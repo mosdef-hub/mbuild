@@ -1,0 +1,22 @@
+__author__ = 'sallai'
+from mbuild.compound import *
+from mbuild.port import *
+
+class AlkaneTail(Compound):
+
+    @classmethod
+    def create(cls, label=None):
+        m = super(AlkaneTail, cls).create(label)
+        m.add(C((0, 0, 0)),'c')
+        m.add(H((1, 0, 0)),'h1')
+        m.add(H((0, 1, 0)),'h2')
+        m.add(H((-1, 0, 0)),'h3')
+
+        m.add(Port.create(), 'female_port')
+        m.female_port.applyTransformation(CoordinateTransform.translation((0,-0.5,0)))
+
+        m.add(Port.create(), 'male_port')
+        m.male_port.applyTransformation(CoordinateTransform.rotation_around_z(pi))
+        m.male_port.applyTransformation(CoordinateTransform.translation((0,-0.5,0)))
+
+        return m
