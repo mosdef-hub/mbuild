@@ -44,29 +44,65 @@ class MoleculeModel(object):
         else:
             raise Exception("can't add unknown type " + str(what))
 
+    # def plot(self, verbose=False, labels=True):
+    #     fig = pyplot.figure()
+    #     ax = fig.add_subplot(111, projection='3d', aspect='equal')
+    #     ax.set_xlabel('X')
+    #     ax.set_ylabel('Y')
+    #     ax.set_zlabel('Z')
+    #     # ax.set_title(self.label())
+    #
+    #     for atom in self.atoms:
+    #         if atom.atomType != 'G' or verbose:
+    #             # print atom
+    #             if labels:
+    #                 atom.plot(ax, str(atom))
+    #             else:
+    #                 atom.plot(ax, None)
+    #
+    #     for bond in self.bonds:
+    #         bond.plot(ax)
+    #
+    #     for angle in self.angles:
+    #         angle.plot(ax)
+    #
+    #     pyplot.show()
+
+    def getAllAtomsByType(self, atomType):
+        return ifilter(lambda atom: isinstance(atom, atomType), self.atoms)
+
+
     def plot(self, verbose=False, labels=True):
-        fig = pyplot.figure()
-        ax = fig.add_subplot(111, projection='3d', aspect='equal')
-        ax.set_xlabel('X')
-        ax.set_ylabel('Y')
-        ax.set_zlabel('Z')
-        # ax.set_title(self.label())
+
+        from mayavi import mlab
+        x = []
+        y = []
+        z = []
 
         for atom in self.atoms:
             if atom.atomType != 'G' or verbose:
                 # print atom
-                if labels:
-                    atom.plot(ax, str(atom))
-                else:
-                    atom.plot(ax, None)
+                x.append(atom.pos[0])
+                y.append(atom.pos[1])
+                z.append(atom.pos[2])
+
+        s = mlab.points3d(x,y,z)
 
         for bond in self.bonds:
-            bond.plot(ax)
+            epsilon = 0.3
+            pos1 = np.array(bond.atom1.pos)
+            pos2 = np.array(bond.atom2.pos)
+            v12 = pos2 - pos1 # vector from atom1 to atom2
+            d12 = np.linalg.norm(v12) # atom1-atom2 distance
+            p1 = pos1 + v12/d12 * epsilon
+            p2 = pos1 + v12/d12 * (d12 - epsilon)
+            mlab.plot3d([p1[0], p2[0]],[p1[1], p2[1]],[p1[2], p2[2]])
 
-        for angle in self.angles:
-            angle.plot(ax)
 
-        pyplot.show()
+        mlab.show()
+
+
+
 
 
 class RuleEngine(object):
@@ -81,14 +117,15 @@ class RuleEngine(object):
 
 
     def execute(self):
-        self.c1xc()
-        self.c1xc1xc();
+        # self.c1xc()
+        self.c1xh()
+        self.c1xc1xc()
 
     def c1xc(self):
         "Ci-Cj distance is in [dmin, dmax] => add bond C1xC(Ci,Cj) (symmetric)"
 
-        dmin = 2.5
-        dmax = 2.8
+        dmin = 1.2
+        dmax = 1.7
 
         for c1, c2 in ifilter(lambda (c1, c2): dmin <= c1.distance(c2) <= dmax,
                               combinations(
@@ -99,36 +136,21 @@ class RuleEngine(object):
         ):
             self.model.add(Bond.create(c1, c2, bondType="c1xc", color='green'))
 
-    def c1xc_lambda(self):
-        "Ci-Cj distance is in [dmin, dmax] => add bond C1xC(Ci,Cj) (symmetric)"
+    def c1xh(self):
+        "Ci-Hj distance is in [dmin, dmax] => add bond C1xH(Ci,Hj) (symmetric)"
 
-        dmin = 2.5
-        dmax = 2.8
-
-        for c1, c2 in combinations(ifilter(lambda atom: isinstance(atom, C), self.model.atoms), 2):
-            if dmin <= c1.distance(c2) <= dmax:
-                # create bond
-                b = Bond.create(c1, c2, "c1xc")
-                self.model.add(b)
+        dmin = 1.0
+        dmax = 1.5
+        # print list(combinations(list(self.model.getAllAtomsByType(C))+ list(self.model.getAllAtomsByType(H)),2))
 
 
-    def c1xc_simple(self):
-        "Ci-Cj distance is in [dmin, dmax] => add bond C1xC(Ci,Cj) (symmetric)"
 
-        dmin = 2.5
-        dmax = 2.8
-        atoms = self.model.atoms
-        # for all c
-        for c1 in atoms:
-            if isinstance(c1, C):
-                # check existence of c1 in the [dmin, dmax] distance range
-                for c2 in atoms:
-                    if isinstance(c2, C) and c1 != c2:
-                        # print c1.distance(c2)
-                        if dmin <= c1.distance(c2) <= dmax:
-                            # create bond
-                            b = Bond.create(c1, c2, "c1xc")
-                            self.model.add(b)
+        for c1, h1 in ifilter(lambda (c1, h1): dmin <= c1.distance(h1) <= dmax and isinstance(c1,C) and isinstance(h1,H),
+                                      combinations(list(self.model.getAllAtomsByType(C)) + list(self.model.getAllAtomsByType(H)),
+                                      2
+                              )
+        ):
+            self.model.add(Bond.create(c1, h1, bondType="c1xh", color='blue'))
 
 
     def c1xc1xc(self):
@@ -154,7 +176,6 @@ class RuleEngine(object):
             else:
                 print "bad angle:" + str(angle_deg)
 
-        pass
 
     def c1xc1xc_simple(self):
         # Ci-Cj-Ck and Ci != Ck => add angle C1xC1xC(Ci,Cj,Ck) (symmetric)
@@ -193,9 +214,11 @@ class RuleEngine(object):
 
 
 if __name__ == "__main__":
-    m = Xyz.create("c60.xyz")
+    # m = Xyz.create("c60.xyz")
+    m = Xyz.create("../mpc.xyz")
     mm = MoleculeModel.create()
     mm.add(m.atoms().values())
+
 
     r = RuleEngine.create(mm)
 
@@ -204,6 +227,7 @@ if __name__ == "__main__":
 
     # for a in r.model.angles:
     #     print a.inDegrees()
+
 
     r.model.plot(labels=False)
 

@@ -68,7 +68,9 @@ class Angle(object):
 
     def plot(self, ax):
         epsilon = .4
-        offset = np.array([round(random()*10+1)*.05, 0, 0])
+        offset = np.array([np.round(np.random.random()*10+1)*.05, 0, 0])
+
+#        offset = np.array([round(random()*10+1)*.05, 0, 0])
 
         pos1 = np.array(self.atom1.pos)
         pos2 = np.array(self.atom2.pos)
