@@ -14,12 +14,12 @@ class AlkaneBody(Compound):
 
         m.add(Port.create(),'male_port')
         m.male_port.applyTransformation(CoordinateTransform.rotation_around_z(pi))
-        m.male_port.applyTransformation(CoordinateTransform.translation((0,-0.6,0)))
+        m.male_port.applyTransformation(CoordinateTransform.translation((0,-0.7,0)))
 
 
         m.add(Port.create(),'female_port')
         m.female_port.applyTransformation(CoordinateTransform.rotation_around_z(pi))
-        m.female_port.applyTransformation(CoordinateTransform.translation((0,0.6,0)))
+        m.female_port.applyTransformation(CoordinateTransform.translation((0,0.7,0)))
         return m
 
 

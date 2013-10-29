@@ -1,6 +1,7 @@
 __author__ = 'sallai'
 from matplotlib import pyplot
 from mpl_toolkits.mplot3d import Axes3D
+import pdb
 
 from mbuild.coordinate_transform import *
 
@@ -95,12 +96,29 @@ class Compound(object):
                     atoms[label + '.' + sublabel] = subatom
         return atoms
 
-    def savexyz(self, fn):
+    def savexyz(self, fn, print_ports=False):
         with open(fn, 'w') as f:
-            f.write(str(self.atoms().__len__()) + '\n\n')
+            if print_ports:
+                f.write(str(self.atoms().__len__()) + '\n\n')
+            else:
+                i = 0
+                for key, value in self.atoms().iteritems():
+                    if value.atomType != 'G':
+                        i += 1
+                f.write(str(i) + '\n\n')
             for key, value in self.atoms().iteritems():
-                f.write(value.atomType + '\t' + str(value.pos[0]) + '\t' + str(value.pos[1]) + '\t' + str(
-                    value.pos[2]) + '\n')
+                if print_ports:
+                    f.write(value.atomType + '\t' +
+                            str(value.pos[0]) + '\t' +
+                            str(value.pos[1]) + '\t' +
+                            str(value.pos[2]) + '\n')
+                else:
+                    if value.atomType != 'G':
+                        f.write(value.atomType + '\t' +
+                                str(value.pos[0]) + '\t' +
+                                str(value.pos[1]) + '\t' +
+                                str(value.pos[2]) + '\n')
+
 
 
     def component(self, component_path):
@@ -144,9 +162,11 @@ class Compound(object):
 
         return (minx, miny, minz), (maxx, maxy, maxz)
 
-    def plot(self, verbose=False, labels=True):
+    def plot(self, verbose=False, labels=False):
         fig = pyplot.figure()
         ax = fig.add_subplot(111, projection='3d', aspect='equal')
+        coord_min = inf
+        coord_max = -inf
         for (label, atom) in self.atoms().items():
             if atom.atomType != 'G' or verbose:
                 # print atom
@@ -154,6 +174,7 @@ class Compound(object):
                     atom.plot(ax, str(atom))
                 else:
                     atom.plot(ax, None)
+
         ax.set_xlabel('X')
         ax.set_ylabel('Y')
         ax.set_zlabel('Z')

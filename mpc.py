@@ -12,8 +12,8 @@ class Mpc(Compound):
         m.add(mpc,'mpc_xyz')
 
         m.add(Port.create(),'mpc_port')
-        m.mpc_port.applyTransformation(CoordinateTransform.rotation_around_x(pi/2))
-        m.mpc_port.applyTransformation(CoordinateTransform.rotation_around_y(pi/4))
+        #m.mpc_port.applyTransformation(CoordinateTransform.rotation_around_z(pi))
+        #m.mpc_port.applyTransformation(CoordinateTransform.rotation_around_y(pi/2))
         m.mpc_port.applyTransformation(CoordinateTransform.translation((-2.2,-2.49,1.17)))
 
         return m
