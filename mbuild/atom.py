@@ -56,6 +56,7 @@ class C(Atom):
     def __init__(self, pos=(0, 0, 0)):
         super(C, self).__init__('C', pos)
         self.color = 'teal'
+        self.colorRGB = (0, .5, .5)
         self.vdw_radius = 1.7
 
 
@@ -63,6 +64,7 @@ class H(Atom):
     def __init__(self, pos=(0, 0, 0)):
         super(H, self).__init__('H', pos)
         self.color = 'white'
+        self.colorRGB = (1, 1, 1)
         self.vdw_radius = 1.2
 
 
@@ -70,12 +72,15 @@ class O(Atom):
     def __init__(self, pos=(0, 0, 0)):
         super(O, self).__init__('O', pos)
         self.color = 'red'
+        self.colorRGB = (1, 0, 0)
         self.vdw_radius = 1.52
 
 class F(Atom):
     def __init__(self, pos=(0, 0, 0)):
         super(F, self).__init__('F', pos)
         self.color = 'pink'
+        self.colorRGB = (1, 192/256, 203/256)
+
         self.vdw_radius = 1.35
 
 
@@ -83,6 +88,7 @@ class N(Atom):
     def __init__(self, pos=(0, 0, 0)):
         super(N, self).__init__('N', pos)
         self.color = 'blue'
+        self.colorRGB = (0, 0, 1)
         self.vdw_radius = 1.55
 
 
@@ -90,10 +96,12 @@ class P(Atom):
     def __init__(self, pos=(0, 0, 0)):
         super(P, self).__init__('P', pos)
         self.color = 'orange'
+        self.colorRGB = (1, 165/256, 0)
         self.vdw_radius = 1.8
 
 
 class G(Atom):
     def __init__(self, pos=(0, 0, 0)):
         super(G, self).__init__('G', pos)
+        self.colorRGB = (.5, .5, .5)
 

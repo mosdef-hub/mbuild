@@ -162,7 +162,49 @@ class Compound(object):
 
         return (minx, miny, minz), (maxx, maxy, maxz)
 
-    def plot(self, verbose=False, labels=False):
+    def plot(self, verbose=False, labels=True):
+
+        from mayavi import mlab
+        from tvtk.api import tvtk
+        import numpy as np
+
+        x = []
+        y = []
+        z = []
+        r = []
+        g = []
+        b = []
+        rgb = []
+
+        # sort atoms by type
+        d = dict()
+
+        for (label, atom) in self.atoms().items():
+            if atom.atomType != 'G' or verbose:
+                if not atom.atomType in d.keys():
+                    d[atom.atomType] = [atom]
+                else:
+                    d[atom.atomType].append(atom);
+
+        for (atomType,atomList) in d.items():
+            x = []
+            y = []
+            z = []
+            r = []
+            for atom in atomList:
+                x.append(atom.pos[0])
+                y.append(atom.pos[1])
+                z.append(atom.pos[2])
+                # TODO: should we do the sizing by the wdv radius???
+                r.append(atom.vdw_radius)
+                # r.append(1)
+            fig = mlab.points3d(x,y,z,r,color=atomList[0].colorRGB, scale_factor=1, scale_mode='scalar')
+            #fig.glyph.glyph.clamping = False
+        mlab.show()
+
+
+
+    def plot2(self, verbose=False, labels=False):
         fig = pyplot.figure()
         ax = fig.add_subplot(111, projection='3d', aspect='equal')
         coord_min = inf
