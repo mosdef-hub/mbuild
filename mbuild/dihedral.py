@@ -4,11 +4,11 @@ import pdb
 from mbuild.atom import *
 
 
-class Angle(object):
+class Dihedral(object):
     @classmethod
-    def create(cls, atom1, atom2, atom3, angleType='undefined', color='black'):
-        b = Angle()
-        b.angleType = angleType
+    def create(cls, atom1, atom2, atom3, atom4, dihedralType='undefined', color='black'):
+        b = dihedral()
+        b.dihedralType = dihedralType
         b.color = color
         b.atom2 = atom2
         if atom1.__hash__() < atom2.__hash__():
@@ -20,19 +20,19 @@ class Angle(object):
         return b
 
     @classmethod
-    def createFromBonds(cls, bond1, bond2, **kwargs):
-        if bond1.atom1 == bond2.atom1:
-            return Angle.create(bond1.atom2, bond1.atom1, bond2.atom2, **kwargs)
-        if bond1.atom1 == bond2.atom2:
-            return Angle.create(bond1.atom2, bond1.atom1, bond2.atom1, **kwargs)
-        elif bond1.atom2 == bond2.atom1:
-            return Angle.create(bond1.atom1, bond1.atom2, bond2.atom2, **kwargs)
-        elif bond1.atom2 == bond2.atom2:
-            return Angle.create(bond1.atom1, bond1.atom2, bond2.atom1, **kwargs)
+    def createFromAngles(cls, angle1, angle2, angle3, **kwargs):
+        if (angle1.atom1, angle1.atom2) == (angle2.atom2, angle2.atom3):
+            return Dihedral.create(angle1.atom3, angle1.atom2, angle2.atom2, angle2.atom1, **kwargs)
+        elif (angle1.atom1, angle1.atom2) == (angle2.atom1, angle2.atom2):
+            return Dihedral.create(angle1.atom3, angle1.atom2, angle2.atom2, angle2.atom3, **kwargs)
+        elif (angle1.atom2, angle1.atom3) == (angle2.atom1, angle2.atom2):
+            return Dihedral.create(angle1.atom1, angle1.atom2, angle2.atom2, angle2.atom3, **kwargs)
+        elif (angle1.atom2, angle1.atom3) == (angle2.atom2, angle2.atom3):
+            return Dihedral.create(angle1.atom1, angle1.atom2, angle2.atom2, angle2.atom1, **kwargs)
         else:
             return None
 
-
+    """
     @staticmethod
     def computeInRadians(atom1, atom2, atom3):
         """
@@ -62,10 +62,12 @@ class Angle(object):
 
     def inDegrees(self):
         return self.inRadians() * 180 / math.pi
+    """
 
     def __hash__(self):
         # atom1 and atom3 are interchangeable
-        return ( self.atom1.__hash__() * self.atom3.__hash__()) ^ self.atom1.__hash__() ^ self.atom3.__hash__() ^ self.atom2.__hash__()
+        return self.atom1.__hash__() ^ self.atom2.__hash__() ^ self.atom3.__hash__() ^ self.atom4.__hash__()
+
 
     def __eq__(self, other):
         return self.__hash__() == other.__hash__()
@@ -92,30 +94,33 @@ class Angle(object):
                 [p1[1], p2[1], p3[1]],
                 [p1[2], p2[2], p3[2]], '-', color=self.color)
 
-    def hasTypes(self, atomType1, atomType2, atomType3):
-        abc = Angle.orderAngle(self, atomType1, atomType2, atomType3)
-        if abc:
+    def hasTypes(self, atomType1, atomType2, atomType3, atomType4):
+        abcd = Dihedral.orderDihedral(self, atomType1, atomType2, atomType3, atomType4)
+        if abcd:
             return True
         else:
             return False
 
     @classmethod
-    def orderAngle(cls, angle, type_A, type_B, type_C):
-        abc = Angle()
-        abc.angleType = angle.angleType
-        abc.color = angle.color
-        if (isinstance(angle.atom1, type_A) and 
-            isinstance(angle.atom2, type_B) and 
-            isinstance(angle.atom3, type_C)):
-            abc.atom1 = angle.atom1
-            abc.atom2 = angle.atom2
-            abc.atom3 = angle.atom3
-            return abc
-        elif (isinstance(angle.atom1, type_C) and 
-            isinstance(angle.atom2, type_B) and 
-            isinstance(angle.atom3, type_A)):
-            abc.atom1 = angle.atom3
-            abc.atom2 = angle.atom2
-            abc.atom3 = angle.atom1
-            return abc
-
+    def orderDihedral(cls, dihedral, type_A, type_B, type_C, type_D):
+        abcd = Dihedral()
+        abcd.dihedralType = dihedral.dihedralType
+        abcd.color = dihedral.color
+        if (isinstance(dihedral.atom1, type_A) and
+            isinstance(dihedral.atom2, type_B) and
+            isinstance(dihedral.atom3, type_C) and
+            isinstance(dihedral.atom4, type_D)):
+            abcd.atom1 = dihedral.atom1
+            abcd.atom2 = dihedral.atom2
+            abcd.atom3 = dihedral.atom3
+            abcd.atom4 = dihedral.atom4
+            return abcd
+        elif (isinstance(dihedral.atom1, type_D) and
+            isinstance(dihedral.atom2, type_C) and
+            isinstance(dihedral.atom3, type_B) and
+            isinstance(dihedral.atom4, type_A)):
+            abcd.atom1 = dihedral.atom4
+            abcd.atom2 = dihedral.atom3
+            abcd.atom3 = dihedral.atom2
+            abcd.atom4 = dihedral.atom1
+            return abcd

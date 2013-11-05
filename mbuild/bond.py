@@ -40,3 +40,27 @@ class Bond(object):
         p1 = pos1 + v12/d12 * epsilon
         p2 = pos1 + v12/d12 * (d12 - epsilon)
         ax.plot([p1[0], p2[0]],[p1[1], p2[1]],[p1[2], p2[2]], '-', color=self.color)
+
+    def com(self):
+        return [sum(y) / len(y) for y in zip(self.atom1.pos, self.atom2.pos)]
+
+    def hasTypes(self, atomType1, atomType2):
+        ab = Bond.orderBond(self, atomType1, atomType2)
+        if ab:
+            return True
+        else:
+            return False
+
+    @classmethod
+    def orderBond(cls, bond, type_A, type_B):
+        ab = Bond()
+        ab.bondType = bond.bondType
+        ab.color = bond.color
+        if isinstance(bond.atom1, type_A) and isinstance(bond.atom2, type_B):
+            ab.atom1 = bond.atom1
+            ab.atom2 = bond.atom2
+            return ab
+        elif isinstance(bond.atom1, type_B) and isinstance(bond.atom2, type_A):
+            ab.atom1 = bond.atom2
+            ab.atom2 = bond.atom1
+            return ab

@@ -69,32 +69,79 @@ class MoleculeModel(object):
     #
     #     pyplot.show()
 
-    def getAllAtomsByType(self, atomType):
+    def getAtomsByType(self, atomType):
         return ifilter(lambda atom: isinstance(atom, atomType), self.atoms)
 
-    def initKdTree(self):
-        self.atomsList = [ atom.pos for atom in self.atoms]
-        self.kdtree = cKDTree(self.atomsList)
+    def getBondsByTypes(self, atomType1, atomType2):
+        return ifilter(lambda bond: bond.hasTypes(atomType1, atomType2), self.bonds)
 
-    def getAtomsInRange(self, point, radius, maxAtoms=250):
+    def getAnglesByTypes(self, atomType1, atomType2, atomType3):
+        return ifilter(lambda angle: angle.hasTypes(atomType1, atomType2, atomType3), self.angles)
+
+
+    def initAtomKdTree(self):
+        self.atomsList = list(self.atoms)
+        self.atomKdtree = cKDTree([atom.pos for atom in self.atomsList])
+
+    def getAtomsInRange(self, point, radius, maxItems=50):
         # create kdtree if it's not yet there
-        if not hasattr(self, 'kdtree'):
-            self.initKdTree()
+        if not hasattr(self, 'atomKdtree'):
+            self.initAtomKdTree()
 
-        distances, indices = self.kdtree.query(point, maxAtoms)
+        distances, indices = self.atomKdtree.query(point, maxItems)
         # indices = self.kdtree.query(point, maxAtoms)
-
-
 
         neighbors = []
         for index, distance in zip(indices, distances):
-            print str(index) + ' ' + str(distance)
             if distance <= radius:
                 neighbors.append(self.atomsList[index])
             else:
                 break
 
         return neighbors
+
+    def initBondKdTree(self):
+        self.bondsList = list(self.bonds)
+        self.BondKdtree = cKDTree([bond.com() for bond in self.bondsList])
+
+    def getBondsInRange(self, point, radius, maxItems=50):
+        # create kdtree if it's not yet there
+        if not hasattr(self, 'bondKdtree'):
+            self.initBondKdTree()
+
+        distances, indices = self.BondKdtree.query(point, maxItems)
+        # indices = self.kdtree.query(point, maxAtoms)
+
+        neighbors = []
+        for index, distance in zip(indices, distances):
+            if distance <= radius:
+                neighbors.append(self.bondsList[index])
+            else:
+                break
+
+        return neighbors
+
+    def initAngleKdTree(self):
+        self.anglesList = list(self.angles)
+        self.AngleKdtree = cKDTree([angle.atom2.pos for angle in self.anglesList])
+
+    def getAnglesInRange(self, point, radius, maxItems=50):
+        # create kdtree if it's not yet there
+        if not hasattr(self, 'angleKdtree'):
+            self.initAngleKdTree()
+
+        distances, indices = self.AngleKdtree.query(point, maxItems)
+        # indices = self.kdtree.query(point, maxAtoms)
+
+        neighbors = []
+        for index, distance in zip(indices, distances):
+            if distance <= radius:
+                neighbors.append(self.anglesList[index])
+            else:
+                break
+
+        return neighbors
+
 
 
     def plot(self, verbose=False, labels=True):
@@ -114,8 +161,8 @@ class MoleculeModel(object):
                 z.append(atom.pos[2])
                 r.append(atom.vdw_radius)
 
-        #mlab.points3d(x,y,z,r)
-
+        mlab.points3d(x,y,z,r)
+        """
         for bond in self.bonds:
             epsilon = 0.3
             pos1 = np.array(bond.atom1.pos)
@@ -126,9 +173,25 @@ class MoleculeModel(object):
             p2 = pos1 + v12/d12 * (d12 - epsilon)
             mlab.plot3d([p1[0], p2[0]],[p1[1], p2[1]],[p1[2], p2[2]],
                     tube_radius=0.25, color=bond.color)
+        """
+        for angle in self.angles:
+            epsilon = 0.3
+            pos1 = np.array(angle.atom1.pos)
+            pos2 = np.array(angle.atom2.pos)
+            pos3 = np.array(angle.atom3.pos)
+            v12 = pos2 - pos1 # vector from atom1 to atom2
+            v23 = pos3 - pos2
+            d12 = np.linalg.norm(v12) # atom1-atom2 distance
+            d23 = np.linalg.norm(v23) # atom1-atom2 distance
+            p1 = pos1 + v12/d12 * epsilon
+            p2 = pos1 + v12/d12 * (d12 - epsilon)
+            mlab.plot3d([pos1[0], pos2[0]],[pos1[1], pos2[1]],[pos1[2], pos2[2]],
+                    tube_radius=0.25, color=angle.color)
+
+            mlab.plot3d([pos2[0], pos3[0]],[pos2[1], pos3[1]],[pos2[2], pos3[2]],
+                    tube_radius=0.25, color=angle.color)
 
         mlab.show()
-
 
 
 class RuleEngine(object):
@@ -143,24 +206,53 @@ class RuleEngine(object):
 
 
     def execute(self):
-        self.add_bond(C, O, 1.2, 1.6, "c1xo", (1, 0, 0))
-        self.add_bond(N, C, 1.2, 1.6, "n1xo", (0, 0, 1))
-        self.c1xc1xc()
+        self.add_bond(C, H, 1.0, 1.4, "c1xh", (1, 1, 1))
+        self.add_bond(C, O, 1.2, 1.6, "c1xc", (0, 1, 0))
+        self.add_bond(C, C, 1.2, 1.6, "c1xc", (0, 1, 0))
+        #self.add_bond(N, C, 1.2, 1.6, "n1xo", (0, 0, 1))
+        self.add_angle(C, C, O, "hxcxc", color=(1, 0.5, 0))
+        #self.add_angle(C, C, C, "cxcxc", color=(1, 0, 0))
+        #self.add_dihedral(H, C, C, C, "hxcxcxc", color=(0, 0, 0))
 
     def add_bond(self, type_A, type_B, dmin, dmax, bondType, color=(1,1,1)):
         "Ai-Bj distance is in [dmin, dmax] => add bond A1xB(Ai,Bj) (symmetric)"
+        for a1 in self.model.getAtomsByType(type_A):
+            nearest = self.model.getAtomsInRange(a1.pos, 2)
+            for b1 in nearest:
+                if isinstance(b1, type_B) and (dmin <= b1.distance(a1) <= dmax):
+                    self.model.add(Bond.create(a1, b1, bondType=bondType, color=color))
 
-        # print list(combinations(list(self.model.getAllAtomsByType(C))+ list(self.model.getAllAtomsByType(H)),2))
+    def add_angle(self, type_A, type_B, type_C, angleType, thmin=-Inf, thmax=Inf, color=(1,1,1)):
+        """
+        """
+        for ab1 in self.model.getBondsByTypes(type_A, type_B):
+            ab = Bond.orderBond(ab1, type_A, type_B)
 
+            nearest = self.model.getBondsInRange(ab.com(), 3)
+            for bc1 in nearest:
+                if ab1 == bc1:
+                    continue
+                bc = Bond.orderBond(bc1, type_B, type_C)
+                if not bc:
+                    continue
+                temp_ang = Angle.createFromBonds(ab, bc, angleType=angleType, color=color)
+                if temp_ang:
+                    if isinstance(temp_ang.atom2, type_B) and (thmin <= temp_ang.inDegrees() <= thmax):
+                        self.model.add(temp_ang)
 
+    def add_dihedral(self, type_A, type_B, type_C, type_D, psimin, psimax, dihedralType, color=(1,1,1)):
+        """
+        """
+        for abc1 in self.model.getAnglesByTypes(type_A, type_B, type_C):
+            abc = Angle.orderAngle(abc1, type_A, type_B, type_C)
 
-        for a1, b1 in ifilter(lambda (a1, b1): dmin <= a1.distance(b1) <= dmax and isinstance(a1,type_A) and isinstance(b1,type_B),
-                                      combinations(list(self.model.getAllAtomsByType(type_A)) + list(self.model.getAllAtomsByType(type_B)),
-                                      2
-                              )
-        ):
-            self.model.add(Bond.create(a1, b1, bondType=bondType, color=color))
-
+            nearest = self.model.getAnglesInRange(abc.atom2.pos, 5)
+            for bcd1 in nearest:
+                if abc1 == bcd1:
+                    continue
+                bcd = Angle.orderAngle(bcd1, type_B, type_C, type_D)
+                if (abc.atom2 == bcd.atom1) and (abc.atom3 == bcd.atom2):
+                    self.model.add(Dihedral.createFromAngles(abc, bcd, dihedralType=dihedralType, color=color))
 
     def c1xc1xc(self):
         for b1, b2 in ifilter(lambda (bond1, bond2): bond1.hasCommonAtomsWith(bond2),
@@ -232,13 +324,14 @@ if __name__ == "__main__":
     r = RuleEngine.create(mm)
 
     r.execute()
-    #print r.model.bonds
+    print 'n_bonds: ' + str(len(r.model.bonds))
+    print 'n_angles: ' + str(len(r.model.angles))
 
     # for a in r.model.angles:
     #     print a.inDegrees()
 
-    print(mm.getAtomsInRange(mm.atoms.pop().pos,2))
-
+    #print(mm.getAtomsInRange(mm.atoms.pop().pos,2))
+    print "done"
     r.model.plot(labels=False)
 
 
