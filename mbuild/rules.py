@@ -78,6 +78,8 @@ class MoleculeModel(object):
         x = []
         y = []
         z = []
+        r = []
+        c = []
 
         for atom in self.atoms:
             if atom.atomType != 'G' or verbose:
@@ -85,8 +87,9 @@ class MoleculeModel(object):
                 x.append(atom.pos[0])
                 y.append(atom.pos[1])
                 z.append(atom.pos[2])
+                r.append(atom.vdw_radius)
 
-        s = mlab.points3d(x,y,z)
+        #mlab.points3d(x,y,z,r)
 
         for bond in self.bonds:
             epsilon = 0.3
@@ -96,12 +99,10 @@ class MoleculeModel(object):
             d12 = np.linalg.norm(v12) # atom1-atom2 distance
             p1 = pos1 + v12/d12 * epsilon
             p2 = pos1 + v12/d12 * (d12 - epsilon)
-            mlab.plot3d([p1[0], p2[0]],[p1[1], p2[1]],[p1[2], p2[2]])
-
+            mlab.plot3d([p1[0], p2[0]],[p1[1], p2[1]],[p1[2], p2[2]],
+                    tube_radius=0.25, color=bond.color)
 
         mlab.show()
-
-
 
 
 
@@ -117,40 +118,23 @@ class RuleEngine(object):
 
 
     def execute(self):
-        # self.c1xc()
-        self.c1xh()
+        self.add_bond(C, O, 1.2, 1.6, "c1xo", (1, 0, 0))
+        self.add_bond(N, C, 1.2, 1.6, "n1xo", (0, 0, 1))
         self.c1xc1xc()
 
-    def c1xc(self):
-        "Ci-Cj distance is in [dmin, dmax] => add bond C1xC(Ci,Cj) (symmetric)"
+    def add_bond(self, type_A, type_B, dmin, dmax, bondType, color=(1,1,1)):
+        "Ai-Bj distance is in [dmin, dmax] => add bond A1xB(Ai,Bj) (symmetric)"
 
-        dmin = 1.2
-        dmax = 1.7
-
-        for c1, c2 in ifilter(lambda (c1, c2): dmin <= c1.distance(c2) <= dmax,
-                              combinations(
-                                      ifilter(lambda atom: isinstance(atom, C),
-                                              self.model.atoms),
-                                      2
-                              )
-        ):
-            self.model.add(Bond.create(c1, c2, bondType="c1xc", color='green'))
-
-    def c1xh(self):
-        "Ci-Hj distance is in [dmin, dmax] => add bond C1xH(Ci,Hj) (symmetric)"
-
-        dmin = 1.0
-        dmax = 1.5
         # print list(combinations(list(self.model.getAllAtomsByType(C))+ list(self.model.getAllAtomsByType(H)),2))
 
 
 
-        for c1, h1 in ifilter(lambda (c1, h1): dmin <= c1.distance(h1) <= dmax and isinstance(c1,C) and isinstance(h1,H),
-                                      combinations(list(self.model.getAllAtomsByType(C)) + list(self.model.getAllAtomsByType(H)),
+        for a1, b1 in ifilter(lambda (a1, b1): dmin <= a1.distance(b1) <= dmax and isinstance(a1,type_A) and isinstance(b1,type_B),
+                                      combinations(list(self.model.getAllAtomsByType(type_A)) + list(self.model.getAllAtomsByType(type_B)),
                                       2
                               )
         ):
-            self.model.add(Bond.create(c1, h1, bondType="c1xh", color='blue'))
+            self.model.add(Bond.create(a1, b1, bondType=bondType, color=color))
 
 
     def c1xc1xc(self):
@@ -223,7 +207,7 @@ if __name__ == "__main__":
     r = RuleEngine.create(mm)
 
     r.execute()
-    print r.model.bonds
+    #print r.model.bonds
 
     # for a in r.model.angles:
     #     print a.inDegrees()
