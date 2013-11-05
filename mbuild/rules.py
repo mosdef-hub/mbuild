@@ -4,7 +4,8 @@ from itertools import *
 from mbuild.xyz import *
 from mbuild.bond import *
 from mbuild.angle import *
-
+from scipy.spatial import cKDTree
+from scipy import inf
 
 __author__ = 'sallai'
 
@@ -70,6 +71,30 @@ class MoleculeModel(object):
 
     def getAllAtomsByType(self, atomType):
         return ifilter(lambda atom: isinstance(atom, atomType), self.atoms)
+
+    def initKdTree(self):
+        self.atomsList = [ atom.pos for atom in self.atoms]
+        self.kdtree = cKDTree(self.atomsList)
+
+    def getAtomsInRange(self, point, radius, maxAtoms=250):
+        # create kdtree if it's not yet there
+        if not hasattr(self, 'kdtree'):
+            self.initKdTree()
+
+        distances, indices = self.kdtree.query(point, maxAtoms)
+        # indices = self.kdtree.query(point, maxAtoms)
+
+
+
+        neighbors = []
+        for index, distance in zip(indices, distances):
+            print str(index) + ' ' + str(distance)
+            if distance <= radius:
+                neighbors.append(self.atomsList[index])
+            else:
+                break
+
+        return neighbors
 
 
     def plot(self, verbose=False, labels=True):
@@ -228,6 +253,7 @@ if __name__ == "__main__":
     # for a in r.model.angles:
     #     print a.inDegrees()
 
+    print(mm.getAtomsInRange(mm.atoms.pop().pos,2))
 
     r.model.plot(labels=False)
 
