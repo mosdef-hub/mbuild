@@ -34,8 +34,8 @@ class Atom(object):
     def distance(self, a2):
         return sqrt((self.pos[0]-a2.pos[0])**2 + (self.pos[1]-a2.pos[1])**2 + (self.pos[2]-a2.pos[2])**2)
 
-    def applyTransformation(self, T):
-        self.pos = tuple(squeeze(T.transform(array([self.pos]))))
+    def transform(self, T):
+        self.pos = tuple(squeeze(T.apply(array([self.pos]))))
 
     def __repr__(self):
         return "Atom[(" + self.atomType + ")" + str(self.pos) + "]"

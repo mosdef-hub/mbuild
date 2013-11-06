@@ -3,7 +3,7 @@ __author__ = 'sallai'
 from numpy import *
 from numpy.linalg import *
 
-class CoordinateTransform:
+class CoordinateTransform(object):
     def __init__(self, T=None):
         if(T==None):
             T = eye(4);
@@ -11,16 +11,44 @@ class CoordinateTransform:
         self.T = T
         self.Tinv = inv(T)
 
-    @classmethod
-    def translation(cls, P):
+    def apply(self, A):
+        """
+        Apply the coordinate transformation to points in A
+        :param A: list of points (nx3)
+        :return: transformed list of points (nx3)
+        """
+        (rows, cols) = A.shape
+        A_new = zeros((rows, 4))
+        A_new = hstack([A, ones((rows,1))])
+
+        A_new = transpose(self.T.dot(transpose(A_new)))
+        return A_new[:, 0:cols]
+
+    def applyInverse(self, A):
+        """
+        Apply the inverse coordinate transformation to points in A
+        :param A: list of points (nx3)
+        :return: transformed list of points (nx3)
+        """
+        (rows, cols) = A.shape
+        A_new = zeros((rows, 4))
+        A_new = hstack([A, ones((rows,1))])
+
+        A_new = transpose(self.Tinv.dot(transpose(A_new)))
+        return A_new[:, 0:cols]
+
+
+
+class Translation(CoordinateTransform):
+    def __init__(self, P):
         T = eye(4)
         T[0,3] = P[0]
         T[1,3] = P[1]
         T[2,3] = P[2]
-        return cls(T)
+        super(Translation, self).__init__(T)
 
-    @classmethod
-    def rotation_around_z(cls, theta):
+class RotationAroundZ(CoordinateTransform):
+    def __init__(self, theta):
         T = eye(4)
         T[0,0] = cos(theta)
         T[0,1] = -sin(theta)
@@ -29,10 +57,10 @@ class CoordinateTransform:
         # T[0,3] = 1.0
         # T[1,3] = 1.0
         # T[2,3] = 1.0
-        return cls(T)
+        super(RotationAroundZ, self).__init__(T)
 
-    @classmethod
-    def rotation_around_y(cls, theta):
+class RotationAroundY(CoordinateTransform):
+    def __init__(self, theta):
         T = eye(4)
         T[0,0] = cos(theta)
         T[0,2] = sin(theta)
@@ -41,10 +69,10 @@ class CoordinateTransform:
         # T[0,3] = 1.0
         # T[1,3] = 1.0
         # T[2,3] = 1.0
-        return cls(T)
+        super(RotationAroundY, self).__init__(T)
 
-    @classmethod
-    def rotation_around_x(cls, theta):
+class RotationAroundX(CoordinateTransform):
+    def __init__(self, theta):
         T = eye(4)
         T[1,1] = cos(theta)
         T[1,2] = -sin(theta)
@@ -53,15 +81,18 @@ class CoordinateTransform:
         # T[0,3] = 1.0
         # T[1,3] = 1.0
         # T[2,3] = 1.0
-        return cls(T)
+        super(RotationAroundX, self).__init__(T)
 
+class RigidTransform(CoordinateTransform):
+    """
+    Computes the rigid transformation that maps points A to points B
+    see http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.173.2196&rep=rep1&type=pdf
+    :param A: list of points (nx3) in source coordinate system
+    :param B: list of points (nx3) in destination coordinate system
+    :return: the CoordinateTransformation object
+    """
 
-    @classmethod
-    def fromMatrix(cls, T):
-        return cls(T)
-
-    @classmethod
-    def compute(cls, A, B):
+    def __init__(self, A, B):
         (rows, cols) = shape(A)
 
         centroid_A = mean(A, axis=0)
@@ -101,19 +132,7 @@ class CoordinateTransform:
 
         T = C_B.dot(R_new).dot(C_A)
 
-        return cls(T)
-
-    def transform(self, A):
-        (rows, cols) = A.shape
-        A_new = zeros((rows, 4))
-        A_new = hstack([A, ones((rows,1))])
-
-        # print "A_new_prime" + str(transpose(A_new))
-        # print "T*A_new_prime" + str(self.T.dot(transpose(A_new)))
-
-        A_new = transpose(self.T.dot(transpose(A_new)))
-        return A_new[:, 0:cols]
-
+        super(RigidTransform, self).__init__(T)
 
 if __name__ == "__main__":
     # matrix with n rows containing x, y, z coordinates(N >= 3) of points in coordinate system 1
@@ -154,20 +173,20 @@ if __name__ == "__main__":
     A = A1
     B = B1
 
-    tAB = CoordinateTransform.compute(A,B)
+    tAB = RigidTransform(A,B)
 
     print "T:" + str(tAB.T)
 
     # test if it works:
-    A2 = tAB.transform(A)
+    A2 = tAB.apply(A)
 
     print "B:" + str(B)
     print "A in B:" + str(A2)
     print "Diff:" + str(A2-B)
 
 
-    translation = CoordinateTransform.translation((10,10,10))
-    print translation.transform(array([[1,1,1]]))
+    translation = Translation((10,10,10))
+    print translation.apply(array([[1,1,1]]))
 
-    rotation_around_z = CoordinateTransform.rotation_around_z(pi/4)
-    print rotation_around_z.transform(array([[1,1,1]]))
+    rotation_around_z = RotationAroundZ(pi/4)
+    print rotation_around_z.apply(array([[1,1,1]]))

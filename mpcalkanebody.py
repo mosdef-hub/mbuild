@@ -16,15 +16,15 @@ class MpcAlkaneBody(Compound):
             m.add(H((1, 0, 0)),'h1')
             m.add(G((-1.2, 0, 0)),'c0') # this is where we want the MPC's first C atom to be
             m.add(Port.create(),'mpc_port')
-            m.mpc_port.applyTransformation(CoordinateTransform.rotation_around_y(pi/2))
-            m.mpc_port.applyTransformation(CoordinateTransform.translation((-0.0,0,0)))
+            m.mpc_port.transform(RotationAroundY(pi/2))
+            m.mpc_port.transform(Translation((-0.0,0,0)))
         else:
             # mpc is on the right
             m.add(H((-1, 0, 0)),'h1')
             m.add(G((1.2, 0, 0)),'c0') # this is where we want the MPC's first C atom to be
             m.add(Port.create(),'mpc_port')
-            m.mpc_port.applyTransformation(CoordinateTransform.rotation_around_y(-pi/2))
-            m.mpc_port.applyTransformation(CoordinateTransform.translation((0.0,0,0)))
+            m.mpc_port.transform(RotationAroundY(-pi/2))
+            m.mpc_port.transform(Translation((0.0,0,0)))
 
 
         m.add(Mpc.create(), 'mpc')
@@ -40,12 +40,12 @@ class MpcAlkaneBody(Compound):
                          (m.mpc.mpc_xyz.C0, m.c0)])
 
         m.add(Port.create(),'male_port')
-        m.male_port.applyTransformation(CoordinateTransform.rotation_around_z(pi))
-        m.male_port.applyTransformation(CoordinateTransform.translation((0,-0.7,0)))
+        m.male_port.transform(RotationAroundZ(pi))
+        m.male_port.transform(Translation((0,-0.7,0)))
 
         m.add(Port.create(),'female_port')
-        m.female_port.applyTransformation(CoordinateTransform.rotation_around_z(pi))
-        m.female_port.applyTransformation(CoordinateTransform.translation((0,0.7,0)))
+        m.female_port.transform(RotationAroundZ(pi))
+        m.female_port.transform(Translation((0,0.7,0)))
         return m
 
 

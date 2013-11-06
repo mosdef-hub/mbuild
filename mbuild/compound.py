@@ -2,22 +2,35 @@ __author__ = 'sallai'
 from matplotlib import pyplot
 from mpl_toolkits.mplot3d import Axes3D
 import pdb
-
+from mayavi import mlab
+from tvtk.api import tvtk
+import numpy as np
 from mbuild.coordinate_transform import *
-
 from mbuild.atom import *
-
+from collections import OrderedDict
 
 class Compound(object):
     @classmethod
     def create(cls, label=None):
+        """
+        Create a compound
+        :param label: a text label of the compount
+        :return: the compound object
+        """
         m = cls()
-        m._components = {}
+        m._components = OrderedDict() # this contain label to Compound or label to Atom mappings
         if label is not None:
             m._label = label
         return m
 
     def add(self, what, label=None):
+        """
+        Add a component to a Compound, inserting it into the map with a label as key, as well as adding it as a member
+        variable with the label as variable name
+        :param what: an Atom or Compound to be added
+        :param label: optionally override the component's label
+        :raise: Exception if component with the given label already exists in the map
+        """
         if label is None:
             label = what.label()
         if label in self._components.keys():
@@ -33,7 +46,7 @@ class Compound(object):
 
     def createEquivalenceTransform(self, equiv):
         """
-        Compute an equivalence transformation that transforms this point cloud to another's coordinate system.
+        Compute an equivalence transformation that transforms this compound to another compound's coordinate system.
         :param other: the other point cloud
         :param equiv: list of equivalent points
         :returns: the coordinatetransform object that transforms this point cloud to the other point cloud's coordinates system
@@ -62,29 +75,30 @@ class Compound(object):
                     self_points = vstack([self_points, atom0.pos])
                     other_points = vstack([other_points, atom1.pos])
 
-        T = CoordinateTransform.compute(self_points, other_points)
+        T = RigidTransform(self_points, other_points)
         return T
 
-    def transform(self, equiv):
+    def transform(self, T):
         """
-        Transform this point cloud to another's coordinate system.
-        :param other: the other point cloud
-        :param equiv: list of equivalent points
-        :returns: the matrix that transforms this point cloud to the other point cloud's coordinates system
+        Transform this point cloud to another's coordinate system, or apply a given coordinate transformation.
+        :param T: list of equivalence relations or coordinate transform
         """
-        T = self.createEquivalenceTransform(equiv)
+
+        if not isinstance(T, CoordinateTransform):
+            # we're assuming here that T is a list of equivalence relations
+            T = self.createEquivalenceTransform(T)
 
         # transform the contained atoms recursively
-        self.applyTransformation(T)
+        for label, component in self._components.iteritems():
+            component.transform(T)
 
         return self
 
-    def applyTransformation(self, T):
-        for label, component in self._components.iteritems():
-            component.applyTransformation(T)
-
-
     def atoms(self):
+        """
+        Get all atoms of the Compound recursively
+        :return: map containing atoms with labels as keys
+        """
         atoms = {} # empty dict
         for label, component in self._components.iteritems():
             # add local atoms
@@ -97,6 +111,11 @@ class Compound(object):
         return atoms
 
     def savexyz(self, fn, print_ports=False):
+        """
+        Save into an xyz file
+        :param fn: file name
+        :param print_ports: if False, ghost points are not written
+        """
         with open(fn, 'w') as f:
             if print_ports:
                 f.write(str(self.atoms().__len__()) + '\n\n')
@@ -119,9 +138,12 @@ class Compound(object):
                                 str(value.pos[1]) + '\t' +
                                 str(value.pos[2]) + '\n')
 
-
-
     def component(self, component_path):
+        """
+        Find a component by label
+        :param component_path: the label of the component (may be hierarchical)
+        :return: the component (if found), None otherwise
+        """
         dot_pos = component_path.find('.')
         if dot_pos > -1:
             subcomponent_path = component_path[:dot_pos]
@@ -137,6 +159,10 @@ class Compound(object):
                 return None
 
     def boundingbox(self, excludeG=True):
+        """
+        Compute the bounding box of the compound
+        :rtype : (minx, miny, minz), (maxx, maxy, maxz)
+        """
         minx = float('inf')
         miny = float('inf')
         minz = float('inf')
@@ -163,10 +189,11 @@ class Compound(object):
         return (minx, miny, minz), (maxx, maxy, maxz)
 
     def plot(self, verbose=False, labels=True):
-
-        from mayavi import mlab
-        from tvtk.api import tvtk
-        import numpy as np
+        """
+        Plot atoms in 3d
+        :param verbose: if True, atom types will be plotted
+        :param labels: if True, labels will be plotted
+        """
 
         x = []
         y = []
@@ -195,16 +222,18 @@ class Compound(object):
                 x.append(atom.pos[0])
                 y.append(atom.pos[1])
                 z.append(atom.pos[2])
-                # TODO: should we do the sizing by the wdv radius???
                 r.append(atom.vdw_radius)
-                # r.append(1)
+
             fig = mlab.points3d(x,y,z,r,color=atomList[0].colorRGB, scale_factor=1, scale_mode='scalar')
             #fig.glyph.glyph.clamping = False
         mlab.show()
 
-
-
     def plot2(self, verbose=False, labels=False):
+        """
+        Plot atoms in 3d
+        :param verbose: if True, atom types will be plotted
+        :param labels: if True, labels will be plotted
+        """
         fig = pyplot.figure()
         ax = fig.add_subplot(111, projection='3d', aspect='equal')
         coord_min = inf
