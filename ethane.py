@@ -30,5 +30,5 @@ if __name__ == "__main__":
     ethane = Ethane.create()
     # print ethane
     print ethane.atoms()
-    ethane.plot(labels=False, verbose=False)
+    ethane.plot2(labels=False, verbose=False)
     print ethane.bottom_tail.c

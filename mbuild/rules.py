@@ -54,7 +54,7 @@ class MoleculeModel(object):
     #     # ax.set_title(self.label())
     #
     #     for atom in self.atoms:
-    #         if atom.atomType != 'G' or verbose:
+    #         if atom.kind != 'G' or verbose:
     #             # print atom
     #             if labels:
     #                 atom.plot(ax, str(atom))
@@ -69,14 +69,14 @@ class MoleculeModel(object):
     #
     #     pyplot.show()
 
-    def getAtomsByType(self, atomType):
-        return ifilter(lambda atom: isinstance(atom, atomType), self.atoms)
+    def getAtomsByType(self, kind):
+        return ifilter(lambda atom: isinstance(atom, kind), self.atoms)
 
-    def getBondsByTypes(self, atomType1, atomType2):
-        return ifilter(lambda bond: bond.hasTypes(atomType1, atomType2), self.bonds)
+    def getBondsByTypes(self, kind1, kind2):
+        return ifilter(lambda bond: bond.hasTypes(kind1, kind2), self.bonds)
 
-    def getAnglesByTypes(self, atomType1, atomType2, atomType3):
-        return ifilter(lambda angle: angle.hasTypes(atomType1, atomType2, atomType3), self.angles)
+    def getAnglesByTypes(self, kind1, kind2, kind3):
+        return ifilter(lambda angle: angle.hasTypes(kind1, kind2, kind3), self.angles)
 
 
     def initAtomKdTree(self):
@@ -154,7 +154,7 @@ class MoleculeModel(object):
         c = []
 
         for atom in self.atoms:
-            if atom.atomType != 'G' or verbose:
+            if atom.kind != 'G' or verbose:
                 # print atom
                 x.append(atom.pos[0])
                 y.append(atom.pos[1])
@@ -214,15 +214,15 @@ class RuleEngine(object):
         #self.add_angle(C, C, C, "cxcxc", color=(1, 0, 0))
         #self.add_dihedral(H, C, C, C, "hxcxcxc", color=(0, 0, 0))
 
-    def add_bond(self, type_A, type_B, dmin, dmax, bondType, color=(1,1,1)):
+    def add_bond(self, type_A, type_B, dmin, dmax, kind, color=(1,1,1)):
         "Ai-Bj distance is in [dmin, dmax] => add bond A1xB(Ai,Bj) (symmetric)"
         for a1 in self.model.getAtomsByType(type_A):
             nearest = self.model.getAtomsInRange(a1.pos, 2)
             for b1 in nearest:
                 if isinstance(b1, type_B) and (dmin <= b1.distance(a1) <= dmax):
-                    self.model.add(Bond.create(a1, b1, bondType=bondType, color=color))
+                    self.model.add(Bond.create(a1, b1, kind=kind, color=color))
 
-    def add_angle(self, type_A, type_B, type_C, angleType, thmin=-Inf, thmax=Inf, color=(1,1,1)):
+    def add_angle(self, type_A, type_B, type_C, kind, thmin=-Inf, thmax=Inf, color=(1,1,1)):
         """
         """
         for ab1 in self.model.getBondsByTypes(type_A, type_B):
@@ -235,7 +235,7 @@ class RuleEngine(object):
                 bc = Bond.orderBond(bc1, type_B, type_C)
                 if not bc:
                     continue
-                temp_ang = Angle.createFromBonds(ab, bc, angleType=angleType, color=color)
+                temp_ang = Angle.createFromBonds(ab, bc, kind=kind, color=color)
                 if temp_ang:
                     if isinstance(temp_ang.atom2, type_B) and (thmin <= temp_ang.inDegrees() <= thmax):
                         self.model.add(temp_ang)
@@ -257,7 +257,7 @@ class RuleEngine(object):
     def c1xc1xc(self):
         for b1, b2 in ifilter(lambda (bond1, bond2): bond1.hasCommonAtomsWith(bond2),
                               combinations(
-                                      ifilter(lambda bond: bond.bondType == 'c1xc',
+                                      ifilter(lambda bond: bond.kind == 'c1xc',
                                               self.model.bonds
                                       ),
                                       2
@@ -267,11 +267,11 @@ class RuleEngine(object):
             a = Angle.createFromBonds(b1, b2)
             angle_deg = a.inDegrees()
             if 106 <= angle_deg <= 113: # around 109.5
-                a.angleType = 'c1xc1xc108'
+                a.kind = 'c1xc1xc108'
                 a.color = 'red'
                 self.model.add(a)
             elif 118 <= angle_deg <= 122: # around 120
-                a.angleType = 'c1xc1xc120'
+                a.kind = 'c1xc1xc120'
                 a.color = 'blue'
                 self.model.add(a)
             else:
@@ -288,11 +288,11 @@ class RuleEngine(object):
             if isinstance(ci, C):
                 # for all c1xc bonds that ci is part of
                 for ci1xcj in ci.bonds:
-                    if ci1xcj.bondType == 'c1xc':
+                    if ci1xcj.kind == 'c1xc':
                         cj = ci1xcj.atom1 if ci1xcj.atom1 != ci else ci1xcj.atom2
                         # for all other c1xc bonds of ci
                         for ci1xck in ci.bonds:
-                            if ci1xck.bondType == 'c1xc' and ci1xck.atom1 != cj and ci1xck.atom2 != cj:
+                            if ci1xck.kind == 'c1xc' and ci1xck.atom1 != cj and ci1xck.atom2 != cj:
                                 ck = ci1xck.atom1 if ci1xck.atom1 != ci else ci1xck.atom2
                                 # create angle
                                 angle_deg = Angle.computeInDegrees(cj, ci, ck)
@@ -318,7 +318,7 @@ if __name__ == "__main__":
     # m = Xyz.create("c60.xyz")
     m = Xyz.create("../mpc.xyz")
     mm = MoleculeModel.create()
-    mm.add(m.atoms().values())
+    mm.add([atom for label, atom in m.atoms()])
 
 
     r = RuleEngine.create(mm)

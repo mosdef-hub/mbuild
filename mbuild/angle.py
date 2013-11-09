@@ -6,9 +6,9 @@ from mbuild.atom import *
 
 class Angle(object):
     @classmethod
-    def create(cls, atom1, atom2, atom3, angleType='undefined', color='black'):
+    def create(cls, atom1, atom2, atom3, kind='undefined', color='black'):
         b = Angle()
-        b.angleType = angleType
+        b.kind = kind
         b.color = color
         b.atom2 = atom2
         if atom1.__hash__() < atom2.__hash__():
@@ -102,7 +102,7 @@ class Angle(object):
     @classmethod
     def orderAngle(cls, angle, type_A, type_B, type_C):
         abc = Angle()
-        abc.angleType = angle.angleType
+        abc.kind = angle.kind
         abc.color = angle.color
         if (isinstance(angle.atom1, type_A) and 
             isinstance(angle.atom2, type_B) and 

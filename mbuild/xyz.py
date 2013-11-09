@@ -28,7 +28,8 @@ class Xyz(Compound):
 if __name__ == "__main__":
     m = Xyz.create("c60.xyz")
     # # print ethane
-    print m.atoms()
+    print [label for label,a in m.atoms()]
+
     print m.boundingbox()
-    # print m.h1
+
     m.plot(labels=False)

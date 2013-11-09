@@ -12,10 +12,4 @@ if __name__ == "__main__":
                           top_port_name='top_male_port',
                           bottom_port_name='bottom_female_port')
     # print m.atoms()
-    m.plot(labels=False, verbose=False)
-
-
-
-
-
-
+    # m.plot(labels=False, verbose=False)

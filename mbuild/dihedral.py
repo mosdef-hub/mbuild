@@ -6,9 +6,9 @@ from mbuild.atom import *
 
 class Dihedral(object):
     @classmethod
-    def create(cls, atom1, atom2, atom3, atom4, dihedralType='undefined', color='black'):
+    def create(cls, atom1, atom2, atom3, atom4, kind='undefined', color='black'):
         b = dihedral()
-        b.dihedralType = dihedralType
+        b.kind = kind
         b.color = color
         b.atom2 = atom2
         if atom1.__hash__() < atom2.__hash__():
@@ -104,7 +104,7 @@ class Dihedral(object):
     @classmethod
     def orderDihedral(cls, dihedral, type_A, type_B, type_C, type_D):
         abcd = Dihedral()
-        abcd.dihedralType = dihedral.dihedralType
+        abcd.kind = dihedral.kind
         abcd.color = dihedral.color
         if (isinstance(dihedral.atom1, type_A) and
             isinstance(dihedral.atom2, type_B) and

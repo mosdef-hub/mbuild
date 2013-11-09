@@ -8,6 +8,7 @@ import numpy as np
 from mbuild.coordinate_transform import *
 from mbuild.atom import *
 from collections import OrderedDict
+from itertools import *
 
 class Compound(object):
     @classmethod
@@ -70,7 +71,7 @@ class Compound(object):
                 self_points = vstack([self_points, pair[0].pos])
                 other_points = vstack([other_points, pair[1].pos])
             if isinstance(pair[0], Compound):
-                for label0, atom0 in pair[0].atoms().iteritems():
+                for label0, atom0 in pair[0].atoms():
                     atom1 = pair[1].component(label0)
                     self_points = vstack([self_points, atom0.pos])
                     other_points = vstack([other_points, atom1.pos])
@@ -88,27 +89,55 @@ class Compound(object):
             # we're assuming here that T is a list of equivalence relations
             T = self.createEquivalenceTransform(T)
 
-        # transform the contained atoms recursively
-        for label, component in self._components.iteritems():
-            component.transform(T)
+        # # transform the contained atoms recursively
+        # for label, component in self._components.iteritems():
+        #     component.transform(T)
+
+        # transform the contained atoms in batch
+        arr = np.fromiter(chain.from_iterable(atom.pos for label, atom in self.atoms()), dtype=np.float64)
+        arrnx3 = arr.reshape((-1,3))
+
+        arrnx3 = T.apply(arrnx3)
+        arr = arrnx3.reshape((-1))
+
+        # write back new coordinates into atoms
+        i = 0
+        for label, atom in self.atoms():
+            atom.pos = (arr[i], arr[i+1], arr[i+2])
+            i=i+3
 
         return self
 
+    # def atoms(self):
+    #     """
+    #     Get all atoms of the Compound recursively
+    #     :return: map containing atoms with labels as keys
+    #     """
+    #     atoms = OrderedDict() # empty dict
+    #     for label, component in self._components.iteritems():
+    #         # add local atoms
+    #         if isinstance(component, Atom):
+    #             atoms[label] = component
+    #             # add atoms in sub-components recursively
+    #         if isinstance(component, Compound):
+    #             for sublabel, subatom in component.atoms().iteritems():
+    #                 atoms[label + '.' + sublabel] = subatom
+    #     return atoms
+
     def atoms(self):
         """
-        Get all atoms of the Compound recursively
-        :return: map containing atoms with labels as keys
+        Generate all atoms of the Compound recursively
+        :return: label - atom pairs
         """
-        atoms = {} # empty dict
+
         for label, component in self._components.iteritems():
             # add local atoms
             if isinstance(component, Atom):
-                atoms[label] = component
+                yield label, component
                 # add atoms in sub-components recursively
             if isinstance(component, Compound):
-                for sublabel, subatom in component.atoms().iteritems():
-                    atoms[label + '.' + sublabel] = subatom
-        return atoms
+                for sublabel, subatom in component.atoms():
+                    yield label + '.' + sublabel, subatom
 
     def savexyz(self, fn, print_ports=False):
         """
@@ -122,18 +151,18 @@ class Compound(object):
             else:
                 i = 0
                 for key, value in self.atoms().iteritems():
-                    if value.atomType != 'G':
+                    if value.kind != 'G':
                         i += 1
                 f.write(str(i) + '\n\n')
             for key, value in self.atoms().iteritems():
                 if print_ports:
-                    f.write(value.atomType + '\t' +
+                    f.write(value.kind + '\t' +
                             str(value.pos[0]) + '\t' +
                             str(value.pos[1]) + '\t' +
                             str(value.pos[2]) + '\n')
                 else:
-                    if value.atomType != 'G':
-                        f.write(value.atomType + '\t' +
+                    if value.kind != 'G':
+                        f.write(value.kind + '\t' +
                                 str(value.pos[0]) + '\t' +
                                 str(value.pos[1]) + '\t' +
                                 str(value.pos[2]) + '\n')
@@ -170,8 +199,8 @@ class Compound(object):
         maxy = float('-inf')
         maxz = float('-inf')
 
-        for label, a in self.atoms().iteritems():
-            if excludeG and a.atomType == 'G':
+        for label, a in self.atoms():
+            if excludeG and a.kind == 'G':
                 continue
             if a.pos[0] < minx:
                 minx = a.pos[0]
@@ -206,14 +235,14 @@ class Compound(object):
         # sort atoms by type
         d = dict()
 
-        for (label, atom) in self.atoms().items():
-            if atom.atomType != 'G' or verbose:
-                if not atom.atomType in d.keys():
-                    d[atom.atomType] = [atom]
+        for (label, atom) in self.atoms():
+            if atom.kind != 'G' or verbose:
+                if not atom.kind in d.keys():
+                    d[atom.kind] = [atom]
                 else:
-                    d[atom.atomType].append(atom);
+                    d[atom.kind].append(atom);
 
-        for (atomType,atomList) in d.items():
+        for (kind,atomList) in d.items():
             x = []
             y = []
             z = []
@@ -238,8 +267,8 @@ class Compound(object):
         ax = fig.add_subplot(111, projection='3d', aspect='equal')
         coord_min = inf
         coord_max = -inf
-        for (label, atom) in self.atoms().items():
-            if atom.atomType != 'G' or verbose:
+        for (label, atom) in self.atoms():
+            if atom.kind != 'G' or verbose:
                 # print atom
                 if labels:
                     atom.plot(ax, str(atom))

@@ -55,5 +55,5 @@ class NAlkane(Compound):
 if __name__ == "__main__":
     m = NAlkane.create(8)
     # m = NAlkane.pentane()
-    print m.atoms()
+    print [(label,atom.pos) for label, atom in m.atoms()]
     m.plot(labels=False)

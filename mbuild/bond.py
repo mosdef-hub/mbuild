@@ -3,9 +3,9 @@ import numpy as np
 
 class Bond(object):
     @classmethod
-    def create(cls, atom1, atom2, bondType='undefined', color='black'):
+    def create(cls, atom1, atom2, kind='undefined', color='black'):
         b = Bond()
-        b.bondType = bondType
+        b.kind = kind
         b.color = color
         # atom1 is the one with the lower hash
         if atom1.__hash__() < atom2.__hash__():
@@ -54,7 +54,7 @@ class Bond(object):
     @classmethod
     def orderBond(cls, bond, type_A, type_B):
         ab = Bond()
-        ab.bondType = bond.bondType
+        ab.kind = bond.kind
         ab.color = bond.color
         if isinstance(bond.atom1, type_A) and isinstance(bond.atom2, type_B):
             ab.atom1 = bond.atom1
