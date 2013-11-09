@@ -9,10 +9,6 @@ from scipy import inf
 
 __author__ = 'sallai'
 
-
-
-
-
 class MoleculeModel(object):
     def __init__(self):
         object.__init__(self)
@@ -39,6 +35,12 @@ class MoleculeModel(object):
             what.atom1.angles.add(what)
             what.atom2.angles.add(what)
             what.atom3.angles.add(what)
+        elif isinstance(what, Dihedral):
+            self.dihedrals.add(what)
+            what.atom1.dihedrals.add(what)
+            what.atom2.dihedrals.add(what)
+            what.atom3.dihedrals.add(what)
+            what.atom4.dihedrals.add(what)
         elif isinstance(what, (list, tuple)):
             for elem in what:
                 self.add(elem)
