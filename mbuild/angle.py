@@ -92,7 +92,7 @@ class Angle(object):
                 [p1[1], p2[1], p3[1]],
                 [p1[2], p2[2], p3[2]], '-', color=self.color)
 
-    def hasTypes(self, atomType1, atomType2, atomType3):
+    def hasAtomKinds(self, atomType1, atomType2, atomType3):
         abc = Angle.orderAngle(self, atomType1, atomType2, atomType3)
         if abc:
             return True

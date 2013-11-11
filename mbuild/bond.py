@@ -26,7 +26,7 @@ class Bond(object):
 
     def __hash__(self):
         # atom1 and atom2 are interchangeable
-        return (self.atom1.__hash__() * self.atom2.__hash__()) ^ self.atom1.__hash__() ^ self.atom2.__hash__()
+        return self.atom1.__hash__() ^ self.atom2.__hash__()
 
     def __eq__(self, other):
         return self.__hash__() == other.__hash__()
@@ -44,7 +44,7 @@ class Bond(object):
     def com(self):
         return [sum(y) / len(y) for y in zip(self.atom1.pos, self.atom2.pos)]
 
-    def hasTypes(self, atomType1, atomType2):
+    def hasAtomKinds(self, atomType1, atomType2):
         ab = Bond.orderBond(self, atomType1, atomType2)
         if ab:
             return True

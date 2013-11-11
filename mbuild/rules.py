@@ -4,6 +4,7 @@ from itertools import *
 from mbuild.xyz import *
 from mbuild.bond import *
 from mbuild.angle import *
+from mbuild.dihedral import *
 from scipy.spatial import cKDTree
 from scipy import inf
 
@@ -71,15 +72,17 @@ class MoleculeModel(object):
     #
     #     pyplot.show()
 
-    def getAtomsByType(self, kind):
+    def getAtomsByKind(self, kind):
         return ifilter(lambda atom: isinstance(atom, kind), self.atoms)
 
-    def getBondsByTypes(self, kind1, kind2):
-        return ifilter(lambda bond: bond.hasTypes(kind1, kind2), self.bonds)
+    def getBondsByAtomKind(self, kind1, kind2):
+        return ifilter(lambda bond: bond.hasAtomKinds(kind1, kind2), self.bonds)
 
-    def getAnglesByTypes(self, kind1, kind2, kind3):
-        return ifilter(lambda angle: angle.hasTypes(kind1, kind2, kind3), self.angles)
+    def getAnglesByAtomKind(self, kind1, kind2, kind3):
+        return ifilter(lambda angle: angle.hasAtomKinds(kind1, kind2, kind3), self.angles)
 
+    def getDihedralsByAtomKind(self, kind1, kind2, kind3, kind4):
+        return ifilter(lambda dihedral: dihedral.hasAtomKinds(kind1, kind2, kind3, kind4), self.dihedrals)
 
     def initAtomKdTree(self):
         self.atomsList = list(self.atoms)
@@ -218,7 +221,7 @@ class RuleEngine(object):
 
     def add_bond(self, type_A, type_B, dmin, dmax, kind, color=(1,1,1)):
         "Ai-Bj distance is in [dmin, dmax] => add bond A1xB(Ai,Bj) (symmetric)"
-        for a1 in self.model.getAtomsByType(type_A):
+        for a1 in self.model.getAtomsByKind(type_A):
             nearest = self.model.getAtomsInRange(a1.pos, 2)
             for b1 in nearest:
                 if isinstance(b1, type_B) and (dmin <= b1.distance(a1) <= dmax):
@@ -227,7 +230,7 @@ class RuleEngine(object):
     def add_angle(self, type_A, type_B, type_C, kind, thmin=-Inf, thmax=Inf, color=(1,1,1)):
         """
         """
-        for ab1 in self.model.getBondsByTypes(type_A, type_B):
+        for ab1 in self.model.getBondsByAtomKind(type_A, type_B):
             ab = Bond.orderBond(ab1, type_A, type_B)
 
             nearest = self.model.getBondsInRange(ab.com(), 3)

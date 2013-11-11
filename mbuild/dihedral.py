@@ -7,62 +7,36 @@ from mbuild.atom import *
 class Dihedral(object):
     @classmethod
     def create(cls, atom1, atom2, atom3, atom4, kind='undefined', color='black'):
-        b = dihedral()
+        b = Dihedral()
         b.kind = kind
         b.color = color
-        b.atom2 = atom2
-        if atom1.__hash__() < atom2.__hash__():
+
+        # make sure atom1 has lower hash than atom2
+        if atom1.__hash__() < atom4.__hash__():
             b.atom1 = atom1
+            b.atom2 = atom2
             b.atom3 = atom3
+            b.atom4 = atom4
         else:
-            b.atom1 = atom3
-            b.atom3 = atom1
+            b.atom1 = atom4
+            b.atom2 = atom3
+            b.atom3 = atom2
+            b.atom4 = atom1
         return b
 
     @classmethod
-    def createFromAngles(cls, angle1, angle2, angle3, **kwargs):
+    def createFromAngles(cls, angle1, angle2, **kwargs):
         if (angle1.atom1, angle1.atom2) == (angle2.atom2, angle2.atom3):
             return Dihedral.create(angle1.atom3, angle1.atom2, angle2.atom2, angle2.atom1, **kwargs)
-        elif (angle1.atom1, angle1.atom2) == (angle2.atom1, angle2.atom2):
+        elif (angle1.atom1, angle1.atom2) == (angle2.atom2, angle2.atom1):
             return Dihedral.create(angle1.atom3, angle1.atom2, angle2.atom2, angle2.atom3, **kwargs)
         elif (angle1.atom2, angle1.atom3) == (angle2.atom1, angle2.atom2):
             return Dihedral.create(angle1.atom1, angle1.atom2, angle2.atom2, angle2.atom3, **kwargs)
-        elif (angle1.atom2, angle1.atom3) == (angle2.atom2, angle2.atom3):
+        elif (angle1.atom2, angle1.atom3) == (angle2.atom3, angle2.atom2):
             return Dihedral.create(angle1.atom1, angle1.atom2, angle2.atom2, angle2.atom1, **kwargs)
         else:
             return None
 
-    """
-    @staticmethod
-    def computeInRadians(atom1, atom2, atom3):
-        """
-        Compute the angle at atom2
-        :param atom1:
-        :param atom2:
-        :param atom3:
-        :return: the angle in radians
-        """
-        assert isinstance(atom1, Atom)
-        assert isinstance(atom2, Atom)
-        assert isinstance(atom3, Atom)
-        a = array(atom1.pos) - array(atom2.pos)
-        b = array(atom3.pos) - array(atom2.pos)
-        try:
-            return math.acos(dot(a, b) / (linalg.norm(a) * linalg.norm(b)))
-        except:
-            pdb.set_trace()
-
-    @staticmethod
-    def computeInDegrees(atom1, atom2, atom3):
-        return Angle.computeInRadians(atom1, atom2, atom3) * 180 / math.pi
-
-
-    def inRadians(self):
-        return Angle.computeInRadians(self.atom1, self.atom2, self.atom3)
-
-    def inDegrees(self):
-        return self.inRadians() * 180 / math.pi
-    """
 
     def __hash__(self):
         # atom1 and atom3 are interchangeable
@@ -101,6 +75,42 @@ class Dihedral(object):
         else:
             return False
 
+    @staticmethod
+    def computeNormal(atom1, atom2, atom3):
+        # a is a vector from atom1 to atom 2
+        a = np.array([atom2.pos[0]-atom1.pos[0],atom2.pos[1]-atom1.pos[1],atom2.pos[2]-atom1.pos[2]])
+        # b is a vector from atom1 to atom 3
+        b = np.array([atom3.pos[0]-atom1.pos[0],atom3.pos[1]-atom1.pos[1],atom3.pos[2]-atom1.pos[2]])
+        # compute the cross product, which is perpendicular to both a and b, and thus, it's a normal vector to the plane
+        print a
+        print b
+        return np.cross(a,b)
+
+    @staticmethod
+    def computeInRadians(atom1, atom2, atom3, atom4):
+        assert isinstance(atom1, Atom)
+        assert isinstance(atom2, Atom)
+        assert isinstance(atom3, Atom)
+        assert isinstance(atom4, Atom)
+
+        # we need to compute the normal vectors of the plane defined by (atom1, atom2, atom3) and by (atom2, atom3, atom4)
+        a = Dihedral.computeNormal(atom1, atom2, atom3)
+        b = Dihedral.computeNormal(atom2, atom3, atom4)
+
+        # then we compute and return the angle of those normals
+        return math.acos(dot(a, b) / (linalg.norm(a) * linalg.norm(b)))
+
+    @staticmethod
+    def computeInDegrees(atom1, atom2, atom3, atom4):
+        return Dihedral.computeInRadians(atom1, atom2, atom3, atom4) * 180 / math.pi
+
+    def inRadians(self):
+        return Dihedral.computeInRadians(self.atom1, self.atom2, self.atom3, self.atom4)
+
+    def inDegrees(self):
+        return self.inRadians() * 180 / math.pi
+
+
     @classmethod
     def orderDihedral(cls, dihedral, type_A, type_B, type_C, type_D):
         abcd = Dihedral()
@@ -124,3 +134,12 @@ class Dihedral(object):
             abcd.atom3 = dihedral.atom2
             abcd.atom4 = dihedral.atom1
             return abcd
+
+if __name__ == "__main__":
+    atom1 = C(pos=(0,-1,0))
+    atom2 = C(pos=(0,0,0))
+    atom3 = C(pos=(1,0,0))
+    atom4 = C(pos=(1,1,1))
+    d = Dihedral.create(atom1, atom2, atom3, atom4)
+    print "Dihedral angle should be 135 degrees, we compute it to be: " + str(d.inDegrees())
+
