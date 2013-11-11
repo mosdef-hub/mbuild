@@ -1,6 +1,7 @@
 __author__ = 'sallai'
 from mbuild.compound import *
 from mbuild.port import *
+from copy import copy, deepcopy
 
 class Tile(Compound):
 

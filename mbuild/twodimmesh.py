@@ -2,7 +2,7 @@ __author__ = 'sallai'
 
 from tile import *
 from mbuild.ndimmesh import *
-
+from copy import copy, deepcopy
 
 class TwoDimMesh(NDimMesh):
     # n = 3
@@ -78,7 +78,10 @@ class TwoDimMesh(NDimMesh):
 
 
 if __name__ == "__main__":
-    m = TwoDimMesh.create(Tile.create, 7, 5,
+    seedTile = Tile.create()
+    def tileCreator(tdm):
+        return deepcopy(seedTile)
+    m = TwoDimMesh.create(tileCreator, 7, 5,
                           left_port_name='left_male_port',
                           right_port_name='right_female_port',
                           top_port_name='top_male_port',

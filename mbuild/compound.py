@@ -9,6 +9,7 @@ from mbuild.coordinate_transform import *
 from mbuild.atom import *
 from collections import OrderedDict
 from itertools import *
+from copy import copy, deepcopy
 
 class Compound(object):
     @classmethod
@@ -281,3 +282,32 @@ class Compound(object):
         ax.set_title(self.label())
 
         pyplot.show()
+
+    def __copy__(self):
+        # newone = type(self)()
+        cls = self.__class__
+        newone = cls.__new__(cls)
+
+        newone.__dict__.update(self.__dict__)
+        return newone
+
+    def __deepcopy__(self, memo):
+        # newone = type(self)()
+        cls = self.__class__
+        newone = cls.__new__(cls)
+
+        memo[id(self)] = newone
+
+        # create deep copies of children, and add the deep copies to the new one
+        # this will copy over whatever is in the _components container
+        # and create the named members of the new one, as well
+        newone._components = OrderedDict()
+        for label, component in self._components.iteritems():
+            newone.add(deepcopy(component, memo), label)
+
+        # copy over the rest of the stuff, that's not yet there in the new one
+        for k, v in self.__dict__.items():
+            if not hasattr(newone, k):
+                setattr(newone, k, deepcopy(v, memo))
+
+        return newone
