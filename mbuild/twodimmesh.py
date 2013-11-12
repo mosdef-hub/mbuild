@@ -5,16 +5,15 @@ from mbuild.ndimmesh import *
 from copy import copy, deepcopy
 
 class TwoDimMesh(NDimMesh):
-    # n = 3
-    # m = 4
     label_prefix = 'part_'
+
     # left_port_name = 'left_male_port'
     # right_port_name = 'right_female_port'
     # top_port_name = 'top_male_port'
     # bottom_port_name = 'bottom_female_port'
 
     @classmethod
-    def create(cls, creator, n, m, left_port_name, right_port_name, top_port_name, bottom_port_name, label=None):
+    def create(cls, creator, n, m, left_port_name, right_port_name, top_port_name, bottom_port_name, label=None, ctx={}):
         cls.creator = staticmethod(creator)
         cls.m = m
         cls.n = n
@@ -22,7 +21,7 @@ class TwoDimMesh(NDimMesh):
         cls.right_port_name = right_port_name
         cls.top_port_name = top_port_name
         cls.bottom_port_name = bottom_port_name
-        mesh = super(TwoDimMesh, cls).create([cls.builder_0, cls.builder_horz, cls.builder_vert], label)
+        mesh = super(TwoDimMesh, cls).create([cls.builder_0, cls.builder_horz, cls.builder_vert], ctx=ctx)
         return mesh
 
     @classmethod
@@ -32,14 +31,14 @@ class TwoDimMesh(NDimMesh):
     @classmethod
     def builder_0(cls, mesh):
         # create the first part
-        new_part = cls.creator()
+        new_part = cls.creator(ctx=mesh.ctx)
         new_part.mesh_coords = (0, 0)
         mesh.add(new_part, cls.coord2label(new_part))
         return new_part
 
     @classmethod
     def builder_horz(cls, mesh, last_part):
-        new_part = cls.creator()
+        new_part = cls.creator(ctx=mesh.ctx)
         new_part.mesh_coords = (last_part.mesh_coords[0] + 1, last_part.mesh_coords[1])
 
         # bail out if new part already exists in the mesh
@@ -60,7 +59,7 @@ class TwoDimMesh(NDimMesh):
 
     @classmethod
     def builder_vert(cls, mesh, last_part):
-        new_part = cls.creator()
+        new_part = cls.creator(ctx=mesh.ctx)
         new_part.mesh_coords = (last_part.mesh_coords[0], last_part.mesh_coords[1] + 1)
 
 
@@ -79,7 +78,7 @@ class TwoDimMesh(NDimMesh):
 
 if __name__ == "__main__":
     seedTile = Tile.create()
-    def tileCreator():
+    def tileCreator(ctx={}):
         return deepcopy(seedTile)
     m = TwoDimMesh.create(tileCreator, 10, 10,
                           left_port_name='left_male_port',

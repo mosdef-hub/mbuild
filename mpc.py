@@ -6,8 +6,8 @@ from mbuild.port import *
 class Mpc(Compound):
 
     @classmethod
-    def create(cls, label=None):
-        m = super(Mpc, cls).create(label)
+    def create(cls, ctx={}):
+        m = super(Mpc, cls).create(ctx=ctx)
         mpc = Xyz.create('mpc.xyz')
         m.add(mpc,'mpc_xyz')
 
@@ -17,10 +17,10 @@ class Mpc(Compound):
         return m
 
 if __name__ == "__main__":
-    m = Mpc.create(label='mpc')
+    m = Mpc.create()
     # m = Methane.create()
     # print ethane
     print m
     print m.atoms()
-    print m.label()
+    # print m.label()
     m.plot(labels=False, verbose=False)

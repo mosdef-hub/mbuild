@@ -2,21 +2,21 @@ __author__ = 'sallai'
 from mbuild.compound import *
 from mbuild.port import *
 from mbuild.xyz import *
-class BuckyBallTile(Compound):
+from n_alkane import *
+
+class NAlkaneTile(Compound):
     @classmethod
-    def create(cls, ctx={}):
-        """
+    def create(cls, ctx={}, label=None):
 
-        :param label:
-        :return:
-        """
-        m = super(BuckyBallTile, cls).create(ctx=ctx)
+        m = super(NAlkaneTile, cls).create(label)
 
-        buckyball = Xyz.create('mbuild/c60.xyz')
+        length = random.randint(ctx["min_alkane_length"], ctx["max_alkane_length"])
 
-        bbmin, bbmax = buckyball.boundingbox()
+        nalkane = NAlkane.create(length, ctx=ctx)
 
-        m.add(buckyball, 'c60')
+        bbmin, bbmax = nalkane.boundingbox()
+
+        m.add(nalkane, 'alkane')
 
         space = 10
 
@@ -37,6 +37,6 @@ class BuckyBallTile(Compound):
         return m
 
 if __name__ == "__main__":
-    t = BuckyBallTile.create()
+    t = NAlkaneTile.create(ctx={"min_alkane_length": 10, "max_alkane_length": 15, "alkane_label": "10-alkane"})
     print t
     t.plot()

@@ -6,7 +6,7 @@ from mpc import *
 class MpcAlkaneBody(Compound):
 
     @classmethod
-    def create(cls, label=None, direction='left'):
+    def create(cls, label=None, direction='left', ctx={}):
         m = super(MpcAlkaneBody, cls).create(label)
 
         m.add(C((0, 0, 0)),'c')
@@ -50,10 +50,10 @@ class MpcAlkaneBody(Compound):
 
 
 if __name__ == "__main__":
-    m = MpcAlkaneBody.create(label='mpcalkanebody')
+    m = MpcAlkaneBody.create()
     # m = Methane.create()
     # print ethane
     print m
     print m.atoms()
-    print m.label()
+    # print m.label()
     m.plot(labels=False, verbose=False)

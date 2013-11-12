@@ -7,26 +7,26 @@ from methane import *
 
 class NAlkane(Compound):
     @classmethod
-    def create(cls, n, label=None):
+    def create(cls, n, ctx={}):
 
         if n < 2:
             raise Exception('n must be 2 or more')
 
-        m = super(NAlkane, cls).create(label)
+        m = super(NAlkane, cls).create(ctx=ctx)
 
         # top tail (CH_3)
-        m.add(AlkaneTail.create(),'top_tail')
+        m.add(AlkaneTail.create(ctx=ctx),'top_tail')
 
         # n times the body CH_2
         last_part = m.top_tail
         for body_count in range(1, n-1):
-            this_part = AlkaneBody.create()
+            this_part = AlkaneBody.create(ctx=ctx)
             this_part.transform([(this_part.female_port, last_part.male_port)])
             m.add(this_part, 'body_'+str(body_count))
             last_part = this_part
 
         # bottom tail (CH_3)
-        m.add(AlkaneTail.create(),'bottom_tail')
+        m.add(AlkaneTail.create(ctx=ctx),'bottom_tail')
         m.bottom_tail.transform( [(m.bottom_tail.female_port, last_part.male_port)])
 
         return m
@@ -55,5 +55,5 @@ class NAlkane(Compound):
 if __name__ == "__main__":
     m = NAlkane.create(8)
     # m = NAlkane.pentane()
-    print [(label,atom.pos) for label, atom in m.atoms()]
-    m.plot(labels=False)
+    print [(label,atom.pos) for label, atom in self.atoms()]
+    self.plot(labels=False)

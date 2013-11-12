@@ -13,16 +13,19 @@ from copy import copy, deepcopy
 
 class Compound(object):
     @classmethod
-    def create(cls, label=None):
+    def create(cls, ctx={}, kind=None):
         """
         Create a compound
         :param label: a text label of the compount
         :return: the compound object
         """
         m = cls()
+        m.ctx = ctx
+        if kind:
+            m.kind = kind
+        else:
+            m.kind = cls.__name__
         m._components = OrderedDict() # this contain label to Compound or label to Atom mappings
-        if label is not None:
-            m._label = label
         return m
 
     def add(self, what, label=None):
@@ -40,11 +43,11 @@ class Compound(object):
         self._components[label] = what
         setattr(self, label, what)
 
-    def label(self):
-        if hasattr(self, '_label'):
-            return self._label
-        else:
-            return str(self.__class__.__name__) + '_' + str(id(self))
+    # def label(self):
+    #     if hasattr(self, '_label'):
+    #         return self._label
+    #     else:
+    #         return str(self.__class__.__name__) + '_' + str(id(self))
 
     def createEquivalenceTransform(self, equiv):
         """
@@ -279,9 +282,41 @@ class Compound(object):
         ax.set_xlabel('X')
         ax.set_ylabel('Y')
         ax.set_zlabel('Z')
-        ax.set_title(self.label())
+        # ax.set_title(self.label())
 
         pyplot.show()
+
+    # def plot3(self, verbose=False, labels=False):
+    #
+    #     import networkx as nx
+    #     import matplotlib.pyplot as plt
+    #
+    #     g = nx.Graph()
+    #     g.add_node("root")
+    #     self.plot3_worker(g, "root")
+    #
+    #     print "g=" + str(g)
+    #
+    #     # draw graph
+    #     pos = nx.shell_layout(g)
+    #     nx.draw(g, pos)
+    #
+    #     # show graph
+    #     plt.show()
+    #
+    #
+    # def plot3_worker(self, g, parent):
+    #     print self.__class__
+    #
+    #     for (label, c) in self._components.iteritems():
+    #         mylabel = label+str(c.__hash__())
+    #         g.add_node(mylabel)
+    #         g.add_edge(parent, mylabel)
+    #         print parent + " " + label
+    #         if isinstance(c, Compound):
+    #             c.plot3_worker(g, mylabel)
+    #
+
 
     def __copy__(self):
         # newone = type(self)()

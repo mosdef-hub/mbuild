@@ -15,9 +15,8 @@ if __name__ == "__main__":
     #                       bottom_port_name='bottom_female_port')
 
     bb = BuckyBallTile.create()
-    def clonebb():
+    def clonebb(ctx={}):
         return deepcopy(bb)
-
     m = TwoDimMesh.create(clonebb , 41, 41,
                           left_port_name='left_male_port',
                           right_port_name='right_female_port',

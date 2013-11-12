@@ -19,9 +19,9 @@ class NDimMesh(Compound):
         part_factory(first_part)
 
     @classmethod
-    def create(cls, builders, label=None):
+    def create(cls, builders, ctx={}, kind=None):
 
-        mesh = super(NDimMesh, cls).create(label)
+        mesh = super(NDimMesh, cls).create(ctx=ctx, kind=kind)
 
         mesh.build(builders)
         return mesh
@@ -33,14 +33,14 @@ if __name__ == "__main__":
 
     def builder_0(mesh):
         # create the first part
-        new_part = Tile.create()
+        new_part = Tile.create(ctx=mesh.ctx)
         new_part.mesh_coords = (0,0)
         new_part_label = 'part_'+str(new_part.mesh_coords[0])+'_'+str(new_part.mesh_coords[1])
         mesh.add(new_part, new_part_label)
         return new_part
 
     def builder_horz(mesh, last_part):
-        new_part = Tile.create()
+        new_part = Tile.create(ctx=mesh.ctx)
         new_part.mesh_coords = (last_part.mesh_coords[0] + 1, last_part.mesh_coords[1])
         new_part_label = 'part_'+str(new_part.mesh_coords[0])+'_'+str(new_part.mesh_coords[1])
 
@@ -61,7 +61,7 @@ if __name__ == "__main__":
         return new_part
 
     def builder_vert(mesh, last_part):
-        new_part = Tile.create()
+        new_part = Tile.create(ctx=mesh.ctx)
         new_part.mesh_coords = (last_part.mesh_coords[0], last_part.mesh_coords[1] + 1)
         new_part_label = 'part_'+str(new_part.mesh_coords[0])+'_'+str(new_part.mesh_coords[1])
 

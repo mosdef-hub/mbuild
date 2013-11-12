@@ -5,8 +5,8 @@ from mbuild.compound import *
 class Xyz(Compound):
 
     @classmethod
-    def create(cls, fn, label=None):
-        m = super(Xyz, cls).create(label)
+    def create(cls, fn, ctx={}):
+        m = super(Xyz, cls).create(ctx=ctx)
         f = open(fn)
         num_atoms = int(f.readline())
         comment = f.readline()

@@ -5,8 +5,8 @@ from mbuild.port import *
 class AlkaneBody(Compound):
 
     @classmethod
-    def create(cls, label=None):
-        m = super(AlkaneBody, cls).create(label)
+    def create(cls, ctx={}):
+        m = super(AlkaneBody, cls).create(ctx=ctx)
 
         m.add(C((0, 0, 0)),'c')
         m.add(H((1, 0, 0)),'h1')

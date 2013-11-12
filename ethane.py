@@ -7,8 +7,8 @@ from mbuild.compound import *
 class Ethane(Compound):
 
     @classmethod
-    def create(cls, label=None):
-        m = super(Ethane, cls).create(label)
+    def create(cls, ctx={}):
+        m = super(Ethane, cls).create(ctx=ctx)
         # two tails
         m.add(AlkaneTail.create(), 'top_tail')
         m.add(AlkaneTail.create(), 'bottom_tail')

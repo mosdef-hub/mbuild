@@ -6,8 +6,8 @@ from copy import copy, deepcopy
 class Tile(Compound):
 
     @classmethod
-    def create(cls, label=None):
-        m = super(Tile, cls).create(label)
+    def create(cls, ctx={}):
+        m = super(Tile, cls).create()
 
         m.add(C((0, 0, 0)),'c')
 
@@ -28,6 +28,5 @@ class Tile(Compound):
         return m
 
 if __name__ == "__main__":
-    # tile_line = create_tile_line(10)
     t = Tile.create()
     print t

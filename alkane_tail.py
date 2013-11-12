@@ -5,8 +5,8 @@ from mbuild.port import *
 class AlkaneTail(Compound):
 
     @classmethod
-    def create(cls, label=None):
-        m = super(AlkaneTail, cls).create(label)
+    def create(cls, ctx={}):
+        m = super(AlkaneTail, cls).create(ctx=ctx)
         m.add(H((1, 0, 0)),'h1')
         m.add(H((0, 1, 0)),'h2')
         m.add(H((-1, 0, 0)),'h3')

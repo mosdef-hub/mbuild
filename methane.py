@@ -5,8 +5,8 @@ from mbuild.compound import *
 class Methane(Compound):
 
     @classmethod
-    def create(cls, label=None):
-        m = super(Methane, cls).create(label)
+    def create(cls, ctx={}):
+        m = super(Methane, cls).create(ctx=ctx)
         m.add(C((0, 0, 0)),'c')
         m.add(H((1, 0, 0)),'h1')
         m.add(H((0, 1, 0)),'h2')
@@ -15,10 +15,10 @@ class Methane(Compound):
         return m
 
 if __name__ == "__main__":
-    m = Methane.create(label='myMethane')
+    self = Methane.create()
     # m = Methane.create()
     # print ethane
-    print m
-    print m.atoms()
-    print m.label()
-    m.plot()
+    print self
+    print self.atoms()
+    # print m.label()
+    self.plot()
