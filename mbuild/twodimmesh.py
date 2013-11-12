@@ -15,7 +15,7 @@ class TwoDimMesh(NDimMesh):
 
     @classmethod
     def create(cls, creator, n, m, left_port_name, right_port_name, top_port_name, bottom_port_name, label=None):
-        cls.creator = creator
+        cls.creator = staticmethod(creator)
         cls.m = m
         cls.n = n
         cls.left_port_name = left_port_name
@@ -79,9 +79,9 @@ class TwoDimMesh(NDimMesh):
 
 if __name__ == "__main__":
     seedTile = Tile.create()
-    def tileCreator(tdm):
+    def tileCreator():
         return deepcopy(seedTile)
-    m = TwoDimMesh.create(tileCreator, 7, 5,
+    m = TwoDimMesh.create(tileCreator, 10, 10,
                           left_port_name='left_male_port',
                           right_port_name='right_female_port',
                           top_port_name='top_male_port',
