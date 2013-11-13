@@ -1,0 +1,21 @@
+<compound kind="ethane" label="ethane">
+	<compound kind="alkane_tail" label="top_tail">
+		<c pos="0, 0, 0" label="c" />
+		<h pos="1, 0, 0" label="h1" />
+		<h pos="0, 1, 0" label="h2" />
+		<h pos="-1, 0, 0" label="h3" />
+		<compound src="port.xml" label="female_port">
+			<translation pos="0,-0.7,0"/>
+		</compound>
+		<compound src="port.xml" label="male_port">
+			<rotation axis="z" angle="pi" />
+			<translation pos="0,-0.7,0" />
+		</compound>
+	</compound>
+	<compound ref="top_tail" label="bottom_tail">
+		<transform>
+			<equivalence my="female_port" target="ethane.top_tail.male_port" />
+		</transform>
+	</compound>
+</compound>
+

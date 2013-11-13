@@ -5,7 +5,7 @@ import sys
 
 class Atom(object):
 
-    wdv_radius=1.0
+    vdw_radius=1.0
     color='w'
     colorRGB=(1,1,1)
 
