@@ -1,0 +1,13 @@
+<compound kind="alkane_tail">
+    <C pos="0, 0, 0" label="c" />
+    <H pos="1, 0, 0" label="h1" />
+    <H pos="0, 1, 0" label="h2" />
+    <H pos="-1, 0, 0" label="h3" />
+    <compound src="port.xml" label="female_port">
+        <translation pos="0,-0.7,0"/>
+    </compound>
+    <compound src="port.xml" label="male_port">
+        <rotation axis="z" angle="180" />
+        <translation pos="0,-0.7,0" />
+    </compound>
+</compound>

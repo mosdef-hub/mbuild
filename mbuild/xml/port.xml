@@ -1,4 +1,4 @@
-<compound kind="port" label="port">
+<compound kind="port">
 	<G pos="0, 0.2, 0" label="top" />
 	<G pos="-0.2, -0.2, 0" label="left" />
 	<G pos="0.2, -0.2, 0" label="right" />

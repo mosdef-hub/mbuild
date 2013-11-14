@@ -26,7 +26,29 @@ class Compound(object):
         else:
             m.kind = cls.__name__
         m._components = OrderedDict() # this contain label to Compound or label to Atom mappings
+        m._aliases = dict()
         return m
+
+    def findLabelOfComponent(self, what):
+        return self._components.keys()[self._components.values().index(what)]
+
+    def addAlias(self, what, alias_label):
+        if isinstance(what, basestring):
+            label = what
+            if not label:
+                raise Exception("no label specified")
+        else:
+            label = self.findLabelOfComponent(what)
+            if not label:
+                raise Exception("no label found for component")
+
+        if label != alias_label and alias_label in self._components.keys():
+            raise Exception("label " + label + " already exists in " + str(self))
+
+
+        self._aliases[alias_label] = label
+
+        setattr(self, alias_label, self._components[label])
 
     def add(self, what, label=None):
         """
@@ -38,10 +60,18 @@ class Compound(object):
         """
         if label is None:
             label = what.label()
+
+        if label.endswith("#"):
+            i = 0
+            while label.replace("#", str(i)) in self._components.keys():
+                i = i + 1
+            label = label.replace("#", str(i))
+
         if label in self._components.keys():
-            raise Exception("label " + label + " already exists in " + str(what))
+            raise Exception("label " + label + " already exists in " + str(self))
+
         self._components[label] = what
-        setattr(self, label, what)
+        self.addAlias(label, label)
 
     # def label(self):
     #     if hasattr(self, '_label'):
@@ -49,7 +79,8 @@ class Compound(object):
     #     else:
     #         return str(self.__class__.__name__) + '_' + str(id(self))
 
-    def createEquivalenceTransform(self, equiv):
+    @staticmethod
+    def createEquivalenceTransform(equiv):
         """
         Compute an equivalence transformation that transforms this compound to another compound's coordinate system.
         :param other: the other point cloud
@@ -337,8 +368,14 @@ class Compound(object):
         # this will copy over whatever is in the _components container
         # and create the named members of the new one, as well
         newone._components = OrderedDict()
+        newone._aliases = dict()
         for label, component in self._components.iteritems():
-            newone.add(deepcopy(component, memo), label)
+            child_copy = deepcopy(component, memo)
+            newone.add(child_copy, label)
+
+            if label in self._aliases.values():
+                 alias_label = self._aliases.keys()[self._aliases.values().index(label)]
+                 newone.addAlias(alias_label, label)
 
         # copy over the rest of the stuff, that's not yet there in the new one
         for k, v in self.__dict__.items():

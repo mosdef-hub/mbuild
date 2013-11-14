@@ -42,10 +42,10 @@ class TreeView(object):
 
 
     def populate_roots(self, tree):
-        k = "root"
+        k = ""
         ptype = "compound"
         v = self.compound
-        node = tree.insert("", "end", text=k, values=[k, ptype, v.kind, str(v.__class__)])
+        node = tree.insert("", "end", text="root", values=[k, ptype, v.kind, str(v.__class__)])
 
         # node = tree.insert('', 'end', text=str(self.compound.__class__), values=[str(self.compound.__class__), "compound"])
         self.nodemap[node] = self.compound

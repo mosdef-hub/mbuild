@@ -1,11 +1,14 @@
 __author__ = 'sallai'
 from mbuild.compound import *
-
+import os.path
 
 class Xyz(Compound):
 
     @classmethod
-    def create(cls, fn, ctx={}):
+    def create(cls, path, ctx={}, cwd=""):
+
+        fn = os.path.join(cwd, path)
+
         m = super(Xyz, cls).create(ctx=ctx)
         f = open(fn)
         num_atoms = int(f.readline())

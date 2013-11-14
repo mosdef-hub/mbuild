@@ -1,84 +1,154 @@
+from mbuild.xyz import Xyz
 from treeview import TreeView
 
 __author__ = 'sallai'
 from lxml import etree
 from mbuild.compound import *
+import os.path
 
 class XmlReader(object):
 
     @classmethod
-    def read(cls, f):
-
-        root = etree.parse(f);
-
+    def read(cls, path, cwd=""):
         r = XmlReader()
+        r.kind_to_compound = {}
+        r.src_to_compound = {}
+        r.items_by_path = {}
+
+        r.path = os.path.join(cwd, path)
+
+        r.cwd = os.path.dirname(r.path)
+
+        root = etree.parse(r.path)
         r.root = root.getroot()
-        r.cache = {}
 
-        return r
+        r.build(r.root)
 
-    def build(self, elem):
+        return r.root_compound
+
+    def build(self, elem, ancestor_compounds=[]):
         # assert(isinstance(elem,etree.ElementBase))
+
+        if len(ancestor_compounds) == 0:
+            root_compound=None
+            parent_compound=None
+        else:
+            root_compound = ancestor_compounds[0]
+            parent_compound = ancestor_compounds[-1]
 
         if elem.tag == "compound":
             # build a compound
 
             # see if there's a ref in there
             ref = elem.get("ref")
+            src = elem.get("src")
 
             if ref:
-                compound = deepcopy(self.cache[ref])
+                compound = deepcopy(self.kind_to_compound[ref])
+            elif src:
+                if src in self.src_to_compound:
+                    compound = deepcopy(self.src_to_compound[src])
+                else:
+                    if src.endswith(".xml"):
+                        compound = XmlReader.read(src, cwd=self.cwd)
+                    elif src.endswith(".xyz"):
+                        compound = Xyz.create(src, cwd=self.cwd)
+                    else:
+                        raise Exception("don't know how to load " + src)
+                    self.src_to_compound[src] = compound
+                    self.kind_to_compound[compound.kind] = compound
+                    compound = deepcopy(compound)
+                # self.elem_to_compound[elem] = compound
             else:
                 compound = Compound.create(kind=elem.get("kind"))
-                self.cache[compound.kind] = compound
+                self.kind_to_compound[compound.kind] = compound
+                # self.elem_to_compound[elem] = compound
+
+            if parent_compound:
+                parent_compound.add(compound, elem.get("label"))
+
+            if not root_compound:
+                root_compound = compound
+                self.root_compound = compound
 
             for c in elem.iterchildren():
                 # assert(isinstance(c,etree.ElementBase))
-                part = self.build(c)
+                part = self.build(c, ancestor_compounds + [compound])
 
-                # part can be compound, atom, or transform
-                if isinstance(part, Compound):
-                    compound.add(part, c.get("label"))
-                if isinstance(part, Atom):
-                    compound.add(part, c.get("label"))
-                if isinstance(part, CoordinateTransform):
-                    compound.transform(part)
+                # # part can be compound, atom, or transform
+                # if isinstance(part, Compound):
+                #     compound.add(part, c.get("label"))
+                # if isinstance(part, Atom):
+                #     compound.add(part, c.get("label"))
+                # if isinstance(part, CoordinateTransform):
+                #     compound.transform(part)
 
-            return compound
+
+        elif elem.tag == "alias":
+            ancestor_compounds[-2].addAlias(parent_compound, elem.get("label") )
+
+        elif elem.tag == "repeat":
+            count = int(elem.get("count"))
+
+            for i in range(0,count):
+                for c in elem.iterchildren():
+                # assert(isinstance(c,etree.ElementBase))
+                    part = self.build(c, ancestor_compounds)
+
         elif elem.tag == "translation":
             coords = elem.get("pos").split(",")
             assert(len(coords) == 3)
             pos = (float(coords[0]), float(coords[1]), float(coords[2]))
-            return Translation(pos)
+            # return Translation(pos)
+            parent_compound.transform(Translation(pos))
 
         elif elem.tag == "rotation":
             axis = elem.get("axis")
             angle = float(elem.get("angle"))*pi/180
 
             if axis == "x":
-                return RotationAroundX(angle)
+                 parent_compound.transform(RotationAroundX(angle))
             elif axis == "y":
-                return RotationAroundY(angle)
+                parent_compound.transform(RotationAroundY(angle))
             elif axis == "z":
-                return RotationAroundZ(angle)
-
-            return None
+                parent_compound.transform(RotationAroundZ(angle))
 
         elif elem.tag == "transform":
-            return None
+            equiv = list()
+            for e in elem.iterchildren():
+                assert(e.tag == "equivalence")
+                my_cpath= e.get("my")
+                target_cpath = e.get("target")
+
+                my = root_compound
+                for clabel in my_cpath.split("."):
+                    if hasattr(my, clabel):
+                        my = getattr(my, clabel)
+                    else:
+                        my = getattr(parent_compound, clabel)
+
+                target = root_compound
+                for clabel in target_cpath.split("."):
+                    target = getattr(target, clabel)
+
+                equiv.append((my, target))
+
+            parent_compound.transform(Compound.createEquivalenceTransform(equiv))
 
         else:
             # build an atom
+            if not elem.get("pos"):
+                raise Exception("expecting an atom, but no pos attribute given (" + self.path + ":" + str(elem.sourceline) +")" )
             coords = elem.get("pos").split(",")
             assert(len(coords) == 3)
             pos = (float(coords[0]), float(coords[1]), float(coords[2]))
 
             atom = Atom.create(kind=elem.tag, pos=pos)
-            return atom
+            parent_compound.add(atom, elem.get("label"))
+
 
 
 if __name__ == "__main__":
-    xr = XmlReader.read("xml/ethane_full.xml")
-    print etree.tostring(xr.root)
-    c = xr.build(xr.root)
-    TreeView(c).show()
+    # compound = XmlReader.read("xml/ethane.xml")
+    compound = XmlReader.read("xml/nalkane.xml")
+    TreeView(compound).show()
