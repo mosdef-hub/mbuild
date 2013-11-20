@@ -16,6 +16,8 @@
 			<equivalence my="bottom_tail.female_port" target="last_part.male_port" />
 		</transform>
 	</compound>
-    <compound src="../c60.xyz" label="c60"/>
+    <compound src="../c60.xyz" label="c60">
+        <translation pos="0,-10.7,0"/>
+    </compound>
 </compound>
 

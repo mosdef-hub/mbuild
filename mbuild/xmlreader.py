@@ -1,3 +1,4 @@
+import imp
 from mbuild.xyz import Xyz
 from treeview import TreeView
 
@@ -5,6 +6,7 @@ __author__ = 'sallai'
 from lxml import etree
 from mbuild.compound import *
 import os.path
+import re
 
 class XmlReader(object):
 
@@ -49,12 +51,54 @@ class XmlReader(object):
                 if src in self.src_to_compound:
                     compound = deepcopy(self.src_to_compound[src])
                 else:
+
+                    src_parts = src.split("?")
+                    src = src_parts[0]
+
+                    if len(src_parts) == 2:
+                        src_params = src_parts[1]
+                        regex = re.compile(r"\b(\w+)\s*=\s*([^=]*)(?=\+|&|$)")
+                        src_params = dict(regex.findall(src_params))
+                        print src_params
+
                     if src.endswith(".xml"):
                         compound = XmlReader.read(src, cwd=self.cwd)
                     elif src.endswith(".xyz"):
                         compound = Xyz.create(src, cwd=self.cwd)
+                    elif src.endswith(".py"):
+                        def load_from_file(filepath, expectedClass=None, baseClass=None):
+                            class_inst = None
+
+                            mod_name,file_ext = os.path.splitext(os.path.split(filepath)[-1])
+
+                            if file_ext.lower() == '.py':
+                                py_mod = imp.load_source(mod_name, filepath)
+
+                            elif file_ext.lower() == '.pyc':
+                                py_mod = imp.load_compiled(mod_name, filepath)
+
+                            print py_mod
+
+
+                            clsmembers = inspect.getmembers(py_mod, inspect.isclass)
+                            print clsmembers
+                            for label, cls in clsmembers:
+                                print label, cls, issubclass(cls, Compound)
+
+                                if not issubclass(cls, baseClass):
+                                    continue
+                                if not label.lower() == expectedClass.lower():
+                                    continue
+
+                                return cls
+
+                        compoundClass = load_from_file(os.path.join(self.cwd,src), baseClass=Compound, expectedClass=os.path.splitext(os.path.split(src)[-1])[0])
+
+                        print compoundClass
+                        compound = compoundClass.create(**src_params)
+                        # compound = compoundClass.create(*src_params, cwd=self.cwd )
                     else:
-                        raise Exception("don't know how to load " + src)
+                        raise Exception, "don't know how to load " + src
                     self.src_to_compound[src] = compound
                     self.kind_to_compound[compound.kind] = compound
                     compound = deepcopy(compound)
@@ -149,6 +193,8 @@ class XmlReader(object):
 
 
 if __name__ == "__main__":
+    # compound = XmlReader.read("xml/methane.xml")
     # compound = XmlReader.read("xml/ethane.xml")
     compound = XmlReader.read("xml/nalkane.xml")
+    # compound = XmlReader.read("xml/nalkane2.xml")
     TreeView(compound).show()

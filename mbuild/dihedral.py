@@ -2,7 +2,7 @@ __author__ = 'sallai'
 import numpy as np
 import pdb
 from mbuild.atom import *
-
+import copy
 
 class Dihedral(object):
     @classmethod
@@ -10,18 +10,10 @@ class Dihedral(object):
         b = Dihedral()
         b.kind = kind
         b.color = color
-
-        # make sure atom1 has lower hash than atom2
-        if atom1.__hash__() < atom4.__hash__():
-            b.atom1 = atom1
-            b.atom2 = atom2
-            b.atom3 = atom3
-            b.atom4 = atom4
-        else:
-            b.atom1 = atom4
-            b.atom2 = atom3
-            b.atom3 = atom2
-            b.atom4 = atom1
+        b.atom1 = atom1
+        b.atom2 = atom2
+        b.atom3 = atom3
+        b.atom4 = atom4
         return b
 
     @classmethod
@@ -37,43 +29,66 @@ class Dihedral(object):
         else:
             return None
 
+    def clone(self):
+        return copy.copy(self)
 
-    def __hash__(self):
-        # atom1 and atom3 are interchangeable
-        return self.atom1.__hash__() ^ self.atom2.__hash__() ^ self.atom3.__hash__() ^ self.atom4.__hash__()
+    def cloneImage(self):
+        new_obj = self.clone()
+        new_obj.atom1 = self.atom4
+        new_obj.atom2 = self.atom3
+        new_obj.atom3 = self.atom2
+        new_obj.atom4 = self.atom1
+        return new_obj
 
+    def cloneWithOrder(self, type_A, type_B, type_C, type_D):
+        if isinstance(self.atom1, type_A) and isinstance(self.atom2, type_B) and isinstance(self.atom3, type_C) and isinstance(self.atom4, type_D):
+            return self.clone()
+        elif isinstance(self.atom1, type_D) and isinstance(self.atom2, type_C) and isinstance(self.atom3, type_B) and isinstance(self.atom4, type_A):
+            return self.cloneImage()
 
-    def __eq__(self, other):
-        return self.__hash__() == other.__hash__()
+        warn ("cannot clone dihedral " + str(self) + " with order " + str(type_A) + "," + str(type_B)+ "," + str(type_C)+ "," + str(type_D))
 
-    def plot(self, ax):
-        epsilon = .4
-        offset = np.array([np.round(np.random.random()*10+1)*.05, 0, 0])
+    # def __hash__(self):
+    #     # atom1 and atom3 are interchangeable
+    #     return self.atom1.__hash__() ^ self.atom2.__hash__() ^ self.atom3.__hash__() ^ self.atom4.__hash__()
+    #
+    #
+    # def __eq__(self, other):
+    #     return self.__hash__() == other.__hash__()
 
-#        offset = np.array([round(random()*10+1)*.05, 0, 0])
+#     def plot(self, ax):
+#         epsilon = .4
+#         offset = np.array([np.round(np.random.random()*10+1)*.05, 0, 0])
+#
+# #        offset = np.array([round(random()*10+1)*.05, 0, 0])
+#
+#         pos1 = np.array(self.atom1.pos)
+#         pos2 = np.array(self.atom2.pos)
+#         pos3 = np.array(self.atom3.pos)
+#         v21 = pos1 - pos2 # vector from atom2 to atom1
+#         d21 = np.linalg.norm(v21) # atom1-atom2 distance
+#         v23 = pos3 - pos2 # vector from atom2 to atom3
+#         d23 = np.linalg.norm(v23) # atom3-atom2 distance
+#
+#         p2 = pos2 + offset
+#         p1 = pos2 + v21*epsilon + offset
+#         p3 = pos2 + v23*epsilon + offset
+#
+#         ax.plot([p1[0], p2[0], p3[0]],
+#                 [p1[1], p2[1], p3[1]],
+#                 [p1[2], p2[2], p3[2]], '-', color=self.color)
 
-        pos1 = np.array(self.atom1.pos)
-        pos2 = np.array(self.atom2.pos)
-        pos3 = np.array(self.atom3.pos)
-        v21 = pos1 - pos2 # vector from atom2 to atom1
-        d21 = np.linalg.norm(v21) # atom1-atom2 distance
-        v23 = pos3 - pos2 # vector from atom2 to atom3
-        d23 = np.linalg.norm(v23) # atom3-atom2 distance
+    def hasAtomKinds(self, atomType1, atomType2, atomType3, atomType4):
+        if isinstance(atomType1, type):
+            atomType1 = atomType1.kind
+        if isinstance(atomType2, type):
+            atomType2 = atomType2.kind
+        if isinstance(atomType3, type):
+            atomType3 = atomType3.kind
+        if isinstance(atomType4, type):
+            atomType4 = atomType4.kind
 
-        p2 = pos2 + offset
-        p1 = pos2 + v21*epsilon + offset
-        p3 = pos2 + v23*epsilon + offset
-
-        ax.plot([p1[0], p2[0], p3[0]],
-                [p1[1], p2[1], p3[1]],
-                [p1[2], p2[2], p3[2]], '-', color=self.color)
-
-    def hasTypes(self, atomType1, atomType2, atomType3, atomType4):
-        abcd = Dihedral.orderDihedral(self, atomType1, atomType2, atomType3, atomType4)
-        if abcd:
-            return True
-        else:
-            return False
+        return (self.atom1.kind == atomType1 and self.atom2.kind == atomType2 and self.atom3.kind == atomType3 and self.atom4.kind == atomType4) or (self.atom1.kind == atomType4 and self.atom2.kind == atomType3 and self.atom3.kind == atomType2 and self.atom4.kind == atomType1)
 
     @staticmethod
     def computeNormal(atom1, atom2, atom3):
@@ -111,29 +126,29 @@ class Dihedral(object):
         return self.inRadians() * 180 / math.pi
 
 
-    @classmethod
-    def orderDihedral(cls, dihedral, type_A, type_B, type_C, type_D):
-        abcd = Dihedral()
-        abcd.kind = dihedral.kind
-        abcd.color = dihedral.color
-        if (isinstance(dihedral.atom1, type_A) and
-            isinstance(dihedral.atom2, type_B) and
-            isinstance(dihedral.atom3, type_C) and
-            isinstance(dihedral.atom4, type_D)):
-            abcd.atom1 = dihedral.atom1
-            abcd.atom2 = dihedral.atom2
-            abcd.atom3 = dihedral.atom3
-            abcd.atom4 = dihedral.atom4
-            return abcd
-        elif (isinstance(dihedral.atom1, type_D) and
-            isinstance(dihedral.atom2, type_C) and
-            isinstance(dihedral.atom3, type_B) and
-            isinstance(dihedral.atom4, type_A)):
-            abcd.atom1 = dihedral.atom4
-            abcd.atom2 = dihedral.atom3
-            abcd.atom3 = dihedral.atom2
-            abcd.atom4 = dihedral.atom1
-            return abcd
+    # @classmethod
+    # def orderDihedral(cls, dihedral, type_A, type_B, type_C, type_D):
+    #     abcd = Dihedral()
+    #     abcd.kind = dihedral.kind
+    #     abcd.color = dihedral.color
+    #     if (isinstance(dihedral.atom1, type_A) and
+    #         isinstance(dihedral.atom2, type_B) and
+    #         isinstance(dihedral.atom3, type_C) and
+    #         isinstance(dihedral.atom4, type_D)):
+    #         abcd.atom1 = dihedral.atom1
+    #         abcd.atom2 = dihedral.atom2
+    #         abcd.atom3 = dihedral.atom3
+    #         abcd.atom4 = dihedral.atom4
+    #         return abcd
+    #     elif (isinstance(dihedral.atom1, type_D) and
+    #         isinstance(dihedral.atom2, type_C) and
+    #         isinstance(dihedral.atom3, type_B) and
+    #         isinstance(dihedral.atom4, type_A)):
+    #         abcd.atom1 = dihedral.atom4
+    #         abcd.atom2 = dihedral.atom3
+    #         abcd.atom3 = dihedral.atom2
+    #         abcd.atom4 = dihedral.atom1
+    #         return abcd
 
 if __name__ == "__main__":
     atom1 = C(pos=(0,-1,0))

@@ -36,19 +36,26 @@ class Atom(object):
     def transform(self, T):
         self.pos = tuple(squeeze(T.apply(array([self.pos]))))
 
+    # def __hash__(self):
+    #     h = hash((self.kind, self.pos))
+    #     return (h ^ (h << 16) ^ 89869747) * 3644798167
+    #
+    # def __eq__(self, other):
+    #     return self.__hash__() == other.__hash__()
+
     def __repr__(self):
         return "Atom[(" + self.kind + ")" + str(self.pos) + "]"
 
-    def plot(self, ax, text):
-        # print atom
-        ax.scatter(self.pos[0], self.pos[1], self.pos[2],
-                c=self.color,
-                marker='o',
-                s=100 * self.vdw_radius ** 3)
-        if text is not None:
-            ax.text(self.pos[0], self.pos[1], self.pos[2],  text)
-        else:
-            ax.text(self.pos[0], self.pos[1], self.pos[2],  self.kind)
+    # def plot(self, ax, text):
+    #     # print atom
+    #     ax.scatter(self.pos[0], self.pos[1], self.pos[2],
+    #             c=self.color,
+    #             marker='o',
+    #             s=100 * self.vdw_radius ** 3)
+    #     if text is not None:
+    #         ax.text(self.pos[0], self.pos[1], self.pos[2],  text)
+    #     else:
+    #         ax.text(self.pos[0], self.pos[1], self.pos[2],  self.kind)
 
     # def plot3_worker(self, g, vnames, parent_vi):
     #     vi = g.add_vertex()
@@ -60,7 +67,7 @@ def AtomClassFactory(name, vdw_radius=1.0, color='w', colorRGB=(1,1,1)):
     def __init__(self, pos=None):
         Atom.__init__(self, kind=name, pos=pos)
     # create new class, setting its init function to the prototype
-    newclass = type(name, (Atom,),{"__init__": __init__, "vdw_radius": vdw_radius, "color": color, "colorRGB": colorRGB})
+    newclass = type(name, (Atom,),{"__init__": __init__, "kind": name, "vdw_radius": vdw_radius, "color": color, "colorRGB": colorRGB})
     return newclass
 
 class G(Atom):
@@ -73,6 +80,7 @@ class G(Atom):
 
 
 C = AtomClassFactory('C', vdw_radius=1.7, color='teal', colorRGB=(0, .5, .5))
+C2 = AtomClassFactory('C2', vdw_radius=1.7, color='teal', colorRGB=(0, 0, 0))
 H = AtomClassFactory('H', vdw_radius=1.2, color='white', colorRGB=(1, 1, 1))
 O = AtomClassFactory('O', vdw_radius=1.52, color='red', colorRGB=(1, 0, 0))
 F = AtomClassFactory('F', vdw_radius=1.35, color='pink', colorRGB=(1, 192/256, 203/256))

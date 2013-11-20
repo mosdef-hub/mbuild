@@ -5,7 +5,7 @@ import os.path
 class Xyz(Compound):
 
     @classmethod
-    def create(cls, path, ctx={}, cwd=""):
+    def create(cls, path=None, ctx={}, cwd=""):
 
         fn = os.path.join(cwd, path)
 
