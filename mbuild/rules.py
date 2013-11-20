@@ -40,6 +40,7 @@ class RuleEngine(object):
         self.add_angle(C, N, C, "c-n-c", color=(0, 0, 0.5))
         self.add_angle(O, P, O, "o-p-o", color=(.8, 0, 0.8))
         self.add_angle(C, O, P, "c-o-p", color=(.8, 0.8, 0))
+        self.add_angle(O, C, O, "o-c-o", color=(.3, 0.8, 0))
 
         # self.add_dihedral(H, C, C, C, "hxcxcxc", color=(0, 0, 0))
         self.add_dihedral(H, C2, C, C, "h-c2-c-c", color=(0, 0, 0))
@@ -170,7 +171,7 @@ if __name__ == "__main__":
     #     print a.inDegrees()
 
     #print(mm.getAtomsInRange(mm.atoms.pop().pos,2))
-    print "done"
+    print "Missing angle kinds: " + str(mm.findMissingAngleKinds())
     r.model.plot(angles=True)
 
 

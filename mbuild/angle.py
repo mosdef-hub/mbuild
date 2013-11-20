@@ -91,13 +91,17 @@ class Angle(object):
     def __repr__( self ):
         return "Angle[atom1=" + str(self.atom1) + " atom2=" + str(self.atom2) + " atom3=" + str(self.atom3) + "]"
 
+    def __hash__(self):
+        # return hash((self.kind, self.atom1, self.atom2, self.atom3))
+        return hash((self.atom1, self.atom2, self.atom3))
 
     # def __hash__(self):
     #     # atom1 and atom3 are interchangeable
     #     return ( self.atom1.__hash__() * self.atom3.__hash__()) ^ self.atom1.__hash__() ^ self.atom3.__hash__() ^ self.atom2.__hash__()
     #
-    # def __eq__(self, other):
-    #     return self.__hash__() == other.__hash__()
+
+    def __eq__(self, other):
+        return self.__hash__() == other.__hash__()
 
 #     def plot(self, ax):
 #         epsilon = .4

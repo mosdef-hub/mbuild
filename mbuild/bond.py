@@ -69,7 +69,8 @@ class Bond(object):
         ax.plot([p1[0], p2[0]],[p1[1], p2[1]],[p1[2], p2[2]], '-', color=self.color)
 
     def __hash__(self):
-        return hash((self.kind, self.atom1, self.atom2))
+        # return hash((self.kind, self.atom1, self.atom2))
+        return hash((self.atom1, self.atom2))
 
     def __eq__(self, other):
         return self.__hash__() == other.__hash__()

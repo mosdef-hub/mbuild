@@ -48,13 +48,21 @@ class Dihedral(object):
 
         warn ("cannot clone dihedral " + str(self) + " with order " + str(type_A) + "," + str(type_B)+ "," + str(type_C)+ "," + str(type_D))
 
+    def __repr__( self ):
+        return "Dihedral[atom1=" + str(self.atom1) + " atom2=" + str(self.atom2) + " atom3=" + str(self.atom3) + " atom4=" + str(self.atom4) + "]"
+
+    def __hash__(self):
+        # return hash((self.kind, self.atom1, self.atom2, self.atom3, self.atom4))
+        return hash((self.atom1, self.atom2, self.atom3, self.atom4))
+
+
     # def __hash__(self):
     #     # atom1 and atom3 are interchangeable
     #     return self.atom1.__hash__() ^ self.atom2.__hash__() ^ self.atom3.__hash__() ^ self.atom4.__hash__()
     #
     #
-    # def __eq__(self, other):
-    #     return self.__hash__() == other.__hash__()
+    def __eq__(self, other):
+        return self.__hash__() == other.__hash__()
 
 #     def plot(self, ax):
 #         epsilon = .4

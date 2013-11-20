@@ -153,6 +153,44 @@ class MoleculeModel(object):
 
         return neighbors
 
+    def findMissingAngleKinds(self):
+        missing = set()
+        for abc in self.findMissingAngles():
+            missing.add((abc.atom1.kind, abc.atom2.kind, abc.atom3.kind))
+        return missing
+
+    def findMissingAngles(self):
+
+        missing = set()
+
+        for ab in self.bonds:
+            assert(isinstance(ab,Bond))
+            type_A = ab.atom1.__class__
+            type_B = ab.atom2.__class__
+
+            for bc in ab.atom2.bonds:
+                if ab==bc:
+                    continue
+                abc = Angle.createFromBonds(ab,bc)
+                abcImage = abc.cloneImage();
+                if not abc in self.angles and not abc.cloneImage() in self.angles and not abcImage in missing:
+                    if abc.atom1.kind < abc.atom3.kind:
+                        missing.add(abc)
+                    else:
+                        missing.add(abcImage)
+
+            for bc in ab.atom1.bonds:
+                if ab==bc:
+                    continue
+                abc = Angle.createFromBonds(ab,bc)
+                abcImage = abc.cloneImage()
+                if not abc in self.angles and not abc.cloneImage() in self.angles and not abcImage in missing:
+                    if abc.atom1.kind < abc.atom3.kind:
+                        missing.add(abc)
+                    else:
+                        missing.add(abcImage)
+
+        return missing
 
 
     def plot(self, verbose=False, labels=True, atoms=True, bonds=True, angles=True, dihedrals=True):
