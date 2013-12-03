@@ -22,7 +22,7 @@ class Xyz(Compound):
                 atom_label = atom_type + '0'
                 atom_cnt[atom_type] = 1
             else:
-                atom_label = atom_type + str(atom_cnt[atom_type])
+                atom_label = atom_type + "__" + str(atom_cnt[atom_type])
                 atom_cnt[atom_type] += 1
 
             m.add(Atom.create(atom_type, atom_pos), atom_label)

@@ -43,5 +43,5 @@ class MpcAlkane(Compound):
 if __name__ == "__main__":
     m = MpcAlkane.create(21)
     #print m.atoms()
-    self.plot(labels=False, verbose=False)
-    self.savexyz('mpcchain.xyz')
+    m.plot(labels=False, verbose=False)
+    m.savexyz('mpcchain.xyz')

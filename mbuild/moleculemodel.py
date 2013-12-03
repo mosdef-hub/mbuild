@@ -1,7 +1,8 @@
 from itertools import ifilter
 from sets import Set
 import numpy
-from scipy.spatial.ckdtree import cKDTree
+#from scipy.spatial.ckdtree import cKDTree
+from periodic_kdtree import PeriodicCKDTree as cKDTree
 from mbuild.angle import Angle
 from mbuild.atom import Atom
 from mbuild.bond import Bond
@@ -11,8 +12,9 @@ __author__ = 'sallai'
 
 
 class MoleculeModel(object):
-    def __init__(self):
+    def __init__(self, bounds = [0.0, 0.0, 0.0]):
         object.__init__(self)
+        self.bounds = bounds
         self.atoms = set()
         self.bonds = set()
         self.angles = set()
@@ -20,8 +22,8 @@ class MoleculeModel(object):
 
 
     @classmethod
-    def create(cls):
-        model = MoleculeModel()
+    def create(cls, bounds = [0.0, 0.0, 0.0]):
+        model = MoleculeModel(bounds=bounds)
         return model
 
     def add(self, new_obj):
@@ -92,7 +94,7 @@ class MoleculeModel(object):
 
     def initAtomKdTree(self):
         self.atomsList = list(self.atoms)
-        self.atomKdtree = cKDTree([atom.pos for atom in self.atomsList])
+        self.atomKdtree = cKDTree([atom.pos for atom in self.atomsList], bounds=self.bounds)
 
     def getAtomsInRange(self, point, radius, maxItems=50):
         # create kdtree if it's not yet there
@@ -113,7 +115,7 @@ class MoleculeModel(object):
 
     def initBondKdTree(self):
         self.bondsList = list(self.bonds)
-        self.BondKdtree = cKDTree([bond.com() for bond in self.bondsList])
+        self.BondKdtree = cKDTree([bond.com() for bond in self.bondsList], bounds=self.bounds)
 
     def getBondsInRange(self, point, radius, maxItems=50):
         # create kdtree if it's not yet there
@@ -134,7 +136,7 @@ class MoleculeModel(object):
 
     def initAngleKdTree(self):
         self.anglesList = list(self.angles)
-        self.AngleKdtree = cKDTree([angle.atom2.pos for angle in self.anglesList])
+        self.AngleKdtree = cKDTree([angle.atom2.pos for angle in self.anglesList], bounds=self.bounds)
 
     def getAnglesInRange(self, point, radius, maxItems=50):
         # create kdtree if it's not yet there

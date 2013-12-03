@@ -185,11 +185,11 @@ class Compound(object):
                 f.write(str(self.atoms().__len__()) + '\n\n')
             else:
                 i = 0
-                for key, value in self.atoms().iteritems():
+                for key, value in self.atoms():
                     if value.kind != 'G':
                         i += 1
                 f.write(str(i) + '\n\n')
-            for key, value in self.atoms().iteritems():
+            for key, value in self.atoms():
                 if print_ports:
                     f.write(value.kind + '\t' +
                             str(value.pos[0]) + '\t' +
