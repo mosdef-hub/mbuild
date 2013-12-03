@@ -9,18 +9,18 @@ class MpcAlkaneBody(Compound):
     def create(cls, label=None, direction='left', ctx={}):
         m = super(MpcAlkaneBody, cls).create(label)
 
-        m.add(C((0, 0, 0)),'c')
+        m.add(CB((0, 0, 0)),'c')
 
         if direction == 'left':
             # mpc is on the left
-            m.add(H((1, 0, 0)),'h1')
+            m.add(HB((1, 0, 0)),'h1')
             m.add(G((-1.2, 0, 0)),'c0') # this is where we want the MPC's first C atom to be
             m.add(Port.create(),'mpc_port')
             m.mpc_port.transform(RotationAroundY(pi/2))
             m.mpc_port.transform(Translation((-0.0,0,0)))
         else:
             # mpc is on the right
-            m.add(H((-1, 0, 0)),'h1')
+            m.add(HB((-1, 0, 0)),'h1')
             m.add(G((1.2, 0, 0)),'c0') # this is where we want the MPC's first C atom to be
             m.add(Port.create(),'mpc_port')
             m.mpc_port.transform(RotationAroundY(-pi/2))

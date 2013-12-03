@@ -26,8 +26,10 @@ class MpcAlkane(Compound):
                 this_part = MpcAlkaneBody.create(direction='left', ctx=ctx)
             elif body_count % 10 == 0:
                 this_part = MpcAlkaneBody.create(direction='right', ctx=ctx)
+            elif body_count % 2 == 0:
+                this_part = AlkaneBody.create(ctx=ctx, direction='left')
             else:
-                this_part = AlkaneBody.create(ctx=ctx)
+                this_part = AlkaneBody.create(ctx=ctx, direction='right')
 
             this_part.transform([(this_part.male_port, last_part.female_port)])
             m.add(this_part, 'body_'+str(body_count))
@@ -43,5 +45,5 @@ class MpcAlkane(Compound):
 if __name__ == "__main__":
     m = MpcAlkane.create(21)
     #print m.atoms()
-    m.plot(labels=False, verbose=False)
+    #m.plot(labels=False, verbose=False)
     m.savexyz('mpcchain.xyz')
