@@ -15,11 +15,11 @@ class MpcAlkane(Compound):
 
         m = super(MpcAlkane, cls).create(ctx=ctx)
 
-        # bottom
-        m.add(AlkaneBody.create(),'bottom_ch2')
+        # bot tail (CH_3)
+        m.add(AlkaneTail.create(ctx=ctx),'bot_ch3')
 
         # n times the body CH_2
-        last_part = m.bottom_ch2
+        last_part = m.bot_ch3
 
         for body_count in range(2, n):
             if body_count % 20 == 0:

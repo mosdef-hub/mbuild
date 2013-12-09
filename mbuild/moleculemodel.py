@@ -1,14 +1,16 @@
+__author__ = 'sallai'
+
 from itertools import ifilter
 from sets import Set
-import numpy
+import numpy as np
+from collections import defaultdict
 #from scipy.spatial.ckdtree import cKDTree
 from periodic_kdtree import PeriodicCKDTree as cKDTree
+
 from mbuild.angle import Angle
 from mbuild.atom import Atom
 from mbuild.bond import Bond
 from mbuild.dihedral import Dihedral
-import numpy as np
-__author__ = 'sallai'
 
 
 class MoleculeModel(object):
@@ -280,3 +282,25 @@ class MoleculeModel(object):
                         tube_radius=0.10, color=d.color)
 
         mlab.show()
+
+    def unique_types(self):
+        a_types = defaultdict(int)
+        for atom in self.atoms:
+            a_types[atom.kind] += 1
+
+        bond_types = defaultdict(int)
+        for bond in self.bonds:
+            bond_types[bond.kind] += 1
+
+        ang_types = defaultdict(int)
+        for ang in self.angles:
+            ang_types[ang.kind] += 1
+
+        dih_types = defaultdict(int)
+        for dih in self.dihedrals:
+            dih_types[dih.kind] += 1
+
+        return a_types, bond_types, ang_types, dih_types
+
+
+

@@ -1,7 +1,9 @@
 __author__ = 'sallai'
-from mbuild.coordinate_transform import *
+
 import inspect
 import sys
+
+from mbuild.coordinate_transform import *
 
 class Atom(object):
 

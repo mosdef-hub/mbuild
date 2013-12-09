@@ -7,10 +7,10 @@ class AlkaneTail(Compound):
     @classmethod
     def create(cls, ctx={}):
         m = super(AlkaneTail, cls).create(ctx=ctx)
-        m.add(H((1, 0, 0)),'h1')
-        m.add(H((0, 1, 0)),'h2')
-        m.add(H((-1, 0, 0)),'h3')
-        m.add(C((0, 0, 0)),'c')
+        m.add(HB((1, 0, 0)),'h1')
+        m.add(HB((0, 1, 0)),'h2')
+        m.add(HB((-1, 0, 0)),'h3')
+        m.add(CB((0, 0, 0)),'c')
 
         m.add(Port.create(), 'female_port')
         m.female_port.transform(Translation((0,-0.7,0)))
