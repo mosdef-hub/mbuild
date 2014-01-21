@@ -1,16 +1,23 @@
 __author__ = 'sallai'
 from mbuild.compound import *
 from mbuild.port import *
+import pdb
 
 class AlkaneBody(Compound):
 
     @classmethod
-    def create(cls, ctx={}):
+    def create(cls, ctx={}, direction='left'):
         m = super(AlkaneBody, cls).create(ctx=ctx)
 
-        m.add(C((0, 0, 0)),'c')
-        m.add(H((1, 0, 0)),'h1')
-        m.add(H((-1, 0, 0)),'h2')
+        m.add(CB((0, 0, 0)),'c')
+        if direction == 'left':
+            m.add(HB((0.7, 0.0, 0.7)),'h1')
+            m.add(HB((-0.7, 0.0, 0.7)),'h2')
+        elif direction == 'right':
+            m.add(HB((0.7, 0, -0.7)),'h1')
+            m.add(HB((-0.7, 0, -0.7)),'h2')
+        else:
+            raise Exception("Unknown 'direction' value: " + str(direction))
 
         m.add(Port.create(),'male_port')
         m.male_port.transform(RotationAroundZ(pi))

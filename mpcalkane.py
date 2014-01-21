@@ -15,19 +15,21 @@ class MpcAlkane(Compound):
 
         m = super(MpcAlkane, cls).create(ctx=ctx)
 
-        # bottom
-        m.add(AlkaneBody.create(),'bottom_ch2')
+        # bot tail (CH_3)
+        m.add(AlkaneTail.create(ctx=ctx),'bot_ch3')
 
         # n times the body CH_2
-        last_part = m.bottom_ch2
+        last_part = m.bot_ch3
 
         for body_count in range(2, n):
             if body_count % 20 == 0:
                 this_part = MpcAlkaneBody.create(direction='left', ctx=ctx)
             elif body_count % 10 == 0:
                 this_part = MpcAlkaneBody.create(direction='right', ctx=ctx)
+            elif body_count % 2 == 0:
+                this_part = AlkaneBody.create(ctx=ctx, direction='left')
             else:
-                this_part = AlkaneBody.create(ctx=ctx)
+                this_part = AlkaneBody.create(ctx=ctx, direction='right')
 
             this_part.transform([(this_part.male_port, last_part.female_port)])
             m.add(this_part, 'body_'+str(body_count))
@@ -43,5 +45,5 @@ class MpcAlkane(Compound):
 if __name__ == "__main__":
     m = MpcAlkane.create(21)
     #print m.atoms()
-    m.plot(labels=False, verbose=False)
+    #m.plot(labels=False, verbose=False)
     m.savexyz('mpcchain.xyz')

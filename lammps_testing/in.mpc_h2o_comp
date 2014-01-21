@@ -1,0 +1,238 @@
+units real
+atom_style full
+
+dimension 3
+boundary p p f
+
+read_data data.${name}
+variable dump_freq equal 1000
+
+thermo_style custom step dt temp etotal evdwl ecoul
+thermo ${dump_freq} 
+
+
+pair_style lj/cut/coul/long 10.0
+#                    sig    eps   local opls-aa papers     notes
+pair_coeff    1   1  0.030  2.500 #HC3  140  
+pair_coeff    2   2  0.170  3.250 #N3   287   
+pair_coeff    3   3  0.066  3.500 #CH3  135  
+pair_coeff    4   4  0.066  3.500 #CT   292  
+pair_coeff    5   5  0.030  2.500 #HC   140  
+pair_coeff    6   6  0.066  3.500 #CTD  443      
+pair_coeff    7   7  0.030  2.500 #HCD  444      
+pair_coeff    8   8  0.140  2.900 #OSD  442      
+pair_coeff    9   9  0.200  3.740 #P    440
+pair_coeff    10  10 0.200  3.150 #O2D  441
+pair_coeff    11  11 0.066  3.500 #CTE  468
+pair_coeff    12  12 0.170  3.000 #OS   467
+pair_coeff    13  13 0.105  3.750 #C    465
+pair_coeff    14  14 0.210  2.960 #O    466
+pair_coeff    15  15 0.076  3.550 #CM3  141
+pair_coeff    16  16 0.076  3.550 #CM1  143
+pair_coeff    17  17 0.030  2.420 #HM   144
+pair_coeff    18  18 0.066  3.500 #CH2  136
+
+pair_coeff    19  19 0.170  3.120 #OH           (4, p.96)
+pair_coeff    20  20 0.000  0.000 #HO           (4, p.96)
+pair_coeff    21  21 0.100  4.000 #Si2          (4, p.96)  Si in chain
+pair_coeff    22  22 0.100  4.000 #Si1          (4, p.96)  Si in substrate
+pair_coeff    23  23 0.170  3.000 #O1           (4, p.96)  O in substrate
+pair_coeff    24  24 0.000  0.000 #H                       H on substrate
+pair_coeff    25  25 0.100  4.000 #Si4          (4, p.96)  Si link in substrate
+pair_coeff    26  26 0.170  3.000 #O4           (4, p.96)  O link in substrate
+
+pair_coeff    27  27 0.1521 3.15061 #OW           (4, p.96)  O link in substrate
+pair_coeff    28  28 0.000  0.000   #HW           (4, p.96)  O link in substrate
+
+pair_modify mix geometric
+
+bond_style harmonic
+#              k     r_eq  local    opls-aa  papers
+bond_coeff 1   340.0 1.09  #CH3-HC3 (CT-HC)
+bond_coeff 2   367.0 1.471 #N3-CH3  (N3-CT)
+bond_coeff 3   367.0 1.471 #N3-CT
+bond_coeff 4   340.0 1.09  #CT-HC
+bond_coeff 5   268.0 1.529 #CT-CTD  (CT-CT)
+bond_coeff 6   340.0 1.09  #CTD-HCD (CT-HC)
+bond_coeff 7   320.0 1.41  #CTD-OSD (CT-OS)
+bond_coeff 8   230.0 1.61  #OSD-P   (OS-P)
+bond_coeff 9   525.0 1.48  #O2D-P   (O2-P)
+bond_coeff 10  268.0 1.529 #CTD-CTE (CT-CT)
+bond_coeff 11  320.0 1.41  #CTE-OSD (CT-OS)
+bond_coeff 12  340.0 1.09  #CTE-HCD (CT-HC)
+bond_coeff 13  214.0 1.327 #C-OS    (C-OS)
+bond_coeff 14  570.0 1.229 #C-O     (C-O)
+bond_coeff 15  410.0 1.444 #C-CM3   (C-CM)
+bond_coeff 16  549.0 1.34  #CM3-CM1 (CM-CM)
+bond_coeff 17  340.0 1.08  #CM1-HM  (CM-HC)
+bond_coeff 18  317.0 1.51  #CM3-CH2 (CM-CT)
+bond_coeff 19  340.0 1.09  #CH2-HC  (CT-HC) 
+
+bond_coeff 20  200.0 1.85  #CH2-Si2          (4, p.96, Si-C)  
+bond_coeff 21  300.0 1.65  #Si1-O1           (4, p.96, Si-O)  
+bond_coeff 22  300.0 1.65  #Si4-O1           (4, p.96, Si-O)  
+bond_coeff 23  300.0 1.65  #Si4-O4           (4, p.96, Si-O)  
+bond_coeff 24  300.0 1.65  #Si2-O4           (4, p.96, Si-O)  
+bond_coeff 25  300.0 1.65  #Si2-OH           (4, p.96, Si-O)  
+bond_coeff 26  553.0 0.945 #O*-HO   (HO-OH) 
+bond_coeff 27  553.0 0.945 #O1-H    (HO-OH) 
+
+bond_coeff 28  600.0 0.9572 #OW-HW   (HW-OW) 
+
+angle_style harmonic
+#               k        0_eq    local        opls-aa    paper
+angle_coeff 1    33.0    107.8   #HC3-CH3-HC  (HC-CT-HC)
+angle_coeff 2    35.0    109.5   #HC3-CH3-N3  (HC-CH3-N3)
+angle_coeff 3    50.0    113.0   #CH3-N3-CH3  (CT-N3-CT)
+angle_coeff 4    50.0    113.0   #CH3-N3-CT   (CT-N3-CT)
+angle_coeff 5    35.0    109.5   #N3-CT-HC    (HC-CT-N3)
+angle_coeff 6    33.0    107.8   #HC-CT-HC
+angle_coeff 7    80.0    111.2   #N3-CT-CTD   (CT-CT-N3)
+angle_coeff 8    37.5    110.7   #CT-CT-HCD   (CT-CT-HC)
+angle_coeff 9    33.0    107.8   #HCD-CTD-HCD (HC-CT-HC)
+angle_coeff 10   50.0    109.5   #CT-CTD-OSD  (CT-CT-OS)
+angle_coeff 11   35.0    109.5   #HCD-CTD-OSD (HC-CT-OS)
+angle_coeff 12  100.0    120.5   #CTD-OSD-P   (CT-OS-P)
+angle_coeff 13  100.0    108.23  #OSD-P-O2D   (O2-P-OS)
+angle_coeff 14   45.0    102.6   #OSD-P-OSD   (OS-P-OS)
+angle_coeff 15   50.0    109.5   #CTD-CTE-OS  (CT-CT-OS)
+angle_coeff 16   37.5    110.7   #HCD-CTD-CTE (CT-CT-HC)
+angle_coeff 17   37.5    110.7   #HCD-CTE-CTD (CT-CT-HC)
+angle_coeff 18   33.0    107.8   #HC-CTE-HC   (HC-CT-HC)
+angle_coeff 19   35.0    109.5   #HC-CTE-OS   (HC-CT-OS)
+angle_coeff 20   83.0    116.9   #CTE-OS-C    (C-OS-CT)
+angle_coeff 21   83.0    123.4   #OS-C-O      (O-C-OS)
+
+angle_coeff 22   81.0    111.4   #OS-C-CM2    (OS-C-CT)-questionable: not alkene C
+angle_coeff 23   80.0    125.3   #O-C-CM3     (CM-C-O)
+angle_coeff 24   70.0    124.0   #C-CM3-CM1   (CM-CM-CT)-questionable: not ester C
+angle_coeff 25   35.0    120.0   #CM3-CM1-HM  (CM-CM-HC)
+angle_coeff 26   70.0    119.7   #C-CM3-CH2   (C-CM-CT)
+
+angle_coeff 27   30.47   120.0   #CM3-CH2-Si2            (4, p.96, Si-C-C) 
+angle_coeff 28   50.00   109.5   #HC-CH2-Si2             (4, p.96, Si-C-F) *** H vs F
+angle_coeff 29   60.00   100.0   #CH2-Si2-OH             (4, p.96, O-Si-C) 
+angle_coeff 30   60.00   110.0   #O*-Si*-O*              (4, p.96, O-Si-O) 
+angle_coeff 31   60.00   110.0   #Si*-O*-Si*             (4, p.96, Si-O-Si) 
+angle_coeff 32   23.7764 122.888 #Si2-OH-HO              (4, p.96, Si-O-H) 
+angle_coeff 33   23.7764 122.888 #Si4-O4-H               (4, p.96, Si-O-H) 
+
+angle_coeff 34   75.0    109.5   #HW-OW-HW               (4, p.96, Si-O-H) 
+
+dihedral_style opls
+#                 k1      k2      k3      k4      local           opls-aa        notes
+dihedral_coeff 1   0.000   0.000   0.3017  0.000  #HC3-CH3-N3-CH3 (HC-CT-N3-CT)  2ary
+dihedral_coeff 2   0.000   0.000   0.3017  0.000  #HC3-CH3-N3-CT  (HC-CT-N3-CT)  2ary
+dihedral_coeff 3   0.000   0.000   0.3017  0.000  #HC-CT-N3-CH3   (HC-CT-N3-CT)  2ary 
+dihedral_coeff 4   1.4379 -0.1238  0.2639  0.000  #CH3-N3-CT-CTD  (CT-CT-N3-CT)  2ary
+dihedral_coeff 5   0.000   0.000   0.384   0.000  #HCD-CTD-CT-N3  (HC-CT-CT-N3)  ammonium 
+dihedral_coeff 6   2.732  -0.229   0.485   0.000  #OSD-CTD-CT-N3  (CT-CT-CT-N3)  ammonium (questionable choice)
+dihedral_coeff 7   0.000   0.000   0.300   0.000  #HC-CT-CTD-HCD  (HC-CT-CT-HC)  hydrocarbon 
+dihedral_coeff 8   0.000   0.000   0.468   0.000  #HC-CT-CTD-OSD  (HC-CT-CT-OS)  alcohols 
+dihedral_coeff 9   0.000   0.000   0.300   0.000  #HCD-CTD-OSD-P  (P-OS-CT-HC)   phosphonates 
+dihedral_coeff 10 -1.420  -0.620   0.100   0.000  #CT-CTD-OSD-P   (CT-CT-OS-P)   in 
+dihedral_coeff 11  0.000   0.000   0.000   0.000  #OSD-P-OSD-CTD  (O-P-OS-CT)    phosphonates 
+dihedral_coeff 12  0.900  -2.930   2.640   0.000  #O2D-P-OSD-CTD  (O2-P-OSD-CTD) dimethyl
+dihedral_coeff 13  0.000   0.000   0.468   0.000  #OSD-CTD-CTE-HC (HC-CT-CT-OS)  alcohols 
+dihedral_coeff 14 -0.550   0.000   0.468   0.000  #OS-CTE-CTD-OSD (OS-CT-CT-OS)  polyethers 
+dihedral_coeff 15  0.000   0.000   0.468   0.000  #OS-CTE-CTD-HCD (HC-CT-CT-OS)  alcohols 
+dihedral_coeff 16 -1.220  -0.126   0.422   0.000  #CTD-CTE-OS-C   (CT-CT-OS-C)   esters
+dihedral_coeff 17  0.000   0.000   0.198   0.000  #C-OS-CTE-HC    (C-OS-CT-HC)   esters
+dihedral_coeff 18  0.000   5.124   0.000   0.000  #O-C-OS-CTE     (O-C-OS-CT)    esters
+
+dihedral_coeff 19  0.650  -0.250   0.670   0.000  #CTE-OS-C-CM3   (CT-OS-CT-CT)  ethers
+dihedral_coeff 20  0.500   0.000   0.000   0.000  #CM1-CM3-C-OS   (CM-CM-CT-O*)  allyl
+dihedral_coeff 21  0.000  14.000   0.000   0.000  #C-CM3-CM1-HM   (C-CM-CM-HC)   alkene
+dihedral_coeff 22  0.000  14.000   0.000   0.000  #OS-C-CM3-CH2   (CT-CM-CM_OS)  vinyl
+dihedral_coeff 23  0.000   0.000  -0.372   0.000  #C-CM3-CH2-HC   (HC-CT-CM-CM)  alkenes
+
+pair_modify mix geometric
+
+kspace_style pppm 1.0e-4
+kspace_modify slab 3.0
+
+
+# Si1 O1 H Si4 O4
+group substrate type 22 23 24 25 26
+# Si1 O1
+#group substrate type 22 23 
+group mpc subtract all substrate
+velocity mpc create 300 9825234592
+fix 1 mpc nvt temp 3 300 10.0
+
+timestep 0.05
+run 200
+timestep 0.1
+run 200
+timestep 0.2
+run 200
+timestep 0.5
+run 200
+timestep 1.0
+run 5000
+
+run_style respa 3 2 2 bond 1 angle 2 dihedral 2 pair 3 kspace 3
+
+#==========================
+variable middle equal (bound(all,zmax)+bound(all,zmin))/2
+print "Middle is ${middle}"
+
+region tophalf block INF INF INF INF ${middle} INF units box
+group tophalf region tophalf
+group topsub intersect tophalf substrate
+
+region bothalf block INF INF INF INF INF ${middle} units box
+group bothalf region bothalf
+group botsub intersect bothalf substrate
+
+reset_timestep 0
+#==========================
+# normal force
+group topmpc intersect tophalf mpc
+group topfilm union topsub topmpc
+compute 1 topsub property/atom fz
+compute 2 topsub atom/molecule c_1
+fix 2 topsub ave/time 1 1 1000 c_2[1] file ${name}.n_force
+
+compute 3 topfilm property/atom fz
+compute 4 topfilm atom/molecule c_3
+fix 9 topfilm ave/time 1 1 1000 c_4[1] file ${name}.n_force_chs
+
+#==========================
+# sep distance
+# based on surface Si
+group Si4 type 25
+group top_Si4 intersect topsub Si4 
+group bot_Si4 intersect botsub Si4 
+
+variable top_surf_Si4 equal bound(top_Si4,zmin)
+variable bot_surf_Si4 equal bound(bot_Si4,zmax)
+variable sep_D equal ${top_surf_Si4}-${bot_surf_Si4}
+
+fix 3 all print 1000 "${sep_D}" file ${name}.sep_D
+
+#==========================
+dump prod all custom ${dump_freq} ${name}.lammpstrj id type x y z 
+timestep 1.0
+
+#==============================
+label loop
+variable a loop 1000000
+
+run 1000
+
+# re-compute distance
+variable top_surf_Si4 equal bound(top_Si4,zmin)
+variable bot_surf_Si4 equal bound(bot_Si4,zmax)
+variable sep_D equal ${top_surf_Si4}-${bot_surf_Si4}
+
+restart 1000 restart.${name}_${sep_D}
+
+displace_atoms topsub move 0.0 0.0 -1.0e-1 units box
+if "${sep_D} < 10" then quit
+
+jump in.mpc_h2o_comp loop
+label break
+#==============================
+
+
