@@ -1,3 +1,7 @@
+from mbuild.moleculemodel import MoleculeModel
+from mbuild.mpcchainrules import MpcChainRules
+from mbuild.rules import RuleEngine
+
 __author__ = 'sallai'
 
 from alkane_tail import AlkaneTail
@@ -26,9 +30,37 @@ class Ethane(Compound):
         return m
 
 
+class MyRules(RuleEngine):
+
+    @classmethod
+    def create(cls, model):
+        re = super(MyRules, cls).create(model)
+        return re
+
+
+    def execute(self):
+        self.add_bond(C, H, .9, 1.1, "c-h", (1, 1, 1))
+        self.add_bond(C, C, .9, 2.1, "c-c", (0, 1, 0))
+
+        self.add_angle(H, C, C, "h-c-c", color=(1, 0.5, 0))
+
+        self.add_dihedral(H, C, C, H, "h-c-c-h", color=(0, 0, 0))
+
+
+
+
 if __name__ == "__main__":
     ethane = Ethane.create()
     # print ethane
     print ethane.atoms()
-    ethane.plot2(labels=False, verbose=False)
+    # ethane.plot(labels=False, verbose=False)
     print ethane.bottom_tail.c
+
+
+    mm = MoleculeModel.create()
+    mm.add([atom for label, atom in ethane.atoms()])
+    re = MyRules.create(mm)
+    re.execute()
+
+    print mm
+    mm.plot(angles=True, dihedrals=False)

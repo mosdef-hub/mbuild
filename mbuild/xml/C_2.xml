@@ -1,0 +1,11 @@
+<compound>
+    <C pos="0, 0, 0" label="c" />
+    <H pos="-1, 0, 0" label="h1" />
+    <H pos="1, 0, 0" label="h2" />
+    <O pos="0, 1, 0" label="o" />
+    <H pos="0.5, 2, 0" label="h3" />
+    <compound src="port.xml" label="port">
+        <rotation axis="z" angle="90" />
+        <translation pos="0,-0.5,0"/>
+    </compound>
+</compound>

@@ -1,16 +1,15 @@
-__author__ = 'sallai'
-
 from itertools import ifilter
 from sets import Set
-import numpy as np
-from collections import defaultdict
+from mayavi.tools.sources import vector_scatter
+import numpy
 #from scipy.spatial.ckdtree import cKDTree
 from periodic_kdtree import PeriodicCKDTree as cKDTree
-
 from mbuild.angle import Angle
 from mbuild.atom import Atom
 from mbuild.bond import Bond
 from mbuild.dihedral import Dihedral
+import numpy as np
+__author__ = 'sallai'
 
 
 class MoleculeModel(object):
@@ -211,7 +210,7 @@ class MoleculeModel(object):
                     if not atom.kind in d.keys():
                         d[atom.kind] = [atom]
                     else:
-                        d[atom.kind].append(atom);
+                        d[atom.kind].append(atom)
 
             for (kind,atomList) in d.items():
                 x = []
@@ -227,18 +226,47 @@ class MoleculeModel(object):
                 fig = mlab.points3d(x,y,z,r,color=atomList[0].colorRGB, scale_factor=1, scale_mode='scalar')
 
 
-
+        # display bonds
         if bonds:
+            # sort bonds by type
+            d=dict()
             for bond in self.bonds:
-                epsilon = 0.4
-                pos1 = np.array(bond.atom1.pos)
-                pos2 = np.array(bond.atom2.pos)
-                v12 = pos2 - pos1 # vector from atom1 to atom2
-                d12 = np.linalg.norm(v12) # atom1-atom2 distance
-                p1 = pos1 + v12/d12 * epsilon
-                p2 = pos1 + v12/d12 * (d12 - epsilon)
-                mlab.plot3d([p1[0], p2[0]],[p1[1], p2[1]],[p1[2], p2[2]],
-                        tube_radius=0.25, color=bond.color, opacity=1)
+                if not bond.kind in d.keys():
+                    d[bond.kind] = [bond]
+                else:
+                    d[bond.kind].append(bond)
+
+            for (kind, bondList) in d.items():
+                x = []
+                y = []
+                z = []
+                u = []
+                v = []
+                w = []
+                for bond in bondList:
+
+                    epsilon = 0.4
+                    pos1 = np.array(bond.atom1.pos)
+                    pos2 = np.array(bond.atom2.pos)
+                    v12 = pos2 - pos1 # vector from atom1 to atom2
+                    d12 = np.linalg.norm(v12) # atom1-atom2 distance
+                    p1 = pos1 + v12/d12 * epsilon
+                    p2 = pos1 + v12/d12 * (d12 - epsilon)
+                    x.append(p1[0])
+                    y.append(p1[1])
+                    z.append(p1[2])
+                    u.append(p2[0] - p1[0])
+                    v.append(p2[1] - p1[1])
+                    w.append(p2[2] - p1[2])
+
+                    # mlab.plot3d([p1[0], p2[0]],[p1[1], p2[1]],[p1[2], p2[2]],
+                    #         tube_radius=0.25, color=bond.color, opacity=1)
+
+                vs = vector_scatter(x, y, z, u, v, w)
+                # mlab.pipeline.glyph(vs)
+                stripper = mlab.pipeline.stripper(vs)
+                mlab.pipeline.tube(stripper)
+
 
         if angles:
             for angle in self.angles:
@@ -282,25 +310,3 @@ class MoleculeModel(object):
                         tube_radius=0.10, color=d.color)
 
         mlab.show()
-
-    def unique_types(self):
-        a_types = defaultdict(int)
-        for atom in self.atoms:
-            a_types[atom.kind] += 1
-
-        bond_types = defaultdict(int)
-        for bond in self.bonds:
-            bond_types[bond.kind] += 1
-
-        ang_types = defaultdict(int)
-        for ang in self.angles:
-            ang_types[ang.kind] += 1
-
-        dih_types = defaultdict(int)
-        for dih in self.dihedrals:
-            dih_types[dih.kind] += 1
-
-        return a_types, bond_types, ang_types, dih_types
-
-
-

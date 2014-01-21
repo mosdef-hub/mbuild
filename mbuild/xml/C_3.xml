@@ -1,0 +1,9 @@
+<compound>
+	<compound src="C_1.xml" label="C_1"/>
+	<compound src="C_2.xml" label="C_2">
+		<transform>
+			<equivalence my="C_2.port" target="C_1.port" />
+		</transform>
+ 	</compound>
+</compound>
+

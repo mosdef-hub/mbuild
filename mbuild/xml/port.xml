@@ -1,6 +1,6 @@
 <compound kind="port">
-	<G pos="0, 0.2, 0" label="top" />
-	<G pos="-0.2, -0.2, 0" label="left" />
-	<G pos="0.2, -0.2, 0" label="right" />
+	<G pos="0.2, 0.1, 0" label="p1" />
+	<G pos="-0.2, 0.1, 0" label="p2" />
+	<G pos="-0.2, -0.1, 0" label="p3" />
 </compound>
 
