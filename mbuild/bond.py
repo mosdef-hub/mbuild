@@ -6,11 +6,12 @@ import numpy as np
 
 class Bond(object):
     @classmethod
-    def create(cls, atom1, atom2, kind='undefined', color='black'):
+    def create(cls, atom1, atom2, kind='undefined', color='black', colorRGB=(0,0,0)):
         assert(not atom1 == atom2)
         b = Bond()
         b.kind = kind
         b.color = color
+        b.colorRGB = colorRGB
         b.atom1 = atom1
         b.atom2 = atom2
         return b

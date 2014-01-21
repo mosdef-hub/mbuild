@@ -212,6 +212,8 @@ class MoleculeModel(object):
                     else:
                         d[atom.kind].append(atom)
 
+            # import pdb
+            # pdb.set_trace()
             for (kind,atomList) in d.items():
                 x = []
                 y = []
@@ -236,6 +238,9 @@ class MoleculeModel(object):
                 else:
                     d[bond.kind].append(bond)
 
+            # import pdb
+            #
+            # pdb.set_trace()
             for (kind, bondList) in d.items():
                 x = []
                 y = []
@@ -245,27 +250,35 @@ class MoleculeModel(object):
                 w = []
                 for bond in bondList:
 
-                    epsilon = 0.4
+                    # epsilon = 0.4
                     pos1 = np.array(bond.atom1.pos)
                     pos2 = np.array(bond.atom2.pos)
-                    v12 = pos2 - pos1 # vector from atom1 to atom2
-                    d12 = np.linalg.norm(v12) # atom1-atom2 distance
-                    p1 = pos1 + v12/d12 * epsilon
-                    p2 = pos1 + v12/d12 * (d12 - epsilon)
-                    x.append(p1[0])
-                    y.append(p1[1])
-                    z.append(p1[2])
-                    u.append(p2[0] - p1[0])
-                    v.append(p2[1] - p1[1])
-                    w.append(p2[2] - p1[2])
+                    # v12 = pos2 - pos1 # vector from atom1 to atom2
+                    # d12 = np.linalg.norm(v12) # atom1-atom2 distance
+                    # p1 = pos1 + v12/d12 * epsilon
+                    # p2 = pos1 + v12/d12 * (d12 - epsilon)
+                    # x.append(p1[0])
+                    # y.append(p1[1])
+                    # z.append(p1[2])
+                    # u.append(p2[0] - p1[0])
+                    # v.append(p2[1] - p1[1])
+                    # w.append(p2[2] - p1[2])
+
+                    x.append((pos1[0] + pos2[0])/2)
+                    y.append((pos1[1] + pos2[1])/2)
+                    z.append((pos1[2] + pos2[2])/2)
 
                     # mlab.plot3d([p1[0], p2[0]],[p1[1], p2[1]],[p1[2], p2[2]],
                     #         tube_radius=0.25, color=bond.color, opacity=1)
 
-                vs = vector_scatter(x, y, z, u, v, w)
-                # mlab.pipeline.glyph(vs)
-                stripper = mlab.pipeline.stripper(vs)
-                mlab.pipeline.tube(stripper)
+
+                fig = mlab.points3d(x,y,z,color=bondList[0].colorRGB, scale_factor=1, scale_mode='scalar')
+
+
+                # vs = vector_scatter(x, y, z, u, v, w)
+                # # mlab.pipeline.glyph(vs)
+                # stripper = mlab.pipeline.stripper(vs)
+                # mlab.pipeline.tube(stripper)
 
 
         if angles:

@@ -25,7 +25,7 @@ class RuleEngine(object):
     def add_bond(self, type_A, type_B, dmin, dmax, kind, color=(1,1,1)):
         "Ai-Bj distance is in [dmin, dmax] => add bond A1xB(Ai,Bj) (symmetric)"
         for a1 in self.model.getAtomsByKind(type_A):
-            nearest = self.model.getAtomsInRange(a1.pos, 2)
+            nearest = self.model.getAtomsInRange(a1.pos, dmax)
             for b1 in nearest:
                 if isinstance(b1, type_B) and (dmin <= b1.distance(a1) <= dmax):
                     self.model.add(Bond.create(a1, b1, kind=kind, color=color))
@@ -35,7 +35,7 @@ class RuleEngine(object):
         """
         for ab1 in self.model.getBondsByAtomKind(type_A, type_B):
             ab = ab1.cloneWithOrder(type_A, type_B)
-            nearest = self.model.getBondsInRange(ab.com(), 3)
+            nearest = self.model.getBondsInRange(ab.com(), 10)
             for bc1 in nearest:
                 if ab1 == bc1:
                     continue

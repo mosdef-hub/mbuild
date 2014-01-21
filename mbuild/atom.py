@@ -7,6 +7,7 @@ from mbuild.coordinate_transform import *
 
 class Atom(object):
 
+
     vdw_radius=1.0
     color='w'
     colorRGB=(1,1,1)
@@ -73,7 +74,7 @@ def AtomClassFactory(name, vdw_radius=1.0, color='w', colorRGB=(1,1,1)):
     return newclass
 
 class G(Atom):
-    vdw_radius = .2
+    vdw_radius = 1.2
     color = "gray"
     colorRGB = (.5, .5, .5)
 
@@ -87,7 +88,9 @@ C2 = AtomClassFactory('C2', vdw_radius=1.7, color='teal', colorRGB=(0, 0, 0))
 H = AtomClassFactory('H', vdw_radius=1.2, color='white', colorRGB=(1, 1, 1))
 HB = AtomClassFactory('HB', vdw_radius=1.2, color='white', colorRGB=(1, 1, 1))
 O = AtomClassFactory('O', vdw_radius=1.52, color='red', colorRGB=(1, 0, 0))
+O1 = AtomClassFactory('O', vdw_radius=1.52, color='red', colorRGB=(1, 0, 0))
 F = AtomClassFactory('F', vdw_radius=1.35, color='pink', colorRGB=(1, 192.0/256.0, 203.0/256.0))
 N = AtomClassFactory('N', vdw_radius=1.55, color='blue', colorRGB=(0, 0, 1))
 P = AtomClassFactory('P', vdw_radius=1.8, color='orange', colorRGB=(1, 165.0/256.0, 0))
-Si = AtomClassFactory('Si', vdw_radius=2.10, color='purple', colorRGB=(1, 0, 165.0/256.0))
+Si = AtomClassFactory('Si', vdw_radius=2.10, color='yellow', colorRGB=(1, 1, 0))
+Si1 = AtomClassFactory('Si', vdw_radius=2.10, color='yellow', colorRGB=(1, 1, 0))

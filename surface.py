@@ -15,13 +15,14 @@ class SurfaceRules(RuleEngine):
         return re
 
     def execute(self):
-        self.add_bond(O, Si, 1.4, 2.5, "o-si", (1, 1, 1))
+        self.add_bond(O, Si, 1.4, 2.5, "o-si", (0, 0, 0))
 
 class Surface(Compound):
 
     @classmethod
     def create(cls, ctx={}):
-        s = Xyz.create('amorphous.xyz')
+        # s = Xyz.create('amorphous.xyz')
+        s = Xyz.create('beta-cristobalite.xyz')
 
         # set up a molecule model
         mm = MoleculeModel.create(bounds=[47.689, 41.3, 0.0])
@@ -32,8 +33,6 @@ class Surface(Compound):
         r = SurfaceRules.create(mm)
         r.execute()
 
-
-
         # we assume here that the surface is in the x-y plane
         # we add ports pointing upwards where there
 
@@ -42,7 +41,7 @@ class Surface(Compound):
             m.add(atom, str(id(atom)))
             if isinstance(atom, O) and len(atom.bonds) == 1:
 
-                distances, indices = mm.atomKdtree.query(atom.pos, 10)
+                distances, indices = mm.atomKdtree.query(atom.pos, k=10)
 
                 on_top = True
                 for index, distance in zip(indices, distances):
@@ -62,18 +61,25 @@ class Surface(Compound):
                     m.add(p, str(id(p)))
 
                     for b in atom.bonds:
-                        b.color = (0,0,0)
+                        b.kind = "si-o-top"
+                        b.color = (1,1,1)
+                        b.colorRGB = (1,1,1)
 
 
-        mm.plot()
+        # mm.plot(atoms=True, bonds=True, angles=False, dihedrals=False, verbose=True)
+        #
+        # # set up a molecule model
+        # mm2 = MoleculeModel.create(bounds=[47.689, 41.3, 0.0])
+        # mm2.add([atom for label, atom in m.atoms()])
+        # mm2.plot(atoms=True, bonds=True, angles=False, dihedrals=False, verbose=True)
 
 
         return m
 
 if __name__ == "__main__":
     m = Surface.create()
-    print m
-
-    for a in m.atoms():
-        print a
+    # print m
+    #
+    # for a in m.atoms():
+    #     print a
     m.plot(labels=False, verbose=True)
