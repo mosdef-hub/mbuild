@@ -1,9 +1,8 @@
 from mbuild.port import Port
+from mbuild.treeview import TreeView
 
 __author__ = 'sallai'
 
-from alkane_tail import AlkaneTail
-from alkane_body import AlkaneBody
 from mbuild.compound import *
 from methane import *
 from surface import Surface
@@ -27,6 +26,7 @@ class Monolayer(Compound):
         return m
 
 if __name__ == "__main__":
-    m = Monolayer.create(chain_length=8)
+    m = Monolayer.create(chain_length=18)
     # print [(label,atom.pos) for label, atom in m.atoms()]
-    m.plot(labels=False, verbose=True)
+    TreeView(m).show()
+    # m.plot(labels=False, verbose=True)

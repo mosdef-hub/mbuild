@@ -1,38 +1,63 @@
+from mbuild.treeview import TreeView
+
 __author__ = 'sallai'
 from mbuild.compound import *
 import os.path
 
 class Xyz(Compound):
 
-    @classmethod
-    def create(cls, path=None, ctx={}, cwd=""):
+    def __init__(self, path, ctx={}, cwd=""):
+        super(Xyz, self).__init__(ctx=ctx)
 
         fn = os.path.join(cwd, path)
 
-        m = super(Xyz, cls).create(ctx=ctx)
         f = open(fn)
         num_atoms = int(f.readline())
         comment = f.readline()
-        atom_cnt = {}
         for line in f:
             split_line = line.split()
             atom_type = split_line[0]
             atom_pos = (float(split_line[1]),float(split_line[2]),float(split_line[3]))
-            if atom_type not in atom_cnt.keys():
-                atom_label = atom_type + '0'
-                atom_cnt[atom_type] = 1
-            else:
-                atom_label = atom_type + "__" + str(atom_cnt[atom_type])
-                atom_cnt[atom_type] += 1
+            self.add(Atom(kind=atom_type, pos=atom_pos), atom_type + '_#')
+        f.close()
 
-            m.add(Atom.create(atom_type, atom_pos), atom_label)
-        return m
+    @staticmethod
+    def save(compound, path, cwd="", print_ports=False):
+        """
+        Save into an xyz file
+        :param fn: file name
+        :param print_ports: if False, ghost points are not written
+        """
+
+        fn = os.path.join(cwd, path)
+
+        with open(fn, 'w') as f:
+            if print_ports:
+                f.write(str(compound.atoms().__len__()) + '\n\n')
+            else:
+                i = 0
+                for value in compound.atoms():
+                    if value.kind != 'G':
+                        i += 1
+                f.write(str(i) + '\n\n')
+            for value in compound.atoms():
+                if print_ports:
+                    f.write(value.kind + '\t' +
+                            str(value.pos[0]) + '\t' +
+                            str(value.pos[1]) + '\t' +
+                            str(value.pos[2]) + '\n')
+                else:
+                    if value.kind != 'G':
+                        f.write(value.kind + '\t' +
+                                str(value.pos[0]) + '\t' +
+                                str(value.pos[1]) + '\t' +
+                                str(value.pos[2]) + '\n')
+
 
 if __name__ == "__main__":
-    m = Xyz.create("c60.xyz")
-    # # print ethane
-    print [label for label,a in m.atoms()]
+    m = Xyz(path="c60.xyz")
+    print [a for a in m.atoms()]
 
     print m.boundingbox()
 
-    m.plot(labels=False)
+    TreeView(m).show()

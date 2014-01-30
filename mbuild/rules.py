@@ -12,27 +12,24 @@ __author__ = 'sallai'
 
 class RuleEngine(object):
 
-    @classmethod
-    def create(cls, model):
-        re = cls()
-        re.model = model
-        return re
-
+    def __init__(self, model):
+        self.model = model
 
     def execute(self):
         raise Exception("RuleEngine must be subclassed, with the execute method implemented in the subclass")
 
-    def add_bond(self, type_A, type_B, dmin, dmax, kind, color=(1,1,1)):
+    def add_bond(self, type_A, type_B, dmin, dmax, kind, color=(1.0,1.0,1.0)):
         "Ai-Bj distance is in [dmin, dmax] => add bond A1xB(Ai,Bj) (symmetric)"
         for a1 in self.model.getAtomsByKind(type_A):
             nearest = self.model.getAtomsInRange(a1.pos, dmax)
             for b1 in nearest:
-                if isinstance(b1, type_B) and (dmin <= b1.distance(a1) <= dmax):
-                    self.model.add(Bond.create(a1, b1, kind=kind, color=color))
+                if (b1.kind==type_B) and (dmin <= b1.distance(a1) <= dmax):
+                    self.model.add(Bond(a1, b1, kind=kind, color=color))
 
     def add_angle(self, type_A, type_B, type_C, kind, thmin=-Inf, thmax=Inf, color=(1,1,1)):
         """
         """
+
         for ab1 in self.model.getBondsByAtomKind(type_A, type_B):
             ab = ab1.cloneWithOrder(type_A, type_B)
             nearest = self.model.getBondsInRange(ab.com(), 10)
@@ -46,7 +43,7 @@ class RuleEngine(object):
 
                 temp_ang = Angle.createFromBonds(ab, bc, kind=kind, color=color)
                 if temp_ang:
-                    if isinstance(temp_ang.atom2, type_B) and (thmin <= temp_ang.inDegrees() <= thmax):
+                    if (temp_ang.atom2.kind==type_B) and (thmin <= temp_ang.inDegrees() <= thmax):
                         self.model.add(temp_ang)
 
     def add_dihedral(self, type_A, type_B, type_C, type_D, dihedralKind, color=(1,1,1)):

@@ -1,3 +1,9 @@
+from mbuild import orderedset
+from mbuild.angle import Angle
+from mbuild.bond import Bond
+from mbuild.dihedral import Dihedral
+from mbuild.periodic_kdtree import PeriodicCKDTree
+
 __author__ = 'sallai'
 from matplotlib import pyplot
 from mpl_toolkits.mplot3d import Axes3D
@@ -10,74 +16,125 @@ from mbuild.atom import *
 from collections import OrderedDict
 from itertools import *
 from copy import copy, deepcopy
+from mbuild.orderedset import *
 
 class Compound(object):
-    @classmethod
-    def create(cls, ctx={}, kind=None):
-        """
-        Create a compound
-        :param label: a text label of the compount
-        :return: the compound object
-        """
-        m = cls()
-        m.ctx = ctx
+
+    def __init__(self, ctx={}, kind=None, bounds = [0.0, 0.0, 0.0]):
+        # set the context (optional)
+        self.ctx = ctx
+        self.bounds = bounds
+        # set the kind (defaults to classname)
         if kind:
-            m.kind = kind
+            self.kind = kind
         else:
-            m.kind = cls.__name__
-        m._components = OrderedDict() # this contain label to Compound or label to Atom mappings
-        m._aliases = dict()
-        return m
+            self.kind = self.__class__.__name__
 
-    def findLabelOfComponent(self, what):
-        return self._components.keys()[self._components.values().index(what)]
+        self.parts = OrderedSet() # contains children (compounds or atoms)
+        self.references = OrderedDict()  # label to compound/atom mappings -- need not be in parts
 
-    def addAlias(self, what, alias_label):
-        if isinstance(what, basestring):
-            label = what
-            if not label:
-                raise Exception("no label specified")
-        else:
-            label = self.findLabelOfComponent(what)
-            if not label:
-                raise Exception("no label found for component")
+        self.bonds = OrderedSet()
+        self.angles = OrderedSet()
+        self.dihedrals = OrderedSet()
 
-        if label != alias_label and alias_label in self._components.keys():
-            raise Exception("label " + label + " already exists in " + str(self))
+    # def findLabelOfComponent(self, what):
+    #     return self._components.keys()[self._components.values().index(what)]
 
-
-        self._aliases[alias_label] = label
-
-        setattr(self, alias_label, self._components[label])
-
-    def add(self, what, label=None):
-        """
-        Add a component to a Compound, inserting it into the map with a label as key, as well as adding it as a member
-        variable with the label as variable name
-        :param what: an Atom or Compound to be added
-        :param label: optionally override the component's label
-        :raise: Exception if component with the given label already exists in the map
-        """
-        if label is None:
-            label = what.label()
-
-        if label.endswith("#"):
-            i = 0
-            while label.replace("#", str(i)) in self._components.keys():
-                i = i + 1
-            label = label.replace("#", str(i))
-
-        if label in self._components.keys():
-            raise Exception("label " + label + " already exists in " + str(self))
-
-        self._components[label] = what
-        self.addAlias(label, label)
-
-    # def label(self):
-    #     if hasattr(self, '_label'):
-    #         return self._label
+    # def addAlias(self, what, alias_label):
+    #     if isinstance(what, basestring):
+    #         label = what
+    #         if not label:
+    #             raise Exception("no label specified")
     #     else:
-    #         return str(self.__class__.__name__) + '_' + str(id(self))
+    #         label = self.findLabelOfComponent(what)
+    #         if not label:
+    #             raise Exception("no label found for component")
+    #
+    #     if label != alias_label and alias_label in self._components.keys():
+    #         raise Exception("label " + label + " already exists in " + str(self))
+    #
+    #
+    #     self._aliases[alias_label] = label
+    #
+    #     setattr(self, alias_label, self._components[label])
+
+    def add(self, new_obj, label=None):
+
+        # add atom as a part, set a reference to it
+        if isinstance(new_obj, Atom):
+            self.parts.add(new_obj)
+            if label is not None:
+
+                # support label with counter
+                if label.endswith("#"):
+                    i = 0
+                    while label.replace("#", str(i)) in self.references.keys():
+                        i += 1
+                    label = label.replace("#", str(i))
+
+                if label in self.references.keys():
+                    raise Exception("label " + label + " already exists in " + str(self))
+                else:
+                    self.references[label] = new_obj
+                    setattr(self, label, new_obj)
+
+        # add compound as a part, set a reference to it
+        elif isinstance(new_obj, Compound):
+            self.parts.add(new_obj)
+            if label is not None:
+
+                # support label with counter
+                if label.endswith("#"):
+                    i = 0
+                    while label.replace("#", str(i)) in self.references.keys():
+                        i += 1
+                    label = label.replace("#", str(i))
+
+                if label in self.references.keys():
+                    raise Exception("label " + label + " already exists in " + str(self))
+                else:
+                    self.references[label] = new_obj
+                    setattr(self, label, new_obj)
+
+        # add bond to compound
+        elif isinstance(new_obj, Bond):
+            # don't add B-A if A-B is already added
+            # print "self.bonds before adding: " + str(list(self.bonds))
+            # print "adding bond "+str(new_obj)
+            if not new_obj in self.bonds and not new_obj.cloneImage() in self.bonds:
+                self.bonds.add(new_obj)
+                new_obj.atom1.bonds.add(new_obj)
+                new_obj.atom2.bonds.add(new_obj)
+            # print "self.bonds after adding:  " + str(list(self.bonds))
+
+
+        # add angle to compound
+        elif isinstance(new_obj, Angle):
+            # don't add A-B-C if C-B-A is already added
+            if not new_obj in self.angles and not new_obj.cloneImage() in self.angles:
+                self.angles.add(new_obj)
+                new_obj.atom1.angles.add(new_obj)
+                new_obj.atom2.angles.add(new_obj)
+                new_obj.atom3.angles.add(new_obj)
+
+        # add dihedral to compound
+        elif isinstance(new_obj, Dihedral):
+            # don't add A-B-C-D if D-C-B-A is already added
+            if not new_obj in self.dihedrals and not new_obj.cloneImage() in self.dihedrals:
+                self.dihedrals.add(new_obj)
+                new_obj.atom1.dihedrals.add(new_obj)
+                new_obj.atom2.dihedrals.add(new_obj)
+                new_obj.atom3.dihedrals.add(new_obj)
+                new_obj.atom4.dihedrals.add(new_obj)
+
+        # support batch add
+        elif isinstance(new_obj, (list, tuple)):
+            for elem in new_obj:
+                self.add(elem)
+
+        else:
+            raise Exception("can't add unknown type " + str(new_obj))
+
 
     @staticmethod
     def createEquivalenceTransform(equiv):
@@ -106,9 +163,9 @@ class Compound(object):
                 self_points = vstack([self_points, pair[0].pos])
                 other_points = vstack([other_points, pair[1].pos])
             if isinstance(pair[0], Compound):
-                for label0, atom0 in pair[0].atoms():
-                    atom1 = pair[1].component(label0)
+                for atom0 in pair[0].atoms():
                     self_points = vstack([self_points, atom0.pos])
+                for atom1 in pair[1].atoms():
                     other_points = vstack([other_points, atom1.pos])
 
         T = RigidTransform(self_points, other_points)
@@ -129,7 +186,7 @@ class Compound(object):
         #     component.transform(T)
 
         # transform the contained atoms in batch
-        arr = np.fromiter(chain.from_iterable(atom.pos for label, atom in self.atoms()), dtype=np.float64)
+        arr = np.fromiter(chain.from_iterable(atom.pos for atom in self.atoms()), dtype=np.float64)
         arrnx3 = arr.reshape((-1,3))
 
         arrnx3 = T.apply(arrnx3)
@@ -137,7 +194,7 @@ class Compound(object):
 
         # write back new coordinates into atoms
         i = 0
-        for label, atom in self.atoms():
+        for atom in self.atoms():
             atom.pos = (arr[i], arr[i+1], arr[i+2])
             i=i+3
 
@@ -165,62 +222,35 @@ class Compound(object):
         :return: label - atom pairs
         """
 
-        for label, component in self._components.iteritems():
+        for part in self.parts:
             # add local atoms
-            if isinstance(component, Atom):
-                yield label, component
+            if isinstance(part, Atom):
+                yield part
                 # add atoms in sub-components recursively
-            if isinstance(component, Compound):
-                for sublabel, subatom in component.atoms():
-                    yield label + '.' + sublabel, subatom
+            if isinstance(part, Compound):
+                for subatom in part.atoms():
+                    yield subatom
 
-    def savexyz(self, fn, print_ports=False):
-        """
-        Save into an xyz file
-        :param fn: file name
-        :param print_ports: if False, ghost points are not written
-        """
-        with open(fn, 'w') as f:
-            if print_ports:
-                f.write(str(self.atoms().__len__()) + '\n\n')
-            else:
-                i = 0
-                for key, value in self.atoms():
-                    if value.kind != 'G':
-                        i += 1
-                f.write(str(i) + '\n\n')
-            for key, value in self.atoms():
-                if print_ports:
-                    f.write(value.kind + '\t' +
-                            str(value.pos[0]) + '\t' +
-                            str(value.pos[1]) + '\t' +
-                            str(value.pos[2]) + '\n')
-                else:
-                    if value.kind != 'G':
-                        f.write(value.kind + '\t' +
-                                str(value.pos[0]) + '\t' +
-                                str(value.pos[1]) + '\t' +
-                                str(value.pos[2]) + '\n')
 
-    def component(self, component_path):
-        """
-        Find a component by label
-        :param component_path: the label of the component (may be hierarchical)
-        :return: the component (if found), None otherwise
-        """
-        dot_pos = component_path.find('.')
-        if dot_pos > -1:
-            subcomponent_path = component_path[:dot_pos]
-            subpath = component_path[dot_pos + 1:]
-            if subcomponent_path in self._components.keys():
-                return self._components[subcomponent_path].component(subpath)
-            else:
-                return None
-        else:
-            if component_path in self._components.keys():
-                return self._components[component_path]
-            else:
-                return None
+    # def component(self, component_path):
+    #     """
+    #     Find a component by label
+    #     :param component_path: the label of the component (may be hierarchical)
+    #     :return: the component (if found), None otherwise
+    #     """
+    #     dot_pos = component_path.find('.')
+    #     if dot_pos > -1:
+    #         subcomponent_path = component_path[:dot_pos]
+    #         subpath = component_path[dot_pos + 1:]
+    #         if subcomponent_path in self._components.keys():
+    #             return self._components[subcomponent_path].component(subpath)
+    #         else:
+    #             return None
+    #     else:
+    #         if component_path in self._components.keys():
+    #             return self._components[component_path]
+    #         else:
+    #             return None
 
     def boundingbox(self, excludeG=True):
         """
@@ -234,7 +264,7 @@ class Compound(object):
         maxy = float('-inf')
         maxz = float('-inf')
 
-        for label, a in self.atoms():
+        for a in self.atoms():
             if excludeG and a.kind == 'G':
                 continue
             if a.pos[0] < minx:
@@ -252,70 +282,75 @@ class Compound(object):
 
         return (minx, miny, minz), (maxx, maxy, maxz)
 
-    def plot(self, verbose=False, labels=True):
-        """
-        Plot atoms in 3d
-        :param verbose: if True, atom types will be plotted
-        :param labels: if True, labels will be plotted
-        """
+    def rename(self, array_of_pairs):
+        for pair in array_of_pairs:
+            for atom in self.getAtomsByKind(pair[0]):
+                atom.kind = pair[1]
 
-        x = []
-        y = []
-        z = []
-        r = []
-        g = []
-        b = []
-        rgb = []
-
-        # sort atoms by type
-        d = dict()
-
-        for (label, atom) in self.atoms():
-            if atom.kind != 'G' or verbose:
-                if not atom.kind in d.keys():
-                    d[atom.kind] = [atom]
-                else:
-                    d[atom.kind].append(atom);
-
-        for (kind,atomList) in d.items():
-            x = []
-            y = []
-            z = []
-            r = []
-            for atom in atomList:
-                x.append(atom.pos[0])
-                y.append(atom.pos[1])
-                z.append(atom.pos[2])
-                r.append(atom.vdw_radius)
-
-            fig = mlab.points3d(x,y,z,r,color=atomList[0].colorRGB, scale_factor=1, scale_mode='scalar')
-            #fig.glyph.glyph.clamping = False
-        mlab.show()
-
-    def plot2(self, verbose=False, labels=False):
-        """
-        Plot atoms in 3d
-        :param verbose: if True, atom types will be plotted
-        :param labels: if True, labels will be plotted
-        """
-        fig = pyplot.figure()
-        ax = fig.add_subplot(111, projection='3d', aspect='equal')
-        coord_min = inf
-        coord_max = -inf
-        for (label, atom) in self.atoms():
-            if atom.kind != 'G' or verbose:
-                # print atom
-                if labels:
-                    atom.plot(ax, str(atom))
-                else:
-                    atom.plot(ax, None)
-
-        ax.set_xlabel('X')
-        ax.set_ylabel('Y')
-        ax.set_zlabel('Z')
-        # ax.set_title(self.label())
-
-        pyplot.show()
+    # def plot(self, verbose=False, labels=True):
+    #     """
+    #     Plot atoms in 3d
+    #     :param verbose: if True, atom types will be plotted
+    #     :param labels: if True, labels will be plotted
+    #     """
+    #
+    #     x = []
+    #     y = []
+    #     z = []
+    #     r = []
+    #     g = []
+    #     b = []
+    #     rgb = []
+    #
+    #     # sort atoms by type
+    #     d = dict()
+    #
+    #     for (label, atom) in self.atoms():
+    #         if atom.kind != 'G' or verbose:
+    #             if not atom.kind in d.keys():
+    #                 d[atom.kind] = [atom]
+    #             else:
+    #                 d[atom.kind].append(atom);
+    #
+    #     for (kind,atomList) in d.items():
+    #         x = []
+    #         y = []
+    #         z = []
+    #         r = []
+    #         for atom in atomList:
+    #             x.append(atom.pos[0])
+    #             y.append(atom.pos[1])
+    #             z.append(atom.pos[2])
+    #             r.append(atom.vdw_radius)
+    #
+    #         fig = mlab.points3d(x,y,z,r,color=atomList[0].colorRGB, scale_factor=1, scale_mode='scalar')
+    #         #fig.glyph.glyph.clamping = False
+    #     mlab.show()
+    #
+    # def plot2(self, verbose=False, labels=False):
+    #     """
+    #     Plot atoms in 3d
+    #     :param verbose: if True, atom types will be plotted
+    #     :param labels: if True, labels will be plotted
+    #     """
+    #     fig = pyplot.figure()
+    #     ax = fig.add_subplot(111, projection='3d', aspect='equal')
+    #     coord_min = inf
+    #     coord_max = -inf
+    #     for (label, atom) in self.atoms():
+    #         if atom.kind != 'G' or verbose:
+    #             # print atom
+    #             if labels:
+    #                 atom.plot(ax, str(atom))
+    #             else:
+    #                 atom.plot(ax, None)
+    #
+    #     ax.set_xlabel('X')
+    #     ax.set_ylabel('Y')
+    #     ax.set_zlabel('Z')
+    #     # ax.set_title(self.label())
+    #
+    #     pyplot.show()
 
     # def plot3(self, verbose=False, labels=False):
     #
@@ -349,37 +384,151 @@ class Compound(object):
     #
 
 
-    def __copy__(self):
-        # newone = type(self)()
-        cls = self.__class__
-        newone = cls.__new__(cls)
+    # def __copy__(self):
+    #     cls = self.__class__
+    #     newone = cls.__new__(cls)
+    #
+    #     newone.__dict__.update(self.__dict__)
+    #     return newone
+    #
+    # def __deepcopy__(self, memo):
+    #     cls = self.__class__
+    #     newone = cls.__new__(cls)
+    #
+    #     memo[id(self)] = newone
+    #
+    #     newone.parts = set()
+    #     newone.references = dict()
+    #
+    #     for part in self.parts.iteritems():
+    #         child_copy = deepcopy(part, memo)
+    #         newone.add(child_copy, label)
+    #
+    #         if label in self._aliases.values():
+    #              alias_label = self._aliases.keys()[self._aliases.values().index(label)]
+    #              newone.addAlias(alias_label, label)
+    #
+    #     # copy over the rest of the stuff, that's not yet there in the new one
+    #     for k, v in self.__dict__.items():
+    #         if not hasattr(newone, k):
+    #             setattr(newone, k, deepcopy(v, memo))
+    #
+    #     return newone
 
-        newone.__dict__.update(self.__dict__)
-        return newone
 
-    def __deepcopy__(self, memo):
-        # newone = type(self)()
-        cls = self.__class__
-        newone = cls.__new__(cls)
 
-        memo[id(self)] = newone
 
-        # create deep copies of children, and add the deep copies to the new one
-        # this will copy over whatever is in the _components container
-        # and create the named members of the new one, as well
-        newone._components = OrderedDict()
-        newone._aliases = dict()
-        for label, component in self._components.iteritems():
-            child_copy = deepcopy(component, memo)
-            newone.add(child_copy, label)
+    def getAtomsByKind(self, kind):
+        return ifilter(lambda atom: (atom.kind == kind), self.atoms())
 
-            if label in self._aliases.values():
-                 alias_label = self._aliases.keys()[self._aliases.values().index(label)]
-                 newone.addAlias(alias_label, label)
+    def getBondsByAtomKind(self, kind1, kind2):
+        return ifilter(lambda bond: bond.hasAtomKinds(kind1, kind2), self.bonds)
 
-        # copy over the rest of the stuff, that's not yet there in the new one
-        for k, v in self.__dict__.items():
-            if not hasattr(newone, k):
-                setattr(newone, k, deepcopy(v, memo))
+    def getAnglesByAtomKind(self, kind1, kind2, kind3):
+        return ifilter(lambda angle: angle.hasAtomKinds(kind1, kind2, kind3), self.angles)
 
-        return newone
+    def getDihedralsByAtomKind(self, kind1, kind2, kind3, kind4):
+        return ifilter(lambda dihedral: dihedral.hasAtomKinds(kind1, kind2, kind3, kind4), self.dihedrals)
+
+    def initAtomKdTree(self):
+        self.atomsList = list(self.atoms())
+        self.atomKdtree = PeriodicCKDTree([atom.pos for atom in self.atomsList], bounds=self.bounds)
+
+    def getAtomsInRange(self, point, radius, maxItems=50):
+        # create kdtree if it's not yet there
+        if not hasattr(self, 'atomKdtree'):
+            self.initAtomKdTree()
+
+        distances, indices = self.atomKdtree.query(point, maxItems)
+        # indices = self.kdtree.query(point, maxAtoms)
+
+        neighbors = []
+        for index, distance in zip(indices, distances):
+            if distance <= radius:
+                neighbors.append(self.atomsList[index])
+            else:
+                break
+
+        return neighbors
+
+    def initBondKdTree(self):
+        self.bondsList = list(self.bonds)
+        self.BondKdtree = PeriodicCKDTree([bond.com() for bond in self.bondsList], bounds=self.bounds)
+
+    def getBondsInRange(self, point, radius, maxItems=50):
+        # create kdtree if it's not yet there
+        if not hasattr(self, 'bondKdtree'):
+            self.initBondKdTree()
+
+        distances, indices = self.BondKdtree.query(point, maxItems)
+        # indices = self.kdtree.query(point, maxAtoms)
+
+        neighbors = []
+        for index, distance in zip(indices, distances):
+            if distance <= radius:
+                neighbors.append(self.bondsList[index])
+            else:
+                break
+
+        return neighbors
+
+    def initAngleKdTree(self):
+        self.anglesList = list(self.angles)
+        self.AngleKdtree = PeriodicCKDTree([angle.atom2.pos for angle in self.anglesList], bounds=self.bounds)
+
+    def getAnglesInRange(self, point, radius, maxItems=50):
+        # create kdtree if it's not yet there
+        if not hasattr(self, 'angleKdtree'):
+            self.initAngleKdTree()
+
+        distances, indices = self.AngleKdtree.query(point, maxItems)
+        # indices = self.kdtree.query(point, maxAtoms)
+
+        neighbors = []
+        for index, distance in zip(indices, distances):
+            if distance <= radius:
+                neighbors.append(self.anglesList[index])
+            else:
+                break
+
+        return neighbors
+
+    def findMissingAngleKinds(self):
+        missing = set()
+        for abc in self.findMissingAngles():
+            missing.add((abc.atom1.kind, abc.atom2.kind, abc.atom3.kind))
+        return missing
+
+    def findMissingAngles(self):
+
+        missing = set()
+
+        for ab in self.bonds:
+            assert(isinstance(ab,Bond))
+            type_A = ab.atom1.__class__
+            type_B = ab.atom2.__class__
+
+            for bc in ab.atom2.bonds:
+                if ab==bc:
+                    continue
+                abc = Angle.createFromBonds(ab,bc)
+                abcImage = abc.cloneImage();
+                if not abc in self.angles and not abc.cloneImage() in self.angles and not abcImage in missing:
+                    if abc.atom1.kind < abc.atom3.kind:
+                        missing.add(abc)
+                    else:
+                        missing.add(abcImage)
+
+            for bc in ab.atom1.bonds:
+                if ab==bc:
+                    continue
+                abc = Angle.createFromBonds(ab,bc)
+                abcImage = abc.cloneImage()
+                if not abc in self.angles and not abc.cloneImage() in self.angles and not abcImage in missing:
+                    if abc.atom1.kind < abc.atom3.kind:
+                        missing.add(abc)
+                    else:
+                        missing.add(abcImage)
+
+        return missing
+

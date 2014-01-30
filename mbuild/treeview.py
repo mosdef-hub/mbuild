@@ -3,6 +3,9 @@ import glob
 import Tkinter
 import ttk
 from mbuild.compound import *
+from mbuild.plot import Plot
+
+
 class TreeView(object):
 
     def __init__(self, compound):
@@ -26,7 +29,7 @@ class TreeView(object):
             if tree.item(child)['text'] == 'dummy':
                 tree.delete(child)
 
-        for k,v in compound._components.iteritems():
+        for v in compound.parts:
             ptype = None
             if isinstance(v,Compound):
                 ptype = "compound"
@@ -34,6 +37,13 @@ class TreeView(object):
                 ptype = "atom"
 
             if not v in self.nodemap.values():
+                # find a reference to the object
+                k = 'na'
+                for rk,rv in compound.references.iteritems():
+                    if v is rv:
+                        k = rk
+                        break
+
                 id = tree.insert(node, "end", text=k, values=[k, ptype, v.kind, str(v.__class__)])
                 self.nodemap[id] = v
 
@@ -62,10 +72,9 @@ class TreeView(object):
         node = tree.focus()
         # if tree.parent(node):
         compound = tree.compoundTreeView.nodemap[node]
-        print compound
+        # print compound
         if isinstance(compound, Compound):
-            compound.plot()
-
+            Plot(compound).show()
 
     @staticmethod
     def autoscroll(sbar, first, last):

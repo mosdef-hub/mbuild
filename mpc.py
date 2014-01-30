@@ -5,22 +5,19 @@ from mbuild.port import *
 
 class Mpc(Compound):
 
-    @classmethod
-    def create(cls, ctx={}):
-        m = super(Mpc, cls).create(ctx=ctx)
-        mpc = Xyz.create('mpc.xyz')
-        m.add(mpc,'mpc_xyz')
+    def __init__(self, ctx={}):
+        super(Mpc, self).__init__(ctx=ctx)
 
-        m.add(Port.create(),'mpc_port')
-        m.mpc_port.transform(Translation((-2.2,-2.49,1.17)))
+        mpc = Xyz('mpc.xyz')
+        self.add(mpc,'mpc_xyz')
 
-        return m
+        self.add(Port(),'mpc_port')
+        self.mpc_port.transform(Translation((-2.2,-2.49,1.17)))
 
 if __name__ == "__main__":
-    m = Mpc.create()
+    m = Mpc()
     # m = Methane.create()
     # print ethane
     print m
-    print m.atoms()
     # print m.label()
-    m.plot(labels=False, verbose=False)
+    TreeView(m).show()

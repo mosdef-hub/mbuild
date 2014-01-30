@@ -42,9 +42,12 @@ class Angle(object):
         return new_obj
 
     def cloneWithOrder(self, type_A, type_B, type_C):
-        if isinstance(self.atom1, type_A) and isinstance(self.atom2, type_B)  and isinstance(self.atom3, type_C):
+        assert(isinstance(type_A, basestring))
+        assert(isinstance(type_B, basestring))
+        assert(isinstance(type_C, basestring))
+        if (self.atom1.kind==type_A) and (self.atom2.kind==type_B)  and (self.atom3.kind==type_C):
             return self.clone()
-        elif isinstance(self.atom1, type_C) and isinstance(self.atom2, type_B) and isinstance(self.atom3, type_A):
+        elif (self.atom1.kind==type_C) and (self.atom2.kind==type_B) and (self.atom3.kind==type_A):
             return self.cloneImage()
 
         warn ("cannot clone angle " + str(self) + " with order " + str(type_A) + "," + str(type_B)+ "," + str(type_C))

@@ -1,6 +1,6 @@
 import imp
 from mbuild.xyz import Xyz
-from treeview import TreeView
+from mbuild.treeview import TreeView
 
 __author__ = 'sallai'
 from lxml import etree

@@ -6,54 +6,51 @@ from mbuild.compound import *
 from methane import *
 
 class NAlkane(Compound):
-    @classmethod
-    def create(cls, n, ctx={}):
+
+    def __init__(self, n, ctx={}):
+        super(NAlkane, self).__init__(kind='NAlkane', ctx=ctx)
 
         if n < 2:
             raise Exception('n must be 2 or more')
 
-        m = super(NAlkane, cls).create(ctx=ctx)
-
         # top tail (CH_3)
-        m.add(AlkaneTail.create(ctx=ctx),'top_tail')
+        self.add(AlkaneTail(ctx=ctx),'top_tail')
 
         # n times the body CH_2
-        last_part = m.top_tail
+        last_part = self.top_tail
         for body_count in range(1, n-1):
-            this_part = AlkaneBody.create(ctx=ctx)
+            this_part = AlkaneBody(ctx=ctx)
             this_part.transform([(this_part.female_port, last_part.male_port)])
-            m.add(this_part, 'body_'+str(body_count))
+            # self.add(this_part, 'body_'+str(body_count))
+            self.add(this_part, 'body_#') # this will generate body_0, body_1,...
             last_part = this_part
 
         # bottom tail (CH_3)
-        m.add(AlkaneTail.create(ctx=ctx),'bottom_tail')
-        m.bottom_tail.transform( [(m.bottom_tail.female_port, last_part.male_port)])
-
-        return m
+        self.add(AlkaneTail(ctx=ctx),'bottom_tail')
+        self.bottom_tail.transform( [(self.bottom_tail.female_port, last_part.male_port)])
 
     @classmethod
     def ethane(cls):
-        return NAlkane.create(2)
+        return NAlkane(2)
 
     @classmethod
     def propane(cls):
-        return NAlkane.create(3)
+        return NAlkane(3)
 
     @classmethod
     def buthane(cls):
-        return NAlkane.create(4)
+        return NAlkane(4)
 
     @classmethod
     def pentane(cls):
-        return NAlkane.create(5)
+        return NAlkane(5)
 
     @classmethod
     def hexane(cls):
-        return NAlkane.create(6)
+        return NAlkane(6)
 
 
 if __name__ == "__main__":
-    m = NAlkane.create(8)
-    # m = NAlkane.pentane()
-    print [(label,atom.pos) for label, atom in self.atoms()]
-    self.plot(labels=False)
+    # m = NAlkane(8)
+    m = NAlkane.pentane()
+    TreeView(m).show()

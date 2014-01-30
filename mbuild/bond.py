@@ -5,16 +5,14 @@ __author__ = 'sallai'
 import numpy as np
 
 class Bond(object):
-    @classmethod
-    def create(cls, atom1, atom2, kind='undefined', color='black', colorRGB=(0,0,0)):
+    def __init__(self, atom1, atom2, kind='undefined', color='black', colorRGB=(0,0,0)):
         assert(not atom1 == atom2)
-        b = Bond()
-        b.kind = kind
-        b.color = color
-        b.colorRGB = colorRGB
-        b.atom1 = atom1
-        b.atom2 = atom2
-        return b
+        self.kind = kind
+        self.color = color
+        self.colorRGB = colorRGB
+        self.atom1 = atom1
+        self.atom2 = atom2
+
 
     def clone(self):
         return copy(self)
@@ -27,11 +25,11 @@ class Bond(object):
 
     def cloneWithOrder(self, type_A, type_B):
         ab = self.clone()
-        if isinstance(self.atom1, type_A) and isinstance(self.atom2, type_B):
+        if (self.atom1.kind==type_A) and (self.atom2.kind==type_B):
             ab.atom1 = self.atom1
             ab.atom2 = self.atom2
             return ab
-        elif isinstance(self.atom1, type_B) and isinstance(self.atom2, type_A):
+        elif (self.atom1.kind==type_B) and (self.atom2.kind==type_A):
             ab.atom1 = self.atom2
             ab.atom2 = self.atom1
             return ab
@@ -52,22 +50,17 @@ class Bond(object):
             return False
 
     def hasAtomKinds(self, atomType1, atomType2):
-        if isinstance(atomType1, type):
-            atomType1 = atomType1.kind
-        if isinstance(atomType2, type):
-            atomType2 = atomType2.kind
-
         return (self.atom1.kind == atomType1 and self.atom2.kind == atomType2) or (self.atom1.kind == atomType2 and self.atom2.kind == atomType1)
 
-    def plot(self, ax):
-        epsilon = 0.3
-        pos1 = np.array(self.atom1.pos)
-        pos2 = np.array(self.atom2.pos)
-        v12 = pos2 - pos1 # vector from atom1 to atom2
-        d12 = np.linalg.norm(v12) # atom1-atom2 distance
-        p1 = pos1 + v12/d12 * epsilon
-        p2 = pos1 + v12/d12 * (d12 - epsilon)
-        ax.plot([p1[0], p2[0]],[p1[1], p2[1]],[p1[2], p2[2]], '-', color=self.color)
+    # def plot(self, ax):
+    #     epsilon = 0.3
+    #     pos1 = np.array(self.atom1.pos)
+    #     pos2 = np.array(self.atom2.pos)
+    #     v12 = pos2 - pos1 # vector from atom1 to atom2
+    #     d12 = np.linalg.norm(v12) # atom1-atom2 distance
+    #     p1 = pos1 + v12/d12 * epsilon
+    #     p2 = pos1 + v12/d12 * (d12 - epsilon)
+    #     ax.plot([p1[0], p2[0]],[p1[1], p2[1]],[p1[2], p2[2]], '-', color=self.color)
 
     def __hash__(self):
         # return hash((self.kind, self.atom1, self.atom2))
@@ -76,6 +69,7 @@ class Bond(object):
     def __eq__(self, other):
         return self.__hash__() == other.__hash__()
 
-
+    def __repr__(self):
+        return "Bond"+str(id(self))+"("+str(self.atom1)+","+str(self.atom2)+", kind="+self.kind+")"
 
 
