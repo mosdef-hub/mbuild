@@ -5,27 +5,27 @@ from mbuild.atom import *
 import copy
 
 class Dihedral(object):
-    @classmethod
-    def create(cls, atom1, atom2, atom3, atom4, kind='undefined', color='black'):
-        b = Dihedral()
-        b.kind = kind
-        b.color = color
-        b.atom1 = atom1
-        b.atom2 = atom2
-        b.atom3 = atom3
-        b.atom4 = atom4
-        return b
+
+    def __init__(self, atom1, atom2, atom3, atom4, kind='undefined'):
+        assert(not atom1 == atom2)
+        assert(not atom2 == atom3)
+        assert(not atom3 == atom4)
+        self.kind = kind
+        self.atom1 = atom1
+        self.atom2 = atom2
+        self.atom3 = atom3
+        self.atom4 = atom4
 
     @classmethod
     def createFromAngles(cls, angle1, angle2, **kwargs):
         if (angle1.atom1, angle1.atom2) == (angle2.atom2, angle2.atom3):
-            return Dihedral.create(angle1.atom3, angle1.atom2, angle2.atom2, angle2.atom1, **kwargs)
+            return Dihedral(angle1.atom3, angle1.atom2, angle2.atom2, angle2.atom1, **kwargs)
         elif (angle1.atom1, angle1.atom2) == (angle2.atom2, angle2.atom1):
-            return Dihedral.create(angle1.atom3, angle1.atom2, angle2.atom2, angle2.atom3, **kwargs)
+            return Dihedral(angle1.atom3, angle1.atom2, angle2.atom2, angle2.atom3, **kwargs)
         elif (angle1.atom2, angle1.atom3) == (angle2.atom1, angle2.atom2):
-            return Dihedral.create(angle1.atom1, angle1.atom2, angle2.atom2, angle2.atom3, **kwargs)
+            return Dihedral(angle1.atom1, angle1.atom2, angle2.atom2, angle2.atom3, **kwargs)
         elif (angle1.atom2, angle1.atom3) == (angle2.atom3, angle2.atom2):
-            return Dihedral.create(angle1.atom1, angle1.atom2, angle2.atom2, angle2.atom1, **kwargs)
+            return Dihedral(angle1.atom1, angle1.atom2, angle2.atom2, angle2.atom1, **kwargs)
         else:
             return None
 

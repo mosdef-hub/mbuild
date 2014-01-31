@@ -7,27 +7,37 @@ from mbuild.atom import *
 import copy
 
 class Angle(object):
-    @classmethod
-    def create(cls, atom1, atom2, atom3, kind='undefined', color='black'):
-        b = Angle()
-        b.kind = kind
-        b.color = color
-        b.atom1 = atom1
-        b.atom2 = atom2
-        b.atom3 = atom3
 
-        return b
+    def __init__(self, atom1, atom2, atom3, kind='undefined'):
+        assert(not atom1 == atom2)
+        assert(not atom2 == atom3)
+        assert(not atom3 == atom1)
+        self.kind = kind
+        self.atom1 = atom1
+        self.atom2 = atom2
+        self.atom3 = atom3
+
+    # @classmethod
+    # def create(cls, atom1, atom2, atom3, kind='undefined', color='black'):
+    #     b = Angle()
+    #     b.kind = kind
+    #     b.color = color
+    #     b.atom1 = atom1
+    #     b.atom2 = atom2
+    #     b.atom3 = atom3
+    #
+    #     return b
 
     @classmethod
     def createFromBonds(cls, bond1, bond2, **kwargs):
         if bond1.atom1 == bond2.atom1:
-            return Angle.create(bond1.atom2, bond1.atom1, bond2.atom2, **kwargs)
+            return Angle(bond1.atom2, bond1.atom1, bond2.atom2, **kwargs)
         if bond1.atom1 == bond2.atom2:
-            return Angle.create(bond1.atom2, bond1.atom1, bond2.atom1, **kwargs)
+            return Angle(bond1.atom2, bond1.atom1, bond2.atom1, **kwargs)
         elif bond1.atom2 == bond2.atom1:
-            return Angle.create(bond1.atom1, bond1.atom2, bond2.atom2, **kwargs)
+            return Angle(bond1.atom1, bond1.atom2, bond2.atom2, **kwargs)
         elif bond1.atom2 == bond2.atom2:
-            return Angle.create(bond1.atom1, bond1.atom2, bond2.atom1, **kwargs)
+            return Angle(bond1.atom1, bond1.atom2, bond2.atom1, **kwargs)
         else:
             return None
 

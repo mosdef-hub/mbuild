@@ -19,6 +19,11 @@ class Methane(Compound):
         self.add(Bond(self.c,self.h3,"c-h"))
         self.add(Bond(self.c,self.h4,"c-h"))
 
+        self.add(Angle(self.h1,self.c,self.h2, 'h-c-h'))
+
+        self.add(Dihedral(self.h1,self.h2,self.h3,self.h4, 'h-h-h-h'))
+
+
 if __name__ == "__main__":
 
 
@@ -28,8 +33,10 @@ if __name__ == "__main__":
     # Prototype("C", radius=1.7, color="black")
     # Prototype("H", radius=1.2, color="white")
     Prototype("c-h", color="pink")
+    Prototype("h-c-h", color="red")
+    Prototype("h-h-h-h", color="orange")
 
     # TreeView(m).show()
 
-    Plot(m, bonds=True).show()
+    Plot(m, bonds=True, angles=True, dihedrals=True).show()
 

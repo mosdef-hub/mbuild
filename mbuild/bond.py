@@ -5,11 +5,9 @@ __author__ = 'sallai'
 import numpy as np
 
 class Bond(object):
-    def __init__(self, atom1, atom2, kind='undefined', color='black', colorRGB=(0,0,0)):
+    def __init__(self, atom1, atom2, kind='undefined'):
         assert(not atom1 == atom2)
         self.kind = kind
-        self.color = color
-        self.colorRGB = colorRGB
         self.atom1 = atom1
         self.atom2 = atom2
 
