@@ -9,7 +9,7 @@ import webcolors
 
 class Plot(object):
 
-    def __init__(self, compound, verbose=False, labels=True, atoms=True, bonds=True, angles=True, dihedrals=True):
+    def __init__(self, compound, verbose=False, atoms=True, bonds=True, angles=True, dihedrals=True):
         assert(isinstance(compound, Compound))
 
         # display atoms
@@ -50,15 +50,19 @@ class Plot(object):
         if bonds:
             # sort bonds by type
             d=dict()
-            for dihedral in compound.bonds:
-                if not dihedral.kind in d.keys():
-                    d[dihedral.kind] = [dihedral]
+            for item in compound.bonds:
+                if not item.kind in d.keys():
+                    d[item.kind] = [item]
                 else:
-                    d[dihedral.kind].append(dihedral)
+                    d[item.kind].append(item)
 
-            for (kind, dihedralList) in d.items():
+            for (kind, itemList) in d.items():
                 color = Prototype.getAttr(kind, "color", default="white")
-                colorRGB=tuple(map(operator.div, webcolors.name_to_rgb(color), (256.0,256.0,256.0)))
+                if isinstance(color, basestring):
+                    print "color="+color
+                    colorRGB=tuple(map(operator.div, webcolors.name_to_rgb(color), (256.0,256.0,256.0)))
+                elif isinstance(color,tuple) and len(color) == 3:
+                    colorRGB = color
 
                 x2 = []
                 y2 = []
@@ -69,10 +73,10 @@ class Plot(object):
 
                 epsilon = 0.1
 
-                for dihedral in dihedralList:
+                for item in itemList:
 
-                    pos1 = np.array(dihedral.atom1.pos)
-                    pos2 = np.array(dihedral.atom2.pos)
+                    pos1 = np.array(item.atom1.pos)
+                    pos2 = np.array(item.atom2.pos)
 
                     v12 = pos2 - pos1 # vector from atom1 to atom2
                     d12 = np.linalg.norm(v12) # atom1-atom2 distance
@@ -112,15 +116,18 @@ class Plot(object):
 
             # sort angles by kind
             d=dict()
-            for dihedral in compound.angles:
-                if not dihedral.kind in d.keys():
-                    d[dihedral.kind] = [dihedral]
+            for item in compound.angles:
+                if not item.kind in d.keys():
+                    d[item.kind] = [item]
                 else:
-                    d[dihedral.kind].append(dihedral)
+                    d[item.kind].append(item)
 
-            for (kind, dihedralList) in d.items():
+            for (kind, itemList) in d.items():
                 color = Prototype.getAttr(kind, "color", default="white")
-                colorRGB=tuple(map(operator.div, webcolors.name_to_rgb(color), (256.0,256.0,256.0)))
+                if isinstance(color, basestring):
+                    colorRGB=tuple(map(operator.div, webcolors.name_to_rgb(color), (256.0,256.0,256.0)))
+                elif isinstance(color,tuple) and len(color) == 3:
+                    colorRGB = color
 
                 x2 = []
                 y2 = []
@@ -135,11 +142,11 @@ class Plot(object):
 
                 epsilon = 0.1
 
-                for dihedral in dihedralList:
+                for item in itemList:
 
-                    pos1 = np.array(dihedral.atom1.pos)
-                    pos2 = np.array(dihedral.atom2.pos)
-                    pos3 = np.array(dihedral.atom3.pos)
+                    pos1 = np.array(item.atom1.pos)
+                    pos2 = np.array(item.atom2.pos)
+                    pos3 = np.array(item.atom3.pos)
 
                     v21 = pos1 - pos2 # vector from atom2 to atom1
                     d21 = np.linalg.norm(v21) # atom1-atom2 distance
@@ -176,15 +183,18 @@ class Plot(object):
 
             # sort angles by kind
             d=dict()
-            for dihedral in compound.dihedrals:
-                if not dihedral.kind in d.keys():
-                    d[dihedral.kind] = [dihedral]
+            for item in compound.dihedrals:
+                if not item.kind in d.keys():
+                    d[item.kind] = [item]
                 else:
-                    d[dihedral.kind].append(dihedral)
+                    d[item.kind].append(item)
 
-            for (kind, dihedralList) in d.items():
+            for (kind, itemList) in d.items():
                 color = Prototype.getAttr(kind, "color", default="white")
-                colorRGB=tuple(map(operator.div, webcolors.name_to_rgb(color), (256.0,256.0,256.0)))
+                if isinstance(color, basestring):
+                    colorRGB=tuple(map(operator.div, webcolors.name_to_rgb(color), (256.0,256.0,256.0)))
+                elif isinstance(color,tuple) and len(color) == 3:
+                    colorRGB = color
 
                 x2 = []
                 y2 = []
@@ -204,12 +214,12 @@ class Plot(object):
 
                 epsilon = 0.1
 
-                for dihedral in dihedralList:
+                for item in itemList:
 
-                    pos1 = np.array(dihedral.atom1.pos)
-                    pos2 = np.array(dihedral.atom2.pos)
-                    pos3 = np.array(dihedral.atom3.pos)
-                    pos4 = np.array(dihedral.atom4.pos)
+                    pos1 = np.array(item.atom1.pos)
+                    pos2 = np.array(item.atom2.pos)
+                    pos3 = np.array(item.atom3.pos)
+                    pos4 = np.array(item.atom4.pos)
 
                     v21 = pos1 - pos2 # vector from atom2 to atom1
                     d21 = np.linalg.norm(v21) # atom1-atom2 distance

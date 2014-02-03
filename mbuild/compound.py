@@ -17,6 +17,8 @@ from collections import OrderedDict
 from itertools import *
 from copy import copy, deepcopy
 from mbuild.orderedset import *
+import numpy as np
+from numpy.linalg import norm
 
 class Compound(object):
 
@@ -532,3 +534,58 @@ class Compound(object):
 
         return missing
 
+    def min_periodic_distance(self, pos1, pos2):
+        p1 = np.array(pos1)
+        p2 = np.array(pos2)
+
+        # print p1
+        # print p2
+        p2_img = np.array([[p2[0]+( 0)*self.bounds[0], p2[1]+( 0)*self.bounds[1], p2[2]+( 0)*self.bounds[2]], \
+                           \
+                           [p2[0]+( 0)*self.bounds[0], p2[1]+( 0)*self.bounds[1], p2[2]+( 1)*self.bounds[2]], \
+                           [p2[0]+( 0)*self.bounds[0], p2[1]+( 0)*self.bounds[1], p2[2]+(-1)*self.bounds[2]], \
+                           \
+                           [p2[0]+( 0)*self.bounds[0], p2[1]+( 1)*self.bounds[1], p2[2]+( 0)*self.bounds[2]], \
+                           [p2[0]+( 0)*self.bounds[0], p2[1]+(-1)*self.bounds[1], p2[2]+( 0)*self.bounds[2]], \
+                           \
+                           [p2[0]+( 0)*self.bounds[0], p2[1]+( 1)*self.bounds[1], p2[2]+( 1)*self.bounds[2]], \
+                           [p2[0]+( 0)*self.bounds[0], p2[1]+( 1)*self.bounds[1], p2[2]+(-1)*self.bounds[2]], \
+                           [p2[0]+( 0)*self.bounds[0], p2[1]+(-1)*self.bounds[1], p2[2]+( 1)*self.bounds[2]], \
+                           [p2[0]+( 0)*self.bounds[0], p2[1]+(-1)*self.bounds[1], p2[2]+(-1)*self.bounds[2]], \
+                           \
+                           [p2[0]+( 1)*self.bounds[0], p2[1]+( 0)*self.bounds[1], p2[2]+( 0)*self.bounds[2]], \
+                           [p2[0]+(-1)*self.bounds[0], p2[1]+( 0)*self.bounds[1], p2[2]+( 0)*self.bounds[2]], \
+                           \
+                           [p2[0]+( 1)*self.bounds[0], p2[1]+( 0)*self.bounds[1], p2[2]+( 1)*self.bounds[2]], \
+                           [p2[0]+( 1)*self.bounds[0], p2[1]+( 0)*self.bounds[1], p2[2]+(-1)*self.bounds[2]], \
+                           [p2[0]+(-1)*self.bounds[0], p2[1]+( 0)*self.bounds[1], p2[2]+( 1)*self.bounds[2]], \
+                           [p2[0]+(-1)*self.bounds[0], p2[1]+( 0)*self.bounds[1], p2[2]+(-1)*self.bounds[2]], \
+                           \
+                           [p2[0]+( 1)*self.bounds[0], p2[1]+( 1)*self.bounds[1], p2[2]+( 0)*self.bounds[2]], \
+                           [p2[0]+( 1)*self.bounds[0], p2[1]+(-1)*self.bounds[1], p2[2]+( 0)*self.bounds[2]], \
+                           [p2[0]+(-1)*self.bounds[0], p2[1]+( 1)*self.bounds[1], p2[2]+( 0)*self.bounds[2]], \
+                           [p2[0]+(-1)*self.bounds[0], p2[1]+(-1)*self.bounds[1], p2[2]+( 0)*self.bounds[2]], \
+                           \
+                           [p2[0]+( 1)*self.bounds[0], p2[1]+( 1)*self.bounds[1], p2[2]+( 1)*self.bounds[2]], \
+                           [p2[0]+( 1)*self.bounds[0], p2[1]+( 1)*self.bounds[1], p2[2]+(-1)*self.bounds[2]], \
+                           [p2[0]+( 1)*self.bounds[0], p2[1]+(-1)*self.bounds[1], p2[2]+( 1)*self.bounds[2]], \
+                           [p2[0]+( 1)*self.bounds[0], p2[1]+(-1)*self.bounds[1], p2[2]+(-1)*self.bounds[2]], \
+                           [p2[0]+(-1)*self.bounds[0], p2[1]+( 1)*self.bounds[1], p2[2]+( 1)*self.bounds[2]], \
+                           [p2[0]+(-1)*self.bounds[0], p2[1]+( 1)*self.bounds[1], p2[2]+(-1)*self.bounds[2]], \
+                           [p2[0]+(-1)*self.bounds[0], p2[1]+(-1)*self.bounds[1], p2[2]+( 1)*self.bounds[2]], \
+                           [p2[0]+(-1)*self.bounds[0], p2[1]+(-1)*self.bounds[1], p2[2]+(-1)*self.bounds[2]], \
+                           ])
+
+
+        # print p2_img
+
+        # print p2_img-p1
+        dists = norm(p2_img-p1, axis=1)
+        # print dists
+
+        return dists.min()
+
+
+# if __name__ == "__main__":
+#     c = Compound(bounds=[10,10,10])
+#     print c.min_periodic_distance((1,1,1),(9,9,9))

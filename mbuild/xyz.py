@@ -18,7 +18,8 @@ class Xyz(Compound):
             split_line = line.split()
             atom_type = split_line[0]
             atom_pos = (float(split_line[1]),float(split_line[2]),float(split_line[3]))
-            self.add(Atom(kind=atom_type, pos=atom_pos), atom_type + '_#')
+            # self.add(Atom(kind=atom_type, pos=atom_pos), atom_type + '_#')
+            self.add(Atom(kind=atom_type, pos=atom_pos))
         f.close()
 
     @staticmethod

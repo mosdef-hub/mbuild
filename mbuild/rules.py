@@ -18,15 +18,15 @@ class RuleEngine(object):
     def execute(self):
         raise Exception("RuleEngine must be subclassed, with the execute method implemented in the subclass")
 
-    def add_bond(self, type_A, type_B, dmin, dmax, kind, color=(1.0,1.0,1.0)):
+    def add_bond(self, type_A, type_B, dmin, dmax, kind):
         "Ai-Bj distance is in [dmin, dmax] => add bond A1xB(Ai,Bj) (symmetric)"
         for a1 in self.model.getAtomsByKind(type_A):
             nearest = self.model.getAtomsInRange(a1.pos, dmax)
             for b1 in nearest:
-                if (b1.kind==type_B) and (dmin <= b1.distance(a1) <= dmax):
-                    self.model.add(Bond(a1, b1, kind=kind, color=color))
+                if (b1.kind==type_B) and (dmin <= self.model.min_periodic_distance(b1.pos, a1.pos) <= dmax):
+                    self.model.add(Bond(a1, b1, kind=kind))
 
-    def add_angle(self, type_A, type_B, type_C, kind, thmin=-Inf, thmax=Inf, color=(1,1,1)):
+    def add_angle(self, type_A, type_B, type_C, kind, thmin=-Inf, thmax=Inf):
         """
         """
 
@@ -41,12 +41,12 @@ class RuleEngine(object):
 
                 bc = bc1.cloneWithOrder(type_B, type_C)
 
-                temp_ang = Angle.createFromBonds(ab, bc, kind=kind, color=color)
+                temp_ang = Angle.createFromBonds(ab, bc, kind=kind)
                 if temp_ang:
                     if (temp_ang.atom2.kind==type_B) and (thmin <= temp_ang.inDegrees() <= thmax):
                         self.model.add(temp_ang)
 
-    def add_dihedral(self, type_A, type_B, type_C, type_D, dihedralKind, color=(1,1,1)):
+    def add_dihedral(self, type_A, type_B, type_C, type_D, dihedralKind):
         """
         """
 
@@ -63,6 +63,6 @@ class RuleEngine(object):
 
                 bcd = bcd1.cloneWithOrder(type_B, type_C, type_D)
 
-                temp_dhdr = Dihedral.createFromAngles(abc, bcd, kind=dihedralKind, color=color)
+                temp_dhdr = Dihedral.createFromAngles(abc, bcd, kind=dihedralKind)
                 if temp_dhdr:
                     self.model.add(temp_dhdr)

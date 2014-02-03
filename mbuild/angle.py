@@ -9,6 +9,7 @@ import copy
 class Angle(object):
 
     def __init__(self, atom1, atom2, atom3, kind='undefined'):
+        assert(isinstance(kind, basestring))
         assert(not atom1 == atom2)
         assert(not atom2 == atom3)
         assert(not atom3 == atom1)
@@ -16,17 +17,6 @@ class Angle(object):
         self.atom1 = atom1
         self.atom2 = atom2
         self.atom3 = atom3
-
-    # @classmethod
-    # def create(cls, atom1, atom2, atom3, kind='undefined', color='black'):
-    #     b = Angle()
-    #     b.kind = kind
-    #     b.color = color
-    #     b.atom1 = atom1
-    #     b.atom2 = atom2
-    #     b.atom3 = atom3
-    #
-    #     return b
 
     @classmethod
     def createFromBonds(cls, bond1, bond2, **kwargs):
@@ -60,7 +50,7 @@ class Angle(object):
         elif (self.atom1.kind==type_C) and (self.atom2.kind==type_B) and (self.atom3.kind==type_A):
             return self.cloneImage()
 
-        warn ("cannot clone angle " + str(self) + " with order " + str(type_A) + "," + str(type_B)+ "," + str(type_C))
+        warn("cannot clone angle " + str(self) + " with order " + str(type_A) + "," + str(type_B)+ "," + str(type_C))
 
 
     @staticmethod
@@ -83,7 +73,6 @@ class Angle(object):
     def computeInDegrees(atom1, atom2, atom3):
         return Angle.computeInRadians(atom1, atom2, atom3) * 180 / math.pi
 
-
     def inRadians(self):
         return Angle.computeInRadians(self.atom1, self.atom2, self.atom3)
 
@@ -101,40 +90,11 @@ class Angle(object):
         return (self.atom1.kind == atomType1 and self.atom2.kind == atomType2 and self.atom3.kind == atomType3) or (self.atom1.kind == atomType3 and self.atom2.kind == atomType2 and self.atom3.kind == atomType1)
 
 
-    def __repr__( self ):
-        return "Angle[atom1=" + str(self.atom1) + " atom2=" + str(self.atom2) + " atom3=" + str(self.atom3) + "]"
+    def __repr__(self):
+        return "Angle"+str(id(self))+"("+ str(self.atom1) + ", " + str(self.atom2) + ", " + str(self.atom3) + ", kind=" + self.kind+")"
 
     def __hash__(self):
-        # return hash((self.kind, self.atom1, self.atom2, self.atom3))
         return hash((self.atom1, self.atom2, self.atom3))
-
-    # def __hash__(self):
-    #     # atom1 and atom3 are interchangeable
-    #     return ( self.atom1.__hash__() * self.atom3.__hash__()) ^ self.atom1.__hash__() ^ self.atom3.__hash__() ^ self.atom2.__hash__()
-    #
 
     def __eq__(self, other):
         return self.__hash__() == other.__hash__()
-
-#     def plot(self, ax):
-#         epsilon = .4
-#         offset = np.array([np.round(np.random.random()*10+1)*.05, 0, 0])
-#
-# #        offset = np.array([round(random()*10+1)*.05, 0, 0])
-#
-#         pos1 = np.array(self.atom1.pos)
-#         pos2 = np.array(self.atom2.pos)
-#         pos3 = np.array(self.atom3.pos)
-#         v21 = pos1 - pos2 # vector from atom2 to atom1
-#         d21 = np.linalg.norm(v21) # atom1-atom2 distance
-#         v23 = pos3 - pos2 # vector from atom2 to atom3
-#         d23 = np.linalg.norm(v23) # atom3-atom2 distance
-#
-#         p2 = pos2 + offset
-#         p1 = pos2 + v21*epsilon + offset
-#         p3 = pos2 + v23*epsilon + offset
-#
-#         ax.plot([p1[0], p2[0], p3[0]],
-#                 [p1[1], p2[1], p3[1]],
-#                 [p1[2], p2[2], p3[2]], '-', color=self.color)
-

@@ -6,11 +6,11 @@ import numpy as np
 
 class Bond(object):
     def __init__(self, atom1, atom2, kind='undefined'):
+        assert(isinstance(kind, basestring))
         assert(not atom1 == atom2)
         self.kind = kind
         self.atom1 = atom1
         self.atom2 = atom2
-
 
     def clone(self):
         return copy(self)
@@ -31,7 +31,7 @@ class Bond(object):
             ab.atom1 = self.atom2
             ab.atom2 = self.atom1
             return ab
-        warn("cannot clone bond " + str(bond) + " with order " + str(type_A) + "," + str(type_B))
+        warn("cannot clone bond " + str(self) + " with order " + str(type_A) + "," + str(type_B))
 
     @classmethod
     def orderBond(cls, bond, type_A, type_B):
@@ -50,18 +50,7 @@ class Bond(object):
     def hasAtomKinds(self, atomType1, atomType2):
         return (self.atom1.kind == atomType1 and self.atom2.kind == atomType2) or (self.atom1.kind == atomType2 and self.atom2.kind == atomType1)
 
-    # def plot(self, ax):
-    #     epsilon = 0.3
-    #     pos1 = np.array(self.atom1.pos)
-    #     pos2 = np.array(self.atom2.pos)
-    #     v12 = pos2 - pos1 # vector from atom1 to atom2
-    #     d12 = np.linalg.norm(v12) # atom1-atom2 distance
-    #     p1 = pos1 + v12/d12 * epsilon
-    #     p2 = pos1 + v12/d12 * (d12 - epsilon)
-    #     ax.plot([p1[0], p2[0]],[p1[1], p2[1]],[p1[2], p2[2]], '-', color=self.color)
-
     def __hash__(self):
-        # return hash((self.kind, self.atom1, self.atom2))
         return hash((self.atom1, self.atom2))
 
     def __eq__(self, other):

@@ -21,7 +21,6 @@ class Methane(Compound):
 
         self.add(Angle(self.h1,self.c,self.h2, 'h-c-h'))
 
-        self.add(Dihedral(self.h1,self.h2,self.h3,self.h4, 'h-h-h-h'))
 
 
 if __name__ == "__main__":
@@ -38,5 +37,5 @@ if __name__ == "__main__":
 
     # TreeView(m).show()
 
-    Plot(m, bonds=True, angles=True, dihedrals=True).show()
+    Plot(m, bonds=True, angles=False, dihedrals=True).show()
 
