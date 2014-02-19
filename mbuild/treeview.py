@@ -8,9 +8,10 @@ from mbuild.plot import Plot
 
 class TreeView(object):
 
-    def __init__(self, compound):
+    def __init__(self, compound, **kwargs):
         self.compound = compound
         self.nodemap = {"root": compound}
+        self.kwargs = kwargs
 
     def populate_tree(self, tree, node):
         if tree.set(node, "type") != 'compound':
@@ -74,7 +75,7 @@ class TreeView(object):
         compound = tree.compoundTreeView.nodemap[node]
         # print compound
         if isinstance(compound, Compound):
-            Plot(compound).show()
+            Plot(compound, **tree.compoundTreeView.kwargs).show()
 
     @staticmethod
     def autoscroll(sbar, first, last):
@@ -126,5 +127,5 @@ class TreeView(object):
 
 if __name__ == "__main__":
     from ethane import Ethane
-    ethane = Ethane.create()
+    ethane = Ethane()
     TreeView(ethane).show()

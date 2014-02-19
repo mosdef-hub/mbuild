@@ -6,7 +6,7 @@ import os.path
 
 class Xyz(Compound):
 
-    def __init__(self, path, ctx={}, cwd=""):
+    def __init__(self, path, ctx={}, labels=False, cwd=""):
         super(Xyz, self).__init__(ctx=ctx)
 
         fn = os.path.join(cwd, path)
@@ -18,8 +18,10 @@ class Xyz(Compound):
             split_line = line.split()
             atom_type = split_line[0]
             atom_pos = (float(split_line[1]),float(split_line[2]),float(split_line[3]))
-            # self.add(Atom(kind=atom_type, pos=atom_pos), atom_type + '_#')
-            self.add(Atom(kind=atom_type, pos=atom_pos))
+            if labels:
+                self.add(Atom(kind=atom_type, pos=atom_pos), atom_type + '_#')
+            else:
+                self.add(Atom(kind=atom_type, pos=atom_pos))
         f.close()
 
     @staticmethod

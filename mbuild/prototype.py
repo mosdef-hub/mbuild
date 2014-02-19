@@ -1,18 +1,25 @@
+from _warnings import warn
+
 __author__ = 'sallai'
 
 class Prototype(object):
-    prototypes = dict()
+    prototypes = dict() # kind:attribute_dict
 
     def __init__(self, kind, **kwargs):
         super(Prototype, self).__init__()
 
         if not Prototype.prototypes.has_key(kind):
              Prototype.prototypes[kind] = dict()
-        else:
-            print "warning: overriding prototype for "+kind
 
         for key, value in kwargs.iteritems():
-            Prototype.prototypes[kind][key] = value
+            if not Prototype.prototypes[kind].has_key(key):
+                Prototype.prototypes[kind][key] = value
+            else:
+                if Prototype.prototypes[kind][key] != value:
+                    # print "old: value=" + str(Prototype.prototypes[kind][key]) + " type=" + str(type(Prototype.prototypes[kind][key]))
+                    # print "new: value=" + str(value) + " type=" + str(type(value))
+                    warn ("overriding prototype property "+kind+"/"+key+" to "+str(value)+" (was: "+str(Prototype.prototypes[kind][key])+")")
+                Prototype.prototypes[kind][key] = value
 
 
         # for key, value in kwargs.iteritems():

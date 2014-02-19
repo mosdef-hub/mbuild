@@ -7,11 +7,12 @@ from mbuild.coordinate_transform import *
 
 class Atom(object):
 
-    def __init__(self, kind, pos=(0, 0, 0)):
+    def __init__(self, kind, pos=(0, 0, 0), charge=0):
         assert(isinstance(kind, basestring))
 
         self.kind = kind
         self.pos = pos
+        self.charge = charge
         self.bonds = set()
         self.angles = set()
         self.dihedrals = set()

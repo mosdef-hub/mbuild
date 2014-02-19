@@ -19,8 +19,8 @@ class Surface(Compound):
     def __init__(self, ctx={}):
         super(Surface, self).__init__(ctx=ctx)
 
-        s = Xyz('amorphous.xyz')
-        # s = Xyz('beta-cristobalite.xyz')
+        # s = Xyz('amorphous.xyz')
+        s = Xyz('beta-cristobalite.xyz')
 
         self.add(s, 'surface_xyz')
         self.bounds = [47.689, 41.3, 0.0]
@@ -61,4 +61,5 @@ if __name__ == "__main__":
     # for a in m.atoms():
     #     print a
     Prototype('o-si', color='grey')
-    Plot(m, verbose=True).show()
+    # Prototype('O', color='blue')
+    Plot(m, bonds=False, verbose=True).show()
