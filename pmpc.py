@@ -1,4 +1,5 @@
 import operator
+from mbuild.plot import Plot
 from mpc_monomer import MpcMonomer
 
 __author__ = 'sallai'
@@ -20,24 +21,27 @@ class Pmpc(Compound):
         # n-1 times the body CH_2
         last_part = None
         for body_count in range(0, n):
-            this_part = MpcMonomer(ctx=ctx)
+            this_part = MpcMonomer(ctx=ctx, alpha=pi/6)
             self.add(this_part, 'monomer_'+str(body_count))
-            if not last_part is None:
+            if last_part is None:
+                first_part = this_part
+            else:
                 this_part.transform([(this_part.bottom_port, last_part.top_port)])
             last_part = this_part
 
         top_port = Port()
-        translateTo = map(operator.sub,last_part.top_port.top.pos, top_port.zero.pos)
+        translateTo = map(operator.sub,last_part.top_port.middle.pos, top_port.middle.pos)
         top_port.transform(Translation(tuple(translateTo)))
         self.add(top_port, "top_port")
 
         bottom_port = Port()
-        translateTo = map(operator.sub,last_part.top_port.top.pos, bottom_port.zero.pos)
+        translateTo = map(operator.sub,first_part.bottom_port.middle.pos, bottom_port.middle.pos)
         bottom_port.transform(Translation(tuple(translateTo)))
         self.add(bottom_port, "bottom_port")
 
 
 
 if __name__ == "__main__":
-    m = Pmpc()
-    TreeView(m, verbose=True).show()
+    m = Pmpc(n=5)
+    # TreeView(m, verbose=True).show()
+    Plot(m, verbose=True).show()

@@ -10,12 +10,11 @@ from mbuild.port import *
 
 class MpcMonomer(Compound):
 
-    def __init__(self, ctx={}):
+    def __init__(self, ctx={}, alpha=0):
         super(MpcMonomer, self).__init__(ctx=ctx)
 
         # read xyz file, turn on labeling (first C is labeled C_0, second C is C_1, and so on)
         mpc = Xyz('mpc_monomer.xyz', labels=True)
-        # mpc = Methane()
         mpc.transform(RotationAroundZ(pi/3))
         mpc.transform(Translation(np.array([2,3,4])))
 
@@ -24,8 +23,6 @@ class MpcMonomer(Compound):
         # find the two atoms of the carbon chain
         cbottom_pos = np.hstack(mpc.C_1.pos)
         ctop_pos = np.hstack(mpc.C_10.pos)
-        # cbottom_pos = np.hstack(mpc.c.pos)
-        # ctop_pos = np.hstack(mpc.h1.pos)
 
         print "ctop_pos=" +str(ctop_pos)
         print "cbottom_pos=" +str(cbottom_pos)
@@ -41,8 +38,6 @@ class MpcMonomer(Compound):
         # find the new positions of the two atoms of the carbon chain
         cbottom_pos = np.hstack(mpc.C_1.pos)
         ctop_pos = np.hstack(mpc.C_10.pos)
-        # cbottom_pos = np.hstack(mpc.c.pos)
-        # ctop_pos = np.hstack(mpc.h1.pos)
 
         print "ctop_pos=" +str(ctop_pos)
         print "cbottom_pos=" +str(cbottom_pos)
@@ -57,6 +52,9 @@ class MpcMonomer(Compound):
 
         # add top port
         self.add(Port(),'top_port')
+        # rotate around y by alpha
+        self.top_port.transform(RotationAroundY(alpha))
+
         # compute position of bottom port
         top_port_pos = cbottom_pos - (cbottom_pos - ctop_pos)*1.5
         # move the port there
