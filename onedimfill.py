@@ -1,8 +1,10 @@
 __author__ = 'sallai'
 
+from copy import deepcopy
+
 from tile import *
 from mbuild.ndimmesh import *
-from copy import copy, deepcopy
+
 
 class OneDimFill(NDimMesh):
     label_prefix = 'part_'
@@ -70,7 +72,7 @@ if __name__ == "__main__":
                           left_port_name='up_male_port',
                           right_port_name='down_female_port')
 
-    from treeview import *
+    from mbuild.treeview import *
     TreeView(methaneBoxSpace).show()
     methaneBoxSpace.plot3()
     # methaneBoxSpace.plot(labels=False, verbose=False)

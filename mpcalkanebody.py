@@ -5,29 +5,28 @@ from mpc import *
 
 class MpcAlkaneBody(Compound):
 
-    @classmethod
-    def create(cls, label=None, direction='left', ctx={}):
-        m = super(MpcAlkaneBody, cls).create(label)
+    def __init__(self, ctx={}, direction='left'):
+        super(MpcAlkaneBody, self).__init__(ctx=ctx)
 
-        m.add(CB((0, 0, 0)),'c')
+        self.add(Atom(kind='CB', pos=(0, 0, 0)),'c')
 
         if direction == 'left':
             # mpc is on the left
-            m.add(HB((1, 0, 0)),'h1')
-            m.add(G((-1.2, 0, 0)),'c0') # this is where we want the MPC's first C atom to be
-            m.add(Port.create(),'mpc_port')
-            m.mpc_port.transform(RotationAroundY(pi/2))
-            m.mpc_port.transform(Translation((-0.0,0,0)))
+            self.add(Atom(kind='HB', pos=(1, 0, 0)),'h1')
+            self.add(Atom(kind='G', pos=(-1.2, 0, 0)),'c0') # this is where we want the MPC's first C atom to be
+            self.add(Port(),'mpc_port')
+            self.mpc_port.transform(RotationAroundY(pi/2))
+            self.mpc_port.transform(Translation((-0.0,0,0)))
         else:
             # mpc is on the right
-            m.add(HB((-1, 0, 0)),'h1')
-            m.add(G((1.2, 0, 0)),'c0') # this is where we want the MPC's first C atom to be
-            m.add(Port.create(),'mpc_port')
-            m.mpc_port.transform(RotationAroundY(-pi/2))
-            m.mpc_port.transform(Translation((0.0,0,0)))
+            self.add(Atom(kind='HB', pos=(-1, 0, 0)),'h1')
+            self.add(Atom(kind='G', pos=(1.2, 0, 0)),'c0') # this is where we want the MPC's first C atom to be
+            self.add(Port(),'mpc_port')
+            self.mpc_port.transform(RotationAroundY(-pi/2))
+            self.mpc_port.transform(Translation((0.0,0,0)))
 
 
-        m.add(Mpc.create(), 'mpc')
+        self.add(Mpc(), 'mpc')
 
         # transform using equivalence of two ports
         # m.mpc.transform([(m.mpc.mpc_port, m.mpc_port)])
@@ -36,17 +35,16 @@ class MpcAlkaneBody(Compound):
         #      m.mpc.mpc_port should match up with m.mpc_port
         #    and
         #      the first C atom that was read from the xyz file should match up with our c0
-        m.mpc.transform([(m.mpc.mpc_port, m.mpc_port),
-                         (m.mpc.mpc_xyz.C0, m.c0)])
+        self.mpc.transform([(self.mpc.mpc_port, self.mpc_port),
+                         (self.mpc.mpc_xyz.C_0, self.c0)])
 
-        m.add(Port.create(),'male_port')
-        m.male_port.transform(RotationAroundZ(pi))
-        m.male_port.transform(Translation((0,-0.7,0)))
+        self.add(Port(),'male_port')
+        self.male_port.transform(RotationAroundZ(pi))
+        self.male_port.transform(Translation((0,-0.7,0)))
 
-        m.add(Port.create(),'female_port')
-        m.female_port.transform(RotationAroundZ(pi))
-        m.female_port.transform(Translation((0,0.7,0)))
-        return m
+        self.add(Port(),'female_port')
+        self.female_port.transform(RotationAroundZ(pi))
+        self.female_port.transform(Translation((0,0.7,0)))
 
 
 if __name__ == "__main__":
