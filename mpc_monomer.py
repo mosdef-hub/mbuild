@@ -1,5 +1,5 @@
 from mayavi.tools.sources import vector_scatter
-from mbuild.coordinate_transform import RotationAroundY
+from mbuild.coordinate_transform import RotationAroundY, RotationAroundZ
 from mbuild.plot import Plot
 
 __author__ = 'sallai'
@@ -20,27 +20,38 @@ class MpcMonomer(Compound):
         cbottom_pos = np.hstack(mpc.C_1.pos)
         ctop_pos = np.hstack(mpc.C_10.pos)
 
+        print "ctop_pos=" +str(ctop_pos)
+        print "cbottom_pos=" +str(cbottom_pos)
+
+        # transform the coordinate system of mpc such that the two carbon atoms that are part of the backbone are on
+        # the x axis, cbottom at the origin
+        mpc.transform(AxisTransform(new_origin=cbottom_pos, point_on_x_axis=ctop_pos))
+
+        # rotate MPC such that ctop and cbottom are on the y axis
+        mpc.transform(RotationAroundZ(pi/2))
+
+
+        # find the new positions of the two atoms of the carbon chain
+        cbottom_pos = np.hstack(mpc.C_1.pos)
+        ctop_pos = np.hstack(mpc.C_10.pos)
+
+        print "ctop_pos=" +str(ctop_pos)
+        print "cbottom_pos=" +str(cbottom_pos)
+
+
         # add bottom port
         self.add(Port(),'bottom_port')
-        # rotate it by -90 degrees first
-        self.bottom_port.transform(RotationAroundZ(-pi/2))
         # compute position of bottom port
         bottom_port_pos = ctop_pos - (ctop_pos - cbottom_pos)*1.5
-        # transform the port's coordinate system such that bottom_port_pos is the new origin
-        # and the x axis will point toward cbottom_pos
-        self.bottom_port.transform(AxisTransform(new_origin=bottom_port_pos, point_on_x_axis=cbottom_pos))
+        # move the port there
+        self.bottom_port.transform(Translation(bottom_port_pos))
 
         # add top port
         self.add(Port(),'top_port')
-        # rotate it by -90 degrees first
-        self.top_port.transform(RotationAroundZ(-pi/2))
-        # compute position of top port
-        top_port_pos = cbottom_pos + (ctop_pos - cbottom_pos)*1.5
-        # compute a point that specifies where the x axis of the port's coordinate system should be transformed to
-        top_port_x_axis = cbottom_pos + (ctop_pos - cbottom_pos)*2
-        # transform the port's coordinate system such that top_port_pos is the new origin
-        # and the x axis will point toward top_port_x_axis
-        self.top_port.transform(AxisTransform(new_origin=top_port_pos, point_on_x_axis=top_port_x_axis))
+        # compute position of bottom port
+        top_port_pos = cbottom_pos - (cbottom_pos - ctop_pos)*1.5
+        # move the port there
+        self.top_port.transform(Translation(top_port_pos))
 
 
 if __name__ == "__main__":

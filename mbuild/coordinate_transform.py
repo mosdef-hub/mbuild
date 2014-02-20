@@ -139,7 +139,14 @@ class ChangeOfBasis(CoordinateTransform):
 
         T[0:3,0:3] = basis
         T = inv(T)
-        T[0:3,3:4] = array([origin]).transpose()
+
+        # Ttr = eye(4)
+        # Ttr[0:3,3:4] = array([origin]).transpose()
+        #
+
+        Ttr = Translation(origin).T
+
+        T = dot(Ttr,T)
 
         print str(T)
 
@@ -297,9 +304,13 @@ if __name__ == "__main__":
 
 
     print "Axis Transform"
-    CT = AxisTransform(new_origin=array([1,1,1]), point_on_x_axis=array([1.5, 1.0+sqrt(3)/2, 1.0]), point_on_xy_plane=array([2.0,1.0,1.0]))
+    new_origin=array([1,0,0])
+    point_on_x_axis=new_origin + array([.5, 0.0+sqrt(3)/2, 0.0])
+    CT = AxisTransform(new_origin=new_origin, point_on_x_axis=point_on_x_axis, point_on_xy_plane=new_origin+array([1.0,1.0,0.0]))
 
     A = array([
+        new_origin,
+        point_on_x_axis,
         [1.0, 0.0, 0.0],
         [0.5, sqrt(3)/2, 0.0]
     ])
@@ -314,19 +325,19 @@ if __name__ == "__main__":
     print "A_prime=" + str(A_prime)
 
 
-    print "Axis Transform"
-    CT = AxisTransform(array([0.0,0.0,0.0]), array([1.0, 0.0, 0.0]), array([0.0,1.0,0.0]))
-
-    A = array([
-        [2.0, 0.0, 0.0],
-        [0.5, sqrt(3)/2, 1.0]
-    ])
+    # print "Axis Transform"
+    # CT = AxisTransform(array([0.0,0.0,0.0]), array([1.0, 0.0, 0.0]), array([0.0,1.0,0.0]))
+    #
     # A = array([
-    #     [1.0, 0.0, 0.0],
-    #     [0.0, 1.0, 0.0],
-    #     [0.0, 0.0, 1.0]])
-
-    A_prime = CT.apply(A)
-
-    print "A=" + str(A)
-    print "A_prime=" + str(A_prime)
+    #     [2.0, 0.0, 0.0],
+    #     [0.5, sqrt(3)/2, 1.0]
+    # ])
+    # # A = array([
+    # #     [1.0, 0.0, 0.0],
+    # #     [0.0, 1.0, 0.0],
+    # #     [0.0, 0.0, 1.0]])
+    #
+    # A_prime = CT.apply(A)
+    #
+    # print "A=" + str(A)
+    # print "A_prime=" + str(A_prime)
