@@ -107,6 +107,8 @@ class RotationAroundX(CoordinateTransform):
 
 class Rotation(CoordinateTransform):
     def __init__(self, theta, around):
+        # rotation around vector around by angle theta
+
         assert ( around.size == 3)
 
         T = eye(4)
@@ -140,20 +142,13 @@ class ChangeOfBasis(CoordinateTransform):
         T[0:3,0:3] = basis
         T = inv(T)
 
-        # Ttr = eye(4)
-        # Ttr[0:3,3:4] = array([origin]).transpose()
-        #
+        T[0:3,3:4] = -array([origin]).transpose()
 
-        Ttr = Translation(origin).T
-
-        T = dot(Ttr,T)
-
-        print str(T)
-
+        # print str(T)
 
         super(ChangeOfBasis, self).__init__(T)
 
-class AxisTransform(ChangeOfBasis):
+class AxisTransform(CoordinateTransform):
     def __init__(self, new_origin=array([0.0,0.0,0.0]), point_on_x_axis=array([1.0,0.0,0.0]), point_on_xy_plane=array([1.0,1.0,0.0])):
         # change the basis such that p1 is the origin, p2 is on the x axis and p3 is in the xy plane
         p1 = new_origin
@@ -166,12 +161,22 @@ class AxisTransform(ChangeOfBasis):
         newz = CoordinateTransform.unit_vector(cross(newx, p3_u))
         newy = cross(newz, newx)
 
-        print "newx=" +str(newx)
-        print "newy=" +str(newy)
-        print "newz=" +str(newz)
+        # print "newx=" +str(newx)
+        # print "newy=" +str(newy)
+        # print "newz=" +str(newz)
 
-        super(AxisTransform, self).__init__(vstack((newx, newy, newz)), origin=p1)
+        # translation that moves new_origin to the origin
+        T_tr = eye(4)
+        T_tr[0:3, 3:4] = -array([p1]).transpose()
 
+        # rotation that moves newx to the x axis, newy to the y axis, newz to the z axis
+        B = eye(4)
+        B[0:3,0:3] = vstack((newx, newy, newz))
+
+        # the concatentaion of translation and rotation
+        B_tr = dot(B, T_tr)
+
+        super(AxisTransform, self).__init__(B_tr)
 
 
 class RigidTransform(CoordinateTransform):
@@ -303,26 +308,28 @@ if __name__ == "__main__":
     # print "A_prime=" + str(A_prime)
 
 
-    print "Axis Transform"
-    new_origin=array([1,0,0])
-    point_on_x_axis=new_origin + array([.5, 0.0+sqrt(3)/2, 0.0])
-    CT = AxisTransform(new_origin=new_origin, point_on_x_axis=point_on_x_axis, point_on_xy_plane=new_origin+array([1.0,1.0,0.0]))
-
-    A = array([
-        new_origin,
-        point_on_x_axis,
-        [1.0, 0.0, 0.0],
-        [0.5, sqrt(3)/2, 0.0]
-    ])
+    #
+    #
+    # print "Axis Transform"
+    # new_origin=array([1,0,0])
+    # point_on_x_axis=new_origin + array([.5, 0.0+sqrt(3)/2, 0.0])
+    # CT = AxisTransform(new_origin=new_origin, point_on_x_axis=point_on_x_axis, point_on_xy_plane=new_origin+array([1.0,1.0,0.0]))
+    #
     # A = array([
+    #     new_origin,
+    #     point_on_x_axis,
     #     [1.0, 0.0, 0.0],
-    #     [0.0, 1.0, 0.0],
-    #     [0.0, 0.0, 1.0]])
-
-    A_prime = CT.apply(A)
-
-    print "A=" + str(A)
-    print "A_prime=" + str(A_prime)
+    #     [0.5, sqrt(3)/2, 0.0]
+    # ])
+    # # A = array([
+    # #     [1.0, 0.0, 0.0],
+    # #     [0.0, 1.0, 0.0],
+    # #     [0.0, 0.0, 1.0]])
+    #
+    # A_prime = CT.apply(A)
+    #
+    # print "A=" + str(A)
+    # print "A_prime=" + str(A_prime)
 
 
     # print "Axis Transform"
@@ -341,3 +348,62 @@ if __name__ == "__main__":
     #
     # print "A=" + str(A)
     # print "A_prime=" + str(A_prime)
+
+
+    # B = array([
+    #     [0.5, sqrt(3)/2, 0.0, 0.0],
+    #     [-sqrt(3)/2, 0.5, 0.0, 0.0],
+    #     [0.0, 0.0, 1.0, 0.0],
+    #     [0.0, 0.0, 0.0, 1.0]])
+    #
+    # Binv = inv(B)
+    #
+    # v1 = array([[1.0, 0.0, 0.0, 1.0], [0.0, 1.0, 0.0, 1.0]])
+    #
+    # v1_prime = dot(Binv,v1.transpose()).transpose()
+    # print "the image of v1="+str(v1)+" is v1_prime=" + str(v1_prime)
+    #
+    #
+    # v_tr = array([2.0, 3.0, 4.0])
+    # # v_tr = array([0.0, 0.0, 0.0])
+    # Binv_tr = Binv
+    # Binv_tr[0:3, 3:4] = array([v_tr]).transpose()
+    # print "Binv_tr="+str(Binv_tr)
+    #
+    # v1_prime_tr = dot(Binv_tr, v1.transpose()).transpose()
+    # print "the translated image of v1="+str(v1)+" is v1_prime_tr=" + str(v1_prime_tr)
+    #
+    # Basis = B[0:3,0:3]
+    # T = ChangeOfBasis(Basis, -v_tr)
+    # v1_prime_tr_T = T.apply(array([[1.0, 0.0, 0.0],[0.0, 1.0, 0.0]]))
+    # print "the translated image of v1="+str(v1)+" is v1_prime_tr_T=" + str(v1_prime_tr_T)
+    #
+    # AT = AxisTransform(new_origin=-v_tr, point_on_x_axis=B[0,0:3]-v_tr, point_on_xy_plane=B[1,0:3]-v_tr)
+    # v1_prime_tr_AT = AT.apply(array([[1.0, 0.0, 0.0],[0.0, 1.0, 0.0]]))
+    # print "the translated image of v1="+str(v1)+" is v1_prime_tr_AT=" + str(v1_prime_tr_AT)
+
+    v_tr = array([2.0, 3.0, 4.0])
+
+    # translate by -v_tr
+    T_tr = eye(4)
+    T_tr[0:3, 3:4] = -array([v_tr]).transpose()
+
+    # rotate 60 degrees
+    B = array([
+        [0.5, sqrt(3)/2, 0.0, 0.0],
+        [-sqrt(3)/2, 0.5, 0.0, 0.0],
+        [0.0, 0.0, 1.0, 0.0],
+        [0.0, 0.0, 0.0, 1.0]])
+
+
+    B_tr = dot(B, T_tr)
+
+
+    v1 = array([[2.0, 3.0, 4.0, 1.0], [2.0+0.5, 3.0+sqrt(3)/2, 4.0, 1.0], [1.0, 0.0, 0.0, 1.0], [0.0, 1.0, 0.0, 1.0]])
+
+    v1_prime = dot(B_tr,v1.transpose()).transpose()
+    print "the image of v1="+str(v1)+" is v1_prime=" + str(v1_prime)
+
+    AT = AxisTransform(new_origin=v_tr, point_on_x_axis=[2.0+0.5, 3.0+sqrt(3)/2, 4.0], point_on_xy_plane=[2.0, 4.0, 4.0])
+    v1_prime_tr_AT = AT.apply(v1[:,0:3])
+    print "the image of v1="+str(v1[:,0:3])+" is v1_prime_tr_AT=" + str(v1_prime_tr_AT)

@@ -1,6 +1,7 @@
 from mayavi.tools.sources import vector_scatter
 from mbuild.coordinate_transform import RotationAroundY, RotationAroundZ
 from mbuild.plot import Plot
+from methane import Methane
 
 __author__ = 'sallai'
 from mbuild.compound import *
@@ -14,11 +15,17 @@ class MpcMonomer(Compound):
 
         # read xyz file, turn on labeling (first C is labeled C_0, second C is C_1, and so on)
         mpc = Xyz('mpc_monomer.xyz', labels=True)
+        # mpc = Methane()
+        mpc.transform(RotationAroundZ(pi/3))
+        mpc.transform(Translation(np.array([2,3,4])))
+
         self.add(mpc,'mpc_monomer_xyz')
 
         # find the two atoms of the carbon chain
         cbottom_pos = np.hstack(mpc.C_1.pos)
         ctop_pos = np.hstack(mpc.C_10.pos)
+        # cbottom_pos = np.hstack(mpc.c.pos)
+        # ctop_pos = np.hstack(mpc.h1.pos)
 
         print "ctop_pos=" +str(ctop_pos)
         print "cbottom_pos=" +str(cbottom_pos)
@@ -34,6 +41,8 @@ class MpcMonomer(Compound):
         # find the new positions of the two atoms of the carbon chain
         cbottom_pos = np.hstack(mpc.C_1.pos)
         ctop_pos = np.hstack(mpc.C_10.pos)
+        # cbottom_pos = np.hstack(mpc.c.pos)
+        # ctop_pos = np.hstack(mpc.h1.pos)
 
         print "ctop_pos=" +str(ctop_pos)
         print "cbottom_pos=" +str(cbottom_pos)

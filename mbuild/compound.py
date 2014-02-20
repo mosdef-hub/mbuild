@@ -1,4 +1,4 @@
-from mbuild import orderedset
+
 from mbuild.angle import Angle
 from mbuild.bond import Bond
 from mbuild.dihedral import Dihedral

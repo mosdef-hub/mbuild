@@ -269,6 +269,14 @@ class Plot(object):
                 fig.glyph.glyph.clamping = False
 
 
+        # print axes
+        axessrc = mlab.pipeline.vector_scatter(np.array([0,0,0]), np.array([0,0,0]), np.array([0,0,0]), np.array([1,0,0]), np.array([0,1,0]), np.array([0,0,1]))
+        fig = mlab.pipeline.vectors(axessrc, mode='arrow', scale_mode='vector', scale_factor=1.0, color=(1,1,1))
+
+        axessrc = mlab.pipeline.vector_scatter(np.array([0]), np.array([0]), np.array([0]), np.array([1]), np.array([0]), np.array([0]))
+        fig = mlab.pipeline.vectors(axessrc, mode='arrow', scale_mode='vector', scale_factor=1.0, color=(1,0,0))
+
+
         self.mlab = mlab
 
     def show(self):
