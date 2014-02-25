@@ -60,6 +60,7 @@ if __name__ == "__main__":
     #
     # for a in m.atoms():
     #     print a
+
     Prototype('o-si', color='grey')
     # Prototype('O', color='blue')
     Plot(m, bonds=False, verbose=True).show()

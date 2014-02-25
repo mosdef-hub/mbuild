@@ -16,7 +16,7 @@ from mbuild.atom import *
 from collections import OrderedDict
 from itertools import *
 from copy import copy, deepcopy
-from mbuild.orderedset import *
+from mbuild.OrderedSet import *
 import numpy as np
 from numpy.linalg import norm
 
