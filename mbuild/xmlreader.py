@@ -1,4 +1,5 @@
 import imp
+from mbuild.plot import Plot
 from mbuild.xyz import Xyz
 from mbuild.treeview import TreeView
 
@@ -64,7 +65,7 @@ class XmlReader(object):
                     if src.endswith(".xml"):
                         compound = XmlReader.read(src, cwd=self.cwd)
                     elif src.endswith(".xyz"):
-                        compound = Xyz.create(src, cwd=self.cwd)
+                        compound = Xyz(src, cwd=self.cwd)
                     elif src.endswith(".py"):
                         def load_from_file(filepath, expectedClass=None, baseClass=None):
                             class_inst = None
@@ -95,7 +96,7 @@ class XmlReader(object):
                         compoundClass = load_from_file(os.path.join(self.cwd,src), baseClass=Compound, expectedClass=os.path.splitext(os.path.split(src)[-1])[0])
 
                         print compoundClass
-                        compound = compoundClass.create(**src_params)
+                        compound = compoundClass(**src_params)
                         # compound = compoundClass.create(*src_params, cwd=self.cwd )
                     else:
                         raise Exception, "don't know how to load " + src
@@ -104,7 +105,7 @@ class XmlReader(object):
                     compound = deepcopy(compound)
                 # self.elem_to_compound[elem] = compound
             else:
-                compound = Compound.create(kind=elem.get("kind"))
+                compound = Compound(kind=elem.get("kind"))
                 self.kind_to_compound[compound.kind] = compound
                 # self.elem_to_compound[elem] = compound
 
@@ -129,7 +130,9 @@ class XmlReader(object):
 
 
         elif elem.tag == "alias":
-            ancestor_compounds[-2].addAlias(parent_compound, elem.get("label") )
+            # add as a reference (will not be added to the set of contained parts)
+            # allow replacing previous reference with the same label
+            ancestor_compounds[-2].add(parent_compound, elem.get("label"), containment=False, replace=True)
 
         elif elem.tag == "repeat":
             count = int(elem.get("count"))
@@ -187,7 +190,7 @@ class XmlReader(object):
             assert(len(coords) == 3)
             pos = (float(coords[0]), float(coords[1]), float(coords[2]))
 
-            atom = Atom.create(kind=elem.tag, pos=pos)
+            atom = Atom(kind=elem.tag, pos=pos)
             parent_compound.add(atom, elem.get("label"))
 
 
@@ -195,7 +198,8 @@ class XmlReader(object):
 if __name__ == "__main__":
     # compound = XmlReader.read("xml/methane.xml")
     # compound = XmlReader.read("xml/ethane.xml")
-    # compound = XmlReader.read("xml/nalkane.xml")
-    compound = XmlReader.read("xml/C_3.xml")
+    compound = XmlReader.read("xml/nalkane.xml")
+    # compound = XmlReader.read("xml/C_3.xml")
     # compound = XmlReader.read("xml/nalkane2.xml")
-    TreeView(compound).show()
+    # TreeView(compound).show()
+    Plot(compound, verbose=True).show()
