@@ -4,7 +4,6 @@
 		<transform>
 			<equivalence my="bottom_tail.female_port" target="top_tail.male_port" />
 		</transform>
-        <alias label="hihi"/>
 	</compound>
 </compound>
 
