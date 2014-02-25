@@ -7,40 +7,34 @@ __author__ = 'sallai'
 from mbuild.compound import *
 from mbuild.xyz import *
 from mbuild.port import *
+import pdb
 
-class MpcMonomer(Compound):
+class Initiator(Compound):
 
     def __init__(self, ctx={}, alpha=0):
-        super(MpcMonomer, self).__init__(ctx=ctx)
+        super(Initiator, self).__init__(ctx=ctx)
 
         # read xyz file, turn on labeling (first C is labeled C_0, second C is C_1, and so on)
-        mpc = Xyz('mpc_monomer.xyz', labels=True)
-        mpc.transform(RotationAroundZ(pi/3))
-        mpc.transform(Translation(np.array([2,3,4])))
+        initiator = Xyz('initiator.xyz', labels=True)
+        #initiator.transform(RotationAroundZ(pi/3))
+        #initiator.transform(Translation(np.array([2,3,4])))
 
-        self.add(mpc,'mpc_monomer_xyz')
+        self.add(initiator,'initiator_xyz')
 
         # find the two atoms of the carbon chain
-        cbottom_pos = np.hstack(mpc.C_1.pos)
-        ctop_pos = np.hstack(mpc.C_10.pos)
+        ctop_pos = np.array(initiator.C_7.pos)
+        cbot_pos = np.array(initiator.C_0.pos)
 
-        # transform the coordinate system of mpc such that the two carbon atoms that are part of the backbone are on
-        # the x axis, cbottom at the origin
-        mpc.transform(AxisTransform(new_origin=cbottom_pos, point_on_x_axis=ctop_pos))
+        initiator.transform(AxisTransform(new_origin=cbot_pos, point_on_x_axis=ctop_pos))
+        initiator.transform(RotationAroundZ(pi/2))
 
-        # rotate MPC such that ctop and cbottom are on the y axis
-        mpc.transform(RotationAroundZ(pi/2))
-
-
-        # find the new positions of the two atoms of the carbon chain
-        cbottom_pos = np.hstack(mpc.C_1.pos)
-        ctop_pos = np.hstack(mpc.C_10.pos)
-
+        ctop_pos = np.array(initiator.C_7.pos)
+        cbot_pos = np.array(initiator.C_0.pos)
 
         # add bottom port
         self.add(Port(),'bottom_port')
         # compute position of bottom port
-        bottom_port_pos = ctop_pos - (ctop_pos - cbottom_pos)*1.5
+        bottom_port_pos = ctop_pos - (ctop_pos - cbot_pos)*1.1
         # move the port there
         self.bottom_port.transform(Translation(bottom_port_pos))
 
@@ -50,13 +44,15 @@ class MpcMonomer(Compound):
         self.top_port.transform(RotationAroundY(alpha))
 
         # compute position of bottom port
-        top_port_pos = cbottom_pos - (cbottom_pos - ctop_pos)*1.5
+        top_port_pos = cbot_pos - (cbot_pos - ctop_pos)*1.1
         # move the port there
         self.top_port.transform(Translation(top_port_pos))
 
 
+
+
 if __name__ == "__main__":
-    m = MpcMonomer()
+    m = Initiator()
     print m
     Plot(m, verbose=True).show()
 

@@ -20,10 +20,10 @@ class Monolayer(Compound):
             if isinstance(port, Port):
                 alkyl = NAlkyl(ctx=ctx, n=chain_length)
                 alkyl.transform([(alkyl.port, port)])
-                self.add( alkyl)
+                self.add(alkyl)
 
 if __name__ == "__main__":
     m = Monolayer(chain_length=8)
     # print [(label,atom.pos) for label, atom in m.atoms()]
-    TreeView(m).show()
-    # m.plot(labels=False, verbose=True)
+    #TreeView(m).show()
+    Plot(m, verbose=True).show()
