@@ -16,7 +16,7 @@ from mbuild.atom import *
 from collections import OrderedDict
 from itertools import *
 from copy import copy, deepcopy
-from mbuild.OrderedSet import *
+from mbuild.orderedset import *
 import numpy as np
 from numpy.linalg import norm
 
@@ -60,82 +60,71 @@ class Compound(object):
     #
     #     setattr(self, alias_label, self._components[label])
 
-    def add(self, new_obj, label=None):
+    def add(self, new_obj, label=None, containment=True, replace=False):
+        if containment:
+            # add atom as a part, set a reference to it
+            if isinstance(new_obj, Atom):
+                self.parts.add(new_obj)
 
-        # add atom as a part, set a reference to it
-        if isinstance(new_obj, Atom):
-            self.parts.add(new_obj)
-            if label is not None:
+            # add compound as a part, set a reference to it
+            elif isinstance(new_obj, Compound):
+                self.parts.add(new_obj)
 
-                # support label with counter
-                if label.endswith("#"):
-                    i = 0
-                    while label.replace("#", str(i)) in self.references.keys():
-                        i += 1
-                    label = label.replace("#", str(i))
+            # add bond to compound
+            elif isinstance(new_obj, Bond):
+                # don't add B-A if A-B is already added
+                # print "self.bonds before adding: " + str(list(self.bonds))
+                # print "adding bond "+str(new_obj)
+                if not new_obj in self.bonds and not new_obj.cloneImage() in self.bonds:
+                    if not reference:
+                        self.bonds.add(new_obj)
+                    new_obj.atom1.bonds.add(new_obj)
+                    new_obj.atom2.bonds.add(new_obj)
+                # print "self.bonds after adding:  " + str(list(self.bonds))
 
-                if label in self.references.keys():
-                    raise Exception("label " + label + " already exists in " + str(self))
-                else:
-                    self.references[label] = new_obj
-                    setattr(self, label, new_obj)
+            # add angle to compound
+            elif isinstance(new_obj, Angle):
+                # don't add A-B-C if C-B-A is already added
+                if not new_obj in self.angles and not new_obj.cloneImage() in self.angles:
+                    if not reference:
+                        self.angles.add(new_obj)
+                    new_obj.atom1.angles.add(new_obj)
+                    new_obj.atom2.angles.add(new_obj)
+                    new_obj.atom3.angles.add(new_obj)
 
-        # add compound as a part, set a reference to it
-        elif isinstance(new_obj, Compound):
-            self.parts.add(new_obj)
-            if label is not None:
+            # add dihedral to compound
+            elif isinstance(new_obj, Dihedral):
+                # don't add A-B-C-D if D-C-B-A is already added
+                if not new_obj in self.dihedrals and not new_obj.cloneImage() in self.dihedrals:
+                    if not reference:
+                        self.dihedrals.add(new_obj)
+                    new_obj.atom1.dihedrals.add(new_obj)
+                    new_obj.atom2.dihedrals.add(new_obj)
+                    new_obj.atom3.dihedrals.add(new_obj)
+                    new_obj.atom4.dihedrals.add(new_obj)
 
-                # support label with counter
-                if label.endswith("#"):
-                    i = 0
-                    while label.replace("#", str(i)) in self.references.keys():
-                        i += 1
-                    label = label.replace("#", str(i))
+            # support batch add
+            elif isinstance(new_obj, (list, tuple)):
+                for elem in new_obj:
+                    self.add(elem)
 
-                if label in self.references.keys():
-                    raise Exception("label " + label + " already exists in " + str(self))
-                else:
-                    self.references[label] = new_obj
-                    setattr(self, label, new_obj)
+            else:
+                raise Exception("can't add unknown type " + str(new_obj))
 
-        # add bond to compound
-        elif isinstance(new_obj, Bond):
-            # don't add B-A if A-B is already added
-            # print "self.bonds before adding: " + str(list(self.bonds))
-            # print "adding bond "+str(new_obj)
-            if not new_obj in self.bonds and not new_obj.cloneImage() in self.bonds:
-                self.bonds.add(new_obj)
-                new_obj.atom1.bonds.add(new_obj)
-                new_obj.atom2.bonds.add(new_obj)
-            # print "self.bonds after adding:  " + str(list(self.bonds))
+        # add new_obj to references
+        if label is not None:
+            # support label with counter
+            if label.endswith("#"):
+                i = 0
+                while label.replace("#", str(i)) in self.references.keys():
+                    i += 1
+                label = label.replace("#", str(i))
 
-
-        # add angle to compound
-        elif isinstance(new_obj, Angle):
-            # don't add A-B-C if C-B-A is already added
-            if not new_obj in self.angles and not new_obj.cloneImage() in self.angles:
-                self.angles.add(new_obj)
-                new_obj.atom1.angles.add(new_obj)
-                new_obj.atom2.angles.add(new_obj)
-                new_obj.atom3.angles.add(new_obj)
-
-        # add dihedral to compound
-        elif isinstance(new_obj, Dihedral):
-            # don't add A-B-C-D if D-C-B-A is already added
-            if not new_obj in self.dihedrals and not new_obj.cloneImage() in self.dihedrals:
-                self.dihedrals.add(new_obj)
-                new_obj.atom1.dihedrals.add(new_obj)
-                new_obj.atom2.dihedrals.add(new_obj)
-                new_obj.atom3.dihedrals.add(new_obj)
-                new_obj.atom4.dihedrals.add(new_obj)
-
-        # support batch add
-        elif isinstance(new_obj, (list, tuple)):
-            for elem in new_obj:
-                self.add(elem)
-
-        else:
-            raise Exception("can't add unknown type " + str(new_obj))
+            if not replace and label in self.references.keys():
+                raise Exception("label " + label + " already exists in " + str(self))
+            else:
+                self.references[label] = new_obj
+                setattr(self, label, new_obj)
 
 
     @staticmethod
