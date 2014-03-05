@@ -1,8 +1,8 @@
+__author__ = 'sallai'
+
 import operator
 from mbuild.plot import Plot
 from mpc_monomer import MpcMonomer
-
-__author__ = 'sallai'
 from mbuild.compound import *
 from mbuild.xyz import *
 from mbuild.port import *
@@ -30,11 +30,13 @@ class Pmpc(Compound):
             last_part = this_part
 
         top_port = Port()
+        top_port.transform(RotationAroundZ(pi))
         translateTo = map(operator.sub,last_part.top_port.middle.pos, top_port.middle.pos)
         top_port.transform(Translation(tuple(translateTo)))
         self.add(top_port, "top_port")
 
         bottom_port = Port()
+        bottom_port.transform(RotationAroundZ(pi))
         translateTo = map(operator.sub,first_part.bottom_port.middle.pos, bottom_port.middle.pos)
         bottom_port.transform(Translation(tuple(translateTo)))
         self.add(bottom_port, "bottom_port")
@@ -42,6 +44,6 @@ class Pmpc(Compound):
 
 
 if __name__ == "__main__":
-    m = Pmpc(n=5)
+    m = Pmpc(n=13)
     # TreeView(m, verbose=True).show()
     Plot(m, verbose=True).show()

@@ -1,10 +1,11 @@
 __author__ = 'sallai'
 
-from tile import *
+from copy import deepcopy
+
 from mbuild.ndimmesh import *
-from mbuild.twodimmesh import *
+from sandbox.twodimmesh import *
 from buckyballtile import *
-from copy import copy, deepcopy
+
 
 if __name__ == "__main__":
     # create a new buckyballtile every time

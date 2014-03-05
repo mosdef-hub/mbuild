@@ -1,3 +1,4 @@
+from mbuild.plot import Plot
 from mbuild.port import Port
 
 __author__ = 'sallai'
@@ -5,7 +6,6 @@ __author__ = 'sallai'
 from alkane_tail import AlkaneTail
 from alkane_body import AlkaneBody
 from mbuild.compound import *
-from methane import *
 import operator
 
 class NAlkyl(Compound):

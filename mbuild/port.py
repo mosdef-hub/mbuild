@@ -7,5 +7,5 @@ class Port(Compound):
         super(Port, self).__init__(kind='Port', ctx=ctx)
         self.add(Atom(kind='G', pos=(0, 0, 0)), 'middle')
         self.add(Atom(kind='G', pos=(0, 0.2, 0)), 'top')
-        self.add(Atom(kind='G', pos=(-0.2, -0.2, 0)), 'left')
-        self.add(Atom(kind='G', pos=(0.0, -0.2, 0)), 'right')
+        self.add(Atom(kind='G', pos=(-0.2, -0.1, 0)), 'left')
+        self.add(Atom(kind='G', pos=(0.0, -0.2, 0.1)), 'right')

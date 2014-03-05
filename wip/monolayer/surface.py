@@ -62,4 +62,4 @@ if __name__ == "__main__":
     #     print a
     Prototype('o-si', color='grey')
     # Prototype('O', color='blue')
-    Plot(m, bonds=False, verbose=True).show()
+    Plot(m, bonds=True, verbose=True).show()

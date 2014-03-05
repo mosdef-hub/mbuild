@@ -1,10 +1,8 @@
-from mbuild.port import Port
-from mbuild.treeview import TreeView
-
 __author__ = 'sallai'
 
+from mbuild.port import Port
+from mbuild.treeview import TreeView
 from mbuild.compound import *
-from methane import *
 from surface import Surface
 from n_alkyl import NAlkyl
 

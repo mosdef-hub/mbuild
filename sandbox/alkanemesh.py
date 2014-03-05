@@ -1,11 +1,7 @@
 __author__ = 'sallai'
 
-from alkane_tail import AlkaneTail
-from alkane_body import AlkaneBody
 from mbuild.compound import *
-from methane import *
-from mbuild.twodimmesh import *
-from n_alkane import  *
+from sandbox.twodimmesh import *
 from nalkanetile import *
 
 class AlkaneMesh(Compound):

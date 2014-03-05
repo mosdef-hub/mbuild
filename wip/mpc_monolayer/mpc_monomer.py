@@ -1,7 +1,5 @@
-from mayavi.tools.sources import vector_scatter
 from mbuild.coordinate_transform import RotationAroundY, RotationAroundZ
 from mbuild.plot import Plot
-from methane import Methane
 
 __author__ = 'sallai'
 from mbuild.compound import *
@@ -21,44 +19,40 @@ class MpcMonomer(Compound):
         self.add(mpc,'mpc_monomer_xyz')
 
         # find the two atoms of the carbon chain
-        cbottom_pos = np.hstack(mpc.C_1.pos)
-        ctop_pos = np.hstack(mpc.C_10.pos)
-
-        print "ctop_pos=" +str(ctop_pos)
-        print "cbottom_pos=" +str(cbottom_pos)
+        ctop_pos = np.hstack(mpc.C_1.pos)
+        cbottom_pos = np.hstack(mpc.C_10.pos)
 
         # transform the coordinate system of mpc such that the two carbon atoms that are part of the backbone are on
-        # the x axis, cbottom at the origin
-        mpc.transform(AxisTransform(new_origin=cbottom_pos, point_on_x_axis=ctop_pos))
+        # the x axis, ctop at the origin
+        mpc.transform(AxisTransform(new_origin=ctop_pos, point_on_x_axis=cbottom_pos))
 
-        # rotate MPC such that ctop and cbottom are on the y axis
+        # rotate MPC such that cbottom and ctop are on the y axis
         mpc.transform(RotationAroundZ(pi/2))
 
 
         # find the new positions of the two atoms of the carbon chain
-        cbottom_pos = np.hstack(mpc.C_1.pos)
-        ctop_pos = np.hstack(mpc.C_10.pos)
+        ctop_pos = np.hstack(mpc.C_1.pos)
+        cbottom_pos = np.hstack(mpc.C_10.pos)
 
-        print "ctop_pos=" +str(ctop_pos)
-        print "cbottom_pos=" +str(cbottom_pos)
-
-
-        # add bottom port
-        self.add(Port(),'bottom_port')
-        # compute position of bottom port
-        bottom_port_pos = ctop_pos - (ctop_pos - cbottom_pos)*1.5
-        # move the port there
-        self.bottom_port.transform(Translation(bottom_port_pos))
+        # print "cbottom_pos=" +str(cbottom_pos)
+        # print "ctop_pos=" +str(ctop_pos)
 
         # add top port
         self.add(Port(),'top_port')
-        # rotate around y by alpha
-        self.top_port.transform(RotationAroundY(alpha))
-
-        # compute position of bottom port
+        # compute position of top port
         top_port_pos = cbottom_pos - (cbottom_pos - ctop_pos)*1.5
         # move the port there
         self.top_port.transform(Translation(top_port_pos))
+
+        # add bottom port
+        self.add(Port(),'bottom_port')
+        # rotate around y by alpha
+        self.bottom_port.transform(RotationAroundY(alpha))
+
+        # compute position of top port
+        bottom_port_pos = ctop_pos - (ctop_pos - cbottom_pos)*1.5
+        # move the port there
+        self.bottom_port.transform(Translation(bottom_port_pos))
 
 
 if __name__ == "__main__":

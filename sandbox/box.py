@@ -1,8 +1,6 @@
 __author__ = 'sallai'
 from mbuild.compound import *
 from mbuild.port import *
-from mbuild.treeview import *
-from copy import copy, deepcopy
 
 
 class Box(Compound):
@@ -74,7 +72,7 @@ class Box(Compound):
         self.down_female_port.transform(Translation((0, 0, bbmin[0] - space)))
 
 if __name__ == "__main__":
-    from methane import *
+    from examples.methane.methane import *
     def creator(ctx={}):
         return Methane.create(ctx)
 

@@ -55,7 +55,7 @@ class OneDimFill(NDimMesh):
 
 if __name__ == "__main__":
 
-    from methane import *
+    from examples.methane.methane import *
     from box import *
 
     methaneBox = Box.create(Methane.create,ctx={})

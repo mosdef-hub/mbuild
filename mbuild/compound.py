@@ -284,6 +284,10 @@ class Compound(object):
 
         return (minx, miny, minz), (maxx, maxy, maxz)
 
+    def boundingbox_diameter(self, excludeG=True):
+        (minx, miny, minz), (maxx, maxy, maxz) = self.boundingbox(excludeG=excludeG)
+        return max([maxx-minx, maxy-miny, maxz-minz])
+
     def rename(self, array_of_pairs):
         for pair in array_of_pairs:
             for atom in self.getAtomsByKind(pair[0]):
