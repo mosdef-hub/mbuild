@@ -12,6 +12,8 @@ class Plot(object):
     def __init__(self, compound, verbose=False, atoms=True, bonds=True, angles=True, dihedrals=True):
         assert(isinstance(compound, Compound))
 
+        max_bond_dist = compound.boundingbox_diameter()/2.0
+
         # display atoms
         if atoms:
             # sort atoms by type
@@ -83,6 +85,9 @@ class Plot(object):
                     p1 = pos1 + v12/d12 * epsilon
                     tube_length = d12-2*epsilon
                     v12 = v12/d12*tube_length
+
+                    if tube_length > max_bond_dist:
+                        continue
 
                     x2.append(p1[0])
                     y2.append(p1[1])
@@ -269,12 +274,15 @@ class Plot(object):
                 fig.glyph.glyph.clamping = False
 
 
-        # print axes
-        axessrc = mlab.pipeline.vector_scatter(np.array([0,0,0]), np.array([0,0,0]), np.array([0,0,0]), np.array([1,0,0]), np.array([0,1,0]), np.array([0,0,1]))
-        fig = mlab.pipeline.vectors(axessrc, mode='arrow', scale_mode='vector', scale_factor=1.0, color=(1,1,1))
-
+        # display axes
         axessrc = mlab.pipeline.vector_scatter(np.array([0]), np.array([0]), np.array([0]), np.array([1]), np.array([0]), np.array([0]))
         fig = mlab.pipeline.vectors(axessrc, mode='arrow', scale_mode='vector', scale_factor=1.0, color=(1,0,0))
+
+        axessrc = mlab.pipeline.vector_scatter(np.array([0]), np.array([0]), np.array([0]), np.array([0]), np.array([1]), np.array([0]))
+        fig = mlab.pipeline.vectors(axessrc, mode='arrow', scale_mode='vector', scale_factor=1.0, color=(0,1,0))
+
+        axessrc = mlab.pipeline.vector_scatter(np.array([0]), np.array([0]), np.array([0]), np.array([0]), np.array([0]), np.array([1]))
+        fig = mlab.pipeline.vectors(axessrc, mode='arrow', scale_mode='vector', scale_factor=1.0, color=(0,0,1))
 
 
         self.mlab = mlab

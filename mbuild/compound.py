@@ -1,23 +1,22 @@
-
-from mbuild.angle import Angle
-from mbuild.bond import Bond
-from mbuild.dihedral import Dihedral
-from mbuild.periodic_kdtree import PeriodicCKDTree
-
 __author__ = 'sallai'
-from matplotlib import pyplot
-from mpl_toolkits.mplot3d import Axes3D
-import pdb
-from mayavi import mlab
-from tvtk.api import tvtk
+
+from .angle import Angle
+from .bond import Bond
+from .dihedral import Dihedral
+from .periodic_kdtree import PeriodicCKDTree
+# from matplotlib import pyplot
+# from mpl_toolkits.mplot3d import Axes3D
+# import pdb
+# from mayavi import mlab
+# from tvtk.api import tvtk
 import numpy as np
-from mbuild.coordinate_transform import *
-from mbuild.atom import *
+from .coordinate_transform import *
+from .atom import *
 from collections import OrderedDict
 from itertools import *
-from copy import copy, deepcopy
-from mbuild.orderedset import *
-import numpy as np
+# from copy import copy, deepcopy
+from .orderedset import *
+# import numpy as np
 from numpy.linalg import norm
 
 class Compound(object):
@@ -76,7 +75,7 @@ class Compound(object):
                 # print "self.bonds before adding: " + str(list(self.bonds))
                 # print "adding bond "+str(new_obj)
                 if not new_obj in self.bonds and not new_obj.cloneImage() in self.bonds:
-                    if not reference:
+                    if containment:
                         self.bonds.add(new_obj)
                     new_obj.atom1.bonds.add(new_obj)
                     new_obj.atom2.bonds.add(new_obj)
@@ -86,7 +85,7 @@ class Compound(object):
             elif isinstance(new_obj, Angle):
                 # don't add A-B-C if C-B-A is already added
                 if not new_obj in self.angles and not new_obj.cloneImage() in self.angles:
-                    if not reference:
+                    if containment:
                         self.angles.add(new_obj)
                     new_obj.atom1.angles.add(new_obj)
                     new_obj.atom2.angles.add(new_obj)
@@ -96,7 +95,7 @@ class Compound(object):
             elif isinstance(new_obj, Dihedral):
                 # don't add A-B-C-D if D-C-B-A is already added
                 if not new_obj in self.dihedrals and not new_obj.cloneImage() in self.dihedrals:
-                    if not reference:
+                    if containment:
                         self.dihedrals.add(new_obj)
                     new_obj.atom1.dihedrals.add(new_obj)
                     new_obj.atom2.dihedrals.add(new_obj)
@@ -277,6 +276,10 @@ class Compound(object):
         for pair in array_of_pairs:
             for atom in self.getAtomsByKind(pair[0]):
                 atom.kind = pair[1]
+
+    def boundingbox_diameter(self, excludeG=True):
+        (minx, miny, minz), (maxx, maxy, maxz) = self.boundingbox(excludeG=excludeG)
+        return max([maxx-minx, maxy-miny, maxz-minz])
 
     # def plot(self, verbose=False, labels=True):
     #     """
