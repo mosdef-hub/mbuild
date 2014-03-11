@@ -1,9 +1,9 @@
 from warnings import warn
 
 __author__ = 'sallai'
-import numpy as np
-import pdb
-from mbuild.atom import *
+# import numpy as np
+# import pdb
+from .atom import *
 import copy
 
 class Angle(object):

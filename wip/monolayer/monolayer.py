@@ -5,6 +5,7 @@ from mbuild.treeview import TreeView
 from mbuild.compound import *
 from surface import Surface
 from n_alkyl import NAlkyl
+from mbuild.plot import Plot
 
 class Monolayer(Compound):
 

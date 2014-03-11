@@ -1,4 +1,4 @@
-from mbuild.moleculemodel import MoleculeModel
+# from mbuild.moleculemodel import MoleculeModel
 from mbuild.plot import Plot
 from mbuild.prototype import Prototype
 from mbuild.rules import RuleEngine

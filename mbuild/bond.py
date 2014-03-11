@@ -1,9 +1,9 @@
 from copy import copy
 from warnings import warn
-from mbuild.atom import Atom
-__author__ = 'sallai'
-import numpy as np
+# from mbuild.atom import Atom
+# import numpy as np
 
+__author__ = 'sallai'
 class Bond(object):
     def __init__(self, atom1, atom2, kind='undefined'):
         assert(isinstance(kind, basestring))

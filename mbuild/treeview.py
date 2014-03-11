@@ -1,10 +1,9 @@
-import os
-import glob
+# import os
+# import glob
 import Tkinter
 import ttk
-from mbuild.compound import *
-from mbuild.plot import Plot
-
+from .compound import *
+from .plot import Plot
 
 class TreeView(object):
 

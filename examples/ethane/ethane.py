@@ -1,7 +1,7 @@
 __author__ = 'sallai'
 
-from mbuild.plot import Plot
-from mbuild.rules import RuleEngine
+# from mbuild.plot import Plot
+# from mbuild.rules import RuleEngine
 from mbuild.treeview import TreeView
 from alkane_tail import AlkaneTail
 from mbuild.compound import *

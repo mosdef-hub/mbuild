@@ -1,7 +1,7 @@
 __author__ = 'sallai'
 import numpy as np
-import pdb
-from mbuild.atom import *
+# import pdb
+from .atom import *
 import copy
 
 class Dihedral(object):

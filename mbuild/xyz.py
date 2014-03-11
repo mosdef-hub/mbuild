@@ -1,7 +1,7 @@
-from mbuild.treeview import TreeView
-
 __author__ = 'sallai'
-from mbuild.compound import *
+
+from .treeview import TreeView
+from .compound import *
 import os.path
 
 class Xyz(Compound):

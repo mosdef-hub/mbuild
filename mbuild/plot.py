@@ -1,8 +1,8 @@
-import operator
-from mbuild.compound import Compound
-from mbuild.prototype import Prototype
-
 __author__ = 'sallai'
+
+import operator
+from .compound import Compound
+from .prototype import Prototype
 from mayavi import mlab
 import numpy as np
 import webcolors

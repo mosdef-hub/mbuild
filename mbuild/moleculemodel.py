@@ -4,10 +4,10 @@ from mayavi.tools.sources import vector_scatter
 import numpy
 #from scipy.spatial.ckdtree import cKDTree
 from periodic_kdtree import PeriodicCKDTree as cKDTree
-from mbuild.angle import Angle
-from mbuild.atom import Atom
-from mbuild.bond import Bond
-from mbuild.dihedral import Dihedral
+from .angle import Angle
+from .atom import Atom
+from .bond import Bond
+from .dihedral import Dihedral
 import numpy as np
 __author__ = 'sallai'
 
