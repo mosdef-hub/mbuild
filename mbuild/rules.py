@@ -1,12 +1,6 @@
 __author__ = 'sallai'
-# from __builtin__ import classmethod
-# from itertools import *
-# from mbuild.moleculemodel import MoleculeModel
 
 from .xyz import *
-# from mbuild.bond import *
-# from mbuild.angle import *
-# from mbuild.dihedral import *
 
 
 

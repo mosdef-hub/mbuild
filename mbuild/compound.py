@@ -10,12 +10,12 @@ from .periodic_kdtree import PeriodicCKDTree
 # from mayavi import mlab
 # from tvtk.api import tvtk
 import numpy as np
-from .coordinate_transform import *
-from .atom import *
+from coordinate_transform import *
+from atom import *
 from collections import OrderedDict
 from itertools import *
 # from copy import copy, deepcopy
-from .orderedset import *
+from orderedset import *
 # import numpy as np
 from numpy.linalg import norm
 

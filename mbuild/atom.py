@@ -3,7 +3,7 @@ __author__ = 'sallai'
 # import inspect
 # import sys
 
-from .coordinate_transform import *
+from coordinate_transform import *
 
 class Atom(object):
 

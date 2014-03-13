@@ -2,8 +2,8 @@
 # import glob
 import Tkinter
 import ttk
-from .compound import *
-from .plot import Plot
+from compound import *
+from plot import Plot
 
 class TreeView(object):
 

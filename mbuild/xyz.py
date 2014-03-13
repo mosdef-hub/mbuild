@@ -1,7 +1,7 @@
 __author__ = 'sallai'
 
-from .treeview import TreeView
-from .compound import *
+from treeview import TreeView
+from compound import *
 import os.path
 
 class Xyz(Compound):

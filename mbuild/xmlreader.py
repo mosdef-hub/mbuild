@@ -1,11 +1,10 @@
 import imp
-from mbuild.plot import Plot
-from mbuild.xyz import Xyz
-from mbuild.treeview import TreeView
+from plot import Plot
+from xyz import Xyz
 
 __author__ = 'sallai'
 from lxml import etree
-from mbuild.compound import *
+from compound import *
 import os.path
 import re
 

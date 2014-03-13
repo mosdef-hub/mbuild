@@ -1,8 +1,3 @@
-import numpy as np
-import warnings
-import re
-import pdb
-
 
 def write_lammps_data(mm, file_name='data.system', sys_name='system'):
     """Write gbb to LAMMPS data file

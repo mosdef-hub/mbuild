@@ -1,5 +1,5 @@
 __author__ = 'sallai'
-from .compound import *
+from compound import *
 
 
 class Port(Compound):

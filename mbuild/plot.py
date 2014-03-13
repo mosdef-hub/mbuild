@@ -1,8 +1,8 @@
 __author__ = 'sallai'
 
 import operator
-from .compound import Compound
-from .prototype import Prototype
+from compound import Compound
+from prototype import Prototype
 from mayavi import mlab
 import numpy as np
 import webcolors

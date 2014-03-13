@@ -3,7 +3,7 @@ from warnings import warn
 __author__ = 'sallai'
 # import numpy as np
 # import pdb
-from .atom import *
+from atom import *
 import copy
 
 class Angle(object):
