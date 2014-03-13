@@ -1,5 +1,7 @@
 import os
 import pdb
+from mbuild.prototype import Prototype
+
 
 class OplsForceField(object):
     """A container class for the OPLS forcefield
@@ -36,16 +38,17 @@ class OplsForceField(object):
     def get_atom_types(self, compound):
         """
         """
-        for atom in compound.atoms:
-            params = self.atom_types[atom.kind]
-            Prototype(atom.kind,
-                    bond_type=params[0],
-                    atomic_num=int(params[1]),
-                    mass=float(params[2]),
-                    charge=float(params[3]),
-                    ptype=params[4],
-                    sigma=float(params[5]),
-                    epsilon=float(params[6]))
+        for atom in compound.atoms():
+            if atom.kind in self.atom_types:
+                params = self.atom_types[atom.kind]
+                Prototype(atom.kind,
+                        bond_type=params[0],
+                        atomic_num=int(params[1]),
+                        mass=float(params[2]),
+                        charge=float(params[3]),
+                        ptype=params[4],
+                        sigma=float(params[5]),
+                        epsilon=float(params[6]))
 
     def parse_bond_types(self, f):
         """

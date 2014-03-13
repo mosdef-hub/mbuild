@@ -29,7 +29,17 @@ class Plot(object):
             # import pdb
             # pdb.set_trace()
             for (kind,atomList) in d.items():
-                color = Prototype.getAttr(kind, "color", default="white")
+
+                # map atomic numbers to default color
+                default_colors = {1:"white", 6:"teal", 7:"blue", 8:"red", 15:"orange", 14:"yellow"}
+                atomicNumber = Prototype.getAttr(kind, "atomic_num", default="0")
+
+                if atomicNumber in default_colors:
+                    default_color = default_colors[atomicNumber]
+                else:
+                    default_color = "white"
+
+                color = Prototype.getAttr(kind, "color", default=default_color)
                 colorRGB=tuple(map(operator.div, webcolors.name_to_rgb(color), (256.0,256.0,256.0)))
                 radius = Prototype.getAttr(kind, "radius", default=1.0)
 

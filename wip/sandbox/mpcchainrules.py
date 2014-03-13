@@ -18,8 +18,8 @@ from mbuild.mdio import write_lammps_data
 
 class MpcChainRules(RuleEngine):
 
-    def __init__(self, model):
-        super(MpcChainRules, self).__init__(model)
+    def __init__(self, compound):
+        super(MpcChainRules, self).__init__(compound)
 
     def execute(self):
 
