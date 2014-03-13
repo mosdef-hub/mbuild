@@ -5,6 +5,9 @@ __author__ = 'sallai'
 from mbuild.compound import *
 from mbuild.xyz import *
 from mbuild.port import *
+import sys
+import os
+import pdb
 
 class MpcMonomer(Compound):
 
@@ -12,11 +15,13 @@ class MpcMonomer(Compound):
         super(MpcMonomer, self).__init__(ctx=ctx)
 
         # read xyz file, turn on labeling (first C is labeled C_0, second C is C_1, and so on)
-        mpc = Xyz('mpc_monomer.xyz', labels=True)
+        current_dir = os.path.dirname(os.path.realpath(sys.modules[__name__].__file__))
+
+        mpc = Xyz(os.path.join(current_dir, 'mpc_monomer.xyz'), labels=True)
         mpc.transform(RotationAroundZ(pi/3))
         mpc.transform(Translation(np.array([2,3,4])))
 
-        self.add(mpc,'mpc_monomer_xyz')
+        self.add(mpc, 'mpc_monomer_xyz')
 
         # find the two atoms of the carbon chain
         ctop_pos = np.hstack(mpc.C_1.pos)

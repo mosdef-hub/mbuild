@@ -1,5 +1,6 @@
 from mbuild.rules import RuleEngine
-from mpc_monomer import MpcMonomer
+from wip.mpc_monolayer.mpc_monomer import MpcMonomer
+# import wip.mpc_monolayer.mpc_monomer
 
 __author__ = 'sallai'
 
@@ -16,7 +17,7 @@ class OplsRules(RuleEngine):
             r, k = fetch_bondtype(atom1.bond_type, atom2.bond_type)
             self.add_bond(atom1.bond_type, atom2.bond_type,
                     r - r_err, r + r_err, 
-                    "{0}-{1}".format(atom1.bond_type, atom2.bond_type)
+                    "{0}-{1}".format(atom1.bond_type, atom2.bond_type))
 
 if __name__ == "__main__":
     m = MpcMonomer()
