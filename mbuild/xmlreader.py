@@ -8,6 +8,7 @@ from lxml import etree
 from compound import *
 import os.path
 import re
+import inspect
 
 class XmlReader(object):
 

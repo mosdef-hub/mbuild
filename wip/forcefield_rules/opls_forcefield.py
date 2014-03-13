@@ -9,28 +9,27 @@ class OplsForceField(object):
         """Populate the database using files bundled with GROMACS
         """
         self.atom_types = dict()
-        gmx_lib = os.getenv('GMXLIB', '')
+        # gmx_lib = os.getenv('GMXLIB', 'gromacs_forcefields')
 
-        atom_type_file = os.path.join(gmx_lib, 'oplsaa.ff/ffnonbonded.itp')
+
+        atom_type_file = os.path.join("../forcefied_api/gromacs_forcefields", 'oplsaa.ff/ffnonbonded.itp')
         with open(atom_type_file, 'r') as f:
             for line in f:
                 fields = line.split()
-                if fields[0] in [';', '[']:
-                    if fields[0][0] == '#':
-                        next(f)
+                if fields[0] in [';', '[', '#']:
+                    continue
                 self.atom_types[fields[0]] = fields[1:8]
 
         parsable_keywords = {'[ bondtypes ]': self.parse_bond_types}
-        bond_type_file = os.path.join(gmx_lib, 'oplsaa.ff/ffbonded_processed.itp')
+        bond_type_file = os.path.join("../forcefied_api/gromacs_forcefields", 'oplsaa.ff/ffbonded.itp')
         self.bond_types = dict()
         with open(bond_type_file, 'r') as f:
             for line in f:
                 if line.strip():
                     keyword = line.strip()
                     fields = line.split()
-                    if fields[0] in [';']:
-                        if fields[0][0] == '#':
-                            next(f)
+                    if fields[0][0] in [';', '#']:
+                        continue
                     elif keyword in parsable_keywords:
                         parsable_keywords[keyword](f)
 
