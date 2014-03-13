@@ -58,7 +58,7 @@ class Xyz(Compound):
 
 
 if __name__ == "__main__":
-    m = Xyz(path="c60.xyz")
+    m = Xyz(path="wip/xml/c60.xyz")
     print [a for a in m.atoms()]
 
     print m.boundingbox()

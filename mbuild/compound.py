@@ -1,22 +1,15 @@
 __author__ = 'sallai'
 
-from .angle import Angle
-from .bond import Bond
-from .dihedral import Dihedral
-from .periodic_kdtree import PeriodicCKDTree
-# from matplotlib import pyplot
-# from mpl_toolkits.mplot3d import Axes3D
-# import pdb
-# from mayavi import mlab
-# from tvtk.api import tvtk
+from angle import Angle
+from bond import Bond
+from dihedral import Dihedral
+from periodic_kdtree import PeriodicCKDTree
 import numpy as np
 from coordinate_transform import *
 from atom import *
 from collections import OrderedDict
 from itertools import *
-# from copy import copy, deepcopy
 from orderedset import *
-# import numpy as np
 from numpy.linalg import norm
 
 class Compound(object):
