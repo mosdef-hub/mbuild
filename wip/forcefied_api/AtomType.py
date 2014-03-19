@@ -9,27 +9,18 @@ from scimath.units.time import usec, msec
 
 __author__ = 'sallai'
 
-from traits.api import HasTraits, Str, Float, Int
+from traits.api import HasTraits, Str, CFloat, CInt
 from scimath.units.quantity_traits import QuantityTrait
-
-print "Unit manager in AtomType: " +str(unit_manager)
 
 
 class AtomType(HasTraits):
     kind = Str
-    bondType = Str
-    atomicNumber = Int()
-    mass = QuantityTrait(0, kilogram, 'mass')
-    # charge = QuantityTrait(0, coulomb, 'charge')
-    time = QuantityTrait(0, msec, 'time')
-    sigma = Float()
-    epsilon = Float()
+    alias = Str
+    atomicNumber = CInt(0)
+    mass = QuantityTrait(float('nan'), kilogram, 'mass')
+    charge = QuantityTrait(float('nan'), coulomb, 'charge')
+    sigma = CFloat('nan')
+    epsilon = CFloat('nan')
 
 if __name__ == "__main__":
-
-    # q = Quantity(0, units=usec)
-    # print q.family_name
-    # C = AtomType(kind='C')
-    # print C.mass
-    # print coulomb.label
     pass

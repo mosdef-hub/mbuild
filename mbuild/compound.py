@@ -215,6 +215,15 @@ class Compound(object):
                     yield subatom
 
 
+    def atomKinds(self):
+        kinds = set()
+        for atom in self.atoms():
+            kinds.add(atom.kind)
+        return kinds
+
+    def hasAtomKind(self, kind):
+        return kind in self.atomKinds()
+
     # def component(self, component_path):
     #     """
     #     Find a component by label
