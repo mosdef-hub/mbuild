@@ -1,8 +1,8 @@
 __author__ = 'sallai'
 
+import pdb
+
 from xyz import *
-
-
 
 
 class RuleEngine(object):
@@ -14,12 +14,14 @@ class RuleEngine(object):
         raise Exception("RuleEngine must be subclassed, with the execute method implemented in the subclass")
 
     def add_bond(self, type_A, type_B, dmin, dmax, kind):
-        "Ai-Bj distance is in [dmin, dmax] => add bond A1xB(Ai,Bj) (symmetric)"
+        """Ai-Bj distance is in [dmin, dmax] => add bond A1xB(Ai,Bj) (symmetric)."""
+        #for a1 in self.compound.getAtomsByBondType(type_A):
         for a1 in self.compound.getAtomsByKind(type_A):
             nearest = self.compound.getAtomsInRange(a1.pos, dmax)
             for b1 in nearest:
                 if (b1.kind==type_B) and (dmin <= self.compound.min_periodic_distance(b1.pos, a1.pos) <= dmax):
                     self.compound.add(Bond(a1, b1, kind=kind))
+                    print "Added bond of kind {0}".format(kind)
 
     def add_angle(self, type_A, type_B, type_C, kind, thmin=-Inf, thmax=Inf):
         """

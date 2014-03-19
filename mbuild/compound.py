@@ -417,6 +417,9 @@ class Compound(object):
     def getAtomsByKind(self, kind):
         return ifilter(lambda atom: (atom.kind == kind), self.atoms())
 
+    def getAtomsByBondType(self, bond_type):
+        return ifilter(lambda atom: (atom.bond_type == bond_type), self.atoms())
+
     def getBondsByAtomKind(self, kind1, kind2):
         return ifilter(lambda bond: bond.hasAtomKinds(kind1, kind2), self.bonds)
 
