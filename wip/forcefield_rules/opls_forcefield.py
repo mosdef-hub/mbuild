@@ -1,19 +1,23 @@
 import os
 import pdb
+
 from mbuild.prototype import Prototype
+import mbuild.unit as units
 
 
 class OplsForceField(object):
-    """A container class for the OPLS forcefield
-    """
+    """A container class for the OPLS forcefield."""
 
     def __init__(self):
-        """Populate the database using files bundled with GROMACS
-        """
+        """Populate the database using files bundled with GROMACS."""
         self.atom_types = dict()
         self.bond_types = dict()
         self.angle_types = dict()
         self.dihedral_types = dict()
+
+        # GROMACS specific units
+        self.DIST = units.nanometers
+        self.ENERGY = units.kilojoules_per_mole
 
         #gmx_lib = os.getenv('GMXLIB', 'gromacs_forcefields')
         #nonbonded_file = os.path.join("../forcefied_api/gromacs_forcefields",
@@ -52,7 +56,10 @@ class OplsForceField(object):
             if fields[0][0] in [';', '#']:
                 continue
             pair = (fields[0], fields[1])
-            self.bond_types[pair] = [float(field) for field in fields[3:5]]
+            if int(fields[2]) == 1:
+                r = float(fields[3]) * self.DIST
+                k = float(fields[3]) * self.ENERGY / (self.DIST * self.DIST)
+            self.bond_types[pair] = (r.in_units_of(units.angstroms), k)
 
     def parse_angle_types(self, f_bonded):
         """Read angle parameter information."""

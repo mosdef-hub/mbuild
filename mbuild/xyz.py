@@ -1,28 +1,33 @@
 __author__ = 'sallai'
 
+import os.path
+
 from treeview import TreeView
 from compound import *
-import os.path
+import unit as units
 
 class Xyz(Compound):
 
-    def __init__(self, path, ctx={}, labels=False, cwd=""):
+    def __init__(self, path, ctx={}, labels=False, cwd="", distance_unit=units.angstroms):
         super(Xyz, self).__init__(ctx=ctx)
+        self.DIST = distance_unit
 
-        fn = os.path.join(cwd, path)
-
-        f = open(fn)
-        num_atoms = int(f.readline())
-        comment = f.readline()
-        for line in f:
-            split_line = line.split()
-            atom_type = split_line[0]
-            atom_pos = (float(split_line[1]),float(split_line[2]),float(split_line[3]))
-            if labels:
-                self.add(Atom(kind=atom_type, pos=atom_pos), atom_type + '_#')
-            else:
-                self.add(Atom(kind=atom_type, pos=atom_pos))
-        f.close()
+        filename = os.path.join(cwd, path)
+        with open(filename, 'r') as f:
+            num_atoms = int(f.readline())
+            comment = f.readline()
+            for line in f:
+                fields = line.split()
+                atom_type = fields[0]
+                #x = float(fields[1]) * self.DIST
+                #y = float(fields[2]) * self.DIST
+                #z = float(fields[3]) * self.DIST
+                #atom_pos = (x, y, z)
+                atom_pos = (float(fields[1]),float(fields[2]),float(fields[3]))
+                if labels:
+                    self.add(Atom(kind=atom_type, pos=atom_pos), atom_type + '_#')
+                else:
+                    self.add(Atom(kind=atom_type, pos=atom_pos))
 
     @staticmethod
     def save(compound, path, cwd="", print_ports=False):
