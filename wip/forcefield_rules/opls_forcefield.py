@@ -104,6 +104,32 @@ class OplsForceField(object):
                         sigma=float(params[5]),
                         epsilon=float(params[6]))
 
+    def findAtomTypes(self, id):
+        # if the id is the atom type, return the AtomType object
+        if id in self.atom_types:
+            return [self.atom_types[id]]
+
+        matching_atom_types = []
+
+        for at,bt in self.atom_types.iteritems():
+
+            if str(id).endswith('*'):
+                # id is a wildcard ending in *
+                prefix = str(id)[:-1]
+
+                if bt[0].startswith(prefix):
+                    matching_atom_types.append(at)
+                elif at.startswith(prefix):
+                    matching_atom_types.append(at)
+            else:
+                # id is not a wildcard
+                if id == bt[0]:
+                    matching_atom_types.append(at)
+
+        # return the matching_atom_types
+        return matching_atom_types
+
+
 if __name__ == "__main__":
     ff = OplsForceField()
     pdb.set_trace()

@@ -21,7 +21,7 @@ class RuleEngine(object):
             for b1 in nearest:
                 if (b1.kind==type_B) and (dmin <= self.compound.min_periodic_distance(b1.pos, a1.pos) <= dmax):
                     self.compound.add(Bond(a1, b1, kind=kind))
-                    print "Added bond of kind {0}".format(kind)
+                    # print "Added bond of kind {0}".format(kind)
 
     def add_angle(self, type_A, type_B, type_C, kind, thmin=-Inf, thmax=Inf):
         """

@@ -80,7 +80,7 @@ class GromacsFF(HasTraits):
                         else:
                             pair = (atomKindIdentifier2, atomKindIdentifier1)
 
-                        self.unresolved_bond_types[pair] = BondType(bond_types=pair, r=fields[3], k=fields[4])
+                        self.unresolved_bond_types[pair] = BondType(bond_types=pair, r=float(fields[3])/10, k=fields[4])
                     else:
                         # print "Not parsing line in section " + section_keyword +":"+line
                         pass
