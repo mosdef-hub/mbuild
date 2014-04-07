@@ -1,9 +1,18 @@
 
 __author__ = 'sallai'
 
+import pdb
+
+from mbuild.plot import Plot
 from mbuild.port import Port
 from mbuild.treeview import TreeView
 from mbuild.compound import *
+#from wip.forcefield_rules.opls_rules import OplsRules
+#from wip.forcefield_rules.opls_forcefield import OplsForceField
+from mbuild.ff.opls_rules import OplsRules
+from mbuild.ff.opls_forcefield import OplsForceField
+import mbuild.unit as units
+
 from surface import Surface
 from initiator import Initiator
 from pmpc import Pmpc
@@ -41,7 +50,38 @@ class Monolayer(Compound):
             coverage_cnt = coverage_cnt+1
 
 if __name__ == "__main__":
-    m = Monolayer(chain_length=13)
+    m = Monolayer(chain_length=13, coverage=100)
+    ff = OplsForceField()
+
+    ff.add_atom_type(opls_type='Si',
+            bond_type='Sisub',
+            atomic_number=14,
+            mass=28.085 * units.amu,
+            charge=0.84 * units.elementary_charge,
+            sigma=3.5 * units.angstroms,
+            epsilon=4.0 * units.kilojoules_per_mole / units.nanometers**(2))
+
+    ff.add_atom_type(opls_type='O',
+            bond_type='Osub',
+            atomic_number=8,
+            mass=16.0 * units.amu,
+            charge=-0.42 * units.elementary_charge,
+            sigma=3.5 * units.angstroms,
+            epsilon=4.0 * units.kilojoules_per_mole / units.nanometers**(2))
+
+    ff.add_atom_type(opls_type='H',
+            bond_type='Hsub',
+            atomic_number=1,
+            mass=1 * units.amu,
+            charge=0.2 * units.elementary_charge,
+            sigma=0.0 * units.angstroms,
+            epsilon=0.0 * units.kilojoules_per_mole / units.nanometers**(2))
+
+
+    ff.get_atom_types(m)
+    rules = OplsRules(m, ff)
+    rules.execute()
+    Plot(m).show()
     # print [(label,atom.pos) for label, atom in m.atoms()]
-    TreeView(m).show()
+    #TreeView(m).show()
     # m.plot(labels=False, verbose=True)

@@ -25,8 +25,12 @@ class OplsRules(RuleEngine):
             if atom.kind != "G":
                 unique_bond_types.add(Prototype.getAttr(atom.kind,
                         "bond_type"))
-                unique_bond_types.add(Prototype.getAttr(atom.kind,
+                try:
+                    unique_bond_types.add(Prototype.getAttr(atom.kind,
                         "bond_type")[0]+"*")
+                except:
+                    pdb.set_trace()
+
 
         pairs = [(i, j) for i,j in combinations(unique_bond_types, 2)]
 

@@ -46,4 +46,4 @@ class Pmpc(Compound):
 if __name__ == "__main__":
     m = Pmpc(n=13)
     # TreeView(m, verbose=True).show()
-    Plot(m, verbose=True).show()
+    Plot(m).show()
