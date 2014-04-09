@@ -9,7 +9,8 @@ import webcolors
 
 class Plot(object):
 
-    def __init__(self, compound, verbose=False, atoms=True, bonds=True, angles=True, dihedrals=True):
+    def __init__(self, compound, verbose=False,
+            atoms=True, bonds=True, angles=True, dihedrals=True):
         assert(isinstance(compound, Compound))
 
         max_bond_dist = compound.boundingbox_diameter()/2.0

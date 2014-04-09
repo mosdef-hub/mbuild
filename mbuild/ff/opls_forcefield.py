@@ -139,12 +139,12 @@ class OplsForceField(object):
             units.amu,
             units.elementary_charge,
             units.angstroms,
-            units.kilojoules_per_mole / units.angstroms**(2))
+            units.kilojoules_per_mole)
     def add_atom_type(self, opls_type, bond_type=None, atomic_number=0,
             mass=0.0 * units.amu,
             charge=0.0 * units.elementary_charge,
             sigma=0.0 * units.angstroms,
-            epsilon=0.0 * units.kilojoules_per_mole / units.angstroms**(2)):
+            epsilon=0.0 * units.kilojoules_per_mole):
         """
         """
         self.atom_types[opls_type] = Atomtype(kind=opls_type, alias=bond_type,
