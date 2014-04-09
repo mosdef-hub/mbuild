@@ -47,7 +47,7 @@ class Silane(Compound):
 
         # Add top port.
         self.add(Port(), 'top_port')
-        top_port_pos = o_pos - 0.7*(o_pos - si_pos)
+        top_port_pos = o_pos - 0.6*(o_pos - si_pos)
         self.top_port.transform(Translation(top_port_pos))
         self.top_port.transform(RotationAroundX(pi / 2))
 

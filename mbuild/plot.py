@@ -1,11 +1,13 @@
-__author__ = 'sallai'
-
+import webcolors
 import operator
+import pdb
+
+import numpy as np
+from mayavi import mlab
+
 from compound import Compound
 from prototype import Prototype
-from mayavi import mlab
-import numpy as np
-import webcolors
+
 
 class Plot(object):
 
@@ -13,7 +15,7 @@ class Plot(object):
             atoms=True, bonds=True, angles=True, dihedrals=True):
         assert(isinstance(compound, Compound))
 
-        max_bond_dist = compound.boundingbox_diameter()/2.0
+        max_bond_dist = compound.boundingbox_diameter() / 2.0
 
         # display atoms
         if atoms:
@@ -27,12 +29,10 @@ class Plot(object):
                     else:
                         d[atom.kind].append(atom)
 
-            # import pdb
-            # pdb.set_trace()
-            for (kind,atomList) in d.items():
-
+            for (kind, atomList) in d.items():
                 # map atomic numbers to default color
-                default_colors = {1:"white", 6:"teal", 7:"blue", 8:"red", 15:"orange", 14:"yellow"}
+                default_colors = {1: "white", 6: "teal", 7: "blue", 8: "red",
+                        15: "orange", 14: "yellow"}
                 atomicNumber = Prototype.getAttr(kind, "atomic_num", default="0")
 
                 if atomicNumber in default_colors:
@@ -52,12 +52,11 @@ class Plot(object):
                     x2.append(atom.pos[0])
                     y2.append(atom.pos[1])
                     z2.append(atom.pos[2])
-                    r.append(radius/5.0)
+                    r.append(radius / 5.0)
 
-
-                fig = mlab.points3d(x2,y2,z2,r,color=colorRGB, scale_factor=1.0, scale_mode='scalar')
+                fig = mlab.points3d(x2, y2, z2, r,
+                        color=colorRGB, scale_factor=1.0, scale_mode='scalar')
                 fig.glyph.glyph.clamping = False
-
 
         # display bonds
         if bonds:
@@ -72,7 +71,6 @@ class Plot(object):
             for (kind, itemList) in d.items():
                 color = Prototype.getAttr(kind, "color", default="white")
                 if isinstance(color, basestring):
-                    print "color="+color
                     colorRGB=tuple(map(operator.div, webcolors.name_to_rgb(color), (256.0,256.0,256.0)))
                 elif isinstance(color,tuple) and len(color) == 3:
                     colorRGB = color
@@ -286,15 +284,20 @@ class Plot(object):
 
 
         # display axes
-        axessrc = mlab.pipeline.vector_scatter(np.array([0]), np.array([0]), np.array([0]), np.array([1]), np.array([0]), np.array([0]))
-        fig = mlab.pipeline.vectors(axessrc, mode='arrow', scale_mode='vector', scale_factor=1.0, color=(1,0,0))
+        axessrc = mlab.pipeline.vector_scatter(np.array([0]), np.array([0]),
+                np.array([0]), np.array([1]), np.array([0]), np.array([0]))
+        fig = mlab.pipeline.vectors(axessrc, mode='arrow', scale_mode='vector',
+                scale_factor=1.0, color=(1,0,0))
 
-        axessrc = mlab.pipeline.vector_scatter(np.array([0]), np.array([0]), np.array([0]), np.array([0]), np.array([1]), np.array([0]))
-        fig = mlab.pipeline.vectors(axessrc, mode='arrow', scale_mode='vector', scale_factor=1.0, color=(0,1,0))
+        axessrc = mlab.pipeline.vector_scatter(np.array([0]), np.array([0]),
+                np.array([0]), np.array([0]), np.array([1]), np.array([0]))
+        fig = mlab.pipeline.vectors(axessrc, mode='arrow', scale_mode='vector',
+                scale_factor=1.0, color=(0,1,0))
 
-        axessrc = mlab.pipeline.vector_scatter(np.array([0]), np.array([0]), np.array([0]), np.array([0]), np.array([0]), np.array([1]))
-        fig = mlab.pipeline.vectors(axessrc, mode='arrow', scale_mode='vector', scale_factor=1.0, color=(0,0,1))
-
+        axessrc = mlab.pipeline.vector_scatter(np.array([0]), np.array([0]),
+                np.array([0]), np.array([0]), np.array([0]), np.array([1]))
+        fig = mlab.pipeline.vectors(axessrc, mode='arrow', scale_mode='vector',
+                scale_factor=1.0, color=(0,0,1))
 
         self.mlab = mlab
 

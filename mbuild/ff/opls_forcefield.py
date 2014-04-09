@@ -24,7 +24,8 @@ class OplsForceField(object):
         self.DIST = units.nanometers
         self.ENERGY = units.kilojoules_per_mole
 
-        nonbonded_file = os.path.join(mbuild.__path__[0], 'ff', 'ffnonbonded_processed.itp')
+        nonbonded_file = os.path.join(mbuild.__path__[0], 'ff',
+                'ffnonbonded_processed.itp')
         with open(nonbonded_file, 'r') as f:
             for line in f:
                 if line.strip():
@@ -43,7 +44,8 @@ class OplsForceField(object):
         parsable_keywords = {'[ bondtypes ]': self.parse_bond_types,
                 '[ angletypes ]': self.parse_angle_types,
                 '[ dihedraltypes ]': self.parse_dihedral_types}
-        bonded_file = os.path.join(mbuild.__path__[0], 'ff', 'ffbonded_processed.itp')
+        bonded_file = os.path.join(mbuild.__path__[0], 'ff',
+                'ffbonded_processed.itp')
         with open(bonded_file, 'r') as f_bonded:
             for line in f_bonded:
                 if line.strip():
@@ -95,8 +97,6 @@ class OplsForceField(object):
             quartet = (fields[0], fields[1], fields[2], fields[3])
             self.dihedral_types[quartet] = fields[5:end_of_params]
 
-
-
     def get_atom_types(self, compound):
         """Parameterize a compound with atom specific information."""
         for atom in compound.atoms():
@@ -110,7 +110,7 @@ class OplsForceField(object):
                         sigma=params.sigma,
                         epsilon=params.epsilon)
 
-    def findAtomTypes(self, atom_id):
+    def find_atom_types(self, atom_id):
         # if the id is the atom type, return the AtomType object
         if atom_id in self.atom_types:
             return [self.atom_types[atom_id]]
