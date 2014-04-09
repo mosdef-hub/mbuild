@@ -1,16 +1,16 @@
-__author__ = 'sallai'
+from collections import OrderedDict
+from orderedset import OrderedSet
+from itertools import *
 
+import numpy as np
+from numpy.linalg import norm
+
+from atom import *
 from angle import Angle
 from bond import Bond
 from dihedral import Dihedral
 from periodic_kdtree import PeriodicCKDTree
-import numpy as np
 from coordinate_transform import *
-from atom import *
-from collections import OrderedDict
-from itertools import *
-from orderedset import *
-from numpy.linalg import norm
 
 class Compound(object):
 

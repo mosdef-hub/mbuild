@@ -1,5 +1,4 @@
 from numpy import pi
-import time
 
 from mbuild.plot import Plot
 from mbuild.port import Port
@@ -52,15 +51,9 @@ class BrushLayer(Compound):
                 break
 
 if __name__ == "__main__":
-    now = time.time()
-    print "Commencing..."
     m = BrushLayer(chain_length=1, alpha=pi/4, coverage=1)
-    print "Finished model: {0:.2f} ".format(time.time() - now)
 
-
-    now = time.time()
     ff = OplsForceField()
-
     # TODO: add real parameters
     ff.add_atom_type(
             opls_type     = 'Si',
@@ -88,13 +81,9 @@ if __name__ == "__main__":
             charge        = 0.2 * units.elementary_charge,
             sigma         = 0.0 * units.angstroms,
             epsilon       = 0.0 * units.kilojoules_per_mole)
-    print "Loaded forcefield: {0:.2f}".format(time.time() - now)
 
-    now = time.time()
     ff.get_atom_types(m)
     rules = OplsRules(m, ff)
     rules.execute()
-    print "Generated topology: {0:.2f}".format(time.time() - now)
-
 
     Plot(m).show()
