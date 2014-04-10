@@ -1,13 +1,11 @@
 import webcolors
 import operator
-import pdb
 
 import numpy as np
 from mayavi import mlab
 
 from compound import Compound
 from prototype import Prototype
-
 
 class Plot(object):
 

@@ -4,7 +4,6 @@ from mbuild.coordinate_transform import *
 from mbuild.atom import Atom
 from mbuild.compound import Compound
 from mbuild.port import Port
-from mbuild.plot import Plot
 
 class AlkaneTail(Compound):
 
@@ -29,4 +28,5 @@ class AlkaneTail(Compound):
 
 if __name__ == "__main__":
     m = AlkaneTail()
+    from mbuild.plot import Plot
     Plot(m, verbose=True).show()

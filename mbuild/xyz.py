@@ -2,7 +2,6 @@ __author__ = 'sallai'
 
 import os.path
 
-from treeview import TreeView
 from compound import *
 import unit as units
 
@@ -68,4 +67,5 @@ if __name__ == "__main__":
 
     print m.boundingbox()
 
+    from treeview import TreeView
     TreeView(m).show()

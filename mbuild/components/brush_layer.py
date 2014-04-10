@@ -1,6 +1,5 @@
 from numpy import pi
 
-from mbuild.plot import Plot
 from mbuild.port import Port
 from mbuild.compound import Compound
 
@@ -51,7 +50,7 @@ class BrushLayer(Compound):
                 break
 
 if __name__ == "__main__":
-    m = BrushLayer(chain_length=1, alpha=pi/4, coverage=1)
+    m = BrushLayer(chain_length=5, alpha=pi/4, coverage=1)
 
     ff = OplsForceField()
     # TODO: add real parameters
@@ -82,8 +81,11 @@ if __name__ == "__main__":
             sigma         = 0.0 * units.angstroms,
             epsilon       = 0.0 * units.kilojoules_per_mole)
 
-    ff.get_atom_types(m)
+    ff = ff.prune(m)
+
     rules = OplsRules(m, ff)
     rules.execute()
+
+    from mbuild.plot import Plot
 
     Plot(m).show()

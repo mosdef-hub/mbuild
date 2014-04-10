@@ -7,7 +7,6 @@ from mbuild.xyz import Xyz
 from mbuild.port import Port
 from mbuild.rules import RuleEngine
 from mbuild.prototype import Prototype
-from mbuild.plot import Plot
 
 
 class SurfaceRules(RuleEngine):
@@ -61,4 +60,5 @@ class Surface(Compound):
 if __name__ == "__main__":
     m = Surface()
     Prototype('o-si', color='grey')
+    from mbuild.plot import Plot
     Plot(m, bonds=True, verbose=True).show()

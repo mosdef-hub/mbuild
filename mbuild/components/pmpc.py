@@ -7,7 +7,6 @@ from mbuild.coordinate_transform import *
 from mbuild.xyz import Xyz
 from mbuild.compound import Compound
 from mbuild.port import Port
-from mbuild.plot import Plot
 
 from mbuild.components.mpc_monomer import MpcMonomer
 
@@ -47,4 +46,5 @@ class Pmpc(Compound):
 
 if __name__ == "__main__":
     m = Pmpc(n=13)
+    from mbuild.plot import Plot
     Plot(m).show()

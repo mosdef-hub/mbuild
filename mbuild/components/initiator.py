@@ -8,7 +8,6 @@ from mbuild.coordinate_transform import *
 from mbuild.xyz import Xyz
 from mbuild.compound import Compound
 from mbuild.port import Port
-from mbuild.plot import Plot
 
 
 class Initiator(Compound):
@@ -54,4 +53,5 @@ class Initiator(Compound):
 
 if __name__ == "__main__":
     m = Initiator()
+    from mbuild.plot import Plot
     Plot(m, verbose=True).show()

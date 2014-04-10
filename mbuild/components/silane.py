@@ -8,7 +8,6 @@ from mbuild.coordinate_transform import *
 from mbuild.xyz import Xyz
 from mbuild.compound import Compound
 from mbuild.port import Port
-from mbuild.plot import Plot
 
 
 class Silane(Compound):
@@ -53,4 +52,5 @@ class Silane(Compound):
 
 if __name__ == "__main__":
     m = Silane()
+    from mbuild.plot import Plot
     Plot(m, verbose=True).show()

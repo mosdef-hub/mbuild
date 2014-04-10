@@ -1,22 +1,21 @@
+from itertools import product
 import os
 import pdb
 
 import mbuild
+from mbuild.ff.forcefield import ForceField
 from mbuild.prototype import Prototype
 import mbuild.unit as units
 from mbuild.decorators import *
 from mbuild.ff.atom_type import Atomtype
 
 
-class OplsForceField(object):
+class OplsForceField(ForceField):
     """A container class for the OPLS forcefield."""
 
     def __init__(self):
         """Populate the database using files bundled with GROMACS."""
-        self.atom_types = dict()
-        self.bond_types = dict()
-        self.angle_types = dict()
-        self.dihedral_types = dict()
+        super(OplsForceField, self).__init__()
 
         # GROMACS specific units
         self.MASS = units.amu
@@ -97,43 +96,6 @@ class OplsForceField(object):
             quartet = (fields[0], fields[1], fields[2], fields[3])
             self.dihedral_types[quartet] = fields[5:end_of_params]
 
-    def get_atom_types(self, compound):
-        """Parameterize a compound with atom specific information."""
-        for atom in compound.atoms():
-            if atom.kind in self.atom_types:
-                params = self.atom_types[atom.kind]
-                Prototype(atom.kind,
-                        bond_type=params.alias,
-                        atomic_num=params.atomic_number,
-                        mass=params.mass,
-                        charge=params.charge,
-                        sigma=params.sigma,
-                        epsilon=params.epsilon)
-
-    def find_atom_types(self, atom_id):
-        # if the id is the atom type, return the AtomType object
-        if atom_id in self.atom_types:
-            return [self.atom_types[atom_id]]
-
-        matching_atom_types = []
-
-        for opls_type, atom_type in self.atom_types.iteritems():
-
-            if str(atom_id).endswith('*'):
-                # id is a wildcard ending in *
-                prefix = str(atom_id)[:-1]
-
-                if atom_type.alias.startswith(prefix):
-                    matching_atom_types.append(opls_type)
-                elif opls_type.startswith(prefix):
-                    matching_atom_types.append(opls_type)
-            else:
-                # id is not a wildcard
-                if atom_id == atom_type.alias:
-                    matching_atom_types.append(opls_type)
-
-        # return the matching_atom_types
-        return matching_atom_types
 
     @accepts_compatible_units(None, None, None,
             units.amu,
@@ -156,6 +118,8 @@ class OplsForceField(object):
             units.kilojoules_per_mole * units.nanometers**(-2))
     def add_bond_type(self, pair, r, k):
         self.bond_types[pair] = (r, k)
+
+
 
 if __name__ == "__main__":
     ff = OplsForceField()
