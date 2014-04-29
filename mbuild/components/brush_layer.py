@@ -1,4 +1,6 @@
+from copy import deepcopy
 from numpy import pi
+from mbuild.components.brush import Brush
 
 from mbuild.port import Port
 from mbuild.compound import Compound
@@ -23,26 +25,23 @@ class BrushLayer(Compound):
         self.add(Surface(ctx=ctx), 'surface')
 
         chains_on_surface = 0.0
+
+        brush_proto = Brush(chain_length=chain_length, alpha=alpha)
+
         n_ports = sum(isinstance(part, Port) for part in self.surface.parts)
         for port in self.surface.parts:
             current_coverage = (chains_on_surface / n_ports ) * 100
             # Build a pMPC brush.
             if isinstance(port, Port) and current_coverage <  coverage:
-                silane = Silane(ctx=ctx)
-                silane.transform([(silane.bottom_port, port)])
-                self.add(silane)
 
-                initiator = Initiator(ctx=ctx)
-                initiator.transform([(initiator.bottom_port, silane.top_port)])
-                self.add(initiator)
+                # brush = Brush(chain_length=chain_length, alpha=alpha)
+                # instead of creating a new brush, clone an already created one
 
-                pmpc = Pmpc(ctx=ctx, n=chain_length, alpha=alpha)
-                pmpc.transform([(pmpc.bottom_port, initiator.top_port)])
-                self.add(pmpc)
+                brush = deepcopy(brush_proto)
+                brush.transform([(brush.port, port)])
+                self.add(brush)
 
-                ch3 = AlkaneTail(ctx=ctx)
-                ch3.transform([(ch3.female_port, pmpc.top_port)])
-                self.add(ch3)
+
 
                 chains_on_surface += 1
 
@@ -50,7 +49,7 @@ class BrushLayer(Compound):
                 break
 
 if __name__ == "__main__":
-    m = BrushLayer(chain_length=5, alpha=pi/4, coverage=1)
+    m = BrushLayer(chain_length=5, alpha=pi/4, coverage=100)
 
     ff = OplsForceField()
     # TODO: add real parameters

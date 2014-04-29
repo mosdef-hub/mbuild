@@ -17,10 +17,13 @@ class NAlkane(Compound):
         # top tail (CH_3)
         self.add(AlkaneTail(ctx=ctx),'top_tail')
 
+        # alkane_body_proto = AlkaneBody(ctx=ctx)
+
         # n times the body CH_2
         last_part = self.top_tail
         for body_count in range(1, n-1):
             this_part = AlkaneBody(ctx=ctx)
+            # this_part = deepcopy(alkane_body_proto)
             this_part.transform([(this_part.female_port, last_part.male_port)])
             # self.add(this_part, 'body_'+str(body_count))
             self.add(this_part, 'body_#') # this will generate body_0, body_1,...

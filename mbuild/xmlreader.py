@@ -197,9 +197,9 @@ class XmlReader(object):
 
 
 if __name__ == "__main__":
-    compound = XmlReader.read("../wip/xml/methane.xml")
-    # compound = XmlReader.read("xml/ethane.xml")
-    # compound = XmlReader.read("../wip/xml/nalkane.xml")
+    # compound = XmlReader.read("../wip/xml/methane.xml")
+    # compound = XmlReader.read("../wip/xml/ethane.xml")
+    compound = XmlReader.read("../wip/xml/nalkane.xml")
     # compound = XmlReader.read("xml/C_3.xml")
     # compound = XmlReader.read("xml/nalkane2.xml")
     # TreeView(compound).show()

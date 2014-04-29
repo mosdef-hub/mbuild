@@ -1,4 +1,5 @@
 from collections import OrderedDict
+from copy import deepcopy
 from orderedset import OrderedSet
 from itertools import *
 
@@ -72,7 +73,6 @@ class Compound(object):
                         self.bonds.add(new_obj)
                     new_obj.atom1.bonds.add(new_obj)
                     new_obj.atom2.bonds.add(new_obj)
-                # print "self.bonds after adding:  " + str(list(self.bonds))
 
             # add angle to compound
             elif isinstance(new_obj, Angle):
@@ -183,21 +183,6 @@ class Compound(object):
 
         return self
 
-    # def atoms(self):
-    #     """
-    #     Get all atoms of the Compound recursively
-    #     :return: map containing atoms with labels as keys
-    #     """
-    #     atoms = OrderedDict() # empty dict
-    #     for label, component in self._components.iteritems():
-    #         # add local atoms
-    #         if isinstance(component, Atom):
-    #             atoms[label] = component
-    #             # add atoms in sub-components recursively
-    #         if isinstance(component, Compound):
-    #             for sublabel, subatom in component.atoms().iteritems():
-    #                 atoms[label + '.' + sublabel] = subatom
-    #     return atoms
 
     def atoms(self):
         """
@@ -283,135 +268,23 @@ class Compound(object):
         (minx, miny, minz), (maxx, maxy, maxz) = self.boundingbox(excludeG=excludeG)
         return max([maxx-minx, maxy-miny, maxz-minz])
 
-    # def plot(self, verbose=False, labels=True):
-    #     """
-    #     Plot atoms in 3d
-    #     :param verbose: if True, atom types will be plotted
-    #     :param labels: if True, labels will be plotted
-    #     """
-    #
-    #     x = []
-    #     y = []
-    #     z = []
-    #     r = []
-    #     g = []
-    #     b = []
-    #     rgb = []
-    #
-    #     # sort atoms by type
-    #     d = dict()
-    #
-    #     for (label, atom) in self.atoms():
-    #         if atom.kind != 'G' or verbose:
-    #             if not atom.kind in d.keys():
-    #                 d[atom.kind] = [atom]
-    #             else:
-    #                 d[atom.kind].append(atom);
-    #
-    #     for (kind,atomList) in d.items():
-    #         x = []
-    #         y = []
-    #         z = []
-    #         r = []
-    #         for atom in atomList:
-    #             x.append(atom.pos[0])
-    #             y.append(atom.pos[1])
-    #             z.append(atom.pos[2])
-    #             r.append(atom.vdw_radius)
-    #
-    #         fig = mlab.points3d(x,y,z,r,color=atomList[0].colorRGB, scale_factor=1, scale_mode='scalar')
-    #         #fig.glyph.glyph.clamping = False
-    #     mlab.show()
-    #
-    # def plot2(self, verbose=False, labels=False):
-    #     """
-    #     Plot atoms in 3d
-    #     :param verbose: if True, atom types will be plotted
-    #     :param labels: if True, labels will be plotted
-    #     """
-    #     fig = pyplot.figure()
-    #     ax = fig.add_subplot(111, projection='3d', aspect='equal')
-    #     coord_min = inf
-    #     coord_max = -inf
-    #     for (label, atom) in self.atoms():
-    #         if atom.kind != 'G' or verbose:
-    #             # print atom
-    #             if labels:
-    #                 atom.plot(ax, str(atom))
-    #             else:
-    #                 atom.plot(ax, None)
-    #
-    #     ax.set_xlabel('X')
-    #     ax.set_ylabel('Y')
-    #     ax.set_zlabel('Z')
-    #     # ax.set_title(self.label())
-    #
-    #     pyplot.show()
+    def __copy__(self):
+        cls = self.__class__
+        newone = cls.__new__(cls)
 
-    # def plot3(self, verbose=False, labels=False):
-    #
-    #     import networkx as nx
-    #     import matplotlib.pyplot as plt
-    #
-    #     g = nx.Graph()
-    #     g.add_node("root")
-    #     self.plot3_worker(g, "root")
-    #
-    #     print "g=" + str(g)
-    #
-    #     # draw graph
-    #     pos = nx.shell_layout(g)
-    #     nx.draw(g, pos)
-    #
-    #     # show graph
-    #     plt.show()
-    #
-    #
-    # def plot3_worker(self, g, parent):
-    #     print self.__class__
-    #
-    #     for (label, c) in self._components.iteritems():
-    #         mylabel = label+str(c.__hash__())
-    #         g.add_node(mylabel)
-    #         g.add_edge(parent, mylabel)
-    #         print parent + " " + label
-    #         if isinstance(c, Compound):
-    #             c.plot3_worker(g, mylabel)
-    #
+        newone.__dict__.update(self.__dict__)
+        return newone
 
+    def __deepcopy__(self, memo):
+        cls = self.__class__
+        newone = cls.__new__(cls)
 
-    # def __copy__(self):
-    #     cls = self.__class__
-    #     newone = cls.__new__(cls)
-    #
-    #     newone.__dict__.update(self.__dict__)
-    #     return newone
-    #
-    # def __deepcopy__(self, memo):
-    #     cls = self.__class__
-    #     newone = cls.__new__(cls)
-    #
-    #     memo[id(self)] = newone
-    #
-    #     newone.parts = set()
-    #     newone.references = dict()
-    #
-    #     for part in self.parts.iteritems():
-    #         child_copy = deepcopy(part, memo)
-    #         newone.add(child_copy, label)
-    #
-    #         if label in self._aliases.values():
-    #              alias_label = self._aliases.keys()[self._aliases.values().index(label)]
-    #              newone.addAlias(alias_label, label)
-    #
-    #     # copy over the rest of the stuff, that's not yet there in the new one
-    #     for k, v in self.__dict__.items():
-    #         if not hasattr(newone, k):
-    #             setattr(newone, k, deepcopy(v, memo))
-    #
-    #     return newone
+        memo[id(self)] = newone
 
+        for k, v in self.__dict__.items():
+            setattr(newone, k, deepcopy(v, memo))
 
+        return newone
 
 
     def getAtomsByKind(self, kind):
@@ -573,16 +446,6 @@ class Compound(object):
                            [p2[0]+(-1)*self.bounds[0], p2[1]+(-1)*self.bounds[1], p2[2]+(-1)*self.bounds[2]], \
                            ])
 
-
-        # print p2_img
-
-        # print p2_img-p1
         dists = norm(p2_img-p1, axis=1)
-        # print dists
 
         return dists.min()
-
-
-# if __name__ == "__main__":
-#     c = Compound(bounds=[10,10,10])
-#     print c.min_periodic_distance((1,1,1),(9,9,9))

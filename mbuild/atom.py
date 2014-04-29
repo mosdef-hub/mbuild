@@ -1,3 +1,5 @@
+from copy import deepcopy
+
 __author__ = 'sallai'
 
 # import inspect
@@ -29,3 +31,21 @@ class Atom(object):
 
     def __repr__(self):
         return "Atom"+str(id(self))+"(" + self.kind + "," + str(self.pos) + ")"
+
+    def __copy__(self):
+        cls = self.__class__
+        newone = cls.__new__(cls)
+
+        newone.__dict__.update(self.__dict__)
+        return newone
+
+    def __deepcopy__(self, memo):
+        cls = self.__class__
+        newone = cls.__new__(cls)
+        memo[id(self)] = newone
+
+        for k, v in self.__dict__.items():
+            setattr(newone, k, deepcopy(v, memo))
+
+        return newone
+
