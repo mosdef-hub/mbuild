@@ -1,3 +1,5 @@
+import time
+import pdb
 from copy import deepcopy
 from numpy import pi
 from mbuild.components.brush import Brush
@@ -21,11 +23,12 @@ class BrushLayer(Compound):
     """
 
     def __init__(self, ctx={}, chain_length=4, alpha=pi/4, coverage=1):
+        """
+        """
         super(BrushLayer, self).__init__(ctx=ctx)
         self.add(Surface(ctx=ctx), 'surface')
 
         chains_on_surface = 0.0
-
         brush_proto = Brush(chain_length=chain_length, alpha=alpha)
 
         n_ports = sum(isinstance(part, Port) for part in self.surface.parts)
@@ -41,21 +44,25 @@ class BrushLayer(Compound):
                 brush.transform([(brush.port, port)])
                 self.add(brush)
 
-
-
                 chains_on_surface += 1
 
             elif current_coverage >= coverage:
                 break
 
 if __name__ == "__main__":
-    m = BrushLayer(chain_length=5, alpha=pi/4, coverage=100)
+    print "Generating model..."
+    start = time.time()
+    m = BrushLayer(chain_length=5, alpha=pi/4, coverage=1)
+    print "Done. ({0:.2f} s)".format(time.time() - start)
 
+    print "Loading and pruning forcefield..."
+    start = time.time()
     ff = OplsForceField()
     # TODO: add real parameters
+
     ff.add_atom_type(
             opls_type     = 'Si',
-            bond_type     = 'Sisub',
+            bond_type     = 'SI',
             atomic_number = 14,
             mass          = 28.085 * units.amu,
             charge        = 0.84 * units.elementary_charge,
@@ -64,7 +71,7 @@ if __name__ == "__main__":
 
     ff.add_atom_type(
             opls_type     = 'O',
-            bond_type     = 'Osub',
+            bond_type     = 'OS',
             atomic_number = 8,
             mass          = 16.0 * units.amu,
             charge        = -0.42 * units.elementary_charge,
@@ -73,7 +80,7 @@ if __name__ == "__main__":
 
     ff.add_atom_type(
             opls_type     = 'H',
-            bond_type     = 'Hsub',
+            bond_type     = 'HO',
             atomic_number = 1,
             mass          = 1 * units.amu,
             charge        = 0.2 * units.elementary_charge,
@@ -81,10 +88,14 @@ if __name__ == "__main__":
             epsilon       = 0.0 * units.kilojoules_per_mole)
 
     ff = ff.prune(m)
+    print "Done. ({0:.2f} s)".format(time.time() - start)
 
+    print "Generating topology..."
+    start = time.time()
     rules = OplsRules(m, ff)
-    rules.execute()
+    rules.execute(verbose=False)
+    print "Done. ({0:.2f} s)".format(time.time() - start)
 
+    print "Visualizing..."
     from mbuild.plot import Plot
-
     Plot(m).show()

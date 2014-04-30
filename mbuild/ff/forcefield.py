@@ -1,3 +1,4 @@
+import pdb
 from itertools import product
 from mbuild.prototype import Prototype
 
@@ -16,9 +17,11 @@ class ForceField(object):
 
     def find_atom_types(self, atom_id):
         # if the id is the atom type, return the AtomType object
+        """
+        if atom_id == 'SI': pdb.set_trace()
         if atom_id in self.atom_types:
-            return [self.atom_types[atom_id]]
-
+            return [self.atom_types[atom_id].kind]
+        """
         matching_atom_types = []
 
         for kind, atom_type in self.atom_types.iteritems():
@@ -39,7 +42,7 @@ class ForceField(object):
         # return the matching_atom_types
         return matching_atom_types
 
-    def prune(self, compound):
+    def prune(self, compound, verbose=False):
         """
         Returns a pruned force field that contains information only relevant to the compound.
         """
@@ -55,13 +58,14 @@ class ForceField(object):
         for atomkind in all_kinds:
             if atomkind not in retained_kinds:
                 del ff.atom_types[atomkind]
-                print "removing " + atomkind
+                if verbose:
+                    print "removing " + atomkind
             else:
-                print "retaining " + atomkind
+                if verbose:
+                    print "retaining " + atomkind
 
         # prune the bond types, resolving wildcards
         for (alias1, alias2), bondType in self.bond_types.iteritems():
-
             # find all atoms that match the atomKindIdentifiers (kind, alias with optional wildcards)
             atomTypes1 = ff.find_atom_types(alias1)
             atomTypes2 = ff.find_atom_types(alias2)
@@ -73,7 +77,6 @@ class ForceField(object):
                     pair = (atomType1, atomType2)
                 else:
                     pair = (atomType2, atomType1)
-
                 ff.bond_types[pair] = bondType
 
         # set up prototypes

@@ -22,7 +22,6 @@ class OplsRules(RuleEngine):
             r, k = self.force_field.bond_types[pair]
             if verbose:
                 print "Found for pair {0}".format(pair)
-
             r_err = 0.2 * r
             self.add_bond(pair[0], pair[1],
                     (r - 2*r_err)._value, (r + r_err)._value,
@@ -33,9 +32,6 @@ if __name__ == "__main__":
     m = MpcMonomer()
 
     ff = OplsForceField().prune(m)
-
-    # import pdb
-    # pdb.set_trace()
 
     rules = OplsRules(m, ff)
     rules.execute()
