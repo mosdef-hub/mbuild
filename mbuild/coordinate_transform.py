@@ -1,4 +1,3 @@
-
 __author__ = 'sallai'
 
 from numpy import *
@@ -190,7 +189,6 @@ class RigidTransform(CoordinateTransform):
 
     def __init__(self, A, B):
         (rows, cols) = shape(A)
-
         centroid_A = mean(A, axis=0)
         centroid_B = mean(B, axis=0)
         centroid_A.shape = (1,3)

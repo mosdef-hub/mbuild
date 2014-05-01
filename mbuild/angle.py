@@ -80,14 +80,16 @@ class Angle(object):
         return self.inRadians() * 180 / math.pi
 
     def hasAtomKinds(self, atomType1, atomType2, atomType3):
+        """
         if isinstance(atomType1, type):
             atomType1 = atomType1.kind
         if isinstance(atomType2, type):
             atomType2 = atomType2.kind
         if isinstance(atomType3, type):
             atomType3 = atomType3.kind
-
-        return (self.atom1.kind == atomType1 and self.atom2.kind == atomType2 and self.atom3.kind == atomType3) or (self.atom1.kind == atomType3 and self.atom2.kind == atomType2 and self.atom3.kind == atomType1)
+        """
+        return ((self.atom1.kind == atomType1 and self.atom2.kind == atomType2 and self.atom3.kind == atomType3) or
+                (self.atom1.kind == atomType3 and self.atom2.kind == atomType2 and self.atom3.kind == atomType1))
 
 
     def __repr__(self):

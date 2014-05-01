@@ -16,6 +16,9 @@ class OplsForceField(ForceField):
     def __init__(self):
         """Populate the database using files bundled with GROMACS."""
         super(OplsForceField, self).__init__()
+        
+        self.DEG = units.degrees
+        self.RAD = units.radians
 
         # GROMACS specific units
         self.MASS = units.amu
@@ -66,7 +69,7 @@ class OplsForceField(ForceField):
             pair = (fields[0], fields[1])
             if int(fields[2]) == 1:
                 r = float(fields[3]) * self.DIST
-                k = float(fields[3]) * self.ENERGY / (self.DIST * self.DIST)
+                k = float(fields[4]) * self.ENERGY / (self.DIST * self.DIST)
             self.bond_types[pair] = (r.in_units_of(units.angstroms), k)
 
     def parse_angle_types(self, f_bonded):
@@ -78,7 +81,10 @@ class OplsForceField(ForceField):
             if fields[0][0] in [';', '#']:
                 continue
             triplet = (fields[0], fields[1], fields[2])
-            self.angle_types[triplet] = [float(field) for field in fields[4:6]]
+            if int(fields[3]) == 1:
+                theta = float(fields[4]) * self.DEG
+                k = float(fields[5]) * self.ENERGY / (self.RAD * self.RAD)
+            self.angle_types[triplet] = (theta, k)
 
     def parse_dihedral_types(self, f_bonded):
         """Read dihedral parameter information."""

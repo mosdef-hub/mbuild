@@ -95,7 +95,8 @@ if __name__ == "__main__":
     rules = OplsRules(m, ff)
     rules.execute(verbose=False)
     print "Done. ({0:.2f} s)".format(time.time() - start)
-
+    """
     print "Visualizing..."
     from mbuild.plot import Plot
     Plot(m).show()
+    """

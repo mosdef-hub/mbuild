@@ -135,7 +135,7 @@ class Plot(object):
                     d[item.kind].append(item)
 
             for (kind, itemList) in d.items():
-                color = Prototype.getAttr(kind, "color", default="white")
+                color = Prototype.getAttr(kind, "color", default="red")
                 if isinstance(color, basestring):
                     colorRGB=tuple(map(operator.div, webcolors.name_to_rgb(color), (256.0,256.0,256.0)))
                 elif isinstance(color,tuple) and len(color) == 3:

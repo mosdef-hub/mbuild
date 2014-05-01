@@ -65,19 +65,39 @@ class ForceField(object):
                     print "retaining " + atomkind
 
         # prune the bond types, resolving wildcards
-        for (alias1, alias2), bondType in self.bond_types.iteritems():
+        for (alias1, alias2), bond_type in self.bond_types.iteritems():
             # find all atoms that match the atomKindIdentifiers (kind, alias with optional wildcards)
-            atomTypes1 = ff.find_atom_types(alias1)
-            atomTypes2 = ff.find_atom_types(alias2)
+            atom_types1 = ff.find_atom_types(alias1)
+            atom_types2 = ff.find_atom_types(alias2)
 
             # for every combination of the matching atom kinds, create a bond type
-            for (atomType1, atomType2) in product(atomTypes1, atomTypes2):
+            for (atom_type1, atom_type2) in product(atom_types1, atom_types2):
 
-                if atomType1 < atomType2:
-                    pair = (atomType1, atomType2)
-                else:
-                    pair = (atomType2, atomType1)
-                ff.bond_types[pair] = bondType
+                # Why were we sorting these? Pretty sure it's unneccesary at this point
+                # Also, this won't hold up for other forcefields
+                #if atom_type1 < atom_type2:
+                    #pair = (atom_type1, atom_type2)
+                #else:
+                #    pair = (atom_type2, atom_type1)
+
+                pair = (atom_type1, atom_type2)
+                ff.bond_types[pair] = bond_type
+
+        # prune the angle types, resolving wildcards
+        for (alias1, alias2, alias3), angle_type in self.angle_types.iteritems():
+            # find all atoms that match the atomKindIdentifiers (kind, alias with optional wildcards)
+            atom_types1 = ff.find_atom_types(alias1)
+            atom_types2 = ff.find_atom_types(alias2)
+            atom_types3 = ff.find_atom_types(alias3)
+
+            # for every combination of the matching atom kinds, create a bond type
+            for (atom_type1, atom_type2, atom_type3) in product(atom_types1, atom_types2, atom_types3):
+                triplet = (atom_type1, atom_type2, atom_type3)
+                #if atom_type1 < atom_type2:
+                #    triplet = (atom_type1, atom_type2)
+                #else:
+                #    triplet = (atom_type2, atom_type1)
+                ff.angle_types[triplet] = angle_type
 
         # set up prototypes
         ff.init_prototypes()

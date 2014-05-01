@@ -38,7 +38,7 @@ class Bond(object):
         cls.cloneWithOrder(bond, type_A, type_B)
 
     def com(self):
-        return [sum(y) / len(y) for y in zip(self.atom1.pos, self.atom2.pos)]
+        return [sum(y) / 2 for y in zip(self.atom1.pos, self.atom2.pos)]
 
     def hasCommonAtomsWith(self, other):
         assert(isinstance(other, Bond))
@@ -48,7 +48,8 @@ class Bond(object):
             return False
 
     def hasAtomKinds(self, atomType1, atomType2):
-        return (self.atom1.kind == atomType1 and self.atom2.kind == atomType2) or (self.atom1.kind == atomType2 and self.atom2.kind == atomType1)
+        return ((self.atom1.kind == atomType1 and self.atom2.kind == atomType2) or
+                (self.atom1.kind == atomType2 and self.atom2.kind == atomType1))
 
     def __hash__(self):
         return hash((self.atom1, self.atom2))
