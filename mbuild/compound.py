@@ -325,14 +325,14 @@ class Compound(object):
 
     def initBondKdTree(self):
         self.bondsList = list(self.bonds)
-        self.BondKdtree = PeriodicCKDTree([bond.com() for bond in self.bondsList], bounds=self.bounds)
+        self.bond_kdtree = PeriodicCKDTree([bond.com() for bond in self.bondsList], bounds=self.bounds)
 
     def getBondsInRange(self, point, radius, maxItems=50):
         # create kdtree if it's not yet there
-        if not hasattr(self, 'bondKdtree'):
+        if not hasattr(self, 'bond_kdtree'):
             self.initBondKdTree()
 
-        distances, indices = self.BondKdtree.query(point, maxItems)
+        distances, indices = self.bond_kdtree.query(point, maxItems)
         # indices = self.kdtree.query(point, maxAtoms)
 
         neighbors = []
