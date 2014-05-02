@@ -56,7 +56,7 @@ class BrushLayer(Compound):
 if __name__ == "__main__":
     print "Generating model..."
     start = time.time()
-    m = BrushLayer(chain_length=5, alpha=pi/4, coverage=.5, tile_x=1, tile_y=2)
+    m = BrushLayer(chain_length=5, alpha=pi/4, coverage=.5, tile_x=5, tile_y=5)
     print "Done. ({0:.2f} s)".format(time.time() - start)
 
     print "Loading and pruning forcefield..."

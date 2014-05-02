@@ -284,25 +284,27 @@ class Compound(object):
 
         return newone
 
-    # def computeAtomsByKind(self):
-    #     # compute if it doesn't exist, or if the component hierarchy has changed since last computation
-    #     if not hasattr(self, 'atomsByKind_hash') or self.parts.__hash__ != self.atomsByKind_hash:
-    #         self.atomsByKind = dict()
-    #         for atom in self.atoms():
-    #             if atom.kind not in self.atomsByKind:
-    #                 self.atomsByKind[atom.kind] = [atom]
-    #             else:
-    #                 self.atomsByKind[atom.kind].append(atom)
+    def computeAtomsByKind(self):
+        # compute if it doesn't exist, or if the component hierarchy has changed since last computation
+        if not hasattr(self, 'atomsByKind_hash') or self.parts.__hash__ != self.atomsByKind_hash:
+            self.atomsByKind_hash = self.parts.__hash__
+            self.atomsByKind = dict()
+            for atom in self.atoms():
+                if atom.kind not in self.atomsByKind:
+                    self.atomsByKind[atom.kind] = [atom]
+                else:
+                    self.atomsByKind[atom.kind].append(atom)
 
     def getAtomsByKind(self, kind):
-        return ifilter(lambda atom: (atom.kind == kind), self.atoms())
-        # self.computeAtomsByKind()
-        #
-        # if kind in self.atomsByKind:
-        #     return self.atomsByKind[kind]
-        # else:
-        #     return []
+        # this is slow...
+        # return ifilter(lambda atom: (atom.kind == kind), self.atoms())
 
+        # speed it up by precomputing a data structure (if needed)
+        self.computeAtomsByKind()
+        if kind in self.atomsByKind:
+            return self.atomsByKind[kind]
+        else:
+            return []
 
     def getAtomsByBondType(self, bond_type):
         return ifilter(lambda atom: (atom.bond_type == bond_type), self.atoms())
@@ -311,7 +313,6 @@ class Compound(object):
         # compute if it doesn't exist, or if the component hierarchy has changed since last computation
         if not hasattr(self, 'bondsByAtomKind_hash') or self.bonds.__hash__ != self.bondsByAtomKind_hash:
             self.bondsByAtomKind_hash = self.bonds.__hash__
-            print 1
             self.bondsByAtomKind = dict()
             for bond in self.bonds:
                 if bond.atom1.kind < bond.atom2.kind:
