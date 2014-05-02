@@ -1,10 +1,12 @@
-from copy import copy
+from copy import copy, deepcopy
 from warnings import warn
 # from mbuild.atom import Atom
 # import numpy as np
 
 __author__ = 'sallai'
 class Bond(object):
+
+    __slots__ = ['kind','atom1','atom2']
     def __init__(self, atom1, atom2, kind='undefined'):
         assert(isinstance(kind, basestring))
         assert(not atom1 == atom2)
@@ -60,4 +62,18 @@ class Bond(object):
     def __repr__(self):
         return "Bond"+str(id(self))+"("+str(self.atom1)+","+str(self.atom2)+", kind="+self.kind+")"
 
+
+    def __deepcopy__(self, memo):
+        cls = self.__class__
+        newone = cls.__new__(cls)
+        memo[id(self)] = newone
+
+        newone.kind = deepcopy(self.kind, memo)
+        newone.atom1 = deepcopy(self.atom1, memo)
+        newone.atom2 = deepcopy(self.atom2, memo)
+
+        # for k, v in self.__dict__.items():
+        #     setattr(newone, k, deepcopy(v, memo))
+
+        return newone
 

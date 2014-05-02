@@ -8,6 +8,8 @@ import copy
 
 class Angle(object):
 
+    __slots__ = ['kind','atom1','atom2','atom3']
+
     def __init__(self, atom1, atom2, atom3, kind='undefined'):
         assert(isinstance(kind, basestring))
         assert(not atom1 == atom2)
@@ -100,3 +102,20 @@ class Angle(object):
 
     def __eq__(self, other):
         return self.__hash__() == other.__hash__()
+
+
+    def __deepcopy__(self, memo):
+        cls = self.__class__
+        newone = cls.__new__(cls)
+        memo[id(self)] = newone
+
+        newone.kind = deepcopy(self.kind, memo)
+        newone.atom1 = deepcopy(self.atom1, memo)
+        newone.atom2 = deepcopy(self.atom2, memo)
+        newone.atom3 = deepcopy(self.atom2, memo)
+
+        # for k, v in self.__dict__.items():
+        #     setattr(newone, k, deepcopy(v, memo))
+
+        return newone
+

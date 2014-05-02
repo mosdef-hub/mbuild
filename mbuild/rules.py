@@ -29,7 +29,8 @@ class RuleEngine(object):
 
         for ab1 in self.compound.getBondsByAtomKind(type_A, type_B):
             ab = ab1.cloneWithOrder(type_A, type_B)
-            nearest = self.compound.getBondsInRange(ab.com(), 10)
+            # nearest = self.compound.getBondsInRangeKdTree(ab.com(), 10)
+            nearest = self.compound.getBondsInRange(ab)
             for bc1 in nearest:
                 if ab1 == bc1:
                     continue

@@ -3,6 +3,7 @@ import os
 
 from mbuild.coordinate_transform import *
 from mbuild.compound import Compound
+from mbuild.orderedset import OrderedSet
 from mbuild.xyz import Xyz
 from mbuild.port import Port
 from mbuild.rules import RuleEngine
@@ -31,6 +32,7 @@ class Surface(Compound):
         self.add(s, 'surface_xyz')
         self.bounds = [47.689, 41.3, 0.0]
 
+
         # Generate topology.
         r = SurfaceRules(self)
         r.execute()
@@ -56,6 +58,15 @@ class Surface(Compound):
                     self.add(p, str(id(p)))
                     for b in atom.bonds:
                         b.kind = "si-o-top"
+        # clean-up
+        self.bonds = OrderedSet()
+        self.angles = OrderedSet()
+        self.dihedrals = OrderedSet()
+        for atom in self.atoms():
+            atom.bonds = set()
+            atom.angles = set()
+            atom.dihedrals = set()
+
 
 if __name__ == "__main__":
     m = Surface()

@@ -2,7 +2,8 @@
  
 # Modified from original source, available here:
 # http://code.activestate.com/recipes/577624-orderedset/
- 
+from copy import deepcopy
+
 try:
     import collections.abc as collections # Python 3
 except ImportError:
@@ -76,7 +77,12 @@ class OrderedSet(collections.MutableSet):
             return '{0!s}()'.format(class_name)
         return '{0!s}({1!r})'.format(class_name, list(self))
  
- 
+
+    def __deepcopy__(self, memo):
+        result = OrderedSet()
+        for elt in self:
+            result.add(deepcopy(elt,memo))
+        return result
  
 if __name__ == '__main__':
     print(OrderedSet('abracadaba'))

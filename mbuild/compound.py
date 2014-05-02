@@ -279,8 +279,6 @@ class Compound(object):
         cls = self.__class__
         newone = cls.__new__(cls)
 
-        memo[id(self)] = newone
-
         for k, v in self.__dict__.items():
             setattr(newone, k, deepcopy(v, memo))
 
@@ -327,7 +325,7 @@ class Compound(object):
         self.bondsList = list(self.bonds)
         self.bond_kdtree = PeriodicCKDTree([bond.com() for bond in self.bondsList], bounds=self.bounds)
 
-    def getBondsInRange(self, point, radius, maxItems=50):
+    def getBondsInRangeKdTree(self, point, radius, maxItems=50):
         # create kdtree if it's not yet there
         if not hasattr(self, 'bond_kdtree'):
             self.initBondKdTree()
@@ -343,6 +341,20 @@ class Compound(object):
                 break
 
         return neighbors
+
+    def getBondsInRange(self, bond, depth=1):
+
+        neighbors = [] # bonds
+        for b in bond.atom1.bonds:
+            if b is not bond:
+                neighbors.append(b)
+
+        for b in bond.atom2.bonds:
+            if b is not bond:
+                neighbors.append(b)
+
+        return neighbors
+
 
     def initAngleKdTree(self):
         self.anglesList = list(self.angles)

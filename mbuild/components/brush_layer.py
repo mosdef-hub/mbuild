@@ -9,6 +9,7 @@ from mbuild.compound import Compound
 
 from mbuild.ff.opls_rules import OplsRules
 from mbuild.ff.opls_forcefield import OplsForceField
+from mbuild.tiled_compound import TiledCompound
 import mbuild.unit as units
 
 from mbuild.components.surface import Surface
@@ -22,17 +23,22 @@ class BrushLayer(Compound):
     """
     """
 
-    def __init__(self, ctx={}, chain_length=4, alpha=pi/4, coverage=1):
+    def __init__(self, ctx={}, tile_x=1, tile_y=1, chain_length=4, alpha=pi/4, coverage=1):
         """
         """
         super(BrushLayer, self).__init__(ctx=ctx)
-        self.add(Surface(ctx=ctx), 'surface')
+
+        surface = Surface(ctx=ctx)
+
+        tc = TiledCompound(surface, tile_x, tile_y, 1, kind="tiled_surface")
+
+        self.add(tc, 'tiled_surface')
 
         chains_on_surface = 0.0
         brush_proto = Brush(chain_length=chain_length, alpha=alpha)
 
-        n_ports = sum(isinstance(part, Port) for part in self.surface.parts)
-        for port in self.surface.parts:
+        n_ports = sum(isinstance(part, Port) for part in self.tiled_surface.parts)
+        for port in self.tiled_surface.parts:
             current_coverage = (chains_on_surface / n_ports ) * 100
             # Build a pMPC brush.
             if isinstance(port, Port) and current_coverage <  coverage:
@@ -52,7 +58,7 @@ class BrushLayer(Compound):
 if __name__ == "__main__":
     print "Generating model..."
     start = time.time()
-    m = BrushLayer(chain_length=5, alpha=pi/4, coverage=1)
+    m = BrushLayer(chain_length=5, alpha=pi/4, coverage=.5, tile_x=5, tile_y=5)
     print "Done. ({0:.2f} s)".format(time.time() - start)
 
     print "Loading and pruning forcefield..."
@@ -90,13 +96,28 @@ if __name__ == "__main__":
     ff = ff.prune(m)
     print "Done. ({0:.2f} s)".format(time.time() - start)
 
+    import cProfile, pstats, StringIO
+    pr = cProfile.Profile()
+    pr.enable()
+
+
     print "Generating topology..."
     start = time.time()
     rules = OplsRules(m, ff)
     rules.execute(verbose=False)
     print "Done. ({0:.2f} s)".format(time.time() - start)
-    """
+
+    pr.disable()
+    s = StringIO.StringIO()
+    sortby = 'cumulative'
+    ps = pstats.Stats(pr, stream=s).sort_stats(sortby)
+    ps.print_stats()
+    print s.getvalue()
+
+
+    # print len(m.angles)
+
     print "Visualizing..."
     from mbuild.plot import Plot
     Plot(m).show()
-    """
+

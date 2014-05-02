@@ -1,7 +1,11 @@
 from copy import deepcopy
+from examples.ethane.ethane import Ethane
+from mbuild.components.alkane_tail import AlkaneTail
+from mbuild.components.mpc_monomer import MpcMonomer
 from mbuild.components.surface import Surface
 from mbuild.compound import Compound
 from mbuild.coordinate_transform import Translation
+from mbuild.port import Port
 from mbuild.prototype import Prototype
 
 __author__ = 'sallai'
@@ -33,11 +37,16 @@ class TiledCompound(Compound):
                     new_tile = deepcopy(tile)
                     new_tile.transform(Translation((i*tile.bounds[0], j*tile.bounds[1], 0)))
                     self.add(new_tile,label=label + "_" + str(i)+"_"+str(j))
+                    for port in new_tile.parts:
+                        if isinstance(port, Port):
+                            self.add(port, containment="False")
 
         self.bounds = [ tile.bounds[0]*i, tile.bounds[1]*j, tile.bounds[2] ]
 
+
 if __name__ == "__main__":
     surface = Surface()
+
     Prototype('o-si', color='grey')
 
     tc = TiledCompound(surface, 3, 4, 1, kind="tiled_surface")

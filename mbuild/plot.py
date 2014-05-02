@@ -13,6 +13,10 @@ class Plot(object):
             atoms=True, bonds=True, angles=True, dihedrals=True):
         assert(isinstance(compound, Compound))
 
+        figure = mlab.gcf()
+        mlab.clf()
+        figure.scene.disable_render = True
+
         max_bond_dist = compound.boundingbox_diameter() / 2.0
 
         # display atoms
@@ -52,9 +56,10 @@ class Plot(object):
                     z2.append(atom.pos[2])
                     r.append(radius / 5.0)
 
-                fig = mlab.points3d(x2, y2, z2, r,
+                glyphs = mlab.points3d(x2, y2, z2, r,
                         color=colorRGB, scale_factor=1.0, scale_mode='scalar')
-                fig.glyph.glyph.clamping = False
+                glyphs.glyph.glyph.clamping = False
+
 
         # display bonds
         if bonds:
@@ -281,6 +286,7 @@ class Plot(object):
                 fig.glyph.glyph.clamping = False
 
 
+
         # display axes
         axessrc = mlab.pipeline.vector_scatter(np.array([0]), np.array([0]),
                 np.array([0]), np.array([1]), np.array([0]), np.array([0]))
@@ -298,6 +304,7 @@ class Plot(object):
                 scale_factor=1.0, color=(0,0,1))
 
         self.mlab = mlab
+
 
     def show(self):
         mlab.show()

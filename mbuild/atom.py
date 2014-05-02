@@ -8,7 +8,7 @@ __author__ = 'sallai'
 from coordinate_transform import *
 
 class Atom(object):
-
+    __slots__ = ['kind','pos','charge','bonds','angles','dihedrals']
     def __init__(self, kind, pos=(0, 0, 0), charge=0):
         assert(isinstance(kind, basestring))
 
@@ -44,8 +44,15 @@ class Atom(object):
         newone = cls.__new__(cls)
         memo[id(self)] = newone
 
-        for k, v in self.__dict__.items():
-            setattr(newone, k, deepcopy(v, memo))
+        newone.kind = deepcopy(self.kind, memo)
+        newone.pos = deepcopy(self.pos, memo)
+        newone.charge = deepcopy(self.charge, memo)
+        newone.bonds = deepcopy(self.bonds, memo)
+        newone.angles= deepcopy(self.angles, memo)
+        newone.dihedrals= deepcopy(self.dihedrals, memo)
+
+        # for k, v in self.__dict__.items():
+        #     setattr(newone, k, deepcopy(v, memo))
 
         return newone
 
