@@ -1,5 +1,4 @@
 import time
-import pdb
 from copy import deepcopy
 from numpy import pi
 from mbuild.components.brush import Brush
@@ -13,19 +12,18 @@ from mbuild.tiled_compound import TiledCompound
 import mbuild.unit as units
 
 from mbuild.components.surface import Surface
-from mbuild.components.initiator import Initiator
-from mbuild.components.pmpc import Pmpc
-from mbuild.components.silane import Silane
-from mbuild.components.alkane_tail import AlkaneTail
 
 
 class BrushLayer(Compound):
     """
     """
 
-    def __init__(self, ctx={}, tile_x=1, tile_y=1, chain_length=4, alpha=pi/4, coverage=1):
+    def __init__(self, ctx=None, tile_x=1, tile_y=1, chain_length=4, alpha=pi / 4, coverage=1):
         """
         """
+
+        if not ctx: ctx = {}
+
         super(BrushLayer, self).__init__(ctx=ctx)
 
         surface = Surface(ctx=ctx)
@@ -58,7 +56,7 @@ class BrushLayer(Compound):
 if __name__ == "__main__":
     print "Generating model..."
     start = time.time()
-    m = BrushLayer(chain_length=5, alpha=pi/4, coverage=.5, tile_x=5, tile_y=5)
+    m = BrushLayer(chain_length=5, alpha=pi/4, coverage=.5, tile_x=1, tile_y=2)
     print "Done. ({0:.2f} s)".format(time.time() - start)
 
     print "Loading and pruning forcefield..."
