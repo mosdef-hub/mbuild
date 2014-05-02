@@ -1,7 +1,6 @@
 import time
 from copy import deepcopy
 from numpy import pi
-from mbuild.components.brush import Brush
 
 from mbuild.port import Port
 from mbuild.compound import Compound
@@ -11,6 +10,7 @@ from mbuild.ff.opls_forcefield import OplsForceField
 from mbuild.tiled_compound import TiledCompound
 import mbuild.unit as units
 
+from mbuild.components.brush import Brush
 from mbuild.components.surface import Surface
 
 
@@ -56,7 +56,7 @@ class BrushLayer(Compound):
 if __name__ == "__main__":
     print "Generating model..."
     start = time.time()
-    m = BrushLayer(chain_length=5, alpha=pi/4, coverage=.5, tile_x=1, tile_y=2)
+    m = BrushLayer(chain_length=5, alpha=pi/4, coverage=.5, tile_x=2, tile_y=2)
     print "Done. ({0:.2f} s)".format(time.time() - start)
 
     print "Loading and pruning forcefield..."
@@ -114,8 +114,8 @@ if __name__ == "__main__":
 
 
     # print len(m.angles)
-
+    """
     print "Visualizing..."
     from mbuild.plot import Plot
     Plot(m).show()
-
+    """

@@ -1,8 +1,5 @@
 from copy import deepcopy
-from examples.ethane.ethane import Ethane
-from mbuild.components.alkane_tail import AlkaneTail
-from mbuild.components.mpc_monomer import MpcMonomer
-from mbuild.components.surface import Surface
+
 from mbuild.compound import Compound
 from mbuild.coordinate_transform import Translation
 from mbuild.port import Port
@@ -45,6 +42,7 @@ class TiledCompound(Compound):
 
 
 if __name__ == "__main__":
+    from mbuild.components.surface import Surface
     surface = Surface()
 
     Prototype('o-si', color='grey')

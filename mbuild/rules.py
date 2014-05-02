@@ -23,7 +23,7 @@ class RuleEngine(object):
                     self.compound.add(Bond(a1, b1, kind=kind))
                     # print "Added bond of kind {0}".format(kind)
 
-    def add_angle(self, type_A, type_B, type_C, kind, thmin=-Inf, thmax=Inf):
+    def add_angle(self, type_A, type_B, type_C, kind):
         """
         """
 
@@ -40,9 +40,8 @@ class RuleEngine(object):
                 bc = bc1.cloneWithOrder(type_B, type_C)
 
                 temp_ang = Angle.createFromBonds(ab, bc, kind=kind)
-                if temp_ang:
-                    if (temp_ang.atom2.kind==type_B) and (thmin <= temp_ang.inDegrees() <= thmax):
-                        self.compound.add(temp_ang)
+                if (temp_ang) and (temp_ang.atom2.kind==type_B):
+                    self.compound.add(temp_ang)
 
     def add_dihedral(self, type_A, type_B, type_C, type_D, dihedralKind):
         """
