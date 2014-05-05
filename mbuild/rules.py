@@ -16,8 +16,8 @@ class RuleEngine(object):
     def add_bond(self, type_A, type_B, dmin, dmax, kind):
         """Ai-Bj distance is in [dmin, dmax] => add bond A1xB(Ai,Bj) (symmetric)."""
         #for a1 in self.compound.getAtomsByBondType(type_A):
-        for a1 in self.compound.getAtomsByKind(type_A):
-            nearest = self.compound.getAtomsInRange(a1.pos, dmax)
+        for a1 in self.compound.getAtomListByKind(type_A):
+            nearest = self.compound.getAtomsInRange(a1.pos, dmax, kind=type_B)
             for b1 in nearest:
                 if (b1.kind==type_B) and (dmin <= self.compound.min_periodic_distance(b1.pos, a1.pos) <= dmax):
                     self.compound.add(Bond(a1, b1, kind=kind))

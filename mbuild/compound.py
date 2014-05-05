@@ -261,7 +261,7 @@ class Compound(object):
 
     def rename(self, array_of_pairs):
         for pair in array_of_pairs:
-            for atom in self.getAtomsByKind(pair[0]):
+            for atom in self.getAtomListByKind(pair[0]):
                 atom.kind = pair[1]
 
     def boundingbox_diameter(self, excludeG=True):
@@ -284,53 +284,86 @@ class Compound(object):
 
         return newone
 
-    def computeAtomsByKind(self):
-        # compute if it doesn't exist, or if the component hierarchy has changed since last computation
-        if not hasattr(self, 'atomsByKind_hash') or self.parts.__hash__ != self.atomsByKind_hash:
-            self.atomsByKind_hash = self.parts.__hash__
-            self.atomsByKind = dict()
-            for atom in self.atoms():
-                if atom.kind not in self.atomsByKind:
-                    self.atomsByKind[atom.kind] = [atom]
-                else:
-                    self.atomsByKind[atom.kind].append(atom)
+    def initAtomsByKind(self, kind='*'):
+        # remember the hash of the parts dict at time of generating the atomListsByKind dict
+        self.atomListsByKind_hash = self.parts.__hash__
+        self.atomListsByKind = OrderedDict()
 
-    def getAtomsByKind(self, kind):
+        # print "intiializing atoms by kind dict"
+
+        self.atomListsByKind['*'] = []
+
+        for atom in self.atoms():
+
+            self.atomListsByKind['*'].append(atom)
+
+            if atom.kind not in self.atomListsByKind:
+                self.atomListsByKind[atom.kind] = [atom]
+            else:
+                self.atomListsByKind[atom.kind].append(atom)
+
+    def hasAtomListByKind(self, kind='*'):
+        if not hasattr(self, 'atomListsByKind') or self.parts.__hash__ != self.atomListsByKind_hash:
+            # print "nonexistent of outdated atomsListByKind"
+            return False
+        else:
+            return True
+
+
+    def getAtomListByKind(self, kind='*'):
         # this is slow...
         # return ifilter(lambda atom: (atom.kind == kind), self.atoms())
 
-        # speed it up by precomputing a data structure (if needed)
-        self.computeAtomsByKind()
-        if kind in self.atomsByKind:
-            return self.atomsByKind[kind]
+        # use some precomputed data structures instead (memory vs. time trade-off)
+        if not self.hasAtomListByKind(kind):
+            self.initAtomsByKind(kind)
+
+        if kind in self.atomListsByKind:
+            return self.atomListsByKind[kind]
         else:
             return []
+
+    def resetAtomListByKind(self, kind='*'):
+        if hasattr(self, 'atomListsByKind'):
+            del self.atomListsByKind
+            del self.atomListsByKind_hash
 
     def getAtomsByBondType(self, bond_type):
         return ifilter(lambda atom: (atom.bond_type == bond_type), self.atoms())
 
-    def computeBondsByAtomKind(self):
-        # compute if it doesn't exist, or if the component hierarchy has changed since last computation
-        if not hasattr(self, 'bondsByAtomKind_hash') or self.bonds.__hash__ != self.bondsByAtomKind_hash:
-            self.bondsByAtomKind_hash = self.bonds.__hash__
-            self.bondsByAtomKind = dict()
-            for bond in self.bonds:
-                if bond.atom1.kind < bond.atom2.kind:
-                    pair = (bond.atom1.kind,bond.atom2.kind)
-                else:
-                    pair = (bond.atom2.kind,bond.atom1.kind)
+    def initBondsByAtomKind(self):
+        # remember the hash of the bonds dict at time of generating the bondsByAtomKind dict
+        self.bondsByAtomKind_hash = self.bonds.__hash__
+        self.bondsByAtomKind = dict()
 
-                if pair not in self.bondsByAtomKind:
-                    self.bondsByAtomKind[pair] = [bond]
-                else:
-                    self.bondsByAtomKind[pair].append(bond)
+        # print "intiializing bonds by atom kind dict"
+
+        for bond in self.bonds:
+            if bond.atom1.kind < bond.atom2.kind:
+                pair = (bond.atom1.kind,bond.atom2.kind)
+            else:
+                pair = (bond.atom2.kind,bond.atom1.kind)
+
+            if pair not in self.bondsByAtomKind:
+                self.bondsByAtomKind[pair] = [bond]
+            else:
+                self.bondsByAtomKind[pair].append(bond)
+
+    def hasBondsByAtomKind(self):
+        # check if helper dict doesn't exist, or if the bonds have changed since last computation
+        if not hasattr(self, 'bondsByAtomKind_hash') or self.bonds.__hash__ != self.bondsByAtomKind_hash:
+            return False
+        else:
+            return True
 
     def getBondsByAtomKind(self, kind1, kind2):
         # this runs slowly..
         # return ifilter(lambda bond: bond.hasAtomKinds(kind1, kind2), self.bonds)
 
         # this should speed it up...
-        self.computeBondsByAtomKind() # precompute a data structure if needed
+        if not self.hasBondsByAtomKind(): # precompute a data structure if needed
+            self.initBondsByAtomKind()
+
         if kind1 < kind2:
             pair = (kind1, kind2)
         else:
@@ -341,29 +374,47 @@ class Compound(object):
         else:
             return []
 
-
     def getAnglesByAtomKind(self, kind1, kind2, kind3):
         return ifilter(lambda angle: angle.hasAtomKinds(kind1, kind2, kind3), self.angles)
 
     def getDihedralsByAtomKind(self, kind1, kind2, kind3, kind4):
         return ifilter(lambda dihedral: dihedral.hasAtomKinds(kind1, kind2, kind3, kind4), self.dihedrals)
 
-    def initAtomKdTree(self):
-        self.atomsList = list(self.atoms())
-        self.atomKdtree = PeriodicCKDTree([atom.pos for atom in self.atomsList], bounds=self.bounds)
+    def initAtomKdTree(self, kind='*'):
+        # check if atomKdTrees dict exists and is up-to-date
+        if not hasattr(self, 'atomKdTrees') or self.parts.__hash__ != self.atomKdTrees_hash:
+            # remember the hash of the bonds dict at time of generating the bondsByAtomKind dict
+            self.atomKdTrees_hash = self.parts.__hash__
+            self.atomKdTrees = dict()
+            # print "intiializing atomKdTrees dict"
 
-    def getAtomsInRange(self, point, radius, maxItems=50):
+        self.atomKdTrees[kind] = PeriodicCKDTree([atom.pos for atom in self.getAtomListByKind(kind)], bounds=self.bounds)
+
+    def hasAtomKdTree(self, kind='*'):
+        if not hasattr(self, 'atomKdTrees') or self.parts.__hash__ != self.atomKdTrees_hash:
+            return False
+
+        if kind in self.atomKdTrees:
+            return True
+
+        return False
+
+    def getAtomKdTree(self, kind='*'):
+        return self.atomKdTrees[kind]
+
+    def getAtomsInRange(self, point, radius, maxItems=50, kind='*'):
+
         # create kdtree if it's not yet there
-        if not hasattr(self, 'atomKdtree'):
-            self.initAtomKdTree()
+        if not self.hasAtomKdTree(kind):
+            self.initAtomKdTree(kind)
 
-        distances, indices = self.atomKdtree.query(point, maxItems)
+        distances, indices = self.getAtomKdTree(kind).query(point, maxItems)
         # indices = self.kdtree.query(point, maxAtoms)
 
         neighbors = []
         for index, distance in zip(indices, distances):
             if distance <= radius:
-                neighbors.append(self.atomsList[index])
+                neighbors.append(self.getAtomListByKind(kind)[index])
             else:
                 break
 
