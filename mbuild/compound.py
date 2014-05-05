@@ -25,6 +25,7 @@ class Compound(object):
         else:
             self.kind = self.__class__.__name__
 
+        self.parent = None
         self.parts = OrderedSet() # contains children (compounds or atoms)
         self.references = OrderedDict()  # label to compound/atom mappings -- need not be in parts
 
@@ -32,36 +33,21 @@ class Compound(object):
         self.angles = OrderedSet()
         self.dihedrals = OrderedSet()
 
-    # def findLabelOfComponent(self, what):
-    #     return self._components.keys()[self._components.values().index(what)]
-
-    # def addAlias(self, what, alias_label):
-    #     if isinstance(what, basestring):
-    #         label = what
-    #         if not label:
-    #             raise Exception("no label specified")
-    #     else:
-    #         label = self.findLabelOfComponent(what)
-    #         if not label:
-    #             raise Exception("no label found for component")
-    #
-    #     if label != alias_label and alias_label in self._components.keys():
-    #         raise Exception("label " + label + " already exists in " + str(self))
-    #
-    #
-    #     self._aliases[alias_label] = label
-    #
-    #     setattr(self, alias_label, self._components[label])
+        self.treeDistancePenalty = 1
 
     def add(self, new_obj, label=None, containment=True, replace=False):
         if containment:
-            # add atom as a part, set a reference to it
+            # add atom as a part
             if isinstance(new_obj, Atom):
                 self.parts.add(new_obj)
+                assert(not new_obj.parent)
+                new_obj.parent = self
 
-            # add compound as a part, set a reference to it
+            # add compound as a part
             elif isinstance(new_obj, Compound):
                 self.parts.add(new_obj)
+                assert(not new_obj.parent)
+                new_obj.parent = self
 
             # add bond to compound
             elif isinstance(new_obj, Bond):
@@ -102,6 +88,10 @@ class Compound(object):
 
             else:
                 raise Exception("can't add unknown type " + str(new_obj))
+
+        # autogenerate a label for if a reference-only object does not have one
+        if not containment and label is None:
+            label = new_obj.kind  + "__" + str(id(new_obj))
 
         # add new_obj to references
         if label is not None:
@@ -273,14 +263,25 @@ class Compound(object):
         newone = cls.__new__(cls)
 
         newone.__dict__.update(self.__dict__)
+
+        newone.parent = None
+
         return newone
 
     def __deepcopy__(self, memo):
         cls = self.__class__
         newone = cls.__new__(cls)
 
+        memo[id(self)] = newone
+
         for k, v in self.__dict__.items():
-            setattr(newone, k, deepcopy(v, memo))
+            if k is "parent":
+                if id(self.parent) in memo:
+                    newone.parent = memo[id(self.parent)]
+                else:
+                    newone.parent = None
+            else:
+                setattr(newone, k, deepcopy(v, memo))
 
         return newone
 
@@ -402,7 +403,7 @@ class Compound(object):
     def getAtomKdTree(self, kind='*'):
         return self.atomKdTrees[kind]
 
-    def getAtomsInRange(self, point, radius, maxItems=50, kind='*'):
+    def getAtomsInRange(self, point, radius, maxItems=10, kind='*'):
 
         # create kdtree if it's not yet there
         if not self.hasAtomKdTree(kind):

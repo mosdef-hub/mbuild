@@ -37,12 +37,13 @@ class TiledCompound(Compound):
                     self.add(new_tile,label=label + "_" + str(i)+"_"+str(j))
                     for port in new_tile.parts:
                         if isinstance(port, Port):
-                            self.add(port, containment="False")
+                            self.add(port, containment=False)
 
         self.periodicity = [ tile.periodicity[0]*i, tile.periodicity[1]*j, tile.periodicity[2] ]
 
 
 if __name__ == "__main__":
+
     from mbuild.components.surface import Surface
     surface = Surface()
 

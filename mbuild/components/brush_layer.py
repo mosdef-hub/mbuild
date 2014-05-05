@@ -35,8 +35,9 @@ class BrushLayer(Compound):
         chains_on_surface = 0.0
         brush_proto = Brush(chain_length=chain_length, alpha=alpha)
 
-        n_ports = sum(isinstance(part, Port) for part in self.tiled_surface.parts)
-        for port in self.tiled_surface.parts:
+        n_ports = sum(isinstance(part, Port) for part in self.tiled_surface.references.values())
+
+        for port in self.tiled_surface.references.values():
             current_coverage = (chains_on_surface / n_ports ) * 100
             # Build a pMPC brush.
             if isinstance(port, Port) and current_coverage <  coverage:
@@ -56,7 +57,7 @@ class BrushLayer(Compound):
 if __name__ == "__main__":
     print "Generating model..."
     start = time.time()
-    m = BrushLayer(chain_length=5, alpha=pi/4, coverage=.5, tile_x=2, tile_y=1)
+    m = BrushLayer(chain_length=5, alpha=pi/4, coverage=2, tile_x=2, tile_y=1)
     print "Done. ({0:.2f} s)".format(time.time() - start)
 
     print "Loading and pruning forcefield..."

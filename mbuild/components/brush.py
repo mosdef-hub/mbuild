@@ -21,6 +21,7 @@ class Brush(Compound):
     def __init__(self, ctx={}, chain_length=4, alpha=pi/4):
         super(Brush, self).__init__(ctx=ctx)
 
+        self.treeDistancePenalty = 10
         silane = Silane(ctx=ctx)
         self.add(silane)
 
