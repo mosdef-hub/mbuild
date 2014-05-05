@@ -23,7 +23,7 @@ class Surface(Compound):
         s = Xyz('beta-cristobalite.xyz')
 
         self.add(s, 'surface_xyz')
-        self.bounds = [47.689, 41.3, 0.0]
+        self.periodicity = [47.689, 41.3, 0.0]
 
         # create a rule engine
         r = SurfaceRules(self)

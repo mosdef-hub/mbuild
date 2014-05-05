@@ -290,7 +290,7 @@ class Lammps(Compound):
 
         # copy over everything relevant to the compound's data structures
 
-        self.bounds = box_hi - box_lo
+        self.periodicity = box_hi - box_lo
         xyz -= box_lo
 
         atoms_by_index = dict()

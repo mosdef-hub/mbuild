@@ -56,7 +56,7 @@ class BrushLayer(Compound):
 if __name__ == "__main__":
     print "Generating model..."
     start = time.time()
-    m = BrushLayer(chain_length=5, alpha=pi/4, coverage=.5, tile_x=2, tile_y=2)
+    m = BrushLayer(chain_length=5, alpha=pi/4, coverage=.5, tile_x=2, tile_y=1)
     print "Done. ({0:.2f} s)".format(time.time() - start)
 
     print "Loading and pruning forcefield..."
@@ -112,10 +112,7 @@ if __name__ == "__main__":
     ps.print_stats()
     print s.getvalue()
 
-
-    # print len(m.angles)
-    """
+    print len(m.angles)
     print "Visualizing..."
     from mbuild.plot import Plot
     Plot(m).show()
-    """

@@ -15,10 +15,10 @@ from coordinate_transform import *
 
 class Compound(object):
 
-    def __init__(self, ctx={}, kind=None, bounds = [0.0, 0.0, 0.0]):
+    def __init__(self, ctx={}, kind=None, periodicity = [0.0, 0.0, 0.0]):
         # set the context (optional)
         self.ctx = ctx
-        self.bounds = bounds
+        self.periodicity = periodicity
         # set the kind (defaults to classname)
         if kind:
             self.kind = kind
@@ -388,7 +388,7 @@ class Compound(object):
             self.atomKdTrees = dict()
             # print "intiializing atomKdTrees dict"
 
-        self.atomKdTrees[kind] = PeriodicCKDTree([atom.pos for atom in self.getAtomListByKind(kind)], bounds=self.bounds)
+        self.atomKdTrees[kind] = PeriodicCKDTree([atom.pos for atom in self.getAtomListByKind(kind)], bounds=self.periodicity)
 
     def hasAtomKdTree(self, kind='*'):
         if not hasattr(self, 'atomKdTrees') or self.parts.__hash__ != self.atomKdTrees_hash:
@@ -422,7 +422,7 @@ class Compound(object):
 
     def initBondKdTree(self):
         self.bondsList = list(self.bonds)
-        self.bond_kdtree = PeriodicCKDTree([bond.com() for bond in self.bondsList], bounds=self.bounds)
+        self.bond_kdtree = PeriodicCKDTree([bond.com() for bond in self.bondsList], bounds=self.periodicity)
 
     def getBondsInRangeKdTree(self, point, radius, maxItems=50):
         # create kdtree if it's not yet there
@@ -457,7 +457,7 @@ class Compound(object):
 
     def initAngleKdTree(self):
         self.anglesList = list(self.angles)
-        self.AngleKdtree = PeriodicCKDTree([angle.atom2.pos for angle in self.anglesList], bounds=self.bounds)
+        self.AngleKdtree = PeriodicCKDTree([angle.atom2.pos for angle in self.anglesList], bounds=self.periodicity)
 
     def getAnglesInRange(self, point, radius, maxItems=50):
         # create kdtree if it's not yet there
@@ -521,40 +521,40 @@ class Compound(object):
 
         # print p1
         # print p2
-        p2_img = np.array([[p2[0]+( 0)*self.bounds[0], p2[1]+( 0)*self.bounds[1], p2[2]+( 0)*self.bounds[2]], \
+        p2_img = np.array([[p2[0]+( 0)*self.periodicity[0], p2[1]+( 0)*self.periodicity[1], p2[2]+( 0)*self.periodicity[2]], \
                            \
-                           [p2[0]+( 0)*self.bounds[0], p2[1]+( 0)*self.bounds[1], p2[2]+( 1)*self.bounds[2]], \
-                           [p2[0]+( 0)*self.bounds[0], p2[1]+( 0)*self.bounds[1], p2[2]+(-1)*self.bounds[2]], \
+                           [p2[0]+( 0)*self.periodicity[0], p2[1]+( 0)*self.periodicity[1], p2[2]+( 1)*self.periodicity[2]], \
+                           [p2[0]+( 0)*self.periodicity[0], p2[1]+( 0)*self.periodicity[1], p2[2]+(-1)*self.periodicity[2]], \
                            \
-                           [p2[0]+( 0)*self.bounds[0], p2[1]+( 1)*self.bounds[1], p2[2]+( 0)*self.bounds[2]], \
-                           [p2[0]+( 0)*self.bounds[0], p2[1]+(-1)*self.bounds[1], p2[2]+( 0)*self.bounds[2]], \
+                           [p2[0]+( 0)*self.periodicity[0], p2[1]+( 1)*self.periodicity[1], p2[2]+( 0)*self.periodicity[2]], \
+                           [p2[0]+( 0)*self.periodicity[0], p2[1]+(-1)*self.periodicity[1], p2[2]+( 0)*self.periodicity[2]], \
                            \
-                           [p2[0]+( 0)*self.bounds[0], p2[1]+( 1)*self.bounds[1], p2[2]+( 1)*self.bounds[2]], \
-                           [p2[0]+( 0)*self.bounds[0], p2[1]+( 1)*self.bounds[1], p2[2]+(-1)*self.bounds[2]], \
-                           [p2[0]+( 0)*self.bounds[0], p2[1]+(-1)*self.bounds[1], p2[2]+( 1)*self.bounds[2]], \
-                           [p2[0]+( 0)*self.bounds[0], p2[1]+(-1)*self.bounds[1], p2[2]+(-1)*self.bounds[2]], \
+                           [p2[0]+( 0)*self.periodicity[0], p2[1]+( 1)*self.periodicity[1], p2[2]+( 1)*self.periodicity[2]], \
+                           [p2[0]+( 0)*self.periodicity[0], p2[1]+( 1)*self.periodicity[1], p2[2]+(-1)*self.periodicity[2]], \
+                           [p2[0]+( 0)*self.periodicity[0], p2[1]+(-1)*self.periodicity[1], p2[2]+( 1)*self.periodicity[2]], \
+                           [p2[0]+( 0)*self.periodicity[0], p2[1]+(-1)*self.periodicity[1], p2[2]+(-1)*self.periodicity[2]], \
                            \
-                           [p2[0]+( 1)*self.bounds[0], p2[1]+( 0)*self.bounds[1], p2[2]+( 0)*self.bounds[2]], \
-                           [p2[0]+(-1)*self.bounds[0], p2[1]+( 0)*self.bounds[1], p2[2]+( 0)*self.bounds[2]], \
+                           [p2[0]+( 1)*self.periodicity[0], p2[1]+( 0)*self.periodicity[1], p2[2]+( 0)*self.periodicity[2]], \
+                           [p2[0]+(-1)*self.periodicity[0], p2[1]+( 0)*self.periodicity[1], p2[2]+( 0)*self.periodicity[2]], \
                            \
-                           [p2[0]+( 1)*self.bounds[0], p2[1]+( 0)*self.bounds[1], p2[2]+( 1)*self.bounds[2]], \
-                           [p2[0]+( 1)*self.bounds[0], p2[1]+( 0)*self.bounds[1], p2[2]+(-1)*self.bounds[2]], \
-                           [p2[0]+(-1)*self.bounds[0], p2[1]+( 0)*self.bounds[1], p2[2]+( 1)*self.bounds[2]], \
-                           [p2[0]+(-1)*self.bounds[0], p2[1]+( 0)*self.bounds[1], p2[2]+(-1)*self.bounds[2]], \
+                           [p2[0]+( 1)*self.periodicity[0], p2[1]+( 0)*self.periodicity[1], p2[2]+( 1)*self.periodicity[2]], \
+                           [p2[0]+( 1)*self.periodicity[0], p2[1]+( 0)*self.periodicity[1], p2[2]+(-1)*self.periodicity[2]], \
+                           [p2[0]+(-1)*self.periodicity[0], p2[1]+( 0)*self.periodicity[1], p2[2]+( 1)*self.periodicity[2]], \
+                           [p2[0]+(-1)*self.periodicity[0], p2[1]+( 0)*self.periodicity[1], p2[2]+(-1)*self.periodicity[2]], \
                            \
-                           [p2[0]+( 1)*self.bounds[0], p2[1]+( 1)*self.bounds[1], p2[2]+( 0)*self.bounds[2]], \
-                           [p2[0]+( 1)*self.bounds[0], p2[1]+(-1)*self.bounds[1], p2[2]+( 0)*self.bounds[2]], \
-                           [p2[0]+(-1)*self.bounds[0], p2[1]+( 1)*self.bounds[1], p2[2]+( 0)*self.bounds[2]], \
-                           [p2[0]+(-1)*self.bounds[0], p2[1]+(-1)*self.bounds[1], p2[2]+( 0)*self.bounds[2]], \
+                           [p2[0]+( 1)*self.periodicity[0], p2[1]+( 1)*self.periodicity[1], p2[2]+( 0)*self.periodicity[2]], \
+                           [p2[0]+( 1)*self.periodicity[0], p2[1]+(-1)*self.periodicity[1], p2[2]+( 0)*self.periodicity[2]], \
+                           [p2[0]+(-1)*self.periodicity[0], p2[1]+( 1)*self.periodicity[1], p2[2]+( 0)*self.periodicity[2]], \
+                           [p2[0]+(-1)*self.periodicity[0], p2[1]+(-1)*self.periodicity[1], p2[2]+( 0)*self.periodicity[2]], \
                            \
-                           [p2[0]+( 1)*self.bounds[0], p2[1]+( 1)*self.bounds[1], p2[2]+( 1)*self.bounds[2]], \
-                           [p2[0]+( 1)*self.bounds[0], p2[1]+( 1)*self.bounds[1], p2[2]+(-1)*self.bounds[2]], \
-                           [p2[0]+( 1)*self.bounds[0], p2[1]+(-1)*self.bounds[1], p2[2]+( 1)*self.bounds[2]], \
-                           [p2[0]+( 1)*self.bounds[0], p2[1]+(-1)*self.bounds[1], p2[2]+(-1)*self.bounds[2]], \
-                           [p2[0]+(-1)*self.bounds[0], p2[1]+( 1)*self.bounds[1], p2[2]+( 1)*self.bounds[2]], \
-                           [p2[0]+(-1)*self.bounds[0], p2[1]+( 1)*self.bounds[1], p2[2]+(-1)*self.bounds[2]], \
-                           [p2[0]+(-1)*self.bounds[0], p2[1]+(-1)*self.bounds[1], p2[2]+( 1)*self.bounds[2]], \
-                           [p2[0]+(-1)*self.bounds[0], p2[1]+(-1)*self.bounds[1], p2[2]+(-1)*self.bounds[2]], \
+                           [p2[0]+( 1)*self.periodicity[0], p2[1]+( 1)*self.periodicity[1], p2[2]+( 1)*self.periodicity[2]], \
+                           [p2[0]+( 1)*self.periodicity[0], p2[1]+( 1)*self.periodicity[1], p2[2]+(-1)*self.periodicity[2]], \
+                           [p2[0]+( 1)*self.periodicity[0], p2[1]+(-1)*self.periodicity[1], p2[2]+( 1)*self.periodicity[2]], \
+                           [p2[0]+( 1)*self.periodicity[0], p2[1]+(-1)*self.periodicity[1], p2[2]+(-1)*self.periodicity[2]], \
+                           [p2[0]+(-1)*self.periodicity[0], p2[1]+( 1)*self.periodicity[1], p2[2]+( 1)*self.periodicity[2]], \
+                           [p2[0]+(-1)*self.periodicity[0], p2[1]+( 1)*self.periodicity[1], p2[2]+(-1)*self.periodicity[2]], \
+                           [p2[0]+(-1)*self.periodicity[0], p2[1]+(-1)*self.periodicity[1], p2[2]+( 1)*self.periodicity[2]], \
+                           [p2[0]+(-1)*self.periodicity[0], p2[1]+(-1)*self.periodicity[1], p2[2]+(-1)*self.periodicity[2]], \
                            ])
 
         dists = norm(p2_img-p1, axis=1)

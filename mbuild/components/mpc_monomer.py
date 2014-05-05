@@ -23,8 +23,8 @@ class MpcMonomer(Compound):
         # Read xyz file with labels.
         # First C is labeled C_0, second C is C_1 etc.
         mpc = Xyz(xyz_path, labels=True)
-        mpc.transform(RotationAroundZ(pi / 3))
-        mpc.transform(Translation(np.array([2, 3, 4])))
+        # mpc.transform(RotationAroundZ(pi / 3))
+        # mpc.transform(Translation(np.array([2, 3, 4])))
 
         self.add(mpc, 'mpc_monomer_xyz')
 

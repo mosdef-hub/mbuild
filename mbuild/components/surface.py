@@ -1,3 +1,4 @@
+from copy import deepcopy
 import sys
 import os
 
@@ -30,19 +31,20 @@ class Surface(Compound):
         s = Xyz(xyz_path)
 
         self.add(s, 'surface_xyz')
-        self.bounds = [47.689, 41.3, 0.0]
+        self.periodicity = [47.689, 41.3, 0.0]
 
 
-        # Generate topology.
-        r = SurfaceRules(self)
+        # Generate topology on a deep copy
+        clone = deepcopy(self)
+        r = SurfaceRules(clone)
         r.execute()
 
         # We assume here that the surface is in the x-y plane.
         # We add ports pointing upwards in the z-direction
         # where there are undercoordinated oxygens on the surface.
-        for atom in self.atoms():
+        for atom in clone.atoms():
             if atom.kind == "O" and len(atom.bonds) == 1:
-                neighbors = self.getAtomsInRange(atom.pos, 3.0, maxItems=10)
+                neighbors = clone.getAtomsInRange(atom.pos, 3.0, maxItems=10)
 
                 on_top = True
                 for neighbor in neighbors:
@@ -51,25 +53,21 @@ class Surface(Compound):
 
                 if on_top:
                     # This is an undercoordinated oxygen with just one bond.
+                    # we add a port on top of the oxygen in the real component, and
+                    # throw away the clone with its topology information
                     p = Port()
                     p.transform(RotationAroundX(pi / 2))
                     p.transform(Translation(atom.pos))
                     p.transform(Translation([0.0, 0.0, 0.5]))
                     self.add(p, str(id(p)))
-                    for b in atom.bonds:
-                        b.kind = "si-o-top"
-        # clean-up
-        self.bonds = OrderedSet()
-        self.angles = OrderedSet()
-        self.dihedrals = OrderedSet()
-        for atom in self.atoms():
-            atom.bonds = set()
-            atom.angles = set()
-            atom.dihedrals = set()
-
+                    # for b in atom.bonds:
+                    #     b.kind = "si-o-top"
+        del clone
 
 if __name__ == "__main__":
     m = Surface()
     Prototype('o-si', color='grey')
+    r = SurfaceRules(m)
+    r.execute()
     from mbuild.plot import Plot
     Plot(m, bonds=True, verbose=True).show()
