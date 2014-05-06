@@ -33,24 +33,22 @@ class BrushLayer(Compound):
 
         self.add(tc, 'tiled_surface')
 
-        chains_on_surface = 0.0
+        chains_on_surface = 0
         brush_proto = Brush(chain_length=chain_length, alpha=alpha)
 
-        n_ports = sum(isinstance(part, Port) for part in self.tiled_surface.references.values())
-
+        n_ports = float(sum(isinstance(part, Port) for part in self.tiled_surface.references.values()))
+        ports_visited = 0
         for port in self.tiled_surface.references.values():
             current_coverage = (chains_on_surface / n_ports ) * 100
             # Build a pMPC brush.
             if isinstance(port, Port) and current_coverage <  coverage:
+                ports_visited += 1
+                if chains_on_surface == 0 or int(n_ports / coverage) % ports_visited == 0:
+                    brush = deepcopy(brush_proto)
+                    brush.transform([(brush.port, port)])
+                    self.add(brush)
 
-                # brush = Brush(chain_length=chain_length, alpha=alpha)
-                # instead of creating a new brush, clone an already created one
-
-                brush = deepcopy(brush_proto)
-                brush.transform([(brush.port, port)])
-                self.add(brush)
-
-                chains_on_surface += 1
+                    chains_on_surface += 1
 
             elif current_coverage >= coverage:
                 break
@@ -58,7 +56,7 @@ class BrushLayer(Compound):
 if __name__ == "__main__":
     print "Generating model..."
     start = time.time()
-    m = BrushLayer(chain_length=5, alpha=pi/4, coverage=.5, tile_x=2, tile_y=1)
+    m = BrushLayer(chain_length=1, alpha=pi/4, coverage=1, tile_x=1, tile_y=1)
     print "Done. ({0:.2f} s)".format(time.time() - start)
 
     print "Loading and pruning forcefield..."
@@ -95,30 +93,32 @@ if __name__ == "__main__":
 
     ff = ff.prune(m)
     print "Done. ({0:.2f} s)".format(time.time() - start)
-
+    """
     import cProfile, pstats, StringIO
     pr = cProfile.Profile()
     pr.enable()
-
+    """
 
     print "Generating topology..."
     start = time.time()
     rules = OplsRules(m, ff)
     rules.execute(verbose=False)
     print "Done. ({0:.2f} s)".format(time.time() - start)
-
+    """
     pr.disable()
     s = StringIO.StringIO()
     sortby = 'cumulative'
     ps = pstats.Stats(pr, stream=s).sort_stats(sortby)
     ps.print_stats()
     print s.getvalue()
+    """
+    print "\nNumber of atoms: {0}".format(len(m.getAtomListByKind('*')))
+    print "Number of bonds: {0}".format(len(m.bonds))
+    print "Number of angles: {0}".format(len(m.angles))
 
-    print "Number of atoms: " + str(len(m.getAtomListByKind('*')))
-    print "Number of angles: " + str(len(m.angles))
-    print "Visualizing..."
-    from mbuild.plot import Plot
-    Plot(m, bonds=True, angles=False).show()
+    #print "Visualizing..."
+    #from mbuild.plot import Plot
+    #Plot(m, bonds=True, angles=False).show()
     #
     # tv = TreeView(m)
     # tv.show()

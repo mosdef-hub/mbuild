@@ -1,4 +1,4 @@
-from math import sqrt
+import numpy as np
 
 from mbuild.coordinate_transform import *
 from mbuild.atom import Atom
@@ -9,7 +9,7 @@ class AlkaneTail(Compound):
 
     def __init__(self, ctx={}, ff='opls'):
         super(AlkaneTail, self).__init__(ctx=ctx)
-        s2 = sqrt(2) / 2.0
+        s2 = np.sqrt(2) / 2.0
         if ff == 'opls':
             h_kind = 'opls_140'
             c_kind = 'opls_135'
@@ -18,13 +18,13 @@ class AlkaneTail(Compound):
             h_kind = 'H'
             c_kind = 'C'
 
-        self.add(Atom(kind=h_kind, pos=(s2, s2, -s2)), 'h1')
-        self.add(Atom(kind=h_kind, pos=(s2, s2, s2)), 'h2')
-        self.add(Atom(kind=h_kind, pos=(-s2, s2, s2)), 'h3')
-        self.add(Atom(kind=c_kind, pos=(0, 0, 0)), 'c')
+        self.add(Atom(kind=h_kind, pos=np.array([s2, s2, -s2])), 'h1')
+        self.add(Atom(kind=h_kind, pos=np.array([s2, s2, s2])), 'h2')
+        self.add(Atom(kind=h_kind, pos=np.array([-s2, s2, s2])), 'h3')
+        self.add(Atom(kind=c_kind, pos=np.array([0, 0, 0])), 'c')
 
         self.add(Port(), 'female_port')
-        self.female_port.transform(Translation((0,-0.7,0)))
+        self.female_port.transform(Translation(np.array([0,-0.7,0])))
 
 if __name__ == "__main__":
     m = AlkaneTail()
