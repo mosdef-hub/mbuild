@@ -34,12 +34,12 @@ class TiledCompound(Compound):
                 for k in range(n_z):
                     new_tile = deepcopy(tile)
                     new_tile.transform(Translation((i*tile.periodicity[0], j*tile.periodicity[1], 0)))
-                    self.add(new_tile,label=label + "_" + str(i)+"_"+str(j))
+                    self.add(new_tile,label=label + "_" + str(i)+"_"+str(j), inherit_periodicity=False)
                     for port in new_tile.parts:
                         if isinstance(port, Port):
                             self.add(port, containment=False)
 
-        self.periodicity = [ tile.periodicity[0]*i, tile.periodicity[1]*j, tile.periodicity[2] ]
+        self.periodicity = [ tile.periodicity[0]*n_x, tile.periodicity[1]*n_y, tile.periodicity[2]*n_z ]
 
 
 if __name__ == "__main__":

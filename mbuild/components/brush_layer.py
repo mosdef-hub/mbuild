@@ -8,6 +8,7 @@ from mbuild.compound import Compound
 from mbuild.ff.opls_rules import OplsRules
 from mbuild.ff.opls_forcefield import OplsForceField
 from mbuild.tiled_compound import TiledCompound
+from mbuild.treeview import TreeView
 import mbuild.unit as units
 
 from mbuild.components.brush import Brush
@@ -113,7 +114,11 @@ if __name__ == "__main__":
     ps.print_stats()
     print s.getvalue()
 
-    print len(m.angles)
+    print "Number of atoms: " + str(len(m.getAtomListByKind('*')))
+    print "Number of angles: " + str(len(m.angles))
     print "Visualizing..."
     from mbuild.plot import Plot
-    Plot(m).show()
+    Plot(m, angles=True).show()
+    #
+    # tv = TreeView(m)
+    # tv.show()

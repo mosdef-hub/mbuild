@@ -24,7 +24,7 @@ class RuleEngine(object):
                         treed = Atom.treeDistance(a1, b1)
                         if (treedmin and treed < treedmin) or (treedmax and treed > treedmax):
                             # tree distance constraint violated: bail out
-                            print "Tree distance constraint violated"
+                            # print "Tree distance constraint violated"
                             continue
 
                     self.compound.add(Bond(a1, b1, kind=kind))

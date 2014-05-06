@@ -5,6 +5,7 @@ import os
 from mbuild.coordinate_transform import *
 from mbuild.compound import Compound
 from mbuild.orderedset import OrderedSet
+from mbuild.tiled_compound import TiledCompound
 from mbuild.xyz import Xyz
 from mbuild.port import Port
 from mbuild.rules import RuleEngine
@@ -65,7 +66,9 @@ class Surface(Compound):
         del clone
 
 if __name__ == "__main__":
-    m = Surface()
+    s = Surface()
+    m = TiledCompound(s, n_x=1, n_y=1, n_z=1, kind="tiled")
+
     Prototype('o-si', color='grey')
     r = SurfaceRules(m)
     r.execute()

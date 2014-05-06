@@ -12,6 +12,7 @@ from bond import Bond
 from dihedral import Dihedral
 from periodic_kdtree import PeriodicCKDTree
 from coordinate_transform import *
+from warnings import warn
 
 class Compound(object):
 
@@ -35,7 +36,7 @@ class Compound(object):
 
         self.treeDistancePenalty = 1
 
-    def add(self, new_obj, label=None, containment=True, replace=False):
+    def add(self, new_obj, label=None, containment=True, replace=False, inherit_periodicity=True):
         if containment:
             # add atom as a part
             if isinstance(new_obj, Atom):
@@ -108,6 +109,12 @@ class Compound(object):
                 self.references[label] = new_obj
                 setattr(self, label, new_obj)
 
+        if inherit_periodicity:
+            if isinstance(new_obj, Compound):
+                if np.any(new_obj.periodicity):
+                    if np.any(self.periodicity):
+                        warn("Overriding periodicity of component " + str(self))
+                    self.periodicity = new_obj.periodicity
 
     @staticmethod
     def createEquivalenceTransform(equiv):
@@ -254,9 +261,9 @@ class Compound(object):
             for atom in self.getAtomListByKind(pair[0]):
                 atom.kind = pair[1]
 
-    def boundingbox_diameter(self, excludeG=True):
-        (minx, miny, minz), (maxx, maxy, maxz) = self.boundingbox(excludeG=excludeG)
-        return max([maxx-minx, maxy-miny, maxz-minz])
+    # def boundingbox_diameter(self, excludeG=True):
+    #     (minx, miny, minz), (maxx, maxy, maxz) = self.boundingbox(excludeG=excludeG)
+    #     return max([maxx-minx, maxy-miny, maxz-minz])
 
     def __copy__(self):
         cls = self.__class__

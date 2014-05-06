@@ -10,14 +10,14 @@ from prototype import Prototype
 class Plot(object):
 
     def __init__(self, compound, verbose=False,
-            atoms=True, bonds=True, angles=True, dihedrals=True):
+            atoms=True, bonds=True, angles=True, dihedrals=True, periodic_bonds=False, periodic_angles=False):
         assert(isinstance(compound, Compound))
 
         figure = mlab.gcf()
         mlab.clf()
         figure.scene.disable_render = True
 
-        max_bond_dist = compound.boundingbox_diameter() / 2.0
+        # max_bond_dist = compound.boundingbox_diameter() / 2.0
 
         # display atoms
         if atoms:
@@ -98,8 +98,20 @@ class Plot(object):
                     tube_length = d12-2*epsilon
                     v12 = v12/d12*tube_length
 
-                    if tube_length > max_bond_dist:
-                        continue
+                    # if not periodic_bonds and tube_length > max_bond_dist:
+                    #         continue
+
+                    # if tube_length > max_bond_dist:
+                    #         continue
+
+                    if not periodic_bonds:
+                        bail_out = False
+                        for i,mag in enumerate(v12):
+                            if compound.periodicity[i]>0 and abs(mag) > 0.5 * compound.periodicity[i]:
+                                bail_out = True
+
+                        if bail_out:
+                            continue
 
                     x2.append(p1[0])
                     y2.append(p1[1])
@@ -175,6 +187,19 @@ class Plot(object):
 
                     tube_length23 = d23-epsilon
                     v23 = v23/d23*tube_length23
+
+                    if not periodic_angles:
+                        bail_out = False
+                        for i,mag in enumerate(v21):
+                            if compound.periodicity[i]>0 and abs(mag) > 0.5 * compound.periodicity[i]:
+                                bail_out = True
+
+                        for i,mag in enumerate(v23):
+                            if compound.periodicity[i]>0 and abs(mag) > 0.5 * compound.periodicity[i]:
+                                bail_out = True
+
+                        if bail_out:
+                            continue
 
                     x2.append(pos2[0])
                     y2.append(pos2[1])
