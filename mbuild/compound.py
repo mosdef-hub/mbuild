@@ -16,9 +16,13 @@ from warnings import warn
 
 class Compound(object):
 
-    def __init__(self, ctx={}, kind=None, periodicity = [0.0, 0.0, 0.0]):
+    def __init__(self, ctx={}, kind=None, periodicity = None):
         # set the context (optional)
         self.ctx = ctx
+
+        if not periodicity:
+            periodicity = np.array([0.0, 0.0, 0.0])
+
         self.periodicity = periodicity
         # set the kind (defaults to classname)
         if kind:
@@ -175,7 +179,7 @@ class Compound(object):
         # write back new coordinates into atoms
         i = 0
         for atom in self.atoms():
-            atom.pos = (arr[i], arr[i+1], arr[i+2])
+            atom.pos = np.array([arr[i], arr[i+1], arr[i+2]])
             i=i+3
 
         return self
@@ -205,26 +209,6 @@ class Compound(object):
 
     def hasAtomKind(self, kind):
         return kind in self.atomKinds()
-
-    # def component(self, component_path):
-    #     """
-    #     Find a component by label
-    #     :param component_path: the label of the component (may be hierarchical)
-    #     :return: the component (if found), None otherwise
-    #     """
-    #     dot_pos = component_path.find('.')
-    #     if dot_pos > -1:
-    #         subcomponent_path = component_path[:dot_pos]
-    #         subpath = component_path[dot_pos + 1:]
-    #         if subcomponent_path in self._components.keys():
-    #             return self._components[subcomponent_path].component(subpath)
-    #         else:
-    #             return None
-    #     else:
-    #         if component_path in self._components.keys():
-    #             return self._components[component_path]
-    #         else:
-    #             return None
 
     def boundingbox(self, excludeG=True):
         """
@@ -503,7 +487,7 @@ class Compound(object):
                 if ab==bc:
                     continue
                 abc = Angle.createFromBonds(ab,bc)
-                abcImage = abc.cloneImage();
+                abcImage = abc.cloneImage()
                 if not abc in self.angles and not abc.cloneImage() in self.angles and not abcImage in missing:
                     if abc.atom1.kind < abc.atom3.kind:
                         missing.add(abc)
@@ -523,48 +507,14 @@ class Compound(object):
 
         return missing
 
-    def min_periodic_distance(self, pos1, pos2):
-        p1 = np.array(pos1)
-        p2 = np.array(pos2)
+    def min_periodic_distance(self, x0, x1):
+        """Vectorized distance calculation considering minimum image
+        """
 
-        # print p1
-        # print p2
-        p2_img = np.array([[p2[0]+( 0)*self.periodicity[0], p2[1]+( 0)*self.periodicity[1], p2[2]+( 0)*self.periodicity[2]], \
-                           \
-                           [p2[0]+( 0)*self.periodicity[0], p2[1]+( 0)*self.periodicity[1], p2[2]+( 1)*self.periodicity[2]], \
-                           [p2[0]+( 0)*self.periodicity[0], p2[1]+( 0)*self.periodicity[1], p2[2]+(-1)*self.periodicity[2]], \
-                           \
-                           [p2[0]+( 0)*self.periodicity[0], p2[1]+( 1)*self.periodicity[1], p2[2]+( 0)*self.periodicity[2]], \
-                           [p2[0]+( 0)*self.periodicity[0], p2[1]+(-1)*self.periodicity[1], p2[2]+( 0)*self.periodicity[2]], \
-                           \
-                           [p2[0]+( 0)*self.periodicity[0], p2[1]+( 1)*self.periodicity[1], p2[2]+( 1)*self.periodicity[2]], \
-                           [p2[0]+( 0)*self.periodicity[0], p2[1]+( 1)*self.periodicity[1], p2[2]+(-1)*self.periodicity[2]], \
-                           [p2[0]+( 0)*self.periodicity[0], p2[1]+(-1)*self.periodicity[1], p2[2]+( 1)*self.periodicity[2]], \
-                           [p2[0]+( 0)*self.periodicity[0], p2[1]+(-1)*self.periodicity[1], p2[2]+(-1)*self.periodicity[2]], \
-                           \
-                           [p2[0]+( 1)*self.periodicity[0], p2[1]+( 0)*self.periodicity[1], p2[2]+( 0)*self.periodicity[2]], \
-                           [p2[0]+(-1)*self.periodicity[0], p2[1]+( 0)*self.periodicity[1], p2[2]+( 0)*self.periodicity[2]], \
-                           \
-                           [p2[0]+( 1)*self.periodicity[0], p2[1]+( 0)*self.periodicity[1], p2[2]+( 1)*self.periodicity[2]], \
-                           [p2[0]+( 1)*self.periodicity[0], p2[1]+( 0)*self.periodicity[1], p2[2]+(-1)*self.periodicity[2]], \
-                           [p2[0]+(-1)*self.periodicity[0], p2[1]+( 0)*self.periodicity[1], p2[2]+( 1)*self.periodicity[2]], \
-                           [p2[0]+(-1)*self.periodicity[0], p2[1]+( 0)*self.periodicity[1], p2[2]+(-1)*self.periodicity[2]], \
-                           \
-                           [p2[0]+( 1)*self.periodicity[0], p2[1]+( 1)*self.periodicity[1], p2[2]+( 0)*self.periodicity[2]], \
-                           [p2[0]+( 1)*self.periodicity[0], p2[1]+(-1)*self.periodicity[1], p2[2]+( 0)*self.periodicity[2]], \
-                           [p2[0]+(-1)*self.periodicity[0], p2[1]+( 1)*self.periodicity[1], p2[2]+( 0)*self.periodicity[2]], \
-                           [p2[0]+(-1)*self.periodicity[0], p2[1]+(-1)*self.periodicity[1], p2[2]+( 0)*self.periodicity[2]], \
-                           \
-                           [p2[0]+( 1)*self.periodicity[0], p2[1]+( 1)*self.periodicity[1], p2[2]+( 1)*self.periodicity[2]], \
-                           [p2[0]+( 1)*self.periodicity[0], p2[1]+( 1)*self.periodicity[1], p2[2]+(-1)*self.periodicity[2]], \
-                           [p2[0]+( 1)*self.periodicity[0], p2[1]+(-1)*self.periodicity[1], p2[2]+( 1)*self.periodicity[2]], \
-                           [p2[0]+( 1)*self.periodicity[0], p2[1]+(-1)*self.periodicity[1], p2[2]+(-1)*self.periodicity[2]], \
-                           [p2[0]+(-1)*self.periodicity[0], p2[1]+( 1)*self.periodicity[1], p2[2]+( 1)*self.periodicity[2]], \
-                           [p2[0]+(-1)*self.periodicity[0], p2[1]+( 1)*self.periodicity[1], p2[2]+(-1)*self.periodicity[2]], \
-                           [p2[0]+(-1)*self.periodicity[0], p2[1]+(-1)*self.periodicity[1], p2[2]+( 1)*self.periodicity[2]], \
-                           [p2[0]+(-1)*self.periodicity[0], p2[1]+(-1)*self.periodicity[1], p2[2]+(-1)*self.periodicity[2]], \
-                           ])
+        # import pdb
+        # pdb.set_trace()
 
-        dists = norm(p2_img-p1, axis=1)
+        d = np.abs(x0 - x1)
+        d = np.where(d > 0.5 * self.periodicity, self.periodicity - d, d)
+        return np.sqrt((d ** 2).sum(axis=-1))
 
-        return dists.min()

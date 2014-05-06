@@ -22,7 +22,7 @@ class Xyz(Compound):
                 #y = float(fields[2]) * self.DIST
                 #z = float(fields[3]) * self.DIST
                 #atom_pos = (x, y, z)
-                atom_pos = (float(fields[1]),float(fields[2]),float(fields[3]))
+                atom_pos = np.array([float(fields[1]),float(fields[2]),float(fields[3])])
                 if labels:
                     self.add(Atom(kind=atom_type, pos=atom_pos), atom_type + '_#')
                 else:

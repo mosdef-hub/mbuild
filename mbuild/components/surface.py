@@ -10,7 +10,7 @@ from mbuild.xyz import Xyz
 from mbuild.port import Port
 from mbuild.rules import RuleEngine
 from mbuild.prototype import Prototype
-
+import numpy as np
 
 class SurfaceRules(RuleEngine):
     """
@@ -32,7 +32,7 @@ class Surface(Compound):
         s = Xyz(xyz_path)
 
         self.add(s, 'surface_xyz')
-        self.periodicity = [47.689, 41.3, 0.0]
+        self.periodicity = np.array([47.689, 41.3, 0.0])
 
 
         # Generate topology on a deep copy

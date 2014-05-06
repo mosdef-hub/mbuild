@@ -11,8 +11,11 @@ from coordinate_transform import *
 class Atom(object):
     __slots__ = ['kind', 'pos', 'charge', 'bonds', 'angles', 'dihedrals', 'parent']
 
-    def __init__(self, kind, pos=(0, 0, 0), charge=0):
+    def __init__(self, kind, pos=None, charge=0):
         assert (isinstance(kind, basestring))
+
+        if pos is None:
+            pos = np.array([0, 0, 0])
 
         self.parent = None
         self.kind = kind
@@ -22,12 +25,9 @@ class Atom(object):
         self.angles = set()
         self.dihedrals = set()
 
-    @staticmethod
-    def distance(a1, a2):
-        return a1.distance(a2)
-
     def distance(self, a2):
-        return sqrt((self.pos[0] - a2.pos[0]) ** 2 + (self.pos[1] - a2.pos[1]) ** 2 + (self.pos[2] - a2.pos[2]) ** 2)
+        return np.linalg.norm(self.pos - a2.pos)
+        # return sqrt((self.pos[0] - a2.pos[0]) ** 2 + (self.pos[1] - a2.pos[1]) ** 2 + (self.pos[2] - a2.pos[2]) ** 2)
 
     def ancestors(self):
         ancestors = []
@@ -41,8 +41,9 @@ class Atom(object):
 
         return ancestors
 
-    @staticmethod
-    def treeDistance(a1, a2):
+    def treeDistance(self, a2):
+
+        a1 = self
 
         ancestors1 = a1.ancestors()
         ancestors2 = a2.ancestors()
@@ -74,12 +75,8 @@ class Atom(object):
 
         return treed
 
-
-    # def treeDistance(self, a2):
-    #     return Atom.treeDistance(self, a2)
-
     def transform(self, T):
-        self.pos = tuple(squeeze(T.apply(array([self.pos]))))
+        self.pos = T.apply(self.pos)
 
     def __repr__(self):
         return "Atom" + str(id(self)) + "(" + self.kind + "," + str(self.pos) + ")"

@@ -4,6 +4,7 @@ from mbuild.compound import Compound
 from mbuild.coordinate_transform import Translation
 from mbuild.port import Port
 from mbuild.prototype import Prototype
+import numpy as np
 
 __author__ = 'sallai'
 
@@ -39,7 +40,7 @@ class TiledCompound(Compound):
                         if isinstance(port, Port):
                             self.add(port, containment=False)
 
-        self.periodicity = [ tile.periodicity[0]*n_x, tile.periodicity[1]*n_y, tile.periodicity[2]*n_z ]
+        self.periodicity = np.array([ tile.periodicity[0]*n_x, tile.periodicity[1]*n_y, tile.periodicity[2]*n_z ])
 
 
 if __name__ == "__main__":
