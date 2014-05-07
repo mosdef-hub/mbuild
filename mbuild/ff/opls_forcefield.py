@@ -37,11 +37,11 @@ class OplsForceField(ForceField):
                     self.add_atom_type(fields[0],
                             fields[1],
                             int(fields[2]),
-                            fields[3] * self.MASS,
-                            fields[4] * self.CHARGE,
+                            float(fields[3]) * self.MASS,
+                            float(fields[4]) * self.CHARGE,
                             #fields[5]  #  ignore ptype
-                            fields[6] * self.DIST,
-                            fields[7] * self.ENERGY)
+                            float(fields[6]) * self.DIST,
+                            float(fields[7]) * self.ENERGY)
 
         parsable_keywords = {'[ bondtypes ]': self.parse_bond_types,
                 '[ angletypes ]': self.parse_angle_types,
@@ -69,8 +69,10 @@ class OplsForceField(ForceField):
             pair = (fields[0], fields[1])
             if int(fields[2]) == 1:
                 r = float(fields[3]) * self.DIST
+                r = r.in_units_of(units.angstroms)
                 k = float(fields[4]) * self.ENERGY / (self.DIST * self.DIST)
-            self.bond_types[pair] = (r.in_units_of(units.angstroms), k)
+            self.add_bond_type(pair, r, k)
+            #self.bond_types[pair] = (r.in_units_of(units.angstroms), k)
 
     def parse_angle_types(self, f_bonded):
         """Read angle parameter information."""
@@ -84,7 +86,8 @@ class OplsForceField(ForceField):
             if int(fields[3]) == 1:
                 theta = float(fields[4]) * self.DEG
                 k = float(fields[5]) * self.ENERGY / (self.RAD * self.RAD)
-            self.angle_types[triplet] = (theta, k)
+            self.add_angle_type(triplet, theta, k)
+            #self.angle_types[triplet] = (theta, k)
 
     def parse_dihedral_types(self, f_bonded):
         """Read dihedral parameter information."""
@@ -124,6 +127,13 @@ class OplsForceField(ForceField):
             units.kilojoules_per_mole * units.nanometers**(-2))
     def add_bond_type(self, pair, r, k):
         self.bond_types[pair] = (r, k)
+
+    @accepts_compatible_units(None,
+            units.degrees,
+            units.kilojoules_per_mole * units.radians**(-2))
+    def add_angle_type(self, triplet, theta, k):
+        self.angle_types[triplet] = (theta, k)
+
 
 
 

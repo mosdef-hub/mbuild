@@ -1,4 +1,4 @@
-from collections import OrderedDict
+from collections import OrderedDict, defaultdict
 from copy import deepcopy
 from orderedset import OrderedSet
 from itertools import *
@@ -510,11 +510,44 @@ class Compound(object):
     def min_periodic_distance(self, x0, x1):
         """Vectorized distance calculation considering minimum image
         """
-
-        # import pdb
-        # pdb.set_trace()
-
         d = np.abs(x0 - x1)
         d = np.where(d > 0.5 * self.periodicity, self.periodicity - d, d)
         return np.sqrt((d ** 2).sum(axis=-1))
+
+    def unique_types(self, ff):
+        """
+        """
+        a_types = OrderedDict()
+        i = 1
+        for atom in self.atoms():
+            if atom.kind != 'G':
+                if atom.kind not in a_types:
+                    a_types[atom.kind] = (i, ff.atom_types[atom.kind])
+                    i += 1
+        
+        b_types = OrderedDict()
+        i = 1
+        for bond in self.bonds:
+            if bond.kind not in b_types:
+                pair = tuple(bond.kind.split('-'))
+                b_types[bond.kind] = (i, ff.bond_types[pair])
+                i += 1
+    
+        ang_types = OrderedDict()
+        i = 1
+        for ang in self.angles:
+            if ang.kind not in ang_types:
+                triplet = tuple(ang.kind.split('-'))
+                ang_types[ang.kind] = (i, ff.angle_types[triplet])
+                i += 1
+
+        dih_types = OrderedDict()
+        i = 1
+        for dih in self.dihedrals:
+            if dih.kind not in dih_types:
+                quadruplet = tuple(dih.kind.split('-'))
+                dih_types[dih.kind] = (i, ff.dih_types[quadruplet])
+                i += 1
+
+        return a_types, b_types, ang_types, dih_types
 

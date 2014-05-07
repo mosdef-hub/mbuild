@@ -1,10 +1,11 @@
-from mbuild.prototype import Prototype
-from mbuild.treeview import TreeView
-
-__author__ = 'sallai'
-from mbuild.compound import *
+import pdb
 import os.path
 import re
+
+import mbuild.unit as units
+from mbuild.prototype import Prototype
+from mbuild.treeview import TreeView
+from mbuild.compound import *
 
 
 class Lammps(Compound):
@@ -349,7 +350,7 @@ class Lammps(Compound):
 
 
     @staticmethod
-    def save(compound, path, cwd="", sys_name="system", print_ports=False):
+    def save(compound, ff, path, cwd="", unit_set='real', sys_name="system", print_ports=False):
         """Write gbb to LAMMPS data file
 
         Args:
@@ -358,6 +359,17 @@ class Lammps(Compound):
             cwd (str): working directory
             sys_name (str): name printed at top of data file
         """
+        RAD = units.radians
+        DEGREE = units.degrees
+        if unit_set == 'real':
+            DIST = units.angstroms
+            VEL = units.angstroms / units.femtosecond
+            ENERGY = units.kilocalorie / units.mole
+            MASS = units.grams / units.mole
+            CHARGE = units.elementary_charge
+            MOLE = units.mole
+        else:
+            raise Exception("Unsupported unit set specified: {0}".format(unit_set))
 
         fn = os.path.join(cwd, path)
 
@@ -365,7 +377,7 @@ class Lammps(Compound):
             f.write(sys_name + '\n')
             f.write('\n')
 
-            n_atoms = len(compound.atoms)
+            n_atoms = len(compound.getAtomListByKind('*'))
             n_bonds = len(compound.bonds)
             n_angles = len(compound.angles)
             n_dihedrals = len(compound.dihedrals)
@@ -376,51 +388,78 @@ class Lammps(Compound):
             f.write(str(n_dihedrals) + ' dihedrals\n')
             f.write('\n')
 
-            a_types, bond_types, ang_types, dih_types = compound.unique_types()
+            a_types, b_types, ang_types, dih_types = compound.unique_types(ff)
 
-            # assign number to each unique atomtype
-            numbered_a_types = dict(zip(a_types.keys(), range(1, len(a_types.keys()) + 1)))
+            ## assign number to each unique atomtype
+            #numbered_a_types = dict(zip(a_types.keys(), range(1, len(a_types.keys()) + 1)))
 
             f.write(str(len(a_types)) + ' atom types\n')
             if n_bonds > 0:
-                f.write(str(len(bond_types)) + ' bond types\n')
+                f.write(str(len(b_types)) + ' bond types\n')
             if n_angles > 0:
                 f.write(str(len(ang_types)) + ' angle types\n')
             if n_dihedrals > 0:
                 f.write(str(len(dih_types)) + ' dihedral types\n')
             f.write('\n')
 
-            f.write('0.0 %8.4f xlo xhi\n' % (compound.bounds[0]))
-            f.write('0.0 %8.4f ylo yhi\n' % (compound.bounds[1]))
-            f.write('0.0 %8.4f zlo zhi\n' % (compound.bounds[2]))
+            # TODO: -find min/max in every dimension
+            #       -use periodicity if non-zero
+            #       -use min/max if zero
+            f.write('0.0 %8.4f xlo xhi\n' % (compound.periodicity[0]))
+            f.write('0.0 %8.4f ylo yhi\n' % (compound.periodicity[1]))
+            f.write('0.0 %8.4f zlo zhi\n' % (compound.periodicity[2]))
 
             f.write('\n')
             f.write('Masses\n')
             f.write('\n')
 
             # find unique masses and corresponding atomtypes
-            masses = set()
-            bogus_masses = [1.0] * len(a_types)  # need to properly implement mass
-            for a_type, mass in zip(numbered_a_types.values(), bogus_masses):
-                # really there should a lookup for mass based on type here
-                masses.add((a_type, mass))
-            for mass in sorted(masses):
-                f.write(" ".join(map(str, mass)) + '\n')
+            for i, a_type in a_types.itervalues():
+                f.write('{0} {1:18.8f}\n'.format(i, a_type.mass.in_units_of(MASS)._value))
+
+            f.write('\n')
+            f.write('Pair Coeffs\n')
+            f.write('\n')
+            for i, a_type in a_types.itervalues():
+                f.write('{0} {1:18.8f} {2:18.8f}\n'.format(i,
+                        a_type.epsilon.in_units_of(ENERGY)._value,
+                        a_type.sigma.in_units_of(DIST)._value))
+
+            if n_bonds > 0:
+                f.write('\n')
+                f.write('Bond Coeffs\n')
+                f.write('\n')
+                for i, b_type in b_types.itervalues():
+                    f.write('{0} {1:18.8f} {2:18.8f}\n'.format(i,
+                            b_type[0].in_units_of(DIST)._value,
+                            0.5 * b_type[1].in_units_of(ENERGY / (DIST * DIST))._value))
+
+            if n_angles > 0:
+                f.write('\n')
+                f.write('Angle Coeffs\n')
+                f.write('\n')
+                for i, ang_type in ang_types.itervalues():
+                    f.write('{0} {1:18.8f} {2:18.8f}\n'.format(i,
+                            ang_type[0].in_units_of(DEGREE)._value,
+                            0.5 * ang_type[1].in_units_of(ENERGY / (RAD * RAD))._value))
 
             f.write('\n')
             f.write('Atoms\n')
             f.write('\n')
-
-            for i, atom in enumerate(compound.atoms):
-                atom.id_num = i
-                f.write('%-6d %-6d %-6d %5.3f %8.3f %8.3f %8.3f\n'
-                    % (i+1,
-                       1,  # TODO: molecule numbering
-                       numbered_a_types[atom.kind],
-                       0.0, # TODO: charge lookups
-                       atom.pos[0],
-                       atom.pos[1],
-                       atom.pos[2]))
+            i = 1
+            for atom in compound.atoms():
+                if atom.kind != 'G':
+                    atom.id_num = i
+                    atom_type = a_types[atom.kind][0]
+                    f.write('%-6d %-6d %-6d %5.3f %8.5f %8.5f %8.5f\n'
+                        % (i,
+                           1,  # TODO: molecule numbering
+                           atom_type,
+                           atom.charge,
+                           atom.pos[0],
+                           atom.pos[1],
+                           atom.pos[2]))
+                    i += 1
 
             if n_bonds > 0:
                 f.write('\n')
@@ -429,7 +468,8 @@ class Lammps(Compound):
                 for i, bond in enumerate(compound.bonds):
                     n_i = bond.atom1.id_num
                     n_j = bond.atom2.id_num
-                    f.write('%d %d %d\n' % (i+1, n_i, n_j))
+                    bond_type = b_types[bond.kind][0]
+                    f.write('%d %d %d %d\n' % (i+1, bond_type, n_i, n_j))
 
             if n_angles > 0:
                 f.write('\n')
@@ -439,7 +479,8 @@ class Lammps(Compound):
                     n_i = angle.atom1.id_num
                     n_j = angle.atom2.id_num
                     n_k = angle.atom3.id_num
-                    f.write('%d %d %d %d\n' % (i+1, n_i, n_j, n_k))
+                    ang_type = ang_types[angle.kind][0]
+                    f.write('%d %d %d %d %d\n' % (i+1, ang_type, n_i, n_j, n_k))
 
             if n_dihedrals > 0:
                 f.write('\n')
@@ -450,7 +491,8 @@ class Lammps(Compound):
                     n_j = dihedral.atom2.id_num
                     n_k = dihedral.atom3.id_num
                     n_l = dihedral.atom4.id_num
-                    f.write('%d %d %d %d %d\n' % (i+1, n_i, n_j, n_k, n_l))
+                    dih_type = dih_types[dihedral.kind]
+                    f.write('%d %d %d %d %d %d\n' % (i+1, dih_type, n_i, n_j, n_k, n_l))
 
 
 if __name__ == "__main__":
