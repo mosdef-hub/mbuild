@@ -120,9 +120,23 @@ class Plot(object):
                     v.append(v12[1])
                     w.append(v12[2])
 
-                src = mlab.pipeline.vector_scatter(x2, y2, z2, u, v, w)
-                fig = mlab.pipeline.vectors(src, mode='cylinder', scale_mode='vector', scale_factor=1.0, color=colorRGB)
-                fig.glyph.glyph.clamping = False
+                # src = mlab.pipeline.vector_scatter(x2, y2, z2, u, v, w)
+                # fig = mlab.pipeline.vectors(src, mode='cylinder', scale_mode='vector', scale_factor=1.0, color=colorRGB)
+                # fig.glyph.glyph.clamping = False
+
+                vec = mlab.quiver3d(x2,
+                                    y2,
+                                    z2,
+                                    u,
+                                    v,
+                                    w,
+                                    # scalars=color_scalars,
+                                    mode='2ddash',
+                                    scale_factor=1,
+                                    color=colorRGB)
+                # vec.glyph.scale_mode = 'data_scaling_off'
+                # if color_scalars is not None:
+                #     vec.glyph.color_mode = 'color_by_scalar'
 
         if angles:
             # for angle in compound.angles:
@@ -222,7 +236,6 @@ class Plot(object):
 
 
         if dihedrals:
-
             # sort angles by kind
             d=dict()
             for item in compound.dihedrals:
