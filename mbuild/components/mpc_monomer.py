@@ -33,8 +33,8 @@ class MpcMonomer(Compound):
             c_backbone = mpc.opls_139_0
             ch2_backbone = mpc.opls_136_0
 
-        ctop_pos = np.asarray(c_backbone.pos)
-        cbottom_pos = np.asarray(ch2_backbone.pos)
+        ctop_pos = c_backbone.pos
+        cbottom_pos = ch2_backbone.pos
 
         # Transform the coordinate system of mpc such that the two carbon atoms
         # that are part of the backbone are on the x axis, ctop at the origin.
@@ -45,8 +45,8 @@ class MpcMonomer(Compound):
         mpc.transform(RotationAroundZ(pi / 2))
 
         # Find the new positions of the two atoms of the carbon chain.
-        ctop_pos = np.asarray(c_backbone.pos)
-        cbottom_pos = np.asarray(ch2_backbone.pos)
+        ctop_pos = c_backbone.pos
+        cbottom_pos = ch2_backbone.pos
 
         # Add top port.
         self.add(Port(), 'top_port')

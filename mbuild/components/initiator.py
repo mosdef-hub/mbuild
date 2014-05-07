@@ -26,8 +26,8 @@ class Initiator(Compound):
 
         # Find two atoms of the carbon chain backbone.
         if ff == 'opls':
-            cbottom_pos = np.asarray(initiator.opls_136_0.pos)
-            ctop_pos = np.asarray(initiator.opls_139_0.pos)
+            cbottom_pos = initiator.opls_136_0.pos
+            ctop_pos = initiator.opls_139_0.pos
 
         # Transform the coordinate system such that the two carbon atoms
         # that are part of the backbone are on the x axis, ctop at the origin.
@@ -41,13 +41,13 @@ class Initiator(Compound):
         # Rotate around y by alpha to give the molecule a little twist.
         self.bottom_port.transform(RotationAroundY(alpha))
         # Place the port.
-        cbottom_pos = np.asarray(initiator.opls_136_0.pos)
+        cbottom_pos = initiator.opls_136_0.pos
         bottom_port_pos = cbottom_pos + (0.0, -0.7, 0.0)
         self.bottom_port.transform(Translation(bottom_port_pos))
 
         # Add top port.
         self.add(Port(), 'top_port')
-        ctop_pos = np.asarray(initiator.opls_139_0.pos)
+        ctop_pos = initiator.opls_139_0.pos
         top_port_pos = ctop_pos + (0.0, 0.7, 0.0)
         self.top_port.transform(Translation(top_port_pos))
 

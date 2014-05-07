@@ -26,8 +26,8 @@ class Silane(Compound):
 
         # Pick two atoms to create axis on.
         if ff == 'opls':
-            si_pos = np.asarray(silane.SI_0.pos)
-            o_pos = np.asarray(silane.opls_154_0.pos)
+            si_pos = silane.SI_0.pos
+            o_pos = silane.opls_154_0.pos
 
         # Transform the coordinate system of silane such that the Si and
         # one oxygen are on the x axis, Si at the origin.
@@ -35,8 +35,8 @@ class Silane(Compound):
                                        point_on_x_axis=o_pos))
         silane.transform(RotationAroundZ(pi / 2))
         if ff == 'opls':
-            o_pos = np.asarray(silane.SI_0.pos)
-            si_pos = np.asarray(silane.opls_154_0.pos)
+            o_pos = silane.SI_0.pos
+            si_pos = silane.opls_154_0.pos
 
         # Add bottom port.
         self.add(Port(), 'bottom_port')
