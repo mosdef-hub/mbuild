@@ -1,4 +1,5 @@
 from __future__ import division
+from itertools import ifilter
 import time
 from copy import deepcopy
 from numpy import pi
@@ -17,13 +18,14 @@ import mbuild.unit as units
 
 from mbuild.components.brush import Brush
 from mbuild.components.surface import Surface
+import numpy as np
 
 
 class BrushLayer(Compound):
     """
     """
 
-    def __init__(self, ctx=None, tile_x=1, tile_y=1, chain_length=4, alpha=pi / 4, coverage=1):
+    def __init__(self, ctx=None, tile_x=1, tile_y=1, chain_length=4, alpha=pi / 4, mask=None):
         """
         """
 
@@ -37,29 +39,78 @@ class BrushLayer(Compound):
 
         self.add(tc, 'tiled_surface')
 
-        chains_on_surface = 0
+        # chains_on_surface = 0
         brush_proto = Brush(chain_length=chain_length, alpha=alpha)
 
+        bbmin, bbmax, bbsize = self.boundingbox(excludeG=False)
+
+
+
+        mask = mask * bbsize + bbmin
+
         n_ports = sum(isinstance(part, Port) for part in self.tiled_surface.references.values())
-        for port in self.tiled_surface.references.values():
-            current_coverage = (chains_on_surface / n_ports ) * 100
-            # Build a pMPC brush.
-            if isinstance(port, Port) and current_coverage <  coverage:
-                brush = deepcopy(brush_proto)
-                brush.transform([(brush.port, port)])
-                self.add(brush)
-                chains_on_surface += 1
-            elif current_coverage >= coverage:
-                break
+        port_pos = np.empty((n_ports,3))
+        port_list = []
+        for pidx, port in enumerate(ifilter(lambda x: isinstance(x, Port),  self.tiled_surface.references.values())):
+            port_pos[pidx, :] = port.middle.pos
+            port_list.append(port)
+
+        for mp in mask:
+            closest_point_idx = np.argmin(tc.min_periodic_distance(mp, port_pos))
+            closest_port = port_list[closest_point_idx]
+            brush = deepcopy(brush_proto)
+            brush.transform([(brush.port, closest_port)])
+            self.add(brush)
+            port_pos[closest_point_idx,:] = np.array([np.inf, np.inf, np.inf])
+
+        #
+        #
+        #
+        #
+        # n_ports = sum(isinstance(part, Port) for part in self.tiled_surface.references.values())
+        # for port in self.tiled_surface.references.values():
+        #     current_coverage = (chains_on_surface / n_ports ) * 100
+        #     # Build a pMPC brush.
+        #     if isinstance(port, Port) and current_coverage <  coverage:
+        #         brush = deepcopy(brush_proto)
+        #         brush.transform([(brush.port, port)])
+        #         self.add(brush)
+        #         chains_on_surface += 1
+        #     elif current_coverage >= coverage:
+        #         break
 
 if __name__ == "__main__":
-    profile = False
+    profile = True
     if len(sys.argv) > 1 and sys.argv[1] == 'profile':
         profile = True
 
     print "Generating model..."
     start = time.time()
-    m = BrushLayer(chain_length=1, alpha=pi/4, coverage=3, tile_x=1, tile_y=1)
+
+    # # random mask
+    # mask = np.random.random((10,3))
+    # mask[:, 2] = 0
+
+    # grid mask
+    mask = np.array([
+        [ 1, 1, 0],
+        [ 1, 2, 0],
+        [ 1, 3, 0],
+        [ 1, 4, 0],
+        [ 1, 5, 0],
+        [ 2, 1, 0],
+        [ 2, 2, 0],
+        [ 2, 3, 0],
+        [ 2, 4, 0],
+        [ 2, 5, 0]
+        ], dtype=float)
+
+    mask[:,0] = mask[:,0] / np.max(mask[:,0])
+    mask[:,1] = mask[:,1] / np.max(mask[:,1])
+
+    print mask
+
+    m = BrushLayer(chain_length=1, alpha=pi/4, mask=mask, tile_x=1, tile_y=2)
     print "Done. ({0:.2f} s)".format(time.time() - start)
 
     print "Loading and pruning forcefield..."

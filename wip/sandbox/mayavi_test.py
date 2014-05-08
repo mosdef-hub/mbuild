@@ -37,13 +37,22 @@ pts.mlab_source.dataset.lines = np.array(conns)
 
 # pts.mlab_source.dataset.lines.add_array(conn_scalars)
 
-tube = mlab.pipeline.tube(pts, tube_radius=0.1)
+# tube = mlab.pipeline.tube(pts, tube_radius=0.1)
 # tube.filter.radius_factor = 1.
-tube.filter.vary_radius = 'vary_radius_by_scalar'
+# tube.filter.vary_radius = 'vary_radius_by_scalar'
 
-mlab.pipeline.surface(tube, colormap='winter')
+# mlab.pipeline.surface(tube, colormap='winter')
 
 
+lines = mlab.pipeline.surface(
+		mlab.pipeline.tube(
+		    mlab.pipeline.stripper(
+			pts,
+		    ),
+		    tube_sides=3, tube_radius=0.1
+		),
+        colormap='winter', point_scalars=conn_scalars
+	    )
 
 
 

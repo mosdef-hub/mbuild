@@ -94,31 +94,35 @@ class Compound(object):
             else:
                 raise Exception("can't add unknown type " + str(new_obj))
 
-        # autogenerate a label for if a reference-only object does not have one
-        if not containment and label is None:
-            label = new_obj.kind  + "__" + str(id(new_obj))
+        # # autogenerate a label for if a reference-only object does not have one
+        # if not containment and label is None:
+        #     label = new_obj.kind  + "__" + str(id(new_obj))
 
-        # add new_obj to references
-        if label is not None:
-            # support label with counter
-            if label.endswith("#"):
-                i = 0
-                while label.replace("#", str(i)) in self.references.keys():
-                    i += 1
-                label = label.replace("#", str(i))
+        if isinstance(new_obj, Compound) or isinstance(new_obj, Atom):
+            if label is None:
+                label = new_obj.kind  + "__" + str(id(new_obj))
 
-            if not replace and label in self.references.keys():
-                raise Exception("label " + label + " already exists in " + str(self))
-            else:
-                self.references[label] = new_obj
-                setattr(self, label, new_obj)
+            # add new_obj to references
+            if label is not None:
+                # support label with counter
+                if label.endswith("#"):
+                    i = 0
+                    while label.replace("#", str(i)) in self.references.keys():
+                        i += 1
+                    label = label.replace("#", str(i))
 
-        if inherit_periodicity:
-            if isinstance(new_obj, Compound):
-                if np.any(new_obj.periodicity):
-                    if np.any(self.periodicity):
-                        warn("Overriding periodicity of component " + str(self))
-                    self.periodicity = new_obj.periodicity
+                if not replace and label in self.references.keys():
+                    raise Exception("label " + label + " already exists in " + str(self))
+                else:
+                    self.references[label] = new_obj
+                    setattr(self, label, new_obj)
+
+            if inherit_periodicity:
+                if isinstance(new_obj, Compound):
+                    if np.any(new_obj.periodicity):
+                        if np.any(self.periodicity):
+                            warn("Overriding periodicity of component " + str(self))
+                        self.periodicity = new_obj.periodicity
 
     @staticmethod
     def createEquivalenceTransform(equiv):
@@ -238,7 +242,11 @@ class Compound(object):
             if a.pos[2] > maxz:
                 maxz = a.pos[2]
 
-        return (minx, miny, minz), (maxx, maxy, maxz)
+        min = np.array([minx, miny, minz])
+        max = np.array([maxx, maxy, maxz])
+
+
+        return min, max, max-min
 
     def rename(self, array_of_pairs):
         for pair in array_of_pairs:
