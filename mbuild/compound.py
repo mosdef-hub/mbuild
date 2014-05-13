@@ -374,8 +374,51 @@ class Compound(object):
         else:
             return []
 
+    def initAnglesByAtomKind(self):
+        # remember the hash of the bonds dict at time of generating the anglesByAtomKind dict
+        self.anglesByAtomKind_hash = self.angles.__hash__
+        self.anglesByAtomKind = dict()
+
+        # print "intializing angles by atom kind dict"
+
+        for angle in self.angles:
+            if angle.atom1.kind < angle.atom3.kind:
+                triplet = (angle.atom1.kind,angle.atom2.kind,angle.atom3.kind)
+            else:
+                triplet = (angle.atom3.kind,angle.atom2.kind,angle.atom1.kind)
+
+            if triplet not in self.anglesByAtomKind:
+                self.anglesByAtomKind[triplet] = [angle]
+            else:
+                self.anglesByAtomKind[triplet].append(angle)
+
+
+    def hasAnglesByAtomKind(self):
+        # check if helper dict doesn't exist, or if the bonds have changed since last computation
+        if not hasattr(self, 'anglesByAtomKind_hash') or self.bonds.__hash__ != self.anglesByAtomKind_hash:
+            return False
+        else:
+            return True
+
     def getAnglesByAtomKind(self, kind1, kind2, kind3):
-        return ifilter(lambda angle: angle.hasAtomKinds(kind1, kind2, kind3), self.angles)
+
+        # this is slow...
+        #return ifilter(lambda angle: angle.hasAtomKinds(kind1, kind2, kind3), self.angles)
+
+        # this should speed it up...
+        if not self.hasAnglesByAtomKind(): # precompute a data structure if needed
+            self.initAnglesByAtomKind()
+
+        if kind1 < kind3:
+            triplet = (kind1, kind2, kind3)
+        else:
+            triplet = (kind3, kind2, kind1)
+
+        if triplet in self.anglesByAtomKind:
+            return self.anglesByAtomKind[triplet]
+        else:
+            return []
+
 
     def getDihedralsByAtomKind(self, kind1, kind2, kind3, kind4):
         return ifilter(lambda dihedral: dihedral.hasAtomKinds(kind1, kind2, kind3, kind4), self.dihedrals)
