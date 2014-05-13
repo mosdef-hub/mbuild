@@ -4,7 +4,7 @@ import pdb
 
 from xyz import *
 
-
+import numpy as np
 class RuleEngine(object):
 
     def __init__(self, compound):
