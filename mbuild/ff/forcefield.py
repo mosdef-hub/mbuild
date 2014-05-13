@@ -6,10 +6,10 @@ __author__ = 'sallai'
 
 class ForceField(object):
 
-    def __init__(self):
+    def __init__(self, name):
         """
-
         """
+        self.name = name
         self.atom_types = dict()
         self.bond_types = dict()
         self.angle_types = dict()
@@ -48,7 +48,7 @@ class ForceField(object):
         """
 
         # create new force field object
-        ff = ForceField()
+        ff = ForceField(self.name)
         ff.atom_types.update(self.atom_types)
 
         all_kinds = ff.atom_types.keys()

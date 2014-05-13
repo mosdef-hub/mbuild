@@ -1,5 +1,6 @@
 __author__ = 'sallai'
 
+import time
 import os.path
 
 from compound import *
@@ -29,7 +30,7 @@ class Xyz(Compound):
                     self.add(Atom(kind=atom_type, pos=atom_pos))
 
     @staticmethod
-    def save(compound, path, cwd="", print_ports=False):
+    def save(compound, path, cwd="", print_ports=False, ff=None):
         """
         Save into an xyz file
         :param fn: file name
@@ -37,7 +38,8 @@ class Xyz(Compound):
         """
 
         fn = os.path.join(cwd, path)
-
+        print "    Writing to '{0}'...".format(fn)
+        start = time.time()
         with open(fn, 'w') as f:
             if print_ports:
                 f.write(str(compound.atoms().__len__()) + '\n\n')
@@ -55,11 +57,15 @@ class Xyz(Compound):
                             str(value.pos[2]) + '\n')
                 else:
                     if value.kind != 'G':
-                        f.write(value.kind + '\t' +
+                        if ff:
+                            atom_name = ff.atom_types[value.kind].alias
+                        else:
+                            atom_name = value.kind
+                        f.write(atom_name + '\t' +
                                 str(value.pos[0]) + '\t' +
                                 str(value.pos[1]) + '\t' +
                                 str(value.pos[2]) + '\n')
-
+        print "    Done. ({0:.2f} s)".format(time.time() - start)
 
 if __name__ == "__main__":
     m = Xyz(path="wip/xml/c60.xyz")

@@ -3,10 +3,14 @@ import time
 import os.path
 import re
 
+import numpy as np
+
 import mbuild.unit as units
 from mbuild.prototype import Prototype
 from mbuild.treeview import TreeView
-from mbuild.compound import *
+from mbuild.compound import Compound
+
+from mbuild.ff.opls_forcefield import OplsForceField
 
 
 class Lammps(Compound):
@@ -361,6 +365,21 @@ class Lammps(Compound):
             sys_name (str): name printed at top of data file
         """
         data_file = os.path.join(cwd, path)
+        basename = os.path.splitext(data_file)[0]
+        input_file = '{0}.input'.format(basename)
+        charged_system = False
+
+        print "    Writing to '{0}' and '{1}'...".format(data_file, input_file)
+        start = time.time()
+        if ff.name == 'opls':
+            bond_style = 'harmonic'
+            angle_style = 'harmonic'
+            dihedral_style = 'opls'
+            improper_style = 'periodic'
+            lj_fudge = 0.5
+            coulomb_fudge = 0.5
+        else:
+            raise Exception("Unrecognized forcefield.")
 
         RAD = units.radians
         DEGREE = units.degrees
@@ -434,34 +453,29 @@ class Lammps(Compound):
         atom_type_dict = dict()
         a_type_i = 1  # counter for atom types
 
-        bond_style = set()
         bond_type_dict = dict()
         b_type_i = 1  # counter for bond types
 
-        angle_style = set()
         angle_type_dict = dict()
         ang_type_i = 1
 
-        dihedral_style = set()
         dihedral_type_dict = dict()
         dih_type_i = 1
 
-        improper_style = set()
         improper_type_dict = dict()
         imp_type_i = 1
 
+        x_min = np.inf
+        y_min = np.inf
+        z_min = np.inf
+        x_max = -np.inf
+        y_max = -np.inf
+        z_max = -np.inf
         for i, atom in enumerate(compound.atoms()):
-            x_min = np.inf
-            y_min = np.inf
-            z_min = np.inf
-            x_max = -np.inf
-            y_max = -np.inf
-            z_max = -np.inf
             # type, mass and pair coeffs
             if atom.kind != 'G':
                 if atom.kind not in atom_type_dict:
                     atom_type_dict[atom.kind] = a_type_i
-                    a_type_i += 1
 
                     atom_type = ff.atom_types[atom.kind]
                     mass = atom_type.mass.in_units_of(MASS)._value
@@ -472,6 +486,7 @@ class Lammps(Compound):
                     # pair coeff
                     pair_coeff_list.append('{0:d} {1:8.4f} {2:8.4f}\n'.format(
                             a_type_i, epsilon, sigma))
+                    a_type_i += 1
 
                 x_coord = atom.pos[0]
                 y_coord = atom.pos[1]
@@ -491,11 +506,13 @@ class Lammps(Compound):
                     z_max = z_coord
 
                 # atom
-                atom.id_num = i
+                atom.id_num = i + 1
                 atom_list.append('{0:-6d} {1:-6d} {2:-6d} {3:5.8f} {4:8.5f} {5:8.5f} {6:8.5f}\n'.format(
-                        i + 1, 1, atom_type_dict[atom.kind],
+                        atom.id_num, 1, atom_type_dict[atom.kind],
                         atom.charge,
                         x_coord, y_coord, z_coord))
+                if atom.charge != 0.0:
+                    charged_system = True
 
         for i, bond in enumerate(compound.bonds):
             if bond.kind not in bond_type_dict:
@@ -509,98 +526,56 @@ class Lammps(Compound):
                         0.5 * k.in_units_of(ENERGY / (DIST * DIST))._value,
                         r.in_units_of(DIST)._value))
                 b_type_i += 1
+
             bond_list.append('{0:-6d} {1:6d} {2:6d} {3:6d}\n'.format(
                     i + 1,
                     bond_type_dict[bond.kind],
                     bond.atom1.id_num,
                     bond.atom2.id_num))
-        """
-                # angle types
-                print "Writing angles..."
-                for j, angle in enumerate(mol_type.angleForceSet.itervalues()):
-                    atom1 = mol_type.moleculeSet[0]._atoms[angle.atom1 - 1]
-                    atomtype1 = atom1.bondtype
-                    atom2 = mol_type.moleculeSet[0]._atoms[angle.atom2 - 1]
-                    atomtype2 = atom2.bondtype
-                    atom3 = mol_type.moleculeSet[0]._atoms[angle.atom3 - 1]
-                    atomtype3 = atom3.bondtype
 
-                    if isinstance(angle, Angle):
-                        style = 'harmonic'
-                        temp = AngleType(atomtype1, atomtype2, atomtype3,
-                                angle.theta, angle.k)
-                        # NOTE: k includes the factor of 0.5 for harmonic in LAMMPS
-                        if temp not in angle_type_dict:
-                            angle_type_dict[temp] = ang_type_i
-                            angle_coeffs.append('{0:d} {1} {2:18.8f} {3:18.8f}\n'.format(
-                                    ang_type_i,
-                                    style, 
-                                    0.5 * angle.k.in_units_of(self.ENERGY / (self.RAD*self.RAD))._value,
-                                    angle.theta.in_units_of(self.DEGREE)._value))
-                            ang_type_i += 1
-                    else:
-                        warn("Found unimplemented angle type for LAMMPS!")
-                        continue
+        for i, angle in enumerate(compound.angles):
+            if angle.kind not in angle_type_dict:
+                angle_type_dict[angle.kind] = ang_type_i
+                triplet = tuple(angle.kind.split('-'))
 
-                    angle_list.append('{0:-6d} {1:6d} {2:6d} {3:6d} {4:6d}\n'.format(
-                            i + j + 1,
-                            angle_type_dict[temp],
-                            angle.atom1 + offset,
-                            angle.atom2 + offset,
-                            angle.atom3 + offset))
+                theta, k = ff.angle_types[triplet]
+                angle_coeffs.append('{0:d} {1:18.8f} {2:18.8f}\n'.format(
+                        ang_type_i,
+                        0.5 * k.in_units_of(ENERGY / (RAD*RAD))._value,
+                        theta.in_units_of(DEGREE)._value))
+                ang_type_i += 1
 
-                    angle_style.add(style)
-                    if len(angle_style) > 1:
-                        warn("More than one angle style found!")
+            angle_list.append('{0:-6d} {1:6d} {2:6d} {3:6d} {4:6d}\n'.format(
+                    i + 1,
+                    angle_type_dict[angle.kind],
+                    angle.atom1.id_num,
+                    angle.atom2.id_num,
+                    angle.atom3.id_num))
 
-                # dihedrals
-                print "Writing dihedrals..."
-                for j, dihedral in enumerate(mol_type.dihedralForceSet.itervalues()):
-                    atom1 = mol_type.moleculeSet[0]._atoms[dihedral.atom1 - 1]
-                    atomtype1 = atom1.bondtype
-                    atom2 = mol_type.moleculeSet[0]._atoms[dihedral.atom2 - 1]
-                    atomtype2 = atom2.bondtype
-                    atom3 = mol_type.moleculeSet[0]._atoms[dihedral.atom3 - 1]
-                    atomtype3 = atom3.bondtype
-                    atom4 = mol_type.moleculeSet[0]._atoms[dihedral.atom4 - 1]
-                    atomtype4 = atom4.bondtype
+        for i, dihedral in enumerate(compound.dihedrals):
+            # TODO: differentiate between forcefields
+            if dihedral.kind not in dihedral_type_dict:
+                dihedral_type_dict[dihedral.kind] = dih_type_i
+                quartet = tuple(dihedral.kind.split('-'))
 
-                    if isinstance(dihedral, FourierDihedral):
-                        style = 'opls'
-                        temp = FourierDihedralType(atomtype1, atomtype2,
-                                atomtype3, atomtype4, 
-                                dihedral.c1, dihedral.c1,
-                                dihedral.c2, dihedral.c3)
-                        if temp not in dihedral_type_dict:
-                            dihedral_type_dict[temp] = dih_type_i
-                            dihedral_coeffs.append('{0:d} {1} {2:18.8f} {3:18.8f} {4:18.8f} {5:18.8f}\n'.format(
-                                    dih_type_i,
-                                    style,
-                                    dihedral.c1.in_units_of(self.ENERGY)._value,
-                                    dihedral.c2.in_units_of(self.ENERGY)._value,
-                                    dihedral.c3.in_units_of(self.ENERGY)._value,
-                                    dihedral.c4.in_units_of(self.ENERGY)._value))
-                            dih_type_i += 1
-                    else:
-                        warn("Found unimplemented dihedral type for LAMMPS!")
-                        continue
+                cs = ff.dihedral_types[quartet]
+                dihedral_coeffs.append('{0:d} {1:18.8f} {2:18.8f} {3:18.8f} {4:18.8f}\n'.format(
+                        dih_type_i,
+                        cs[0].in_units_of(ENERGY)._value,
+                        cs[1].in_units_of(ENERGY)._value,
+                        cs[2].in_units_of(ENERGY)._value,
+                        cs[3].in_units_of(ENERGY)._value))
+                dih_type_i += 1
 
-                    dihedral_list.append('{0:-6d} {1:6d} {2:6d} {3:6d} {4:6d} {5:6d}\n'.format(
-                            i + j + 1,
-                            dihedral_type_dict[temp],
-                            dihedral.atom1 + offset,
-                            dihedral.atom2 + offset,
-                            dihedral.atom3 + offset,
-                            dihedral.atom4 + offset))
-                    dihedral_style.add(style)
-                    if len(dihedral_style) > 1:
-                        warn("More than one dihedral style found!")
+            dihedral_list.append('{0:-6d} {1:6d} {2:6d} {3:6d} {4:6d} {5:6d}\n'.format(
+                    i + 1,
+                    dihedral_type_dict[dihedral.kind],
+                    dihedral.atom1.id_num,
+                    dihedral.atom2.id_num,
+                    dihedral.atom3.id_num,
+                    dihedral.atom4.id_num))
 
-            # atom specific information
-        """
         # Write the actual data file.
-        print "    Writing to '{0}'...".format(data_file)
-        start = time.time()
         with open(data_file, 'w') as f:
             # front matter
             f.write('Generated by mBuild\n')
@@ -679,47 +654,39 @@ class Lammps(Compound):
             if len(improper_list) > 3:
                 for improper in improper_list:
                     f.write(improper)
-        print "    Done. ({0:.2f} s)".format(time.time() - start)
-        """
+
         # Write the corresponding input file.
-        basename = os.path.splitext(data_file)[0]
-        input_filename = '{0}.input'.format(basename)
-        with open(input_filename, 'w') as f:
+        with open(input_file, 'w') as f:
             f.write('units {0}\n'.format(unit_set))
-            f.write('atom_style full\n')  # TODO
+            f.write('atom_style full\n')
             f.write('\n')
 
-            f.write('dimension 3\n')  # TODO
-            f.write('boundary p p p\n')  # TODO
+            f.write('dimension 3\n')
+            f.write('boundary p p p\n')
             f.write('\n')
 
             # non-bonded
-            f.write('pair_style lj/cut/coul/long 9.0 10.0\n')  # TODO: match mdp
-            f.write('pair_modify mix geometric\n')  # TODO: match defaults
-            f.write('kspace_style pppm 1.0e-5\n')  # TODO: match mdp
+            if charged_system:
+                f.write('pair_style lj/cut/coul/long 9.0 10.0\n')
+                f.write('kspace_style pppm 1.0e-5\n')
+            else:
+                f.write('pair_style lj/cut 9.0\n')
+            f.write('pair_modify mix geometric\n') # TODO: match to forcefield
             f.write('\n')
 
             # bonded
             if len(bond_coeffs) > 3:
-                f.write('bond_style hybrid {0}\n'.format(
-                        " ".join(bond_style)))
+                f.write('bond_style {0}\n'.format(bond_style))
             if len(angle_coeffs) > 3:
-                f.write('angle_style hybrid {0}\n'.format(
-                        " ".join(angle_style)))
+                f.write('angle_style {0}\n'.format(angle_style))
             if len(dihedral_coeffs) > 3:
-                f.write('dihedral_style hybrid {0}\n'.format(
-                        " ".join(dihedral_style)))
+                f.write('dihedral_style {0}\n'.format(dihedral_style))
             if len(improper_coeffs) > 3:
-                f.write('improper_style hybrid {0}\n'.format(
-                        " ".join(improper_style)))
+                f.write('improper_style {0}\n'.format(improper_style))
 
             f.write('special_bonds lj {0} {1} {2} coul {3} {4} {5}\n'.format(
-                    0.0,
-                    0.0,
-                    System._sys._ljCorrection,
-                    0.0,
-                    0.0,
-                    System._sys._coulombCorrection))
+                    0.0, 0.0, lj_fudge,
+                    0.0, 0.0, coulomb_fudge))
             f.write('\n')
 
             # read data
@@ -736,13 +703,19 @@ class Lammps(Compound):
                                      'ecoul',
                                      'elong',
                                      'etail',
-                                     'pe'])
+                                     'pe',
+                                     'ke',
+                                     'temp',
+                                     'etotal'])
 
             f.write('thermo_style custom {0}\n'.format(energy_terms))
             f.write('\n')
 
-            f.write('run 0\n')
-        """
+            f.write('fix integrator all nvt temp 300 300 100.0\n')
+            f.write('run_style respa 3 2 2 bond 1 angle 2 dihedral 2 pair 3 kspace 3\n'.format())
+            f.write('run 50\n')
+        print "    Done. ({0:.2f} s)".format(time.time() - start)
+
 if __name__ == "__main__":
     m = Lammps("bmim.lmp", cwd="..\\lammps_testing")
     print [a for a in m.atoms()]

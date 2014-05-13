@@ -17,8 +17,8 @@ class OplsForceField(ForceField):
 
     def __init__(self):
         """Populate the database using files bundled with GROMACS."""
-        super(OplsForceField, self).__init__()
-        
+        super(OplsForceField, self).__init__(name='opls')
+
         self.DEG = units.degrees
         self.RAD = units.radians
 
@@ -102,6 +102,7 @@ class OplsForceField(ForceField):
             if fields[0][0] in [';', '#']:
                 continue
             quartet = (fields[0], fields[1], fields[2], fields[3])
+            # TODO: convert all incoming dihedrals to OPLS style
             if fields[4].isdigit():
                 if int(fields[4]) == 3:
                     cs = map(float, fields[5:11])

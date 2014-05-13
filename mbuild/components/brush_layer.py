@@ -1,31 +1,27 @@
 from __future__ import division
 from itertools import ifilter
-import time
 from copy import deepcopy
 from numpy import pi
 import sys
 
+import numpy as np
+
 from mbuild.port import Port
 from mbuild.compound import Compound
-from mbuild.xyz import Xyz
-from mbuild.lammps import Lammps
-
-from mbuild.ff.opls_rules import OplsRules
-from mbuild.ff.opls_forcefield import OplsForceField
 from mbuild.tiled_compound import TiledCompound
-from mbuild.treeview import TreeView
-import mbuild.unit as units
 
 from mbuild.components.brush import Brush
 from mbuild.components.surface import Surface
-import numpy as np
 
+import mbuild.unit as units
+from mbuild.ff.opls_rules import OplsRules
+from mbuild.ff.opls_forcefield import OplsForceField
 
 class BrushLayer(Compound):
     """
     """
 
-    def __init__(self, ctx=None, tile_x=1, tile_y=1, chain_length=4, alpha=pi / 4, mask=None):
+    def __init__(self, ctx=None, tile_x=1, tile_y=1, chain_length=4, alpha=pi/4, mask=None):
         """
         """
         if not ctx:
@@ -33,12 +29,9 @@ class BrushLayer(Compound):
         super(BrushLayer, self).__init__(ctx=ctx)
 
         surface = Surface(ctx=ctx)
-
         tc = TiledCompound(surface, tile_x, tile_y, 1, kind="tiled_surface")
-
         self.add(tc, 'tiled_surface')
 
-        # chains_on_surface = 0
         brush_proto = Brush(chain_length=chain_length, alpha=alpha)
         bbmin, bbmax, bbsize = self.boundingbox(excludeG=False)
         mask = mask * bbsize + bbmin
@@ -46,7 +39,7 @@ class BrushLayer(Compound):
         n_ports = sum(isinstance(part, Port) for part in self.tiled_surface.references.values())
         port_pos = np.empty((n_ports,3))
         port_list = []
-        for pidx, port in enumerate(ifilter(lambda x: isinstance(x, Port),  self.tiled_surface.references.values())):
+        for pidx, port in enumerate(ifilter(lambda x: isinstance(x, Port), self.tiled_surface.references.values())):
             port_pos[pidx, :] = port.middle.pos
             port_list.append(port)
 
@@ -58,19 +51,8 @@ class BrushLayer(Compound):
             self.add(brush)
             port_pos[closest_point_idx,:] = np.array([np.inf, np.inf, np.inf])
 
-        # n_ports = sum(isinstance(part, Port) for part in self.tiled_surface.references.values())
-        # for port in self.tiled_surface.references.values():
-        #     current_coverage = (chains_on_surface / n_ports ) * 100
-        #     # Build a pMPC brush.
-        #     if isinstance(port, Port) and current_coverage <  coverage:
-        #         brush = deepcopy(brush_proto)
-        #         brush.transform([(brush.port, port)])
-        #         self.add(brush)
-        #         chains_on_surface += 1
-        #     elif current_coverage >= coverage:
-        #         break
-
 if __name__ == "__main__":
+    import time
     profile = False
     if len(sys.argv) > 1 and sys.argv[1] == 'profile':
         profile = True
@@ -161,17 +143,18 @@ if __name__ == "__main__":
     print "Number of angles: {0}".format(len(m.angles))
     print "Number of dihedrals: {0}".format(len(m.dihedrals))
 
-
     print "Saving..."
+    from mbuild.lammps import Lammps
+    from mbuild.xyz import Xyz
     start = time.time()
-    #Xyz.save(m, 'brush_layer.xyz')
+    Xyz.save(m, 'brush_layer.xyz', ff=ff)
     Lammps.save(m, ff, 'brush_layer.lmp')
     print "Done. ({0:.2f} s)".format(time.time() - start)
 
-    print "Visualizing..."
-    from mbuild.plot import Plot
-    Plot(m, bonds=True, angles=False, dihedrals=True).show()
+    #print "Visualizing..."
+    #from mbuild.plot import Plot
+    #Plot(m, bonds=True, angles=False, dihedrals=True).show()
 
-    #
-    # tv = TreeView(m)
-    # tv.show()
+    #from mbuild.treeview import TreeView
+    #tv = TreeView(m)
+    #tv.show()
