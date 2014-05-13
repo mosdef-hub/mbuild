@@ -442,7 +442,6 @@ class Compound(object):
         return neighbors
 
     def getBondsInRange(self, bond, depth=1):
-
         neighbors = [] # bonds
         for b in bond.atom1.bonds:
             if b is not bond:
@@ -454,12 +453,26 @@ class Compound(object):
 
         return neighbors
 
-
     def initAngleKdTree(self):
         self.anglesList = list(self.angles)
         self.AngleKdtree = PeriodicCKDTree([angle.atom2.pos for angle in self.anglesList], bounds=self.periodicity)
 
-    def getAnglesInRange(self, point, radius, maxItems=50):
+    def getAnglesInRange(self, angle, depth=1):
+        neighbors = [] # angles
+        for a in angle.atom1.angles:
+            if a is not angle:
+                neighbors.append(a)
+        for a in angle.atom2.angles:
+            if a is not angle:
+                neighbors.append(a)
+        for a in angle.atom3.angles:
+            if a is not angle:
+                neighbors.append(a)
+
+        return neighbors
+
+
+    def getAnglesInRangeKdTree(self, point, radius, maxItems=50):
         # create kdtree if it's not yet there
         if not hasattr(self, 'angleKdtree'):
             self.initAngleKdTree()

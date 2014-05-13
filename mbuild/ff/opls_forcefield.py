@@ -2,6 +2,8 @@ from itertools import product
 import os
 import pdb
 
+import numpy as np
+
 import mbuild
 from mbuild.ff.forcefield import ForceField
 from mbuild.prototype import Prototype
@@ -71,8 +73,9 @@ class OplsForceField(ForceField):
                 r = float(fields[3]) * self.DIST
                 r = r.in_units_of(units.angstroms)
                 k = float(fields[4]) * self.ENERGY / (self.DIST * self.DIST)
-            self.add_bond_type(pair, r, k)
-            #self.bond_types[pair] = (r.in_units_of(units.angstroms), k)
+                self.add_bond_type(pair, r, k)
+            else:
+                raise Exception("Found non-opls angle in forcefield")
 
     def parse_angle_types(self, f_bonded):
         """Read angle parameter information."""
@@ -86,8 +89,9 @@ class OplsForceField(ForceField):
             if int(fields[3]) == 1:
                 theta = float(fields[4]) * self.DEG
                 k = float(fields[5]) * self.ENERGY / (self.RAD * self.RAD)
-            self.add_angle_type(triplet, theta, k)
-            #self.angle_types[triplet] = (theta, k)
+                self.add_angle_type(triplet, theta, k)
+            else:
+                raise Exception("Found non-opls angle in forcefield")
 
     def parse_dihedral_types(self, f_bonded):
         """Read dihedral parameter information."""
@@ -97,14 +101,17 @@ class OplsForceField(ForceField):
             fields = line.split()
             if fields[0][0] in [';', '#']:
                 continue
-            if ';' in fields:
-                end_of_params = fields.index(';')
-            else:
-                end_of_params = len(fields)
-
             quartet = (fields[0], fields[1], fields[2], fields[3])
-            self.dihedral_types[quartet] = fields[5:end_of_params]
-
+            if fields[4].isdigit():
+                if int(fields[4]) == 3:
+                    cs = map(float, fields[5:11])
+                    for i, c in enumerate(cs):
+                        cs[i] = c * self.ENERGY
+                    self.add_dihedral_type(quartet, *cs)
+                elif int(fields[4]) == 4:
+                    print "Found improper. Ignoring"
+                    #params = np.array(fields[5:11], dtype=float)
+                    #self.dihedral_types[quartet] = fields[5:end_of_params]
 
     @accepts_compatible_units(None, None, None,
             units.amu,
@@ -134,8 +141,15 @@ class OplsForceField(ForceField):
     def add_angle_type(self, triplet, theta, k):
         self.angle_types[triplet] = (theta, k)
 
-
-
+    @accepts_compatible_units(None,
+            units.kilojoules_per_mole,
+            units.kilojoules_per_mole,
+            units.kilojoules_per_mole,
+            units.kilojoules_per_mole,
+            units.kilojoules_per_mole,
+            units.kilojoules_per_mole)
+    def add_dihedral_type(self, quartet, c0, c1, c2, c3, c4, c5):
+        self.dihedral_types[quartet] = (c0, c1, c2, c3, c4, c5)
 
 if __name__ == "__main__":
     ff = OplsForceField()

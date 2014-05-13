@@ -59,23 +59,26 @@ class RuleEngine(object):
                 if (temp_ang) and (temp_ang.atom2.kind==type_B):
                     self.compound.add(temp_ang)
 
-    def add_dihedral(self, type_A, type_B, type_C, type_D, dihedralKind):
+    def add_dihedral(self, type_A, type_B, type_C, type_D, kind):
         """
         """
-
         for abc1 in self.compound.getAnglesByAtomKind(type_A, type_B, type_C):
             abc = abc1.cloneWithOrder(type_A, type_B, type_C)
-
-            nearest = self.compound.getAnglesInRange(abc.atom2.pos, 5)
+            #nearest = self.compound.getAnglesInRange(abc.atom2.pos, 5)
+            nearest = self.compound.getAnglesInRange(abc)
             for bcd1 in nearest:
                 if abc1 == bcd1:
                     continue
-
                 if not bcd1.hasAtomKinds(type_B, type_C, type_D):
                     continue
-
                 bcd = bcd1.cloneWithOrder(type_B, type_C, type_D)
 
-                temp_dhdr = Dihedral.createFromAngles(abc, bcd, kind=dihedralKind)
-                if temp_dhdr:
+                temp_dhdr = Dihedral.createFromAngles(abc, bcd, kind=kind)
+                if ((temp_dhdr) and
+                        (temp_dhdr.atom2.kind == type_B) and 
+                        (temp_dhdr.atom3.kind == type_C)):
+                    self.compound.add(temp_dhdr)
+                elif ((temp_dhdr) and
+                        (temp_dhdr.atom2.kind == type_C) and 
+                        (temp_dhdr.atom3.kind == type_B)):
                     self.compound.add(temp_dhdr)

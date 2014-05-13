@@ -99,6 +99,23 @@ class ForceField(object):
                 #    triplet = (atom_type2, atom_type1)
                 ff.angle_types[triplet] = angle_type
 
+        # prune the dihedral types, resolving wildcards
+        for (alias1, alias2, alias3, alias4), dihedral_type in self.dihedral_types.iteritems():
+            # find all atoms that match the atomKindIdentifiers (kind, alias with optional wildcards)
+            atom_types1 = ff.find_atom_types(alias1)
+            atom_types2 = ff.find_atom_types(alias2)
+            atom_types3 = ff.find_atom_types(alias3)
+            atom_types4 = ff.find_atom_types(alias4)
+
+            # for every combination of the matching atom kinds, create a bond type
+            for (atom_type1, atom_type2, atom_type3, atom_type4) in product(atom_types1, atom_types2, atom_types3, atom_types4):
+                quartet = (atom_type1, atom_type2, atom_type3, atom_type4)
+                #if atom_type1 < atom_type2:
+                #    triplet = (atom_type1, atom_type2)
+                #else:
+                #    triplet = (atom_type2, atom_type1)
+                ff.dihedral_types[quartet] = dihedral_type
+
         # set up prototypes
         ff.init_prototypes()
 

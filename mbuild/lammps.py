@@ -1,4 +1,5 @@
 import pdb
+import time
 import os.path
 import re
 
@@ -359,6 +360,8 @@ class Lammps(Compound):
             cwd (str): working directory
             sys_name (str): name printed at top of data file
         """
+        data_file = os.path.join(cwd, path)
+
         RAD = units.radians
         DEGREE = units.degrees
         if unit_set == 'real':
@@ -371,130 +374,375 @@ class Lammps(Compound):
         else:
             raise Exception("Unsupported unit set specified: {0}".format(unit_set))
 
-        fn = os.path.join(cwd, path)
+        # Containers for lines which are ultimately written to output files.
+        mass_list = list()
+        mass_list.append('\n')
+        mass_list.append('Masses\n')
+        mass_list.append('\n')
 
-        with open(fn, 'w') as f:
-            f.write(sys_name + '\n')
+        pair_coeff_list = list()
+        pair_coeff_list.append('\n')
+        pair_coeff_list.append('Pair Coeffs\n')
+        pair_coeff_list.append('\n')
+
+        bond_coeffs = list()
+        bond_coeffs.append('\n')
+        bond_coeffs.append('Bond Coeffs\n')
+        bond_coeffs.append('\n')
+
+        angle_coeffs = list()
+        angle_coeffs.append('\n')
+        angle_coeffs.append('Angle Coeffs\n')
+        angle_coeffs.append('\n')
+
+        dihedral_coeffs = list()
+        dihedral_coeffs.append('\n')
+        dihedral_coeffs.append('Dihedral Coeffs\n')
+        dihedral_coeffs.append('\n')
+
+        improper_coeffs = list()
+        improper_coeffs.append('\n')
+        improper_coeffs.append('Improper Coeffs\n')
+        improper_coeffs.append('\n')
+
+        atom_list = list()
+        atom_list.append('\n')
+        atom_list.append('Atoms\n')
+        atom_list.append('\n')
+
+        bond_list = list()
+        bond_list.append('\n')
+        bond_list.append('Bonds\n')
+        bond_list.append('\n')
+
+        angle_list = list()
+        angle_list.append('\n')
+        angle_list.append('Angles\n')
+        angle_list.append('\n')
+
+        dihedral_list = list()
+        dihedral_list.append('\n')
+        dihedral_list.append('Dihedrals\n')
+        dihedral_list.append('\n')
+
+        improper_list = list()
+        improper_list.append('\n')
+        improper_list.append('Impropers\n')
+        improper_list.append('\n')
+
+        # dicts for type information
+        atom_type_dict = dict()
+        a_type_i = 1  # counter for atom types
+
+        bond_style = set()
+        bond_type_dict = dict()
+        b_type_i = 1  # counter for bond types
+
+        angle_style = set()
+        angle_type_dict = dict()
+        ang_type_i = 1
+
+        dihedral_style = set()
+        dihedral_type_dict = dict()
+        dih_type_i = 1
+
+        improper_style = set()
+        improper_type_dict = dict()
+        imp_type_i = 1
+
+        for i, atom in enumerate(compound.atoms()):
+            x_min = np.inf
+            y_min = np.inf
+            z_min = np.inf
+            x_max = -np.inf
+            y_max = -np.inf
+            z_max = -np.inf
+            # type, mass and pair coeffs
+            if atom.kind != 'G':
+                if atom.kind not in atom_type_dict:
+                    atom_type_dict[atom.kind] = a_type_i
+                    a_type_i += 1
+
+                    atom_type = ff.atom_types[atom.kind]
+                    mass = atom_type.mass.in_units_of(MASS)._value
+                    epsilon = atom_type.epsilon.in_units_of(ENERGY)._value
+                    sigma = atom_type.sigma.in_units_of(DIST)._value
+                    # mass
+                    mass_list.append('{0:d} {1:8.4f}\n'.format(a_type_i, mass))
+                    # pair coeff
+                    pair_coeff_list.append('{0:d} {1:8.4f} {2:8.4f}\n'.format(
+                            a_type_i, epsilon, sigma))
+
+                x_coord = atom.pos[0]
+                y_coord = atom.pos[1]
+                z_coord = atom.pos[2]
+                # box dimensions
+                if x_coord < x_min:
+                    x_min = x_coord
+                if x_coord > x_max:
+                    x_max = x_coord
+                if y_coord < y_min:
+                    y_min = y_coord
+                if y_coord > y_max:
+                    y_max = y_coord
+                if z_coord < z_min:
+                    z_min = z_coord
+                if z_coord > z_max:
+                    z_max = z_coord
+
+                # atom
+                atom.id_num = i
+                atom_list.append('{0:-6d} {1:-6d} {2:-6d} {3:5.8f} {4:8.5f} {5:8.5f} {6:8.5f}\n'.format(
+                        i + 1, 1, atom_type_dict[atom.kind],
+                        atom.charge,
+                        x_coord, y_coord, z_coord))
+
+        for i, bond in enumerate(compound.bonds):
+            if bond.kind not in bond_type_dict:
+                bond_type_dict[bond.kind] = b_type_i
+                pair = tuple(bond.kind.split('-'))
+
+                r, k = ff.bond_types[pair]
+                # NOTE: k includes the factor of 0.5 for harmonic in LAMMPS
+                bond_coeffs.append('{0:d} {1:18.8f} {2:18.8f}\n'.format(
+                        b_type_i,
+                        0.5 * k.in_units_of(ENERGY / (DIST * DIST))._value,
+                        r.in_units_of(DIST)._value))
+                b_type_i += 1
+            bond_list.append('{0:-6d} {1:6d} {2:6d} {3:6d}\n'.format(
+                    i + 1,
+                    bond_type_dict[bond.kind],
+                    bond.atom1.id_num,
+                    bond.atom2.id_num))
+        """
+                # angle types
+                print "Writing angles..."
+                for j, angle in enumerate(mol_type.angleForceSet.itervalues()):
+                    atom1 = mol_type.moleculeSet[0]._atoms[angle.atom1 - 1]
+                    atomtype1 = atom1.bondtype
+                    atom2 = mol_type.moleculeSet[0]._atoms[angle.atom2 - 1]
+                    atomtype2 = atom2.bondtype
+                    atom3 = mol_type.moleculeSet[0]._atoms[angle.atom3 - 1]
+                    atomtype3 = atom3.bondtype
+
+                    if isinstance(angle, Angle):
+                        style = 'harmonic'
+                        temp = AngleType(atomtype1, atomtype2, atomtype3,
+                                angle.theta, angle.k)
+                        # NOTE: k includes the factor of 0.5 for harmonic in LAMMPS
+                        if temp not in angle_type_dict:
+                            angle_type_dict[temp] = ang_type_i
+                            angle_coeffs.append('{0:d} {1} {2:18.8f} {3:18.8f}\n'.format(
+                                    ang_type_i,
+                                    style, 
+                                    0.5 * angle.k.in_units_of(self.ENERGY / (self.RAD*self.RAD))._value,
+                                    angle.theta.in_units_of(self.DEGREE)._value))
+                            ang_type_i += 1
+                    else:
+                        warn("Found unimplemented angle type for LAMMPS!")
+                        continue
+
+                    angle_list.append('{0:-6d} {1:6d} {2:6d} {3:6d} {4:6d}\n'.format(
+                            i + j + 1,
+                            angle_type_dict[temp],
+                            angle.atom1 + offset,
+                            angle.atom2 + offset,
+                            angle.atom3 + offset))
+
+                    angle_style.add(style)
+                    if len(angle_style) > 1:
+                        warn("More than one angle style found!")
+
+                # dihedrals
+                print "Writing dihedrals..."
+                for j, dihedral in enumerate(mol_type.dihedralForceSet.itervalues()):
+                    atom1 = mol_type.moleculeSet[0]._atoms[dihedral.atom1 - 1]
+                    atomtype1 = atom1.bondtype
+                    atom2 = mol_type.moleculeSet[0]._atoms[dihedral.atom2 - 1]
+                    atomtype2 = atom2.bondtype
+                    atom3 = mol_type.moleculeSet[0]._atoms[dihedral.atom3 - 1]
+                    atomtype3 = atom3.bondtype
+                    atom4 = mol_type.moleculeSet[0]._atoms[dihedral.atom4 - 1]
+                    atomtype4 = atom4.bondtype
+
+                    if isinstance(dihedral, FourierDihedral):
+                        style = 'opls'
+                        temp = FourierDihedralType(atomtype1, atomtype2,
+                                atomtype3, atomtype4, 
+                                dihedral.c1, dihedral.c1,
+                                dihedral.c2, dihedral.c3)
+                        if temp not in dihedral_type_dict:
+                            dihedral_type_dict[temp] = dih_type_i
+                            dihedral_coeffs.append('{0:d} {1} {2:18.8f} {3:18.8f} {4:18.8f} {5:18.8f}\n'.format(
+                                    dih_type_i,
+                                    style,
+                                    dihedral.c1.in_units_of(self.ENERGY)._value,
+                                    dihedral.c2.in_units_of(self.ENERGY)._value,
+                                    dihedral.c3.in_units_of(self.ENERGY)._value,
+                                    dihedral.c4.in_units_of(self.ENERGY)._value))
+                            dih_type_i += 1
+                    else:
+                        warn("Found unimplemented dihedral type for LAMMPS!")
+                        continue
+
+                    dihedral_list.append('{0:-6d} {1:6d} {2:6d} {3:6d} {4:6d} {5:6d}\n'.format(
+                            i + j + 1,
+                            dihedral_type_dict[temp],
+                            dihedral.atom1 + offset,
+                            dihedral.atom2 + offset,
+                            dihedral.atom3 + offset,
+                            dihedral.atom4 + offset))
+                    dihedral_style.add(style)
+                    if len(dihedral_style) > 1:
+                        warn("More than one dihedral style found!")
+
+            # atom specific information
+        """
+        # Write the actual data file.
+        print "    Writing to '{0}'...".format(data_file)
+        start = time.time()
+        with open(data_file, 'w') as f:
+            # front matter
+            f.write('Generated by mBuild\n')
             f.write('\n')
 
-            n_atoms = len(compound.getAtomListByKind('*'))
-            n_bonds = len(compound.bonds)
-            n_angles = len(compound.angles)
-            n_dihedrals = len(compound.dihedrals)
+            n_atoms = len(atom_list) - 3
+            n_bonds = len(bond_list) - 3
+            n_angles = len(angle_list) - 3
+            n_dihedrals = len(dihedral_list) - 3
+            n_impropers = len(improper_list) - 3
 
-            f.write(str(n_atoms) + ' atoms\n')
-            f.write(str(n_bonds) + ' bonds\n')
-            f.write(str(n_angles) + ' angles\n')
-            f.write(str(n_dihedrals) + ' dihedrals\n')
+            n_atom_types = len(pair_coeff_list) - 3
+            n_bond_types = len(bond_coeffs) - 3
+            n_angle_types = len(angle_coeffs) - 3
+            n_dihedral_types = len(dihedral_coeffs) - 3
+            n_improper_types = len(improper_coeffs) - 3
+
+            f.write('{0} atoms\n'.format(n_atoms))
+            f.write('{0} bonds\n'.format(n_bonds))
+            f.write('{0} angles\n'.format(n_angles))
+            f.write('{0} dihedrals\n'.format(n_dihedrals))
+            f.write('{0} impropers\n'.format(n_impropers))
             f.write('\n')
 
-            a_types, b_types, ang_types, dih_types = compound.unique_types(ff)
-
-            ## assign number to each unique atomtype
-            #numbered_a_types = dict(zip(a_types.keys(), range(1, len(a_types.keys()) + 1)))
-
-            f.write(str(len(a_types)) + ' atom types\n')
-            if n_bonds > 0:
-                f.write(str(len(b_types)) + ' bond types\n')
-            if n_angles > 0:
-                f.write(str(len(ang_types)) + ' angle types\n')
-            if n_dihedrals > 0:
-                f.write(str(len(dih_types)) + ' dihedral types\n')
+            f.write('{0} atom types\n'.format(n_atom_types))
+            if n_bond_types > 0:
+                f.write('{0} bond types\n'.format(n_bond_types))
+            if n_angle_types > 0:
+                f.write('{0} angle types\n'.format(n_angle_types))
+            if n_dihedral_types > 0:
+                f.write('{0} dihedral types\n'.format(n_dihedral_types))
+            if n_improper_types > 0:
+                f.write('{0} improper types\n'.format(n_improper_types))
             f.write('\n')
 
-            # TODO: -find min/max in every dimension
-            #       -use periodicity if non-zero
-            #       -use min/max if zero
-            f.write('0.0 %8.4f xlo xhi\n' % (compound.periodicity[0]))
-            f.write('0.0 %8.4f ylo yhi\n' % (compound.periodicity[1]))
-            f.write('0.0 %8.4f zlo zhi\n' % (compound.periodicity[2]))
+            # shifting of box dimensions
+            f.write('{0:10.6f} {1:10.6f} xlo xhi\n'.format(x_min, x_max))
+            f.write('{0:10.6f} {1:10.6f} ylo yhi\n'.format(y_min, y_max))
+            f.write('{0:10.6f} {1:10.6f} zlo zhi\n'.format(z_min, z_max))
 
+            # masses
+            for mass in mass_list:
+                f.write(mass)
+
+            # forcefield coefficients
+            if len(pair_coeff_list) > 3:
+                for pair in pair_coeff_list:
+                    f.write(pair)
+            if len(bond_coeffs) > 3:
+                for bond in bond_coeffs:
+                    f.write(bond)
+            if len(angle_coeffs) > 3:
+                for angle in angle_coeffs:
+                    f.write(angle)
+            if len(dihedral_coeffs) > 3:
+                for dihedral in dihedral_coeffs:
+                    f.write(dihedral)
+            if len(improper_coeffs) > 3:
+                for improper in improper_coeffs:
+                    f.write(improper)
+
+            # atoms and velocities
+            for atom in atom_list:
+                f.write(atom)
+
+            # topology
+            if len(bond_list) > 3:
+                for bond in bond_list:
+                    f.write(bond)
+            if len(angle_list) > 3:
+                for angle in angle_list:
+                    f.write(angle)
+            if len(dihedral_list) > 3:
+                for dihedral in dihedral_list:
+                    f.write(dihedral)
+            if len(improper_list) > 3:
+                for improper in improper_list:
+                    f.write(improper)
+        print "    Done. ({0:.2f} s)".format(time.time() - start)
+        """
+        # Write the corresponding input file.
+        basename = os.path.splitext(data_file)[0]
+        input_filename = '{0}.input'.format(basename)
+        with open(input_filename, 'w') as f:
+            f.write('units {0}\n'.format(unit_set))
+            f.write('atom_style full\n')  # TODO
             f.write('\n')
-            f.write('Masses\n')
+
+            f.write('dimension 3\n')  # TODO
+            f.write('boundary p p p\n')  # TODO
             f.write('\n')
 
-            # find unique masses and corresponding atomtypes
-            for i, a_type in a_types.itervalues():
-                f.write('{0} {1:18.8f}\n'.format(i, a_type.mass.in_units_of(MASS)._value))
-
+            # non-bonded
+            f.write('pair_style lj/cut/coul/long 9.0 10.0\n')  # TODO: match mdp
+            f.write('pair_modify mix geometric\n')  # TODO: match defaults
+            f.write('kspace_style pppm 1.0e-5\n')  # TODO: match mdp
             f.write('\n')
-            f.write('Pair Coeffs\n')
+
+            # bonded
+            if len(bond_coeffs) > 3:
+                f.write('bond_style hybrid {0}\n'.format(
+                        " ".join(bond_style)))
+            if len(angle_coeffs) > 3:
+                f.write('angle_style hybrid {0}\n'.format(
+                        " ".join(angle_style)))
+            if len(dihedral_coeffs) > 3:
+                f.write('dihedral_style hybrid {0}\n'.format(
+                        " ".join(dihedral_style)))
+            if len(improper_coeffs) > 3:
+                f.write('improper_style hybrid {0}\n'.format(
+                        " ".join(improper_style)))
+
+            f.write('special_bonds lj {0} {1} {2} coul {3} {4} {5}\n'.format(
+                    0.0,
+                    0.0,
+                    System._sys._ljCorrection,
+                    0.0,
+                    0.0,
+                    System._sys._coulombCorrection))
             f.write('\n')
-            for i, a_type in a_types.itervalues():
-                f.write('{0} {1:18.8f} {2:18.8f}\n'.format(i,
-                        a_type.epsilon.in_units_of(ENERGY)._value,
-                        a_type.sigma.in_units_of(DIST)._value))
 
-            if n_bonds > 0:
-                f.write('\n')
-                f.write('Bond Coeffs\n')
-                f.write('\n')
-                for i, b_type in b_types.itervalues():
-                    f.write('{0} {1:18.8f} {2:18.8f}\n'.format(i,
-                            b_type[0].in_units_of(DIST)._value,
-                            0.5 * b_type[1].in_units_of(ENERGY / (DIST * DIST))._value))
-
-            if n_angles > 0:
-                f.write('\n')
-                f.write('Angle Coeffs\n')
-                f.write('\n')
-                for i, ang_type in ang_types.itervalues():
-                    f.write('{0} {1:18.8f} {2:18.8f}\n'.format(i,
-                            ang_type[0].in_units_of(DEGREE)._value,
-                            0.5 * ang_type[1].in_units_of(ENERGY / (RAD * RAD))._value))
-
+            # read data
+            f.write('read_data {0}\n'.format(os.path.basename(data_file)))
             f.write('\n')
-            f.write('Atoms\n')
+
+            # output energies
+            energy_terms = " ".join(['ebond',
+                                     'eangle',
+                                     'edihed',
+                                     'eimp',
+                                     'epair',
+                                     'evdwl',
+                                     'ecoul',
+                                     'elong',
+                                     'etail',
+                                     'pe'])
+
+            f.write('thermo_style custom {0}\n'.format(energy_terms))
             f.write('\n')
-            i = 1
-            for atom in compound.atoms():
-                if atom.kind != 'G':
-                    atom.id_num = i
-                    atom_type = a_types[atom.kind][0]
-                    f.write('%-6d %-6d %-6d %5.3f %8.5f %8.5f %8.5f\n'
-                        % (i,
-                           1,  # TODO: molecule numbering
-                           atom_type,
-                           atom.charge,
-                           atom.pos[0],
-                           atom.pos[1],
-                           atom.pos[2]))
-                    i += 1
 
-            if n_bonds > 0:
-                f.write('\n')
-                f.write('Bonds\n')
-                f.write('\n')
-                for i, bond in enumerate(compound.bonds):
-                    n_i = bond.atom1.id_num
-                    n_j = bond.atom2.id_num
-                    bond_type = b_types[bond.kind][0]
-                    f.write('%d %d %d %d\n' % (i+1, bond_type, n_i, n_j))
-
-            if n_angles > 0:
-                f.write('\n')
-                f.write('Angles\n')
-                f.write('\n')
-                for i, angle in enumerate(compound.angles):
-                    n_i = angle.atom1.id_num
-                    n_j = angle.atom2.id_num
-                    n_k = angle.atom3.id_num
-                    ang_type = ang_types[angle.kind][0]
-                    f.write('%d %d %d %d %d\n' % (i+1, ang_type, n_i, n_j, n_k))
-
-            if n_dihedrals > 0:
-                f.write('\n')
-                f.write('Dihedrals\n')
-                f.write('\n')
-                for i, dihedral in enumerate(compound.dihedrals):
-                    n_i = dihedral.atom1.id_num
-                    n_j = dihedral.atom2.id_num
-                    n_k = dihedral.atom3.id_num
-                    n_l = dihedral.atom4.id_num
-                    dih_type = dih_types[dihedral.kind]
-                    f.write('%d %d %d %d %d %d\n' % (i+1, dih_type, n_i, n_j, n_k, n_l))
-
-
+            f.write('run 0\n')
+        """
 if __name__ == "__main__":
     m = Lammps("bmim.lmp", cwd="..\\lammps_testing")
     print [a for a in m.atoms()]

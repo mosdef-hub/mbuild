@@ -41,6 +41,16 @@ class OplsRules(RuleEngine):
                     "{0}-{1}-{2}".format(triplet[0], triplet[1], triplet[2]))
         print "    Done with angles. ({0:.2f} s)".format(time.time() - start)
 
+        start = time.time()
+        quartets = self.force_field.dihedral_types.keys()
+        for quartet in quartets:
+            cs = self.force_field.dihedral_types[quartet]
+            if verbose:
+                print "Found for quartet {0}".format(quartet)
+            self.add_dihedral(quartet[0], quartet[1], quartet[2], quartet[3],
+                    "{0}-{1}-{2}-{3}".format(quartet[0], quartet[1], quartet[2], quartet[3]))
+        print "    Done with dihedrals. ({0:.2f} s)".format(time.time() - start)
+
 if __name__ == "__main__":
     from mbuild.components.mpc_monomer import MpcMonomer
     m = MpcMonomer()

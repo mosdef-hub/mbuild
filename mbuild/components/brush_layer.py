@@ -28,9 +28,8 @@ class BrushLayer(Compound):
     def __init__(self, ctx=None, tile_x=1, tile_y=1, chain_length=4, alpha=pi / 4, mask=None):
         """
         """
-
-        if not ctx: ctx = {}
-
+        if not ctx:
+            ctx = {}
         super(BrushLayer, self).__init__(ctx=ctx)
 
         surface = Surface(ctx=ctx)
@@ -41,11 +40,7 @@ class BrushLayer(Compound):
 
         # chains_on_surface = 0
         brush_proto = Brush(chain_length=chain_length, alpha=alpha)
-
         bbmin, bbmax, bbsize = self.boundingbox(excludeG=False)
-
-
-
         mask = mask * bbsize + bbmin
 
         n_ports = sum(isinstance(part, Port) for part in self.tiled_surface.references.values())
@@ -63,10 +58,6 @@ class BrushLayer(Compound):
             self.add(brush)
             port_pos[closest_point_idx,:] = np.array([np.inf, np.inf, np.inf])
 
-        #
-        #
-        #
-        #
         # n_ports = sum(isinstance(part, Port) for part in self.tiled_surface.references.values())
         # for port in self.tiled_surface.references.values():
         #     current_coverage = (chains_on_surface / n_ports ) * 100
@@ -80,7 +71,7 @@ class BrushLayer(Compound):
         #         break
 
 if __name__ == "__main__":
-    profile = True
+    profile = False
     if len(sys.argv) > 1 and sys.argv[1] == 'profile':
         profile = True
 
@@ -108,9 +99,7 @@ if __name__ == "__main__":
     mask[:,0] = mask[:,0] / np.max(mask[:,0])
     mask[:,1] = mask[:,1] / np.max(mask[:,1])
 
-    print mask
-
-    m = BrushLayer(chain_length=1, alpha=pi/4, mask=mask, tile_x=1, tile_y=2)
+    m = BrushLayer(chain_length=1, alpha=pi/4, mask=mask, tile_x=1, tile_y=1)
     print "Done. ({0:.2f} s)".format(time.time() - start)
 
     print "Loading and pruning forcefield..."
@@ -170,17 +159,19 @@ if __name__ == "__main__":
     print "\nNumber of atoms: {0}".format(len(m.getAtomListByKind('*')))
     print "Number of bonds: {0}".format(len(m.bonds))
     print "Number of angles: {0}".format(len(m.angles))
+    print "Number of dihedrals: {0}".format(len(m.dihedrals))
 
 
     print "Saving..."
     start = time.time()
-    Xyz.save(m, 'brush_layer.xyz')
+    #Xyz.save(m, 'brush_layer.xyz')
     Lammps.save(m, ff, 'brush_layer.lmp')
     print "Done. ({0:.2f} s)".format(time.time() - start)
 
     print "Visualizing..."
     from mbuild.plot import Plot
-    Plot(m, bonds=True, angles=True).show()
+    Plot(m, bonds=True, angles=False, dihedrals=True).show()
+
     #
     # tv = TreeView(m)
     # tv.show()
