@@ -61,25 +61,19 @@ if __name__ == "__main__":
     start = time.time()
 
     # # random mask
-    # mask = np.random.random((10,3))
-    # mask[:, 2] = 0
-
+    mask = np.random.random((5, 3))
+    mask[:, 2] = 0
+    """
     # grid mask
-    mask = np.array([
-        [ 1, 1, 0],
-        [ 1, 2, 0],
-        [ 1, 3, 0],
-        [ 1, 4, 0],
-        [ 1, 5, 0],
-        [ 2, 1, 0],
-        [ 2, 2, 0],
-        [ 2, 3, 0],
-        [ 2, 4, 0],
-        [ 2, 5, 0]
-        ], dtype=float)
-
+    n = 10
+    mask = np.zeros(shape=(n*n, 3), dtype=float)
+    for i in range(n):
+        for j in range(n):
+            mask[i*n + j, 0] = i
+            mask[i*n + j, 1] = j
     mask[:,0] = mask[:,0] / np.max(mask[:,0])
     mask[:,1] = mask[:,1] / np.max(mask[:,1])
+    """
 
     m = BrushLayer(chain_length=1, alpha=pi/4, mask=mask, tile_x=1, tile_y=1)
     print "Done. ({0:.2f} s)".format(time.time() - start)

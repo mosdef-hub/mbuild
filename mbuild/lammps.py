@@ -465,19 +465,25 @@ class Lammps(Compound):
         improper_type_dict = dict()
         imp_type_i = 1
 
-        x_min = np.inf
-        y_min = np.inf
-        z_min = np.inf
-        x_max = -np.inf
-        y_max = -np.inf
-        z_max = -np.inf
-        for i, atom in enumerate(compound.atoms()):
+        # figure out bounding box
+        min_coords, max_coords, _ = compound.boundingbox()
+        upper_box_limit = np.zeros(3)
+        for dim in range(3):
+            if compound.periodicity[dim]:
+                upper_box_limit[dim] = min_coords[dim] + compound.periodicity[dim]
+            else:
+                upper_box_limit[dim] = max_coords[dim]
+        box_dims = np.vstack([min_coords, upper_box_limit])
+
+        id_num = 1
+        for atom in compound.atoms():
             # type, mass and pair coeffs
             if atom.kind != 'G':
+                atom_type = ff.atom_types[atom.kind]
+                charge = atom_type.charge.in_units_of(CHARGE)._value
                 if atom.kind not in atom_type_dict:
                     atom_type_dict[atom.kind] = a_type_i
 
-                    atom_type = ff.atom_types[atom.kind]
                     mass = atom_type.mass.in_units_of(MASS)._value
                     epsilon = atom_type.epsilon.in_units_of(ENERGY)._value
                     sigma = atom_type.sigma.in_units_of(DIST)._value
@@ -488,29 +494,22 @@ class Lammps(Compound):
                             a_type_i, epsilon, sigma))
                     a_type_i += 1
 
-                x_coord = atom.pos[0]
-                y_coord = atom.pos[1]
-                z_coord = atom.pos[2]
-                # box dimensions
-                if x_coord < x_min:
-                    x_min = x_coord
-                if x_coord > x_max:
-                    x_max = x_coord
-                if y_coord < y_min:
-                    y_min = y_coord
-                if y_coord > y_max:
-                    y_max = y_coord
-                if z_coord < z_min:
-                    z_min = z_coord
-                if z_coord > z_max:
-                    z_max = z_coord
+                for dim in range(3):
+                    if compound.periodicity[dim]:
+                        if atom.pos[dim] < box_dims[0, dim]:
+                            atom.pos[dim] = box_dims[1, dim] - abs(box_dims[0, dim] - atom.pos[dim])
+                        elif atom.pos[dim] > box_dims[1, dim]:
+                            atom.pos[dim] = box_dims[0, dim] + abs(atom.pos[dim] - box_dims[1, dim])
+
 
                 # atom
-                atom.id_num = i + 1
+                atom.id_num = id_num
+                id_num += 1
                 atom_list.append('{0:-6d} {1:-6d} {2:-6d} {3:5.8f} {4:8.5f} {5:8.5f} {6:8.5f}\n'.format(
                         atom.id_num, 1, atom_type_dict[atom.kind],
-                        atom.charge,
-                        x_coord, y_coord, z_coord))
+                        #atom.charge,
+                        charge,
+                        atom.pos[0], atom.pos[1], atom.pos[2]))
                 if atom.charge != 0.0:
                     charged_system = True
 
@@ -575,6 +574,7 @@ class Lammps(Compound):
                     dihedral.atom3.id_num,
                     dihedral.atom4.id_num))
 
+
         # Write the actual data file.
         with open(data_file, 'w') as f:
             # front matter
@@ -612,9 +612,9 @@ class Lammps(Compound):
             f.write('\n')
 
             # shifting of box dimensions
-            f.write('{0:10.6f} {1:10.6f} xlo xhi\n'.format(x_min, x_max))
-            f.write('{0:10.6f} {1:10.6f} ylo yhi\n'.format(y_min, y_max))
-            f.write('{0:10.6f} {1:10.6f} zlo zhi\n'.format(z_min, z_max))
+            f.write('{0:10.6f} {1:10.6f} xlo xhi\n'.format(box_dims[0, 0], box_dims[1, 0]))
+            f.write('{0:10.6f} {1:10.6f} ylo yhi\n'.format(box_dims[0, 1], box_dims[1, 1]))
+            f.write('{0:10.6f} {1:10.6f} zlo zhi\n'.format(box_dims[0, 2], box_dims[1, 2]))
 
             # masses
             for mass in mass_list:
@@ -637,7 +637,7 @@ class Lammps(Compound):
                 for improper in improper_coeffs:
                     f.write(improper)
 
-            # atoms and velocities
+            # atoms
             for atom in atom_list:
                 f.write(atom)
 
@@ -709,11 +709,18 @@ class Lammps(Compound):
                                      'etotal'])
 
             f.write('thermo_style custom {0}\n'.format(energy_terms))
+            f.write('thermo 100\n')
+            f.write('\n')
+
+            f.write('dump equil all custom 10 equil.lammpstrj id type x y z\n')
+            f.write('\n')
+
+            f.write('minimize 1.0e-4 1.0e-6 100 1000\n')
             f.write('\n')
 
             f.write('fix integrator all nvt temp 300 300 100.0\n')
             f.write('run_style respa 3 2 2 bond 1 angle 2 dihedral 2 pair 3 kspace 3\n'.format())
-            f.write('run 50\n')
+            f.write('run 1000\n')
         print "    Done. ({0:.2f} s)".format(time.time() - start)
 
 if __name__ == "__main__":
