@@ -510,7 +510,7 @@ class Lammps(Compound):
                         #atom.charge,
                         charge,
                         atom.pos[0], atom.pos[1], atom.pos[2]))
-                if atom.charge != 0.0:
+                if charge != 0.0:
                     charged_system = True
 
         for i, bond in enumerate(compound.bonds):
