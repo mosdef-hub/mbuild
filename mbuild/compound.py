@@ -124,6 +124,11 @@ class Compound(object):
                             warn("Overriding periodicity of component " + str(self))
                         self.periodicity = new_obj.periodicity
 
+    def remove(self, what):
+        if isinstance(what, Atom):
+            if what.parent.parts is not None and what in what.parent.parts:
+                what.parent.parts.remove(what)
+
     @staticmethod
     def createEquivalenceTransform(equiv):
         """
