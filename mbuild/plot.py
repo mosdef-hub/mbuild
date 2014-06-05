@@ -13,7 +13,18 @@ class Plot(object):
             atoms=True, bonds=True, angles=True, dihedrals=True, periodic_bonds=False, periodic_angles=False):
         assert(isinstance(compound, Compound))
 
-        figure = mlab.gcf()
+        # figure = mlab.gcf()
+        figure = mlab.figure(figure="mBuild", bgcolor=(1.0,1.0,1.0), fgcolor=None, engine=None, size=(800, 800))
+
+        scene = figure
+        scene.scene.camera.position = [-10.735326465888146, 184.11231537891925, 48.303486259268361]
+        scene.scene.camera.focal_point = [23.822950035333633, 19.577976047992706, 29.446013271808624]
+        scene.scene.camera.view_angle = 30.0
+        scene.scene.camera.view_up = [0.019326879088605135, -0.10983683463315895, 0.99376171263661728]
+        scene.scene.camera.clipping_range = [110.69981884203659, 243.19959909482969]
+        scene.scene.camera.compute_view_plane_normal()
+        scene.scene.render()
+
         mlab.clf()
         figure.scene.disable_render = True
 
@@ -54,7 +65,7 @@ class Plot(object):
                     x2.append(atom.pos[0])
                     y2.append(atom.pos[1])
                     z2.append(atom.pos[2])
-                    r.append(radius / 5.0)
+                    r.append(radius / 2.0)
 
                 glyphs = mlab.points3d(x2, y2, z2, r,
                         color=colorRGB, scale_factor=1.0, scale_mode='scalar')
@@ -72,7 +83,7 @@ class Plot(object):
                     d[item.kind].append(item)
 
             for (kind, itemList) in d.items():
-                color = Prototype.getAttr(kind, "color", default="white")
+                color = Prototype.getAttr(kind, "color", default="gray")
                 if isinstance(color, basestring):
                     colorRGB=tuple(map(operator.div, webcolors.name_to_rgb(color), (256.0,256.0,256.0)))
                 elif isinstance(color,tuple) and len(color) == 3:
