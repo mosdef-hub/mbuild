@@ -1,6 +1,7 @@
 from __future__ import division
 from itertools import ifilter
 from copy import deepcopy
+from enthought.mayavi.tools import mlab_scene_model
 from numpy import pi
 import sys
 
@@ -63,6 +64,11 @@ if __name__ == "__main__":
     # # random mask
     mask = np.random.random((5, 3))
     mask[:, 2] = 0
+
+    # mask = np.array([[.3, .3, 0], [.5, .7, 0], [.7, .3, 0]])
+    # mask = np.array([[.3, .3, 0], [.7, .3, 0]])
+    # mask = np.array([[.3, .3, 0]])
+
     """
     # grid mask
     n = 10
@@ -75,7 +81,7 @@ if __name__ == "__main__":
     mask[:,1] = mask[:,1] / np.max(mask[:,1])
     """
 
-    m = BrushLayer(chain_length=1, alpha=pi/4, mask=mask, tile_x=1, tile_y=1)
+    m = BrushLayer(chain_length=10, alpha=pi/4, mask=mask, tile_x=5, tile_y=5)
     print "Done. ({0:.2f} s)".format(time.time() - start)
 
     print "Loading and pruning forcefield..."
@@ -145,10 +151,13 @@ if __name__ == "__main__":
     Lammps.save(m, ff, 'brush_layer.lmp')
     print "Done. ({0:.2f} s)".format(time.time() - start)
 
-    #print "Visualizing..."
-    #from mbuild.plot import Plot
-    #Plot(m, bonds=True, angles=False, dihedrals=True).show()
+    print "Visualizing..."
+    from mbuild.plot import Plot
+    from mayavi import mlab
+
+    Plot(m, bonds=True, angles=False, dihedrals=False).show()
 
     #from mbuild.treeview import TreeView
     #tv = TreeView(m)
     #tv.show()
+

@@ -1,5 +1,5 @@
 from copy import deepcopy
-
+import numpy as np
 __author__ = 'sallai'
 
 # import inspect

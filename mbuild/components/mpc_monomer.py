@@ -35,7 +35,7 @@ class MpcMonomer(Compound):
         # Find two atoms of the carbon chain backbone.
         if ff == 'opls':
             c_backbone = mpc.opls_139_0
-            ch2_backbone = mpc.opls_136_0
+            ch2_backbone = mpc.opls_136_1
 
         ctop_pos = c_backbone.pos
         cbottom_pos = ch2_backbone.pos
