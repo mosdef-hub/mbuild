@@ -9,7 +9,7 @@ from coordinate_transform import *
 
 
 class Atom(object):
-    __slots__ = ['kind', 'id_num', 'pos', 'charge', 'bonds', 'angles', 'dihedrals', 'parent']
+    __slots__ = ['kind', 'idx', 'pos', 'charge', 'bonds', 'angles', 'dihedrals', 'parent']
 
     def __init__(self, kind, pos=None, charge=0.0):
         assert (isinstance(kind, basestring))
@@ -19,7 +19,7 @@ class Atom(object):
 
         self.parent = None
         self.kind = kind
-        self.id_num = 0
+        self.idx = 0
         self.pos = pos
         self.charge = charge
         self.bonds = set()

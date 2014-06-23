@@ -6,13 +6,13 @@ from warnings import warn
 __author__ = 'sallai'
 class Bond(object):
 
-    __slots__ = ['kind','atom1','atom2']
+    __slots__ = ['atom1','atom2', 'kind']
     def __init__(self, atom1, atom2, kind='undefined'):
         assert(isinstance(kind, basestring))
         assert(not atom1 == atom2)
-        self.kind = kind
         self.atom1 = atom1
         self.atom2 = atom2
+        self.kind = kind
 
     def clone(self):
         return copy(self)
