@@ -10,6 +10,10 @@ from mbuild.xyz import Xyz
 from mbuild.compound import Compound
 from mbuild.port import Port
 
+import mbuild.unit as units
+from mbuild.ff.opls_rules import OplsRules
+from mbuild.ff.opls_forcefield import OplsForceField
+
 
 class MpcMonomer(Compound):
 
@@ -62,5 +66,13 @@ class MpcMonomer(Compound):
 
 if __name__ == "__main__":
     m = MpcMonomer()
+
+    ff = OplsForceField()
+    ff = ff.prune(m)
+    ff.init_prototypes()
+    rules = OplsRules(m, ff)
+    rules.execute(verbose=False)
+
+    pdb.set_trace()
     from mbuild.plot import Plot
     Plot(m, verbose=True).show()
