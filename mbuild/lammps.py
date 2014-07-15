@@ -475,7 +475,7 @@ class Lammps(Compound):
                 upper_box_limit[dim] = max_coords[dim]
         box_dims = np.vstack([min_coords, upper_box_limit])
 
-        id_num = 1
+        idx = 1
         for atom in compound.atoms():
             # type, mass and pair coeffs
             if atom.kind != 'G':
@@ -503,10 +503,10 @@ class Lammps(Compound):
 
 
                 # atom
-                atom.id_num = id_num
-                id_num += 1
+                atom.idx = idx
+                idx += 1
                 atom_list.append('{0:-6d} {1:-6d} {2:-6d} {3:5.8f} {4:8.5f} {5:8.5f} {6:8.5f}\n'.format(
-                        atom.id_num, 1, atom_type_dict[atom.kind],
+                        atom.idx, 1, atom_type_dict[atom.kind],
                         #atom.charge,
                         charge,
                         atom.pos[0], atom.pos[1], atom.pos[2]))
@@ -529,8 +529,8 @@ class Lammps(Compound):
             bond_list.append('{0:-6d} {1:6d} {2:6d} {3:6d}\n'.format(
                     i + 1,
                     bond_type_dict[bond.kind],
-                    bond.atom1.id_num,
-                    bond.atom2.id_num))
+                    bond.atom1.idx,
+                    bond.atom2.idx))
 
         for i, angle in enumerate(compound.angles):
             if angle.kind not in angle_type_dict:
@@ -547,9 +547,9 @@ class Lammps(Compound):
             angle_list.append('{0:-6d} {1:6d} {2:6d} {3:6d} {4:6d}\n'.format(
                     i + 1,
                     angle_type_dict[angle.kind],
-                    angle.atom1.id_num,
-                    angle.atom2.id_num,
-                    angle.atom3.id_num))
+                    angle.atom1.idx,
+                    angle.atom2.idx,
+                    angle.atom3.idx))
 
         for i, dihedral in enumerate(compound.dihedrals):
             # TODO: differentiate between forcefields
@@ -569,10 +569,10 @@ class Lammps(Compound):
             dihedral_list.append('{0:-6d} {1:6d} {2:6d} {3:6d} {4:6d} {5:6d}\n'.format(
                     i + 1,
                     dihedral_type_dict[dihedral.kind],
-                    dihedral.atom1.id_num,
-                    dihedral.atom2.id_num,
-                    dihedral.atom3.id_num,
-                    dihedral.atom4.id_num))
+                    dihedral.atom1.idx,
+                    dihedral.atom2.idx,
+                    dihedral.atom3.idx,
+                    dihedral.atom4.idx))
 
 
         # Write the actual data file.
