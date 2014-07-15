@@ -9,9 +9,7 @@ import numpy as np
 __author__ = 'sallai'
 
 class TiledCompound(Compound):
-    """
-
-    """
+    """ """
 
     def __init__(self, tile, n_x=1, n_y=1, n_z=1, kind=None, ctx={}, label=None):
         assert(isinstance(tile, Compound))

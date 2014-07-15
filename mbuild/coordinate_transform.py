@@ -1,7 +1,14 @@
 __author__ = 'sallai'
 
+import pdb
+from compound import Compound
+#from itertools import *
+
 from numpy import *
+import numpy as np
 from numpy.linalg import *
+
+pdb.set_trace()
 
 class CoordinateTransform(object):
     def __init__(self, T=None):
@@ -10,6 +17,43 @@ class CoordinateTransform(object):
 
         self.T = T
         self.Tinv = inv(T)
+
+    @staticmethod
+    def createEquivalenceTransform(equiv):
+        """Compute an equivalence transformation that transforms this compound
+        to another compound's coordinate system.
+
+        :param other: the other point cloud
+        :param equiv: list of equivalent points
+        :returns: the coordinatetransform object that transforms this point cloud to the other point cloud's coordinates system
+        """
+
+        self_points = array([])
+        self_points.shape = (0, 3)
+        other_points = array([])
+        other_points.shape = (0, 3)
+
+        for pair in equiv:
+            if not isinstance(pair, tuple) or len(pair) != 2:
+                raise Exception('Equivalence pair not a 2-tuple')
+            if not ((isinstance(pair[0], Compound) and isinstance(pair[1], Compound)) or (
+                    isinstance(pair[0], Atom) and isinstance(pair[1], Atom))):
+                raise Exception(
+                    'Equivalence pair type mismatch: pair[0] is a ' + str(type(pair[0])) + ' and pair[1] is a ' + str(
+                        type(pair[1])))
+
+            if isinstance(pair[0], Atom):
+                self_points = vstack([self_points, pair[0].pos])
+                other_points = vstack([other_points, pair[1].pos])
+            if isinstance(pair[0], Compound):
+                for atom0 in pair[0].atoms():
+                    self_points = vstack([self_points, atom0.pos])
+                for atom1 in pair[1].atoms():
+                    other_points = vstack([other_points, atom1.pos])
+
+        T = RigidTransform(self_points, other_points)
+        return T
+
 
     def apply(self, A):
         """
@@ -227,6 +271,28 @@ class RigidTransform(CoordinateTransform):
         T = C_B.dot(R_new).dot(C_A)
 
         super(RigidTransform, self).__init__(T)
+
+def transform(compound, T):
+    """Transform this point cloud to another's coordinate system, or apply
+    a given coordinate transformation.
+
+    :param T: list of equivalence relations or coordinate transform
+    """
+    if not isinstance(T, CoordinateTransform):
+        # we're assuming here that T is a list of equivalence relations
+        T = CoordinateTransform.createEquivalenceTransform(T)
+
+    # transform the contained atoms in batch
+    arr = np.fromiter(chain.from_iterable(atom.pos for atom in compound.atoms()), dtype=np.float64)
+
+    arrnx3 = arr.reshape((-1,3))
+    arrnx3 = T.apply(arrnx3)
+    arr = arrnx3.reshape((-1))
+
+    # write back new coordinates into atoms
+    for i, atom in enumerate(compound.atoms()):
+        atom.pos = np.array([arr[3*i], arr[3*i + 1], arr[3*i + 2]])
+
 
 if __name__ == "__main__":
     # # matrix with n rows containing x, y, z coordinates(N >= 3) of points in coordinate system 1

@@ -1,30 +1,34 @@
+import pdb
 import itertools
 
 import numpy as np
 
-from mbuild.compound import Compound
 from mbuild.atom import Atom
 from mbuild.bond import Bond
+from mbuild.compound import Compound
 
 def load_mol2(filename):
     """
     """
     component = Compound()
+    atom_list = list()
 
     with open(filename, 'r') as mol2_file:
         data = dict((key, list(grp)) for key, grp in itertools.groupby(mol2_file, _parse_mol2_sections))
 
-    for atom in data['@<TRIPOS>ATOM\n'][1:]:
+    for idx, atom in enumerate(data['@<TRIPOS>ATOM\n'][1:]):
         _, _, x, y, z, kind, _, _, _ = atom.split()
         position = np.array([float(x), float(y), float(z)])
-        component.add(Atom(kind, position))
-    """
+        new_atom = Atom(kind, position)
+        component.add(new_atom, label="{0}_{1}".format(kind, idx+1))
+        atom_list.append(new_atom)
+
     for bond in data['@<TRIPOS>BOND\n'][1:]:
-        _, atom1_idx, atom_2idx, _ = bond.split()
-        atom1 = 'blah'
-        atom2 = 'blah2'
+        _, atom1_idx, atom2_idx, _ = bond.split()
+        atom1 = atom_list[int(atom1_idx) - 1]
+        atom2 = atom_list[int(atom2_idx) - 1]
         component.add(Bond(atom1, atom2))
-    """
+
     return component
 
 def write_mol2(component, filename='mbuild.mol2'):

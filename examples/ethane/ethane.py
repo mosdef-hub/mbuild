@@ -1,34 +1,27 @@
 __author__ = 'sallai'
 
-# from mbuild.plot import Plot
-# from mbuild.rules import RuleEngine
-from mbuild.treeview import TreeView
-from alkane_tail import AlkaneTail
-from mbuild.compound import *
+from methyl import Methyl
+from mbuild.compound import Compound
+from mbuild.port import Port
+from mbuild.mol2file import load_mol2
+from mbuild.coordinate_transform import *
 
 
 class Ethane(Compound):
+    """ """
 
-    def __init__(self, ctx={}):
-        super(Ethane, self).__init__(kind='Ethane', ctx=ctx)
-        # two tails
-        self.add(AlkaneTail(), 'top_tail')
-        self.add(AlkaneTail(), 'bottom_tail')
+    def __init__(self):
+        super(Ethane, self).__init__(kind='Ethane')
+        methyl1 = Methyl()
+        port1 = methyl1.references['up']
 
-        # transform bottom_tail to top_tail's coordinate system with point equivalencies
-        self.bottom_tail.transform(
-                            [
-                                    (self.bottom_tail.female_port.top, self.top_tail.male_port.top),
-                                    (self.bottom_tail.female_port.middle, self.top_tail.male_port.middle),
-                                    (self.bottom_tail.female_port.left, self.top_tail.male_port.left),
-                                    (self.bottom_tail.female_port.right, self.top_tail.male_port.right)
-                            ])
+        methyl2 = Methyl()
+        port2 = methyl2.references['down']
 
-        # # transform bottom_tail to top_tail's coordinate system with subcomponent equivalencies
-        # self.bottom_tail.transform([(self.bottom_tail.female_port, self.top_tail.male_port)])
+        transform(methyl2, [(port1, port2)])
 
 if __name__ == "__main__":
     ethane = Ethane()
 
-    # Plot(ethane).show()
-    TreeView(ethane).show()
+    from mbuild.plot import Plot
+    Plot(methyl, verbose=True, atoms=True, bonds=True, angles=False, dihedrals=False).show()

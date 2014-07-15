@@ -776,8 +776,8 @@ $line=1;
        }
        if ($data[0] eq 'CONECT' and $conect == 1) {
         $i = $data[1];
-         $bond_list[$i] = "$data[2]";
-         $bond[$i][$Z[$data[2]]]++;
+        $bond_list[$i] = "$data[2]";
+        $bond[$i][$Z[$data[2]]]++;
         for($j=3;$j<=$#data;$j++)
         {
          $bond_list[$i] = "$bond_list[$i]:$data[$j]";
@@ -877,7 +877,7 @@ if (-e $topology) {
       }
   if($conect == 0)
   {
-       $bond_list[$i] = join (':', @list);
+      $bond_list[$i] = join (':', @list);
       foreach $atom (@list) {
        if ($bond[$i][$Z[$atom]] =~ /\d/) {
         $bond[$i][$Z[$atom]]++;

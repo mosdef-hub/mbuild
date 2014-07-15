@@ -1,10 +1,13 @@
 __author__ = 'sallai'
-from compound import *
+import numpy as np
 
+from compound import Compound
+from atom import Atom
 
 class Port(Compound):
-    def __init__(self, ctx={}):
-        super(Port, self).__init__(kind='Port', ctx=ctx)
+    """ """
+    def __init__(self):
+        super(Port, self).__init__(kind='Port')
         self.add(Atom(kind='G', pos=np.array([0, 0, 0])), 'middle')
         self.add(Atom(kind='G', pos=np.array([0, 0.2, 0])), 'top')
         self.add(Atom(kind='G', pos=np.array([-0.2, -0.1, 0])), 'left')

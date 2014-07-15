@@ -10,7 +10,7 @@ from prototype import Prototype
 class Plot(object):
 
     def __init__(self, compound, verbose=False,
-            atoms=True, bonds=True, angles=True, dihedrals=True, periodic_bonds=False, periodic_angles=False):
+            atoms=True, bonds=True, angles=False, dihedrals=False, periodic_bonds=False, periodic_angles=False):
         assert(isinstance(compound, Compound))
 
         # figure = mlab.gcf()
@@ -51,7 +51,7 @@ class Plot(object):
                 if atomicNumber in default_colors:
                     default_color = default_colors[atomicNumber]
                 else:
-                    default_color = "white"
+                    default_color = "green"
 
                 color = Prototype.getAttr(kind, "color", default=default_color)
                 colorRGB=tuple(map(operator.div, webcolors.name_to_rgb(color), (256.0,256.0,256.0)))
@@ -76,11 +76,15 @@ class Plot(object):
         if bonds:
             # sort bonds by type
             d=dict()
-            for item in compound.bonds:
-                if not item.kind in d.keys():
-                    d[item.kind] = [item]
+            d['none'] = []
+            for item in compound.bonds():
+                if not hasattr(item, 'kind'):
+                    d['none'].append(item) 
                 else:
-                    d[item.kind].append(item)
+                    if not item.kind in d:
+                        d[item.kind] = [item]
+                    else:
+                        d[item.kind].append(item)
 
             for (kind, itemList) in d.items():
                 color = Prototype.getAttr(kind, "color", default="gray")

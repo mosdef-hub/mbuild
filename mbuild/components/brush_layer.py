@@ -22,7 +22,8 @@ class BrushLayer(Compound):
     """
     """
 
-    def __init__(self, ctx=None, tile_x=1, tile_y=1, chain_length=4, alpha=pi/4, mask=None):
+    def __init__(self, ctx=None, tile_x=1, tile_y=1, chain_length=4,
+            alpha=pi/4, mask=None):
         """
         """
         if not ctx:
@@ -62,7 +63,8 @@ if __name__ == "__main__":
     start = time.time()
 
     # # random mask
-    mask = np.random.random((5, 3))
+    n_chains = 20*6
+    mask = np.random.random((n_chains, 3))
     mask[:, 2] = 0
 
     # mask = np.array([[.3, .3, 0], [.5, .7, 0], [.7, .3, 0]])
@@ -81,7 +83,7 @@ if __name__ == "__main__":
     mask[:,1] = mask[:,1] / np.max(mask[:,1])
     """
 
-    m = BrushLayer(chain_length=10, alpha=pi/4, mask=mask, tile_x=5, tile_y=5)
+    m = BrushLayer(chain_length=5, alpha=pi/4, mask=mask, tile_x=3, tile_y=2)
     print "Done. ({0:.2f} s)".format(time.time() - start)
 
     print "Loading and pruning forcefield..."
@@ -123,13 +125,13 @@ if __name__ == "__main__":
         import cProfile, pstats, StringIO
         pr = cProfile.Profile()
         pr.enable()
-
+    """
     print "Generating topology..."
     start = time.time()
     rules = OplsRules(m, ff)
     rules.execute(verbose=False)
     print "Done. ({0:.2f} s)".format(time.time() - start)
-
+    """
     if profile:
         pr.disable()
         s = StringIO.StringIO()
@@ -144,18 +146,18 @@ if __name__ == "__main__":
     print "Number of dihedrals: {0}".format(len(m.dihedrals))
 
     print "Saving..."
-    from mbuild.lammps import Lammps
+    #from mbuild.lammps import Lammps
     from mbuild.xyz import Xyz
     start = time.time()
     Xyz.save(m, 'brush_layer.xyz', ff=ff)
-    Lammps.save(m, ff, 'brush_layer.lmp')
+    #Lammps.save(m, ff, 'brush_layer.lmp')
     print "Done. ({0:.2f} s)".format(time.time() - start)
 
-    print "Visualizing..."
-    from mbuild.plot import Plot
-    from mayavi import mlab
+    #print "Visualizing..."
+    #from mbuild.plot import Plot
+    #from mayavi import mlab
 
-    Plot(m, bonds=True, angles=False, dihedrals=False).show()
+    #Plot(m, bonds=True, angles=False, dihedrals=False).show()
 
     #from mbuild.treeview import TreeView
     #tv = TreeView(m)

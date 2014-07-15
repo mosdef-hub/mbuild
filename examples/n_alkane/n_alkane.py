@@ -57,4 +57,5 @@ class NAlkane(Compound):
 if __name__ == "__main__":
     # m = NAlkane(8)
     m = NAlkane.pentane()
+    from mbuild.treeview import TreeView
     TreeView(m).show()
