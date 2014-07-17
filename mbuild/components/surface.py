@@ -60,6 +60,10 @@ class Surface(Compound):
                     p.transform(RotationAroundX(pi / 2))
                     p.transform(Translation(atom.pos))
                     p.transform(Translation([0.0, 0.0, 0.5]))
+
+                    # video
+                    p.transform(Translation([0.0, 0.0, 4]))
+
                     self.add(p, str(id(p)))
                     # for b in atom.bonds:
                     #     b.kind = "si-o-top"

@@ -32,7 +32,11 @@ class TiledCompound(Compound):
             for j in range(n_y):
                 for k in range(n_z):
                     new_tile = deepcopy(tile)
-                    new_tile.transform(Translation((i*tile.periodicity[0], j*tile.periodicity[1], 0)))
+
+                    #video
+                    # new_tile.transform(Translation((i*tile.periodicity[0], j*tile.periodicity[1], 0)))
+                    new_tile.transform(Translation((i*(tile.periodicity[0]+8), j*(tile.periodicity[1]+8), 0)))
+
                     self.add(new_tile,label=label + "_" + str(i)+"_"+str(j), inherit_periodicity=False)
                     for port in new_tile.parts:
                         if isinstance(port, Port):

@@ -28,6 +28,11 @@ class Pmpc(Compound):
             else:
                 this_part.transform([(this_part.bottom_port,
                                       last_part.top_port)])
+                # video
+                this_part.transform(Translation([0.0, -3.0, 3]))
+
+
+
             last_part = this_part
 
         top_port = Port()
