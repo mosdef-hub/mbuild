@@ -22,6 +22,7 @@ class Ethane(Compound):
 
 if __name__ == "__main__":
     ethane = Ethane()
+    write_mol2(ethane, 'ethane.mol2')
 
     from mbuild.plot import Plot
     Plot(methyl, verbose=True, atoms=True, bonds=True, angles=False, dihedrals=False).show()

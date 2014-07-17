@@ -54,7 +54,7 @@ def write_mol2(component, filename='mbuild.mol2'):
 
         if n_bonds:
             mol2_file.write("@<TRIPOS>BONDS\n")
-            for bond_idx, bond in enumerate(component.bonds):
+            for bond_idx, bond in enumerate(component.bonds()):
                 mol2_file.write("{0} {1} {2} 1\n".format(
                         bond_idx + 1, bond.atom1.idx, bond.atom2.idx))
 
