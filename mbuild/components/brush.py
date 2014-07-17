@@ -1,4 +1,5 @@
 from numpy import pi
+from mbuild.coordinate_transform import Translation
 
 from mbuild.port import Port
 from mbuild.compound import Compound
@@ -27,15 +28,27 @@ class Brush(Compound):
 
         initiator = Initiator(ctx=ctx)
         initiator.transform([(initiator.bottom_port, silane.top_port)])
+
+        # video
+        initiator.transform(Translation([0.0, 0.0, 4]))
+
         self.add(initiator)
 
         pmpc = Pmpc(ctx=ctx, n=chain_length, alpha=alpha)
         pmpc.transform([(pmpc.bottom_port, initiator.top_port)])
+
+        # video
+        pmpc.transform(Translation([0.0, 0.0, 4]))
+
         self.add(pmpc)
 
         ch3 = AlkaneTail(ctx=ctx)
         ch3.transform([(ch3.female_port, pmpc.top_port)])
         self.add(ch3)
+
+        # video
+        ch3.transform(Translation([0.0, 0.0, 4]))
+
 
         # make self.port point to silane.bottom_port
         self.add(silane.bottom_port, label="port", containment=False)
