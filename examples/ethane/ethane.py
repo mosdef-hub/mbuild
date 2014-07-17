@@ -24,4 +24,4 @@ if __name__ == "__main__":
     ethane = Ethane()
 
     from mbuild.plot import Plot
-    Plot(methyl, verbose=True, atoms=True, bonds=True, angles=False, dihedrals=False).show()
+    Plot(ethane, verbose=True, atoms=True, bonds=True, angles=False, dihedrals=False).show()
