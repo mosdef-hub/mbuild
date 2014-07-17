@@ -69,7 +69,7 @@ class OrderedSet(collections.MutableSet):
     
     ### General Methods
     def __del__(self):
-        self.clear()                    # remove circular references
+        self.clear()                    # remove circular labels
  
     def __repr__(self):
         class_name = self.__class__.__name__

@@ -11,7 +11,7 @@ from bond import Bond
 
 class Compound(object):
     """ """
-    __slots__ = ['kind', 'periodicity', 'parts', 'references']
+    __slots__ = ['kind', 'periodicity', 'parts', 'labels']
 
     def __init__(self, kind=None, periodicity=None):
         # set the kind (defaults to classname)
@@ -27,7 +27,7 @@ class Compound(object):
         # contains children (compounds or atoms)
         self.parts = OrderedSet()
         # label to compound/atom mappings -- need not be in parts
-        self.references = OrderedDict()
+        self.labels = OrderedDict()
 
     def add(self, new_obj, label=None, containment=True, replace=False,
             inherit_periodicity=True):
@@ -41,12 +41,12 @@ class Compound(object):
                 return
             self.parts.add(new_obj)
 
-        # add new_obj to references
+        # add new_obj to labels
         if label is not None:
-            if not replace and label in self.references:
+            if not replace and label in self.labels:
                 raise Exception("Label {0} already exists in {1}".format(label, self))
             else:
-                self.references[label] = new_obj
+                self.labels[label] = new_obj
 
         if (inherit_periodicity
                 and isinstance(new_obj, Compound)
@@ -122,7 +122,7 @@ class Compound(object):
         newone.kind = deepcopy(self.kind, memo)
         newone.periodicity = deepcopy(self.periodicity, memo)
         newone.parts = deepcopy(self.parts, memo)
-        newone.references = deepcopy(self.references, memo)
+        newone.references = deepcopy(self.labels, memo)
         return newone
 
 

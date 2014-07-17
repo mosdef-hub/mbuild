@@ -7,10 +7,12 @@ from atom import Atom
 from bond import Bond
 from compound import Compound
 
-def load_mol2(filename):
+def load_mol2(filename, component=None):
     """
     """
-    component = Compound()
+    if component is None:
+        component = Compound()
+
     atom_list = list()
 
     with open(filename, 'r') as mol2_file:
@@ -34,7 +36,7 @@ def load_mol2(filename):
 def write_mol2(component, filename='mbuild.mol2'):
     """
     """
-    n_atoms = len(list(component.atoms()))
+    n_atoms = len([a for a in component.atoms() if a.kind != "G"])
     n_bonds = len(list(component.bonds()))
 
     with open(filename, 'w') as mol2_file:
@@ -47,14 +49,14 @@ def write_mol2(component, filename='mbuild.mol2'):
 
         mol2_file.write("@<TRIPOS>ATOM\n")
         id_to_idx = dict()
-        for atom_idx, atom in enumerate(component.atoms()):
+        for atom_idx, atom in enumerate([a for a in component.atoms() if a.kind != "G"]):
             id_to_idx[id(atom)] = atom_idx + 1
             x, y, z = atom.pos
             mol2_file.write("{0} {1} {2:8.3f} {3:8.3f} {4:8.3f} {5}\n".format(
                     atom_idx + 1, atom.kind[0], x, y, z, atom.kind))
 
         if n_bonds:
-            mol2_file.write("@<TRIPOS>BONDS\n")
+            mol2_file.write("\n@<TRIPOS>BONDS\n")
             for bond_idx, bond in enumerate(component.bonds()):
                 mol2_file.write("{0} {1} {2} 1\n".format(
                         bond_idx + 1, id_to_idx[id(bond.atom1)], id_to_idx[id(bond.atom2)]))

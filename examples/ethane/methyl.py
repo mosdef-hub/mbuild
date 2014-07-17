@@ -9,12 +9,11 @@ from mbuild.coordinate_transform import *
 class Methyl(Compound):
     """ """
     def __init__(self):
-        super(Methyl, self).__init__()
-        mol2 = load_mol2('methyl.mol2')
-        carbon = mol2.references['C.3_1']
-        transform(mol2, Translation(-carbon.pos))
+        Compound.__init__(self)
+        load_mol2('methyl.mol2', component=self)
+        carbon = self.labels['C.3_1']
 
-        self.add(mol2, label='methyl')
+        transform(self, Translation(-carbon.pos))
 
         up = Port()
         self.add(up, 'up')

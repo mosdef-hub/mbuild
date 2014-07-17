@@ -73,8 +73,8 @@ if __name__ == "__main__":
     s = Surface()
     m = TiledCompound(s, n_x=1, n_y=1, n_z=1, kind="tiled")
 
-    # n_ports = sum(isinstance(part, Port) for part in self.tiled_surface.references.values())
-    for port in m.references.values():
+    # n_ports = sum(isinstance(part, Port) for part in self.tiled_surface.labels.values())
+    for port in m.labels.values():
         if isinstance(port, Port):
             pass
 
