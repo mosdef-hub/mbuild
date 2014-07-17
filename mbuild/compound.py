@@ -54,6 +54,12 @@ class Compound(object):
             self.periodicity = new_obj.periodicity
 
 
+    def __getattr__(self, attr):
+        if attr in self.labels:
+            return self.labels[attr]
+        else:
+            raise AttributeError
+
     def _yield_parts(self, part_type):
         """
         Generate all atoms of the Compound recursively
@@ -122,7 +128,8 @@ class Compound(object):
         newone.kind = deepcopy(self.kind, memo)
         newone.periodicity = deepcopy(self.periodicity, memo)
         newone.parts = deepcopy(self.parts, memo)
-        newone.references = deepcopy(self.labels, memo)
+        newone.labels = deepcopy(self.labels, memo)
+
         return newone
 
 

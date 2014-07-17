@@ -13,16 +13,20 @@ class Methyl(Compound):
         load_mol2('methyl.mol2', component=self)
         carbon = self.labels['C.3_1']
 
-        transform(self, Translation(-carbon.pos))
+        # transform(self, Translation(-carbon.pos))
+        translate(self, -carbon.pos)
 
         up = Port()
         self.add(up, 'up')
-        transform(up, Translation(np.array([0,-0.7,0])))
+        # transform(up, Translation(np.array([0,-0.7,0])))
+        translate(up, np.array([0,-0.7,0]))
 
         down = Port()
         self.add(down, 'down')
-        transform(down, RotationAroundZ(np.pi))
-        transform(down, Translation(np.array([0,-0.7,0])))
+        # transform(down, RotationAroundZ(np.pi))
+        rotate_around_z(down, np.pi)
+        # transform(down, Translation(np.array([0,-0.7,0])))
+        translate(down, np.array([0,-0.7,0]))
 
 if __name__ == '__main__':
     methyl = Methyl()

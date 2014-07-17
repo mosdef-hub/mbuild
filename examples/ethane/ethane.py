@@ -15,12 +15,9 @@ class Ethane(Compound):
     def __init__(self):
         super(Ethane, self).__init__(kind='Ethane')
         methyl1 = Methyl()
-        port1 = methyl1.labels['up']
-
         methyl2 = Methyl()
-        port2 = methyl2.labels['down']
 
-        transform(methyl2, [(port1, port2)])
+        equivalence_transform(methyl2, methyl1.up, methyl2.down)
 
         self.add(methyl1, "m1")
         self.add(methyl2, "m2")

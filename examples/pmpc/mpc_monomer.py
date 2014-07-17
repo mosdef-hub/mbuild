@@ -19,42 +19,27 @@ class MpcMonomer(Compound):
         new_path = os.path.join(current_dir, 'mpc.mol2')
         load_mol2(new_path, component=self)
 
-        # print(self.labels)
-
+        # Transform the coordinate system of mpc such that the two carbon atoms
+        # that are part of the backbone are on the y axis, c_backbone at the origin.
         c_backbone = self.labels['C.3_2']
         ch2_backbone = self.labels['C.3_38']
-        ctop_pos = c_backbone.pos
-        cbottom_pos = ch2_backbone.pos
 
-        # Transform the coordinate system of mpc such that the two carbon atoms
-        # that are part of the backbone are on the x axis, ctop at the origin.
-        transform(self, AxisTransform(new_origin=ctop_pos,
-                                    point_on_x_axis=cbottom_pos))
-
-        # Rotate mpc such that cbottom and ctop are on the y axis.
-        transform(self, RotationAroundZ(pi / 2))
-
-        # Find the new positions of the two atoms of the carbon chain.
-        ctop_pos = c_backbone.pos
-        cbottom_pos = ch2_backbone.pos
+        y_axis_transform(self, new_origin=c_backbone, point_on_y_axis=ch2_backbone)
 
         # Add top port.
         top_port = Port()
         self.add(top_port, 'top_port')
-        top_port_pos = cbottom_pos - (cbottom_pos - ctop_pos)*1.5
-        transform(top_port, Translation(top_port_pos))
+        translate(top_port, c_backbone.pos - (c_backbone.pos - ch2_backbone.pos)*1.5)
 
         # Add bottom port
         bottom_port = Port()
         self.add(bottom_port, 'bottom_port')
-        transform(bottom_port, RotationAroundY(alpha))
-        bottom_port_pos = ctop_pos - (ctop_pos - cbottom_pos)*1.5
-        transform(bottom_port, Translation(bottom_port_pos))
+        rotate_around_y(bottom_port, alpha)
+        translate(bottom_port, ch2_backbone.pos - (ch2_backbone.pos - c_backbone.pos)*1.5)
 
 
 if __name__ == "__main__":
     m = MpcMonomer()
-
 
     # pdb.set_trace()
     from mbuild.plot import Plot

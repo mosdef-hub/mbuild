@@ -5,7 +5,7 @@ import numpy as np
 
 class Atom(object):
     """ """
-    __slots__ = ['kind', 'pos', 'charge', 'bonds']
+    __slots__ = ['kind', 'pos', 'charge']
 
     def __init__(self, kind, pos=None, charge=0.0):
         assert (isinstance(kind, basestring))
@@ -28,5 +28,4 @@ class Atom(object):
         newone.kind = deepcopy(self.kind, memo)
         newone.pos = deepcopy(self.pos, memo)
         newone.charge = deepcopy(self.charge, memo)
-        newone.bonds = deepcopy(self.bonds, memo)
         return newone
