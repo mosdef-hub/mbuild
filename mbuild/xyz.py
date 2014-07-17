@@ -1,10 +1,12 @@
+from mbuild.atom import Atom
+
 __author__ = 'sallai'
 
 import time
 import os.path
 
-from compound import *
-import unit as units
+from compound import Compound
+
 
 class Xyz(Compound):
 

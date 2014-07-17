@@ -3,9 +3,6 @@ from copy import deepcopy
 
 import numpy as np
 
-from coordinate_transform import *
-from orderedset import OrderedSet
-
 class Atom(object):
     """ """
     __slots__ = ['kind', 'pos', 'charge', 'bonds']

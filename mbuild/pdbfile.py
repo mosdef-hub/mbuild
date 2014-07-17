@@ -6,6 +6,8 @@ from mbuild.bond import Bond
 
 def load_pdb(filename):
     """
+
+    :param filename:
     """
     component = Compound()
 
@@ -17,18 +19,16 @@ def load_pdb(filename):
                 y = float(line[38:46])
                 z = float(line[46:54])
                 component.add(Atom(kind, np.array([x, y, z])))
-            """
-            elif "CONECT" in line:
-                pdb.set_trace()
-                atom1_idx = int(line[7:12])
-                atom1 = ???
-                for idx in (12, 17, 22, 27):
-                    try:
-                        atom2 = ???
-                        component.add(Bond(atom1,atom2))
-                    except:
-                        pass
-            """
+            # elif "CONECT" in line:
+            #     pdb.set_trace()
+            #     atom1_idx = int(line[7:12])
+            #     atom1 = 11111
+            #     for idx in (12, 17, 22, 27):
+            #         try:
+            #             atom2 = 1111
+            #             component.add(Bond(atom1,atom2))
+            #         except:
+            #             pass
             elif "END" in line:
                 break
 

@@ -1,9 +1,9 @@
 from copy import deepcopy
 
-from mbuild.compound import Compound
-from mbuild.coordinate_transform import Translation
-from mbuild.port import Port
-from mbuild.prototype import Prototype
+from compound import Compound
+from coordinate_transform import Translation
+from port import Port
+from prototype import Prototype
 import numpy as np
 
 __author__ = 'sallai'

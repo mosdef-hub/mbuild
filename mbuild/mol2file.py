@@ -3,9 +3,9 @@ import itertools
 
 import numpy as np
 
-from mbuild.atom import Atom
-from mbuild.bond import Bond
-from mbuild.compound import Compound
+from atom import Atom
+from bond import Bond
+from compound import Compound
 
 def load_mol2(filename):
     """
@@ -35,7 +35,7 @@ def write_mol2(component, filename='mbuild.mol2'):
     """
     """
     n_atoms = len(list(component.atoms()))
-    n_bonds = len(component.bonds)
+    n_bonds = len(list(component.bonds()))
 
     with open(filename, 'w') as mol2_file:
         mol2_file.write("@<TRIPOS>MOLECULE\n")
@@ -46,17 +46,18 @@ def write_mol2(component, filename='mbuild.mol2'):
         mol2_file.write("\n")
 
         mol2_file.write("@<TRIPOS>ATOM\n")
+        id_to_idx = dict()
         for atom_idx, atom in enumerate(component.atoms()):
-            atom.idx = atom_idx + 1
+            id_to_idx[id(atom)] = atom_idx + 1
             x, y, z = atom.pos
             mol2_file.write("{0} {1} {2:8.3f} {3:8.3f} {4:8.3f} {5}\n".format(
-                    atom.idx, atom.kind[0], x, y, z, atom.kind))
+                    atom_idx + 1, atom.kind[0], x, y, z, atom.kind))
 
         if n_bonds:
             mol2_file.write("@<TRIPOS>BONDS\n")
             for bond_idx, bond in enumerate(component.bonds()):
                 mol2_file.write("{0} {1} {2} 1\n".format(
-                        bond_idx + 1, bond.atom1.idx, bond.atom2.idx))
+                        bond_idx + 1, id_to_idx[id(bond.atom1)], id_to_idx[id(bond.atom2)]))
 
 def _parse_mol2_sections(x):
     """

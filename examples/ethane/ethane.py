@@ -3,7 +3,7 @@ __author__ = 'sallai'
 from methyl import Methyl
 from mbuild.compound import Compound
 from mbuild.port import Port
-from mbuild.mol2file import load_mol2
+from mbuild.mol2file import load_mol2, write_mol2
 from mbuild.coordinate_transform import *
 
 
@@ -20,9 +20,16 @@ class Ethane(Compound):
 
         transform(methyl2, [(port1, port2)])
 
+        self.add(methyl1, "m1")
+        self.add(methyl2, "m2")
+
+
 if __name__ == "__main__":
     ethane = Ethane()
     write_mol2(ethane, 'ethane.mol2')
+
+    import pdb
+    pdb.set_trace()
 
     from mbuild.plot import Plot
     Plot(ethane, verbose=True, atoms=True, bonds=True, angles=False, dihedrals=False).show()

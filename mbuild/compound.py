@@ -8,7 +8,6 @@ from numpy.linalg import norm
 
 from atom import Atom
 from bond import Bond
-from coordinate_transform import *
 
 class Compound(object):
     """ """

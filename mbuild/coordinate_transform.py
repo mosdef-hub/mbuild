@@ -1,14 +1,20 @@
+from atom import Atom
+# from compound import Compound
+import compound
+from mbuild.tools import createEquivalenceTransform
+
+
 __author__ = 'sallai'
 
 import pdb
-from compound import Compound
-#from itertools import *
+
+from itertools import *
 
 from numpy import *
 import numpy as np
 from numpy.linalg import *
 
-pdb.set_trace()
+# pdb.set_trace()
 
 class CoordinateTransform(object):
     def __init__(self, T=None):
@@ -18,41 +24,6 @@ class CoordinateTransform(object):
         self.T = T
         self.Tinv = inv(T)
 
-    @staticmethod
-    def createEquivalenceTransform(equiv):
-        """Compute an equivalence transformation that transforms this compound
-        to another compound's coordinate system.
-
-        :param other: the other point cloud
-        :param equiv: list of equivalent points
-        :returns: the coordinatetransform object that transforms this point cloud to the other point cloud's coordinates system
-        """
-
-        self_points = array([])
-        self_points.shape = (0, 3)
-        other_points = array([])
-        other_points.shape = (0, 3)
-
-        for pair in equiv:
-            if not isinstance(pair, tuple) or len(pair) != 2:
-                raise Exception('Equivalence pair not a 2-tuple')
-            if not ((isinstance(pair[0], Compound) and isinstance(pair[1], Compound)) or (
-                    isinstance(pair[0], Atom) and isinstance(pair[1], Atom))):
-                raise Exception(
-                    'Equivalence pair type mismatch: pair[0] is a ' + str(type(pair[0])) + ' and pair[1] is a ' + str(
-                        type(pair[1])))
-
-            if isinstance(pair[0], Atom):
-                self_points = vstack([self_points, pair[0].pos])
-                other_points = vstack([other_points, pair[1].pos])
-            if isinstance(pair[0], Compound):
-                for atom0 in pair[0].atoms():
-                    self_points = vstack([self_points, atom0.pos])
-                for atom1 in pair[1].atoms():
-                    other_points = vstack([other_points, atom1.pos])
-
-        T = RigidTransform(self_points, other_points)
-        return T
 
 
     def apply(self, A):
@@ -280,7 +251,7 @@ def transform(compound, T):
     """
     if not isinstance(T, CoordinateTransform):
         # we're assuming here that T is a list of equivalence relations
-        T = CoordinateTransform.createEquivalenceTransform(T)
+        T = createEquivalenceTransform(T)
 
     # transform the contained atoms in batch
     arr = np.fromiter(chain.from_iterable(atom.pos for atom in compound.atoms()), dtype=np.float64)
