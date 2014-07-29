@@ -31,7 +31,7 @@ class Pmpc(Compound):
                 # transform this part, such that it's bottom port is rotated+translated to the last part's top port
                 equivalence_transform(this_part, this_part.bottom_port,
                                       last_part.top_port)
-                bond = Bond(this_part.labels['C.3_2'], last_part.labels['C.3_38'])
+                bond = Bond(this_part.C_2, last_part.C_38)
                 self.add(bond)
             last_part = this_part
 

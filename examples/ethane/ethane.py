@@ -17,12 +17,12 @@ class Ethane(Compound):
         methyl1 = Methyl()
         methyl2 = Methyl()
 
-        equivalence_transform(methyl2, methyl1.up, methyl2.down)
+        equivalence_transform(methyl2, methyl2.up, methyl1.down)
 
         self.add(methyl1, "m1")
         self.add(methyl2, "m2")
 
-        bond = Bond(methyl1.labels['C.3_1'], methyl2.labels['C.3_1'])
+        bond = Bond(methyl1.C_1, methyl2.C_1)
         self.add(bond)
 
 
