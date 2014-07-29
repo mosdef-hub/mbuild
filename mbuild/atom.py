@@ -17,6 +17,29 @@ class Atom(object):
         self.pos = pos
         self.charge = charge
 
+    def __add__(self, other):
+        if isinstance(other, Atom):
+            other = other.pos
+        return self.pos + other
+
+    def __radd__(self, other):
+        if isinstance(other, Atom):
+            other = other.pos
+        return self.pos + other
+
+    def __sub__(self, other):
+        if isinstance(other, Atom):
+            other = other.pos
+        return self.pos - other
+
+    def __rsub__(self, other):
+        if isinstance(other, Atom):
+            other = other.pos
+        return self.pos - other
+
+    def __neg__(self):
+        return -self.pos
+
     def __repr__(self):
         return "Atom{0}({1}, {2})".format(id(self), self.kind, self.pos)
 

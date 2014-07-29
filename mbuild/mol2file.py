@@ -19,7 +19,7 @@ def load_mol2(filename, component=None):
         data = dict((key, list(grp)) for key, grp in itertools.groupby(mol2_file, _parse_mol2_sections))
 
     for idx, atom in enumerate(data['@<TRIPOS>ATOM\n'][1:]):
-        _, _, x, y, z, kind, _, _, _ = atom.split()
+        _, kind, x, y, z, _, _, _, _ = atom.split()
         position = np.array([float(x), float(y), float(z)])
         new_atom = Atom(kind, position)
         component.add(new_atom, label="{0}_{1}".format(kind, idx+1))

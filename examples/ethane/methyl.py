@@ -11,10 +11,10 @@ class Methyl(Compound):
     def __init__(self):
         Compound.__init__(self)
         load_mol2('methyl.mol2', component=self)
-        carbon = self.labels['C.3_1']
+        carbon = self.C_1
 
         # transform(self, Translation(-carbon.pos))
-        translate(self, -carbon.pos)
+        translate(self, -carbon)
 
         up = Port()
         self.add(up, 'up')
