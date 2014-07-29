@@ -1,5 +1,7 @@
 __author__ = 'sallai'
 import pdb
+import sys
+import os
 
 from mbuild.compound import Compound
 from mbuild.port import Port
@@ -10,23 +12,22 @@ class Methyl(Compound):
     """ """
     def __init__(self):
         Compound.__init__(self)
-        load_mol2('methyl.mol2', component=self)
+
+        # Look for data file in same directory as this python module.
+        current_dir = os.path.dirname(os.path.realpath(sys.modules[__name__].__file__))
+        new_path = os.path.join(current_dir, 'methyl.mol2')
+        load_mol2(new_path, component=self)
         carbon = self.C_1
 
         # transform(self, Translation(-carbon.pos))
         translate(self, -carbon)
 
-        up = Port()
-        self.add(up, 'up')
-        # transform(up, Translation(np.array([0,-0.7,0])))
-        translate(up, np.array([0,-0.7,0]))
+        self.add(Port(), 'up')
+        rotate_around_z(self.up, np.pi)
+        translate(self.up, np.array([0,-0.7,0]))
 
-        down = Port()
-        self.add(down, 'down')
-        # transform(down, RotationAroundZ(np.pi))
-        rotate_around_z(down, np.pi)
-        # transform(down, Translation(np.array([0,-0.7,0])))
-        translate(down, np.array([0,-0.7,0]))
+        self.add(Port(), 'down')
+        translate(self.down, np.array([0,-0.7,0]))
 
 if __name__ == '__main__':
     methyl = Methyl()

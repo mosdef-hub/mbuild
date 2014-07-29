@@ -15,7 +15,7 @@ class Bond(object):
         return id(self.atom1) ^ id(self.atom2) 
 
     def __eq__(self, bond):
-        return (self.atom1 == bond.atom1 and self.atom2 == bond.atom2
+        return isinstance(bond, Bond) and (self.atom1 == bond.atom1 and self.atom2 == bond.atom2
              or self.atom2 == bond.atom1 and self.atom1 == bond.atom1)
 
     def __repr__(self):

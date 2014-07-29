@@ -39,12 +39,12 @@ class TreeView(object):
             if not v in self.nodemap.values():
                 # find a reference to the object
                 k = 'na'
-                for rk,rv in compound.references.iteritems():
+                for rk,rv in compound.labels.iteritems():
                     if v is rv:
                         k = rk
                         break
 
-                id = tree.insert(node, "end", text=k, values=[k, ptype, v.kind, str(v.__class__)])
+                id = tree.insert(node, "end", text=k, values=[k, ptype, v.__str__(), str(v.__class__)])
                 self.nodemap[id] = v
 
                 if ptype == 'compound':

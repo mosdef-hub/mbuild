@@ -21,22 +21,23 @@ class MpcMonomer(Compound):
 
         # Transform the coordinate system of mpc such that the two carbon atoms
         # that are part of the backbone are on the y axis, c_backbone at the origin.
-        c_backbone = self.C_2
-        ch2_backbone = self.C_38
+        self.add(self.C_38, 'C_top', containment=False)
+        self.add(self.C_2, 'C_bottom', containment=False)
 
-        y_axis_transform(self, new_origin=c_backbone, point_on_y_axis=ch2_backbone)
+        y_axis_transform(self, new_origin=self.C_top, point_on_y_axis=self.C_bottom)
+
 
         # Add top port.
-        top_port = Port()
-        self.add(top_port, 'top_port')
+        self.add(Port(), 'top_port')
         # translate(top_port, c_backbone.pos - (c_backbone.pos - ch2_backbone.pos)*1.5)
-        translate(top_port, c_backbone - (c_backbone - ch2_backbone)*1.5)
+        translate(self.top_port, self.C_top - (self.C_top - self.C_bottom)*1.5)
 
-        # Add bottom port
-        bottom_port = Port()
-        self.add(bottom_port, 'bottom_port')
-        rotate_around_y(bottom_port, alpha)
-        translate(bottom_port, ch2_backbone - (ch2_backbone - c_backbone)*1.5)
+        # # Add bottom port
+        self.add(Port(), 'bottom_port')
+        rotate_around_y(self.bottom_port, alpha)
+        translate(self.bottom_port, self.C_bottom - (self.C_bottom - self.C_top)*1.5)
+
+
 
 
 if __name__ == "__main__":

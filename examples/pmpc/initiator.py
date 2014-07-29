@@ -6,9 +6,9 @@ from numpy import pi
 
 from mbuild.coordinate_transform import *
 from mbuild.mol2file import load_mol2
-from mbuild.xyz import Xyz
 from mbuild.compound import Compound
 from mbuild.port import Port
+from mbuild.treeview import TreeView
 
 
 class Initiator(Compound):
@@ -21,34 +21,22 @@ class Initiator(Compound):
         new_path = os.path.join(current_dir, 'initiator.mol2')
         load_mol2(new_path, component=self)
 
-        # Find two atoms of the carbon chain backbone.
-        cbottom_pos = self.labels['opls_136_0'].pos
-        ctop_pos = self.labels['opls_139_0'].pos
-
         # Transform the coordinate system such that the two carbon atoms
-        # that are part of the backbone are on the x axis, ctop at the origin.
-        transform(self, AxisTransform(new_origin=cbottom_pos,
-                                          point_on_x_axis=ctop_pos))
-
-        # Rotate such that cbottom and ctop are on the y axis.
-        self.transform(RotationAroundZ(pi / 2))
+        # that are part of the backbone are on the y axis, C_1 at the origin.
+        y_axis_transform(self, new_origin=self.C_1, point_on_y_axis=self.C_22)
 
         # Add bottom port
         self.add(Port(), 'bottom_port')
-        # Rotate around y by alpha to give the molecule a little twist.
-        self.bottom_port.transform(RotationAroundY(alpha))
         # Place the port.
-        cbottom_pos = initiator.opls_136_0.pos
-        bottom_port_pos = cbottom_pos + (0.0, -0.7, 0.0)
-        self.bottom_port.transform(Translation(bottom_port_pos))
+        translate(self.bottom_port, self.C_1 + np.array([0.0, -0.7, 0.0]))
 
         # Add top port.
         self.add(Port(), 'top_port')
-        ctop_pos = initiator.opls_139_0.pos
-        top_port_pos = ctop_pos + (0.0, 0.7, 0.0)
-        self.top_port.transform(Translation(top_port_pos))
+        # Place the port.
+        translate(self.top_port, self.C_22 + np.array([0.0, 0.7, 0.0]))
 
 if __name__ == "__main__":
     m = Initiator()
     from mbuild.plot import Plot
+    # TreeView(m).show()
     Plot(m, verbose=True).show()

@@ -1,5 +1,7 @@
 from numpy import pi
-from mbuild.coordinate_transform import Translation, transform
+from examples.ethane.methyl import Methyl
+from mbuild.bond import Bond
+from mbuild.coordinate_transform import equivalence_transform
 
 from mbuild.port import Port
 from mbuild.compound import Compound
@@ -7,7 +9,6 @@ from mbuild.compound import Compound
 from initiator import Initiator
 from pmpc import Pmpc
 from silane import Silane
-from methyl import Methyl
 
 
 class Brush(Compound):
@@ -17,24 +18,24 @@ class Brush(Compound):
     def __init__(self, chain_length=4, alpha=pi/4):
         Compound.__init__(self)
 
-        silane = Silane()
-        self.add(silane)
+        # Add parts
+        self.add(Silane(), 'silane')
+        self.add(Initiator(), 'initiator')
+        self.add(Pmpc(n=chain_length, alpha=alpha), 'pmpc')
+        self.add(Methyl(), 'methyl')
 
-        initiator = Initiator()
-        transform(initiator, [(initiator.labels['bottom_port'], silane.labels['top_port'])])
-        self.add(initiator)
+        # join silane and initiator
+        equivalence_transform(self.initiator, self.initiator.bottom_port, self.silane.top_port)
+        self.add(Bond(self.silane.SI_1, self.initiator.C_1))
 
-        pmpc = Pmpc(n=chain_length, alpha=alpha)
-        transform(pmpc, [(pmpc.labels['bottom_port'], initiator.labels['top_port'])])
-        self.add(pmpc)
+        equivalence_transform(self.pmpc, self.pmpc.bottom_port, self.initiator.top_port)
+        self.add(Bond(self.pmpc.C_bottom, self.initiator.C_22))
 
-        ch3 = Methyl()
-        transform([ch3, (ch3.labels['female_port'], pmpc.labels['top_port'])])
-        self.add(ch3)
+        equivalence_transform(self.methyl, self.methyl.down, self.pmpc.top_port)
+        self.add(Bond(self.pmpc.C_top, self.methyl.C_1))
 
         # make self.port point to silane.bottom_port
-        self.add(silane.labels['bottom_port'], label="port", containment=False)
-
+        self.add(self.silane.bottom_port, label="port", containment=False)
 
 if __name__ == "__main__":
     m = Brush(chain_length=5, alpha=pi/4)
