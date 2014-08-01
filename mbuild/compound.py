@@ -9,6 +9,7 @@ from numpy.linalg import norm
 from atom import Atom
 from bond import Bond
 
+
 class Compound(object):
     """ """
     __slots__ = ['kind', 'periodicity', 'parts', 'labels']
@@ -32,7 +33,7 @@ class Compound(object):
     def add(self, new_obj, label=None, containment=True, replace=False,
             inherit_periodicity=True):
         """ """
-        assert(isinstance(new_obj, (Atom, Bond, Compound, list, tuple)))
+        assert isinstance(new_obj, (Atom, Bond, Compound, list, tuple))
         if containment:
             # support batch add
             if isinstance(new_obj, (list, tuple)):
@@ -41,18 +42,43 @@ class Compound(object):
                 return
             self.parts.add(new_obj)
 
+        if (inherit_periodicity
+            and isinstance(new_obj, Compound)
+            and np.any(new_obj.periodicity)):
+            self.periodicity = new_obj.periodicity
+
         # add new_obj to labels
+        assert isinstance(new_obj, (Atom, Bond, Compound))
+
+        if not containment and label is None:
+            label = '_'+new_obj.__class__.__name__+'_'+str(id(new_obj))
+
         if label is not None:
             if not replace and label in self.labels:
                 raise Exception("Label {0} already exists in {1}".format(label, self))
             else:
                 self.labels[label] = new_obj
 
-        if (inherit_periodicity
-                and isinstance(new_obj, Compound)
-                and np.any(new_obj.periodicity)):
-            self.periodicity = new_obj.periodicity
 
+    def remove(self, obj):
+        """
+        Remove a part (atom, bond or component) from the compound by value
+        :param obj: the part to remove
+        """
+
+        # remove reference to obj
+        for k in self.labels:
+            if self.labels[k] == obj:
+                del self.labels[k]
+
+        # remove containment
+        if obj in self.parts:
+            self.parts.discard(obj)
+
+        # remove it recursively from subcomponents
+        for part in self.parts:
+            if isinstance(part, Compound):
+                part.remove(obj)
 
     def __getattr__(self, attr):
         if attr in self.labels:
@@ -73,6 +99,21 @@ class Compound(object):
             if isinstance(part, Compound):
                 for subpart in part._yield_parts(part_type):
                     yield subpart
+
+    def _find_parent_of(self, obj):
+        # check if self is the parent
+        if obj in self.parts:
+            return self
+
+        # recursively search for parent in parts
+        for part in self.parts:
+            if isinstance(part, Compound):
+                parent = part._find_parent_of(obj)
+                if not parent is None:
+                    return parent
+
+        # no parent found
+        return None
 
     def atoms(self):
         return self._yield_parts(Atom)
@@ -118,7 +159,7 @@ class Compound(object):
         min_coords = np.array([minx, miny, minz])
         max_coords = np.array([maxx, maxy, maxz])
 
-        return min_coords, max_coords, max_coords-min_coords
+        return min_coords, max_coords, max_coords - min_coords
 
     def __deepcopy__(self, memo):
         cls = self.__class__

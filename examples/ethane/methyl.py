@@ -25,9 +25,11 @@ class Methyl(Compound):
         self.add(Port(), 'up')
         rotate_around_z(self.up, np.pi)
         translate(self.up, np.array([0,-0.7,0]))
+        self.up.add(carbon, 'C_1', containment=False)
 
         self.add(Port(), 'down')
         translate(self.down, np.array([0,-0.7,0]))
+        self.down.add(carbon, 'C_1', containment=False)
 
 if __name__ == '__main__':
     methyl = Methyl()

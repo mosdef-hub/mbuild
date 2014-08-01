@@ -15,7 +15,7 @@ def _gen_relevant_images(x, bounds, distance_upper_bound):
     # Map x onto the canonical unit cell, then produce the relevant
     # mirror images
 
-    real_x = x
+    real_x = np.copy(x)
 
     for i, coord in enumerate(x):
         if bounds[i] > 0.0:

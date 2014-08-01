@@ -22,7 +22,8 @@ class Ethane(Compound):
         self.add(methyl1, "m1")
         self.add(methyl2, "m2")
 
-        bond = Bond(methyl1.C_1, methyl2.C_1)
+        # bond = Bond(methyl1.C_1, methyl2.C_1)
+        bond = Bond(methyl1.up.C_1, methyl2.down.C_1)
         self.add(bond)
 
 

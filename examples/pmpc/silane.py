@@ -25,6 +25,7 @@ class Silane(Compound):
 
         # Add bottom port.
         self.add(Port(), 'bottom_port')
+        self.bottom_port.add(self.SI_1, 'SI_1', containment=False)
         translate(self.bottom_port, np.array([0, -.7, 0]))
 
         # # Add top port.

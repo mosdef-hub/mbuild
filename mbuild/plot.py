@@ -10,7 +10,7 @@ from prototype import Prototype
 class Plot(object):
 
     def __init__(self, compound, verbose=False,
-            atoms=True, bonds=True, angles=False, dihedrals=False, periodic_bonds=False, periodic_angles=False):
+            atoms=True, bonds=True, angles=False, dihedrals=False, periodic_bonds=True, periodic_angles=True):
         assert(isinstance(compound, Compound))
 
         # figure = mlab.gcf()

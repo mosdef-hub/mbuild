@@ -2,7 +2,7 @@ __author__ = 'sallai'
 
 from copy import copy, deepcopy
 from warnings import warn
-
+import numpy as np
 class Bond(object):
     __slots__ = ['atom1','atom2']
 
@@ -13,6 +13,13 @@ class Bond(object):
 
     def __hash__(self):
         return id(self.atom1) ^ id(self.atom2) 
+
+    def distance(self, periodicity=np.array([0.0, 0.0, 0.0])):
+        """Vectorized distance calculation considering minimum image
+        """
+        d = np.abs(self.atom1 - self.atom2)
+        d = np.where(d > 0.5 * periodicity, periodicity - d, d)
+        return np.sqrt((d ** 2).sum(axis=-1))
 
     def __eq__(self, bond):
         return isinstance(bond, Bond) and (self.atom1 == bond.atom1 and self.atom2 == bond.atom2

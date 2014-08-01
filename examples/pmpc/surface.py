@@ -28,13 +28,14 @@ class Surface(Compound):
             if atom.kind == 'O' and atom.pos[2] > 10:
                 cnt += 1
                 port = Port()
+                port.add(atom, 'O', containment=False)
                 rotate_around_x(port, pi/2)
                 translate(port, atom + np.array([0, 0, 1]))
                 self.add(port, 'port_{}'.format(cnt))
 
 if __name__ == "__main__":
     s = Surface()
-    m = TiledCompound(s, n_x=2, n_y=3, n_z=1, kind="tiled")
+    m = TiledCompound(s, n_x=2, n_y=1, n_z=1, kind="tiled")
 
 
     # # n_ports = sum(isinstance(part, Port) for part in self.tiled_surface.labels.values())

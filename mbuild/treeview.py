@@ -35,6 +35,8 @@ class TreeView(object):
                 ptype = "compound"
             if isinstance(v,Atom):
                 ptype = "atom"
+            if isinstance(v,Bond):
+                ptype = "bond"
 
             if not v in self.nodemap.values():
                 # find a reference to the object
