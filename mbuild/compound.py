@@ -1,5 +1,5 @@
 from collections import OrderedDict, defaultdict
-from copy import deepcopy
+from copy import deepcopy, copy
 from orderedset import OrderedSet
 from warnings import warn
 
@@ -60,25 +60,52 @@ class Compound(object):
                 self.labels[label] = new_obj
 
 
-    def remove(self, obj):
+    def remove(self, objs, containment_only=False):
         """
         Remove a part (atom, bond or component) from the compound by value
         :param obj: the part to remove
         """
 
+        if containment_only:
+            self._remove_from_containment(copy(objs))
+            return
+
+        self._remove_from_labels(copy(objs))
+
+
+    def _remove_from_labels(self, objs_to_remove):
+
         # remove reference to obj
-        for k in self.labels:
-            if self.labels[k] == obj:
+        for k, obj in self.labels.iteritems():
+            if obj in objs_to_remove:
                 del self.labels[k]
 
-        # remove containment
-        if obj in self.parts:
-            self.parts.discard(obj)
+        # recurse into subcomponents
+        for part in self.parts:
+            if isinstance(part, Compound):
+                part._remove_from_labels(objs_to_remove)
+
+
+    def _remove_from_containment(self, objs_to_remove):
+        """
+        Remove a set of parts (atoms, bonds or components) from the compound's containment hierarchy by value
+        Notes: a.) label references are not removed, b.) a part is assumed to be present only once in the hierarchy
+        :param obj: the part to remove
+        :returns True if the part was removed, False otherwise
+        """
+
+        if len(objs_to_remove) == 0:
+            return
+
+        intersection = objs_to_remove.intersection(self.parts)
+        self.parts.intersection_update(intersection)
+        objs_to_remove.intersection_update(intersection)
 
         # remove it recursively from subcomponents
         for part in self.parts:
-            if isinstance(part, Compound):
-                part.remove(obj)
+            if isinstance(part, Compound) and len(objs_to_remove) > 0:
+                part.remove(objs_to_remove)
+
 
     def __getattr__(self, attr):
         if attr in self.labels:
@@ -172,5 +199,3 @@ class Compound(object):
         newone.labels = deepcopy(self.labels, memo)
 
         return newone
-
-

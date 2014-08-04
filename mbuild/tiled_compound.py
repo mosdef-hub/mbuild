@@ -64,6 +64,8 @@ class TiledCompound(Compound):
             # for every long bond
             bond_dist_thres = min(tile.periodicity[tile.periodicity > 0]) / 2
 
+            print "Stitching bonds..."
+            bonds_to_remove = set()
             for bond in self.bonds():
                 if bond.distance(self.periodicity) > bond_dist_thres:
 
@@ -92,12 +94,14 @@ class TiledCompound(Compound):
                     assert(atom2_image is not None)
 
                     # remove existing bond
-                    self.remove(bond)
-
+                    bonds_to_remove.add(bond)
                     # add bond between atom1 and atom2_image
                     self.add(Bond(bond.atom1, atom2_image))
-                    # # add bond between atom1_image and atom2
+                    # add bond between atom1_image and atom2
                     self.add(Bond(atom1_image, bond.atom2))
+
+            # batch remove bonds
+            self.remove(bonds_to_remove, containment_only=True)
 
             # for every tile, we clean up uids
             for child in self.parts:
@@ -105,6 +109,7 @@ class TiledCompound(Compound):
                     continue
                 for atom in child.atoms():
                     del atom.uid
+            print "Stitching bonds done..."
 
 if __name__ == "__main__":
 

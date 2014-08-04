@@ -5,7 +5,7 @@ import numpy as np
 
 class Atom(object):
     """ """
-    # __slots__ = ['kind', 'pos', 'charge']
+    # __slots__ = ['kind', 'pos', 'charge', 'uid']
 
     def __init__(self, kind, pos=None, charge=0.0):
         assert (isinstance(kind, basestring))

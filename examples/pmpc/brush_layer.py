@@ -32,7 +32,7 @@ class BrushLayer(Compound):
         mask = mask * bbsize + bbmin
 
         n_ports = sum(isinstance(part, Port) for part in self.tiled_surface.labels.values())
-        print n_ports
+        # print n_ports
 
         port_pos = np.empty((n_ports,3))
         port_list = []
@@ -60,7 +60,7 @@ if __name__ == "__main__":
     start = time.time()
 
     # # random mask
-    n_chains = 10
+    n_chains = 1
     mask = np.random.random((n_chains, 3))
     mask[:, 2] = 0
 
@@ -80,7 +80,7 @@ if __name__ == "__main__":
     mask[:,1] = mask[:,1] / np.max(mask[:,1])
     """
 
-    m = BrushLayer(chain_length=5, alpha=pi/4, mask=mask, tile_x=1, tile_y=2)
+    m = BrushLayer(chain_length=5, alpha=pi/4, mask=mask, tile_x=20, tile_y=20)
     print "Done. ({0:.2f} s)".format(time.time() - start)
 
 
@@ -88,7 +88,9 @@ if __name__ == "__main__":
     #from mbuild.plot import Plot
     #from mayavi import mlab
 
-    Plot(m, bonds=True, angles=False, dihedrals=False, periodic_bonds=True).show()
+    print len([a for a in m.atoms()])
+
+    # Plot(m, bonds=True, angles=False, dihedrals=False, periodic_bonds=True).show()
 
     # from mbuild.treeview import TreeView
     # tv = TreeView(m)

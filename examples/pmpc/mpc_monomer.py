@@ -26,7 +26,6 @@ class MpcMonomer(Compound):
 
         y_axis_transform(self, new_origin=self.C_top, point_on_y_axis=self.C_bottom)
 
-
         # Add top port.
         self.add(Port(), 'top_port')
         # translate(top_port, c_backbone.pos - (c_backbone.pos - ch2_backbone.pos)*1.5)
