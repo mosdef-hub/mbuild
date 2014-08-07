@@ -1,4 +1,5 @@
 import collections
+from copy import deepcopy
 
 class OrderedSet(collections.Set):
 
@@ -26,96 +27,34 @@ class OrderedSet(collections.Set):
         return element in self.d
 
     def __iter__(self):
-        return iter(self.d)
+        return self.d.__iter__()
 
-# # -*- coding: utf-8 -*-
-#
-# # Modified from original source, available here:
-# # http://code.activestate.com/recipes/577624-orderedset/
-# from copy import deepcopy
-#
-# # try:
-# #     import collections.abc as collections # Python 3
-# # except ImportError:
-# #     import collections # Python 2
-#
-#
-# class OrderedSet(set):
-#     '''Set that remembers original insertion order.'''
-#
-#     KEY, PREV, NEXT = range(3)
-#
-#     def __init__(self, iterable=None):
-#         self.end = end = []
-#         end += [None, end, end]         # sentinel node for doubly linked list
-#         self.map = {}                   # key --> [key, prev, next]
-#         if iterable is not None:
-#             self |= iterable
-#
-#     ### Collection Methods
-#     def __contains__(self, key):
-#         return key in self.map
-#
-#     def __eq__(self, other):
-#         if isinstance(other, OrderedSet):
-#             return len(self) == len(other) and list(self) == list(other)
-#         return set(self) == set(other)
-#
-#     def __iter__(self):
-#         end = self.end
-#         curr = end[self.NEXT]
-#         while curr is not end:
-#             yield curr[self.KEY]
-#             curr = curr[self.NEXT]
-#
-#     def __len__(self):
-#         return len(self.map)
-#
-#     def __reversed__(self):
-#         end = self.end
-#         curr = end[self.PREV]
-#         while curr is not end:
-#             yield curr[self.KEY]
-#             curr = curr[self.PREV]
-#
-#     def add(self, key):
-#         if key not in self.map:
-#             end = self.end
-#             curr = end[self.PREV]
-#             curr[self.NEXT] = end[self.PREV] = self.map[key] = [key, curr, end]
-#
-#     def discard(self, key):
-#         if key in self.map:
-#             key, prev, next = self.map.pop(key)
-#             prev[self.NEXT] = next
-#             next[self.PREV] = prev
-#
-#     def difference_update(self, *args, **kwargs):
-#
-#
-#     def pop(self, last=True):
-#         if not self:
-#             raise KeyError('set is empty')
-#         key = next(reversed(self)) if last else next(iter(self))
-#         self.discard(key)
-#         return key
-#
-#     ### General Methods
-#     def __del__(self):
-#         self.clear()                    # remove circular labels
-#
-#     def __repr__(self):
-#         class_name = self.__class__.__name__
-#         if not self:
-#             return '{0!s}()'.format(class_name)
-#         return '{0!s}({1!r})'.format(class_name, list(self))
-#
-#
-#     def __deepcopy__(self, memo):
-#         result = OrderedSet()
-#         for elt in self:
-#             result.add(deepcopy(elt,memo))
-#         return result
+    def __le__(self, other):
+        if not isinstance(other, collections.Set):
+            return NotImplemented
+        if len(self) > len(other):
+            return False
+
+        for e1,e2 in zip(self, other):
+            if e1 != e2:
+                return False
+        return True
+
+    ### General Methods
+    def __del__(self):
+        self.d.clear()                    # remove circular labels
+
+    def __repr__(self):
+        class_name = self.__class__.__name__
+        if not self:
+            return '{0!s}()'.format(class_name)
+        return '{0!s}({1!r})'.format(class_name, list(self))
+
+    def __deepcopy__(self, memo):
+        result = OrderedSet()
+        for elt in self:
+            result.add(deepcopy(elt,memo))
+        return result
 #
 # if __name__ == '__main__':
 #     print(OrderedSet('abracadaba'))
