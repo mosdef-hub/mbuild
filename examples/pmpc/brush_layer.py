@@ -80,7 +80,7 @@ if __name__ == "__main__":
     mask[:,1] = mask[:,1] / np.max(mask[:,1])
     """
 
-    m = BrushLayer(chain_length=5, alpha=pi/4, mask=mask, tile_x=20, tile_y=20)
+    m = BrushLayer(chain_length=5, alpha=pi/4, mask=mask, tile_x=2, tile_y=2)
     print "Done. ({0:.2f} s)".format(time.time() - start)
 
 
@@ -90,7 +90,7 @@ if __name__ == "__main__":
 
     print len([a for a in m.atoms()])
 
-    # Plot(m, bonds=True, angles=False, dihedrals=False, periodic_bonds=True).show()
+    Plot(m, bonds=True, angles=False, dihedrals=False, periodic_bonds=True).show()
 
     # from mbuild.treeview import TreeView
     # tv = TreeView(m)

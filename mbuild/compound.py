@@ -60,7 +60,7 @@ class Compound(object):
                 self.labels[label] = new_obj
 
 
-    def remove(self, objs, containment_only=False):
+    def remove(self, objs, containment_only=True):
         """
         Remove a part (atom, bond or component) from the compound by value
         :param obj: the part to remove
@@ -98,13 +98,13 @@ class Compound(object):
             return
 
         intersection = objs_to_remove.intersection(self.parts)
-        self.parts.intersection_update(intersection)
-        objs_to_remove.intersection_update(intersection)
+        self.parts.difference_update(intersection)
+        objs_to_remove.difference_update(intersection)
 
         # remove it recursively from subcomponents
         for part in self.parts:
             if isinstance(part, Compound) and len(objs_to_remove) > 0:
-                part.remove(objs_to_remove)
+                part._remove_from_containment(objs_to_remove)
 
 
     def __getattr__(self, attr):
