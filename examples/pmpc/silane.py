@@ -24,12 +24,11 @@ class Silane(Compound):
         x_axis_transform(self, new_origin=self.SI_1, point_on_x_axis=self.O_4)
 
         # Add bottom port.
-        self.add(Port(), 'bottom_port')
-        self.bottom_port.add(self.SI_1, 'SI_1', containment=False)
+        self.add(Port(anchor=self.SI_1), 'bottom_port')
         translate(self.bottom_port, np.array([0, -.7, 0]))
 
         # # Add top port.
-        self.add(Port(), 'top_port')
+        self.add(Port(anchor=self.SI_1), 'top_port')
         translate(self.top_port, np.array([0, .7, 0]))
 
 if __name__ == "__main__":

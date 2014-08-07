@@ -24,15 +24,9 @@ class Brush(Compound):
         self.add(Pmpc(n=chain_length, alpha=alpha), 'pmpc')
         self.add(Methyl(), 'methyl')
 
-        # join silane and initiator
         equivalence_transform(self.initiator, self.initiator.bottom_port, self.silane.top_port)
-        self.add(Bond(self.silane.SI_1, self.initiator.C_1))
-
         equivalence_transform(self.pmpc, self.pmpc.bottom_port, self.initiator.top_port)
-        self.add(Bond(self.pmpc.C_bottom, self.initiator.C_22))
-
         equivalence_transform(self.methyl, self.methyl.down, self.pmpc.top_port)
-        self.add(Bond(self.pmpc.C_top, self.methyl.C_1))
 
         # make self.port point to silane.bottom_port
         self.add(self.silane.bottom_port, label="port", containment=False)

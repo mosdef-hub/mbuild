@@ -31,8 +31,6 @@ class Pmpc(Compound):
                 # transform this part, such that it's bottom port is rotated+translated to the last part's top port
                 equivalence_transform(this_part, this_part.bottom_port,
                                       last_part.top_port)
-                bond = Bond(this_part.C_bottom, last_part.C_top)
-                self.add(bond)
             last_part = this_part
 
         # hoist the last part's top port to be the top port of the polymer
@@ -40,14 +38,6 @@ class Pmpc(Compound):
 
         # hoist the first part's bottom port to be the bottom port of the polymer
         self.add(first_part.bottom_port, 'bottom_port', containment=False)
-
-        # hoist the first part's bottom carbon atom to be the bottom binding site
-        self.add(first_part.C_bottom, 'C_bottom', containment=False)
-
-        # hoist the last part's top carbon atom to be the top binding site
-        self.add(last_part.C_top, 'C_top', containment=False)
-
-
 
 if __name__ == "__main__":
     m = Pmpc(n=13)

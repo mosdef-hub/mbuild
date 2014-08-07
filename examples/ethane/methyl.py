@@ -17,19 +17,16 @@ class Methyl(Compound):
         current_dir = os.path.dirname(os.path.realpath(sys.modules[__name__].__file__))
         new_path = os.path.join(current_dir, 'methyl.mol2')
         load_mol2(new_path, component=self)
-        carbon = self.C_1
 
         # transform(self, Translation(-carbon.pos))
-        translate(self, -carbon)
+        translate(self, -self.C_1)
 
-        self.add(Port(), 'up')
+        self.add(Port(anchor=self.C_1), 'up')
         rotate_around_z(self.up, np.pi)
         translate(self.up, np.array([0,-0.7,0]))
-        self.up.add(carbon, 'C_1', containment=False)
 
-        self.add(Port(), 'down')
+        self.add(Port(anchor=self.C_1), 'down')
         translate(self.down, np.array([0,-0.7,0]))
-        self.down.add(carbon, 'C_1', containment=False)
 
 if __name__ == '__main__':
     methyl = Methyl()

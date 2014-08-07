@@ -14,17 +14,11 @@ class Ethane(Compound):
 
     def __init__(self):
         super(Ethane, self).__init__(kind='Ethane')
-        methyl1 = Methyl()
-        methyl2 = Methyl()
+        self.add(Methyl(), "m1")
+        self.add(Methyl(), "m2")
 
-        equivalence_transform(methyl2, methyl2.up, methyl1.down)
+        equivalence_transform(self.m1, self.m1.up, self.m2.down)
 
-        self.add(methyl1, "m1")
-        self.add(methyl2, "m2")
-
-        # bond = Bond(methyl1.C_1, methyl2.C_1)
-        bond = Bond(methyl1.up.C_1, methyl2.down.C_1)
-        self.add(bond)
 
 
 if __name__ == "__main__":
@@ -35,4 +29,4 @@ if __name__ == "__main__":
     # pdb.set_trace()
 
     from mbuild.plot import Plot
-    Plot(ethane, verbose=True, atoms=True, bonds=True, angles=False, dihedrals=False).show()
+    Plot(ethane, verbose=False, atoms=True, bonds=True, angles=False, dihedrals=False).show()

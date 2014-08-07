@@ -27,8 +27,7 @@ class Surface(Compound):
         for atom in self.atoms():
             if atom.kind == 'O' and atom.pos[2] > 10:
                 cnt += 1
-                port = Port()
-                port.add(atom, 'O', containment=False)
+                port = Port(anchor=atom)
                 rotate_around_x(port, pi/2)
                 translate(port, atom + np.array([0, 0, 1]))
                 self.add(port, 'port_{}'.format(cnt))
@@ -36,19 +35,6 @@ class Surface(Compound):
 if __name__ == "__main__":
     s = Surface()
     m = TiledCompound(s, n_x=2, n_y=1, n_z=1, kind="tiled")
-
-
-    # # n_ports = sum(isinstance(part, Port) for part in self.tiled_surface.labels.values())
-    # for port in m.labels.values():
-    #     if isinstance(port, Port):
-    #         pass
-    #
-    #
-    #
-    #
-    # Prototype('o-si', color='grey')
-    # r = SurfaceRules(m)
-    # r.execute()
 
     from mbuild.plot import Plot
     Plot(m, bonds=True, verbose=True, periodic_bonds=True).show()

@@ -276,7 +276,7 @@ def _createEquivalenceTransform(equiv):
     T = RigidTransform(self_points, other_points)
     return T
 
-def equivalence_transform(compound, from_positions=None, to_positions=None):
+def equivalence_transform(compound, from_positions=None, to_positions=None, add_bond=True):
     """Computes an affine transformation that maps the from_positions to the respective
     to_positions, and applies this transformation to the compound.
     :param equivalence_pairs: list of equivalence pairs (tuples)
@@ -291,6 +291,14 @@ def equivalence_transform(compound, from_positions=None, to_positions=None):
     atom_positions = _extract_atom_positions(compound)
     atom_positions = T.applyTo(atom_positions)
     _write_back_atom_positions(compound, atom_positions)
+
+    if add_bond:
+        from mbuild.port import Port
+        from mbuild.bond import Bond
+        if isinstance(from_positions, Port) and isinstance(to_positions, Port):
+            compound.add(Bond(from_positions, to_positions))
+
+
 
 def translate(compound, v):
     atom_positions = _extract_atom_positions(compound)

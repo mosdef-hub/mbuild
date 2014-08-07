@@ -1,5 +1,6 @@
 from collections import OrderedDict, defaultdict
 from copy import deepcopy, copy
+from itertools import ifilter
 from orderedset import OrderedSet
 from warnings import warn
 
@@ -58,7 +59,6 @@ class Compound(object):
                 raise Exception("Label {0} already exists in {1}".format(label, self))
             else:
                 self.labels[label] = new_obj
-
 
     def remove(self, objs, containment_only=True):
         """
@@ -147,6 +147,11 @@ class Compound(object):
 
     def bonds(self):
         return self._yield_parts(Bond)
+
+    def referenced_ports(self):
+        from mbuild.port import Port
+        return [port for port in self.labels.values() if isinstance(port, Port)]
+
 
     def min_periodic_distance(self, x0, x1):
         """Vectorized distance calculation considering minimum image

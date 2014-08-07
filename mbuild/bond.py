@@ -1,13 +1,22 @@
+
 __author__ = 'sallai'
 
 from copy import copy, deepcopy
 from warnings import warn
 import numpy as np
 class Bond(object):
+
     __slots__ = ['atom1','atom2']
 
     def __init__(self, atom1, atom2):
         assert(not atom1 == atom2)
+        from mbuild.port import Port
+
+        if isinstance(atom1, Port):
+            atom1 = atom1.anchor
+        if isinstance(atom2, Port):
+            atom2 = atom2.anchor
+
         self.atom1 = atom1
         self.atom2 = atom2
 

@@ -26,12 +26,12 @@ class Initiator(Compound):
         y_axis_transform(self, new_origin=self.C_1, point_on_y_axis=self.C_22)
 
         # Add bottom port
-        self.add(Port(), 'bottom_port')
+        self.add(Port(anchor=self.C_1), 'bottom_port')
         # Place the port.
         translate(self.bottom_port, self.C_1 + np.array([0.0, -0.7, 0.0]))
 
         # Add top port.
-        self.add(Port(), 'top_port')
+        self.add(Port(anchor=self.C_22), 'top_port')
         # Place the port.
         translate(self.top_port, self.C_22 + np.array([0.0, 0.7, 0.0]))
 
