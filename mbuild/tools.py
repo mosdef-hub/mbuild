@@ -10,8 +10,9 @@ import numpy as np
 
 
 def apply_mask(host, guest, mask):
-    bbmin, bbmax, bbsize = host.boundingbox(excludeG=False)
-    mask = mask * bbsize + bbmin
+    box = host.boundingbox(excludeG=False)
+
+    mask = mask * box.lengths + box.mins
 
     print mask
 
@@ -51,6 +52,42 @@ def grid_mask_2d(n, m):
             mask[i*m + j, 0] = i / n
             mask[i*m + j, 1] = j / m
     return mask
+
+
+def solvate(host_compound, guest_compound, host_bounds, guest_bounds):
+    assert(np.shape())
+    # we may want to make sure that the axes of the two boxes line up
+
+    # replicate the quest so that it's bigger than the host
+
+
+
+    host_compound.add(guest_compound, 'guest')
+
+
+
+    for ag in guest_compound.atoms():
+        for neighbor in ag.getAtomsInRange(o.pos, 10, maxItems=10, kind='*'):
+            if neighbor is o:
+                continue
+            neighbor_sigma = Prototype.getAttr(neighbor.kind, "sigma", default=float("-inf"))
+            if isinstance(neighbor_sigma, Quantity):
+                neighbor_sigma = neighbor_sigma._value
+            print "neighbor_sigma=" + str(neighbor_sigma)
+            if o.distance(neighbor) < o_sigma + neighbor_sigma:
+                print str(o) + " is close to " + str(neighbor)
+                print "removing " + str(o)
+
+                for b in o.bonds:
+                    print str(b)
+                    self.remove(b.atom1)
+                    self.remove(b.atom2)
+                    print "removing " + str(b.atom1)
+                    print "removing " + str(b.atom2)
+
+
+
+
 
 
 if __name__ == "__main__":

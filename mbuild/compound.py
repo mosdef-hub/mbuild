@@ -1,6 +1,7 @@
 from collections import OrderedDict, defaultdict
 from copy import deepcopy, copy
 from itertools import ifilter
+from mbuild.box import Box
 from orderedset import OrderedSet
 from warnings import warn
 
@@ -191,7 +192,8 @@ class Compound(object):
         min_coords = np.array([minx, miny, minz])
         max_coords = np.array([maxx, maxy, maxz])
 
-        return min_coords, max_coords, max_coords - min_coords
+        return Box(mins=min_coords, maxes=max_coords)
+        # return min_coords, max_coords, max_coords - min_coords
 
     def __deepcopy__(self, memo):
         cls = self.__class__
