@@ -14,7 +14,7 @@ from bond import Bond
 
 class Compound(object):
     """ """
-    __slots__ = ['kind', 'periodicity', 'parts', 'labels']
+    __slots__ = ['kind', 'periodicity', 'parts', 'labels', 'parent', 'referrers']
 
     def __init__(self, kind=None, periodicity=None):
         # set the kind (defaults to classname)
@@ -22,6 +22,7 @@ class Compound(object):
             self.kind = kind
         else:
             self.kind = self.__class__.__name__
+
 
         if not periodicity:
             periodicity = np.array([0.0, 0.0, 0.0])
@@ -32,6 +33,9 @@ class Compound(object):
         # label to compound/atom mappings -- need not be in parts
         self.labels = OrderedDict()
 
+        self.parent = None
+        self.referrers = set()
+
     def add(self, new_obj, label=None, containment=True, replace=False,
             inherit_periodicity=True):
         """ """
@@ -40,9 +44,13 @@ class Compound(object):
             # support batch add
             if isinstance(new_obj, (list, tuple)):
                 for elem in new_obj:
+                    assert(elem.parent is None)
                     self.add(elem)
+                    elem.parent = self
                 return
+            assert(new_obj.parent is None)
             self.parts.add(new_obj)
+            new_obj.parent = self
 
         if (inherit_periodicity
             and isinstance(new_obj, Compound)
@@ -60,40 +68,16 @@ class Compound(object):
                 raise Exception("Label {0} already exists in {1}".format(label, self))
             else:
                 self.labels[label] = new_obj
+                new_obj.referrers.add(self)
 
-    def remove(self, objs, containment_only=True):
+    def remove(self, objs_to_remove, containment_only=False):
         """
         Remove a part (atom, bond or component) from the compound by value
         :param obj: the part to remove
         """
 
-        if containment_only:
-            self._remove_from_containment(copy(objs))
-            return
-
-        self._remove_from_labels(copy(objs))
-
-
-    def _remove_from_labels(self, objs_to_remove):
-
-        # remove reference to obj
-        for k, obj in self.labels.iteritems():
-            if obj in objs_to_remove:
-                del self.labels[k]
-
-        # recurse into subcomponents
-        for part in self.parts:
-            if isinstance(part, Compound):
-                part._remove_from_labels(objs_to_remove)
-
-
-    def _remove_from_containment(self, objs_to_remove):
-        """
-        Remove a set of parts (atoms, bonds or components) from the compound's containment hierarchy by value
-        Notes: a.) label references are not removed, b.) a part is assumed to be present only once in the hierarchy
-        :param obj: the part to remove
-        :returns True if the part was removed, False otherwise
-        """
+        if not isinstance(objs_to_remove, (list, tuple, set)):
+            objs_to_remove = set(objs_to_remove)
 
         if len(objs_to_remove) == 0:
             return
@@ -102,10 +86,35 @@ class Compound(object):
         self.parts.difference_update(intersection)
         objs_to_remove.difference_update(intersection)
 
-        # remove it recursively from subcomponents
+        for removed_part in intersection:
+            removed_part.parent = None
+            if not containment_only:
+                # remove labels in the hierarchy pointing to this part
+                referrers_to_remove = set()
+                for referrer in removed_part.referrers:
+                    if not removed_part in referrer.ancestors():
+                        for label, referred_part in referrer.labels.items():
+                            if referred_part is removed_part:
+                                del referrer.labels[label]
+                                # removed_part.referrers.remove(referrer)
+                                referrers_to_remove.append(referrer)
+                removed_part.referrers.difference_update(referrers_to_remove)
+
+                # remove labels in this part pointing into the hierarchy
+                labels_to_delete = []
+                if isinstance(removed_part, Compound):
+                    for k, v in removed_part.labels.items():
+                        if not removed_part in v.ancestors():
+                            v.referrers.remove(removed_part)
+                            # del removed_part.labels[k]
+                            labels_to_delete.append(k)
+                for k in labels_to_delete:
+                    del removed_part.labels[k]
+
+        # remove it recursively from sub-components
         for part in self.parts:
             if isinstance(part, Compound) and len(objs_to_remove) > 0:
-                part._remove_from_containment(objs_to_remove)
+                part.remove(objs_to_remove)
 
 
     def __getattr__(self, attr):
@@ -154,6 +163,59 @@ class Compound(object):
         return [port for port in self.labels.values() if isinstance(port, Port)]
 
 
+    def ancestors(self):
+        """
+        Generate all ancestors of the Compound recursively
+        :yield ancestors
+        """
+        yield self.parent
+        if self.parent is not None:
+            for a in self.parent.ancestors():
+                yield a
+
+    def initAtomsByKind(self, kind='*'):
+        # remember the hash of the parts dict at time of generating the atomListsByKind dict
+        self.atomListsByKind_hash = self.parts.__hash__
+        self.atomListsByKind = OrderedDict()
+
+        # print "intializing atoms by kind dict"
+
+        self.atomListsByKind['*'] = []
+
+        for atom in self.atoms():
+
+            self.atomListsByKind['*'].append(atom)
+
+            if atom.kind not in self.atomListsByKind:
+                self.atomListsByKind[atom.kind] = [atom]
+            else:
+                self.atomListsByKind[atom.kind].append(atom)
+
+    def hasAtomListByKind(self, kind='*'):
+        if not hasattr(self, 'atomListsByKind') or self.parts.__hash__ != self.atomListsByKind_hash:
+            # print "nonexistent of outdated atomsListByKind"
+            return False
+        else:
+            return True
+
+    def getAtomListByKind(self, kind='*'):
+        # this is slow...
+        # return ifilter(lambda atom: (atom.kind == kind), self.atoms())
+
+        # use some precomputed data structures instead (memory vs. time tradeoff)
+        if not self.hasAtomListByKind(kind):
+            self.initAtomsByKind(kind)
+
+        if kind in self.atomListsByKind:
+            return self.atomListsByKind[kind]
+        else:
+            return []
+
+    def resetAtomListByKind(self, kind='*'):
+        if hasattr(self, 'atomListsByKind'):
+            del self.atomListsByKind
+            del self.atomListsByKind_hash
+
     def min_periodic_distance(self, x0, x1):
         """Vectorized distance calculation considering minimum image
         """
@@ -198,11 +260,45 @@ class Compound(object):
     def __deepcopy__(self, memo):
         cls = self.__class__
         newone = cls.__new__(cls)
+        if len(memo) == 0:
+            memo[0] = self
         memo[id(self)] = newone
 
         newone.kind = deepcopy(self.kind, memo)
         newone.periodicity = deepcopy(self.periodicity, memo)
-        newone.parts = deepcopy(self.parts, memo)
-        newone.labels = deepcopy(self.labels, memo)
+
+        # copy the parent of everybody, except the topmost compound being deepcopied
+        if memo[0] == self:
+            newone.parent = None
+        else:
+            newone.parent = deepcopy(self.parent, memo)
+
+        # copy parts, except bonds with atoms outside the hierarchy
+        newone.parts = OrderedSet()
+        for part in self.parts:
+            if isinstance(part, Bond):
+                if memo[0] in part.atom1.ancestors() and memo[0] in part.atom2.ancestors():
+                    newone.parts.add(deepcopy(part,memo))
+            else:
+                newone.parts.add(deepcopy(part,memo))
+
+
+        # copy labels, except bonds with atoms outside the hierarchy
+        newone.labels = OrderedDict()
+        for k, v in self.labels.items():
+            if isinstance(v, Bond):
+                if memo[0] in v.atom1.ancestors() and memo[0] in v.atom2.ancestors():
+                    newone.labels[k] = deepcopy(v, memo)
+                    newone.labels[k].referrers.add(newone)
+            else:
+                newone.labels[k] = deepcopy(v, memo)
+                newone.labels[k].referrers.add(newone)
+
+
+        # copy references that don't point out of the hierarchy
+        newone.referrers = set()
+        # for r in self.referrers:
+        #     if memo[0] in r.ancestors():
+        #         newone.referrers.add(r)
 
         return newone

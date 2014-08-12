@@ -2,7 +2,9 @@ from __future__ import division
 from copy import deepcopy
 from atom import Atom
 from compound import Compound
-from mbuild.coordinate_transform import equivalence_transform
+from mbuild.box import Box
+from mbuild.coordinate_transform import equivalence_transform, translate
+from mbuild.periodic_kdtree import PeriodicCKDTree
 
 __author__ = 'sallai'
 
@@ -55,40 +57,46 @@ def grid_mask_2d(n, m):
 
 
 def solvate(host_compound, guest_compound, host_bounds, guest_bounds):
-    assert(np.shape())
+    assert(isinstance(host_bounds, Box))
+    assert(isinstance(guest_bounds, Box))
+    assert(np.all(guest_compound.periodicity == 0))
+
     # we may want to make sure that the axes of the two boxes line up
 
     # replicate the quest so that it's bigger than the host
+    kdtree = PeriodicCKDTree(host_compound.atoms())
 
+    num_replicas = host_bounds / guest_bounds
 
+    for xi in range(1,num_replicas[0]+1):
+        for yi in range(1,num_replicas[0]+1):
+            for zi in range(1,num_replicas[0]+1):
 
-    host_compound.add(guest_compound, 'guest')
+                guest = deepcopy(guest_compound)
+                translate(guest, -guest_bounds.mins + np.array([xi, yi, zi])*guest_bounds.lengths)
 
+                # remove atoms outside the host's box, and anything bonded to them (recursively)
+                guest_atoms = guest.getAtomsByKind('*')
+                atoms_to_remove = set()
 
+                atom_indicies = np.where(guest_atoms, np.any(guest_atoms < host_bounds.mins) or np.any(guest_atoms > host_bounds.maxes))
+                for ai in atom_indicies:
+                    atoms_to_remove.add(guest_atoms[ai])
+                    atoms_to_remove.add(guest_atoms[ai].bonded_atoms())
 
-    for ag in guest_compound.atoms():
-        for neighbor in ag.getAtomsInRange(o.pos, 10, maxItems=10, kind='*'):
-            if neighbor is o:
-                continue
-            neighbor_sigma = Prototype.getAttr(neighbor.kind, "sigma", default=float("-inf"))
-            if isinstance(neighbor_sigma, Quantity):
-                neighbor_sigma = neighbor_sigma._value
-            print "neighbor_sigma=" + str(neighbor_sigma)
-            if o.distance(neighbor) < o_sigma + neighbor_sigma:
-                print str(o) + " is close to " + str(neighbor)
-                print "removing " + str(o)
+                guest.remove(atoms_to_remove)
 
-                for b in o.bonds:
-                    print str(b)
-                    self.remove(b.atom1)
-                    self.remove(b.atom2)
-                    print "removing " + str(b.atom1)
-                    print "removing " + str(b.atom2)
+                # remove overlapping atoms, and anything bonded to them (recursively)
+                atoms_to_remove = set()
+                for guest_atom in guest.atoms():
+                    neighbors = kdtree.query(guest_atom, k=10, distance_upper_bound=10)
+                    for host_atom in neighbors:
+                        if host_compound.min_periodic_distance(host_atom, guest_atom) < get_van_der_waals_radius(host_atom) + get_van_der_waals_radius(guest_atom):
+                            atoms_to_remove.add(guest_atom)
+                            atoms_to_remove.add(guest_atom.bonded_atoms())
 
-
-
-
-
+                guest.remove(atoms_to_remove)
+                host_compound.host_compound.add(guest, "guest_{}_{}_{}".format(xi,yi,zi))
 
 if __name__ == "__main__":
     print "hello"
