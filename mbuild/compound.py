@@ -14,7 +14,6 @@ from bond import Bond
 
 class Compound(object):
     """ """
-    __slots__ = ['kind', 'periodicity', 'parts', 'labels', 'parent', 'referrers']
 
     def __init__(self, kind=None, periodicity=None):
         # set the kind (defaults to classname)
@@ -97,7 +96,7 @@ class Compound(object):
                             if referred_part is removed_part:
                                 del referrer.labels[label]
                                 # removed_part.referrers.remove(referrer)
-                                referrers_to_remove.append(referrer)
+                                referrers_to_remove.add(referrer)
                 removed_part.referrers.difference_update(referrers_to_remove)
 
                 # remove labels in this part pointing into the hierarchy

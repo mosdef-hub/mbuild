@@ -51,6 +51,15 @@ class Bond(object):
             for a in self.parent.ancestors():
                 yield a
 
+    def other(self, one):
+        if self._atom1 is one:
+            return self._atom2
+        if self._atom2 is one:
+            return self._atom1
+        return None
+
+
+
     def __hash__(self):
         return id(self.atom1) ^ id(self.atom2) 
 

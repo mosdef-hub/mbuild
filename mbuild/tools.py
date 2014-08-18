@@ -56,6 +56,9 @@ def grid_mask_2d(n, m):
     return mask
 
 
+def vdw_radius(atomic_number):
+    return 1.5
+
 def solvate(host_compound, guest_compound, host_bounds, guest_bounds):
     assert(isinstance(host_bounds, Box))
     assert(isinstance(guest_bounds, Box))
@@ -64,9 +67,12 @@ def solvate(host_compound, guest_compound, host_bounds, guest_bounds):
     # we may want to make sure that the axes of the two boxes line up
 
     # replicate the quest so that it's bigger than the host
-    kdtree = PeriodicCKDTree(host_compound.atoms())
+    host_atom_list = [atom for atom in host_compound.atoms() if atom.kind != 'G']
+    host_atom_pos_list = [atom.pos for atom in host_atom_list]
+    kdtree = PeriodicCKDTree(host_atom_pos_list)
 
-    num_replicas = host_bounds / guest_bounds
+    num_replicas = np.ceil(host_bounds.lengths / guest_bounds.lengths)
+    num_replicas = num_replicas.astype('int')
 
     for xi in range(1,num_replicas[0]+1):
         for yi in range(1,num_replicas[0]+1):
@@ -76,24 +82,33 @@ def solvate(host_compound, guest_compound, host_bounds, guest_bounds):
                 translate(guest, -guest_bounds.mins + np.array([xi, yi, zi])*guest_bounds.lengths)
 
                 # remove atoms outside the host's box, and anything bonded to them (recursively)
-                guest_atoms = guest.getAtomsByKind('*')
+                guest_atoms = guest.getAtomListByKind('*')
                 atoms_to_remove = set()
 
-                atom_indicies = np.where(guest_atoms, np.any(guest_atoms < host_bounds.mins) or np.any(guest_atoms > host_bounds.maxes))
+
+                guest_atom_pos_list = [atom.pos for atom in guest_compound.atoms()]
+
+                atom_indicies = np.where(np.logical_or(np.any(guest_atom_pos_list < host_bounds.mins, axis=1), np.any(guest_atom_pos_list > host_bounds.maxes, axis=1)))[0]
                 for ai in atom_indicies:
                     atoms_to_remove.add(guest_atoms[ai])
-                    atoms_to_remove.add(guest_atoms[ai].bonded_atoms())
+                    atoms_to_remove.update(guest_atoms[ai].bonded_atoms())
 
                 guest.remove(atoms_to_remove)
 
                 # remove overlapping atoms, and anything bonded to them (recursively)
                 atoms_to_remove = set()
                 for guest_atom in guest.atoms():
-                    neighbors = kdtree.query(guest_atom, k=10, distance_upper_bound=10)
-                    for host_atom in neighbors:
-                        if host_compound.min_periodic_distance(host_atom, guest_atom) < get_van_der_waals_radius(host_atom) + get_van_der_waals_radius(guest_atom):
-                            atoms_to_remove.add(guest_atom)
-                            atoms_to_remove.add(guest_atom.bonded_atoms())
+                    _, neighbors = kdtree.query(guest_atom.pos, k=10)
+                    print neighbors
+                    for host_atom_idx in neighbors:
+                        if host_atom_idx < len(host_atom_list):
+                            print host_atom_idx
+                            host_atom = host_atom_list[host_atom_idx]
+                            print host_atom
+                            print guest_atom
+                            if host_compound.min_periodic_distance(host_atom, guest_atom) < (vdw_radius(host_atom) + vdw_radius(guest_atom)):
+                                atoms_to_remove.add(guest_atom)
+                                atoms_to_remove.add(guest_atom.bonded_atoms())
 
                 guest.remove(atoms_to_remove)
                 host_compound.host_compound.add(guest, "guest_{}_{}_{}".format(xi,yi,zi))

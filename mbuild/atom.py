@@ -32,6 +32,14 @@ class Atom(object):
             for a in self.parent.ancestors():
                 yield a
 
+    def bonded_atoms(self, memo=dict()):
+        for bond in self.bonds:
+            bonded_atom = bond.other(self)
+            if id(bonded_atom) not in memo:
+                memo[id(bonded_atom)] = bonded_atom
+                bonded_atom.bonded_atoms(memo)
+        return memo.values()
+
     def __add__(self, other):
         if isinstance(other, Atom):
             other = other.pos

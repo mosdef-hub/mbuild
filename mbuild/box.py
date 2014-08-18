@@ -17,4 +17,7 @@ class Box(object):
             assert(np.shape(maxes) == (3,))
             self.mins = np.array(mins)
             self.maxes = np.array(maxes)
-            self.lengths = maxes - mins
+            self.lengths = self.maxes - self.mins
+
+    def __repr__(self):
+        return "Box(mins={},maxes={})".format(self.mins,self.maxes)
