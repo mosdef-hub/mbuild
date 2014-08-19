@@ -74,12 +74,12 @@ def solvate(host_compound, guest_compound, host_bounds, guest_bounds):
     num_replicas = np.ceil(host_bounds.lengths / guest_bounds.lengths)
     num_replicas = num_replicas.astype('int')
 
-    for xi in range(1,num_replicas[0]+1):
-        for yi in range(1,num_replicas[0]+1):
-            for zi in range(1,num_replicas[0]+1):
+    for xi in range(0,num_replicas[0]):
+        for yi in range(0,num_replicas[0]):
+            for zi in range(0,num_replicas[0]):
 
                 guest = deepcopy(guest_compound)
-                translate(guest, -guest_bounds.mins + np.array([xi, yi, zi])*guest_bounds.lengths)
+                translate(guest, -guest_bounds.mins + host_bounds.mins + np.array([xi, yi, zi])*guest_bounds.lengths)
 
                 # remove atoms outside the host's box, and anything bonded to them (recursively)
                 guest_atoms = guest.getAtomListByKind('*')
@@ -90,6 +90,7 @@ def solvate(host_compound, guest_compound, host_bounds, guest_bounds):
 
                 atom_indicies = np.where(np.logical_or(np.any(guest_atom_pos_list < host_bounds.mins, axis=1), np.any(guest_atom_pos_list > host_bounds.maxes, axis=1)))[0]
                 for ai in atom_indicies:
+                    # print("Guest atom {} outside host box {} -- removing guest atom".format(guest_atoms[ai],host_bounds))
                     atoms_to_remove.add(guest_atoms[ai])
                     atoms_to_remove.update(guest_atoms[ai].bonded_atoms())
 
@@ -99,19 +100,16 @@ def solvate(host_compound, guest_compound, host_bounds, guest_bounds):
                 atoms_to_remove = set()
                 for guest_atom in guest.atoms():
                     _, neighbors = kdtree.query(guest_atom.pos, k=10)
-                    print neighbors
                     for host_atom_idx in neighbors:
                         if host_atom_idx < len(host_atom_list):
-                            print host_atom_idx
                             host_atom = host_atom_list[host_atom_idx]
-                            print host_atom
-                            print guest_atom
                             if host_compound.min_periodic_distance(host_atom, guest_atom) < (vdw_radius(host_atom) + vdw_radius(guest_atom)):
+                                # print("Guest atom {} overlaps with host atom {} -- removing guest atom".format(guest_atom,host_atom))
                                 atoms_to_remove.add(guest_atom)
-                                atoms_to_remove.add(guest_atom.bonded_atoms())
+                                atoms_to_remove.update(guest_atom.bonded_atoms())
 
                 guest.remove(atoms_to_remove)
-                host_compound.host_compound.add(guest, "guest_{}_{}_{}".format(xi,yi,zi))
+                host_compound.add(guest, "guest_{}_{}_{}".format(xi,yi,zi))
 
 if __name__ == "__main__":
     print "hello"

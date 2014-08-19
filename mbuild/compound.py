@@ -69,14 +69,14 @@ class Compound(object):
                 self.labels[label] = new_obj
                 new_obj.referrers.add(self)
 
-    def remove(self, objs_to_remove, containment_only=False):
+    def remove(self, objs_to_remove):
         """
         Remove a part (atom, bond or component) from the compound by value
         :param obj: the part to remove
         """
 
         if not isinstance(objs_to_remove, (list, tuple, set)):
-            objs_to_remove = set(objs_to_remove)
+            objs_to_remove = set([objs_to_remove])
 
         if len(objs_to_remove) == 0:
             return
@@ -87,28 +87,33 @@ class Compound(object):
 
         for removed_part in intersection:
             removed_part.parent = None
-            if not containment_only:
-                # remove labels in the hierarchy pointing to this part
-                referrers_to_remove = set()
-                for referrer in removed_part.referrers:
-                    if not removed_part in referrer.ancestors():
-                        for label, referred_part in referrer.labels.items():
-                            if referred_part is removed_part:
-                                del referrer.labels[label]
-                                # removed_part.referrers.remove(referrer)
-                                referrers_to_remove.add(referrer)
-                removed_part.referrers.difference_update(referrers_to_remove)
+            # remove labels in the hierarchy pointing to this part
+            referrers_to_remove = set()
+            for referrer in removed_part.referrers:
+                if not removed_part in referrer.ancestors():
+                    for label, referred_part in referrer.labels.items():
+                        if referred_part is removed_part:
+                            del referrer.labels[label]
+                            # removed_part.referrers.remove(referrer)
+                            referrers_to_remove.add(referrer)
+            removed_part.referrers.difference_update(referrers_to_remove)
 
-                # remove labels in this part pointing into the hierarchy
-                labels_to_delete = []
-                if isinstance(removed_part, Compound):
-                    for k, v in removed_part.labels.items():
-                        if not removed_part in v.ancestors():
-                            v.referrers.remove(removed_part)
-                            # del removed_part.labels[k]
-                            labels_to_delete.append(k)
-                for k in labels_to_delete:
-                    del removed_part.labels[k]
+            # remove labels in this part pointing into the hierarchy
+            labels_to_delete = []
+            if isinstance(removed_part, Compound):
+                for k, v in removed_part.labels.items():
+                    if not removed_part in v.ancestors():
+                        v.referrers.remove(removed_part)
+                        # del removed_part.labels[k]
+                        labels_to_delete.append(k)
+            for k in labels_to_delete:
+                del removed_part.labels[k]
+
+            # if removing an atom, make sure to remove the bonds it's part of
+            if isinstance(removed_part, Atom):
+                for bond in removed_part.bonds:
+                    if bond.parent is not None:
+                        bond.parent.remove(bond)
 
         # remove it recursively from sub-components
         for part in self.parts:
