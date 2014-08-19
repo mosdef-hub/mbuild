@@ -11,7 +11,7 @@ __author__ = 'sallai'
 import numpy as np
 
 
-def apply_mask(host, guest, mask):
+def apply_mask(host, guest, mask, guest_port_name="port"):
     box = host.boundingbox(excludeG=False)
 
     mask = mask * box.lengths + box.mins
@@ -31,7 +31,7 @@ def apply_mask(host, guest, mask):
         closest_point_idx = np.argmin(host.min_periodic_distance(mp, port_pos))
         closest_port = port_list[closest_point_idx]
         brush = deepcopy(guest)
-        equivalence_transform(brush, brush.port, closest_port)
+        equivalence_transform(brush, brush.labels[guest_port_name], closest_port)
         host.add(brush)
         port_pos[closest_point_idx,:] = np.array([np.inf, np.inf, np.inf])
 
@@ -71,7 +71,7 @@ def sphere_mask(N):
     az = bands * long_incr      # azimuthal angle of point modulo 2 pi
     x = r * np.cos(az)
     y = r * np.sin(az)
-    return np.concatenate(x, y, z)
+    return np.column_stack((x, y, z))
 
 
 def disk_mask(n):
