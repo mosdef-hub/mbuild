@@ -56,6 +56,39 @@ def grid_mask_2d(n, m):
     return mask
 
 
+def sphere_mask(N):
+    """ Generate N evenly distributed points on the unit sphere centered at
+        the origin. Uses the 'Golden Spiral'.
+        Code by Chris Colbert from the numpy-discussion list.
+    """
+    phi = (1 + np.sqrt(5)) / 2  # the golden ratio
+    long_incr = 2*np.pi / phi   # how much to increment the longitude
+
+    dz = 2.0 / float(N)         # a unit sphere has diameter 2
+    bands = np.arange(N)        # each band will have one point placed on it
+    z = bands * dz - 1 + (dz/2) # the height z of each band/point
+    r = np.sqrt(1 - z*z)        # project onto xy-plane
+    az = bands * long_incr      # azimuthal angle of point modulo 2 pi
+    x = r * np.cos(az)
+    y = r * np.sin(az)
+    return np.concatenate(x, y, z)
+
+
+def disk_mask(n):
+    radius = np.sqrt(np.arange(n) / float(n))
+
+    golden_angle = np.pi * (3 - np.sqrt(5))
+    theta = golden_angle * np.arange(n)
+
+    points = np.zeros((n, 2))
+    points[:,0] = np.cos(theta)
+    points[:,1] = np.sin(theta)
+    points *= radius.reshape((n, 1))
+
+    return points
+
+
+
 def vdw_radius(atomic_number):
     return 1.5
 
