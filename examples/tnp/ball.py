@@ -15,7 +15,7 @@ from mbuild.tools import *
 
 class Ball(Compound):
 
-    def __init__(self, n=65, radius=10):
+    def __init__(self, n=65, radius=10, port_distance_from_surface=.7):
         Compound.__init__(self)
 
         # generate 65 points on the surface of a unit sphere
@@ -30,13 +30,18 @@ class Ball(Compound):
             self.add(particle,"particle_{}".format(i))
             port = Port(anchor=particle)
             self.add(port,"port_{}".format(i))
-            rotate_around_z(port, np.pi)
-            rotate_around_x(port, -asin(pos[2]/radius))
-            rotate_around_z(port, +np.pi/2 + atan2(pos[1], pos[0]))
-            translate(port, pos * 1.1)
+
+            # make the top of the port point toward the positive x axis
+            rotate_around_z(port, -np.pi/2)
+            # lift up (or down) the top of the port in the z direction
+            rotate_around_y(port, -asin(pos[2]/radius))
+            # rotate along the z axis
+            rotate_around_z(port, atan2(pos[1], pos[0]))
+
+            translate(port, pos + (pos/radius * port_distance_from_surface))
 
 if __name__ == "__main__":
-    m = Ball(n=128, radius = 20)
+    m = Ball(n=65, radius = 20)
 
     # pdb.set_trace()
     from mbuild.plot import Plot
