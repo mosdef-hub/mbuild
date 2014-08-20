@@ -1,10 +1,12 @@
+__author__ = 'sallai'
+
 from copy import deepcopy
 
-__author__ = 'sallai'
 import numpy as np
 
-from compound import Compound
 from atom import Atom
+from compound import Compound
+
 
 class Port(Compound):
     """ """

@@ -1,15 +1,12 @@
-from collections import OrderedDict, defaultdict
-from copy import deepcopy, copy
-from itertools import ifilter
-from mbuild.box import Box
-from orderedset import OrderedSet
-from warnings import warn
+from collections import OrderedDict
+from copy import deepcopy
 
 import numpy as np
-from numpy.linalg import norm
 
 from atom import Atom
 from bond import Bond
+from box import Box
+from orderedset import OrderedSet
 
 
 class Compound(object):
@@ -166,11 +163,13 @@ class Compound(object):
         from mbuild.port import Port
         return [port for port in self.labels.values() if isinstance(port, Port)]
 
-
     def ancestors(self):
-        """
-        Generate all ancestors of the Compound recursively
-        :yield ancestors
+        """Generate all ancestors of the Compound recursively.
+
+        Yields:
+            ancestor (Compound): A Compound one or more levels higher in the
+                hierarchy.
+
         """
         yield self.parent
         if self.parent is not None:
@@ -203,9 +202,6 @@ class Compound(object):
             return True
 
     def getAtomListByKind(self, kind='*'):
-        # this is slow...
-        # return ifilter(lambda atom: (atom.kind == kind), self.atoms())
-
         # use some precomputed data structures instead (memory vs. time tradeoff)
         if not self.hasAtomListByKind(kind):
             self.initAtomsByKind(kind)

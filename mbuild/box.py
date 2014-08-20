@@ -1,7 +1,13 @@
 __author__ = 'sallai'
+
 import numpy as np
 
 class Box(object):
+    """A box representing the bounds of the system.
+
+    Attributes:
+        
+    """
 
     def __init__(self, lengths=None, mins=None, maxes=None):
         if lengths is not None:
@@ -20,4 +26,4 @@ class Box(object):
             self.lengths = self.maxes - self.mins
 
     def __repr__(self):
-        return "Box(mins={},maxes={})".format(self.mins,self.maxes)
+        return "Box(mins={},maxes={})".format(self.mins, self.maxes)

@@ -1,15 +1,40 @@
-from mbuild.bond import Bond
-
 __author__ = 'sallai'
+
 from copy import deepcopy
 
 import numpy as np
 
+from mbuild.bond import Bond
+
+
 class Atom(object):
-    """ """
+    """Elementary container class - typically a leaf in the hierarchy.
+
+    Note:
+        Atoms may be added and substracted using +/-. The result is the
+        addition or subtraction of the Atoms' cartesian coordinates.
+
+    Attributes:
+        kind (str): The kind of atom, usually the chemical element.
+        pos (np.ndarray): Cartesian coordinates of the atom.
+        charge (float): Partial charge on the atom.
+        parent (Compound): Compound to which the Atom belongs.
+        referrers (set of Compounds): All Compounds that refer to this instance
+            of Atom.
+        bonds (set of Bond): Every Bond that the Atom is a part of.
+
+    """
     __slots__ = ['kind', 'pos', 'charge', 'parent', 'referrers', 'bonds', 'uid']
 
     def __init__(self, kind, pos=None, charge=0.0):
+        """Initialize an Atom.
+
+        Args:
+            kind (str): The kind of atom, usually the chemical element.
+            pos (np.ndarray, optional): Cartesian coordinates of the atom.
+            charge (float, optional): Partial charge on the atom.
+
+        """
         assert (isinstance(kind, basestring))
 
         if pos is None:
@@ -23,18 +48,23 @@ class Atom(object):
         self.bonds = set()
 
     def ancestors(self):
-        """
-        Generate all ancestors of the Compound recursively
-        :yield ancestors
+        """Generate all ancestors of the Compound recursively.
+
+        Yields:
+            ancestor (Compound): A Compound one or more levels higher in the
+                hierarchy.
+
         """
         yield self.parent
         if self.parent is not None:
-            for a in self.parent.ancestors():
-                yield a
+            for ancestor in self.parent.ancestors():
+                yield ancestor
 
-    def bonded_atoms(self, memo=dict()):
+    def bonded_atoms(self):
+        """Return a list of atoms bonded to self. """
+        memo = dict()
         for bond in self.bonds:
-            bonded_atom = bond.other(self)
+            bonded_atom = bond.other_atom(self)
             if id(bonded_atom) not in memo:
                 memo[id(bonded_atom)] = bonded_atom
                 bonded_atom.bonded_atoms(memo)

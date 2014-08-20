@@ -1,17 +1,33 @@
-
 __author__ = 'sallai'
 
-from copy import copy, deepcopy
-from warnings import warn
-import numpy as np
-class Bond(object):
+from copy import deepcopy
 
+import numpy as np
+
+
+class Bond(object):
+    """Bond between two Atoms.
+
+    Attributes:
+        atom1 (Atom): First Atom in the bond.
+        atom2 (Atom): Second Atom in the bond.
+        parent (Compound): Compound to which the Bond belongs.
+    """
     __slots__ = ['_atom1', '_atom2', 'parent', 'referrers']
 
     def __init__(self, atom1, atom2):
-        assert(not atom1 == atom2)
-        from mbuild.port import Port
+        """Initialize a Bond.
 
+        Args:
+            atom1 (Atom): First Atom or Port in the bond.
+            atom2 (Atom): Second Atom or Port in the bond.
+           
+        """
+        assert(not atom1 == atom2)
+
+        # If a Port is used to initialize a Bond, the Atom that the Port is
+        # anchored to will be used to create the Bond.
+        from mbuild.port import Port
         if isinstance(atom1, Port):
             atom1 = atom1.anchor
         if isinstance(atom2, Port):
@@ -22,6 +38,7 @@ class Bond(object):
 
         self.parent = None
 
+        # Ensure Atoms in Bond know about the Bond.
         atom1.bonds.add(self)
         atom2.bonds.add(self)
 
@@ -31,7 +48,7 @@ class Bond(object):
 
     @atom1.setter
     def atom1(self, v):
-        raise TypeError
+        raise TypeError  # what's going on here?
 
     @property
     def atom2(self):
@@ -42,33 +59,33 @@ class Bond(object):
         raise TypeError
 
     def ancestors(self):
-        """
-        Generate all ancestors of the Compound recursively
-        :yield ancestors
+        """Generate all ancestors of the Compound recursively.
+
+        Yields:
+            ancestor (Compound): A Compound one or more levels higher in the
+                hierarchy.
+
         """
         yield self.parent
         if self.parent is not None:
             for a in self.parent.ancestors():
                 yield a
 
-    def other(self, one):
-        if self._atom1 is one:
+    def other_atom(self, atom):
+        """Returns the other Atom in the Bond. """
+        if self._atom1 is atom:
             return self._atom2
-        if self._atom2 is one:
+        elif self._atom2 is atom:
             return self._atom1
-        return None
-
-
-
-    def __hash__(self):
-        return id(self.atom1) ^ id(self.atom2) 
 
     def distance(self, periodicity=np.array([0.0, 0.0, 0.0])):
-        """Vectorized distance calculation considering minimum image
-        """
+        """Vectorized distance calculation considering minimum image. """
         d = np.abs(self.atom1 - self.atom2)
         d = np.where(d > 0.5 * periodicity, periodicity - d, d)
         return np.sqrt((d ** 2).sum(axis=-1))
+
+    def __hash__(self):
+        return id(self.atom1) ^ id(self.atom2) 
 
     def __eq__(self, bond):
         return isinstance(bond, Bond) and (self.atom1 == bond.atom1 and self.atom2 == bond.atom2
@@ -95,8 +112,6 @@ class Bond(object):
             newone.parent = None
         else:
             newone.parent = deepcopy(self.parent, memo)
-
         newone.referrers = set()
-
         return newone
 

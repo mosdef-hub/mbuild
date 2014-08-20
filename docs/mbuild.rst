@@ -1,23 +1,17 @@
-mbuild Package
+mbuild package
 ==============
 
-:mod:`mbuild` Package
----------------------
+Subpackages
+-----------
 
-.. automodule:: mbuild.__init__
-    :members:
-    :undoc-members:
-    :show-inheritance:
+.. toctree::
 
-:mod:`angle` Module
--------------------
+    mbuild.components
 
-.. automodule:: mbuild.angle
-    :members:
-    :undoc-members:
-    :show-inheritance:
+Submodules
+----------
 
-:mod:`atom` Module
+mbuild.atom module
 ------------------
 
 .. automodule:: mbuild.atom
@@ -25,7 +19,7 @@ mbuild Package
     :undoc-members:
     :show-inheritance:
 
-:mod:`bond` Module
+mbuild.bond module
 ------------------
 
 .. automodule:: mbuild.bond
@@ -33,7 +27,15 @@ mbuild Package
     :undoc-members:
     :show-inheritance:
 
-:mod:`compound` Module
+mbuild.box module
+-----------------
+
+.. automodule:: mbuild.box
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+mbuild.compound module
 ----------------------
 
 .. automodule:: mbuild.compound
@@ -41,7 +43,7 @@ mbuild Package
     :undoc-members:
     :show-inheritance:
 
-:mod:`coordinate_transform` Module
+mbuild.coordinate_transform module
 ----------------------------------
 
 .. automodule:: mbuild.coordinate_transform
@@ -49,15 +51,7 @@ mbuild Package
     :undoc-members:
     :show-inheritance:
 
-:mod:`dihedral` Module
-----------------------
-
-.. automodule:: mbuild.dihedral
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-:mod:`lammps` Module
+mbuild.lammps module
 --------------------
 
 .. automodule:: mbuild.lammps
@@ -65,47 +59,15 @@ mbuild Package
     :undoc-members:
     :show-inheritance:
 
-:mod:`mbuild` Module
---------------------
-
-.. automodule:: mbuild.mbuild
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-:mod:`mdio` Module
-------------------
-
-.. automodule:: mbuild.mdio
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-:mod:`moleculemodel` Module
----------------------------
-
-.. automodule:: mbuild.moleculemodel
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-:mod:`mpcchainrules` Module
----------------------------
-
-.. automodule:: mbuild.mpcchainrules
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-:mod:`ndimmesh` Module
+mbuild.mol2file module
 ----------------------
 
-.. automodule:: mbuild.ndimmesh
+.. automodule:: mbuild.mol2file
     :members:
     :undoc-members:
     :show-inheritance:
 
-:mod:`orderedset` Module
+mbuild.orderedset module
 ------------------------
 
 .. automodule:: mbuild.orderedset
@@ -113,7 +75,15 @@ mbuild Package
     :undoc-members:
     :show-inheritance:
 
-:mod:`periodic_kdtree` Module
+mbuild.pdbfile module
+---------------------
+
+.. automodule:: mbuild.pdbfile
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+mbuild.periodic_kdtree module
 -----------------------------
 
 .. automodule:: mbuild.periodic_kdtree
@@ -121,7 +91,7 @@ mbuild Package
     :undoc-members:
     :show-inheritance:
 
-:mod:`plot` Module
+mbuild.plot module
 ------------------
 
 .. automodule:: mbuild.plot
@@ -129,7 +99,15 @@ mbuild Package
     :undoc-members:
     :show-inheritance:
 
-:mod:`port` Module
+mbuild.polymer module
+---------------------
+
+.. automodule:: mbuild.polymer
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+mbuild.port module
 ------------------
 
 .. automodule:: mbuild.port
@@ -137,7 +115,7 @@ mbuild Package
     :undoc-members:
     :show-inheritance:
 
-:mod:`prototype` Module
+mbuild.prototype module
 -----------------------
 
 .. automodule:: mbuild.prototype
@@ -145,15 +123,23 @@ mbuild Package
     :undoc-members:
     :show-inheritance:
 
-:mod:`rules` Module
--------------------
+mbuild.tiled_compound module
+----------------------------
 
-.. automodule:: mbuild.rules
+.. automodule:: mbuild.tiled_compound
     :members:
     :undoc-members:
     :show-inheritance:
 
-:mod:`treeview` Module
+mbuild.tools module
+-------------------
+
+.. automodule:: mbuild.tools
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+mbuild.treeview module
 ----------------------
 
 .. automodule:: mbuild.treeview
@@ -161,15 +147,7 @@ mbuild Package
     :undoc-members:
     :show-inheritance:
 
-:mod:`xmlreader` Module
------------------------
-
-.. automodule:: mbuild.xmlreader
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-:mod:`xyz` Module
+mbuild.xyz module
 -----------------
 
 .. automodule:: mbuild.xyz
@@ -177,3 +155,11 @@ mbuild Package
     :undoc-members:
     :show-inheritance:
 
+
+Module contents
+---------------
+
+.. automodule:: mbuild
+    :members:
+    :undoc-members:
+    :show-inheritance:
