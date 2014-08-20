@@ -1,13 +1,14 @@
 from numpy import pi
 from examples.ethane.methyl import Methyl
+from examples.pmpc.mpc_monomer import MpcMonomer
 from mbuild.bond import Bond
 from mbuild.coordinate_transform import equivalence_transform
+from mbuild.polymer import Polymer
 
 from mbuild.port import Port
 from mbuild.compound import Compound
 
 from initiator import Initiator
-from pmpc import Pmpc
 from silane import Silane
 
 
@@ -21,7 +22,9 @@ class Brush(Compound):
         # Add parts
         self.add(Silane(), 'silane')
         self.add(Initiator(), 'initiator')
-        self.add(Pmpc(n=chain_length, alpha=alpha), 'pmpc')
+        # self.add(Pmpc(n=chain_length, alpha=alpha), 'pmpc')
+        self.add(Polymer(MpcMonomer(alpha=alpha),n=chain_length, port_labels=("top_port","bottom_port")), 'pmpc')
+
         self.add(Methyl(), 'methyl')
 
         equivalence_transform(self.initiator, self.initiator.bottom_port, self.silane.top_port)

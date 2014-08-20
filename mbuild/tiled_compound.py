@@ -101,7 +101,7 @@ class TiledCompound(Compound):
                     self.add(Bond(atom1_image, bond.atom2))
 
             # batch remove bonds
-            self.remove(bonds_to_remove, containment_only=True)
+            self.remove(bonds_to_remove)
 
             # for every tile, we clean up uids
             for child in self.parts:
