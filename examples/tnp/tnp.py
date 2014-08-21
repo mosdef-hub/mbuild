@@ -16,16 +16,16 @@ from mbuild.tools import *
 
 class Tnp(Compound):
 
-    def __init__(self, radius=10, n_chains=4, chain_length=10):
+    def __init__(self, ball_radius=10, n_chains=4, chain_length=10):
         Compound.__init__(self)
 
-        self.add(Ball(n=129, radius=radius, port_distance_from_surface=.7), "ball")
+        self.add(Ball(n=129, radius=ball_radius, port_distance_from_surface=.7), "ball")
 
         # generate 65 points on the surface of a unit sphere
         mask = sphere_mask(n_chains)
 
         # magnify it a bit
-        mask = mask * radius
+        mask = mask * ball_radius
 
         chain_proto = Polymer(Bead(), n=chain_length)
 

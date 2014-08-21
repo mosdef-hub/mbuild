@@ -55,6 +55,16 @@ def grid_mask_2d(n, m):
             mask[i*m + j, 1] = j / m
     return mask
 
+def grid_mask_3d(n, m, l):
+    mask = np.zeros(shape=(n*m*l, 3), dtype=float)
+    for i in range(n):
+        for j in range(m):
+            for k in range(l):
+                mask[i*m*l + j*l + k, 0] = i / n
+                mask[i*m*l + j*l + k, 1] = j / m
+                mask[i*m*l + j*l + k, 2] = k / l
+    return mask
+
 
 def sphere_mask(N):
     """ Generate N evenly distributed points on the unit sphere centered at
