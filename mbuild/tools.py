@@ -17,8 +17,6 @@ def apply_mask(host, guest, mask, guest_port_name="port"):
 
     mask = mask * box.lengths + box.mins
 
-    print mask
-
     n_ports = len(host.referenced_ports())
     assert(n_ports >= mask.shape[0])
 

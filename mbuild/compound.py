@@ -210,23 +210,7 @@ class Compound(object):
         else:
             raise AttributeError
 
-    def _find_parent_of(self, obj):
-        """Return the parent of a Compound. """
-        # Check if self is the parent.
-        if obj in self.parts:
-            return self
-
-        # Recursively search for parent in parts.
-        for part in self.parts:
-            if isinstance(part, Compound):
-                parent = part._find_parent_of(obj)
-                if parent:
-                    return parent
-
-        # No parent found.
-        return None
-
-    def init_atoms_by_kind(self, kind='*'):
+    def _init_atoms_by_kind(self, kind='*'):
         # Remember the hash of the parts dict at time of generating the
         # atom_list_by_kind dict.
         self.atom_list_by_kind_hash = self.parts.__hash__
@@ -240,7 +224,7 @@ class Compound(object):
             else:
                 self.atom_list_by_kind_dict[atom.kind].append(atom)
 
-    def has_atom_list_by_kind(self, kind='*'):
+    def _has_atom_list_by_kind(self, kind='*'):
         if (not hasattr(self, 'atom_list_by_kind_dict')
                 or self.parts.__hash__ != self.atom_list_by_kind_hash):
             return False
@@ -249,15 +233,15 @@ class Compound(object):
 
     def atom_list_by_kind(self, kind='*'):
         # Use precomputed data structures instead (memory vs. time tradeoff)
-        if not self.has_atom_list_by_kind(kind):
-            self.init_atoms_by_kind(kind)
+        if not self._has_atom_list_by_kind(kind):
+            self._init_atoms_by_kind(kind)
 
         if kind in self.atom_list_by_kind_dict:
             return self.atom_list_by_kind_dict[kind]
         else:
             return []
 
-    def reset_atom_list_by_kind(self, kind='*'):
+    def _reset_atom_list_by_kind(self, kind='*'):
         if hasattr(self, 'atom_list_by_kind'):
             del self.atom_list_by_kind
             del self.atom_list_by_kind_hash
@@ -268,7 +252,7 @@ class Compound(object):
         d = np.where(d > 0.5 * self.periodicity, self.periodicity - d, d)
         return np.sqrt((d ** 2).sum(axis=-1))
 
-    def initAtomKdTree(self, kind='*'):
+    def _init_aAtom_kdtree(self, kind='*'):
             # check if atomKdTrees dict exists and is up-to-date
             if not hasattr(self, 'atomKdTrees') or self.parts.__hash__ != self.atomKdTrees_hash:
                 # remember the hash of the bonds dict at time of generating the bondsByAtomKind dict
@@ -287,7 +271,7 @@ class Compound(object):
             else:
                 self.atomKdTrees[kind] = None
 
-    def hasAtomKdTree(self, kind='*'):
+    def _has_atom_kdtree(self, kind='*'):
         if not hasattr(self, 'atomKdTrees') or self.parts.__hash__ != self.atomKdTrees_hash:
             return False
 
@@ -296,19 +280,19 @@ class Compound(object):
 
         return False
 
-    def getAtomKdTree(self, kind='*'):
+    def _atom_kdtree(self, kind='*'):
         return self.atomKdTrees[kind]
 
     def atoms_in_range(self, point, radius, maxItems=10, kind='*'):
 
         # create kdtree if it's not yet there
-        if not self.hasAtomKdTree(kind):
-            self.initAtomKdTree(kind)
+        if not self._has_atom_kdtree(kind):
+            self._init_aAtom_kdtree(kind)
 
-        if self.getAtomKdTree(kind) is None:
+        if self._atom_kdtree(kind) is None:
             return []
 
-        distances, indices = self.getAtomKdTree(kind).query(point, maxItems)
+        distances, indices = self._atom_kdtree(kind).query(point, maxItems)
 
         neighbors = []
         for index, distance in zip(indices, distances):
