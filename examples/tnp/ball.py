@@ -41,7 +41,7 @@ class Ball(Compound):
             translate(port, pos + (pos/radius * port_distance_from_surface))
 
 if __name__ == "__main__":
-    m = Ball(n=65, radius = 20)
+    m = Ball(n=65, radius=20)
 
     # pdb.set_trace()
     from mbuild.plot import Plot
