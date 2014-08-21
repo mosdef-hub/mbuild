@@ -156,8 +156,8 @@ def solvate(host_compound, guest_compound, host_bounds, guest_bounds):
 
 def add_bond(compound, type_A, type_B, dmin, dmax):
         """Ai-Bj distance is in [dmin, dmax] => add bond A1xB(Ai,Bj) (symmetric)."""
-        for a1 in compound.getAtomListByKind(type_A):
-            nearest = compound.getAtomsInRange(a1.pos, dmax, kind=type_B)
+        for a1 in compound.atom_list_by_kind(type_A):
+            nearest = compound.atoms_in_range(a1.pos, dmax, kind=type_B)
             for b1 in nearest:
                 if (b1.kind==type_B) and (dmin <= compound.min_periodic_distance(b1.pos, a1.pos) <= dmax):
                     compound.add(Bond(a1, b1))
