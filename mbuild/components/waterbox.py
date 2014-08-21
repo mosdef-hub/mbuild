@@ -105,7 +105,7 @@ class WaterBox(Compound):
         # Prototype('H', sigma=2.5)
 
 
-        for o in self.getAtomListByKind(kind='OW'):
+        for o in self.atom_list_by_kind(kind='OW'):
             o_sigma = Prototype.getAttr(o.kind, "sigma")
             if isinstance(o_sigma, Quantity):
                 o_sigma = o_sigma._value

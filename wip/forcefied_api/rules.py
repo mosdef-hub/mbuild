@@ -12,7 +12,7 @@ class Rules(object):
         "Ai-Bj distance is in [dmin, dmax] => add bond A1xB(Ai,Bj) (symmetric)"
         print "+ "+type_A+" "+type_B
 
-        for a1 in compound.getAtomListByKind(type_A):
+        for a1 in compound.atom_list_by_kind(type_A):
             nearest = compound.getAtomsInRange(a1.pos, dmax)
             print nearest
             for b1 in nearest:

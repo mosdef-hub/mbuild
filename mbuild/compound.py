@@ -6,7 +6,6 @@ import numpy as np
 from atom import Atom
 from bond import Bond
 from box import Box
-from mbuild.periodic_kdtree import PeriodicCKDTree
 from orderedset import OrderedSet
 
 
@@ -212,59 +211,10 @@ class Compound(object):
         else:
             return []
 
-
-    def initAtomKdTree(self, kind='*'):
-            # check if atomKdTrees dict exists and is up-to-date
-            if not hasattr(self, 'atomKdTrees') or self.parts.__hash__ != self.atomKdTrees_hash:
-                # remember the hash of the bonds dict at time of generating the bondsByAtomKind dict
-                self.atomKdTrees_hash = self.parts.__hash__
-                self.atomKdTrees = dict()
-                # print "intiializing atomKdTrees dict"
-
-            #self.atomKdTrees[kind] = PeriodicCKDTree([atom.pos for atom in self.getAtomListByKind(kind)], bounds=self.periodicity)
-            # host_atom_list = [atom for atom in self.atoms()]
-            # host_atom_pos_list = [atom.pos for atom in host_atom_list]
-
-            atom_list = self.getAtomListByKind(kind)
-            atom_pos_list = [atom.pos for atom in atom_list]
-            if len(atom_list) > 0:
-                self.atomKdTrees[kind] = PeriodicCKDTree(atom_pos_list)
-            else:
-                self.atomKdTrees[kind] = None
-
-    def hasAtomKdTree(self, kind='*'):
-        if not hasattr(self, 'atomKdTrees') or self.parts.__hash__ != self.atomKdTrees_hash:
-            return False
-
-        if kind in self.atomKdTrees:
-            return True
-
-        return False
-
-    def getAtomKdTree(self, kind='*'):
-        return self.atomKdTrees[kind]
-
-    def getAtomsInRange(self, point, radius, maxItems=10, kind='*'):
-
-        # create kdtree if it's not yet there
-        if not self.hasAtomKdTree(kind):
-            self.initAtomKdTree(kind)
-
-        if self.getAtomKdTree(kind) is None:
-            return []
-
-        distances, indices = self.getAtomKdTree(kind).query(point, maxItems)
-
-        neighbors = []
-        for index, distance in zip(indices, distances):
-            if distance <= radius:
-                al = self.getAtomListByKind(kind)
-                neighbors.append(self.getAtomListByKind(kind)[index])
-            else:
-                break
-
-        return neighbors
-
+    def resetAtomListByKind(self, kind='*'):
+        if hasattr(self, 'atomListsByKind'):
+            del self.atomListsByKind
+            del self.atomListsByKind_hash
 
     def min_periodic_distance(self, x0, x1):
         """Vectorized distance calculation considering minimum image

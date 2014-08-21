@@ -6,7 +6,7 @@ import numpy as np
 
 
 class Bond(object):
-    """Bond between two Atoms.
+    """Connection between two Atoms.
 
     Attributes:
         atom1 (Atom): First Atom in the bond.
