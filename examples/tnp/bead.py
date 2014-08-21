@@ -15,7 +15,7 @@ class Bead(Compound):
     def __init__(self, particle_kind="particle"):
         Compound.__init__(self)
 
-        self.add(Atom(pos=[0,0,0],kind=particle_kind), "particle")
+        self.add(Atom(pos=[0,0,0], kind=particle_kind), "particle")
 
         self.add(Port(anchor=self.particle), 'up')
         # rotate_around_z(self.up, np.pi)

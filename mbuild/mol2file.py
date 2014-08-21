@@ -1,4 +1,4 @@
-import itertools
+from itertools import groupby
 
 import numpy as np
 
@@ -7,7 +7,18 @@ from bond import Bond
 from compound import Compound
 
 def load_mol2(filename, component=None):
-    """
+    """Load a TRIPOS mol2 file into a Compound.
+  
+    If no Compound is specified, this function will return a new Compound. 
+
+    Args:
+        filename (str): Path to the mol2 file to be read.
+        component (Compound, optional): Optionally read the mol2 data into an
+            existing Compound.
+
+    Returns:
+        component (Compound): The Compound containing the mol2 file's data.
+        
     """
     if component is None:
         component = Compound()
@@ -15,7 +26,7 @@ def load_mol2(filename, component=None):
     atom_list = list()
 
     with open(filename, 'r') as mol2_file:
-        data = dict((key, list(grp)) for key, grp in itertools.groupby(mol2_file, _parse_mol2_sections))
+        data = dict((key, list(grp)) for key, grp in groupby(mol2_file, _parse_mol2_sections))
 
     for idx, atom in enumerate(data['@<TRIPOS>ATOM\n'][1:]):
         entries = atom.split()
@@ -27,7 +38,6 @@ def load_mol2(filename, component=None):
         new_atom = Atom(kind, position)
         component.add(new_atom, label="{0}_{1}".format(kind, idx+1))
         atom_list.append(new_atom)
-        # print "adding atom {} idx={}".format(new_atom, idx)
 
     idx = 0
     for bond in data['@<TRIPOS>BOND\n'][1:]:
@@ -36,12 +46,15 @@ def load_mol2(filename, component=None):
         atom1 = atom_list[int(atom1_idx) - 1]
         atom2 = atom_list[int(atom2_idx) - 1]
         component.add(Bond(atom1, atom2))
-        # print "adding bond between {} {} idx={}".format(atom1, atom2, idx)
-
     return component
 
 def write_mol2(component, filename='mbuild.mol2'):
-    """
+    """Output a Compound as a TRIPOS mol2 file.
+   
+    Args:
+        component (Compound): The Compound to be output.
+        filename (str, optional): Path of the output file.
+
     """
     n_atoms = len([a for a in component.atoms() if a.kind != "G"])
     n_bonds = len(list(component.bonds()))
@@ -69,16 +82,7 @@ def write_mol2(component, filename='mbuild.mol2'):
                         bond_idx + 1, id_to_idx[id(bond.atom1)], id_to_idx[id(bond.atom2)]))
 
 def _parse_mol2_sections(x):
-    """
-    """
+    """Helper functon for parsing a section in a mol2 file. """
     if x.startswith('@<TRIPOS>'):
         _parse_mol2_sections.key = x
     return _parse_mol2_sections.key
-
-if __name__ == "__main__":
-    import pdb
-    component = load_mol2('ethanol.mol2')
-    write_mol2(component, 'ethanol_out.mol2')
-
-
-

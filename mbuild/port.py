@@ -21,5 +21,4 @@ class Port(Compound):
     def __deepcopy__(self, memo):
         newone = super(Port, self).__deepcopy__(memo)
         newone.anchor = deepcopy(self.anchor, memo)
-
         return newone

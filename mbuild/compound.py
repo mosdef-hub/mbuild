@@ -6,7 +6,7 @@ import numpy as np
 from atom import Atom
 from bond import Bond
 from box import Box
-from mbuild.periodic_kdtree import PeriodicCKDTree
+from periodic_kdtree import PeriodicCKDTree
 from orderedset import OrderedSet
 
 
@@ -252,42 +252,42 @@ class Compound(object):
         d = np.where(d > 0.5 * self.periodicity, self.periodicity - d, d)
         return np.sqrt((d ** 2).sum(axis=-1))
 
-    def _init_aAtom_kdtree(self, kind='*'):
-            # check if atomKdTrees dict exists and is up-to-date
-            if not hasattr(self, 'atomKdTrees') or self.parts.__hash__ != self.atomKdTrees_hash:
+    def _init_atom_kdtree(self, kind='*'):
+            # check if atom_kdtrees dict exists and is up-to-date
+            if not hasattr(self, 'atom_kdtrees') or self.parts.__hash__ != self.atom_kdtrees_hash:
                 # remember the hash of the bonds dict at time of generating the bondsByAtomKind dict
-                self.atomKdTrees_hash = self.parts.__hash__
-                self.atomKdTrees = dict()
-                # print "intiializing atomKdTrees dict"
+                self.atom_kdtrees_hash = self.parts.__hash__
+                self.atom_kdtrees = dict()
+                # print "intiializing atom_kdtrees dict"
 
-            #self.atomKdTrees[kind] = PeriodicCKDTree([atom.pos for atom in self.getAtomListByKind(kind)], bounds=self.periodicity)
+            #self.atom_kdtrees[kind] = PeriodicCKDTree([atom.pos for atom in self.getAtomListByKind(kind)], bounds=self.periodicity)
             # host_atom_list = [atom for atom in self.atoms()]
             # host_atom_pos_list = [atom.pos for atom in host_atom_list]
 
             atom_list = self.atom_list_by_kind(kind)
             atom_pos_list = [atom.pos for atom in atom_list]
             if len(atom_list) > 0:
-                self.atomKdTrees[kind] = PeriodicCKDTree(atom_pos_list)
+                self.atom_kdtrees[kind] = PeriodicCKDTree(atom_pos_list)
             else:
-                self.atomKdTrees[kind] = None
+                self.atom_kdtrees[kind] = None
 
     def _has_atom_kdtree(self, kind='*'):
-        if not hasattr(self, 'atomKdTrees') or self.parts.__hash__ != self.atomKdTrees_hash:
+        if not hasattr(self, 'atom_kdtrees') or self.parts.__hash__ != self.atom_kdtrees_hash:
             return False
 
-        if kind in self.atomKdTrees:
+        if kind in self.atom_kdtrees:
             return True
 
         return False
 
     def _atom_kdtree(self, kind='*'):
-        return self.atomKdTrees[kind]
+        return self.atom_kdtrees[kind]
 
     def atoms_in_range(self, point, radius, maxItems=10, kind='*'):
 
         # create kdtree if it's not yet there
         if not self._has_atom_kdtree(kind):
-            self._init_aAtom_kdtree(kind)
+            self._init_atom_kdtree(kind)
 
         if self._atom_kdtree(kind) is None:
             return []

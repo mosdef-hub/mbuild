@@ -3,33 +3,34 @@ __author__ = 'sallai'
 import time
 import os.path
 import sys
+
 import numpy as np
 
 from mbuild.atom import Atom
 from mbuild.compound import Compound
 
 def load_xyz(filename, component=None, labels=False):
+    """ """
+    if component is None:
+        component = Compound()
 
-        if component is None:
-            component = Compound()
+    with open(filename, 'r') as f:
+        num_atoms = int(f.readline())
+        comment = f.readline()
+        for line in f:
+            fields = line.split()
+            atom_type = fields[0]
+            atom_pos = np.array([float(fields[1]),float(fields[2]),float(fields[3])])
+            if labels:
+                component.add(Atom(kind=atom_type, pos=atom_pos), atom_type + '_#')
+            else:
+                component.add(Atom(kind=atom_type, pos=atom_pos))
 
-        with open(filename, 'r') as f:
-            num_atoms = int(f.readline())
-            comment = f.readline()
-            for line in f:
-                fields = line.split()
-                atom_type = fields[0]
-                atom_pos = np.array([float(fields[1]),float(fields[2]),float(fields[3])])
-                if labels:
-                    component.add(Atom(kind=atom_type, pos=atom_pos), atom_type + '_#')
-                else:
-                    component.add(Atom(kind=atom_type, pos=atom_pos))
-
-        return component
+    return component
 
 
 def write_xyz(compound, fn, print_ports=False):
-
+    """ """
     print "    Writing to '{0}'...".format(fn)
     start = time.time()
     with open(fn, 'w') as f:
