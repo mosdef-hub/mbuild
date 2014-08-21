@@ -58,6 +58,7 @@ def grid_mask_2d(n, m):
             mask[i*m + j, 1] = j / m
     return mask
 
+
 def grid_mask_3d(n, m, l):
     """ """
     mask = np.zeros(shape=(n*m*l, 3), dtype=float)
@@ -73,9 +74,9 @@ def grid_mask_3d(n, m, l):
 def sphere_mask(N):
     """Generate N evenly distributed points on the unit sphere.
     
-    Sphere is centered at the origin. Alrgorithm based onthe 'Golden Spiral'.
+    Sphere is centered at the origin. Alrgorithm based on the 'Golden Spiral'.
 
-    Code by Chris Colbert  numpy-discussion list:
+    Code by Chris Colbert from the numpy-discussion list:
     http://mail.scipy.org/pipermail/numpy-discussion/2009-July/043811.html
 
     """
@@ -116,6 +117,7 @@ def solvate(host_compound, guest_compound, host_bounds, guest_bounds):
    
     Typical usage of this function would be to use a pre-equilibrated solvent
     system as the guest which will then be replicated to fill the host's Box.
+    All Compounds that have overlapping Atoms with the host are removed.
 
     Args:
         host_compound (Compound):
@@ -130,7 +132,7 @@ def solvate(host_compound, guest_compound, host_bounds, guest_bounds):
 
     # TODO: we may want to make sure that the axes of the two boxes line up
 
-    # Replicate the guest so that it fills or overfills the host box
+    # Replicate the guest so that it fills or overfills the host box.
     host_atom_list = [atom for atom in host_compound.atoms() if atom.kind != 'G']
     host_atom_pos_list = [atom.pos for atom in host_atom_list]
     kdtree = PeriodicCKDTree(host_atom_pos_list)
