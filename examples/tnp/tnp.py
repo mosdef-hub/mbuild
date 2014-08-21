@@ -19,7 +19,8 @@ class Tnp(Compound):
     def __init__(self, ball_radius=10, n_chains=4, chain_length=10):
         Compound.__init__(self)
 
-        self.add(Ball(n=129, radius=ball_radius, port_distance_from_surface=.7), "ball")
+        n = 129
+        self.add(Ball(n=n, radius=ball_radius, port_distance_from_surface=.7), "ball")
 
         # generate 65 points on the surface of a unit sphere
         mask = sphere_mask(n_chains)
@@ -31,6 +32,8 @@ class Tnp(Compound):
 
         # apply chains to mask
         apply_mask(self.ball, chain_proto , mask, guest_port_name="down")
+
+        add_bond(self, "particle", "particle", np.sqrt(4*ball_radius*ball_radius*np.pi/n)-.5, np.sqrt(4*ball_radius*ball_radius*np.pi/n)+.5)
 
 
 if __name__ == "__main__":

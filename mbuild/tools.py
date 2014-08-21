@@ -2,6 +2,7 @@ from __future__ import division
 from copy import deepcopy
 from atom import Atom
 from compound import Compound
+from mbuild.bond import Bond
 from mbuild.box import Box
 from mbuild.coordinate_transform import equivalence_transform, translate
 from mbuild.periodic_kdtree import PeriodicCKDTree
@@ -98,7 +99,6 @@ def disk_mask(n):
     return points
 
 
-
 def vdw_radius(atomic_number):
     return 1.5
 
@@ -153,6 +153,14 @@ def solvate(host_compound, guest_compound, host_bounds, guest_bounds):
 
                 guest.remove(atoms_to_remove)
                 host_compound.add(guest, "guest_{}_{}_{}".format(xi,yi,zi))
+
+def add_bond(compound, type_A, type_B, dmin, dmax):
+        """Ai-Bj distance is in [dmin, dmax] => add bond A1xB(Ai,Bj) (symmetric)."""
+        for a1 in compound.getAtomListByKind(type_A):
+            nearest = compound.getAtomsInRange(a1.pos, dmax, kind=type_B)
+            for b1 in nearest:
+                if (b1.kind==type_B) and (dmin <= compound.min_periodic_distance(b1.pos, a1.pos) <= dmax):
+                    compound.add(Bond(a1, b1))
 
 if __name__ == "__main__":
     print "hello"
