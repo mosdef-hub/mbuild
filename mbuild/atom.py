@@ -11,12 +11,13 @@ class Atom(object):
     """Elementary container class - typically a leaf in the hierarchy.
 
     Note:
-        Atoms may be added and substracted using +/-. The result is the
-        addition or subtraction of the Atoms' cartesian coordinates.
+        -Also used as "ghost" particles in Ports.
+        -Atoms can be added and substracted using +/- operators. The result is
+        the addition or subtraction of the Atoms' cartesian coordinates.
 
     Attributes:
         kind (str): The kind of atom, usually the chemical element.
-        pos (np.ndarray): Cartesian coordinates of the atom.
+        pos (np.ndarray of floats): Cartesian coordinates of the atom.
         charge (float): Partial charge on the atom.
         parent (Compound): Compound to which the Atom belongs.
         referrers (set of Compounds): All Compounds that refer to this instance

@@ -9,7 +9,7 @@ from compound import Compound
 
 
 class Port(Compound):
-    """ """
+    """A set of four ghost Atoms used to connect parts. """
     def __init__(self, anchor=None):
         super(Port, self).__init__(kind='Port')
         self.anchor = anchor

@@ -59,6 +59,8 @@ if __name__ == "__main__":
 
     print len([a for a in m.atoms()])
 
+    m.has_atom_list_by_kind()
+
     Plot(m, bonds=True, angles=False, dihedrals=False, periodic_bonds=True).show()
 
     # from mbuild.treeview import TreeView

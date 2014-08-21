@@ -115,7 +115,7 @@ def solvate(host_compound, guest_compound, host_bounds, guest_bounds):
                 translate(guest, -guest_bounds.mins + host_bounds.mins + np.array([xi, yi, zi])*guest_bounds.lengths)
 
                 # remove atoms outside the host's box, and anything bonded to them (recursively)
-                guest_atoms = guest.getAtomListByKind('*')
+                guest_atoms = guest.atom_list_by_kind('*')
                 atoms_to_remove = set()
 
 
