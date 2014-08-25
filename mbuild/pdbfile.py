@@ -4,13 +4,25 @@ from mbuild.compound import Compound
 from mbuild.atom import Atom
 from mbuild.bond import Bond
 
-def load_pdb(filename):
-    """
+def load_pdb(filename, component=None):
+    """Load a PDB file into a Compound.
 
-    :param filename:
-    """
-    component = Compound()
+    If no Compound is specified, this function will return a new Compound.
 
+    Args:
+        filename (str): Path to the mol2 file to be read.
+        component (Compound, optional): Optionally read the mol2 data into an
+            existing Compound.
+
+    Returns:
+        component (Compound): The Compound containing the mol2 file's data.
+
+    """
+    if component is None:
+        component = Compound()
+
+    atom_list = list()
+    idx = 1
     with open(filename, 'r') as pdb_file:
         for line in pdb_file:
             if line[:6] in ("ATOM  ", "HETATM"):
@@ -18,24 +30,33 @@ def load_pdb(filename):
                 x = float(line[30:38])
                 y = float(line[38:46])
                 z = float(line[46:54])
-                component.add(Atom(kind, np.array([x, y, z])))
-            # elif "CONECT" in line:
-            #     pdb.set_trace()
-            #     atom1_idx = int(line[7:12])
-            #     atom1 = 11111
-            #     for idx in (12, 17, 22, 27):
-            #         try:
-            #             atom2 = 1111
-            #             component.add(Bond(atom1,atom2))
-            #         except:
-            #             pass
+                new_atom = Atom(kind, np.array([x, y, z]))
+                component.add(new_atom, label="{0}_{1}".format(kind, idx))
+                atom_list.append(new_atom)
+                idx += 1
+            elif "CONECT" in line:
+                atom1_idx = int(line[7:12])
+                atom1 = atom_list[atom1_idx - 1]
+                for idx in (12, 17, 22, 27):
+                    try:
+                        atom2_idx = int(line[idx:idx+5])
+                    except:
+                        pass
+                    atom2 = atom_list[atom2_idx - 1]
+                    component.add(Bond(atom1, atom2))
             elif "END" in line:
                 break
-
     return component
 
 def write_pdb(component, filename='mbuild.pdb'):
-    """
+    """Output a Compound as a PDB file.
+
+    UNDER CONSTRUCTION
+
+    Args:
+        component (Compound): The Compound to be output.
+        filename (str, optional): Path of the output file.
+
     """
     with open(filename, 'w') as pdb_file:
         pdb_file.write("COMPND    MBUILD COMPONENT\n")
@@ -49,11 +70,3 @@ def write_pdb(component, filename='mbuild.pdb'):
             end = "{:2s}{:2s}\n".format(atom.kind[0], ' ')
             pdb_file.write(''.join([names, numbers, end]))
         pdb_file.write("END")
-
-if __name__ == "__main__":
-    import pdb
-    component = load_pdb('ethane.pdb')
-    write_pdb(component, 'ethane_out.pdb')
-
-
-

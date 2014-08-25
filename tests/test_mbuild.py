@@ -1,19 +1,9 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-"""
-test_mbuild
-----------------------------------
+"""Tests for `mbuild` module. """
 
-Tests for `mbuild` module.
-"""
-
-import unittest
-
-from mbuild import mbuild
-
-
-class TestMbuild(unittest.TestCase):
+class TestMbuild:
 
     def setUp(self):
         pass
@@ -23,6 +13,3 @@ class TestMbuild(unittest.TestCase):
 
     def tearDown(self):
         pass
-
-if __name__ == '__main__':
-    unittest.main()

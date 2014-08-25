@@ -210,6 +210,16 @@ class Compound(object):
         else:
             raise AttributeError
 
+    def atom_list_by_kind(self, kind='*'):
+        # Use precomputed data structures instead (memory vs. time tradeoff)
+        if not self._has_atom_list_by_kind(kind):
+            self._init_atoms_by_kind(kind)
+
+        if kind in self.atom_list_by_kind_dict:
+            return self.atom_list_by_kind_dict[kind]
+        else:
+            return []
+
     def _init_atoms_by_kind(self, kind='*'):
         # Remember the hash of the parts dict at time of generating the
         # atom_list_by_kind dict.
@@ -231,20 +241,47 @@ class Compound(object):
         else:
             return True
 
-    def atom_list_by_kind(self, kind='*'):
-        # Use precomputed data structures instead (memory vs. time tradeoff)
-        if not self._has_atom_list_by_kind(kind):
-            self._init_atoms_by_kind(kind)
-
-        if kind in self.atom_list_by_kind_dict:
-            return self.atom_list_by_kind_dict[kind]
-        else:
-            return []
-
     def _reset_atom_list_by_kind(self, kind='*'):
         if hasattr(self, 'atom_list_by_kind'):
             del self.atom_list_by_kind
             del self.atom_list_by_kind_hash
+
+    def bond_list_by_kind(self, kind='*'):
+        # Use precomputed data structures instead (memory vs. time tradeoff)
+        if not self._has_bond_list_by_kind(kind):
+            self._init_bonds_by_kind(kind)
+
+        if kind in self.bond_list_by_kind_dict:
+            return self.bond_list_by_kind_dict[kind]
+        else:
+            return []
+
+    def _init_bonds_by_kind(self, kind='*'):
+        # Remember the hash of the parts dict at time of generating the
+        # bond_list_by_kind dict.
+        self.bond_list_by_kind_hash = self.parts.__hash__
+        self.bond_list_by_kind_dict = OrderedDict()
+
+        self.bond_list_by_kind_dict['*'] = []
+        for bond in self.bonds():
+            self.bond_list_by_kind_dict['*'].append(bond)
+            if bond.kind not in self.bond_list_by_kind_dict:
+                self.bond_list_by_kind_dict[bond.kind] = [bond]
+            else:
+                self.bond_list_by_kind_dict[bond.kind].append(bond)
+
+    def _has_bond_list_by_kind(self, kind='*'):
+        if (not hasattr(self, 'bond_list_by_kind_dict')
+                or self.parts.__hash__ != self.bond_list_by_kind_hash):
+            return False
+        else:
+            return True
+
+    def _reset_bond_list_by_kind(self, kind='*'):
+        if hasattr(self, 'bond_list_by_kind'):
+            del self.bond_list_by_kind
+            del self.bond_list_by_kind_hash
+
 
     def min_periodic_distance(self, x0, x1):
         """Vectorized distance calculation considering minimum image. """
@@ -303,8 +340,6 @@ class Compound(object):
                 break
 
         return neighbors
-
-
 
     def boundingbox(self, excludeG=True):
         """Compute the bounding box of the compound.

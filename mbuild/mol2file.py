@@ -8,8 +8,8 @@ from compound import Compound
 
 def load_mol2(filename, component=None):
     """Load a TRIPOS mol2 file into a Compound.
-  
-    If no Compound is specified, this function will return a new Compound. 
+
+    If no Compound is specified, this function will return a new Compound.
 
     Args:
         filename (str): Path to the mol2 file to be read.
@@ -18,13 +18,12 @@ def load_mol2(filename, component=None):
 
     Returns:
         component (Compound): The Compound containing the mol2 file's data.
-        
+
     """
     if component is None:
         component = Compound()
 
     atom_list = list()
-
     with open(filename, 'r') as mol2_file:
         data = dict((key, list(grp)) for key, grp in groupby(mol2_file, _parse_mol2_sections))
 
@@ -39,9 +38,7 @@ def load_mol2(filename, component=None):
         component.add(new_atom, label="{0}_{1}".format(kind, idx+1))
         atom_list.append(new_atom)
 
-    idx = 0
     for bond in data['@<TRIPOS>BOND\n'][1:]:
-        idx += 1
         _, atom1_idx, atom2_idx, _ = bond.split()
         atom1 = atom_list[int(atom1_idx) - 1]
         atom2 = atom_list[int(atom2_idx) - 1]
@@ -50,13 +47,13 @@ def load_mol2(filename, component=None):
 
 def write_mol2(component, filename='mbuild.mol2'):
     """Output a Compound as a TRIPOS mol2 file.
-   
+
     Args:
         component (Compound): The Compound to be output.
         filename (str, optional): Path of the output file.
 
     """
-    n_atoms = len([a for a in component.atoms() if a.kind != "G"])
+    n_atoms = len([atom for atom in component.atoms() if atom.kind != "G"])
     n_bonds = len(list(component.bonds()))
 
     with open(filename, 'w') as mol2_file:
@@ -72,7 +69,7 @@ def write_mol2(component, filename='mbuild.mol2'):
         for atom_idx, atom in enumerate([a for a in component.atoms() if a.kind != "G"]):
             id_to_idx[id(atom)] = atom_idx + 1
             x, y, z = atom.pos
-            mol2_file.write("{0} {1} {2:8.3f} {3:8.3f} {4:8.3f} {5}\n".format(
+            mol2_file.write("{0} {1} {2:8.4f} {3:8.4f} {4:8.4f} {5}\n".format(
                     atom_idx + 1, atom.kind[0], x, y, z, atom.kind))
 
         if n_bonds:

@@ -13,7 +13,7 @@ class Bond(object):
         atom2 (Atom): Second Atom in the bond.
         parent (Compound): Compound to which the Bond belongs.
     """
-    __slots__ = ['_atom1', '_atom2', 'parent', 'referrers']
+    __slots__ = ['_atom1', '_atom2', 'kind', 'parent', 'referrers']
 
     def __init__(self, atom1, atom2):
         """Initialize a Bond.
@@ -32,9 +32,9 @@ class Bond(object):
             atom1 = atom1.anchor
         if isinstance(atom2, Port):
             atom2 = atom2.anchor
-
         self._atom1 = atom1
         self._atom2 = atom2
+        self.kind = '{0}-{1}'.format(atom1.kind, atom2.kind)
 
         self.parent = None
 
