@@ -1,13 +1,9 @@
 from mbuild.atom import Atom
 
 __author__ = 'sallai'
-import pdb
-import sys
-import os
 
 from mbuild.compound import Compound
 from mbuild.port import Port
-from mbuild.mol2file import load_mol2
 from mbuild.coordinate_transform import *
 
 class Bead(Compound):

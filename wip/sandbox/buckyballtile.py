@@ -1,7 +1,6 @@
 __author__ = 'sallai'
-from mbuild.compound import *
 from mbuild.port import *
-from mbuild.xyz import *
+from mbuild.file_formats.xyz import *
 class BuckyBallTile(Compound):
     @classmethod
     def create(cls, ctx={}):

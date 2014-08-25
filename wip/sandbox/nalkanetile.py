@@ -1,7 +1,5 @@
 __author__ = 'sallai'
-from mbuild.compound import *
 from mbuild.port import *
-from mbuild.xyz import *
 from n_alkane import *
 
 class NAlkaneTile(Compound):

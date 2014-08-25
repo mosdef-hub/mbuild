@@ -1,3 +1,7 @@
+import os
+import time
+import sys
+
 import mbuild.unit as units
 from examples.ethane.ethane import Ethane
 from mbuild.compound import Compound
@@ -6,10 +10,8 @@ from mbuild.ff.opls_rules import OplsRules
 from mbuild.plot import Plot
 from mbuild.prototype import Prototype
 from mbuild.unit.quantity import Quantity
-from mbuild.xyz import Xyz
-import os
-import time
-import sys
+from mbuild.file_formats.xyz import Xyz
+
 __author__ = 'sallai'
 
 

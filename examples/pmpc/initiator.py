@@ -1,14 +1,7 @@
-import sys
-import os
-
-import numpy as np
-from numpy import pi
-
 from mbuild.coordinate_transform import *
-from mbuild.mol2file import load_mol2
+from mbuild.file_formats.mol2file import load_mol2
 from mbuild.compound import Compound
 from mbuild.port import Port
-from mbuild.treeview import TreeView
 
 
 class Initiator(Compound):

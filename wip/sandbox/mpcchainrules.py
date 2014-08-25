@@ -1,19 +1,11 @@
-from mbuild.plot import Plot
 from mbuild.prototype import Prototype
 
 __author__ = 'sallai'
 
-from __builtin__ import classmethod
-from itertools import *
-
-from mbuild.moleculemodel import MoleculeModel
 from mbuild.rules import RuleEngine
-from mbuild.xyz import *
-from mbuild.bond import *
+from mbuild.file_formats.xyz import *
 from mbuild.angle import *
 from mbuild.dihedral import *
-from mbuild.mdio import write_lammps_data
-
 
 
 class MpcChainRules(RuleEngine):

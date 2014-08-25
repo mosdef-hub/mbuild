@@ -1,11 +1,9 @@
 # from mbuild.moleculemodel import MoleculeModel
-from mbuild.plot import Plot
 from mbuild.prototype import Prototype
 from mbuild.rules import RuleEngine
 
 __author__ = 'sallai'
-from mbuild.compound import *
-from mbuild.xyz import *
+from mbuild.file_formats.xyz import *
 from mbuild.port import *
 
 

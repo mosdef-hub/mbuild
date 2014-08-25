@@ -1,11 +1,8 @@
-from mbuild.bond import Bond
-
 __author__ = 'sallai'
 
 from methyl import Methyl
 from mbuild.compound import Compound
-from mbuild.port import Port
-from mbuild.mol2file import load_mol2, write_mol2
+from mbuild.file_formats.mol2file import write_mol2
 from mbuild.coordinate_transform import *
 
 

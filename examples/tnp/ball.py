@@ -1,15 +1,6 @@
 from math import atan2, asin
-import sys
-import os
-import pdb
-
-from numpy import pi
-from examples.tnp.bead import Bead
 
 from mbuild.coordinate_transform import *
-from mbuild.polymer import Polymer
-from mbuild.xyz import load_xyz
-from mbuild.compound import Compound
 from mbuild.port import Port
 from mbuild.tools import *
 

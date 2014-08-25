@@ -1,11 +1,11 @@
 __author__ = 'sallai'
 
 import operator
-from mbuild.plot import Plot
+
 from mpc_monomer import MpcMonomer
-from mbuild.compound import *
-from mbuild.xyz import *
+from mbuild.file_formats.xyz import *
 from mbuild.port import *
+
 
 class Pmpc(Compound):
 

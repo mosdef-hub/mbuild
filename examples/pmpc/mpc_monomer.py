@@ -1,11 +1,5 @@
-import sys
-import os
-import pdb
-
-from numpy import pi
-
 from mbuild.coordinate_transform import *
-from mbuild.mol2file import load_mol2
+from mbuild.file_formats.mol2file import load_mol2
 from mbuild.compound import Compound
 from mbuild.port import Port
 

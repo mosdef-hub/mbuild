@@ -1,11 +1,9 @@
 __author__ = 'sallai'
 
-from mbuild.coordinate_transform import RotationAroundY, RotationAroundZ
-from mbuild.plot import Plot
-from mbuild.compound import *
-from mbuild.xyz import *
+from mbuild.coordinate_transform import RotationAroundZ
+from mbuild.file_formats.xyz import *
 from mbuild.port import *
-import pdb
+
 
 class Silane(Compound):
 

@@ -1,13 +1,11 @@
 from mbuild.coordinate_transform import RotationAroundY, RotationAroundZ
-from mbuild.plot import Plot
 
 __author__ = 'sallai'
-from mbuild.compound import *
-from mbuild.xyz import *
+from mbuild.file_formats.xyz import *
 from mbuild.port import *
 import sys
 import os
-import pdb
+
 
 class MpcMonomer(Compound):
 

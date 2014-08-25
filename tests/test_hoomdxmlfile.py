@@ -3,8 +3,8 @@
 
 """Tests for `mbuild.hoomdxmlfile` module. """
 
-from mbuild.hoomdxmlfile import load_hoomdxml, write_hoomdxml
-from mbuild.mol2file import load_mol2
+from mbuild.file_formats.hoomdxmlfile import write_hoomdxml
+from mbuild.file_formats.mol2file import load_mol2
 
 class TestMol2:
 

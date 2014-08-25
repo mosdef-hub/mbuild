@@ -1,9 +1,11 @@
 import os
 import sys
+
 from examples.ethane.ethane import Ethane
 from mbuild.box import Box
-from mbuild.mol2file import load_mol2
+from mbuild.file_formats.mol2file import load_mol2
 from mbuild.tools import solvate
+
 
 __author__ = 'sallai'
 

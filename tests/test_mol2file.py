@@ -3,7 +3,7 @@
 
 """Tests for `mbuild.mol2file` module. """
 
-from mbuild.mol2file import load_mol2, write_mol2
+from mbuild.file_formats.mol2file import load_mol2, write_mol2
 from mbuild.compound import Compound
 
 class TestMol2:

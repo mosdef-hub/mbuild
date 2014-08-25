@@ -3,7 +3,7 @@
 
 """Tests for `mbuild.pdbfile` module. """
 
-from mbuild.pdbfile import load_pdb, write_pdb
+from mbuild.file_formats.pdbfile import load_pdb, write_pdb
 from mbuild.compound import Compound
 
 class TestPdb:
