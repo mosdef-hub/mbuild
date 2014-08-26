@@ -18,5 +18,5 @@ class TestMol2:
         pass
 
     def test_write(self):
-        methyl = load_mol2('methyl.mol2').
+        methyl = load_mol2('methyl.mol2')
         write_hoomdxml(methyl, filename='methyl_out.xml')
