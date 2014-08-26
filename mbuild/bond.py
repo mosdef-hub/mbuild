@@ -46,17 +46,9 @@ class Bond(object):
     def atom1(self):
         return self._atom1
 
-    @atom1.setter
-    def atom1(self, v):
-        raise TypeError  # what's going on here?
-
     @property
     def atom2(self):
         return self._atom2
-
-    @atom2.setter
-    def atom2(self, v):
-        raise TypeError
 
     def ancestors(self):
         """Generate all ancestors of the Compound recursively.
