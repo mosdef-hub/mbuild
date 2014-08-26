@@ -10,6 +10,7 @@ from mbuild.bond import Bond
 from mbuild.coordinate_transform import equivalence_transform
 from mbuild.mol2file import write_mol2
 from mbuild.plot import Plot
+from mbuild.plugins.mask import grid_mask_2d, apply_mask
 from mbuild.port import Port
 from mbuild.compound import Compound
 from mbuild.tiled_compound import TiledCompound

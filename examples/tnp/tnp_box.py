@@ -3,7 +3,7 @@ from copy import deepcopy
 from examples.tnp.tnp import Tnp
 from mbuild.compound import Compound
 from mbuild.coordinate_transform import translate, rotate_around_x, rotate_around_y, rotate_around_z
-from mbuild.tools import grid_mask_3d
+from mbuild.plugins.mask import grid_mask_3d
 import numpy as np
 __author__ = 'sallai'
 

@@ -160,8 +160,9 @@ class Compound(object):
                 remove duplicates.
         """
         if not isinstance(objs_to_remove, (list, tuple, set)):
-            # does this need to cast to a list first?
-            objs_to_remove = set([objs_to_remove])
+            objs_to_remove = [objs_to_remove]
+
+        objs_to_remove = set(objs_to_remove)
 
         if len(objs_to_remove) == 0:
             # when does this occurr? 
@@ -223,7 +224,7 @@ class Compound(object):
     def _init_atoms_by_kind(self, kind='*'):
         # Remember the hash of the parts dict at time of generating the
         # atom_list_by_kind dict.
-        self.atom_list_by_kind_hash = self.parts.__hash__
+        self.atom_list_by_kind_hash = hash(frozenset(self.parts))
         self.atom_list_by_kind_dict = OrderedDict()
 
         self.atom_list_by_kind_dict['*'] = []
@@ -236,7 +237,7 @@ class Compound(object):
 
     def _has_atom_list_by_kind(self, kind='*'):
         if (not hasattr(self, 'atom_list_by_kind_dict')
-                or self.parts.__hash__ != self.atom_list_by_kind_hash):
+                or hash(frozenset(self.parts)) != self.atom_list_by_kind_hash):
             return False
         else:
             return True
@@ -259,7 +260,7 @@ class Compound(object):
     def _init_bonds_by_kind(self, kind='*'):
         # Remember the hash of the parts dict at time of generating the
         # bond_list_by_kind dict.
-        self.bond_list_by_kind_hash = self.parts.__hash__
+        self.bond_list_by_kind_hash = hash(frozenset(self.parts))
         self.bond_list_by_kind_dict = OrderedDict()
 
         self.bond_list_by_kind_dict['*'] = []
@@ -272,7 +273,7 @@ class Compound(object):
 
     def _has_bond_list_by_kind(self, kind='*'):
         if (not hasattr(self, 'bond_list_by_kind_dict')
-                or self.parts.__hash__ != self.bond_list_by_kind_hash):
+                or hash(frozenset(self.parts)) != self.bond_list_by_kind_hash):
             return False
         else:
             return True
@@ -291,9 +292,9 @@ class Compound(object):
 
     def _init_atom_kdtree(self, kind='*'):
             # check if atom_kdtrees dict exists and is up-to-date
-            if not hasattr(self, 'atom_kdtrees') or self.parts.__hash__ != self.atom_kdtrees_hash:
+            if not hasattr(self, 'atom_kdtrees') or hash(frozenset(self.parts)) != self.atom_kdtrees_hash:
                 # remember the hash of the bonds dict at time of generating the bondsByAtomKind dict
-                self.atom_kdtrees_hash = self.parts.__hash__
+                self.atom_kdtrees_hash = hash(frozenset(self.parts))
                 self.atom_kdtrees = dict()
                 # print "intiializing atom_kdtrees dict"
 
@@ -309,7 +310,7 @@ class Compound(object):
                 self.atom_kdtrees[kind] = None
 
     def _has_atom_kdtree(self, kind='*'):
-        if not hasattr(self, 'atom_kdtrees') or self.parts.__hash__ != self.atom_kdtrees_hash:
+        if not hasattr(self, 'atom_kdtrees') or hash(frozenset(self.parts)) != self.atom_kdtrees_hash:
             return False
 
         if kind in self.atom_kdtrees:

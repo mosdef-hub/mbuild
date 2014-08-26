@@ -1,7 +1,9 @@
 from examples.tnp.ball import Ball
 from examples.tnp.bead import Bead
 
+from mbuild.compound import Compound
 from mbuild.polymer import Polymer
+from mbuild.plugins.mask import *
 from mbuild.tools import *
 
 class Tnp(Compound):

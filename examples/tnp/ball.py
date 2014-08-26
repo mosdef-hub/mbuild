@@ -1,8 +1,10 @@
 from math import atan2, asin
 
+from mbuild.atom import Atom
+from mbuild.compound import Compound
 from mbuild.coordinate_transform import *
 from mbuild.port import Port
-from mbuild.tools import *
+from mbuild.plugins.mask import *
 
 class Ball(Compound):
 
