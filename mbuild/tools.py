@@ -1,4 +1,4 @@
-__author__ = 'sallai'
+# __author__ = 'sallai'
 from __future__ import division
 from copy import deepcopy
 from atom import Atom

@@ -1,3 +1,4 @@
+import os,sys
 from mbuild.coordinate_transform import *
 from mbuild.file_formats.mol2file import load_mol2
 from mbuild.compound import Compound

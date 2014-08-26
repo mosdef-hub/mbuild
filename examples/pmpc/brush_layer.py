@@ -8,6 +8,7 @@ from examples.pmpc.surface import Surface
 from examples.pmpc.brush import Brush
 from mbuild.bond import Bond
 from mbuild.coordinate_transform import equivalence_transform
+from mbuild.mol2file import write_mol2
 from mbuild.plot import Plot
 from mbuild.port import Port
 from mbuild.compound import Compound
@@ -47,7 +48,7 @@ if __name__ == "__main__":
     # mask = random_mask_2d(4)
     mask = grid_mask_2d(3,3)
 
-    print mask
+    # print mask
 
     m = BrushLayer(chain_length=5, alpha=pi/4, mask=mask, tile_x=2, tile_y=2)
     print "Done. ({0:.2f} s)".format(time.time() - start)
@@ -57,7 +58,9 @@ if __name__ == "__main__":
     #from mbuild.plot import Plot
     #from mayavi import mlab
 
-    print len([a for a in m.atoms()])
+    write_mol2(m, "brush_layer.mol2")
+
+    # print len([a for a in m.atoms()])
 
     Plot(m, bonds=True, angles=False, dihedrals=False, periodic_bonds=True).show()
 

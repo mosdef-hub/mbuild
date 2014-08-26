@@ -3,9 +3,9 @@ import pdb
 
 import numpy as np
 
-from atom import Atom
-from bond import Bond
-from compound import Compound
+from mbuild.atom import Atom
+from mbuild.bond import Bond
+from mbuild.compound import Compound
 
 def load_hoomdxml(filename, component=None):
     """Load a HOOMD XML file into a Compound.

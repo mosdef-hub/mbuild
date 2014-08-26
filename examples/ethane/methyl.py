@@ -1,5 +1,5 @@
 __author__ = 'sallai'
-
+import os, sys
 from mbuild.compound import Compound
 from mbuild.port import Port
 from mbuild.file_formats.mol2file import load_mol2
