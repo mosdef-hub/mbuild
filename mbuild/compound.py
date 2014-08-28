@@ -270,53 +270,30 @@ class Compound(object):
         d = np.where(d > 0.5 * self.periodicity, self.periodicity - d, d)
         return np.sqrt((d ** 2).sum(axis=-1))
 
-    def _init_atom_kdtree(self, kind='*'):
-            # check if atom_kdtrees dict exists and is up-to-date
-            if not hasattr(self, 'atom_kdtrees') or hash(frozenset(self.parts)) != self.atom_kdtrees_hash:
-                # remember the hash of the bonds dict at time of generating the bondsByAtomKind dict
-                self.atom_kdtrees_hash = hash(frozenset(self.parts))
-                self.atom_kdtrees = dict()
-                # print "intiializing atom_kdtrees dict"
-
-            #self.atom_kdtrees[kind] = PeriodicCKDTree([atom.pos for atom in self.getAtomListByKind(kind)], bounds=self.periodicity)
-            # host_atom_list = [atom for atom in self.atoms()]
-            # host_atom_pos_list = [atom.pos for atom in host_atom_list]
-
-            atom_list = self.atom_list_by_kind(kind)
+    def _init_atom_kdtree(self):
+            atom_list = self.atom_list_by_kind(kind, excludeG=true)
             atom_pos_list = [atom.pos for atom in atom_list]
             if len(atom_list) > 0:
-                self.atom_kdtrees[kind] = PeriodicCKDTree(atom_pos_list)
+                self._atom_kdtree = PeriodicCKDTree(atom_pos_list)
             else:
-                self.atom_kdtrees[kind] = None
+                self._atom_kdtree = None
 
-    def _has_atom_kdtree(self, kind='*'):
-        if not hasattr(self, 'atom_kdtrees') or hash(frozenset(self.parts)) != self.atom_kdtrees_hash:
-            return False
-
-        if kind in self.atom_kdtrees:
-            return True
-
-        return False
-
-    def _atom_kdtree(self, kind='*'):
-        return self.atom_kdtrees[kind]
-
-    def atoms_in_range(self, point, radius, maxItems=10, kind='*'):
+    def atoms_in_range(self, point, radius, maxItems=10):
 
         # create kdtree if it's not yet there
-        if not self._has_atom_kdtree(kind):
-            self._init_atom_kdtree(kind)
+        if not hasattr(self,'_atom_kdtree'):
+            self._init_atom_kdtree()
 
-        if self._atom_kdtree(kind) is None:
+        if self._atom_kdtree() is None:
             return []
 
-        distances, indices = self._atom_kdtree(kind).query(point, maxItems)
+        distances, indices = self._atom_kdtree().query(point, maxItems)
 
         neighbors = []
         for index, distance in zip(indices, distances):
             if distance <= radius:
-                al = self.atom_list_by_kind(kind)
-                neighbors.append(self.atom_list_by_kind(kind)[index])
+                al = self.atom_list_by_kind()
+                neighbors.append(self.atom_list_by_kind('*')[index])
             else:
                 break
 

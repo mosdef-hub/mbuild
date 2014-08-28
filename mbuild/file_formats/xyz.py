@@ -1,3 +1,6 @@
+from mbuild.flat_compound import FlatCompound
+from mbuild.plugins.system import System
+
 __author__ = 'sallai'
 
 import time
@@ -9,66 +12,54 @@ import numpy as np
 from mbuild.atom import Atom
 from mbuild.compound import Compound
 
-def load_xyz(filename, component=None, labels=False):
+def load_xyz(filename):
     """ """
-    if component is None:
-        component = Compound()
+
+    coords = None
+    types = None
 
     with open(filename, 'r') as f:
-        num_atoms = int(f.readline())
+        n_atoms = int(f.readline())
         comment = f.readline()
+        coords = np.ndarray(shape=(n_atoms,3), dtype='float')
+        types = np.empty(n_atoms, dtype='string')
+        idx = 0
         for line in f:
             fields = line.split()
-            atom_type = fields[0]
-            atom_pos = np.array([float(fields[1]),float(fields[2]),float(fields[3])])
-            if labels:
-                component.add(Atom(kind=atom_type, pos=atom_pos), atom_type + '_#')
-            else:
-                component.add(Atom(kind=atom_type, pos=atom_pos))
+            types[idx] = fields[0]
+            # coords[idx,0] = float(fields[1])
+            # coords[idx,1] = float(fields[2])
+            # coords[idx,2] = float(fields[3])
+            coords[idx] = np.array([float(fields[1]),float(fields[2]),float(fields[3])])
+            idx += 1
 
-    return component
+    return System(coords=coords, types=types)
 
 
-def write_xyz(compound, fn, print_ports=False):
+def write_xyz(system, fn):
     """ """
     print "    Writing to '{0}'...".format(fn)
     start = time.time()
     with open(fn, 'w') as f:
-        if print_ports:
-            f.write(str(compound.atoms().__len__()) + '\n\n')
-        else:
-            i = 0
-            for value in compound.atoms():
-                if value.kind != 'G':
-                    i += 1
-            f.write(str(i) + '\n\n')
-        for value in compound.atoms():
-            if print_ports:
-                f.write(value.kind + '\t' +
-                        str(value.pos[0]) + '\t' +
-                        str(value.pos[1]) + '\t' +
-                        str(value.pos[2]) + '\n')
-            else:
-                if value.kind != 'G':
-                    atom_name = value.kind
-                    f.write(atom_name + '\t' +
-                            str(value.pos[0]) + '\t' +
-                            str(value.pos[1]) + '\t' +
-                            str(value.pos[2]) + '\n')
+        f.write(str(system.n_atoms) + '\n\n')
+        for idx, kind in enumerate(system.types):
+                f.write(kind + '\t' +
+                        str(system.coords[idx, 0]) + '\t' +
+                        str(system.coords[idx, 1]) + '\t' +
+                        str(system.coords[idx, 2]) + '\n')
     print "    Done. ({0:.2f} s)".format(time.time() - start)
 
 if __name__ == "__main__":
     # Look for data file in same directory as this python module.
     current_dir = os.path.dirname(os.path.realpath(sys.modules[__name__].__file__))
-    new_path = os.path.join(current_dir, "../wip/resources/c60.xyz")
+    new_path = os.path.join(current_dir, "../../wip/resources/c60.xyz")
 
+    sys = load_xyz(new_path)
+    print sys.coords
 
-    m = load_xyz(new_path)
-    print [a for a in m.atoms()]
+    m = sys.to_compound()
 
-    print m.boundingbox()
-
-    # from treeview import TreeView
-    # TreeView(m).show()
+    # # from treeview import TreeView
+    # # TreeView(m).show()
     from mbuild.plot import Plot
     Plot(m).show()

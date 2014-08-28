@@ -1,3 +1,5 @@
+from mbuild.atom import Atom
+from mbuild.bond import Bond
 from mbuild.box import Box
 from mbuild.compound import Compound
 
@@ -6,7 +8,7 @@ import numpy as np
 
 class System(object):
 
-    def __init__(self, coords=None, masses=None, charges=None, types=None, bonds=None, angles=None, dihedrals=None, impropers=None, box=None):
+    def __init__(self, coords=None, masses=None, charges=None, types=None, bonds=None, angles=None, dihedrals=None, impropers=None, box=None, compound=None):
         if coords is not None:
             self.coords = np.asarray(coords, 'float')
             assert(self.coords.shape[1] == 3)
@@ -61,23 +63,57 @@ class System(object):
         else:
             self.box = Box()
 
+        # initialize from compound
+        if compound is not None:
 
-    def from_compound(self, compound):
-        assert(isinstance(compound, Compound))
+            atoms, atom_id_to_idx = compound.atom_list_by_kind('*', excludeG=True, with_id_to_idx_mapping=True)
 
-        n_atoms = len([atom for atom in compound.atoms() if atom.kind != "G"])
-        n_bonds = len(list(compound.bonds()))
+            self.n_atoms = len(atoms)
+            self.coords = np.ndarray(shape=(self.n_atoms, 3), dtype='float')
+            self.types = np.empty(self.n_atoms, dtype='string')
 
-        self.coords = np.array(shape=(n_atoms,3))
-        self.types = np.array(shape=(n_atoms,1))
+            for idx, atom in enumerate(atoms):
+                self.coords[idx] = atom.pos
+                self.types[idx] = atom.kind
 
-        id_to_idx = dict()
-        for atom_idx, atom in enumerate([a for a in compound.atoms() if a.kind != "G"]):
-            id_to_idx[id(atom)] = atom_idx
-            self.coords[atom_idx] = atom.pos
-            self.types[atom_idx] = atom.kind
+            bonds = compound.bond_list_by_kind('*')
+            self.n_bonds = len(bonds)
 
-        if n_bonds:
-            for bond_idx, bond in enumerate(compound.bonds()):
-                self.bonds[bond_idx][0] = id_to_idx[id(bond.atom1)]
-                self.bonds[bond_idx][1] = id_to_idx[id(bond.atom2)]
+            self.bonds = np.ndarray(shape=(len(bonds), 2), dtype='int')
+            self.bond_types = np.empty(len(bonds), dtype='string')
+
+            for idx, bond in enumerate(bonds):
+                self.bonds[idx, 0] = self.atom_id_to_idx[id(bond._atom1)]
+                self.bonds[idx, 1] = self.atom_id_to_idx[id(bond._atom2)]
+                self.bond_types[idx] = bond.kind
+
+
+    def update_compound(self, compound):
+        atoms, atom_id_to_idx = compound.atom_list_by_kind('*', excludeG=True, with_id_to_idx_mapping=True)
+
+        assert (len(atoms) == self.n_atoms)
+
+        for idx, atom in enumerate(atoms):
+            atom.pos = self.coords[idx]
+
+    def to_compound(self, part=None):
+        if part is None:
+            part = Compound()
+
+        atom_list = []
+        for idx,kind in enumerate(self.types):
+            coord = self.coords[idx]
+            new_atom = Atom(str(kind), coord)
+            print new_atom
+            part.add(new_atom, label="{0}[$]".format(kind))
+            part.add(new_atom, label="atom[$]", containment=False)
+            atom_list.append(new_atom)
+
+        if self.bonds is not None:
+            for idx,bond in enumerate(self.bonds):
+                atom1 = atom_list[bond[0]]
+                atom2 = atom_list[bond[1]]
+                kind = self.bond_types[idx]
+                part.add(Bond(atom1, atom2), kind=kind)
+
+        return part
