@@ -56,8 +56,15 @@ class Compound(object):
         # be in self.parts.
         self.labels = OrderedDict()
 
+        # The parent compound that contains this compound (can be None if this compound is the root of the
+        # containment hierarchy.)
         self.parent = None
+
+        # The set of other compounds that reference this compound with labels
         self.referrers = set()
+
+        self._label_counter = dict()
+
 
     def atoms(self):
         return self._yield_parts(Atom)
@@ -145,6 +152,17 @@ class Compound(object):
             label = '_{0}_{1}'.format(new_part.__class__.__name__, id(new_part))
 
         if label is not None:
+            if label.endswith("[$]"):
+                label = label[:-3]
+                if not label in self.labels:
+                    self.labels[label] = []
+
+                label_pattern = label + "[{}]"
+
+                count = len(self.labels[label])
+                self.labels[label].append(new_part)
+                label = label_pattern.format(count)
+
             if not replace and label in self.labels:
                 raise Exception("Label {0} already exists in {1}".format(label, self))
             else:
@@ -384,6 +402,7 @@ class Compound(object):
             memo[0] = self
         memo[id(self)] = newone
 
+        newone.label_counter = deepcopy(self._label_counter, memo)
         newone.kind = deepcopy(self.kind, memo)
         newone.periodicity = deepcopy(self.periodicity, memo)
 

@@ -8,21 +8,21 @@ from mbuild.compound import *
 
 class NAlkane(Compound):
 
-    def __init__(self, n, ctx={}):
-        super(NAlkane, self).__init__(kind='NAlkane', ctx=ctx)
+    def __init__(self, n):
+        super(NAlkane, self).__init__(kind='NAlkane')
 
         if n < 2:
             raise Exception('n must be 2 or more')
 
         # top tail (CH_3)
-        self.add(AlkaneTail(ctx=ctx),'top_tail')
+        self.add(AlkaneTail(),'top_tail')
 
         # alkane_body_proto = AlkaneBody(ctx=ctx)
 
         # n times the body CH_2
         last_part = self.top_tail
         for body_count in range(1, n-1):
-            this_part = AlkaneBody(ctx=ctx)
+            this_part = AlkaneBody()
             # this_part = deepcopy(alkane_body_proto)
             this_part.transform([(this_part.female_port, last_part.male_port)])
             # self.add(this_part, 'body_'+str(body_count))
