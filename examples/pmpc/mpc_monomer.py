@@ -45,4 +45,6 @@ if __name__ == "__main__":
     from mbuild.plot import Plot
     Plot(m, verbose=True).show()
 
-    TreeView(m).show()
+    # TreeView(m).show()
+    from mbuild.file_formats.mol2file import write_mol2
+    write_mol2(m,'mpc_monomer_out.mol2')

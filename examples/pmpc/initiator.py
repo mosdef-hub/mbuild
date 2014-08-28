@@ -13,21 +13,21 @@ class Initiator(Compound):
         # Look for data file in same directory as this python module.
         current_dir = os.path.dirname(os.path.realpath(sys.modules[__name__].__file__))
         new_path = os.path.join(current_dir, 'initiator.mol2')
-        load_mol2(new_path, component=self)
+        load_mol2(new_path, part=self)
 
         # Transform the coordinate system such that the two carbon atoms
         # that are part of the backbone are on the y axis, C_1 at the origin.
-        y_axis_transform(self, new_origin=self.C_1, point_on_y_axis=self.C_22)
+        y_axis_transform(self, new_origin=self.atom[0], point_on_y_axis=self.atom[21])
 
         # Add bottom port
-        self.add(Port(anchor=self.C_1), 'bottom_port')
+        self.add(Port(anchor=self.atom[0]), 'bottom_port')
         # Place the port.
-        translate(self.bottom_port, self.C_1 + np.array([0.0, -0.7, 0.0]))
+        translate(self.bottom_port, self.atom[0] + np.array([0.0, -0.7, 0.0]))
 
         # Add top port.
-        self.add(Port(anchor=self.C_22), 'top_port')
+        self.add(Port(anchor=self.atom[21]), 'top_port')
         # Place the port.
-        translate(self.top_port, self.C_22 + np.array([0.0, 0.7, 0.0]))
+        translate(self.top_port, self.atom[21] + np.array([0.0, 0.7, 0.0]))
 
 if __name__ == "__main__":
     m = Initiator()

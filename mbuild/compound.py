@@ -223,83 +223,45 @@ class Compound(object):
             if isinstance(part, Compound) and len(objs_to_remove) > 0:
                 part.remove(objs_to_remove)
 
+        # TODO: remove lists from labels if the list becomes empty, remove items from lists, as well
+
     def __getattr__(self, attr):
         if attr in self.labels:
             return self.labels[attr]
         else:
             raise AttributeError
 
-    def atom_list_by_kind(self, kind='*'):
-        # Use precomputed data structures instead (memory vs. time tradeoff)
-        if not self._has_atom_list_by_kind(kind):
-            self._init_atoms_by_kind(kind)
-
-        if kind in self.atom_list_by_kind_dict:
-            return self.atom_list_by_kind_dict[kind]
-        else:
-            return []
-
-    def _init_atoms_by_kind(self, kind='*'):
-        # Remember the hash of the parts dict at time of generating the
-        # atom_list_by_kind dict.
-        self.atom_list_by_kind_hash = hash(frozenset(self.parts))
-        self.atom_list_by_kind_dict = OrderedDict()
-
-        self.atom_list_by_kind_dict['*'] = []
+    def atom_list_by_kind(self, kind='*', excludeG=False, with_id_to_idx_mapping=False):
+        list = []
+        id_to_idx = dict()
+        idx = 0
         for atom in self.atoms():
-            self.atom_list_by_kind_dict['*'].append(atom)
-            if atom.kind not in self.atom_list_by_kind_dict:
-                self.atom_list_by_kind_dict[atom.kind] = [atom]
-            else:
-                self.atom_list_by_kind_dict[atom.kind].append(atom)
+            if not (excludeG and atom.kind == "G"):
+                if kind == '*':
+                    list.append(atom)
+                    id_to_idx[id(atom)] = idx
+                    idx += 1
+                elif atom.kind == kind:
+                    list.append(atom)
+                    id_to_idx[id(atom)] = idx
+                    idx += 1
 
-    def _has_atom_list_by_kind(self, kind='*'):
-        if (not hasattr(self, 'atom_list_by_kind_dict')
-                or hash(frozenset(self.parts)) != self.atom_list_by_kind_hash):
-            return False
+        if with_id_to_idx_mapping:
+            return list, id_to_idx
         else:
-            return True
+            return list
 
-    def _reset_atom_list_by_kind(self, kind='*'):
-        if hasattr(self, 'atom_list_by_kind'):
-            del self.atom_list_by_kind
-            del self.atom_list_by_kind_hash
 
     def bond_list_by_kind(self, kind='*'):
-        # Use precomputed data structures instead (memory vs. time tradeoff)
-        if not self._has_bond_list_by_kind(kind):
-            self._init_bonds_by_kind(kind)
+        list = []
 
-        if kind in self.bond_list_by_kind_dict:
-            return self.bond_list_by_kind_dict[kind]
-        else:
-            return []
-
-    def _init_bonds_by_kind(self, kind='*'):
-        # Remember the hash of the parts dict at time of generating the
-        # bond_list_by_kind dict.
-        self.bond_list_by_kind_hash = hash(frozenset(self.parts))
-        self.bond_list_by_kind_dict = OrderedDict()
-
-        self.bond_list_by_kind_dict['*'] = []
         for bond in self.bonds():
-            self.bond_list_by_kind_dict['*'].append(bond)
-            if bond.kind not in self.bond_list_by_kind_dict:
-                self.bond_list_by_kind_dict[bond.kind] = [bond]
-            else:
-                self.bond_list_by_kind_dict[bond.kind].append(bond)
+            if kind == '*':
+                list.append(bond)
+            elif bond.kind == kind:
+                list.append(bond)
 
-    def _has_bond_list_by_kind(self, kind='*'):
-        if (not hasattr(self, 'bond_list_by_kind_dict')
-                or hash(frozenset(self.parts)) != self.bond_list_by_kind_hash):
-            return False
-        else:
-            return True
-
-    def _reset_bond_list_by_kind(self, kind='*'):
-        if hasattr(self, 'bond_list_by_kind'):
-            del self.bond_list_by_kind
-            del self.bond_list_by_kind_hash
+        return list
 
 
     def min_periodic_distance(self, x0, x1):
@@ -360,6 +322,45 @@ class Compound(object):
 
         return neighbors
 
+    # @property
+    def coords_nparray(self):
+        atoms = self.atom_list_by_kind('*', excludeG=True)
+        coords = np.ndarray(shape=(len(atoms), 3), dtype='float')
+
+        for idx, atom in enumerate(atoms):
+            coords[idx] = atom.pos
+
+        return coords
+
+
+
+    @property
+    def types_nparray(self):
+        atoms = self.atom_list_by_kind('*', excludeG=True)
+        types = np.empty(len(atoms), dtype='string')
+
+        for idx, atom in enumerate(atoms):
+            types[idx] = atom.kind
+
+        return types
+
+    @property
+    def bonds_nparray(self):
+        atoms, atom_id_to_idx = self.atom_list_by_kind('*', excludeG=True, with_id_to_idx_mapping=True)
+        bonds = self.bond_list_by_kind('*')
+
+        bonds_nparray = np.ndarray(shape=(len(bonds), 2), dtype='int')
+        bond_types = np.empty(len(bonds), dtype='string')
+
+        for idx, bond in enumerate(bonds):
+            bonds_nparray[idx, 0] = atom_id_to_idx[id(bond._atom1)]
+            bonds_nparray[idx, 1] = atom_id_to_idx[id(bond._atom2)]
+            bond_types[idx] = bond.kind
+
+        # return bonds_nparray, bond_types
+        return bonds_nparray
+
+
     def boundingbox(self, excludeG=True):
         """Compute the bounding box of the compound.
 
@@ -402,7 +403,6 @@ class Compound(object):
             memo[0] = self
         memo[id(self)] = newone
 
-        newone.label_counter = deepcopy(self._label_counter, memo)
         newone.kind = deepcopy(self.kind, memo)
         newone.periodicity = deepcopy(self.periodicity, memo)
 
@@ -430,7 +430,8 @@ class Compound(object):
                     newone.labels[k].referrers.add(newone)
             else:
                 newone.labels[k] = deepcopy(v, memo)
-                newone.labels[k].referrers.add(newone)
+                if not isinstance(newone.labels[k], list):
+                    newone.labels[k].referrers.add(newone)
 
         # Copy referrers that do not point out of the hierarchy.
         newone.referrers = set()

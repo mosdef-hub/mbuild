@@ -61,9 +61,8 @@ class Atom(object):
             for ancestor in self.parent.ancestors():
                 yield ancestor
 
-    def bonded_atoms(self):
+    def bonded_atoms(self, memo=dict()):
         """Return a list of atoms bonded to self. """
-        memo = dict()
         for bond in self.bonds:
             bonded_atom = bond.other_atom(self)
             if id(bonded_atom) not in memo:

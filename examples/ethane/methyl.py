@@ -13,16 +13,16 @@ class Methyl(Compound):
         # Look for data file in same directory as this python module.
         current_dir = os.path.dirname(os.path.realpath(sys.modules[__name__].__file__))
         new_path = os.path.join(current_dir, 'methyl.mol2')
-        load_mol2(new_path, component=self)
+        load_mol2(new_path, part=self)
 
         # transform(self, Translation(-carbon.pos))
-        translate(self, -self.C_1)
+        translate(self, -self.C[0])
 
-        self.add(Port(anchor=self.C_1), 'up')
+        self.add(Port(anchor=self.C[0]), 'up')
         rotate_around_z(self.up, np.pi)
         translate(self.up, np.array([0,-0.7,0]))
 
-        self.add(Port(anchor=self.C_1), 'down')
+        self.add(Port(anchor=self.C[0]), 'down')
         translate(self.down, np.array([0,-0.7,0]))
 
 if __name__ == '__main__':

@@ -54,8 +54,8 @@ def write_mol2(part, filename='mbuild.mol2'):
         filename (str, optional): Path of the output file.
 
     """
-    n_atoms = len(part.types)
-    n_bonds = len(part.bonds)
+    n_atoms = len(part.types_nparray)
+    n_bonds = len(part.bonds_nparray)
 
     with open(filename, 'w') as mol2_file:
         mol2_file.write("@<TRIPOS>MOLECULE\n")
@@ -66,16 +66,16 @@ def write_mol2(part, filename='mbuild.mol2'):
         mol2_file.write("\n")
 
         mol2_file.write("@<TRIPOS>ATOM\n")
-        for atom_idx, atom_type in enumerate(part.types):
-            x, y, z = part.coords[atom_idx]
+        for atom_idx, atom_type in enumerate(part.types_nparray):
+            x, y, z = part.coords_nparray()[atom_idx]
             mol2_file.write("{0} {1} {2:8.4f} {3:8.4f} {4:8.4f} {5}\n".format(
                     atom_idx + 1, atom_type, x, y, z, atom_type))
    
         if n_bonds:
             mol2_file.write("\n@<TRIPOS>BONDS\n")
-            for bond_idx, bond in enumerate(part.bonds):
+            for bond_idx, bond in enumerate(part.bonds_nparray):
                 mol2_file.write("{0} {1} {2} 1\n".format(
-                        bond_idx + 1, bond[0], bond[1]))
+                        bond_idx + 1, bond[0]+1, bond[1]+1))
 
 
 
