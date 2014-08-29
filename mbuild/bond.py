@@ -15,7 +15,7 @@ class Bond(object):
     """
     __slots__ = ['_atom1', '_atom2', 'kind', 'parent', 'referrers']
 
-    def __init__(self, atom1, atom2):
+    def __init__(self, atom1, atom2, kind=None):
         """Initialize a Bond.
 
         Args:
@@ -34,13 +34,19 @@ class Bond(object):
             atom2 = atom2.anchor
         self._atom1 = atom1
         self._atom2 = atom2
-        self.kind = '{0}-{1}'.format(atom1.kind, atom2.kind)
+
+        if kind is not None:
+            self.kind = kind
+        else:
+            self.kind = '{0}-{1}'.format(atom1.kind, atom2.kind)
 
         self.parent = None
 
         # Ensure Atoms in Bond know about the Bond.
         atom1.bonds.add(self)
         atom2.bonds.add(self)
+
+        self.referrers = set()
 
     @property
     def atom1(self):
@@ -98,6 +104,8 @@ class Bond(object):
         newone._atom2 = deepcopy(self.atom2, memo)
         newone._atom1.bonds.add(newone)
         newone._atom2.bonds.add(newone)
+
+        newone.kind = self.kind
 
         # copy the parent of everybody, except the topmost compound being deepcopied
         if memo[0] == self:

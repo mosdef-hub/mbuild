@@ -1,13 +1,7 @@
 from copy import deepcopy
-import operator
-import pdb
-
-from numpy import pi
-from mbuild.bond import Bond
 
 from mbuild.coordinate_transform import *
 from mbuild.compound import Compound
-from mbuild.port import Port
 
 
 class Polymer(Compound):
@@ -24,7 +18,7 @@ class Polymer(Compound):
         last_part = None
         for body_count in range(0, n):
             this_part = deepcopy(proto)
-            self.add(this_part, 'monomer_{0}'.format(body_count))
+            self.add(this_part, 'monomer[$]')
             if last_part is None:
                 first_part = this_part
             else:
@@ -40,6 +34,7 @@ class Polymer(Compound):
         self.add(first_part.labels[port_labels[1]], port_labels[1], containment=False)
 
 if __name__ == "__main__":
+    from examples.alkane.ch2 import Ch2
     ch2 = Ch2()
     m = Polymer(ch2, n=13, port_labels=("up","down"))
     from mbuild.plot import Plot

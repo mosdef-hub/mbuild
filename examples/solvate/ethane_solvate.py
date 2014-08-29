@@ -3,6 +3,7 @@ import sys
 
 from examples.ethane.ethane import Ethane
 from mbuild.box import Box
+from mbuild.compound import Compound
 from mbuild.file_formats.mol2file import load_mol2
 from mbuild.tools import solvate
 
@@ -27,7 +28,7 @@ if __name__ == "__main__":
     water = load_mol2(new_path)
 
     guest_box = water.boundingbox()
-
+    water = water.to_compound()
     print("Guest (water) box: {}".format(guest_box))
 
     # add water to ethane

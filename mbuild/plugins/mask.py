@@ -3,11 +3,14 @@ from copy import deepcopy
 import numpy as np
 
 from mbuild.coordinate_transform import equivalence_transform
+from mbuild.plugins.system import System
 
 
 def apply_mask(host, guest, mask, guest_port_name="port"):
     """ """
-    box = host.boundingbox(excludeG=False)
+    # box = host.boundingbox(excludeG=False)
+
+    box = System.from_compound(host).boundingbox()
 
     mask = mask * box.lengths + box.mins
 

@@ -13,7 +13,7 @@ class Ch2(Compound):
         # Look for data file in same directory as this python module.
         current_dir = os.path.dirname(os.path.realpath(sys.modules[__name__].__file__))
         new_path = os.path.join(current_dir, 'ch2.mol2')
-        load_mol2(new_path, part=self)
+        load_mol2(new_path).to_compound(part=self)
 
         self.add(Port(anchor=self.C[0]), 'up')
         translate(self.up, np.array([0,0.7,0]))

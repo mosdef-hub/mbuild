@@ -2,18 +2,52 @@ from mbuild.atom import Atom
 from mbuild.bond import Bond
 from mbuild.box import Box
 from mbuild.compound import Compound
+from mbuild.periodic_kdtree import PeriodicCKDTree
 
 __author__ = 'sallai'
 import numpy as np
 
 class System(object):
 
-    def __init__(self, coords=None, masses=None, charges=None, types=None, bonds=None, angles=None, dihedrals=None, impropers=None, box=None, compound=None):
+    @classmethod
+    def from_compound(cls, compound):
+        atom_list, atom_id_to_idx = compound.atom_list_by_kind('*', excludeG=True, with_id_to_idx_mapping=True)
+
+        n_atoms = len(atom_list)
+        coords = np.ndarray(shape=(n_atoms, 3), dtype='float')
+        types = np.empty(n_atoms, dtype='string')
+
+        for idx, atom in enumerate(atom_list):
+            coords[idx] = atom.pos
+            types[idx] = atom.kind
+
+        bond_list, bond_id_to_idx = compound.bond_list_by_kind('*', with_id_to_idx_mapping=True)
+        n_bonds = len(bond_list)
+
+        bonds = np.ndarray(shape=(n_bonds, 2), dtype='int')
+        bond_types = np.empty(len(bonds), dtype='string')
+
+        for idx, bond in enumerate(bond_list):
+            bonds[idx, 0] = atom_id_to_idx[id(bond._atom1)]
+            bonds[idx, 1] = atom_id_to_idx[id(bond._atom2)]
+            bond_types[idx] = bond.kind
+
+        sys = cls(coords=coords, types=types, bonds=bonds, bond_types=bond_types)
+        sys.atom_list = atom_list
+        sys.bond_list = bond_list
+        sys.atom_id_to_idx = atom_id_to_idx
+        sys.bond_id_to_idx = bond_id_to_idx
+        return sys
+
+
+    def __init__(self, coords=None, masses=None, charges=None, types=None, bonds=None, bond_types=None, angles=None, dihedrals=None, impropers=None, box=None):
         if coords is not None:
             self.coords = np.asarray(coords, 'float')
+            self.n_atoms = self.coords.shape[0]
             assert(self.coords.shape[1] == 3)
         else:
             self.coords = None
+            self.n_atoms = 0
 
         if masses is not None:
             self.masses = np.asarray(masses, 'float')
@@ -35,9 +69,17 @@ class System(object):
 
         if bonds is not None:
             self.bonds= np.asarray(bonds, 'int')
+            self.n_bonds = self.bonds.shape[0]
             assert(self.bonds.shape[1] == 2)
         else:
             self.bonds = None
+            self.n_bonds = 0
+
+        if bond_types is not None:
+            self.bond_types= np.asarray(bond_types, 'string')
+            assert(len(self.bond_types.shape) == 1)
+        else:
+            self.bond_types = None
 
         if angles is not None:
             self.angles= np.asarray(angles, 'int')
@@ -63,30 +105,6 @@ class System(object):
         else:
             self.box = Box()
 
-        # initialize from compound
-        if compound is not None:
-
-            atoms, atom_id_to_idx = compound.atom_list_by_kind('*', excludeG=True, with_id_to_idx_mapping=True)
-
-            self.n_atoms = len(atoms)
-            self.coords = np.ndarray(shape=(self.n_atoms, 3), dtype='float')
-            self.types = np.empty(self.n_atoms, dtype='string')
-
-            for idx, atom in enumerate(atoms):
-                self.coords[idx] = atom.pos
-                self.types[idx] = atom.kind
-
-            bonds = compound.bond_list_by_kind('*')
-            self.n_bonds = len(bonds)
-
-            self.bonds = np.ndarray(shape=(len(bonds), 2), dtype='int')
-            self.bond_types = np.empty(len(bonds), dtype='string')
-
-            for idx, bond in enumerate(bonds):
-                self.bonds[idx, 0] = self.atom_id_to_idx[id(bond._atom1)]
-                self.bonds[idx, 1] = self.atom_id_to_idx[id(bond._atom2)]
-                self.bond_types[idx] = bond.kind
-
 
     def update_compound(self, compound):
         atoms, atom_id_to_idx = compound.atom_list_by_kind('*', excludeG=True, with_id_to_idx_mapping=True)
@@ -104,7 +122,6 @@ class System(object):
         for idx,kind in enumerate(self.types):
             coord = self.coords[idx]
             new_atom = Atom(str(kind), coord)
-            print new_atom
             part.add(new_atom, label="{0}[$]".format(kind))
             part.add(new_atom, label="atom[$]", containment=False)
             atom_list.append(new_atom)
@@ -113,7 +130,39 @@ class System(object):
             for idx,bond in enumerate(self.bonds):
                 atom1 = atom_list[bond[0]]
                 atom2 = atom_list[bond[1]]
-                kind = self.bond_types[idx]
-                part.add(Bond(atom1, atom2), kind=kind)
+                if(self.bond_types):
+                    kind = self.bond_types[idx]
+                else:
+                    kind = None
+                part.add(Bond(atom1, atom2, kind=kind), label="bond[$]")
 
         return part
+
+    def boundingbox(self):
+        return Box(mins=np.amin(self.coords, axis=0), maxes=np.amax(self.coords, axis=0))
+
+    def _init_atom_kdtree(self):
+            if len(self.coords) > 0:
+                self._atom_kdtree = PeriodicCKDTree(self.coords)
+            else:
+                self._atom_kdtree = None
+
+    def atoms_in_range(self, point, radius, maxItems=10):
+
+        # create kdtree if it's not yet there
+        if not hasattr(self,'_atom_kdtree'):
+            self._init_atom_kdtree()
+
+        if self._atom_kdtree is None:
+            return []
+
+        distances, indices = self._atom_kdtree.query(point, maxItems)
+
+        neighbors = []
+        for index, distance in zip(indices, distances):
+            if distance <= radius:
+                neighbors.append(self.atom_list[index])
+            else:
+                break
+
+        return neighbors

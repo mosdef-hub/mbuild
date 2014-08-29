@@ -229,7 +229,7 @@ class Compound(object):
         if attr in self.labels:
             return self.labels[attr]
         else:
-            raise AttributeError
+            raise AttributeError("'{}' object has no attribute '{}'".format(self.__class__.__name__, attr))
 
     def atom_list_by_kind(self, kind='*', excludeG=False, with_id_to_idx_mapping=False):
         list = []
@@ -251,17 +251,26 @@ class Compound(object):
         else:
             return list
 
-
-    def bond_list_by_kind(self, kind='*'):
+    def bond_list_by_kind(self, kind='*', with_id_to_idx_mapping=False):
         list = []
+        id_to_idx = dict()
 
+        idx = 0
         for bond in self.bonds():
             if kind == '*':
                 list.append(bond)
+                id_to_idx[id(bond)] = idx
+                idx += 1
+
             elif bond.kind == kind:
                 list.append(bond)
+                id_to_idx[id(bond)] = idx
+                idx += 1
 
-        return list
+        if with_id_to_idx_mapping:
+            return list, id_to_idx
+        else:
+            return list
 
 
     def min_periodic_distance(self, x0, x1):
@@ -270,34 +279,34 @@ class Compound(object):
         d = np.where(d > 0.5 * self.periodicity, self.periodicity - d, d)
         return np.sqrt((d ** 2).sum(axis=-1))
 
-    def _init_atom_kdtree(self):
-            atom_list = self.atom_list_by_kind('*', excludeG=True)
-            atom_pos_list = [atom.pos for atom in atom_list]
-            if len(atom_list) > 0:
-                self._atom_kdtree = PeriodicCKDTree(atom_pos_list)
-            else:
-                self._atom_kdtree = None
-
-    def atoms_in_range(self, point, radius, maxItems=10):
-
-        # create kdtree if it's not yet there
-        if not hasattr(self,'_atom_kdtree'):
-            self._init_atom_kdtree()
-
-        if self._atom_kdtree is None:
-            return []
-
-        distances, indices = self._atom_kdtree.query(point, maxItems)
-
-        neighbors = []
-        for index, distance in zip(indices, distances):
-            if distance <= radius:
-                al = self.atom_list_by_kind()
-                neighbors.append(self.atom_list_by_kind('*')[index])
-            else:
-                break
-
-        return neighbors
+    # def _init_atom_kdtree(self):
+    #         atom_list = self.atom_list_by_kind('*', excludeG=True)
+    #         atom_pos_list = [atom.pos for atom in atom_list]
+    #         if len(atom_list) > 0:
+    #             self._atom_kdtree = PeriodicCKDTree(atom_pos_list)
+    #         else:
+    #             self._atom_kdtree = None
+    #
+    # def atoms_in_range(self, point, radius, maxItems=10):
+    #
+    #     # create kdtree if it's not yet there
+    #     if not hasattr(self,'_atom_kdtree'):
+    #         self._init_atom_kdtree()
+    #
+    #     if self._atom_kdtree is None:
+    #         return []
+    #
+    #     distances, indices = self._atom_kdtree.query(point, maxItems)
+    #
+    #     neighbors = []
+    #     for index, distance in zip(indices, distances):
+    #         if distance <= radius:
+    #             al = self.atom_list_by_kind()
+    #             neighbors.append(self.atom_list_by_kind('*')[index])
+    #         else:
+    #             break
+    #
+    #     return neighbors
 
     # # @property
     # def coords_nparray(self):
@@ -338,40 +347,40 @@ class Compound(object):
     #     return bonds_nparray
 
 
-    def boundingbox(self, excludeG=True):
-        """Compute the bounding box of the compound.
-
-        Returns:
-            Box: Simulation box initialzied with min and max coordinates.
-
-        """
-        minx = np.inf
-        miny = np.inf
-        minz = np.inf
-        maxx = -np.inf
-        maxy = -np.inf
-        maxz = -np.inf
-
-        for a in self.atoms():
-            if excludeG and a.kind == 'G':
-                continue
-            if a.pos[0] < minx:
-                minx = a.pos[0]
-            if a.pos[0] > maxx:
-                maxx = a.pos[0]
-            if a.pos[1] < miny:
-                miny = a.pos[1]
-            if a.pos[1] > maxy:
-                maxy = a.pos[1]
-            if a.pos[2] < minz:
-                minz = a.pos[2]
-            if a.pos[2] > maxz:
-                maxz = a.pos[2]
-
-        min_coords = np.array([minx, miny, minz])
-        max_coords = np.array([maxx, maxy, maxz])
-
-        return Box(mins=min_coords, maxes=max_coords)
+    # def boundingbox(self, excludeG=True):
+    #     """Compute the bounding box of the compound.
+    #
+    #     Returns:
+    #         Box: Simulation box initialzied with min and max coordinates.
+    #
+    #     """
+    #     minx = np.inf
+    #     miny = np.inf
+    #     minz = np.inf
+    #     maxx = -np.inf
+    #     maxy = -np.inf
+    #     maxz = -np.inf
+    #
+    #     for a in self.atoms():
+    #         if excludeG and a.kind == 'G':
+    #             continue
+    #         if a.pos[0] < minx:
+    #             minx = a.pos[0]
+    #         if a.pos[0] > maxx:
+    #             maxx = a.pos[0]
+    #         if a.pos[1] < miny:
+    #             miny = a.pos[1]
+    #         if a.pos[1] > maxy:
+    #             maxy = a.pos[1]
+    #         if a.pos[2] < minz:
+    #             minz = a.pos[2]
+    #         if a.pos[2] > maxz:
+    #             maxz = a.pos[2]
+    #
+    #     min_coords = np.array([minx, miny, minz])
+    #     max_coords = np.array([maxx, maxy, maxz])
+    #
+    #     return Box(mins=min_coords, maxes=max_coords)
 
     def __deepcopy__(self, memo):
         cls = self.__class__

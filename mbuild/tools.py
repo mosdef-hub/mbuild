@@ -9,6 +9,7 @@ from compound import Compound
 from bond import Bond
 from box import Box
 from coordinate_transform import equivalence_transform, translate
+from mbuild.plugins.system import System
 from periodic_kdtree import PeriodicCKDTree
 
 
@@ -76,11 +77,13 @@ def solvate(host_compound, guest_compound, host_bounds, guest_bounds):
 
 def add_bond(compound, type_A, type_B, dmin, dmax):
     """Ai-Bj distance is in [dmin, dmax] => add bond A1xB(Ai,Bj) (symmetric)."""
+
+    system = System.from_compound(compound)
     for a1 in compound.atom_list_by_kind(type_A):
-        nearest = compound.atoms_in_range(a1.pos, dmax)
-        for b1 in nearest:
-            if (b1.kind==type_B) and (dmin <= compound.min_periodic_distance(b1.pos, a1.pos) <= dmax):
-                compound.add(Bond(a1, b1))
+        nearest = system.atoms_in_range(a1.pos, dmax)
+        for a2_idx in nearest:
+            if (a2_idx.kind==type_B) and (dmin <= compound.min_periodic_distance(a2_idx.pos, a1.pos) <= dmax):
+                compound.add(Bond(a1, a2_idx))
 
 if __name__ == "__main__":
     print "hello"

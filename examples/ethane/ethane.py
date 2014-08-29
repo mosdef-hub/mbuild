@@ -1,3 +1,5 @@
+from mbuild.plugins.system import System
+
 __author__ = 'sallai'
 
 from methyl import Methyl
