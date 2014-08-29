@@ -271,7 +271,7 @@ class Compound(object):
         return np.sqrt((d ** 2).sum(axis=-1))
 
     def _init_atom_kdtree(self):
-            atom_list = self.atom_list_by_kind(kind, excludeG=true)
+            atom_list = self.atom_list_by_kind('*', excludeG=True)
             atom_pos_list = [atom.pos for atom in atom_list]
             if len(atom_list) > 0:
                 self._atom_kdtree = PeriodicCKDTree(atom_pos_list)
@@ -284,10 +284,10 @@ class Compound(object):
         if not hasattr(self,'_atom_kdtree'):
             self._init_atom_kdtree()
 
-        if self._atom_kdtree() is None:
+        if self._atom_kdtree is None:
             return []
 
-        distances, indices = self._atom_kdtree().query(point, maxItems)
+        distances, indices = self._atom_kdtree.query(point, maxItems)
 
         neighbors = []
         for index, distance in zip(indices, distances):
@@ -299,43 +299,43 @@ class Compound(object):
 
         return neighbors
 
+    # # @property
+    # def coords_nparray(self):
+    #     atoms = self.atom_list_by_kind('*', excludeG=True)
+    #     coords = np.ndarray(shape=(len(atoms), 3), dtype='float')
+    #
+    #     for idx, atom in enumerate(atoms):
+    #         coords[idx] = atom.pos
+    #
+    #     return coords
+    #
+    #
+    #
     # @property
-    def coords_nparray(self):
-        atoms = self.atom_list_by_kind('*', excludeG=True)
-        coords = np.ndarray(shape=(len(atoms), 3), dtype='float')
-
-        for idx, atom in enumerate(atoms):
-            coords[idx] = atom.pos
-
-        return coords
-
-
-
-    @property
-    def types_nparray(self):
-        atoms = self.atom_list_by_kind('*', excludeG=True)
-        types = np.empty(len(atoms), dtype='string')
-
-        for idx, atom in enumerate(atoms):
-            types[idx] = atom.kind
-
-        return types
-
-    @property
-    def bonds_nparray(self):
-        atoms, atom_id_to_idx = self.atom_list_by_kind('*', excludeG=True, with_id_to_idx_mapping=True)
-        bonds = self.bond_list_by_kind('*')
-
-        bonds_nparray = np.ndarray(shape=(len(bonds), 2), dtype='int')
-        bond_types = np.empty(len(bonds), dtype='string')
-
-        for idx, bond in enumerate(bonds):
-            bonds_nparray[idx, 0] = atom_id_to_idx[id(bond._atom1)]
-            bonds_nparray[idx, 1] = atom_id_to_idx[id(bond._atom2)]
-            bond_types[idx] = bond.kind
-
-        # return bonds_nparray, bond_types
-        return bonds_nparray
+    # def types_nparray(self):
+    #     atoms = self.atom_list_by_kind('*', excludeG=True)
+    #     types = np.empty(len(atoms), dtype='string')
+    #
+    #     for idx, atom in enumerate(atoms):
+    #         types[idx] = atom.kind
+    #
+    #     return types
+    #
+    # @property
+    # def bonds_nparray(self):
+    #     atoms, atom_id_to_idx = self.atom_list_by_kind('*', excludeG=True, with_id_to_idx_mapping=True)
+    #     bonds = self.bond_list_by_kind('*')
+    #
+    #     bonds_nparray = np.ndarray(shape=(len(bonds), 2), dtype='int')
+    #     bond_types = np.empty(len(bonds), dtype='string')
+    #
+    #     for idx, bond in enumerate(bonds):
+    #         bonds_nparray[idx, 0] = atom_id_to_idx[id(bond._atom1)]
+    #         bonds_nparray[idx, 1] = atom_id_to_idx[id(bond._atom2)]
+    #         bond_types[idx] = bond.kind
+    #
+    #     # return bonds_nparray, bond_types
+    #     return bonds_nparray
 
 
     def boundingbox(self, excludeG=True):
