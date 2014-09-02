@@ -1,3 +1,6 @@
+from mbuild.mbase import MBase
+from mbuild.part_mixin import PartMixin
+
 __author__ = 'sallai'
 
 from copy import deepcopy
@@ -7,7 +10,7 @@ import numpy as np
 from mbuild.bond import Bond
 
 
-class Atom(object):
+class Atom(MBase, PartMixin):
     """Elementary container class - typically a leaf in the hierarchy.
 
     Note:
@@ -36,6 +39,8 @@ class Atom(object):
             charge (float, optional): Partial charge on the atom.
 
         """
+        super(Atom, self).__init__(kind, pos=pos, charge=charge)
+
         assert (isinstance(kind, basestring))
 
         if pos is None:
@@ -44,22 +49,22 @@ class Atom(object):
         self.kind = kind
         self.pos = pos
         self.charge = charge
-        self.parent = None
-        self.referrers = set()
+        # self.parent = None
+        # self.referrers = set()
         self.bonds = set()
 
-    def ancestors(self):
-        """Generate all ancestors of the Compound recursively.
-
-        Yields:
-            ancestor (Compound): A Compound one or more levels higher in the
-                hierarchy.
-
-        """
-        yield self.parent
-        if self.parent is not None:
-            for ancestor in self.parent.ancestors():
-                yield ancestor
+    # def ancestors(self):
+    #     """Generate all ancestors of the Compound recursively.
+    #
+    #     Yields:
+    #         ancestor (Compound): A Compound one or more levels higher in the
+    #             hierarchy.
+    #
+    #     """
+    #     yield self.parent
+    #     if self.parent is not None:
+    #         for ancestor in self.parent.ancestors():
+    #             yield ancestor
 
     def bonded_atoms(self, memo=dict()):
         """Return a list of atoms bonded to self. """
@@ -117,3 +122,4 @@ class Atom(object):
         newone.bonds = set()
 
         return newone
+

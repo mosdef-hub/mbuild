@@ -29,6 +29,7 @@ class BrushLayer(Compound):
         surface = Surface()
         tc = TiledCompound(surface, tile_x, tile_y, 1, kind="tiled_surface")
         self.add(tc, 'tiled_surface')
+        self.periodicity = tc.periodicity
 
         brush_proto = Brush(chain_length=chain_length, alpha=alpha)
 

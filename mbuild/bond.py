@@ -1,3 +1,6 @@
+from mbuild.mbase import MBase
+from mbuild.part_mixin import PartMixin
+
 __author__ = 'sallai'
 
 from copy import deepcopy
@@ -5,7 +8,7 @@ from copy import deepcopy
 import numpy as np
 
 
-class Bond(object):
+class Bond(MBase, PartMixin):
     """Connection between two Atoms.
 
     Attributes:
@@ -21,8 +24,9 @@ class Bond(object):
         Args:
             atom1 (Atom): First Atom or Port in the bond.
             atom2 (Atom): Second Atom or Port in the bond.
-           
+
         """
+        super(Bond, self).__init__(atom1, atom2, kind=kind)
         assert(not atom1 == atom2)
 
         # If a Port is used to initialize a Bond, the Atom that the Port is
@@ -40,13 +44,13 @@ class Bond(object):
         else:
             self.kind = '{0}-{1}'.format(atom1.kind, atom2.kind)
 
-        self.parent = None
+        # self.parent = None
 
         # Ensure Atoms in Bond know about the Bond.
         atom1.bonds.add(self)
         atom2.bonds.add(self)
 
-        self.referrers = set()
+        # self.referrers = set()
 
     @property
     def atom1(self):
@@ -56,18 +60,18 @@ class Bond(object):
     def atom2(self):
         return self._atom2
 
-    def ancestors(self):
-        """Generate all ancestors of the Compound recursively.
-
-        Yields:
-            ancestor (Compound): A Compound one or more levels higher in the
-                hierarchy.
-
-        """
-        yield self.parent
-        if self.parent is not None:
-            for a in self.parent.ancestors():
-                yield a
+    # def ancestors(self):
+    #     """Generate all ancestors of the Compound recursively.
+    #
+    #     Yields:
+    #         ancestor (Compound): A Compound one or more levels higher in the
+    #             hierarchy.
+    #
+    #     """
+    #     yield self.parent
+    #     if self.parent is not None:
+    #         for a in self.parent.ancestors():
+    #             yield a
 
     def other_atom(self, atom):
         """Returns the other Atom in the Bond. """
@@ -114,4 +118,3 @@ class Bond(object):
             newone.parent = deepcopy(self.parent, memo)
         newone.referrers = set()
         return newone
-
