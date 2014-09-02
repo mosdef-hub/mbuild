@@ -3,7 +3,7 @@ import numpy as np
 from examples.pmpc.brush import Brush
 from mbuild.coordinate_transform import rotate_around_z
 from mbuild.file_formats.mol2file import write_mol2, load_mol2
-from mbuild.plugins.system import System
+from mbuild.plugins.system import FlatCompound
 
 __author__ = 'sallai'
 

@@ -47,5 +47,5 @@ if __name__ == "__main__":
 
     # TreeView(m).show()
     from mbuild.file_formats.mol2file import write_mol2
-    from mbuild.plugins.system import System
-    write_mol2(System(compound=m),'mpc_monomer_out.mol2')
+    from mbuild.plugins.system import FlatCompound
+    write_mol2(FlatCompound(compound=m),'mpc_monomer_out.mol2')

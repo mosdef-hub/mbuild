@@ -1,10 +1,8 @@
-from mbuild.plugins.system import System
 
 __author__ = 'sallai'
 
 from methyl import Methyl
 from mbuild.compound import Compound
-from mbuild.file_formats.mol2file import write_mol2
 from mbuild.coordinate_transform import *
 
 
@@ -22,7 +20,6 @@ class Ethane(Compound):
 
 if __name__ == "__main__":
     ethane = Ethane()
-    write_mol2(ethane, 'ethane.mol2')
 
     # import pdb
     # pdb.set_trace()

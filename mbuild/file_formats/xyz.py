@@ -1,5 +1,5 @@
 from mbuild.flat_compound import FlatCompound
-from mbuild.plugins.system import System
+from mbuild.plugins.system import FlatCompound
 
 __author__ = 'sallai'
 
@@ -33,7 +33,7 @@ def load_xyz(filename):
             coords[idx] = np.array([float(fields[1]),float(fields[2]),float(fields[3])])
             idx += 1
 
-    return System(coords=coords, types=types)
+    return FlatCompound(coords=coords, types=types)
 
 
 def write_xyz(system, fn):
