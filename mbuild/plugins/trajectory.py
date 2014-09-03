@@ -1,5 +1,5 @@
 from mdtraj.core.topology import Topology as MDTTopology
-from mdtraj.core.trajectory import Trajectory as MDTTrajectory
+import mdtraj as md
 from mbuild.atom import Atom
 from mbuild.bond import Bond
 from mbuild.box import Box
@@ -11,11 +11,14 @@ import mdtraj as md
 __author__ = 'sallai'
 import numpy as np
 
-class Trajectory(MDTTrajectory):
+class Trajectory(md.Trajectory):
 
     def __init__(self, *args, **kwargs):
         if "trajectory" in kwargs:
+            # we're casting an md.Trajectory to mbuild Trajectory
             trajectory = kwargs["trajectory"]
+            assert(isinstance(trajectory, md.Trajectory))
+            assert(len(kwargs) == 1)
             super(Trajectory, self).__init__(trajectory.xyz, trajectory.topology, time=trajectory.time, unitcell_lengths=trajectory.unitcell_lengths, unitcell_angles=trajectory.unitcell_angles)
         else:
             super(Trajectory, self).__init__(*args, **kwargs)
@@ -35,71 +38,6 @@ class Trajectory(MDTTrajectory):
         return cls(xyz, t)
 
 
-    # def __init__(self, coords=None, masses=None, charges=None, types=None, bonds=None, bond_types=None, angles=None, dihedrals=None, impropers=None, box=None):
-    #     if coords is not None:
-    #         self.coords = np.asarray(coords, 'float')
-    #         self.n_atoms = self.coords.shape[0]
-    #         assert(self.coords.shape[1] == 3)
-    #     else:
-    #         self.coords = None
-    #         self.n_atoms = 0
-    #
-    #     if masses is not None:
-    #         self.masses = np.asarray(masses, 'float')
-    #         assert(len(self.masses.shape) == 1)
-    #     else:
-    #         self.masses = None
-    #
-    #     if charges is not None:
-    #         self.charges= np.asarray(charges, 'float')
-    #         assert(len(self.charges.shape) == 1)
-    #     else:
-    #         self.charges = None
-    #
-    #     if types is not None:
-    #         self.types= np.asarray(types, 'str')
-    #         assert(len(self.types.shape) == 1)
-    #     else:
-    #         self.types = None
-    #
-    #     if bonds is not None:
-    #         self.bonds= np.asarray(bonds, 'int')
-    #         self.n_bonds = self.bonds.shape[0]
-    #         assert(self.bonds.shape[1] == 2)
-    #     else:
-    #         self.bonds = None
-    #         self.n_bonds = 0
-    #
-    #     if bond_types is not None:
-    #         self.bond_types= np.asarray(bond_types, 'string')
-    #         assert(len(self.bond_types.shape) == 1)
-    #     else:
-    #         self.bond_types = None
-    #
-    #     if angles is not None:
-    #         self.angles= np.asarray(angles, 'int')
-    #         assert(self.angles.shape[1] == 3)
-    #     else:
-    #         self.angles = None
-    #
-    #     if dihedrals is not None:
-    #         self.dihedrals= np.asarray(dihedrals, 'int')
-    #         assert(self.dihedrals.shape[1] == 4)
-    #     else:
-    #         self.dihedrals = None
-    #
-    #     if impropers is not None:
-    #         self.impropers= np.asarray(impropers, 'int')
-    #         assert(self.impropers.shape[1] == 4)
-    #     else:
-    #         self.impropers = None
-    #
-    #     if box is not None:
-    #         self.box = box
-    #         assert(isinstance(self.box, Box))
-    #     else:
-    #         self.box = Box()
-
 
     # def update_compound(self, compound):
     #     atoms, atom_id_to_idx = compound.atom_list_by_kind('*', excludeG=True, with_id_to_idx_mapping=True)
@@ -112,6 +50,8 @@ class Trajectory(MDTTrajectory):
     def to_compound(self, part=None, frame=0):
         if part is None:
             part = Compound()
+
+        assert(isinstance(compound, Compound))
 
         atom_mapping = {}
         idx = 0
@@ -132,6 +72,11 @@ class Trajectory(MDTTrajectory):
             part.add(Bond(atom1, atom2), label="bond[$]")
 
         return part
+
+    def append_compound(self, compound):
+        assert(isinstance(compound, Compound))
+
+        self.to_compound(part=compound)
 
     # def boundingbox(self):
     #     return Box(mins=np.amin(self.coords, axis=0), maxes=np.amax(self.coords, axis=0))
@@ -164,13 +109,17 @@ class Trajectory(MDTTrajectory):
 
 
 
-def load(filename):
+def load(filename, relative_to_module=""):
+
+    # Look for data file in same directory as this python module.
+    current_dir = os.path.dirname(os.path.realpath(sys.modules[relative_to_module].__file__))
+    new_path = os.path.join(current_dir, filename)
+
     t = md.load(filename)
     return Trajectory(trajectory=t)
 
 
 if __name__ == "__main__":
-    import mdtraj as md
     t1 = load("../../../mbuild/tests/methyl.pdb")
 
     compound = t1.to_compound()

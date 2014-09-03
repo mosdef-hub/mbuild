@@ -118,6 +118,19 @@ class Compound(MBase, PartMixin, HasPartsMixin):
             return list
 
 
+    def append_from_file(self, filename, relative_to_module="", frame=0):
+
+        # Load trajectory from file
+        from plugins.trajectory import Trajectory
+        traj = Trajectory.load(filename, relative_to_module="")
+
+        self.append_from_trajectory(traj, frame=frame)
+
+    def append_from_trajectory(self, traj, frame=0):
+        # Append to this compound the trajectory's topology (atoms, bonds) with the atom's xyz positions as of frame 0
+        traj.to_compound(part=self, frame=frame)
+
+
     def min_periodic_distance(self, x0, x1):
         """Vectorized distance calculation considering minimum image. """
         d = np.abs(x0 - x1)
