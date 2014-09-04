@@ -14,9 +14,9 @@ class Port(Compound):
         super(Port, self).__init__(kind='Port')
         self.anchor = anchor
         self.add(Atom(kind='G', pos=np.array([0, 0, 0])), 'middle')
-        self.add(Atom(kind='G', pos=np.array([0, 0.2, 0])), 'top')
-        self.add(Atom(kind='G', pos=np.array([-0.2, -0.1, 0])), 'left')
-        self.add(Atom(kind='G', pos=np.array([0.0, -0.2, 0.1])), 'right')
+        self.add(Atom(kind='G', pos=np.array([0, 0.02, 0])), 'top')
+        self.add(Atom(kind='G', pos=np.array([-0.02, -0.01, 0])), 'left')
+        self.add(Atom(kind='G', pos=np.array([0.0, -0.02, 0.01])), 'right')
 
     def __deepcopy__(self, memo):
         newone = super(Port, self).__deepcopy__(memo)

@@ -16,8 +16,6 @@ class Ethane(Compound):
 
         equivalence_transform(self.m1, self.m1.up, self.m2.down)
 
-
-
 if __name__ == "__main__":
     ethane = Ethane()
 
@@ -27,5 +25,5 @@ if __name__ == "__main__":
     from mbuild.plot import Plot
     Plot(ethane, verbose=False, atoms=True, bonds=True, angles=False, dihedrals=False).show()
 
-    from mbuild.treeview import TreeView
-    TreeView(ethane).show()
+    # from mbuild.treeview import TreeView
+    # TreeView(ethane).show()

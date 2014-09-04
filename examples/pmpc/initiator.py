@@ -20,12 +20,12 @@ class Initiator(Compound):
         # Add bottom port
         self.add(Port(anchor=self.atom[0]), 'bottom_port')
         # Place the port.
-        translate(self.bottom_port, self.atom[0] + np.array([0.0, -0.7, 0.0]))
+        translate(self.bottom_port, self.atom[0] + np.array([0.0, -0.07, 0.0]))
 
         # Add top port.
         self.add(Port(anchor=self.atom[21]), 'top_port')
         # Place the port.
-        translate(self.top_port, self.atom[21] + np.array([0.0, 0.7, 0.0]))
+        translate(self.top_port, self.atom[21] + np.array([0.0, 0.07, 0.0]))
 
 if __name__ == "__main__":
     m = Initiator()

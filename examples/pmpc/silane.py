@@ -1,5 +1,4 @@
 import os, sys
-from mbuild.file_formats.mol2file import load_mol2
 from mbuild.coordinate_transform import *
 from mbuild.compound import Compound
 from mbuild.port import Port
@@ -19,11 +18,11 @@ class Silane(Compound):
 
         # Add bottom port.
         self.add(Port(anchor=self.SI[0]), 'bottom_port')
-        translate(self.bottom_port, np.array([0, -.7, 0]))
+        translate(self.bottom_port, np.array([0, -.07, 0]))
 
         # # Add top port.
         self.add(Port(anchor=self.SI[0]), 'top_port')
-        translate(self.top_port, np.array([0, .7, 0]))
+        translate(self.top_port, np.array([0, .07, 0]))
 
 if __name__ == "__main__":
     m = Silane()

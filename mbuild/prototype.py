@@ -45,16 +45,19 @@ class Prototype(object):
         return Prototype.prototypes[kind][key]
 
 # define atom kind prototypes containing radius and color
-Prototype('C', radius=1.7, color='teal')
-Prototype('C2', radius=1.7, color='teal')
-Prototype('CB', radius=1.7, color='teal')
-Prototype('H', radius=1.2, color='white')
-Prototype('HB', radius=1.2, color='white')
-Prototype('O', radius=1.52, color='red')
-Prototype('O1', radius=1.52, color='red')
-Prototype('F', radius=1.35, color='pink')
-Prototype('N', radius=1.55, color='blue')
-Prototype('P', radius=1.8, color='orange')
-Prototype('Si', radius=2.10, color='yellow')
-Prototype('Si1', radius=2.10, color='yellow')
+Prototype('G', radius=.05, color='gray')
+
+Prototype('C', radius=.17, color='teal')
+Prototype('C2', radius=.17, color='teal')
+Prototype('CB', radius=.17, color='teal')
+Prototype('H', radius=.12, color='white')
+Prototype('HB', radius=.12, color='white')
+Prototype('O', radius=.152, color='red')
+Prototype('O1', radius=.152, color='red')
+Prototype('F', radius=.135, color='pink')
+Prototype('N', radius=.155, color='blue')
+Prototype('P', radius=.18, color='orange')
+Prototype('SI', radius=.210, color='yellow')
+Prototype('Si', radius=.210, color='yellow')
+Prototype('Si1', radius=.210, color='yellow')
 

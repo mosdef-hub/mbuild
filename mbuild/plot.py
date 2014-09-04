@@ -55,7 +55,7 @@ class Plot(object):
 
                 color = Prototype.getAttr(kind, "color", default=default_color)
                 colorRGB=tuple(map(operator.div, webcolors.name_to_rgb(color), (256.0,256.0,256.0)))
-                radius = Prototype.getAttr(kind, "radius", default=1.0)
+                radius = Prototype.getAttr(kind, "radius", default=.1)
 
                 x2 = []
                 y2 = []
@@ -100,7 +100,7 @@ class Plot(object):
                 v = []
                 w = []
 
-                epsilon = 0.1
+                epsilon = 0.01
 
                 for item in itemList:
 
@@ -344,17 +344,17 @@ class Plot(object):
         axessrc = mlab.pipeline.vector_scatter(np.array([0]), np.array([0]),
                 np.array([0]), np.array([1]), np.array([0]), np.array([0]))
         fig = mlab.pipeline.vectors(axessrc, mode='arrow', scale_mode='vector',
-                scale_factor=1.0, color=(1,0,0))
+                scale_factor=.10, color=(1,0,0))
 
         axessrc = mlab.pipeline.vector_scatter(np.array([0]), np.array([0]),
                 np.array([0]), np.array([0]), np.array([1]), np.array([0]))
         fig = mlab.pipeline.vectors(axessrc, mode='arrow', scale_mode='vector',
-                scale_factor=1.0, color=(0,1,0))
+                scale_factor=.10, color=(0,1,0))
 
         axessrc = mlab.pipeline.vector_scatter(np.array([0]), np.array([0]),
                 np.array([0]), np.array([0]), np.array([0]), np.array([1]))
         fig = mlab.pipeline.vectors(axessrc, mode='arrow', scale_mode='vector',
-                scale_factor=1.0, color=(0,0,1))
+                scale_factor=.10, color=(0,0,1))
 
         self.mlab = mlab
 
