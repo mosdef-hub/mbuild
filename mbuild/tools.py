@@ -13,7 +13,7 @@ from periodic_kdtree import PeriodicCKDTree
 
 
 def vdw_radius(atomic_number):
-    return 1.5
+    return .2
 
 
 def solvate(host_compound, guest_compound, host_bounds, guest_bounds):
@@ -77,9 +77,8 @@ def solvate(host_compound, guest_compound, host_bounds, guest_bounds):
 def add_bond(compound, type_A, type_B, dmin, dmax):
     """Ai-Bj distance is in [dmin, dmax] => add bond A1xB(Ai,Bj) (symmetric)."""
 
-    system = FlatCompound.from_compound(compound)
     for a1 in compound.atom_list_by_kind(type_A):
-        nearest = system.atoms_in_range(a1.pos, dmax)
+        nearest = compound.atoms_in_range(a1.pos, dmax)
         for a2_idx in nearest:
             if (a2_idx.kind==type_B) and (dmin <= compound.min_periodic_distance(a2_idx.pos, a1.pos) <= dmax):
                 compound.add(Bond(a1, a2_idx))

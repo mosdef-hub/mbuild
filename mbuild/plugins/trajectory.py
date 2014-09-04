@@ -19,6 +19,9 @@ import numpy as np
 class Trajectory(md.Trajectory):
 
     def __init__(self, *args, **kwargs):
+
+        self._atom_kdtrees = {}
+
         if "trajectory" in kwargs:
             # we're casting an md.Trajectory to mbuild Trajectory
             trajectory = kwargs["trajectory"]
@@ -101,31 +104,39 @@ class Trajectory(md.Trajectory):
     # def boundingbox(self):
     #     return Box(mins=np.amin(self.coords, axis=0), maxes=np.amax(self.coords, axis=0))
 
-    # def _init_atom_kdtree(self):
-    #         if len(self.coords) > 0:
-    #             self._atom_kdtree = PeriodicCKDTree(self.coords)
-    #         else:
-    #             self._atom_kdtree = None
-    #
-    # def atoms_in_range(self, point, radius, maxItems=10):
-    #
-    #     # create kdtree if it's not yet there
-    #     if not hasattr(self,'_atom_kdtree'):
-    #         self._init_atom_kdtree()
-    #
-    #     if self._atom_kdtree is None:
-    #         return []
-    #
-    #     distances, indices = self._atom_kdtree.query(point, maxItems)
-    #
-    #     neighbors = []
-    #     for index, distance in zip(indices, distances):
-    #         if distance <= radius:
-    #             neighbors.append(self.atom_list[index])
-    #         else:
-    #             break
-    #
-    #     return neighbors
+    def _init_atom_kdtree(self, frame=0):
+            if self.n_atoms > 0:
+                self._atom_kdtrees[frame] = PeriodicCKDTree(self.xyz[frame])
+            else:
+                self._atom_kdtrees[frame] = None
+
+    def atoms_in_range_idx(self, point, radius, max_items=10, frame=0):
+
+        # create kdtree if it's not yet there
+        if not frame in self._atom_kdtrees:
+            self._init_atom_kdtree(frame=frame)
+
+        if self._atom_kdtrees[frame] is None:
+            return []
+
+        distances, indices = self._atom_kdtrees[frame].query(point, max_items)
+
+        neighbors = []
+        for index, distance in zip(indices, distances):
+            if distance <= radius:
+                neighbors.append(index)
+            else:
+                break
+
+        return neighbors
+
+    def atoms_in_range_xyz(self, *args, **kwargs):
+        neighbors_idx = self.atoms_in_range_idx(*args, **kwargs)
+        return [self.xyz[kwargs["frame"], idx] for idx in neighbors_idx]
+
+    def atoms_in_range(self, *args, **kwargs):
+        neighbors_idx = self.atoms_in_range_idx(*args, **kwargs)
+        return [self.topology.atom(idx) for idx in neighbors_idx]
 
     @classmethod
     def load(cls, filename, relative_to_module=None):

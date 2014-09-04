@@ -96,6 +96,9 @@ class Compound(MBase, PartMixin, HasPartsMixin):
         else:
             return list
 
+    def n_atoms(self, kind='*', excludeG=True):
+        return len(self.atom_list_by_kind(kind=kind, excludeG=excludeG))
+
     def bond_list_by_kind(self, kind='*', with_id_to_idx_mapping=False):
         list = []
         id_to_idx = dict()
@@ -195,6 +198,11 @@ class Compound(MBase, PartMixin, HasPartsMixin):
 
         return Box(mins=min_coords, maxes=max_coords)
 
+    def atoms_in_range(self, point, radius, max_items=10):
+        atoms = self.atom_list_by_kind(excludeG=True)
+        traj = self.to_trajectory()
+        idxs = traj.atoms_in_range_idx(point, radius, max_items=max_items)
+        return [atoms[idx] for idx in idxs]
 
     def __deepcopy__(self, memo):
         cls = self.__class__

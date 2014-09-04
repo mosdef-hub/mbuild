@@ -25,7 +25,7 @@ class Tnp(Compound):
         # apply chains to mask
         apply_mask(self.ball, chain_proto , mask, guest_port_name="down")
 
-        # add_bond(self, "particle", "particle", np.sqrt(4*ball_radius*ball_radius*np.pi/n)-.5, np.sqrt(4*ball_radius*ball_radius*np.pi/n)+.5)
+        add_bond(self, "particle", "particle", np.sqrt(4*ball_radius*ball_radius*np.pi/n)-.5, np.sqrt(4*ball_radius*ball_radius*np.pi/n)+.5)
 
 
 if __name__ == "__main__":

@@ -18,7 +18,7 @@ if __name__ == "__main__":
     #
     # print box
 
-    host_box = Box(mins=[-9,-9,-9], maxes=[19,19,19])
+    host_box = Box(mins=[-.9,-.9,-.9], maxes=[1.9,1.9,1.9])
     print("Host (ethane) box: {}".format(host_box))
 
 

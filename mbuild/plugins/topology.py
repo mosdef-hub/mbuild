@@ -1,3 +1,5 @@
+from mdtraj.core.element import Element
+
 __author__ = 'sallai'
 from mdtraj.core.topology import Topology as MDTTopology
 from mdtraj.core import element as elem
@@ -17,7 +19,13 @@ class Topology(MDTTopology):
             atom_list, atom_id_to_idx = compound.atom_list_by_kind('*', excludeG=True, with_id_to_idx_mapping=True)
 
         for atom in atom_list:
-            a = out.add_atom(atom.kind, elem.get_by_symbol(atom.kind), r)
+            e = None
+            try:
+                e = elem.get_by_symbol(atom.kind)
+            except:
+                e = Element(  1000, atom.kind, atom.kind, 1.0)
+
+            a = out.add_atom(atom.kind, e, r)
             atom_mapping[atom] = a
 
         if bond_list is None:
