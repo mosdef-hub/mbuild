@@ -26,3 +26,6 @@ if __name__ == "__main__":
 
     from mbuild.plot import Plot
     Plot(ethane, verbose=False, atoms=True, bonds=True, angles=False, dihedrals=False).show()
+
+    from mbuild.treeview import TreeView
+    TreeView(ethane).show()

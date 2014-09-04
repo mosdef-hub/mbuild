@@ -11,9 +11,7 @@ class Silane(Compound):
         super(Silane, self).__init__()
 
         # Look for data file in same directory as this python module.
-        current_dir = os.path.dirname(os.path.realpath(sys.modules[__name__].__file__))
-        new_path = os.path.join(current_dir, 'silane.mol2')
-        load_mol2(new_path, part=self)
+        self.append_from_file('silane.pdb', relative_to_module=__name__)
 
         # Transform the coordinate system such that the silicon atom is at the origin
         # and the oxygen atoms are on the x axis.

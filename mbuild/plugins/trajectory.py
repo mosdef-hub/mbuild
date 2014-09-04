@@ -1,4 +1,5 @@
 from mdtraj.core.topology import Topology as MDTTopology
+import sys, os
 import mdtraj as md
 from mbuild.atom import Atom
 from mbuild.bond import Bond
@@ -10,6 +11,7 @@ import mdtraj as md
 
 __author__ = 'sallai'
 import numpy as np
+
 
 class Trajectory(md.Trajectory):
 
@@ -37,27 +39,36 @@ class Trajectory(md.Trajectory):
 
         return cls(xyz, t)
 
+    def update_compound(self, compound, frame=0):
+        assert(isinstance(compound, Compound))
 
+        atoms, atom_id_to_idx = compound.atom_list_by_kind('*', excludeG=True, with_id_to_idx_mapping=True)
 
-    # def update_compound(self, compound):
-    #     atoms, atom_id_to_idx = compound.atom_list_by_kind('*', excludeG=True, with_id_to_idx_mapping=True)
-    #
-    #     assert (len(atoms) == self.n_atoms)
-    #
-    #     for idx, atom in enumerate(atoms):
-    #         atom.pos = self.coords[idx]
+        assert (len(atoms) == self.n_atoms)
+
+        idx = 0
+        for chain in self.topology.chains:
+            for res in chain.residues:
+                for atom in res.atoms:
+                    atoms[idx].pos = self.xyz[frame, idx]
+                    idx += 1
+
 
     def to_compound(self, part=None, frame=0):
         if part is None:
             part = Compound()
 
-        assert(isinstance(compound, Compound))
+        assert(isinstance(part, Compound))
 
         atom_mapping = {}
         idx = 0
         for chain in self.topology.chains:
-            chain_compound = Compound()
-            part.add(chain_compound, "chain[$]")
+            chain_compound = None
+            if self.topology.n_chains > 1:
+                chain_compound = Compound()
+                part.add(chain_compound, "chain[$]")
+            else:
+                chain_compound = part
             for res in chain.residues:
                 for atom in res.atoms:
                     new_atom = Atom(str(atom.name), self.xyz[frame, idx])
@@ -107,16 +118,16 @@ class Trajectory(md.Trajectory):
     #
     #     return neighbors
 
+    @classmethod
+    def load(cls, filename, relative_to_module=None):
 
+        # Look for data file in same directory as this python module.
+        if relative_to_module is not None:
+            current_dir = os.path.dirname(os.path.realpath(sys.modules[relative_to_module].__file__))
+            filename = os.path.join(current_dir, filename)
 
-def load(filename, relative_to_module=""):
-
-    # Look for data file in same directory as this python module.
-    current_dir = os.path.dirname(os.path.realpath(sys.modules[relative_to_module].__file__))
-    new_path = os.path.join(current_dir, filename)
-
-    t = md.load(filename)
-    return Trajectory(trajectory=t)
+        t = md.load(filename)
+        return cls(trajectory=t)
 
 
 if __name__ == "__main__":

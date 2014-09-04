@@ -9,7 +9,6 @@ from compound import Compound
 from bond import Bond
 from box import Box
 from coordinate_transform import equivalence_transform, translate
-from mbuild.plugins.system import FlatCompound
 from periodic_kdtree import PeriodicCKDTree
 
 

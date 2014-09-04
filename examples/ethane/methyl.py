@@ -11,9 +11,9 @@ class Methyl(Compound):
         Compound.__init__(self)
 
         # Look for data file in same directory as this python module.
-        current_dir = os.path.dirname(os.path.realpath(sys.modules[__name__].__file__))
-        new_path = os.path.join(current_dir, 'methyl.pdb')
-        load_mol2(new_path, part=self)
+        # current_dir = os.path.dirname(os.path.realpath(sys.modules[__name__].__file__))
+        # new_path = os.path.join(current_dir, 'methyl.pdb')
+        # load_mol2(new_path, part=self)
         self.append_from_file('methyl.pdb', relative_to_module=__name__)
 
         # transform(self, Translation(-carbon.pos))
