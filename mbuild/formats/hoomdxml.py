@@ -2,6 +2,8 @@ import pdb
 from warnings import warn
 
 from mdtraj.formats.registry import _FormatRegistry
+from mbuild.compound import Compound
+from mbuild.coordinate_transform import rotate_around_x
 
 __all__ = ['load_hoomxml', 'save_hoomdxml']
 
@@ -53,8 +55,9 @@ def load_hoomdxml(filename, optional_nodes=False):
     for atom_type in config.find('type').text.splitlines()[1:]:
         atom_types.append(atom_type)
 
+    optional_data = dict()
+
     if optional_nodes:
-        optional_data = dict()
 
         # Create a dataframe with all available per-particle information.
         per_particle_df = pd.DataFrame()
@@ -93,10 +96,10 @@ def load_hoomdxml(filename, optional_nodes=False):
         # TODO: read wall
         # <wall> has its information stored as attributes
 
-    found = [node for node in optional_data.keys() if node != 'per_particle']
-    found.extend([node for node in per_particle_df.columns])
-    print "Parsed the following optional nodes from '{0}':".format(filename)
-    print found
+    # found = [node for node in optional_data.keys() if node != 'per_particle']
+    # found.extend([node for node in per_particle_df.columns])
+    # print "Parsed the following optional nodes from '{0}':".format(filename)
+    # print found
 
     atoms_df = pd.DataFrame(atom_types, columns=['name'])
     atoms_df['element'] = ['' for n in range(n_atoms)]
@@ -108,7 +111,7 @@ def load_hoomdxml(filename, optional_nodes=False):
     if 'bond' in optional_data:
         bonds = optional_data['bond'][['id0', 'id1']].values
     else:
-        bonds=None
+        bonds = np.empty(shape=(0,2), dtype="int")
     top = Topology.from_dataframe(atoms_df, bonds=bonds)
 
     traj = Trajectory(xyz=np.array(xyz, dtype=np.float64), topology=top)
@@ -131,9 +134,12 @@ def save_hoomdxml(traj, step=-1, optional_nodes=None, filename='mbuild.xml'):
         xml_file.write("""<hoomd_xml>\n""")
         xml_file.write("""<configuration time_step="0">\n""")
 
-        #lx, ly, lz = traj.unitcell_lengths[0]
-        lx, ly, lz = (2, 2, 2)
-        xml_file.write("""<box lx="{0}" ly="{1}" lz="{2}"/>\n""".format(lx, ly, lz))
+        lx, ly, lz = traj.unitcell_lengths[0]
+        xy = traj.unitcell_vectors[0,1,0] / ly
+        xz = traj.unitcell_vectors[0,2,0] / lz
+        yz = traj.unitcell_vectors[0,2,1] / lz
+
+        xml_file.write("""<box lx="{0}" ly="{1}" lz="{2}" xy="{3}" xz="{4}" yz="{5}" />\n""".format(lx, ly, lz, xy, xz, yz))
 
         xml_file.write("""<position num="{0}">\n""".format(traj.n_atoms))
         for atom in traj.xyz[step]:
@@ -151,6 +157,21 @@ def save_hoomdxml(traj, step=-1, optional_nodes=None, filename='mbuild.xml'):
         xml_file.write("</hoomd_xml>\n")
 
 if __name__ == "__main__":
-    traj, optional_data = load_hoomdxml('init.xml', optional_nodes=True)
-    save_hoomdxml(traj, filename='init_out.xml')
-    pdb.set_trace()
+    # traj, optional_data = load_hoomdxml('init.xml', optional_nodes=True)
+    # save_hoomdxml(traj, filename='init_out.xml')
+    # pdb.set_trace()
+
+
+    from examples.ethane.ethane import Ethane
+    ethane = Ethane()
+    import numpy as np
+    rotate_around_x(ethane, np.pi)
+    ethane.save("ethane.hoomdxml")
+
+    ethane.update_from_file("ethane.hoomdxml")
+
+    c = Compound()
+    c.append_from_file("ethane.hoomdxml")
+
+    for atom in c.atoms():
+        print atom

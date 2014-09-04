@@ -5,9 +5,12 @@ from mbuild.atom import Atom
 from mbuild.bond import Bond
 from mbuild.box import Box
 from mbuild.compound import Compound
+from mbuild.formats.hoomdxml import save_hoomdxml
 from mbuild.periodic_kdtree import PeriodicCKDTree
 from mbuild.plugins.topology import Topology
 import mdtraj as md
+import mbuild.formats.hoomdxml
+
 
 __author__ = 'sallai'
 import numpy as np
@@ -134,6 +137,12 @@ class Trajectory(md.Trajectory):
 
         t = md.load(filename)
         return cls(trajectory=t)
+
+    def save(self, filename, **kwargs):
+        if filename.endswith(".hoomdxml"):
+            save_hoomdxml(traj=self, filename=filename, **kwargs)
+        else:
+           super(self, Trajectory).save(filename, **kwargs)
 
 
 if __name__ == "__main__":

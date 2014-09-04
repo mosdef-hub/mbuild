@@ -142,7 +142,6 @@ class Compound(MBase, PartMixin, HasPartsMixin):
         traj.update_compound(self, frame=frame)
 
     def save(self, filename, **kwargs):
-        from plugins.trajectory import Trajectory
         self.to_trajectory().save(filename, **kwargs)
 
     def to_trajectory(self):
