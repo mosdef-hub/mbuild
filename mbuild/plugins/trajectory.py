@@ -39,7 +39,11 @@ class Trajectory(md.Trajectory):
 
         box = compound.boundingbox()
 
-        return cls(xyz, t, unitcell_lengths=box.lengths)
+        traj = cls(xyz, t)
+
+        traj.unitcell_vectors = np.array([np.identity(3)*box.lengths])
+
+        return traj
 
     def update_compound(self, compound, frame=0):
         assert(isinstance(compound, Compound))
@@ -133,7 +137,7 @@ class Trajectory(md.Trajectory):
 
 
 if __name__ == "__main__":
-    t1 = load("../../../mbuild/tests/methyl.pdb")
+    t1 = Trajectory.load("../../../mbuild/tests/methyl.pdb")
 
     compound = t1.to_compound()
 
