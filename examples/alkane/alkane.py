@@ -30,6 +30,21 @@ class Alkane(Compound):
         equivalence_transform(self.methyl2, self.methyl2.up, self.chain.down)
 
 if __name__ == "__main__":
-    m = Alkane(n=4)
+    n = 4
+    m = Alkane(n=n)
+
+    m.save("{}-alkane.pdb".format(n))
     from mbuild.plot import Plot
+
+
+
+    import pybel
+    mol = m.to_molecule()
+    print mol
+    print mol.OBMol.NumBonds()
+    mol.localopt(forcefield="gaff", steps=2000)
+    print mol
+    m.update_from_molecule(mol)
+
+
     Plot(m).show()

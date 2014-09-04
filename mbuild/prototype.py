@@ -47,10 +47,10 @@ class Prototype(object):
 # define atom kind prototypes containing radius and color
 Prototype('G', radius=.05, color='gray')
 
-Prototype('C', radius=.17, color='teal')
+Prototype('C', radius=.17, color='teal', atomic_number=6)
 Prototype('C2', radius=.17, color='teal')
 Prototype('CB', radius=.17, color='teal')
-Prototype('H', radius=.12, color='white')
+Prototype('H', radius=.12, color='white', atomic_number=1)
 Prototype('HB', radius=.12, color='white')
 Prototype('O', radius=.152, color='red')
 Prototype('O1', radius=.152, color='red')

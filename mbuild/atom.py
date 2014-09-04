@@ -53,18 +53,6 @@ class Atom(MBase, PartMixin):
         # self.referrers = set()
         self.bonds = set()
 
-    # def ancestors(self):
-    #     """Generate all ancestors of the Compound recursively.
-    #
-    #     Yields:
-    #         ancestor (Compound): A Compound one or more levels higher in the
-    #             hierarchy.
-    #
-    #     """
-    #     yield self.parent
-    #     if self.parent is not None:
-    #         for ancestor in self.parent.ancestors():
-    #             yield ancestor
 
     def bonded_atoms(self, memo=dict()):
         """Return a list of atoms bonded to self. """

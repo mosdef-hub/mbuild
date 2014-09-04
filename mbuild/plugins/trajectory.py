@@ -153,7 +153,7 @@ class Trajectory(md.Trajectory):
         if filename.endswith(".hoomdxml"):
             save_hoomdxml(traj=self, filename=filename, **kwargs)
         else:
-           super(self, Trajectory).save(filename, **kwargs)
+           super(Trajectory, self).save(filename, **kwargs)
 
 
 if __name__ == "__main__":

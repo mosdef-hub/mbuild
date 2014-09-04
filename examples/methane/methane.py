@@ -1,3 +1,5 @@
+from pybel import Molecule
+
 __author__ = 'sallai'
 from mbuild.plot import Plot
 from mbuild.prototype import Prototype
