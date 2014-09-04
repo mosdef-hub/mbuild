@@ -14,10 +14,10 @@ class Ch2(Compound):
         self.append_from_file('ch2.pdb', relative_to_module=__name__)
 
         self.add(Port(anchor=self.C[0]), 'up')
-        translate(self.up, np.array([0,0.7,0]))
+        translate(self.up, np.array([0,0.07,0]))
 
         self.add(Port(anchor=self.C[0]), 'down')
-        translate(self.down, np.array([0,-0.7,0]))
+        translate(self.down, np.array([0,-0.07,0]))
 
 if __name__ == '__main__':
     m = Ch2()

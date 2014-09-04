@@ -149,6 +149,12 @@ class Compound(MBase, PartMixin, HasPartsMixin):
         from plugins.trajectory import Trajectory
         return Trajectory.from_compound(self)
 
+    @classmethod
+    def load(cls, filename, relative_to_module=None, frame=0):
+        from plugins.trajectory import Trajectory
+        traj = Trajectory.load(filename, relative_to_module=relative_to_module)
+        return traj.to_compound(frame=frame)
+
     def min_periodic_distance(self, x0, x1):
         """Vectorized distance calculation considering minimum image. """
         d = np.abs(x0 - x1)

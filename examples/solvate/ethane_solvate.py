@@ -23,12 +23,10 @@ if __name__ == "__main__":
 
 
     # Look for data file in same directory as this python module.
-    current_dir = os.path.dirname(os.path.realpath(sys.modules[__name__].__file__))
-    new_path = os.path.join(current_dir, 'spc216.mol2')
-    water = load_mol2(new_path)
+    water = Compound()
+    water.append_from_file("spc216.pdb", relative_to_module=__name__)
 
     guest_box = water.boundingbox()
-    water = water.to_compound()
     print("Guest (water) box: {}".format(guest_box))
 
     # add water to ethane
