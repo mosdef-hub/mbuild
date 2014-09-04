@@ -8,7 +8,7 @@ from mbuild.plugins.mask import *
 
 class Ball(Compound):
 
-    def __init__(self, n=65, radius=10, port_distance_from_surface=.7):
+    def __init__(self, n=65, radius=1, port_distance_from_surface=.07):
         Compound.__init__(self)
 
         # generate 65 points on the surface of a unit sphere
@@ -34,7 +34,7 @@ class Ball(Compound):
             translate(port, pos + (pos/radius * port_distance_from_surface))
 
 if __name__ == "__main__":
-    m = Ball(n=65, radius=20)
+    m = Ball(n=65, radius=2)
 
     # pdb.set_trace()
     from mbuild.plot import Plot

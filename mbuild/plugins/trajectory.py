@@ -37,7 +37,9 @@ class Trajectory(md.Trajectory):
         for idx, atom in enumerate(atom_list):
             xyz[0,idx] = atom.pos
 
-        return cls(xyz, t)
+        box = compound.boundingbox()
+
+        return cls(xyz, t, unitcell_lengths=box.lengths)
 
     def update_compound(self, compound, frame=0):
         assert(isinstance(compound, Compound))
