@@ -42,7 +42,8 @@ if __name__ == "__main__":
     mol = m.to_molecule()
     print mol
     print mol.OBMol.NumBonds()
-    mol.localopt(forcefield="gaff", steps=2000)
+    # mol.localopt(forcefield="gaff", steps=2000)
+    mol.localopt(forcefield="ghemical", steps=2000)
     print mol
     m.update_from_molecule(mol)
 

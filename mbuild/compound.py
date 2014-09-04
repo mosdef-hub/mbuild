@@ -171,12 +171,12 @@ class Compound(MBase, PartMixin, HasPartsMixin):
             atomic_num = Prototype.getAttr(atom.kind, "atomic_number", 0)
 
             a.SetAtomicNum(atomic_num)
-            a.SetVector(atom.pos[0], atom.pos[1], atom.pos[2]) # coordinates
+            a.SetVector(float(atom.pos[0])*10, float(atom.pos[1])*10, float(atom.pos[2])*10) # coordinates
 
         for bond in self.bond_list_by_kind():
             idx1 = atom_id_to_index[id(bond.atom1)]
             idx2 = atom_id_to_index[id(bond.atom2)]
-            mol.AddBond(idx1, idx2, 1)   # atoms indexed from 1
+            mol.AddBond(idx1+1, idx2+1, 1)   # atoms indexed from 1
 
         return Molecule(mol)
 
@@ -194,7 +194,7 @@ class Compound(MBase, PartMixin, HasPartsMixin):
         idx = 0
         for atom in mol.atoms:
             print atom
-            atoms[idx].pos = atom.coords
+            atoms[idx].pos = np.array(atom.coords) / 10.0
             idx += 1
 
 
