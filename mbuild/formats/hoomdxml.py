@@ -115,7 +115,7 @@ def load_hoomdxml(filename, optional_nodes=False):
     return traj
 
 # TODO: decide if we want this to be a class
-def save_hoomdxml(traj, optional_nodes=None, filename='mbuild.xml'):
+def save_hoomdxml(traj, step=-1, optional_nodes=None, filename='mbuild.xml'):
     """Output a Compound as a HOOMD XML file.
 
     Args:
@@ -123,27 +123,24 @@ def save_hoomdxml(traj, optional_nodes=None, filename='mbuild.xml'):
         filename (str, optional): Path of the output file.
 
     """
-    n_atoms = len([atom for atom in component.atoms() if atom.kind != "G"])
-    n_bonds = len(list(component.bonds()))
-
     with open(filename, 'w') as xml_file:
         xml_file.write("""<?xml version="1.3" encoding="UTF-8"?>\n""")
         xml_file.write("""<hoomd_xml>\n""")
         xml_file.write("""<configuration time_step="0">\n""")
 
+        #lx, ly, lz = traj.unitcell_lengths[0]
+        lx, ly, lz = (2, 2, 2)
         xml_file.write("""<box lx="{0}" ly="{1}" lz="{2}"/>\n""".format(lx, ly, lz))
 
-        xml_file.write("""<position num="{0}">\n""".format(n_atoms))
-        for atom in ATOMS:
-            atom_types.append(atom.kind)
-            x, y, z = atom.pos
+        xml_file.write("""<position num="{0}">\n""".format(traj.n_atoms))
+        for atom in traj.xyz[step]:
+            x, y, z = atom
             xml_file.write("{0:8.5f} {1:8.5f} {2:8.5f}\n".format(x, y, z))
-
         xml_file.write("</position>\n")
 
-        xml_file.write("""<type num="{0}">\n""".format(n_atoms))
-        for atom_type in atom_types:
-            xml_file.write("{0}\n".format(atom_type))
+        xml_file.write("""<type num="{0}">\n""".format(traj.n_atoms))
+        for atom in traj.top.atoms:
+            xml_file.write("{0}\n".format(atom.name))
         xml_file.write("</type>\n")
 
         # TODO: optional things
@@ -152,4 +149,5 @@ def save_hoomdxml(traj, optional_nodes=None, filename='mbuild.xml'):
 
 if __name__ == "__main__":
     traj, optional_data = load_hoomdxml('init.xml', optional_nodes=True)
+    save_hoomdxml(traj, filename='init_out.xml')
     pdb.set_trace()
