@@ -1,8 +1,11 @@
 import pdb
 from warnings import warn
 
+from mdtraj.formats.registry import _FormatRegistry
+
 __all__ = ['load_hoomxml', 'save_hoomdxml']
 
+@_FormatRegistry.register_loader('.hoomdxml')
 def load_hoomdxml(filename, optional_nodes=False):
     """Load a HOOMD-blue XML file form disk.
 
