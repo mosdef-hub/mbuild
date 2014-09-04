@@ -15,9 +15,7 @@ class Surface(Compound):
         super(Surface, self).__init__()
 
         # Look for mol2 file in same directory as this file.
-        current_dir = os.path.dirname(os.path.realpath(sys.modules[__name__].__file__))
-        mol2_path = os.path.join(current_dir, 'beta-cristobalite.mol2')
-        load_mol2(mol2_path, part=self)
+        self.append_from_file('beta-cristobalite.mpdb', relative_to_module=__name__)
 
         self.periodicity = np.array([47.689, 41.3, 0.0])
 

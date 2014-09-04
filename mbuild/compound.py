@@ -118,24 +118,77 @@ class Compound(MBase, PartMixin, HasPartsMixin):
             return list
 
 
-    def append_from_file(self, filename, relative_to_module="", frame=0):
+    def append_from_file(self, filename, relative_to_module=None, frame=0):
 
         # Load trajectory from file
         from plugins.trajectory import Trajectory
-        traj = Trajectory.load(filename, relative_to_module="")
+        traj = Trajectory.load(filename, relative_to_module=relative_to_module)
 
         self.append_from_trajectory(traj, frame=frame)
+
+    def update_from_file(self, filename, relative_to_module=None, frame=0):
+
+        # Load trajectory from file
+        from plugins.trajectory import Trajectory
+        traj = Trajectory.load(filename, relative_to_module=relative_to_module)
+
+        self.update_from_trajectory(traj, frame=frame)
 
     def append_from_trajectory(self, traj, frame=0):
         # Append to this compound the trajectory's topology (atoms, bonds) with the atom's xyz positions as of frame 0
         traj.to_compound(part=self, frame=frame)
 
+    def update_from_trajectory(self, traj, frame=0):
+        traj.update_compound(self, frame=frame)
+
+    def save(self, filename, **kwargs):
+        from plugins.trajectory import Trajectory
+        self.to_trajectory().save(filename, **kwargs)
+
+    def to_trajectory(self):
+        from plugins.trajectory import Trajectory
+        return Trajectory.from_compound(self)
 
     def min_periodic_distance(self, x0, x1):
         """Vectorized distance calculation considering minimum image. """
         d = np.abs(x0 - x1)
         d = np.where(d > 0.5 * self.periodicity, self.periodicity - d, d)
         return np.sqrt((d ** 2).sum(axis=-1))
+
+    def boundingbox(self, excludeG=True):
+        """Compute the bounding box of the compound.
+
+        Returns:
+            Box: Simulation box initialzied with min and max coordinates.
+
+        """
+        minx = np.inf
+        miny = np.inf
+        minz = np.inf
+        maxx = -np.inf
+        maxy = -np.inf
+        maxz = -np.inf
+
+        for a in self.atoms():
+            if excludeG and a.kind == 'G':
+                continue
+            if a.pos[0] < minx:
+                minx = a.pos[0]
+            if a.pos[0] > maxx:
+                maxx = a.pos[0]
+            if a.pos[1] < miny:
+                miny = a.pos[1]
+            if a.pos[1] > maxy:
+                maxy = a.pos[1]
+            if a.pos[2] < minz:
+                minz = a.pos[2]
+            if a.pos[2] > maxz:
+                maxz = a.pos[2]
+
+        min_coords = np.array([minx, miny, minz])
+        max_coords = np.array([maxx, maxy, maxz])
+
+        return Box(mins=min_coords, maxes=max_coords)
 
 
     def __deepcopy__(self, memo):
