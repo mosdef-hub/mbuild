@@ -2,14 +2,15 @@ from collections import OrderedDict
 from copy import deepcopy
 
 import numpy as np
+
 from atom import Atom
 from bond import Bond
 from box import Box
 from mbuild.mbase import MBase
 from mbuild.has_parts_mixin import HasPartsMixin
 from mbuild.part_mixin import PartMixin
-from periodic_kdtree import PeriodicCKDTree
 from orderedset import OrderedSet
+
 
 class Compound(MBase, PartMixin, HasPartsMixin):
     """A building block in the mBuild hierarchy.
@@ -123,7 +124,7 @@ class Compound(MBase, PartMixin, HasPartsMixin):
     def append_from_file(self, filename, relative_to_module=None, frame=0):
 
         # Load trajectory from file
-        from plugins.trajectory import Trajectory
+        from mbuild.trajectory import Trajectory
         traj = Trajectory.load(filename, relative_to_module=relative_to_module)
 
         self.append_from_trajectory(traj, frame=frame)
@@ -131,7 +132,7 @@ class Compound(MBase, PartMixin, HasPartsMixin):
     def update_from_file(self, filename, relative_to_module=None, frame=0):
 
         # Load trajectory from file
-        from plugins.trajectory import Trajectory
+        from mbuild.trajectory import Trajectory
         traj = Trajectory.load(filename, relative_to_module=relative_to_module)
 
         self.update_from_trajectory(traj, frame=frame)
@@ -147,17 +148,16 @@ class Compound(MBase, PartMixin, HasPartsMixin):
         self.to_trajectory().save(filename, **kwargs)
 
     def to_trajectory(self):
-        from plugins.trajectory import Trajectory
+        from mbuild.trajectory import Trajectory
         return Trajectory.from_compound(self)
 
     @classmethod
     def load(cls, filename, relative_to_module=None, frame=0):
-        from plugins.trajectory import Trajectory
+        from mbuild.trajectory import Trajectory
         traj = Trajectory.load(filename, relative_to_module=relative_to_module)
         return traj.to_compound(frame=frame)
 
     def to_molecule(self):
-        from openbabel import OBMol, OBAtom
         from pybel import Molecule
         from mbuild.prototype import Prototype
 
@@ -181,9 +181,7 @@ class Compound(MBase, PartMixin, HasPartsMixin):
         return Molecule(mol)
 
     def update_from_molecule(self, mol):
-        from openbabel import OBMol, OBAtom
         from pybel import Molecule
-        from mbuild.prototype import Prototype
 
         assert(isinstance(mol, Molecule))
 

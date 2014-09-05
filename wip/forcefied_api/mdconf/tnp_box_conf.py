@@ -1,4 +1,4 @@
-from examples.tnp.tnp_box import TnpBox
+from mbuild.examples.tnp.tnp_box import TnpBox
 
 __author__ = 'sallai'
 

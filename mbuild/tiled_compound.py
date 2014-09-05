@@ -26,7 +26,7 @@ class TiledCompound(Compound):
 
     """
 
-    def __init__(self, tile, n_x=1, n_y=1, n_z=1, kind=None, label=None):
+    def __init__(self, tile, n_x=1, n_y=1, n_z=1, kind=None):
         """ """
         assert isinstance(tile, Compound)
         super(TiledCompound, self).__init__()
@@ -41,8 +41,8 @@ class TiledCompound(Compound):
         if n_z != 1:
             assert tile.periodicity[2] != 0, "tile not periodic in z dimension"
 
-        if label is None:
-            label = tile.kind
+        if kind is None:
+            kind = tile.kind
 
         for i in range(n_x):
             for j in range(n_y):
@@ -52,7 +52,7 @@ class TiledCompound(Compound):
                             np.array([i*tile.periodicity[0],
                                       j*tile.periodicity[1],
                                       k*tile.periodicity[2]]))
-                    self.add(new_tile, label="label_{0}_{1}".format(i, j))
+                    self.add(new_tile, label="{0}_{1}_{2}".format(kind, i, j))
 
                     # Hoist ports.
                     for port in new_tile.parts:
@@ -126,7 +126,7 @@ class TiledCompound(Compound):
                     del atom.uid
 
 if __name__ == "__main__":
-    from examples.pmpc.surface import Surface
+    from mbuild.examples.pmpc.surface import Surface
     surface = Surface()
     tc = TiledCompound(surface, 2, 3, 1, kind="tiled_surface")
 

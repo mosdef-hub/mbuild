@@ -1,15 +1,14 @@
-from mdtraj.core.topology import Topology as MDTTopology
-import sys, os
+import sys
+import os
+
 import mdtraj as md
+
 from mbuild.atom import Atom
 from mbuild.bond import Bond
-from mbuild.box import Box
 from mbuild.compound import Compound
 from mbuild.formats.hoomdxml import save_hoomdxml
 from mbuild.periodic_kdtree import PeriodicCKDTree
-from mbuild.plugins.topology import Topology
-import mdtraj as md
-import mbuild.formats.hoomdxml
+from mbuild.topology import Topology
 
 
 __author__ = 'sallai'

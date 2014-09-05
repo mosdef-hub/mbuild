@@ -1,9 +1,8 @@
-import pdb
-from warnings import warn
-
 from mdtraj.formats.registry import _FormatRegistry
+
 from mbuild.compound import Compound
 from mbuild.coordinate_transform import rotate_around_x
+
 
 __all__ = ['load_hoomxml', 'save_hoomdxml']
 
@@ -24,10 +23,8 @@ def load_hoomdxml(filename, optional_nodes=False):
     import numpy as np
     import pandas as pd
 
-    #from mbuild.trajectory import Trajectory
-    from mdtraj.core.trajectory import Trajectory
-    #from mbuild.topology import Topology
-    from mdtraj.core.topology import Topology
+    from mbuild.trajectory import Trajectory
+    from mbuild.topology import Topology
 
     tree = etree.parse(filename)
 
@@ -41,7 +38,7 @@ def load_hoomdxml(filename, optional_nodes=False):
     xz = float(box.attrib['xz'])
     yz = float(box.attrib['yz'])
     unitcell_vectors = np.array([[[lx,  xy*ly, xz*lz],
-                                  [0.0, ly,    xy*lz],
+                                  [0.0, ly,    yz*lz],
                                   [0.0, 0.0,   lz   ]]])
 
     xyz = list()
@@ -135,9 +132,9 @@ def save_hoomdxml(traj, step=-1, optional_nodes=None, filename='mbuild.xml'):
         xml_file.write("""<configuration time_step="0">\n""")
 
         lx, ly, lz = traj.unitcell_lengths[0]
-        xy = traj.unitcell_vectors[0,1,0] / ly
-        xz = traj.unitcell_vectors[0,2,0] / lz
-        yz = traj.unitcell_vectors[0,2,1] / lz
+        xy = traj.unitcell_vectors[0, 1, 0] / ly
+        xz = traj.unitcell_vectors[0, 2, 0] / lz
+        yz = traj.unitcell_vectors[0, 2, 1] / lz
 
         xml_file.write("""<box lx="{0}" ly="{1}" lz="{2}" xy="{3}" xz="{4}" yz="{5}" />\n""".format(lx, ly, lz, xy, xz, yz))
 
@@ -152,6 +149,14 @@ def save_hoomdxml(traj, step=-1, optional_nodes=None, filename='mbuild.xml'):
             xml_file.write("{0}\n".format(atom.name))
         xml_file.write("</type>\n")
 
+        xml_file.write("""<bond>\n""")
+        for bond in traj.top.bonds:
+            a1 = bond[0]
+            a2 = bond[1]
+            bond_type = '{0}-{1}'.format(a1.name, a2.name)
+            xml_file.write("{0} {1} {2}\n".format(bond_type, a1.index, a2.index))
+        xml_file.write("</bond>\n")
+
         # TODO: optional things
         xml_file.write("</configuration>\n")
         xml_file.write("</hoomd_xml>\n")
@@ -162,7 +167,7 @@ if __name__ == "__main__":
     # pdb.set_trace()
 
 
-    from examples.ethane.ethane import Ethane
+    from mbuild.examples.ethane.ethane import Ethane
     ethane = Ethane()
     import numpy as np
     rotate_around_x(ethane, np.pi)

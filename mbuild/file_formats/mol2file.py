@@ -1,6 +1,3 @@
-from itertools import groupby
-
-import numpy as np
 from mbuild.compound import Compound
 
 
@@ -56,7 +53,7 @@ def load_mol2(filename, part=None):
     #
     # sys = FlatCompound(coords=coords, types=types, bonds=bonds)
 
-    from mbuild.plugins.trajectory import load
+    from mbuild.trajectory import load
     t = load(filename)
 
     if part is None:

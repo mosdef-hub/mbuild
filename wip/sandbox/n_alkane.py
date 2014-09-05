@@ -2,8 +2,7 @@ __author__ = 'sallai'
 
 from alkane_tail import AlkaneTail
 from alkane_body import AlkaneBody
-from mbuild.compound import *
-from examples.methane.methane import *
+from mbuild.examples.methane.methane import *
 
 class NAlkane(Compound):
 

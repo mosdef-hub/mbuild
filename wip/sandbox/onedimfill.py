@@ -1,8 +1,5 @@
 __author__ = 'sallai'
 
-from copy import deepcopy
-
-from tile import *
 from mbuild.ndimmesh import *
 
 
@@ -55,7 +52,7 @@ class OneDimFill(NDimMesh):
 
 if __name__ == "__main__":
 
-    from examples.methane.methane import *
+    from mbuild.examples.methane.methane import *
     from box import *
 
     methaneBox = Box.create(Methane.create,ctx={})
