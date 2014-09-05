@@ -1,2 +1,5 @@
 numpy
+webcolors
+mdtraj
+mayavi
 wheel==0.22.0

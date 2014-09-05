@@ -55,8 +55,6 @@ class Trajectory(md.Trajectory):
 
         atoms, atom_id_to_idx = compound.atom_list_by_kind('*', excludeG=True, with_id_to_idx_mapping=True)
 
-        assert (len(atoms) == self.n_atoms)
-
         idx = 0
         for chain in self.topology.chains:
             for res in chain.residues:

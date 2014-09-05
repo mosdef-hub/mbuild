@@ -3,18 +3,26 @@
 
 """Tests for `mbuild.pdbfile` module. """
 
-from mbuild.file_formats.pdbfile import load_pdb, write_pdb
 from mbuild.compound import Compound
+from mbuild.examples.ethane.methyl import Methyl
+from mbuild.testing.tools import get_fn
+
 
 class TestPdb:
 
     def test_load_and_create(self):
-        methyl = load_pdb('methyl.pdb')
+        methyl = Compound.load(get_fn('methyl.pdb'))
 
-    def test_load_into(self):
-        methyl = Compound()
-        load_pdb('methyl.pdb', component=methyl)
+    def test_update_from_file(self):
+        methyl = Methyl()
+        methyl.update_from_file(get_fn("methyl.pdb"))
 
     def test_write(self):
-        methyl = load_pdb('methyl.pdb')
-        write_pdb(methyl, filename='methyl_out.pdb') 
+        methyl = Compound.load(get_fn('methyl.pdb'))
+        methyl.save(filename='methyl_out.pdb')
+
+if __name__=="__main__":
+    TestPdb().test_load_and_create()
+    TestPdb().test_update_from_file()
+    TestPdb().test_write()
+
