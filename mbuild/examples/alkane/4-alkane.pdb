@@ -1,0 +1,33 @@
+CRYST1    2.200    5.738    1.646  90.00  90.00  90.00 P 1           1 
+MODEL        0
+ATOM      1  C   RES A   0       0.000   0.000   0.000  1.00  0.00           C  
+ATOM      2  H   RES A   0       1.070   0.000   0.000  1.00  0.00           H  
+ATOM      3  H   RES A   0      -0.357   0.769   0.653  1.00  0.00           H  
+ATOM      4  H   RES A   0      -0.357   0.181  -0.993  1.00  0.00           H  
+ATOM      5  C   RES A   0      -0.000  -2.800  -0.000  1.00  0.00           C  
+ATOM      6  H   RES A   0      -1.100  -2.800   0.000  1.00  0.00           H  
+ATOM      7  H   RES A   0       1.100  -2.800  -0.000  1.00  0.00           H  
+ATOM      8  C   RES A   0      -0.000  -1.400  -0.000  1.00  0.00           C  
+ATOM      9  H   RES A   0      -1.100  -1.400   0.000  1.00  0.00           H  
+ATOM     10  H   RES A   0       1.100  -1.400  -0.000  1.00  0.00           H  
+ATOM     11  C   RES A   0      -0.000  -4.200  -0.000  1.00  0.00           C  
+ATOM     12  H   RES A   0      -1.070  -4.200   0.000  1.00  0.00           H  
+ATOM     13  H   RES A   0       0.357  -4.969   0.653  1.00  0.00           H  
+ATOM     14  H   RES A   0       0.357  -4.381  -0.993  1.00  0.00           H  
+TER      15      RES A   0
+ENDMDL
+CONECT    1    2    3    4    8
+CONECT    2    1
+CONECT    3    1
+CONECT    4    1
+CONECT    5    6    7    8   11
+CONECT    6    5
+CONECT    7    5
+CONECT    8    9   10    5    1
+CONECT    9    8
+CONECT   10    8
+CONECT   11   12   13   14    5
+CONECT   12   11
+CONECT   13   11
+CONECT   14   11
+END
