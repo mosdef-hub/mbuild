@@ -14,7 +14,7 @@ ATOM     11  C   RES A   0      -0.000  -4.200  -0.000  1.00  0.00           C
 ATOM     12  H   RES A   0      -1.070  -4.200   0.000  1.00  0.00           H  
 ATOM     13  H   RES A   0       0.357  -4.969   0.653  1.00  0.00           H  
 ATOM     14  H   RES A   0       0.357  -4.381  -0.993  1.00  0.00           H  
-TER      15      RES A   0
+TER      15      RES A   1
 ENDMDL
 CONECT    1    2    3    4    8
 CONECT    2    1

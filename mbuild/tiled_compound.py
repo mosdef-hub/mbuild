@@ -52,7 +52,7 @@ class TiledCompound(Compound):
                             np.array([i*tile.periodicity[0],
                                       j*tile.periodicity[1],
                                       k*tile.periodicity[2]]))
-                    self.add(new_tile, label="{0}_{1}_{2}".format(kind, i, j))
+                    self.add(new_tile, label="{0}_{1}_{2}_{3}".format(kind, i, j, k))
 
                     # Hoist ports.
                     for port in new_tile.parts:
