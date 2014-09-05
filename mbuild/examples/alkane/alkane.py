@@ -27,13 +27,11 @@ if __name__ == "__main__":
 
     m.save("{}-alkane.pdb".format(n))
 
-    #mol = m.to_molecule()
-    #print mol
-    #print mol.OBMol.NumBonds()
-    ## mol.localopt(forcefield="gaff", steps=2000)
-    #mol.localopt(forcefield="ghemical", steps=2000)
-    #print mol
-    #m.update_from_molecule(mol)
+    # mol = m.to_molecule()
+    # # mol.localopt(forcefield="gaff", steps=2000)
+    # mol.localopt(forcefield="ghemical", steps=2000)
+    # print mol
+    # m.update_from_molecule(mol)
 
     from mbuild.plot import Plot
     Plot(m).show()

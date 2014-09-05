@@ -159,6 +159,7 @@ class Compound(MBase, PartMixin, HasPartsMixin):
 
     def to_molecule(self):
         from pybel import Molecule
+        from openbabel import OBMol
         from mbuild.prototype import Prototype
 
         mol = OBMol()
