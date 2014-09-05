@@ -12,6 +12,11 @@ class Surface(Compound):
         super(Surface, self).__init__()
 
         self.append_from_file(get_fn('sic.pdb'))
+        atoms_to_remove = list()
+        for atom in self.atoms():
+            if atom.pos[2] < 0.05:
+                atoms_to_remove.append(atom)
+        self.remove(atoms_to_remove)
         self.periodicity = np.array([2*6.16 + 1.5, 2*3.56+1.5, 10.08+1.5]) / 10
 
 if __name__ == "__main__":
