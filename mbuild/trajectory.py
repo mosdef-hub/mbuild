@@ -5,6 +5,7 @@ import mdtraj as md
 
 from mbuild.atom import Atom
 from mbuild.bond import Bond
+from mbuild.box import Box
 from mbuild.compound import Compound
 from mbuild.formats.hoomdxml import save_hoomdxml
 from mbuild.periodic_kdtree import PeriodicCKDTree
@@ -72,7 +73,6 @@ class Trajectory(md.Trajectory):
         atom_mapping = {}
         idx = 0
         for chain in self.topology.chains:
-            chain_compound = None
             if self.topology.n_chains > 1:
                 chain_compound = Compound()
                 part.add(chain_compound, "chain[$]")
@@ -98,8 +98,10 @@ class Trajectory(md.Trajectory):
 
         self.to_compound(part=compound)
 
-    # def boundingbox(self):
-    #     return Box(mins=np.amin(self.coords, axis=0), maxes=np.amax(self.coords, axis=0))
+    def boundingbox(self, step):
+        mins = np.amin(self.xyz[step], axis=0)
+        maxes = np.amax(self.xyz[step], axis=0)
+        return Box(mins=mins, maxes=maxes)
 
     def _init_atom_kdtree(self, frame=0):
             if self.n_atoms > 0:
