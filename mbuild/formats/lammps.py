@@ -1,12 +1,8 @@
-from collections import OrderedDict
-
 
 def save_lammps(traj, step=-1, optional_nodes=None, filename='data.mbuild'):
-    """Output a Compound as a HOOMD XML file.
+    """
 
     Args:
-        component (Compound): The Compound to be output.
-        filename (str, optional): Path of the output file.
 
     """
     directives_to_write = list()
