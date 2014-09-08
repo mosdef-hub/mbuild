@@ -17,9 +17,10 @@ class Ethane(Compound):
 
 if __name__ == "__main__":
     ethane = Ethane()
+    ethane.save('ethane.pdb')
 
-    from mbuild.plot import Plot
-    Plot(ethane, verbose=False, atoms=True, bonds=True, angles=False, dihedrals=False).show()
+    #from mbuild.plot import Plot
+    #Plot(ethane, verbose=False, atoms=True, bonds=True, angles=False, dihedrals=False).show()
 
     # from mbuild.treeview import TreeView
     # TreeView(ethane).show()

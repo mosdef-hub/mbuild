@@ -1,9 +1,11 @@
 from mdtraj.utils import in_units_of
 
 def save_lammps(traj, step=-1, optional_nodes=None, filename='data.mbuild', unit_set='real'):
-    """
+    """Output a Trajectory as a LAMMPS data file.
 
     Args:
+        traj (md.Trajectory): The Trajectory to be output.
+        filename (str, optional): Path of the output file.
 
     """
     _radians_unit = 'radians'
@@ -96,5 +98,3 @@ if __name__ == "__main__":
     ethane = Ethane()
     ethane = ethane.to_trajectory()
     save_lammps(ethane, filename='data.ethane')
-    import pdb
-    pdb.set_trace()

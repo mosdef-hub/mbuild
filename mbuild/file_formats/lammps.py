@@ -18,41 +18,41 @@ class Lammps(Compound):
     def __init__(self, path, ctx={}, cwd="", verbose=False):
         """Reads a LAMMPS data file
 
-            *** Only works for directives delimited by blank lines ***
+        *** Only works for directives delimited by blank lines ***
 
-            Currently supports the following directives:
-                Masses
-                Pair Coeffs (must be mix geometry)
-                Bond Coeffs (must be harmonic)
-                Angle Coeffs (must be harmonic)
-                Dihedral Coeffs (must be OPLS)
-                Atoms
-                Bonds
-                Angles
-                Dihedrals
+        Currently supports the following directives:
+            Masses
+            Pair Coeffs (must be mix geometry)
+            Bond Coeffs (must be harmonic)
+            Angle Coeffs (must be harmonic)
+            Dihedral Coeffs (must be OPLS)
+            Atoms
+            Bonds
+            Angles
+            Dihedrals
 
-            TODO:
-                -handling for comments
-                -handling for directives not delimited by blank lines
-                -allow specification of forcefield styles
+        TODO:
+            -handling for comments
+            -handling for directives not delimited by blank lines
+            -allow specification of forcefield styles
 
-            Args:
-                data_file (str): name of LAMMPS data file to read in
-            Returns:
-                lmp_data (dict):
-                    'xyz': xyz (numpy.ndarray)
-                    'types': types (numpy.ndarray)
-                    'masses': masses (numpy.ndarray)
-                    'charges': charges (numpy.ndarray)
-                    'bonds': bonds (numpy.ndarray)
-                    'angles': angles (numpy.ndarray)
-                    'dihedrals': dihedrals (numpy.ndarray)
-                    'pair_types': pair_types (dict)
-                    'bond_types': bond_types (dict)
-                    'angle_types': angle_types (dict)
-                    'dihedral_types': dihedral_type (dict)
+        Args:
+            data_file (str): name of LAMMPS data file to read in
+        Returns:
+            lmp_data (dict):
+                'xyz': xyz (numpy.ndarray)
+                'types': types (numpy.ndarray)
+                'masses': masses (numpy.ndarray)
+                'charges': charges (numpy.ndarray)
+                'bonds': bonds (numpy.ndarray)
+                'angles': angles (numpy.ndarray)
+                'dihedrals': dihedrals (numpy.ndarray)
+                'pair_types': pair_types (dict)
+                'bond_types': bond_types (dict)
+                'angle_types': angle_types (dict)
+                'dihedral_types': dihedral_type (dict)
 
-                box (numpy.ndarray): box dimensions
+            box (numpy.ndarray): box dimensions
             """
         super(Lammps, self).__init__(ctx=ctx)
 

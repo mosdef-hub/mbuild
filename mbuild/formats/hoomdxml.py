@@ -1,7 +1,5 @@
 from mdtraj.formats.registry import _FormatRegistry
 
-from mbuild.compound import Compound
-from mbuild.coordinate_transform import rotate_around_x
 
 
 __all__ = ['load_hoomxml', 'save_hoomdxml']
@@ -119,10 +117,10 @@ def load_hoomdxml(filename, optional_nodes=False):
 
 # TODO: decide if we want this to be a class
 def save_hoomdxml(traj, step=-1, optional_nodes=None, filename='mbuild.xml'):
-    """Output a Compound as a HOOMD XML file.
+    """Output a Trajectory as a HOOMD XML file.
 
     Args:
-        component (Compound): The Compound to be output.
+        traj (md.Trajectory): The Trajectory to be output.
         filename (str, optional): Path of the output file.
 
     """
@@ -166,10 +164,13 @@ if __name__ == "__main__":
     # save_hoomdxml(traj, filename='init_out.xml')
     # pdb.set_trace()
 
+    import numpy as np
 
     from mbuild.examples.ethane.ethane import Ethane
+    from mbuild.compound import Compound
+    from mbuild.coordinate_transform import rotate_around_x
+
     ethane = Ethane()
-    import numpy as np
     rotate_around_x(ethane, np.pi)
     ethane.save("ethane.hoomdxml")
 
