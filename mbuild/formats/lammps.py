@@ -1,10 +1,23 @@
+from mdtraj.utils import in_units_of
 
-def save_lammps(traj, step=-1, optional_nodes=None, filename='data.mbuild'):
+def save_lammps(traj, step=-1, optional_nodes=None, filename='data.mbuild', unit_set='real'):
     """
 
     Args:
 
     """
+    _radians_unit = 'radians'
+    _degrees_unit = 'degrees'
+    if unit_set == 'real':
+        _distance_unit = 'angstroms'
+        _velocity_unit = 'angstroms/femtosecond'
+        _energy_unit = 'kilocalories/mole'
+        _mass_unit = 'grams/mole'
+        _charge_unit = 'elementary_charge'
+        _mole_unit = 'mole'
+    else:
+        raise Exception("Unsupported unit set specified: {0}".format(unit_set))
+
     directives_to_write = list()
     mass_list = list()
     mass_list.append('\n')
@@ -22,10 +35,11 @@ def save_lammps(traj, step=-1, optional_nodes=None, filename='data.mbuild'):
         for atom in chain.atoms:
             if atom.name not in numeric_atom_types:
                 numeric_atom_types[atom.name] = atom_type_n
-                mass_list.append('{0:d} {1:8.4f}\n'.format(atom_type_n, atom.element.mass))
+                mass = in_units_of(atom.element.mass, 'grams/moles', _mass_unit)
+                mass_list.append('{0:d} {1:8.4f}\n'.format(atom_type_n, mass))
                 atom_type_n += 1
 
-            x, y, z = traj.xyz[step][atom.index]
+            x, y, z = in_units_of(traj.xyz[step][atom.index], 'nanometers', _distance_unit)
             entry = '{0:-6d} {1:-6d} {2:-6d} {3:5.8f} {4:8.5f} {5:8.5f} {6:8.5f}\n'.format(
                     atom.index + 1, chain.index + 1, numeric_atom_types[atom.name],
                     0.0, x, y, z)
@@ -67,6 +81,8 @@ def save_lammps(traj, step=-1, optional_nodes=None, filename='data.mbuild'):
         f.write('\n')
 
         box = traj.boundingbox(step)
+        box.mins = in_units_of(box.mins, 'nanometers', _distance_unit)
+        box.maxes = in_units_of(box.mins, 'nanometers', _distance_unit)
         f.write('{0:10.6f} {1:10.6f} xlo xhi\n'.format(box.mins[0], box.maxes[0]))
         f.write('{0:10.6f} {1:10.6f} ylo yhi\n'.format(box.mins[1], box.maxes[1]))
         f.write('{0:10.6f} {1:10.6f} zlo zhi\n'.format(box.mins[2], box.maxes[2]))

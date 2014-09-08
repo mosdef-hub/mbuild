@@ -2,4 +2,5 @@ numpy
 webcolors
 mdtraj
 mayavi
+simtk.unit
 wheel==0.22.0
