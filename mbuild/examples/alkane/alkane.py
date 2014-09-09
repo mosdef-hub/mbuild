@@ -22,16 +22,20 @@ class Alkane(Compound):
         equivalence_transform(self.methyl2, self.methyl2.up, self.chain.down)
 
 if __name__ == "__main__":
-    n = 4
+    n = 3
     m = Alkane(n=n)
 
     m.save("{}-alkane.pdb".format(n))
 
     # mol = m.to_molecule()
     # # mol.localopt(forcefield="gaff", steps=2000)
-    # mol.localopt(forcefield="ghemical", steps=2000)
+    # mol.localopt(forcefield="gaff", steps=2000)
     # print mol
     # m.update_from_molecule(mol)
+
+    from mbuild.tools import add_angle
+    traj = m.to_trajectory()
+    add_angle(traj, "C", "C", "C")
 
     from mbuild.plot import Plot
     Plot(m).show()

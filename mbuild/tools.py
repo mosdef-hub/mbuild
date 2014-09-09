@@ -74,14 +74,67 @@ def solvate(host_compound, guest_compound, host_bounds, guest_bounds):
                 guest.remove(atoms_to_remove)
                 host_compound.add(guest, "guest_{0}_{1}_{2}".format(xi,yi,zi))
 
-def add_bond(compound, type_A, type_B, dmin, dmax):
+
+def add_bond(compound, type_A, type_B, dmin, dmax, kind=None):
     """Ai-Bj distance is in [dmin, dmax] => add bond A1xB(Ai,Bj) (symmetric)."""
 
     for a1 in compound.atom_list_by_kind(type_A):
         nearest = compound.atoms_in_range(a1.pos, dmax)
-        for a2_idx in nearest:
-            if (a2_idx.kind==type_B) and (dmin <= compound.min_periodic_distance(a2_idx.pos, a1.pos) <= dmax):
-                compound.add(Bond(a1, a2_idx))
+        for a2 in nearest:
+            if (a2.kind==type_B) and (dmin <= compound.min_periodic_distance(a2.pos, a1.pos) <= dmax):
+                compound.add(Bond(a1, a2, kind=kind))
+
+def add_angle(traj, type_A, type_B, type_C):
+    """
+    """
+    for ab in traj.bonds_by_atom_type(type_A, type_B):
+        nearest = traj.neighbor_bonds(ab)
+        for bc in nearest:
+            bc = traj.order_bond(bc, type_B, type_C)
+            if bc is None:
+                continue
+
+            temp_ang = None
+            if ab[1] == bc[0]:
+                temp_ang = (ab[0], ab[1], bc[1])
+
+            if ab[0] == bc[1]:
+                temp_ang = (ab[0], ab[1], bc[1])
+
+            if temp_ang is None:
+                continue
+
+            # to be improved...
+            # handle an edge case where we're adding the same angle multiple times
+            if type_A == type_B == type_C:
+                if ab[0].index < bc[1].index:
+                    continue
+
+            traj.top.add_angle(*temp_ang)
+
+    #
+    # def add_dihedral(self, type_A, type_B, type_C, type_D, dihedralKind):
+    #     """
+    #     """
+    #
+    #     for abc1 in self.compound.getAnglesByAtomKind(type_A, type_B, type_C):
+    #         abc = abc1.cloneWithOrder(type_A, type_B, type_C)
+    #
+    #         nearest = self.compound.getAnglesInRange(abc.atom2.pos, 5)
+    #         for bcd1 in nearest:
+    #             if abc1 == bcd1:
+    #                 continue
+    #
+    #             if not bcd1.hasAtomKinds(type_B, type_C, type_D):
+    #                 continue
+    #
+    #             bcd = bcd1.cloneWithOrder(type_B, type_C, type_D)
+    #
+    #             temp_dhdr = Dihedral.createFromAngles(abc, bcd, kind=dihedralKind)
+    #             if temp_dhdr:
+    #                 self.compound.add(temp_dhdr)
+
+
 
 if __name__ == "__main__":
     print "hello"

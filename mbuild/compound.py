@@ -170,6 +170,7 @@ class Compound(MBase, PartMixin, HasPartsMixin):
             a = mol.NewAtom()
 
             atomic_num = Prototype.getAttr(atom.kind, "atomic_number", 0)
+            print atomic_num
 
             a.SetAtomicNum(atomic_num)
             a.SetVector(float(atom.pos[0])*10, float(atom.pos[1])*10, float(atom.pos[2])*10) # coordinates
@@ -244,6 +245,7 @@ class Compound(MBase, PartMixin, HasPartsMixin):
         traj = self.to_trajectory()
         idxs = traj.atoms_in_range_idx(point, radius, max_items=max_items)
         return [atoms[idx] for idx in idxs]
+
 
     def __deepcopy__(self, memo):
         cls = self.__class__

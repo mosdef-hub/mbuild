@@ -6,6 +6,16 @@ from mdtraj.core import element as elem
 
 class Topology(MDTTopology):
 
+    def __init__(self):
+        super(Topology, self).__init__()
+        self._angles = []
+        self._dihedrals = []
+
+
+    def add_angle(self, atom1, atom2, atom3):
+        print "Adding angle: {}-{}-{}".format(atom1, atom2, atom3)
+        self._angles.append((atom1, atom2, atom3))
+
     @classmethod
     def from_compound(cls, compound, atom_list=None, bond_list=None):
 

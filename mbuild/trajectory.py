@@ -137,6 +137,60 @@ class Trajectory(md.Trajectory):
         neighbors_idx = self.atoms_in_range_idx(*args, **kwargs)
         return [self.topology.atom(idx) for idx in neighbors_idx]
 
+    def bonds_by_atom_type(self, type_A, type_B):
+        bond_list = []
+        for ab1 in self.top.bonds:
+            ab = None
+            if (ab1[0].name == type_A and ab1[1].name == type_B):
+                ab  = ab1
+
+            if (ab1[1].name == type_A and ab1[0].name == type_B):
+                ab = ab1[::-1]
+
+            if ab is None:
+                continue
+
+            bond_list.append(ab)
+
+        return bond_list
+
+    @staticmethod
+    def order_bond(ab, type_A, type_B):
+        """
+        Order the atoms in a bond by atom type.
+        :param ab: the bond (tuple)
+        :param type_A: the type of the first atom
+        :param type_B: the type of the second atom
+        :return: ab with its atoms reordered such that its first atom is of type_A and its second atom is of type_B,
+        or None if ab the atom types do not match
+        """
+        if ab[0].name == type_A and ab[1].name == type_B:
+            return ab
+
+        if ab[1].name == type_A and ab[0].name == type_B:
+            return ab[::-1]
+
+        return None
+
+
+    def bonds_by_atom(self, atom):
+
+        bond_list = []
+        for bond in self.top.bonds:
+            if atom in bond:
+                bond_list.append(bond)
+
+        return bond_list
+
+    def neighbor_bonds(self, bond):
+
+        atom0 = bond[0]
+        atom1 = bond[1]
+        atom0_bonds = set(self.bonds_by_atom(atom0))
+        atom1_bonds = set(self.bonds_by_atom(atom1))
+
+        return (atom0_bonds | atom1_bonds) - set([bond])
+
     @classmethod
     def load(cls, filename, relative_to_module=None):
 
