@@ -1,0 +1,41 @@
+1. Implementation of angle restraints.
+   From Tripos manuals, and from the description of angle
+   restraints in the Gromacs manual, I'm not quite sure how
+   Tripos angle restraints correspond to Gromacs angle restraints.
+   Furthermore, I have not found the Gromacs format for angle
+   restraints in the material I have.
+
+2. Implementation of output in other topology formats.
+   This requires writing routines to output in the correct
+   format for the topology using the force field data
+   assigned to the molecule.
+
+3. Complete implementation of Ryckaert-Bellemans dihedrals.
+   Correction of pairs output to skip pairs that are terminii of
+   Ryckaert-Bellemans dihedral angles is not yet tested because
+   none of the force fields implemented use Ryckaert-Bellemans
+   dihedrals for which pairs are to be skipped (OPLS-AA's use
+   wants pairs to be present as well).
+
+4. Complete implementation of Urey-Bradley angle potentials.
+   The force fields implemented so far do not include these.
+   The additions to the angle potentials assignment and
+   output code are included but have not been tested.
+
+5. Implementation of all of the special defines given in
+   OPLS-AA for dihedrals of various chemical species.
+   Some of these are implemented by defining special atom
+   types that are included as subsets or more general atom
+   types, but this process is not yet complete.
+
+6. Addition of other force fields.
+   This should be a simple matter of writing an atom types
+   definition file to define the atom types, and an appropriate
+   force field parameters file.  The files provided should
+   give sufficient guidance to do this.  Of course, making
+   these tables is a substantial task.
+   Once these are available, the name of the force field, its
+   specific characteristics and defines, and a case entry in
+   the switch statements for force field selection for assignment
+   need to be added to topolbuild.c and the program can then
+   be recompiled.

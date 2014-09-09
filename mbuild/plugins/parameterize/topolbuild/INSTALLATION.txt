@@ -1,0 +1,22 @@
+INSTALLATION:
+Compilation has been tested on a G4 Power Macintosh running Os X 10.3.9
+with both gcc version 3.3  20030304 (Apple Computer, Inc. build 1671), 
+and with gcc version 4.1.0 as distributed by the Fink Project.
+
+Two make files, that may need editing for individual systems, are included
+as follows:
+     Makefile                        Uses a standard C compiler with option -O
+                                     to build the executable topolbuild
+     Makefile.G4OsX                  Optimization set for a G4 Power Macintosh
+                                     running Os X with optimization options
+                                     -O2 -mcpu=7450 -mtune=970
+To build topolbuild, type
+     make
+If you happen to have a Mac PowerPC G4 running Mac OS X, you can also type
+     make -f Makefile.G4OsX
+Otherwise, your system may require editing of the make file according to
+the specifications of your systems C compiler and libraries to generate a
+functional program.  Advice on such editing is best gotten from your own
+technical support people.
+
+

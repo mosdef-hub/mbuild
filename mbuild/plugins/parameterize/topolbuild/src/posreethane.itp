@@ -1,0 +1,12 @@
+; topolbuild version 1.3
+; Command line:
+;     ./topolbuild -n ethane -dir ../dat/gromacs/ -ff oplsaa -r Eth -charge
+;
+; In this topology include file, you will find position restraint
+; entries for all the heavy atoms in your original mol2 file.
+; This means that protons are not restrained.
+
+[ position_restraints ]
+; atom  type      fx      fy      fz
+     1     1  1000  1000  1000
+     5     1  1000  1000  1000

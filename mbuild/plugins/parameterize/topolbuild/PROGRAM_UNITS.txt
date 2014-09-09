@@ -1,0 +1,126 @@
+Program Files Description:
+   PROGRAM FILE                           PURPOSES
+adjustments.c               Routines to adjust assigned atom types from gaff after
+                            standard atom type assignment is completed.  Only used
+                            with gaff force field.
+atom_types.c                Routines to read atom type definitions and atom
+                            correlations definitions.
+block_memory.c              Memory allocation and error handling utilities
+compare_FF.c                Routines to compare amber and gaff type force field
+                            data against assigned atom types of molecule.
+gromacs_use.c               Routines to use gromacs or OLPLS-AA force field
+                            atom type definition files and force field parameters
+                            to assign gromacs or OPLS-AA atom types and set
+                            appropriate parameters for a topology.
+improper.c                  Routine to determine impropers
+initializations.c           Defining declarations for external variables
+judge_bond.c                Routines to assign atom type definition bond types
+                            based on molecular structure and Tripos bond assignment.
+judge_types.c               Routines to parse atom type definition entries and
+                            assign atom types based on molecular structure
+mainchain.c                 Routine to assign main chain of molecule.  Main
+                            chain assignment is only used for atom renaming
+                            (option -rename implementation).
+molec_alloc.c               Routines to allocate and initialise storage for
+                            molecule force field data.  Includes routine to
+                            correct for residue order issues and to remove
+                            zero mass particles.
+param_tables.c              Routines to find angles and dihedrals, and to measure
+                            bond lengths, angles, dihedrals, and impropers from
+                            molecular coordinates.  Routine to correct inaccuracies
+                            from dihedral measurements.  Routine to reassign some
+                            dihedrals related to ring planarity to be impropers.
+                            Routine to test dihedrals for desirability.
+read_amber.c                Routines to read amber and gaff force field parameters
+                            from the same style *.parm files used by leap, and to
+                            free the storage allocated for these parameters.
+read_tripos.c               Routines to read Tripos force field parameters from
+                            TAFF* files and to free the storage allocated for
+                            these parameters.  (Needed because some of the Tripos
+                            force field entries differ from amber force field
+                            entries.)
+readmol2.c                  Routines to read and write Tripos style *.mol2 files,
+                            to assign molecule storage, to perform a simple check
+                            for structural correctness, and to determine atomic
+                            numbers, masses, and symbols for atoms in the molecule.
+rename.c                    Routine to use a set of rules based on Tripos atom
+                            type and main chain assignment to revise atom naming
+                            within a molecule.
+ring_detect.c               Collection of routines to determine molecular ring
+                            structure, atom electron withdrawing character,
+                            aromaticity, and atom saturation.
+set_similars.c              Routines to allocate, to free, and to set values from
+                            atom correlation definitions in lists of similar atom
+                            types for the molecule.  Used with gaff force field
+                            data assignment.
+topolbuild.c                Main program with subroutines to print version
+                            information, to print usage information, and to handle
+                            the calls needed for making assignments for gaff and
+                            amber force fields.
+use_amber.c                 Routines to handle the simplified comparisons needed to
+                            assign amber force field parameters to atoms in a molecule.
+use_gaff.c                  Routines to handle the handle series of comparisons,
+                            including similar atom types comparisons, needed to
+                            assign gaff force field parameters to atoms in a molecule.
+use_tripos.c                Routines to handle the comparisons needed to assign
+                            Tripos force field parameters to atoms in a molecule
+                            including handling the specialized wild card types
+                            found in Tripos force field files (ANY, HAL, HET, and
+                            HEV)
+utilities.c                 Character string manipulation utilities, utility for
+                            input tokenization, type double fast inverse square
+                            root, and type double fast cube root.
+write_gro.c                 Routines to write the *.gro coordinates file and to
+                            write the main parameters file for the topology *.top
+write_gro_top.c             Routine to write the include files ff*.itp, ff*nb.itp,
+                            posre*.itp
+
+
+Header file usage:
+   HEADER                                 PROGRAM FILES USED IN
+GMX_FF.h                    compare_FF.h, gromacs_use.h, param_tables.c,
+                            and write_gro.c
+Tripos_FF.h                 read_tripos.c, topolbuild.c, and use_tripos.c
+adjustments.h               adjustments.c, gromacs_use.c, and topolbuild.c
+amber_FF.h                  compare_FF.h, gromacs_use.h, read_amber.c,
+                            read_tripos.c, use_amber.c, use_gaff.c, and
+                            use_tripos.c
+atom_types.h                adjustments.c, atom_types.c, judge_types.h, and
+                            set_similars.c
+block_memory.h              adjustments.c, atom_types.c, block_memory.c,
+                            compare_FF.h, gromacs_use.h, improper.c,
+                            judge_bond.h, judge_types.h, mainchain.c,
+                            molec_alloc.c, param_tables.c, read_amber.c,
+                            read_tripos.c, readmol2.c, rename.c, ring_detect.c,
+                            set_similars.c, use_amber.c, use_gaff.c,
+                            use_tripos.c, write_gro.c, and write_gro_top.c
+compare_FF.h                compare_FF.c, gromacs_use.h, topolbuild.c,
+                            use_amber.c, and use_gaff.c
+gromacs_FF.h                topolbuild.c, write_gro.c, and write_gro_top.c
+gromacs_use.h               gromacs_use.c, topolbuild.c
+judge_bond.h                judge_bond.c, and topolbuild.c
+judge_types.h               judge_types.c, and topolbuild.c
+mainchain.h                 gromacs_use.h, improper.c, mainchain.c, rename.c,
+                            and topolbuild.c
+mol2.h                      adjustments.c, compare_FF.h, gromacs_use.h,
+                            improper.c, judge_bond.h, judge_types.h, mainchain.c,
+                            molec_alloc.c, param_tables.c, readmol2.c, rename.c,
+                            ring_detect.c, set_similars.c, use_amber.c, use_gaff.c,
+                            use_tripos.c, write_gro.c, and write_gro_top.c
+multors.h                   gromacs_use.h, molec_alloc.c, param_tables.c,
+                            topolbuild.c, use_amber.c, use_gaff.c, and write_gro.c
+param_tables.h              gromacs_use.h, param_tables.c, and topolbuild.c
+read_amber.h                gromacs_use.h, read_amber.c, and topolbuild.c
+readmol2.h                  atom_types.c, molec_alloc.c, readmol2.c, and
+                            topolbuild.c
+ring_detect.h               ring_detect.c, and topolbuild.c
+rings.h                     adjustments.c, gromacs_use.h, improper.c, judge_bond.h,
+                            judge_types.h, mainchain.c, param_tables.c, rename.c,
+                            and ring_detect.c
+similars.h                  compare_FF.h, gromacs_use.h, set_similars.c, topolbuild.c,
+                            use_amber.c, use_gaff.c, and use_tripos.c
+tripos.h                    readmol2.c
+use_amber.h                 gromacs_use.h, topolbuild.c, and use_amber.c
+use_gaff.h                  topolbuild.c, and use_gaff.c
+utilities.h                 atom_types.c, gromacs_use.h, read_amber.c, readmol2.c,
+                            utilities.c

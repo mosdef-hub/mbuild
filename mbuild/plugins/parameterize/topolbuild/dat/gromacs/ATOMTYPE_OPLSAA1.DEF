@@ -1,0 +1,414 @@
+# Please go to the end to see rules of defining an atom  
+
+============================================================================================
+      Definition begin
+============================================================================================
+--------------------------------------------------------------------------------------------
+WILDATOM XX C N O S P
+WILDATOM XA O S
+WILDATOM XB N P
+WILDATOM XC F Cl Br I
+WILDATOM XD S P
+WILDATOM XE N O
+WILDATOM XF N O S
+-------------------------------------------------------------------------------------------- 
+ f1  f2    f3  f4  f5  f6  f7  f8                     f9        f10 
+-------------------------------------------------------------------------------------------- 
+// Carbon types
+// CY types
+ATD  CY      *   6   4   *   *   [RG3]   &
+
+// CT_3 types
+ATD  CT_3    *   6   4   2   *   *                         (C4,N(C3(O1)))            &
+ATD  CT_3    *   6   4   2   *   *                         (C4,N(C4(C3(O1))))        &
+
+// CT_2 types
+ATD  CT_2    *   6   4   *   *   *                         (N,C3(O1,XE))             &
+
+// CT_4 types
+ATD  CT_4    *   6   4   2   *   *                         (C4(F,F,F),O2)            &
+
+// C3 types
+ATD  C3      *   6   4   3   *   *                         (XF[MI])                  &
+ATD  C3      *   6   4   2   *   [MI]    &
+
+// C+ types
+ATD  C+      *   6   *   *   *   [PL]    &
+
+// CO types
+ATD  CO      *   6   4  *   *   *                          (O(C),XE(C))              &
+ATD  CO      *   6   4  *   *   *                          (O(C),O(H))               &
+
+//  CTF types for perfluoroalkanes
+ATD  CTF     *   6   4  0   *   *                          (C(F,F),C(F,F),C(F,F),F)  &
+ATD  CTF     *   6   4  0   *   *                          (F,F,C(F,F))              &
+
+//  CTp types for hexopyranose
+ATD  CTp     *   6   4  2   *   *                      (C4[RG6,AR4](O2,C4(O2)),O2)   &
+ATD  CTp     *   6   4  1   *   [RG6,AR4]                  (O2,C4[RG6](O2),C4(O2))   &
+ATD  CTp     *   6   4  1   *   [RG6,AR4]                  (O2,C4[RG6](O2,C4(O2)))   &
+ATD  CTp     *   6   4  1   *   [RG6,AR4]                  (C4[RG6](O2,C4(O2)),O2)   &
+
+//  CT types
+ATD  CT      *   6   4   &
+
+// CN types
+ATD  CN      *   6   3   *   *   [RG5,RG6,AR1.AR2]         (C3,C3,N3)                &
+
+// CB types
+ATD  CB      *   6   3   0   *   [RG5,RG6,AR1.AR2.AR3]     (N3,N2)                   &
+ATD  CB      *   6   3   0   *   [RG5,RG6,AR1.AR2.AR3]     (C3,N2)                   &
+
+// CR types
+ATD  CR      *   6   3   *   *   [RG5,AR1.AR2.AR3]         (N3,N3)                   &
+ATD  CR      *   6   3   *   *   [RG5,AR1.AR2.AR3]         (N2,N3(H))                &
+
+// CK types
+ATD  CK      *   6   3   *   *   [RG5,AR1.AR2.AR3]         (N2,N3)                   &
+
+// CW types
+ATD  CW      *   6   3   *   *   [RG5,AR1.AR2.AR3]         (C3,N3(C3,H))             &
+ATD  CW      *   6   3   *   *   [RG5,AR1.AR2.AR3]  (C3[RG5](C3[RG5]),N[RG5](C3[RG5])) &
+
+// CV types
+ATD  CV      *   6   3   *   *   [RG5,AR1.AR2.AR3]         (C3,XF(C3))               &
+
+// C* types
+ATD  C*      *   6   3   *   *   [RG5,AR1.AR2.AR3]         (C4,C3,C3[RG5,RG6])       &
+
+// CQ types
+ATD  CQ      *   6   3   *   *   [RG6,AR1.AR2.AR3]         (N2,N2)                   &
+
+// CS types
+ATD  CS      *   6   3   *   *   [RG5,AR1.AR2.AR3]        (C3[RG5](XF[RG5]),C3[RG5]) &
+
+// CU types
+ATD  CU      *   6   3   *   *   [RG5,AR1.AR2.AR3]         (N[RG5](XF[RG5]),C3[RG5]) &
+
+// CX types
+ATD  CX      *   6   3   *   *   [RG5,AR1.AR2.AR3]        (C3[RG5](N3[RG5]),N3[RG5]) &
+
+// C! types
+ATD  C!      *   6   3   0   *   [AR1.AR2.AR3] (C[SB',AR1.AR2.AR3](C[AR1.AR2.AR3],C[AR1.AR2.AR3])) &
+
+// CM types
+ATD  CM      *   6   3   *   *   [RG6,AR1.AR2.AR3]         (C3,C3(N2(C3(N3(C3)))))   &
+ATD  CM      *   6   3   *   *   [RG6,AR1.AR2.AR3]         (C3,C3(N3(C3(N3(C3)))))   &
+ATD  CM      *   6   3   *   *   [RG6,AR1.AR2.AR3]         (C3,N3(C3(N2(C3(C3)))))   &
+ATD  CM      *   6   3   *   *   [RG6,AR1.AR2.AR3]         (N3,C3(C3(N3(C3(N3)))))   &
+
+// C_3 types
+ATD  C_3     *   6   3   *   *   *                         (O1,O1)                   &
+
+// C types
+ATD  C       *   6   3   *   *   [DB]                      (XA1,N3)                  &
+ATD  C       *   6   3   *   *   *               (C[AR1.AR2.AR3],XA1,C[AR1.AR2.AR3]) &
+ATD  C       *   6   3   *   *   *                         (XA1,XA)                  &
+
+// CA types
+ATD  CA      *   6   3   *   *   [AR1.AR2.AR3]             &
+ATD  CA      *   6   3   *   *   [NR]                      (N3,N3,N)                 &
+ATD  CA      *   6   3   *   *   [NR]                      (C[AR1.AR2.AR3],N3,N)     &
+
+// C_2 types
+ATD  C_2     *   6   3   *   *   *                         (XA1)                     &
+
+// C= types
+ATD  C=      *   6   3   *   *   [NR]                   (C3[SB',NR](C[DB']),C[DB'])  &
+
+// CM types
+ATD  CM      *   6   3   &
+
+// CZ types
+ATD  CZ      *   6   2   &
+
+// Oxygen types
+// OS types
+ATD  OS      *   8   2   *   *   *                         (XX4,P)                   &
+ATD  OS      *   8   2   *   *   [RG5,AR1.AR2.AR3]         &
+
+//
+ATD  O_3     *   8   1   *   *   *                         (C3(O2(H)))               &
+
+// O2 types
+ATD  O2      *   8   *   *   *   *                         (P)                       &
+ATD  O2      *   8   1   *   *   *                         (C(O))                    &
+
+// O types
+ATD  O       *   8   1   *   *   [DB,NR]                   (C(N))                    &
+ATD  O       *   8   1   *   *   *                         (N(O,O))                  &
+ATD  O       *   8   1   *   *   *                         (C3(O,C4(H,H,N4(H,H,H)))) &
+
+// O_2 types
+ATD  O_2     *   8   1   *   *   *                         (C)                       &
+
+// ON types
+ATD  ON      *   8   1   *   *   *                         (N)                       &
+
+// OY types
+ATD  OY      *   8   *   *   *   *                         (S)                       &
+
+// OU types
+ATD  OU      *   8   1   *   *   *                         (U)                       &
+
+ATD  O       *   8   1   &
+
+// OHd, OHt, OHp : diol, triol, and polyol defined
+ATD  OHp     *   8   2   1   *   *         (C4[NR](C4[NR](O(H),C4[NR](O(H))),C4[NR](O(H)))) &    ; O: polyol   linear
+ATD  OHp     *   8   2   1   *   *         (C4[NR](C4[NR](O(H),C4[NR](O(H),C4[NR](O(H)))))) &    ; O: polyol   linear
+ATD  OHp     *   8   2   1   *   *         (C4[NR](C4[NR](O(H)),C4[NR](O(H)),C4[NR](O(H)))) &    ; O: polyol   tertiary
+ATD  OHp     *   8   2   1   *   *         (C4[NR](C4[NR](O(H),C4[NR](O(H)),C4[NR](O(H))))) &    ; O: polyol   C-OH on tertiary
+ATD  OHt     *   8   2   1   *   *                      (C4[NR](C4[NR](O(H)),C4[NR](O(H)))) &    ; O: triols
+ATD  OHt     *   8   2   1   *   *                      (C4[NR](C4[NR](O(H),C4[NR](O(H))))) &    ; O: triols
+ATD  OHd     *   8   2   1   *   *                      (C4[NR](C4[NR](O(H))))              &    ; O: diols
+
+// OH types
+ATD  OH      *   8   2   1   &
+
+// OW types
+ATD  OW      *   8   2   2   &
+
+ATD  OS      *   8   2   &
+
+// Sulfur types
+// SH types
+ATD  SH      *  16   2   1   &
+ATD  SH      *  16   2   2   &
+
+// S types
+ATD  S       *  16   2   0   *   *                         (C)                       &
+
+// SY types
+ATD  SY      *  16   4   *   *   *                         (C,O1,O,N3)               &
+
+// SY2 types
+ATD  SY2     *  16   4   *   *   *                         (C4,O,O,C4)               &
+
+// SZ types
+ATD  SZ      *  16   3   *   *   *                         (C4,C4,O1)                &
+
+// Nitrogen types
+// NB types
+ATD  NB      *   7   2   *   *   [RG5,AR1.AR2.AR3]         &
+
+// NC types
+ATD  NC      *   7   2   *   *   [RG6,AR1.AR2.AR3]         &
+
+// N2 types
+ATD  N2      *   7   *   *   *   *                         (C3(N3,N3))               &
+ATD  N2      *   7   *   *   *   *                       (C3[NR](N3,C[AR1.AR2.AR3])) &
+
+// NO types
+ATD  NO      *   7   3   0   *   *                         (O1,O1)                   &
+
+// NY types
+ATD  NY      *   7   3   1   *   *                         (C,C3(N2,N3))             &
+ATD  NY      *   7   3   1   *   *                         (C3(N(C),N3))             &
+
+// N* types
+ATD  N*      *   7   3   *   *   [RG5.RG6,AR1.AR2.AR3]  (C4(O2,C4(O2)),C[RG5.RG6],C[RG5.RG6])  &
+
+// NA types
+ATD  NA      *   7   3   *   *   [RG5.RG6,AR1.AR2.AR3]     & 
+
+// N2 types
+ATD  N2      *   7   3   *   *   [NR]                      (XX[AR1.AR2.AR3])         &
+
+// N types
+ATD  N       *   7   3   *   *   *                         (C3(XA1))                 &
+ATD  N       *   7   3   *   *   *                         (O,O,O)                   &
+
+// NT ring types
+// ATD  NTex    *   7   3   *   *                         (C4(C4(C4(C4(N3)))),C[RG]) &
+// ATD  NT14    *   7   3   *   *   [RG]         (C[RG](C[RG](C[RG](C[RG](N[RG]))))) &
+// ATD  NT4     *   7   3   *   *   [RG4]  &
+// ATD  NT5     *   7   3   *   *   [RG5]  &
+// ATD  NTr     *   7   3   *   *   [RG]   &
+
+// NT types
+ATD  NT      *   7   3   &
+
+// N2 types
+ATD  N2      *   7   2   &
+
+// NZ types
+ATD  NZ      *   7   1   &
+
+// N3 types
+ATD  N3      *   7   4   &
+
+// Phosphorous types
+// P+ types
+ATD  P+      *  15   *   *   *   [PL]                      &
+
+// P types
+ATD  P       *  15   *   & 
+ 
+// Hydrogen types
+//  H3 types
+ATD  H3      *   1   1   *   *   *                         (N4)                      &
+ATD  H3      *   1   1   *   *   *                 (N3[NR](C3[NR](N3[NR],N3[NR]),C)) &
+ATD  H3      *   1   1   *   *   *                   (N3[NR](C3[NR](N3[NR](C[NR])))) &
+
+// H types
+ATD  H       *   1   1   *   *   *                         (N)                       &
+
+// HO types
+ATD  HO      *   1   1   *   *   *                         (O)                       &
+
+// HS types
+ATD  HS      *   1   1   *   *   *                         (S)                       &
+
+// HC types
+ATD  HC      *   1   1   *   *   *                         (C4)                      &
+ATD  HC      *   1   1   *   *   *                         (C3(O1,C4))               &
+ATD  HC      *   1   1   *   *   *                         (C3(O1,N3))               &
+
+// H5 types
+ATD  H5      *   1   1   *   2   * (C[RG5,RG6,AR1.AR2.AR3](N[RG](C[RG5,RG6](N[RG])),N[RG])) &
+
+// H4 types
+ATD  H4      *   1   1   *   1   * (C[RG6,AR1.AR2.AR3](C[RG6](C[RG6](N[NR],N[RG6])),N[RG6](C[RG6](O1)))) &
+
+//HA types
+ATD  HA      *   1   1   *   *   *                         (XX[AR1.AR2.AR3])         &
+ATD  HA      *   1   1   &
+
+ATD  U       *  92   *   &    ; U in UO2+ J Mol Struct 366, 55 (96)
+
+// Fluorine types
+// F types
+ATD  F       *   9   1   &
+
+// F- types
+ATD  F-      *   9   0   &
+
+// Chlorine types
+// Cl types
+ATD  Cl      *  17   1   &
+
+// Cl- types
+ATD  Cl-     *  17   0   &
+
+// Bromine types
+// Br types
+ATD  Br      *  35   1   &
+
+// Br- types
+ATD  Br-     *  35   0   &
+
+// Iodine types
+// I types
+ATD  I       *  53   1   &
+
+// I- types
+ATD  I-      *  53   0   &
+
+// Cation types
+ATD  Li+     *   3   *   &    ; Li+
+ATD  Na+     *  11   *   &    ; Na+ JACS 106, 903 (1984)
+ATD  Mg2+    *  12   *   &    ; Mg++
+ATD  K+      *  19   *   &    ; K+  parameters: JPC,94, 8021 (90)
+ATD  Ca2+    *  20   *   &    ; Ca++
+ATD  Rb+     *  37   *   &    ; Rb+ parameters: JPC,94, 8021 (90)
+ATD  Sr2+    *  38   *   &    ; Sr++
+ATD  Cs+     *  55   *   &    ; Cs+
+ATD  Ba2+    *  56   *   &    ; Ba++
+ATD  Ac3+    *  89   *   &    ; Ac+3 Actinide params - F. van Veggel, Chem Eur J 5, 90 (1999).
+ATD  Th4+    *  90   *   &    ; Th+4 Actinide params - F. van Veggel, Chem Eur J 5, 90 (1999).
+ATD  Am3+    *  95   *   &    ; Am+3 Actinide params - F. van Veggel, Chem Eur J 5, 90 (1999).
+ATD  La3+    *  57   *   &    ; La+3 Lanthanide params - F. van Veggel, Chem Eur J 5, 90 (1999).
+ATD  Nd3+    *  60   *   &    ; Nd+3 Lanthanide params - F. van Veggel, Chem Eur J 5, 90 (1999).
+ATD  Eu3+    *  63   *   &    ; Eu+3 Lanthanide params - F. van Veggel, Chem Eur J 5, 90 (1999).
+ATD  Gd3+    *  64   *   &    ; Gd+3
+ATD  Yb3+    *  70   *   &    ; Yb+3 see also JPC-A 104, 7659 (2000)
+ATD  Cu2+    *  29   *   &    ; Copper. See Inorg. Chem. 40, 5223 (2001).
+ATD  Fe      *  26   *   &    ; Iron
+ATD  Zn2+    *  30   *   &    ; Zinc
+ATD  Ar      *  18   *   &    ; Argon
+ATD  SI      *  14   *   &    ; Silicium in Glass etc.
+
+ATD  LP1     *   0   &    ; LP in  CH3CH2-
+
+--------------------------------------------------------------------------------------------
+============================================================================================
+
+
+
+
+============================================================================================
+               Field descriptions
+============================================================================================
+f1  ATD, which stands for atom type defination, ATD should always in the first three columns 
+f2  Atom type name, can be letters or numbers   
+f3  Residue names, which means this description is only applied to atoms in special residues
+f4  Atomic number 
+f5  Number of attached atoms 
+f6  Number of attached hydrogen atoms
+f7  For hydrogen, number of the electron-withdrawal atoms connected to the atom that the 
+    hydrogen attached
+f8  atomic property
+f9  Chemical enviornment definations
+
+
+============================================================================================
+               Specific symbols
+============================================================================================
+*  Ignore this field
+&  End of definition 
+.  "or" operation in the ring and aromaticity descriptions 
+
+
+============================================================================================
+               Predefined words
+============================================================================================
+EW   Electron-withdraw atom
+AA   Amino acid residue
+NA   Nucleic acid
+BIO  AA + NA
+
+AR1  Pure aromatic atom (such as benzene and pyridine)
+AR2  Atom in a planar ring, usually the ring has two continous single bonds and at least two 
+     double bonds
+AR3  Atom in a planar ring, which has one or several double bonds formed between non-ring atoms
+     and the ring atoms
+AR4  Atom other than AR1, AR2, AR3 and AR5. 
+AR5  Pure aliphatic atom in a ring, which is made of sp3 carbon
+
+RG   Ring (from 3-membered to nine-membered)
+RG3  3-membered ring 
+RG4  4-membered ring 
+RG5  5-membered ring 
+RG6  6-membered ring 
+RG7  7-membered ring 
+RG8  8-membered ring 
+RG9  9-membered ring 
+NR   non-ring atom
+
+SB   Single bond
+DB   Double bond
+TB   Triple bond
+AB   Aromatic bond
+DL   Delocalized bond (9 in AM1-BCC)
+sb   Single bond, including aromtaic single, delocalized bond (9 in AM1-BCC) 
+db   Double bond, including aromatic double
+tb   Triple bond
+
+PL   Positive formal charge
+MI   Negative formal charge
+ 
+'    Bond type (SB sb etc) followed by ' means the current atom forms this kind of bond with the 
+     immediately precessor in a chain of atoms
+     For example, (XD3[SB',db]) means the current atom XD3 has a double bond with the atom in 
+     defination 
+''   Bond type (SB sb etc) followed by '' means the current atom does not form this kind of bond 
+     with the immediately precessor in a chain of atoms
+============================================================================================
+               Miscellaneous
+============================================================================================
+1. maximum line length is 500 characters
+2. no space in the atomic property string
+3. no space in the chemical environment string 
+4. no field missing before &
+5. the definition order is crucial, special atom types should defined before the more general 
+   ones

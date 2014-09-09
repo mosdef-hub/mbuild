@@ -1,0 +1,179 @@
+#
+# Standard shipped vdw radii used by $TA_BIN/sgmaker
+# for the area calculation used in the CPSA descriptors
+# calculation.
+#
+# 	"Normal" (C,N,O,S,Halogen) atom vdw values provided by 
+#	P. Jurs (Pennsylvania State University)
+#
+#	NB: If first word on a line is not a recognized atom type for 
+#	a given molecule, line is ignored.  Everthing after the second
+#	word (the vdw radii) on a line is ignored also. 
+#
+#		Dennis Sprous.  23 June 2000. Tripos Inc. 
+#
+#		Revised:
+#		Dennis Sprous.  25 Oct 2000. Tripos Inc.
+#  	
+#			File is also used by $TA__ROOT/bin/svfunct.
+#			svfunct is the back end to the molprop_
+#			column types and expression generators.
+#			
+#			In anticipation of some work with macromolecules
+#			for the molprop functions, metals were appended
+#			into the file.  These are the same as seen
+#			in metals.tpd, which means they are reasonable
+#			but do not make allowances for difference
+#			charge states.  
+#
+#	BEGIN VALUES PROVIDED BY 
+#	PETER JURS
+#
+C.3	1.7
+C.2	1.7
+C.cat	1.7
+C.ar	1.77	
+C.1	1.7
+N.3	1.55
+N.2	1.55
+N.1	1.60
+O.3	1.52
+O.2	1.50
+O.co2	1.50
+S.3	1.8	
+N.ar	1.60
+P.3	1.8
+H	1.2
+Br	1.85
+Cl	1.75
+F	1.50
+I	1.97
+S.2	1.8
+N.pl3	1.55
+LP	0.0
+Na	1.2
+K	1.2
+Ca	1.2
+Li	1.2
+Al	1.2
+Si	2.1	
+N.am	1.60
+S.o	1.8	
+S.o2	1.8
+N.4	1.55
+#
+# END VALUES PROVIDED BY PETER JURS
+#
+# not found in small molecules usually but left in...
+O.t3p	1.76825	
+H.t3p	1.008
+O.spc	1.7766
+H.spc	1.008
+HEV	1.7	
+ANY	1.7	
+HAL	1.75	
+HET	1.55	
+N.so    1.55   
+#
+# From metals.tpd.  Note that there is no adjustments
+# made for charge state!   The reference for these 
+# was marked as "AUTO" which means that it came from 
+# Matt Clark and were intended for graphics.  
+# The values are consistent in regards to trends
+# and better than taking a dumb default for all of
+# them.
+#
+# BOTTOM LINE:  
+# If area of Fe(+2) versus Fe(+3) is critical to your
+# question, you need to be introducing new types...
+#
+Ac	3.342
+Ag	1.9
+Am	3.062
+Ar	2.124
+As	2.146
+At	2.85
+Au	1.9
+B	1.453
+Ba	1.665
+Be	1.241
+Bi	2.705
+Bk	3.129
+Cd	1.788
+Ce	3.241
+Cf	3.129
+Cm	3.074	
+Co.oh	1.732
+Cr.oh	1.9	
+Cr.th	1.9	
+Cs	2.101
+Cu	1.676	
+Dy	3.152	
+Er	3.129	
+Es	3.129	
+Eu	3.632	
+Fe	1.844	
+Fm	3.129	
+Fr	2.671
+Ga	2.124	
+Gd	3.208	
+Ge	2.168	
+He	1.453	
+Hf	2.559	
+Hg	1.676	
+Ho	3.152	
+In	2.124	
+Ir	2.414	 
+Kr	2.235	 
+La	3.342	 
+Lr	3.129	 
+Lu	3.074	 
+Md	3.129	 
+Mg	0.961	 
+Mn	1.9	 
+Mo	1.844	 
+Nb	1.844	 
+Nd	3.241	 
+Ne	1.788	 
+Ni	1.788	 
+No	3.129	 
+Np	2.772	 
+Os	2.403	 
+Pa	2.917	 
+Pb	2.235	 
+Pd	1.788	 
+Pm	3.208	 
+Po	2.705	 
+Pr	3.252	 
+Pt	1.956	 
+Pu	2.839	 
+Ra	2.794	 
+Rb	1.855	 
+Re	2.28	 
+Rh	1.844	 
+Rn	3.029	 
+Ru.oh	1.844	 
+Sb	2.459	 
+Sc	1.956	 
+Se	2.124	 
+Sm	3.208	 
+Sn	2.459	 
+Sr	1.9	 
+Ta	2.381	 
+Tb	3.163	 
+Tc	1.844	 
+Te	2.347	 
+Th	3.208	 
+Ti.oh	1.956	 
+Ti.th	1.956	 
+Tl	2.235	 
+Tm	3.118	 
+U	2.794	 
+V	1.956	 
+W	2.314	 
+Xe	2.459	 
+Y	2.012	 
+Yb	3.454	 
+Zn	1.676	 
+Zr	1.9	 
+Zr.oh	1.9	 

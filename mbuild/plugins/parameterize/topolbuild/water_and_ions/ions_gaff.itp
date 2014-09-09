@@ -1,0 +1,47 @@
+[ moleculetype ]
+; molname       nrexcl
+K+              1
+
+[ atoms ]
+; id    at type res nr  residu name     at name  cg nr   charge       mass
+1       K+      1       K+              K+       1       1            39.0983
+
+[ moleculetype ]
+; molname       nrexcl
+Na+              1
+
+[ atoms ]
+; id    at type res nr  residu name     at name  cg nr   charge       mass
+1       NA+     1       NA+              NA+     1       1            22.9898
+
+[ moleculetype ]
+; molname       nrexcl
+Ca2+            1
+
+[ atoms ]
+; id    at type res nr  residu name     at name  cg nr   charge       mass
+1       CA2+    1       CA2+            CA2+     1       2            40.08000
+
+[ moleculetype ]
+; molname       nrexcl
+Mg2+            1
+
+[ atoms ]
+; id    at type res nr  residu name     at name  cg nr   charge       mass
+1       MG2+    1       MG2+            MG2+     1       2            24.30500
+
+[ moleculetype ]
+; molname       nrexcl
+Cl-             1
+
+[ atoms ]
+; id    at type res nr  residu name     at name  cg nr   charge       mass
+1       CL-     1       CL-             CL-      1       -1           35.45300
+
+[ moleculetype ]
+; molname       nrexcl
+Zn2+              1
+
+[ atoms ]
+; id    at type res nr  residu name     at name  cg nr   charge       mass
+1       ZN2+    1       ZN2+            ZN2+     1       2            65.37000

@@ -30,9 +30,10 @@ def save_mol2(traj, step=-1, filename='mbuild.mol2'):
                     atom.index + 1, atom.name, x, y, z, atom.name,
                     atom.residue.index + 1, atom.residue, 0.0))
         if bond_list:
-            mol2_file.write("\n@<TRIPOS>BOND\n")
+            mol2_file.write("@<TRIPOS>BOND\n")
             for entry in bond_list:
                 mol2_file.write(entry)
+        mol2_file.write("<@TRIPOS>\n")
 
 if __name__ == "__main__":
     from mbuild.examples.ethane.ethane import Ethane

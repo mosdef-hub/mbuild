@@ -1,0 +1,29 @@
+# make mol2 to gromacs
+
+CC = cc
+CFLAGS = -O
+
+# user created variables
+
+PROGRAM = topolbuild
+
+SOURCES = topolbuild.c readmol2.c block_memory.c param_tables.c molec_alloc.c ring_detect.c \
+          improper.c judge_bond.c atom_types.c judge_types.c adjustments.c set_similars.c \
+          read_amber.c use_gaff.c use_amber.c compare_FF.c mainchain.c rename.c write_gro.c \
+          write_gro_top.c use_tripos.c read_tripos.c initializations.c gromacs_use.c \
+          utilities.c
+
+OBJECTS = topolbuild.o readmol2.o block_memory.o param_tables.o molec_alloc.o ring_detect.o \
+          improper.o judge_bond.o atom_types.o judge_types.o adjustments.o set_similars.o \
+          read_amber.o use_gaff.o use_amber.o compare_FF.o mainchain.o rename.o write_gro.o \
+          write_gro_top.o use_tripos.o read_tripos.o initializations.o gromacs_use.o \
+          utilities.o
+
+$(PROGRAM): $(OBJECTS)
+	$(CC) -o $(PROGRAM) $(CFLAGS) $(OBJECTS) -lm
+
+clean:
+	rm -f *.o
+
+dist_clean:
+	rm -f *.o $(PROGRAM)

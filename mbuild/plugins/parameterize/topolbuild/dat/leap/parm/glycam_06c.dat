@@ -1,0 +1,685 @@
+GLYCAM PARAMETERS (FOR AMBER 8.0, RESP 0.010), COPYRIGHT CCRC 2004
+CG 12.01                !            sp3 C aliphatic
+CT 12.01                             sp3 C aliphatic
+CY 12.01                             sp3 C aliphatic - for sialic acid only!
+C  12.01                             sp2 C carbonyl group
+CP 12.01                             sp3 C aliphatic - carbon atom bonded to an oxygen atom bonded to a phosphorus atom
+CK 12.01                             sp2 C alkenes
+CJ 12.01                             sp2 C alkenes for adjacent double bonds
+H  1.008                             H Bonded to nitrogen atoms
+H1 1.008                             H aliph. bond. to C with 1 electrwd. groups
+H2 1.008                             H aliph. bond. to C with 2 electrwd. groups
+HC 1.008                             H aliph. bond. to C without electrwd. groups
+HO 1.008                             H hydroxyl group
+HW 1.008                             H TIP3P water
+HA 1.008                             H aliph. bond. to C in alkenes eg CK
+HP 1.008                             H bonded to C next to positively charged group
+N  14.01                             sp2 N amide group
+NT 14.01                             sp3 N amine group
+N3 14.01                             sp3 N for charged amino groups (Lys, phospholipids, etc)
+O  16.00                             O carbonyl group
+O2 16.00                             O carboxyl group
+OH 16.00                             O hydroxyl group
+OS 16.00                             O ether
+OY 16.00                             O ether - for sialic acid only!
+OW 16.00                             O TIP3P water
+S  32.06                             sulphur in sulphates ABY 03/15/05
+SM 32.06                             sulfane carbohydrate linkage (-CH2-S-CH2-)
+P  30.97                             phosphate in phosphates ABY 04/24/05
+
+C   H   HO  N   NA  NB  NC  N2  NT  N2  N3  N*  O   OH  OS  P   O2 
+S -N   238.0    1.675       ***G06 MT using avg value from ZULPIF and ZULPIF01 (CSD 1.638 A)
+CG-SM  237.0    1.810       ***changed from 222.0 based on methanethiol nmodes
+N3-H   434.0    1.010       Parm94
+N3-CG  355.0    1.490       Methanaminium (eqm value from crystal avg)
+CJ-CK  350.9    1.467       CRC manual for 1,3-butadiene
+OS-CJ  454.5    1.359       copy of OS-CK
+OS-CK  454.5    1.359       Methoxyethene (JACS 1993, 115, 11921)
+CJ-CJ  629.0    1.337       copy of CK-CK
+CK-CK  629.0    1.337       JCC 1996, 17 (5&6),669
+CG-CJ  324.0    1.514       copy of CG-CK
+CG-CK  324.0    1.514       JCC 1996, 17 (5&6),669
+CJ-HA  360.0    1.095       copy of CK-HA
+CK-HA  360.0    1.095       Ethane for alkenes
+CG-HP  360.0    1.095       Copy of CG-HC
+NT-H   434.0    1.010       Parm99
+NT-CG  352.0    1.470       K calculated from methyl amine (eqm value from crystal average)
+CG-CP  310.0    1.520       Copy of CG-CG
+CP-H2  340.0    1.090       Copy of CG-H1
+CP-H1  340.0    1.090       Copy of CG-H1
+CP-OS  285.0    1.460       Copy of CG-OS
+P -OS  230.0    1.610       Parm94
+P -O2  525.0    1.480       Parm94
+S -OS  206.0    1.589       K calculated from methyl sulphate (eqm value from THEOCHEM 395/396 (1997) 107-122)
+S -O2  620.0    1.440       K calculated from methyl sulphate (eqm value from THEOCHEM 395/396 (1997) 107-122)
+C -OS  450.0    1.323       Parm99
+OW-HW  553.0    0.9572      TIP3P water
+HW-HW  553.0    1.5136      TIP3P water
+CG-CG  310.0    1.520       Butane (gauche, and trans)
+CG-HC  340.0    1.090       Parm94
+CG-H1  340.0    1.090       Parm94
+CG-H2  340.0    1.090       Parm94
+CG-OH  320.0    1.430       Methanol
+CG-C   220.0    1.530       2-Methylpropanoate
+CG-N   337.0    1.450       N-Methylethanamide
+C -O   570.0    1.229       Parm94
+C -N   490.0    1.335       Parm94
+C -O2  656.0    1.250       Parm94
+C -HC  331.0    1.090       Parm91
+C -H1  410.0    1.092       Methanol
+OH-HO  553.0    0.960       Methanol
+N -H   434.0    1.010       Parm94
+CY-OH  320.0    1.410       Parm94 - for sialic acid only!
+CG-OS  285.0    1.460       Parm94   K calculated from methyl sulphate (eqm value from THEOCHEM 395/396 (1997) 107-122)
+CG-OY  320.0    1.410       Parm94 - for sialic acid only!
+CY-CG  310.0    1.520       Butane (gauche, and trans) - for sialic acid only!
+CY-OS  320.0    1.410       Parm94 - for sialic acid only!
+CY-OY  320.0    1.410       Parm94 - for sialic acid only!
+CY-C   220.0    1.530       2-Methylpropanoate - for sialic acid only!
+
+S -N -CG     31.0     110.0    avg value from ZULPIF & ZULPIF01 118.4 deg
+O2-S -N      84.0     108.0    avg value from ZULPIF & ZULPIF01 106.4 deg
+S -N -H      37.5     121.2    avg value from QM 6-31++g** 114.0 deg (ethylsulfamate)
+CG-CG-SM     50.0     108.6    AA cys
+CG-SM-CG     50.0     109.5    AA cyx
+H1-CG-SM     50.0     109.5    AA cys     changed based on NMA nmodes
+HC-CG-SM     50.0     109.5    AA cys     changed based on NMA nmodes
+H -N3-CG     45.5     109.2    Methanaminium (eqm. value copied from H -NT-CG)
+H -N3-H      35.0     109.5    Parm94
+N3-CG-HP     57.0     109.6    Methanaminium (eqm. value copied from NT-CG-H1)
+CJ-CG-CK     46.7     111.5    copy of CK-CG-CK
+CK-CG-CK     46.7     111.5    K calculated from 1,4-pentadiene (value from ED of C2 and CS conformers JACS 1987,109,24,7304-7309 108.9 deg)
+CJ-CG-CJ     46.7     111.5    copy of CK-CG-CK
+OS-CJ-HA     65.1     107.5    copy of OS-CK-HA
+OS-CK-HA     65.1     107.5    K calculated from methoxyethene (value from J Mol Struct 102 (1983) pg 333-345 methoxyethene 108.3 deg)
+CG-OS-CJ     38.0     107.0    copy of CG-OS-CK
+CG-OS-CK     38.0     107.0    K calculated from methoxyethene (value from J Mol Struct 28 (1975) pg 193-203 methoxyethene 118.3 deg)
+OS-CJ-CJ     59.5     119.0    copy of OS-CK-CK
+OS-CK-CK     59.5     119.0    K calculated from methoxyethene (value from J Mol Struct 28 (1975) pg 193-203 methoxyethene 127.7 deg)
+CG-CJ-CG     46.1     115.6    copy of CG-CK-CG
+CG-CK-CG     46.1     115.6    K calculated from 2-methylpropene (eqm value from ED,MW average 115.6 deg)
+CK-CJ-HA     32.7     126.4    copy of CJ-CK-HA
+CJ-CK-HA     32.7     126.4    K calculated from 1,3-butadiene (value form ED of 1,3-butadiene 120.9 deg)
+CK-CJ-CJ     49.4     127.7    copy of CK-CK-CJ
+CK-CK-CJ     49.4     127.7    K calculated from 1,3-butadiene (eqm value from ED 124.4 deg)
+HA-CJ-HA     31.3     117.4    copy of HA-CK-HA
+HA-CK-HA     31.3     117.4    K calculated from ethylene (eqm value from ED,MW average)
+HA-CJ-CJ     38.2     121.3    copy of HA-CK-CK
+HA-CK-CK     38.2     121.3    K calculated from ethylene (eqm value from ED,MW average)
+H1-CG-CJ     56.0     111.5    copy of H1-CG-CK
+H1-CG-CK     56.0     111.5    Copy of HC-CG-CK
+HC-CG-CJ     41.4     114.0    copy of HC-CG-CK
+HC-CG-CK     41.4     114.0    K calculated from propene (eqm value from JMS 1973,17,207-223,ED 111.7 deg)
+HA-CJ-CG     50.0     114.0    copy of HA-CK-CG
+HA-CK-CG     50.0     114.0    K calculated from propene (eqm value from ED,MW average)
+CG-CJ-CJ     47.9     122.5    copy of CG-CK-CK
+CG-CK-CK     47.9     122.5    K calculated from propene (eqm value from JMS 1973,17,207-223,ED 124.3 deg)
+CG-CG-CJ     43.0     112.0    copy of CG-CG-CK
+CG-CG-CK     43.0     112.0    K calculated from but-1-ene (eqm value from JACS 1980,102(7),471)
+OH-CG-CJ     70.0     107.5    copy of OH-CG-CK
+OH-CG-CK     70.0     107.5    Copy of OH-CG-CG
+HP-CG-HP     40.0     109.5    Copy of HC-CG-HC
+HP-CG-CP     45.0     112.6    Copy of CG-CG-HC
+HP-CG-CG     45.0     112.6    Copy of CG-CG-HC
+CG-N3-CG     54.0     111.1
+N3-CG-CP     67.0     111.6    Copy of NT-CG-CG
+N3-CG-CG     67.0     111.6    Copy of NT-CG-CG
+H -NT-H      35.0     109.5    Copy of H-N3-H (Parm94)
+H -NT-CG     49.0     109.2    K calculated from methyl amine (eqm value from crystal average)
+NT-CG-H1     64.0     109.6    K calculated from methyl amine (eqm value from crystal average)
+NT-CG-CG     67.0     111.6    K calculated from ethyl amine (eqm value from crystal average)
+CG-NT-CG     54.0     108.1    K calculated from dimethyl amine (eqm value from crystal average)
+H1-CP-H1     45.00    109.50   Copy of H1-CG-H1
+CP-CG-H1     45.00    111.00   Copy of CG-CG-H1
+CG-CP-H1     45.00    111.00   Copy of CG-CG-H1
+CG-CP-CG     45.00    113.50   Copy of CG-CG-CG
+CP-CG-CG     45.00    113.50   Copy of CG-CG-CG
+OS-CP-CG     70.00    108.50   Copy of OS-CG-CG
+OS-CG-CP     70.00    108.50   Copy of OS-CG-CG
+H2-CP-OS     60.00    110.00   Copy of H1-CG-OS
+H1-CP-OS     60.00    110.00   Copy of H1-CG-OS
+OS-P -OS     45.0     102.6    Parm94
+P -OS-CP     50.0     121.0    K calculated from dimethyl phosphate (eqm value from crystal average)
+O2-P -OS    100.0     108.2    Parm94
+O2-P -O2    140.0     119.9    Parm94
+O2-S -O2    123.0     113.91   K calculated from methyl sulphate  (eqm value from THEOCHEM 395/396 (1997) 107-122)
+S -OS-CG     50.0     118.88   K calculated from methyl sulphate  (eqm value from THEOCHEM 395/396 (1997) 107-122)
+O2-S -OS    104.0     106.87   K calculated from methyl sulphate  (eqm value from THEOCHEM 395/396 (1997) 107-122)
+OH-CG-C      63.00    112.36   Glycam_93 (taken from OS-CG-C) - for N-glycolyl
+CG-OS-C      60.0     117.00   K calculated from methyl acetate (eqm value from crystal average)
+OS-C -O      80.0     125.00   Parm99
+OS-C -CG     95.0     110.80   K calculated from methyl acetate (eqm value from crystal average)
+HW-OW-HW    100.      104.52   TIP3P water
+HW-HW-OW      0.      127.74   (found in crystallographic water with 3 bonds)
+HC-CG-HC     40.00    109.50   Methane, Ethane
+H1-CG-H1     45.00    109.50   Methanol, Propanol
+H2-CG-H2     45.00    109.50   Methanol, Propanol
+CG-CG-HC     45.00    112.60   Ethane
+CG-CG-H1     45.00    111.00   Propanol
+CG-CP-H2     45.00    111.00   Propanol
+CG-CG-H2     45.00    111.00   Propanol
+CG-CG-CG     45.00    113.50   Propane
+OH-CG-CG     70.00    107.50   Ethanol
+H1-CG-OH     60.00    110.00   Methanol (best fit for trans and gauche hyrdogens)
+H2-CG-OH     60.00    110.00   Methanol (best fit for trans and gauche hyrdogens)
+CG-OH-HO     55.00    109.50   Methanol
+CY-OH-HO     55.00    109.50   - Sialic Acid Only
+CP-OS-CG     50.00    111.60   Copy of CG-OS-CG
+CG-OS-CG     50.00    111.60   Methoxymethane (Dimethyl ether)
+CT-OS-CG     50.00    111.60   Methoxymethane (Dimethylether) for OLS, OLT
+OS-CG-CG     70.00    108.50   Methoxyethane (Ethylmethyl ether)
+OY-CG-CG     70.00    108.50   Methoxyethane (Ethylmethyl ether) - for sialic acid only
+H1-CG-OS     60.00    110.00   Methoxymethane (Dimethyl ether) - best fit for trans and gauche hyrdogens
+H1-CG-OY     60.00    110.00   Methoxymethane - for sialic acid only!
+H2-CG-OS     60.00    110.00   Methoxymethane - best fit for trans and gauche hyrdogens
+H1-C -O      60.00    110.00   Methoxymethane - best fit for trans and gauche hyrdogens
+H1-C -N      55.00    112.40   AVG K C-C=O, H-C-N FOR N-FORMYL - Approximate
+OS-CP-OS    100.00    112.00   Copy of OS-CG-OS
+OS-CG-OS    100.00    112.00   Dimethoxymethane, 1,1 Dimethoxyethane
+OH-CG-OS    100.00    112.00   Copy of OS-CG-OS (not derived)
+O2-C -O2     80.00    126.00   Parm94
+O2-C -CG     70.00    115.00   Aprroximate based from 2-Dimethylpropanoate and OH-CG-CG
+CG-C -N      70.00    115.60   Force constant taken from Parm94, Angle set to HF/6-31G(d) value N-Methylethanamide
+CG-C -O      80.00    121.70   Force constant taken from Parm94, Angle set to HF/6-31G(d) value N-Methylethanamide
+N -C -O      80.00    122.90   Parm94
+N -CG-HC     50.00    110.10   Force constant taken from HC-CG-C Parm94, Angle set to average HF/6-31G(d) value N-Methylethanamide
+OS-CG-N     106.90    107.90   AVE X'TAL ASN-GLCNAC, K FROM FAMM (GLYCAM_93)
+CP-CG-N      80.00    109.70   Copy of CG-CG-N
+CG-CG-N      80.00    109.70   Parm91
+H1-CG-N      50.00    109.50   Parm94 H-CG-N
+H2-CG-N      50.00    109.50   Parm94 H-CG-N
+C -CG-CG     63.00    111.10   Parm94
+C -CG-HC     50.00    109.50   Parm94
+C -CG-H1     50.00    109.50   Parm94
+C -CG-H2     50.00    109.50   Parm94
+C -N -CG     50.00    120.00   Force constant taken from Parm94 - modified the angle by 2.9 degrees
+CG-N -CG     50.00    118.00   Parm94
+H -N -CG     30.00    118.00   N-Methylethanamide
+C -N -H      30.00    122.00   Parm94
+H -N -H      35.00    120.00   Parm94
+H2-C -N      55.00    112.40   AVG K C-C=O, H-C-N FOR N-FORMYL
+H2-C -O      55.00    122.20   AVG K C-C=O, H-C-N FOR FORMYL
+OS-CG-C      63.00    112.36   Glycam_93
+O2-C -OH     80.0     126.00   Parm96
+OS-CY-CG     70.00    108.50   Methoxyethane (Ethylmethyl ether) - for sialic acid only!
+OH-CY-CG     70.00    108.50   - for sialic acid only!
+OY-CY-CG     70.00    108.50   Methoxyethane - for sialic acid only!
+OH-CY-C      63.00    112.36   - for sialic acid only!
+OS-CY-C      63.00    112.36   Glycam_93 - for sialic acid only!
+OY-CY-C      63.00    112.36   Glycam_93 - for sialic acid only!
+OY-CY-OH    100.00    112.00   - for sialic acid only!
+OY-CY-OS    100.00    112.00   Dimethoxymethane, 1,1 Dimethoxyethane - for sialic acid only!
+CG-CY-C      63.00    111.10   Parm94 - for sialic acid only!
+CG-OS-CY     50.00    111.60   Methoxymethane - for sialic acid only!
+CG-OY-CY     50.00    111.60   Methoxymethane - for sialic acid only!
+O2-C -CY     70.00    115.00   Aprroximate based from 2,2-Dimethylpropanoate and OH-CG-CG - for sialic acid only!
+HC-CG-CY     45.00    112.60   Ethane - for sialic acid only!
+CG-CG-CY     45.00    113.50   Propane - for sialic acid only!
+
+O2-S -N -H    1   -0.10          0.0             6.         ***G06 - MT
+O2-S -N -CG   1    0.11          0.0            -3.         ***G06 - MT
+              1    0.00          0.0            -2.
+              1    0.00          0.0             1.
+S -N -CG-H1   1    0.02          0.0             3.         ***G06 - MT
+S -N -CG-CG   1    0.00          0.0            -3.         ***G06 - MT
+              1   -1.25          0.0            -2.
+              1   -4.00          0.0             1.
+CG-SM-CG-H1   1    0.33          0.0             3.         ****Sameer
+CG-CG-SM-CG   1    0.27          0.0            -3.         ****Sameer
+              1    0.15          0.0            -2.
+              1    0.42          0.0             1.
+SM-CG-CG-HC   1    0.18          0.0             3.         ****Sameer
+SM-CG-CG-H1   1    0.18          0.0             3.         ****Sameer
+SM-CG-CG-OH   1    0.02          0.0            -3.         ****Sameer
+              1    0.20          0.0             1.
+CG-CG-CG-SM   1   -0.30          0.0            -3.         ****Sameer
+              1   -0.45          0.0            -2.
+              1    0.60          0.0             1.
+NH-CG-CG-SM   1    0.45          0.0            -3.         ****Sameer
+              1    0.25          0.0             2.
+H -N3-CG-HP   1    0.13          0.0             3          Methanaminium
+H -N3-CG-CG   1    0.13          0.0             3          Ethanaminium
+CK-CG-CG-N    1    0.18          0.0            -3          Lipids, from N-but-3-en-1-ylacetamide
+              1    0.03          0.0            -2
+              1   -0.22          0.0             1
+CJ-CG-CG-N    1    0.18          0.0            -3          Lipids, copy of CK-CG-CG-N
+              1    0.03          0.0            -2
+              1   -0.22          0.0             1
+C -CG-CG-CJ   1   -0.42          0.0            -3          Lipids, from 3-buten-1-ol acetate
+              1    0.33          0.0            -2
+              1    0.40          0.0             1
+C -CG-CG-CK   1   -0.42          0.0            -3          Lipids, from 3-buten-1-ol acetate
+              1    0.33          0.0            -2
+              1    0.40          0.0             1
+H1-CG-CG-CK   1    0.10          0.0             3          Lipids, copy of HC-CG-CG-CK
+H1-CG-CG-CJ   1    0.10          0.0             3          Lipids, copy of HC-CG-CG-CJ
+OH-CG-CG-CK   1   -0.11          0.0            -3          Lipids, from 3-butenol
+              1   -0.16          0.0            -2
+              1   -1.06          0.0             1
+OH-CG-CG-CJ   1   -0.11          0.0            -3          Lipids, from 3-butenol
+              1   -0.16          0.0            -2
+              1   -1.06          0.0             1
+OS-CJ-CJ-CG   1  -13.00          0.0             2          copy of OS-CK-CK-CG
+OS-CK-CK-CG   1  -13.00          0.0             2          Lipids, from 1-propenylmethylether
+CK-CJ-CJ-HA   1  -15.00          0.0             2          copy of CJ-CK-CK-HA
+CJ-CK-CK-HA   1  -15.00          0.0             2
+CG-OS-CJ-HA   1    0.08          0.0            -3          copy of CG-OS-CK-HA, coupled to CG-OS-CJ-CJ
+              1    0.22          0.0            -2
+              1    0.40          0.0             1
+CG-OS-CK-HA   1    0.08          0.0            -3          Lipids, from methoxyethene, coupled to CG-OS-CK-CK
+              1    0.22          0.0            -2
+              1    0.40          0.0             1
+OS-CJ-CJ-HA   1  -20.00          0.0             2          copy of OS-CK-CK-HA
+OS-CK-CK-HA   1  -20.00          0.0             2          Lipids, from methoxyethene
+H1-CG-OS-CJ   1    0.10          0.0             3          copy of H1-CG-OS-CK
+H1-CG-OS-CK   1    0.10          0.0             3          Lipids, from methoxyethene
+CG-CG-OS-CJ   1   -0.01          0.0            -3          copy of CG-CG-OS-CK
+              1   -0.42          0.0            -2
+              1    0.22          0.0             1
+CG-CG-OS-CK   1   -0.01          0.0            -3          Lipids, from ethoxyethene
+              1   -0.42          0.0            -2
+              1    0.22          0.0             1
+CG-OS-CJ-CJ   1   -0.87          0.0            -3          copy of CG-OS-CK-CK
+              1   -3.99          0.0            -2
+              1   -0.25          0.0             1
+CG-OS-CK-CK   1   -0.87          0.0            -3
+              1   -3.99          0.0            -2
+              1   -0.25          0.0             1
+CJ-CK-CK-CJ   1   -2.00          0.0             2
+CK-CJ-CJ-CK   1   -2.00          0.0             2
+CK-CG-CK-CK   1   -0.04          0.0            -3          Lipids, from 1,4-Pentadiene
+              1   -0.68          0.0            -2
+              1   -0.21          0.0             1
+CJ-CG-CK-CK   1   -0.04          0.0            -3          Copy of CK-CG-CK-CK
+              1   -0.68          0.0            -2
+              1   -0.21          0.0             1
+CK-CG-CJ-CJ   1   -0.04          0.0            -3          Copy of CK-CG-CK-CK
+              1   -0.68          0.0            -2
+              1   -0.21          0.0             1
+CJ-CG-CJ-CJ   1   -0.04          0.0            -3          Copy of CK-CG-CK-CK
+              1   -0.68          0.0            -2
+              1   -0.21          0.0             1
+CK-CG-CK-HA   1    0.31          0.0            -3          Lipids, from 1,4-Pentadiene, coupled to CK-CG-CK-CK
+              1    0.03          0.0            -2
+              1    0.05          0.0             1
+CJ-CG-CK-HA   1    0.31          0.0            -3          Copy of CK-CG-CK-HA, coupled to CJ-CG-CK-CK
+              1    0.03          0.0            -2
+              1    0.05          0.0             1
+CK-CG-CJ-HA   1    0.31          0.0            -3          Copy of CK-CG-CK-HA, coupled to CK-CG-CJ-CJ
+              1    0.03          0.0            -2
+              1    0.05          0.0             1
+CJ-CG-CJ-HA   1    0.31          0.0            -3          Copy of CK-CG-CK-HA, coupled to CJ-CG-CJ-CJ
+              1    0.03          0.0            -2
+              1    0.05          0.0             1
+CJ-CK-CK-CG   1   -3.50          0.0             2          copy of CK-CJ-CJ-CG
+CK-CJ-CJ-CG   1   -3.50          0.0             2          Lipids, from
+CG-CG-CJ-CG   1   -0.01          0.0            -3          copy of CG-CG-CK-CG
+              1   -0.34          0.0            -2
+              1    0.29          0.0             1
+CG-CG-CK-CG   1   -0.01          0.0            -3          Lipids
+              1   -0.34          0.0            -2
+              1    0.29          0.0             1
+HC-CG-CJ-CG   1    0.0           0.0             1          copy of HC-CG-CK-CG,no term necessary
+HC-CG-CK-CG   1    0.0           0.0             1          Lipids, no term necessary
+HA-CK-CJ-HA   1    0.69          0.0            -3          Lipids - 1,3-butadiene
+              1   -1.75          0.0            -2
+              1    0.92          0.0             1
+HA-CJ-CK-CK   1    0.17          0.0            -3          copy of HA-CK-CJ-CJ
+              1    0.40          0.0            -2
+              1    0.69          0.0             1
+HA-CK-CJ-CJ   1    0.17          0.0            -3          Lipids - 1,3-butadiene
+              1    0.40          0.0            -2
+              1    0.69          0.0             1
+CJ-CJ-CK-CK   1    0.69          0.0            -3          Lipids - adjacent double-bonded carbons
+              1   -1.75          0.0            -2
+              1    0.92          0.0             1
+OH-CG-CJ-CJ   1   -0.50          0.0            -3          copy of OH-CG-CK-CK
+              1   -1.00          0.0            -2
+              1   -0.50          0.0             1
+OH-CG-CK-CK   1   -0.50          0.0            -3          Lipids
+              1   -1.00          0.0            -2
+              1   -0.50          0.0             1
+OH-CG-CJ-HA   1    0.0           0.0             1          Coupled to OH-CG-CK-CK, copy of OH-CG-CK-HA
+OH-CG-CK-HA   1    0.0           0.0             1          Coupled to OH-CG-CK-CK
+HO-OH-CG-CJ   1    0.20          0.0            -3          copy of HO-OH-CG-CK
+              1    0.58          0.0            -2
+              1    0.38          0.0             1
+HO-OH-CG-CK   1    0.20          0.0            -3          Lipids
+              1    0.58          0.0            -2
+              1    0.38          0.0             1
+CG-CG-CG-CJ   1    0.0           0.0             3          copy of CG-CG-CG-CJ
+CG-CG-CG-CK   1    0.0           0.0             3          Lipids
+CG-CG-CJ-CJ   1   -0.5           0.0            -3          copy of CG-CG-CK-CK
+              1   -0.4           0.0             2
+CG-CG-CK-CK   1   -0.5           0.0            -3          Lipids
+              1   -0.4           0.0             2
+CG-CG-CJ-HA   1    0.0           0.0             1          Lipids coupled to CG-CG-CK-CK, copy of CG-CG-CK-HA
+CG-CG-CK-HA   1    0.0           0.0             1          Lipids coupled to CG-CG-CK-CK
+CG-CJ-CJ-CG   1  -15.0           0.0            -2          copy of CG-CK-CK-CG
+              1    0.5           0.0             1
+CG-CK-CK-CG   1  -15.0           0.0            -2          Lipids
+              1    0.5           0.0             1
+HC-CG-CG-CJ   1    0.1           0.0             3          copy of HC-CG-CG-CK
+HC-CG-CG-CK   1    0.1           0.0             3          Lipids
+H1-CG-CJ-CJ   1   -0.33          0.0             3          Copy of HC-CG-CK-CK
+H1-CG-CK-CK   1   -0.33          0.0             3          Copy of HC-CG-CK-CK
+HC-CG-CJ-CJ   1   -0.34          0.0            -3          Copy of HC-CG-CK-CK
+              1   -0.1           0.0            -2
+              1    0.1           0.0             1
+HC-CG-CK-CK   1   -0.34          0.0            -3          Lipids
+              1   -0.1           0.0            -2
+              1    0.1           0.0             1
+HC-CG-CJ-HA   1    0.0           0.0             3          Lipids coupled to HC-CG-CJ-CJ
+HC-CG-CK-HA   1    0.0           0.0             3          Lipids coupled to HC-CG-CK-CK
+H1-CG-CJ-HA   1    0.0           0.0             3          Copy of HC-CG-CK-HA
+H1-CG-CK-HA   1    0.0           0.0             3          Copy of HC-CG-CK-HA
+HA-CJ-CJ-CG   1  -21.0           0.0             2          copy of HA-CK-CK-CG
+HA-CK-CK-CG   1  -21.0           0.0             2          Lipids
+HA-CJ-CJ-HA   1   -8.5           0.0             2          copy of HA-CK-CK-HA
+HA-CK-CK-HA   1   -8.5           0.0             2          Lipids
+HP-CG-CP-OS   1    0.05          0.0             3.         Copy of HC-CG-CG-OS
+HP-CG-CG-OS   1    0.05          0.0             3.         Copy of HC-CG-CG-OS
+HP-CG-CP-H1   1    0.13          0.0             3.         Copy of HC-CG-CG-HC
+HP-CG-CG-H1   1    0.13          0.0             3.         Copy of HC-CG-CG-HC
+HP-CG-CG-HC   1    0.13          0.0             3.         Copy of HC-CG-CG-HC
+HP-CG-CG-CG   1    0.10          0.0             3.         Copy of HC-CG-CG-CG
+CG-N3-CG-CP   1    0.1           0.0            -3          Copy of CG-N3-CG-CG
+              1   -0.2           0.0            -2
+              1    0.1           0.0             1
+CG-N3-CG-CG   1    0.1           0.0            -3          N-methylethanaminium
+              1   -0.2           0.0            -2
+              1    0.1           0.0             1
+CG-NT-CG-CG   1    0.1           0.0            -3          N-Ethyl N-Methyl amine
+              1   -0.2           0.0            -2
+              1    0.1           0.0             1
+N3-CG-CG-CG   1    0.3           0.0            -3          Propanaminium
+              1   -0.1           0.0            -2
+              1    0.1           0.0             1
+NT-CG-CG-CG   1    0.3           0.0            -3          N-Propyl amine
+              1   -0.1           0.0            -2
+              1    0.1           0.0             1
+NT-CG-CG-HC   1    0.1           0.0             3          N-ethyl amine
+N3-CG-CG-HC   1    0.1           0.0             3          Ethanaminium
+NT-CG-CG-H1   1    0.1           0.0             3          N-ethyl amine
+N3-CG-CP-H1   1    0.1           0.0             3          Copy of NT-CG-CG-H1
+N3-CG-CG-H1   1    0.1           0.0             3          Copy of NT-CG-CG-H1
+NT-CG-CG-OS   1    1.5           0.0            -3          2-Methoxy ethyl amine
+              1    0.5           0.0            -2
+              1   -0.5           0.0             1
+N3-CG-CP-OS   1    1.5           0.0            -3          2-Methoxyethanaminium
+              1    0.5           0.0            -2
+              1   -0.5           0.0             1
+N3-CG-CG-OS   1    1.5           0.0            -3          2-Methoxyethanaminium
+              1    0.5           0.0            -2
+              1   -0.5           0.0             1
+NT-CG-CG-OH   1    0.6           0.0            -3          2-Hydroxy ethyl amine
+              1    0.5           0.0            -2
+              1   -1.0           0.0             1
+N3-CG-CG-OH   1    0.6           0.0            -3          2-Hydroxyethanaminium
+              1    0.5           0.0            -2
+              1   -1.0           0.0             1
+HP-CG-N3-CG   1    0.25          0.0             3          Dimethylammonium
+H1-CG-NT-CG   1    0.25          0.0             3          N,N-Dimethyl amine
+HC-CG-NT-CG   1    0.25          0.0             3          N,N-Dimethyl amine
+OS-C -CG-CG   1    0.20          0.0             3          Methyl propanoate
+CG-CG-NT-H    1    0.2           0.0             3          N-Ethyl amine
+H1-CG-NT-H    1    0.17          0.0             3          N-Methyl amine
+NT-CG-CG-HC   1    0.1           0.0             3          ***N-ethyl amine***Awaiting Correction
+NT-CG-CG-H1   1    0.1           0.0             3          ***N-ethyl amine***Awaiting Correction
+CP-CG-OS-C    1   -0.04          0.0            -3          Copy of CG-CG-OS-C
+              1    0.47          0.0             1
+H1-CG-CP-H1   1    0.17          0.0             3.         Copy of H1-CG-CG-H1
+H1-CG-CP-CG   1    0.15          0.0             3.         Copy of H1-CG-CG-CG
+H1-CG-CG-CP   1    0.15          0.0             3.         Copy of H1-CG-CG-CG
+H1-CP-CG-CG   1    0.15          0.0             3.         Copy of H1-CG-CG-CG
+OS-CG-CP-CG   1   -0.27          0.0             1.         Copy of OS-CG-CG-CG
+OS-CP-CG-CG   1   -0.27          0.0             1.         Copy of OS-CG-CG-CG
+OS-CG-CG-CP   1   -0.27          0.0             1.         Copy of OS-CG-CG-CG
+CG-OS-CP-CG   1    0.16          0.0             3.         Copy of CG-OS-CG-CG
+CG-OS-CG-CP   1    0.16          0.0             3.         Copy of CG-OS-CG-CG
+CP-OS-CG-CG   1    0.16          0.0             3.         Copy of CG-OS-CG-CG
+OH-CG-CG-HP   1    0.05          0.0             3.         Tertbutanol
+OS-CG-CP-OS   1    0.82          0.0             2.         Copy of OS-CG-CG-OS
+H1-CG-CP-OS   1    0.05          0.0             3.         Copy of H1-CG-CG-OS
+H1-CP-CG-OS   1    0.05          0.0             3.         Copy of H1-CG-CG-OS
+H1-CG-CP-OS   1    0.05          0.0             3.         Copy of H1-CG-CG-OS
+N -C -CG-CG   1    0.20          0.0            -3          Propanamide
+              1   -0.70          0.0            -2
+              1    0.05          0.0             1
+O -C -CG-CG   1    0.50          0.0            -3          Propanamide (coupled to N -C -CG-CG)
+              1   -0.10          0.0            -2
+              1   -0.05          0.0             1
+CT-OS-CG-CG   1    0.16          0.0             3.         Ethyl methyl ether, Isopropyl methyl ether for OLS,OLT
+C -CG-OH-HO   1    0.9           0.0             2          2-Hydroxy ethanamide
+O -C -CG-H1   1    0.0           0.0             3          2-Hydroxy ethanamide
+N -C -CG-H1   1    0.0           0.0             3          2-Hydroxy ethanamide (coupled to O -C -CG-H1)
+N -C -CG-OH   1    0.20          0.0            -3          2-Hydroxy ethanamide
+              1   -2.21          0.0            -2
+              1    2.24          0.0             1
+O -C -CG-OH   1    0.0           0.0             3          2-Hydroxy ethanamide (coupled to N -C -CG-OH)
+H1-CP-OS-P    1    0.07          0.0             3.         Dimethyl phosphate
+OS-P -OS-CP   1    0.50          0.0            -3.         Dimethyl phosphate
+              1    0.70          0.0             2.
+O2-P -OS-CP   1    0.10          0.0            -3.         Dimethyl phosphate
+              1   -0.50          0.0            -2.
+              1    0.10          0.0             1
+P -OS-CP-CG   1    0.10          0.0            -3          Methyl ethyl phosphate
+              1    0.05          0.0            -2
+              1   -1.20          0.0             1
+H2-CP-OS-P    1    0.07          0.0             3.         Dimethyl phosphate
+OS-CP-OS-P    1    0.40          0.0            -3          Methoxy methyl methyl phosphate
+              1    0.40          0.0            -2
+              1   -0.50          0.0             1
+CG-OS-S -O2   1    0.18          0.0             3.         Methyl sulphate - CH3OSO3
+H1-CG-OS-S    1    0.17          0.0             3.         Methyl sulphate -CH3CH2OSO3
+CG-CG-OS-S    1   -1.20          0.0             1.         Ethyl sulphate - CH3OSO3
+OS-CG-CG-C    1   -0.1           0.0            -3          3-Methoxy propanoate
+              1    0.1           0.0            -2
+              1   -1.0           0.0             1
+OH-CG-CG-C    1    0.1           0.0            -3          3-Hydroxy propanoate
+              1    0.2           0.0            -2
+              1   -2.5           0.0             1
+CG-CG-OS-C    1   -0.04          0.0            -3          Ethyl acetate, 2-Methoxy 3-O-Acetyl THP
+              1    0.47          0.0             1
+CG-OS-C -O    1   -3.20          0.0             2          Methyl acetate
+CG-C -OS-CG   1    3.0           0.0             2          Methyl acetate
+H1-CG-OS-C    1    0.0           0.0             3          Methyl acetate
+OS-C -CG-HC   1    0.0           0.0             3          Methyl acetate
+HC-CG-CG-HC   1    0.13          0.0             3.         Ethane
+H1-CG-CG-HC   1    0.17          0.0             3.         Ethanol, after H1-CG-CG-CG
+H2-CG-CG-HC   1    0.17          0.0             3.         Ethanol, after H1-CG-CG-CG
+H1-CG-CG-H1   1    0.17          0.0             3.         Ethanol
+H1-CG-CP-H2   1    0.17          0.0             3.         Copy of H1-CG-CG-H2
+H1-CG-CG-H2   1    0.17          0.0             3.         Ethanol
+HC-CG-CG-CG   1    0.10          0.0             3.         Propane
+H1-CG-CG-CG   1    0.15          0.0             3.         2,2-Dimethylbutanol
+H2-CP-CG-CG   1    0.15          0.0             3.         Copy of H2-CG-CG-CG
+H2-CG-CG-CG   1    0.15          0.0             3.         2,2-Dimethylbutanol
+HO-OH-CG-H1   1    0.18          0.0             3.         Methanol
+HO-OH-CG-H2   1    0.18          0.0             3.         Copy of HO-OH-CG-H1 (not derived)
+HO-OH-CY-OY   1    0.18          0.0             3.         - sialic acid only
+HO-OH-CY-C    1    0.18          0.0             3.         - sialic acid only
+HO-OH-CY-CG   1    0.18          0.0             3.         - sialic acid only
+HO-OH-CG-CG   1    0.18          0.0             3.         Ethanol, propan-2-ol (Isopropanol)
+CG-CG-CP-CG   1    0.45          0.0             1.         Copy of CG-CG-CG-CG
+CG-CG-CG-CP   1    0.45          0.0             1.         Copy of CG-CG-CG-CG
+CG-CG-CG-CG   1    0.45          0.0             1.         Butane
+OH-CG-CG-HC   1    0.05          0.0             3.         tert-butanol
+OH-CG-CG-H1   1    0.05          0.0             3.         tert-butanol
+OH-CG-CG-H2   1    0.05          0.0             3.         tert-butanol
+OH-CG-CG-CP   1    0.10          0.0             3.         2,3-Dimethylbutanol
+OH-CG-CG-CG   1    0.10          0.0             3.         2,3-Dimethylbutanol
+OS-CG-CG-CG   1   -0.27          0.0             1.         1-methoxypropane (Methylpropyl ether), 1-methoxy-2-methylpropane (Methyl 2-methylpropyl ether)
+OS-CG-CG-CY   1   -0.27          0.0             1.         1-methoxypropane - sialic acid only 4-O link ABY 05/29/05
+OY-CG-CG-CG   1   -0.27          0.0             1.         1-methoxypropane - sialic acid only
+H1-CG-OS-CP   1    0.27          0.0             3.         Copy of H1-CG-OS-CG
+H1-CG-OS-CG   1    0.27          0.0             3.         Methoxymethane, 2-methoxy-2-methylpropane (Isobutyl methyl ether), etc
+CG-OS-CG-CG   1    0.16          0.0             3.         Methoxyethane, 2-methoxypropane (Isopropyl methyl ether)
+OH-CG-CG-OH   1   -0.10          0.0            -1.         2,3-propanediol, 2-methyl-2,3-butanediol, etc
+              1    0.95          0.0            -2.
+              1    0.55          0.0             3.
+OH-CG-CG-OS   1   -1.10          0.0            -1.         Ether-Alcohols
+              1    0.25          0.0             2.
+OH-CG-CG-OY   1   -1.10          0.0            -1.         Ether-Alcohols - sialic acid only
+              1    0.25          0.0             2.
+H1-CG-CG-OY   1    0.05          0.0             3.         COPY OF H1-CG-CG-OS NOT DERIVED
+OS-CG-CG-OS   1    0.82          0.0             2.         DiEthers
+OS-CG-CG-OY   1    0.82          0.0             2.         DiEthers - sialic acid only
+OS-CG-OH-HO   1    0.18          0.0             3.         Copy of HO-OH-CG-CG (not derived)
+OS-CP-OS-CG   1    0.30          0.0            -1.         Copy of OS-CG-OS-CG
+              1    1.27          0.0            -2.
+              1    0.37          0.0             3.
+OS-CG-OS-CG   1    0.30          0.0            -1.         2,2-Dimethoxypropane
+              1    1.27          0.0            -2.
+              1    0.37          0.0             3.
+OH-CG-OS-CG   1    0.30          0.0            -1.         Copy of OS-CG-OS-CG (not derived)
+              1    1.27          0.0            -2.
+              1    0.37          0.0             3.
+H2-CP-OS-CG   1    0.60          0.0            -2.         Copy of H2-CG-OS-CG
+              1    0.10          0.0             3.
+H2-CG-OS-CG   1    0.60          0.0            -2.         Dimethoxymethane, after OS-CG-OS-CG
+              1    0.10          0.0             3.
+H2-CG-OS-CT   1    0.60          0.0            -2.         Dimethoxymethane, after OS-CG-OS-CG for OLS, OLT
+              1    0.10          0.0             3.
+HC-CG-CG-OS   1    0.05          0.0             3.         Methoxyethane
+H1-CG-CG-OS   1    0.05          0.0             3.         Methoxyethane
+H2-CG-CG-OS   1    0.05          0.0             3.         Methoxyethane
+H -N -C -O    1    2.00          0.0            -1.         Parm94 - Corrected to remove phase shift
+              1   -2.50          0.0             2.
+H -N -C -H1   1   -2.50          0.0             2.         Parm94 - Corrected to remove phase shift
+H -N -C -CG   1    0.00          0.0             1.         Ethanamide and N-Methylethanamide
+HC-CG-C -O    1    0.00          0.0             3.         Ethanamide
+HC-CG-C -N    1    0.00          0.0             3.         Ethanamide
+CG-OS-CG-N    1   -0.90          0.0             1.         N-(2-Methoxyisopropyl)-ethanamide, N-(2-Methoxyethyl)-ethanamide
+OS-CP-CG-N    1   -1.30          0.0             1.         N-(2-methoxyethyl)-ethanamide, N-(2-methyoxy-2-methyl-propyl)-ethanmide
+OS-CG-CG-N    1   -1.30          0.0             1.         N-(2-methoxyethyl)-ethanamide, N-(2-methyoxy-2-methyl-propyl)-ethanmide
+OY-CG-CG-N    1   -1.30          0.0             1.         N-(2-methoxyethyl)-ethanamide - sialic acid only
+OH-CG-CG-N    1   -1.50          0.0             1.         N-(2-hydroxyethyl)-ethanamide, N-(2-Hydroxy-2-methyl-propyl)-ethanmide
+CP-CG-CG-N    1    0.40          0.0             1.         Copy of CG-CG-CG-N
+CG-CG-CG-N    1    0.40          0.0             1.         N-(1,1,2,2-tetramethyl-propyl)-ethanamide, N-propyl-ethanamide
+HC-CG-CG-N    1    0.10          0.0             3.         N-tert-butylethanamide (N-isobutylethanamide)
+H1-CG-CG-N    1    0.10          0.0             3.         N-tert-butylethanamide
+H2-CP-CG-N    1    0.10          0.0             3.         Copy of H2-CG-CG-N
+H2-CG-CG-N    1    0.10          0.0             3.         N-tert-butylethanamide
+N -CG-CG-N    1    0.00          0.0             1.         N-(N-ethylethanamide)-ethanamide
+HC-CG-CG-C    1    0.10          0.0             3.         Propane
+H1-CG-CG-C    1    0.10          0.0             3.         Propane
+CG-CG-CG-C    1    0.45          0.0             1.         Butane
+CP-CG-N -C    1    0.00          0.0             3.         Copy of CG-CG-N -C
+CG-CG-N -C    1    0.00          0.0             3.         N-tert-butylethanamide, N-Isopropylethanamide
+OS-CG-N -C    1    2.03          0.0            -2.         Coupled to OS-CG-N-H
+              1    1.00          0.0             1.
+OS-CG-N -H    1   -0.43          0.0            -2.         Coupled to OS-CG-N-C
+              1    1.52          0.0             1.
+CP-CG-N -H    1    0.10          0.0             3.         Copy of CG-CG-N -H
+CG-CG-N -H    1    0.10          0.0             3.         N-tert-butylethanamide, N-Isopropylethanamide
+H1-CG-N -CG   1    0.00          0.0             3.         N,N-Dimethylethanamide coupled to H1-CG-N-C
+H2-CG-N -CG   1    0.00          0.0             3.         N,N-Dimethylethanamide coupled to H1-CG-N-C
+H1-CG-N -H    1    1.00          0.0             1.         N-Isopropylethanamide Coupled to H1-CG-N-C
+H2-CG-N -H    1    1.00          0.0             1.         N-Isopropylethanamide Coupled to H1-CG-N-C
+H1-CG-N -C    1   -1.00          0.0             1.         N,N-Dimethylethanamide, N-Isopropylethanamide
+H2-CG-N -C    1   -1.00          0.0             1.         N,N-Dimethylethanamide, N-Isopropylethanamide
+CG-N -C -O    1   -2.80          0.0             2.         N-Methylethanamide, N-tert-butylethanamide
+CG-N -C -CG   1   -2.70          0.0             2.         N-Methylethanamide, N-tertbutylethanamide
+HC-CG-C -O2   2    0.00          0.0             1.         Acetate
+CG-CG-C -O2   2   -1.50          0.0             2.         Propanoate, 2-Methylpropanoate, 2-Dimethylpropanoate
+H1-CG-C -O2   2    0.00          0.0             1.         2-Methylpropanoate
+H2-CG-C -O2   2    0.00          0.0             1.         1,1-Dimethoxyacetate
+OS-CG-C -O2   2   -2.25          0.0             2.         2-Methoxy-2-methylpropanoate
+CG-OS-CG-C    1    0.00          0.0            -1.         1-Methoxy-1-Acetate THP, 1-Methoxy-1-Acetate THP Neutralized w/ Hbond
+              1    0.00          0.0             2.
+H1-CT-OS-CG   1    0.27          0.0             3.         Protein Linkage: Methoxymethane, Isobutyl methyl ether (2-methoxy-2-methylpropane), etc
+CG-OS-CT-CT   1    0.16          0.0             3.         Protein Linkage: Methoxyethane, 2-methoxypropane
+CT-OS-CG-CG   1    0.16          0.0             3.         Protein Linkage: Methoxyethane, 2-methoxypropane
+OS-CG-OS-CT   1    0.30          0.0            -1.         Protein Linkage: 2,2-Dimethoxypropane
+              1    1.27          0.0            -2.
+              1    0.37          0.0             3.
+CG-N -C -CT   1    0.00          0.0             2.         Protein Linkage: N-Methylethanamide, N-Isobutylethanamide
+OY-CY-OS-CG   1    0.30          0.0            -1.         1-Methoxy-1-Acetate THP - for sialic acid only!
+              1    1.27          0.0            -2.
+              1    0.37          0.0             3.
+OH-CY-OY-CG   1    0.30          0.0            -1.         - for sialic acid only!
+              1    1.27          0.0            -2.
+              1    0.37          0.0             3.
+OS-CY-OY-CG   1    0.30          0.0            -1.         2,2-Dimethoxypropane - for sialic acid only!
+              1    1.27          0.0            -2.
+              1    0.37          0.0             3.
+OH-CY-CG-CG   1   -0.27          0.0             1.         - for sialic acid only
+OS-CY-CG-CG   1   -0.27          0.0             1.         1-methoxypropane, Methyl 2-methylpropyl ether (1-methoxy-2-methylpropane) - for sialic acid only!
+OY-CY-CG-CG   1   -0.27          0.0             1.         1-methoxypropane, 1-methoxy-2-methylpropane - for sialic acid only!
+OH-CY-CG-HC   1    0.05          0.0             3.         - for sialic acid only!
+OS-CY-CG-HC   1    0.05          0.0             3.         Methoxyethane - for sialic acid only!
+OY-CY-CG-HC   1    0.05          0.0             3.         Methoxyethane - for sialic acid only!
+CG-OS-CY-CG   1    0.16          0.0             3.         Methoxyethane, 2-methoxypropane - for sialic acid only!
+CG-OY-CY-CG   1    0.16          0.0             3.         Methoxyethane, 2-methoxypropane - for sialic acid only!
+OH-CY-C -O2   2   -2.25          0.0             2.         - for sialic acid only!
+OS-CY-C -O2   2   -2.25          0.0             2.         2-Methoxy-2-methylpropanoate - for sialic acid only!
+OY-CY-C -O2   2   -2.25          0.0             2.         2-Methoxy-2-methylpropanoate - for sialic acid only!
+CG-CY-C -O2   2   -1.50          0.0             2.         Propanoate, 2-Methylpropanoate, 2-Dimethylpropanoate - for sialic acid only!
+CG-OS-CY-C    1    3.50          0.0             1.         1-Methoxy-1-Acetate THP, 1-Methoxy-1-Acetate THP Acid w/ Hbond - for sialic acid only!
+CG-OY-CY-C    1    0.00          0.0             1.         1-Methoxy-1-Acetate THP, 1-Methoxy-1-Acetate THP Acid w/ Hbond - for sialic acid only!
+HC-CG-CY-C    1    0.10          0.0             3.         Propane - for sialic acid only!
+CG-CG-CY-C    1    0.45          0.0             3.         Butane - for sialic acid only!
+CY-OS-CG-CG   1    0.16          0.0             3.         Methoxyethane, 2-methoxypropane - for sialic acid only!
+CY-OY-CG-CG   1    0.16          0.0             3.         Methoxyethane, 2-methoxypropane - for sialic acid only!
+CY-OS-CG-H1   1    0.27          0.0             3.         Methoxymethane, 2-methoxy-2-methylpropane, etc - for sialic acid only!
+CY-OY-CG-H1   1    0.27          0.0             3.         Methoxymethane, 2-methoxy-2-methylpropane, etc - for sialic acid only!
+CY-CG-CG-CG   1    0.45          0.0             1.         Butane - for sialic acid only!
+CY-CG-CG-HC   1    0.10          0.0             3.         Propane - for sialic acid only!
+CY-CG-CG-H1   1    0.15          0.0             3.         2-Dimethylbutanol - for sialic acid only!
+CY-CG-CG-OH   1    0.10          0.0             3.         2,3-Dimethylbutanol - for sialic acid only!
+
+X -X -N -H           1.5         180.          2.           Parm94
+X -X -C -O          10.5         180.          2.           Parm94
+X -X -N -CG          1.5         180.          2.           X -X -N -H
+X -O2-C -O2         10.5         180.          2.           Parm94
+X -O2-C -OH         10.5         180.          2.           X -O2-C -O2
+CG-S -N -H           5.5         180.          2.           GLYCAM 06 Sulfamates
+
+  HW  OW  0000.     0000.                                4.  flag for fast water
+ 
+N   NA  N2  N*  NC  NB  N3  NP  NO
+C   C*  CA  CB  CC  CN  CM  CK  CQ  CW  CV  CR  CA  CX  CD
+
+MOD4      RE
+  H           0.6000  0.0157            !Ferguson base pair geom.
+  HO          0.0000  0.0000             OPLS Jorgensen, JACS,110,(1988),1657
+  HC          1.4870  0.0157             OPLS
+  H1          1.3870  0.0157             Veenstra et al JCC,8,(1992),963 
+  H2          1.2870  0.0157             Veenstra et al JCC,8,(1992),963 
+  HW          0.0000  0.0000             TIP3P water model
+  HA          1.4590  0.0150             Spellmeyer
+  HP          1.1000  0.0157             Veenstra et al JCC,8,(1992),963
+  O           1.6612  0.2100             OPLS
+  O2          1.6612  0.2100             OPLS
+  OW          1.7682  0.1521             TIP3P water model
+  OH          1.7210  0.2104             OPLS 
+  OS          1.6837  0.1700             OPLS ether
+  OY          1.6837  0.1700             OPLS ether - sialic acid only
+  CG          1.9080  0.1094             Spellmeyer
+  CY          1.9080  0.1094             Spellmeyer - sialic acid only
+  C           1.9080  0.0860             OPLS
+  CP          1.9080  0.1094             Spellmeyer
+  CK          1.9080  0.0860             Spellmeyer
+  CJ          1.9080  0.0860             Spellmeyer
+  N           1.8240  0.1700             OPLS
+  NT          1.8240  0.1700             OPLS
+  N3          1.8240  0.1700             OPLS
+  S           2.0000  0.2500             W. Cornell CH3SH and CH3SCH3 FEP's 03/16/05 from parm94.dat
+  SM          1.7210  0.2104             OPLS
+  P           2.1000  0.2000             JCC,7,(1986),230; 04/24/05 from parm94.dat
+
+END
+END
+
+Notes:  This force field my be employed independently for simulating carbohydrtes or may be used
+in conjunction with Parm94 without introducing any conflict.  Correct rotational behavior for
+O-C-C-O fragments requires SCEE=SCNB=1.0.  This is in contrast to "standard" AMBER, in which
+it is normal to set SCEE=1.2 and SCNB=2.0.  Unless you are attempting to generate rotamer
+populations, it is OK to use the "standard" values.  Using non-standard values (SCEE=SCNB=1.0)
+may be unacceptable when a protein is also present.
+        To obtain the current version of this force field and/or carbohydrate prep files
+go to the website http://www.glycam.ccrc.uga.edu.
+
+GLYCAM contributors include:
+Karl N. Kirschner, Sarah Tschampel, Robert Woods

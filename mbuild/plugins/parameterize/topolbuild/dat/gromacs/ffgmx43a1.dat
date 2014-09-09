@@ -1,0 +1,946 @@
+; Gromacs 43a1 forcefield parameters
+;
+; Equivalent types
+; SUG     c3.s     c3.d     cs.2     cs3     cs5   sugars
+; N5R     na5r     nc5r     nd5r                   Nitrogen in 5 membered rings
+; NIT     n#                                       all nitrogen types
+; C3A     c3.0     c3.1     c3.2     c3.3          all tetrahedral carbons
+; C5R     cc5      cd5                             Carbon in 5 membered rings
+; N06     na06     nb06     nc06     nd06          Unprotonated nitrogen in 6 membered rings
+; N6R     na6r     nb6r     nc6r     nd6r          Nitrogen in 6 membered rings
+; NTL     n.1      n.2      n4                     Nitrogens with 1 or 2 H's
+; CAR     ca.6     ca.1     ca6r     ca            Other SP2 in conjugated rings
+; SP2     cc       cd                              Other conjugated SP2
+; CBN     c#                                       all carbon types
+; OXY     o#                                       all oxygen types
+
+equivs 12
+SUG   5               ;  1
+c3.s
+c3.d
+cs.2
+cs3
+cs5
+N5R   3               ;  2
+na5r
+nc5r
+nd5r
+NIT   1               ;  3
+n#
+C3A   4               ;  4
+c3.0
+c3.1
+c3.2
+c3.3
+C5R   2               ;  5
+cc5
+cd5
+N06   4               ;  6
+na06
+nb06
+nc06
+nd06
+N6R   4               ;  7
+na6r
+nb6r
+nc6r
+nd6r
+NTL   3               ;  8
+n.1
+n.2
+n4
+CAR   4               ;  9
+ca.6
+ca.1
+ca6r
+ca
+SP2   2               ; 10
+cc
+cd
+CBN   1               ; 11
+c#
+OXY   1               ; 12
+o#
+
+; Atoms data
+atoms  32      6
+O       15.99940      0.434    0.0022619536       1e-06         ;     carbonyl oxygen (C=O)                        1
+OM      15.99940      0.434    0.0022619536       7.4149321e-07 ;     carboxyl oxygen (CO-)                        2
+OA      15.99940      0.465    0.0022619536       1.505529e-06  ;     hydroxyl, sugar or ester oxygen              3
+N       14.00670      0.530    0.0024364096       2.319529e-06  ;     peptide nitrogen (N or NH)                   4
+NT      14.00670      0.530    0.0024364096       5.0625e-06    ;     terminal nitrogen (NH2)                      5
+NL      14.00670      0.530    0.0024364096       2.319529e-06  ;     terminal nitrogen (NH3)                      6
+NR      14.00670      0.530    0.0024364096       3.389281e-06  ;     aromatic nitrogen                            7
+NZ      14.00670      0.530    0.0024364096       2.319529e-06  ;     Arg NH (NH2)                                 8
+NE      14.00670      0.530    0.0024364096       2.319529e-06  ;     Arg NE (NH)                                  9
+C       12.01100      0.616    0.0023406244       4.937284e-06  ;     bare carbon                                 10
+CH1     13.01900      0.878    0.00606841         9.70225e-05   ;     aliphatic or sugar CH-group                 11
+CH2     14.02700      0.878    0.0074684164       3.3965584e-05 ;     aliphatic or sugar CH2-group                12
+CH3     15.03500      0.878    0.0096138025       2.6646244e-05 ;     aliphatic CH3-group                         13
+CH4     16.04300      0.878    0.01317904         3.4363044e-05 ;     methane                                     14
+CR1     13.01900      0.360    0.0055130625       1.5116544e-05 ;     aromatic CH-group                           15
+HC       1.00800      0.135    8.464e-05          1.5129e-08    ;     hydrogen bound to carbon                    16
+H        1.00800      0.135    0.0                0.0           ;     hydrogen not bound to carbon                17
+S       32.06000      2.900    0.0099840064       1.3075456e-05 ;     sulfur                                      18
+CU1+    63.54600      0.0      0.0004182025       5.1251281e-09 ;     copper (charge 1+)                          19
+CU2+    63.54600      0.0      0.0004182025       5.1251281e-09 ;     copper (charge 2+)                          20
+FE      55.84700      0.0      0.0                0.0           ;     iron (heme)                                 21
+ZN2+    65.37000      0.0      0.0004182025       9.4400656e-09 ;     zinc (charge 2+)                            22
+MG2+    24.30500      0.120    6.52864e-05        3.4082244e-09 ;     magnesium (charge 2+)                       23
+CA2+    40.08000      0.0      0.00100489         4.9801249e-07 ;     calcium (charge 2+)                         24
+P       30.97380      1.538    0.01473796         2.2193521e-05 ;     phosphor                                    25
+AR      39.94800      0.0      0.0062647225       9.847044e-06  ;     argon                                       26
+F       18.99840      0.320    0.0011778624       7.6073284e-07 ;     fluor (non-ionic)                           27
+CL      35.45300      1.910    0.0087647044       1.5295921e-05 ;     chlorine (non-ionic)                        28
+BR      79.90400      2.880    0.02765569         6.5480464e-05 ;     bromine (non-ionic)                         29
+NA+     22.9898       0.250    7.2063121e-05      2.1025e-08    ;     sodium (charge 1+)                          30
+CL-     35.45300      1.910    0.01380625         0.0001069156  ;     chlorine (charge 1-)                        31
+SI      28.08         0.0      0.01473796         2.2193521e-05 ;     silicon                                     32
+
+; Bond lengths and forces
+
+bonds  132
+;                 fn       length  Force constant
+oa        ho       2       0.1000  1.5700e+07       ; gb_1         H   -  OA      750                                    1
+;
+NIT       h        2       0.1000  1.8700e+07       ; gb_2         H   -  N (all) 895                                    2
+; n.1 - h ; n.2 - h ; n  - h ; n3.a - h ; n3.b - h ; n4 - h ; ; na - h ; nh - h ;
+; nb - h ; na6r - h ; nb6r - h ; na5r - h ; nc6r - h ; nc5r - h ; ncr - h ;
+; nd6r - h ; nd5r - h ; ndr - h ; ne - h ; n1 - h ; n2 - h
+CBN       hc       2       0.1090  1.2300e+07       ; gb_3         HC  -  C       700                                    3
+; ca - hc; cc - hc; cd - hc ; C5R - hc ; cc5 - hc; cd5 - hc; etc.
+;
+c.2       o        2       0.1230  1.6600e+07       ; gb_4          C  -  O      1200                                    4
+;
+c2        om       2       0.1250  1.3400e+07       ; gb_5          C  -  OM     1000                                    5
+c.2       om       2       0.1250  1.3400e+07       ; gb_5          C  -  OM     1000                                    6
+;
+ca.6      N06      2       0.1320  1.2000e+07       ; gb_6        CR1  -  NR (6-ring)   1000                             7
+ca.1      N06      2       0.1320  1.2000e+07       ; gb_6        CR1  -  NR (6-ring)   1000                             8
+;
+s         hs       2       0.1330  8.8700e+06       ; gb_7          H  -  S       750                                    9
+;
+c.2       n.2      2       0.1330  1.0600e+07       ; gb_8          C  -  NT, NL  900                                   10
+CAR       nh       2       0.1330  1.0600e+07       ; gb_8          C  -  NT, NL  900                                   11
+;ca - nh; ca6r - nh; ca.1 - nh; ca.6 - nh
+cc        nh       2       0.1330  1.0600e+07       ; gb_8          C  -  NT, NL  900                                   12
+cd        nh       2       0.1330  1.0600e+07       ; gb_8          C  -  NT, NL  900                                   13
+;
+; C5R       nh
+cc5       nh       2       0.1330  1.0600e+07       ; gb_8          C  -  NT, NL  900                                   14
+cd5       nh       2       0.1330  1.0600e+07       ; gb_8          C  -  NT, NL  900                                   15
+;
+c.2       n.1      2       0.1330  1.1800e+07       ; gb_9     C, CR1  -  N, NR, CR1, C (peptide, 5-ring)       1000    16
+c.2       n        2       0.1330  1.1800e+07       ; gb_9     C, CR1  -  N, NR, CR1, C (peptide, 5-ring)       1000    17
+c.2       N5R      2       0.1330  1.1800e+07       ; gb_9     C, CR1  -  N, NR, CR1, C (peptide, 5-ring)       1000    18
+
+;
+; C5R       na
+cc5       na       2       0.1330  1.1800e+07       ; gb_9     C, CR1  -  N, NR, CR1, C (peptide, 5-ring)       1000    19
+cd5       na       2       0.1330  1.1800e+07       ; gb_9     C, CR1  -  N, NR, CR1, C (peptide, 5-ring)       1000    20
+cc        na       2       0.1330  1.1800e+07       ; gb_9     C, CR1  -  N, NR, CR1, C (peptide, 5-ring)       1000    21
+cd        na       2       0.1330  1.1800e+07       ; gb_9     C, CR1  -  N, NR, CR1, C (peptide, 5-ring)       1000    22
+;
+CAR       na       2       0.1330  1.1800e+07       ; gb_9     C, CR1  -  N, NR, CR1, C (peptide, 5-ring)       1000    23
+; ca.1 - na; ca.6 - na; ca6r - na; ca - na
+;
+C5R       N5R      2       0.1330  1.1800e+07       ; gb_9     C, CR1  -  N, NR, CR1, C (peptide, 5-ring)       1000    24
+; cc5 - na5r; cd5 - na5r; cc5 - nc5r; cd5 - nc5r; cc5 - nd5r; cd5 - nd5r
+;
+cc        N5R      2       0.1330  1.1800e+07       ; gb_9     C, CR1  -  N, NR, CR1, C (peptide, 5-ring)       1000    25
+; cc - na5r; cc - nc5r; cc - nd5r
+;
+cd        N5R      2       0.1330  1.1800e+07       ; gb_9     C, CR1  -  N, NR, CR1, C (peptide, 5-ring)       1000    26
+; cd - na5r; cd - nc5r; cd - nd5r
+;
+CAR       N5R      2       0.1330  1.1800e+07       ; gb_9     C, CR1  -  N, NR, CR1, C (peptide, 5-ring)       1000    27
+; ca.1- na5r; ca.6 - na5r; ca6r - na5r; ca - na5r; ca.1 - nc5r; ca.6 - nc5r
+; ca6r - nc5r; ca - nc5r; ca.1 - nd5r; ca.6 - nd5r; ca6r - nd5r; ca - nd5r
+;
+C5R       C5R      2       0.1330  1.1800e+07       ; gb_9     C, CR1  -  N, NR, CR1, C (peptide, 5-ring)       1000    28
+; cc5 - cc5; cc5 - cd5; cd5 - cd5
+;
+cc5       cc       2       0.1330  1.1800e+07       ; gb_9     C, CR1  -  N, NR, CR1, C (peptide, 5-ring)       1000    29
+cc5       cd       2       0.1330  1.1800e+07       ; gb_9     C, CR1  -  N, NR, CR1, C (peptide, 5-ring)       1000    30
+cd5       cd       2       0.1330  1.1800e+07       ; gb_9     C, CR1  -  N, NR, CR1, C (peptide, 5-ring)       1000    31
+cc        cc       2       0.1330  1.1800e+07       ; gb_9     C, CR1  -  N, NR, CR1, C (peptide, 5-ring)       1000    32
+cc        cd       2       0.1330  1.1800e+07       ; gb_9     C, CR1  -  N, NR, CR1, C (peptide, 5-ring)       1000    33
+cd        cd       2       0.1330  1.1800e+07       ; gb_9     C, CR1  -  N, NR, CR1, C (peptide, 5-ring)       1000    34
+;
+CAR       nc.1     2       0.1330  1.1800e+07       ; gb_9     C, CR1  -  N, NR, CR1, C (peptide, 5-ring)       1000    35
+; ca.1 - nc.1; ca.6 - nc.1; ca6r - nc.1; ca - nc.1
+;
+CAR       nd.1     2       0.1330  1.1800e+07       ; gb_9     C, CR1  -  N, NR, CR1, C (peptide, 5-ring)       1000    36
+; ca.1 - nd.1; ca.6 - nd.1; ca6r - nd.1; ca - nd.1
+;
+cc5       nc.1     2       0.1330  1.1800e+07       ; gb_9     C, CR1  -  N, NR, CR1, C (peptide, 5-ring)       1000    37
+cd5       nc.1     2       0.1330  1.1800e+07       ; gb_9     C, CR1  -  N, NR, CR1, C (peptide, 5-ring)       1000    38
+cc5       nd.1     2       0.1330  1.1800e+07       ; gb_9     C, CR1  -  N, NR, CR1, C (peptide, 5-ring)       1000    39
+cd5       nd.1     2       0.1330  1.1800e+07       ; gb_9     C, CR1  -  N, NR, CR1, C (peptide, 5-ring)       1000    40
+cc        nc.1     2       0.1330  1.1800e+07       ; gb_9     C, CR1  -  N, NR, CR1, C (peptide, 5-ring)       1000    41
+cd        nc.1     2       0.1330  1.1800e+07       ; gb_9     C, CR1  -  N, NR, CR1, C (peptide, 5-ring)       1000    42
+cc        nd.1     2       0.1330  1.1800e+07       ; gb_9     C, CR1  -  N, NR, CR1, C (peptide, 5-ring)       1000    43
+cd        nd.1     2       0.1330  1.1800e+07       ; gb_9     C, CR1  -  N, NR, CR1, C (peptide, 5-ring)       1000    44
+cw2       cw       2       0.1330  1.1800e+07       ; gb_9     C, CR1  -  N, NR, CR1, C (peptide, 5-ring)       1000    45
+N5R       cw       2       0.1330  1.1800e+07       ; gb_9     C, CR1  -  N, NR, CR1, C (peptide, 5-ring)       1000    46
+;
+cz        NIT      2       0.1340  1.0500e+07       ; gb_10         C  -  N, NZ, NE       900                           47
+;
+ca6r      N06      2       0.1340  1.1700e+07       ; gb_11         C  -  NR (no H) (6-ring)      1000                  48
+; ca6r - na06; ca6r - nb06; ca6r - nc06; ca6r - nd06
+;
+ca        oa       2       0.1360  1.0200e+07       ; gb_12         C  -  OA      900                                   49
+cc        oa       2       0.1360  1.0200e+07       ; gb_12         C  -  OA      900                                   50
+cd        oa       2       0.1360  1.0200e+07       ; gb_12         C  -  OA      900                                   51
+c.2       oa       2       0.1360  1.0200e+07       ; gb_12         C  -  OA      900                                   52
+;
+c3.2      CAR      2       0.1390  8.6600e+06       ; gb_14       CH2  -  C, CR1 (6-ring)       800                     53
+c3.2      cw2      2       0.1390  8.6600e+06       ; gb_14       CH2  -  C, CR1 (6-ring)       800                     54
+;
+CAR       CAR      2       0.1390  1.0800e+07       ; gb_15    C, CR1  -  CH2, C, CR1 (6-ring)       1000               55
+cw2       CAR      2       0.1390  1.0800e+07       ; gb_15    C, CR1  -  CH2, C, CR1 (6-ring)       1000               56
+;
+CAR       N06      2       0.1400  8.5400e+06       ; gb_16    C, CR1, CH2  -  NR (6-ring)   800                        57
+; ca - na06; ca - nc06; ca - nd06
+; ca.1 - na06; ca.1 - nc06; ca.1 - nd06
+CAR       N6R      2       0.1400  8.5400e+06       ; gb_16    C, CR1, CH2  -  NR (6-ring)   800                        58
+; ca - na6r; ca - nb6r; ca - nc6r; ca - nd6r
+; ca.1 - na6r; ca.1 - nb6r; ca.1 - nc6r; ca.1 - nd6r
+; ca.6 - na6r; ca.6 - nb6r; ca.6 - nc6r; ca.6 - nd6r
+; ca6r - na6r; ca6r - nb6r; ca6r - nc6r; ca6r - nd6r
+;
+c3.2      N06      2       0.1400  8.5400e+06       ; gb_16    C, CR1, CH2  -  NR (6-ring)   800                        59
+; c3.2 - na06; c3.2 - nc06; c3.2 - nd06
+;
+c3.2      N6R      2       0.1400  8.5400e+06       ; gb_16    C, CR1, CH2  -  NR (6-ring)   800                        60
+; c3.2 - na6r; c3.2 - nc6r; c3.2 - nd6r
+;
+c3.r      N06      2       0.1400  8.5400e+06       ; gb_16    C, CR1, CH2  -  NR (6-ring)   800                        61
+; c3.r - na06; c3.r - nc06; c3.r - nd06
+;
+c3.r      N6R      2       0.1400  8.5400e+06       ; gb_16    C, CR1, CH2  -  NR (6-ring)   800                        62
+; c3.r - na6r; c3.r - nc6r; c3.r - nd6r
+;
+C3A       oa       2       0.1430  8.1800e+06       ; gb_17       CHn  -  OA      800                                   63
+; c3.0 - oa; c3.1 - oa; c3.2 - oa; c3.3 - oa
+;
+c3.r      oa       2       0.1430  8.1800e+06       ; gb_17       CHn  -  OA      800                                   64
+;
+C3A       om       2       0.1430  9.2100e+06       ; gb_18       CHn  -  OM      900                                   65
+; c3.0 - om; c3.1 - om; c3.2 - om; c3.3 - om
+;
+C3A       o        2       0.1430  9.2100e+06       ; gb_18       CHn  -  OM      900                                   66
+; c3.0 - o ; c3.1 - o ; c3.2 - o ; c3.3 - o 
+;
+c3.r      om       2       0.1430  9.2100e+06       ; gb_18       CHn  -  OM      900                                   67
+;
+SUG       oa       2       0.1435  6.1000e+06       ; gb_19       CHn  -  OA (sugar)    600                             68
+;
+C3A       n        2       0.1470  8.7100e+06       ; gb_20       CHn  -  N, NT, NL, NZ, NE     900                     69
+; c3.0 - n ; c3.1 - n ; c3.2 - n ; c3.3 - n 
+;
+c3.r      n        2       0.1470  8.7100e+06       ; gb_20       CHn  -  N, NT, NL, NZ, NE     900                     70
+c3.s      n        2       0.1470  8.7100e+06       ; gb_20       CHn  -  N, NT, NL, NZ, NE     900                     71
+;
+C3A       NTL      2       0.1470  8.7100e+06       ; gb_20       CHn  -  N, NT, NL, NZ, NE     900                     72
+; c3.0 - n.1; c3.1 - n.1; c3.2 - n.1; c3.3 - n.1
+;
+c3.r      n.1      2       0.1470  8.7100e+06       ; gb_20       CHn  -  N, NT, NL, NZ, NE     900                     73
+c3.s      n.1      2       0.1470  8.7100e+06       ; gb_20       CHn  -  N, NT, NL, NZ, NE     900                     74
+;
+C3A       n3.a     2       0.1470  8.7100e+06       ; gb_20       CHn  -  N, NT, NL, NZ, NE     900                     75
+; c3.0 - n3.a; c3.1 - n3.a; c3.2 - n3.a; c3.3 - n3.a
+;
+c3.r      n3.a     2       0.1470  8.7100e+06       ; gb_20       CHn  -  N, NT, NL, NZ, NE     900                     76
+c3.s      n3.a     2       0.1470  8.7100e+06       ; gb_20       CHn  -  N, NT, NL, NZ, NE     900                     77
+;
+C3A       n3.b     2       0.1470  8.7100e+06       ; gb_20       CHn  -  N, NT, NL, NZ, NE     900                     78
+; c3.0 - n3.b; c3.1 - n3.b; c3.2 - n3.b; c3.3 - n3.b
+;
+c3.r      n3.b     2       0.1470  8.7100e+06       ; gb_20       CHn  -  N, NT, NL, NZ, NE     900                     79
+c3.s      n3.b     2       0.1470  8.7100e+06       ; gb_20       CHn  -  N, NT, NL, NZ, NE     900                     80
+;
+c3.r      NTL      2       0.1470  8.7100e+06       ; gb_20       CHn  -  N, NT, NL, NZ, NE     900                     81
+c3.s      NTL      2       0.1470  8.7100e+06       ; gb_20       CHn  -  N, NT, NL, NZ, NE     900                     82
+;
+C3A       N5R      2       0.1480  5.7300e+06       ; gb_21       CHn  -  NR (5-ring)   600                             83
+; c3.0 - na5r; c3.1 - na5r; c3.2 - na5r; c3.3 - na5r
+; c3.0 - nc5r; c3.1 - nc5r; c3.2 - nc5r; c3.3 - nc5r
+; c3.0 - nd5r; c3.1 - nd5r; c3.2 - nd5r; c3.3 - nd5r
+;
+c3.r      N5R      2       0.1480  5.7300e+06       ; gb_21       CHn  -  NR (5-ring)   600                             84
+; c3.r - na5r; c3.r - nc5r; c3.r - nd5r
+;
+c3.s      N5R      2       0.1480  5.7300e+06       ; gb_21       CHn  -  NR (5-ring)   600                             85
+; c3.s - na5r; c3.s - nc5r; c3.s - nd5r
+;
+C3A       N6R      2       0.1480  7.6400e+06       ; gb_22       CHn  -  NR (6-ring)   800                             86
+; c3.0 - na6r; c3.1 - na6r; c3.2 - na6r; c3.3 - na6r
+; c3.0 - nc6r; c3.1 - nc6r; c3.2 - nc6r; c3.3 - nc6r
+; c3.0 - nd6r; c3.1 - nd6r; c3.2 - nd6r; c3.3 - nd6r
+;
+C3A       N06      2       0.1480  7.6400e+06       ; gb_22       CHn  -  NR (6-ring)   800                             87
+; c3.0 - na06; c3.1 - na06; c3.2 - na06; c3.3 - na06
+; c3.0 - nc06; c3.1 - nc06; c3.2 - nc06; c3.3 - nc06
+; c3.0 - nd06; c3.1 - nd06; c3.2 - nd06; c3.3 - nd06
+;
+c3.r      N6R      2       0.1480  7.6400e+06       ; gb_22       CHn  -  NR (6-ring)   800                             88
+; c3.r - na6r; c3.r - nc6r; c3.r - nd6r
+;
+c3.r      N06      2       0.1480  7.6400e+06       ; gb_22       CHn  -  NR (6-ring)   800                             89
+; c3.r - na06; c3.r - nc06; c3.r - nd06
+;
+c3.s      N6R      2       0.1480  7.6400e+06       ; gb_22       CHn  -  NR (6-ring)   800                             90
+; c3.s - na6r; c3.s - nc6r; c3.s - nd6r
+;
+c3.s      N06      2       0.1480  7.6400e+06       ; gb_22       CHn  -  NR (6-ring)   800                             91
+; c3.s - na06; c3.s - nc06; c3.s - nd06
+;
+p         o        2       0.1480  8.6000e+06       ; gb_23     O, OM  -  P       900                                   92
+p         om       2       0.1480  8.6000e+06       ; gb_23     O, OM  -  P       900                                   93
+;
+s         o        2       0.1500  8.3700e+06       ; gb_24         O  -  S       900                                   94
+s         om       2       0.1500  8.3700e+06       ; gb_24         O  -  S       900                                   95
+s         oa       2       0.1500  8.3700e+06       ; gb_24         O  -  S       900                                   96
+;
+; SUG       SUG
+SUG       SUG      2       0.1520  5.4300e+06       ; gb_25       CHn  -   CHn (sugar)  600                             97
+;
+C3A       C3A      2       0.1530  7.1500e+06       ; gb_26    C, CHn  -  C, CHn    800                                 98
+; c3.0 - c3.0; c3.0 - c3.1; c3.0 - c3.2; c3.0 - c3.3
+; c3.1 - c3.1; c3.1 - c3.2; c3.1 - c3.3
+; c3.2 - c3.2; c3.2 - c3.3
+; c3.3 - c3.3
+;
+C3A       c3.r     2       0.1530  7.1500e+06       ; gb_26    C, CHn  -  C, CHn    800                                 99
+; c3.0      c3.r; c3.1      c3.r; c3.2      c3.r; c3.3      c3.r
+;
+C3A       c.2      2       0.1530  7.1500e+06       ; gb_26    C, CHn  -  C, CHn    800                                100
+C3A       c2       2       0.1530  7.1500e+06       ; gb_26    C, CHn  -  C, CHn    800                                101
+; c3.0 - c.2; c3.1 - c.2; c3.2 - c.2; c3.3 - c.2
+; c3.0 - c2; c3.1 - c2; c3.2 - c2; c3.3 - c2
+;
+C3A       CAR      2       0.1530  7.1500e+06       ; gb_26    C, CHn  -  C, CHn    800                                102
+; c3.0 - ca; c3.1 - ca; c3.2 - ca; c3.3 - ca
+; c3.0 - ca.1; c3.1 - ca.1; c3.2 - ca.1; c3.3 - ca.1
+; c3.0 - ca.6; c3.1 - ca.6; c3.2 - ca.6; c3.3 - ca.6
+; c3.0 - ca6r; c3.1 - ca6r; c3.2 - ca6r; c3.3 - ca6r
+;
+C3A       cc       2       0.1530  7.1500e+06       ; gb_26    C, CHn  -  C, CHn    800                                103
+; c3.0 - cc; c3.1 - cc; c3.2 - cc; c3.3 - cc
+;
+C3A       cd       2       0.1530  7.1500e+06       ; gb_26    C, CHn  -  C, CHn    800                                104
+; c3.0 - cd; c3.1 - cd; c3.2 - cd; c3.3 - cd
+;
+C3A       C5R      2       0.1530  7.1500e+06       ; gb_26    C, CHn  -  C, CHn    800                                105
+; c3.0 - cc5; c3.1 - cc5; c3.2 - cc5; c3.3 - cc5
+; c3.0 - cd5; c3.1 - cd5; c3.2 - cd5; c3.3 - cd5
+;
+cc        ca       2       0.1530  7.1500e+06       ; gb_26    C, CHn  -  C, CHn    800                                106
+cd        ca       2       0.1530  7.1500e+06       ; gb_26    C, CHn  -  C, CHn    800                                107
+;
+; C5R       ca
+cc5       ca       2       0.1530  7.1500e+06       ; gb_26    C, CHn  -  C, CHn    800                                108
+cd5       ca       2       0.1530  7.1500e+06       ; gb_26    C, CHn  -  C, CHn    800                                109
+;
+; C5R       ca.1
+cc5       ca.1     2       0.1530  7.1500e+06       ; gb_26    C, CHn  -  C, CHn    800                                110
+cd5       ca.1     2       0.1530  7.1500e+06       ; gb_26    C, CHn  -  C, CHn    800                                111
+;
+c3.r      c.2      2       0.1530  7.1500e+06       ; gb_26    C, CHn  -  C, CHn    800                                112
+c3.r      c3.r     2       0.1530  7.1500e+06       ; gb_26    C, CHn  -  C, CHn    800                                113
+c3.r      ca       2       0.1530  7.1500e+06       ; gb_26    C, CHn  -  C, CHn    800                                114
+c3.r      ca.1     2       0.1530  7.1500e+06       ; gb_26    C, CHn  -  C, CHn    800                                115
+c3.r      cc       2       0.1530  7.1500e+06       ; gb_26    C, CHn  -  C, CHn    800                                116
+c3.r      cd       2       0.1530  7.1500e+06       ; gb_26    C, CHn  -  C, CHn    800                                117
+;
+; c3.r      C5R
+c3.r      cc5      2       0.1530  7.1500e+06       ; gb_26    C, CHn  -  C, CHn    800                                118
+c3.r      cd5      2       0.1530  7.1500e+06       ; gb_26    C, CHn  -  C, CHn    800                                119
+;
+p         oa       2       0.1610  4.8400e+06       ; gb_27        OA  -  P       600                                  120
+;
+si        oa       2       0.1630  4.7200e+06       ; gb_28        OA  -  SI      600                                  121
+;
+c3.3      s        2       0.1780  5.9400e+06       ; gb_29       CH3  -  S       900                                  122
+;
+c3.2      s        2       0.1830  5.6200e+06       ; gb_30       CH2  -  S       900                                  123
+;
+c3.1      si       2       0.1870  3.5900e+06       ; gb_31       CH1  -  SI      600                                  124
+;
+Fe        N5R      2       0.2000  0.6280e+06       ; gb_34     NR (heme)  -  FE  120                                  125
+;
+s         s        2       0.2040  5.0300e+06       ; gb_33         S  -  S      1000                                  126
+;
+Fe        N6R      2       0.1980  0.6400e+06       ; gb_32        NR  -  FE      120                                  127
+Fe        N06      2       0.1980  0.6400e+06       ; gb_32        NR  -  FE      120                                  128
+;
+cw2       N5R      2       0.1380  1.1000e+07       ; gb_13        C  -  NR (heme)       1000                          129
+cw2       cw2      2       0.1400  8.5400e+06       ; gb_16    C, CR1, CH2  -  NR (6-ring)   800                       130
+cw2       C3A      2       0.1530  7.1500e+06       ; gb_26    C, CHn  -  C, CHn    800                                131
+cw2       ce.1     2       0.1400  8.5400e+06       ; gb_16    C, CR1, CH2  -  NR (6-ring)   800                       132
+
+
+constraints     2
+; this section is implemented manually from bond & angle values
+; angle-derived constraints for OH and SH groups in proteins
+; The constraint A-C is calculated from the angle A-B-C and bonds A-B, B-C.
+CBN       ho       2       0.19849
+p         ho       2       0.21603
+
+
+; angles phases and forces
+
+angles   145
+;                          fn           angle  Force constant
+h         s          c3.2    2         96.00      405.00       ; ga_2         H  -  S  -  CH2       95                              1
+;
+c3.2      s          c3.3    2        100.00      475.00       ; ga_3       CH2  -  S  -  CH3      110                              2
+;
+oa        p          oa      2        103.00      420.00       ; ga_4        OA  -  P  -  OA        95                              3
+;
+c3.2      s          s       2        104.00      490.00       ; ga_5       CH2  -  S  -  S        110                              4
+;
+N5R       C5R        C5R     2        108.00      465.00       ; ga_6       NR, C, CR1(5-ring)     100                              5
+; na5r - cc5 - cc5; na5r - cc5 - cd5; na5r - cd5 - cc5; na5r - cd5 - cd5
+; nc5r - cc5 - cc5; nc5r - cc5 - cd5; nc5r - cd5 - cc5; nc5r - cd5 - cd5
+; nd5r - cc5 - cc5; nd5r - cc5 - cd5; nd5r - cd5 - cc5; nd5r - cd5 - cd5
+;
+N5R       C5R        N5R     2        108.00      465.00       ; ga_6       NR, C, CR1(5-ring)     100                              6
+; na5r - cc5 - na5r; na5r - cd5 - na5r; na5r - cc5 - nc5r; na5r - cc5 - nd5r; na5r - cd5 - nc5r; na5r - cd5 - nd5r
+; nc5r - cc5 - nc5r; nc5r - cd5 - nc5r; nc5r - cc5 - nd5r; nc5r - cd5 - nd5r
+; nd5r - cc5 - nd5r; nd5r - cd5 - nd5r 
+;
+C5R       N5R        C5R     2        108.00      465.00       ; ga_6       NR, C, CR1(5-ring)     100                              7
+; cc5 - na5r - cc5; cc5 - na5r - cd5; cd5 - na5r - cd5
+; cc5 - nc5r - cc5; cc5 - nd5r - cc5; cc5 - nc5r - cd5
+; cd5 - nc5r - cd5; cc5 - nd5r - cd5; cd5 - nd5r - cd5
+;
+N5R       CAR        CAR     2        108.00      465.00       ; ga_6       NR, C, CR1(5-ring)     100                              8
+; na5r - ca6r - ca6r; nc5r - ca6r - ca6r; nd5r - ca6r - ca6r; etc.
+;
+N5R       C5R        CAR     2        108.00      465.00       ; ga_6       NR, C, CR1(5-ring)     100                              9
+; na5r - cc5 - ca6r; na5r - cd5 - ca6r
+; nc5r - cc5 - ca6r; nc5r - cd5 - ca6r
+; nd5r - cc5 - ca6r; nd5r - cd5 - ca6r; etc.
+;
+N5R       CAR        C5R     2        108.00      465.00       ; ga_6       NR, C, CR1(5-ring)     100                             10
+; na5r - ca6r - cc5; na5r - ca6r - cd5
+; nc5r - ca6r - cc5; nc5r - ca6r - cd5
+; nd5r - ca6r - cc5; nd5r - ca6r - cd5; etc.
+;
+CAR       N5R        C5R     2        108.00      465.00       ; ga_6       NR, C, CR1(5-ring)     100                             11
+; ca6r - na5r - cc5; ca6r - na5r - cd5
+; ca6r - nc5r - cc5; ca6r - nc5r - cd5
+; ca6r - nd5r - cc5; ca6r - nd5r - cd5; etc.
+;
+cw        cw2        CAR     2        108.00      465.00       ; ga_6       NR, C, CR1(5-ring)     100                             12
+cw2       cw         N5R     2        108.00      465.00       ; ga_6       NR, C, CR1(5-ring)     100                             13
+cw        N5R        CAR     2        108.00      465.00       ; ga_6       NR, C, CR1(5-ring)     100                             14
+;
+SUG       SUG        SUG     2        109.50      285.00       ; ga_7   CHn  - CHn - CHn, NR(6-ring) (sugar)  60                   15
+; c3.s - c3.s - c3.s; c3.s - c3.d - c3.s; c3.s - c3.s - c3.d
+;
+N06       c3.s       SUG     2        109.50      285.00       ; ga_7   CHn  - CHn - CHn, NR(6-ring) (sugar)  60                   16
+; na06 - c3.s - c3.s; na06 - c3.s - c3.d
+; nb06 - c3.s - c3.s; nb06 - c3.s - c3.d
+; nc06 - c3.s - c3.s; nc06 - c3.s - c3.d
+; nd06 - c3.s - c3.s; nd06 - c3.s - c3.d
+;
+N6R       c3.s       SUG     2        109.50      285.00       ; ga_7   CHn  - CHn - CHn, NR(6-ring) (sugar)  60                   17
+; c3.s - c3.s - na6r; c3.d - c3.s - na6r
+; c3.s - c3.s - nb6r; c3.d - c3.s - nb6r
+; c3.s - c3.s - nc6r; c3.d - c3.s - nc6r
+; c3.s - c3.s - nd6r; c3.d - c3.s - nd6r
+;
+SUG       SUG        oa      2        109.50      320.00       ; ga_8   CHn, OA  - CHn  - OA, NR(ring) (sugar)        68           18
+;
+SUG       c3.s       N5R     2        109.50      320.00       ; ga_8   CHn, OA  - CHn  - OA, NR(ring) (sugar)        68           19
+; c3.s - c3.s - na5r; c3.d - c3.s - na5r
+; c3.s - c3.s - nc5r; c3.d - c3.s - nc5r
+; c3.s - c3.s - nd5r; c3.d - c3.s - nd5r
+;
+SUG       c3.s       nb      2        109.50      320.00       ; ga_8   CHn, OA  - CHn  - OA, NR(ring) (sugar)        68           20
+; 
+oa        SUG        oa      2        109.50      320.00       ; ga_8   CHn, OA  - CHn  - OA, NR(ring) (sugar)        68           21
+;
+oa        c3.s       N5R     2        109.50      320.00       ; ga_8   CHn, OA  - CHn  - OA, NR(ring) (sugar)        68           22
+; oa - c3.s - na5r; oa - c3.s - nc5r; oa - c3.s - nd5r
+;
+oa        c3.s       N6R     2        109.50      320.00       ; ga_8   CHn, OA  - CHn  - OA, NR(ring) (sugar)        68           23
+; oa - c3.s - na6r; oa - c3.s - nb6r; oa - c3.s - nc6r; oa - c3.s - nd6r
+oa        C3A        N6R     2        109.50      320.00       ; ga_8   CHn, OA  - CHn  - OA, NR(ring) (sugar)        68           24
+;
+oa        c3.s       N06     2        109.50      320.00       ; ga_8   CHn, OA  - CHn  - OA, NR(ring) (sugar)        68           25
+; oa -   c3.s - na06; oa -   c3.s - nb06; oa -   c3.s - nc06; oa -   c3.s - nd06
+;
+oa        C3A        N06     2        109.50      320.00       ; ga_8   CHn, OA  - CHn  - OA, NR(ring) (sugar)        68           26
+oa        c3.s       nb      2        109.50      320.00       ; ga_8   CHn, OA  - CHn  - OA, NR(ring) (sugar)        68           27
+oa        c3.s       ncr     2        109.50      320.00       ; ga_8   CHn, OA  - CHn  - OA, NR(ring) (sugar)        68           28
+oa        c3.s       ndr     2        109.50      320.00       ; ga_8   CHn, OA  - CHn  - OA, NR(ring) (sugar)        68           29
+;
+h         NTL        h       2        109.50      380.00       ; ga_9       H -  NL, NT  -  H       80                             30
+SUG       oa         SUG     2        109.50      380.00       ; ga_9       CHn  - OA  - CHn(sugar)    80                          31
+;
+h         NTL        C3A     2        109.50      425.00       ; ga_10         H  - NT  -  CHn      90                             32
+; h  - n.2 - c3.0; h  - n.2 - c3.1; h  - n.2 - c3.2; h  - n.2 - c3.3
+; h  - n.1 - c3.0; h  - n.1 - c3.1; h  - n.1 - c3.2; h  - n.1 - c3.3
+;
+h         NTL        c3.s    2        109.50      425.00       ; ga_10         H  - NT  -  CHn      90                             33
+;
+h         NTL        c3.r    2        109.50      425.00       ; ga_10         H  - NT  -  CHn      90                             34
+h         n3.a       C3A     2        109.50      425.00       ; ga_10         H  - NT  -  CHn      90                             35
+;
+SUG       oa         ho      2        109.50      450.00       ; ga_11        X  -  OA, SI  -  X    95                             36
+C3A       oa         ho      2        109.50      450.00       ; ga_11        X  -  OA, SI  -  X    95                             37
+CAR       oa         ho      2        109.50      450.00       ; ga_11        X  -  OA, SI  -  X    95                             38
+c.2       oa         ho      2        109.50      450.00       ; ga_11        X  -  OA, SI  -  X    95                             39
+p         oa         ho      2        109.50      450.00       ; ga_11        X  -  OA, SI  -  X    95                             40
+;
+C3A       C3A        NTL     2        109.50      520.00       ; ga_12     CHn,C  -  CHn  -  C, CHn, OA, OM, N, NE       110       41
+C3A       C3A        n3.a    2        109.50      520.00       ; ga_12     CHn,C  -  CHn  -  C, CHn, OA, OM, N, NE       110       42
+C3A       C3A        n3.b    2        109.50      520.00       ; ga_12     CHn,C  -  CHn  -  C, CHn, OA, OM, N, NE       110       43
+; c3.1 - c3.1 - n.1; c3.2 - c3.1 - n.1; c3.3 - c3.1 - n.1
+; c3.2 - c3.2 - n.1; c3.3 - c3.2 - n.1
+;
+c.2       C3A        NIT     2        109.50      520.00       ; ga_12     CHn,C  -  CHn  -  C, CHn, OA, OM, N, NE       110       44
+c2        C3A        NIT     2        109.50      520.00       ; ga_12     CHn,C  -  CHn  -  C, CHn, OA, OM, N, NE       110       45
+;
+C3A       C3A        c.2     2        109.50      520.00       ; ga_12     CHn,C  -  CHn  -  C, CHn, OA, OM, N, NE       110       46
+; c3.1 - c3.1 - c.2; c3.2 - c3.1 - c.2; c3.3 - c3.1 - c.2
+; c3.2 - c3.2 - c.2; c3.3 - c3.2 - c.2
+;
+;
+C3A       C3A        oa      2        109.50      520.00       ; ga_12     CHn,C  -  CHn  -  C, CHn, OA, OM, N, NE       110       47
+; c3.1 - c3.1 - oa; c3.1 - c3.2 - oa; c3.2 - c3.2 - oa; c3.2 - c3.1 - oa 
+;
+c3.1      c3.r       n       2        109.50      520.00       ; ga_12     CHn,C  -  CHn  -  C, CHn, OA, OM, N, NE       110       48
+c3.1      c3.r       N5R     2        109.50      520.00       ; ga_12     CHn,C  -  CHn  -  C, CHn, OA, OM, N, NE       110       49
+c3.r      c3.1       c.2     2        109.50      520.00       ; ga_12     CHn,C  -  CHn  -  C, CHn, OA, OM, N, NE       110       50
+c3.1      c3.r       c3.r    2        109.50      520.00       ; ga_12     CHn,C  -  CHn  -  C, CHn, OA, OM, N, NE       110       51
+c3.r      c3.r       c3.r    2        109.50      520.00       ; ga_12     CHn,C  -  CHn  -  C, CHn, OA, OM, N, NE       110       52
+c3.r      c3.r       n       2        109.50      520.00       ; ga_12     CHn,C  -  CHn  -  C, CHn, OA, OM, N, NE       110       53
+c3.r      c3.r       N5R     2        109.50      520.00       ; ga_12     CHn,C  -  CHn  -  C, CHn, OA, OM, N, NE       110       54
+c3.r      c3.1       n       2        109.50      520.00       ; ga_12     CHn,C  -  CHn  -  C, CHn, OA, OM, N, NE       110       55
+c3.r      c3.1       N5R     2        109.50      520.00       ; ga_12     CHn,C  -  CHn  -  C, CHn, OA, OM, N, NE       110       56
+CAR       C3A        OXY     2        109.50      520.00       ; ga_12     CHn,C  -  CHn  -  C, CHn, OA, OM, N, NE       110       57
+CAR       C3A        NIT     2        109.50      520.00       ; ga_12     CHn,C  -  CHn  -  C, CHn, OA, OM, N, NE       110       58
+;
+om        p          oa      2        109.60      450.00       ; ga_13        OM  -  P  -  OA       95                             59
+;
+C3A       C3A        C3A     2        111.00      530.00       ; ga_14  CHn  -  CHn  -  C, CHn, OA, NR, NT, NL        110          60
+; c3.1 - c3.1 - c3.1; c3.1 - c3.1 - c3.2; c3.1 - c3.1 - c3.3
+; c3.1 - c3.2 - c3.1; c3.1 - c3.2 - c3.2; c3.1 - c3.2 - c3.3
+; c3.2 - c3.1 - c3.2; c3.2 - c3.1 - c3.3
+; c3.2 - c3.2 - c3.2; c3.2 - c3.2 - c3.3
+; c3.3 - c3.1 - c3.3; c3.3 - c3.2 - c3.3
+;
+C3A       C3A        oa      2        111.00      530.00       ; ga_14  CHn  -  CHn  -  C, CHn, OA, NR, NT, NL        110          61
+; c3.1 - c3.1 - oa; c3.1 - c3.2 - oa
+; c3.2 - c3.1 - oa; c3.2 - c3.2 - oa
+; c3.3 - c3.1 - oa; c3.3 - c3.2 - oa
+;
+;
+C3A       C3A        c2      2        111.00      530.00       ; ga_14  CHn  -  CHn  -  C, CHn, OA, NR, NT, NL        110          62
+C3A       C3A        C5R     2        111.00      530.00       ; ga_14  CHn  -  CHn  -  C, CHn, OA, NR, NT, NL        110          63
+C3A       C3A        ca      2        111.00      530.00       ; ga_14  CHn  -  CHn  -  C, CHn, OA, NR, NT, NL        110          64
+;
+C3A       C3A        n4      2        111.00      530.00       ; ga_14  CHn  -  CHn  -  C, CHn, OA, NR, NT, NL        110          65
+; c3.1 - c3.1 - n4; c3.1 - c3.2 - n4
+; c3.2 - c3.1 - n4; c3.2 - c3.2 - n4
+; c3.3 - c3.1 - n4; c3.3 - c3.2 - n4
+;
+C3A        C3A       cw2     2        111.00      530.00       ; ga_14  CHn  -  CHn  -  C, CHn, OA, NR, NT, NL        110          66
+;
+C3A       c3.2       s       2        113.00      545.00       ; ga_15       CHn  - CH2 -  S       110                             67
+; c3.0 - c3.2 - s ; c3.1 - c3.2 - s 
+; c3.2 - c3.2 - s 
+; c3.3 - c3.2 - s 
+;
+c3.r      c3.2       s       2        113.00      545.00       ; ga_15       CHn  - CH2 -  S       110                             68
+;
+h         n.1        c3.1    2        115.00      460.00       ; ga_17         H  -  N  -  CHn      90                             69
+h         n.1        c3.2    2        115.00      460.00       ; ga_17         H  -  N  -  CHn      90                             70
+h         n.1        c3.3    2        115.00      460.00       ; ga_17         H  -  N  -  CHn      90                             71
+;
+C3A       c.2        NTL     2        115.00      610.00       ; ga_18    CHn, C  -  C  -  OA, N, NT, NL        120                72
+C3A       c.2        n       2        115.00      610.00       ; ga_18    CHn, C  -  C  -  OA, N, NT, NL        120                73
+; c3.0 - c.2 - n.1; c3.1 - c.2 - n.1; c3.2 - c.2 - n.1; c3.3 - c.2 - n.1
+; c3.0 - c.2 - n.2; c3.1 - c.2 - n.2; c3.2 - c.2 - n.2; c3.3 - c.2 - n.2
+;
+C3A       c2         oa      2        115.00      610.00       ; ga_18    CHn, C  -  C  -  OA, N, NT, NL        120                74
+C3A       c.2        oa      2        115.00      610.00       ; ga_18    CHn, C  -  C  -  OA, N, NT, NL        120                75
+; c3.0 - c2 - oa; c3.1 - c2 - oa; c3.2 - c2 - oa; c3.3 - c2 - oa
+;
+c3.2      n3.b       h       2        116.00      465.00       ; ga_19         H  -  NE  -  CH2     90                             76
+;
+c3.1      n          c3.r    2        116.00      620.00       ; ga_20       CH2  -  N  -  CH1     120                             77
+;
+C3A       c2         om      2        117.00      635.00       ; ga_21    CH3 -  N  -  C, CHn  - C  - OM        120                78
+C3A       c.2        om      2        117.00      635.00       ; ga_21    CH3 -  N  -  C, CHn  - C  - OM        120                79
+; c3.1 - c2 - om; c3.2 - c2 - om; c3.3 - c2 - om
+;
+SUG       c2         om      2        117.00      635.00       ; ga_21    CH3 -  N  -  C, CHn  - C  - OM        120                80
+;
+c.2       n.2        h       2        120.00      390.00       ; ga_22        H  -  NT, NZ, NE  -  C        70                     81
+cz        n3.b       h       2        120.00      390.00       ; ga_22        H  -  NT, NZ, NE  -  C        70                     82
+cz        n3.a       h       2        120.00      390.00       ; ga_22        H  -  NT, NZ, NE  -  C        70                     83
+ca        nh         h       2        120.00      390.00       ; ga_22        H  -  NT, NZ, NE  -  C        70                     84
+ca6r      nh         h       2        120.00      390.00       ; ga_22        H  -  NT, NZ, NE  -  C        70                     85
+;
+h         n.2        h       2        120.00      445.00       ; ga_23           H  -  NT, NZ  -  H         80                     86
+h         nh         h       2        120.00      445.00       ; ga_23           H  -  NT, NZ  -  H         80                     87
+h         n3.a       h       2        120.00      445.00       ; ga_23           H  -  NT, NZ  -  H         80                     88
+;
+hc        CAR        CAR     2        120.00      505.00       ; ga_24    H - N - CH3, H, HC - 6-ring, H - NT - CHn     90         89
+N06       CAR        hc      2        120.00      505.00       ; ga_24    H - N - CH3, H, HC - 6-ring, H - NT - CHn     90         90
+;
+p         oa         SUG      2       120.00      530.00       ; ga_25         P, SI  -  OA  -  CHn, P      95                     91
+p         oa         p        2       120.00      530.00       ; ga_25         P, SI  -  OA  -  CHn, P      95                     92
+;
+C3A       CAR        CAR      2       120.00      560.00       ; ga_26        N, C, CR1 (6-ring, no H)     100                     93
+CAR       CAR        oa       2       120.00      560.00       ; ga_26        N, C, CR1 (6-ring, no H)     100                     94
+N06       CAR        CAR      2       120.00      560.00       ; ga_26        N, C, CR1 (6-ring, no H)     100                     95
+N06       CAR        N06      2       120.00      560.00       ; ga_26        N, C, CR1 (6-ring, no H)     100                     96
+CAR       N06        CAR      2       120.00      560.00       ; ga_26        N, C, CR1 (6-ring, no H)     100                     97
+CAR       CAR        CAR      2       120.00      560.00       ; ga_26        N, C, CR1 (6-ring, no H)     100                     98
+nh        CAR        CAR      2       120.00      560.00       ; ga_26        N, C, CR1 (6-ring, no H)     100                     99
+N06       CAR        nh       2       120.00      560.00       ; ga_26        N, C, CR1 (6-ring, no H)     100                    100
+c3.s      N06        CAR      2       120.00      560.00       ; ga_26        N, C, CR1 (6-ring, no H)     100                    101
+;
+n3.b      cz         n3.a     2       120.00      670.00       ; ga_27           NZ  -  C  -  NZ, NE       120                    102
+n3.a      cz         n3.a     2       120.00      670.00       ; ga_27           NZ  -  C  -  NZ, NE       120                    103
+;
+om        p          om       2       120.00      780.00       ; ga_28           OM  -  P  -  OM           140                    104
+;
+c3.1      c.2        o        2       121.00      685.00       ; ga_29     O  -  C  -  CHn, C    CH3  -  N  -  CHn 120            105
+c3.2      c.2        o        2       121.00      685.00       ; ga_29     O  -  C  -  CHn, C    CH3  -  N  -  CHn 120            106
+;
+c3.1      n.1        c.2      2       122.00      700.00       ; ga_30     CH1, CH2  -  N  -  C            120                    107
+c3.2      n.1        c.2      2       122.00      700.00       ; ga_30     CH1, CH2  -  N  -  C            120                    108
+c3.1      n          c.2      2       122.00      700.00       ; ga_30     CH1, CH2  -  N  -  C            120                    109
+c3.r      n          c.2      2       122.00      700.00       ; ga_30     CH1, CH2  -  N  -  C            120                    110
+;
+c.2       n.1        h        2       123.00      415.00       ; ga_31            H  -  N  -  C             70                    111
+;
+o         c.2        n.1      2       124.00      730.00       ; ga_32    O  - C  - OA, N, NT, NL   C - NE - CH2        120       112
+o         c.2        n        2       124.00      730.00       ; ga_32    O  - C  - OA, N, NT, NL   C - NE - CH2        120       113
+o         C3A        NIT      2       124.00      730.00       ; ga_32    O  - C  - OA, N, NT, NL   C - NE - CH2        120       114
+c3.2      n3.b       cz       2       124.00      730.00       ; ga_32    O  - C  - OA, N, NT, NL   C - NE - CH2        120       115
+o         c.2        n.2      2       124.00      730.00       ; ga_32    O  - C  - OA, N, NT, NL   C - NE - CH2        120       116
+o         c.2        oa       2       124.00      730.00       ; ga_32    O  - C  - OA, N, NT, NL   C - NE - CH2        120       117
+;
+C5R       N5R        h        2       126.00      575.00       ; ga_35             H, HC  - 5-ring          90                    118
+C5R       C5R        hc       2       126.00      575.00       ; ga_35             H, HC  - 5-ring          90                    119
+;
+N5R       C5R        hc       2       126.00      575.00       ; ga_35             H, HC  - 5-ring          90                    120
+; na5r - cc5 - hc; na5r - cd5 - hc
+; nc5r - cc5 - hc; nc5r - cd5 - hc
+; nd5r - cc5 - hc; nd5r - cd5 - hc
+;
+cw2       cw         hc       2       126.00      575.00       ; ga_35             H, HC  - 5-ring          90                    121
+N5R       cw         hc       2       126.00      575.00       ; ga_35             H, HC  - 5-ring          90                    122
+cw        N5R        h        2       126.00      575.00       ; ga_35             H, HC  - 5-ring          90                    123
+CAR       N5R        h        2       126.00      575.00       ; ga_35             H, HC  - 5-ring          90                    124
+;
+C3A       C5R        N5R      2       126.00      640.00       ; ga_36            X(noH)  - 5-ring         100                    125
+; c3.1 - cc5 - na5r; c3.1 - cc5 - nc5r; c3.1 - cc5 - nd5r
+; c3.2 - cc5 - na5r; c3.2 - cc5 - nc5r; c3.2 - cc5 - nd5r
+; c3.3 - cc5 - na5r; c3.3 - cc5 - nc5r; c3.3 - cc5 - nd5r
+; c3.1 - cd5 - na5r; c3.1 - cd5 - nc5r; c3.1 - cd5 - nd5r
+; c3.2 - cd5 - na5r; c3.2 - cd5 - nc5r; c3.2 - cd5 - nd5r
+; c3.3 - cd5 - na5r; c3.3 - cd5 - nc5r; c3.3 - cd5 - nd5r
+;
+C3A       C5R        C5R      2       126.00      640.00       ; ga_36            X(noH)  - 5-ring         100                    126
+; c3.1 - cc5 - cd; c3.2 - cc5 - cd; c3.3 - cc5 - cd5
+; c3.1 - cd5 - cd5; c3.2 - cd5 - cd5; c3.3 - cd5 - cd5
+;
+c3.s      N5R       CAR       2       126.00      640.00       ; ga_36            X(noH)  - 5-ring         100                    127
+c3.s      N5R       C5R       2       126.00      640.00       ; ga_36            X(noH)  - 5-ring         100                    128
+;
+C3A       cw2       cw        2       126.00      640.00       ; ga_36            X(noH)  - 5-ring         100                    129
+C3A       cw2       CAR       2       126.00      640.00       ; ga_36            X(noH)  - 5-ring         100                    130
+;
+om        c2        om        2       126.00      770.00       ; ga_37            OM  - C  - OM            120                    131
+;
+N5R       CAR       N06       2       132.00      760.00       ; ga_38           5, 6 ring connnection     100                    132
+CAR       CAR       N5R       2       132.00      760.00       ; ga_38           5, 6 ring connnection     100                    133
+;
+cw2       CAR       CAR       2       132.00      760.00       ; ga_38           5, 6 ring connnection     100                    134
+;
+N5R       Fe        N5R       2        90.00      420.00       ; ga_1        NR(heme)  -  FE  -  NR(heme)  100                    135
+cw2       N5R       cw2       2       104.00      490.00       ; ga_5            CH2  -  S  -  S           110                    136
+cw2       cw2       cw2       2       108.00      465.00       ; ga_6            NR, C, CR1(5-ring)        100                    137
+cw2       cw2       N5R       2       111.00      530.00       ; ga_14  CHn  -  CHn  -  C, CHn, OA, NR, NT, NL        110         138
+cw2       ce.1      hc        2       116.00      465.00       ; ga_19           H  -  NE  -  CH2           90                    139
+ce.1      cw2       N5R       2       124.00      730.00       ; ga_32    O  - C  - OA, N, NT, NL   C - NE - CH2        120       140
+cw2       N5R       Fe        2       126.00      575.00       ; ga_35             H, HC  - 5-ring          90                    141
+cw2       ce.1      cw2       2       126.00      640.00       ; ga_36            X(noH)  - 5-ring         100                    142
+cw2       cw2       C3A       2       126.00      640.00       ; ga_36            X(noH)  - 5-ring         100                    143
+cw2       cw2       ce.1      2       126.00      770.00       ; ga_37            OM  - C  - OM            120                    144
+;
+si        oa        s1        2       155.00     2215.00       ; ga_39            SI  - OA  - SI            95                    145
+;
+#define ga_16       115.00       50.00
+; NR(heme)  -  FE  - NR 10      
+;
+#define ga_33       125.00      375.00
+; FE  - NR  - CR1 (5-ring)      60      
+;
+#define ga_34       125.00      750.00
+; -     120     
+;
+
+
+[ angletypes ]
+CR1    NR    FE     2   ga_33
+NR     FE    NR     2   ga_16
+
+
+; Dihedral phases, multiplicities, and forces
+
+torsions 86
+;                                fn   Phase shift  Force constant  Multiplicity index
+oa      SUG     oa      SUG       1         0.000          3.65         -3       5   ; gd_XX  OA-CHn-OA-CHn,H (alpha sugar) 0.9       1
+GLCA    GALA    MANA    UGAA    UGUA
+oa      SUG     oa      SUG       1       180.000          9.45          1       5   ; gd_XX  OA-CHn-OA-CHn,H (alpha sugar) 2.3       2
+GLCA    GALA    MANA    UGAA    UGUA
+;
+oa      SUG     SUG     oa        1         0.000          7.69         -3       2   ; gd_XX       OA-CHn-CHn-OA (sugar) 1.8          3
+GALA    GALB
+oa      SUG     SUG     oa        1       180.000          4.97          1       2   ; gd_XX       OA-CHn-CHn-OA (sugar) 1.2          4
+GALA    GALB
+;
+oa      SUG     oa      SUG       1         0.000          4.69         -3       5   ; gd_XX     OA-CHn-OA-CHn,H (beta sugar)         5
+GLCB    GALB    MANB    UGLB    UMNB
+oa      SUG     oa      SUG       1       180.000          3.41          1       5   ; gd_XX     OA-CHn-OA-CHn,H (beta sugar) 0.8     6
+GLCB    GALB    MANB    UGLB    UMNB
+;
+oa      SUG     SUG     SUG       1       180.000          2.67          1       2   ; gd_XX   CHn-CHn-CHn-OA (sugar)    0.6          7
+GALA    GALB
+;
+oa      SUG     SUG     oa        1         0.000          9.50         -3       4   ; gd_XX    OA-CHn-CHn-OA (sugar)    2.3          8
+GLCA    GLCB    MANA    MANB
+oa      SUG     SUG     oa        1       180.000          9.35          1       4   ; gd_XX   OA-CHn-CHn-OA (sugar)    2.2           9
+GLCA    GLCB    MANA    MANB
+;
+SUG     SUG     oa      ho        1         0.000          3.90          3       6   ; gd_XX    CHn-CHn-OA-H (sugar)     0.9         10
+GLCA    GLCB    GALA    GALB    MANA    MANB
+SUG     SUG     oa      ho        1         0.000          3.90          3       5   ; gd_XX    CHn-CHn-OA-H (sugar)     0.9         11
+TRH    UGLB    UMNB    UGAA    UGUA
+;
+p       oa      cs.2    SUG       1         0.000          2.79          1       0   ; gd_XX     P-O5*-C5*-C4* (dna)     0.7         12
+p       oa      cs5     SUG       1         0.000          2.79          1       0   ; gd_XX     P-O5*-C5*-C4* (dna)     0.7         13
+;
+oa      cs.2    SUG     oa        1         0.000          2.53         -3       0   ; gd_XX       O5*-C5*-C4*-O4* (dna) 0.6         14
+oa      cs.2    SUG     oa        1         0.000          5.35          1       0   ; gd_XX       O5*-C5*-C4*-O4* (dna) 1.3         15
+oa      cs5     SUG     oa        1         0.000          2.53         -3       0   ; gd_XX       O5*-C5*-C4*-O4* (dna) 0.6         16
+oa      cs5     SUG     oa        1         0.000          5.35          1       0   ; gd_XX       O5*-C5*-C4*-O4* (dna) 1.3         17
+;
+X       CAR     oa      X         1       180.000          7.11          2       0   ; gd_2        -C-OA- (at ring)      1.7         18
+X       CAR     oe      X         1       180.000          7.11          2       0   ; gd_2        -C-OA- (at ring)      1.7         19
+;
+X       c2      oa      X         1       180.000          16.7          2       0   ; gd_3        -C-OA- (carboxyl)     4.0         20
+X       c.2     oa      X         1       180.000          16.7          2       0   ; gd_3        -C-OA- (carboxyl)     4.0         21
+;
+X       cz      n3.b    X         1       180.000          33.5          2       0   ; gd_4       -C-N,NT,NE,NZ,NR-      8.0         22
+X       cz      n3.a    X         1       180.000          33.5          2       0   ; gd_4       -C-N,NT,NE,NZ,NR-      8.0         23
+X       c.2     n.2     X         1       180.000          33.5          2       0   ; gd_4       -C-N,NT,NE,NZ,NR-      8.0         24
+X       c.2     NTL     X         1       180.000          33.5          2       0   ; gd_4       -C-N,NT,NE,NZ,NR-      8.0         25
+X       c.2     n       X         1       180.000          33.5          2       0   ; gd_4       -C-N,NT,NE,NZ,NR-      8.0         26
+X       c.2     N5R     X         1       180.000          33.5          2       0   ; gd_4       -C-N,NT,NE,NZ,NR-      8.0         27
+X       CAR     nh      X         1       180.000          33.5          2       0   ; gd_4       -C-N,NT,NE,NZ,NR-      8.0         28
+;
+X       c3.s    N5R     X         1         0.000           0.0          2       0   ; gd_6       -CH1(sugar)-NR(base)   0.0         29
+X       c3.s    N06     X         1         0.000           0.0          2       0   ; gd_6       -CH1(sugar)-NR(base)   0.0         30
+;
+oa      SUG     SUG     oa        1         0.000          2.09          2       0   ; gd_8         O-CH1-CHn-O          0.5         31
+;
+oa      SUG     SUG     SUG       1         0.000          0.418         2       0   ; gd_7        O-CH1-CHn-no O        0.1         32
+oa      SUG     c3.s    N5R       1         0.000          0.418         2       0   ; gd_7        O-CH1-CHn-no O        0.1         33
+;
+X       s       s       X         1         0.000         16.7           2       0   ; gd_10              -S-S-          4.0         34
+;
+X       C3A     oa      ho        1         0.000          1.26          3       0   ; gd_12        -CHn-OA(no sugar)-   0.3         35
+X       c3.r    oa      ho        1         0.000          1.26          3       0   ; gd_12        -CHn-OA(no sugar)-   0.3         36
+X       SUG     oa      ho        1         0.000          1.26          3       0   ; gd_12        -CHn-OA(no sugar)-   0.3         37
+;
+X       c3.2    s       X         1         0.000          2.93          3       0   ; gd_13            -CH2-S-          0.7         38
+;
+cs5     oa      p       oa        1         0.000          5.09         -2       0   ; gd_XX       O-P-O- (dna, lipids)  1.2         39
+cs5     oa      p       oa        1         0.000          3.19          3       0   ; gd_XX       O-P-O- (dna, lipids)  0.8         40
+cs3     oa      p       oa        1         0.000          5.09         -2       0   ; gd_XX       O-P-O- (dna, lipids)  1.2         41
+cs3     oa      p       oa        1         0.000          3.19          3       0   ; gd_XX       O-P-O- (dna, lipids)  0.8         42
+;
+X       oa      p       X         1         0.000          3.14         -2       0   ; gd_9             -OA-P-           0.75        43
+X       oa      p       X         1         0.000          1.05          3       0   ; gd_11            -OA-P-           0.25        44
+;
+C3A     C3A     n3.a    h         1         0.000          3.77          3       0   ; gd_14        -C,CHn,SI-           0.9         45
+C3A     C3A     NTL     h         1         0.000          3.77          3       0   ; gd_14        -C,CHn,SI-           0.9         46
+C3A     C3A     n4      h         1         0.000          3.77          3       0   ; gd_14        -C,CHn,SI-           0.9         47
+c.2     C3A     n3.a    h         1         0.000          3.77          3       0   ; gd_14        -C,CHn,SI-           0.9         48
+c.2     C3A     NTL     h         1         0.000          3.77          3       0   ; gd_14        -C,CHn,SI-           0.9         49
+X       SUG     oa      X         1         0.000          3.77          3       0   ; gd_14        -C,CHn,SI-           0.9         50
+;
+X       C3A     C3A     X         1         0.000          5.92          3       0   ; gd_17        -CHn,SI-CHn-         1.4         51
+X       SUG     SUG     X         1         0.000          5.92          3       0   ; gd_17        -CHn,SI-CHn-         1.4         52
+X       c3.1    c3.r    X         1         0.000          5.92          3       0   ; gd_17        -CHn,SI-CHn-         1.4         53
+X       c3.2    c3.r    X         1         0.000          5.92          3       0   ; gd_17        -CHn,SI-CHn-         1.4         54
+X       c3.r    c3.r    X         1         0.000          5.92          3       0   ; gd_17        -CHn,SI-CHn-         1.4         55
+;
+X       NTL     C3A     X         1       180.000          1.0           6       0   ; gd_19          -CHn-N,NE-         0.24        56
+X       C3A     n3.b    X         1       180.000          1.0           6       0   ; gd_19          -CHn-N,NE-         0.24        57
+X       C3A     n3.a    X         1       180.000          1.0           6       0   ; gd_19          -CHn-N,NE-         0.24        58
+X       n       c3.r    X         1       180.000          1.0           6       0   ; gd_19          -CHn-N,NE-         0.24        59
+X       N5R     c3.r    X         1       180.000          1.0           6       0   ; gd_19          -CHn-N,NE-         0.24        60
+X       n       c3.1    X         1       180.000          1.0           6       0   ; gd_19          -CHn-N,NE-         0.24        61
+;
+cw2     cw2     c3.2    c3.3      1       180.000          1.53          2       0   ; gd_XX       C1-C2-CAB-CBB (heme)  0.4         62
+;
+X       C3A     c.2     X         1         0.000          1.0           6       0   ; gd_20      -CHn-C,NR(ring), CR1-  0.24        63
+X       C3A     c2      X         1         0.000          1.0           6       0   ; gd_20      -CHn-C,NR(ring), CR1-  0.24        64
+X       c3.2    c2      X         1         0.000          1.0           6       0   ; gd_20      -CHn-C,NR(ring), CR1-  0.24        65
+X       c3.2    cc5     X         1         0.000          1.0           6       0   ; gd_20      -CHn-C,NR(ring), CR1-  0.24        66
+X       c3.2    cd5     X         1         0.000          1.0           6       0   ; gd_20      -CHn-C,NR(ring), CR1-  0.24        67
+X       C3A     CAR     X         1         0.000          1.0           6       0   ; gd_20      -CHn-C,NR(ring), CR1-  0.24        68
+X       c3.2    cw2     X         1         0.000          1.0           6       0   ; gd_20      -CHn-C,NR(ring), CR1-  0.24        69
+X       N5R     Fe      X         1         0.000          0.0           4       0   ; gd_18          -NR-FE-            0.0         70
+X       ce.1    cw2     X         1       180.000         41.8           2       0   ; gd_5           -C-CR1- (6-ring)  10.0         71
+hc      CBN     s       X         1         0.000          4.18          3       0   ; gd_15           HC-C-S-           1.0         72
+hc      CBN     CBN     X         1         0.000          5.44          3       0   ; gd_16           HC-C-C-           1.3         73
+;
+X       CAR     CAR     X         1         0.000        167.42309       1       0   ; gi_1        planar groups 40                  74
+X       N5R     cc5     X         1         0.000        167.42309       1       0   ; gi_1        planar groups 40                  75
+X       N5R     cd5     X         1         0.000        167.42309       1       0   ; gi_1        planar groups 40                  76
+X       N06     CAR     X         1         0.000        167.42309       1       0   ; gi_1        planar groups 40                  77
+X       N5R     CAR     X         1         0.000        167.42309       1       0   ; gi_1        planar groups 40                  78
+X       cw2     CAR     X         1         0.000        167.42309       1       0   ; gi_1        planar groups 40                  79
+X       cc5     cc5     X         1         0.000        167.42309       1       0   ; gi_1        planar groups 40                  80
+X       cc5     cd5     X         1         0.000        167.42309       1       0   ; gi_1        planar groups 40                  81
+X       N5R     CAR     X         1         0.000        167.42309       1       0   ; gi_1        planar groups 40                  82
+X       N5R     cw      X         1         0.000        167.42309       1       0   ; gi_1        planar groups 40                  83
+X       cw      cw2     X         1         0.000        167.42309       1       0   ; gi_1        planar groups 40                  84
+X       N5R     cw2     X         1         0.000        167.42309       1       0   ; gi_1        planar groups 40                  85
+X       cw2     cw2     X         1         0.000        167.42309       1       0   ; gi_1        planar groups 40                  86
+;
+#define gd_XY   180.000       5.86          1
+; N-CHn-CHn-OA (lipid)   1.4
+;
+#define gd_1    180.000       5.86          2
+; -C-C-   1.4
+;
+#define gd_XY     0.000       8.62          3
+; N-CHn-CHn-OA (lipid)   2.1
+;
+#define gd_21     0.000       3.77          6
+; -CHn-NT-   0.9
+
+
+; Improper phases, and forces
+
+impropers 63
+;
+; peptides
+NTL     c.2     C3A     h                 0.0        167.42309     ; gi_1      planar groups 40          1
+c.2     C3A     NTL     o                 0.0        167.42309     ; gi_1      planar groups 40          2
+n       c.2     c3.1    h                 0.0        167.42309     ; gi_1      planar groups 40          3
+n       c.2     c3.1    c3.r              0.0        167.42309     ; gi_1      planar groups 40          4
+c.2     C3A     n       o                 0.0        167.42309     ; gi_1      planar groups 40          5
+;
+; N terminus
+n3.a    C3A     h       h                 0.0        167.42309     ; gi_1      planar groups 40          6
+NTL     C3A     h       h                 0.0        167.42309     ; gi_1      planar groups 40          7
+n       C3A     h       h                 0.0        167.42309     ; gi_1      planar groups 40          8
+n       c3.1    c3.r    h                 0.0        167.42309     ; gi_1      planar groups 40          9
+;
+; ARG
+n3.b    C3A     cz      h                 0.0        167.42309     ; gi_1      planar groups 40         10
+cz      n3.a    n3.a    n3.b              0.0        167.42309     ; gi_1      planar groups 40         11
+n3.a    h       h       cz                0.0        167.42309     ; gi_1      planar groups 40         12
+;
+; ASN, GLN
+c.2     o       n.2     c3.2              0.0        167.42309     ; gi_1      planar groups 40         13
+n.2     h       h       c.2               0.0        167.42309     ; gi_1      planar groups 40         14
+;
+; ASP, GLU, ASPH, GLUH
+c2      om      om      C3A               0.0        167.42309     ; gi_1      planar groups 40         15
+c.2     o       oa      C3A               0.0        167.42309     ; gi_1      planar groups 40         16
+;
+; from HIS
+; cc5     na5r    cd5     c3.2
+C5R     N5R     C5R     C3A               0.0        167.42309     ; gi_1      planar groups 40         17
+;
+; cc5     na5r    cc5     nd5r
+C5R     N5R     C5R     N5R               0.0        167.42309     ; gi_1      planar groups 40         18
+;
+; cc5     na5r    nd5r    h 
+C5R     N5R     N5R     h                 0.0        167.42309     ; gi_1      planar groups 40         19
+;
+; cc5     cd5     nd5r    cc5; cd5     cc5     na5r    cc5
+C5R     C5R     N5R     C5R               0.0        167.42309     ; gi_1      planar groups 40         20
+;
+; cd5     cc5     nd5r    hc
+C5R     C5R     N5R     hc                0.0        167.42309     ; gi_1      planar groups 40         21
+;
+; na5r    cc5     cd5     nd5r
+N5R     C5R     C5R     N5R               0.0        167.42309     ; gi_1      planar groups 40         22
+;
+; na5r    cc5     cc5     h 
+N5R     C5R     C5R     h                 0.0        167.42309     ; gi_1      planar groups 40         23
+;
+; na5r    cc5     nd5r    cd5
+N5R     C5R     N5R     C5R               0.0        167.42309     ; gi_1      planar groups 40         24
+;
+; from PHE and TYR
+CAR     CAR     CAR     X                 0.0        167.42309     ; gi_1      planar groups 40         25
+;
+; from TRP
+cw2     C3A     CAR     cw                0.0        167.42309     ; gi_1      planar groups 40         26
+cw2     CAR     cw      N5R               0.0        167.42309     ; gi_1      planar groups 40         27
+cw2     CAR     CAR     N5R               0.0        167.42309     ; gi_1      planar groups 40         28
+cw      CAR     CAR     cw2               0.0        167.42309     ; gi_1      planar groups 40         29
+cw      cw2     N5R     hc                0.0        167.42309     ; gi_1      planar groups 40         30
+cw      CAR     CAR     N5R               0.0        167.42309     ; gi_1      planar groups 40         31
+CAR     cw      cw2     N5R               0.0        167.42309     ; gi_1      planar groups 40         32
+CAR     CAR     CAR     cw2               0.0        167.42309     ; gi_1      planar groups 40         33
+N5R     CAR     cw      h                 0.0        167.42309     ; gi_1      planar groups 40         34
+CAR     CAR     CAR     N5R               0.0        167.42309     ; gi_1      planar groups 40         35
+;
+; from DADE, ADE, 
+c3.s    CAR     C5R     N5R               0.0        167.42309     ; gi_1      planar groups 40         36
+N5R     c3.s    CAR     C5R               0.0        167.42309     ; gi_1      planar groups 40         37
+N5R     CAR     CAR     N5R               0.0        167.42309     ; gi_1      planar groups 40         38
+CAR     N5R     N06     CAR               0.0        167.42309     ; gi_1      planar groups 40         39
+CAR     N5R     C5R     N5R               0.0        167.42309     ; gi_1      planar groups 40         40
+CAR     N06     CAR     N06               0.0        167.42309     ; gi_1      planar groups 40         41
+CAR     CAR     N5R     C5R               0.0        167.42309     ; gi_1      planar groups 40         42
+N06     CAR     CAR     CAR               0.0        167.42309     ; gi_1      planar groups 40         43
+N06     CAR     N06     CAR               0.0        167.42309     ; gi_1      planar groups 40         44
+CAR     N06     hc      N06               0.0        167.42309     ; gi_1      planar groups 40         45
+CAR     N06     CAR     CAR               0.0        167.42309     ; gi_1      planar groups 40         46
+nh      N06     CAR     CAR               0.0        167.42309     ; gi_1      planar groups 40         47
+CAR     CAR     N06     nh                0.0        167.42309     ; gi_1      planar groups 40         48
+nh      h       h       CAR               0.0        167.42309     ; gi_1      planar groups 40         49
+CAR     CAR     N06     CAR               0.0        167.42309     ; gi_1      planar groups 40         50
+CAR     CAR     N5R     CAR               0.0        167.42309     ; gi_1      planar groups 40         51
+CAR     N5R     C5R     N5R               0.0        167.42309     ; gi_1      planar groups 40         52
+C5R     N5R     N5R     hc                0.0        167.42309     ; gi_1      planar groups 40         53
+N06     c3.s    CAR     CAR               0.0        167.42309     ; gi_1      planar groups 40         54
+;
+; peptides
+C3A     NTL     c.2     C3A              35.26439    334.84617     ; gi_2    tetrahedral centres   80   55
+;
+; from ILE, LEU, VAL, MELEU, and MEVAL
+C3A     C3A     C3A     C3A              35.26439    334.84617     ; gi_2    tetrahedral centres   80   56
+;
+; from THR
+C3A     oa      C3A     C3A              35.26439    334.84617     ; gi_2    tetrahedral centres   80   57
+;
+; from DADE, DGUA, ADE, GUA,
+c3.d    oa      N5R     c3.s             35.26439    334.84617     ; gi_2    tetrahedral centres   80   58
+SUG     SUG     oa      SUG              35.26439    334.84617     ; gi_2    tetrahedral centres   80   59
+c3.s    oa      N5R     SUG              35.26439    334.84617     ; gi_2    tetrahedral centres   80   60
+;
+N5R     CBN     CBN     Fe                0.0        669.69235     ; gi_3      heme iron  160           61
+ce.1    CBN     CBN     X                 0.0        167.42309     ; gi_1      planar groups 40         62
+cw2     CBN     CBN     X                 0.0        167.42309     ; gi_1      planar groups 40         63

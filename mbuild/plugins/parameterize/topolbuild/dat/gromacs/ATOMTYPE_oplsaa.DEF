@@ -1,0 +1,1030 @@
+# Please go to the end to see rules of defining an atom
+
+============================================================================================
+      Definition begin
+============================================================================================
+--------------------------------------------------------------------------------------------
+WILDATOM XX C N O S P
+WILDATOM XA O S
+WILDATOM XB N P
+WILDATOM XC F Cl Br I
+WILDATOM XD S P
+WILDATOM XE N O
+WILDATOM XH C H
+-------------------------------------------------------------------------------------------- 
+ f1  f2    f3  f4  f5  f6  f7  f8                               f9             f10 
+-------------------------------------------------------------------------------------------- 
+// Carbon types
+// CY types
+ATD  733    *   6   4   1   *   [RG3]                   (C[AR1])                                       &    ; all-atom C: CH, cyclopropyl benzene
+ATD  711    *   6   4   2   *   [RG3]   &    ; CH2    C: cyclopropane
+ATD  712    *   6   4   1   *   [RG3]   &    ; CHR    C: cyclopropane
+ATD  713    *   6   4   0   *   [RG3]   &    ; CR2    C: cyclopropane
+
+// CT_3 types
+ATD  245    *   6   4   2   *   *                       (C4,N3(C3(O1)))                                &    ; C on N: tertiary  N-CH2R amide, Pro CD
+ATD  296    *   6   4   2   *   [RG5]                   (C4,N4(C4(C3(O1))))                            &    ; C-delta in N-term PRO NH2+
+
+// CT_2 types
+ATD  906B   *   6   4   2   *   *                       (N3(H,H),C3(O1,N))                             &    ; CA in GLY-NH2 N-terminus
+ATD  223B   *   6   4   2   *   *                       (N3,C3(O1,N))                                  &    ; Gly Calpha
+ATD  225B   *   6   4   0   *   *                       (N,C4,C4,C3(O1))                               &    ; Aib Calpha.
+ATD  246    *   6   4   1   *   [RG5]                   (C4,N3(C,C3(O1)),C3[NR](O1,N))                 &    ; C on N: tertiary  N-CHR2 amide, Pro CA
+ATD  246    *   6   4   1   *   *                       (N3(C,C3[NR](O1)))                             &    ; C on N: tertiary  N-CHR2 amide, Pro CA
+ATD  912B   *   6   4   1   *   *                       (N3(H,H),C3(O1,N))                             &    ; CA in NH2 N-terminus. All AA except GLY, PRO
+ATD  224B   *   6   4   1   *   *                       (N3,C3(O1,N))                                  &    ; Calpha in most AA (except Gly,Pro,Aib)
+ATD  285    *   6   4   1   *   [RG5]                   (C4,N3(C,C3(O1)),C3(O1,O))                     &    ; CA on C-terminal PRO
+ATD  283    *   6   4   1   *   *                       (N3(C3(O1)),C3(O1,O))                          &    ; CA on C-terminal ALA,CYS,SER,THR,HIS,ASP,ASN
+ATD  284    *   6   4   2   *   *                       (N3(C3(O1)),C3(O1,O))                          &    ; CA on C-terminal GLY
+ATD  292B   *   6   4   2   *   *                       (N4,C3(O1,N))                                  &    ; CA in GLY-NH3+ N-term.
+ATD  293B   *   6   4   1   *   *                       (N4,C3(O1,N))                                  &    ; CA in NH3+ N-term, All AA except GLY & PRO
+ATD  295    *   6   4   1   *   [RG5]                   (C4,N3(H,C4),C3(O1,N))                         &    ; AA C-alpha on N-term PRO
+ATD  298    *   6   4   2   *   *                       (N4,C3(O1,O))                                  &    ; AA C-alpha in Gly zwitterion
+ATD  299    *   6   4   1   *   *                       (N4,C3(O1,O))                                  &    ; AA C-alpha in Ala zwitterion
+
+// CT_4 types
+ATD  160    *   6   4   2   *   *                       (C4(F,F,F),O(H))                               &    ; CH2 Trifluoroethanol
+
+// C3 types
+ATD  415    *   6   4   3   *   *                       (S[MI])                                        &    ; C  in  CH3S-  thiolate
+ATD  418    *   6   4   3   *   *                       (O[MI])                                        &    ; C  in  CH3O-  alkoxide
+ATD  425    *   6   4   3   *   *                       (N[MI])                                        &    ; C  in  CH3NH-
+ATD  429    *   6   4   2   *   [MI]                    (C)                                            &    ; C2 in  CH3CH2- RCH2-
+
+// C+ types
+ATD  700    *   6   3   0   *   [PL]                    (C,C,C)                                        &    ; C+  in t-butyl+ B3LYP/6-31G*
+
+// CO types
+ATD  189    *   6   4   2   *   *                       (O(C),XE(C))                                   &    ; C(H2O2): acetal OCH2O
+ATD  191    *   6   4   2   *   *                       (O(C),XA(H))                                   &    ; C(H2O2): hemiacetal OCH2OH
+ATD  193    *   6   4   1   *   *                       (C,O(C),XE(C))                                 &    ; C(HCO2): acetal OCHRO
+ATD  195    *   6   4   1   *   *                       (C,O(C),XA(H))                                 &    ; C(HCO2): hemiacetal OCHROH
+ATD  197    *   6   4   0   *   *                       (C,C,O(C),XE(C))                               &    ; C(C2O2): acetal OCRRO
+ATD  198    *   6   4   0   *   *                       (C,C,O(C),XA(H))                               &    ; C(C2O2): hemiacetal OCRROH
+
+//  CT types
+ATD  148    *   6   4   3   *   *                       (C[AR1])                                       &    ; C: CH3, toluene
+ATD  725    *   6   4   0   *   *                       (C[AR1.AR2.AR3],F,F,F)                         &    ; CF3   trifluoromethylbenzene
+ATD  149    *   6   4   2   *   *                       (C[AR1],C4)                                    &    ; C: CH2, ethyl benzene
+ATD  152    *   6   4   2   *   *                       (Cl)                                           &    ; RCH2Cl in alkyl chlorides
+ATD  443    *   6   4   *   *   *                       (O(P(O(XX),O,O)))                              &    ; C  in Me2PO4-, Me2PO4H dimethylphosphate
+ATD  448    *   6   4   *   *   *                       (O(P(O,O,O)))                                  &    ; C  in MeOPO3--, MeOPO3H2   6-31+G* CHELPG
+ATD  453    *   6   4   *   *   *                       (O(P(XX,O,O)))                                 &    ; C(O) MePO3Me-, MePO3HMe     methylphosphonate
+ATD  455    *   6   4   *   *   *                       (P(O(XX)O,O))                                  &    ; C(P) MePO3Me-, MePO3HMe
+ATD  458    *   6   4   *   *   *                       (O(P(XX,O,O)),XX[AR1.AR2.AR3])                 &    ; C(O) benzyl methylphosphonate
+ATD  461    *   6   4   *   *   *                       (P(O(XX),O,O),XX[AR1.AR2.AR3])                 &    ; C(P)  methyl benzylphosphonate
+ATD  173    *   6   4   2   *   *                       (C4(O2,C4(O2)),O2)                             &    ; C(H2OH): triols
+ATD  174    *   6   4   1   *   *                       (O2,C4(O2),C4(O2))                             &    ; C(HROH): triols
+ATD  174    *   6   4   1   *   *                       (O2,C4(O2,C4(O2)))                             &    ; C(HROH): triols
+ATD  175    *   6   4   0   *   *                       (C4(O2,C4(O2)),O2)                             &    ; C(R2OH): triols
+ATD  157    *   6   4   3   *   *                       (O2)                                           &    ; all-atom C: CH3 & CH2, alcohols
+ATD  157    *   6   4   2   *   *                       (C4,O2)                                        &    ; all-atom C: CH3 & CH2, alcohols
+ATD  158    *   6   4   1   *   *                       (C4,O2)                                        &    ; all-atom C: CH, alcohols
+ATD  161    *   6   4   0   *   *                       (F,F,F,C(H,H,O(H)))                            &    ; CF3 Trifluoroethanol
+ATD  159    *   6   4   0   *   *                       (O2(H))                                        &    ; all-atom C: C, alcohols
+ATD  181    *   6   4   3   *   *                       (O(C(XH)))                                     &    ; C(H3OR): methyl ether
+ATD  182    *   6   4   2   *   *                       (O(C(XH)))                                     &    ; C(H2OR): ethyl  ether
+ATD  183    *   6   4   1   *   *                       (O(C(XH)))                                     &    ; C(HOR):  i-Pr   ether, allose
+ATD  184    *   6   4   0   *   *                       (O(C(XH)))                                     &    ; C(OR):   t-Bu   ether
+ATD  217    *   6   4   3   *   *                       (S2(H))                                        &    ; all-atom C: CH3, methanethiol
+ATD  206    *   6   4   2   *   *                       (S2(H))                                        &    ; all-atom C: CH2, thiols
+ATD  207    *   6   4   1   *   *                       (S2(H))                                        &    ; all-atom C: CH, thiols
+ATD  208    *   6   4   0   *   *                       (S2(H))                                        &    ; all-atom C: C, thiols
+ATD  213    *   6   4   3   *   *                       (S2(S2(C)))                                    &    ; all-atom C: CH3, disulfides
+ATD  214    *   6   4   2   *   *                       (S2(S2(C)))                                    &    ; all-atom C: CH2, disulfides
+ATD  215    *   6   4   1   *   *                       (S2(S2(C)))                                    &    ; all-atom C: CH, disulfides
+ATD  216    *   6   4   0   *   *                       (S2(S2(C)))                                    &    ; all-atom C: C, disulfides
+ATD  209    *   6   4   3   *   *                       (S2(C))                                        &    ; all-atom C: CH3, sulfides
+ATD  210    *   6   4   2   *   *                       (S2(C))                                        &    ; all-atom C: CH2, sulfides
+ATD  211    *   6   4   1   *   *                       (S2(C))                                        &    ; all-atom C: CH, sulfides
+ATD  212    *   6   4   0   *   *                       (S2(C))                                        &    ; all-atom C: C, sulfides
+ATD  218    *   6   4   2   *   *                       (C[AR1],O2)                                    &    ; C in CH2OH - benzyl alcohols
+ATD  219    *   6   4   1   *   *                       (C[AR1],C,O2)                                  &    ; C in CHROH - benzyl alcohols
+ATD  220    *   6   4   0   *   *                       (C[AR1],C,C,O2)                                &    ; C in CR2OH - benzyl alcohols
+ATD  223    *   6   4   2   *   *                       (C,N3(H,H))                                    &    ; C in RCH2NH2. Use #223B for AA Calpha.
+ATD  224    *   6   4   1   *   *                       (C,C,N3(H,H))                                  &    ; C in R2CHNH2. Use #224B for AA Calpha.
+ATD  225    *   6   4   0   *   *                       (C,C,C,N3(H,H))                                &    ; C in R3CNH2. Use #225B for AA Calpha.
+ATD  256    *   6   4   3   *   *                       (N3(C3(O1,XH),C3(O1,XH)))                      &    ; C in CH3  imide
+ATD  257    *   6   4   2   *   *                       (N3(C3(O1,XH),C3(O1,XH)))                      &    ; C in RCH2 imide
+ATD  258    *   6   4   1   *   *                       (N3(C3(O1,XH),C3(O1,XH)))                      &    ; C in R2CH imide
+ATD  259    *   6   4   0   *   *                       (N3(C3(O1,XH),C3(O1,XH)))                      &    ; C in R3C  imide
+ATD  229    *   6   4   1   *   *                       (N3(C3(O1)))                                   &    ; C on N: secondary N-CHR2 amide
+ATD  230    *   6   4   0   *   *                       (N3(C3(O1)))                                   &    ; C on N: secondary N-CR3  amide
+ATD  243    *   6   4   3   *   *                       (N3(C,C3(O1)))                                 &    ; C on N: tertiary  N-Me amide
+ATD  242    *   6   4   3   *   *                       (N3(C3(O1)))                                   &    ; C on N: secondary N-Me amide
+ATD  244    *   6   4   2   *   *                       (N3(C3(O1)))                                   &    ; C on N: secondary N-CH2R amide
+ATD  273    *   6   4   3   *   *                       (C3(O1,O))                                     &    ; C: CH3, carboxylate ion
+ATD  274    *   6   4   2   *   *                       (C3(O1,O))                                     &    ; C: CH2, carboxylate ion
+ATD  275    *   6   4   1   *   *                       (C3(O1,O))                                     &    ; C: CH,  carboxylate ion
+ATD  276    *   6   4   0   *   *                       (C3(O1,O))                                     &    ; C: C,   carboxylate ion
+ATD  291    *   6   4   3   *   *                       (N4(H,H,H))                                    &    ; C in  CH3NH3+
+ATD  292    *   6   4   2   *   *                       (N4(H,H,H))                                    &    ; C in  RCH2NH3+
+ATD  293    *   6   4   1   *   *                       (N4(H,H,H))                                    &    ; C in  R2CHNH3+
+ATD  294    *   6   4   0   *   *                       (N4(H,H,H))                                    &    ; C in  R3CNH3+
+ATD  297    *   6   4   3   *   *                       (N4(H,H))                                      &    ; CT in  CH3NH2+R
+ATD  305    *   6   4   3   *   *                       (N3(C3(N3,N)))                                 &    ; C: CH3, methylguanidinium
+ATD  306    *   6   4   3   *   *                       (C(N3(C3(N3,N))))                              &    ; C: CH3, ethylguanidinium
+ATD  748    *   6   4   2   *   *                       (C4(C4),N3(C3(N3,N2)))                         &    ; CD of neutral ARG
+ATD  307    *   6   4   2   *   *                       (C4,N3(C3(N3,N)))                              &    ; C: CH2(D), ARG, ethylguanidinium
+ATD  308    *   6   4   2   *   *                       (C4(N3(C3(N3,N))))                             &    ; C: CH2(G), ARG
+ATD  331    *   6   4   3   *   *  (C[RG6,AR1.AR2.AR3](C[RG6](O[NR],N[RG6]),C3[RG6](N[RG6](C3[RG6](O[NR])))))          &    ; Thymine C-C5
+ATD  371    *   6   4   *   *   *  (N[RG5,AR1.AR2.AR3](C[RG5](N2(C[RG5,AR1](C[AR1](O1,N[AR1])))),C[RG5,AR1](N2[AR1]))) &    ; 9-Me Adenine or Guanine C-N9
+ATD  373    *   6   4   3   *   *  (N[RG6,AR1.AR2.AR3](C[RG6](O[NR],N[RG6]),C3[RG6](C3[RG6](C[RG6](O[NR],N[RG6])))))   &    ; 1-Me Uracil or Thymine C-N1
+ATD  375    *   6   4   *   *   *         (N[RG6](C[RG6](O1,N2[RG6](C[RG6](N[NR]))),C[RG6](C[RG6])))   &    ; 1-Me Cytosine C-N1
+ATD  391    *   6   4   3   *   *         (N[RG6](C[RG6](O1,N3[RG6](C[RG6](N[NR]))),C[RG6](C[RG6])))   &    ; 1-Me CytH+ C-N1
+ATD  421    *   6   4   2   *   *                       (C2(N[MI]))                                    &    ; C1 in  CH2CN-  RCN-
+ATD  431    *   6   4   3   *   *                       (C[MI](H,H))                                   &    ; C1 in  CH3CH2-
+ATD  468    *   6   4   *   *   *                       (O[NR](C3(O1)))                                &    ; methoxy C in esters - see also #490-492
+ATD  476    *   6   4   *   *   *                       (S(N3,O1,O1))                                  &    ; CH3 attached to S of sulfonamide
+ATD  482    *   6   4   3   *   *                       (N3(S(O1,O1)))                                 &    ; alpha CH3-N of sulfonamide
+ATD  484    *   6   4   2   *   *                       (N3(S(O1,O1)))                                 &    ; alpha CH2-N of sulfonamide. Use q=0.45 for CRH-N, q=0.65 for O=N-C-CH-N.
+ATD  486    *   6   4   3   *   *                       (C4(N3(S(O1,O1))))                             &    ; beta CH3 of N-ethyl sulfonamide
+ATD  490    *   6   4   2   *   *                       (O(S))                                         &    ; C(H2OS) ethyl ester
+ATD  491    *   6   4   1   *   *                       (O(S))                                         &    ; C(HOS) i-pr ester
+ATD  492    *   6   4   0   *   *                       (O(S))                                         &    ; C(OS) t-bu ester
+ATD  498    *   6   4   3   *   *                       (S(O1,C))                                      &    ; CH3 all-atom C: sulfoxide
+ATD  499    *   6   4   2   *   *                       (S(O1,C))                                      &    ; CH2 all-atom C: sulfoxide
+ATD  505    *   6   4   2   *   *                       (C3[RG5,AR2](N(C3)))                           &    ; CB in His
+ATD  515    *   6   4   1   *   *                       (C3[AR1.AR2.AR3],C4,C4)                        &    ; all-atom C: CH, isopropyl benzene
+ATD  516    *   6   4   0   *   *                       (C3[AR1.AR2.AR3],C4,C4,C4)                     &    ; all-atom C: C,  t-butyl benzene
+ATD  645    *   6   4   *   *   *    (C3[RG5,AR2](C[AR2,AR1](C[RG6](C[RG6](O[NR]))),C[RG5](N[RG5])))   &    ; C on C3 in serotonin
+ATD  670    *   6   4   3   *   *    (C3[RG6,AR1.AR2.AR3](N[RG6](C3[RG6]),C3[RG6](C3[RG6](C3[RG6]))))  &    ; CH3, 2-methyl pyridine
+ATD  671    *   6   4   2   *   *    (C3[RG6,AR1.AR2.AR3](N[RG6](C3[RG6]),C3[RG6](C3[RG6](C3[RG6]))))  &    ; CH2, 2-ethyl pyridine
+ATD  672    *   6   4   3   *   *     (C3[RG6,AR1.AR2.AR3](N[RG6](N[RG6]),C3[RG6](C3[RG6](C3[RG6]))))  &    ; CH3, 3-methyl pyridazine
+ATD  673    *   6   4   2   *   *     (C3[RG6,AR1.AR2.AR3](N[RG6](N[RG6]),C3[RG6](C3[RG6](C3[RG6]))))  &    ; CH2, 3-ethyl pyridazine
+ATD  674    *   6   4   3   *   *          (C[RG6,AR1.AR2.AR3](N[RG6](C[RG6](N[RG6])),C[RG6](C[RG6]))) &    ; CH3, 4-methyl pyrimidine
+ATD  675    *   6   4   2   *   *          (C[RG6,AR1.AR2.AR3](N[RG6](C[RG6](N[RG6])),C[RG6](C[RG6]))) &    ; CH2, 4-ethyl pyrimidine
+ATD  676    *   6   4   3   *   *                      (C3[RG6,AR1.AR2.AR3](N[RG6]),C3[RG6](N[RG6]))   &    ; CH3, 2-methyl pyrazine
+ATD  677    *   6   4   2   *   *                      (C3[RG6,AR1.AR2.AR3](N[RG6]),C3[RG6](N[RG6]))   &    ; CH2, 2-ethyl pyrazine
+ATD  678    *   6   4   3   *   *          (C3[RG5,AR1.AR2.AR3],(C3[RG5](C3[RG5]),N3[RG5](C3[RG5])))   &    ; CH3, 2-methyl pyrrole
+ATD  679    *   6   4   2   *   *          (C3[RG5,AR1.AR2.AR3],(C3[RG5](C3[RG5]),N3[RG5](C3[RG5])))   &    ; CH2, 2-ethyl pyrrole
+ATD  680    *   6   4   3   *   *          (C3[RG5,AR1.AR2.AR3],(C3[RG5](C3[RG5]),XA2[RG5](C3[RG5])))  &    ; CH3, 2-methyl furan
+ATD  681    *   6   4   2   *   *          (C3[RG5,AR1.AR2.AR3],(C3[RG5](C3[RG5]),XA2[RG5](C3[RG5])))  &    ; CH2, 2-ethyl furan
+ATD  701    *   6   4   *   *   *                       (C[PL](C,C))                                   &    ; C  in t-butyl+ B3LYP/6-31G*
+ATD  747    *   6   4   3   *   *                       (N3[NR](C(N3[NR],N2[NR])))                     &    ; CH3 in neutral MeGDN
+ATD  755    *   6   4   3   *   *                       (C2(N1))                                       &    ; C of CH3 in CH3CN
+ATD  756    *   6   4   2   *   *                       (C4,C2(N1))                                    &    ; C of CH2 in RCH2CN
+ATD  757    *   6   4   1   *   *                       (C4,C4,C2(N1))                                 &    ; C of CH  in R2CHCN
+ATD  758    *   6   4   0   *   *                       (C4,C4,C4,C2(N1))                              &    ; C of C   in R3CCN
+ATD  762    *   6   4   3   *   *                       (N3(O,O))                                      &    ; CT-NO2 nitromethane
+ATD  764    *   6   4   2   *   *                       (C4(H,H,H),N3(O,O))                            &    ; CT-NO2 nitroethane
+ATD  765    *   6   4   1   *   *                       (C4(H,H,H),C4(H,H,H),N3(O,O))                  &    ; CT-NO2 2-nitropropane
+ATD  766    *   6   4   0   *   *                       (C4(H,H,H),C4(H,H,H),C4(H,H,H),N3(O,O))        &    ; CT-NO2 2-methyl-2-nitropropane
+ATD  774    *   6   4   2   *   [RG5]                   (C4[RG5](C4[NR],O[RG5](C3[RG5](O1))),O[RG5])   &    ; propylene carbonate C in CH2
+ATD  775    *   6   4   1   *   [RG5]                   (C4[NR],C4[RG5](O[RG5]),O[RG5](C[RG5](O1)))    &    ; propylene carbonate C in CH
+ATD  776    *   6   4   3   *   [NR]                    (C4[RG5](C4[RG5](O[RG5]),O[RG5](C[RG5](O1))))  &    ; propylene carbonate C in CH3
+ATD  782    *   6   4   3   *   *                       (P[PL](C,C,C))                                 &    ; CH3PR3+ 6-31G* CHELPG
+ATD  783    *   6   4   2   *   *                       (P[PL](C,C,C))                                 &    ; RCH2PR3+
+ATD  903    *   6   4   3   *   *                       (N3(H,H))                                      &    ; CH3(N) primary   aliphatic amines, H(C) is #911
+ATD  904    *   6   4   3   *   *                       (N3(H,C))                                      &    ; CH3(N) secondary aliphatic amines, H(C) is #911
+ATD  905    *   6   4   3   *   *                       (N3(C,C))                                      &    ; CH3(N) tertiary  aliphatic amines, H(C) is #911
+ATD  906    *   6   4   2   *   *                       (N3(H,H))                                      &    ; CH2(N) primary   aliphatic amines, H(C) is #911
+ATD  907    *   6   4   2   *   *                       (N3(H,C))                                      &    ; CH2(N) secondary aliphatic amines, aziridine  C2,C3H
+ATD  908    *   6   4   2   *   *                       (N3(C,C))                                      &    ; CH2(N) tertiary  aliphatic amines, H(C) is #911
+ATD  912    *   6   4   1   *   *                       (C4,C4,N3(H,H))                                &    ; CH     primary isopropyl amine
+ATD  913    *   6   4   0   *   *                       (C4,C4,C4,N3(H,H))                             &    ; C      primary t-butyl amine
+ATD  914    *   6   4   1   *   *                       (C4,C4,N3(H,C))                                &    ; CH     secondary isopropyl amine
+ATD  915    *   6   4   1   *   *                       (C4,C4,N3(C,C))                                &    ; CH     tertiary  isopropyl amine
+ATD  942    *   6   4   3   *   *                       (N4(H,C,C))                                    &    ; C in  CH3NHR2+
+ATD  943    *   6   4   2   *   *                       (N4(H,C,C))                                    &    ; C in  RCH2NHR2+
+ATD  944    *   6   4   1   *   *                       (N4(H,C,C))                                    &    ; C in  R2CHNHR2+
+ATD  945    *   6   4   0   *   *                       (N4(H,C,C))                                    &    ; C in  R3CNHR2+
+ATD  951    *   6   4   2   *   *                       (N4(H,H,H),C3(O1,O))                           &    ; glycine zwit. 6-31G* CHELPG charges
+ATD  957    *   6   4   3   *   *                       (F)                                            &    ; RCH2F in monoalkyl fluorides (tentative)
+ATD  957    *   6   4   2   *   *                       (C,F)                                          &    ; RCH2F in monoalkyl fluorides (tentative)
+ATD  959    *   6   4   1   *   *                       (C,C,F)                                        &    ; R2CHF in monoalkyl fluorides (tentative)
+ATD  961    *   6   4   0   *   *                       (C(F,F),F,F,F)                                 &    ; CF3 perfluoroalkanes
+ATD  962    *   6   4   0   *   *                       (C(F,F),C(F,F),F,F)                            &    ; CF2 perfluoroalkanes
+ATD  963    *   6   4   0   *   *                       (C(F,F),C(F,F),C(F,F),F)                       &    ; CF perfluoroalkanes
+ATD  960    *   6   4   0   *   *                       (C,C,C,F)                                      &    ; R3CF in monoalkyl fluorides (tentative)
+ATD  964    *   6   4   0   *   *                       (F,F,F,F)                                      &    ; CF4
+ATD  135    *   6   4   3   &    ; alkane CH3
+ATD  136    *   6   4   2   &    ; alkane CH2
+ATD  137    *   6   4   1   &    ; alkane CH
+ATD  138    *   6   4   4   &    ; alkane CH4
+ATD  139    *   6   4   0   &    ; alkane C
+
+// C_2 types
+ATD  232    *   6   3   1   *   [DB]                    (C[AR1.AR2.AR3],XA1)                           &    ; C: C=O in benzaldehyde,acetophenone (CH)
+ATD  232    *   6   3   0   *   [DB]                    (C[AR1.AR2.AR3],XA1,C4)                        &    ; C: C=O in benzaldehyde,acetophenone (CH)
+ATD  233    *   6   3   3   *   *                       (C3(C[AR1.AR2.AR3],XA1))                       &    ; C: C=O in acetophenone (CMe)
+ATD  277    *   6   3   1   *   [DB]                    (C,XA1)                                        &    ; C: aldehyde - for C-alpha use #135-#139
+ATD  280    *   6   3   0   *   [DB]                    (C,C,XA1)                                      &    ; C: ketone - for C-alpha use #135-#139
+ATD  465    *   6   3   *   *   [DB]                    (XA1,XA2(C))                                   &    ; C: esters - for R on C=O, use #280-#282
+
+// C_3 types
+ATD  271    *   6   3   *   *   *                       (O1,O1)                                        &    ; C in COO- carboxylate
+
+// C types
+ATD  320    *   6   3   *   *   [RG6,AR1.AR2.AR3] (O[NR],N[RG6](C[RG6](C[RG6])),N[RG6](C[RG6](O[NR])))  &    ; Uracil & Thymine C2
+ATD  322    *   6   3   *   *   [RG6,AR1.AR2.AR3] (O[NR],N[RG6](C[RG6](O[NR],N[RG6])),(C[RG6](C[RG6]))) &    ; Uracil & Thymine C4
+ATD  334    *   6   3   *   *   [RG6,AR1.AR2.AR3]   (O1,N2[RG6](C(N[NR],C[RG6])),N[RG6](C[RG6]))       &    ; Cytosine C2
+ATD  334    *   6   3   *   *   [RG6,AR1.AR2.AR3]   (O1,N2[RG6](C(H,C[RG6])),N[RG6](C[RG6]))           &    ; zebulariine C2
+ATD  366    *   6   3   *   *   [RG6,AR1.AR2.AR3] (O[NR],C[RG5,RG6](N[RG5](C3(H,N[RG5]))),N[RG6](C3(N[NR],N[RG6])))        &    ; Guanine C6
+ATD  378    *   6   3   *   *   [RG6,AR1.AR2.AR3]   (O1,N3[RG6](C(N[NR],C[RG6])),N[RG6](C[RG6]))       &    ; CytH+ C2
+ATD  772    *   6   3   *   *   [RG5]                   (XA1,XA[RG5](C4[RG5](C4[NR],C4[RG5])),XA[RG5]) &    ; propylene carbonate C=O
+ATD  231    *   6   3   *   *   *                       (C[AR1.AR2.AR3],C[AR1.AR2.AR3],XA1)            &    ; C: C=O in benzophenone
+ATD  952    *   6   3   *   *   *                       (XA1,XA,C4(N4,H,H))                            &    ; glycine zwit. 6-31G* CHELPG charges
+ATD  234    *   6   3   *   *   [DB]                    (C[AR1.AR2.AR3],XA1,N3)                        &    ; C: C=O in benzamide
+ATD  252    *   6   3   *   *   *                       (XA1,N3(C3(XA1,C)))                            &    ; C(=O) in imide
+ATD  252    *   6   3   *   *   *                       (XA1,N3(C3(XA1,H)))                            &    ; C(=O) in imide
+ATD  267    *   6   3   0   *   *                       (C4,XA1,XA2(H))                                &    ; Co in CCOOH carboxylic acid
+ATD  470    *   6   3   *   *   *                       (C[AR1.AR2.AR3],XA1,XA2)                       &    ; Co in benzoic acid
+ATD  471    *   6   3   *   *   *                       (C[AR1.AR2.AR3],XA1,XA2(C))                    &    ; Co in methyl benzoate, aryl ester
+ATD  247    *   6   3   0   *   *                       (O1,N3,N3)                                     &    ; C in O=C(NH2)2  Urea  Isr. J. Chem. 33, 323 (93)
+ATD  235    *   6   3   1   *   [DB]                    (O1,N3)                                        &    ; C=O in amide, dmf, peptide bond
+ATD  235    *   6   3   0   *   [DB]                    (O1,N3)                                        &    ; C=O in amide, dmf, peptide bond
+
+// CN types
+ATD  502    *   6   3   *   *   [RG5,RG6,AR1.AR2]       (C[RG5,RG6](C[RG5](C4[NR])),N[RG5],C[RG6])     &    ; CE2 C in Trp
+ATD  594    *   6   3   *   *   [RG5,RG6,AR1.AR2]       (C[RG5,RG6](C[RG5]),N[RG5],C[RG6])             &    ; C8 in indole
+
+// CB types
+ATD  349    *   6   3   0   *   [RG5,RG6,AR1.AR2] (N3[RG5](C3(N2[RG5](C[RG5,RG6](C[RG6](N[NR],N[RG6]))))),N2[RG6](C3(N[RG6]))) &    ; Adenine C4
+ATD  350    *   6   3   0   *   [RG5,RG6,AR1.AR2]   (C[RG6](N[NR],N[RG6](C3(N2(C[RG5,RG6](N3[RG5]))))),N2[RG5](C3(N3[RG5])))   &    ; Adenine C5
+ATD  364    *   6   3   0   *   [RG5,RG6,AR1.AR2.AR3]   (N[RG6](C3(N[NR],N[RG6])),N[RG5](C3(H,N[RG5]))) &    ; Guanine C4
+ATD  365    *   6   3   0   *   [RG5,RG6,AR1.AR2.AR3]   (N[RG5](C3(H,N[RG5])),C[RG6](O[NR]),C[RG5,RG6]) &    ; Guanine C5
+ATD  501    *   6   3   0   *   [RG5,RG6,AR1.AR2]       (C[RG5,RG6](N[RG5]),C[RG6],C[RG5](C4))         &    ; CD2 C in Trp
+ATD  595    *   6   3   0   *   [RG5,RG6,AR1.AR2]       (C[RG5,RG6](N[RG5]),C[RG6],C[RG5])             &    ; C9 in indole
+ATD  623    *   6   3   0   *   [RG5,RG6,AR1.AR2]       (N[RG6](C3(N[RG6])),N[RG5](C3(N2)))            &    ; C4 in purine
+ATD  624    *   6   3   0   *   [RG5,RG6,AR1.AR2]       (N[RG5](C3(N[RG5])),C[RG6],C[RG5,RG6])         &    ; C5 in purine
+
+// CK types
+ATD  353    *   6   3   *   *   [RG5,AR1.AR2.AR3] (N3[RG5](C[RG5,RG6](N2[RG6])),N2[RG5](C[RG5,RG6](C[RG6](XE,N[RG6])))) &    ; Adenine & Guanine C8
+ATD  627    *   6   3   *   *   [RG5,AR1.AR2.AR3]       (N2(C[RG5,RG6](C[RG6])),N3)                    &    ; C8  in purine
+
+// CR types
+ATD  506    *   6   3   *   *   [RG5,AR2]               (N2(C3[RG5](C4[NR])),N3(H,C3[RG5]))            &    ; CE1 in HID, HIE
+ATD  506    *   6   3   *   *   [RG5,AR2]               (N2(C3[RG5]),N3(H,C3[RG5](C4[NR])))            &    ; CE1 in HID, HIE
+ATD  509    *   6   3   *   *   [RG5,AR2]               (N3(C3[RG5]),N3[RG5](C3[RG5](C4[NR])))         &    ; CE1 in HIP
+ATD  558    *   6   3   *   *   [RG5,AR1.AR2.AR3]       (N[RG5](C3[RG5]),N3[RG5](C3[RG5]))             &    ; C2  in imidazole
+ATD  572    *   6   3   *   *   [RG5,AR1.AR2.AR3]       (N[RG5](C3[RG5]),O[RG5](C3[RG5]))              &    ; C2  in oxazole
+ATD  634    *   6   3   *   *   [RG5,AR1.AR2.AR3]       (N[RG5](C3[RG5]),S2[RG5](C3[RG5]))             &    ; C2  in thiazole
+// CR    *   6   3   *   *   [RG5,AR1.AR2.AR3]        (N2,N3(H))              &
+
+// CC    *   6   3   0   *   [RG5,AR1.AR2.AR3]        (C3,N3(C3,H))              &
+// CC    *   6   3   0   *   [RG5,AR1.AR2.AR3]        (C3,N2(C3))              &
+
+// CW types
+ATD  508    *   6   3   0   *   [RG5,AR1.AR2.AR3]       (C4,C3,N3(C3,H))                               &    ; CG in HID, CD2 in HIE
+ATD  508    *   6   3   1   *   [RG5,AR1.AR2.AR3]       (C3,N3(C3,H))                                  &    ; CG in HID, CD2 in HIE
+ATD  514    *   6   3   *   *   [RG5,AR1.AR2.AR3]       (C3[RG5](C4,C[RG5,RG6]),N3[RG5])               &    ; CD1 in TRP
+ATD  543    *   6   3   *   *   [RG5,AR1.AR2.AR3]       (C3[RG5](C3[RG5]),N3[RG5](C3[RG5]))            &    ; C2  in pyrrole
+ATD  552    *   6   3   *   *   [RG5,AR1.AR2.AR3]       (C3[RG5],N3[RG5](N[RG5](C3[RG5])))             &    ; C5  in pyrazole
+ATD  561    *   6   3   *   *   [RG5,AR1.AR2.AR3]       (C3[RG5](N[RG5]),N3[RG5](C3[RG5]))             &    ; C5  in imidazole
+ATD  567    *   6   3   *   *   [RG5,AR1.AR2.AR3]       (C3[RG5](C3[RG5]),XA2[RG5](C3[RG5]))           &    ; C2  in furan
+ATD  575    *   6   3   *   *   [RG5,AR1.AR2.AR3]       (C3[RG5](N[RG5]),O[RG5](C3[RG5]))              &    ; C5  in oxazole
+ATD  583    *   6   3   *   *   [RG5,AR1.AR2.AR3]       (C3[RG5],O[RG5](N[RG5](C3[RG5])))              &    ; C5  in isoxazole
+ATD  588    *   6   3   *   *   [RG5,AR1.AR2.AR3]       (C3[RG5](C[RG5,RG6]),N3[RG5])                  &    ; C2  in indole
+ATD  637    *   6   3   *   *   [RG5,AR1.AR2.AR3]       (C3[RG5](N[RG5]),S2[RG5](C3[RG5]))             &    ; C5  in thiazole
+
+// CV types
+ATD  507    *   6   3   0   *   [RG5,AR1.AR2.AR3]       (C4,C3[RG5],N2[RG5](C3[RG5]))                  &    ; CD2 in HID, CG in HIE
+ATD  507    *   6   3   *   *   [RG5,AR1.AR2.AR3]       (C3[RG5],N[RG5](C3[RG5]))                      &    ; CD2 in HID, CG in HIE
+ATD  560    *   6   3   *   *   [RG5,AR1.AR2.AR3]       (C3[RG5](N3[RG5]),N[RG5](C3[RG5]))             &    ; C4  in imidazole
+ATD  574    *   6   3   *   *   [RG5,AR1.AR2.AR3]       (C3[RG5](N3[RG5]),O[RG5](C3[RG5]))             &    ; C4  in oxazole
+ATD  636    *   6   3   *   *   [RG5,AR1.AR2.AR3]       (C3[RG5](N3[RG5]),S2[RG5](C3[RG5]))            &    ; C4  in thiazole
+
+// C* types
+ATD  500    *   6   3   0   *   [RG5,AR1.AR2.AR3]       (C4,C3[RG5](N3(C[RG5,RG6])),C[RG5,RG6])        &    ; CG in Trp
+
+// CQ types
+ATD  347    *   6   3   *   *   [RG6,AR1]  (N2(C[AR2,AR1](N3[AR2])),N[AR1](C[AR1](N[NR],C[AR2,AR1](N2[AR2])))) &    ; Adenine C2
+ATD  621    *   6   3   *   *   [RG6,AR1]  (N[RG6](C[RG5,RG6](N[RG5])),N[RG6](C3[RG6](C[RG5,RG6](N[RG5]))))    &    ; C2  in purine
+ATD  531    *   6   3   *   *   [RG6,AR1.AR2.AR3]       (N[RG6](C3[RG6]),N[RG6](C3[RG6](C3[RG6])))     &    ; C2  in pyrimidine
+ATD  642    *   6   3   *   *   [RG6,AR1.AR2.AR3]       (N2(C3[RG6]),N2(C3[RG6](N2[RG6])))             &    ; C   in 1,3,5-triazine
+
+// CM types
+ATD  227    *   6   3   *   *   [NR,DB]                 (C3,Cl)                                        &    ; chloroalkene C (ClH-C=)
+ATD  141    *   6   3   0   *   [NR,DB]                 (C3,C,C)                                       &    ; alkene C (R2-C=)
+ATD  143    *   6   3   2   *   [NR,DB]                 (C3)                                           &    ; alkene C (H2-C=)
+ATD  142    *   6   3   1   *   [NR,DB]                 (C3,C)                                         &    ; alkene C (RH-C=)
+ATD  323    *   6   3   *   *   [RG6,AR1.AR2.AR3] (C[RG6](O[NR],N[RG6]),C3[RG6](N[RG6](C[RG6](O[NR])))) &    ; Uracil & Thymine C5
+ATD  324    *   6   3   *   *   [RG6,AR1.AR2.AR3]   (N[RG6](C(O[NR],N[RG6])),C3[RG6](C[RG6](O[NR])))   &    ; Uracil & Thymine C6
+ATD  337    *   6   3   1   *   [RG6,AR1.AR2.AR3]   (C[RG6](N[NR],N2[RG6]),C[RG6](N[RG6](C[RG6](O1)))) &    ; Cytosine C5   Nucleotide base parameters:
+ATD  338    *   6   3   1   *   [RG6,AR1.AR2.AR3]   (C[RG6](C[RG6](N[NR],N2[RG6])),N[RG6](C[RG6](O1))) &    ; Cytosine C6      JACS,113,2810(1991)
+ATD  381    *   6   3   1   *   [RG6,AR1.AR2.AR3]   (C[RG6](N[NR],N3[RG6]),C[RG6](N[RG6](C[RG6](O1)))) &    ; CytH+ C5
+ATD  382    *   6   3   1   *   [RG6,AR1.AR2.AR3]   (C[RG6](C[RG6](N[NR],N3[RG6])),N[RG6](C[RG6](O1))) &    ; CytH+ C6
+ATD  518    *   6   3   0   *   [NR]                (C[DB'],O(C(XH)))                                  &    ; vinyl ether RCOR
+ATD  517    *   6   3   *   *   [NR]                (C[DB'],O(C(XH)))                                  &    ; vinyl ether HCOR
+//ATD  708    *   6   3   *   *           &    ; C in Cl..CH3..Cl- TS
+// CM    *   6   3   *   *   [RG6,AR1.AR2.AR3]        (C3,C3(N3(C3(N3(C3))))) &
+// CM    *   6   3   *   *   [RG6,AR1.AR2.AR3]        (C3,N3(C3(N2(C3(C3))))) &
+// CM    *   6   3   *   *   [RG6,AR1.AR2.AR3]        (N3,C3(C3(N3(C3(N3))))) &
+// CM    *   6   3   &
+
+// CA types
+ATD  166    *   6   3   0   *   [RG6,AR1.AR2.AR3]       (O2)                                           &    ; C(OH) phenol  Use with all
+ATD  199    *   6   3   *   *   [RG6,AR1.AR2.AR3]       (O(C4))                                        &    ; C(O,Me): anisole
+ATD  221    *   6   3   0   *   [RG6,AR1.AR2.AR3]       (C(H,H,O(H)))                                  &    ; C(CH2OH)   - benzyl alcohols
+ATD  228    *   6   3   *   *   [RG6,AR1.AR2.AR3]       (S2(C4))                                       &    ; C(SMe)  thioanisole
+ATD  260    *   6   3   0   *   [RG6,AR1.AR2.AR3]       (C2(N1))                                       &    ; C(CN)  benzonitrile
+ATD  263    *   6   3   0   *   [RG6,AR1.AR2.AR3]       (Cl)                                           &    ; C(Cl)  chlorobenzene
+ATD  266    *   6   3   *   *   [RG6,AR1]               (N3[NR](C3[NR](XA1,C4)))                       &    ; ipso C in N-phenylacetamide
+ATD  312    *   6   3   0   *   [RG6,AR1.AR2.AR3] (N[NR],C3[RG6](C3[RG6]),N[RG6](C3[RG6](N[NR],C3[RG6]))) &    ; DAP C2
+ATD  315    *   6   3   1   *   [RG6,AR1.AR2.AR3] (C3[RG6](N[NR],N[RG6](C3[RG6](N[NR],C3[RG6]))),C3[RG6]) &    ; DAP C3
+ATD  317    *   6   3   *   *   [RG6,AR1.AR2.AR3] (C3[RG6](C3[RG6](N[NR])),C3[RG6](C3[RG6](N[RG6],N[NR]))) &   ; DAP C4
+ATD  336    *   6   3   0   *   [RG6,AR1.AR2.AR3]   (N[NR],N2[RG6](C[RG6](O1,N[RG6])),C[RG6](C[RG6]))  &    ; Cytosine C4 parameters: JACS,113,2810(1991)
+ATD  351    *   6   3   0   *   [RG6,AR1.AR2.AR3]       (N[NR],N[RG6],C[RG5,RG6](N[RG5],C[RG5,RG6]))   &    ; Adenine C6
+ATD  362    *   6   3   *   *   [RG6,AR1.AR2.AR3] (N[NR],N[RG6](C[RG6](O)),N[RG6](C[RG5,RG6](N[RG5]))) &    ; Guanine C2
+ATD  380    *   6   3   0   *   [RG6,AR1.AR2.AR3]   (N[NR],N3[RG6](C[RG6](O1,N[RG6])),C[RG6](C[RG6]))  &    ; CytH+ C4
+ATD  457    *   6   3   *   *   [AR1.AR2.AR3]           (XX(O(P(XX,O,O))))                             &    ; Cipso  benzyl methylphosphonate
+ATD  460    *   6   3   *   *   [AR1.AR2.AR3]           (XX(P(O(XX),O,O)))                             &    ; Cipso  methyl benzylphosphonate
+ATD  463    *   6   3   *   *   [AR1.AR2.AR3]           (O(P(O,O,O)))                                  &    ; Cipso C6H5OPO3(2-)  use with #445-#447
+ATD  472    *   6   3   *   *   [RG6,AR1.AR2.AR3]       (XA2(C(XA1)))                                  &    ; Cipso phenyl ester
+ATD  488    *   6   3   0   *   [RG6,AR1.AR2.AR3]       (S(O,O,N3))                                    &    ; benzene C attached to S of sulfonamide
+ATD  521    *   6   3   *   *   [RG6,AR1.AR2.AR3]       (N[RG6](C3[RG6](C3[RG6])),C3[RG6](C3[RG6]))    &    ; C1  in pyridine CHELPG6-31G* charges for 520-619
+ATD  522    *   6   3   *   *   [RG6,AR1.AR2.AR3]       (C3[RG6](N[RG6](C3[RG6])),C3[RG6](C3[RG6]))    &    ; C2  in pyridine CHELPG6-31G* charges for 520-619
+ATD  523    *   6   3   *   *   [RG6,AR1.AR2.AR3]       (C3[RG6](C3[RG6](N[RG6](C3[RG6]))),C3[RG6])    &    ; C3  in pyridine CHELPG6-31G* charges for 520-619
+ATD  528    *   6   3   *   *   [RG6,AR1.AR2.AR3]           (N[RG6],C3[RG6](N[RG6]))                   &    ; C   in pyrazine
+ATD  532    *   6   3   *   *   [RG6,AR1.AR2.AR3]           (N[RG6](C[RG6](N[RG6])),C[RG6](C[RG6]))    &    ; C4  in pyrimidine
+ATD  533    *   6   3   *   *   [RG6,AR1.AR2.AR3]           (C[RG6](N[RG6](C[RG6])),C[RG6](N[RG6]))    &    ; C5  in pyrimidine
+ATD  538    *   6   3   *   *   [RG6,AR1.AR2.AR3]       (N[RG6](N[RG6]),C3[RG6](C3[RG6](C3[RG6])))     &    ; C3  in pyridazine
+ATD  539    *   6   3   *   *   [RG6,AR1.AR2.AR3]       (C3[RG6](N[RG6](N[RG6])),C3[RG6](C3[RG6]))     &    ; C4  in pyridazine
+ATD  551    *   6   3   *   *   [RG5,AR1.AR2.AR3]       (C3[RG5](N[RG5]),C3[RG5](N[RG5]))              &    ; C4  in pyrazole
+ATD  582    *   6   3   *   *   [RG5,AR1.AR2.AR3]       (C3[RG5](O[RG5]),C3[RG5](N[RG5]))              &    ; C4  in isoxazole
+ATD  644    *   6   3   *   *   [RG6,AR1] (C[RG6](O2,C[RG6](C[RG5,RG6](N[RG5]))),C[RG6](C[RG5,RG6](C3[RG5](C3[RG5])))) &    ; C5  in serotonin
+ATD  590    *   6   3   *   *   [RG6,AR1] (C[RG6](C[RG6](C[RG6](C[RG5,RG6](N[RG5])))),C[RG5,RG6](C3[RG5](C3[RG5]))) &    ; C4  in indole
+ATD  591    *   6   3   *   *   [RG6,AR1] (C[RG6](C[RG6](C[RG5,RG6](N[RG5]))),C[RG6](C[RG5,RG6](C3[RG5](C3[RG5])))) &    ; C5  in indole
+ATD  592    *   6   3   *   *   [RG6,AR1] (C[RG6](C[RG5,RG6](N[RG5])),C[RG6](C[RG6](C[RG5,RG6](C3[RG5](C3[RG5]))))) &    ; C6  in indole
+ATD  593    *   6   3   *   *   [RG6,AR1] (C[RG5,RG6](N[RG5]),C[RG6](C[RG6](C[RG6](C[RG5,RG6](C3[RG5](C3[RG5])))))) &    ; C7  in indole
+ATD  604    *   6   3   *   *   [RG6,AR1.AR2.AR3]     (N(C3[2RG6,AR1]),C3[RG6](C3[RG6](C3[2RG6,AR1]))) &    ; C2  in quinoline
+ATD  605    *   6   3   *   *   [RG6,AR1.AR2.AR3]     (C3[RG6](N(C3[2RG6,AR1])),C3[RG6](C3[2RG6,AR1])) &    ; C3  in quinoline
+ATD  606    *   6   3   *   *   [RG6,AR1.AR2.AR3]     (C3[2RG6,AR1],C3[RG6](C3[RG6](N(C3[2RG6,AR1])))) &    ; C4  in quinoline
+ATD  607    *   6   3   *   *   [RG6,AR1.AR2.AR3] (C3[2RG6,AR1](C3[2RG6,AR1](C3[RG6],N[RG6]),C3[RG6]),C3[RG6]) &    ; C5  in quinoline
+ATD  608    *   6   3   *   *   [RG6,AR1]         (C3[RG6](C3[2RG6,AR1](C3[2RG6,AR1](C3[RG6],N[RG6]),C3[RG6]),C3[RG6]),C3[RG6])  &    ; C6  in quinoline
+ATD  609    *   6   3   *   *   [RG6,AR1]         (C3[RG6](C3[2RG6,AR1](N[RG6],C3[2RG6,AR1](C3[RG6],C3[RG6]))),C3[RG6](C3[RG6])) &    ; C7  in quinoline
+ATD  610    *   6   3   *   *   [RG6,AR1]         (C3[2RG6,AR1](N[RG6](C3[RG6]),C3[2RG6,AR1](C3[RG6],C3[RG6])),C3[RG6](C3[RG6])) &    ; C8  in quinoline
+ATD  611    *   6   3   *   *   [2RG6,AR1.AR2.AR3] (N[RG6](C3[RG6](C3[RG6](C3[RG6](C3[2RG6,AR1])))),C3[RG6](C3[RG6](C3[RG6](C3[RG6])))) &    ; C9  in quinoline
+ATD  612    *   6   3   *   *   [2RG6,AR1.AR2.AR3] (C3[RG6](C3[RG6](C3[RG6](C3[RG6]))),C3[RG6](C3[RG6](C3[RG6](N[RG6](C3[2RG6,AR1]))))) &    ; C10 in quinoline
+ATD  625    *   6   3   *   *   [RG6,AR1]               (N[AR1],C[AR1,AR2](N[AR2]))                    &    ; C6  in purine
+ATD  647    *   6   3   *   *   [RG6,AR1.AR2.AR3] (N[RG6](C[2RG6](C[2RG6],C[2RG6](N[RG6],C[2RG6](C[RG6])))),C[RG6](C[RG6])) &    ; C2,C9  in 1,10-phenanthroline
+ATD  648    *   6   3   *   *   [RG6,AR1.AR2.AR3] (C[RG6](N[RG6](C[2RG6](C[2RG6],C[2RG6](N[RG6],C[2RG6](C[RG6]))))),C[RG6]) &    ; C3,C8  in 1,10-phenanthroline
+ATD  649    *   6   3   *   *   [RG6,AR1.AR2.AR3] (C[2RG6](C[RG6](C[RG6]),C[2RG6](N[RG6],C[2RG6](N[RG6],C[2RG6]))),C[RG6](C[RG6])) &    ; C4,C7  in 1,10-phenanthroline
+ATD  650    *   6   3   *   *   [2RG6,AR1.AR2.AR3] (C[2RG6](N[RG6](C[RG6]),C[2RG6](N[RG6](C[RG6]))),C[RG6],C[RG6](C[RG6](C[2RG6](C[RG6])))) &    ; C12,C14 in 1,10-phenanthroline
+ATD  651    *   6   3   *   *   [2RG6,AR1.AR2.AR3] (N[RG6](C[RG6]),C[2RG6](N[RG6](C[RG6]),C[2RG6](C[RG6],C[RG6])),C[2RG6](C[RG6],C[RG6])) &    ; C11,C13 in 1,10-phenanthroline
+ATD  652    *   6   3   *   *   [RG6,AR1.AR2.AR3] (C[2RG6](C[2RG6](N[RG6])),C[RG6](C[2RG6](C[2RG6](N[RG6])))) &    ; C5  in 1,10-phenanthroline
+//ATD  714    *   6   3   *   *   [AR1.AR2.AR3]             &    ; C in C5H5- cyclopentadienyl anion
+//ATD  716    *   6   3   *   *   [AR1.AR2.AR3]             &    ; C in C5H5  cyclopentadienyl radical
+ATD  718    *   6   3   0   *   [AR1.AR2.AR3]           (F,C3(H,C3(H)),C3(H,C3(H,C3(H))))              &    ; C(F) fluorobenzene
+ATD  720    *   6   3   0   *   [AR1.AR2.AR3]           (F,C3(F,C3(F)),C3(F,C3(F,C3(F))))              &    ; C(F)  hexafluorobenzene
+ATD  724    *   6   3   0   *   [AR1.AR2.AR3]           (C(F,F,F))                                     &    ; C(CF3) trifluoromethylbenzene
+ATD  727    *   6   3   0   *   [AR1.AR2.AR3]           (F)                                            &    ; C(F)  difluorobenzenes
+ATD  729    *   6   3   0   *   [AR1.AR2.AR3]           (Br)                                           &    ; C(Br) bromobenzene
+ATD  731    *   6   3   0   *   [AR1.AR2.AR3]           (I)                                            &    ; C(I)  iodobenzene - tentative
+ATD  735    *   6   3   0   *   [AR1.AR2.AR3]           (S(H))                                         &    ; C(S)  thiophenol
+ATD  736    *   6   3   *   *   [RG6,AR1.AR2.AR3]       (C[RG6](C[RG6](C[RG6](C[NR](N3[NR],N[NR])))))  &    ; CG of Benzamidine
+ATD  737    *   6   3   *   *   [RG6,AR1.AR2.AR3]       (C[RG6](C[RG6](C[NR](N3[NR],N[NR]))))          &    ; CD of Benzamidine
+ATD  738    *   6   3   *   *   [RG6,AR1.AR2.AR3]       (C[RG6](C[NR](N3[NR],N[NR])))                  &    ; CE of Benzamidine
+ATD  739    *   6   3   *   *   [RG6,AR1.AR2.AR3]       (C[NR](N3[NR],N[NR]))                          &    ; CZ of Benzamidine
+ATD  768    *   6   3   0   *   [RG6,AR1.AR2.AR3]       (N3(O1,O1))                                    &    ; C(NO2) nitrobenzene
+ATD  918    *   6   3   0   *   [RG6,AR1]               (C[AR1](C[AR1]),N3[NR](C4,C4),C[AR1](C[AR1]))  &    ; C(NH2) N,N-dimethylaniline
+ATD  917    *   6   3   0   *   [RG6,AR1]               (C[AR1](C[AR1]),N3[NR](C4),C[AR1](C[AR1]))     &    ; C(NH2) N-methylaniline
+ATD  916    *   6   3   0   *   [RG6,AR1]               (C[AR1](C[AR1]),N3[NR],C[AR1](C[AR1]))         &    ; C(NH2) aniline
+ATD  145    *   6   3   *   *   [RG6,AR1.AR2.AR3]           &    ; Benzene C - 12 site JACS,112,4768-90. Use #145B for biphenyl
+// CA    *   6   3   *   *   *                        (N3,N3,N3)              &
+ATD  752    *   6   3   0   *   [NR]                    (N3[NR],N3[NR],N2[NR])                         &    ; CZ of neutral ARG
+ATD  302    *   6   3   0   *   [NR]                    (N3[NR],N3[NR],N3[NR])                         &    ; C: guanidinium C+ (Arg CZ)
+ATD  742    *   6   3   *   *   [NR]                    (C[RG6,AR1.AR2.AR3],N3[NR],N[NR])              &    ; C+ of Benzamidine
+ATD  147    *   6   3   0   *   [2RG6,AR1.AR2.AR3]   &    ; Naphthalene fusion C (C9)
+
+// CS types
+ATD  544    *   6   3   *   *   [RG5,AR1.AR2.AR3]       (C3[RG5](N[RG5](C3[RG5])),C3[RG5])             &    ; C3  in pyrrole
+ATD  568    *   6   3   *   *   [RG5,AR1.AR2.AR3]       (C3[RG5](XA2[RG5](C3[RG5])),C3[RG5])           &    ; C3  in furan
+ATD  589    *   6   3   *   *   [RG5,AR1.AR2.AR3]       (C3[RG5](N[RG5](C[RG5,RG6])),C[RG5,RG6])       &    ; C3  in indole
+
+// CU types
+ATD  550    *   6   3   *   *   [RG5,AR1.AR2.AR3]       (N[RG5](N3[RG5](C3[RG5])),C3[RG5])             &    ; C3  in pyrazole
+ATD  581    *   6   3   *   *   [RG5,AR1.AR2.AR3]       (N[RG5](O[RG5](C3[RG5])),C3[RG5])              &    ; C3  in isoxazole
+
+// CX types
+ATD  510    *   6   3   *   *   [RG5,AR1.AR2.AR3]       (C3(N3(H)),N3(H))                              &    ; CG, CD2 in HIP
+
+// C! types
+ATD  145B   *   6   3   0   *   [AR1.AR2.AR3]     (C[SB',AR1.AR2.AR3](C[AR1.AR2.AR3],C[AR1.AR2.AR3]))  &    ; Biphenyl C1
+
+// C= types
+ATD  150    *   6   3   1   *   [NR]                   (C3[SB',NR](C[DB']),C[DB'])                     &    ; diene =CH-CH= ; use #178 for =CR-CR=
+ATD  178    *   6   3   0   *   [NR]                   (C3[SB',NR](C[DB']),C[DB'])                     &    ; diene =CR-CR= ; use #150 for =CH-CH=
+
+// C    6    3    mop-up
+ATD  141    *   6   3   &
+
+// CZ types
+ATD  261    *   6   2   0   *   [TB]                    (C[AR1],N1)                                    &    ; C(N)   benzonitrile
+ATD  423    *   6   2   0   *   *                       (N[MI])                                        &    ; C2 in  CH2CN-   JACS 111,4190 (89)
+ATD  754    *   6   2   0   *   [TB]                    (N1,C4)                                        &    ; C IN RCN  nitriles
+ATD  925    *   6   2   1   *   [TB]    &    ; alkyne RC%CH terminal C   acetylene
+ATD  927    *   6   2   0   *   [TB]                    (C4(H,H),C2(H))                                &    ; alkyne RC%CH C2 R-with 2 or 3 H
+ATD  928    *   6   2   0   *   [TB]                    (C4(H),C2(H))                                  &    ; alkyne RC%CH C2 R-with 1 H
+ATD  929    *   6   2   0   *   [TB]                    (C4,C2(H))                                     &    ; alkyne RC%CH C2 R-with no H or R=Phenyl
+ATD  929    *   6   2   0   *   [TB]                    (C[AR1.AR2.AR3],C2(H))                         &    ; alkyne RC%CH C2 R-with no H or R=Phenyl
+ATD  931    *   6   2   0   *   [TB]                    (C4,C2(C))                                     &    ; alkyne RC%CR
+
+// C    6    2    mop-up
+ATD  261    *   6   2   &
+
+// Oxygen types
+// O_3 types
+ATD  269    *   8   1   *   *   *                       (C3(O2(H)))                                    &    ; Oc in CCOOH, R in RCOOH is neutral ; use #135-#140
+
+// O_2 types
+ATD  278    *   8   1   *   *   [DB]                    (C(H))                                         &    ; O: aldehyde
+ATD  466    *   8   1   *   *   [DB]                    (C(O2(C)))                                     &    ; =O:  esters
+ATD  281    *   8   1   *   *   [DB]                    (C3(C,C))                                      &    ; O: ketone
+
+// O2 types
+ATD  272    *   8   1   *   *   *                       (C(O))                                         &    ; O: O in COO- carboxylate,peptide terminus
+ATD  441    *   8   1   *   *   *                       (P(O(XX),O(XX),O))                             &    ; O= in Me2PO4-, Me2PO4H
+ATD  446    *   8   1   *   *   *                       (P(O(XX),O,O))                                 &    ; O= in MeOPO3--, MeOPO3H2
+ATD  451    *   8   1   *   *   *                       (P(XX,O(XX),O))                                &    ; O= in MePO3Me-, MePO3HMe
+// O2    *   8   1   *   *   *                         (P)              &
+
+// O types
+ATD  326    *   8   1   *   *   [NR] (C[RG6,AR1.AR2.AR3](N[RG6](C[RG6](C[RG6])),N[RG6](C[RG6](O[NR]))))  &    ; Uracil O-C2
+ATD  328    *   8   1   *   *   [NR] (C[RG6,AR1.AR2.AR3](N[RG6](C[RG6](O[NR],N[RG6])),(C[RG6](C[RG6])))) &    ; Uracil O-C4
+ATD  340    *   8   1   *   *   [NR]                   (C[RG6](N2[RG6](C(C[RG6])),N[RG6](C[RG6])))     &    ; Cytosine O-C2
+ATD  370    *   8   1   *   *   [NR] (C[RG6](N[RG6](C3(N[NR],N2(C[RG5,RG6](N3[RG5])))),C[RG5,RG6](N2[RG5]))) &    ; Guanine O-C6
+ATD  384    *   8   1   *   *   [NR]                 (C[RG6](N3[RG6](C(N[NR],C[RG6])),N[RG6](C[RG6]))) &    ; CytH+ O-C2
+ATD  771    *   8   1   *   *   [NR]                   (C3(XA[RG5](C4[RG5](C4[NR],C4[RG5])),XA[RG5]))  &    ; propylene carbonate O (Luciennes param.)
+ATD  788    *   8   1   *   *   [NR]                   (N(O,O))                                        &    ; O in NO3-
+ATD  248    *   8   1   *   *   [DB,NR]                (C(N3,N3))                                      &    ; O in O=C(NH2)2  Urea Isr. J. Chem. 33, 323 (93)
+ATD  236    *   8   1   *   *   [DB,NR]                (C3(N3))                                        &    ; O: C=O in amide.   Acyl R on C in amide is neutral -
+ATD  253    *   8   1   *   *   *                      (C3(N3(C3(O1))))                                &    ; O   in imide
+ATD  954    *   8   1   *   *   [NR]                   (C3(O,C4(H,H,N4(H,H,H))))                       &    ; glycine zwit. 6-31G* CHELPG charges
+// O     *   8   1   *   *   *                         (C)                     &
+// O     *   8   1   *   *   *                         (S)                     &
+
+// ON types
+ATD  761    *   8   1   *   *   *                      (N(C,O1))                                       &    ; O in nitro R-NO2
+
+// OW types
+ATD  795    *   8   2   2   &    ; O TIP4F Water
+
+// OS types
+ATD  179    *   8   2   *   *   *                      (C4,C3[RG6,AR1.AR2.AR3])                        &    ; O: anisole
+ATD  186    *   8   2   *   *   *                      (C,C4(XE(C)))                                   &    ; O: acetal ether
+ATD  186    *   8   2   *   *   *                      (C4,C4(XA(H)))                                  &    ; O: acetal ether
+ATD  442    *   8   2   *   *   *                      (XX4,P(O(XX4),O,O))                             &    ; OMe in Me2PO4-, Me2PO4H   dimethylphosphate
+ATD  447    *   8   2   *   *   *                      (XX4,P(O,O,O))                                  &    ; OMe in MeOPO3--, MeOPO3H2  methyl phosphate
+ATD  452    *   8   2   *   *   *                      (XX4,P(XX4,O,O))                                &    ; OMe in MePO3Me-, MePO3HMe  methyl methyl phosphate
+ATD  467    *   8   2   *   *   [NR]                   (C[NR],C3[NR](XA1))                             &    ; -OR: alkyl ester
+ATD  473    *   8   2   *   *   [NR]                   (C[AR1.AR2.AR3],C3[NR](XA1))                    &    ; -OR: phenyl ester
+ATD  566    *   8   2   *   *   [RG5,AR1.AR2.AR3]      (C3[RG5](C3[RG5]),C3[RG5](C3[RG5]))             &    ; O in furan
+ATD  571    *   8   2   *   *   [RG5,AR1.AR2.AR3]      (C3[RG5](N3[RG5]),C3[RG5](C3[RG5]))             &    ; O in oxazole
+ATD  579    *   8   2   *   *   [RG5,AR1.AR2.AR3]      (N[RG5](C3[RG5]),C3[RG5](C3[RG5]))              &    ; O in isoxazole
+ATD  773    *   8   2   *   *   [RG5]                  (C3(O1,O[RG5](C4[RG5])),C4[RG5])                &    ; propylene carbonate OS
+ATD  180    *   8   2   *   *   *                      (C4,C4)                                         &    ; O: dialkyl ether
+// ATD  395    *   8   2   *   *   *                      (P(O,O,O))                                      &    ; O(-) dimethylphosphate anion
+ATD  441    *   8   2   *   *   *                      (P(O(XX),O(XX),O))                              &    ; O(-) dimethylphosphate anion
+ATD  446    *   8   2   *   *   *                      (P(O(XX),O,O))                                  &    ; O(-) dimethylphosphate anion
+
+// OH types
+ATD  162    *   8   2   *   *   *                      (C4(C(F,F,F)))                                  &    ; OH  Trifluoroethanol
+ATD  167    *   8   2   *   *   *                      (C[AR1.AR2.AR3])                                &    ; O  phenol  atom C, H 145 & 146
+ATD  171    *   8   2   *   *   *                      (C4(C4(O2),C4(O2)))                             &    ; O: triols
+ATD  171    *   8   2   *   *   *                      (C4(C4(O2,C4(O2))))                             &    ; O: triols
+ATD  169    *   8   2   *   *   *                      (C4(C4(O2)))                                    &    ; O: diols
+ATD  187    *   8   2   1   *   *                      (C4(XE(C)))                                     &    ; O(H): hemiacetal
+ATD  268    *   8   2   1   *   *                      (C3(O),H)                                       &    ; Oh in CCOOH R in RCOOH is neutral; use #135-#140
+ATD  420    *   8   2   0   *   [MI]                   (C4)                                            &    ; O  in  CH3O-
+ATD  434    *   8   2   1   *   [MI]                   &    ; O in OH-  Hyroxide O-H = 0.953 A
+ATD  154    *   8   2   1   *   *                      (C4)                                            &    ; all-atom O: mono alcohols
+
+// OU types
+ATD  437    *   8   1   *   *   *                      (U)                                             &    ; O in UO2+ r(U-O) = 1.80 A
+
+// OY types
+ATD  475    *   8   *   *   *   *                      (S(N3,O1))                                      &    ; O in sulfonamide, S(=O)2(OR)
+ATD  494    *   8   1   *   *   *                      (S4(O1,C))                                      &    ; O in sulfone
+ATD  497    *   8   1   *   *   *                      (S3(C,C))                                       &    ; sulfoxide - all atom
+
+// O mop-up
+ATD  272    *   8   1   &        ; Default for O types.
+ATD  154    *   8   2   1   &    ; Anything else that makes OH
+ATD  180    *   8   2   &        ; Default for all other oxygens
+
+// Sulfur types
+// SH types
+ATD  734    *  16  2   1   *   *                       (C[AR1.AR2.AR3])                                &    ; all-atom S: thiophenol (HS is #204)
+ATD  417    *  16  2   1   *   *                       (C(H,H,H))                                      &    ; S  in  CH3S-
+ATD  200    *  16  2   1   *   *                       (C)                                             &    ; all-atom S: thiols
+ATD  201    *  16  2   2   &    ; S   IN H2S  JPC,90,6379 (1986)
+
+// S types
+ATD  222    *  16  2   0   *   *                       (C3[RG6,AR1.AR2.AR3],C4)                        &    ; S in thioanisoles
+ATD  202    *  16  2   0   *   [DB]                    (C[DB])                                         &    ; all-atom S: sulfides, S=C
+ATD  202    *  16  2   0   *   *                       (C,C)                                           &    ; all-atom S: sulfides, S=C
+ATD  203    *  16  2   0   *   *                       (C,S)                                           &    ; all-atom S: disulfides
+ATD  633    *  16  2   0   *   [RG5,AR1.AR2.AR3]       (C3[RG5](N3[RG5]),C3[RG5](C3[RG5]))             &    ; S   in thiazole
+// SO    *   16  4   &
+
+// SY types
+ATD  474    *  16  4   *   *   *                       (C,O1,O1,N3)                                    &    ; S in sulfonamide, S(=O)2(OR)
+
+// SY2 types
+ATD  493    *  16  4   *   *   *                       (C4,O,O,C4)                                     &    ; S in sulfone
+
+// SZ types
+ATD  496    *  16  3   *   *   *                       (C4,C4,O1)                                      &    ; sulfoxide - all atom
+
+// S mop-up
+ATD  200    *  16  2   1   &    ; Anything else that makes SH
+ATD  202    *  16  2   &        ; Anything else that makes -S-
+ATD  474    *  16  &            ; Default all other S
+
+// Nitrogen types
+// NB types
+ATD  511    *   7   2   0   *   [RG5,AR2]              (C3(H),C3(H))                                   &    ; NE in HID, ND in HIE
+ATD  511    *   7   2   0   *   [RG5,AR2]              (C3(H),C3(C4))                                  &    ; NE in HID, ND in HIE
+ATD  352    *   7   2   0   *   [RG5,AR1.AR2.AR3] (C[RG5](N3(C[RG5,RG6](N2[RG6]))),C[RG5,RG6](C[RG6](XE,N[RG6]))) &    ; Adenine & Guanine N7
+ATD  549    *   7   2   *   *   [RG5,AR1.AR2.AR3]      (N3[RG5](C3[RG5]),C3[RG5](C3[RG5]))             &    ; N2 in pyrazole
+ATD  559    *   7   2   *   *   [RG5,AR1.AR2.AR3]      (C3[RG5](N3[RG5]),C3[RG5](C3[RG5]))             &    ; N3 in imidazole
+ATD  573    *   7   2   *   *   [RG5,AR1.AR2.AR3]      (C3[RG5](O[RG5]),C3[RG5](C3[RG5]))              &    ; N in oxazole
+ATD  580    *   7   2   *   *   [RG5,AR1.AR2.AR3]      (O[RG5](C3[RG5]),C3[RG5](C3[RG5]))              &    ; N in isoxazole
+ATD  626    *   7   2   0   *   [RG5,AR1.AR2.AR3] (C[RG5](N3(C[RG5,RG6](N2[RG6]))),C[RG5,RG6](C[RG6](N[RG6]))) &    ; N7 in purine
+ATD  635    *   7   2   *   *   [RG5,AR1.AR2.AR3]      (C3[RG5](S2[RG5]),C3[RG5](C3[RG5]))             &    ; N in thiazole
+ATD  542    *   7   2   *   *   [RG5,AR1.AR2.AR3]      (C3[RG5](C3[RG5]),C3[RG5](C3[RG5]))             &    ; N in pyrrole
+
+// NC types
+ATD  311    *   7   2   *   *   [RG6,AR1.AR2.AR3] (C3[RG6](C3[RG6](C3[RG6]),N[NR]),C3[RG6](C3[RG6],N[NR])) &    ; DAP N1   (Diaminopyridine)
+ATD  335    *   7   2   0   *   [RG6,AR1.AR2.AR3]   (C[RG6](O1,N[RG6](C[RG6])),C[RG6](N[NR],C[RG6]))   &    ; Cytosine N3
+ATD  346    *   7   2   *   *   [RG6,AR1] (C3(N2(C[AR2,AR1](N3[AR2]))),C3(N[NR],C[AR2,AR1](N2[AR2])))  &    ; Adenine N1
+ATD  348    *   7   2   *   *   [RG6,AR1] (C[AR2,AR1](N3[AR2]),C3(N[AR1](C[AR1](N[NR],C[AR2,AR1](N2[AR2]))))) &    ; Adenine N3
+ATD  363    *   7   2   *   *   [RG6,AR1.AR2.AR3] (C[RG5,RG6](N3[RG5]),C3(N[NR],N[RG6](C[RG6](O1,C[RG5,RG6](N2[RG5]))))) &    ; Guanine N3
+ATD  520    *   7   2   *   *   [RG6,AR1.AR2.AR3]         (C3[RG6](C3[RG6](C3[RG6])),C3[RG6](C3[RG6])) &    ; N in pyridine 6-31G*
+ATD  527    *   7   2   *   *   [RG6,AR1.AR2.AR3]         (C3[RG6](C3[RG6](N[RG6])),C3[RG6](C3[RG6]))  &    ; N in pyrazine
+ATD  530    *   7   2   *   *   [RG6,AR1.AR2.AR3]         (C[RG6](N[RG6](C[RG6])),C[RG6](C[RG6]))      &    ; N in pyrimidine
+ATD  537    *   7   2   *   *   [RG6,AR1.AR2.AR3]         (C3[RG6](C3[RG6](C3[RG6])),N[RG6](C3[RG6]))  &    ; N in pyridazine
+ATD  603    *   7   2   *   *   [RG6,AR1.AR2.AR3] (C3[RG6](C3[RG6](C3[RG6](C[2RG6,AR1]))),C[2RG6,AR1](C[AR1](C[AR1](C[AR1](C[AR1]))))) &    ; N1 in quinoline
+ATD  620    *   7   2   *   *   [RG6,AR1] (C[RG6](C[RG5,RG6](N[RG5])),C[RG6](N[RG6](C[RG5,RG6](N[RG5]))))     &    ; N1 in purine
+ATD  622    *   7   2   *   *   [RG6,AR1] (C[RG5,RG6](N[RG5]),C[RG6](N[RG6](C[RG6](C[RG5,RG6](N[RG5])))))     &    ; N3 in purine
+ATD  641    *   7   2   *   *   [RG6,AR1.AR2.AR3]         (C3[RG6](N2[RG6]),C3[RG6](N2[RG6](C3[RG6]))) &    ; N in 1,3,5-triazine
+ATD  646    *   7   2   *   *   [RG6,AR1.AR2.AR3] (C[2RG6](C[2RG6](N[RG6],C[2RG6]),C[2RG6]),C[RG6](C[RG6](C[RG6]))) &    ; N1,N10 in 1,10-phenanthroline
+
+// N2 types
+ATD  300    *   7   3   2   *   [NR]                   (C3(N,N3(C)))                                   &    ; N: guanidinium NH2
+ATD  303    *   7   3   1   *   [NR]                   (C3(N3,N3),C)                                   &    ; N: guanidinium NHR
+ATD  313    *   7   *   *   *   [NR] (C[RG6,AR1.AR2.AR3](C3[RG6](C3[RG6]),N[RG6](C3[RG6](N[NR],C3[RG6])))) &    ; DAP N-amine
+ATD  341    *   7   3   *   *   [NR]       (C[RG6](N2[RG6](C[RG6](O1,N[RG6])),C[RG6](C[RG6])))         &    ; Cytosine N-C4
+ATD  356    *   7   3   *   *   [NR] (C[AR1](N[AR1](C3(N2(C[RG5,AR1](N3[RG5])))),C[RG5,AR1](N2[RG5]))) &    ; Adenine & Guanine N-C6
+ATD  368    *   7   3   *   *   [NR] (C[RG6](N2(C[RG5,RG6](N3[RG5])),N[RG6](C[RG6](O1,C[RG5,RG6](N2[RG5]))))) &    ; Guanine N-C2
+ATD  386    *   7   *   *   *   [NR]       (C[RG6](N3[RG6](C[RG6](O1,N[RG6])),C[RG6](C[RG6])))         &    ; CytH+ N-C4
+ATD  743    *   7   3   2   *   [NR]                   (C(C[AR1.AR2.AR3],N))                           &    ; N-H2 of Benzamidine
+// N2    *   7   3   *   *   [NR]                      (XX[AR1.AR2.AR3])        &    
+
+// NO types
+ATD  767    *   7   3   0   *   [NR]                   (C[AR1.AR2.AR3],O1,O1)                          &    ; N in nitro Ar-NO2
+ATD  760    *   7   3   0   *   *                      (C,O1,O1)                                       &    ; N in nitro R-NO2
+
+// N* types
+ATD  319B   *   7   3   0   *   [RG6,AR1.AR2.AR3] (C(O[NR],N[RG6](C[RG6](O[NR]))),C[RG6](C[RG6]),C4(O2,C4(O2)))    &    ; Uracil & Thymine N1 - only for nucleoside
+ATD  333B   *   7   3   0   *   [RG6,AR1.AR2.AR3] (C[RG6](O1,N2[RG6](C[RG6](N[NR]))),C[RG6](C[RG6]),C4(O2,C4(O2))) &    ; Cytosine N1 - for nucleoside
+ATD  333B   *   7   3   0   *   [RG6,AR1.AR2.AR3] (C[RG6](O1,N2[RG6](C[RG6](H))),C[RG6](C[RG6]),C4(O2,C4(O2)))     &    ; Zebularine N1 - for nucleoside
+ATD  354B   *   7   3   0   *   [RG5,AR1.AR2.AR3] (C[RG5,RG6](N2[RG6]),C4(O2,C4(O2)),C[RG5](N2[RG5]))  &    ; Adenine & Guanine N9 - nucleoside only
+ATD  377B   *   7   3   *   *   [RG6,AR1.AR2.AR3] (C[RG6](O1,N3[RG6](C[RG6](N[NR]))),C[RG6](C[RG6]),C4(O2,C4(O2))) &    ; CytH+ N1 - nucleoside only
+
+// NA types
+ATD  319    *   7   3   *   *   [RG6,AR1.AR2.AR3] (C[RG6](O[NR],N[RG6](C[RG6](O[NR]))),C[RG6](C[RG6])) &    ; Uracil & Thymine N1 - use #319B for nucleoside
+ATD  321    *   7   3   1   *   [RG6,AR1.AR2.AR3] (C[RG6](O[NR],N[RG6](C[RG6](C[RG6]))),C[RG6](O[NR])) &    ; Uracil & Thymine N3
+ATD  333    *   7   3   *   *   [RG6,AR1.AR2.AR3]   (C[RG6](O1,N2[RG6](C[RG6](N[NR]))),C[RG6](C[RG6])) &    ; Cytosine N1 -use #333B for nucleoside
+ATD  354    *   7   3   *   *   [RG5,AR1.AR2.AR3] (C[RG5,RG6](N2[RG6]),C[RG5](N2[RG5](C[RG5,RG6](C[RG6](XE[NR]))))) &    ; Adenine & Guanine N9 - use #354B for nucleoside
+ATD  361    *   7   3   *   *   [RG5,AR1.AR2.AR3]      (C(N[NR],N[RG6]),C(O[NR],C[RG5,RG6](N2)))       &    ; Guanine N1
+ATD  377    *   7   3   *   *   [RG6,AR1.AR2.AR3]   (C[RG6](O1,N3[RG6](C[RG6](N[NR]))),C[RG6](C[RG6])) &    ; CytH+ N1 Use #377B for nucleoside.
+ATD  379    *   7   3   *   *   [RG6,AR1.AR2.AR3]   (C[RG6](N[NR],C[RG6]),C[RG6](O1,N[RG6](C[RG6])))   &    ; CytH+ N3 Protonated cytosine.
+ATD  503    *   7   3   1   *   [RG5,AR1.AR2.AR3]      (C[RG5,RG6],C3[RG5](C3[RG5](C4,C[RG5,RG6])))    &    ; NE in Trp
+ATD  512    *   7   3   1   *   [RG5,AR1.AR2.AR3]      (C3(N3[RG5]),C3(C3,C4))                         &    ; N in HIP
+ATD  512    *   7   3   1   *   [RG5,AR1.AR2.AR3]      (C3(N3[RG5]),C3(C3(C4)))                        &    ; N in HIP
+ATD  542    *   7   3   *   *   [RG5,AR1.AR2.AR3]      (C3[RG5](C3[RG5]),C3[RG5](C3[RG5]))             &    ; N in pyrrole
+ATD  548    *   7   3   *   *   [RG5,AR1.AR2.AR3]      (N[RG5](C3[RG5]),C3[RG5](C3[RG5]))              &    ; N1 in pyrazole
+ATD  557    *   7   3   *   *   [RG5,AR1.AR2.AR3]      (C3[RG5](N[RG5]),C3[RG5](C3[RG5]))              &    ; N1 in imidazole
+ATD  587    *   7   3   *   *   [RG5,AR1.AR2.AR3]      (C3[RG5](C3[RG5](C[RG5,RG6])),C[RG5,RG6])       &    ; N1 in indole
+ATD  628    *   7   3   *   *   [RG5,AR1.AR2.AR3]      (C[RG5,RG6](N2[RG6]),C[RG5](N2[RG5]))           &    ; N9 in purine
+
+// N types
+ATD  251    *   7   3   *   *   *                      (C3(XA1),C3(XA1))                               &    ; N   in imide
+ATD  249    *   7   3   2   *   [NR]                   (C3[NR](O1,N(H,H)))                             &    ; N in O=C(NH2)2  Urea Isr. J. Chem. 33, 323 (93)
+ATD  265    *   7   3   1   *   [NR]                   (C[AR1.AR2.AR3],C3(XA1,C4))                     &    ; N: N-phenylacetamide
+ATD  478    *   7   3   2   *   *                      (C,S(O1,O1))                                    &    ; N: primary amide of sulfonamide
+ATD  480    *   7   3   1   *   *                      (C,C,S(O1,O1))                                  &    ; N secondary amide of sulfonamide
+ATD  237    *   7   3   2   *   *                      (C3(O1))                                        &    ; N: primary amide.  use alkane parammeters.
+ATD  238    *   7   3   1   *   *                      (C3(O1),C)                                      &    ; N: secondary amide, peptide bond (see #279 for formyl H)
+ATD  239    *   7   3   0   *   *                      (C3(O1),C,C)                                    &    ; N: tertiary amide, Pro in peptide bond
+ATD  787    *   7   3   *   *   *                      (O,O,O)                                         &    ; N in NO3-
+
+// N3 types
+ATD  953    *   7   4   3   *   *                      (C4(C(O1,O),H,H,H))                             &    ; glycine zwit. 6-31G* CHELPG charges
+ATD  286    *   7   4   4   &    ; N (NH4+) JPC,90,2174 (1986)
+ATD  287    *   7   4   3   &    ; N (RNH3+) JPC,90,2174 (1986)
+ATD  288    *   7   4   0   &    ; N (R4N+)  JPC,90,2174 (1986)
+ATD  309    *   7   4   2   &    ; N (R2NH2+), N-terminal PRO NH2+
+ATD  427    *   7   4   1   *   *                      (C(H,H,H))                                      &    ; N  in  CH3NH-
+ATD  940    *   7   4   1   &    ; N (R3NH+)
+
+// NY types
+ATD  749    *   7   3   1   *   [NR]                   (C[NR],C3[NR](N2[NR],N3[NR]))                   &    ; NE of neutral ARG
+ATD  751    *   7   3   2   *   [NR]                   (C3[NR](N3[NR](C[NR]),N2[NR]))                  &    ; N2 of neutral ARG (H2N-CZ)
+
+// NZ types
+ATD  262    *   7   1   0   *   [TB]                   (C(C[RG6,AR1.AR2.AR3]))                         &    ; N      benzonitrile
+ATD  424    *   7   1   0   *   [MI]             &    ; N  in  CH2CN-
+ATD  750    *   7   2   1   *   [DB,NR]                (C3[NR](N3[NR](C[NR]),N3[NR]))                  &    ; N1 of neutral ARG (HN=CZ)
+ATD  753    *   7   1   0   *   [TB]                   (C(C4))                                         &    ; N IN RCN  nitriles
+
+// NT types
+ATD  902    *   7   3   *   *   *                      (C4,C4,C4)                                      &    ; N tertiary  amines
+ATD  901    *   7   3   *   *   *                      (C4,C4)                                         &    ; N secondary amines, aziridine N1
+ATD  900    *   7   3   *   *   *                      (C4)                                            &    ; N primary   amines
+
+// N types mop-up
+ATD  300    *   7   3   2   *   *                      (C3(N,N3(C)))                                   &    ; N: in ring NH2
+ATD  303    *   7   3   1   *   *                      (C3(N3,N3),C)                                   &    ; N: in ring NHR
+ATD  237    *   7   3   2   &    ; Default -NH2
+ATD  238    *   7   3   1   &    ; Default -N(H)-
+ATD  239    *   7   3   0   &    ; Default -N(-)-
+ATD  750    *   7   2   &        ; Default -N-
+ATD  753    *   7   1   &        ; Default N-
+
+
+// Phosphorous types
+// P types
+ATD  440    *  15   4   0   *   *                      (O(XX4),O(XX4),O,O)                             &    ; P in  Me2PO4-, Me2PO4H
+ATD  445    *  15   4   0   *   *                      (O(XX4),O,O,O)                                  &    ; P  in MeOPO3--, MeOPO3H2
+ATD  450    *  15   4   0   *   *                      (C4,O(XX4),O,O)                                 &    ; P  in MePO3Me-, MePO3HMe
+ATD  785    *  15   6   0   *   *                      (F,F,F,F,F,F)                                   &    ; P in PF6-
+
+// P+ types
+ATD  781    *  15   4   *   *   [PL]             &    ; phosphonium R4P+
+
+
+// Hydrogen types
+// H3 types
+ATD  941    *   1   1   *   *   *                      (N4(C,C,C))                                     &    ; H (R3NH+)
+ATD  310    *   1   1   *   *   *                      (N4(C,C))                                       &    ; H (R2NH2+)
+ATD  955    *   1   1   *   *   *                      (N4(C(H,H,C3(O1,O))))                           &    ; glycine zwit. 6-31G* CHELPG charges
+ATD  290    *   1   1   *   *   *                      (N4(C))                                         &    ; H (RNH3+) JPC,90,2174 (1986)
+ATD  289    *   1   1   *   *   *                      (N4)                                            &    ; H (NH4+)  JPC,90,2174 (1986)
+ATD  304    *   1   1   *   *   *                      (N3[NR](C3[NR](N3[NR],N[NR]),C))                &    ; H: guanidinium NHR
+ATD  301    *   1   1   *   *   *                      (N3[NR](C3[NR](N[NR],N3[NR](C[NR]))))           &    ; H: guanidinium NH2
+
+// H types
+ATD  240    *   1   1   *   *   *                      (N3(C3(O1,C),H))                                &    ; H on N: primary amide
+ATD  241    *   1   1   *   *   *                      (N3(C3(O1),C))                                  &    ; H on N: secondary amide
+ATD  250    *   1   1   *   *   *                      (N3[NR](C3[NR](O1,N3[NR])))                     &    ; H in O=C(NH2)2  Urea
+ATD  254    *   1   1   *   *   *                      (N3(C3(O1,C),C3(O1,C)))                         &    ; H(N) in imide
+ATD  314    *   1   1   *   *   * (N[NR](C[RG6,AR1.AR2.AR3](C3[RG6](C3[RG6]),N[RG6](C3[RG6](N[NR],C3[RG6]))))) &    ; DAP H-amine
+ATD  325    *   1   1   *   *   * (N[RG6,AR1.AR2.AR3](C[RG6](O[NR],N[RG6](C[RG6](O[NR]))),C[RG6](C[RG6]))) &    ; Uracil & Thymine H-N1
+ATD  327    *   1   1   *   *   * (N[RG6,AR1.AR2.AR3](C[RG6](O[NR],N[RG6](C[RG6](C[RG6]))),C[RG6](O[NR]))) &    ; Uracil H-N3
+ATD  339    *   1   1   *   *   *  (N[RG6,AR1.AR2.AR3](C[RG6](O1,N[RG6](C[RG6](N[NR]))),C[RG6](C[RG6]))) &    ; Cytosine H-N1
+ATD  342    *   1   1   *   *   *  (N[NR](C[RG6,AR1.AR2.AR3](N2[RG6](C[RG6](O1,N[RG6]))),C[RG6](C[RG6]))) &    ; Cytosine H-NC4/N3
+ATD  343    *   1   1   *   *   *  (N[NR](C[RG6,AR1.AR2.AR3](N2[RG6](C[RG6](O1,N[RG6]))),C[RG6](C[RG6]))) &    ; Cytosine H-NC4/C5
+ATD  357    *   1   1   *   *   *                      (N[NR](C[AR1](C[RG5,AR1](N[RG5]),N[AR1])))      &    ; Adenine & Guanine H-NC6/N1
+ATD  358    *   1   1   *   *   *                      (N[NR](C[AR1](C[RG5,AR1](N[RG5]),N[AR1])))      &    ; Adenine & Guanine H-NC6/C5
+ATD  360    *   1   1   *   *   *                      (N[RG5](C[RG5,RG6](N[RG6]),C[RG5](N[RG5])))     &    ; Adenine & Guanine H-N9 Guanine
+ATD  367    *   1   1   *   *   *                      (N[RG6](C[RG6](N[NR]),C[RG6](C[RG5,RG6])))      &    ; Guanine H-N1
+ATD  369    *   1   1   *   *   *                      (N[NR](C[RG6](N,N(C[RG5,RG6]))))                &    ; Guanine H-NC2
+ATD  383    *   1   1   *   *   *  (N[RG6,AR1.AR2.AR3](C[RG6](O1,N3[RG6](C[RG6](N[NR]))),C[RG6](C[RG6]))) &    ; CytH+ H-N1
+ATD  385    *   1   1   *   *   *  (N3[RG6,AR1.AR2.AR3](C[RG6](N[NR],C[RG6]),C[RG6](O1,N[RG6](C[RG6]))))  &    ; CytH+ H-N3
+ATD  387    *   1   1   *   *   *  (N[NR](C[RG6,AR1.AR2.AR3](N3[RG6](C[RG6](O1,N[RG6]))),C[RG6](C[RG6]))) &    ; CytH+ H-NC4/N3
+ATD  388    *   1   1   *   *   *  (N[NR](C[RG6,AR1.AR2.AR3](N3[RG6](C[RG6](O1,N[RG6]))),C[RG6](C[RG6]))) &    ; CytH+ H-NC4/C5
+ATD  428    *   1   1   *   *   *                      (N[MI])                                         &    ; HN in  CH3NH-
+ATD  481    *   1   1   *   *   *                      (N3(C,C,S(O1,O1)))                              &    ; H on N: secondary sulfonamide
+ATD  479    *   1   1   *   *   *                      (N3(C,S(O1,O1)))                                &    ; H on N: primary sulfonamide
+ATD  504    *   1   1   *   *   *     (N[RG5,AR1.AR2.AR3](C3[RG5](C3[RG5](C4,C[RG5,RG6])),C[RG5,RG6])) &    ; H on NE in Trp
+ATD  513    *   1   1   *   *   *                      (N3[RG5,AR1.AR2.AR3](C3(N3[RG5]),C3(C3,C4)))    &    ; H on N in HIP
+ATD  513    *   1   1   *   *   *                      (N3[RG5,AR1.AR2.AR3](C3(N3[RG5]),C3(C3(C4))))   &    ; H on N in HIP
+ATD  545    *   1   1   *   *   *              (N[RG5,AR1.AR2.AR3](C3[RG5](C3[RG5]),C3[RG5](C3[RG5]))) &    ; H1  in pyrrole
+ATD  553    *   1   1   *   *   *              (N3[RG5,AR1.AR2.AR3](N[RG5](C3[RG5]),C3[RG5](C3[RG5]))) &    ; H1  in pyrazole
+ATD  562    *   1   1   *   *   *                      (N3[RG5](C3[RG5](N[RG5]),C3[RG5](C3[RG5])))     &    ; H1  in imidazole
+ATD  596    *   1   1   *   *   *        (N[RG5,AR1.AR2.AR3](C3[RG5](C3[RG5](C[RG5,RG6])),C[RG5,RG6])) &    ; H1  in indole
+ATD  632    *   1   1   *   *   *           (N3[RG5,AR1.AR2.AR3](C[RG5,RG6](N2[RG6]),C[RG5](N2[RG5]))) &    ; H9  in purine
+ATD  745    *   1   1   *   2   [NR]                   (N3(C[NR](C[AR1.AR2.AR3],N)))                   &    ; H2-N of Benzamidine
+ATD  744    *   1   1   *   2   [NR]                   (N(C[NR](C[AR1.AR2.AR3],N3)))                   &    ; H1-N of Benzamidine
+ATD  910    *   1   1   *   *   *                      (N3(XX,XX))                                     &    ; H(N) secondary amines
+ATD  909    *   1   1   *   *   *                      (N3)                                            &    ; H(N) primary   amines
+
+// HO types
+ATD  163    *   1   1   *   *   *                      (O2(C(C(F,F,F))))                               &    ; HO  Trifluoroethanol
+ATD  168    *   1   1   *   *   *                      (O2(C[AR1.AR2.AR3]))                            &    ; H  phenol
+ATD  172    *   1   1   *   *   *                      (O2(C4(C4(O2),C4(O2))))                         &    ; H(O): triols
+ATD  172    *   1   1   *   *   *                      (O2(C4(C4(O2),(C4(O2)))))                       &    ; H(O): triols
+ATD  170    *   1   1   *   *   *                      (O2(C4(C4(O2))))                                &    ; H(O): diols
+ATD  188    *   1   1   *   *   *                      (O(C4(XE(C))))                                  &    ; H(O): hemiacetal
+ATD  435    *   1   1   *   *   *                      (O[MI])                                         &    ; H in OH- JACS 108, 2517 (86)
+ATD  155    *   1   1   *   *   *                      (O2(C4))                                        &    ; all-atom H(O): mono alcohols, OP(=O)2
+ATD  155    *   1   1   *   *   *                      (O2(P(O1,O1)))                                  &    ; all-atom H(O): mono alcohols, OP(=O)2
+ATD  270    *   1   1   *   *   *                      (O2(C3(O)))                                     &    ; H in CCOOH
+
+// HS types
+ATD  205    *   1   1   *   *   *                      (S(H))                                          &    ; H in H2S  JPC,90,6379 (1986)
+ATD  204    *   1   1   *   *   *                      (S)                                             &    ; all-atom H(S): thiols
+
+// HW types
+ATD  796    *   1   1   *   *   *                      (O(H1))                                         &    ; H TIP4F Water
+
+// H5 types
+ATD  355    *   1   1   *   2   * (C[RG6](N2(C[RG5,RG6](N3[RG5])),N[RG6](C[RG6](N[NR],C[RG5,RG6](N2[RG5])))))   &    ; Adenine & Guanine H-C2
+ATD  359    *   1   1   *   2   * (C[RG5](N3[RG5](C[RG5,RG6](N2[RG6])),N2[RG5](C[RG5,RG6](C[RG6](XE,N[RG6]))))) &    ; Adenine & Guanine H-C8 Guanine
+
+// H4 types
+ATD  345    *   1   1   *   1   *        (C[RG6,AR1.AR2.AR3](C[RG6](C[RG6](N[NR],N2[RG6])),N[RG6](C[RG6](O1)))) &    ; Cytosine H-C6
+ATD  390    *   1   1   *   1   *        (C[RG6,AR1.AR2.AR3](C[RG6](C[RG6](N[NR],N3[RG6])),N[RG6](C[RG6](O1)))) &    ; CytH+ H-C6
+
+// HC types
+ATD  444    *   1   *   *   *   *                      (XX4(O(P(O(XX),O,O))))                          &    ; H in Me2PO4-, Me2PO4H    6-31+G* CHELPG
+ATD  449    *   1   *   *   *   *                      (XX4(O(P(O,O,O))))                              &    ; H in MeOPO3--, MeOPO3H2
+ATD  459    *   1   *   *   *   *                      (XX4(XX[AR1.AR2.AR3],O(P(XX4,O,O))))            &    ; H(CO) benzyl methylphosphonate
+ATD  462    *   1   *   *   *   *                      (XX4(XX[AR1.AR2.AR3],P(O(XX4),O,O)))            &    ; H(CP) methyl benzylphosphonate
+ATD  454    *   1   *   *   *   *                      (XX4(O(P(XX4,O,O))))                            &    ; H(CO) MePO3Me-, MePO3HMe     6-31+G* CHELPG
+ATD  456    *   1   *   *   *   *                      (XX4(P(O(XX4),O,O)))                            &    ; H(CP) MePO3Me-, MePO3HMe
+ATD  176    *   1   *   *   1   *                      (C4(C4(O2),C4(O2),O2))                          &    ; H(CXOH): triols
+ATD  176    *   1   *   *   1   *                      (C4(C4(O2,C4(O2)),O2))                          &    ; H(CXOH): triols
+ATD  153    *   1   *   *   *   *                      (C4(H,C,Cl))                                    &    ; H in RCH2Cl in alkyl chlorides
+ATD  156    *   1   *   *   1   *                      (C4(H,H,O2))                                    &    ; all-atom H(C): methanol
+ATD  165    *   1   *   *   *   *                      (C4(H,O2,C4(F,F,F)))                            &    ; H Trifluoroethanol
+ATD  190    *   1   *   *   *   *                      (C4(H,XA(C),XE(C)))                             &    ; H(CHO2): acetal OCH2O
+ATD  192    *   1   *   *   *   *                      (C4(H,XE(C),XA(H)))                             &    ; H(CHO2): hemiacetal OCH2OH
+ATD  194    *   1   *   *   *   *                      (C4(C,XA(C),XE(C)))                             &    ; H(CHO2): acetal OCHRO
+ATD  196    *   1   *   *   *   *                      (C4(C,XE(C),XA(H)))                             &    ; H(C2O2): hemiacetal OCHROH
+ATD  255    *   1   *   *   *   *                      (C3(XA1,N3(C3(XA1,C))))                         &    ; H(C) in formimide
+ATD  255    *   1   *   *   *   *                      (C3(XA1,N3(C3(XA1,H))))                         &    ; H(C) in formimide
+ATD  279    *   1   *   *   1   *                      (C3(O1,C4))                                     &    ; H-alpha in aldehyde & formamide
+ATD  279    *   1   *   *   2   *                      (C3(O1,N3))                                     &    ; H-alpha in aldehyde & formamide
+ATD  282    *   1   *   *   *   *                      (C4(C3(O1,H)))                                  &    ; H on C-alpha in ketone & aldehyde
+ATD  282    *   1   *   *   *   *                      (C4(C3(O1,C4)))                                 &    ; H on C-alpha in ketone & aldehyde
+ATD  185    *   1   *   *   *   *                      (C(O(C(XH))))                                   &    ; H(COR): alpha H ether
+ATD  329    *   1   *   *   *   * (C[RG6,AR1.AR2.AR3](C[RG6](O[NR],N[RG6]),C3[RG6](N[RG6](C[RG6](O[NR])))))     &    ; Uracil H-C5
+ATD  330    *   1   *   *   *   * (C[RG6,AR1.AR2.AR3](N[RG6](C(O[NR],N[RG6])),C3[RG6](C[RG6](O[NR]))))          &    ; Uracil H-C6
+ATD  332    *   1   *   *   *   * (C4(C[RG6,AR1.AR2.AR3](C[RG6](O[NR],N[RG6]),C3[RG6](N[RG6](C[RG6](O[NR])))))) &    ; Thymine H-CC5
+ATD  344    *   1   *   *   *   *          (C[RG6](C[RG6](C[RG6](N[NR],N2[RG6])),N[RG6](C[RG6](O1))))  &    ; Cytosine H-C5
+ATD  372    *   1   *   *   1   *                (C4(N[RG5](C[RG5,RG6](N2)),C[RG5](N2(C[RG5,RG6]))))   &    ; 9-Me Adenine or Guanine H-CN9
+ATD  374    *   1   *   *   1   * (C4(N[RG6,AR1.AR2.AR3](C[RG6](O[NR],N[RG6](C[RG6](O[NR]))),C[RG6](C[RG6]))))  &    ; 1-Me Uracil or Thymine H-CN1
+ATD  376    *   1   *   *   1   *      (C4(N[RG6](C[RG6](O1,N2[RG6](C[RG6](N[NR]))),C[RG6](C[RG6]))))  &    ; 1-Me Cytosine H-CN1
+ATD  392    *   1   *   *   1   *      (C4(N[RG6](C[RG6](O1,N3[RG6](C[RG6](N[NR]))),C[RG6](C[RG6]))))  &    ; 1-Me CytH+ H-CN1
+ATD  416    *   1   *   *   *   *                      (C4(S[MI]))                                     &    ; H in CH3S-
+ATD  419    *   1   *   *   *   *                      (C4(O[MI]))                                     &    ; H in CH3O-
+ATD  426    *   1   *   *   *   *                      (C4(N[MI](H)))                                  &    ; HC in CH3NH-  RNH-
+ATD  422    *   1   *   *   *   *                      (C4(N[MI]))                                     &    ; H in CH2CN-
+ATD  430    *   1   *   *   *   *                      (C[MI])                                         &    ; H in CH3CH2-
+ATD  432    *   1   *   *   *   *                      (C(C[MI]))                                      &    ; H1 in CH3CH2-
+ATD  469    *   1   *   *   *   *                      (C[NR](O[NR](C3(O1))))                          &    ; methoxy Hs in esters
+ATD  477    *   1   *   *   *   *                      (C4(S(N3,O1,O1)))                               &    ; H of Me attached to S of sulfonamide
+ATD  485    *   1   *   *   *   *                      (C4(N3(S(O1,O1)),XX))                           &    ; H of alpha CH2-N of sulfonamide
+ATD  483    *   1   *   *   *   *                      (C4(N3(S(O1,O1))))                              &    ; H of alpha CH3-N of sulfonamide
+ATD  487    *   1   *   *   *   *                      (C4(C4(N3(S(O1,O1)))))                          &    ; H of beta CH3 of N-ethyl sulfonamide
+ATD  702    *   1   *   *   *   *                      (C(C[PL](C,C)))                                 &    ; H in t-butyl+
+//ATD  710    *   1   &    ; H in Cl..CH3..Cl- TS
+ATD  759    *   1   *   *   *   *                      (C4(C2(N1)))                                    &    ; HC-CT-CN alpha-H in nitriles
+ATD  763    *   1   *   *   *   *                      (C(C4(N(O,O))))                                 &    ; HC-CT-NO2 alpha-H in nitroalkanes
+ATD  777    *   1   *   *   *   *                (C4[RG5](C4[RG5](C4[NR],O[RG5](C3[RG5](O1))),O[RG5])) &    ; propylene carbonate H in CH2
+ATD  778    *   1   *   *   *   *                 (C4[RG5](C4[NR],C4[RG5](O[RG5]),O[RG5](C[RG5](O1)))) &    ; propylene carbonate H in CH
+ATD  779    *   1   *   *   *   *                (C4[NR](C4[RG5](C4[RG5](O[RG5]),O[RG5](C[RG5](O1))))) &    ; propylene carbonate H in CH3
+ATD  784    *   1   *   *   *   *                      (C(P[PL]))                                      &    ; H in CH3PR3+
+ATD  140    *   1   *   *   *   *                      (C4(N3,C(O1,N)))                                &    ; alkane H.
+ATD  140    *   1   *   *   *   *                      (C4(N4,C(O1,N)))                                &    ; alkane H.
+ATD  140    *   1   *   *   *   *                      (C4(N3(C(O1,C4))))                              &    ; alkane H.
+ATD  911    *   1   *   *   1   *                      (C(N3(H,H)))                                    &    ; H(C) for C bonded to N in amines, diamines (aziridine H2,H3)
+ATD  926    *   1   *   *   *   *                      (C2[tb])                                        &    ; alkyne RC%CH terminal H
+ATD  930    *   1   *   *   *   *                      (C4(C2[tb]))                                    &    ; alkyne RC%CH H on C3 (for C3 use #135-#139)
+ATD  950    *   1   *   *   *   *                      (C4(N4,C(O1,O)))                                &    ; glycine zwit. 6-31G* CHELPG charges
+ATD  958    *   1   *   *   *   *                      (C4(C,F,H))                                     &    ; H in RCHF in monoalkyl fluorides (tentative)
+ATD  140    *   1   *   *   *   *                      (C4)                                            &    ; alkane H.
+ATD  144    *   1   *   *   *   *                      (C3(C3[DB']))                                   &    ; alkene H (H-C=)
+
+//HA types
+ATD  316    *   1   1   *   *   * (C[RG6,AR1.AR2.AR3](C3[RG6](N[NR],N[RG6](C3[RG6](N[NR],C3[RG6]))),C3[RG6])) &    ; DAP H3
+ATD  318    *   1   1   *   *   * (C[RG6,AR1.AR2.AR3](C3[RG6](C3[RG6](N[NR])),C3[RG6](C3[RG6](N[RG6],N[NR])))) &    ; DAP H4
+ATD  597    *   1   1   *   *   *           (C[RG5,AR1.AR2.AR3](C3[RG5](C[RG5,RG6]),N3[RG5]))          &    ; H2 in indole
+ATD  598    *   1   1   *   *   *           (C[RG5,AR1.AR2.AR3](C3[RG5](N3(C[RG5,RG6])),C[RG5,RG6]))   &    ; H3 in indole
+ATD  599    *   1   1   *   *   * (C[RG6,AR1](C[RG6](C[RG6](C[RG6](C[RG5,RG6](N[RG5])))),C[RG5,RG6](C3[RG5](C3[RG5])))) &    ; H4 in indole
+ATD  600    *   1   1   *   *   * (C[RG6,AR1](C[RG6](C[RG6](C[RG5,RG6](N[RG5]))),C[RG6](C[RG5,RG6](C3[RG5](C3[RG5]))))) &    ; H5 in indole
+ATD  601    *   1   1   *   *   * (C[RG6,AR1](C[RG6](C[RG5,RG6](N[RG5])),C[RG6](C[RG6](C[RG5,RG6](C3[RG5](C3[RG5])))))) &    ; H6 in indole
+ATD  602    *   1   1   *   *   * (C[RG6,AR1](C[RG5,RG6](N[RG5]),C[RG6](C[RG6](C[RG6](C[RG5,RG6](C3[RG5](C3[RG5]))))))) &    ; H7 in indole
+ATD  389    *   1   1   *   1   *        (C[RG6,AR1.AR2.AR3](C[RG6](C[RG6](N[NR],N3[RG6])),N[RG6](C[RG6](O1)))) &    ; CytH+ H-C5
+ATD  524    *   1   1   *   *   *     (C3[RG6,AR1.AR2.AR3](N[RG6](C3[RG6](C3[RG6])),C3[RG6](C3[RG6]))) &    ; H1 in pyridine 520-619
+ATD  525    *   1   1   *   *   *     (C3[RG6,AR1.AR2.AR3](C3[RG6](N[RG6](C3[RG6])),C3[RG6](C3[RG6]))) &    ; H2 in pyridine
+ATD  526    *   1   1   *   *   *     (C3[RG6,AR1.AR2.AR3](C3[RG6](C3[RG6](N[RG6])),C3[RG6](C3[RG6]))) &    ; H3 in pyridine
+ATD  529    *   1   1   *   *   *                      (C3[RG6,AR1.AR2.AR3](N[RG6]),C3[RG6](N[RG6]))   &    ; H in pyrazine
+ATD  534    *   1   1   *   *   *          (C[RG6,AR1.AR2.AR3](N[RG6](C[RG6]),N[RG6](C[RG6](C[RG6])))) &    ; H2 in pyrimidine
+ATD  535    *   1   1   *   *   *          (C[RG6,AR1.AR2.AR3](N[RG6](C[RG6](N[RG6])),C[RG6](C[RG6]))) &    ; H4 in pyrimidine
+ATD  536    *   1   1   *   *   *          (C[RG6,AR1.AR2.AR3](C[RG6](N[RG6](C[RG6])),C[RG6](N[RG6]))) &    ; H5 in pyrimidine
+ATD  540    *   1   1   *   *   *     (C3[RG6,AR1.AR2.AR3](N[RG6](C3[RG6]),C3[RG6](C3[RG6](C3[RG6])))) &    ; H3 in pyridazine
+ATD  541    *   1   1   *   *   *     (C3[RG6,AR1.AR2.AR3](C3[RG6](N[RG6](N[RG6])),C3[RG6](C3[RG6])))  &    ; H4 in pyridazine
+ATD  546    *   1   1   *   *   *          (C[RG5,AR1.AR2.AR3](N[RG5](C3[RG5]),C3[RG5](C3[RG5])))      &    ; H2 in pyrrole
+ATD  547    *   1   1   *   *   *          (C[RG5,AR1.AR2.AR3](C3[RG5](N[RG5](C3[RG5])),C3[RG5]))      &    ; H3 in pyrrole
+ATD  554    *   1   1   *   *   *           (C[RG5,AR1.AR2.AR3](N[RG5](N3[RG5](C3[RG5])),C3[RG5]))     &    ; H3 in pyrazole
+ATD  555    *   1   1   *   *   *           (C[RG5,AR1.AR2.AR3](C3[RG5](N3[RG5]),C3[RG5](N[RG5])))     &    ; H4 in pyrazole
+ATD  556    *   1   1   *   *   *           (C[RG5,AR1.AR2.AR3](C3[RG5],N3[RG5](N[RG5](C3[RG5]))))     &    ; H5 in pyrazole
+ATD  563    *   1   1   *   *   *           (C[RG5,AR1.AR2.AR3](N[RG5](C3[RG5]),N3[RG5](C3[RG5])))     &    ; H2 in imidazole
+ATD  564    *   1   1   *   *   *           (C[RG5,AR1.AR2.AR3](C3[RG5](N3[RG5](C3[RG5])),N[RG5]))     &    ; H4 in imidazole
+ATD  565    *   1   1   *   *   *           (C[RG5,AR1.AR2.AR3](N3[RG5](C3[RG5]),C3[RG5](N[RG5])))     &    ; H5 in imidazole
+ATD  569    *   1   1   *   *   *           (C[RG5,AR1.AR2.AR3](XA2[RG5](C3[RG5]),C3[RG5](C3[RG5])))   &    ; H2 in furan
+ATD  570    *   1   1   *   *   *           (C[RG5,AR1.AR2.AR3](C3[RG5](XA2[RG5](C3[RG5])),C3[RG5]))   &    ; H3 in furan
+ATD  576    *   1   1   *   *   *           (C[RG5,AR1.AR2.AR3](N[RG5](C3[RG5]),O[RG5](C3[RG5])))      &    ; H2 in oxazole
+ATD  577    *   1   1   *   *   *           (C[RG5,AR1.AR2.AR3](C3[RG5](O[RG5](C3[RG5])),N[RG5]))      &    ; H4 in oxazole
+ATD  578    *   1   1   *   *   *           (C[RG5,AR1.AR2.AR3](O[RG5](C3[RG5]),C3[RG5](N[RG5])))      &    ; H5 in oxazole
+ATD  584    *   1   1   *   *   *           (C[RG5,AR1.AR2.AR3](N[RG5](O[RG5](C3[RG5])),C3[RG5]))      &    ; H3 in isoxazole
+ATD  585    *   1   1   *   *   *           (C[RG5,AR1.AR2.AR3](C3[RG5](O[RG5]),C3[RG5](N[RG5])))      &    ; H4 in isoxazole
+ATD  586    *   1   1   *   *   *           (C[RG5,AR1.AR2.AR3](C3[RG5],O[RG5](N[RG5](C3[RG5]))))      &    ; H5 in isoxazole
+ATD  613    *   1   1   *   *   * (C[RG6,AR1.AR2.AR3](N[RG6](C[2RG6,AR1]),C3[RG6](C3[RG6](C[2RG6,AR1])))) &    ; H2 in quinoline
+ATD  614    *   1   1   *   *   * (C[RG6,AR1.AR2.AR3](C3[RG6](N[RG6](C[2RG6,AR1])),C3[RG6](C[2RG6,AR1]))) &    ; H3 in quinoline
+ATD  615    *   1   1   *   *   * (C[RG6,AR1.AR2.AR3](C[2RG6,AR1],C3[RG6](C3[RG6](N[RG6](C[2RG6,AR1]))))) &    ; H4 in quinoline
+ATD  616    *   1   1   *   *   * (C[RG6,AR1](C[2RG6,AR1](C[2RG6,AR1](C[AR1],N[RG6]),C3[RG6]),C[AR1](C[AR1](C[AR1])))) &    ; H5 in quinoline
+ATD  617    *   1   1   *   *   * (C[RG6,AR1](C[AR1](C[2RG6,AR1](C[2RG6,AR1](C[AR1],N[RG6]),C3[RG6])),C[AR1](C[AR1]))) &    ; H6 in quinoline
+ATD  618    *   1   1   *   *   * (C[RG6,AR1](C[AR1](C[2RG6,AR1](N[RG6],C[2RG6,AR1](C[AR1],C3[RG6]))),C[AR1](C[AR1]))) &    ; H7 in quinoline
+ATD  619    *   1   1   *   *   * (C[RG6,AR1](C[2RG6,AR1](N[RG6](C3[RG6]),C[2RG6,AR1](C[AR1],C3[RG6])),C[AR1](C[AR1]))) &    ; H8 in quinoline
+ATD  629    *   1   1   *   *   *               (C[RG6,AR1.AR2.AR3](N,N(C[RG6](C[RG5,RG6](N[RG5])))))  &    ; H2 in purine
+ATD  630    *   1   1   *   *   *               (C[RG6,AR1.AR2.AR3](N,C[RG6](C[RG5,RG6](N[RG5]))))     &    ; H6 in purine
+ATD  631    *   1   1   *   *   *   (C[RG5,AR1.AR2.AR3](N(C[RG5,RG6](N[RG6])),N(C[RG5,RG6](C[RG6](N[RG6])))))       &    ; H8 in purine
+ATD  638    *   1   1   *   *   *          (C3[RG5,AR1.AR2.AR3](N[RG5](C3[RG5]),S2[RG5](C3[RG5])))     &    ; H2 in thiazole
+ATD  639    *   1   1   *   *   *          (C3[RG5,AR1.AR2.AR3](C3[RG5](S2[RG5](C3[RG5])),N[RG5]))     &    ; H4 in thiazole
+ATD  640    *   1   1   *   *   *          (C3[RG5,AR1.AR2.AR3](S2[RG5](C3[RG5]),C3[RG5](N[RG5])))     &    ; H5 in thiazole
+ATD  643    *   1   1   *   *   *              (C[RG6,AR1.AR2.AR3](N2(C3[RG6]),N2(C3[RG6](N2[RG6]))))  &    ; H in 1,3,5-triazine
+ATD  653    *   1   1   *   *   * (C[RG6,AR1.AR2.AR3](N[RG6](C[2RG6](C[2RG6],C[2RG6](N[RG6],C[2RG6](C[RG6])))),C[RG6](C[RG6]))) &    ; H2,H9 in 1,10-phenanthroline
+ATD  654    *   1   1   *   *   * (C[RG6,AR1.AR2.AR3](C[RG6](N[RG6](C[2RG6](C[2RG6],C[2RG6](N[RG6],C[2RG6](C[RG6]))))),C[RG6])) &    ; H3,H8 in 1,10-phenanthroline
+ATD  655    *   1   1   *   *   * (C[RG6,AR1.AR2.AR3](C[2RG6](C[RG6](C[RG6]),C[2RG6](N[RG6],C[2RG6](N[RG6],C[2RG6]))),C[RG6](C[RG6]))) &    ; H4,H7 in 1,10-phenanthroline
+ATD  656    *   1   1   *   *   * (C[RG6,AR1.AR2.AR3](C[2RG6](C[2RG6](N[RG6])),C[RG6](C[2RG6](C[2RG6](N[RG6]))))) &    ; H5,H6 in 1,10-phenanthroline
+//ATD  715    *   1   1   *   *   *                        (XX[AR1.AR2.AR3])       &    ; H in C5H5- cyclopentadienyl anion
+//ATD  717    *   1   1   *   *   *                        (XX[AR1.AR2.AR3])       &    ; H in C5H5  cyclopentadienyl radical
+ATD  740    *   1   1   *   *   *            (C[RG6,AR1.AR2.AR3](C[RG6](C[RG6](C[NR](N3[NR],N[NR]))))) &    ; HD of Benzamidine
+ATD  741    *   1   1   *   *   *                    (C[RG6,AR1.AR2.AR3](C[RG6](C[NR](N3[NR],N[NR])))) &    ; HE of Benzamidine
+ATD  746    *   1   1   *   *   *    (C[RG6,AR1.AR2.AR3](C[RG6](C[RG6](C[RG6](C[NR](N3[NR],N[NR])))))) &    ; H-CG of Benzamidine
+ATD  146    *   1   1   *   *   *                      (C[RG6,AR1.AR2.AR3])                            &    ; Benzene H - 12 site.
+// HA    *   1   1   &
+
+
+// Cation types
+// Li+
+ATD  404    *   3   *   &    ; Li+
+ATD  406    *   3   *   &    ; Li+ JACS 106, 903 (1984)
+
+// Na+
+ATD  405    *  11   *   &    ; Na+ JACS 106, 903 (1984)
+ATD  407    *  11   *   &    ; Na+    Aqvists cation
+
+// Mg2+
+ATD  411    *  12   *   &    ; Mg++
+
+// K+
+ATD  408    *  19   *   &    ; K+  parameters: JPC,94, 8021 (90)
+
+// Ca2+
+ATD  412    *  20   *   &    ; Ca++
+
+// Rb+
+ATD  409    *  37   *   &    ; Rb+ parameters: JPC,94, 8021 (90)
+
+// Sr 2+
+ATD  413    *  38   *   &    ; Sr++
+
+// Cs+
+ATD  410    *  55   *   &    ; Cs+
+
+// Ba2+
+ATD  414    *  56   *   &    ; Ba++
+
+ATD  436    *  92   *   &    ; U in UO2+ J Mol Struct 366, 55 (96)
+ATD  697    *  89   *   &    ; Ac+3 Actinide params - F. van Veggel, Chem Eur J 5, 90 (1999).
+ATD  698    *  90   *   &    ; Th+4 Actinide params - F. van Veggel, Chem Eur J 5, 90 (1999).
+ATD  699    *  95   *   &    ; Am+3 Actinide params - F. van Veggel, Chem Eur J 5, 90 (1999).
+ATD  703    *  57   *   &    ; La+3 Lanthanide params - F. van Veggel, Chem Eur J 5, 90 (1999).
+ATD  704    *  60   *   &    ; Nd+3 Lanthanide params - F. van Veggel, Chem Eur J 5, 90 (1999).
+ATD  705    *  63   *   &    ; Eu+3 Lanthanide params - F. van Veggel, Chem Eur J 5, 90 (1999).
+ATD  706    *  64   *   &    ; Gd+3
+ATD  707    *  70   *   &    ; Yb+3 see also JPC-A 104, 7659 (2000)
+
+; These ion atomtypes are NOT part of OPLS, but since they are
+; needed for some proteins we have added them.
+ATD  Cu2+   *  29   *   &    ; Copper. See Inorg. Chem. 40, 5223 (2001).
+ATD  Fe2+   *  26   *   &    ; Iron(II)
+ATD  Fe3+   *  26   *   &    ; Iron(III)
+ATD  Zn2+   *  30   *   &    ; Zinc
+ATD  Ar     *  18   *   &    ; Argon
+; Added by DvdS 05/2005 copied from GROMACS force field. 
+ATD  SI     *  14   *   &    ; Silicium in Glass etc.
+
+// Fluorine types
+// F types
+ATD  164    *   9   1   &    ; F Trifluoroethanol
+ATD  719    *   9   1   &    ; F fluorobenzene
+ATD  721    *   9   1   &    ; F hexafluorobenzene
+ATD  726    *   9   1   &    ; F trifluoromethylbenzene
+ATD  728    *   9   1   &    ; F difluorobenzenes
+ATD  786    *   9   1   &    ; F in PF6-
+ATD  956    *   9   1   &    ; F in monoalkyl fluorides (tentative)
+ATD  965    *   9   1   &    ; F: perfluoroalkanes
+
+// F- types
+ATD  400    *   9   0   &    ; F-  JACS 106, 903 (1984)
+
+// Chlorine types
+// Cl types
+ATD  151    *  17   1   *   *   *                      (C4)                                            &    ; Cl in alkyl chlorides
+ATD  226    *  17   1   *   *   *                      (C3[DB])                                        &    ; chloroalkene Cl (ClH-C=) - see also #398
+ATD  264    *  17   1   *   *   *                      (C[AR1])                                        &    ; Cl     chlorobenzene
+
+// Cl- types
+ATD  401    *  17   0   &    ; Cl- JACS 106, 903 (1984)
+ATD  709    *  17   0   &    ; Cl charges: JACS 117,2024 (95)
+
+// Bromine types
+// Br types
+ATD  722    *  35   1   &    ; Br alkyl bromide (UA, but probably ok for AA)
+ATD  730    *  35   1   &    ; Br bromobenzene
+
+// Br- types
+ATD  402    *  35   0   &    ; Br- JACS 107, 7793(1985)
+
+// Iodine types
+// I types
+ATD  732    *  53   1   &    ; I iodobenzene - tentative
+
+// I- types
+ATD  403    *  53   0   &    ; I-  JACS 120, 5104(1998)
+
+
+// Lone Pair and unidentified types
+ATD  433    *   0   &    ; LP in  CH3CH2-
+ATD  797    *   0   &    ; M TIP4F Water
+
+--------------------------------------------------------------------------------------------
+============================================================================================
+
+
+
+
+============================================================================================
+                     Field descriptions
+============================================================================================
+(1)  ATD, which stands for atom type definition, ATD should always in the first three columns 
+(2)  Atom type name, can be letters or numbers   
+(3)  Residue names, which means this description is only applied to atoms in special residues
+(4)  Atomic number 
+(5)  Number of attached atoms 
+(6)  Number of attached hydrogen atoms
+(7)  For hydrogen, number of the electron-withdrawal atoms connected to the atom that the 
+     hydrogen attached
+(8)  atomic property
+(9)  Chemical enviornment definitions
+
+
+============================================================================================
+                     Specific symbols
+============================================================================================
+*  Ignore this field
+&  End of defination 
+.  "or" operation in the ring and aromaticity descriptions 
+
+
+============================================================================================
+                     Predefined words
+============================================================================================
+EW   Electron-withdrawing atom
+AA   Amino acid residue
+NA   Nucleic acid
+BIO  AA + NA
+
+AR1  Pure aromatic atom (benzene and pyridine)
+AR2  Atom in a planar ring, usually the ring has two contigous single bonds
+AR3  Atom in a planar ring, which has one or several double bonds formed between outside atoms
+     and ring atoms
+AR4  Atom other than AR1, AR2, AR3 and AR5. 
+AR5  Pure aliphatic atom in a ring, which is made of sp3 carbon
+
+RG   Ring (from 3-membered to nine-membered)
+RG3  3-membered ring 
+RG4  4-membered ring 
+RG5  5-membered ring 
+RG6  6-membered ring 
+RG7  7-membered ring 
+RG8  8-membered ring 
+RG9  9-membered ring 
+NR   non-ring atom 
+
+SB   Single bond
+DB   Double bond
+TB   Triple bond
+AB   Aromatic bond
+sb   Single bond, including aromatic single
+db   Double bond, including aromatic double
+tb   Triple bond
+
+PL   Positive formal charge
+MI   Negative formal charge
+
+'    Bond type (SB sb etc) followed by ' means the current atom forms this kind of bond with the 
+     immediately precessor in a chain of atoms
+     For example, (XD3[SB',db]) means the current atom XD3 has a double bond with the atom in 
+     definition 
+''   Bond type (SB sb etc) followed by '' means the current atom does not form this kind of bond 
+     with the immediately precessor in a chain of atoms
+============================================================================================
+                     Miscellaneous
+============================================================================================
+1. maximum line length is 500 characters
+2. no space in the atomic property string
+3. no space in the chemical environment string 
+4. no filed missing before &
+5. the definition order is crucial, special atom types should defined before the more general 
+   ones
+6. Bonds in COO- and -NO2 are considered as double bonds
