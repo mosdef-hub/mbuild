@@ -61,3 +61,5 @@ Prototype('SI', radius=.210, color='yellow')
 Prototype('Si', radius=.210, color='yellow')
 Prototype('Si1', radius=.210, color='yellow')
 
+Prototype('Si-cluster', radius=.410, color='yellow')
+Prototype('particle', radius=.27, color='teal', atomic_number=6)

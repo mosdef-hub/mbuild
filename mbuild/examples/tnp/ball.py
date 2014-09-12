@@ -19,8 +19,8 @@ class Ball(Compound):
 
         # create particles and ports at mask positions
         for i,pos in enumerate(mask):
-            particle = Atom(kind="particle", pos=pos)
-            self.add(particle,"particle_{}".format(i))
+            particle = Atom(kind="Si-cluster", pos=pos)
+            self.add(particle,"Si-cluster_{}".format(i))
             port = Port(anchor=particle)
             self.add(port,"port_{}".format(i))
 

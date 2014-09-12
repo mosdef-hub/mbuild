@@ -5,6 +5,7 @@ from mdtraj.core.element import Element
 from mdtraj.core.topology import Topology as MDTTopology
 from mdtraj.core import element as elem
 
+
 class Topology(MDTTopology):
 
     def __init__(self):
@@ -26,7 +27,7 @@ class Topology(MDTTopology):
     def ff_dihedrals(self):
         return iter(self._ff_dihedrals)
 
-    def add_bond(self, atom1, atom2):
+    def add_ff_bond(self, atom1, atom2):
         print "Adding bond: {}-{}".format(atom1, atom2)
         self._ff_bonds.append(ForcefieldBond(atom1, atom2))
 
@@ -168,7 +169,7 @@ class ForcefieldAngle(object):
 
 
 class ForcefieldDihedral(object):
-    """Triplet formed by four Atoms, three Bonds and two angles.
+    """Quadruplet formed by four Atoms, three Bonds and two angles.
 
     Attributes:
         atom1 (Atom): First Atom in the dihedral.
