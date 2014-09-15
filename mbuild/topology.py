@@ -30,7 +30,6 @@ class Topology(MDTTopology):
         return iter(self._ff_dihedrals)
 
     def add_ff_bond(self, atom1, atom2):
-        print "Adding bond: {}-{}".format(atom1, atom2)
         if atom1.index < atom2.index:
             self._ff_bonds.append(ForcefieldBond(atom1, atom2))
         else:
@@ -55,16 +54,12 @@ class Topology(MDTTopology):
 
     def enumerate_ff_angles(self):
         """Find all angles based on all bonds. """
-        angle_set = set()
         graph = self.to_bondgraph()
         for node in graph.nodes_iter():
             neighbors = graph.neighbors(node)
             if len(neighbors) > 1:
                 for pair in itertools.combinations(neighbors, 2):
-                    angle_set.add((node, pair[0], pair[1]))
-        for triplet in angle_set:
-            self.add_ff_angle(*triplet)
-
+                    self.add_ff_angle(node, pair[0], pair[1])
 
 
     @classmethod
@@ -84,7 +79,7 @@ class Topology(MDTTopology):
             try:
                 e = elem.get_by_symbol(atom.kind)
             except:
-                e = Element(  1000, atom.kind, atom.kind, 1.0)
+                e = Element(1000, atom.kind, atom.kind, 1.0)
 
             a = out.add_atom(atom.kind, e, r)
             atom_mapping[atom] = a
