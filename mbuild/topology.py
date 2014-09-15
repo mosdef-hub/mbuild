@@ -1,3 +1,5 @@
+import itertools
+
 __author__ = 'sallai'
 import numpy as np
 
@@ -29,15 +31,41 @@ class Topology(MDTTopology):
 
     def add_ff_bond(self, atom1, atom2):
         print "Adding bond: {}-{}".format(atom1, atom2)
-        self._ff_bonds.append(ForcefieldBond(atom1, atom2))
+        if atom1.index < atom2.index:
+            self._ff_bonds.append(ForcefieldBond(atom1, atom2))
+        else:
+            self._ff_bonds.append(ForcefieldBond(atom2, atom1))
 
-    def add_angle(self, atom1, atom2, atom3):
-        print "Adding angle: {}-{}-{}".format(atom1, atom2, atom3)
-        self._ff_angles.append(ForcefieldAngle(atom1, atom2, atom3))
+    def add_ff_angle(self, atom1, atom2, atom3):
+        print "Adding angle: {}{}-{}{}-{}{}".format(atom1.index, atom1.name,
+                                              atom2.index, atom2.name,
+                                              atom3.index, atom3.name)
+        atoms = sorted([atom1, atom2, atom3], key=lambda x: x.index)
+        self._ff_angles.append(ForcefieldAngle(*atoms))
 
-    def add_dihedral(self, atom1, atom2, atom3, atom4):
-        print "Adding dihedral: {}-{}-{}".format(atom1, atom2, atom3, atom4)
-        self._ff_dihedrals.append(ForcefieldDihedral(atom1, atom2, atom3, atom4))
+    def add_ff_dihedral(self, atom1, atom2, atom3, atom4):
+
+        atoms = sorted([atom1, atom2, atom3, atom4], key=lambda x: x.index)
+        self._ff_dihedrals.append(ForcefieldDihedral(*atoms))
+
+    def load_ff_bonds(self):
+        """Convert from (Atom1, Atom2) to ForcefieldBonds. """
+        for bond in self.bonds:
+            self.add_ff_bond(bond[0], bond[1])
+
+    def enumerate_ff_angles(self):
+        """Find all angles based on all bonds. """
+        angle_set = set()
+        graph = self.to_bondgraph()
+        for node in graph.nodes_iter():
+            neighbors = graph.neighbors(node)
+            if len(neighbors) > 1:
+                for pair in itertools.combinations(neighbors, 2):
+                    angle_set.add((node, pair[0], pair[1]))
+        for triplet in angle_set:
+            self.add_ff_angle(*triplet)
+
+
 
     @classmethod
     def from_compound(cls, compound, atom_list=None, bond_list=None):

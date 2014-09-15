@@ -10,7 +10,7 @@ from mbuild.polymer import Polymer
 class Alkane(Compound):
     """ """
     def __init__(self, n=3):
-        if n < 3:
+        if n < 2:
             raise Exception('n must be 1 or more')
         Compound.__init__(self)
 
@@ -23,9 +23,9 @@ class Alkane(Compound):
 
 if __name__ == "__main__":
     n = 3
-    m = Alkane(n=n)
+    alkane = Alkane(n=n)
 
-    m.save("{}-alkane.pdb".format(n))
+    #m.save("{}-alkane.pdb".format(n))
 
     # mol = m.to_molecule()
     # # mol.localopt(forcefield="gaff", steps=2000)
@@ -33,9 +33,18 @@ if __name__ == "__main__":
     # print mol
     # m.update_from_molecule(mol)
 
+
     from mbuild.tools import add_angle
-    traj = m.to_trajectory()
-    add_angle(traj, "C", "C", "C")
+
+    alkane = alkane.to_trajectory()
+    alkane.top.load_ff_bonds()
+
+    alkane.top.enumerate_ff_angles()
+
+    print len(alkane.top._ff_bonds)
+    print len(alkane.top._ff_angles)
+    import pdb
+    pdb.set_trace()
 
     from mbuild.plot import Plot
-    Plot(m).show()
+    Plot(alkane).show()

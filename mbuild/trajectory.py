@@ -1,6 +1,9 @@
+__author__ = 'sallai'
+
 import sys
 import os
 
+import numpy as np
 import mdtraj as md
 
 from mbuild.atom import Atom
@@ -12,14 +15,9 @@ from mbuild.periodic_kdtree import PeriodicCKDTree
 from mbuild.topology import Topology
 
 
-__author__ = 'sallai'
-import numpy as np
-
-
 class Trajectory(md.Trajectory):
 
     def __init__(self, *args, **kwargs):
-
         self._atom_kdtrees = {}
 
         if "trajectory" in kwargs:
@@ -174,7 +172,6 @@ class Trajectory(md.Trajectory):
 
 
     def bonds_by_atom(self, atom):
-
         bond_list = []
         for bond in self.top.bonds:
             if atom in bond:
@@ -183,7 +180,6 @@ class Trajectory(md.Trajectory):
         return bond_list
 
     def neighbor_bonds(self, bond):
-
         atom0 = bond[0]
         atom1 = bond[1]
         atom0_bonds = set(self.bonds_by_atom(atom0))

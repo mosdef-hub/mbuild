@@ -84,6 +84,10 @@ def add_bond(compound, type_A, type_B, dmin, dmax, kind=None):
             if (a2.kind==type_B) and (dmin <= compound.min_periodic_distance(a2.pos, a1.pos) <= dmax):
                 compound.add(Bond(a1, a2, kind=kind))
 
+def find_all_angles(traj):
+    """ """
+
+
 def add_angle(traj, type_A, type_B, type_C):
     """
     """

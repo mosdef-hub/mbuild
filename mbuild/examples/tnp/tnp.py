@@ -16,7 +16,7 @@ class Tnp(Compound):
         if not monomer:
             monomer = Bead()
 
-        n = 129
+        n = 129  # TODO: make this tweakable
         self.add(Ball(n=n, radius=ball_radius, port_distance_from_surface=0.7), "ball")
 
         # generate 65 points on the surface of a unit sphere

@@ -97,9 +97,9 @@ def load_hoomdxml(filename, optional_nodes=False):
     # print found
 
     atoms_df = pd.DataFrame(atom_types, columns=['name'])
-    atoms_df['element'] = ['' for n in range(n_atoms)]
+    atoms_df['element'] = ['' for _ in range(n_atoms)]
     atoms_df['resSeq'] = np.ones(n_atoms, dtype='int')
-    atoms_df['resName'] = ['RES' for n in range(n_atoms)]
+    atoms_df['resName'] = ['RES' for _ in range(n_atoms)]
     atoms_df['chainID'] = np.ones(n_atoms, dtype='int')
 
     # TODO: Infer chains by finding isolated bonded structures.
@@ -114,6 +114,7 @@ def load_hoomdxml(filename, optional_nodes=False):
     if optional_nodes:
         return traj, optional_data
     return traj
+
 
 # TODO: decide if we want this to be a class
 def save_hoomdxml(traj, step=-1, optional_nodes=None, filename='mbuild.xml'):
