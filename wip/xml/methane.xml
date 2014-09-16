@@ -1,8 +1,0 @@
-<compound kind="methane">
-	<C pos="0, 0, 0" label="c" />
-	<H pos="1, 0, 0" label="h1" />
-	<H pos="0, 1, 0" label="h2" />
-	<H pos="-1, 0, 0" label="h3" />
-	<H pos="0, -1, 0" label="h4" />
-</compound>
-

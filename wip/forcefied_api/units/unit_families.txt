@@ -1,3 +1,0 @@
-FAMILY_NAME           KGS_UNITS      METRIC_UNITS   IMPERIAL_UNITS   MIXED_UNITS    INVERSE             DESCRIPTION
-mass                  kg             kg             lb               lb             none                "Mass"
-charge                coulomb        coulomb        coulomb          coulomb        none                "Charge"

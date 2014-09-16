@@ -1,9 +1,0 @@
-<compound kind="ethane">
-	<compound src="alkane_tail.xml" label="top_tail"/>
-	<compound src="alkane_tail.xml" label="bottom_tail">
-		<transform>
-			<equivalence my="bottom_tail.female_port" target="top_tail.male_port" />
-		</transform>
-	</compound>
-</compound>
-

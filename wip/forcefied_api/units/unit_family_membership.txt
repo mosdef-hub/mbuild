@@ -1,3 +1,0 @@
-FAMILY_NAME         NAME_ALIASES
-mass                mass*
-charge              charge*
