@@ -39,10 +39,13 @@ if __name__ == "__main__":
     alkane = alkane.to_trajectory()
     alkane.top.load_ff_bonds()
 
-    alkane.top.enumerate_ff_angles()
+    #alkane.top.enumerate_ff_angles()
+    #alkane.top.enumerate_ff_dihedrals()
+    alkane.top.enumerate_ff_angles_and_dihedrals()
 
     print len(alkane.top._ff_bonds)
     print len(alkane.top._ff_angles)
+    print len(alkane.top._ff_dihedrals)
     import pdb
     pdb.set_trace()
 

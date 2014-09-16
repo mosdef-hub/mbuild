@@ -22,10 +22,12 @@ if __name__ == "__main__":
 
     ethane = ethane.to_trajectory()
     ethane.top.load_ff_bonds()
-    ethane.top.enumerate_ff_angles()
+    #ethane.top.enumerate_ff_angles()
+    ethane.top.enumerate_ff_angles_and_dihedrals()
 
     print len(ethane.top._ff_bonds)
     print len(ethane.top._ff_angles)
+    print len(ethane.top._ff_dihedrals)
 
     #from mbuild.plot import Plot
     #Plot(ethane, verbose=False, atoms=True, bonds=True, angles=False, dihedrals=False).show()
