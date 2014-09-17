@@ -106,7 +106,11 @@ class Bond(MBase, PartMixin):
 
         newone._atom1 = deepcopy(self.atom1, memo)
         newone._atom2 = deepcopy(self.atom2, memo)
-        newone._atom1.bonds.add(newone)
+        try:
+            newone._atom1.bonds.add(newone)
+        except:
+            import pdb
+            pdb.set_trace()
         newone._atom2.bonds.add(newone)
 
         newone.kind = self.kind

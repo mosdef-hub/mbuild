@@ -6,7 +6,7 @@ from mbuild.compound import Compound
 
 class Polymer(Compound):
 
-    def __init__(self, proto, port_labels=("up","down"), n=2):
+    def __init__(self, proto, port_labels=("up", "down"), n=2):
         if n < 1:
             raise Exception('n must be 1 or more')
         Compound.__init__(self)

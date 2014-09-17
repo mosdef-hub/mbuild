@@ -1,31 +1,33 @@
 from __future__ import division
+
 from copy import deepcopy
 import numpy as np
 
 from mbuild.coordinate_transform import equivalence_transform
 
+
 def apply_mask(host, guest, mask, guest_port_name="port"):
     """ """
     box = host.boundingbox(excludeG=False)
-
     mask = mask * box.lengths + box.mins
 
     n_ports = len(host.referenced_ports())
     assert(n_ports >= mask.shape[0])
 
-    port_pos = np.empty((n_ports,3))
+    port_positions = np.empty(shape=(n_ports, 3))
     port_list = []
-    for pidx, port in enumerate(host.referenced_ports()):
-        port_pos[pidx, :] = port.middle.pos
+    for port_idx, port in enumerate(host.referenced_ports()):
+        port_positions[port_idx, :] = port.middle.pos
         port_list.append(port)
 
-    for mp in mask:
-        closest_point_idx = np.argmin(host.min_periodic_distance(mp, port_pos))
+    for point in mask:
+        closest_point_idx = np.argmin(host.min_periodic_distance(point, port_positions))
         closest_port = port_list[closest_point_idx]
-        brush = deepcopy(guest)
-        equivalence_transform(brush, brush.labels[guest_port_name], closest_port)
-        host.add(brush)
-        port_pos[closest_point_idx,:] = np.array([np.inf, np.inf, np.inf])
+        new_guest = deepcopy(guest)
+        equivalence_transform(new_guest, new_guest.labels[guest_port_name], closest_port)
+        host.add(new_guest)
+        # Move the port as far away as possible (simpler than removing it).
+        port_positions[closest_point_idx, :] = np.array([np.inf, np.inf, np.inf])
 
 
 def random_mask_3d(num_sites):
