@@ -23,18 +23,7 @@ class AlkaneMonolayer(Compound):
         self.add(tc, 'tiled_surface')
         self.periodicity = tc.periodicity
 
-        #alkylsilane = AlkylSilane(chain_length)
-        ch3 = Methyl()
-        ch2 = Ch2()
-        alkylsilane = Compound()
-        alkylsilane.add(ch3, 'ch3')
-        alkylsilane.add(ch2, 'ch2')
-        equivalence_transform(alkylsilane.ch3, alkylsilane.ch3.down, alkylsilane.ch2.up)
-        alkylsilane.add(ch2.down, 'down', containment=False)
-
-        import pdb
-        #pdb.set_trace()
-
+        alkylsilane = AlkylSilane(chain_length)
         apply_mask(self.tiled_surface, alkylsilane, mask, guest_port_name='down')
 
 if __name__ == "__main__":
