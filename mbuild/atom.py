@@ -92,10 +92,15 @@ class Atom(MBase, PartMixin):
     def __deepcopy__(self, memo):
         cls = self.__class__
         newone = cls.__new__(cls)
+
+        # remember the topmost component being deepcopied
         if len(memo) == 0:
             memo[0] = self
         memo[id(self)] = newone
 
+        # copy fields that don't need recursion
+        newone.referrers = set()
+        newone.bonds = set()
         newone.kind = deepcopy(self.kind, memo)
         newone.pos = deepcopy(self.pos, memo)
         newone.charge = deepcopy(self.charge, memo)
@@ -105,9 +110,6 @@ class Atom(MBase, PartMixin):
             newone.parent = None
         else:
             newone.parent = deepcopy(self.parent, memo)
-
-        newone.referrers = set()
-        newone.bonds = set()
 
         return newone
 
