@@ -254,8 +254,14 @@ class Compound(MBase, PartMixin, HasPartsMixin):
             memo[0] = self
         memo[id(self)] = newone
 
+        # first copy those attributes that don't need deepcopying
         newone.kind = deepcopy(self.kind, memo)
         newone.periodicity = deepcopy(self.periodicity, memo)
+
+        # create empty containers
+        newone.parts = OrderedSet()
+        newone.labels = OrderedDict()
+        newone.referrers = set()
 
         # Copy the parent of everybody, except topmost compound being deepcopied.
         if memo[0] == self:
@@ -264,7 +270,6 @@ class Compound(MBase, PartMixin, HasPartsMixin):
             newone.parent = deepcopy(self.parent, memo)
 
         # Copy parts, except bonds with atoms outside the hierarchy.
-        newone.parts = OrderedSet()
         for part in self.parts:
             if isinstance(part, Bond):
                 if memo[0] in part.atom1.ancestors() and memo[0] in part.atom2.ancestors():
@@ -273,7 +278,6 @@ class Compound(MBase, PartMixin, HasPartsMixin):
                 newone.parts.add(deepcopy(part,memo))
 
         # Copy labels, except bonds with atoms outside the hierarchy
-        newone.labels = OrderedDict()
         for k, v in self.labels.items():
             if isinstance(v, Bond):
                 if memo[0] in v.atom1.ancestors() and memo[0] in v.atom2.ancestors():
@@ -285,7 +289,6 @@ class Compound(MBase, PartMixin, HasPartsMixin):
                     newone.labels[k].referrers.add(newone)
 
         # Copy referrers that do not point out of the hierarchy.
-        newone.referrers = set()
         for r in self.referrers:
             if memo[0] in r.ancestors():
                 newone.referrers.add(deepcopy(r,memo))
