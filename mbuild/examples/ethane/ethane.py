@@ -1,8 +1,8 @@
 __author__ = 'sallai'
 
-from mbuild.examples.ethane.methyl import Methyl
 from mbuild.compound import Compound
-from mbuild.coordinate_transform import *
+from mbuild.examples.ethane.methyl import Methyl
+from mbuild.coordinate_transform import equivalence_transform
 
 
 class Ethane(Compound):
@@ -19,11 +19,8 @@ if __name__ == "__main__":
     ethane = Ethane()
     ethane.save('ethane.pdb')
 
-
     ethane = ethane.to_trajectory()
-    ethane.top.load_ff_bonds()
-    #ethane.top.enumerate_ff_angles()
-    ethane.top.enumerate_ff_angles_and_dihedrals()
+    ethane.top.find_forcefield_terms()
 
     print len(ethane.top._ff_bonds)
     print len(ethane.top._ff_angles)

@@ -47,7 +47,7 @@ class Alkane(Compound):
 
 if __name__ == "__main__":
     n = 3
-    alkane = Alkane(n=n, cap_front=True, cap_end=False)
+    alkane = Alkane(n=n, cap_front=True, cap_end=True)
 
     #m.save("{}-alkane.pdb".format(n))
 
@@ -58,20 +58,14 @@ if __name__ == "__main__":
     # m.update_from_molecule(mol)
 
 
-    from mbuild.tools import add_angle
+    # from mbuild.plot import Plot
+    # Plot(alkane, bonds=True).show()
 
-    # alkane = alkane.to_trajectory()
-    # alkane.top.load_ff_bonds()
-    #
-    # #alkane.top.enumerate_ff_angles()
-    # #alkane.top.enumerate_ff_dihedrals()
-    # alkane.top.enumerate_ff_angles_and_dihedrals()
-    #
-    # print len(alkane.top._ff_bonds)
-    # print len(alkane.top._ff_angles)
-    # print len(alkane.top._ff_dihedrals)
-    # import pdb
-    # pdb.set_trace()
+    alkane = alkane.to_trajectory()
+    alkane.top.find_forcefield_terms()
 
-    from mbuild.plot import Plot
-    Plot(alkane, bonds=True).show()
+    print len(alkane.top._ff_bonds)
+    print len(alkane.top._ff_angles)
+    print len(alkane.top._ff_dihedrals)
+
+

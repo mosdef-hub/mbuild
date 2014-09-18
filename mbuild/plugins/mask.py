@@ -3,11 +3,20 @@ from __future__ import division
 from copy import deepcopy
 import numpy as np
 
+from mbuild.compound import Compound
 from mbuild.coordinate_transform import equivalence_transform
 
 
-def apply_mask(host, guest, mask, guest_port_name="port"):
-    """ """
+def apply_mask(host, guest, mask, guest_port_name="port", backfill=None):
+    """Attach guest Compounds to a host Compound in the pattern of a mask.
+
+    Args:
+        host (mbuild.Compound):
+        guest (mbuild.Compound):
+        mask (np.ndarray):
+        guest_port_name (str):
+        backfill (Compound, optional):
+    """
     box = host.boundingbox(excludeG=False)
     mask = mask * box.lengths + box.mins
 
@@ -15,19 +24,35 @@ def apply_mask(host, guest, mask, guest_port_name="port"):
     assert(n_ports >= mask.shape[0])
 
     port_positions = np.empty(shape=(n_ports, 3))
-    port_list = []
+    port_list = list()
     for port_idx, port in enumerate(host.referenced_ports()):
         port_positions[port_idx, :] = port.middle.pos
         port_list.append(port)
 
+    used_ports = list()  # Keep track of used ports for backfilling.
     for point in mask:
         closest_point_idx = np.argmin(host.min_periodic_distance(point, port_positions))
         closest_port = port_list[closest_point_idx]
+        used_ports.append(closest_port)
+
+        # Attach the guest to the closest port.
         new_guest = deepcopy(guest)
         equivalence_transform(new_guest, new_guest.labels[guest_port_name], closest_port)
         host.add(new_guest)
+
         # Move the port as far away as possible (simpler than removing it).
+        # There may well be a more elegant/efficient way of doing this.
         port_positions[closest_point_idx, :] = np.array([np.inf, np.inf, np.inf])
+
+    if backfill:
+        # Attach the backfilling Compound to unused ports.
+        for port in port_list:
+            if port not in used_ports:
+                new_backfill = deepcopy(backfill)
+                # Might make sense to have a backfill_port_name option...
+                equivalence_transform(
+                    new_backfill, new_backfill.labels[guest_port_name], port)
+                host.add(new_backfill)
 
 
 def random_mask_3d(num_sites):

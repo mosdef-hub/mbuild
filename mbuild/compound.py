@@ -120,34 +120,37 @@ class Compound(MBase, PartMixin, HasPartsMixin):
         else:
             return list
 
-
     def append_from_file(self, filename, relative_to_module=None, frame=0):
-
-        # Load trajectory from file
+        """Append to Compound with information from a Trajectory file. """
         from mbuild.trajectory import Trajectory
         traj = Trajectory.load(filename, relative_to_module=relative_to_module)
 
         self.append_from_trajectory(traj, frame=frame)
 
     def update_from_file(self, filename, relative_to_module=None, frame=0):
-
-        # Load trajectory from file
+        """Update Compound with information from a Trajectory file. """
         from mbuild.trajectory import Trajectory
         traj = Trajectory.load(filename, relative_to_module=relative_to_module)
 
         self.update_from_trajectory(traj, frame=frame)
 
     def append_from_trajectory(self, traj, frame=0):
-        # Append to this compound the trajectory's topology (atoms, bonds) with the atom's xyz positions as of frame 0
+        """Append the Trajectory's topology (atoms, bonds). """
         traj.to_compound(part=self, frame=frame)
 
     def update_from_trajectory(self, traj, frame=0):
+        """Update the Compound with the Trajectory's topology. """
         traj.update_compound(self, frame=frame)
 
     def save(self, filename, **kwargs):
+        """Save the Compound to a file.
+
+        This creates an intermediate Trajectory object.
+        """
         self.to_trajectory().save(filename, **kwargs)
 
     def to_trajectory(self):
+        """Convert the Compound to a Trajectory. """
         from mbuild.trajectory import Trajectory
         return Trajectory.from_compound(self)
 
@@ -183,6 +186,11 @@ class Compound(MBase, PartMixin, HasPartsMixin):
         return Molecule(mol)
 
     def update_from_molecule(self, mol):
+        """
+
+        Args:
+            mol:
+        """
         from pybel import Molecule
 
         assert(isinstance(mol, Molecule))
@@ -208,9 +216,11 @@ class Compound(MBase, PartMixin, HasPartsMixin):
     def boundingbox(self, excludeG=True):
         """Compute the bounding box of the compound.
 
+        Args:
+            excludeG (bool): Exclude Atoms of kind 'G' (typically reserved for
+                             Ports).
         Returns:
             Box: Simulation box initialzied with min and max coordinates.
-
         """
         minx = np.inf
         miny = np.inf
@@ -241,11 +251,19 @@ class Compound(MBase, PartMixin, HasPartsMixin):
         return Box(mins=min_coords, maxes=max_coords)
 
     def atoms_in_range(self, point, radius, max_items=10):
+        """Find all Atoms within a radius of a point.
+
+        Args:
+            point:
+            radius:
+            max_items:
+        Returns:
+            list of Atoms within range
+        """
         atoms = self.atom_list_by_kind(excludeG=True)
         traj = self.to_trajectory()
         idxs = traj.atoms_in_range_idx(point, radius, max_items=max_items)
         return [atoms[idx] for idx in idxs]
-
 
     def __deepcopy__(self, memo):
         cls = self.__class__

@@ -1,33 +1,46 @@
-import itertools
-
 __author__ = 'sallai'
+import itertools
+from copy import deepcopy
+
 import numpy as np
 
-from mdtraj.core.element import Element
 from mdtraj.core.topology import Topology as MDTTopology
+from mdtraj.core.element import Element
 from mdtraj.core import element as elem
 
 
 class Topology(MDTTopology):
-
+    """Derivative MDTraj's Topology class with additional functionalities. """
     def __init__(self):
+        """Initialize an mBuild Topology. """
         super(Topology, self).__init__()
         self._ff_bonds = []
         self._ff_angles = []
         self._ff_dihedrals = []
-
 
     @property
     def ff_bonds(self):
         return iter(self._ff_bonds)
 
     @property
+    def n_ff_bonds(self):
+        return sum(1 for _ in self.ff_bonds)
+
+    @property
     def ff_angles(self):
         return iter(self._ff_angles)
 
     @property
+    def n_ff_angles(self):
+        return sum(1 for _ in self.ff_angles)
+
+    @property
     def ff_dihedrals(self):
         return iter(self._ff_dihedrals)
+
+    @property
+    def n_ff_dihedrals(self):
+        return sum(1 for _ in self.ff_dihedrals)
 
     def add_ff_bond(self, atom1, atom2):
         if atom1.index < atom2.index:
@@ -36,17 +49,10 @@ class Topology(MDTTopology):
             self._ff_bonds.append(ForcefieldBond(atom2, atom1))
 
     def add_ff_angle(self, atom1, atom2, atom3):
-        #print "Adding angle: {}{}-{}{}-{}{}".format(atom1.index, atom1.name,
-        #                                      atom2.index, atom2.name,
-        #                                      atom3.index, atom3.name)
         atoms = sorted([atom1, atom2, atom3], key=lambda x: x.index)
         self._ff_angles.append(ForcefieldAngle(*atoms))
 
     def add_ff_dihedral(self, atom1, atom2, atom3, atom4):
-        print "Adding dihedral: {}{}-{}{}-{}{}-{}{}".format(atom1.index, atom1.name,
-                                              atom2.index, atom2.name,
-                                              atom3.index, atom3.name,
-                                              atom4.index, atom4.name)
         atoms = sorted([atom1, atom2, atom3, atom4], key=lambda x: x.index)
         self._ff_dihedrals.append(ForcefieldDihedral(*atoms))
 
@@ -55,62 +61,59 @@ class Topology(MDTTopology):
         for bond in self.bonds:
             self.add_ff_bond(bond[0], bond[1])
 
-    def enumerate_ff_angles(self):
-        """Find all angles based on all bonds. """
-        graph = self.to_bondgraph()
-        for node in graph.nodes_iter():
-            neighbors = graph.neighbors(node)
-            if len(neighbors) > 1:
-                for pair in itertools.combinations(neighbors, 2):
-                    self.add_ff_angle(node, pair[0], pair[1])
+    def enumerate_angles(self, node, neighbors):
+        """Find all angles around a node."""
+        for pair in itertools.combinations(neighbors, 2):
+            self.add_ff_angle(node, pair[0], pair[1])
 
-    def enumerate_ff_dihedrals(self):
-        """Find all dihedrals based on all bonds. """
-        graph = self.to_bondgraph()
-        for node_1 in graph.nodes_iter():
-            neighbors_1 = graph.neighbors(node_1)
-            if len(neighbors_1) > 1:
-                for node_2 in neighbors_1:
-                    if node_2.index > node_1.index:
-                        neighbors_2 = graph.neighbors(node_2)
-                        if len(neighbors_2) > 1:
+    def enumerate_dihedrals(self, node_1, neighbors_1, node_2, neighbors_2):
+        """Find all dihedrals around a pair of nodes."""
+        # We need to make sure we don't remove the node from the neighbor lists
+        # that we will be re-using in the following iterations.
+        # TODO: Make pretty. Any way to avoid the deepcopy?
+        temp_neighbors_1 = deepcopy(neighbors_1)
+        temp_neighbors_2 = deepcopy(neighbors_2)
+        temp_neighbors_1.remove(node_2)
+        temp_neighbors_2.remove(node_1)
 
-                            # TODO: make pretty
-                            temp_neighbors_1 = neighbors_1
-                            temp_neighbors_2 = neighbors_2
-                            temp_neighbors_1.remove(node_2)
-                            temp_neighbors_2.remove(node_1)
+        for pair in itertools.product(temp_neighbors_1, temp_neighbors_2):
+            self.add_ff_dihedral(pair[0], node_1, node_2, pair[1])
 
-                            for pair in itertools.product(temp_neighbors_1, temp_neighbors_2):
-                                self.add_ff_dihedral(pair[0], node_1, node_2, pair[1])
+    def find_forcefield_terms(self, bonds=True, angles=True, dihedrals=True,
+                              impropers=True):
+        """Convert Bonds to ForcefieldBonds and find angles and dihedrals. """
+        if bonds:
+            self.load_ff_bonds()
 
-    def enumerate_ff_angles_and_dihedrals(self):
-        """Find all angles and dihedrals based on all bonds. """
-        graph = self.to_bondgraph()
-        for node_1 in graph.nodes_iter():
-            neighbors_1 = graph.neighbors(node_1)
-            if len(neighbors_1) > 1:
-                # angles
-                for pair in itertools.combinations(neighbors_1, 2):
-                    self.add_ff_angle(node_1, pair[0], pair[1])
-
-                # dihedrals
-                for node_2 in neighbors_1:
-                    if node_2.index > node_1.index:
-                        neighbors_2 = graph.neighbors(node_2)
-                        if len(neighbors_2) > 1:
-                            # TODO: make pretty
-                            temp_neighbors_1 = neighbors_1
-                            temp_neighbors_2 = neighbors_2
-                            temp_neighbors_1.remove(node_2)
-                            temp_neighbors_2.remove(node_1)
-
-                            for pair in itertools.product(temp_neighbors_1, temp_neighbors_2):
-                                self.add_ff_dihedral(pair[0], node_1, node_2, pair[1])
+        if any([angles, dihedrals, impropers]):
+            graph = self.to_bondgraph()
+            for node_1 in graph.nodes_iter():
+                neighbors_1 = graph.neighbors(node_1)
+                if len(neighbors_1) > 1:
+                    if angles:
+                        self.enumerate_angles(node_1, neighbors_1)
+                    if dihedrals:
+                        for node_2 in neighbors_1:
+                            if node_2.index > node_1.index:
+                                neighbors_2 = graph.neighbors(node_2)
+                                if len(neighbors_2) > 1:
+                                    self.enumerate_dihedrals(
+                                        node_1, neighbors_1, node_2, neighbors_2)
+                    if impropers:
+                        # TODO: implement
+                        pass
 
     @classmethod
     def from_compound(cls, compound, atom_list=None, bond_list=None):
+        """Create a Topology from a Compound.
 
+        Args:
+            compound:
+            atom_list:
+            bond_list:
+        Returns:
+            out (mbuild.Topology):
+        """
         out = cls()
         atom_mapping = {}
 
@@ -118,10 +121,10 @@ class Topology(MDTTopology):
         r = out.add_residue("RES", c)
 
         if atom_list is None:
-            atom_list, atom_id_to_idx = compound.atom_list_by_kind('*', excludeG=True, with_id_to_idx_mapping=True)
+            atom_list, atom_id_to_idx = compound.atom_list_by_kind(
+                '*', excludeG=True, with_id_to_idx_mapping=True)
 
         for atom in atom_list:
-            e = None
             try:
                 e = elem.get_by_symbol(atom.kind)
             except:
@@ -131,7 +134,9 @@ class Topology(MDTTopology):
             atom_mapping[atom] = a
 
         if bond_list is None:
-            bond_list, bond_id_to_idx = compound.bond_list_by_kind('*', with_id_to_idx_mapping=True)
+            bond_list, bond_id_to_idx = compound.bond_list_by_kind(
+                '*', with_id_to_idx_mapping=True)
+
         for idx, bond in enumerate(bond_list):
             a1 = bond.atom1
             a2 = bond.atom2
@@ -229,12 +234,12 @@ class ForcefieldAngle(object):
 
     def __eq__(self, angle):
         return (isinstance(angle, ForcefieldAngle) and
-               (self.atom1 == angle.atom1 and self.atom2 == angle.atom2 and self.atom3 == angle.atom3 or
-                self.atom3 == angle.atom1 and self.atom2 == angle.atom2 and self.atom1 == angle.atom3))
+                (self.atom1 == angle.atom1 and self.atom2 == angle.atom2 and self.atom3 == angle.atom3 or
+                 self.atom3 == angle.atom1 and self.atom2 == angle.atom2 and self.atom1 == angle.atom3))
 
     def __repr__(self):
         return "Angle{0}({1}, {2}, {3})".format(
-                id(self), self.atom1, self.atom2, self.atom3)
+            id(self), self.atom1, self.atom2, self.atom3)
 
 
 class ForcefieldDihedral(object):
@@ -259,7 +264,7 @@ class ForcefieldDihedral(object):
             self.kind = kind
         else:
             self.kind = '{0}-{1}-{2}-{3}'.format(
-                    atom1.name, atom2.name, atom3.name, atom4.name)
+                atom1.name, atom2.name, atom3.name, atom4.name)
 
     @property
     def atom1(self):
@@ -282,9 +287,9 @@ class ForcefieldDihedral(object):
 
     def __eq__(self, dihedral):
         return (isinstance(dihedral, ForcefieldDihedral) and
-               (self.atom1 == dihedral.atom1 and self.atom2 == dihedral.atom2 and self.atom3 == dihedral.atom3 and self.atom4 == dihedral.atom4 or
-                self.atom4 == dihedral.atom1 and self.atom3 == dihedral.atom2 and self.atom2 == dihedral.atom3 and self.atom1 == dihedral.atom4))
+                (self.atom1 == dihedral.atom1 and self.atom2 == dihedral.atom2 and self.atom3 == dihedral.atom3 and self.atom4 == dihedral.atom4 or
+                 self.atom4 == dihedral.atom1 and self.atom3 == dihedral.atom2 and self.atom2 == dihedral.atom3 and self.atom1 == dihedral.atom4))
 
     def __repr__(self):
         return "Dihedral{0}({1}, {2}, {3}, {4})".format(
-                id(self), self.atom1, self.atom2, self.atom3, self.atom4)
+            id(self), self.atom1, self.atom2, self.atom3, self.atom4)
