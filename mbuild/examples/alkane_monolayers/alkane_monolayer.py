@@ -46,8 +46,7 @@ if __name__ == "__main__":
 
     monolayer = AlkaneMonolayer(chain_length=6, mask=mask)
     monolayer = monolayer.to_trajectory()
-    monolayer.top.load_ff_bonds()
-    monolayer.top.enumerate_ff_angles_and_dihedrals()
+    monolayer.top.find_forcefield_terms()
 
     print monolayer.n_atoms
     print monolayer.top.n_ff_bonds
@@ -55,6 +54,6 @@ if __name__ == "__main__":
     print monolayer.top.n_ff_dihedrals
 
     from mbuild.plot import Plot
-    Plot(monolayer, bonds=False, angles=True, dihedrals=False,
+    Plot(monolayer, bonds=True, angles=False, dihedrals=False,
          periodic_bonds=False).show()
 

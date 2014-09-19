@@ -10,7 +10,10 @@ from mdtraj.core import element as elem
 
 
 class Topology(MDTTopology):
-    """Derivative MDTraj's Topology class with additional functionalities. """
+    """Derivative of MDTraj's Topology class with additional functionalities.
+
+    Most notably, provides conversion to and from mBuild Compounds.
+    """
     def __init__(self):
         """Initialize an mBuild Topology. """
         super(Topology, self).__init__()
@@ -71,6 +74,7 @@ class Topology(MDTTopology):
         # We need to make sure we don't remove the node from the neighbor lists
         # that we will be re-using in the following iterations.
         # TODO: Make pretty. Any way to avoid the deepcopy?
+        # TODO: Double check if we actually need to do this for `neighbors_2`.
         temp_neighbors_1 = deepcopy(neighbors_1)
         temp_neighbors_2 = deepcopy(neighbors_2)
         temp_neighbors_1.remove(node_2)
@@ -121,8 +125,7 @@ class Topology(MDTTopology):
         r = out.add_residue("RES", c)
 
         if atom_list is None:
-            atom_list, atom_id_to_idx = compound.atom_list_by_kind(
-                '*', excludeG=True, with_id_to_idx_mapping=True)
+            atom_list = compound.atom_list_by_kind('*', excludeG=True)
 
         for atom in atom_list:
             try:
@@ -134,8 +137,7 @@ class Topology(MDTTopology):
             atom_mapping[atom] = a
 
         if bond_list is None:
-            bond_list, bond_id_to_idx = compound.bond_list_by_kind(
-                '*', with_id_to_idx_mapping=True)
+            bond_list = compound.bond_list_by_kind(kind='*')
 
         for idx, bond in enumerate(bond_list):
             a1 = bond.atom1
