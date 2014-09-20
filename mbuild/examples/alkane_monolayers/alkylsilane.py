@@ -25,10 +25,29 @@ class AlkylSilane(Compound):
         self.add(silane.down, 'down', containment=False)
 
 if __name__ == "__main__":
-    alkyl_silane = AlkylSilane(5)
+    alkyl_silane = AlkylSilane(100)
+    alkyl_silane = alkyl_silane.to_trajectory()
 
-    from mbuild.plot import Plot
-    Plot(alkyl_silane, bonds=True, verbose=False).show()
+    import cProfile, pstats, StringIO
+    pr = cProfile.Profile()
+    pr.enable()
+
+    alkyl_silane.top.find_forcefield_terms()
+
+    pr.disable()
+    s = StringIO.StringIO()
+    sortby = 'cumulative'
+    ps = pstats.Stats(pr, stream=s).sort_stats(sortby)
+    ps.print_stats()
+    print s.getvalue()
+
+    print alkyl_silane.n_atoms
+    print alkyl_silane.top.n_ff_bonds
+    print alkyl_silane.top.n_ff_angles
+    print alkyl_silane.top.n_ff_dihedrals
+
+    #from mbuild.plot import Plot
+    #Plot(alkyl_silane, bonds=True, verbose=False).show()
 
     #from mbuild.treeview import TreeView
     # TreeView(m).show()

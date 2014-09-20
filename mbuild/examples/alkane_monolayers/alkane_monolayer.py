@@ -46,7 +46,19 @@ if __name__ == "__main__":
 
     monolayer = AlkaneMonolayer(chain_length=6, mask=mask)
     monolayer = monolayer.to_trajectory()
+
+    import cProfile, pstats, StringIO
+    pr = cProfile.Profile()
+    pr.enable()
+
     monolayer.top.find_forcefield_terms()
+
+    pr.disable()
+    s = StringIO.StringIO()
+    sortby = 'cumulative'
+    ps = pstats.Stats(pr, stream=s).sort_stats(sortby)
+    ps.print_stats()
+    print s.getvalue()
 
     print monolayer.n_atoms
     print monolayer.top.n_ff_bonds

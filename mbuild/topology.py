@@ -73,14 +73,10 @@ class Topology(MDTTopology):
         """Find all dihedrals around a pair of nodes."""
         # We need to make sure we don't remove the node from the neighbor lists
         # that we will be re-using in the following iterations.
-        # TODO: Make pretty. Any way to avoid the deepcopy?
-        # TODO: Double check if we actually need to do this for `neighbors_2`.
-        temp_neighbors_1 = deepcopy(neighbors_1)
-        temp_neighbors_2 = deepcopy(neighbors_2)
-        temp_neighbors_1.remove(node_2)
-        temp_neighbors_2.remove(node_1)
+        neighbors_1 = set(neighbors_1) - set([node_2])
+        neighbors_2.remove(node_1)
 
-        for pair in itertools.product(temp_neighbors_1, temp_neighbors_2):
+        for pair in itertools.product(neighbors_1, neighbors_2):
             self.add_ff_dihedral(pair[0], node_1, node_2, pair[1])
 
     def find_forcefield_terms(self, bonds=True, angles=True, dihedrals=True,
