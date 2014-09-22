@@ -1,3 +1,5 @@
+from future.builtins import range
+
 import operator
 
 from mdtraj.utils import in_units_of
@@ -46,7 +48,7 @@ def save_lammps(traj, step=-1, optional_nodes=None, filename='data.mbuild',
                 atom_type_n += 1
             x, y, z = in_units_of(traj.xyz[step][atom.index], 'nanometers',
                                   _distance_unit)
-            entry = '{0:-6d} {1:-6d} {2:-6d} {3:5.8f} {4:8.5f} {5:8.5f} {6:8.5f}\n'.format(
+            entry = '{0:-d} {1:-d} {2:-d} {3:5.8f} {4:8.5f} {5:8.5f} {6:8.5f}\n'.format(
                 atom.index + 1, chain.index + 1, numeric_types[atom.name],
                 0.0, x, y, z)
             atom_list.append(entry)
@@ -61,23 +63,21 @@ def save_lammps(traj, step=-1, optional_nodes=None, filename='data.mbuild',
     number_of_terms = dict()
     for directive, n_terms in optional_directives:
         number_of_terms[directive] = 0
-        # We refer directly to the private member because the property function
-        # returns an iterator.
+        numeric_types = dict()
         if getattr(traj.top, '_ff_{0}'.format(directive)):
             list_of_terms = list()
             list_of_terms.append('\n')
             list_of_terms.append('{0}\n'.format(directive.title()))
             list_of_terms.append('\n')
 
-            numeric_types = dict()
             term_type_n = 1
             for term_n, term in enumerate(getattr(traj.top, 'ff_{0}'.format(directive))):
                 if term.kind not in numeric_types:
                     numeric_types[term.kind] = term_type_n
                     term_type_n += 1
-                entry = '{0:-6d} {1:6d} '.format(term_n + 1, numeric_types[term.kind])
+                entry = '{0:-d} {1:d} '.format(term_n + 1, numeric_types[term.kind])
                 for n in range(n_terms):
-                    entry += '{0:6d}'.format(getattr(term, 'atom{0}'.format(n + 1)).index + 1)
+                    entry += '{0:d} '.format(getattr(term, 'atom{0}'.format(n + 1)).index + 1)
                 entry += '\n'
                 list_of_terms.append(entry)
             number_of_terms[directive] = term_n + 1

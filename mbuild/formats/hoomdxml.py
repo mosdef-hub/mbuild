@@ -1,3 +1,5 @@
+from future.builtins import range
+
 from mdtraj.formats.registry import _FormatRegistry
 from mbuild.testing.tools import get_fn
 
@@ -52,7 +54,6 @@ def load_hoomdxml(filename, optional_nodes=False):
     optional_data = dict()
 
     if optional_nodes:
-
         # Create a dataframe with all available per-particle information.
         per_particle_df = pd.DataFrame()
         per_particle_nodes = ['image', 'velocity', 'acceleration', 'mass',
@@ -72,7 +73,7 @@ def load_hoomdxml(filename, optional_nodes=False):
 
         # Add a dataframe for each available multi-particle node.
         multi_particle_nodes = [('bond', 2), ('angle', 3), ('dihedral', 4),
-                ('improper', 4)]
+                                ('improper', 4)]
         for node, n_indices in multi_particle_nodes:
             parsed_node_text = list()
             try:
@@ -147,38 +148,45 @@ def save_hoomdxml(traj, step=-1, optional_nodes=None, filename='mbuild.xml'):
             xml_file.write("{0}\n".format(atom.name))
         xml_file.write("</type>\n")
 
-        xml_file.write("""<bond>\n""")
-        for bond in traj.top.bonds:
-            a1 = bond[0]
-            a2 = bond[1]
-            bond_type = '{0}-{1}'.format(a1.name, a2.name)
-            xml_file.write("{0} {1} {2}\n".format(bond_type, a1.index, a2.index))
-        xml_file.write("</bond>\n")
+
+        optional_directives = [('bonds', 2), ('angles', 3), ('dihedrals', 4),
+                               ('impropers', 4)]
+        for directive, n_terms in optional_directives:
+            if getattr(traj.top, '_ff_{0}'.format(directive)):
+                xml_file.write("""<{0}>\n""".format(directive[:-1]))
+                for term in getattr(traj.top, 'ff_{0}'.format(directive)):
+                    entry = '{0} '.format(term.kind)
+                    for n in range(n_terms):
+                        entry += '{0} '.format(
+                            getattr(term, 'atom{0}'.format(n + 1)).index)
+                    entry += '\n'
+                    xml_file.write(entry)
+                xml_file.write("</{0}>\n".format(directive))
 
         # TODO: optional things
         xml_file.write("</configuration>\n")
         xml_file.write("</hoomd_xml>\n")
 
 if __name__ == "__main__":
-    traj, optional_data = load_hoomdxml(get_fn('triblock.hoomdxml'), optional_nodes=True)
-    import pdb
-    pdb.set_trace()
+    #traj, optional_data = load_hoomdxml(get_fn('triblock.hoomdxml'), optional_nodes=True)
     # save_hoomdxml(traj, filename='init_out.xml')
 
     import numpy as np
 
     from mbuild.examples.ethane.ethane import Ethane
-    from mbuild.compound import Compound
     from mbuild.coordinate_transform import rotate_around_x
 
     ethane = Ethane()
     rotate_around_x(ethane, np.pi)
+    ethane = ethane.to_trajectory()
+    ethane.top.find_forcefield_terms()
     ethane.save("ethane.hoomdxml")
 
-    ethane.update_from_file("ethane.hoomdxml")
-
-    c = Compound()
-    c.append_from_file("ethane.hoomdxml")
-
-    for atom in c.atoms():
-        print atom
+    # ethane.update_from_file("ethane.hoomdxml")
+    #
+    # from mbuild.compound import Compound
+    # c = Compound()
+    # c.append_from_file("ethane.hoomdxml")
+    #
+    # for atom in c.atoms():
+    #     print atom
