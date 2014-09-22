@@ -20,6 +20,7 @@ class Topology(MDTTopology):
         self._ff_bonds = []
         self._ff_angles = []
         self._ff_dihedrals = []
+        self._ff_impropers = []
 
     @property
     def ff_bonds(self):
@@ -34,6 +35,10 @@ class Topology(MDTTopology):
         return iter(self._ff_dihedrals)
 
     @property
+    def ff_impropers(self):
+        return iter(self._ff_impropers)
+
+    @property
     def n_ff_bonds(self):
         return sum(1 for _ in self.ff_bonds)
 
@@ -44,6 +49,10 @@ class Topology(MDTTopology):
     @property
     def n_ff_dihedrals(self):
         return sum(1 for _ in self.ff_dihedrals)
+
+    @property
+    def n_ff_impropers(self):
+        return sum(1 for _ in self.ff_impropers)
 
     def sort_atoms_alphabetically(self, atoms):
         """Sort a list of atoms alphabetically by their lowercase names. """
