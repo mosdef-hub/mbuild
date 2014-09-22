@@ -75,9 +75,11 @@ def save_lammps(traj, step=-1, optional_nodes=None, filename='data.mbuild',
                 if term.kind not in numeric_types:
                     numeric_types[term.kind] = term_type_n
                     term_type_n += 1
-                list_of_terms.append('{0:-6d} {1:6d} {2:6d} {3:6d}\n'.format(
-                    term_n + 1, numeric_types[term.kind],
-                    term.atom1.index + 1, term.atom2.index + 1))
+                entry = '{0:-6d} {1:6d} '.format(term_n + 1, numeric_types[term.kind])
+                for n in range(n_terms):
+                    entry += '{0:6d}'.format(getattr(term, 'atom{0}'.format(n + 1)).index + 1)
+                entry += '\n'
+                list_of_terms.append(entry)
             number_of_terms[directive] = term_n + 1
             directives_to_write.append(list_of_terms)
         print '(string: numeric types) for {0}'.format(directive)
