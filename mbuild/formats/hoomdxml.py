@@ -1,6 +1,5 @@
 from mdtraj.formats.registry import _FormatRegistry
-
-
+from mbuild.testing.tools import get_fn
 
 __all__ = ['load_hoomxml', 'save_hoomdxml']
 
@@ -161,9 +160,10 @@ def save_hoomdxml(traj, step=-1, optional_nodes=None, filename='mbuild.xml'):
         xml_file.write("</hoomd_xml>\n")
 
 if __name__ == "__main__":
-    # traj, optional_data = load_hoomdxml('init.xml', optional_nodes=True)
+    traj, optional_data = load_hoomdxml(get_fn('triblock.hoomdxml'), optional_nodes=True)
+    import pdb
+    pdb.set_trace()
     # save_hoomdxml(traj, filename='init_out.xml')
-    # pdb.set_trace()
 
     import numpy as np
 

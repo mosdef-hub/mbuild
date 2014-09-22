@@ -26,38 +26,46 @@ class Topology(MDTTopology):
         return iter(self._ff_bonds)
 
     @property
-    def n_ff_bonds(self):
-        return sum(1 for _ in self.ff_bonds)
-
-    @property
     def ff_angles(self):
         return iter(self._ff_angles)
-
-    @property
-    def n_ff_angles(self):
-        return sum(1 for _ in self.ff_angles)
 
     @property
     def ff_dihedrals(self):
         return iter(self._ff_dihedrals)
 
     @property
+    def n_ff_bonds(self):
+        return sum(1 for _ in self.ff_bonds)
+
+    @property
+    def n_ff_angles(self):
+        return sum(1 for _ in self.ff_angles)
+
+    @property
     def n_ff_dihedrals(self):
         return sum(1 for _ in self.ff_dihedrals)
 
+    def sort_atoms_alphabetically(self, atoms):
+        """Sort a list of atoms alphabetically by their lowercase names. """
+        atoms.sort(key=lambda x: x.name.lower())
+        return atoms
+
     def add_ff_bond(self, atom1, atom2):
-        if atom1.index < atom2.index:
-            self._ff_bonds.append(ForcefieldBond(atom1, atom2))
-        else:
-            self._ff_bonds.append(ForcefieldBond(atom2, atom1))
+        atoms = self.sort_atoms_alphabetically([atom1, atom2])
+        self._ff_bonds.append(ForcefieldBond(*atoms))
 
     def add_ff_angle(self, atom1, atom2, atom3):
-        atoms = sorted([atom1, atom2, atom3], key=lambda x: x.index)
-        self._ff_angles.append(ForcefieldAngle(*atoms))
+        atoms = self.sort_atoms_alphabetically([atom1, atom3])
+        self._ff_angles.append(ForcefieldAngle(atoms[0], atom2, atoms[1]))
 
     def add_ff_dihedral(self, atom1, atom2, atom3, atom4):
-        atoms = sorted([atom1, atom2, atom3, atom4], key=lambda x: x.index)
-        self._ff_dihedrals.append(ForcefieldDihedral(*atoms))
+        atoms = self.sort_atoms_alphabetically([atom1, atom4])
+        if atoms[0] == atom1:
+            self._ff_dihedrals.append(ForcefieldDihedral(
+                atom1, atom2, atom3, atom4))
+        elif atoms[1] == atom1:
+            self._ff_dihedrals.append(ForcefieldDihedral(
+                atom4, atom3, atom2, atom1))
 
     def load_ff_bonds(self):
         """Convert from (Atom1, Atom2) to ForcefieldBonds. """
@@ -67,7 +75,7 @@ class Topology(MDTTopology):
     def enumerate_angles(self, node, neighbors):
         """Find all angles around a node."""
         for pair in itertools.combinations(neighbors, 2):
-            self.add_ff_angle(node, pair[0], pair[1])
+            self.add_ff_angle(pair[0], node, pair[1])
 
     def enumerate_dihedrals(self, node_1, neighbors_1, node_2, neighbors_2):
         """Find all dihedrals around a pair of nodes."""
@@ -160,6 +168,7 @@ class ForcefieldBond(object):
             self.kind = kind
         else:
             self.kind = '{0}-{1}'.format(atom1.name, atom2.name)
+
 
     @property
     def atom1(self):

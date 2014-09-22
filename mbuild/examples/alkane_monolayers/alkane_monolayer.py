@@ -65,7 +65,7 @@ if __name__ == "__main__":
     print monolayer.top.n_ff_angles
     print monolayer.top.n_ff_dihedrals
 
-    from mbuild.plot import Plot
-    Plot(monolayer, bonds=True, angles=False, dihedrals=False,
-         periodic_bonds=False).show()
+    #from mbuild.plot import Plot
+    #Plot(monolayer, bonds=True, angles=False, dihedrals=False,
+    #     periodic_bonds=False).show()
 
