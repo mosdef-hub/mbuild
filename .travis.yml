@@ -3,8 +3,15 @@ python:
   # We don't actually use the Travis Python, but this keeps it organized.
   - "2.6"
   - "2.7"
-install:
+virtualenv:
+  - system_site_packages: true
+
+before_install:
   - sudo apt-get update
+  - sudo apt-get install -qq python-numpy python-scipy python-pandas mayavi2
+
+install:
+  - pip install cython
   - pip install -r requirements.txt --use-mirrors
   - pip install .
   - pip install coverage

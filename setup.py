@@ -7,11 +7,8 @@ from setuptools.command.test import test as TestCommand
 
 from pip.req import parse_requirements
 
-# parse_requirements() returns generator of pip.req.InstallRequirement objects
-install_reqs = parse_requirements('requirements.txt')
-
-# reqs is a list of requirement
-reqs = [str(ir.req) for ir in install_reqs]
+requirements_lines = [line.strip() for line in open('requirements.txt').readlines()]
+reqs = list(filter(None, requirements_lines))
 
 if sys.argv[-1] == 'publish':
     os.system('python setup.py sdist upload')
