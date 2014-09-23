@@ -1,14 +1,17 @@
-# Config file for automatic testing at travis-ci.org
-
 language: python
-
 python:
-  - "2.7"
+  # We don't actually use the Travis Python, but this keeps it organized.
   - "2.6"
-  - "pypy"
+  - "2.7"
+install:
+  - sudo apt-get update
+  - pip install -r requirements.txt --use-mirrors
+  - pip install .
+  - pip install coverage
+  - pip install coveralls
 
-# command to install dependencies, e.g. pip install -r requirements.txt --use-mirrors
-install: pip install -r requirements.txt
+script:
+  - coverage run --source=mbuild setup.py test
 
-# command to run tests, e.g. python setup.py test
-script: python setup.py test
+after_success:
+  - coveralls
