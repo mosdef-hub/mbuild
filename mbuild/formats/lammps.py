@@ -48,9 +48,9 @@ def save_lammps(traj, step=-1, optional_nodes=None, filename='data.mbuild',
                 atom_type_n += 1
             x, y, z = in_units_of(traj.xyz[step][atom.index], 'nanometers',
                                   _distance_unit)
-            entry = '{0:-d} {1:-d} {2:-d} {3:5.8f} {4:8.5f} {5:8.5f} {6:8.5f}\n'.format(
+            entry = '{0:-d} {1:-d} {2:-d} {3:5.8f} {4:8.5f} {5:8.5f} {6:8.5f}  # {7}\n'.format(
                 atom.index + 1, chain.index + 1, numeric_types[atom.name],
-                0.0, x, y, z)
+                0.0, x, y, z, atom.name)
             atom_list.append(entry)
 
     directives_to_write.append(mass_list)
@@ -78,7 +78,7 @@ def save_lammps(traj, step=-1, optional_nodes=None, filename='data.mbuild',
                 entry = '{0:-d} {1:d} '.format(term_n + 1, numeric_types[term.kind])
                 for n in range(n_terms):
                     entry += '{0:d} '.format(getattr(term, 'atom{0}'.format(n + 1)).index + 1)
-                entry += '\n'
+                entry += ' # {0}\n'.format(term.kind)
                 list_of_terms.append(entry)
             number_of_terms[directive] = term_n + 1
             directives_to_write.append(list_of_terms)

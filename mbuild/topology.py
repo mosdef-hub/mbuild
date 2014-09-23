@@ -82,12 +82,12 @@ class Topology(MDTTopology):
             self.add_ff_bond(bond[0], bond[1])
 
     def enumerate_angles(self, node, neighbors):
-        """Find all angles around a node."""
+        """Find all angles around a node. """
         for pair in itertools.combinations(neighbors, 2):
             self.add_ff_angle(pair[0], node, pair[1])
 
     def enumerate_dihedrals(self, node_1, neighbors_1, node_2, neighbors_2):
-        """Find all dihedrals around a pair of nodes."""
+        """Find all dihedrals around a pair of nodes. """
         # We need to make sure we don't remove the node from the neighbor lists
         # that we will be re-using in the following iterations.
         neighbors_1 = set(neighbors_1) - set([node_2])
