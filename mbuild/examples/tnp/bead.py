@@ -1,29 +1,35 @@
-from mbuild.atom import Atom
-
 __author__ = 'sallai'
 
+import numpy as np
+
+from mbuild.atom import Atom
 from mbuild.compound import Compound
 from mbuild.port import Port
-from mbuild.coordinate_transform import *
+from mbuild.coordinate_transform import translate
+
 
 class Bead(Compound):
-    """ """
-    def __init__(self, particle_kind="particle"):
+    """A point particle with two ports pointing in opposite directions. """
+    def __init__(self, particle_kind="bead"):
+        """Initialize a Bead object.
+
+        Args:
+            particle_kind (str): Descriptive name for the Bead.
+        """
         Compound.__init__(self)
 
-        self.add(Atom(pos=[0,0,0], kind=particle_kind), "particle")
+        self.add(Atom(kind=particle_kind), "bead")
 
-        self.add(Port(anchor=self.particle), 'up')
-        # rotate_around_z(self.up, np.pi)
-        translate(self.up, np.array([0,0.7,0]))
+        self.add(Port(anchor=self.labels[particle_kind]), 'up')
+        translate(self.up, np.array([0, 0.7, 0]))
 
-        self.add(Port(anchor=self.particle), 'down')
-        translate(self.down, np.array([0,-0.7,0]))
+        self.add(Port(anchor=self.labels[particle_kind]), 'down')
+        translate(self.down, np.array([0, -0.7, 0]))
 
 if __name__ == '__main__':
-    m = Bead(particle_kind="bead")
+    bead = Bead(particle_kind="bead")
 
     from mbuild.plot import Plot
-    Plot(m, verbose=True, atoms=True, bonds=True, angles=False, dihedrals=False).show()
+    Plot(bead).show()
 
 

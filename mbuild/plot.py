@@ -7,10 +7,25 @@ from mayavi import mlab
 from compound import Compound
 from prototype import Prototype
 
-class Plot(object):
 
+class Plot(object):
+    """ """
     def __init__(self, compound, verbose=False,
             atoms=True, bonds=True, angles=False, dihedrals=False, periodic_bonds=True, periodic_angles=True):
+        """
+
+        TODO: Accept Topology objects to visualize angles/dihedrals.
+
+        Args:
+            compound:
+            verbose:
+            atoms:
+            bonds:
+            angles:
+            dihedrals:
+            periodic_bonds:
+            periodic_angles:
+        """
         assert(isinstance(compound, Compound))
 
         # figure = mlab.gcf()

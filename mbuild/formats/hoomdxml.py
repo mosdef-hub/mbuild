@@ -1,7 +1,6 @@
 from future.builtins import range
 
 from mdtraj.formats.registry import _FormatRegistry
-from mbuild.testing.tools import get_fn
 
 __all__ = ['load_hoomxml', 'save_hoomdxml']
 
@@ -17,7 +16,7 @@ def load_hoomdxml(filename, optional_nodes=False):
         traj (md.Trajectory):
     """
 
-    import xml.etree.cElementTree as etree
+    from xml.etree import cElementTree
 
     import numpy as np
     import pandas as pd
@@ -25,7 +24,7 @@ def load_hoomdxml(filename, optional_nodes=False):
     from mbuild.trajectory import Trajectory
     from mbuild.topology import Topology
 
-    tree = etree.parse(filename)
+    tree = cElementTree.parse(filename)
 
     config = tree.getroot().find('configuration')
     # Required nodes for valid HOOMD simulation: box, position and type.
@@ -51,8 +50,8 @@ def load_hoomdxml(filename, optional_nodes=False):
     for atom_type in config.find('type').text.splitlines()[1:]:
         atom_types.append(atom_type)
 
+    # TODO: Read angles/dihedrals/impropers into ff_X topology attributes.
     optional_data = dict()
-
     if optional_nodes:
         # Create a dataframe with all available per-particle information.
         per_particle_df = pd.DataFrame()
@@ -148,7 +147,6 @@ def save_hoomdxml(traj, step=-1, optional_nodes=None, filename='mbuild.xml'):
             xml_file.write("{0}\n".format(atom.name))
         xml_file.write("</type>\n")
 
-
         optional_directives = [('bonds', 2), ('angles', 3), ('dihedrals', 4),
                                ('impropers', 4)]
         for directive, n_terms in optional_directives:
@@ -168,6 +166,7 @@ def save_hoomdxml(traj, step=-1, optional_nodes=None, filename='mbuild.xml'):
         xml_file.write("</hoomd_xml>\n")
 
 if __name__ == "__main__":
+    from mbuild.testing.tools import get_fn
     #traj, optional_data = load_hoomdxml(get_fn('triblock.hoomdxml'), optional_nodes=True)
     # save_hoomdxml(traj, filename='init_out.xml')
 
