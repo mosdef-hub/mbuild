@@ -5,7 +5,7 @@ from numpy import pi
 from mbuild.compound import Compound
 from mbuild.examples.pmpc.surface import Surface
 from mbuild.examples.pmpc.brush import Brush
-from mbuild.plugins.mask import grid_mask_2d, apply_mask
+from mbuild.plugins.mask import grid_mask_2d, apply_mask, random_mask_2d
 from mbuild.tiled_compound import TiledCompound
 
 
@@ -25,14 +25,16 @@ class BrushLayer(Compound):
         apply_mask(self.tiled_surface, brush_proto, mask)
 
 if __name__ == "__main__":
-    # mask = random_mask_2d(4)
-    mask = grid_mask_2d(3,3)
+    mask = random_mask_2d(20)
+    #mask = grid_mask_2d(,3)
     # print mask
 
-    m = BrushLayer(chain_length=5, alpha=pi/4, mask=mask, tile_x=2, tile_y=2)
+    m = BrushLayer(chain_length=20, alpha=pi/4, mask=mask, tile_x=3, tile_y=2)
 
-    from mbuild.plot import Plot
-    Plot(m, bonds=True, angles=False, dihedrals=False, periodic_bonds=True).show()
+    from mbuild.formats.xyz import save_xyz
+    save_xyz(m.to_trajectory(), filename='brush_layer.xyz')
+    # from mbuild.plot import Plot
+    # Plot(m, bonds=True, angles=False, dihedrals=False, periodic_bonds=True).show()
 
     # from mbuild.treeview import TreeView
     # tv = TreeView(m)

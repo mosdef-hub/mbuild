@@ -3,8 +3,8 @@ __author__ = 'sallai'
 import numpy as np
 
 from mbuild.atom import Atom
-from mbuild.compound import Compound
 from mbuild.port import Port
+from mbuild.compound import Compound
 from mbuild.coordinate_transform import translate
 
 

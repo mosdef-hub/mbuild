@@ -1,9 +1,9 @@
 import numpy as np
 
 from mbuild.atom import Atom
+from mbuild.port import Port
 from mbuild.compound import Compound
 from mbuild.coordinate_transform import rotate_around_z, rotate_around_y, translate
-from mbuild.port import Port
 from mbuild.plugins.mask import sphere_mask
 
 
