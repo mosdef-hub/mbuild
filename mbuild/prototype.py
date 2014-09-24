@@ -2,6 +2,7 @@ from _warnings import warn
 
 __author__ = 'sallai'
 
+# TODO: Incorporate into plotting functions.
 class Prototype(object):
     prototypes = dict() # kind:attribute_dict
 

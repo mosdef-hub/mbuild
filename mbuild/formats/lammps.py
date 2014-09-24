@@ -5,13 +5,14 @@ import operator
 from mdtraj.utils import in_units_of
 
 
-def save_lammps(traj, step=-1, optional_nodes=None, filename='data.mbuild',
-                unit_set='real'):
+def save_lammps(traj, step=-1, filename='data.mbuild', unit_set='real'):
     """Output a Trajectory as a LAMMPS data file.
 
     Args:
-        traj (md.Trajectory): The Trajectory to be output.
+        traj (Trajectory): The Trajectory to be output.
+        step (int, optional): The frame in traj to save. Default is last frame.
         filename (str, optional): Path of the output file.
+        unit_set (str, optional): The LAMMPS unit set to write the data file in.
 
     """
     _radians_unit = 'radians'

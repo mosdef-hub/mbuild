@@ -24,10 +24,13 @@ class Surface(Compound):
 
 if __name__ == "__main__":
     s = Surface()
-    m = TiledCompound(s, n_x=2, n_y=1, n_z=1, kind="tiled")
+    m = TiledCompound(s, n_x=3, n_y=2, n_z=1, kind="tiled")
+
+    from mbuild.formats.xyz import save_xyz
+    save_xyz(m.to_trajectory(), filename='tiled_surface.xyz')
 
     # print s.periodicity
     # print m.periodicity
 
-    from mbuild.plot import Plot
-    Plot(m, bonds=True, verbose=True, periodic_bonds=True).show()
+    #from mbuild.plot import Plot
+    #Plot(m, bonds=True, verbose=True, periodic_bonds=True).show()

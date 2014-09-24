@@ -29,7 +29,10 @@ class Brush(Compound):
         self.add(self.silane.bottom_port, label="port", containment=False)
 
 if __name__ == "__main__":
-    m = Brush(chain_length=5, alpha=pi/4)
+    m = Brush(chain_length=20, alpha=pi/4)
 
-    from mbuild.plot import Plot
-    Plot(m).show()
+    from mbuild.formats.xyz import save_xyz
+    save_xyz(m.to_trajectory(), filename='brush.xyz')
+
+    #from mbuild.plot import Plot
+    #Plot(m).show()

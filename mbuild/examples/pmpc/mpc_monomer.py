@@ -1,5 +1,6 @@
-from mbuild.coordinate_transform import *
+from mbuild.coordinate_transform import translate, y_axis_transform, rotate_around_y
 from mbuild.compound import Compound
+from mbuild.polymer import Polymer
 from mbuild.port import Port
 from mbuild.testing.tools import get_fn
 
@@ -32,10 +33,15 @@ class MpcMonomer(Compound):
         translate(self.bottom_port, C_bottom - (C_bottom - C_top)*1.50)
 
 if __name__ == "__main__":
-    m = MpcMonomer()
+    monomer = MpcMonomer()
 
-    from mbuild.plot import Plot
-    Plot(m, verbose=True).show()
+    import numpy as np
+    polymer = Polymer(MpcMonomer(alpha=np.pi/4), n=20, port_labels=("top_port", "bottom_port"))
+
+    from mbuild.formats.xyz import save_xyz
+    save_xyz(polymer.to_trajectory(), filename='pmpc.xyz')
+    #from mbuild.plot import Plot
+    #Plot(m, verbose=True).show()
 
     #from mbuild.treeview import TreeView
     # TreeView(m).show()
