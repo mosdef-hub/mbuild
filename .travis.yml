@@ -14,6 +14,9 @@ before_install:
 
 install:
   - pip install cython
+  - pip install mdtraj
+  - pip install coverage
+  - pip install coveralls
   - pip install -r requirements.txt --use-mirrors
   - pip install .
   - pip install coverage
