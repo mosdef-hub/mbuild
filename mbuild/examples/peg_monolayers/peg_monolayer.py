@@ -31,8 +31,8 @@ if __name__ == "__main__":
 
     m = BrushLayer(chain_length=5, alpha=pi/4, mask=mask, tile_x=2, tile_y=2)
 
-    from mbuild.plot import Plot
-    Plot(m, bonds=True, angles=False, dihedrals=False, periodic_bonds=True).show()
+    #from mbuild.plot import Plot
+    #Plot(m, bonds=True, angles=False, dihedrals=False, periodic_bonds=True).show()
 
     # from mbuild.treeview import TreeView
     # tv = TreeView(m)

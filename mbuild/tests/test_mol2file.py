@@ -1,20 +1,23 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-"""Tests for `mbuild.mol2file` module. """
+"""Tests for `mbuild.formats.mol2` module. """
+from mbuild.examples.ethane.methyl import Methyl
+from mbuild.trajectory import Trajectory
+from mbuild.formats.mol2 import save_mol2
+from mbuild.testing.tools import get_fn
 
-from mbuild.file_formats.mol2file import load_mol2, write_mol2
-from mbuild.compound import Compound
 
 class TestMol2:
 
     def test_load_and_create(self):
-        methyl = load_mol2('methyl.mol2')
+        methyl = Trajectory.load(get_fn('methyl.mol2'))
+        methyl.to_compound()
 
     def test_load_into(self):
-        methyl = Compound()
-        load_mol2('methyl.mol2', component=methyl)
+        methyl = Methyl()
+        methyl.update_from_file(get_fn('methyl.mol2'))
 
-    def test_write(self):
-        methyl = load_mol2('methyl.mol2')
-        write_mol2(methyl, filename='methyl_out.mol2')
+    def test_save(self):
+        methyl = Trajectory.load(get_fn('methyl.mol2'))
+        save_mol2(methyl, filename='methyl_out.mol2')
