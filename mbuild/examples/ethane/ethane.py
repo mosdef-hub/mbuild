@@ -19,7 +19,9 @@ if __name__ == "__main__":
     ethane = Ethane()
     
     ethane.save('ethane.pdb')
-
+    ethane.save('ethane.hoomdxml')
+    
+    
     ethane = ethane.to_trajectory()
     ethane.top.find_forcefield_terms()
 
