@@ -8,10 +8,11 @@ virtualenv:
 
 before_install:
   - sudo apt-get update
-  - sudo apt-get install -qq python-scipy python-pandas mayavi2
+  - sudo apt-get install -qq python-scipy mayavi2
 
 install:
   - pip install cython
+  - pip install pandas
   - pip install mdtraj
   - pip install coverage
   - pip install coveralls

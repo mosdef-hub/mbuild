@@ -17,6 +17,7 @@ class Ethane(Compound):
 
 if __name__ == "__main__":
     ethane = Ethane()
+    
     ethane.save('ethane.pdb')
 
     ethane = ethane.to_trajectory()
