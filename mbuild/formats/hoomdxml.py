@@ -103,11 +103,11 @@ def load_hoomdxml(filename, optional_nodes=True):
     # print found
 
     atoms_df = pd.DataFrame(atom_types, columns=['name'])
+    atoms_df['serial'] = range(n_atoms)
     atoms_df['element'] = ['' for _ in range(n_atoms)]
     atoms_df['resSeq'] = np.ones(n_atoms, dtype='int')
     atoms_df['resName'] = ['RES' for _ in range(n_atoms)]
     atoms_df['chainID'] = np.ones(n_atoms, dtype='int')
-
     # TODO: Infer chains by finding isolated bonded structures.
     if 'bond' in optional_data:
         bonds = optional_data['bond'][['id0', 'id1']].values
@@ -146,7 +146,7 @@ def save_hoomdxml(traj, step=-1, optional_nodes=None, filename='mbuild.xml'):
         xml_file.write("""<position num="{0}">\n""".format(traj.n_atoms))
         for atom in traj.xyz[step]:
             x, y, z = atom
-            xml_file.write("{0:8.5f} {1:8.5f} {2:8.5f}\n".format(x, y, z))
+            xml_file.write("{0:8.5f} {1:8.5f} {2:8.5f}\n".format(float(x), float(y), float(z)))
         xml_file.write("</position>\n")
 
         xml_file.write("""<type num="{0}">\n""".format(traj.n_atoms))
