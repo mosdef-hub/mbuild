@@ -14,7 +14,7 @@ mbuild
 
 mbuild is a component based molecule builder tool to assemble large molecular systems from reusable parts for molecular dynamics simulations
 
-* Free software: BSD license
+* Free software: LGPL license
 * Documentation: http://mbuild.rtfd.org.
 
 Features
