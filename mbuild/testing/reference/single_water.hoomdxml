@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<hoomd_xml version="1.5">
+<configuration time_step="2600000" dimensions="3" natoms="1" >
+<box lx="1.0" ly="1.0" lz="1.0"/>
+<position num="1">
+0.0 0.0 0.0
+</position>
+<type num="1">
+WATER
+</type>
+<mass num="1">
+1.0
+</mass>
+<charge num="1">
+0
+</charge>
+</configuration>
+</hoomd_xml>

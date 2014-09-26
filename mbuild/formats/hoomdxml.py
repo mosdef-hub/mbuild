@@ -5,9 +5,10 @@ from mdtraj.formats.registry import _FormatRegistry
 __all__ = ['load_hoomxml', 'save_hoomdxml']
 
 @_FormatRegistry.register_loader('.hoomdxml')
-def load_hoomdxml(filename, optional_nodes=False):
+def load_hoomdxml(filename, optional_nodes=True):
     """Load a HOOMD-blue XML file form disk.
 
+    TODO: better way to read optional nodes
     Args:
         filename (str): Path to xml file.
         optional_nodes(bool, optional):
@@ -32,9 +33,15 @@ def load_hoomdxml(filename, optional_nodes=False):
     lx = float(box.attrib['lx'])
     ly = float(box.attrib['ly'])
     lz = float(box.attrib['lz'])
-    xy = float(box.attrib['xy'])
-    xz = float(box.attrib['xz'])
-    yz = float(box.attrib['yz'])
+    try:
+        xy = float(box.attrib['xy'])
+        xz = float(box.attrib['xz'])
+        yz = float(box.attrib['yz'])
+    except:
+        xy = 0.0
+        xz = 0.0
+        yz = 0.0
+
     unitcell_vectors = np.array([[[lx,  xy*ly, xz*lz],
                                   [0.0, ly,    yz*lz],
                                   [0.0, 0.0,   lz   ]]])
@@ -159,7 +166,7 @@ def save_hoomdxml(traj, step=-1, optional_nodes=None, filename='mbuild.xml'):
                             getattr(term, 'atom{0}'.format(n + 1)).index)
                     entry += '\n'
                     xml_file.write(entry)
-                xml_file.write("</{0}>\n".format(directive))
+                xml_file.write("</{0}>\n".format(directive[:-1]))
 
         # TODO: optional things
         xml_file.write("</configuration>\n")

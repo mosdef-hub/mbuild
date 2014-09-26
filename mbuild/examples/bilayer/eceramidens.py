@@ -2,14 +2,15 @@ from mbuild.compound import Compound
 from mbuild.testing.tools import get_fn
 
 
-class ECerNS(Compound):
+class ECeramideNS(Compound):
     """ """
     def __init__(self):
-        Compound.__init__(self)
-        self.append_from_file(get_fn('ecer2.hoomdxml'))
+        super(ECeramideNS, self).__init__()
+        #self.append_from_file(get_fn('ecer2.hoomdxml'))  # this is a CG model
+        self.append_from_file(get_fn('e-ceramide-ns.pdb'))
 
 if __name__ == "__main__":
-    ecerns = ECerNS()
+    ecerns = ECeramideNS()
 
     from mbuild.plot import Plot
     Plot(ecerns, verbose=True, atoms=True, bonds=True).show()

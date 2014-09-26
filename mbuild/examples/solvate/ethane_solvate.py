@@ -1,3 +1,6 @@
+from mbuild.examples.bilayer.eceramidens import ECeramideNS
+from mbuild.formats.hoomdxml import save_hoomdxml
+
 __author__ = 'sallai'
 
 from mbuild.box import Box
@@ -14,6 +17,7 @@ if __name__ == "__main__":
 
     water = Compound()
     water.append_from_file(get_fn('spc216.pdb'))
+    #water.append_from_file(get_fn('water.hoomdxml'))
 
     guest_box = water.boundingbox()
     print("Guest (water) box: {}".format(guest_box))
@@ -21,5 +25,8 @@ if __name__ == "__main__":
     # add water to ethane
     solvate(ethane, water, host_box, guest_box)
 
-    from mbuild.plot import Plot
-    Plot(ethane, verbose=False, atoms=True, bonds=True, angles=False, dihedrals=False).show()
+    ethane = ethane.to_trajectory()
+    ethane.topology.load_ff_bonds()
+    save_hoomdxml(ethane, filename='ethane.hoomdxml')
+    #from mbuild.plot import Plot
+    #Plot(ethane, verbose=False, atoms=True, bonds=True, angles=False, dihedrals=False).show()

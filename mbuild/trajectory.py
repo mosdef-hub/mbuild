@@ -195,7 +195,7 @@ class Trajectory(md.Trajectory):
             current_dir = os.path.dirname(os.path.realpath(sys.modules[relative_to_module].__file__))
             filename = os.path.join(current_dir, filename)
 
-        t = md.load(filename)
+        t = md.load(filename)[0]  # TODO: figure out why this is a tuple
         return cls(trajectory=t)
 
     def save(self, filename, **kwargs):

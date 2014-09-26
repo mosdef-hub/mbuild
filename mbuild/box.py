@@ -19,6 +19,8 @@ class Box(object):
         lengths.
         2) Specifying the maxes and mins sets the lengths to maxes-mins.
 
+        Adjusting the length of a box adjusts `maxes` to reflect the change.
+
         Args:
             mins (np.ndarray of floats, optional): Minimum x, y, z
                 coordinates.
@@ -27,22 +29,47 @@ class Box(object):
                 directions. 
 
         """
-        # For clarities sake, we may want to throw a more descriptive exception
-        # here re-iterating the points made in the doc string.
         if lengths is not None:
             assert(mins is None and maxes is None)
-            assert(np.shape(lengths) == (3, ))
-            self.mins = np.array([0.0, 0.0, 0.0])
-            self.lengths = np.array(lengths)
-            self.maxes = np.array(lengths)
+            self._mins = np.array([0.0, 0.0, 0.0])
+            self._maxes = np.array(lengths)
+            self._lengths = np.array(lengths)
 
         elif maxes is not None:
             assert(mins is not None and lengths is None)
-            assert(np.shape(mins) == (3, ))
-            assert(np.shape(maxes) == (3, ))
-            self.mins = np.array(mins)
-            self.maxes = np.array(maxes)
-            self.lengths = self.maxes - self.mins
+            self._mins = np.array(mins)
+            self._maxes = np.array(maxes)
+            self._lengths = self.maxes - self.mins
+
+    @property
+    def mins(self):
+        return self._mins
+
+    @property
+    def maxes(self):
+        return self._maxes
+
+    @property
+    def lengths(self):
+        return self._lengths
+
+    @mins.setter
+    def mins(self, mins):
+        assert mins.shape == (3, )
+        self._mins = mins
+        self._lengths = self.maxes - self.mins
+
+    @maxes.setter
+    def maxes(self, maxes):
+        assert maxes.shape == (3, )
+        self._mins = maxes
+        self._lengths = self.maxes - self.mins
+
+    @lengths.setter
+    def lengths(self, lengths):
+        assert lengths.shape == (3, )
+        self._maxes += lengths - self.lengths
+        self._lengths = lengths
 
     def __repr__(self):
         return "Box(mins={}, maxes={})".format(self.mins, self.maxes)
