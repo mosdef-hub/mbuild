@@ -13,7 +13,8 @@ from mbuild.tools import solvate
 class Bilayer(Compound):
     """ """
     def __init__(self, lipid, n_lipids_x=10, n_lipids_y=10, apl=1.0,
-                 solvent=None, host_box=None, guest_box=None):
+                 solvent=None, host_box=None, guest_box=None,
+                 ref_atom=0, spacing_z=0.5):
         """
 
         Args:
@@ -34,12 +35,12 @@ class Bilayer(Compound):
         for point in mask:
             top_lipid = deepcopy(lipid)
             # TODO: figure out labeling
-            translate(top_lipid, -top_lipid.C[32] + np.asarray([0, 0, 0.1]))
+            translate(top_lipid, -top_lipid.atom[ref_atom] + np.asarray([0, 0, spacing_z]))
             translate(top_lipid, point)
             self.add(top_lipid)
 
             bot_lipid = deepcopy(lipid)
-            translate(bot_lipid, -bot_lipid.C[32] + np.asarray([0, 0, 0.1]))
+            translate(bot_lipid, -bot_lipid.atom[ref_atom] + np.asarray([0, 0, spacing_z]))
             rotate_around_x(bot_lipid, np.pi)
             translate(bot_lipid, point)
             self.add(bot_lipid)
@@ -60,12 +61,21 @@ if __name__ == "__main__":
     from mbuild.trajectory import Trajectory
     from mbuild.formats.hoomdxml import save_hoomdxml
     from mbuild.testing.tools import get_fn
+    import pdb
+
+    from mbuild.tools import solvent_box
+    water = Trajectory.load(get_fn('spc216.pdb'))
+    water = water.to_compound()
+    water.periodicity = water.boundingbox().lengths
+    water = solvent_box(water, Box(lengths=np.array([3.0, 3.0, 3.0])))
+    #save_hoomdxml(water.to_trajectory(), filename='water_box.xml')
+    water.to_trajectory()
+    water.save(filename='water_box.pdb')
 
     ecerns = ECeramideNS()
+    pdb.set_trace()
 
-    #water = Trajectory.load(get_fn('single_water.hoomdxml'))
     water = Trajectory.load(get_fn('spc216.pdb'))
-    #water_box = Box(water.unitcell_lengths[0])
     water = water.to_compound()
     water_box = water.boundingbox()
 

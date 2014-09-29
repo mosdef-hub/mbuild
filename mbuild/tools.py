@@ -6,6 +6,7 @@ import numpy as np
 
 from box import Box
 from bond import Bond
+from mbuild.compound import Compound
 from periodic_kdtree import PeriodicCKDTree
 from coordinate_transform import translate
 
@@ -13,6 +14,45 @@ from coordinate_transform import translate
 def vdw_radius(atomic_number):
     return 0.2
 
+
+def solvent_box(solvent, box):
+    """Fill a box with solvent.
+
+    Args:
+        solvent (Compound):
+        box (Box):
+
+    """
+    solvent_box = Box(lengths=solvent.periodicity)
+    num_replicas = np.ceil(box.lengths / solvent_box.lengths)
+    num_replicas = num_replicas.astype('int')
+    print num_replicas
+
+    out = Compound()
+    for xi in range(num_replicas[0]):
+        for yi in range(num_replicas[1]):
+            for zi in range(num_replicas[2]):
+                temp_solvent = deepcopy(solvent)
+                translate(temp_solvent, -solvent_box.mins + box.mins + np.array([xi, yi, zi])*solvent_box.lengths)
+
+                # Remove atoms outside the host's box and anything bonded to them.
+                guest_atoms = list()
+                guest_atom_pos_list = list()
+                for atom in temp_solvent.atoms():
+                    guest_atoms.append(atom)
+                    guest_atom_pos_list.append(atom.pos)
+                guest_atom_pos_list = np.array(guest_atom_pos_list)
+
+                atoms_to_remove = set()
+                atom_indicies = np.where(np.logical_or(np.any(guest_atom_pos_list < box.mins, axis=1),
+                        np.any(guest_atom_pos_list > box.maxes, axis=1)))[0]
+                for ai in atom_indicies:
+                    atoms_to_remove.add(guest_atoms[ai])
+                    atoms_to_remove.update(guest_atoms[ai].bonded_atoms())
+                temp_solvent.remove(atoms_to_remove)
+                out.add(temp_solvent, "solvent_{}_{}_{}".format(xi, yi, zi))
+
+    return out
 
 def solvate(host_compound, guest_compound, host_box, guest_box, overlap=vdw_radius):
     """Solvate a Compound in a Box.
