@@ -31,7 +31,6 @@ def solvate(host_compound, guest_compound, host_box, guest_box, overlap=vdw_radi
     """
     assert isinstance(host_box, Box)
     assert isinstance(guest_box, Box)
-    assert np.all(guest_compound.periodicity == 0)
 
     # TODO: we may want to make sure that the axes of the two boxes line up
 
@@ -48,10 +47,8 @@ def solvate(host_compound, guest_compound, host_box, guest_box, overlap=vdw_radi
             for zi in range(num_replicas[2]):
                 guest = deepcopy(guest_compound)
                 translate(guest, -guest_box.mins + host_box.mins + np.array([xi, yi, zi])*guest_box.lengths)
+
                 # Remove atoms outside the host's box and anything bonded to them.
-                #guest_atoms = guest.atom_list_by_kind('*')
-                #guest_atoms = [atom for atom in guest.atoms()]
-                #guest_atom_pos_list = np.array([atom.pos for atom in guest_atoms])
                 guest_atoms = list()
                 guest_atom_pos_list = list()
                 for atom in guest.atoms():

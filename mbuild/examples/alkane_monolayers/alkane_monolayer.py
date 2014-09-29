@@ -46,7 +46,7 @@ if __name__ == "__main__":
     monolayer = AlkaneMonolayer(chain_length=6, mask=mask)
     monolayer = monolayer.to_trajectory()  # Convert from mBuild to mdtraj
 
-    monolayer.top.find_forcefield_terms()  # Find angles/dihedrals from bonds.
+    monolayer.topology.find_forcefield_terms()  # Find angles/dihedrals from bonds.
 
     save_lammps(monolayer, filename='data.c6-100')  # Print a LAMMPS data file.
 

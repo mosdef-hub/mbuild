@@ -62,13 +62,14 @@ class Box(object):
     @maxes.setter
     def maxes(self, maxes):
         assert maxes.shape == (3, )
-        self._mins = maxes
+        self._maxes = maxes
         self._lengths = self.maxes - self.mins
 
     @lengths.setter
     def lengths(self, lengths):
         assert lengths.shape == (3, )
-        self._maxes += lengths - self.lengths
+        self._maxes += 0.5*lengths - 0.5*self.lengths
+        self._mins += 0.5*lengths - 0.5*self.lengths
         self._lengths = lengths
 
     def __repr__(self):
