@@ -1,0 +1,1711 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>mbuild package &mdash; mbuild  documentation</title>
+  
+
+  
+  
+
+  
+  <link href='https://fonts.googleapis.com/css?family=Lato:400,700|Roboto+Slab:400,700|Inconsolata:400,700' rel='stylesheet' type='text/css'>
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+    <link rel="top" title="mbuild  documentation" href="index.html"/>
+        <link rel="next" title="mbuild.examples package" href="mbuild.examples.html"/>
+        <link rel="prev" title="Welcome to mbuild’s documentation!" href="index.html"/> 
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/modernizr/2.6.2/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-nav-search">
+        <a href="index.html" class="fa fa-home"> mbuild</a>
+        <div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+        
+        
+            <ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="">mbuild package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#subpackages">Subpackages</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-mbuild.atom">mbuild.atom module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-mbuild.bond">mbuild.bond module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-mbuild.box">mbuild.box module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-mbuild.compound">mbuild.compound module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-mbuild.coordinate_transform">mbuild.coordinate_transform module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-mbuild.has_parts_mixin">mbuild.has_parts_mixin module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-mbuild.mbase">mbuild.mbase module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-mbuild.orderedset">mbuild.orderedset module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-mbuild.part_mixin">mbuild.part_mixin module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-mbuild.periodic_kdtree">mbuild.periodic_kdtree module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-mbuild.plot">mbuild.plot module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-mbuild.polymer">mbuild.polymer module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-mbuild.port">mbuild.port module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-mbuild.prototype">mbuild.prototype module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-mbuild.tiled_compound">mbuild.tiled_compound module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-mbuild.tools">mbuild.tools module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-mbuild.topology">mbuild.topology module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-mbuild.trajectory">mbuild.trajectory module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-mbuild.treeview">mbuild.treeview module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-mbuild">Module contents</a></li>
+</ul>
+</li>
+</ul>
+
+        
+      </div>
+      &nbsp;
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="index.html">mbuild</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="index.html">Docs</a> &raquo;</li>
+      
+    <li>mbuild package</li>
+      <li class="wy-breadcrumbs-aside">
+        
+          <a href="_sources/mbuild.txt" rel="nofollow"> View page source</a>
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main">
+            
+  <div class="section" id="mbuild-package">
+<h1>mbuild package<a class="headerlink" href="#mbuild-package" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="subpackages">
+<h2>Subpackages<a class="headerlink" href="#subpackages" title="Permalink to this headline">¶</a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="mbuild.examples.html">mbuild.examples package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="mbuild.examples.html#subpackages">Subpackages</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="mbuild.examples.alkane.html">mbuild.examples.alkane package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="mbuild.examples.alkane.html#submodules">Submodules</a></li>
+<li class="toctree-l4"><a class="reference internal" href="mbuild.examples.alkane.html#module-mbuild.examples.alkane.alkane">mbuild.examples.alkane.alkane module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="mbuild.examples.alkane.html#module-mbuild.examples.alkane.ch2">mbuild.examples.alkane.ch2 module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="mbuild.examples.alkane.html#module-mbuild.examples.alkane">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="mbuild.examples.alkane_monolayers.html">mbuild.examples.alkane_monolayers package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="mbuild.examples.alkane_monolayers.html#submodules">Submodules</a></li>
+<li class="toctree-l4"><a class="reference internal" href="mbuild.examples.alkane_monolayers.html#module-mbuild.examples.alkane_monolayers.alkane_monolayer">mbuild.examples.alkane_monolayers.alkane_monolayer module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="mbuild.examples.alkane_monolayers.html#module-mbuild.examples.alkane_monolayers.alkylsilane">mbuild.examples.alkane_monolayers.alkylsilane module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="mbuild.examples.alkane_monolayers.html#module-mbuild.examples.alkane_monolayers.silane">mbuild.examples.alkane_monolayers.silane module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="mbuild.examples.alkane_monolayers.html#module-mbuild.examples.alkane_monolayers.surface">mbuild.examples.alkane_monolayers.surface module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="mbuild.examples.alkane_monolayers.html#module-mbuild.examples.alkane_monolayers">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="mbuild.examples.bilayer.html">mbuild.examples.bilayer package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="mbuild.examples.bilayer.html#submodules">Submodules</a></li>
+<li class="toctree-l4"><a class="reference internal" href="mbuild.examples.bilayer.html#module-mbuild.examples.bilayer.bilayer_solvated">mbuild.examples.bilayer.bilayer_solvated module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="mbuild.examples.bilayer.html#module-mbuild.examples.bilayer.eceramidens">mbuild.examples.bilayer.eceramidens module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="mbuild.examples.bilayer.html#module-mbuild.examples.bilayer">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="mbuild.examples.ethane.html">mbuild.examples.ethane package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="mbuild.examples.ethane.html#submodules">Submodules</a></li>
+<li class="toctree-l4"><a class="reference internal" href="mbuild.examples.ethane.html#module-mbuild.examples.ethane.ethane">mbuild.examples.ethane.ethane module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="mbuild.examples.ethane.html#mbuild-examples-ethane-full-run-module">mbuild.examples.ethane.full_run module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="mbuild.examples.ethane.html#module-mbuild.examples.ethane.methyl">mbuild.examples.ethane.methyl module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="mbuild.examples.ethane.html#module-mbuild.examples.ethane">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="mbuild.examples.methane.html">mbuild.examples.methane package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="mbuild.examples.methane.html#submodules">Submodules</a></li>
+<li class="toctree-l4"><a class="reference internal" href="mbuild.examples.methane.html#module-mbuild.examples.methane.methane">mbuild.examples.methane.methane module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="mbuild.examples.methane.html#module-mbuild.examples.methane">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="mbuild.examples.peg_monolayers.html">mbuild.examples.peg_monolayers package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="mbuild.examples.peg_monolayers.html#submodules">Submodules</a></li>
+<li class="toctree-l4"><a class="reference internal" href="mbuild.examples.peg_monolayers.html#module-mbuild.examples.peg_monolayers.peg">mbuild.examples.peg_monolayers.peg module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="mbuild.examples.peg_monolayers.html#module-mbuild.examples.peg_monolayers.peg_monolayer">mbuild.examples.peg_monolayers.peg_monolayer module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="mbuild.examples.peg_monolayers.html#module-mbuild.examples.peg_monolayers.silane">mbuild.examples.peg_monolayers.silane module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="mbuild.examples.peg_monolayers.html#module-mbuild.examples.peg_monolayers.surface">mbuild.examples.peg_monolayers.surface module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="mbuild.examples.peg_monolayers.html#module-mbuild.examples.peg_monolayers">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="mbuild.examples.pmpc.html">mbuild.examples.pmpc package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="mbuild.examples.pmpc.html#submodules">Submodules</a></li>
+<li class="toctree-l4"><a class="reference internal" href="mbuild.examples.pmpc.html#module-mbuild.examples.pmpc.brush">mbuild.examples.pmpc.brush module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="mbuild.examples.pmpc.html#module-mbuild.examples.pmpc.brush_layer">mbuild.examples.pmpc.brush_layer module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="mbuild.examples.pmpc.html#module-mbuild.examples.pmpc.initiator">mbuild.examples.pmpc.initiator module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="mbuild.examples.pmpc.html#module-mbuild.examples.pmpc.mpc_monomer">mbuild.examples.pmpc.mpc_monomer module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="mbuild.examples.pmpc.html#module-mbuild.examples.pmpc.silane">mbuild.examples.pmpc.silane module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="mbuild.examples.pmpc.html#module-mbuild.examples.pmpc.surface">mbuild.examples.pmpc.surface module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="mbuild.examples.pmpc.html#module-mbuild.examples.pmpc">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="mbuild.examples.reload.html">mbuild.examples.reload package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="mbuild.examples.reload.html#submodules">Submodules</a></li>
+<li class="toctree-l4"><a class="reference internal" href="mbuild.examples.reload.html#module-mbuild.examples.reload.reload">mbuild.examples.reload.reload module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="mbuild.examples.reload.html#module-mbuild.examples.reload">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="mbuild.examples.silicon_carbide-4H.html">mbuild.examples.silicon_carbide-4H package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="mbuild.examples.silicon_carbide-4H.html#submodules">Submodules</a></li>
+<li class="toctree-l4"><a class="reference internal" href="mbuild.examples.silicon_carbide-4H.html#mbuild-examples-silicon-carbide-4h-sic-module">mbuild.examples.silicon_carbide-4H.sic module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="mbuild.examples.silicon_carbide-4H.html#module-contents">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="mbuild.examples.solvate.html">mbuild.examples.solvate package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="mbuild.examples.solvate.html#submodules">Submodules</a></li>
+<li class="toctree-l4"><a class="reference internal" href="mbuild.examples.solvate.html#module-mbuild.examples.solvate.ethane_solvate">mbuild.examples.solvate.ethane_solvate module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="mbuild.examples.solvate.html#module-mbuild.examples.solvate">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="mbuild.examples.tnp.html">mbuild.examples.tnp package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="mbuild.examples.tnp.html#submodules">Submodules</a></li>
+<li class="toctree-l4"><a class="reference internal" href="mbuild.examples.tnp.html#module-mbuild.examples.tnp.bead">mbuild.examples.tnp.bead module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="mbuild.examples.tnp.html#module-mbuild.examples.tnp.sphere">mbuild.examples.tnp.sphere module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="mbuild.examples.tnp.html#module-mbuild.examples.tnp.tnp">mbuild.examples.tnp.tnp module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="mbuild.examples.tnp.html#module-mbuild.examples.tnp.tnp_box">mbuild.examples.tnp.tnp_box module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="mbuild.examples.tnp.html#module-mbuild.examples.tnp">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="mbuild.examples.html#module-mbuild.examples">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="mbuild.formats.html">mbuild.formats package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="mbuild.formats.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="mbuild.formats.html#module-mbuild.formats.gromacs">mbuild.formats.gromacs module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="mbuild.formats.html#mbuild-formats-hoomdxml-module">mbuild.formats.hoomdxml module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="mbuild.formats.html#module-mbuild.formats.lammps">mbuild.formats.lammps module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="mbuild.formats.html#module-mbuild.formats.mol2">mbuild.formats.mol2 module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="mbuild.formats.html#module-mbuild.formats.xyz">mbuild.formats.xyz module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="mbuild.formats.html#module-mbuild.formats">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="mbuild.plugins.html">mbuild.plugins package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="mbuild.plugins.html#subpackages">Subpackages</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="mbuild.plugins.parameterize.html">mbuild.plugins.parameterize package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="mbuild.plugins.parameterize.html#submodules">Submodules</a></li>
+<li class="toctree-l4"><a class="reference internal" href="mbuild.plugins.parameterize.html#module-mbuild.plugins.parameterize.topolbuild">mbuild.plugins.parameterize.topolbuild module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="mbuild.plugins.parameterize.html#module-mbuild.plugins.parameterize.topolgen">mbuild.plugins.parameterize.topolgen module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="mbuild.plugins.parameterize.html#module-mbuild.plugins.parameterize">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="mbuild.plugins.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="mbuild.plugins.html#module-mbuild.plugins.mask">mbuild.plugins.mask module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="mbuild.plugins.html#module-mbuild.plugins">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="mbuild.testing.html">mbuild.testing package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="mbuild.testing.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="mbuild.testing.html#module-mbuild.testing.tools">mbuild.testing.tools module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="mbuild.testing.html#module-mbuild.testing">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+<div class="section" id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-mbuild.atom">
+<span id="mbuild-atom-module"></span><h2>mbuild.atom module<a class="headerlink" href="#module-mbuild.atom" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="mbuild.atom.Atom">
+<em class="property">class </em><tt class="descclassname">mbuild.atom.</tt><tt class="descname">Atom</tt><big>(</big><em>kind</em>, <em>pos=None</em>, <em>charge=0.0</em><big>)</big><a class="reference internal" href="_modules/mbuild/atom.html#Atom"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.atom.Atom" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#mbuild.mbase.MBase" title="mbuild.mbase.MBase"><tt class="xref py py-class docutils literal"><span class="pre">mbuild.mbase.MBase</span></tt></a>, <a class="reference internal" href="#mbuild.part_mixin.PartMixin" title="mbuild.part_mixin.PartMixin"><tt class="xref py py-class docutils literal"><span class="pre">mbuild.part_mixin.PartMixin</span></tt></a></p>
+<p>Elementary container class - typically a leaf in the hierarchy.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">-Also used as &#8220;ghost&#8221; particles in Ports.
+-Atoms can be added and substracted using +/- operators. The result is
+the addition or subtraction of the Atoms&#8217; cartesian coordinates.</p>
+</div>
+<dl class="attribute">
+<dt id="mbuild.atom.Atom.kind">
+<tt class="descname">kind</tt><a class="headerlink" href="#mbuild.atom.Atom.kind" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>str</em></p>
+<p>The kind of atom, usually the chemical element.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="mbuild.atom.Atom.pos">
+<tt class="descname">pos</tt><a class="headerlink" href="#mbuild.atom.Atom.pos" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>np.ndarray of floats</em></p>
+<p>Cartesian coordinates of the atom.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="mbuild.atom.Atom.charge">
+<tt class="descname">charge</tt><a class="headerlink" href="#mbuild.atom.Atom.charge" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>float</em></p>
+<p>Partial charge on the atom.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="mbuild.atom.Atom.parent">
+<tt class="descname">parent</tt><a class="headerlink" href="#mbuild.atom.Atom.parent" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>Compound</em></p>
+<p>Compound to which the Atom belongs.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="mbuild.atom.Atom.referrers">
+<tt class="descname">referrers</tt><a class="headerlink" href="#mbuild.atom.Atom.referrers" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>set of Compounds</em></p>
+<p>All Compounds that refer to this instance
+of Atom.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="mbuild.atom.Atom.bonds">
+<tt class="descname">bonds</tt><a class="headerlink" href="#mbuild.atom.Atom.bonds" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>set of Bond</em></p>
+<p>Every Bond that the Atom is a part of.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="mbuild.atom.Atom.bonded_atoms">
+<tt class="descname">bonded_atoms</tt><big>(</big><em>memo={}</em><big>)</big><a class="reference internal" href="_modules/mbuild/atom.html#Atom.bonded_atoms"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.atom.Atom.bonded_atoms" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a list of atoms bonded to self.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">bonds</tt></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">charge</tt></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">kind</tt></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">parent</tt></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">pos</tt></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">referrers</tt></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="mbuild.atom.Atom.uid">
+<tt class="descname">uid</tt><a class="headerlink" href="#mbuild.atom.Atom.uid" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-mbuild.bond">
+<span id="mbuild-bond-module"></span><h2>mbuild.bond module<a class="headerlink" href="#module-mbuild.bond" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="mbuild.bond.Bond">
+<em class="property">class </em><tt class="descclassname">mbuild.bond.</tt><tt class="descname">Bond</tt><big>(</big><em>atom1</em>, <em>atom2</em>, <em>kind=None</em><big>)</big><a class="reference internal" href="_modules/mbuild/bond.html#Bond"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.bond.Bond" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#mbuild.mbase.MBase" title="mbuild.mbase.MBase"><tt class="xref py py-class docutils literal"><span class="pre">mbuild.mbase.MBase</span></tt></a>, <a class="reference internal" href="#mbuild.part_mixin.PartMixin" title="mbuild.part_mixin.PartMixin"><tt class="xref py py-class docutils literal"><span class="pre">mbuild.part_mixin.PartMixin</span></tt></a></p>
+<p>Connection between two Atoms.</p>
+<dl class="attribute">
+<dt id="mbuild.bond.Bond.atom1">
+<tt class="descname">atom1</tt><a class="reference internal" href="_modules/mbuild/bond.html#Bond.atom1"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.bond.Bond.atom1" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>Atom</em></p>
+<p>First Atom in the bond.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="mbuild.bond.Bond.atom2">
+<tt class="descname">atom2</tt><a class="reference internal" href="_modules/mbuild/bond.html#Bond.atom2"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.bond.Bond.atom2" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>Atom</em></p>
+<p>Second Atom in the bond.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="mbuild.bond.Bond.parent">
+<tt class="descname">parent</tt><a class="headerlink" href="#mbuild.bond.Bond.parent" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>Compound</em></p>
+<p>Compound to which the Bond belongs.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">atom1</tt><a class="reference internal" href="_modules/mbuild/bond.html#Bond.atom1"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">atom2</tt><a class="reference internal" href="_modules/mbuild/bond.html#Bond.atom2"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="mbuild.bond.Bond.distance">
+<tt class="descname">distance</tt><big>(</big><em>periodicity=array([ 0.</em>, <em>0.</em>, <em>0.])</em><big>)</big><a class="reference internal" href="_modules/mbuild/bond.html#Bond.distance"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.bond.Bond.distance" title="Permalink to this definition">¶</a></dt>
+<dd><p>Vectorized distance calculation considering minimum image.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="mbuild.bond.Bond.kind">
+<tt class="descname">kind</tt><a class="headerlink" href="#mbuild.bond.Bond.kind" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="mbuild.bond.Bond.other_atom">
+<tt class="descname">other_atom</tt><big>(</big><em>atom</em><big>)</big><a class="reference internal" href="_modules/mbuild/bond.html#Bond.other_atom"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.bond.Bond.other_atom" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the other Atom in the Bond.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">parent</tt></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="mbuild.bond.Bond.referrers">
+<tt class="descname">referrers</tt><a class="headerlink" href="#mbuild.bond.Bond.referrers" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-mbuild.box">
+<span id="mbuild-box-module"></span><h2>mbuild.box module<a class="headerlink" href="#module-mbuild.box" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="mbuild.box.Box">
+<em class="property">class </em><tt class="descclassname">mbuild.box.</tt><tt class="descname">Box</tt><big>(</big><em>lengths=None</em>, <em>mins=None</em>, <em>maxs=None</em><big>)</big><a class="reference internal" href="_modules/mbuild/box.html#Box"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.box.Box" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">object</span></tt></p>
+<p>A box representing the bounds of the system.</p>
+<dl class="attribute">
+<dt id="mbuild.box.Box.mins">
+<tt class="descname">mins</tt><a class="reference internal" href="_modules/mbuild/box.html#Box.mins"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.box.Box.mins" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>np.ndarray of floats</em></p>
+<p>Minimum x, y, z coordinates.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="mbuild.box.Box.maxs">
+<tt class="descname">maxs</tt><a class="reference internal" href="_modules/mbuild/box.html#Box.maxs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.box.Box.maxs" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>np.ndarray of floats</em></p>
+<p>Maximum x, y, z coordinates.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="mbuild.box.Box.lengths">
+<tt class="descname">lengths</tt><a class="reference internal" href="_modules/mbuild/box.html#Box.lengths"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.box.Box.lengths" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>np.ndarray of floats</em></p>
+<p>Box length in x, y and z directions.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">lengths</tt><a class="reference internal" href="_modules/mbuild/box.html#Box.lengths"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">maxs</tt><a class="reference internal" href="_modules/mbuild/box.html#Box.maxs"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">mins</tt><a class="reference internal" href="_modules/mbuild/box.html#Box.mins"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-mbuild.compound">
+<span id="mbuild-compound-module"></span><h2>mbuild.compound module<a class="headerlink" href="#module-mbuild.compound" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="mbuild.compound.Compound">
+<em class="property">class </em><tt class="descclassname">mbuild.compound.</tt><tt class="descname">Compound</tt><big>(</big><em>kind=None</em>, <em>periodicity=None</em><big>)</big><a class="reference internal" href="_modules/mbuild/compound.html#Compound"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.compound.Compound" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#mbuild.mbase.MBase" title="mbuild.mbase.MBase"><tt class="xref py py-class docutils literal"><span class="pre">mbuild.mbase.MBase</span></tt></a>, <a class="reference internal" href="#mbuild.part_mixin.PartMixin" title="mbuild.part_mixin.PartMixin"><tt class="xref py py-class docutils literal"><span class="pre">mbuild.part_mixin.PartMixin</span></tt></a>, <a class="reference internal" href="#mbuild.has_parts_mixin.HasPartsMixin" title="mbuild.has_parts_mixin.HasPartsMixin"><tt class="xref py py-class docutils literal"><span class="pre">mbuild.has_parts_mixin.HasPartsMixin</span></tt></a></p>
+<p>A building block in the mBuild hierarchy.</p>
+<p><strong>* add eloquent description here *</strong></p>
+<dl class="attribute">
+<dt id="mbuild.compound.Compound.kind">
+<tt class="descname">kind</tt><a class="headerlink" href="#mbuild.compound.Compound.kind" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>str</em></p>
+<p>The type of Compound.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="mbuild.compound.Compound.periodicity">
+<tt class="descname">periodicity</tt><a class="headerlink" href="#mbuild.compound.Compound.periodicity" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>np.ndarray</em></p>
+<p>The periodic distance of the
+Compound in the x, y and z directions.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="mbuild.compound.Compound.parts">
+<tt class="descname">parts</tt><a class="headerlink" href="#mbuild.compound.Compound.parts" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>OrderedSet</em></p>
+<p>All Atom, Bond and Compound instances that this
+Compound is a parent of.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="mbuild.compound.Compound.labels">
+<tt class="descname">labels</tt><a class="headerlink" href="#mbuild.compound.Compound.labels" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>OrderedDict</em></p>
+<p>Strings referring to parts. This is primarily a
+convenience functionality.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="mbuild.compound.Compound.parent">
+<tt class="descname">parent</tt><a class="headerlink" href="#mbuild.compound.Compound.parent" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>Compound</em></p>
+<p>Compound to which this Compound belongs.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="mbuild.compound.Compound.referrers">
+<tt class="descname">referrers</tt><a class="headerlink" href="#mbuild.compound.Compound.referrers" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>set of Compound</em></p>
+<p>Compounds with labels referring to this
+Compound.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="mbuild.compound.Compound.append_from_file">
+<tt class="descname">append_from_file</tt><big>(</big><em>filename</em>, <em>relative_to_module=None</em>, <em>frame=0</em><big>)</big><a class="reference internal" href="_modules/mbuild/compound.html#Compound.append_from_file"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.compound.Compound.append_from_file" title="Permalink to this definition">¶</a></dt>
+<dd><p>Append to Compound with information from a Trajectory file.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="mbuild.compound.Compound.append_from_trajectory">
+<tt class="descname">append_from_trajectory</tt><big>(</big><em>traj</em>, <em>frame=0</em><big>)</big><a class="reference internal" href="_modules/mbuild/compound.html#Compound.append_from_trajectory"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.compound.Compound.append_from_trajectory" title="Permalink to this definition">¶</a></dt>
+<dd><p>Append the Trajectory&#8217;s topology (atoms, bonds).</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="mbuild.compound.Compound.atom_list_by_kind">
+<tt class="descname">atom_list_by_kind</tt><big>(</big><em>kind='*'</em>, <em>excludeG=False</em>, <em>with_id_to_idx_mapping=False</em><big>)</big><a class="reference internal" href="_modules/mbuild/compound.html#Compound.atom_list_by_kind"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.compound.Compound.atom_list_by_kind" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="mbuild.compound.Compound.atoms">
+<tt class="descname">atoms</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/mbuild/compound.html#Compound.atoms"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.compound.Compound.atoms" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="mbuild.compound.Compound.atoms_in_range">
+<tt class="descname">atoms_in_range</tt><big>(</big><em>point</em>, <em>radius</em>, <em>max_items=10</em><big>)</big><a class="reference internal" href="_modules/mbuild/compound.html#Compound.atoms_in_range"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.compound.Compound.atoms_in_range" title="Permalink to this definition">¶</a></dt>
+<dd><p>Find all Atoms within a radius of a point.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">list of Atoms within range</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="mbuild.compound.Compound.bond_list_by_kind">
+<tt class="descname">bond_list_by_kind</tt><big>(</big><em>kind='*'</em>, <em>with_id_to_idx_mapping=False</em><big>)</big><a class="reference internal" href="_modules/mbuild/compound.html#Compound.bond_list_by_kind"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.compound.Compound.bond_list_by_kind" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="mbuild.compound.Compound.bonds">
+<tt class="descname">bonds</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/mbuild/compound.html#Compound.bonds"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.compound.Compound.bonds" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="mbuild.compound.Compound.boundingbox">
+<tt class="descname">boundingbox</tt><big>(</big><em>excludeG=True</em><big>)</big><a class="reference internal" href="_modules/mbuild/compound.html#Compound.boundingbox"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.compound.Compound.boundingbox" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the bounding box of the compound.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>excludeG</strong> (<em>bool</em>) &#8211; Exclude Atoms of kind &#8216;G&#8217; (typically reserved for
+Ports).</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Simulation box initialzied with min and max coordinates.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">Box</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="mbuild.compound.Compound.load">
+<em class="property">classmethod </em><tt class="descname">load</tt><big>(</big><em>filename</em>, <em>relative_to_module=None</em>, <em>frame=0</em><big>)</big><a class="reference internal" href="_modules/mbuild/compound.html#Compound.load"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.compound.Compound.load" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="mbuild.compound.Compound.min_periodic_distance">
+<tt class="descname">min_periodic_distance</tt><big>(</big><em>x0</em>, <em>x1</em><big>)</big><a class="reference internal" href="_modules/mbuild/compound.html#Compound.min_periodic_distance"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.compound.Compound.min_periodic_distance" title="Permalink to this definition">¶</a></dt>
+<dd><p>Vectorized distance calculation considering minimum image.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="mbuild.compound.Compound.n_atoms">
+<tt class="descname">n_atoms</tt><big>(</big><em>kind='*'</em>, <em>excludeG=True</em><big>)</big><a class="reference internal" href="_modules/mbuild/compound.html#Compound.n_atoms"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.compound.Compound.n_atoms" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="mbuild.compound.Compound.post_remove">
+<tt class="descname">post_remove</tt><big>(</big><em>removed_part</em><big>)</big><a class="reference internal" href="_modules/mbuild/compound.html#Compound.post_remove"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.compound.Compound.post_remove" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="mbuild.compound.Compound.referenced_ports">
+<tt class="descname">referenced_ports</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/mbuild/compound.html#Compound.referenced_ports"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.compound.Compound.referenced_ports" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="mbuild.compound.Compound.save">
+<tt class="descname">save</tt><big>(</big><em>filename</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="_modules/mbuild/compound.html#Compound.save"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.compound.Compound.save" title="Permalink to this definition">¶</a></dt>
+<dd><p>Save the Compound to a file.</p>
+<p>This creates an intermediate Trajectory object.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="mbuild.compound.Compound.to_molecule">
+<tt class="descname">to_molecule</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/mbuild/compound.html#Compound.to_molecule"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.compound.Compound.to_molecule" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="mbuild.compound.Compound.to_trajectory">
+<tt class="descname">to_trajectory</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/mbuild/compound.html#Compound.to_trajectory"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.compound.Compound.to_trajectory" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert the Compound to a Trajectory.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="mbuild.compound.Compound.update_from_file">
+<tt class="descname">update_from_file</tt><big>(</big><em>filename</em>, <em>relative_to_module=None</em>, <em>frame=0</em><big>)</big><a class="reference internal" href="_modules/mbuild/compound.html#Compound.update_from_file"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.compound.Compound.update_from_file" title="Permalink to this definition">¶</a></dt>
+<dd><p>Update Compound with information from a Trajectory file.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="mbuild.compound.Compound.update_from_molecule">
+<tt class="descname">update_from_molecule</tt><big>(</big><em>mol</em><big>)</big><a class="reference internal" href="_modules/mbuild/compound.html#Compound.update_from_molecule"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.compound.Compound.update_from_molecule" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="mbuild.compound.Compound.update_from_trajectory">
+<tt class="descname">update_from_trajectory</tt><big>(</big><em>traj</em>, <em>frame=0</em><big>)</big><a class="reference internal" href="_modules/mbuild/compound.html#Compound.update_from_trajectory"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.compound.Compound.update_from_trajectory" title="Permalink to this definition">¶</a></dt>
+<dd><p>Update the Compound with the Trajectory&#8217;s topology.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-mbuild.coordinate_transform">
+<span id="mbuild-coordinate-transform-module"></span><h2>mbuild.coordinate_transform module<a class="headerlink" href="#module-mbuild.coordinate_transform" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="mbuild.coordinate_transform.AxisTransform">
+<em class="property">class </em><tt class="descclassname">mbuild.coordinate_transform.</tt><tt class="descname">AxisTransform</tt><big>(</big><em>new_origin=array([ 0.</em>, <em>0.</em>, <em>0.])</em>, <em>point_on_x_axis=array([ 1.</em>, <em>0.</em>, <em>0.])</em>, <em>point_on_xy_plane=array([ 1.</em>, <em>1.</em>, <em>0.])</em><big>)</big><a class="reference internal" href="_modules/mbuild/coordinate_transform.html#AxisTransform"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.coordinate_transform.AxisTransform" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#mbuild.coordinate_transform.CoordinateTransform" title="mbuild.coordinate_transform.CoordinateTransform"><tt class="xref py py-class docutils literal"><span class="pre">mbuild.coordinate_transform.CoordinateTransform</span></tt></a></p>
+</dd></dl>
+
+<dl class="class">
+<dt id="mbuild.coordinate_transform.ChangeOfBasis">
+<em class="property">class </em><tt class="descclassname">mbuild.coordinate_transform.</tt><tt class="descname">ChangeOfBasis</tt><big>(</big><em>basis</em>, <em>origin=array([ 0.</em>, <em>0.</em>, <em>0.])</em><big>)</big><a class="reference internal" href="_modules/mbuild/coordinate_transform.html#ChangeOfBasis"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.coordinate_transform.ChangeOfBasis" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#mbuild.coordinate_transform.CoordinateTransform" title="mbuild.coordinate_transform.CoordinateTransform"><tt class="xref py py-class docutils literal"><span class="pre">mbuild.coordinate_transform.CoordinateTransform</span></tt></a></p>
+</dd></dl>
+
+<dl class="class">
+<dt id="mbuild.coordinate_transform.CoordinateTransform">
+<em class="property">class </em><tt class="descclassname">mbuild.coordinate_transform.</tt><tt class="descname">CoordinateTransform</tt><big>(</big><em>T=None</em><big>)</big><a class="reference internal" href="_modules/mbuild/coordinate_transform.html#CoordinateTransform"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.coordinate_transform.CoordinateTransform" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">object</span></tt></p>
+<dl class="method">
+<dt id="mbuild.coordinate_transform.CoordinateTransform.applyInverseTo">
+<tt class="descname">applyInverseTo</tt><big>(</big><em>A</em><big>)</big><a class="reference internal" href="_modules/mbuild/coordinate_transform.html#CoordinateTransform.applyInverseTo"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.coordinate_transform.CoordinateTransform.applyInverseTo" title="Permalink to this definition">¶</a></dt>
+<dd><p>Apply the inverse coordinate transformation to points in A
+:param A: list of points (nx3)
+:return: transformed list of points (nx3)</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="mbuild.coordinate_transform.CoordinateTransform.applyTo">
+<tt class="descname">applyTo</tt><big>(</big><em>A</em><big>)</big><a class="reference internal" href="_modules/mbuild/coordinate_transform.html#CoordinateTransform.applyTo"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.coordinate_transform.CoordinateTransform.applyTo" title="Permalink to this definition">¶</a></dt>
+<dd><p>Apply the coordinate transformation to points in A
+:param A: list of points (nx3)
+:return: transformed list of points (nx3)</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="mbuild.coordinate_transform.RigidTransform">
+<em class="property">class </em><tt class="descclassname">mbuild.coordinate_transform.</tt><tt class="descname">RigidTransform</tt><big>(</big><em>A</em>, <em>B</em><big>)</big><a class="reference internal" href="_modules/mbuild/coordinate_transform.html#RigidTransform"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.coordinate_transform.RigidTransform" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#mbuild.coordinate_transform.CoordinateTransform" title="mbuild.coordinate_transform.CoordinateTransform"><tt class="xref py py-class docutils literal"><span class="pre">mbuild.coordinate_transform.CoordinateTransform</span></tt></a></p>
+<p>Computes the rigid transformation that maps points A to points B
+see <a class="reference external" href="http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.173.2196&amp;rep=rep1&amp;type=pdf">http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.173.2196&amp;rep=rep1&amp;type=pdf</a>
+:param A: list of points (nx3) in source coordinate system
+:param B: list of points (nx3) in destination coordinate system
+:return: the CoordinateTransformation object</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="mbuild.coordinate_transform.Rotation">
+<em class="property">class </em><tt class="descclassname">mbuild.coordinate_transform.</tt><tt class="descname">Rotation</tt><big>(</big><em>theta</em>, <em>around</em><big>)</big><a class="reference internal" href="_modules/mbuild/coordinate_transform.html#Rotation"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.coordinate_transform.Rotation" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#mbuild.coordinate_transform.CoordinateTransform" title="mbuild.coordinate_transform.CoordinateTransform"><tt class="xref py py-class docutils literal"><span class="pre">mbuild.coordinate_transform.CoordinateTransform</span></tt></a></p>
+</dd></dl>
+
+<dl class="class">
+<dt id="mbuild.coordinate_transform.RotationAroundX">
+<em class="property">class </em><tt class="descclassname">mbuild.coordinate_transform.</tt><tt class="descname">RotationAroundX</tt><big>(</big><em>theta</em><big>)</big><a class="reference internal" href="_modules/mbuild/coordinate_transform.html#RotationAroundX"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.coordinate_transform.RotationAroundX" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#mbuild.coordinate_transform.CoordinateTransform" title="mbuild.coordinate_transform.CoordinateTransform"><tt class="xref py py-class docutils literal"><span class="pre">mbuild.coordinate_transform.CoordinateTransform</span></tt></a></p>
+</dd></dl>
+
+<dl class="class">
+<dt id="mbuild.coordinate_transform.RotationAroundY">
+<em class="property">class </em><tt class="descclassname">mbuild.coordinate_transform.</tt><tt class="descname">RotationAroundY</tt><big>(</big><em>theta</em><big>)</big><a class="reference internal" href="_modules/mbuild/coordinate_transform.html#RotationAroundY"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.coordinate_transform.RotationAroundY" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#mbuild.coordinate_transform.CoordinateTransform" title="mbuild.coordinate_transform.CoordinateTransform"><tt class="xref py py-class docutils literal"><span class="pre">mbuild.coordinate_transform.CoordinateTransform</span></tt></a></p>
+</dd></dl>
+
+<dl class="class">
+<dt id="mbuild.coordinate_transform.RotationAroundZ">
+<em class="property">class </em><tt class="descclassname">mbuild.coordinate_transform.</tt><tt class="descname">RotationAroundZ</tt><big>(</big><em>theta</em><big>)</big><a class="reference internal" href="_modules/mbuild/coordinate_transform.html#RotationAroundZ"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.coordinate_transform.RotationAroundZ" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#mbuild.coordinate_transform.CoordinateTransform" title="mbuild.coordinate_transform.CoordinateTransform"><tt class="xref py py-class docutils literal"><span class="pre">mbuild.coordinate_transform.CoordinateTransform</span></tt></a></p>
+</dd></dl>
+
+<dl class="class">
+<dt id="mbuild.coordinate_transform.Translation">
+<em class="property">class </em><tt class="descclassname">mbuild.coordinate_transform.</tt><tt class="descname">Translation</tt><big>(</big><em>P</em><big>)</big><a class="reference internal" href="_modules/mbuild/coordinate_transform.html#Translation"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.coordinate_transform.Translation" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#mbuild.coordinate_transform.CoordinateTransform" title="mbuild.coordinate_transform.CoordinateTransform"><tt class="xref py py-class docutils literal"><span class="pre">mbuild.coordinate_transform.CoordinateTransform</span></tt></a></p>
+</dd></dl>
+
+<dl class="function">
+<dt id="mbuild.coordinate_transform.equivalence_transform">
+<tt class="descclassname">mbuild.coordinate_transform.</tt><tt class="descname">equivalence_transform</tt><big>(</big><em>compound</em>, <em>from_positions=None</em>, <em>to_positions=None</em>, <em>add_bond=True</em><big>)</big><a class="reference internal" href="_modules/mbuild/coordinate_transform.html#equivalence_transform"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.coordinate_transform.equivalence_transform" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes an affine transformation that maps the from_positions to the respective
+to_positions, and applies this transformation to the compound.
+:param equivalence_pairs: list of equivalence pairs (tuples)</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="mbuild.coordinate_transform.rotate_around_x">
+<tt class="descclassname">mbuild.coordinate_transform.</tt><tt class="descname">rotate_around_x</tt><big>(</big><em>compound</em>, <em>theta</em><big>)</big><a class="reference internal" href="_modules/mbuild/coordinate_transform.html#rotate_around_x"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.coordinate_transform.rotate_around_x" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="mbuild.coordinate_transform.rotate_around_y">
+<tt class="descclassname">mbuild.coordinate_transform.</tt><tt class="descname">rotate_around_y</tt><big>(</big><em>compound</em>, <em>theta</em><big>)</big><a class="reference internal" href="_modules/mbuild/coordinate_transform.html#rotate_around_y"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.coordinate_transform.rotate_around_y" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="mbuild.coordinate_transform.rotate_around_z">
+<tt class="descclassname">mbuild.coordinate_transform.</tt><tt class="descname">rotate_around_z</tt><big>(</big><em>compound</em>, <em>theta</em><big>)</big><a class="reference internal" href="_modules/mbuild/coordinate_transform.html#rotate_around_z"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.coordinate_transform.rotate_around_z" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="mbuild.coordinate_transform.translate">
+<tt class="descclassname">mbuild.coordinate_transform.</tt><tt class="descname">translate</tt><big>(</big><em>compound</em>, <em>v</em><big>)</big><a class="reference internal" href="_modules/mbuild/coordinate_transform.html#translate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.coordinate_transform.translate" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="mbuild.coordinate_transform.unit_vector">
+<tt class="descclassname">mbuild.coordinate_transform.</tt><tt class="descname">unit_vector</tt><big>(</big><em>vector</em><big>)</big><a class="reference internal" href="_modules/mbuild/coordinate_transform.html#unit_vector"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.coordinate_transform.unit_vector" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the unit vector of the vector.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="mbuild.coordinate_transform.vec_angle">
+<tt class="descclassname">mbuild.coordinate_transform.</tt><tt class="descname">vec_angle</tt><big>(</big><em>v1</em>, <em>v2</em><big>)</big><a class="reference internal" href="_modules/mbuild/coordinate_transform.html#vec_angle"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.coordinate_transform.vec_angle" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the angle in radians between vectors &#8216;v1&#8217; and &#8216;v2&#8217;</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">angle_between</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
+<span class="go">1.5707963267948966</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">angle_between</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
+<span class="go">0.0</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">angle_between</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
+<span class="go">3.141592653589793</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="mbuild.coordinate_transform.x_axis_transform">
+<tt class="descclassname">mbuild.coordinate_transform.</tt><tt class="descname">x_axis_transform</tt><big>(</big><em>compound</em>, <em>new_origin=array([ 0.</em>, <em>0.</em>, <em>0.])</em>, <em>point_on_x_axis=array([ 1.</em>, <em>0.</em>, <em>0.])</em>, <em>point_on_xy_plane=array([ 1.</em>, <em>1.</em>, <em>0.])</em><big>)</big><a class="reference internal" href="_modules/mbuild/coordinate_transform.html#x_axis_transform"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.coordinate_transform.x_axis_transform" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="mbuild.coordinate_transform.y_axis_transform">
+<tt class="descclassname">mbuild.coordinate_transform.</tt><tt class="descname">y_axis_transform</tt><big>(</big><em>compound</em>, <em>new_origin=array([ 0.</em>, <em>0.</em>, <em>0.])</em>, <em>point_on_y_axis=array([ 1.</em>, <em>0.</em>, <em>0.])</em>, <em>point_on_xy_plane=array([ 1.</em>, <em>1.</em>, <em>0.])</em><big>)</big><a class="reference internal" href="_modules/mbuild/coordinate_transform.html#y_axis_transform"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.coordinate_transform.y_axis_transform" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+<div class="section" id="module-mbuild.has_parts_mixin">
+<span id="mbuild-has-parts-mixin-module"></span><h2>mbuild.has_parts_mixin module<a class="headerlink" href="#module-mbuild.has_parts_mixin" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="mbuild.has_parts_mixin.HasPartsMixin">
+<em class="property">class </em><tt class="descclassname">mbuild.has_parts_mixin.</tt><tt class="descname">HasPartsMixin</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="_modules/mbuild/has_parts_mixin.html#HasPartsMixin"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.has_parts_mixin.HasPartsMixin" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">object</span></tt></p>
+<dl class="method">
+<dt id="mbuild.has_parts_mixin.HasPartsMixin.add">
+<tt class="descname">add</tt><big>(</big><em>new_part</em>, <em>label=None</em>, <em>containment=True</em>, <em>replace=False</em><big>)</big><a class="reference internal" href="_modules/mbuild/has_parts_mixin.html#HasPartsMixin.add"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.has_parts_mixin.HasPartsMixin.add" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add a part to the Compound.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">This does not necessarily add the part to self.parts but may
+instead be used to add a reference to the part to self.labels. See
+&#8216;containment&#8217; argument.</p>
+</div>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>new_part</strong> (<em>Atom, Bond or Compound</em>) &#8211; The object to be added to this
+Compound.</li>
+<li><strong>label</strong> (<em>str, optional</em>) &#8211; A descriptive string for the part.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="mbuild.has_parts_mixin.HasPartsMixin.post_remove">
+<tt class="descname">post_remove</tt><big>(</big><em>removed_part</em><big>)</big><a class="reference internal" href="_modules/mbuild/has_parts_mixin.html#HasPartsMixin.post_remove"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.has_parts_mixin.HasPartsMixin.post_remove" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="mbuild.has_parts_mixin.HasPartsMixin.remove">
+<tt class="descname">remove</tt><big>(</big><em>objs_to_remove</em><big>)</big><a class="reference internal" href="_modules/mbuild/has_parts_mixin.html#HasPartsMixin.remove"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.has_parts_mixin.HasPartsMixin.remove" title="Permalink to this definition">¶</a></dt>
+<dd><p>Remove a part (Atom, Bond or Compound) from the Compound by value.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>objs_to_remove</strong> (<em>set of parts</em>) &#8211; All objects to be removed from the
+hierarchy. If this is not a set, it will be cast to one to
+remove duplicates.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-mbuild.mbase">
+<span id="mbuild-mbase-module"></span><h2>mbuild.mbase module<a class="headerlink" href="#module-mbuild.mbase" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="mbuild.mbase.MBase">
+<em class="property">class </em><tt class="descclassname">mbuild.mbase.</tt><tt class="descname">MBase</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="_modules/mbuild/mbase.html#MBase"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.mbase.MBase" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">object</span></tt></p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-mbuild.orderedset">
+<span id="mbuild-orderedset-module"></span><h2>mbuild.orderedset module<a class="headerlink" href="#module-mbuild.orderedset" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="mbuild.orderedset.OrderedSet">
+<em class="property">class </em><tt class="descclassname">mbuild.orderedset.</tt><tt class="descname">OrderedSet</tt><big>(</big><em>iterable=()</em><big>)</big><a class="reference internal" href="_modules/mbuild/orderedset.html#OrderedSet"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.orderedset.OrderedSet" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">_abcoll.Set</span></tt></p>
+<dl class="method">
+<dt id="mbuild.orderedset.OrderedSet.add">
+<tt class="descname">add</tt><big>(</big><em>key</em><big>)</big><a class="reference internal" href="_modules/mbuild/orderedset.html#OrderedSet.add"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.orderedset.OrderedSet.add" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="mbuild.orderedset.OrderedSet.difference_update">
+<tt class="descname">difference_update</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="_modules/mbuild/orderedset.html#OrderedSet.difference_update"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.orderedset.OrderedSet.difference_update" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="mbuild.orderedset.OrderedSet.discard">
+<tt class="descname">discard</tt><big>(</big><em>key</em><big>)</big><a class="reference internal" href="_modules/mbuild/orderedset.html#OrderedSet.discard"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.orderedset.OrderedSet.discard" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="mbuild.orderedset.OrderedSet.intersection_update">
+<tt class="descname">intersection_update</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="_modules/mbuild/orderedset.html#OrderedSet.intersection_update"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.orderedset.OrderedSet.intersection_update" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-mbuild.part_mixin">
+<span id="mbuild-part-mixin-module"></span><h2>mbuild.part_mixin module<a class="headerlink" href="#module-mbuild.part_mixin" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="mbuild.part_mixin.PartMixin">
+<em class="property">class </em><tt class="descclassname">mbuild.part_mixin.</tt><tt class="descname">PartMixin</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="_modules/mbuild/part_mixin.html#PartMixin"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.part_mixin.PartMixin" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">object</span></tt></p>
+<dl class="method">
+<dt id="mbuild.part_mixin.PartMixin.ancestors">
+<tt class="descname">ancestors</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/mbuild/part_mixin.html#PartMixin.ancestors"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.part_mixin.PartMixin.ancestors" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate all ancestors of the Compound recursively.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Yields:</th><td class="field-body"><strong>ancestor</strong> (<em>Compound</em>) &#8211;
+A Compound one or more levels higher in the
+hierarchy.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-mbuild.periodic_kdtree">
+<span id="mbuild-periodic-kdtree-module"></span><h2>mbuild.periodic_kdtree module<a class="headerlink" href="#module-mbuild.periodic_kdtree" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="mbuild.periodic_kdtree.PeriodicCKDTree">
+<em class="property">class </em><tt class="descclassname">mbuild.periodic_kdtree.</tt><tt class="descname">PeriodicCKDTree</tt><big>(</big><em>data, leafsize=10, bounds=[0.0, 0.0, 0.0]</em><big>)</big><a class="reference internal" href="_modules/mbuild/periodic_kdtree.html#PeriodicCKDTree"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.periodic_kdtree.PeriodicCKDTree" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">scipy.spatial.ckdtree.cKDTree</span></tt></p>
+<p>Cython kd-tree for quick nearest-neighbor lookup with periodic boundaries</p>
+<p>See scipy.spatial.ckdtree for details on kd-trees.</p>
+<p>Searches with periodic boundaries are implemented by mapping all
+initial data points to one canonical periodic image, building an
+ordinary kd-tree with these points, then querying this kd-tree multiple
+times, if necessary, with all the relevant periodic images of the
+query point.</p>
+<p>Note that to ensure that no two distinct images of the same point
+appear in the results, it is essential to restrict the maximum
+distance between a query point and a data point to half the smallest
+box dimension.</p>
+<dl class="method">
+<dt id="mbuild.periodic_kdtree.PeriodicCKDTree.count_neighbors">
+<tt class="descname">count_neighbors</tt><big>(</big><em>other</em>, <em>r</em>, <em>p=2.0</em><big>)</big><a class="reference internal" href="_modules/mbuild/periodic_kdtree.html#PeriodicCKDTree.count_neighbors"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.periodic_kdtree.PeriodicCKDTree.count_neighbors" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="mbuild.periodic_kdtree.PeriodicCKDTree.query">
+<tt class="descname">query</tt><big>(</big><em>x</em>, <em>k=1</em>, <em>eps=0</em>, <em>p=2</em>, <em>distance_upper_bound=inf</em><big>)</big><a class="reference internal" href="_modules/mbuild/periodic_kdtree.html#PeriodicCKDTree.query"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.periodic_kdtree.PeriodicCKDTree.query" title="Permalink to this definition">¶</a></dt>
+<dd><p>Query the kd-tree for nearest neighbors</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>x</strong> (<em>array_like, last dimension self.m</em>) &#8211; An array of points to query.</li>
+<li><strong>k</strong> (<em>integer</em>) &#8211; The number of nearest neighbors to return.</li>
+<li><strong>eps</strong> (<em>non-negative float</em>) &#8211; Return approximate nearest neighbors; the kth returned value
+is guaranteed to be no further than (1+eps) times the
+distance to the real k-th nearest neighbor.</li>
+<li><strong>p</strong> (<em>float, 1&lt;=p&lt;=infinity</em>) &#8211; Which Minkowski p-norm to use.
+1 is the sum-of-absolute-values &#8220;Manhattan&#8221; distance
+2 is the usual Euclidean distance
+infinity is the maximum-coordinate-difference distance</li>
+<li><strong>distance_upper_bound</strong> (<em>nonnegative float</em>) &#8211; Return only neighbors within this distance.  This is used to prune
+tree searches, so if you are doing a series of nearest-neighbor
+queries, it may help to supply the distance to the nearest neighbor
+of the most recent point.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><ul class="simple">
+<li><strong>d</strong> (<em>array of floats</em>) &#8211;
+The distances to the nearest neighbors.
+If x has shape tuple+(self.m,), then d has shape tuple+(k,).
+Missing neighbors are indicated with infinite distances.</li>
+<li><strong>i</strong> (<em>ndarray of ints</em>) &#8211;
+The locations of the neighbors in self.data.
+If <cite>x</cite> has shape tuple+(self.m,), then <cite>i</cite> has shape tuple+(k,).
+Missing neighbors are indicated with self.n.</li>
+</ul>
+</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="mbuild.periodic_kdtree.PeriodicCKDTree.query_ball_point">
+<tt class="descname">query_ball_point</tt><big>(</big><em>x</em>, <em>r</em>, <em>p=2.0</em>, <em>eps=0</em><big>)</big><a class="reference internal" href="_modules/mbuild/periodic_kdtree.html#PeriodicCKDTree.query_ball_point"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.periodic_kdtree.PeriodicCKDTree.query_ball_point" title="Permalink to this definition">¶</a></dt>
+<dd><p>Find all points within distance r of point(s) x.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>x</strong> (<em>array_like, shape tuple + (self.m,)</em>) &#8211; The point or points to search for neighbors of.</li>
+<li><strong>r</strong> (<em>positive float</em>) &#8211; The radius of points to return.</li>
+<li><strong>p</strong> (<em>float, optional</em>) &#8211; Which Minkowski p-norm to use.  Should be in the range [1, inf].</li>
+<li><strong>eps</strong> (<em>nonnegative float, optional</em>) &#8211; Approximate search. Branches of the tree are not explored if their
+nearest points are further than <tt class="docutils literal"><span class="pre">r</span> <span class="pre">/</span> <span class="pre">(1</span> <span class="pre">+</span> <span class="pre">eps)</span></tt>, and branches are
+added in bulk if their furthest points are nearer than
+<tt class="docutils literal"><span class="pre">r</span> <span class="pre">*</span> <span class="pre">(1</span> <span class="pre">+</span> <span class="pre">eps)</span></tt>.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>results</strong> &#8211;
+If <cite>x</cite> is a single point, returns a list of the indices of the
+neighbors of <cite>x</cite>. If <cite>x</cite> is an array of points, returns an object
+array of shape tuple containing lists of neighbors.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">list or array of lists</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Notes</p>
+<p>If you have many points whose neighbors you want to find, you may
+save substantial amounts of time by putting them in a
+PeriodicCKDTree and using query_ball_tree.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="mbuild.periodic_kdtree.PeriodicCKDTree.query_ball_tree">
+<tt class="descname">query_ball_tree</tt><big>(</big><em>other</em>, <em>r</em>, <em>p=2.0</em>, <em>eps=0</em><big>)</big><a class="reference internal" href="_modules/mbuild/periodic_kdtree.html#PeriodicCKDTree.query_ball_tree"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.periodic_kdtree.PeriodicCKDTree.query_ball_tree" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="mbuild.periodic_kdtree.PeriodicCKDTree.query_pairs">
+<tt class="descname">query_pairs</tt><big>(</big><em>r</em>, <em>p=2.0</em>, <em>eps=0</em><big>)</big><a class="reference internal" href="_modules/mbuild/periodic_kdtree.html#PeriodicCKDTree.query_pairs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.periodic_kdtree.PeriodicCKDTree.query_pairs" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="mbuild.periodic_kdtree.PeriodicCKDTree.sparse_distance_matrix">
+<tt class="descname">sparse_distance_matrix</tt><big>(</big><em>other</em>, <em>max_distance</em>, <em>p=2.0</em><big>)</big><a class="reference internal" href="_modules/mbuild/periodic_kdtree.html#PeriodicCKDTree.sparse_distance_matrix"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.periodic_kdtree.PeriodicCKDTree.sparse_distance_matrix" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="mbuild.periodic_kdtree.PeriodicKDTree">
+<em class="property">class </em><tt class="descclassname">mbuild.periodic_kdtree.</tt><tt class="descname">PeriodicKDTree</tt><big>(</big><em>data, leafsize=10, bounds=[inf, inf, inf]</em><big>)</big><a class="reference internal" href="_modules/mbuild/periodic_kdtree.html#PeriodicKDTree"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.periodic_kdtree.PeriodicKDTree" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">scipy.spatial.kdtree.KDTree</span></tt></p>
+<p>kd-tree for quick nearest-neighbor lookup with periodic boundaries</p>
+<p>See scipy.spatial.kdtree for details on kd-trees.</p>
+<p>Searches with periodic boundaries are implemented by mapping all
+initial data points to one canonical periodic image, building an
+ordinary kd-tree with these points, then querying this kd-tree multiple
+times, if necessary, with all the relevant periodic images of the
+query point.</p>
+<p>Note that to ensure that no two distinct images of the same point
+appear in the results, it is essential to restrict the maximum
+distance between a query point and a data point to half the smallest
+box dimension.</p>
+<dl class="method">
+<dt id="mbuild.periodic_kdtree.PeriodicKDTree.count_neighbors">
+<tt class="descname">count_neighbors</tt><big>(</big><em>other</em>, <em>r</em>, <em>p=2.0</em><big>)</big><a class="reference internal" href="_modules/mbuild/periodic_kdtree.html#PeriodicKDTree.count_neighbors"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.periodic_kdtree.PeriodicKDTree.count_neighbors" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="mbuild.periodic_kdtree.PeriodicKDTree.query_ball_tree">
+<tt class="descname">query_ball_tree</tt><big>(</big><em>other</em>, <em>r</em>, <em>p=2.0</em>, <em>eps=0</em><big>)</big><a class="reference internal" href="_modules/mbuild/periodic_kdtree.html#PeriodicKDTree.query_ball_tree"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.periodic_kdtree.PeriodicKDTree.query_ball_tree" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="mbuild.periodic_kdtree.PeriodicKDTree.query_pairs">
+<tt class="descname">query_pairs</tt><big>(</big><em>r</em>, <em>p=2.0</em>, <em>eps=0</em><big>)</big><a class="reference internal" href="_modules/mbuild/periodic_kdtree.html#PeriodicKDTree.query_pairs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.periodic_kdtree.PeriodicKDTree.query_pairs" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="mbuild.periodic_kdtree.PeriodicKDTree.sparse_distance_matrix">
+<tt class="descname">sparse_distance_matrix</tt><big>(</big><em>other</em>, <em>max_distance</em>, <em>p=2.0</em><big>)</big><a class="reference internal" href="_modules/mbuild/periodic_kdtree.html#PeriodicKDTree.sparse_distance_matrix"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.periodic_kdtree.PeriodicKDTree.sparse_distance_matrix" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-mbuild.plot">
+<span id="mbuild-plot-module"></span><h2>mbuild.plot module<a class="headerlink" href="#module-mbuild.plot" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="mbuild.plot.Plot">
+<em class="property">class </em><tt class="descclassname">mbuild.plot.</tt><tt class="descname">Plot</tt><big>(</big><em>compound</em>, <em>verbose=False</em>, <em>atoms=True</em>, <em>bonds=True</em>, <em>angles=False</em>, <em>dihedrals=False</em>, <em>periodic_bonds=True</em>, <em>periodic_angles=True</em><big>)</big><a class="reference internal" href="_modules/mbuild/plot.html#Plot"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.plot.Plot" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">object</span></tt></p>
+<dl class="method">
+<dt id="mbuild.plot.Plot.show">
+<tt class="descname">show</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/mbuild/plot.html#Plot.show"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.plot.Plot.show" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-mbuild.polymer">
+<span id="mbuild-polymer-module"></span><h2>mbuild.polymer module<a class="headerlink" href="#module-mbuild.polymer" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="mbuild.polymer.Polymer">
+<em class="property">class </em><tt class="descclassname">mbuild.polymer.</tt><tt class="descname">Polymer</tt><big>(</big><em>proto</em>, <em>port_labels=('up'</em>, <em>'down')</em>, <em>n=2</em><big>)</big><a class="reference internal" href="_modules/mbuild/polymer.html#Polymer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.polymer.Polymer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#mbuild.compound.Compound" title="mbuild.compound.Compound"><tt class="xref py py-class docutils literal"><span class="pre">mbuild.compound.Compound</span></tt></a></p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-mbuild.port">
+<span id="mbuild-port-module"></span><h2>mbuild.port module<a class="headerlink" href="#module-mbuild.port" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="mbuild.port.Port">
+<em class="property">class </em><tt class="descclassname">mbuild.port.</tt><tt class="descname">Port</tt><big>(</big><em>anchor=None</em><big>)</big><a class="reference internal" href="_modules/mbuild/port.html#Port"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.port.Port" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#mbuild.compound.Compound" title="mbuild.compound.Compound"><tt class="xref py py-class docutils literal"><span class="pre">mbuild.compound.Compound</span></tt></a></p>
+<p>A set of four ghost Atoms used to connect parts.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-mbuild.prototype">
+<span id="mbuild-prototype-module"></span><h2>mbuild.prototype module<a class="headerlink" href="#module-mbuild.prototype" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="mbuild.prototype.Prototype">
+<em class="property">class </em><tt class="descclassname">mbuild.prototype.</tt><tt class="descname">Prototype</tt><big>(</big><em>kind</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="_modules/mbuild/prototype.html#Prototype"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.prototype.Prototype" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">object</span></tt></p>
+<dl class="staticmethod">
+<dt id="mbuild.prototype.Prototype.getAttr">
+<em class="property">static </em><tt class="descname">getAttr</tt><big>(</big><em>kind</em>, <em>key</em>, <em>default=None</em><big>)</big><a class="reference internal" href="_modules/mbuild/prototype.html#Prototype.getAttr"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.prototype.Prototype.getAttr" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="mbuild.prototype.Prototype.prototypes">
+<tt class="descname">prototypes</tt><em class="property"> = {'Si1': {'color': 'yellow', 'radius': 0.21}, 'C': {'atomic_number': 6, 'color': 'teal', 'radius': 0.17}, 'particle': {'atomic_number': 6, 'color': 'teal', 'radius': 0.27}, 'G': {'color': 'gray', 'radius': 0.05}, 'F': {'color': 'pink', 'radius': 0.135}, 'H': {'atomic_number': 1, 'color': 'white', 'radius': 0.12}, 'Si-cluster': {'color': 'yellow', 'radius': 0.41}, 'Si': {'color': 'yellow', 'radius': 0.21}, 'O': {'color': 'red', 'radius': 0.152}, 'N': {'color': 'blue', 'radius': 0.155}, 'P': {'color': 'orange', 'radius': 0.18}, 'SI': {'color': 'yellow', 'radius': 0.21}, 'CB': {'color': 'teal', 'radius': 0.17}, 'HB': {'color': 'white', 'radius': 0.12}, 'C2': {'color': 'teal', 'radius': 0.17}, 'O1': {'color': 'red', 'radius': 0.152}}</em><a class="headerlink" href="#mbuild.prototype.Prototype.prototypes" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-mbuild.tiled_compound">
+<span id="mbuild-tiled-compound-module"></span><h2>mbuild.tiled_compound module<a class="headerlink" href="#module-mbuild.tiled_compound" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="mbuild.tiled_compound.TiledCompound">
+<em class="property">class </em><tt class="descclassname">mbuild.tiled_compound.</tt><tt class="descname">TiledCompound</tt><big>(</big><em>tile</em>, <em>n_x=1</em>, <em>n_y=1</em>, <em>n_z=1</em>, <em>kind=None</em><big>)</big><a class="reference internal" href="_modules/mbuild/tiled_compound.html#TiledCompound"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.tiled_compound.TiledCompound" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#mbuild.compound.Compound" title="mbuild.compound.Compound"><tt class="xref py py-class docutils literal"><span class="pre">mbuild.compound.Compound</span></tt></a></p>
+<p>Replicates a Compound in any cartesian direction(s).</p>
+<p>Correctly updates connectivity while respecting periodic boundary
+conditions.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>tile</strong> (<em>Compound</em>) &#8211; The Compound to be replicated.</li>
+<li><strong>n_x</strong> (<em>int</em>) &#8211; Number of times to replicate tile in the x-direction.</li>
+<li><strong>n_y</strong> (<em>int</em>) &#8211; Number of times to replicate tile in the y-direction.</li>
+<li><strong>n_z</strong> (<em>int</em>) &#8211; Number of times to replicate tile in the z-direction.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+<div class="section" id="module-mbuild.tools">
+<span id="mbuild-tools-module"></span><h2>mbuild.tools module<a class="headerlink" href="#module-mbuild.tools" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="mbuild.tools.add_angle">
+<tt class="descclassname">mbuild.tools.</tt><tt class="descname">add_angle</tt><big>(</big><em>traj</em>, <em>type_A</em>, <em>type_B</em>, <em>type_C</em><big>)</big><a class="reference internal" href="_modules/mbuild/tools.html#add_angle"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.tools.add_angle" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="mbuild.tools.add_bond">
+<tt class="descclassname">mbuild.tools.</tt><tt class="descname">add_bond</tt><big>(</big><em>compound</em>, <em>type_A</em>, <em>type_B</em>, <em>dmin</em>, <em>dmax</em>, <em>kind=None</em><big>)</big><a class="reference internal" href="_modules/mbuild/tools.html#add_bond"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.tools.add_bond" title="Permalink to this definition">¶</a></dt>
+<dd><p>Ai-Bj distance is in [dmin, dmax] =&gt; add bond A1xB(Ai,Bj) (symmetric).</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="mbuild.tools.compute_center_of_mass">
+<tt class="descclassname">mbuild.tools.</tt><tt class="descname">compute_center_of_mass</tt><big>(</big><em>traj</em>, <em>masses=None</em><big>)</big><a class="reference internal" href="_modules/mbuild/tools.html#compute_center_of_mass"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.tools.compute_center_of_mass" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the center of mass for each frame.</p>
+<p>Note: This function alters the equivalent mdtraj by adding the option to
+provide an array of masses.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>traj</strong> (<em>Trajectory</em>) &#8211; Trajectory to compute center of mass for.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>com</strong> &#8211;
+Coordinates of the center of mass
+for each frame.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">np.ndarray, shape=(n_frames, 3)</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="mbuild.tools.compute_inertia_tensor">
+<tt class="descclassname">mbuild.tools.</tt><tt class="descname">compute_inertia_tensor</tt><big>(</big><em>traj</em>, <em>masses=None</em><big>)</big><a class="reference internal" href="_modules/mbuild/tools.html#compute_inertia_tensor"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.tools.compute_inertia_tensor" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculates the moment of inertia tensor for each frame.</p>
+<p>Function adapted from MDAnalysis (<a class="reference external" href="https://code.google.com/p/mdanalysis/">https://code.google.com/p/mdanalysis/</a>)</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>traj</strong> (<em>Trajectory</em>) &#8211; Trajectory to compute center of mass for.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>I</strong> &#8211;
+Moment of inertia tensor for each<blockquote>
+<div>frame.</div></blockquote>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">np.ndarray, shape=(n_frames, 3, 3</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="mbuild.tools.solvate">
+<tt class="descclassname">mbuild.tools.</tt><tt class="descname">solvate</tt><big>(</big><em>host_compound</em>, <em>guest_compound</em>, <em>host_box</em>, <em>guest_box</em>, <em>overlap=&lt;function vdw_radius at 0x11cacde60&gt;</em><big>)</big><a class="reference internal" href="_modules/mbuild/tools.html#solvate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.tools.solvate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Solvate a Compound in a Box.</p>
+<p>Typical usage of this function would be to use a pre-equilibrated solvent
+system as the guest which will then be replicated to fill the host&#8217;s Box.
+All Compounds that have overlapping Atoms with the host are removed.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>overlap</strong> (<em>function</em>) &#8211; A function which translate atoms to overlap radii.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="mbuild.tools.solvent_box">
+<tt class="descclassname">mbuild.tools.</tt><tt class="descname">solvent_box</tt><big>(</big><em>solvent</em>, <em>box</em><big>)</big><a class="reference internal" href="_modules/mbuild/tools.html#solvent_box"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.tools.solvent_box" title="Permalink to this definition">¶</a></dt>
+<dd><p>Fill a box with solvent.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="mbuild.tools.vdw_radius">
+<tt class="descclassname">mbuild.tools.</tt><tt class="descname">vdw_radius</tt><big>(</big><em>atomic_number</em><big>)</big><a class="reference internal" href="_modules/mbuild/tools.html#vdw_radius"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.tools.vdw_radius" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+<div class="section" id="module-mbuild.topology">
+<span id="mbuild-topology-module"></span><h2>mbuild.topology module<a class="headerlink" href="#module-mbuild.topology" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="mbuild.topology.ForcefieldAngle">
+<em class="property">class </em><tt class="descclassname">mbuild.topology.</tt><tt class="descname">ForcefieldAngle</tt><big>(</big><em>atom1</em>, <em>atom2</em>, <em>atom3</em>, <em>kind=None</em><big>)</big><a class="reference internal" href="_modules/mbuild/topology.html#ForcefieldAngle"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.topology.ForcefieldAngle" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">object</span></tt></p>
+<p>Triplet formed by three Atoms and two consecutive Bonds.</p>
+<dl class="attribute">
+<dt id="mbuild.topology.ForcefieldAngle.atom1">
+<tt class="descname">atom1</tt><a class="reference internal" href="_modules/mbuild/topology.html#ForcefieldAngle.atom1"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.topology.ForcefieldAngle.atom1" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>Atom</em></p>
+<p>First Atom in the angle.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="mbuild.topology.ForcefieldAngle.atom2">
+<tt class="descname">atom2</tt><a class="reference internal" href="_modules/mbuild/topology.html#ForcefieldAngle.atom2"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.topology.ForcefieldAngle.atom2" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>Atom</em></p>
+<p>Second Atom in the angle.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="mbuild.topology.ForcefieldAngle.atom3">
+<tt class="descname">atom3</tt><a class="reference internal" href="_modules/mbuild/topology.html#ForcefieldAngle.atom3"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.topology.ForcefieldAngle.atom3" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>Atom</em></p>
+<p>Third Atom in the angle.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="mbuild.topology.ForcefieldAngle.kind">
+<tt class="descname">kind</tt><a class="headerlink" href="#mbuild.topology.ForcefieldAngle.kind" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>str, optional</em></p>
+<p>Descriptive name for the angle.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">atom1</tt><a class="reference internal" href="_modules/mbuild/topology.html#ForcefieldAngle.atom1"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">atom2</tt><a class="reference internal" href="_modules/mbuild/topology.html#ForcefieldAngle.atom2"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">atom3</tt><a class="reference internal" href="_modules/mbuild/topology.html#ForcefieldAngle.atom3"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="mbuild.topology.ForcefieldBond">
+<em class="property">class </em><tt class="descclassname">mbuild.topology.</tt><tt class="descname">ForcefieldBond</tt><big>(</big><em>atom1</em>, <em>atom2</em>, <em>kind=None</em><big>)</big><a class="reference internal" href="_modules/mbuild/topology.html#ForcefieldBond"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.topology.ForcefieldBond" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">object</span></tt></p>
+<p>Connection between two Atoms.</p>
+<dl class="attribute">
+<dt id="mbuild.topology.ForcefieldBond.atom1">
+<tt class="descname">atom1</tt><a class="reference internal" href="_modules/mbuild/topology.html#ForcefieldBond.atom1"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.topology.ForcefieldBond.atom1" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>Atom</em></p>
+<p>First Atom in the bond.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="mbuild.topology.ForcefieldBond.atom2">
+<tt class="descname">atom2</tt><a class="reference internal" href="_modules/mbuild/topology.html#ForcefieldBond.atom2"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.topology.ForcefieldBond.atom2" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>Atom</em></p>
+<p>Second Atom in the bond.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="mbuild.topology.ForcefieldBond.kind">
+<tt class="descname">kind</tt><a class="headerlink" href="#mbuild.topology.ForcefieldBond.kind" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>str, optional</em></p>
+<p>Descriptive name for the bond.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">atom1</tt><a class="reference internal" href="_modules/mbuild/topology.html#ForcefieldBond.atom1"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">atom2</tt><a class="reference internal" href="_modules/mbuild/topology.html#ForcefieldBond.atom2"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="mbuild.topology.ForcefieldBond.distance">
+<tt class="descname">distance</tt><big>(</big><em>periodicity=array([ 0.</em>, <em>0.</em>, <em>0.])</em><big>)</big><a class="reference internal" href="_modules/mbuild/topology.html#ForcefieldBond.distance"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.topology.ForcefieldBond.distance" title="Permalink to this definition">¶</a></dt>
+<dd><p>Vectorized distance calculation considering minimum image.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="mbuild.topology.ForcefieldBond.other_atom">
+<tt class="descname">other_atom</tt><big>(</big><em>atom</em><big>)</big><a class="reference internal" href="_modules/mbuild/topology.html#ForcefieldBond.other_atom"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.topology.ForcefieldBond.other_atom" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the other Atom in the Bond.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="mbuild.topology.ForcefieldDihedral">
+<em class="property">class </em><tt class="descclassname">mbuild.topology.</tt><tt class="descname">ForcefieldDihedral</tt><big>(</big><em>atom1</em>, <em>atom2</em>, <em>atom3</em>, <em>atom4</em>, <em>kind=None</em><big>)</big><a class="reference internal" href="_modules/mbuild/topology.html#ForcefieldDihedral"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.topology.ForcefieldDihedral" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">object</span></tt></p>
+<p>Quadruplet formed by four Atoms, three Bonds and two angles.</p>
+<dl class="attribute">
+<dt id="mbuild.topology.ForcefieldDihedral.atom1">
+<tt class="descname">atom1</tt><a class="reference internal" href="_modules/mbuild/topology.html#ForcefieldDihedral.atom1"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.topology.ForcefieldDihedral.atom1" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>Atom</em></p>
+<p>First Atom in the dihedral.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="mbuild.topology.ForcefieldDihedral.atom2">
+<tt class="descname">atom2</tt><a class="reference internal" href="_modules/mbuild/topology.html#ForcefieldDihedral.atom2"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.topology.ForcefieldDihedral.atom2" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>Atom</em></p>
+<p>Second Atom in the dihedral.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="mbuild.topology.ForcefieldDihedral.atom3">
+<tt class="descname">atom3</tt><a class="reference internal" href="_modules/mbuild/topology.html#ForcefieldDihedral.atom3"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.topology.ForcefieldDihedral.atom3" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>Atom</em></p>
+<p>Third Atom in the dihedral.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="mbuild.topology.ForcefieldDihedral.atom4">
+<tt class="descname">atom4</tt><a class="reference internal" href="_modules/mbuild/topology.html#ForcefieldDihedral.atom4"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.topology.ForcefieldDihedral.atom4" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>Atom</em></p>
+<p>Fourth Atom in the dihedral.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="mbuild.topology.ForcefieldDihedral.kind">
+<tt class="descname">kind</tt><a class="headerlink" href="#mbuild.topology.ForcefieldDihedral.kind" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>str, optional</em></p>
+<p>Descriptive name for the dihedral.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">atom1</tt><a class="reference internal" href="_modules/mbuild/topology.html#ForcefieldDihedral.atom1"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">atom2</tt><a class="reference internal" href="_modules/mbuild/topology.html#ForcefieldDihedral.atom2"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">atom3</tt><a class="reference internal" href="_modules/mbuild/topology.html#ForcefieldDihedral.atom3"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">atom4</tt><a class="reference internal" href="_modules/mbuild/topology.html#ForcefieldDihedral.atom4"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="mbuild.topology.Topology">
+<em class="property">class </em><tt class="descclassname">mbuild.topology.</tt><tt class="descname">Topology</tt><a class="reference internal" href="_modules/mbuild/topology.html#Topology"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.topology.Topology" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">mdtraj.core.topology.Topology</span></tt></p>
+<p>Derivative of MDTraj&#8217;s Topology class with additional functionalities.</p>
+<p>Most notably, provides conversion to and from mBuild Compounds.</p>
+<dl class="method">
+<dt id="mbuild.topology.Topology.add_ff_angle">
+<tt class="descname">add_ff_angle</tt><big>(</big><em>atom1</em>, <em>atom2</em>, <em>atom3</em><big>)</big><a class="reference internal" href="_modules/mbuild/topology.html#Topology.add_ff_angle"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.topology.Topology.add_ff_angle" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="mbuild.topology.Topology.add_ff_bond">
+<tt class="descname">add_ff_bond</tt><big>(</big><em>atom1</em>, <em>atom2</em><big>)</big><a class="reference internal" href="_modules/mbuild/topology.html#Topology.add_ff_bond"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.topology.Topology.add_ff_bond" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="mbuild.topology.Topology.add_ff_dihedral">
+<tt class="descname">add_ff_dihedral</tt><big>(</big><em>atom1</em>, <em>atom2</em>, <em>atom3</em>, <em>atom4</em><big>)</big><a class="reference internal" href="_modules/mbuild/topology.html#Topology.add_ff_dihedral"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.topology.Topology.add_ff_dihedral" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="mbuild.topology.Topology.enumerate_angles">
+<tt class="descname">enumerate_angles</tt><big>(</big><em>node</em>, <em>neighbors</em><big>)</big><a class="reference internal" href="_modules/mbuild/topology.html#Topology.enumerate_angles"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.topology.Topology.enumerate_angles" title="Permalink to this definition">¶</a></dt>
+<dd><p>Find all angles around a node.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="mbuild.topology.Topology.enumerate_dihedrals">
+<tt class="descname">enumerate_dihedrals</tt><big>(</big><em>node_1</em>, <em>neighbors_1</em>, <em>node_2</em>, <em>neighbors_2</em><big>)</big><a class="reference internal" href="_modules/mbuild/topology.html#Topology.enumerate_dihedrals"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.topology.Topology.enumerate_dihedrals" title="Permalink to this definition">¶</a></dt>
+<dd><p>Find all dihedrals around a pair of nodes.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="mbuild.topology.Topology.ff_angles">
+<tt class="descname">ff_angles</tt><a class="reference internal" href="_modules/mbuild/topology.html#Topology.ff_angles"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.topology.Topology.ff_angles" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="mbuild.topology.Topology.ff_bonds">
+<tt class="descname">ff_bonds</tt><a class="reference internal" href="_modules/mbuild/topology.html#Topology.ff_bonds"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.topology.Topology.ff_bonds" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="mbuild.topology.Topology.ff_dihedrals">
+<tt class="descname">ff_dihedrals</tt><a class="reference internal" href="_modules/mbuild/topology.html#Topology.ff_dihedrals"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.topology.Topology.ff_dihedrals" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="mbuild.topology.Topology.ff_impropers">
+<tt class="descname">ff_impropers</tt><a class="reference internal" href="_modules/mbuild/topology.html#Topology.ff_impropers"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.topology.Topology.ff_impropers" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="mbuild.topology.Topology.find_forcefield_terms">
+<tt class="descname">find_forcefield_terms</tt><big>(</big><em>bonds=True</em>, <em>angles=True</em>, <em>dihedrals=True</em>, <em>impropers=True</em><big>)</big><a class="reference internal" href="_modules/mbuild/topology.html#Topology.find_forcefield_terms"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.topology.Topology.find_forcefield_terms" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert Bonds to ForcefieldBonds and find angles and dihedrals.</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="mbuild.topology.Topology.from_compound">
+<em class="property">classmethod </em><tt class="descname">from_compound</tt><big>(</big><em>compound</em>, <em>atom_list=None</em>, <em>bond_list=None</em><big>)</big><a class="reference internal" href="_modules/mbuild/topology.html#Topology.from_compound"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.topology.Topology.from_compound" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a Topology from a Compound.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><strong>out</strong></td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">mbuild.Topology</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="mbuild.topology.Topology.load_ff_bonds">
+<tt class="descname">load_ff_bonds</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/mbuild/topology.html#Topology.load_ff_bonds"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.topology.Topology.load_ff_bonds" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert from (Atom1, Atom2) to ForcefieldBonds.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="mbuild.topology.Topology.n_ff_angles">
+<tt class="descname">n_ff_angles</tt><a class="reference internal" href="_modules/mbuild/topology.html#Topology.n_ff_angles"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.topology.Topology.n_ff_angles" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="mbuild.topology.Topology.n_ff_bonds">
+<tt class="descname">n_ff_bonds</tt><a class="reference internal" href="_modules/mbuild/topology.html#Topology.n_ff_bonds"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.topology.Topology.n_ff_bonds" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="mbuild.topology.Topology.n_ff_dihedrals">
+<tt class="descname">n_ff_dihedrals</tt><a class="reference internal" href="_modules/mbuild/topology.html#Topology.n_ff_dihedrals"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.topology.Topology.n_ff_dihedrals" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="mbuild.topology.Topology.n_ff_impropers">
+<tt class="descname">n_ff_impropers</tt><a class="reference internal" href="_modules/mbuild/topology.html#Topology.n_ff_impropers"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.topology.Topology.n_ff_impropers" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="mbuild.topology.Topology.sort_atoms_alphabetically">
+<tt class="descname">sort_atoms_alphabetically</tt><big>(</big><em>atoms</em><big>)</big><a class="reference internal" href="_modules/mbuild/topology.html#Topology.sort_atoms_alphabetically"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.topology.Topology.sort_atoms_alphabetically" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sort a list of atoms alphabetically by their lowercase names.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-mbuild.trajectory">
+<span id="mbuild-trajectory-module"></span><h2>mbuild.trajectory module<a class="headerlink" href="#module-mbuild.trajectory" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="mbuild.trajectory.Trajectory">
+<em class="property">class </em><tt class="descclassname">mbuild.trajectory.</tt><tt class="descname">Trajectory</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="_modules/mbuild/trajectory.html#Trajectory"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.trajectory.Trajectory" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">mdtraj.core.trajectory.Trajectory</span></tt></p>
+<dl class="method">
+<dt id="mbuild.trajectory.Trajectory.append_compound">
+<tt class="descname">append_compound</tt><big>(</big><em>compound</em><big>)</big><a class="reference internal" href="_modules/mbuild/trajectory.html#Trajectory.append_compound"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.trajectory.Trajectory.append_compound" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="mbuild.trajectory.Trajectory.atoms_in_range">
+<tt class="descname">atoms_in_range</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="_modules/mbuild/trajectory.html#Trajectory.atoms_in_range"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.trajectory.Trajectory.atoms_in_range" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="mbuild.trajectory.Trajectory.atoms_in_range_idx">
+<tt class="descname">atoms_in_range_idx</tt><big>(</big><em>point</em>, <em>radius</em>, <em>max_items=10</em>, <em>frame=0</em><big>)</big><a class="reference internal" href="_modules/mbuild/trajectory.html#Trajectory.atoms_in_range_idx"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.trajectory.Trajectory.atoms_in_range_idx" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="mbuild.trajectory.Trajectory.atoms_in_range_xyz">
+<tt class="descname">atoms_in_range_xyz</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="_modules/mbuild/trajectory.html#Trajectory.atoms_in_range_xyz"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.trajectory.Trajectory.atoms_in_range_xyz" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="mbuild.trajectory.Trajectory.bonds_by_atom">
+<tt class="descname">bonds_by_atom</tt><big>(</big><em>atom</em><big>)</big><a class="reference internal" href="_modules/mbuild/trajectory.html#Trajectory.bonds_by_atom"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.trajectory.Trajectory.bonds_by_atom" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="mbuild.trajectory.Trajectory.bonds_by_atom_type">
+<tt class="descname">bonds_by_atom_type</tt><big>(</big><em>type_A</em>, <em>type_B</em><big>)</big><a class="reference internal" href="_modules/mbuild/trajectory.html#Trajectory.bonds_by_atom_type"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.trajectory.Trajectory.bonds_by_atom_type" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="mbuild.trajectory.Trajectory.boundingbox">
+<tt class="descname">boundingbox</tt><big>(</big><em>step</em><big>)</big><a class="reference internal" href="_modules/mbuild/trajectory.html#Trajectory.boundingbox"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.trajectory.Trajectory.boundingbox" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="classmethod">
+<dt id="mbuild.trajectory.Trajectory.from_compound">
+<em class="property">classmethod </em><tt class="descname">from_compound</tt><big>(</big><em>compound</em><big>)</big><a class="reference internal" href="_modules/mbuild/trajectory.html#Trajectory.from_compound"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.trajectory.Trajectory.from_compound" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="classmethod">
+<dt id="mbuild.trajectory.Trajectory.load">
+<em class="property">classmethod </em><tt class="descname">load</tt><big>(</big><em>filename</em>, <em>relative_to_module=None</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="_modules/mbuild/trajectory.html#Trajectory.load"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.trajectory.Trajectory.load" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>relative_to_module</strong> (<em>bool, optional</em>) &#8211; Look for data file in same
+directory as this python module.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Trajectory</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="mbuild.trajectory.Trajectory.neighbor_bonds">
+<tt class="descname">neighbor_bonds</tt><big>(</big><em>bond</em><big>)</big><a class="reference internal" href="_modules/mbuild/trajectory.html#Trajectory.neighbor_bonds"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.trajectory.Trajectory.neighbor_bonds" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="staticmethod">
+<dt id="mbuild.trajectory.Trajectory.order_bond">
+<em class="property">static </em><tt class="descname">order_bond</tt><big>(</big><em>ab</em>, <em>type_A</em>, <em>type_B</em><big>)</big><a class="reference internal" href="_modules/mbuild/trajectory.html#Trajectory.order_bond"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.trajectory.Trajectory.order_bond" title="Permalink to this definition">¶</a></dt>
+<dd><p>Order the atoms in a bond by atom type.
+:param ab: the bond (tuple)
+:param type_A: the type of the first atom
+:param type_B: the type of the second atom
+:return: ab with its atoms reordered such that its first atom is of type_A and its second atom is of type_B,
+or None if ab the atom types do not match</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="mbuild.trajectory.Trajectory.save">
+<tt class="descname">save</tt><big>(</big><em>filename</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="_modules/mbuild/trajectory.html#Trajectory.save"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.trajectory.Trajectory.save" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="mbuild.trajectory.Trajectory.to_compound">
+<tt class="descname">to_compound</tt><big>(</big><em>part=None</em>, <em>frame=0</em><big>)</big><a class="reference internal" href="_modules/mbuild/trajectory.html#Trajectory.to_compound"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.trajectory.Trajectory.to_compound" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="mbuild.trajectory.Trajectory.update_compound">
+<tt class="descname">update_compound</tt><big>(</big><em>compound</em>, <em>frame=0</em><big>)</big><a class="reference internal" href="_modules/mbuild/trajectory.html#Trajectory.update_compound"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.trajectory.Trajectory.update_compound" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-mbuild.treeview">
+<span id="mbuild-treeview-module"></span><h2>mbuild.treeview module<a class="headerlink" href="#module-mbuild.treeview" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="mbuild.treeview.TreeView">
+<em class="property">class </em><tt class="descclassname">mbuild.treeview.</tt><tt class="descname">TreeView</tt><big>(</big><em>compound</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="_modules/mbuild/treeview.html#TreeView"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.treeview.TreeView" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">object</span></tt></p>
+<dl class="staticmethod">
+<dt id="mbuild.treeview.TreeView.autoscroll">
+<em class="property">static </em><tt class="descname">autoscroll</tt><big>(</big><em>sbar</em>, <em>first</em>, <em>last</em><big>)</big><a class="reference internal" href="_modules/mbuild/treeview.html#TreeView.autoscroll"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.treeview.TreeView.autoscroll" title="Permalink to this definition">¶</a></dt>
+<dd><p>Hide and show scrollbar as needed.</p>
+</dd></dl>
+
+<dl class="staticmethod">
+<dt id="mbuild.treeview.TreeView.change_dir">
+<em class="property">static </em><tt class="descname">change_dir</tt><big>(</big><em>event</em><big>)</big><a class="reference internal" href="_modules/mbuild/treeview.html#TreeView.change_dir"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.treeview.TreeView.change_dir" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="mbuild.treeview.TreeView.populate_roots">
+<tt class="descname">populate_roots</tt><big>(</big><em>tree</em><big>)</big><a class="reference internal" href="_modules/mbuild/treeview.html#TreeView.populate_roots"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.treeview.TreeView.populate_roots" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="mbuild.treeview.TreeView.populate_tree">
+<tt class="descname">populate_tree</tt><big>(</big><em>tree</em>, <em>node</em><big>)</big><a class="reference internal" href="_modules/mbuild/treeview.html#TreeView.populate_tree"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.treeview.TreeView.populate_tree" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="mbuild.treeview.TreeView.show">
+<tt class="descname">show</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/mbuild/treeview.html#TreeView.show"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.treeview.TreeView.show" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="staticmethod">
+<dt id="mbuild.treeview.TreeView.update_tree">
+<em class="property">static </em><tt class="descname">update_tree</tt><big>(</big><em>event</em><big>)</big><a class="reference internal" href="_modules/mbuild/treeview.html#TreeView.update_tree"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.treeview.TreeView.update_tree" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-mbuild">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-mbuild" title="Permalink to this headline">¶</a></h2>
+</div>
+</div>
+
+
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="mbuild.examples.html" class="btn btn-neutral float-right" title="mbuild.examples package"/>Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="index.html" class="btn btn-neutral" title="Welcome to mbuild’s documentation!"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2014, Author.
+    </p>
+  </div>
+
+  <a href="https://github.com/snide/sphinx_rtd_theme">Sphinx theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

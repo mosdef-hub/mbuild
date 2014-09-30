@@ -1,0 +1,592 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>mbuild.periodic_kdtree &mdash; mbuild  documentation</title>
+  
+
+  
+  
+
+  
+  <link href='https://fonts.googleapis.com/css?family=Lato:400,700|Roboto+Slab:400,700|Inconsolata:400,700' rel='stylesheet' type='text/css'>
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  
+
+  
+    <link rel="top" title="mbuild  documentation" href="../../index.html"/>
+        <link rel="up" title="Module code" href="../index.html"/> 
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/modernizr/2.6.2/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-nav-search">
+        <a href="../../index.html" class="fa fa-home"> mbuild</a>
+        <div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+        
+        
+            <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../mbuild.html">mbuild package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../mbuild.html#subpackages">Subpackages</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../mbuild.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../mbuild.html#module-mbuild.atom">mbuild.atom module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../mbuild.html#module-mbuild.bond">mbuild.bond module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../mbuild.html#module-mbuild.box">mbuild.box module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../mbuild.html#module-mbuild.compound">mbuild.compound module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../mbuild.html#module-mbuild.coordinate_transform">mbuild.coordinate_transform module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../mbuild.html#module-mbuild.has_parts_mixin">mbuild.has_parts_mixin module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../mbuild.html#module-mbuild.mbase">mbuild.mbase module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../mbuild.html#module-mbuild.orderedset">mbuild.orderedset module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../mbuild.html#module-mbuild.part_mixin">mbuild.part_mixin module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../mbuild.html#module-mbuild.periodic_kdtree">mbuild.periodic_kdtree module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../mbuild.html#module-mbuild.plot">mbuild.plot module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../mbuild.html#module-mbuild.polymer">mbuild.polymer module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../mbuild.html#module-mbuild.port">mbuild.port module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../mbuild.html#module-mbuild.prototype">mbuild.prototype module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../mbuild.html#module-mbuild.tiled_compound">mbuild.tiled_compound module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../mbuild.html#module-mbuild.tools">mbuild.tools module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../mbuild.html#module-mbuild.topology">mbuild.topology module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../mbuild.html#module-mbuild.trajectory">mbuild.trajectory module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../mbuild.html#module-mbuild.treeview">mbuild.treeview module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../mbuild.html#module-mbuild">Module contents</a></li>
+</ul>
+</li>
+</ul>
+
+        
+      </div>
+      &nbsp;
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="../../index.html">mbuild</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../../index.html">Docs</a> &raquo;</li>
+      
+          <li><a href="../index.html">Module code</a> &raquo;</li>
+      
+    <li>mbuild.periodic_kdtree</li>
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main">
+            
+  <h1>Source code for mbuild.periodic_kdtree</h1><div class="highlight"><pre>
+<span class="c"># periodic_kdtree.py</span>
+<span class="c">#</span>
+<span class="c"># A wrapper around scipy.spatial.kdtree to implement periodic boundary</span>
+<span class="c"># conditions</span>
+<span class="c">#</span>
+<span class="c"># Written by Patrick Varilly, 6 Jul 2012</span>
+<span class="c"># Released under the scipy license</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">scipy.spatial</span> <span class="kn">import</span> <span class="n">KDTree</span><span class="p">,</span> <span class="n">cKDTree</span>
+<span class="kn">import</span> <span class="nn">itertools</span>
+<span class="kn">import</span> <span class="nn">heapq</span>
+
+<span class="k">def</span> <span class="nf">_gen_relevant_images</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">bounds</span><span class="p">,</span> <span class="n">distance_upper_bound</span><span class="p">):</span>
+    <span class="c"># Map x onto the canonical unit cell, then produce the relevant</span>
+    <span class="c"># mirror images</span>
+
+    <span class="n">real_x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">coord</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">bounds</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mf">0.0</span><span class="p">:</span>
+            <span class="n">real_x</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">x</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">/</span> <span class="n">bounds</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="o">*</span> <span class="n">bounds</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+
+    <span class="c"># if all(v == 0 for v in bounds):</span>
+    <span class="c">#     real_x = x</span>
+    <span class="c"># else:</span>
+    <span class="c">#     real_x = x - np.where(bounds &gt; 0.0,</span>
+    <span class="c">#                       np.floor(x / bounds) * bounds, 0.0)</span>
+    <span class="n">m</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+
+    <span class="n">xs_to_try</span> <span class="o">=</span> <span class="p">[</span><span class="n">real_x</span><span class="p">]</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">m</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">bounds</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mf">0.0</span><span class="p">:</span>
+            <span class="n">disp</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">m</span><span class="p">)</span>
+            <span class="n">disp</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">bounds</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+
+            <span class="k">if</span> <span class="n">distance_upper_bound</span> <span class="o">==</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">:</span>
+                <span class="n">xs_to_try</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span>
+                    <span class="n">itertools</span><span class="o">.</span><span class="n">chain</span><span class="o">.</span><span class="n">from_iterable</span><span class="p">(</span>
+                        <span class="p">(</span><span class="n">_</span> <span class="o">+</span> <span class="n">disp</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span> <span class="o">-</span> <span class="n">disp</span><span class="p">)</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">xs_to_try</span><span class="p">))</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">extra_xs</span> <span class="o">=</span> <span class="p">[]</span>
+
+                <span class="c"># Point near lower boundary, include image on upper side</span>
+                <span class="k">if</span> <span class="nb">abs</span><span class="p">(</span><span class="n">real_x</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="o">&lt;</span> <span class="n">distance_upper_bound</span><span class="p">:</span>
+                    <span class="n">extra_xs</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">_</span> <span class="o">+</span> <span class="n">disp</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">xs_to_try</span><span class="p">)</span>
+
+                <span class="c"># Point near upper boundary, include image on lower side</span>
+                <span class="k">if</span> <span class="nb">abs</span><span class="p">(</span><span class="n">bounds</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">-</span> <span class="n">real_x</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="o">&lt;</span> <span class="n">distance_upper_bound</span><span class="p">:</span>
+                    <span class="n">extra_xs</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">_</span> <span class="o">-</span> <span class="n">disp</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">xs_to_try</span><span class="p">)</span>
+
+                <span class="n">xs_to_try</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">extra_xs</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">xs_to_try</span>
+
+
+<div class="viewcode-block" id="PeriodicKDTree"><a class="viewcode-back" href="../../mbuild.html#mbuild.periodic_kdtree.PeriodicKDTree">[docs]</a><span class="k">class</span> <span class="nc">PeriodicKDTree</span><span class="p">(</span><span class="n">KDTree</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    kd-tree for quick nearest-neighbor lookup with periodic boundaries</span>
+
+<span class="sd">    See scipy.spatial.kdtree for details on kd-trees.</span>
+
+<span class="sd">    Searches with periodic boundaries are implemented by mapping all</span>
+<span class="sd">    initial data points to one canonical periodic image, building an</span>
+<span class="sd">    ordinary kd-tree with these points, then querying this kd-tree multiple</span>
+<span class="sd">    times, if necessary, with all the relevant periodic images of the</span>
+<span class="sd">    query point.</span>
+
+<span class="sd">    Note that to ensure that no two distinct images of the same point</span>
+<span class="sd">    appear in the results, it is essential to restrict the maximum</span>
+<span class="sd">    distance between a query point and a data point to half the smallest</span>
+<span class="sd">    box dimension.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">leafsize</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">bounds</span><span class="o">=</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">]):</span>
+        <span class="sd">&quot;&quot;&quot;Construct a kd-tree.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        bounds : array_like, shape (k,)</span>
+<span class="sd">            Size of the periodic box along each spatial dimension.  A</span>
+<span class="sd">            negative or zero size for dimension k means that space is not</span>
+<span class="sd">            periodic along k.</span>
+<span class="sd">        data : array_like, shape (n,k)</span>
+<span class="sd">            The data points to be indexed. This array is not copied, and</span>
+<span class="sd">            so modifying this data will result in bogus results.</span>
+<span class="sd">        leafsize : positive int</span>
+<span class="sd">            The number of points at which the algorithm switches over to</span>
+<span class="sd">            brute-force.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c"># Map all points to canonical periodic image</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">bounds</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">bounds</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">real_data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+        <span class="n">wrapped_data</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">real_data</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">bounds</span> <span class="o">&gt;</span> <span class="mf">0.0</span><span class="p">,</span>
+                <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">real_data</span> <span class="o">/</span> <span class="n">bounds</span><span class="p">)</span> <span class="o">*</span> <span class="n">bounds</span><span class="p">),</span> <span class="mf">0.0</span><span class="p">))</span>
+
+        <span class="c"># Calculate maximum distance_upper_bound</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">max_distance_upper_bound</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bounds</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">,</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">bounds</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">))</span>
+
+        <span class="c"># Set up underlying kd-tree</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">PeriodicKDTree</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">wrapped_data</span><span class="p">,</span> <span class="n">leafsize</span><span class="p">)</span>
+
+    <span class="c"># The following name is a kludge to override KDTree&#39;s private method</span>
+    <span class="k">def</span> <span class="nf">_KDTree__query</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">eps</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">p</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">distance_upper_bound</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">):</span>
+        <span class="c"># This is the internal query method, which guarantees that x</span>
+        <span class="c"># is a single point, not an array of points</span>
+        <span class="c">#</span>
+        <span class="c"># A slight complication: k could be &quot;None&quot;, which means &quot;return</span>
+        <span class="c"># all neighbors within the given distance_upper_bound&quot;.</span>
+
+        <span class="c"># Cap distance_upper_bound</span>
+        <span class="n">distance_upper_bound</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">distance_upper_bound</span><span class="p">,</span>
+                                      <span class="bp">self</span><span class="o">.</span><span class="n">max_distance_upper_bound</span><span class="p">)</span>
+
+        <span class="c"># Run queries over all relevant images of x</span>
+        <span class="n">hits_list</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">real_x</span> <span class="ow">in</span> <span class="n">_gen_relevant_images</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">bounds</span><span class="p">,</span> <span class="n">distance_upper_bound</span><span class="p">):</span>
+            <span class="n">hits_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                <span class="nb">super</span><span class="p">(</span><span class="n">PeriodicKDTree</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">_KDTree__query</span><span class="p">(</span>
+                    <span class="n">real_x</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">eps</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">distance_upper_bound</span><span class="p">))</span>
+
+        <span class="c"># Now merge results</span>
+        <span class="k">if</span> <span class="n">k</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="n">heapq</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span><span class="o">*</span><span class="n">hits_list</span><span class="p">))</span>
+        <span class="k">elif</span> <span class="n">k</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">heapq</span><span class="o">.</span><span class="n">nsmallest</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">itertools</span><span class="o">.</span><span class="n">chain</span><span class="p">(</span><span class="o">*</span><span class="n">hits_list</span><span class="p">))</span>
+        <span class="k">elif</span> <span class="n">k</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">[</span><span class="nb">min</span><span class="p">(</span><span class="n">itertools</span><span class="o">.</span><span class="n">chain</span><span class="p">(</span><span class="o">*</span><span class="n">hits_list</span><span class="p">))]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&quot;Invalid k in periodic_kdtree._KDTree__query&quot;</span><span class="p">)</span>
+
+    <span class="c"># The following name is a kludge to override KDTree&#39;s private method</span>
+    <span class="k">def</span> <span class="nf">_KDTree__query_ball_point</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">p</span><span class="o">=</span><span class="mf">2.</span><span class="p">,</span> <span class="n">eps</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+        <span class="c"># This is the internal query method, which guarantees that x</span>
+        <span class="c"># is a single point, not an array of points</span>
+
+        <span class="c"># Cap r</span>
+        <span class="n">r</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_distance_upper_bound</span><span class="p">)</span>
+
+        <span class="c"># Run queries over all relevant images of x</span>
+        <span class="n">results</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">real_x</span> <span class="ow">in</span> <span class="n">_gen_relevant_images</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">bounds</span><span class="p">,</span> <span class="n">r</span><span class="p">):</span>
+            <span class="n">results</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span>
+                <span class="nb">super</span><span class="p">(</span><span class="n">PeriodicKDTree</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">_KDTree__query_ball_point</span><span class="p">(</span>
+                    <span class="n">real_x</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">eps</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">results</span>
+
+<div class="viewcode-block" id="PeriodicKDTree.query_ball_tree"><a class="viewcode-back" href="../../mbuild.html#mbuild.periodic_kdtree.PeriodicKDTree.query_ball_tree">[docs]</a>    <span class="k">def</span> <span class="nf">query_ball_tree</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">p</span><span class="o">=</span><span class="mf">2.</span><span class="p">,</span> <span class="n">eps</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">()</span>
+</div>
+<div class="viewcode-block" id="PeriodicKDTree.query_pairs"><a class="viewcode-back" href="../../mbuild.html#mbuild.periodic_kdtree.PeriodicKDTree.query_pairs">[docs]</a>    <span class="k">def</span> <span class="nf">query_pairs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">p</span><span class="o">=</span><span class="mf">2.</span><span class="p">,</span> <span class="n">eps</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">()</span>
+</div>
+<div class="viewcode-block" id="PeriodicKDTree.count_neighbors"><a class="viewcode-back" href="../../mbuild.html#mbuild.periodic_kdtree.PeriodicKDTree.count_neighbors">[docs]</a>    <span class="k">def</span> <span class="nf">count_neighbors</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">p</span><span class="o">=</span><span class="mf">2.</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">()</span>
+</div>
+<div class="viewcode-block" id="PeriodicKDTree.sparse_distance_matrix"><a class="viewcode-back" href="../../mbuild.html#mbuild.periodic_kdtree.PeriodicKDTree.sparse_distance_matrix">[docs]</a>    <span class="k">def</span> <span class="nf">sparse_distance_matrix</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">,</span> <span class="n">max_distance</span><span class="p">,</span> <span class="n">p</span><span class="o">=</span><span class="mf">2.</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">()</span>
+
+</div></div>
+<div class="viewcode-block" id="PeriodicCKDTree"><a class="viewcode-back" href="../../mbuild.html#mbuild.periodic_kdtree.PeriodicCKDTree">[docs]</a><span class="k">class</span> <span class="nc">PeriodicCKDTree</span><span class="p">(</span><span class="n">cKDTree</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Cython kd-tree for quick nearest-neighbor lookup with periodic boundaries</span>
+
+<span class="sd">    See scipy.spatial.ckdtree for details on kd-trees.</span>
+
+<span class="sd">    Searches with periodic boundaries are implemented by mapping all</span>
+<span class="sd">    initial data points to one canonical periodic image, building an</span>
+<span class="sd">    ordinary kd-tree with these points, then querying this kd-tree multiple</span>
+<span class="sd">    times, if necessary, with all the relevant periodic images of the</span>
+<span class="sd">    query point.</span>
+
+<span class="sd">    Note that to ensure that no two distinct images of the same point</span>
+<span class="sd">    appear in the results, it is essential to restrict the maximum</span>
+<span class="sd">    distance between a query point and a data point to half the smallest</span>
+<span class="sd">    box dimension.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">leafsize</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">bounds</span><span class="o">=</span><span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">]):</span>
+        <span class="sd">&quot;&quot;&quot;Construct a kd-tree.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        bounds : array_like, shape (k,)</span>
+<span class="sd">            Size of the periodic box along each spatial dimension.  A</span>
+<span class="sd">            negative or zero size for dimension k means that space is not</span>
+<span class="sd">            periodic along k.</span>
+<span class="sd">        data : array-like, shape (n,m)</span>
+<span class="sd">            The n data points of dimension mto be indexed. This array is</span>
+<span class="sd">            not copied unless this is necessary to produce a contiguous</span>
+<span class="sd">            array of doubles, and so modifying this data will result in</span>
+<span class="sd">            bogus results.</span>
+<span class="sd">        leafsize : positive integer</span>
+<span class="sd">            The number of points at which the algorithm switches over to</span>
+<span class="sd">            brute-force.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c"># Map all points to canonical periodic image</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">bounds</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">bounds</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">real_data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+
+        <span class="n">wrapped_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">real_data</span>
+
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">row</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">real_data</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">j</span><span class="p">,</span> <span class="n">coord</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">row</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">bounds</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mf">0.0</span><span class="p">:</span>
+                    <span class="n">wrapped_data</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">real_data</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">]</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">real_data</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">]</span> <span class="o">/</span> <span class="n">bounds</span><span class="p">[</span><span class="n">j</span><span class="p">])</span> <span class="o">*</span> <span class="n">bounds</span><span class="p">[</span><span class="n">j</span><span class="p">]</span>
+
+        <span class="c"># if all(v == 0 for v in bounds):</span>
+        <span class="c">#     wrapped_data = self.real_data</span>
+        <span class="c"># else:</span>
+        <span class="c">#     wrapped_data = (</span>
+        <span class="c">#         self.real_data - np.where(bounds &gt; 0.0,</span>
+        <span class="c">#         (np.floor(self.real_data / bounds) * bounds), 0.0))</span>
+
+        <span class="c"># Calculate maximum distance_upper_bound</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">max_distance_upper_bound</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bounds</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">,</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">bounds</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">))</span>
+
+        <span class="c"># Set up underlying kd-tree</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">PeriodicCKDTree</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">wrapped_data</span><span class="p">,</span> <span class="n">leafsize</span><span class="p">)</span>
+
+    <span class="c"># Ideally, KDTree and cKDTree would expose identical query and __query</span>
+    <span class="c"># interfaces.  But they don&#39;t, and cKDTree.__query is also inaccessible</span>
+    <span class="c"># from Python.  We do our best here to cope.</span>
+    <span class="k">def</span> <span class="nf">__query</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">eps</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">p</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">distance_upper_bound</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">):</span>
+        <span class="c"># This is the internal query method, which guarantees that x</span>
+        <span class="c"># is a single point, not an array of points</span>
+        <span class="c">#</span>
+        <span class="c"># A slight complication: k could be &quot;None&quot;, which means &quot;return</span>
+        <span class="c"># all neighbors within the given distance_upper_bound&quot;.</span>
+
+        <span class="c"># Cap distance_upper_bound</span>
+        <span class="n">distance_upper_bound</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">([</span><span class="n">distance_upper_bound</span><span class="p">,</span>
+                                      <span class="bp">self</span><span class="o">.</span><span class="n">max_distance_upper_bound</span><span class="p">])</span>
+
+        <span class="c"># Run queries over all relevant images of x</span>
+        <span class="n">hits_list</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">real_x</span> <span class="ow">in</span> <span class="n">_gen_relevant_images</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">bounds</span><span class="p">,</span> <span class="n">distance_upper_bound</span><span class="p">):</span>
+            <span class="n">d</span><span class="p">,</span> <span class="n">i</span> <span class="o">=</span> <span class="nb">super</span><span class="p">(</span><span class="n">PeriodicCKDTree</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">query</span><span class="p">(</span>
+                    <span class="n">real_x</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">eps</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">distance_upper_bound</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">k</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="n">hits_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="n">i</span><span class="p">)))</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">hits_list</span><span class="o">.</span><span class="n">append</span><span class="p">([(</span><span class="n">d</span><span class="p">,</span> <span class="n">i</span><span class="p">)])</span>
+
+        <span class="c"># Now merge results</span>
+        <span class="k">if</span> <span class="n">k</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">heapq</span><span class="o">.</span><span class="n">nsmallest</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">itertools</span><span class="o">.</span><span class="n">chain</span><span class="p">(</span><span class="o">*</span><span class="n">hits_list</span><span class="p">))</span>
+        <span class="k">elif</span> <span class="n">k</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">[</span><span class="nb">min</span><span class="p">(</span><span class="n">itertools</span><span class="o">.</span><span class="n">chain</span><span class="p">(</span><span class="o">*</span><span class="n">hits_list</span><span class="p">))]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&quot;Invalid k in periodic_kdtree._KDTree__query&quot;</span><span class="p">)</span>
+
+<div class="viewcode-block" id="PeriodicCKDTree.query"><a class="viewcode-back" href="../../mbuild.html#mbuild.periodic_kdtree.PeriodicCKDTree.query">[docs]</a>    <span class="k">def</span> <span class="nf">query</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">eps</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">p</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">distance_upper_bound</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Query the kd-tree for nearest neighbors</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        x : array_like, last dimension self.m</span>
+<span class="sd">            An array of points to query.</span>
+<span class="sd">        k : integer</span>
+<span class="sd">            The number of nearest neighbors to return.</span>
+<span class="sd">        eps : non-negative float</span>
+<span class="sd">            Return approximate nearest neighbors; the kth returned value</span>
+<span class="sd">            is guaranteed to be no further than (1+eps) times the</span>
+<span class="sd">            distance to the real k-th nearest neighbor.</span>
+<span class="sd">        p : float, 1&lt;=p&lt;=infinity</span>
+<span class="sd">            Which Minkowski p-norm to use.</span>
+<span class="sd">            1 is the sum-of-absolute-values &quot;Manhattan&quot; distance</span>
+<span class="sd">            2 is the usual Euclidean distance</span>
+<span class="sd">            infinity is the maximum-coordinate-difference distance</span>
+<span class="sd">        distance_upper_bound : nonnegative float</span>
+<span class="sd">            Return only neighbors within this distance.  This is used to prune</span>
+<span class="sd">            tree searches, so if you are doing a series of nearest-neighbor</span>
+<span class="sd">            queries, it may help to supply the distance to the nearest neighbor</span>
+<span class="sd">            of the most recent point.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        d : array of floats</span>
+<span class="sd">            The distances to the nearest neighbors.</span>
+<span class="sd">            If x has shape tuple+(self.m,), then d has shape tuple+(k,).</span>
+<span class="sd">            Missing neighbors are indicated with infinite distances.</span>
+<span class="sd">        i : ndarray of ints</span>
+<span class="sd">            The locations of the neighbors in self.data.</span>
+<span class="sd">            If `x` has shape tuple+(self.m,), then `i` has shape tuple+(k,).</span>
+<span class="sd">            Missing neighbors are indicated with self.n.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="n">x</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">m</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&quot;x must consist of vectors of length </span><span class="si">%d</span><span class="s"> but has shape </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">m</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="n">x</span><span class="p">)))</span>
+        <span class="k">if</span> <span class="n">p</span><span class="o">&lt;</span><span class="mi">1</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&quot;Only p-norms with 1&lt;=p&lt;=infinity permitted&quot;</span><span class="p">)</span>
+        <span class="n">retshape</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="n">x</span><span class="p">)[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">retshape</span><span class="o">!=</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">k</span><span class="o">&gt;</span><span class="mi">1</span><span class="p">:</span>
+                <span class="n">dd</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="n">retshape</span><span class="o">+</span><span class="p">(</span><span class="n">k</span><span class="p">,),</span><span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float</span><span class="p">)</span>
+                <span class="n">dd</span><span class="o">.</span><span class="n">fill</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">)</span>
+                <span class="n">ii</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="n">retshape</span><span class="o">+</span><span class="p">(</span><span class="n">k</span><span class="p">,),</span><span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int</span><span class="p">)</span>
+                <span class="n">ii</span><span class="o">.</span><span class="n">fill</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">k</span><span class="o">==</span><span class="mi">1</span><span class="p">:</span>
+                <span class="n">dd</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="n">retshape</span><span class="p">,</span><span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float</span><span class="p">)</span>
+                <span class="n">dd</span><span class="o">.</span><span class="n">fill</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">)</span>
+                <span class="n">ii</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="n">retshape</span><span class="p">,</span><span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int</span><span class="p">)</span>
+                <span class="n">ii</span><span class="o">.</span><span class="n">fill</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&quot;Requested </span><span class="si">%s</span><span class="s"> nearest neighbors; acceptable numbers are integers greater than or equal to one, or None&quot;</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">np</span><span class="o">.</span><span class="n">ndindex</span><span class="p">(</span><span class="n">retshape</span><span class="p">):</span>
+                <span class="n">hits</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__query</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="n">c</span><span class="p">],</span> <span class="n">k</span><span class="o">=</span><span class="n">k</span><span class="p">,</span> <span class="n">eps</span><span class="o">=</span><span class="n">eps</span><span class="p">,</span> <span class="n">p</span><span class="o">=</span><span class="n">p</span><span class="p">,</span> <span class="n">distance_upper_bound</span><span class="o">=</span><span class="n">distance_upper_bound</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">k</span><span class="o">&gt;</span><span class="mi">1</span><span class="p">:</span>
+                    <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">hits</span><span class="p">)):</span>
+                        <span class="n">dd</span><span class="p">[</span><span class="n">c</span><span class="o">+</span><span class="p">(</span><span class="n">j</span><span class="p">,)],</span> <span class="n">ii</span><span class="p">[</span><span class="n">c</span><span class="o">+</span><span class="p">(</span><span class="n">j</span><span class="p">,)]</span> <span class="o">=</span> <span class="n">hits</span><span class="p">[</span><span class="n">j</span><span class="p">]</span>
+                <span class="k">elif</span> <span class="n">k</span><span class="o">==</span><span class="mi">1</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">hits</span><span class="p">)</span><span class="o">&gt;</span><span class="mi">0</span><span class="p">:</span>
+                        <span class="n">dd</span><span class="p">[</span><span class="n">c</span><span class="p">],</span> <span class="n">ii</span><span class="p">[</span><span class="n">c</span><span class="p">]</span> <span class="o">=</span> <span class="n">hits</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">dd</span><span class="p">[</span><span class="n">c</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span>
+                        <span class="n">ii</span><span class="p">[</span><span class="n">c</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">n</span>
+            <span class="k">return</span> <span class="n">dd</span><span class="p">,</span> <span class="n">ii</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">hits</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__query</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="n">k</span><span class="p">,</span> <span class="n">eps</span><span class="o">=</span><span class="n">eps</span><span class="p">,</span> <span class="n">p</span><span class="o">=</span><span class="n">p</span><span class="p">,</span> <span class="n">distance_upper_bound</span><span class="o">=</span><span class="n">distance_upper_bound</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">k</span><span class="o">==</span><span class="mi">1</span><span class="p">:</span>
+                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">hits</span><span class="p">)</span><span class="o">&gt;</span><span class="mi">0</span><span class="p">:</span>
+                    <span class="k">return</span> <span class="n">hits</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">n</span>
+            <span class="k">elif</span> <span class="n">k</span><span class="o">&gt;</span><span class="mi">1</span><span class="p">:</span>
+                <span class="n">dd</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="n">k</span><span class="p">,</span><span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float</span><span class="p">)</span>
+                <span class="n">dd</span><span class="o">.</span><span class="n">fill</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">)</span>
+                <span class="n">ii</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="n">k</span><span class="p">,</span><span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int</span><span class="p">)</span>
+                <span class="n">ii</span><span class="o">.</span><span class="n">fill</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">hits</span><span class="p">)):</span>
+                    <span class="n">dd</span><span class="p">[</span><span class="n">j</span><span class="p">],</span> <span class="n">ii</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">hits</span><span class="p">[</span><span class="n">j</span><span class="p">]</span>
+                <span class="k">return</span> <span class="n">dd</span><span class="p">,</span> <span class="n">ii</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&quot;Requested </span><span class="si">%s</span><span class="s"> nearest neighbors; acceptable numbers are integers greater than or equal to one, or None&quot;</span><span class="p">)</span>
+
+    <span class="c"># Ideally, KDTree and cKDTree would expose identical __query_ball_point</span>
+    <span class="c"># interfaces.  But they don&#39;t, and cKDTree.__query_ball_point is also</span>
+    <span class="c"># inaccessible from Python.  We do our best here to cope.</span></div>
+    <span class="k">def</span> <span class="nf">__query_ball_point</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">p</span><span class="o">=</span><span class="mf">2.</span><span class="p">,</span> <span class="n">eps</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+        <span class="c"># This is the internal query method, which guarantees that x</span>
+        <span class="c"># is a single point, not an array of points</span>
+
+        <span class="c"># Cap r</span>
+        <span class="n">r</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_distance_upper_bound</span><span class="p">)</span>
+
+        <span class="c"># Run queries over all relevant images of x</span>
+        <span class="n">results</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">real_x</span> <span class="ow">in</span> <span class="n">_gen_relevant_images</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">bounds</span><span class="p">,</span> <span class="n">r</span><span class="p">):</span>
+            <span class="n">results</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="nb">super</span><span class="p">(</span><span class="n">PeriodicCKDTree</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">query_ball_point</span><span class="p">(</span>
+                <span class="n">real_x</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">eps</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">results</span>
+
+<div class="viewcode-block" id="PeriodicCKDTree.query_ball_point"><a class="viewcode-back" href="../../mbuild.html#mbuild.periodic_kdtree.PeriodicCKDTree.query_ball_point">[docs]</a>    <span class="k">def</span> <span class="nf">query_ball_point</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">p</span><span class="o">=</span><span class="mf">2.</span><span class="p">,</span> <span class="n">eps</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Find all points within distance r of point(s) x.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        x : array_like, shape tuple + (self.m,)</span>
+<span class="sd">            The point or points to search for neighbors of.</span>
+<span class="sd">        r : positive float</span>
+<span class="sd">            The radius of points to return.</span>
+<span class="sd">        p : float, optional</span>
+<span class="sd">            Which Minkowski p-norm to use.  Should be in the range [1, inf].</span>
+<span class="sd">        eps : nonnegative float, optional</span>
+<span class="sd">            Approximate search. Branches of the tree are not explored if their</span>
+<span class="sd">            nearest points are further than ``r / (1 + eps)``, and branches are</span>
+<span class="sd">            added in bulk if their furthest points are nearer than</span>
+<span class="sd">            ``r * (1 + eps)``.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        results : list or array of lists</span>
+<span class="sd">            If `x` is a single point, returns a list of the indices of the</span>
+<span class="sd">            neighbors of `x`. If `x` is an array of points, returns an object</span>
+<span class="sd">            array of shape tuple containing lists of neighbors.</span>
+
+<span class="sd">        Notes</span>
+<span class="sd">        -----</span>
+<span class="sd">        If you have many points whose neighbors you want to find, you may</span>
+<span class="sd">        save substantial amounts of time by putting them in a</span>
+<span class="sd">        PeriodicCKDTree and using query_ball_tree.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">m</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&quot;Searching for a </span><span class="si">%d</span><span class="s">-dimensional point in a &quot;</span> \
+                             <span class="s">&quot;</span><span class="si">%d</span><span class="s">-dimensional KDTree&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">m</span><span class="p">))</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__query_ball_point</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">eps</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">retshape</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="n">retshape</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">object</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">np</span><span class="o">.</span><span class="n">ndindex</span><span class="p">(</span><span class="n">retshape</span><span class="p">):</span>
+                <span class="n">result</span><span class="p">[</span><span class="n">c</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__query_ball_point</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="n">c</span><span class="p">],</span> <span class="n">r</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">eps</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">result</span>
+</div>
+<div class="viewcode-block" id="PeriodicCKDTree.query_ball_tree"><a class="viewcode-back" href="../../mbuild.html#mbuild.periodic_kdtree.PeriodicCKDTree.query_ball_tree">[docs]</a>    <span class="k">def</span> <span class="nf">query_ball_tree</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">p</span><span class="o">=</span><span class="mf">2.</span><span class="p">,</span> <span class="n">eps</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">()</span>
+</div>
+<div class="viewcode-block" id="PeriodicCKDTree.query_pairs"><a class="viewcode-back" href="../../mbuild.html#mbuild.periodic_kdtree.PeriodicCKDTree.query_pairs">[docs]</a>    <span class="k">def</span> <span class="nf">query_pairs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">p</span><span class="o">=</span><span class="mf">2.</span><span class="p">,</span> <span class="n">eps</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">()</span>
+</div>
+<div class="viewcode-block" id="PeriodicCKDTree.count_neighbors"><a class="viewcode-back" href="../../mbuild.html#mbuild.periodic_kdtree.PeriodicCKDTree.count_neighbors">[docs]</a>    <span class="k">def</span> <span class="nf">count_neighbors</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">p</span><span class="o">=</span><span class="mf">2.</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">()</span>
+</div>
+<div class="viewcode-block" id="PeriodicCKDTree.sparse_distance_matrix"><a class="viewcode-back" href="../../mbuild.html#mbuild.periodic_kdtree.PeriodicCKDTree.sparse_distance_matrix">[docs]</a>    <span class="k">def</span> <span class="nf">sparse_distance_matrix</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">,</span> <span class="n">max_distance</span><span class="p">,</span> <span class="n">p</span><span class="o">=</span><span class="mf">2.</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">()</span></div></div>
+</pre></div>
+
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2014, Author.
+    </p>
+  </div>
+
+  <a href="https://github.com/snide/sphinx_rtd_theme">Sphinx theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../',
+            VERSION:'',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

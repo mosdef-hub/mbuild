@@ -159,7 +159,7 @@ def compute_center_of_mass(traj, masses=None):
     """Compute the center of mass for each frame.
 
     Note: This function alters the equivalent mdtraj by adding the option to
-        provide an array of masses.
+    provide an array of masses.
 
     Args:
         traj (Trajectory): Trajectory to compute center of mass for.
@@ -167,7 +167,7 @@ def compute_center_of_mass(traj, masses=None):
 
     Returns:
         com (np.ndarray, shape=(n_frames, 3)): Coordinates of the center of mass
-            for each frame.
+        for each frame.
 
     """
 

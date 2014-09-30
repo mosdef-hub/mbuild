@@ -1,0 +1,280 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>mbuild.formats package &mdash; mbuild  documentation</title>
+  
+
+  
+  
+
+  
+  <link href='https://fonts.googleapis.com/css?family=Lato:400,700|Roboto+Slab:400,700|Inconsolata:400,700' rel='stylesheet' type='text/css'>
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+    <link rel="top" title="mbuild  documentation" href="index.html"/>
+        <link rel="up" title="mbuild package" href="mbuild.html"/>
+        <link rel="next" title="mbuild.plugins package" href="mbuild.plugins.html"/>
+        <link rel="prev" title="mbuild.examples.tnp package" href="mbuild.examples.tnp.html"/> 
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/modernizr/2.6.2/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-nav-search">
+        <a href="index.html" class="fa fa-home"> mbuild</a>
+        <div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+        
+        
+            <ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="mbuild.html">mbuild package</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="mbuild.html#subpackages">Subpackages</a></li>
+<li class="toctree-l2"><a class="reference internal" href="mbuild.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="mbuild.html#module-mbuild.atom">mbuild.atom module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="mbuild.html#module-mbuild.bond">mbuild.bond module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="mbuild.html#module-mbuild.box">mbuild.box module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="mbuild.html#module-mbuild.compound">mbuild.compound module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="mbuild.html#module-mbuild.coordinate_transform">mbuild.coordinate_transform module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="mbuild.html#module-mbuild.has_parts_mixin">mbuild.has_parts_mixin module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="mbuild.html#module-mbuild.mbase">mbuild.mbase module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="mbuild.html#module-mbuild.orderedset">mbuild.orderedset module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="mbuild.html#module-mbuild.part_mixin">mbuild.part_mixin module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="mbuild.html#module-mbuild.periodic_kdtree">mbuild.periodic_kdtree module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="mbuild.html#module-mbuild.plot">mbuild.plot module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="mbuild.html#module-mbuild.polymer">mbuild.polymer module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="mbuild.html#module-mbuild.port">mbuild.port module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="mbuild.html#module-mbuild.prototype">mbuild.prototype module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="mbuild.html#module-mbuild.tiled_compound">mbuild.tiled_compound module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="mbuild.html#module-mbuild.tools">mbuild.tools module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="mbuild.html#module-mbuild.topology">mbuild.topology module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="mbuild.html#module-mbuild.trajectory">mbuild.trajectory module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="mbuild.html#module-mbuild.treeview">mbuild.treeview module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="mbuild.html#module-mbuild">Module contents</a></li>
+</ul>
+</li>
+</ul>
+
+        
+      </div>
+      &nbsp;
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="index.html">mbuild</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="index.html">Docs</a> &raquo;</li>
+      
+          <li><a href="mbuild.html">mbuild package</a> &raquo;</li>
+      
+    <li>mbuild.formats package</li>
+      <li class="wy-breadcrumbs-aside">
+        
+          <a href="_sources/mbuild.formats.txt" rel="nofollow"> View page source</a>
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main">
+            
+  <div class="section" id="mbuild-formats-package">
+<h1>mbuild.formats package<a class="headerlink" href="#mbuild-formats-package" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-mbuild.formats.gromacs">
+<span id="mbuild-formats-gromacs-module"></span><h2>mbuild.formats.gromacs module<a class="headerlink" href="#module-mbuild.formats.gromacs" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="mbuild.formats.gromacs.save_gromacs">
+<tt class="descclassname">mbuild.formats.gromacs.</tt><tt class="descname">save_gromacs</tt><big>(</big><em>traj</em>, <em>step=-1</em>, <em>basename='mbuild'</em>, <em>forcefield='opls-aa'</em><big>)</big><a class="reference internal" href="_modules/mbuild/formats/gromacs.html#save_gromacs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.formats.gromacs.save_gromacs" title="Permalink to this definition">¶</a></dt>
+<dd><p>Output a Trajectory as a GROMACS .gro and .top file.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="mbuild-formats-hoomdxml-module">
+<h2>mbuild.formats.hoomdxml module<a class="headerlink" href="#mbuild-formats-hoomdxml-module" title="Permalink to this headline">¶</a></h2>
+<span class="target" id="module-mbuild.formats.hoomdxml"></span><dl class="function">
+<dt id="mbuild.formats.hoomdxml.save_hoomdxml">
+<tt class="descclassname">mbuild.formats.hoomdxml.</tt><tt class="descname">save_hoomdxml</tt><big>(</big><em>traj</em>, <em>step=-1</em>, <em>optional_nodes=None</em>, <em>filename='mbuild.xml'</em><big>)</big><a class="reference internal" href="_modules/mbuild/formats/hoomdxml.html#save_hoomdxml"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.formats.hoomdxml.save_hoomdxml" title="Permalink to this definition">¶</a></dt>
+<dd><p>Output a Trajectory as a HOOMD XML file.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>traj</strong> (<em>md.Trajectory</em>) &#8211; The Trajectory to be output.</li>
+<li><strong>filename</strong> (<em>str, optional</em>) &#8211; Path of the output file.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+<div class="section" id="module-mbuild.formats.lammps">
+<span id="mbuild-formats-lammps-module"></span><h2>mbuild.formats.lammps module<a class="headerlink" href="#module-mbuild.formats.lammps" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="mbuild.formats.lammps.save_lammps">
+<tt class="descclassname">mbuild.formats.lammps.</tt><tt class="descname">save_lammps</tt><big>(</big><em>traj</em>, <em>step=-1</em>, <em>filename='data.mbuild'</em>, <em>unit_set='real'</em><big>)</big><a class="reference internal" href="_modules/mbuild/formats/lammps.html#save_lammps"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.formats.lammps.save_lammps" title="Permalink to this definition">¶</a></dt>
+<dd><p>Output a Trajectory as a LAMMPS data file.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>traj</strong> (<em>Trajectory</em>) &#8211; The Trajectory to be output.</li>
+<li><strong>step</strong> (<em>int, optional</em>) &#8211; The frame in traj to save. Default is last frame.</li>
+<li><strong>filename</strong> (<em>str, optional</em>) &#8211; Path of the output file.</li>
+<li><strong>unit_set</strong> (<em>str, optional</em>) &#8211; The LAMMPS unit set to write the data file in.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+<div class="section" id="module-mbuild.formats.mol2">
+<span id="mbuild-formats-mol2-module"></span><h2>mbuild.formats.mol2 module<a class="headerlink" href="#module-mbuild.formats.mol2" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="mbuild.formats.mol2.save_mol2">
+<tt class="descclassname">mbuild.formats.mol2.</tt><tt class="descname">save_mol2</tt><big>(</big><em>traj</em>, <em>step=-1</em>, <em>filename='mbuild.mol2'</em><big>)</big><a class="reference internal" href="_modules/mbuild/formats/mol2.html#save_mol2"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.formats.mol2.save_mol2" title="Permalink to this definition">¶</a></dt>
+<dd><p>Output a Trajectory as a TRIPOS mol2 file.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>traj</strong> (<em>md.Trajectory</em>) &#8211; The Trajectory to be output.</li>
+<li><strong>filename</strong> (<em>str, optional</em>) &#8211; Path of the output file.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+<div class="section" id="module-mbuild.formats.xyz">
+<span id="mbuild-formats-xyz-module"></span><h2>mbuild.formats.xyz module<a class="headerlink" href="#module-mbuild.formats.xyz" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="mbuild.formats.xyz.save_xyz">
+<tt class="descclassname">mbuild.formats.xyz.</tt><tt class="descname">save_xyz</tt><big>(</big><em>traj</em>, <em>step=-1</em>, <em>filename='mbuild.xyz'</em><big>)</big><a class="reference internal" href="_modules/mbuild/formats/xyz.html#save_xyz"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.formats.xyz.save_xyz" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+<div class="section" id="module-mbuild.formats">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-mbuild.formats" title="Permalink to this headline">¶</a></h2>
+</div>
+</div>
+
+
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="mbuild.plugins.html" class="btn btn-neutral float-right" title="mbuild.plugins package"/>Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="mbuild.examples.tnp.html" class="btn btn-neutral" title="mbuild.examples.tnp package"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2014, Author.
+    </p>
+  </div>
+
+  <a href="https://github.com/snide/sphinx_rtd_theme">Sphinx theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

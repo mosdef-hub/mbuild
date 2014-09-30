@@ -1,0 +1,375 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>mbuild.formats.hoomdxml &mdash; mbuild  documentation</title>
+  
+
+  
+  
+
+  
+  <link href='https://fonts.googleapis.com/css?family=Lato:400,700|Roboto+Slab:400,700|Inconsolata:400,700' rel='stylesheet' type='text/css'>
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  
+
+  
+    <link rel="top" title="mbuild  documentation" href="../../../index.html"/>
+        <link rel="up" title="Module code" href="../../index.html"/> 
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/modernizr/2.6.2/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-nav-search">
+        <a href="../../../index.html" class="fa fa-home"> mbuild</a>
+        <div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+        
+        
+            <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../mbuild.html">mbuild package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../mbuild.html#subpackages">Subpackages</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../mbuild.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../mbuild.html#module-mbuild.atom">mbuild.atom module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../mbuild.html#module-mbuild.bond">mbuild.bond module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../mbuild.html#module-mbuild.box">mbuild.box module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../mbuild.html#module-mbuild.compound">mbuild.compound module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../mbuild.html#module-mbuild.coordinate_transform">mbuild.coordinate_transform module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../mbuild.html#module-mbuild.has_parts_mixin">mbuild.has_parts_mixin module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../mbuild.html#module-mbuild.mbase">mbuild.mbase module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../mbuild.html#module-mbuild.orderedset">mbuild.orderedset module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../mbuild.html#module-mbuild.part_mixin">mbuild.part_mixin module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../mbuild.html#module-mbuild.periodic_kdtree">mbuild.periodic_kdtree module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../mbuild.html#module-mbuild.plot">mbuild.plot module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../mbuild.html#module-mbuild.polymer">mbuild.polymer module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../mbuild.html#module-mbuild.port">mbuild.port module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../mbuild.html#module-mbuild.prototype">mbuild.prototype module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../mbuild.html#module-mbuild.tiled_compound">mbuild.tiled_compound module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../mbuild.html#module-mbuild.tools">mbuild.tools module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../mbuild.html#module-mbuild.topology">mbuild.topology module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../mbuild.html#module-mbuild.trajectory">mbuild.trajectory module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../mbuild.html#module-mbuild.treeview">mbuild.treeview module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../mbuild.html#module-mbuild">Module contents</a></li>
+</ul>
+</li>
+</ul>
+
+        
+      </div>
+      &nbsp;
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="../../../index.html">mbuild</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../../../index.html">Docs</a> &raquo;</li>
+      
+          <li><a href="../../index.html">Module code</a> &raquo;</li>
+      
+    <li>mbuild.formats.hoomdxml</li>
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main">
+            
+  <h1>Source code for mbuild.formats.hoomdxml</h1><div class="highlight"><pre>
+<span class="kn">from</span> <span class="nn">future.builtins</span> <span class="kn">import</span> <span class="nb">range</span>
+
+<span class="kn">from</span> <span class="nn">mdtraj.formats.registry</span> <span class="kn">import</span> <span class="n">_FormatRegistry</span>
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;load_hoomxml&#39;</span><span class="p">,</span> <span class="s">&#39;save_hoomdxml&#39;</span><span class="p">]</span>
+
+<span class="nd">@_FormatRegistry.register_loader</span><span class="p">(</span><span class="s">&#39;.hoomdxml&#39;</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">load_hoomdxml</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">optional_nodes</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Load a HOOMD-blue XML file form disk.</span>
+
+<span class="sd">    TODO: better way to read optional nodes</span>
+<span class="sd">    Args:</span>
+<span class="sd">        filename (str): Path to xml file.</span>
+<span class="sd">        optional_nodes(bool, optional):</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        traj (md.Trajectory):</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="kn">from</span> <span class="nn">xml.etree</span> <span class="kn">import</span> <span class="n">cElementTree</span>
+
+    <span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+    <span class="kn">import</span> <span class="nn">pandas</span> <span class="kn">as</span> <span class="nn">pd</span>
+
+    <span class="kn">from</span> <span class="nn">mbuild.trajectory</span> <span class="kn">import</span> <span class="n">Trajectory</span>
+    <span class="kn">from</span> <span class="nn">mbuild.topology</span> <span class="kn">import</span> <span class="n">Topology</span>
+
+    <span class="n">tree</span> <span class="o">=</span> <span class="n">cElementTree</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+
+    <span class="n">config</span> <span class="o">=</span> <span class="n">tree</span><span class="o">.</span><span class="n">getroot</span><span class="p">()</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s">&#39;configuration&#39;</span><span class="p">)</span>
+    <span class="c"># Required nodes for valid HOOMD simulation: box, position and type.</span>
+    <span class="n">box</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s">&#39;box&#39;</span><span class="p">)</span>
+    <span class="n">lx</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">box</span><span class="o">.</span><span class="n">attrib</span><span class="p">[</span><span class="s">&#39;lx&#39;</span><span class="p">])</span>
+    <span class="n">ly</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">box</span><span class="o">.</span><span class="n">attrib</span><span class="p">[</span><span class="s">&#39;ly&#39;</span><span class="p">])</span>
+    <span class="n">lz</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">box</span><span class="o">.</span><span class="n">attrib</span><span class="p">[</span><span class="s">&#39;lz&#39;</span><span class="p">])</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">xy</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">box</span><span class="o">.</span><span class="n">attrib</span><span class="p">[</span><span class="s">&#39;xy&#39;</span><span class="p">])</span>
+        <span class="n">xz</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">box</span><span class="o">.</span><span class="n">attrib</span><span class="p">[</span><span class="s">&#39;xz&#39;</span><span class="p">])</span>
+        <span class="n">yz</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">box</span><span class="o">.</span><span class="n">attrib</span><span class="p">[</span><span class="s">&#39;yz&#39;</span><span class="p">])</span>
+    <span class="k">except</span><span class="p">:</span>
+        <span class="n">xy</span> <span class="o">=</span> <span class="mf">0.0</span>
+        <span class="n">xz</span> <span class="o">=</span> <span class="mf">0.0</span>
+        <span class="n">yz</span> <span class="o">=</span> <span class="mf">0.0</span>
+
+    <span class="n">unitcell_vectors</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[[</span><span class="n">lx</span><span class="p">,</span>  <span class="n">xy</span><span class="o">*</span><span class="n">ly</span><span class="p">,</span> <span class="n">xz</span><span class="o">*</span><span class="n">lz</span><span class="p">],</span>
+                                  <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">ly</span><span class="p">,</span>    <span class="n">yz</span><span class="o">*</span><span class="n">lz</span><span class="p">],</span>
+                                  <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span>   <span class="n">lz</span>   <span class="p">]]])</span>
+
+    <span class="n">xyz</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">n</span><span class="p">,</span> <span class="n">pos</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s">&#39;position&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">text</span><span class="o">.</span><span class="n">splitlines</span><span class="p">()[</span><span class="mi">1</span><span class="p">:]):</span>
+        <span class="n">xyz</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="nb">float</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">pos</span><span class="o">.</span><span class="n">split</span><span class="p">()])</span>
+    <span class="n">n_atoms</span> <span class="o">=</span> <span class="n">n</span> <span class="o">+</span> <span class="mi">1</span>
+
+    <span class="c"># TODO: Create custom elements based on type names. Probably want a prefix</span>
+    <span class="c">#       or suffix to avoid overwriting atomic elements.</span>
+    <span class="n">atom_types</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">atom_type</span> <span class="ow">in</span> <span class="n">config</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s">&#39;type&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">text</span><span class="o">.</span><span class="n">splitlines</span><span class="p">()[</span><span class="mi">1</span><span class="p">:]:</span>
+        <span class="n">atom_types</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">atom_type</span><span class="p">)</span>
+
+    <span class="c"># TODO: Read angles/dihedrals/impropers into ff_X topology attributes.</span>
+    <span class="n">optional_data</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">optional_nodes</span><span class="p">:</span>
+        <span class="c"># Create a dataframe with all available per-particle information.</span>
+        <span class="n">per_particle_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">()</span>
+        <span class="n">per_particle_nodes</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;image&#39;</span><span class="p">,</span> <span class="s">&#39;velocity&#39;</span><span class="p">,</span> <span class="s">&#39;acceleration&#39;</span><span class="p">,</span> <span class="s">&#39;mass&#39;</span><span class="p">,</span>
+                <span class="s">&#39;diameter&#39;</span><span class="p">,</span> <span class="s">&#39;charge&#39;</span><span class="p">,</span> <span class="s">&#39;body&#39;</span><span class="p">,</span> <span class="s">&#39;orientation&#39;</span><span class="p">,</span> <span class="s">&#39;moment_inertia&#39;</span><span class="p">]</span>
+        <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">per_particle_nodes</span><span class="p">:</span>
+            <span class="n">parsed_node_text</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">node_text</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="n">node</span><span class="p">)</span><span class="o">.</span><span class="n">text</span><span class="o">.</span><span class="n">splitlines</span><span class="p">()[</span><span class="mi">1</span><span class="p">:]</span>
+                <span class="k">for</span> <span class="n">raw_line</span> <span class="ow">in</span> <span class="n">node_text</span><span class="p">:</span>
+                    <span class="n">parsed_line</span> <span class="o">=</span> <span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">if</span> <span class="n">x</span><span class="o">.</span><span class="n">isdigit</span><span class="p">()</span> <span class="k">else</span> <span class="nb">float</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">raw_line</span><span class="o">.</span><span class="n">split</span><span class="p">()]</span>
+                    <span class="n">parsed_node_text</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">parsed_line</span><span class="p">)</span>
+                <span class="n">per_particle_df</span><span class="p">[</span><span class="n">node</span><span class="p">]</span> <span class="o">=</span> <span class="n">parsed_node_text</span>
+            <span class="k">except</span> <span class="ne">AttributeError</span> <span class="k">as</span> <span class="n">err</span><span class="p">:</span>
+                <span class="k">pass</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">per_particle_df</span><span class="o">.</span><span class="n">empty</span><span class="p">:</span>
+            <span class="n">optional_data</span><span class="p">[</span><span class="s">&#39;per_particle&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">per_particle_df</span>
+
+        <span class="c"># Add a dataframe for each available multi-particle node.</span>
+        <span class="n">multi_particle_nodes</span> <span class="o">=</span> <span class="p">[(</span><span class="s">&#39;bond&#39;</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="p">(</span><span class="s">&#39;angle&#39;</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span> <span class="p">(</span><span class="s">&#39;dihedral&#39;</span><span class="p">,</span> <span class="mi">4</span><span class="p">),</span>
+                                <span class="p">(</span><span class="s">&#39;improper&#39;</span><span class="p">,</span> <span class="mi">4</span><span class="p">)]</span>
+        <span class="k">for</span> <span class="n">node</span><span class="p">,</span> <span class="n">n_indices</span> <span class="ow">in</span> <span class="n">multi_particle_nodes</span><span class="p">:</span>
+            <span class="n">parsed_node_text</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">node_text</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="n">node</span><span class="p">)</span><span class="o">.</span><span class="n">text</span><span class="o">.</span><span class="n">splitlines</span><span class="p">()[</span><span class="mi">1</span><span class="p">:]</span>
+                <span class="k">for</span> <span class="n">raw_line</span> <span class="ow">in</span> <span class="n">node_text</span><span class="p">:</span>
+                    <span class="n">parsed_line</span> <span class="o">=</span> <span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">if</span> <span class="n">x</span><span class="o">.</span><span class="n">isdigit</span><span class="p">()</span> <span class="k">else</span> <span class="n">x</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">raw_line</span><span class="o">.</span><span class="n">split</span><span class="p">()]</span>
+                    <span class="n">parsed_node_text</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">parsed_line</span><span class="p">)</span>
+                <span class="n">columns</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;id&#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">n</span><span class="p">)</span> <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_indices</span><span class="p">)]</span>
+                <span class="n">columns</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">node</span><span class="o">+</span><span class="s">&#39;type&#39;</span><span class="p">)</span>
+                <span class="n">multi_particle_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">parsed_node_text</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="n">columns</span><span class="p">)</span>
+                <span class="n">optional_data</span><span class="p">[</span><span class="n">node</span><span class="p">]</span> <span class="o">=</span> <span class="n">multi_particle_df</span>
+            <span class="k">except</span> <span class="p">(</span><span class="ne">AttributeError</span><span class="p">,</span> <span class="ne">ValueError</span><span class="p">)</span> <span class="k">as</span> <span class="n">err</span><span class="p">:</span>
+                <span class="k">pass</span>
+
+        <span class="c"># TODO: read wall</span>
+        <span class="c"># &lt;wall&gt; has its information stored as attributes</span>
+
+    <span class="c"># found = [node for node in optional_data.keys() if node != &#39;per_particle&#39;]</span>
+    <span class="c"># found.extend([node for node in per_particle_df.columns])</span>
+    <span class="c"># print &quot;Parsed the following optional nodes from &#39;{0}&#39;:&quot;.format(filename)</span>
+    <span class="c"># print found</span>
+
+    <span class="n">atoms_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">atom_types</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s">&#39;name&#39;</span><span class="p">])</span>
+    <span class="n">atoms_df</span><span class="p">[</span><span class="s">&#39;serial&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_atoms</span><span class="p">)</span>
+    <span class="n">atoms_df</span><span class="p">[</span><span class="s">&#39;element&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;&#39;</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_atoms</span><span class="p">)]</span>
+    <span class="n">atoms_df</span><span class="p">[</span><span class="s">&#39;resSeq&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">n_atoms</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="s">&#39;int&#39;</span><span class="p">)</span>
+    <span class="n">atoms_df</span><span class="p">[</span><span class="s">&#39;resName&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;RES&#39;</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_atoms</span><span class="p">)]</span>
+    <span class="n">atoms_df</span><span class="p">[</span><span class="s">&#39;chainID&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">n_atoms</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="s">&#39;int&#39;</span><span class="p">)</span>
+    <span class="c"># TODO: Infer chains by finding isolated bonded structures.</span>
+    <span class="k">if</span> <span class="s">&#39;bond&#39;</span> <span class="ow">in</span> <span class="n">optional_data</span><span class="p">:</span>
+        <span class="n">bonds</span> <span class="o">=</span> <span class="n">optional_data</span><span class="p">[</span><span class="s">&#39;bond&#39;</span><span class="p">][[</span><span class="s">&#39;id0&#39;</span><span class="p">,</span> <span class="s">&#39;id1&#39;</span><span class="p">]]</span><span class="o">.</span><span class="n">values</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">bonds</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="s">&quot;int&quot;</span><span class="p">)</span>
+    <span class="n">top</span> <span class="o">=</span> <span class="n">Topology</span><span class="o">.</span><span class="n">from_dataframe</span><span class="p">(</span><span class="n">atoms_df</span><span class="p">,</span> <span class="n">bonds</span><span class="o">=</span><span class="n">bonds</span><span class="p">)</span>
+
+    <span class="n">traj</span> <span class="o">=</span> <span class="n">Trajectory</span><span class="p">(</span><span class="n">xyz</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">xyz</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">),</span> <span class="n">topology</span><span class="o">=</span><span class="n">top</span><span class="p">)</span>
+    <span class="n">traj</span><span class="o">.</span><span class="n">unitcell_vectors</span> <span class="o">=</span> <span class="n">unitcell_vectors</span>
+    <span class="k">if</span> <span class="n">optional_nodes</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">traj</span><span class="p">,</span> <span class="n">optional_data</span>
+    <span class="k">return</span> <span class="n">traj</span>
+
+
+<span class="c"># TODO: decide if we want this to be a class</span>
+<div class="viewcode-block" id="save_hoomdxml"><a class="viewcode-back" href="../../../mbuild.formats.html#mbuild.formats.hoomdxml.save_hoomdxml">[docs]</a><span class="k">def</span> <span class="nf">save_hoomdxml</span><span class="p">(</span><span class="n">traj</span><span class="p">,</span> <span class="n">step</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span> <span class="n">optional_nodes</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">filename</span><span class="o">=</span><span class="s">&#39;mbuild.xml&#39;</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Output a Trajectory as a HOOMD XML file.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        traj (md.Trajectory): The Trajectory to be output.</span>
+<span class="sd">        filename (str, optional): Path of the output file.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">xml_file</span><span class="p">:</span>
+        <span class="n">xml_file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&quot;&quot;&quot;&lt;?xml version=&quot;1.3&quot; encoding=&quot;UTF-8&quot;?&gt;</span><span class="se">\n</span><span class="s">&quot;&quot;&quot;</span><span class="p">)</span>
+        <span class="n">xml_file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&quot;&quot;&quot;&lt;hoomd_xml&gt;</span><span class="se">\n</span><span class="s">&quot;&quot;&quot;</span><span class="p">)</span>
+        <span class="n">xml_file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&quot;&quot;&quot;&lt;configuration time_step=&quot;0&quot;&gt;</span><span class="se">\n</span><span class="s">&quot;&quot;&quot;</span><span class="p">)</span>
+
+        <span class="n">lx</span><span class="p">,</span> <span class="n">ly</span><span class="p">,</span> <span class="n">lz</span> <span class="o">=</span> <span class="n">traj</span><span class="o">.</span><span class="n">unitcell_lengths</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">xy</span> <span class="o">=</span> <span class="n">traj</span><span class="o">.</span><span class="n">unitcell_vectors</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">/</span> <span class="n">ly</span>
+        <span class="n">xz</span> <span class="o">=</span> <span class="n">traj</span><span class="o">.</span><span class="n">unitcell_vectors</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">/</span> <span class="n">lz</span>
+        <span class="n">yz</span> <span class="o">=</span> <span class="n">traj</span><span class="o">.</span><span class="n">unitcell_vectors</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">/</span> <span class="n">lz</span>
+
+        <span class="n">xml_file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&quot;&quot;&quot;&lt;box lx=&quot;{0}&quot; ly=&quot;{1}&quot; lz=&quot;{2}&quot; xy=&quot;{3}&quot; xz=&quot;{4}&quot; yz=&quot;{5}&quot; /&gt;</span><span class="se">\n</span><span class="s">&quot;&quot;&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">lx</span><span class="p">,</span> <span class="n">ly</span><span class="p">,</span> <span class="n">lz</span><span class="p">,</span> <span class="n">xy</span><span class="p">,</span> <span class="n">xz</span><span class="p">,</span> <span class="n">yz</span><span class="p">))</span>
+
+        <span class="n">xml_file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&quot;&quot;&quot;&lt;position num=&quot;{0}&quot;&gt;</span><span class="se">\n</span><span class="s">&quot;&quot;&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">traj</span><span class="o">.</span><span class="n">n_atoms</span><span class="p">))</span>
+        <span class="k">for</span> <span class="n">atom</span> <span class="ow">in</span> <span class="n">traj</span><span class="o">.</span><span class="n">xyz</span><span class="p">[</span><span class="n">step</span><span class="p">]:</span>
+            <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span> <span class="o">=</span> <span class="n">atom</span>
+            <span class="n">xml_file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&quot;{0:8.5f} {1:8.5f} {2:8.5f}</span><span class="se">\n</span><span class="s">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">x</span><span class="p">),</span> <span class="nb">float</span><span class="p">(</span><span class="n">y</span><span class="p">),</span> <span class="nb">float</span><span class="p">(</span><span class="n">z</span><span class="p">)))</span>
+        <span class="n">xml_file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&quot;&lt;/position&gt;</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">)</span>
+
+        <span class="n">xml_file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&quot;&quot;&quot;&lt;type num=&quot;{0}&quot;&gt;</span><span class="se">\n</span><span class="s">&quot;&quot;&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">traj</span><span class="o">.</span><span class="n">n_atoms</span><span class="p">))</span>
+        <span class="k">for</span> <span class="n">atom</span> <span class="ow">in</span> <span class="n">traj</span><span class="o">.</span><span class="n">top</span><span class="o">.</span><span class="n">atoms</span><span class="p">:</span>
+            <span class="n">xml_file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&quot;{0}</span><span class="se">\n</span><span class="s">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">atom</span><span class="o">.</span><span class="n">name</span><span class="p">))</span>
+        <span class="n">xml_file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&quot;&lt;/type&gt;</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">)</span>
+
+        <span class="n">optional_directives</span> <span class="o">=</span> <span class="p">[(</span><span class="s">&#39;bonds&#39;</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="p">(</span><span class="s">&#39;angles&#39;</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span> <span class="p">(</span><span class="s">&#39;dihedrals&#39;</span><span class="p">,</span> <span class="mi">4</span><span class="p">),</span>
+                               <span class="p">(</span><span class="s">&#39;impropers&#39;</span><span class="p">,</span> <span class="mi">4</span><span class="p">)]</span>
+        <span class="k">for</span> <span class="n">directive</span><span class="p">,</span> <span class="n">n_terms</span> <span class="ow">in</span> <span class="n">optional_directives</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">traj</span><span class="o">.</span><span class="n">top</span><span class="p">,</span> <span class="s">&#39;_ff_{0}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">directive</span><span class="p">)):</span>
+                <span class="n">xml_file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&quot;&quot;&quot;&lt;{0}&gt;</span><span class="se">\n</span><span class="s">&quot;&quot;&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">directive</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]))</span>
+                <span class="k">for</span> <span class="n">term</span> <span class="ow">in</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">traj</span><span class="o">.</span><span class="n">top</span><span class="p">,</span> <span class="s">&#39;ff_{0}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">directive</span><span class="p">)):</span>
+                    <span class="n">entry</span> <span class="o">=</span> <span class="s">&#39;{0} &#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">term</span><span class="o">.</span><span class="n">kind</span><span class="p">)</span>
+                    <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_terms</span><span class="p">):</span>
+                        <span class="n">entry</span> <span class="o">+=</span> <span class="s">&#39;{0} &#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                            <span class="nb">getattr</span><span class="p">(</span><span class="n">term</span><span class="p">,</span> <span class="s">&#39;atom{0}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">n</span> <span class="o">+</span> <span class="mi">1</span><span class="p">))</span><span class="o">.</span><span class="n">index</span><span class="p">)</span>
+                    <span class="n">entry</span> <span class="o">+=</span> <span class="s">&#39;</span><span class="se">\n</span><span class="s">&#39;</span>
+                    <span class="n">xml_file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">entry</span><span class="p">)</span>
+                <span class="n">xml_file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&quot;&lt;/{0}&gt;</span><span class="se">\n</span><span class="s">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">directive</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]))</span>
+
+        <span class="c"># TODO: optional things</span>
+        <span class="n">xml_file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&quot;&lt;/configuration&gt;</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">)</span>
+        <span class="n">xml_file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&quot;&lt;/hoomd_xml&gt;</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">)</span>
+</div>
+<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="kn">from</span> <span class="nn">mbuild.testing.tools</span> <span class="kn">import</span> <span class="n">get_fn</span>
+    <span class="c">#traj, optional_data = load_hoomdxml(get_fn(&#39;triblock.hoomdxml&#39;), optional_nodes=True)</span>
+    <span class="c"># save_hoomdxml(traj, filename=&#39;init_out.xml&#39;)</span>
+
+    <span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+
+    <span class="kn">from</span> <span class="nn">mbuild.examples.ethane.ethane</span> <span class="kn">import</span> <span class="n">Ethane</span>
+    <span class="kn">from</span> <span class="nn">mbuild.coordinate_transform</span> <span class="kn">import</span> <span class="n">rotate_around_x</span>
+
+    <span class="n">ethane</span> <span class="o">=</span> <span class="n">Ethane</span><span class="p">()</span>
+    <span class="n">rotate_around_x</span><span class="p">(</span><span class="n">ethane</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">)</span>
+    <span class="n">ethane</span> <span class="o">=</span> <span class="n">ethane</span><span class="o">.</span><span class="n">to_trajectory</span><span class="p">()</span>
+    <span class="n">ethane</span><span class="o">.</span><span class="n">top</span><span class="o">.</span><span class="n">find_forcefield_terms</span><span class="p">()</span>
+    <span class="n">ethane</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="s">&quot;ethane.hoomdxml&quot;</span><span class="p">)</span>
+
+    <span class="c"># ethane.update_from_file(&quot;ethane.hoomdxml&quot;)</span>
+    <span class="c">#</span>
+    <span class="c"># from mbuild.compound import Compound</span>
+    <span class="c"># c = Compound()</span>
+    <span class="c"># c.append_from_file(&quot;ethane.hoomdxml&quot;)</span>
+    <span class="c">#</span>
+    <span class="c"># for atom in c.atoms():</span>
+    <span class="c">#     print atom</span>
+</pre></div>
+
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2014, Author.
+    </p>
+  </div>
+
+  <a href="https://github.com/snide/sphinx_rtd_theme">Sphinx theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../../',
+            VERSION:'',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="../../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../../_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../../../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

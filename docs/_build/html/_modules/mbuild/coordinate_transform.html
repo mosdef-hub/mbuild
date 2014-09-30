@@ -1,0 +1,695 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>mbuild.coordinate_transform &mdash; mbuild  documentation</title>
+  
+
+  
+  
+
+  
+  <link href='https://fonts.googleapis.com/css?family=Lato:400,700|Roboto+Slab:400,700|Inconsolata:400,700' rel='stylesheet' type='text/css'>
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  
+
+  
+    <link rel="top" title="mbuild  documentation" href="../../index.html"/>
+        <link rel="up" title="Module code" href="../index.html"/> 
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/modernizr/2.6.2/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-nav-search">
+        <a href="../../index.html" class="fa fa-home"> mbuild</a>
+        <div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+        
+        
+            <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../mbuild.html">mbuild package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../mbuild.html#subpackages">Subpackages</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../mbuild.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../mbuild.html#module-mbuild.atom">mbuild.atom module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../mbuild.html#module-mbuild.bond">mbuild.bond module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../mbuild.html#module-mbuild.box">mbuild.box module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../mbuild.html#module-mbuild.compound">mbuild.compound module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../mbuild.html#module-mbuild.coordinate_transform">mbuild.coordinate_transform module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../mbuild.html#module-mbuild.has_parts_mixin">mbuild.has_parts_mixin module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../mbuild.html#module-mbuild.mbase">mbuild.mbase module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../mbuild.html#module-mbuild.orderedset">mbuild.orderedset module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../mbuild.html#module-mbuild.part_mixin">mbuild.part_mixin module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../mbuild.html#module-mbuild.periodic_kdtree">mbuild.periodic_kdtree module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../mbuild.html#module-mbuild.plot">mbuild.plot module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../mbuild.html#module-mbuild.polymer">mbuild.polymer module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../mbuild.html#module-mbuild.port">mbuild.port module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../mbuild.html#module-mbuild.prototype">mbuild.prototype module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../mbuild.html#module-mbuild.tiled_compound">mbuild.tiled_compound module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../mbuild.html#module-mbuild.tools">mbuild.tools module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../mbuild.html#module-mbuild.topology">mbuild.topology module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../mbuild.html#module-mbuild.trajectory">mbuild.trajectory module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../mbuild.html#module-mbuild.treeview">mbuild.treeview module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../mbuild.html#module-mbuild">Module contents</a></li>
+</ul>
+</li>
+</ul>
+
+        
+      </div>
+      &nbsp;
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="../../index.html">mbuild</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../../index.html">Docs</a> &raquo;</li>
+      
+          <li><a href="../index.html">Module code</a> &raquo;</li>
+      
+    <li>mbuild.coordinate_transform</li>
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main">
+            
+  <h1>Source code for mbuild.coordinate_transform</h1><div class="highlight"><pre>
+<span class="n">__author__</span> <span class="o">=</span> <span class="s">&#39;sallai&#39;</span>
+
+<span class="c"># from mbuild.tools import createEquivalenceTransform</span>
+<span class="kn">from</span> <span class="nn">itertools</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="kn">from</span> <span class="nn">numpy</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">numpy.linalg</span> <span class="kn">import</span> <span class="o">*</span>
+
+
+<div class="viewcode-block" id="CoordinateTransform"><a class="viewcode-back" href="../../mbuild.html#mbuild.coordinate_transform.CoordinateTransform">[docs]</a><span class="k">class</span> <span class="nc">CoordinateTransform</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">T</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="k">if</span><span class="p">(</span><span class="n">T</span><span class="o">==</span><span class="bp">None</span><span class="p">):</span>
+            <span class="n">T</span> <span class="o">=</span> <span class="n">eye</span><span class="p">(</span><span class="mi">4</span><span class="p">);</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">T</span> <span class="o">=</span> <span class="n">T</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Tinv</span> <span class="o">=</span> <span class="n">inv</span><span class="p">(</span><span class="n">T</span><span class="p">)</span>
+
+<div class="viewcode-block" id="CoordinateTransform.applyTo"><a class="viewcode-back" href="../../mbuild.html#mbuild.coordinate_transform.CoordinateTransform.applyTo">[docs]</a>    <span class="k">def</span> <span class="nf">applyTo</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">A</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Apply the coordinate transformation to points in A</span>
+<span class="sd">        :param A: list of points (nx3)</span>
+<span class="sd">        :return: transformed list of points (nx3)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="p">(</span><span class="n">rows</span><span class="p">,</span> <span class="n">cols</span><span class="p">)</span> <span class="o">=</span> <span class="n">A</span><span class="o">.</span><span class="n">shape</span>
+        <span class="n">A_new</span> <span class="o">=</span> <span class="n">zeros</span><span class="p">((</span><span class="n">rows</span><span class="p">,</span> <span class="mi">4</span><span class="p">))</span>
+        <span class="n">A_new</span> <span class="o">=</span> <span class="n">hstack</span><span class="p">([</span><span class="n">A</span><span class="p">,</span> <span class="n">ones</span><span class="p">((</span><span class="n">rows</span><span class="p">,</span><span class="mi">1</span><span class="p">))])</span>
+
+        <span class="n">A_new</span> <span class="o">=</span> <span class="n">transpose</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">T</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">transpose</span><span class="p">(</span><span class="n">A_new</span><span class="p">)))</span>
+        <span class="k">return</span> <span class="n">A_new</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">:</span><span class="n">cols</span><span class="p">]</span>
+</div>
+<div class="viewcode-block" id="CoordinateTransform.applyInverseTo"><a class="viewcode-back" href="../../mbuild.html#mbuild.coordinate_transform.CoordinateTransform.applyInverseTo">[docs]</a>    <span class="k">def</span> <span class="nf">applyInverseTo</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">A</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Apply the inverse coordinate transformation to points in A</span>
+<span class="sd">        :param A: list of points (nx3)</span>
+<span class="sd">        :return: transformed list of points (nx3)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="p">(</span><span class="n">rows</span><span class="p">,</span> <span class="n">cols</span><span class="p">)</span> <span class="o">=</span> <span class="n">A</span><span class="o">.</span><span class="n">shape</span>
+        <span class="n">A_new</span> <span class="o">=</span> <span class="n">zeros</span><span class="p">((</span><span class="n">rows</span><span class="p">,</span> <span class="mi">4</span><span class="p">))</span>
+        <span class="n">A_new</span> <span class="o">=</span> <span class="n">hstack</span><span class="p">([</span><span class="n">A</span><span class="p">,</span> <span class="n">ones</span><span class="p">((</span><span class="n">rows</span><span class="p">,</span><span class="mi">1</span><span class="p">))])</span>
+
+        <span class="n">A_new</span> <span class="o">=</span> <span class="n">transpose</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Tinv</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">transpose</span><span class="p">(</span><span class="n">A_new</span><span class="p">)))</span>
+        <span class="k">return</span> <span class="n">A_new</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">:</span><span class="n">cols</span><span class="p">]</span>
+</div></div>
+<div class="viewcode-block" id="Translation"><a class="viewcode-back" href="../../mbuild.html#mbuild.coordinate_transform.Translation">[docs]</a><span class="k">class</span> <span class="nc">Translation</span><span class="p">(</span><span class="n">CoordinateTransform</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">P</span><span class="p">):</span>
+        <span class="n">T</span> <span class="o">=</span> <span class="n">eye</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span>
+        <span class="n">T</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">3</span><span class="p">]</span> <span class="o">=</span> <span class="n">P</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">T</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">3</span><span class="p">]</span> <span class="o">=</span> <span class="n">P</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">T</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">]</span> <span class="o">=</span> <span class="n">P</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">Translation</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">T</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="RotationAroundZ"><a class="viewcode-back" href="../../mbuild.html#mbuild.coordinate_transform.RotationAroundZ">[docs]</a><span class="k">class</span> <span class="nc">RotationAroundZ</span><span class="p">(</span><span class="n">CoordinateTransform</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">theta</span><span class="p">):</span>
+        <span class="n">T</span> <span class="o">=</span> <span class="n">eye</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span>
+        <span class="n">T</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">cos</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span>
+        <span class="n">T</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="n">sin</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span>
+        <span class="n">T</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">sin</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span>
+        <span class="n">T</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">cos</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">RotationAroundZ</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">T</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="RotationAroundY"><a class="viewcode-back" href="../../mbuild.html#mbuild.coordinate_transform.RotationAroundY">[docs]</a><span class="k">class</span> <span class="nc">RotationAroundY</span><span class="p">(</span><span class="n">CoordinateTransform</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">theta</span><span class="p">):</span>
+        <span class="n">T</span> <span class="o">=</span> <span class="n">eye</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span>
+        <span class="n">T</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">cos</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span>
+        <span class="n">T</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">sin</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span>
+        <span class="n">T</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="n">sin</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span>
+        <span class="n">T</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">cos</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">RotationAroundY</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">T</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="RotationAroundX"><a class="viewcode-back" href="../../mbuild.html#mbuild.coordinate_transform.RotationAroundX">[docs]</a><span class="k">class</span> <span class="nc">RotationAroundX</span><span class="p">(</span><span class="n">CoordinateTransform</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">theta</span><span class="p">):</span>
+        <span class="n">T</span> <span class="o">=</span> <span class="n">eye</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span>
+        <span class="n">T</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">cos</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span>
+        <span class="n">T</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="n">sin</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span>
+        <span class="n">T</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">sin</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span>
+        <span class="n">T</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">cos</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">RotationAroundX</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">T</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="Rotation"><a class="viewcode-back" href="../../mbuild.html#mbuild.coordinate_transform.Rotation">[docs]</a><span class="k">class</span> <span class="nc">Rotation</span><span class="p">(</span><span class="n">CoordinateTransform</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">theta</span><span class="p">,</span> <span class="n">around</span><span class="p">):</span>
+        <span class="c"># rotation around vector around by angle theta</span>
+
+        <span class="k">assert</span> <span class="p">(</span> <span class="n">around</span><span class="o">.</span><span class="n">size</span> <span class="o">==</span> <span class="mi">3</span><span class="p">)</span>
+
+        <span class="n">T</span> <span class="o">=</span> <span class="n">eye</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span>
+
+        <span class="n">s</span> <span class="o">=</span> <span class="n">sin</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span>
+        <span class="n">c</span> <span class="o">=</span> <span class="n">cos</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span>
+        <span class="n">t</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">c</span>
+
+        <span class="n">n</span> <span class="o">=</span> <span class="n">around</span> <span class="o">/</span> <span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">around</span><span class="p">)</span>
+
+        <span class="n">x</span> <span class="o">=</span> <span class="n">n</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">y</span> <span class="o">=</span> <span class="n">n</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">z</span> <span class="o">=</span> <span class="n">n</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+        <span class="n">m</span> <span class="o">=</span> <span class="n">array</span><span class="p">([</span>
+            <span class="p">[</span><span class="n">t</span><span class="o">*</span><span class="n">x</span><span class="o">*</span><span class="n">x</span> <span class="o">+</span> <span class="n">c</span><span class="p">,</span>    <span class="n">t</span><span class="o">*</span><span class="n">x</span><span class="o">*</span><span class="n">y</span> <span class="o">-</span> <span class="n">s</span><span class="o">*</span><span class="n">z</span><span class="p">,</span>  <span class="n">t</span><span class="o">*</span><span class="n">x</span><span class="o">*</span><span class="n">z</span> <span class="o">+</span> <span class="n">s</span><span class="o">*</span><span class="n">y</span><span class="p">],</span>
+            <span class="p">[</span><span class="n">t</span><span class="o">*</span><span class="n">x</span><span class="o">*</span><span class="n">y</span> <span class="o">+</span> <span class="n">s</span><span class="o">*</span><span class="n">z</span><span class="p">,</span>  <span class="n">t</span><span class="o">*</span><span class="n">y</span><span class="o">*</span><span class="n">y</span> <span class="o">+</span> <span class="n">c</span><span class="p">,</span>    <span class="n">t</span><span class="o">*</span><span class="n">y</span><span class="o">*</span><span class="n">z</span> <span class="o">-</span> <span class="n">s</span><span class="o">*</span><span class="n">x</span><span class="p">],</span>
+            <span class="p">[</span><span class="n">t</span><span class="o">*</span><span class="n">x</span><span class="o">*</span><span class="n">z</span> <span class="o">-</span> <span class="n">s</span><span class="o">*</span><span class="n">y</span><span class="p">,</span>  <span class="n">t</span><span class="o">*</span><span class="n">y</span><span class="o">*</span><span class="n">z</span> <span class="o">+</span> <span class="n">s</span><span class="o">*</span><span class="n">x</span><span class="p">,</span>  <span class="n">t</span><span class="o">*</span><span class="n">z</span><span class="o">*</span><span class="n">z</span> <span class="o">+</span> <span class="n">c</span><span class="p">]])</span>
+
+        <span class="n">T</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">3</span><span class="p">,</span><span class="mi">0</span><span class="p">:</span><span class="mi">3</span><span class="p">]</span> <span class="o">=</span> <span class="n">m</span>
+
+        <span class="nb">super</span><span class="p">(</span><span class="n">Rotation</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">T</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="ChangeOfBasis"><a class="viewcode-back" href="../../mbuild.html#mbuild.coordinate_transform.ChangeOfBasis">[docs]</a><span class="k">class</span> <span class="nc">ChangeOfBasis</span><span class="p">(</span><span class="n">CoordinateTransform</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">basis</span><span class="p">,</span> <span class="n">origin</span><span class="o">=</span><span class="n">array</span><span class="p">([</span><span class="mf">0.0</span><span class="p">,</span><span class="mf">0.0</span><span class="p">,</span><span class="mf">0.0</span><span class="p">])):</span>
+
+        <span class="k">assert</span> <span class="p">(</span><span class="n">shape</span><span class="p">(</span><span class="n">basis</span><span class="p">)</span> <span class="o">==</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span><span class="mi">3</span><span class="p">))</span>
+
+        <span class="n">T</span> <span class="o">=</span> <span class="n">eye</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span>
+
+        <span class="n">T</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">3</span><span class="p">,</span><span class="mi">0</span><span class="p">:</span><span class="mi">3</span><span class="p">]</span> <span class="o">=</span> <span class="n">basis</span>
+        <span class="n">T</span> <span class="o">=</span> <span class="n">inv</span><span class="p">(</span><span class="n">T</span><span class="p">)</span>
+
+        <span class="n">T</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">3</span><span class="p">,</span><span class="mi">3</span><span class="p">:</span><span class="mi">4</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="n">array</span><span class="p">([</span><span class="n">origin</span><span class="p">])</span><span class="o">.</span><span class="n">transpose</span><span class="p">()</span>
+
+        <span class="nb">super</span><span class="p">(</span><span class="n">ChangeOfBasis</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">T</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="AxisTransform"><a class="viewcode-back" href="../../mbuild.html#mbuild.coordinate_transform.AxisTransform">[docs]</a><span class="k">class</span> <span class="nc">AxisTransform</span><span class="p">(</span><span class="n">CoordinateTransform</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">new_origin</span><span class="o">=</span><span class="n">array</span><span class="p">([</span><span class="mf">0.0</span><span class="p">,</span><span class="mf">0.0</span><span class="p">,</span><span class="mf">0.0</span><span class="p">]),</span> <span class="n">point_on_x_axis</span><span class="o">=</span><span class="n">array</span><span class="p">([</span><span class="mf">1.0</span><span class="p">,</span><span class="mf">0.0</span><span class="p">,</span><span class="mf">0.0</span><span class="p">]),</span> <span class="n">point_on_xy_plane</span><span class="o">=</span><span class="n">array</span><span class="p">([</span><span class="mf">1.0</span><span class="p">,</span><span class="mf">1.0</span><span class="p">,</span><span class="mf">0.0</span><span class="p">])):</span>
+        <span class="c"># change the basis such that p1 is the origin, p2 is on the x axis and p3 is in the xy plane</span>
+        <span class="n">p1</span> <span class="o">=</span> <span class="n">new_origin</span>
+        <span class="n">p2</span> <span class="o">=</span> <span class="n">point_on_x_axis</span> <span class="c"># positive x axis</span>
+        <span class="n">p3</span> <span class="o">=</span> <span class="n">point_on_xy_plane</span> <span class="c"># positive y part of the x axis</span>
+
+        <span class="c"># the direction vector of our new x axis</span>
+        <span class="n">newx</span> <span class="o">=</span> <span class="n">unit_vector</span><span class="p">(</span><span class="n">p2</span><span class="o">-</span><span class="n">p1</span><span class="p">)</span>
+        <span class="n">p3_u</span> <span class="o">=</span> <span class="n">unit_vector</span><span class="p">(</span><span class="n">p3</span><span class="o">-</span><span class="n">p1</span><span class="p">)</span>
+        <span class="n">newz</span> <span class="o">=</span> <span class="n">unit_vector</span><span class="p">(</span><span class="n">cross</span><span class="p">(</span><span class="n">newx</span><span class="p">,</span> <span class="n">p3_u</span><span class="p">))</span>
+        <span class="n">newy</span> <span class="o">=</span> <span class="n">cross</span><span class="p">(</span><span class="n">newz</span><span class="p">,</span> <span class="n">newx</span><span class="p">)</span>
+
+        <span class="c"># print &quot;newx=&quot; +str(newx)</span>
+        <span class="c"># print &quot;newy=&quot; +str(newy)</span>
+        <span class="c"># print &quot;newz=&quot; +str(newz)</span>
+
+        <span class="c"># translation that moves new_origin to the origin</span>
+        <span class="n">T_tr</span> <span class="o">=</span> <span class="n">eye</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span>
+        <span class="n">T_tr</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">:</span><span class="mi">4</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="n">array</span><span class="p">([</span><span class="n">p1</span><span class="p">])</span><span class="o">.</span><span class="n">transpose</span><span class="p">()</span>
+
+        <span class="c"># rotation that moves newx to the x axis, newy to the y axis, newz to the z axis</span>
+        <span class="n">B</span> <span class="o">=</span> <span class="n">eye</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span>
+        <span class="n">B</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">3</span><span class="p">,</span><span class="mi">0</span><span class="p">:</span><span class="mi">3</span><span class="p">]</span> <span class="o">=</span> <span class="n">vstack</span><span class="p">((</span><span class="n">newx</span><span class="p">,</span> <span class="n">newy</span><span class="p">,</span> <span class="n">newz</span><span class="p">))</span>
+
+        <span class="c"># the concatentaion of translation and rotation</span>
+        <span class="n">B_tr</span> <span class="o">=</span> <span class="n">dot</span><span class="p">(</span><span class="n">B</span><span class="p">,</span> <span class="n">T_tr</span><span class="p">)</span>
+
+        <span class="nb">super</span><span class="p">(</span><span class="n">AxisTransform</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">B_tr</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="RigidTransform"><a class="viewcode-back" href="../../mbuild.html#mbuild.coordinate_transform.RigidTransform">[docs]</a><span class="k">class</span> <span class="nc">RigidTransform</span><span class="p">(</span><span class="n">CoordinateTransform</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Computes the rigid transformation that maps points A to points B</span>
+<span class="sd">    see http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.173.2196&amp;rep=rep1&amp;type=pdf</span>
+<span class="sd">    :param A: list of points (nx3) in source coordinate system</span>
+<span class="sd">    :param B: list of points (nx3) in destination coordinate system</span>
+<span class="sd">    :return: the CoordinateTransformation object</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">A</span><span class="p">,</span> <span class="n">B</span><span class="p">):</span>
+        <span class="p">(</span><span class="n">rows</span><span class="p">,</span> <span class="n">cols</span><span class="p">)</span> <span class="o">=</span> <span class="n">shape</span><span class="p">(</span><span class="n">A</span><span class="p">)</span>
+        <span class="n">centroid_A</span> <span class="o">=</span> <span class="n">mean</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">centroid_B</span> <span class="o">=</span> <span class="n">mean</span><span class="p">(</span><span class="n">B</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">centroid_A</span><span class="o">.</span><span class="n">shape</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">3</span><span class="p">)</span>
+        <span class="n">centroid_B</span><span class="o">.</span><span class="n">shape</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">3</span><span class="p">)</span>
+
+        <span class="n">H</span> <span class="o">=</span> <span class="n">zeros</span><span class="p">((</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">rows</span><span class="p">):</span>
+            <span class="n">H</span> <span class="o">=</span> <span class="n">H</span> <span class="o">+</span> <span class="n">transpose</span><span class="p">(</span><span class="n">A</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="p">:]</span> <span class="o">-</span> <span class="n">centroid_A</span><span class="p">)</span><span class="o">.</span><span class="n">dot</span><span class="p">((</span><span class="n">B</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="p">:]</span> <span class="o">-</span> <span class="n">centroid_B</span><span class="p">))</span>
+
+        <span class="n">U</span><span class="p">,</span> <span class="n">s</span><span class="p">,</span> <span class="n">V</span> <span class="o">=</span> <span class="n">svd</span><span class="p">(</span><span class="n">H</span><span class="p">)</span>
+
+        <span class="c"># print &quot;centroid_A:&quot; + str(centroid_A)</span>
+        <span class="c"># print &quot;H:&quot; + str(H)</span>
+
+        <span class="c"># print &quot;U:&quot; + str(U)</span>
+        <span class="n">V</span> <span class="o">=</span> <span class="n">transpose</span><span class="p">(</span><span class="n">V</span><span class="p">)</span>
+        <span class="c"># print &quot;V:&quot; + str(V)</span>
+
+        <span class="n">R</span> <span class="o">=</span> <span class="n">V</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">transpose</span><span class="p">(</span><span class="n">U</span><span class="p">))</span>
+        <span class="c"># print &quot;R:&quot; + str(R)</span>
+
+        <span class="n">C_A</span> <span class="o">=</span> <span class="n">eye</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+        <span class="n">C_A</span> <span class="o">=</span> <span class="n">vstack</span><span class="p">([</span><span class="n">hstack</span><span class="p">([</span><span class="n">C_A</span><span class="p">,</span> <span class="n">transpose</span><span class="p">(</span><span class="n">centroid_A</span><span class="p">)</span> <span class="o">*</span> <span class="o">-</span><span class="mf">1.0</span><span class="p">]),</span><span class="n">array</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">])])</span>
+        <span class="c"># print &quot;C_A:&quot; + str(C_A)</span>
+
+        <span class="n">R_new</span> <span class="o">=</span> <span class="n">eye</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+        <span class="n">R_new</span> <span class="o">=</span> <span class="n">vstack</span><span class="p">([</span><span class="n">hstack</span><span class="p">([</span><span class="n">R</span><span class="p">,</span><span class="n">array</span><span class="p">([[</span><span class="mi">0</span><span class="p">],[</span><span class="mi">0</span><span class="p">],[</span><span class="mi">0</span><span class="p">]])]),</span><span class="n">array</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">])])</span>
+        <span class="c"># print &quot;R_new:&quot; + str(R_new)</span>
+
+        <span class="n">C_B</span> <span class="o">=</span> <span class="n">eye</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+
+        <span class="n">C_B</span> <span class="o">=</span> <span class="n">vstack</span><span class="p">([</span><span class="n">hstack</span><span class="p">([</span><span class="n">C_B</span><span class="p">,</span> <span class="n">transpose</span><span class="p">(</span><span class="n">centroid_B</span><span class="p">)]),</span> <span class="n">array</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">])])</span>
+        <span class="c"># print &quot;C_B:&quot; + str(C_B)</span>
+
+        <span class="n">T</span> <span class="o">=</span> <span class="n">C_B</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">R_new</span><span class="p">)</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">C_A</span><span class="p">)</span>
+
+        <span class="nb">super</span><span class="p">(</span><span class="n">RigidTransform</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">T</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="unit_vector"><a class="viewcode-back" href="../../mbuild.html#mbuild.coordinate_transform.unit_vector">[docs]</a><span class="k">def</span> <span class="nf">unit_vector</span><span class="p">(</span><span class="n">vector</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Returns the unit vector of the vector.  &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">vector</span> <span class="o">/</span> <span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">vector</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="vec_angle"><a class="viewcode-back" href="../../mbuild.html#mbuild.coordinate_transform.vec_angle">[docs]</a><span class="k">def</span> <span class="nf">vec_angle</span><span class="p">(</span><span class="n">v1</span><span class="p">,</span> <span class="n">v2</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Returns the angle in radians between vectors &#39;v1&#39; and &#39;v2&#39;</span>
+
+<span class="sd">            &gt;&gt;&gt; angle_between((1, 0, 0), (0, 1, 0))</span>
+<span class="sd">            1.5707963267948966</span>
+<span class="sd">            &gt;&gt;&gt; angle_between((1, 0, 0), (1, 0, 0))</span>
+<span class="sd">            0.0</span>
+<span class="sd">            &gt;&gt;&gt; angle_between((1, 0, 0), (-1, 0, 0))</span>
+<span class="sd">            3.141592653589793</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">v1_u</span> <span class="o">=</span> <span class="n">CoordinateTransform</span><span class="o">.</span><span class="n">unit_vector</span><span class="p">(</span><span class="n">v1</span><span class="p">)</span>
+    <span class="n">v2_u</span> <span class="o">=</span> <span class="n">CoordinateTransform</span><span class="o">.</span><span class="n">unit_vector</span><span class="p">(</span><span class="n">v2</span><span class="p">)</span>
+
+    <span class="n">d</span> <span class="o">=</span> <span class="n">dot</span><span class="p">(</span><span class="n">v1_u</span><span class="p">,</span> <span class="n">v2_u</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">abs</span><span class="p">(</span><span class="n">d</span><span class="o">-</span><span class="mf">1.0</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mf">0.000000001</span><span class="p">:</span>
+        <span class="n">angle</span> <span class="o">=</span> <span class="mf">0.0</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">angle</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arccos</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">isnan</span><span class="p">(</span><span class="n">angle</span><span class="p">):</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">v1_u</span> <span class="o">==</span> <span class="n">v2_u</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">():</span>
+            <span class="k">return</span> <span class="mf">0.0</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span>
+    <span class="k">return</span> <span class="n">angle</span>
+
+</div>
+<span class="k">def</span> <span class="nf">_extract_atom_positions</span><span class="p">(</span><span class="n">compound</span><span class="p">):</span>
+    <span class="n">arr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">fromiter</span><span class="p">(</span><span class="n">chain</span><span class="o">.</span><span class="n">from_iterable</span><span class="p">(</span><span class="n">atom</span><span class="o">.</span><span class="n">pos</span> <span class="k">for</span> <span class="n">atom</span> <span class="ow">in</span> <span class="n">compound</span><span class="o">.</span><span class="n">atoms</span><span class="p">()),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+    <span class="n">arrnx3</span> <span class="o">=</span> <span class="n">arr</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">3</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">arrnx3</span>
+
+<span class="k">def</span> <span class="nf">_write_back_atom_positions</span><span class="p">(</span><span class="n">compound</span><span class="p">,</span> <span class="n">arrnx3</span><span class="p">):</span>
+    <span class="n">arr</span> <span class="o">=</span> <span class="n">arrnx3</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="o">-</span><span class="mi">1</span><span class="p">))</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">atom</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">compound</span><span class="o">.</span><span class="n">atoms</span><span class="p">()):</span>
+        <span class="n">atom</span><span class="o">.</span><span class="n">pos</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">arr</span><span class="p">[</span><span class="mi">3</span><span class="o">*</span><span class="n">i</span><span class="p">],</span> <span class="n">arr</span><span class="p">[</span><span class="mi">3</span><span class="o">*</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">],</span> <span class="n">arr</span><span class="p">[</span><span class="mi">3</span><span class="o">*</span><span class="n">i</span> <span class="o">+</span> <span class="mi">2</span><span class="p">]])</span>
+
+<span class="k">def</span> <span class="nf">_createEquivalenceTransform</span><span class="p">(</span><span class="n">equiv</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Compute an equivalence transformation that transforms this compound</span>
+<span class="sd">    to another compound&#39;s coordinate system.</span>
+
+<span class="sd">    :param other: the other point cloud</span>
+<span class="sd">    :param equiv: list of equivalent points</span>
+<span class="sd">    :returns: the coordinatetransform object that transforms this point cloud to the other point cloud&#39;s coordinates system</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">self_points</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([])</span>
+    <span class="n">self_points</span><span class="o">.</span><span class="n">shape</span> <span class="o">=</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+    <span class="n">other_points</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([])</span>
+    <span class="n">other_points</span><span class="o">.</span><span class="n">shape</span> <span class="o">=</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+
+    <span class="kn">from</span> <span class="nn">compound</span> <span class="kn">import</span> <span class="n">Compound</span>
+    <span class="kn">from</span> <span class="nn">atom</span> <span class="kn">import</span> <span class="n">Atom</span>
+
+    <span class="k">for</span> <span class="n">pair</span> <span class="ow">in</span> <span class="n">equiv</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">pair</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="n">pair</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">2</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s">&#39;Equivalence pair not a 2-tuple&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="p">((</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">pair</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">Compound</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">pair</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">Compound</span><span class="p">))</span> <span class="ow">or</span> <span class="p">(</span>
+                <span class="nb">isinstance</span><span class="p">(</span><span class="n">pair</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">Atom</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">pair</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">Atom</span><span class="p">))):</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span>
+                <span class="s">&#39;Equivalence pair type mismatch: pair[0] is a &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">pair</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span> <span class="o">+</span> <span class="s">&#39; and pair[1] is a &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span>
+                    <span class="nb">type</span><span class="p">(</span><span class="n">pair</span><span class="p">[</span><span class="mi">1</span><span class="p">])))</span>
+
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">pair</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">Atom</span><span class="p">):</span>
+            <span class="n">self_points</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">([</span><span class="n">self_points</span><span class="p">,</span> <span class="n">pair</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">pos</span><span class="p">])</span>
+            <span class="n">other_points</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">([</span><span class="n">other_points</span><span class="p">,</span> <span class="n">pair</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">pos</span><span class="p">])</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">pair</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">Compound</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">atom0</span> <span class="ow">in</span> <span class="n">pair</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">atoms</span><span class="p">():</span>
+                <span class="n">self_points</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">([</span><span class="n">self_points</span><span class="p">,</span> <span class="n">atom0</span><span class="o">.</span><span class="n">pos</span><span class="p">])</span>
+            <span class="k">for</span> <span class="n">atom1</span> <span class="ow">in</span> <span class="n">pair</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">atoms</span><span class="p">():</span>
+                <span class="n">other_points</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">([</span><span class="n">other_points</span><span class="p">,</span> <span class="n">atom1</span><span class="o">.</span><span class="n">pos</span><span class="p">])</span>
+
+    <span class="n">T</span> <span class="o">=</span> <span class="n">RigidTransform</span><span class="p">(</span><span class="n">self_points</span><span class="p">,</span> <span class="n">other_points</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">T</span>
+
+<div class="viewcode-block" id="equivalence_transform"><a class="viewcode-back" href="../../mbuild.html#mbuild.coordinate_transform.equivalence_transform">[docs]</a><span class="k">def</span> <span class="nf">equivalence_transform</span><span class="p">(</span><span class="n">compound</span><span class="p">,</span> <span class="n">from_positions</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">to_positions</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">add_bond</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Computes an affine transformation that maps the from_positions to the respective</span>
+<span class="sd">    to_positions, and applies this transformation to the compound.</span>
+<span class="sd">    :param equivalence_pairs: list of equivalence pairs (tuples)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">from_positions</span><span class="p">,</span> <span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">))</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">to_positions</span><span class="p">,</span> <span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">)):</span>
+        <span class="n">equivalence_pairs</span> <span class="o">=</span> <span class="nb">zip</span><span class="p">(</span><span class="n">from_positions</span><span class="p">,</span> <span class="n">to_positions</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">equivalence_pairs</span> <span class="o">=</span> <span class="p">[(</span><span class="n">from_positions</span><span class="p">,</span> <span class="n">to_positions</span><span class="p">)]</span>
+
+    <span class="n">T</span> <span class="o">=</span> <span class="n">_createEquivalenceTransform</span><span class="p">(</span><span class="n">equivalence_pairs</span><span class="p">)</span>
+    <span class="n">atom_positions</span> <span class="o">=</span> <span class="n">_extract_atom_positions</span><span class="p">(</span><span class="n">compound</span><span class="p">)</span>
+    <span class="n">atom_positions</span> <span class="o">=</span> <span class="n">T</span><span class="o">.</span><span class="n">applyTo</span><span class="p">(</span><span class="n">atom_positions</span><span class="p">)</span>
+    <span class="n">_write_back_atom_positions</span><span class="p">(</span><span class="n">compound</span><span class="p">,</span> <span class="n">atom_positions</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">add_bond</span><span class="p">:</span>
+        <span class="kn">from</span> <span class="nn">mbuild.port</span> <span class="kn">import</span> <span class="n">Port</span>
+        <span class="kn">from</span> <span class="nn">mbuild.bond</span> <span class="kn">import</span> <span class="n">Bond</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">from_positions</span><span class="p">,</span> <span class="n">Port</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">to_positions</span><span class="p">,</span> <span class="n">Port</span><span class="p">):</span>
+            <span class="n">compound</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">Bond</span><span class="p">(</span><span class="n">from_positions</span><span class="p">,</span> <span class="n">to_positions</span><span class="p">))</span>
+
+
+</div>
+<div class="viewcode-block" id="translate"><a class="viewcode-back" href="../../mbuild.html#mbuild.coordinate_transform.translate">[docs]</a><span class="k">def</span> <span class="nf">translate</span><span class="p">(</span><span class="n">compound</span><span class="p">,</span> <span class="n">v</span><span class="p">):</span>
+    <span class="n">atom_positions</span> <span class="o">=</span> <span class="n">_extract_atom_positions</span><span class="p">(</span><span class="n">compound</span><span class="p">)</span>
+    <span class="n">atom_positions</span> <span class="o">=</span> <span class="n">Translation</span><span class="p">(</span><span class="n">v</span><span class="p">)</span><span class="o">.</span><span class="n">applyTo</span><span class="p">(</span><span class="n">atom_positions</span><span class="p">)</span>
+    <span class="n">_write_back_atom_positions</span><span class="p">(</span><span class="n">compound</span><span class="p">,</span> <span class="n">atom_positions</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="rotate_around_z"><a class="viewcode-back" href="../../mbuild.html#mbuild.coordinate_transform.rotate_around_z">[docs]</a><span class="k">def</span> <span class="nf">rotate_around_z</span><span class="p">(</span><span class="n">compound</span><span class="p">,</span> <span class="n">theta</span><span class="p">):</span>
+    <span class="n">atom_positions</span> <span class="o">=</span> <span class="n">_extract_atom_positions</span><span class="p">(</span><span class="n">compound</span><span class="p">)</span>
+    <span class="n">atom_positions</span> <span class="o">=</span> <span class="n">RotationAroundZ</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span><span class="o">.</span><span class="n">applyTo</span><span class="p">(</span><span class="n">atom_positions</span><span class="p">)</span>
+    <span class="n">_write_back_atom_positions</span><span class="p">(</span><span class="n">compound</span><span class="p">,</span> <span class="n">atom_positions</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="rotate_around_y"><a class="viewcode-back" href="../../mbuild.html#mbuild.coordinate_transform.rotate_around_y">[docs]</a><span class="k">def</span> <span class="nf">rotate_around_y</span><span class="p">(</span><span class="n">compound</span><span class="p">,</span> <span class="n">theta</span><span class="p">):</span>
+    <span class="n">atom_positions</span> <span class="o">=</span> <span class="n">_extract_atom_positions</span><span class="p">(</span><span class="n">compound</span><span class="p">)</span>
+    <span class="n">atom_positions</span> <span class="o">=</span> <span class="n">RotationAroundY</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span><span class="o">.</span><span class="n">applyTo</span><span class="p">(</span><span class="n">atom_positions</span><span class="p">)</span>
+    <span class="n">_write_back_atom_positions</span><span class="p">(</span><span class="n">compound</span><span class="p">,</span> <span class="n">atom_positions</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="rotate_around_x"><a class="viewcode-back" href="../../mbuild.html#mbuild.coordinate_transform.rotate_around_x">[docs]</a><span class="k">def</span> <span class="nf">rotate_around_x</span><span class="p">(</span><span class="n">compound</span><span class="p">,</span> <span class="n">theta</span><span class="p">):</span>
+    <span class="n">atom_positions</span> <span class="o">=</span> <span class="n">_extract_atom_positions</span><span class="p">(</span><span class="n">compound</span><span class="p">)</span>
+    <span class="n">atom_positions</span> <span class="o">=</span> <span class="n">RotationAroundX</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span><span class="o">.</span><span class="n">applyTo</span><span class="p">(</span><span class="n">atom_positions</span><span class="p">)</span>
+    <span class="n">_write_back_atom_positions</span><span class="p">(</span><span class="n">compound</span><span class="p">,</span> <span class="n">atom_positions</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="x_axis_transform"><a class="viewcode-back" href="../../mbuild.html#mbuild.coordinate_transform.x_axis_transform">[docs]</a><span class="k">def</span> <span class="nf">x_axis_transform</span><span class="p">(</span><span class="n">compound</span><span class="p">,</span> <span class="n">new_origin</span><span class="o">=</span><span class="n">array</span><span class="p">([</span><span class="mf">0.0</span><span class="p">,</span><span class="mf">0.0</span><span class="p">,</span><span class="mf">0.0</span><span class="p">]),</span> <span class="n">point_on_x_axis</span><span class="o">=</span><span class="n">array</span><span class="p">([</span><span class="mf">1.0</span><span class="p">,</span><span class="mf">0.0</span><span class="p">,</span><span class="mf">0.0</span><span class="p">]),</span> <span class="n">point_on_xy_plane</span><span class="o">=</span><span class="n">array</span><span class="p">([</span><span class="mf">1.0</span><span class="p">,</span><span class="mf">1.0</span><span class="p">,</span><span class="mf">0.0</span><span class="p">])):</span>
+    <span class="kn">from</span> <span class="nn">atom</span> <span class="kn">import</span> <span class="n">Atom</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">new_origin</span><span class="p">,</span> <span class="n">Atom</span><span class="p">):</span>
+        <span class="n">new_origin</span> <span class="o">=</span> <span class="n">new_origin</span><span class="o">.</span><span class="n">pos</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">point_on_x_axis</span><span class="p">,</span> <span class="n">Atom</span><span class="p">):</span>
+        <span class="n">point_on_x_axis</span> <span class="o">=</span> <span class="n">point_on_x_axis</span><span class="o">.</span><span class="n">pos</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">point_on_xy_plane</span><span class="p">,</span> <span class="n">Atom</span><span class="p">):</span>
+        <span class="n">point_on_xy_plane</span> <span class="o">=</span> <span class="n">point_on_xy_plane</span><span class="o">.</span><span class="n">pos</span>
+
+    <span class="n">atom_positions</span> <span class="o">=</span> <span class="n">_extract_atom_positions</span><span class="p">(</span><span class="n">compound</span><span class="p">)</span>
+    <span class="n">atom_positions</span> <span class="o">=</span> <span class="n">AxisTransform</span><span class="p">(</span><span class="n">new_origin</span><span class="o">=</span><span class="n">new_origin</span><span class="p">,</span> <span class="n">point_on_x_axis</span><span class="o">=</span><span class="n">point_on_x_axis</span><span class="p">,</span> <span class="n">point_on_xy_plane</span><span class="o">=</span><span class="n">point_on_xy_plane</span><span class="p">)</span><span class="o">.</span><span class="n">applyTo</span><span class="p">(</span><span class="n">atom_positions</span><span class="p">)</span>
+    <span class="n">_write_back_atom_positions</span><span class="p">(</span><span class="n">compound</span><span class="p">,</span> <span class="n">atom_positions</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="y_axis_transform"><a class="viewcode-back" href="../../mbuild.html#mbuild.coordinate_transform.y_axis_transform">[docs]</a><span class="k">def</span> <span class="nf">y_axis_transform</span><span class="p">(</span><span class="n">compound</span><span class="p">,</span> <span class="n">new_origin</span><span class="o">=</span><span class="n">array</span><span class="p">([</span><span class="mf">0.0</span><span class="p">,</span><span class="mf">0.0</span><span class="p">,</span><span class="mf">0.0</span><span class="p">]),</span> <span class="n">point_on_y_axis</span><span class="o">=</span><span class="n">array</span><span class="p">([</span><span class="mf">1.0</span><span class="p">,</span><span class="mf">0.0</span><span class="p">,</span><span class="mf">0.0</span><span class="p">]),</span> <span class="n">point_on_xy_plane</span><span class="o">=</span><span class="n">array</span><span class="p">([</span><span class="mf">1.0</span><span class="p">,</span><span class="mf">1.0</span><span class="p">,</span><span class="mf">0.0</span><span class="p">])):</span>
+    <span class="n">x_axis_transform</span><span class="p">(</span><span class="n">compound</span><span class="p">,</span> <span class="n">new_origin</span><span class="o">=</span><span class="n">new_origin</span><span class="p">,</span> <span class="n">point_on_x_axis</span><span class="o">=</span><span class="n">point_on_y_axis</span><span class="p">,</span> <span class="n">point_on_xy_plane</span><span class="o">=</span><span class="n">point_on_xy_plane</span><span class="p">)</span>
+    <span class="n">rotate_around_z</span><span class="p">(</span><span class="n">compound</span><span class="p">,</span> <span class="n">pi</span><span class="o">/</span><span class="mi">2</span><span class="p">)</span>
+
+</div>
+<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="c"># # matrix with n rows containing x, y, z coordinates(N &gt;= 3) of points in coordinate system 1</span>
+    <span class="c">#</span>
+    <span class="c"># # Test 1</span>
+    <span class="c"># A1 = array([</span>
+    <span class="c">#     [0.1239, 0.2085, 0.9479],</span>
+    <span class="c">#     [0.4904, 0.5650, 0.0821],</span>
+    <span class="c">#     [0.8530, 0.6403, 0.1057],</span>
+    <span class="c">#     [0.8739, 0.4170, 0.1420],</span>
+    <span class="c">#     [0.2703, 0.2060, 0.1665]])</span>
+    <span class="c">#</span>
+    <span class="c"># # matrix with n rows containing x, y, z coordinates(N &gt;= 3) of the same points in coordinate system 2</span>
+    <span class="c"># B1 = array([</span>
+    <span class="c">#     [-0.4477, 0.4830, 0.6862],</span>
+    <span class="c">#     [0.2384, -0.1611, 0.3321],</span>
+    <span class="c">#     [0.0970, -0.3850, 0.0721],</span>
+    <span class="c">#     [0.0666, -0.1926, -0.0449],</span>
+    <span class="c">#     [0.2457, 0.2672, 0.3625]])</span>
+    <span class="c">#</span>
+    <span class="c">#</span>
+    <span class="c"># # Test 2</span>
+    <span class="c"># A2 = array([</span>
+    <span class="c">#     [0.0, -0.2, 0.0],</span>
+    <span class="c">#     [-1.0, -0.5, 0.0],</span>
+    <span class="c">#     [1.0, -0.5, 0.0]])</span>
+    <span class="c">#</span>
+    <span class="c"># # matrix with n rows containing x, y, z coordinates(N &gt;= 3) of the same points in coordinate system 2</span>
+    <span class="c"># B2 = array([</span>
+    <span class="c">#     [0.0, 0.8, 0.0],</span>
+    <span class="c">#     [-1.0, 0.5, 0.0],</span>
+    <span class="c">#     [1.0, 0.5, 0.0]])</span>
+    <span class="c">#</span>
+    <span class="c">#</span>
+    <span class="c"># # find out the coordinate transform</span>
+    <span class="c">#</span>
+    <span class="c">#</span>
+    <span class="c"># A = A1</span>
+    <span class="c"># B = B1</span>
+    <span class="c">#</span>
+    <span class="c"># tAB = RigidTransform(A,B)</span>
+    <span class="c">#</span>
+    <span class="c"># print &quot;T:&quot; + str(tAB.T)</span>
+    <span class="c">#</span>
+    <span class="c"># # test if it works:</span>
+    <span class="c"># A2 = tAB.apply(A)</span>
+    <span class="c">#</span>
+    <span class="c"># print &quot;B:&quot; + str(B)</span>
+    <span class="c"># print &quot;A in B:&quot; + str(A2)</span>
+    <span class="c"># print &quot;Diff:&quot; + str(A2-B)</span>
+    <span class="c">#</span>
+    <span class="c">#</span>
+    <span class="c"># translation = Translation((10,10,10))</span>
+    <span class="c"># print translation.apply(array([[1,1,1]]))</span>
+    <span class="c">#</span>
+    <span class="c"># rotation_around_z = RotationAroundZ(pi/4)</span>
+    <span class="c"># print rotation_around_z.apply(array([[1,1,1]]))</span>
+    <span class="c">#</span>
+
+    <span class="c"># print &quot;Change of basis&quot;</span>
+    <span class="c"># CT = ChangeOfBasis(array([[sqrt(3)/2,0.5,0.0],</span>
+    <span class="c">#                           [-0.5,sqrt(3)/2,0.0],</span>
+    <span class="c">#                           [0.0,0.0,1.0]</span>
+    <span class="c">#                         ]))</span>
+    <span class="c">#</span>
+    <span class="c"># A = array([</span>
+    <span class="c">#     [1.0, 0.0, 0.0],</span>
+    <span class="c">#     [0.5, sqrt(3)/2, 0.0]</span>
+    <span class="c"># ])</span>
+    <span class="c"># # A = array([</span>
+    <span class="c"># #     [1.0, 0.0, 0.0],</span>
+    <span class="c"># #     [0.0, 1.0, 0.0],</span>
+    <span class="c"># #     [0.0, 0.0, 1.0]])</span>
+    <span class="c">#</span>
+    <span class="c"># A_prime = CT.apply(A)</span>
+    <span class="c">#</span>
+    <span class="c"># print &quot;A_prime=&quot; + str(A_prime)</span>
+
+
+    <span class="c">#</span>
+    <span class="c">#</span>
+    <span class="c"># print &quot;Axis Transform&quot;</span>
+    <span class="c"># new_origin=array([1,0,0])</span>
+    <span class="c"># point_on_x_axis=new_origin + array([.5, 0.0+sqrt(3)/2, 0.0])</span>
+    <span class="c"># CT = AxisTransform(new_origin=new_origin, point_on_x_axis=point_on_x_axis, point_on_xy_plane=new_origin+array([1.0,1.0,0.0]))</span>
+    <span class="c">#</span>
+    <span class="c"># A = array([</span>
+    <span class="c">#     new_origin,</span>
+    <span class="c">#     point_on_x_axis,</span>
+    <span class="c">#     [1.0, 0.0, 0.0],</span>
+    <span class="c">#     [0.5, sqrt(3)/2, 0.0]</span>
+    <span class="c"># ])</span>
+    <span class="c"># # A = array([</span>
+    <span class="c"># #     [1.0, 0.0, 0.0],</span>
+    <span class="c"># #     [0.0, 1.0, 0.0],</span>
+    <span class="c"># #     [0.0, 0.0, 1.0]])</span>
+    <span class="c">#</span>
+    <span class="c"># A_prime = CT.apply(A)</span>
+    <span class="c">#</span>
+    <span class="c"># print &quot;A=&quot; + str(A)</span>
+    <span class="c"># print &quot;A_prime=&quot; + str(A_prime)</span>
+
+
+    <span class="c"># print &quot;Axis Transform&quot;</span>
+    <span class="c"># CT = AxisTransform(array([0.0,0.0,0.0]), array([1.0, 0.0, 0.0]), array([0.0,1.0,0.0]))</span>
+    <span class="c">#</span>
+    <span class="c"># A = array([</span>
+    <span class="c">#     [2.0, 0.0, 0.0],</span>
+    <span class="c">#     [0.5, sqrt(3)/2, 1.0]</span>
+    <span class="c"># ])</span>
+    <span class="c"># # A = array([</span>
+    <span class="c"># #     [1.0, 0.0, 0.0],</span>
+    <span class="c"># #     [0.0, 1.0, 0.0],</span>
+    <span class="c"># #     [0.0, 0.0, 1.0]])</span>
+    <span class="c">#</span>
+    <span class="c"># A_prime = CT.apply(A)</span>
+    <span class="c">#</span>
+    <span class="c"># print &quot;A=&quot; + str(A)</span>
+    <span class="c"># print &quot;A_prime=&quot; + str(A_prime)</span>
+
+
+    <span class="c"># B = array([</span>
+    <span class="c">#     [0.5, sqrt(3)/2, 0.0, 0.0],</span>
+    <span class="c">#     [-sqrt(3)/2, 0.5, 0.0, 0.0],</span>
+    <span class="c">#     [0.0, 0.0, 1.0, 0.0],</span>
+    <span class="c">#     [0.0, 0.0, 0.0, 1.0]])</span>
+    <span class="c">#</span>
+    <span class="c"># Binv = inv(B)</span>
+    <span class="c">#</span>
+    <span class="c"># v1 = array([[1.0, 0.0, 0.0, 1.0], [0.0, 1.0, 0.0, 1.0]])</span>
+    <span class="c">#</span>
+    <span class="c"># v1_prime = dot(Binv,v1.transpose()).transpose()</span>
+    <span class="c"># print &quot;the image of v1=&quot;+str(v1)+&quot; is v1_prime=&quot; + str(v1_prime)</span>
+    <span class="c">#</span>
+    <span class="c">#</span>
+    <span class="c"># v_tr = array([2.0, 3.0, 4.0])</span>
+    <span class="c"># # v_tr = array([0.0, 0.0, 0.0])</span>
+    <span class="c"># Binv_tr = Binv</span>
+    <span class="c"># Binv_tr[0:3, 3:4] = array([v_tr]).transpose()</span>
+    <span class="c"># print &quot;Binv_tr=&quot;+str(Binv_tr)</span>
+    <span class="c">#</span>
+    <span class="c"># v1_prime_tr = dot(Binv_tr, v1.transpose()).transpose()</span>
+    <span class="c"># print &quot;the translated image of v1=&quot;+str(v1)+&quot; is v1_prime_tr=&quot; + str(v1_prime_tr)</span>
+    <span class="c">#</span>
+    <span class="c"># Basis = B[0:3,0:3]</span>
+    <span class="c"># T = ChangeOfBasis(Basis, -v_tr)</span>
+    <span class="c"># v1_prime_tr_T = T.apply(array([[1.0, 0.0, 0.0],[0.0, 1.0, 0.0]]))</span>
+    <span class="c"># print &quot;the translated image of v1=&quot;+str(v1)+&quot; is v1_prime_tr_T=&quot; + str(v1_prime_tr_T)</span>
+    <span class="c">#</span>
+    <span class="c"># AT = AxisTransform(new_origin=-v_tr, point_on_x_axis=B[0,0:3]-v_tr, point_on_xy_plane=B[1,0:3]-v_tr)</span>
+    <span class="c"># v1_prime_tr_AT = AT.apply(array([[1.0, 0.0, 0.0],[0.0, 1.0, 0.0]]))</span>
+    <span class="c"># print &quot;the translated image of v1=&quot;+str(v1)+&quot; is v1_prime_tr_AT=&quot; + str(v1_prime_tr_AT)</span>
+
+    <span class="n">v_tr</span> <span class="o">=</span> <span class="n">array</span><span class="p">([</span><span class="mf">2.0</span><span class="p">,</span> <span class="mf">3.0</span><span class="p">,</span> <span class="mf">4.0</span><span class="p">])</span>
+
+    <span class="c"># translate by -v_tr</span>
+    <span class="n">T_tr</span> <span class="o">=</span> <span class="n">eye</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span>
+    <span class="n">T_tr</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">:</span><span class="mi">4</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="n">array</span><span class="p">([</span><span class="n">v_tr</span><span class="p">])</span><span class="o">.</span><span class="n">transpose</span><span class="p">()</span>
+
+    <span class="c"># rotate 60 degrees</span>
+    <span class="n">B</span> <span class="o">=</span> <span class="n">array</span><span class="p">([</span>
+        <span class="p">[</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">sqrt</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span><span class="o">/</span><span class="mi">2</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">],</span>
+        <span class="p">[</span><span class="o">-</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span><span class="o">/</span><span class="mi">2</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">],</span>
+        <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">],</span>
+        <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">]])</span>
+
+
+    <span class="n">B_tr</span> <span class="o">=</span> <span class="n">dot</span><span class="p">(</span><span class="n">B</span><span class="p">,</span> <span class="n">T_tr</span><span class="p">)</span>
+
+
+    <span class="n">v1</span> <span class="o">=</span> <span class="n">array</span><span class="p">([[</span><span class="mf">2.0</span><span class="p">,</span> <span class="mf">3.0</span><span class="p">,</span> <span class="mf">4.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">],</span> <span class="p">[</span><span class="mf">2.0</span><span class="o">+</span><span class="mf">0.5</span><span class="p">,</span> <span class="mf">3.0</span><span class="o">+</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span><span class="o">/</span><span class="mi">2</span><span class="p">,</span> <span class="mf">4.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">],</span> <span class="p">[</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">],</span> <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">]])</span>
+
+    <span class="n">v1_prime</span> <span class="o">=</span> <span class="n">dot</span><span class="p">(</span><span class="n">B_tr</span><span class="p">,</span><span class="n">v1</span><span class="o">.</span><span class="n">transpose</span><span class="p">())</span><span class="o">.</span><span class="n">transpose</span><span class="p">()</span>
+    <span class="k">print</span> <span class="s">&quot;the image of v1=&quot;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">v1</span><span class="p">)</span><span class="o">+</span><span class="s">&quot; is v1_prime=&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">v1_prime</span><span class="p">)</span>
+
+    <span class="n">AT</span> <span class="o">=</span> <span class="n">AxisTransform</span><span class="p">(</span><span class="n">new_origin</span><span class="o">=</span><span class="n">v_tr</span><span class="p">,</span> <span class="n">point_on_x_axis</span><span class="o">=</span><span class="p">[</span><span class="mf">2.0</span><span class="o">+</span><span class="mf">0.5</span><span class="p">,</span> <span class="mf">3.0</span><span class="o">+</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span><span class="o">/</span><span class="mi">2</span><span class="p">,</span> <span class="mf">4.0</span><span class="p">],</span> <span class="n">point_on_xy_plane</span><span class="o">=</span><span class="p">[</span><span class="mf">2.0</span><span class="p">,</span> <span class="mf">4.0</span><span class="p">,</span> <span class="mf">4.0</span><span class="p">])</span>
+    <span class="n">v1_prime_tr_AT</span> <span class="o">=</span> <span class="n">AT</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">v1</span><span class="p">[:,</span><span class="mi">0</span><span class="p">:</span><span class="mi">3</span><span class="p">])</span>
+    <span class="k">print</span> <span class="s">&quot;the image of v1=&quot;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">v1</span><span class="p">[:,</span><span class="mi">0</span><span class="p">:</span><span class="mi">3</span><span class="p">])</span><span class="o">+</span><span class="s">&quot; is v1_prime_tr_AT=&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">v1_prime_tr_AT</span><span class="p">)</span>
+</pre></div>
+
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2014, Author.
+    </p>
+  </div>
+
+  <a href="https://github.com/snide/sphinx_rtd_theme">Sphinx theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../',
+            VERSION:'',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>
