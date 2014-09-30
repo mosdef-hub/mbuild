@@ -39,7 +39,7 @@ def save_gromacs(traj, step=-1, basename='mbuild', forcefield='opls-aa'):
         if traj.topology._ff_dihedrals:
             f.write('\n[ dihedrals ]\n')
             for n, dihedral in enumerate(traj.topology.ff_dihedrals):
-                f.write('{:d} {:d} {:d} {:d}\n'.format(
+                f.write('{:d} {:d} {:d} {:d} {:d}\n'.format(
                     n + 1, dihedral.atom1.index, dihedral.atom2.index,
                     dihedral.atom3.index, dihedral.atom4.index))
 

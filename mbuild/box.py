@@ -2,6 +2,7 @@ __author__ = 'sallai'
 
 import numpy as np
 
+
 class Box(object):
     """A box representing the bounds of the system.
 
