@@ -12,7 +12,7 @@ from mbuild.examples.ethane.ethane import Ethane
 if __name__ == "__main__":
     ethane = Ethane()
 
-    host_box = Box(mins=[-.9, -.9, -.9], maxes=[1.9, 1.9, 1.9])
+    host_box = Box(mins=[-.9, -.9, -.9], maxs=[1.9, 1.9, 1.9])
     print("Host (ethane) box: {}".format(host_box))
 
     water = Compound()

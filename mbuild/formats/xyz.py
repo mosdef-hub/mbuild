@@ -1,7 +1,4 @@
-__author__ = 'CTK'
-
 from mdtraj import in_units_of
-
 
 def save_xyz(traj, step=-1, filename='mbuild.xyz'):
     """ """

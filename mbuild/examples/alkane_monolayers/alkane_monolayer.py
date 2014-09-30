@@ -43,7 +43,7 @@ class AlkaneMonolayer(Compound):
 if __name__ == "__main__":
     from mbuild.plugins.mask import grid_mask_2d
     mask = grid_mask_2d(10, 10)  # Evenly spaced, 2D grid of points.
-    monolayer = AlkaneMonolayer(chain_length=6, mask=mask)
+    monolayer = AlkaneMonolayer(chain_length=10, mask=mask)
     monolayer = monolayer.to_trajectory()  # Convert from mBuild to mdtraj
 
     monolayer.topology.find_forcefield_terms()  # Find angles/dihedrals from bonds.

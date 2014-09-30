@@ -23,10 +23,11 @@ def solvent_box(solvent, box):
         box (Box):
 
     """
+    if np.all(solvent.periodicity == 0):
+        solvent.periodicity = solvent.boundingbox().lengths
     solvent_box = Box(lengths=solvent.periodicity)
     num_replicas = np.ceil(box.lengths / solvent_box.lengths)
     num_replicas = num_replicas.astype('int')
-    print num_replicas
 
     out = Compound()
     for xi in range(num_replicas[0]):
@@ -45,7 +46,7 @@ def solvent_box(solvent, box):
 
                 atoms_to_remove = set()
                 atom_indicies = np.where(np.logical_or(np.any(guest_atom_pos_list < box.mins, axis=1),
-                        np.any(guest_atom_pos_list > box.maxes, axis=1)))[0]
+                        np.any(guest_atom_pos_list > box.maxs, axis=1)))[0]
                 for ai in atom_indicies:
                     atoms_to_remove.add(guest_atoms[ai])
                     atoms_to_remove.update(guest_atoms[ai].bonded_atoms())
@@ -98,7 +99,7 @@ def solvate(host_compound, guest_compound, host_box, guest_box, overlap=vdw_radi
 
                 atoms_to_remove = set()
                 atom_indicies = np.where(np.logical_or(np.any(guest_atom_pos_list < host_box.mins, axis=1),
-                        np.any(guest_atom_pos_list > host_box.maxes, axis=1)))[0]
+                        np.any(guest_atom_pos_list > host_box.maxs, axis=1)))[0]
                 for ai in atom_indicies:
                     atoms_to_remove.add(guest_atoms[ai])
                     atoms_to_remove.update(guest_atoms[ai].bonded_atoms())

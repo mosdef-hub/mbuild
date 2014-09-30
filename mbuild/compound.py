@@ -249,7 +249,7 @@ class Compound(MBase, PartMixin, HasPartsMixin):
         min_coords = np.array([minx, miny, minz])
         max_coords = np.array([maxx, maxy, maxz])
 
-        return Box(mins=min_coords, maxes=max_coords)
+        return Box(mins=min_coords, maxs=max_coords)
 
     def atoms_in_range(self, point, radius, max_items=10):
         """Find all Atoms within a radius of a point.

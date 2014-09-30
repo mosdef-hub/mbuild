@@ -112,7 +112,7 @@ def load_hoomdxml(filename, optional_nodes=True):
     if 'bond' in optional_data:
         bonds = optional_data['bond'][['id0', 'id1']].values
     else:
-        bonds = np.empty(shape=(0,2), dtype="int")
+        bonds = np.empty(shape=(0, 2), dtype="int")
     top = Topology.from_dataframe(atoms_df, bonds=bonds)
 
     traj = Trajectory(xyz=np.array(xyz, dtype=np.float64), topology=top)

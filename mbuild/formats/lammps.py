@@ -72,7 +72,10 @@ def save_lammps(traj, step=-1, filename='data.mbuild', unit_set='real'):
             list_of_terms.append('\n')
 
             term_type_n = 1
-            for term_n, term in enumerate(getattr(traj.top, 'ff_{0}'.format(directive))):
+            term_n = 0
+            for term in getattr(traj.top, 'ff_{0}'.format(directive)):
+                if directive == 'dihedrals' and ('Si' in term.kind or 'SI' in term.kind):
+                    continue
                 if term.kind not in numeric_types:
                     numeric_types[term.kind] = term_type_n
                     term_type_n += 1
@@ -81,7 +84,8 @@ def save_lammps(traj, step=-1, filename='data.mbuild', unit_set='real'):
                     entry += '{0:d} '.format(getattr(term, 'atom{0}'.format(n + 1)).index + 1)
                 entry += ' # {0}\n'.format(term.kind)
                 list_of_terms.append(entry)
-            number_of_terms[directive] = term_n + 1
+                term_n += 1
+            number_of_terms[directive] = term_n
             directives_to_write.append(list_of_terms)
         print '(string: numeric types) for {0}'.format(directive)
         print sorted(numeric_types.iteritems(), key=operator.itemgetter(1))
@@ -101,13 +105,13 @@ def save_lammps(traj, step=-1, filename='data.mbuild', unit_set='real'):
 
         box = traj.boundingbox(step)
         box.mins = in_units_of(box.mins, 'nanometers', _distance_unit)
-        box.maxes = in_units_of(box.mins, 'nanometers', _distance_unit)
+        box.maxs = in_units_of(box.mins, 'nanometers', _distance_unit)
         f.write(
-            '{0:10.6f} {1:10.6f} xlo xhi\n'.format(box.mins[0], box.maxes[0]))
+            '{0:10.6f} {1:10.6f} xlo xhi\n'.format(box.mins[0], box.maxs[0]))
         f.write(
-            '{0:10.6f} {1:10.6f} ylo yhi\n'.format(box.mins[1], box.maxes[1]))
+            '{0:10.6f} {1:10.6f} ylo yhi\n'.format(box.mins[1], box.maxs[1]))
         f.write(
-            '{0:10.6f} {1:10.6f} zlo zhi\n'.format(box.mins[2], box.maxes[2]))
+            '{0:10.6f} {1:10.6f} zlo zhi\n'.format(box.mins[2], box.maxs[2]))
 
         for directive in directives_to_write:
             for entry in directive:

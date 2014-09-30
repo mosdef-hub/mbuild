@@ -99,7 +99,7 @@ class Trajectory(md.Trajectory):
     def boundingbox(self, step):
         mins = np.amin(self.xyz[step], axis=0)
         maxes = np.amax(self.xyz[step], axis=0)
-        return Box(mins=mins, maxes=maxes)
+        return Box(mins=mins, maxs=maxes)
 
     def _init_atom_kdtree(self, frame=0):
             if self.n_atoms > 0:

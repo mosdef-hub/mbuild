@@ -47,53 +47,42 @@ class Bilayer(Compound):
 
         if host_box is None:
             host_box = self.boundingbox()
-            host_box.mins -= [0.5*np.sqrt(apl), 0.5*np.sqrt(apl), 0]
-            host_box.maxes += [0.5*np.sqrt(apl), 0.5*np.sqrt(apl), 0]
-            host_box.lengths *= [1, 1, 3.0]
+            host_box.mins -= np.array([0.5*np.sqrt(apl), 0.5*np.sqrt(apl), 0])
+            host_box.maxs += np.array([0.5*np.sqrt(apl), 0.5*np.sqrt(apl), 0])
+            host_box.lengths = host_box.lengths * np.array([1.0, 1.0, 3.0])
 
-        solvent.periodicity = solvent.boundingbox().lengths
-        solvent = TiledCompound(solvent, 3, 3, 8)
-        guest_box = solvent.boundingbox()
-        solvate(self, solvent, host_box, guest_box)
+        lipid_box = self.boundingbox()
+        top_box = Box(mins=[host_box.mins[0], host_box.mins[1], lipid_box.maxs[2]],
+                      maxs=[host_box.maxs[0], host_box.maxs[1], host_box.maxs[2]])
+        bot_box = Box(mins=[host_box.mins[0], host_box.mins[1], host_box.mins[2]],
+                      maxs=[host_box.maxs[0], host_box.maxs[1], lipid_box.mins[2]])
+        import pdb
+        pdb.set_trace()
+
+        top_solvent = solvent_box(solvent, top_box)
+        self.add(top_solvent)
+        bottom_solvent = solvent_box(solvent, bot_box)
+        self.add(bottom_solvent)
+
 
 if __name__ == "__main__":
     from mbuild.examples.bilayer.eceramidens import ECeramideNS
     from mbuild.trajectory import Trajectory
     from mbuild.formats.hoomdxml import save_hoomdxml
     from mbuild.testing.tools import get_fn
-    import pdb
 
     from mbuild.tools import solvent_box
-    water = Trajectory.load(get_fn('spc216.pdb'))
-    water = water.to_compound()
-    water.periodicity = water.boundingbox().lengths
-    water = solvent_box(water, Box(lengths=np.array([3.0, 3.0, 3.0])))
-    #save_hoomdxml(water.to_trajectory(), filename='water_box.xml')
-    water.to_trajectory()
-    water.save(filename='water_box.pdb')
-
     ecerns = ECeramideNS()
-    pdb.set_trace()
 
-    water = Trajectory.load(get_fn('spc216.pdb'))
+    water = Trajectory.load(get_fn('water.hoomdxml'))
     water = water.to_compound()
-    water_box = water.boundingbox()
+    ecerns = Trajectory.load(get_fn('ecer2.hoomdxml'))
+    ecerns = ecerns.to_compound()
 
-    bilayer = Bilayer(ecerns, n_lipids_x=5, n_lipids_y=5, apl=0.5,
-                      solvent=water, guest_box=water_box)
+    bilayer = Bilayer(ecerns, n_lipids_x=5, n_lipids_y=5, apl=1.4,
+                      solvent=water, ref_atom=0, spacing_z=1.0)
 
     bilayer = bilayer.to_trajectory()
     bilayer.topology.load_ff_bonds()
     save_hoomdxml(bilayer, filename='bilayer.xml')
-    #import os
-    #os.system('vmd -hoomd bilayer.xml')
-
-    #from mbuild.plot import Plot
-    #Plot(bilayer, verbose=True, atoms=True, bonds=True).show()
-
-    #from mbuild.plot import Plot
-    #Plot(water, verbose=True, atoms=True, bonds=True).show()
-    #water.append_from_file(get_fn('spc216.pdb'))
-    #water.periodicity = water.boundingbox().lengths
-    #water = TiledCompound(water, 6, 6, 9)
 
