@@ -1,14 +1,14 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-"""Tests for `mbuild.pdbfile` module. """
+"""Tests for `mbuild.compound` module. """
 
 from mbuild.compound import Compound
 from mbuild.examples.ethane.methyl import Methyl
 from mbuild.testing.tools import get_fn
 
 
-class TestPdb:
+class TestCompound:
 
     def test_load_and_create(self):
         methyl = Compound.load(get_fn('methyl.pdb'))
@@ -22,7 +22,7 @@ class TestPdb:
         methyl.save(filename='methyl_out.pdb')
 
 if __name__=="__main__":
-    TestPdb().test_load_and_create()
-    TestPdb().test_update_from_file()
-    TestPdb().test_write()
+    TestCompound().test_load_and_create()
+    TestCompound().test_update_from_file()
+    TestCompound().test_write()
 

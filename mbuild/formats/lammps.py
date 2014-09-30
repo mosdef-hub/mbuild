@@ -103,7 +103,7 @@ def save_lammps(traj, step=-1, filename='data.mbuild', unit_set='real'):
 
         box = traj.boundingbox(step)
         box.mins = in_units_of(box.mins, 'nanometers', _distance_unit)
-        box.maxs = in_units_of(box.mins, 'nanometers', _distance_unit)
+        box.maxs = in_units_of(box.maxs, 'nanometers', _distance_unit)
         f.write(
             '{0:10.6f} {1:10.6f} xlo xhi\n'.format(box.mins[0], box.maxs[0]))
         f.write(
