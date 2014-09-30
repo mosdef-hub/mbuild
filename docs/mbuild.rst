@@ -6,7 +6,11 @@ Subpackages
 
 .. toctree::
 
-    mbuild.components
+    mbuild.examples
+    mbuild.formats
+    mbuild.plugins
+    mbuild.testing
+    mbuild.tests
 
 Submodules
 ----------
@@ -51,18 +55,18 @@ mbuild.coordinate_transform module
     :undoc-members:
     :show-inheritance:
 
-mbuild.lammps module
---------------------
+mbuild.has_parts_mixin module
+-----------------------------
 
-.. automodule:: mbuild.lammps
+.. automodule:: mbuild.has_parts_mixin
     :members:
     :undoc-members:
     :show-inheritance:
 
-mbuild.mol2file module
-----------------------
+mbuild.mbase module
+-------------------
 
-.. automodule:: mbuild.mol2file
+.. automodule:: mbuild.mbase
     :members:
     :undoc-members:
     :show-inheritance:
@@ -75,10 +79,10 @@ mbuild.orderedset module
     :undoc-members:
     :show-inheritance:
 
-mbuild.pdbfile module
----------------------
+mbuild.part_mixin module
+------------------------
 
-.. automodule:: mbuild.pdbfile
+.. automodule:: mbuild.part_mixin
     :members:
     :undoc-members:
     :show-inheritance:
@@ -139,18 +143,26 @@ mbuild.tools module
     :undoc-members:
     :show-inheritance:
 
-mbuild.treeview module
+mbuild.topology module
 ----------------------
 
-.. automodule:: mbuild.treeview
+.. automodule:: mbuild.topology
     :members:
     :undoc-members:
     :show-inheritance:
 
-mbuild.xyz module
------------------
+mbuild.trajectory module
+------------------------
 
-.. automodule:: mbuild.xyz
+.. automodule:: mbuild.trajectory
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+mbuild.treeview module
+----------------------
+
+.. automodule:: mbuild.treeview
     :members:
     :undoc-members:
     :show-inheritance:
