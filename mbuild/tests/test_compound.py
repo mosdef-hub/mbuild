@@ -21,8 +21,4 @@ class TestCompound:
         methyl = Compound.load(get_fn('methyl.pdb'))
         methyl.save(filename='methyl_out.pdb')
 
-if __name__=="__main__":
-    TestCompound().test_load_and_create()
-    TestCompound().test_update_from_file()
-    TestCompound().test_write()
 

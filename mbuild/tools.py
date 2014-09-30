@@ -52,8 +52,8 @@ def solvent_box(solvent, box):
                     atoms_to_remove.update(guest_atoms[ai].bonded_atoms())
                 temp_solvent.remove(atoms_to_remove)
                 compound.add(temp_solvent, "solvent_{}_{}_{}".format(xi, yi, zi))
-
     return compound
+
 
 def solvate(host_compound, guest_compound, host_box, guest_box, overlap=vdw_radius):
     """Solvate a Compound in a Box.

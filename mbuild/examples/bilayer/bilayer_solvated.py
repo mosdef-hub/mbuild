@@ -74,7 +74,7 @@ if __name__ == "__main__":
     ecerns = Trajectory.load(get_fn('ecer2.hoomdxml'))
     ecerns = ecerns.to_compound()
 
-    bilayer = Bilayer(ecerns, n_lipids_x=10, n_lipids_y=10, apl=1.4,
+    bilayer = Bilayer(ecerns, n_lipids_x=5, n_lipids_y=5, apl=1.4,
                       solvent=water, ref_atom=0, spacing_z=1.0)
 
     bilayer = bilayer.to_trajectory()
