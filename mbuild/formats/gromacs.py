@@ -1,5 +1,5 @@
 
-def save_gromacs(traj, step=-1, top_file='mbuild.top', gro_file='mbuild.gro'):
+def save_gromacs(traj, step=-1, basename='mbuild', forcefield='opls-aa'):
     """Output a Trajectory as a GROMACS .gro and .top file.
 
     Args:
@@ -9,11 +9,45 @@ def save_gromacs(traj, step=-1, top_file='mbuild.top', gro_file='mbuild.gro'):
         grofile:
     """
 
-    with open(top_file, 'w') as f:
+    with open(basename + '.top', 'w') as f:
+        if forcefield == 'opls-aa':
+            f.write('#include "oplsaa.ff"\n\n')
 
+        # TODO: iteration over chains
+        f.write('\n[ moleculetype ]\n')
+        f.write('; name nrexcl\n')
+        f.write('mbuild 3\n')
 
-    with open(gro_file, 'w') as f:
-        f.write('mbuild\n')
+        f.write('\n[ atoms ]\n')
+        for atom in traj.topology.atoms:
+            f.write('{:d} {:s} {:d} {:s} {:s} {:d} {:8.4f} {:8.4f}\n'.format(
+                atom.index, atom.name, atom.residue.index, atom.residue.name,
+                atom.name, 1, 0.0, atom.element.mass))
+
+        f.write('\n[ bonds ]\n')
+        for n, bond in enumerate(traj.topology.ff_bonds):
+            f.write('{:d} {:d} {:d}\n'.format(
+                n + 1, bond.atom1.index, bond.atom2.index))
+
+        f.write('\n[ angles ]\n')
+        for n, angle in enumerate(traj.topology.ff_angles):
+            f.write('{:d} {:d} {:d} {:d}\n'.format(
+                n + 1, angle.atom1.index, angle.atom2.index, angle.atom3.index))
+
+        f.write('\n[ dihedrals ]\n')
+        for n, dihedral in enumerate(traj.topology.ff_dihedrals):
+            f.write('{:d} {:d} {:d} {:d}\n'.format(
+                n + 1, dihedral.atom1.index, dihedral.atom2.index,
+                dihedral.atom3.index, dihedral.atom4.index))
+
+        f.write('\n[ system ]\n')
+        f.write('{}\n'.format(basename))
+
+        f.write('\n[ molecules ]\n')
+        f.write('mbuild 1\n')
+
+    with open(basename + '.gro', 'w') as f:
+        f.write('{}\n'.format(basename))
         f.write('{}\n'.format(traj.n_atoms))
         for n, data in enumerate(zip(traj.top.atoms, traj.xyz[step])):
             atom, xyz = data
@@ -33,5 +67,6 @@ def save_gromacs(traj, step=-1, top_file='mbuild.top', gro_file='mbuild.gro'):
 if __name__ == "__main__":
     from mbuild.examples.ethane.ethane import Ethane
     ethane = Ethane().to_trajectory()
-    save_gromacs(ethane)
+    ethane.topology.find_forcefield_terms()
+    save_gromacs(ethane, basename='ethane')
 

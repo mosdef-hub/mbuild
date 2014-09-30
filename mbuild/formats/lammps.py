@@ -74,8 +74,6 @@ def save_lammps(traj, step=-1, filename='data.mbuild', unit_set='real'):
             term_type_n = 1
             term_n = 0
             for term in getattr(traj.top, 'ff_{0}'.format(directive)):
-                if directive == 'dihedrals' and ('Si' in term.kind or 'SI' in term.kind):
-                    continue
                 if term.kind not in numeric_types:
                     numeric_types[term.kind] = term_type_n
                     term_type_n += 1

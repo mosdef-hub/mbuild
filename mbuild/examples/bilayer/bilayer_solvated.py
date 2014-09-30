@@ -79,5 +79,5 @@ if __name__ == "__main__":
 
     bilayer = bilayer.to_trajectory()
     bilayer.topology.load_ff_bonds()
-    save_hoomdxml(bilayer, filename='bilayer.xml')
+    save_hoomdxml(bilayer, filename='bilayer.hoomdxml')
 
