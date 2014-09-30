@@ -187,15 +187,22 @@ class Trajectory(md.Trajectory):
         return (atom0_bonds | atom1_bonds) - set([bond])
 
     @classmethod
-    def load(cls, filename, relative_to_module=None):
+    def load(cls, filename, relative_to_module=None, **kwargs):
+        """
 
-        # Look for data file in same directory as this python module.
+        Args:
+            filename (str):
+            relative_to_module (bool, optional):  Look for data file in same
+                directory as this python module.
+        Returns:
+            Trajectory
+        """
         if relative_to_module is not None:
             current_dir = os.path.dirname(os.path.realpath(sys.modules[relative_to_module].__file__))
             filename = os.path.join(current_dir, filename)
 
         t = md.load(filename)[0]  # TODO: figure out why this is a tuple
-        return cls(trajectory=t)
+        return cls(trajectory=t, **kwargs)
 
     def save(self, filename, **kwargs):
         if filename.endswith(".hoomdxml"):
@@ -210,7 +217,7 @@ class Trajectory(md.Trajectory):
         elif filename.startswith("data.") or filename.startswith(".lmp"):
             save_lammps(traj=self, filename=filename, **kwargs)
         else:
-           super(Trajectory, self).save(filename, **kwargs)
+            super(Trajectory, self).save(filename, **kwargs)
 
 
 if __name__ == "__main__":
