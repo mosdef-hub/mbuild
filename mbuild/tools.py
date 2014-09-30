@@ -28,8 +28,8 @@ def solvent_box(solvent, box):
     solvent_box = Box(lengths=solvent.periodicity)
     num_replicas = np.ceil(box.lengths / solvent_box.lengths)
     num_replicas = num_replicas.astype('int')
-
-    out = Compound()
+    print num_replicas
+    compound = Compound()
     for xi in range(num_replicas[0]):
         for yi in range(num_replicas[1]):
             for zi in range(num_replicas[2]):
@@ -51,9 +51,9 @@ def solvent_box(solvent, box):
                     atoms_to_remove.add(guest_atoms[ai])
                     atoms_to_remove.update(guest_atoms[ai].bonded_atoms())
                 temp_solvent.remove(atoms_to_remove)
-                out.add(temp_solvent, "solvent_{}_{}_{}".format(xi, yi, zi))
+                compound.add(temp_solvent, "solvent_{}_{}_{}".format(xi, yi, zi))
 
-    return out
+    return compound
 
 def solvate(host_compound, guest_compound, host_box, guest_box, overlap=vdw_radius):
     """Solvate a Compound in a Box.
