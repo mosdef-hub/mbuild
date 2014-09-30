@@ -1,3 +1,8 @@
+from mbuild.formats.gromacs import save_gromacs
+from mbuild.formats.lammps import save_lammps
+from mbuild.formats.mol2 import save_mol2
+from mbuild.formats.xyz import save_xyz
+
 __author__ = 'sallai'
 
 import sys
@@ -201,6 +206,15 @@ class Trajectory(md.Trajectory):
     def save(self, filename, **kwargs):
         if filename.endswith(".hoomdxml"):
             save_hoomdxml(traj=self, filename=filename, **kwargs)
+        elif filename.endswith(".gro") or filename.endswith(".top"):
+            basename = filename.split('.')[:-1]
+            save_gromacs(traj=self, basename=basename, **kwargs)
+        elif filename.endswith(".xyz"):
+            save_xyz(traj=self, filename=filename, **kwargs)
+        elif filename.endswith(".mol2"):
+            save_mol2(traj=self, filename=filename, **kwargs)
+        elif filename.startswith("data.") or filename.startswith(".lmp"):
+            save_lammps(traj=self, filename=filename, **kwargs)
         else:
            super(Trajectory, self).save(filename, **kwargs)
 
