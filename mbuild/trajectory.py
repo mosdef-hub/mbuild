@@ -1,8 +1,3 @@
-from mbuild.formats.gromacs import save_gromacs
-from mbuild.formats.lammps import save_lammps
-from mbuild.formats.mol2 import save_mol2
-from mbuild.formats.xyz import save_xyz
-
 __author__ = 'sallai'
 
 import sys
@@ -18,7 +13,10 @@ from mbuild.compound import Compound
 from mbuild.formats.hoomdxml import save_hoomdxml
 from mbuild.periodic_kdtree import PeriodicCKDTree
 from mbuild.topology import Topology
-
+from mbuild.formats.gromacs import save_gromacs
+from mbuild.formats.lammps import save_lammps
+from mbuild.formats.mol2 import save_mol2
+from mbuild.formats.xyz import save_xyz
 
 class Trajectory(md.Trajectory):
 
@@ -172,16 +170,13 @@ class Trajectory(md.Trajectory):
 
         if ab[1].name == type_A and ab[0].name == type_B:
             return ab[::-1]
-
         return None
-
 
     def bonds_by_atom(self, atom):
         bond_list = []
         for bond in self.top.bonds:
             if atom in bond:
                 bond_list.append(bond)
-
         return bond_list
 
     def neighbor_bonds(self, bond):
@@ -189,7 +184,6 @@ class Trajectory(md.Trajectory):
         atom1 = bond[1]
         atom0_bonds = set(self.bonds_by_atom(atom0))
         atom1_bonds = set(self.bonds_by_atom(atom1))
-
         return (atom0_bonds | atom1_bonds) - set([bond])
 
     @classmethod

@@ -2,25 +2,25 @@
 # -*- coding: utf-8 -*-
 
 """Tests for `mbuild.tools` module. """
-from mbuild.examples.bilayer.eceramidens import ECeramideNS
 import numpy as np
 
+from mbuild.trajectory import Trajectory
+from mbuild.testing.tools import get_fn
 
 class TestTools:
 
     def test_center_of_mass(self):
-        e_ceramide_ns = ECeramideNS().to_trajectory()
+        e_ceramide_ns =  Trajectory.load(get_fn('e-ceramide-ns.pdb'))
 
         from mdtraj import compute_center_of_mass
         mdtraj_com = compute_center_of_mass(e_ceramide_ns)
-
         from mbuild.tools import compute_center_of_mass
         mbuild_com = compute_center_of_mass(e_ceramide_ns)
 
         assert mdtraj_com.all() == mbuild_com.all()
 
     def test_inertia_tensor(self):
-        e_ceramide_ns = ECeramideNS().to_trajectory()
+        e_ceramide_ns =  Trajectory.load(get_fn('e-ceramide-ns.pdb'))
 
         from mbuild.tools import compute_inertia_tensor
 
