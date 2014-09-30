@@ -6,8 +6,7 @@ from mbuild.box import Box
 from mbuild.compound import Compound
 from mbuild.coordinate_transform import translate, rotate_around_x
 from mbuild.plugins.mask import grid_mask_2d
-from mbuild.tiled_compound import TiledCompound
-from mbuild.tools import solvate
+from mbuild.tools import solvent_box
 
 
 class Bilayer(Compound):
@@ -65,13 +64,10 @@ class Bilayer(Compound):
 
 
 if __name__ == "__main__":
-    from mbuild.examples.bilayer.eceramidens import ECeramideNS
     from mbuild.trajectory import Trajectory
     from mbuild.formats.hoomdxml import save_hoomdxml
     from mbuild.testing.tools import get_fn
 
-    from mbuild.tools import solvent_box
-    ecerns = ECeramideNS()
 
     water = Trajectory.load(get_fn('water.hoomdxml'))
     water = water.to_compound()
