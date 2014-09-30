@@ -24,21 +24,24 @@ def save_gromacs(traj, step=-1, basename='mbuild', forcefield='opls-aa'):
                 atom.index, atom.name, atom.residue.index, atom.residue.name,
                 atom.name, 1, 0.0, atom.element.mass))
 
-        f.write('\n[ bonds ]\n')
-        for n, bond in enumerate(traj.topology.ff_bonds):
-            f.write('{:d} {:d} {:d}\n'.format(
-                n + 1, bond.atom1.index, bond.atom2.index))
+        if traj.topology._ff_bonds:
+            f.write('\n[ bonds ]\n')
+            for n, bond in enumerate(traj.topology.ff_bonds):
+                f.write('{:d} {:d} {:d}\n'.format(
+                    n + 1, bond.atom1.index, bond.atom2.index))
 
-        f.write('\n[ angles ]\n')
-        for n, angle in enumerate(traj.topology.ff_angles):
-            f.write('{:d} {:d} {:d} {:d}\n'.format(
-                n + 1, angle.atom1.index, angle.atom2.index, angle.atom3.index))
+        if traj.topology._ff_angles:
+            f.write('\n[ angles ]\n')
+            for n, angle in enumerate(traj.topology.ff_angles):
+                f.write('{:d} {:d} {:d} {:d}\n'.format(
+                    n + 1, angle.atom1.index, angle.atom2.index, angle.atom3.index))
 
-        f.write('\n[ dihedrals ]\n')
-        for n, dihedral in enumerate(traj.topology.ff_dihedrals):
-            f.write('{:d} {:d} {:d} {:d}\n'.format(
-                n + 1, dihedral.atom1.index, dihedral.atom2.index,
-                dihedral.atom3.index, dihedral.atom4.index))
+        if traj.topology._ff_dihedrals:
+            f.write('\n[ dihedrals ]\n')
+            for n, dihedral in enumerate(traj.topology.ff_dihedrals):
+                f.write('{:d} {:d} {:d} {:d}\n'.format(
+                    n + 1, dihedral.atom1.index, dihedral.atom2.index,
+                    dihedral.atom3.index, dihedral.atom4.index))
 
         f.write('\n[ system ]\n')
         f.write('{}\n'.format(basename))
