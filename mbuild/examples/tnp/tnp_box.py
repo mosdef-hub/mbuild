@@ -23,14 +23,12 @@ class TnpBox(Compound):
 
         for pos in mask:
             tnp = deepcopy(tnp_proto)
-            rotate_around_x(tnp, rnd.uniform(0,2*np.pi))
-            rotate_around_y(tnp, rnd.uniform(0,2*np.pi))
-            rotate_around_z(tnp, rnd.uniform(0,2*np.pi))
+            rotate_around_x(tnp, rnd.uniform(0, 2*np.pi))
+            rotate_around_y(tnp, rnd.uniform(0, 2*np.pi))
+            rotate_around_z(tnp, rnd.uniform(0, 2*np.pi))
             translate(tnp, pos)
             self.add(tnp)
 
 if __name__ == "__main__":
     m = TnpBox()
 
-    from mbuild.plot import Plot
-    Plot(m).show()

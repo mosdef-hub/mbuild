@@ -63,7 +63,7 @@ class Bilayer(Compound):
         self.add(bottom_solvent)
 
 
-if __name__ == "__main__":
+def main():
     from mbuild.trajectory import Trajectory
     from mbuild.testing.tools import get_fn
 
@@ -80,3 +80,5 @@ if __name__ == "__main__":
     bilayer.topology.load_ff_bonds()
     bilayer.save(filename='bilayer.hoomdxml')
 
+if __name__ == "__main__":
+    main()

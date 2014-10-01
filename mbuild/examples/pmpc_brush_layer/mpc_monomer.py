@@ -1,16 +1,16 @@
-from mbuild.coordinate_transform import *
+from mbuild.coordinate_transform import translate, y_axis_transform, rotate_around_y
 from mbuild.compound import Compound
 from mbuild.port import Port
 from mbuild.testing.tools import get_fn
 
 
-class Peg(Compound):
+class MpcMonomer(Compound):
 
     def __init__(self, alpha=0):
         Compound.__init__(self)
 
         # Look for data file in same directory as this python module.
-        self.append_from_file(get_fn('ch2-ch2-o.pdb'))
+        self.append_from_file(get_fn('mpc.pdb'))
 
         # Transform the coordinate system of mpc such that the two carbon atoms
         # that are part of the backbone are on the y axis, c_backbone at the origin.
@@ -32,10 +32,6 @@ class Peg(Compound):
         translate(self.bottom_port, C_bottom - (C_bottom - C_top)*1.50)
 
 if __name__ == "__main__":
-    m = Peg()
+    monomer = MpcMonomer().to_trajectory()
 
-    from mbuild.plot import Plot
-    Plot(m, verbose=True).show()
-
-    #from mbuild.treeview import TreeView
-    # TreeView(m).show()
+    monomer.save(filename='mpc.xyz')

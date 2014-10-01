@@ -1,11 +1,10 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import os,sys
-from setuptools import setup, find_packages
+import os
+import sys
+from setuptools import setup
 from setuptools.command.test import test as TestCommand
-
-from pip.req import parse_requirements
 
 requirements_lines = [line.strip() for line in open('requirements.txt').readlines()]
 reqs = list(filter(None, requirements_lines))
@@ -17,6 +16,7 @@ if sys.argv[-1] == 'publish':
 readme = open('README.rst').read()
 history = open('HISTORY.rst').read().replace('.. :changelog:', '')
 
+
 class PyTest(TestCommand):
     def finalize_options(self):
         TestCommand.finalize_options(self)
@@ -25,7 +25,7 @@ class PyTest(TestCommand):
 
     def run_tests(self):
         import pytest
-#        errcode = pytest.main(self.test_args)
+        #errcode = pytest.main(self.test_args)
         errcode = pytest.main(['mbuild'])
         sys.exit(errcode)
 
@@ -51,7 +51,7 @@ setup(
         'Intended Audience :: Computational Chemistry',
         'License :: OSI Approved :: LGPL License',
         'Natural Language :: English',
-        'Programming Language :: Python :: 2.6',
+        #'Programming Language :: Python :: 2.6',
         'Programming Language :: Python :: 2.7',
     ],
     test_suite='tests',

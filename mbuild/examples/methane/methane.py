@@ -1,9 +1,9 @@
-__author__ = 'sallai'
 import numpy as np
 
 from mbuild.compound import Compound
 from mbuild.atom import Atom
 from mbuild.bond import Bond
+
 
 class Methane(Compound):
     def __init__(self):
@@ -18,21 +18,10 @@ class Methane(Compound):
         self.add(Bond(self.c, self.h3))
         self.add(Bond(self.c, self.h4))
 
+
+def main():
+    methane = Methane()
+
 if __name__ == "__main__":
-
-    m = Methane()
-
-    from mbuild.prototype import Prototype
-    Prototype("C", radius=.17, color="yellow")
-    # Prototype("C", radius=.17, color="black")
-    Prototype("H", radius=.12, color="white")
-    Prototype("c-h", color="pink")
-    Prototype("h-c-h", color="red")
-    Prototype("h-h-h-h", color="orange")
-
-    from mbuild.treeview import TreeView
-    # TreeView(m).show()
-
-    from mbuild.plot import Plot
-    Plot(m, bonds=True, angles=False, dihedrals=False).show()
+    main()
 

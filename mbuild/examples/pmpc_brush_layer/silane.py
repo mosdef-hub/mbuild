@@ -1,4 +1,6 @@
-from mbuild.coordinate_transform import *
+import numpy as np
+
+from mbuild.coordinate_transform import translate, x_axis_transform
 from mbuild.compound import Compound
 from mbuild.port import Port
 from mbuild.testing.tools import get_fn
@@ -26,5 +28,3 @@ class Silane(Compound):
 
 if __name__ == "__main__":
     m = Silane()
-    from mbuild.plot import Plot
-    Plot(m, verbose=True).show()

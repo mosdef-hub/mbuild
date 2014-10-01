@@ -1,4 +1,6 @@
-from mbuild.coordinate_transform import *
+import numpy as np
+
+from mbuild.coordinate_transform import translate, rotate_around_x
 from mbuild.compound import Compound
 from mbuild.port import Port
 from mbuild.testing.tools import get_fn
@@ -18,16 +20,16 @@ class Surface(Compound):
             if atom.kind == 'O' and atom.pos[2] > 1:
                 cnt += 1
                 port = Port(anchor=atom)
-                rotate_around_x(port, pi/2)
+                rotate_around_x(port, np.pi/2)
                 translate(port, atom + np.array([0, 0, .1]))
                 self.add(port, 'port_{}'.format(cnt))
 
 if __name__ == "__main__":
     s = Surface()
     m = TiledCompound(s, n_x=3, n_y=2, n_z=1, kind="tiled")
+    m.to_trajectory()
 
-    from mbuild.formats.xyz import save_xyz
-    save_xyz(m.to_trajectory(), filename='tiled_surface.xyz')
+    m.save(filename='tiled_surface.xyz')
 
     # print s.periodicity
     # print m.periodicity

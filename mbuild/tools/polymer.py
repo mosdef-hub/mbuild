@@ -1,12 +1,13 @@
 from copy import deepcopy
 
-from mbuild.coordinate_transform import *
+from mbuild.coordinate_transform import equivalence_transform
 from mbuild.compound import Compound
 
 
 class Polymer(Compound):
-
+    """ """
     def __init__(self, proto, port_labels=("up", "down"), n=2):
+        """ """
         if n < 1:
             raise Exception('n must be 1 or more')
         Compound.__init__(self)
@@ -36,6 +37,4 @@ class Polymer(Compound):
 if __name__ == "__main__":
     from mbuild.examples.alkane.ch2 import Ch2
     ch2 = Ch2()
-    m = Polymer(ch2, n=13, port_labels=("up","down"))
-    from mbuild.plot import Plot
-    Plot(m).show()
+    m = Polymer(ch2, n=13, port_labels=("up", "down"))

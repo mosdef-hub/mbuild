@@ -4,7 +4,8 @@ from mbuild.testing.tools import get_fn
 from mbuild.tools.solvent import solvate
 from mbuild.examples.ethane.ethane import Ethane
 
-if __name__ == "__main__":
+
+def main():
     ethane = Ethane()
 
     host_box = Box(mins=[-.9, -.9, -.9], maxs=[1.9, 1.9, 1.9])
@@ -23,3 +24,6 @@ if __name__ == "__main__":
     ethane = ethane.to_trajectory()
     ethane.topology.load_ff_bonds()
     ethane.save(filename='ethane.hoomdxml')
+
+if __name__ == "__main__":
+    main()

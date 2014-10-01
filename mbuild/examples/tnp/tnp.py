@@ -42,10 +42,11 @@ class Tnp(Compound):
         self.add_bond('t', 'np', 0.1, 0.3)
 
 
-if __name__ == "__main__":
+def main():
     nano_particle = Tnp(n_chains=5, chain_length=10)
-
     nano_particle = nano_particle.to_trajectory()
     nano_particle.top.find_forcefield_terms()
-
     nano_particle.save(filename='tnp.hoomdxml')
+
+if __name__ == "__main__":
+    main()

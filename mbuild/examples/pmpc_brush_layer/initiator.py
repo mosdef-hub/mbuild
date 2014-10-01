@@ -1,4 +1,6 @@
-from mbuild.coordinate_transform import *
+import numpy as np
+
+from mbuild.coordinate_transform import translate, y_axis_transform
 from mbuild.compound import Compound
 from mbuild.port import Port
 from mbuild.testing.tools import get_fn
@@ -28,5 +30,5 @@ class Initiator(Compound):
 
 if __name__ == "__main__":
     m = Initiator()
-    from mbuild.plot import Plot
-    Plot(m, verbose=True).show()
+
+

@@ -6,8 +6,8 @@ from mbuild.compound import Compound
 from mbuild.tools.tiled_compound import TiledCompound
 from mbuild.tools.mask import apply_mask
 
-from mbuild.examples.alkane_monolayers.alkylsilane import AlkylSilane
-from mbuild.examples.alkane_monolayers.surface import Surface
+from mbuild.examples.alkane_monolayer.alkylsilane import AlkylSilane
+from mbuild.examples.alkane_monolayer.surface import Surface
 
 
 class AlkaneMonolayer(Compound):
@@ -17,9 +17,9 @@ class AlkaneMonolayer(Compound):
         """Create an alkylsilane monolayer on beta-cristobalite.
 
         Args:
-            tile_x (int):
-            tile_y (int):
-            chain_length (int):
+            tile_x (int): Number of times to replicate substrate in x-direction.
+            tile_y (int): Number of times to replicate substrate in y-direction.
+            chain_length (int): Number of carbon atoms per chain.
             mask (np.ndarray):
         """
         super(AlkaneMonolayer, self).__init__()
@@ -35,11 +35,15 @@ class AlkaneMonolayer(Compound):
         hydrogen = Compound('H')
         hydrogen.add(Atom('H'), 'H')
         hydrogen.add(Port(anchor=hydrogen.H), 'down')
+
+        if mask is None:
+            from mbuild.tools.mask import random_mask_2d
+            mask = random_mask_2d(tile_x * 10, tile_y * 10)
         apply_mask(self.tiled_surface, alkylsilane, mask,
                    guest_port_name='down', backfill=hydrogen)
 
 
-if __name__ == "__main__":
+def main():
     from mbuild.tools.mask import grid_mask_2d
     mask = grid_mask_2d(10, 10)  # Evenly spaced, 2D grid of points.
     monolayer = AlkaneMonolayer(chain_length=10, mask=mask)
@@ -49,4 +53,6 @@ if __name__ == "__main__":
 
     monolayer.save(filename='data.c6-100')  # Print a LAMMPS data file.
 
+if __name__ == "__main__":
+    main()
 

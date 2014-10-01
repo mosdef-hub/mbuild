@@ -30,9 +30,9 @@ class Brush(Compound):
 
 if __name__ == "__main__":
     m = Brush(chain_length=20, alpha=pi/4)
+    m = m.to_trajectory()
 
-    from mbuild.formats.xyz import save_xyz
-    save_xyz(m.to_trajectory(), filename='brush.xyz')
+    m.save(filename='brush.xyz')
 
     #from mbuild.plot import Plot
     #Plot(m).show()

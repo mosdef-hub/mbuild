@@ -3,8 +3,8 @@ from __future__ import division
 from numpy import pi
 
 from mbuild.compound import Compound
-from mbuild.examples.pmpc.surface import Surface
-from mbuild.examples.pmpc.brush import Brush
+from mbuild.examples.pmpc_brush_layer.surface import Surface
+from mbuild.examples.pmpc_brush_layer.brush import Brush
 from mbuild.tools.mask import apply_mask, random_mask_2d
 from mbuild.tools.tiled_compound import TiledCompound
 
@@ -24,7 +24,8 @@ class BrushLayer(Compound):
 
         apply_mask(self.tiled_surface, brush_proto, mask)
 
-if __name__ == "__main__":
+
+def main():
     mask = random_mask_2d(20)
     #mask = grid_mask_2d(,3)
     # print mask
@@ -35,7 +36,5 @@ if __name__ == "__main__":
 
     brush_layer.save(filename='brush_layer.hoomdxml')
 
-    # from mbuild.treeview import TreeView
-    # tv = TreeView(m)
-    # tv.show()
-
+if __name__ == "__main__":
+    main()
