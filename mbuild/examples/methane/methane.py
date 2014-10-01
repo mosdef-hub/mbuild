@@ -21,6 +21,7 @@ class Methane(Compound):
 
 def main():
     methane = Methane()
+    methane.visualize()
 
 if __name__ == "__main__":
     main()

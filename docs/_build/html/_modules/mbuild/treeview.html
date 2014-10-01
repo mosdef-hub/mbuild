@@ -70,7 +70,6 @@
 <li class="toctree-l2"><a class="reference internal" href="../../mbuild.html#module-mbuild.orderedset">mbuild.orderedset module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../mbuild.html#module-mbuild.part_mixin">mbuild.part_mixin module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../mbuild.html#module-mbuild.periodic_kdtree">mbuild.periodic_kdtree module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../mbuild.html#module-mbuild.plot">mbuild.plot module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../mbuild.html#module-mbuild.port">mbuild.port module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../mbuild.html#module-mbuild.prototype">mbuild.prototype module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../mbuild.html#module-mbuild.topology">mbuild.topology module</a></li>
@@ -119,7 +118,6 @@
 <span class="kn">import</span> <span class="nn">Tkinter</span>
 <span class="kn">import</span> <span class="nn">ttk</span>
 <span class="kn">from</span> <span class="nn">compound</span> <span class="kn">import</span> <span class="o">*</span>
-<span class="kn">from</span> <span class="nn">plot</span> <span class="kn">import</span> <span class="n">Plot</span>
 
 <div class="viewcode-block" id="TreeView"><a class="viewcode-back" href="../../mbuild.html#mbuild.treeview.TreeView">[docs]</a><span class="k">class</span> <span class="nc">TreeView</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
 
@@ -190,9 +188,6 @@
         <span class="n">node</span> <span class="o">=</span> <span class="n">tree</span><span class="o">.</span><span class="n">focus</span><span class="p">()</span>
         <span class="c"># if tree.parent(node):</span>
         <span class="n">compound</span> <span class="o">=</span> <span class="n">tree</span><span class="o">.</span><span class="n">compoundTreeView</span><span class="o">.</span><span class="n">nodemap</span><span class="p">[</span><span class="n">node</span><span class="p">]</span>
-        <span class="c"># print compound</span>
-        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">compound</span><span class="p">,</span> <span class="n">Compound</span><span class="p">):</span>
-            <span class="n">Plot</span><span class="p">(</span><span class="n">compound</span><span class="p">,</span> <span class="o">**</span><span class="n">tree</span><span class="o">.</span><span class="n">compoundTreeView</span><span class="o">.</span><span class="n">kwargs</span><span class="p">)</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
 </div>
     <span class="nd">@staticmethod</span>
 <div class="viewcode-block" id="TreeView.autoscroll"><a class="viewcode-back" href="../../mbuild.html#mbuild.treeview.TreeView.autoscroll">[docs]</a>    <span class="k">def</span> <span class="nf">autoscroll</span><span class="p">(</span><span class="n">sbar</span><span class="p">,</span> <span class="n">first</span><span class="p">,</span> <span class="n">last</span><span class="p">):</span>

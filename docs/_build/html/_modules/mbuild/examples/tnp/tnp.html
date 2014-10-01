@@ -70,7 +70,6 @@
 <li class="toctree-l2"><a class="reference internal" href="../../../../mbuild.html#module-mbuild.orderedset">mbuild.orderedset module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../mbuild.html#module-mbuild.part_mixin">mbuild.part_mixin module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../mbuild.html#module-mbuild.periodic_kdtree">mbuild.periodic_kdtree module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../../../mbuild.html#module-mbuild.plot">mbuild.plot module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../mbuild.html#module-mbuild.port">mbuild.port module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../mbuild.html#module-mbuild.prototype">mbuild.prototype module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../mbuild.html#module-mbuild.topology">mbuild.topology module</a></li>
@@ -158,13 +157,14 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">add_bond</span><span class="p">(</span><span class="s">&#39;t&#39;</span><span class="p">,</span> <span class="s">&#39;np&#39;</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">,</span> <span class="mf">0.3</span><span class="p">)</span>
 
 </div>
-<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&quot;__main__&quot;</span><span class="p">:</span>
+<div class="viewcode-block" id="main"><a class="viewcode-back" href="../../../../mbuild.examples.tnp.html#mbuild.examples.tnp.tnp.main">[docs]</a><span class="k">def</span> <span class="nf">main</span><span class="p">():</span>
     <span class="n">nano_particle</span> <span class="o">=</span> <span class="n">Tnp</span><span class="p">(</span><span class="n">n_chains</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">chain_length</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
-
     <span class="n">nano_particle</span> <span class="o">=</span> <span class="n">nano_particle</span><span class="o">.</span><span class="n">to_trajectory</span><span class="p">()</span>
     <span class="n">nano_particle</span><span class="o">.</span><span class="n">top</span><span class="o">.</span><span class="n">find_forcefield_terms</span><span class="p">()</span>
-
     <span class="n">nano_particle</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">filename</span><span class="o">=</span><span class="s">&#39;tnp.hoomdxml&#39;</span><span class="p">)</span>
+</div>
+<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="n">main</span><span class="p">()</span>
 </pre></div>
 
           </div>

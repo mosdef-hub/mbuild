@@ -129,6 +129,4 @@ if __name__ == "__main__":
     from mbuild.examples.pmpc_brush_layer.surface import Surface
     surface = Surface()
     tc = TiledCompound(surface, 2, 3, 1, kind="tiled_surface")
-
-    from mbuild.plot import Plot
-    Plot(tc, bonds=True, verbose=True, periodic_bonds=True).show()
+    tc.visualize()

@@ -70,7 +70,6 @@
 <li class="toctree-l2"><a class="reference internal" href="../../mbuild.html#module-mbuild.orderedset">mbuild.orderedset module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../mbuild.html#module-mbuild.part_mixin">mbuild.part_mixin module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../mbuild.html#module-mbuild.periodic_kdtree">mbuild.periodic_kdtree module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../mbuild.html#module-mbuild.plot">mbuild.plot module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../mbuild.html#module-mbuild.port">mbuild.port module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../mbuild.html#module-mbuild.prototype">mbuild.prototype module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../mbuild.html#module-mbuild.topology">mbuild.topology module</a></li>
@@ -209,9 +208,11 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="k">return</span> <span class="nb">list</span>
 </div>
-<div class="viewcode-block" id="Compound.n_atoms"><a class="viewcode-back" href="../../mbuild.html#mbuild.compound.Compound.n_atoms">[docs]</a>    <span class="k">def</span> <span class="nf">n_atoms</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">kind</span><span class="o">=</span><span class="s">&#39;*&#39;</span><span class="p">,</span> <span class="n">excludeG</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
-        <span class="c">#return len(self.atom_list_by_kind(kind=kind, excludeG=excludeG))</span>
+<div class="viewcode-block" id="Compound.n_atoms"><a class="viewcode-back" href="../../mbuild.html#mbuild.compound.Compound.n_atoms">[docs]</a>    <span class="k">def</span> <span class="nf">n_atoms</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="nb">sum</span><span class="p">([</span><span class="mi">1</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">atoms</span><span class="p">()])</span>
+</div>
+<div class="viewcode-block" id="Compound.n_bonds"><a class="viewcode-back" href="../../mbuild.html#mbuild.compound.Compound.n_bonds">[docs]</a>    <span class="k">def</span> <span class="nf">n_bonds</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">sum</span><span class="p">([</span><span class="mi">1</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">bonds</span><span class="p">()])</span>
 </div>
 <div class="viewcode-block" id="Compound.bond_list_by_kind"><a class="viewcode-back" href="../../mbuild.html#mbuild.compound.Compound.bond_list_by_kind">[docs]</a>    <span class="k">def</span> <span class="nf">bond_list_by_kind</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">kind</span><span class="o">=</span><span class="s">&#39;*&#39;</span><span class="p">,</span> <span class="n">with_id_to_idx_mapping</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
         <span class="nb">list</span> <span class="o">=</span> <span class="p">[]</span>
@@ -306,7 +307,6 @@
 <span class="sd">            mol:</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="kn">from</span> <span class="nn">pybel</span> <span class="kn">import</span> <span class="n">Molecule</span>
-
         <span class="k">assert</span><span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">mol</span><span class="p">,</span> <span class="n">Molecule</span><span class="p">))</span>
 
         <span class="n">atoms</span><span class="p">,</span> <span class="n">atom_id_to_idx</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">atom_list_by_kind</span><span class="p">(</span><span class="s">&#39;*&#39;</span><span class="p">,</span> <span class="n">excludeG</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">with_id_to_idx_mapping</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
@@ -318,6 +318,24 @@
             <span class="k">print</span> <span class="n">atom</span>
             <span class="n">atoms</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span><span class="o">.</span><span class="n">pos</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">atom</span><span class="o">.</span><span class="n">coords</span><span class="p">)</span> <span class="o">/</span> <span class="mf">10.0</span>
             <span class="n">idx</span> <span class="o">+=</span> <span class="mi">1</span>
+</div>
+<div class="viewcode-block" id="Compound.visualize"><a class="viewcode-back" href="../../mbuild.html#mbuild.compound.Compound.visualize">[docs]</a>    <span class="k">def</span> <span class="nf">visualize</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Visualize the Compound using VMD.</span>
+
+<span class="sd">        Assumes you have VMD installed and can call it from the command line via</span>
+<span class="sd">        &#39;vmd&#39;.</span>
+
+<span class="sd">        TODO: Make more useful/robust. Look into pizza.py&#39;s vmd.py.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">filename</span> <span class="o">=</span> <span class="s">&#39;visualize_{}.pdb&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__class__</span><span class="o">.</span><span class="n">__name__</span><span class="p">)</span>
+        <span class="n">traj</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">to_trajectory</span><span class="p">()</span>
+        <span class="n">traj</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">filename</span><span class="o">=</span><span class="n">filename</span><span class="p">)</span>
+        <span class="kn">import</span> <span class="nn">os</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="s">&#39;vmd {}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">filename</span><span class="p">))</span>
+        <span class="k">except</span> <span class="ne">OSError</span><span class="p">:</span>
+            <span class="k">print</span><span class="p">(</span><span class="s">&quot;Visualization with VMD failed. Make sure you it is installed&quot;</span>
+                  <span class="s">&quot;correctly and launchable from the command line via &#39;vmd&#39;.&quot;</span><span class="p">)</span>
 
 </div>
 <div class="viewcode-block" id="Compound.min_periodic_distance"><a class="viewcode-back" href="../../mbuild.html#mbuild.compound.Compound.min_periodic_distance">[docs]</a>    <span class="k">def</span> <span class="nf">min_periodic_distance</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x0</span><span class="p">,</span> <span class="n">x1</span><span class="p">):</span>

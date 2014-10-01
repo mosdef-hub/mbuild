@@ -3,7 +3,6 @@
 import Tkinter
 import ttk
 from compound import *
-from plot import Plot
 
 class TreeView(object):
 
@@ -74,9 +73,6 @@ class TreeView(object):
         node = tree.focus()
         # if tree.parent(node):
         compound = tree.compoundTreeView.nodemap[node]
-        # print compound
-        if isinstance(compound, Compound):
-            Plot(compound, **tree.compoundTreeView.kwargs).show()
 
     @staticmethod
     def autoscroll(sbar, first, last):

@@ -24,7 +24,5 @@ class Methyl(Compound):
 if __name__ == '__main__':
     methyl = Methyl()
 
-    from mbuild.plot import Plot
-    Plot(methyl, verbose=True, atoms=True, bonds=True, angles=False, dihedrals=False).show()
-
+    methyl.visualize()
 

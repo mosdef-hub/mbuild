@@ -70,7 +70,6 @@
 <li class="toctree-l2"><a class="reference internal" href="../../../../mbuild.html#module-mbuild.orderedset">mbuild.orderedset module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../mbuild.html#module-mbuild.part_mixin">mbuild.part_mixin module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../mbuild.html#module-mbuild.periodic_kdtree">mbuild.periodic_kdtree module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../../../mbuild.html#module-mbuild.plot">mbuild.plot module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../mbuild.html#module-mbuild.port">mbuild.port module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../mbuild.html#module-mbuild.prototype">mbuild.prototype module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../mbuild.html#module-mbuild.topology">mbuild.topology module</a></li>
@@ -114,8 +113,6 @@
           <div role="main">
             
   <h1>Source code for mbuild.examples.ethane.ethane</h1><div class="highlight"><pre>
-<span class="n">__author__</span> <span class="o">=</span> <span class="s">&#39;sallai&#39;</span>
-
 <span class="kn">from</span> <span class="nn">mbuild.compound</span> <span class="kn">import</span> <span class="n">Compound</span>
 <span class="kn">from</span> <span class="nn">mbuild.examples.ethane.methyl</span> <span class="kn">import</span> <span class="n">Methyl</span>
 <span class="kn">from</span> <span class="nn">mbuild.coordinate_transform</span> <span class="kn">import</span> <span class="n">equivalence_transform</span>
@@ -130,26 +127,16 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">Methyl</span><span class="p">(),</span> <span class="s">&quot;m2&quot;</span><span class="p">)</span>
 
         <span class="n">equivalence_transform</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">m1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">m1</span><span class="o">.</span><span class="n">up</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">m2</span><span class="o">.</span><span class="n">down</span><span class="p">)</span>
+
 </div>
-<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&quot;__main__&quot;</span><span class="p">:</span>
+<div class="viewcode-block" id="main"><a class="viewcode-back" href="../../../../mbuild.examples.ethane.html#mbuild.examples.ethane.ethane.main">[docs]</a><span class="k">def</span> <span class="nf">main</span><span class="p">():</span>
     <span class="n">ethane</span> <span class="o">=</span> <span class="n">Ethane</span><span class="p">()</span>
-    
-    <span class="n">ethane</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="s">&#39;ethane.pdb&#39;</span><span class="p">)</span>
-    <span class="n">ethane</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="s">&#39;ethane.hoomdxml&#39;</span><span class="p">)</span>
-    
     
     <span class="n">ethane</span> <span class="o">=</span> <span class="n">ethane</span><span class="o">.</span><span class="n">to_trajectory</span><span class="p">()</span>
     <span class="n">ethane</span><span class="o">.</span><span class="n">top</span><span class="o">.</span><span class="n">find_forcefield_terms</span><span class="p">()</span>
-
-    <span class="k">print</span> <span class="nb">len</span><span class="p">(</span><span class="n">ethane</span><span class="o">.</span><span class="n">top</span><span class="o">.</span><span class="n">_ff_bonds</span><span class="p">)</span>
-    <span class="k">print</span> <span class="nb">len</span><span class="p">(</span><span class="n">ethane</span><span class="o">.</span><span class="n">top</span><span class="o">.</span><span class="n">_ff_angles</span><span class="p">)</span>
-    <span class="k">print</span> <span class="nb">len</span><span class="p">(</span><span class="n">ethane</span><span class="o">.</span><span class="n">top</span><span class="o">.</span><span class="n">_ff_dihedrals</span><span class="p">)</span>
-
-    <span class="c">#from mbuild.plot import Plot</span>
-    <span class="c">#Plot(ethane, verbose=False, atoms=True, bonds=True, angles=False, dihedrals=False).show()</span>
-
-    <span class="c"># from mbuild.treeview import TreeView</span>
-    <span class="c"># TreeView(ethane).show()</span>
+</div>
+<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="n">main</span><span class="p">()</span>
 </pre></div>
 
           </div>

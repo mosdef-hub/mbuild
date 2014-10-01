@@ -8,7 +8,7 @@ virtualenv:
 
 before_install:
   - sudo apt-get update
-  - sudo apt-get install -qq python-scipy mayavi2
+  - sudo apt-get install -qq python-scipy
 
 install:
   - pip install cython

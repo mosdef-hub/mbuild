@@ -29,7 +29,5 @@ class Bead(Compound):
 if __name__ == '__main__':
     bead = Bead(particle_kind="bead")
 
-    from mbuild.plot import Plot
-    Plot(bead).show()
-
+    bead.visualize()
 

@@ -47,6 +47,7 @@ def main():
     from mbuild.tools.mask import grid_mask_2d
     mask = grid_mask_2d(10, 10)  # Evenly spaced, 2D grid of points.
     monolayer = AlkaneMonolayer(chain_length=10, mask=mask)
+    monolayer.visualize()
     monolayer = monolayer.to_trajectory()  # Convert from mBuild to mdtraj
 
     monolayer.topology.find_forcefield_terms()  # Find angles/dihedrals from bonds.

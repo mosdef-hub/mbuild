@@ -26,8 +26,4 @@ if __name__ == "__main__":
     s = Surface()
     m = TiledCompound(s, n_x=2, n_y=1, n_z=1, kind="tiled")
 
-    # print s.periodicity
-    # print m.periodicity
-
-    from mbuild.plot import Plot
-    Plot(m, bonds=True, verbose=True, periodic_bonds=True).show()
+    m.visualize()

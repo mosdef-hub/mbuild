@@ -4,18 +4,10 @@ mbuild.examples.bilayer package
 Submodules
 ----------
 
-mbuild.examples.bilayer.bilayer_solvated module
------------------------------------------------
+mbuild.examples.bilayer.bilayer module
+--------------------------------------
 
-.. automodule:: mbuild.examples.bilayer.bilayer_solvated
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-mbuild.examples.bilayer.eceramidens module
-------------------------------------------
-
-.. automodule:: mbuild.examples.bilayer.eceramidens
+.. automodule:: mbuild.examples.bilayer.bilayer
     :members:
     :undoc-members:
     :show-inheritance:

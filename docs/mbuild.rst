@@ -94,14 +94,6 @@ mbuild.periodic_kdtree module
     :undoc-members:
     :show-inheritance:
 
-mbuild.plot module
-------------------
-
-.. automodule:: mbuild.plot
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
 mbuild.port module
 ------------------
 

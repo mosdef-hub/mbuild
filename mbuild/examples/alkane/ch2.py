@@ -21,7 +21,5 @@ class Ch2(Compound):
 if __name__ == '__main__':
     m = Ch2()
 
-    from mbuild.plot import Plot
-    Plot(m, verbose=True, atoms=True, bonds=True, angles=False, dihedrals=False).show()
-
+    m.visualize()
 

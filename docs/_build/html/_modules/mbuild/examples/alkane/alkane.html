@@ -70,7 +70,6 @@
 <li class="toctree-l2"><a class="reference internal" href="../../../../mbuild.html#module-mbuild.orderedset">mbuild.orderedset module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../mbuild.html#module-mbuild.part_mixin">mbuild.part_mixin module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../mbuild.html#module-mbuild.periodic_kdtree">mbuild.periodic_kdtree module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../../../mbuild.html#module-mbuild.plot">mbuild.plot module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../mbuild.html#module-mbuild.port">mbuild.port module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../mbuild.html#module-mbuild.prototype">mbuild.prototype module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../mbuild.html#module-mbuild.topology">mbuild.topology module</a></li>
@@ -160,29 +159,18 @@
                 <span class="bp">self</span><span class="o">.</span><span class="n">methyl_end</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">methyl_end</span><span class="o">.</span><span class="n">up</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">chain</span><span class="o">.</span><span class="n">down</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">chain</span><span class="o">.</span><span class="n">down</span><span class="p">,</span> <span class="s">&#39;down&#39;</span><span class="p">,</span> <span class="n">containment</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+
 </div>
-<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&quot;__main__&quot;</span><span class="p">:</span>
+<div class="viewcode-block" id="main"><a class="viewcode-back" href="../../../../mbuild.examples.alkane.html#mbuild.examples.alkane.alkane.main">[docs]</a><span class="k">def</span> <span class="nf">main</span><span class="p">():</span>
     <span class="n">n</span> <span class="o">=</span> <span class="mi">3</span>
     <span class="n">alkane</span> <span class="o">=</span> <span class="n">Alkane</span><span class="p">(</span><span class="n">n</span><span class="o">=</span><span class="n">n</span><span class="p">,</span> <span class="n">cap_front</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">cap_end</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
-
-    <span class="c">#m.save(&quot;{}-alkane.pdb&quot;.format(n))</span>
-
-    <span class="c"># mol = m.to_molecule()</span>
-    <span class="c"># # mol.localopt(forcefield=&quot;gaff&quot;, steps=2000)</span>
-    <span class="c"># mol.localopt(forcefield=&quot;gaff&quot;, steps=2000)</span>
-    <span class="c"># print mol</span>
-    <span class="c"># m.update_from_molecule(mol)</span>
-
-
-    <span class="c"># from mbuild.plot import Plot</span>
-    <span class="c"># Plot(alkane, bonds=True).show()</span>
 
     <span class="n">alkane</span> <span class="o">=</span> <span class="n">alkane</span><span class="o">.</span><span class="n">to_trajectory</span><span class="p">()</span>
     <span class="n">alkane</span><span class="o">.</span><span class="n">top</span><span class="o">.</span><span class="n">find_forcefield_terms</span><span class="p">()</span>
 
-    <span class="k">print</span> <span class="nb">len</span><span class="p">(</span><span class="n">alkane</span><span class="o">.</span><span class="n">top</span><span class="o">.</span><span class="n">_ff_bonds</span><span class="p">)</span>
-    <span class="k">print</span> <span class="nb">len</span><span class="p">(</span><span class="n">alkane</span><span class="o">.</span><span class="n">top</span><span class="o">.</span><span class="n">_ff_angles</span><span class="p">)</span>
-    <span class="k">print</span> <span class="nb">len</span><span class="p">(</span><span class="n">alkane</span><span class="o">.</span><span class="n">top</span><span class="o">.</span><span class="n">_ff_dihedrals</span><span class="p">)</span>
+</div>
+<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="n">main</span><span class="p">()</span>
 </pre></div>
 
           </div>

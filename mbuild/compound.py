@@ -192,7 +192,6 @@ class Compound(MBase, PartMixin, HasPartsMixin):
             mol:
         """
         from pybel import Molecule
-
         assert(isinstance(mol, Molecule))
 
         atoms, atom_id_to_idx = self.atom_list_by_kind('*', excludeG=True, with_id_to_idx_mapping=True)
@@ -204,6 +203,24 @@ class Compound(MBase, PartMixin, HasPartsMixin):
             print atom
             atoms[idx].pos = np.array(atom.coords) / 10.0
             idx += 1
+
+    def visualize(self):
+        """Visualize the Compound using VMD.
+
+        Assumes you have VMD installed and can call it from the command line via
+        'vmd'.
+
+        TODO: Make more useful/robust. Look into pizza.py's vmd.py.
+        """
+        filename = 'visualize_{}.pdb'.format(self.__class__.__name__)
+        traj = self.to_trajectory()
+        traj.save(filename=filename)
+        import os
+        try:
+            os.system('vmd {}'.format(filename))
+        except OSError:
+            print("Visualization with VMD failed. Make sure you it is installed"
+                  "correctly and launchable from the command line via 'vmd'.")
 
 
     def min_periodic_distance(self, x0, x1):

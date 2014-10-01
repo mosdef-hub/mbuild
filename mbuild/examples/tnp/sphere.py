@@ -43,6 +43,4 @@ class Sphere(Compound):
 
 if __name__ == "__main__":
     m = Sphere(n=65, radius=2)
-
-    from mbuild.plot import Plot
-    Plot(m, verbose=True).show()
+    m.visualize()

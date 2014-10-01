@@ -26,5 +26,4 @@ class Silane(Compound):
 
 if __name__ == "__main__":
     m = Silane()
-    from mbuild.plot import Plot
-    Plot(m, verbose=True).show()
+    m.visualize()
