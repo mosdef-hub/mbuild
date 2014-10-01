@@ -14,5 +14,5 @@ mBuild: a hierarchical, component based molecule builder
 mBuild is a component based molecule builder tool used to assemble complex
 molecular systems from reusable parts for molecular dynamics simulations.
 
-* Documentation: http://mbuild.rtfd.org.
+* Documentation: http://mbuild.rtfd.org/en/develop/
 
