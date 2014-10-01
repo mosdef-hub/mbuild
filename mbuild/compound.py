@@ -93,9 +93,11 @@ class Compound(MBase, PartMixin, HasPartsMixin):
         else:
             return list
 
-    def n_atoms(self, kind='*', excludeG=True):
-        #return len(self.atom_list_by_kind(kind=kind, excludeG=excludeG))
+    def n_atoms(self):
         return sum([1 for _ in self.atoms()])
+
+    def n_bonds(self):
+        return sum([1 for _ in self.bonds()])
 
     def bond_list_by_kind(self, kind='*', with_id_to_idx_mapping=False):
         list = []
