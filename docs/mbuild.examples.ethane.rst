@@ -12,14 +12,6 @@ mbuild.examples.ethane.ethane module
     :undoc-members:
     :show-inheritance:
 
-mbuild.examples.ethane.full_run module
---------------------------------------
-
-.. automodule:: mbuild.examples.ethane.full_run
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
 mbuild.examples.ethane.methyl module
 ------------------------------------
 

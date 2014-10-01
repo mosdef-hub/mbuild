@@ -8,8 +8,8 @@ Subpackages
 
     mbuild.examples
     mbuild.formats
-    mbuild.plugins
     mbuild.testing
+    mbuild.tools
 
 Submodules
 ----------
@@ -102,14 +102,6 @@ mbuild.plot module
     :undoc-members:
     :show-inheritance:
 
-mbuild.polymer module
----------------------
-
-.. automodule:: mbuild.polymer
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
 mbuild.port module
 ------------------
 
@@ -122,22 +114,6 @@ mbuild.prototype module
 -----------------------
 
 .. automodule:: mbuild.prototype
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-mbuild.tiled_compound module
-----------------------------
-
-.. automodule:: mbuild.tiled_compound
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-mbuild.tools module
--------------------
-
-.. automodule:: mbuild.tools
     :members:
     :undoc-members:
     :show-inheritance:

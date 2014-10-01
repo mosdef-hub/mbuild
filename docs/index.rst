@@ -1,14 +1,17 @@
 .. mbuild documentation master file, created by
-   sphinx-quickstart on Tue Sep 30 15:10:34 2014.
+   sphinx-quickstart on Wed Oct  1 09:05:14 2014.
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to mbuild's documentation!
-==================================
 .. include:: ../README.rst
-.. include:: ../LICENSE
 
-Contents:
+License
+-------
+mBuild is licensed under the Lesser GNU General Public License (LGPL v2.1+).
+
+
+API Reference
+-------------
 
 .. toctree::
    :maxdepth: 4

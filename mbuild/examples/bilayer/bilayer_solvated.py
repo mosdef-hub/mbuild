@@ -5,8 +5,8 @@ import numpy as np
 from mbuild.box import Box
 from mbuild.compound import Compound
 from mbuild.coordinate_transform import translate, rotate_around_x
-from mbuild.plugins.mask import grid_mask_2d
-from mbuild.tools import solvent_box
+from mbuild.tools.mask import grid_mask_2d
+from mbuild.tools.solvent import solvent_box
 
 
 class Bilayer(Compound):
@@ -65,7 +65,6 @@ class Bilayer(Compound):
 
 if __name__ == "__main__":
     from mbuild.trajectory import Trajectory
-    from mbuild.formats.hoomdxml import save_hoomdxml
     from mbuild.testing.tools import get_fn
 
 
@@ -79,5 +78,5 @@ if __name__ == "__main__":
 
     bilayer = bilayer.to_trajectory()
     bilayer.topology.load_ff_bonds()
-    save_hoomdxml(bilayer, filename='bilayer.hoomdxml')
+    bilayer.save(filename='bilayer.hoomdxml')
 

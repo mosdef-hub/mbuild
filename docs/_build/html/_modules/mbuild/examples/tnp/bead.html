@@ -71,11 +71,8 @@
 <li class="toctree-l2"><a class="reference internal" href="../../../../mbuild.html#module-mbuild.part_mixin">mbuild.part_mixin module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../mbuild.html#module-mbuild.periodic_kdtree">mbuild.periodic_kdtree module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../mbuild.html#module-mbuild.plot">mbuild.plot module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../../../mbuild.html#module-mbuild.polymer">mbuild.polymer module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../mbuild.html#module-mbuild.port">mbuild.port module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../mbuild.html#module-mbuild.prototype">mbuild.prototype module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../../../mbuild.html#module-mbuild.tiled_compound">mbuild.tiled_compound module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../../../mbuild.html#module-mbuild.tools">mbuild.tools module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../mbuild.html#module-mbuild.topology">mbuild.topology module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../mbuild.html#module-mbuild.trajectory">mbuild.trajectory module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../mbuild.html#module-mbuild.treeview">mbuild.treeview module</a></li>
@@ -137,7 +134,7 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">Compound</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">Atom</span><span class="p">(</span><span class="n">kind</span><span class="o">=</span><span class="n">particle_kind</span><span class="p">),</span> <span class="s">&quot;bead&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">Atom</span><span class="p">(</span><span class="n">kind</span><span class="o">=</span><span class="n">particle_kind</span><span class="p">),</span> <span class="n">particle_kind</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">Port</span><span class="p">(</span><span class="n">anchor</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">labels</span><span class="p">[</span><span class="n">particle_kind</span><span class="p">]),</span> <span class="s">&#39;up&#39;</span><span class="p">)</span>
         <span class="n">translate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">up</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mf">0.7</span><span class="p">,</span> <span class="mi">0</span><span class="p">]))</span>

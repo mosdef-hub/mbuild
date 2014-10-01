@@ -1,6 +1,5 @@
-===============================
-mbuild
-===============================
+mBuild: a hierarchical, component based molecule builder
+========================================================
 
 .. image:: https://badge.fury.io/py/mbuild.png
     :target: http://badge.fury.io/py/mbuild
@@ -8,12 +7,8 @@ mbuild
 .. image:: https://travis-ci.org/sallai/mbuild.png?branch=develop
         :target: https://travis-ci.org/sallai/mbuild
 
-mbuild is a component based molecule builder tool to assemble large molecular systems from reusable parts for molecular dynamics simulations
+mBuild is a component based molecule builder tool used to assemble complex
+molecular systems from reusable parts for molecular dynamics simulations.
 
-* Free software: LGPL license
 * Documentation: http://mbuild.rtfd.org.
 
-Features
---------
-
-* TODO

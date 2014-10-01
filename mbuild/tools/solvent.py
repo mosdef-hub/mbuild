@@ -4,11 +4,10 @@ from copy import deepcopy
 
 import numpy as np
 
-from box import Box
-from bond import Bond
+from mbuild.box import Box
 from mbuild.compound import Compound
-from periodic_kdtree import PeriodicCKDTree
-from coordinate_transform import translate
+from mbuild.periodic_kdtree import PeriodicCKDTree
+from mbuild.coordinate_transform import translate
 
 
 def vdw_radius(atomic_number):
@@ -57,7 +56,7 @@ def solvent_box(solvent, box):
 
 def solvate(host_compound, guest_compound, host_box, guest_box, overlap=vdw_radius):
     """Solvate a Compound in a Box.
-   
+
     Typical usage of this function would be to use a pre-equilibrated solvent
     system as the guest which will then be replicated to fill the host's Box.
     All Compounds that have overlapping Atoms with the host are removed.
@@ -117,114 +116,3 @@ def solvate(host_compound, guest_compound, host_box, guest_box, overlap=vdw_radi
                                 atoms_to_remove.update(guest_atom.bonded_atoms())
                 guest.remove(atoms_to_remove)
                 host_compound.add(guest, "guest_{}_{}_{}".format(xi, yi, zi))
-
-
-# TODO: Move and incorporate into forcefield filtering functions.
-def add_bond(compound, type_A, type_B, dmin, dmax, kind=None):
-    """Ai-Bj distance is in [dmin, dmax] => add bond A1xB(Ai,Bj) (symmetric)."""
-
-    for a1 in compound.atom_list_by_kind(type_A):
-        nearest = compound.atoms_in_range(a1.pos, dmax)
-        for a2 in nearest:
-            if (a2.kind==type_B) and (dmin <= compound.min_periodic_distance(a2.pos, a1.pos) <= dmax):
-                compound.add(Bond(a1, a2, kind=kind))
-
-
-def add_angle(traj, type_A, type_B, type_C):
-    """ """
-    for ab in traj.bonds_by_atom_type(type_A, type_B):
-        nearest = traj.neighbor_bonds(ab)
-        for bc in nearest:
-            bc = traj.order_bond(bc, type_B, type_C)
-            if bc is None:
-                continue
-
-            temp_ang = None
-            if ab[1] == bc[0]:
-                temp_ang = (ab[0], ab[1], bc[1])
-            if ab[0] == bc[1]:
-                temp_ang = (ab[0], ab[1], bc[1])
-            if temp_ang is None:
-                continue
-
-            # to be improved...
-            # handle an edge case where we're adding the same angle multiple times
-            if type_A == type_B == type_C:
-                if ab[0].index < bc[1].index:
-                    continue
-            traj.top.add_angle(*temp_ang)
-
-
-def compute_center_of_mass(traj, masses=None):
-    """Compute the center of mass for each frame.
-
-    Note: This function alters the equivalent mdtraj by adding the option to
-    provide an array of masses.
-
-    Args:
-        traj (Trajectory): Trajectory to compute center of mass for.
-        masses (np.ndarray, optional):
-
-    Returns:
-        com (np.ndarray, shape=(n_frames, 3)): Coordinates of the center of mass
-        for each frame.
-
-    """
-
-    com = np.zeros((traj.n_frames, 3))
-    if masses is None:
-        try:
-            masses = np.array([a.element.mass for a in traj.top.atoms])
-        except:
-            masses = np.ones(traj.n_atoms)
-    else:
-        assert masses.shape[0] == traj.xyz[0].shape[0]
-
-    masses /= masses.sum()
-
-    for i, x in enumerate(traj.xyz):
-        com[i, :] = x.astype('float64').T.dot(masses)
-    return com
-
-
-def compute_inertia_tensor(traj, masses=None):
-    """Calculates the moment of inertia tensor for each frame.
-
-    Function adapted from MDAnalysis (https://code.google.com/p/mdanalysis/)
-
-    Args:
-        traj (Trajectory): Trajectory to compute center of mass for.
-        masses (np.ndarray, optional):
-
-    Returns:
-        I (np.ndarray, shape=(n_frames, 3, 3): Moment of inertia tensor for each
-            frame.
-    """
-
-    if not masses:
-        try:
-            masses = np.array([a.element.mass for a in traj.top.atoms])
-        except:
-            masses = np.ones(traj.n_atoms)
-    else:
-        assert masses.shape[0] == traj.xyz[0].shape[0]
-
-    com = compute_center_of_mass(traj, masses)
-    I = np.zeros(shape=(traj.n_frames, 3, 3))
-    for n, frame in enumerate(traj.xyz):
-        recenteredpos = frame - com[n]
-        values = zip(masses, recenteredpos)
-        Ixx = reduce(lambda t,a: t+a[0]*(a[1][1]*a[1][1]+a[1][2]*a[1][2]), values, 0.)
-        Iyy = reduce(lambda t,a: t+a[0]*(a[1][0]*a[1][0]+a[1][2]*a[1][2]), values, 0.)
-        Izz = reduce(lambda t,a: t+a[0]*(a[1][0]*a[1][0]+a[1][1]*a[1][1]), values, 0.)
-        Ixy = Iyx = -1*reduce(lambda t,a: t+a[0]*a[1][0]*a[1][1], values, 0.)
-        Ixz = Izx = -1*reduce(lambda t,a: t+a[0]*a[1][0]*a[1][2], values, 0.)
-        Iyz = Izy = -1*reduce(lambda t,a: t+a[0]*a[1][1]*a[1][2], values, 0.)
-        I[n] = np.array([[Ixx, Ixy, Ixz], [Iyx, Iyy, Iyz], [Izx, Izy, Izz]])
-    return I
-
-if __name__ == "__main__":
-    print "hello"
-
-
-

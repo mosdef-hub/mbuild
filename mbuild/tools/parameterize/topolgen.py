@@ -8,7 +8,7 @@ def topolgen(traj, pdb_name='traj.pdb', top_name='traj.top'):
     Args:
         traj (md.Trajectory): The trajectory to parameterize
         top_name (str, optional): Rename the output .top file to something
-                other than the default 'ffoplsaa_TopolGen_.top'
+        other than the default 'ffoplsaa_TopolGen_.top'
     """
     traj.save(pdb_name)
     directory = os.path.dirname(os.path.realpath(__file__))

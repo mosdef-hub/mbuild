@@ -1,12 +1,7 @@
-from mbuild.examples.bilayer.eceramidens import ECeramideNS
-from mbuild.formats.hoomdxml import save_hoomdxml
-
-__author__ = 'sallai'
-
 from mbuild.box import Box
 from mbuild.compound import Compound
 from mbuild.testing.tools import get_fn
-from mbuild.tools import solvate
+from mbuild.tools.solvent import solvate
 from mbuild.examples.ethane.ethane import Ethane
 
 if __name__ == "__main__":
@@ -27,6 +22,4 @@ if __name__ == "__main__":
 
     ethane = ethane.to_trajectory()
     ethane.topology.load_ff_bonds()
-    save_hoomdxml(ethane, filename='ethane.hoomdxml')
-    #from mbuild.plot import Plot
-    #Plot(ethane, verbose=False, atoms=True, bonds=True, angles=False, dihedrals=False).show()
+    ethane.save(filename='ethane.hoomdxml')

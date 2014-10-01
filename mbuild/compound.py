@@ -60,11 +60,9 @@ class Compound(MBase, PartMixin, HasPartsMixin):
     def bonds(self):
         return self._yield_parts(Bond)
 
-
     def referenced_ports(self):
         from mbuild.port import Port
         return [port for port in self.labels.values() if isinstance(port, Port)]
-
 
     def post_remove(self, removed_part):
         super(Compound, self).post_remove(removed_part)
@@ -74,7 +72,6 @@ class Compound(MBase, PartMixin, HasPartsMixin):
             for bond in removed_part.bonds:
                 if bond.parent is not None:
                     bond.parent.remove(bond)
-
 
     def atom_list_by_kind(self, kind='*', excludeG=False, with_id_to_idx_mapping=False):
         list = []
@@ -207,7 +204,6 @@ class Compound(MBase, PartMixin, HasPartsMixin):
             idx += 1
 
 
-
     def min_periodic_distance(self, x0, x1):
         """Vectorized distance calculation considering minimum image. """
         d = np.abs(x0 - x1)
@@ -265,6 +261,15 @@ class Compound(MBase, PartMixin, HasPartsMixin):
         traj = self.to_trajectory()
         idxs = traj.atoms_in_range_idx(point, radius, max_items=max_items)
         return [atoms[idx] for idx in idxs]
+
+    def add_bond(self, type_a, type_b, dmin, dmax, kind=None):
+        """ai-bj distance is in [dmin, dmax] => add bond a1xb(ai,bj) (symmetric)."""
+
+        for a1 in self.atom_list_by_kind(type_a):
+            nearest = self.atoms_in_range(a1.pos, dmax)
+            for a2 in nearest:
+                if (a2.kind==type_b) and (dmin <= self.min_periodic_distance(a2.pos, a1.pos) <= dmax):
+                    self.add(Bond(a1, a2, kind=kind))
 
     def __deepcopy__(self, memo):
         cls = self.__class__

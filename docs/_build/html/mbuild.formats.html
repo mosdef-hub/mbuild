@@ -30,7 +30,7 @@
   
     <link rel="top" title="mbuild  documentation" href="index.html"/>
         <link rel="up" title="mbuild package" href="mbuild.html"/>
-        <link rel="next" title="mbuild.plugins package" href="mbuild.plugins.html"/>
+        <link rel="next" title="mbuild.testing package" href="mbuild.testing.html"/>
         <link rel="prev" title="mbuild.examples.tnp package" href="mbuild.examples.tnp.html"/> 
 
   
@@ -73,11 +73,8 @@
 <li class="toctree-l2"><a class="reference internal" href="mbuild.html#module-mbuild.part_mixin">mbuild.part_mixin module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="mbuild.html#module-mbuild.periodic_kdtree">mbuild.periodic_kdtree module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="mbuild.html#module-mbuild.plot">mbuild.plot module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="mbuild.html#module-mbuild.polymer">mbuild.polymer module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="mbuild.html#module-mbuild.port">mbuild.port module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="mbuild.html#module-mbuild.prototype">mbuild.prototype module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="mbuild.html#module-mbuild.tiled_compound">mbuild.tiled_compound module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="mbuild.html#module-mbuild.tools">mbuild.tools module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="mbuild.html#module-mbuild.topology">mbuild.topology module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="mbuild.html#module-mbuild.trajectory">mbuild.trajectory module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="mbuild.html#module-mbuild.treeview">mbuild.treeview module</a></li>
@@ -134,9 +131,28 @@
 </dd></dl>
 
 </div>
-<div class="section" id="mbuild-formats-hoomdxml-module">
-<h2>mbuild.formats.hoomdxml module<a class="headerlink" href="#mbuild-formats-hoomdxml-module" title="Permalink to this headline">¶</a></h2>
-<span class="target" id="module-mbuild.formats.hoomdxml"></span><dl class="function">
+<div class="section" id="module-mbuild.formats.hoomdxml">
+<span id="mbuild-formats-hoomdxml-module"></span><h2>mbuild.formats.hoomdxml module<a class="headerlink" href="#module-mbuild.formats.hoomdxml" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="mbuild.formats.hoomdxml.load_hoomdxml">
+<tt class="descclassname">mbuild.formats.hoomdxml.</tt><tt class="descname">load_hoomdxml</tt><big>(</big><em>filename</em>, <em>optional_nodes=True</em><big>)</big><a class="reference internal" href="_modules/mbuild/formats/hoomdxml.html#load_hoomdxml"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.formats.hoomdxml.load_hoomdxml" title="Permalink to this definition">¶</a></dt>
+<dd><p>Load a HOOMD-blue XML file form disk.</p>
+<p>TODO: better way to read optional nodes
+:param filename: Path to xml file.
+:type filename: str</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><strong>traj</strong></td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">md.Trajectory</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
 <dt id="mbuild.formats.hoomdxml.save_hoomdxml">
 <tt class="descclassname">mbuild.formats.hoomdxml.</tt><tt class="descname">save_hoomdxml</tt><big>(</big><em>traj</em>, <em>step=-1</em>, <em>optional_nodes=None</em>, <em>filename='mbuild.xml'</em><big>)</big><a class="reference internal" href="_modules/mbuild/formats/hoomdxml.html#save_hoomdxml"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.formats.hoomdxml.save_hoomdxml" title="Permalink to this definition">¶</a></dt>
 <dd><p>Output a Trajectory as a HOOMD XML file.</p>
@@ -218,7 +234,7 @@
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="mbuild.plugins.html" class="btn btn-neutral float-right" title="mbuild.plugins package"/>Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="mbuild.testing.html" class="btn btn-neutral float-right" title="mbuild.testing package"/>Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
         <a href="mbuild.examples.tnp.html" class="btn btn-neutral" title="mbuild.examples.tnp package"><span class="fa fa-arrow-circle-left"></span> Previous</a>

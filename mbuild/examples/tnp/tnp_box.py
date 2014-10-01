@@ -6,7 +6,7 @@ import numpy as np
 from mbuild.examples.tnp.tnp import Tnp
 from mbuild.compound import Compound
 from mbuild.coordinate_transform import translate, rotate_around_x, rotate_around_y, rotate_around_z
-from mbuild.plugins.mask import grid_mask_3d
+from mbuild.tools.mask import grid_mask_3d
 
 __author__ = 'sallai'
 

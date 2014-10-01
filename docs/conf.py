@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 # mbuild documentation build configuration file, created by
-# sphinx-quickstart on Tue Sep 30 15:10:34 2014.
+# sphinx-quickstart on Wed Oct  1 08:59:12 2014.
 #
 # This file is execfile()d with the current directory set to its
 # containing dir.
@@ -106,6 +106,7 @@ pygments_style = 'sphinx'
 #html_theme = 'default'
 html_theme = "sphinx_rtd_theme"
 html_theme_path = [sphinx_rtd_theme.get_html_theme_path()]
+
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the

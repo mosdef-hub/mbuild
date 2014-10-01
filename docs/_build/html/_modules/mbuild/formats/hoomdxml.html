@@ -71,11 +71,8 @@
 <li class="toctree-l2"><a class="reference internal" href="../../../mbuild.html#module-mbuild.part_mixin">mbuild.part_mixin module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../mbuild.html#module-mbuild.periodic_kdtree">mbuild.periodic_kdtree module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../mbuild.html#module-mbuild.plot">mbuild.plot module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../../mbuild.html#module-mbuild.polymer">mbuild.polymer module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../mbuild.html#module-mbuild.port">mbuild.port module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../mbuild.html#module-mbuild.prototype">mbuild.prototype module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../../mbuild.html#module-mbuild.tiled_compound">mbuild.tiled_compound module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../../mbuild.html#module-mbuild.tools">mbuild.tools module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../mbuild.html#module-mbuild.topology">mbuild.topology module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../mbuild.html#module-mbuild.trajectory">mbuild.trajectory module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../mbuild.html#module-mbuild.treeview">mbuild.treeview module</a></li>
@@ -121,10 +118,9 @@
 
 <span class="kn">from</span> <span class="nn">mdtraj.formats.registry</span> <span class="kn">import</span> <span class="n">_FormatRegistry</span>
 
-<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;load_hoomxml&#39;</span><span class="p">,</span> <span class="s">&#39;save_hoomdxml&#39;</span><span class="p">]</span>
 
 <span class="nd">@_FormatRegistry.register_loader</span><span class="p">(</span><span class="s">&#39;.hoomdxml&#39;</span><span class="p">)</span>
-<span class="k">def</span> <span class="nf">load_hoomdxml</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">optional_nodes</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+<div class="viewcode-block" id="load_hoomdxml"><a class="viewcode-back" href="../../../mbuild.formats.html#mbuild.formats.hoomdxml.load_hoomdxml">[docs]</a><span class="k">def</span> <span class="nf">load_hoomdxml</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">optional_nodes</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Load a HOOMD-blue XML file form disk.</span>
 
 <span class="sd">    TODO: better way to read optional nodes</span>
@@ -241,7 +237,7 @@
     <span class="k">return</span> <span class="n">traj</span>
 
 
-<span class="c"># TODO: decide if we want this to be a class</span>
+<span class="c"># TODO: decide if we want this to be a class</span></div>
 <div class="viewcode-block" id="save_hoomdxml"><a class="viewcode-back" href="../../../mbuild.formats.html#mbuild.formats.hoomdxml.save_hoomdxml">[docs]</a><span class="k">def</span> <span class="nf">save_hoomdxml</span><span class="p">(</span><span class="n">traj</span><span class="p">,</span> <span class="n">step</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span> <span class="n">optional_nodes</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">filename</span><span class="o">=</span><span class="s">&#39;mbuild.xml&#39;</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Output a Trajectory as a HOOMD XML file.</span>
 

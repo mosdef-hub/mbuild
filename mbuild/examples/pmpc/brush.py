@@ -1,7 +1,7 @@
 from numpy import pi
 
 from mbuild.compound import Compound
-from mbuild.polymer import Polymer
+from mbuild.tools.polymer import Polymer
 from mbuild.coordinate_transform import equivalence_transform
 from mbuild.examples.ethane.methyl import Methyl
 from mpc_monomer import MpcMonomer

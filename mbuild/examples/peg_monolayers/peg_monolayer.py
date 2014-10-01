@@ -5,8 +5,8 @@ from numpy import pi
 from mbuild.compound import Compound
 from mbuild.examples.pmpc.surface import Surface
 from mbuild.examples.pmpc.brush import Brush
-from mbuild.plugins.mask import grid_mask_2d, apply_mask
-from mbuild.tiled_compound import TiledCompound
+from mbuild.tools.mask import grid_mask_2d, apply_mask
+from mbuild.tools.tiled_compound import TiledCompound
 
 
 class BrushLayer(Compound):

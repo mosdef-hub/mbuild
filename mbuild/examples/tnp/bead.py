@@ -18,7 +18,7 @@ class Bead(Compound):
         """
         Compound.__init__(self)
 
-        self.add(Atom(kind=particle_kind), "bead")
+        self.add(Atom(kind=particle_kind), particle_kind)
 
         self.add(Port(anchor=self.labels[particle_kind]), 'up')
         translate(self.up, np.array([0, 0.7, 0]))

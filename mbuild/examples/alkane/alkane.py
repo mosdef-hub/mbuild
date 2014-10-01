@@ -1,7 +1,7 @@
 __author__ = 'sallai'
 
 from mbuild.compound import Compound
-from mbuild.polymer import Polymer
+from mbuild.tools.polymer import Polymer
 from mbuild.coordinate_transform import equivalence_transform
 
 from mbuild.examples.alkane.ch2 import Ch2

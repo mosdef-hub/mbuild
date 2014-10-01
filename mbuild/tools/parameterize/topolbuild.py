@@ -1,20 +1,15 @@
 import subprocess
 import os
-import pdb
-
-from mbuild.formats.mol2 import save_mol2
 
 
 # TODO: could add a formatregister here for forcefield parameterizers
 def topolbuild(traj, forcefield, charge=False, mol2_name='traj.mol2', top_name='traj.top'):
-    """Use topolgen to apply the OPLS-aa forcefield to a .pdb file.
+    """Use topolbuild to apply the OPLS-aa forcefield to a .pdb file.
 
     Args:
-        traj (md.Trajectory): The trajectory to parameterize
-        top_name (str, optional): Rename the output .top file to something
-                other than the default 'ffoplsaa_TopolGen_.top'
+        traj (Trajectory): The trajectory to parameterize
     """
-    save_mol2(traj, filename=mol2_name)
+    traj.save(filename=mol2_name)
     mol2_name_base, _ = os.path.splitext(mol2_name)
 
     executable = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'topolbuild/src/topolbuild')

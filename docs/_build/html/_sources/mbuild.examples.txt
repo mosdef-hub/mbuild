@@ -14,7 +14,6 @@ Subpackages
     mbuild.examples.peg_monolayers
     mbuild.examples.pmpc
     mbuild.examples.reload
-    mbuild.examples.silicon_carbide-4H
     mbuild.examples.solvate
     mbuild.examples.tnp
 

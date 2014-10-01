@@ -1,6 +1,6 @@
 from mbuild.coordinate_transform import translate, y_axis_transform, rotate_around_y
 from mbuild.compound import Compound
-from mbuild.polymer import Polymer
+from mbuild.tools.polymer import Polymer
 from mbuild.port import Port
 from mbuild.testing.tools import get_fn
 

@@ -2,7 +2,7 @@ from mbuild.coordinate_transform import *
 from mbuild.compound import Compound
 from mbuild.port import Port
 from mbuild.testing.tools import get_fn
-from mbuild.tiled_compound import TiledCompound
+from mbuild.tools.tiled_compound import TiledCompound
 
 
 class Surface(Compound):

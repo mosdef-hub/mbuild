@@ -71,11 +71,8 @@
 <li class="toctree-l2"><a class="reference internal" href="mbuild.html#module-mbuild.part_mixin">mbuild.part_mixin module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="mbuild.html#module-mbuild.periodic_kdtree">mbuild.periodic_kdtree module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="mbuild.html#module-mbuild.plot">mbuild.plot module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="mbuild.html#module-mbuild.polymer">mbuild.polymer module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="mbuild.html#module-mbuild.port">mbuild.port module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="mbuild.html#module-mbuild.prototype">mbuild.prototype module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="mbuild.html#module-mbuild.tiled_compound">mbuild.tiled_compound module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="mbuild.html#module-mbuild.tools">mbuild.tools module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="mbuild.html#module-mbuild.topology">mbuild.topology module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="mbuild.html#module-mbuild.trajectory">mbuild.trajectory module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="mbuild.html#module-mbuild.treeview">mbuild.treeview module</a></li>
@@ -157,11 +154,7 @@
 
       </dl></dd>
       
-  <dt><a href="mbuild.html#mbuild.tools.add_angle">add_angle() (in module mbuild.tools)</a>
-  </dt>
-
-      
-  <dt><a href="mbuild.html#mbuild.tools.add_bond">add_bond() (in module mbuild.tools)</a>
+  <dt><a href="mbuild.html#mbuild.compound.Compound.add_bond">add_bond() (mbuild.compound.Compound method)</a>
   </dt>
 
       
@@ -205,15 +198,15 @@
   </dt>
 
       
-  <dt><a href="mbuild.plugins.html#mbuild.plugins.mask.apply_mask">apply_mask() (in module mbuild.plugins.mask)</a>
+  <dt><a href="mbuild.tools.html#mbuild.tools.mask.apply_mask">apply_mask() (in module mbuild.tools.mask)</a>
   </dt>
 
-  </dl></td>
-  <td style="width: 33%" valign="top"><dl>
       
   <dt><a href="mbuild.html#mbuild.coordinate_transform.CoordinateTransform.applyInverseTo">applyInverseTo() (mbuild.coordinate_transform.CoordinateTransform method)</a>
   </dt>
 
+  </dl></td>
+  <td style="width: 33%" valign="top"><dl>
       
   <dt><a href="mbuild.html#mbuild.coordinate_transform.CoordinateTransform.applyTo">applyTo() (mbuild.coordinate_transform.CoordinateTransform method)</a>
   </dt>
@@ -407,11 +400,11 @@
   </dl></td>
   <td style="width: 33%" valign="top"><dl>
       
-  <dt><a href="mbuild.html#mbuild.tools.compute_center_of_mass">compute_center_of_mass() (in module mbuild.tools)</a>
+  <dt><a href="mbuild.tools.html#mbuild.tools.compute.compute_center_of_mass">compute_center_of_mass() (in module mbuild.tools.compute)</a>
   </dt>
 
       
-  <dt><a href="mbuild.html#mbuild.tools.compute_inertia_tensor">compute_inertia_tensor() (in module mbuild.tools)</a>
+  <dt><a href="mbuild.tools.html#mbuild.tools.compute.compute_inertia_tensor">compute_inertia_tensor() (in module mbuild.tools.compute)</a>
   </dt>
 
       
@@ -445,7 +438,7 @@
   </dl></td>
   <td style="width: 33%" valign="top"><dl>
       
-  <dt><a href="mbuild.plugins.html#mbuild.plugins.mask.disk_mask">disk_mask() (in module mbuild.plugins.mask)</a>
+  <dt><a href="mbuild.tools.html#mbuild.tools.mask.disk_mask">disk_mask() (in module mbuild.tools.mask)</a>
   </dt>
 
       
@@ -553,11 +546,11 @@
   </dl></td>
   <td style="width: 33%" valign="top"><dl>
       
-  <dt><a href="mbuild.plugins.html#mbuild.plugins.mask.grid_mask_2d">grid_mask_2d() (in module mbuild.plugins.mask)</a>
+  <dt><a href="mbuild.tools.html#mbuild.tools.mask.grid_mask_2d">grid_mask_2d() (in module mbuild.tools.mask)</a>
   </dt>
 
       
-  <dt><a href="mbuild.plugins.html#mbuild.plugins.mask.grid_mask_3d">grid_mask_3d() (in module mbuild.plugins.mask)</a>
+  <dt><a href="mbuild.tools.html#mbuild.tools.mask.grid_mask_3d">grid_mask_3d() (in module mbuild.tools.mask)</a>
   </dt>
 
   </dl></td>
@@ -632,8 +625,6 @@
   <dt><a href="mbuild.html#mbuild.box.Box.lengths">lengths (mbuild.box.Box attribute)</a>, <a href="mbuild.html#mbuild.box.Box.lengths">[1]</a>
   </dt>
 
-  </dl></td>
-  <td style="width: 33%" valign="top"><dl>
       
   <dt><a href="mbuild.html#mbuild.compound.Compound.load">load() (mbuild.compound.Compound class method)</a>
   </dt>
@@ -644,8 +635,14 @@
   </dt>
 
       </dl></dd>
+  </dl></td>
+  <td style="width: 33%" valign="top"><dl>
       
   <dt><a href="mbuild.html#mbuild.topology.Topology.load_ff_bonds">load_ff_bonds() (mbuild.topology.Topology method)</a>
+  </dt>
+
+      
+  <dt><a href="mbuild.formats.html#mbuild.formats.hoomdxml.load_hoomdxml">load_hoomdxml() (in module mbuild.formats.hoomdxml)</a>
   </dt>
 
   </dl></td>
@@ -810,12 +807,12 @@
   <dt><a href="mbuild.examples.reload.html#module-mbuild.examples.reload.reload">mbuild.examples.reload.reload (module)</a>
   </dt>
 
-  </dl></td>
-  <td style="width: 33%" valign="top"><dl>
       
   <dt><a href="mbuild.examples.solvate.html#module-mbuild.examples.solvate">mbuild.examples.solvate (module)</a>
   </dt>
 
+  </dl></td>
+  <td style="width: 33%" valign="top"><dl>
       
   <dt><a href="mbuild.examples.solvate.html#module-mbuild.examples.solvate.ethane_solvate">mbuild.examples.solvate.ethane_solvate (module)</a>
   </dt>
@@ -889,30 +886,6 @@
   </dt>
 
       
-  <dt><a href="mbuild.plugins.html#module-mbuild.plugins">mbuild.plugins (module)</a>
-  </dt>
-
-      
-  <dt><a href="mbuild.plugins.html#module-mbuild.plugins.mask">mbuild.plugins.mask (module)</a>
-  </dt>
-
-      
-  <dt><a href="mbuild.plugins.parameterize.html#module-mbuild.plugins.parameterize">mbuild.plugins.parameterize (module)</a>
-  </dt>
-
-      
-  <dt><a href="mbuild.plugins.parameterize.html#module-mbuild.plugins.parameterize.topolbuild">mbuild.plugins.parameterize.topolbuild (module)</a>
-  </dt>
-
-      
-  <dt><a href="mbuild.plugins.parameterize.html#module-mbuild.plugins.parameterize.topolgen">mbuild.plugins.parameterize.topolgen (module)</a>
-  </dt>
-
-      
-  <dt><a href="mbuild.html#module-mbuild.polymer">mbuild.polymer (module)</a>
-  </dt>
-
-      
   <dt><a href="mbuild.html#module-mbuild.port">mbuild.port (module)</a>
   </dt>
 
@@ -929,11 +902,39 @@
   </dt>
 
       
-  <dt><a href="mbuild.html#module-mbuild.tiled_compound">mbuild.tiled_compound (module)</a>
+  <dt><a href="mbuild.tools.html#module-mbuild.tools">mbuild.tools (module)</a>
   </dt>
 
       
-  <dt><a href="mbuild.html#module-mbuild.tools">mbuild.tools (module)</a>
+  <dt><a href="mbuild.tools.html#module-mbuild.tools.compute">mbuild.tools.compute (module)</a>
+  </dt>
+
+      
+  <dt><a href="mbuild.tools.html#module-mbuild.tools.mask">mbuild.tools.mask (module)</a>
+  </dt>
+
+      
+  <dt><a href="mbuild.tools.parameterize.html#module-mbuild.tools.parameterize">mbuild.tools.parameterize (module)</a>
+  </dt>
+
+      
+  <dt><a href="mbuild.tools.parameterize.html#module-mbuild.tools.parameterize.topolbuild">mbuild.tools.parameterize.topolbuild (module)</a>
+  </dt>
+
+      
+  <dt><a href="mbuild.tools.parameterize.html#module-mbuild.tools.parameterize.topolgen">mbuild.tools.parameterize.topolgen (module)</a>
+  </dt>
+
+      
+  <dt><a href="mbuild.tools.html#module-mbuild.tools.polymer">mbuild.tools.polymer (module)</a>
+  </dt>
+
+      
+  <dt><a href="mbuild.tools.html#module-mbuild.tools.solvent">mbuild.tools.solvent (module)</a>
+  </dt>
+
+      
+  <dt><a href="mbuild.tools.html#module-mbuild.tools.tiled_compound">mbuild.tools.tiled_compound (module)</a>
   </dt>
 
       
@@ -1077,7 +1078,7 @@
   </dl></td>
   <td style="width: 33%" valign="top"><dl>
       
-  <dt><a href="mbuild.html#mbuild.polymer.Polymer">Polymer (class in mbuild.polymer)</a>
+  <dt><a href="mbuild.tools.html#mbuild.tools.polymer.Polymer">Polymer (class in mbuild.tools.polymer)</a>
   </dt>
 
       
@@ -1157,11 +1158,11 @@
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%" valign="top"><dl>
       
-  <dt><a href="mbuild.plugins.html#mbuild.plugins.mask.random_mask_2d">random_mask_2d() (in module mbuild.plugins.mask)</a>
+  <dt><a href="mbuild.tools.html#mbuild.tools.mask.random_mask_2d">random_mask_2d() (in module mbuild.tools.mask)</a>
   </dt>
 
       
-  <dt><a href="mbuild.plugins.html#mbuild.plugins.mask.random_mask_3d">random_mask_3d() (in module mbuild.plugins.mask)</a>
+  <dt><a href="mbuild.tools.html#mbuild.tools.mask.random_mask_3d">random_mask_3d() (in module mbuild.tools.mask)</a>
   </dt>
 
       
@@ -1283,11 +1284,11 @@
   </dl></td>
   <td style="width: 33%" valign="top"><dl>
       
-  <dt><a href="mbuild.html#mbuild.tools.solvate">solvate() (in module mbuild.tools)</a>
+  <dt><a href="mbuild.tools.html#mbuild.tools.solvent.solvate">solvate() (in module mbuild.tools.solvent)</a>
   </dt>
 
       
-  <dt><a href="mbuild.html#mbuild.tools.solvent_box">solvent_box() (in module mbuild.tools)</a>
+  <dt><a href="mbuild.tools.html#mbuild.tools.solvent.solvent_box">solvent_box() (in module mbuild.tools.solvent)</a>
   </dt>
 
       
@@ -1309,7 +1310,7 @@
   </dt>
 
       
-  <dt><a href="mbuild.plugins.html#mbuild.plugins.mask.sphere_mask">sphere_mask() (in module mbuild.plugins.mask)</a>
+  <dt><a href="mbuild.tools.html#mbuild.tools.mask.sphere_mask">sphere_mask() (in module mbuild.tools.mask)</a>
   </dt>
 
       
@@ -1333,7 +1334,7 @@
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%" valign="top"><dl>
       
-  <dt><a href="mbuild.html#mbuild.tiled_compound.TiledCompound">TiledCompound (class in mbuild.tiled_compound)</a>
+  <dt><a href="mbuild.tools.html#mbuild.tools.tiled_compound.TiledCompound">TiledCompound (class in mbuild.tools.tiled_compound)</a>
   </dt>
 
       
@@ -1357,13 +1358,13 @@
   </dt>
 
       
-  <dt><a href="mbuild.plugins.parameterize.html#mbuild.plugins.parameterize.topolbuild.topolbuild">topolbuild() (in module mbuild.plugins.parameterize.topolbuild)</a>
+  <dt><a href="mbuild.tools.parameterize.html#mbuild.tools.parameterize.topolbuild.topolbuild">topolbuild() (in module mbuild.tools.parameterize.topolbuild)</a>
   </dt>
 
   </dl></td>
   <td style="width: 33%" valign="top"><dl>
       
-  <dt><a href="mbuild.plugins.parameterize.html#mbuild.plugins.parameterize.topolgen.topolgen">topolgen() (in module mbuild.plugins.parameterize.topolgen)</a>
+  <dt><a href="mbuild.tools.parameterize.html#mbuild.tools.parameterize.topolgen.topolgen">topolgen() (in module mbuild.tools.parameterize.topolgen)</a>
   </dt>
 
       
@@ -1429,7 +1430,7 @@
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%" valign="top"><dl>
       
-  <dt><a href="mbuild.html#mbuild.tools.vdw_radius">vdw_radius() (in module mbuild.tools)</a>
+  <dt><a href="mbuild.tools.html#mbuild.tools.solvent.vdw_radius">vdw_radius() (in module mbuild.tools.solvent)</a>
   </dt>
 
   </dl></td>

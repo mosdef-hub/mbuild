@@ -1,11 +1,10 @@
 from __future__ import division
 
 from mbuild.atom import Atom
-from mbuild.formats.lammps import save_lammps
 from mbuild.port import Port
 from mbuild.compound import Compound
-from mbuild.tiled_compound import TiledCompound
-from mbuild.plugins.mask import apply_mask
+from mbuild.tools.tiled_compound import TiledCompound
+from mbuild.tools.mask import apply_mask
 
 from mbuild.examples.alkane_monolayers.alkylsilane import AlkylSilane
 from mbuild.examples.alkane_monolayers.surface import Surface
@@ -41,19 +40,13 @@ class AlkaneMonolayer(Compound):
 
 
 if __name__ == "__main__":
-    from mbuild.plugins.mask import grid_mask_2d
+    from mbuild.tools.mask import grid_mask_2d
     mask = grid_mask_2d(10, 10)  # Evenly spaced, 2D grid of points.
     monolayer = AlkaneMonolayer(chain_length=10, mask=mask)
     monolayer = monolayer.to_trajectory()  # Convert from mBuild to mdtraj
 
     monolayer.topology.find_forcefield_terms()  # Find angles/dihedrals from bonds.
 
-    save_lammps(monolayer, filename='data.c6-100')  # Print a LAMMPS data file.
-
-    print monolayer.n_atoms
-    print monolayer.top.n_ff_bonds
-    print monolayer.top.n_ff_angles
-    print monolayer.top.n_ff_dihedrals
-
+    monolayer.save(filename='data.c6-100')  # Print a LAMMPS data file.
 
 

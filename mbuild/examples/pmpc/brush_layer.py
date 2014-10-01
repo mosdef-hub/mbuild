@@ -5,8 +5,8 @@ from numpy import pi
 from mbuild.compound import Compound
 from mbuild.examples.pmpc.surface import Surface
 from mbuild.examples.pmpc.brush import Brush
-from mbuild.plugins.mask import grid_mask_2d, apply_mask, random_mask_2d
-from mbuild.tiled_compound import TiledCompound
+from mbuild.tools.mask import apply_mask, random_mask_2d
+from mbuild.tools.tiled_compound import TiledCompound
 
 
 class BrushLayer(Compound):
@@ -29,12 +29,11 @@ if __name__ == "__main__":
     #mask = grid_mask_2d(,3)
     # print mask
 
-    m = BrushLayer(chain_length=20, alpha=pi/4, mask=mask, tile_x=3, tile_y=2)
+    brush_layer = BrushLayer(chain_length=20, alpha=pi/4, mask=mask, tile_x=3, tile_y=2)
+    brush_layer = brush_layer.to_trajectory()
+    brush_layer.topology.find_forcefield_terms()
 
-    from mbuild.formats.xyz import save_xyz
-    save_xyz(m.to_trajectory(), filename='brush_layer.xyz')
-    # from mbuild.plot import Plot
-    # Plot(m, bonds=True, angles=False, dihedrals=False, periodic_bonds=True).show()
+    brush_layer.save(filename='brush_layer.hoomdxml')
 
     # from mbuild.treeview import TreeView
     # tv = TreeView(m)

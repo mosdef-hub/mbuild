@@ -71,11 +71,8 @@
 <li class="toctree-l2"><a class="reference internal" href="../../mbuild.html#module-mbuild.part_mixin">mbuild.part_mixin module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../mbuild.html#module-mbuild.periodic_kdtree">mbuild.periodic_kdtree module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../mbuild.html#module-mbuild.plot">mbuild.plot module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../mbuild.html#module-mbuild.polymer">mbuild.polymer module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../mbuild.html#module-mbuild.port">mbuild.port module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../mbuild.html#module-mbuild.prototype">mbuild.prototype module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../mbuild.html#module-mbuild.tiled_compound">mbuild.tiled_compound module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../mbuild.html#module-mbuild.tools">mbuild.tools module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../mbuild.html#module-mbuild.topology">mbuild.topology module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../mbuild.html#module-mbuild.trajectory">mbuild.trajectory module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../mbuild.html#module-mbuild.treeview">mbuild.treeview module</a></li>
@@ -178,12 +175,10 @@
 </div>
 <div class="viewcode-block" id="Compound.bonds"><a class="viewcode-back" href="../../mbuild.html#mbuild.compound.Compound.bonds">[docs]</a>    <span class="k">def</span> <span class="nf">bonds</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_yield_parts</span><span class="p">(</span><span class="n">Bond</span><span class="p">)</span>
-
 </div>
 <div class="viewcode-block" id="Compound.referenced_ports"><a class="viewcode-back" href="../../mbuild.html#mbuild.compound.Compound.referenced_ports">[docs]</a>    <span class="k">def</span> <span class="nf">referenced_ports</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="kn">from</span> <span class="nn">mbuild.port</span> <span class="kn">import</span> <span class="n">Port</span>
         <span class="k">return</span> <span class="p">[</span><span class="n">port</span> <span class="k">for</span> <span class="n">port</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">labels</span><span class="o">.</span><span class="n">values</span><span class="p">()</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">port</span><span class="p">,</span> <span class="n">Port</span><span class="p">)]</span>
-
 </div>
 <div class="viewcode-block" id="Compound.post_remove"><a class="viewcode-back" href="../../mbuild.html#mbuild.compound.Compound.post_remove">[docs]</a>    <span class="k">def</span> <span class="nf">post_remove</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">removed_part</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">(</span><span class="n">Compound</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">post_remove</span><span class="p">(</span><span class="n">removed_part</span><span class="p">)</span>
@@ -193,7 +188,6 @@
             <span class="k">for</span> <span class="n">bond</span> <span class="ow">in</span> <span class="n">removed_part</span><span class="o">.</span><span class="n">bonds</span><span class="p">:</span>
                 <span class="k">if</span> <span class="n">bond</span><span class="o">.</span><span class="n">parent</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
                     <span class="n">bond</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">bond</span><span class="p">)</span>
-
 </div>
 <div class="viewcode-block" id="Compound.atom_list_by_kind"><a class="viewcode-back" href="../../mbuild.html#mbuild.compound.Compound.atom_list_by_kind">[docs]</a>    <span class="k">def</span> <span class="nf">atom_list_by_kind</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">kind</span><span class="o">=</span><span class="s">&#39;*&#39;</span><span class="p">,</span> <span class="n">excludeG</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">with_id_to_idx_mapping</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
         <span class="nb">list</span> <span class="o">=</span> <span class="p">[]</span>
@@ -325,7 +319,6 @@
             <span class="n">atoms</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span><span class="o">.</span><span class="n">pos</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">atom</span><span class="o">.</span><span class="n">coords</span><span class="p">)</span> <span class="o">/</span> <span class="mf">10.0</span>
             <span class="n">idx</span> <span class="o">+=</span> <span class="mi">1</span>
 
-
 </div>
 <div class="viewcode-block" id="Compound.min_periodic_distance"><a class="viewcode-back" href="../../mbuild.html#mbuild.compound.Compound.min_periodic_distance">[docs]</a>    <span class="k">def</span> <span class="nf">min_periodic_distance</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x0</span><span class="p">,</span> <span class="n">x1</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Vectorized distance calculation considering minimum image. &quot;&quot;&quot;</span>
@@ -384,6 +377,15 @@
         <span class="n">traj</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">to_trajectory</span><span class="p">()</span>
         <span class="n">idxs</span> <span class="o">=</span> <span class="n">traj</span><span class="o">.</span><span class="n">atoms_in_range_idx</span><span class="p">(</span><span class="n">point</span><span class="p">,</span> <span class="n">radius</span><span class="p">,</span> <span class="n">max_items</span><span class="o">=</span><span class="n">max_items</span><span class="p">)</span>
         <span class="k">return</span> <span class="p">[</span><span class="n">atoms</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="k">for</span> <span class="n">idx</span> <span class="ow">in</span> <span class="n">idxs</span><span class="p">]</span>
+</div>
+<div class="viewcode-block" id="Compound.add_bond"><a class="viewcode-back" href="../../mbuild.html#mbuild.compound.Compound.add_bond">[docs]</a>    <span class="k">def</span> <span class="nf">add_bond</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">type_a</span><span class="p">,</span> <span class="n">type_b</span><span class="p">,</span> <span class="n">dmin</span><span class="p">,</span> <span class="n">dmax</span><span class="p">,</span> <span class="n">kind</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;ai-bj distance is in [dmin, dmax] =&gt; add bond a1xb(ai,bj) (symmetric).&quot;&quot;&quot;</span>
+
+        <span class="k">for</span> <span class="n">a1</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">atom_list_by_kind</span><span class="p">(</span><span class="n">type_a</span><span class="p">):</span>
+            <span class="n">nearest</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">atoms_in_range</span><span class="p">(</span><span class="n">a1</span><span class="o">.</span><span class="n">pos</span><span class="p">,</span> <span class="n">dmax</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">a2</span> <span class="ow">in</span> <span class="n">nearest</span><span class="p">:</span>
+                <span class="k">if</span> <span class="p">(</span><span class="n">a2</span><span class="o">.</span><span class="n">kind</span><span class="o">==</span><span class="n">type_b</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">dmin</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">min_periodic_distance</span><span class="p">(</span><span class="n">a2</span><span class="o">.</span><span class="n">pos</span><span class="p">,</span> <span class="n">a1</span><span class="o">.</span><span class="n">pos</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="n">dmax</span><span class="p">):</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">Bond</span><span class="p">(</span><span class="n">a1</span><span class="p">,</span> <span class="n">a2</span><span class="p">,</span> <span class="n">kind</span><span class="o">=</span><span class="n">kind</span><span class="p">))</span>
 </div>
     <span class="k">def</span> <span class="nf">__deepcopy__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">memo</span><span class="p">):</span>
         <span class="n">cls</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__class__</span>

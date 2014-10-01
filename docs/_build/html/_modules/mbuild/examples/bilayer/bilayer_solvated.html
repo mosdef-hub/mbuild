@@ -71,11 +71,8 @@
 <li class="toctree-l2"><a class="reference internal" href="../../../../mbuild.html#module-mbuild.part_mixin">mbuild.part_mixin module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../mbuild.html#module-mbuild.periodic_kdtree">mbuild.periodic_kdtree module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../mbuild.html#module-mbuild.plot">mbuild.plot module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../../../mbuild.html#module-mbuild.polymer">mbuild.polymer module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../mbuild.html#module-mbuild.port">mbuild.port module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../mbuild.html#module-mbuild.prototype">mbuild.prototype module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../../../mbuild.html#module-mbuild.tiled_compound">mbuild.tiled_compound module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../../../mbuild.html#module-mbuild.tools">mbuild.tools module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../mbuild.html#module-mbuild.topology">mbuild.topology module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../mbuild.html#module-mbuild.trajectory">mbuild.trajectory module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../mbuild.html#module-mbuild.treeview">mbuild.treeview module</a></li>
@@ -124,8 +121,8 @@
 <span class="kn">from</span> <span class="nn">mbuild.box</span> <span class="kn">import</span> <span class="n">Box</span>
 <span class="kn">from</span> <span class="nn">mbuild.compound</span> <span class="kn">import</span> <span class="n">Compound</span>
 <span class="kn">from</span> <span class="nn">mbuild.coordinate_transform</span> <span class="kn">import</span> <span class="n">translate</span><span class="p">,</span> <span class="n">rotate_around_x</span>
-<span class="kn">from</span> <span class="nn">mbuild.plugins.mask</span> <span class="kn">import</span> <span class="n">grid_mask_2d</span>
-<span class="kn">from</span> <span class="nn">mbuild.tools</span> <span class="kn">import</span> <span class="n">solvent_box</span>
+<span class="kn">from</span> <span class="nn">mbuild.tools.mask</span> <span class="kn">import</span> <span class="n">grid_mask_2d</span>
+<span class="kn">from</span> <span class="nn">mbuild.tools.solvent</span> <span class="kn">import</span> <span class="n">solvent_box</span>
 
 
 <div class="viewcode-block" id="Bilayer"><a class="viewcode-back" href="../../../../mbuild.examples.bilayer.html#mbuild.examples.bilayer.bilayer_solvated.Bilayer">[docs]</a><span class="k">class</span> <span class="nc">Bilayer</span><span class="p">(</span><span class="n">Compound</span><span class="p">):</span>
@@ -184,7 +181,6 @@
 </div>
 <span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&quot;__main__&quot;</span><span class="p">:</span>
     <span class="kn">from</span> <span class="nn">mbuild.trajectory</span> <span class="kn">import</span> <span class="n">Trajectory</span>
-    <span class="kn">from</span> <span class="nn">mbuild.formats.hoomdxml</span> <span class="kn">import</span> <span class="n">save_hoomdxml</span>
     <span class="kn">from</span> <span class="nn">mbuild.testing.tools</span> <span class="kn">import</span> <span class="n">get_fn</span>
 
 
@@ -198,7 +194,7 @@
 
     <span class="n">bilayer</span> <span class="o">=</span> <span class="n">bilayer</span><span class="o">.</span><span class="n">to_trajectory</span><span class="p">()</span>
     <span class="n">bilayer</span><span class="o">.</span><span class="n">topology</span><span class="o">.</span><span class="n">load_ff_bonds</span><span class="p">()</span>
-    <span class="n">save_hoomdxml</span><span class="p">(</span><span class="n">bilayer</span><span class="p">,</span> <span class="n">filename</span><span class="o">=</span><span class="s">&#39;bilayer.hoomdxml&#39;</span><span class="p">)</span>
+    <span class="n">bilayer</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">filename</span><span class="o">=</span><span class="s">&#39;bilayer.hoomdxml&#39;</span><span class="p">)</span>
 </pre></div>
 
           </div>
