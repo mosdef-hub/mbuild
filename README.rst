@@ -6,6 +6,9 @@ mBuild: a hierarchical, component based molecule builder
     
 .. image:: https://travis-ci.org/sallai/mbuild.png?branch=develop
         :target: https://travis-ci.org/sallai/mbuild
+        
+.. image:: https://coveralls.io/repos/sallai/mbuild/badge.png?branch=develop 
+        :target: https://coveralls.io/r/sallai/mbuild?branch=develop
 
 .. image:: https://readthedocs.org/projects/mbuild/badge/?version=develop
         :target: http://mbuild.readthedocs.org/en/develop/
