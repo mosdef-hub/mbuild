@@ -8,7 +8,7 @@ mBuild: a hierarchical, component based molecule builder
         :target: https://travis-ci.org/sallai/mbuild
 
 .. image:: https://readthedocs.org/projects/mbuild/badge/?version=develop
-        :target: https://readthedocs.org/projects/mbuild/?badge=develop
+        :target: http://mbuild.readthedocs.org/en/develop/
         :alt: Documentation Status
 
 mBuild is a component based molecule builder tool used to assemble complex
