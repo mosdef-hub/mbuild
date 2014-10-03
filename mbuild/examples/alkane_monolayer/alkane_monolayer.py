@@ -52,7 +52,8 @@ def main():
 
     monolayer.topology.find_forcefield_terms()  # Find angles/dihedrals from bonds.
 
-    monolayer.save(filename='data.c6-100')  # Print a LAMMPS data file.
+    monolayer.save(filename='data.c10-100')  # Print a LAMMPS data file.
+    monolayer.save(filename='c10-100.pdb')
 
 if __name__ == "__main__":
     main()

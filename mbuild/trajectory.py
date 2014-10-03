@@ -1,10 +1,10 @@
-__author__ = 'sallai'
-
 import sys
 import os
 
 import numpy as np
 import mdtraj as md
+from mdtraj.utils.six import string_types
+from mdtraj.core.trajectory import load_frame, load_mol2, load_prmtop
 
 from mbuild.atom import Atom
 from mbuild.bond import Bond
@@ -14,9 +14,10 @@ from mbuild.formats.hoomdxml import save_hoomdxml
 from mbuild.periodic_kdtree import PeriodicCKDTree
 from mbuild.topology import Topology
 from mbuild.formats.gromacs import save_gromacs
-from mbuild.formats.lammps import save_lammps
+from mbuild.formats.lammps_data import save_lammps_data
 from mbuild.formats.mol2 import save_mol2
 from mbuild.formats.xyz import save_xyz
+
 
 class Trajectory(md.Trajectory):
 
@@ -208,14 +209,14 @@ class Trajectory(md.Trajectory):
         if filename.endswith(".hoomdxml"):
             save_hoomdxml(traj=self, filename=filename, **kwargs)
         elif filename.endswith(".gro") or filename.endswith(".top"):
-            basename = filename.split('.')[:-1]
+            basename = ''.join(filename.split('.')[:-1])
             save_gromacs(traj=self, basename=basename, **kwargs)
         elif filename.endswith(".xyz"):
             save_xyz(traj=self, filename=filename, **kwargs)
         elif filename.endswith(".mol2"):
             save_mol2(traj=self, filename=filename, **kwargs)
         elif filename.startswith("data.") or filename.startswith(".lmp"):
-            save_lammps(traj=self, filename=filename, **kwargs)
+            save_lammps_data(traj=self, filename=filename, **kwargs)
         else:
             super(Trajectory, self).save(filename, **kwargs)
 

@@ -9,6 +9,7 @@ def save_gromacs(traj, step=-1, basename='mbuild', forcefield='opls-aa'):
         grofile:
     """
 
+
     with open(basename + '.top', 'w') as f:
         if forcefield == 'opls-aa':
             f.write('#include "oplsaa.ff"\n\n')
@@ -24,24 +25,28 @@ def save_gromacs(traj, step=-1, basename='mbuild', forcefield='opls-aa'):
                 atom.index, atom.name, atom.residue.index, atom.residue.name,
                 atom.name, 1, 0.0, atom.element.mass))
 
+
         if traj.topology._ff_bonds:
             f.write('\n[ bonds ]\n')
-            for n, bond in enumerate(traj.topology.ff_bonds):
+            for bond in traj.topology.ff_bonds:
                 f.write('{:d} {:d} {:d}\n'.format(
-                    n + 1, bond.atom1.index, bond.atom2.index))
+                    bond.atom1.index + 1, bond.atom2.index + 1, 1))
 
         if traj.topology._ff_angles:
             f.write('\n[ angles ]\n')
-            for n, angle in enumerate(traj.topology.ff_angles):
+            for angle in traj.topology.ff_angles:
                 f.write('{:d} {:d} {:d} {:d}\n'.format(
-                    n + 1, angle.atom1.index, angle.atom2.index, angle.atom3.index))
+                    angle.atom1.index + 1, angle.atom2.index + 1,
+                    angle.atom3.index + 1, 1))
 
         if traj.topology._ff_dihedrals:
             f.write('\n[ dihedrals ]\n')
-            for n, dihedral in enumerate(traj.topology.ff_dihedrals):
+            for dihedral in traj.topology.ff_dihedrals:
+                if 'Si' in dihedral.kind or 'SI' in dihedral.kind:
+                    continue
                 f.write('{:d} {:d} {:d} {:d} {:d}\n'.format(
-                    n + 1, dihedral.atom1.index, dihedral.atom2.index,
-                    dihedral.atom3.index, dihedral.atom4.index))
+                    dihedral.atom1.index + 1, dihedral.atom2.index + 1,
+                    dihedral.atom3.index + 1, dihedral.atom4.index + 1, 3))
 
         f.write('\n[ system ]\n')
         f.write('{}\n'.format(basename))
@@ -56,7 +61,7 @@ def save_gromacs(traj, step=-1, basename='mbuild', forcefield='opls-aa'):
             atom, xyz = data
             f.write('{:5d}{:<4s}{:6s}{:5d}'
                     '{:8.3f}{:8.3f}{:8.3f}{:8.3f}{:8.3f}{:8.3f}\n'.format(
-                atom.residue.index, atom.residue.name, atom.name, n + 1,
+                atom.residue.index + 1, atom.residue.name, atom.name, n + 1,
                 xyz[0], xyz[1], xyz[2], 0.0, 0.0, 0.0))
         box = traj.unitcell_vectors[step]
         f.write('{:10.5f}{:10.5f}{:10.5f}'
