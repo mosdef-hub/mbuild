@@ -42,7 +42,8 @@ def save_lammps_data(traj, step=-1, filename='data.mbuild', unit_set='real'):
             if atom.name not in numeric_types:
                 numeric_types[atom.name] = atom_type_n
                 mass = in_units_of(atom.element.mass, 'grams/moles', _mass_unit)
-                mass_list.append('{0:d} {1:8.4f}\n'.format(atom_type_n, mass))
+                mass_list.append('{0:d} {1:8.4f} # {2}\n'.format(
+                    atom_type_n, mass, atom.name))
                 atom_type_n += 1
             x, y, z = in_units_of(traj.xyz[step][atom.index], 'nanometers',
                                   _distance_unit)

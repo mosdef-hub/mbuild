@@ -283,7 +283,6 @@ class Compound(MBase, PartMixin, HasPartsMixin):
 
     def add_bond(self, type_a, type_b, dmin, dmax, kind=None):
         """ai-bj distance is in [dmin, dmax] => add bond a1xb(ai,bj) (symmetric)."""
-
         for a1 in self.atom_list_by_kind(type_a):
             nearest = self.atoms_in_range(a1.pos, dmax)
             for a2 in nearest:

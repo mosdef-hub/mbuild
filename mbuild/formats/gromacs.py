@@ -9,10 +9,18 @@ def save_gromacs(traj, step=-1, basename='mbuild', forcefield='opls-aa'):
         grofile:
     """
 
-
+    # opls_names = {'C':  ('opls_136', 'CT'),
+    #               'C3': ('opls_135', 'CT'),
+    #               'H':  ('opls_140', 'HC'),
+    #               'HO': ('opls_155', 'HO'),
+    #               'OH': ('opls_154', 'OH'),
+    #               'O':  ('OS',       'OS'),
+    #               'Si': ('Si',       'SI'),
+    #               'SI': ('SI',       'SI')}
+    import pdb
     with open(basename + '.top', 'w') as f:
-        if forcefield == 'opls-aa':
-            f.write('#include "oplsaa.ff"\n\n')
+        #if forcefield == 'opls-aa':
+        #    f.write('#include "oplsaa.ff/forcefield.itp"\n\n')
 
         # TODO: iteration over chains
         f.write('\n[ moleculetype ]\n')
@@ -22,9 +30,13 @@ def save_gromacs(traj, step=-1, basename='mbuild', forcefield='opls-aa'):
         f.write('\n[ atoms ]\n')
         for atom in traj.topology.atoms:
             f.write('{:d} {:s} {:d} {:s} {:s} {:d} {:8.4f} {:8.4f}\n'.format(
-                atom.index, atom.name, atom.residue.index, atom.residue.name,
-                atom.name, 1, 0.0, atom.element.mass))
-
+               atom.index, atom.name, atom.residue.index, atom.residue.name,
+               atom.name, 1, 0.0, atom.element.mass))
+            # opls = opls_names[atom.name][0]
+            # bondtype = opls_names[atom.name][1]
+            # f.write('{:d} {:s} {:d} {:s} {:s} {:d}\n'.format(
+            #     atom.index + 1, opls, atom.residue.index + 1,
+            #     atom.residue.name, bondtype, 1))
 
         if traj.topology._ff_bonds:
             f.write('\n[ bonds ]\n')
@@ -59,10 +71,11 @@ def save_gromacs(traj, step=-1, basename='mbuild', forcefield='opls-aa'):
         f.write('{}\n'.format(traj.n_atoms))
         for n, data in enumerate(zip(traj.top.atoms, traj.xyz[step])):
             atom, xyz = data
-            f.write('{:5d}{:<4s}{:6s}{:5d}'
+            #bondtype = opls_names[atom.name][1]
+            f.write('{:5d}{:<5s}{:5s}{:5d}'
                     '{:8.3f}{:8.3f}{:8.3f}{:8.3f}{:8.3f}{:8.3f}\n'.format(
-                atom.residue.index + 1, atom.residue.name, atom.name, n + 1,
-                xyz[0], xyz[1], xyz[2], 0.0, 0.0, 0.0))
+                atom.residue.index + 1, atom.residue.name, 'CT', n + 1,
+                xyz[0], xyz[1], xyz[2] + 3, 0.0, 0.0, 0.0))
         box = traj.unitcell_vectors[step]
         f.write('{:10.5f}{:10.5f}{:10.5f}'
                 '{:10.5f}{:10.5f}{:10.5f}'
