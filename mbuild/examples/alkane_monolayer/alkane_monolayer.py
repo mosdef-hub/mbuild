@@ -6,8 +6,8 @@ from mbuild.compound import Compound
 from mbuild.tools.tiled_compound import TiledCompound
 from mbuild.tools.mask import apply_mask
 
-from mbuild.examples.alkane_monolayer.alkylsilane import AlkylSilane
-from mbuild.examples.alkane_monolayer.surface import Surface
+from alkylsilane import AlkylSilane
+from surface import Surface
 
 
 class AlkaneMonolayer(Compound):

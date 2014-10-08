@@ -6,6 +6,7 @@ import numpy as np
 from atom import Atom
 from bond import Bond
 from box import Box
+from mbuild.coordinate_transform import translate
 from mbuild.mbase import MBase
 from mbuild.has_parts_mixin import HasPartsMixin
 from mbuild.part_mixin import PartMixin
@@ -280,6 +281,20 @@ class Compound(MBase, PartMixin, HasPartsMixin):
         traj = self.to_trajectory()
         idxs = traj.atoms_in_range_idx(point, radius, max_items=max_items)
         return [atoms[idx] for idx in idxs]
+
+    def wrap(self):
+        """ """
+        assert np.any(self.periodicity)
+        box = self.boundingbox()
+        translate(self, -box.mins)
+        for atom in self.atoms():
+            for k, c in enumerate(atom.pos):
+                if self.periodicity[k]:
+                    if c < 0.0:
+                        atom.pos[k] = self.periodicity[k] + c
+                    if c > self.periodicity[k]:
+                        atom.pos[k] = c - self.periodicity[k]
+
 
     def add_bond(self, type_a, type_b, dmin, dmax, kind=None):
         """ai-bj distance is in [dmin, dmax] => add bond a1xb(ai,bj) (symmetric)."""

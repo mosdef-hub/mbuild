@@ -9,7 +9,6 @@ class Silane(Compound):
     def __init__(self, ):
         super(Silane, self).__init__()
 
-        # Look for data file in same directory as this python module.
         self.append_from_file(get_fn('silane.pdb'))
 
         # Transform the coordinate system such that the silicon atom is at the origin

@@ -45,12 +45,16 @@ class Trajectory(md.Trajectory):
         for idx, atom in enumerate(atom_list):
             xyz[0,idx] = atom.pos
 
-        box = compound.boundingbox()
-
         traj = cls(xyz, t)
 
-        traj.unitcell_vectors = np.array([np.identity(3)*box.lengths])
-
+        box = compound.boundingbox()
+        unitcell_lengths = np.empty(3)
+        for dim, val in enumerate(compound.periodicity):
+            if val:
+                unitcell_lengths[dim] = val
+            else:
+                unitcell_lengths[dim] = box.lengths[dim]
+            traj.unitcell_lengths = unitcell_lengths
         return traj
 
     def update_compound(self, compound, frame=0):
