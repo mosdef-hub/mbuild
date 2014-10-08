@@ -135,7 +135,7 @@ def save_hoomdxml(traj, step=-1, optional_nodes=None, filename='mbuild.xml'):
         xml_file.write("""<hoomd_xml>\n""")
         xml_file.write("""<configuration time_step="0">\n""")
 
-        lx, ly, lz = traj.unitcell_lengths[0]
+        lx, ly, lz = traj.unitcell_lengths[step]
         xy = traj.unitcell_vectors[0, 1, 0] / ly
         xz = traj.unitcell_vectors[0, 2, 0] / lz
         yz = traj.unitcell_vectors[0, 2, 1] / lz

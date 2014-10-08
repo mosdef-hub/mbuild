@@ -117,6 +117,9 @@ def save_lammps_data(traj, step=-1, filename='data.mbuild', unit_set='real'):
         f.write('\n')
 
         box = traj.boundingbox(step)
+        for dim, val in enumerate(traj.unitcell_lengths[step]):
+            box.maxs[dim] = box.mins[dim] + val
+
         box.mins = in_units_of(box.mins, 'nanometers', _distance_unit)
         box.maxs = in_units_of(box.maxs, 'nanometers', _distance_unit)
         f.write(

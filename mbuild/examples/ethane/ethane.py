@@ -19,6 +19,7 @@ def main():
     
     ethane = ethane.to_trajectory()
     ethane.top.find_forcefield_terms()
+    ethane.save('ethane.hoomdxml')
 
 if __name__ == "__main__":
     main()
