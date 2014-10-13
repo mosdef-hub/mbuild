@@ -152,8 +152,7 @@ class HasPartsMixin(object):
         #             bond.parent.remove(bond)
 
     def __getattr__(self, attr):
-        import pdb
-        pdb.set_trace()
+        assert "labels" == attr, "HasPartsMixin __init__ never called. Make sure to call super().__init__() in the __init__ method of your class."
         if attr in self.labels:
             return self.labels[attr]
         else:
