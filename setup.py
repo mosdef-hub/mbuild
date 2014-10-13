@@ -3,7 +3,7 @@
 
 import os
 import sys
-from setuptools import setup
+from setuptools import setup, find_packages
 from setuptools.command.test import test as TestCommand
 
 requirements_lines = [line.strip() for line in open('requirements.txt').readlines()]
@@ -37,9 +37,7 @@ setup(
     author='Janos Sallai, Christoph Klein',
     author_email='janos.sallai@vanderbilt.edu, christoph.klein@vanderbilt.edu',
     url='https://github.com/sallai/mbuild',
-    packages=[
-        'mbuild',
-    ],
+    packages=find_packages(),
     package_dir={'mbuild': 'mbuild'},
     include_package_data=True,
     install_requires=reqs,
