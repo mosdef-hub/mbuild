@@ -45,7 +45,6 @@ class Trajectory(md.Trajectory):
         for idx, atom in enumerate(atom_list):
             xyz[0,idx] = atom.pos
 
-
         box = compound.boundingbox()
         unitcell_lengths = np.empty(3)
         for dim, val in enumerate(compound.periodicity):

@@ -9,7 +9,7 @@ from numpy.linalg import *
 
 class CoordinateTransform(object):
     def __init__(self, T=None):
-        if(T==None):
+        if (T == None):
             T = eye(4);
 
         self.T = T
@@ -23,7 +23,7 @@ class CoordinateTransform(object):
         """
         (rows, cols) = A.shape
         A_new = zeros((rows, 4))
-        A_new = hstack([A, ones((rows,1))])
+        A_new = hstack([A, ones((rows, 1))])
 
         A_new = transpose(self.T.dot(transpose(A_new)))
         return A_new[:, 0:cols]
@@ -36,51 +36,55 @@ class CoordinateTransform(object):
         """
         (rows, cols) = A.shape
         A_new = zeros((rows, 4))
-        A_new = hstack([A, ones((rows,1))])
+        A_new = hstack([A, ones((rows, 1))])
 
         A_new = transpose(self.Tinv.dot(transpose(A_new)))
         return A_new[:, 0:cols]
 
+
 class Translation(CoordinateTransform):
     def __init__(self, P):
         T = eye(4)
-        T[0,3] = P[0]
-        T[1,3] = P[1]
-        T[2,3] = P[2]
+        T[0, 3] = P[0]
+        T[1, 3] = P[1]
+        T[2, 3] = P[2]
         super(Translation, self).__init__(T)
+
 
 class RotationAroundZ(CoordinateTransform):
     def __init__(self, theta):
         T = eye(4)
-        T[0,0] = cos(theta)
-        T[0,1] = -sin(theta)
-        T[1,0] = sin(theta)
-        T[1,1] = cos(theta)
+        T[0, 0] = cos(theta)
+        T[0, 1] = -sin(theta)
+        T[1, 0] = sin(theta)
+        T[1, 1] = cos(theta)
         super(RotationAroundZ, self).__init__(T)
+
 
 class RotationAroundY(CoordinateTransform):
     def __init__(self, theta):
         T = eye(4)
-        T[0,0] = cos(theta)
-        T[0,2] = sin(theta)
-        T[2,0] = -sin(theta)
-        T[2,2] = cos(theta)
+        T[0, 0] = cos(theta)
+        T[0, 2] = sin(theta)
+        T[2, 0] = -sin(theta)
+        T[2, 2] = cos(theta)
         super(RotationAroundY, self).__init__(T)
+
 
 class RotationAroundX(CoordinateTransform):
     def __init__(self, theta):
         T = eye(4)
-        T[1,1] = cos(theta)
-        T[1,2] = -sin(theta)
-        T[2,1] = sin(theta)
-        T[2,2] = cos(theta)
+        T[1, 1] = cos(theta)
+        T[1, 2] = -sin(theta)
+        T[2, 1] = sin(theta)
+        T[2, 2] = cos(theta)
         super(RotationAroundX, self).__init__(T)
+
 
 class Rotation(CoordinateTransform):
     def __init__(self, theta, around):
         # rotation around vector around by angle theta
-
-        assert ( around.size == 3)
+        assert around.size == 3
 
         T = eye(4)
 
@@ -94,39 +98,38 @@ class Rotation(CoordinateTransform):
         y = n[1]
         z = n[2]
         m = array([
-            [t*x*x + c,    t*x*y - s*z,  t*x*z + s*y],
-            [t*x*y + s*z,  t*y*y + c,    t*y*z - s*x],
-            [t*x*z - s*y,  t*y*z + s*x,  t*z*z + c]])
-
-        T[0:3,0:3] = m
-
+            [t * x * x + c, t * x * y - s * z, t * x * z + s * y],
+            [t * x * y + s * z, t * y * y + c, t * y * z - s * x],
+            [t * x * z - s * y, t * y * z + s * x, t * z * z + c]])
+        T[0:3, 0:3] = m
         super(Rotation, self).__init__(T)
 
 
 class ChangeOfBasis(CoordinateTransform):
-    def __init__(self, basis, origin=array([0.0,0.0,0.0])):
-
-        assert (shape(basis) == (3,3))
+    def __init__(self, basis, origin=array([0.0, 0.0, 0.0])):
+        assert shape(basis) == (3, 3)
 
         T = eye(4)
 
-        T[0:3,0:3] = basis
+        T[0:3, 0:3] = basis
         T = inv(T)
 
-        T[0:3,3:4] = -array([origin]).transpose()
-
+        T[0:3, 3:4] = -array([origin]).transpose()
         super(ChangeOfBasis, self).__init__(T)
 
+
 class AxisTransform(CoordinateTransform):
-    def __init__(self, new_origin=array([0.0,0.0,0.0]), point_on_x_axis=array([1.0,0.0,0.0]), point_on_xy_plane=array([1.0,1.0,0.0])):
+    def __init__(self, new_origin=array([0.0, 0.0, 0.0]),
+                 point_on_x_axis=array([1.0, 0.0, 0.0]),
+                 point_on_xy_plane=array([1.0, 1.0, 0.0])):
         # change the basis such that p1 is the origin, p2 is on the x axis and p3 is in the xy plane
         p1 = new_origin
-        p2 = point_on_x_axis # positive x axis
-        p3 = point_on_xy_plane # positive y part of the x axis
+        p2 = point_on_x_axis  # positive x axis
+        p3 = point_on_xy_plane  # positive y part of the x axis
 
         # the direction vector of our new x axis
-        newx = unit_vector(p2-p1)
-        p3_u = unit_vector(p3-p1)
+        newx = unit_vector(p2 - p1)
+        p3_u = unit_vector(p3 - p1)
         newz = unit_vector(cross(newx, p3_u))
         newy = cross(newz, newx)
 
@@ -140,7 +143,7 @@ class AxisTransform(CoordinateTransform):
 
         # rotation that moves newx to the x axis, newy to the y axis, newz to the z axis
         B = eye(4)
-        B[0:3,0:3] = vstack((newx, newy, newz))
+        B[0:3, 0:3] = vstack((newx, newy, newz))
 
         # the concatentaion of translation and rotation
         B_tr = dot(B, T_tr)
@@ -161,8 +164,8 @@ class RigidTransform(CoordinateTransform):
         (rows, cols) = shape(A)
         centroid_A = mean(A, axis=0)
         centroid_B = mean(B, axis=0)
-        centroid_A.shape = (1,3)
-        centroid_B.shape = (1,3)
+        centroid_A.shape = (1, 3)
+        centroid_B.shape = (1, 3)
 
         H = zeros((3, 3), dtype=float)
 
@@ -182,25 +185,30 @@ class RigidTransform(CoordinateTransform):
         # print "R:" + str(R)
 
         C_A = eye(3)
-        C_A = vstack([hstack([C_A, transpose(centroid_A) * -1.0]),array([0,0,0,1])])
+        C_A = vstack(
+            [hstack([C_A, transpose(centroid_A) * -1.0]), array([0, 0, 0, 1])])
         # print "C_A:" + str(C_A)
 
         R_new = eye(3)
-        R_new = vstack([hstack([R,array([[0],[0],[0]])]),array([0,0,0,1])])
+        R_new = vstack(
+            [hstack([R, array([[0], [0], [0]])]), array([0, 0, 0, 1])])
         # print "R_new:" + str(R_new)
 
         C_B = eye(3)
 
-        C_B = vstack([hstack([C_B, transpose(centroid_B)]), array([0,0,0,1])])
+        C_B = vstack(
+            [hstack([C_B, transpose(centroid_B)]), array([0, 0, 0, 1])])
         # print "C_B:" + str(C_B)
 
         T = C_B.dot(R_new).dot(C_A)
 
         super(RigidTransform, self).__init__(T)
 
+
 def unit_vector(vector):
     """ Returns the unit vector of the vector.  """
     return vector / linalg.norm(vector)
+
 
 def vec_angle(v1, v2):
     """ Returns the angle in radians between vectors 'v1' and 'v2'
@@ -216,7 +224,7 @@ def vec_angle(v1, v2):
     v2_u = CoordinateTransform.unit_vector(v2)
 
     d = dot(v1_u, v2_u)
-    if abs(d-1.0) < 0.000000001:
+    if abs(d - 1.0) < 0.000000001:
         angle = 0.0
     else:
         angle = np.arccos(d)
@@ -229,14 +237,18 @@ def vec_angle(v1, v2):
 
 
 def _extract_atom_positions(compound):
-    arr = np.fromiter(chain.from_iterable(atom.pos for atom in compound.atoms()), dtype=np.float64)
-    arrnx3 = arr.reshape((-1,3))
+    arr = np.fromiter(
+        chain.from_iterable(atom.pos for atom in compound.atoms()),
+        dtype=np.float64)
+    arrnx3 = arr.reshape((-1, 3))
     return arrnx3
+
 
 def _write_back_atom_positions(compound, arrnx3):
     arr = arrnx3.reshape((-1))
     for i, atom in enumerate(compound.atoms()):
-        atom.pos = np.array([arr[3*i], arr[3*i + 1], arr[3*i + 2]])
+        atom.pos = np.array([arr[3 * i], arr[3 * i + 1], arr[3 * i + 2]])
+
 
 def _createEquivalenceTransform(equiv):
     """Compute an equivalence transformation that transforms this compound
@@ -258,10 +270,12 @@ def _createEquivalenceTransform(equiv):
     for pair in equiv:
         if not isinstance(pair, tuple) or len(pair) != 2:
             raise Exception('Equivalence pair not a 2-tuple')
-        if not ((isinstance(pair[0], Compound) and isinstance(pair[1], Compound)) or (
-                isinstance(pair[0], Atom) and isinstance(pair[1], Atom))):
+        if not ((isinstance(pair[0], Compound) and isinstance(pair[1],
+                                                              Compound)) or (
+                    isinstance(pair[0], Atom) and isinstance(pair[1], Atom))):
             raise Exception(
-                'Equivalence pair type mismatch: pair[0] is a ' + str(type(pair[0])) + ' and pair[1] is a ' + str(
+                'Equivalence pair type mismatch: pair[0] is a ' + str(
+                    type(pair[0])) + ' and pair[1] is a ' + str(
                     type(pair[1])))
 
         if isinstance(pair[0], Atom):
@@ -276,13 +290,16 @@ def _createEquivalenceTransform(equiv):
     T = RigidTransform(self_points, other_points)
     return T
 
-def equivalence_transform(compound, from_positions=None, to_positions=None, add_bond=True):
+
+def equivalence_transform(compound, from_positions=None, to_positions=None,
+                          add_bond=True):
     """Computes an affine transformation that maps the from_positions to the respective
     to_positions, and applies this transformation to the compound.
     :param equivalence_pairs: list of equivalence pairs (tuples)
     """
 
-    if isinstance(from_positions, (list, tuple)) and isinstance(to_positions, (list, tuple)):
+    if isinstance(from_positions, (list, tuple)) and isinstance(to_positions,
+                                                                (list, tuple)):
         equivalence_pairs = zip(from_positions, to_positions)
     else:
         equivalence_pairs = [(from_positions, to_positions)]
@@ -295,9 +312,9 @@ def equivalence_transform(compound, from_positions=None, to_positions=None, add_
     if add_bond:
         from mbuild.port import Port
         from mbuild.bond import Bond
+
         if isinstance(from_positions, Port) and isinstance(to_positions, Port):
             compound.add(Bond(from_positions, to_positions))
-
 
 
 def translate(compound, v):
@@ -305,23 +322,30 @@ def translate(compound, v):
     atom_positions = Translation(v).applyTo(atom_positions)
     _write_back_atom_positions(compound, atom_positions)
 
+
 def rotate_around_z(compound, theta):
     atom_positions = _extract_atom_positions(compound)
     atom_positions = RotationAroundZ(theta).applyTo(atom_positions)
     _write_back_atom_positions(compound, atom_positions)
+
 
 def rotate_around_y(compound, theta):
     atom_positions = _extract_atom_positions(compound)
     atom_positions = RotationAroundY(theta).applyTo(atom_positions)
     _write_back_atom_positions(compound, atom_positions)
 
+
 def rotate_around_x(compound, theta):
     atom_positions = _extract_atom_positions(compound)
     atom_positions = RotationAroundX(theta).applyTo(atom_positions)
     _write_back_atom_positions(compound, atom_positions)
 
-def x_axis_transform(compound, new_origin=array([0.0,0.0,0.0]), point_on_x_axis=array([1.0,0.0,0.0]), point_on_xy_plane=array([1.0,1.0,0.0])):
+
+def x_axis_transform(compound, new_origin=array([0.0, 0.0, 0.0]),
+                     point_on_x_axis=array([1.0, 0.0, 0.0]),
+                     point_on_xy_plane=array([1.0, 1.0, 0.0])):
     from atom import Atom
+
     if isinstance(new_origin, Atom):
         new_origin = new_origin.pos
     if isinstance(point_on_x_axis, Atom):
@@ -330,13 +354,20 @@ def x_axis_transform(compound, new_origin=array([0.0,0.0,0.0]), point_on_x_axis=
         point_on_xy_plane = point_on_xy_plane.pos
 
     atom_positions = _extract_atom_positions(compound)
-    atom_positions = AxisTransform(new_origin=new_origin, point_on_x_axis=point_on_x_axis, point_on_xy_plane=point_on_xy_plane).applyTo(atom_positions)
+    atom_positions = AxisTransform(new_origin=new_origin,
+                                   point_on_x_axis=point_on_x_axis,
+                                   point_on_xy_plane=point_on_xy_plane).applyTo(
+        atom_positions)
     _write_back_atom_positions(compound, atom_positions)
 
 
-def y_axis_transform(compound, new_origin=array([0.0,0.0,0.0]), point_on_y_axis=array([1.0,0.0,0.0]), point_on_xy_plane=array([1.0,1.0,0.0])):
-    x_axis_transform(compound, new_origin=new_origin, point_on_x_axis=point_on_y_axis, point_on_xy_plane=point_on_xy_plane)
-    rotate_around_z(compound, pi/2)
+def y_axis_transform(compound, new_origin=array([0.0, 0.0, 0.0]),
+                     point_on_y_axis=array([1.0, 0.0, 0.0]),
+                     point_on_xy_plane=array([1.0, 1.0, 0.0])):
+    x_axis_transform(compound, new_origin=new_origin,
+                     point_on_x_axis=point_on_y_axis,
+                     point_on_xy_plane=point_on_xy_plane)
+    rotate_around_z(compound, pi / 2)
 
 
 if __name__ == "__main__":
@@ -344,7 +375,7 @@ if __name__ == "__main__":
     #
     # # Test 1
     # A1 = array([
-    #     [0.1239, 0.2085, 0.9479],
+    # [0.1239, 0.2085, 0.9479],
     #     [0.4904, 0.5650, 0.0821],
     #     [0.8530, 0.6403, 0.1057],
     #     [0.8739, 0.4170, 0.1420],
@@ -499,20 +530,22 @@ if __name__ == "__main__":
 
     # rotate 60 degrees
     B = array([
-        [0.5, sqrt(3)/2, 0.0, 0.0],
-        [-sqrt(3)/2, 0.5, 0.0, 0.0],
+        [0.5, sqrt(3) / 2, 0.0, 0.0],
+        [-sqrt(3) / 2, 0.5, 0.0, 0.0],
         [0.0, 0.0, 1.0, 0.0],
         [0.0, 0.0, 0.0, 1.0]])
 
-
     B_tr = dot(B, T_tr)
 
+    v1 = array([[2.0, 3.0, 4.0, 1.0], [2.0 + 0.5, 3.0 + sqrt(3) / 2, 4.0, 1.0],
+                [1.0, 0.0, 0.0, 1.0], [0.0, 1.0, 0.0, 1.0]])
 
-    v1 = array([[2.0, 3.0, 4.0, 1.0], [2.0+0.5, 3.0+sqrt(3)/2, 4.0, 1.0], [1.0, 0.0, 0.0, 1.0], [0.0, 1.0, 0.0, 1.0]])
+    v1_prime = dot(B_tr, v1.transpose()).transpose()
+    print "the image of v1=" + str(v1) + " is v1_prime=" + str(v1_prime)
 
-    v1_prime = dot(B_tr,v1.transpose()).transpose()
-    print "the image of v1="+str(v1)+" is v1_prime=" + str(v1_prime)
-
-    AT = AxisTransform(new_origin=v_tr, point_on_x_axis=[2.0+0.5, 3.0+sqrt(3)/2, 4.0], point_on_xy_plane=[2.0, 4.0, 4.0])
-    v1_prime_tr_AT = AT.apply(v1[:,0:3])
-    print "the image of v1="+str(v1[:,0:3])+" is v1_prime_tr_AT=" + str(v1_prime_tr_AT)
+    AT = AxisTransform(new_origin=v_tr,
+                       point_on_x_axis=[2.0 + 0.5, 3.0 + sqrt(3) / 2, 4.0],
+                       point_on_xy_plane=[2.0, 4.0, 4.0])
+    v1_prime_tr_AT = AT.apply(v1[:, 0:3])
+    print "the image of v1=" + str(v1[:, 0:3]) + " is v1_prime_tr_AT=" + str(
+        v1_prime_tr_AT)

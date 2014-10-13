@@ -5,6 +5,7 @@ from mbuild.part_mixin import PartMixin
 
 __author__ = 'sallai'
 
+
 class HasPartsMixin(object):
     def __init__(self, *args, **kwargs):
         super(HasPartsMixin, self).__init__()
@@ -16,7 +17,6 @@ class HasPartsMixin(object):
         # be in self.parts.
         self.labels = OrderedDict()
 
-
     def _yield_parts(self, part_type):
         """Generate all parts of a specified type in the Compound recursively.
 
@@ -26,7 +26,6 @@ class HasPartsMixin(object):
         Yields:
             part/subpart (Atom, Bond, Compound): A part in the hierarchy
                 matching the specified type.
-
         """
         for part in self.parts:
             # Parts local to the current Compound.
@@ -36,7 +35,6 @@ class HasPartsMixin(object):
             if isinstance(part, HasPartsMixin):
                 for subpart in part._yield_parts(part_type):
                     yield subpart
-
 
     def add(self, new_part, label=None, containment=True, replace=False):
         """Add a part to the Compound.
@@ -53,7 +51,6 @@ class HasPartsMixin(object):
             containment (bool, optional):
             replace (bool, optional):
             inherit_periodicity (bool, optional):
-
         """
         assert isinstance(new_part, (PartMixin, list, tuple, set))
         if containment:
@@ -154,8 +151,9 @@ class HasPartsMixin(object):
         #         if bond.parent is not None:
         #             bond.parent.remove(bond)
 
-
     def __getattr__(self, attr):
+        import pdb
+        pdb.set_trace()
         if attr in self.labels:
             return self.labels[attr]
         else:

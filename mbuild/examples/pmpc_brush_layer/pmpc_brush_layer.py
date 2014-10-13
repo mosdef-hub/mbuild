@@ -10,9 +10,8 @@ from mbuild.tools.tiled_compound import TiledCompound
 
 
 class BrushLayer(Compound):
-    """ """
+    """Create a layer of grafted pMPC brushes on a beta-cristobalite surface."""
     def __init__(self, tile_x=1, tile_y=1, chain_length=4, alpha=pi/4, mask=None):
-        """ """
         super(BrushLayer, self).__init__()
 
         surface = Surface()
@@ -22,14 +21,13 @@ class BrushLayer(Compound):
 
         brush_proto = Brush(chain_length=chain_length, alpha=alpha)
 
+        if mask is None:
+            mask == random_mask_2d()
         apply_mask(self.tiled_surface, brush_proto, mask)
 
 
 def main():
     mask = random_mask_2d(20)
-    #mask = grid_mask_2d(,3)
-    # print mask
-
     brush_layer = BrushLayer(chain_length=20, alpha=pi/4, mask=mask, tile_x=3, tile_y=2)
     brush_layer = brush_layer.to_trajectory()
     brush_layer.topology.find_forcefield_terms()
