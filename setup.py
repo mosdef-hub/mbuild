@@ -38,6 +38,7 @@ setup(
     author_email='janos.sallai@vanderbilt.edu, christoph.klein@vanderbilt.edu',
     url='https://github.com/sallai/mbuild',
     packages=find_packages(),
+    package_data={'mbuild' : ['testing/reference/*']},
     package_dir={'mbuild': 'mbuild'},
     include_package_data=True,
     install_requires=reqs,
