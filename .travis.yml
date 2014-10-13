@@ -18,8 +18,6 @@ install:
   - pip install coveralls
   - pip install -r requirements.txt --use-mirrors
   - pip install .
-  - pip install coverage
-  - pip install coveralls
 
 script:
   - coverage run --rcfile=.coveragerc --source=mbuild setup.py test
