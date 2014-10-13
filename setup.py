@@ -31,7 +31,7 @@ class PyTest(TestCommand):
 
 setup(
     name='mbuild',
-    version='0.3.0',
+    version='0.4.0',
     description='mbuild is a component based molecule builder tool to assemble large molecular systems from reusable parts for molecular dynamics simulations',
     long_description=readme + '\n\n' + history,
     author='Janos Sallai, Christoph Klein',
