@@ -58,4 +58,18 @@ class Tnp(Compound):
 if __name__ == "__main__":
 
     tnp = Tnp(5, 25)
+
+    from mbuild.tools.mask import random_mask_3d
+    from copy import deepcopy
+    mask = np.array([[0, 0, 0],
+                     [1, 0, 0],
+                     [0, 1, 0],
+                     [0, 0, 1],
+                     [2.3, 2.3, 1],
+                     [0.5, 0.5, 0.5]])
+    mask *= 50
+    for point in mask:
+        new_tnp = deepcopy(tnp)
+        translate(new_tnp, point)
+        tnp.add(new_tnp)
     tnp.visualize()

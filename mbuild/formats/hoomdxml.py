@@ -29,7 +29,10 @@ def load_hoomdxml(filename, optional_nodes=True):
     config = tree.getroot().find('configuration')
     # Required nodes for valid HOOMD simulation: box, position and type.
     box = config.find('box')
-    lx = float(box.attrib['lx'])
+    try:
+        lx = float(box.attrib['lx'])
+    except :
+        lx = float(box.attrib['Lx'])
     ly = float(box.attrib['ly'])
     lz = float(box.attrib['lz'])
     try:
