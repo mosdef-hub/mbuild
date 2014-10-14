@@ -19,3 +19,6 @@ molecular systems from reusable parts for molecular dynamics simulations.
 
 * Documentation: http://mbuild.rtfd.org/en/develop/
 
+.. include:: ../INSTALLATION.rst
+.. include:: ../CONTRIBUTING.rst
+
