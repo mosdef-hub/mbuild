@@ -61,8 +61,8 @@ class HasPartsMixin(object):
                     self.add(elem)
                     elem.parent = self
                 return
-            # Is the following assertion necessary? Seems to be handled above.
-            assert(new_part.parent is None)
+
+            assert new_part.parent is None, "Part {} already has a parent: {}".format(new_part, new_part.parent)
             self.parts.add(new_part)
             new_part.parent = self
 

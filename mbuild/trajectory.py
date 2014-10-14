@@ -4,7 +4,7 @@ import os
 import numpy as np
 import mdtraj as md
 from mdtraj.utils.six import string_types
-from mdtraj.core.trajectory import load_frame, load_mol2, load_prmtop
+from mdtraj.core.trajectory import load_frame, load_prmtop
 
 from mbuild.atom import Atom
 from mbuild.bond import Bond
