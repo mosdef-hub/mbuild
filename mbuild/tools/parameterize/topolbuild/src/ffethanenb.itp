@@ -1,8 +1,0 @@
-; topolbuild version 1.3
-; Command line:
-;     ./topolbuild -n ethane -dir ../ -ff amber99 -r Eth -charge
-;
-[ atomtypes ]
-; name        mass      charge    ptype               sigma             epsilon
-CT         12.01100     0.00000        A        3.399676e-01        4.577296e-01 ;     1.91  0.1094
-HC          1.00800     0.00000        A        2.649538e-01        6.568880e-02 ;     1.49  0.0157
