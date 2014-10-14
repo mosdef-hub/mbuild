@@ -35,3 +35,9 @@ of the dependencies.
 =========================
 Testing your installation
 =========================
+
+mBuild uses `py.test` for unit testing. To run them simply type run the following while in the base folder:
+
+ $ py.test
+
+We need a LOT more tests so any help here is more than welcome!
