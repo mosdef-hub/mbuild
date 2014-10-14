@@ -31,13 +31,13 @@ class PyTest(TestCommand):
 
 setup(
     name='mbuild',
-    version='0.4.0',
+    version='0.4.1',
     description='mbuild is a component based molecule builder tool to assemble large molecular systems from reusable parts for molecular dynamics simulations',
     long_description=readme + '\n\n' + history,
     author='Janos Sallai, Christoph Klein',
     author_email='janos.sallai@vanderbilt.edu, christoph.klein@vanderbilt.edu',
     url='https://github.com/sallai/mbuild',
-    download_url='https://github.com/sallai/mbuild/tarball/0.4.0',
+    download_url='https://github.com/sallai/mbuild/tarball/0.4.1',
     packages=find_packages(),
     package_data={'mbuild' : ['testing/reference/*']},
     package_dir={'mbuild': 'mbuild'},
