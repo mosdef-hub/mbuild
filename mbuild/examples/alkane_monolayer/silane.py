@@ -1,11 +1,13 @@
-from mbuild.coordinate_transform import *
+import numpy as np
+
+from mbuild.coordinate_transform import x_axis_transform, translate
 from mbuild.compound import Compound
 from mbuild.port import Port
 from mbuild.testing.tools import get_fn
 
 
 class Silane(Compound):
-
+    """An Si(OH)2 group with two ports. """
     def __init__(self, ):
         super(Silane, self).__init__()
 

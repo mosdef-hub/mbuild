@@ -126,7 +126,7 @@ class TiledCompound(Compound):
                     del atom.uid
 
 if __name__ == "__main__":
-    from mbuild.examples.pmpc_brush_layer.surface import Surface
+    from mbuild.examples.alkane_monolayer.surface import Surface
     surface = Surface()
     tc = TiledCompound(surface, 2, 3, 1, kind="tiled_surface")
     tc.visualize()

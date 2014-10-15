@@ -2,19 +2,41 @@
 # -*- coding: utf-8 -*-
 
 """Tests for `mbuild.examples` module. """
-import os
-
-import mbuild.examples
-
 
 class TestExamples:
 
-    def test_all(self):
-        sub_dirs = [os.path.basename(x[0]) for x in
-                    os.walk(os.path.dirname(mbuild.examples.__file__))][1:]
+    def test_alkane(self):
+        import mbuild.examples.alkane.alkane as example
+        example.main()
 
-        for name in sub_dirs:
-            example = __import__('mbuild.examples.{0}.{0}'.format(name),
-                                 fromlist=[''])
-            example.main()
+    def test_alkane_monolayer(self):
+        import mbuild.examples.alkane_monolayer.alkane_monolayer as example
+        example.main()
 
+    def test_bilayer(self):
+        import mbuild.examples.bilayer.bilayer as example
+        example.main()
+
+    def test_ethane(self):
+        import mbuild.examples.ethane.ethane as example
+        example.main()
+
+    def test_methane(self):
+        import mbuild.examples.methane.methane as example
+        example.main()
+
+    def test_pmpc_brush_layer(self):
+        import mbuild.examples.pmpc_brush_layer.pmpc_brush_layer as example
+        example.main()
+
+    def test_reload(self):
+        import mbuild.examples.reload.reload as example
+        example.main()
+
+    def test_solvate(self):
+        import mbuild.examples.solvate.solvate as example
+        example.main()
+
+    def test_tnp(self):
+        import mbuild.examples.tnp.tnp as example
+        example.main()

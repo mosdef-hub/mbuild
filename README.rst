@@ -48,20 +48,30 @@ To use mbuild, the following libraries and software will need to be installed.
         molecular dynamics trajectories. mBuild uses MDTraj as an entry and
         exit point for all data.
 
-We recommend that you use a pre-packaged Python distribution like
-`Enthought's Canopy <https://www.enthought.com/products/canopy/>`_ or
-`Continuum's Anaconda <https://store.continuum.io/>`_ in order to get all
+Optional packages:
+
+    `VMD <http://www.ks.uiuc.edu/Research/vmd/>`_
+        VMD (Visual Molecular Dynamics) is a visualization program. Currently,
+        we only use a (very) thin wrapper to call it from the command-line
+        when you want to look at a Compound that you've built. A more robust
+        integration with partial control from Python is planned in the near
+        future (see issue [#32](/../../issues/32)).
+
+To make your life easier, we recommend that you use a pre-packaged Python
+distribution like `Enthought's Canopy <https://www.enthought.com/products/canopy/>`_
+or `Continuum's Anaconda <https://store.continuum.io/>`_ in order to get all
 of the dependencies.
 
 =========================
 Testing your installation
 =========================
 
-mBuild uses `py.test` for unit testing. To run them simply type run the following while in the base folder:
+mBuild uses `py.test` for unit testing. To run them simply type run the
+following while in the base directory:
 
  $ py.test
 
-We need a LOT more tests so any help here is more than welcome!
+We need a LOT more tests so any help here is especially welcome!
 
 ============
 Contributing
@@ -144,7 +154,7 @@ Ready to contribute? Here's how to set up `mbuild` for local development.
     $ flake8 mbuild tests
     $ python setup.py test
 
-   To get flake8 and tox, just pip install them into your virtualenv. 
+   To get flake8, just pip install it into your virtualenv.
 
 6. Commit your changes and push your branch to GitHub::
 

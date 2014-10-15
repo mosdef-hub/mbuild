@@ -1,4 +1,4 @@
-import numpy as np
+from numpy import pi, arctan2, arcsin
 
 from mbuild.atom import Atom
 from mbuild.port import Port
@@ -17,7 +17,7 @@ class Sphere(Compound):
             radius (float): Radius of the Sphere.
             port_distance_from_surface (float): Distance of Ports from Sphere.
         """
-        Compound.__init__(self)
+        super(Sphere, self).__init__(self)
 
         # Generate 65 points on the surface of a unit sphere.
         mask = sphere_mask(n)
@@ -33,11 +33,11 @@ class Sphere(Compound):
             self.add(port, "port_{}".format(i))
 
             # Make the top of the port point toward the positive x axis.
-            rotate_around_z(port, -np.pi/2)
+            rotate_around_z(port, -pi/2)
             # Raise up (or down) the top of the port in the z direction.
-            rotate_around_y(port, -np.arcsin(pos[2]/radius))
+            rotate_around_y(port, -arcsin(pos[2]/radius))
             # Rotate the Port along the z axis.
-            rotate_around_z(port, np.arctan2(pos[1], pos[0]))
+            rotate_around_z(port, arctan2(pos[1], pos[0]))
             # Move the Port a bit away from the surface of the Sphere.
             translate(port, pos + (pos/radius * port_distance_from_surface))
 

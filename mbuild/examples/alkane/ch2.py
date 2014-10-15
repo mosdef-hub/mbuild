@@ -1,13 +1,15 @@
-__author__ = 'sallai'
+import numpy as np
+
 from mbuild.compound import Compound
 from mbuild.port import Port
-from mbuild.coordinate_transform import *
+from mbuild.coordinate_transform import translate
 from mbuild.testing.tools import get_fn
 
+
 class Ch2(Compound):
-    """ """
+    """A methylene bridge. """
     def __init__(self):
-        Compound.__init__(self)
+        super(Ch2, self).__init__(self)
 
         # Look for data file in same directory as this python module.
         self.append_from_file(get_fn('ch2.pdb'))
@@ -20,6 +22,5 @@ class Ch2(Compound):
 
 if __name__ == '__main__':
     m = Ch2()
-
     m.visualize()
 

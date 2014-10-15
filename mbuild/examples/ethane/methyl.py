@@ -1,14 +1,15 @@
-__author__ = 'sallai'
+import numpy as np
+
 from mbuild.compound import Compound
 from mbuild.port import Port
-from mbuild.coordinate_transform import *
+from mbuild.coordinate_transform import rotate_around_z, translate
 from mbuild.testing.tools import get_fn
 
 
 class Methyl(Compound):
-    """ """
+    """A methyl group with one Port. """
     def __init__(self):
-        Compound.__init__(self)
+        super(Methyl, self).__init__(self)
 
         self.append_from_file(get_fn('methyl.pdb'))
 
