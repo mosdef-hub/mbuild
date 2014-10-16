@@ -149,7 +149,7 @@ Ready to contribute? Here's how to set up `mbuild` for local development.
    
    Now you can make your changes locally.
 
-5. When you're done making changes, check that your changes pass flake8 and the tests:
+5. When you're done making changes, check that your changes pass flake8 and the tests::
 
     $ flake8 mbuild tests
     $ python setup.py test
