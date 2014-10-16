@@ -1,9 +1,2 @@
 future
-pytest
-webcolors
-simtk.unit
-wheel==0.22.0
 networkx
-sphinx
-sphinx_rtd_theme
-sphinxcontrib-napoleon
