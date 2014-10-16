@@ -82,7 +82,7 @@ class TiledCompound(Compound):
             
             # Update connectivity.
             bonds_to_remove = set()
-            for bond in self.bonds():
+            for bond in self.yield_bonds():
                 if bond.distance(self.periodicity) > bond_dist_thres:
                     # Find new pair for atom1
                     dists, idxs = atom_kdtree.query(bond.atom1.pos, k=10)

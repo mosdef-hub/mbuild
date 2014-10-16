@@ -62,7 +62,11 @@ class Compound(MBase, PartMixin, HasPartsMixin):
     def yield_atoms(self):
         return self._yield_parts(Atom)
 
+    @property
     def bonds(self):
+        return self.bond_list_by_kind()
+
+    def yield_bonds(self):
         return self._yield_parts(Bond)
 
     def referenced_ports(self):
@@ -102,14 +106,14 @@ class Compound(MBase, PartMixin, HasPartsMixin):
         return sum([1 for _ in self.yield_atoms()])
 
     def n_bonds(self):
-        return sum([1 for _ in self.bonds()])
+        return sum([1 for _ in self.yield_bonds()])
 
     def bond_list_by_kind(self, kind='*', with_id_to_idx_mapping=False):
         list = []
         id_to_idx = dict()
 
         idx = 0
-        for bond in self.bonds():
+        for bond in self.yield_bonds():
             if kind == '*':
                 list.append(bond)
                 id_to_idx[id(bond)] = idx

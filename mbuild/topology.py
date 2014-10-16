@@ -138,7 +138,7 @@ class Topology(MDTTopology):
         r = out.add_residue("RES", c)
 
         if atom_list is None:
-            atom_list = compound.atom_list_by_kind('*', excludeG=True)
+            atom_list = compound.atoms
 
         for atom in atom_list:
             try:
@@ -150,7 +150,7 @@ class Topology(MDTTopology):
             atom_mapping[atom] = a
 
         if bond_list is None:
-            bond_list = compound.bond_list_by_kind(kind='*')
+            bond_list = compound.bonds
 
         for idx, bond in enumerate(bond_list):
             a1 = bond.atom1
