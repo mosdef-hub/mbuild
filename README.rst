@@ -46,7 +46,7 @@ To use mbuild, the following libraries and software will need to be installed.
     `MDTraj <http://mdtraj.org/>`_ >=1.0.0
         MDTraj is a Python library for reading, writing and analyizing
         molecular dynamics trajectories. mBuild uses MDTraj as an entry and
-        exit point for all data.
+        exit point for molecule data.
 
 Optional packages:
 
