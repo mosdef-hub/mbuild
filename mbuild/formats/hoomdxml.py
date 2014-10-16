@@ -170,7 +170,8 @@ def load_hoomdxml(filename, optional_nodes=True, lj_units=None):
 
     traj = Trajectory(xyz=np.array(xyz, dtype=np.float64), topology=top)
     traj.unitcell_vectors = unitcell_vectors
-    return traj, optional_data
+    traj.extra = optional_data
+    return traj
 
 
 # TODO: decide if we want this to be a class
