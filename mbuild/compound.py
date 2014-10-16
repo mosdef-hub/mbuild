@@ -161,50 +161,6 @@ class Compound(MBase, PartMixin, HasPartsMixin):
         traj = Trajectory.load(filename, relative_to_module=relative_to_module)
         return traj.to_compound(frame=frame)
 
-    def to_molecule(self):
-        from pybel import Molecule
-        from openbabel import OBMol
-        from mbuild.prototype import Prototype
-
-        mol = OBMol()
-
-        atoms, atom_id_to_index = self.atom_list_by_kind(excludeG=True, with_id_to_idx_mapping=True)
-
-        for atom in atoms:
-            a = mol.NewAtom()
-
-            atomic_num = Prototype.getAttr(atom.kind, "atomic_number", 0)
-            print atomic_num
-
-            a.SetAtomicNum(atomic_num)
-            a.SetVector(float(atom.pos[0])*10, float(atom.pos[1])*10, float(atom.pos[2])*10) # coordinates
-
-        for bond in self.bond_list_by_kind():
-            idx1 = atom_id_to_index[id(bond.atom1)]
-            idx2 = atom_id_to_index[id(bond.atom2)]
-            mol.AddBond(idx1+1, idx2+1, 1)   # atoms indexed from 1
-
-        return Molecule(mol)
-
-    def update_from_molecule(self, mol):
-        """
-
-        Args:
-            mol:
-        """
-        from pybel import Molecule
-        assert(isinstance(mol, Molecule))
-
-        atoms, atom_id_to_idx = self.atom_list_by_kind('*', excludeG=True, with_id_to_idx_mapping=True)
-
-        assert (len(atoms) == mol.OBMol.NumAtoms())
-
-        idx = 0
-        for atom in mol.atoms:
-            print atom
-            atoms[idx].pos = np.array(atom.coords) / 10.0
-            idx += 1
-
     def visualize(self):
         """Visualize the Compound using VMD.
 

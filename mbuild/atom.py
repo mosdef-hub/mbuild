@@ -44,10 +44,10 @@ class Atom(MBase, PartMixin):
         assert (isinstance(kind, basestring))
 
         if pos is None:
-            pos = np.array([0, 0, 0])
+            pos = np.array([0, 0, 0], dtype=float)
 
         self.kind = kind
-        self.pos = pos
+        self.pos = np.asarray(pos, dtype=float)
         self.charge = charge
         # self.parent = None
         # self.referrers = set()

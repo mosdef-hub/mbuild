@@ -55,7 +55,7 @@ setup(
     ],
     test_suite='tests',
     cmdclass={
-      'test':PyTest,
+      'test': PyTest,
     },
     extras_require={
       'testing': ['pytest'],

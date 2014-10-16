@@ -3,6 +3,7 @@
 
 """Tests for `mbuild.examples` module. """
 
+
 class TestExamples:
 
     def test_alkane(self):
