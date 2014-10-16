@@ -28,7 +28,6 @@ class Trajectory(md.Trajectory):
             # we're casting an md.Trajectory to mbuild Trajectory
             trajectory = kwargs["trajectory"]
             assert(isinstance(trajectory, md.Trajectory))
-            assert(len(kwargs) == 1)
             super(Trajectory, self).__init__(trajectory.xyz, trajectory.topology, time=trajectory.time, unitcell_lengths=trajectory.unitcell_lengths, unitcell_angles=trajectory.unitcell_angles)
         else:
             super(Trajectory, self).__init__(*args, **kwargs)
