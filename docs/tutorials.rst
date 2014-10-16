@@ -5,7 +5,7 @@ by building a methane molecule.
 
 The primary building block in mBuild is a `Compound`. Anything you construct
 will inherit from this class. Let's start with some basic imports and
-initialization:
+initialization::
 
     $ from mbuild.compound import Compound
     $
@@ -20,7 +20,7 @@ initialization:
 
 The other classes used in building molecules are `Atoms` and `Bonds`. Either of
 them can be added to a `Compound` using its `add()` method. Let's add a carbon
-and a hydrogen atom to our `Methane`:
+and a hydrogen atom to our `Methane`::
 
     $ from mbuild.compound import Compound
     $ from mbuild.atom import Atom
@@ -40,7 +40,7 @@ By default a created `Atom` will be placed at `0, 0, 0` as indicated by its
 
 Explain labeling
 
-Now let's connect the carbon to the hydrogen:
+Now let's connect the carbon to the hydrogen::
 
     $ from mbuild.compound import Compound
     $ from mbuild.atom import Atom
@@ -66,7 +66,7 @@ Like `Atoms`, `Bonds` also have a descriptive `kind` attribute. By default,
 `kind` is set to `'{0}-{1}'.format(atom1.kind, atom2.kind)`.
 
 Alright now that we've got the basics, let's finish building our `Methane` and
-take a look at it!
+take a look at it::
 
 
     $ from mbuild.compound import Compound
