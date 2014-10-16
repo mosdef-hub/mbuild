@@ -5,7 +5,7 @@ by building a methane molecule.
 
 The primary building block in mBuild is a `Compound`. Anything you construct
 will inherit from this class. Let's start with some basic imports and
-initialization:: python
+initialization::
 
     from mbuild.compound import Compound
 
