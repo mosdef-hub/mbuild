@@ -154,7 +154,7 @@ Ready to contribute? Here's how to set up `mbuild` for local development.
     $ flake8 mbuild tests
     $ python setup.py test
 
-    To get flake8, just pip install it into your virtualenv.
+   To get flake8, just pip install it into your virtualenv.
 
 6. Commit your changes and push your branch to GitHub::
 
