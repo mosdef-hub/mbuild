@@ -16,7 +16,7 @@ class Surface(Compound):
         self.periodicity = np.array([4.7689, 4.13, 0.0])
 
         cnt = 0
-        for atom in self.atoms():
+        for atom in self.yield_atoms():
             if atom.kind == 'O' and atom.pos[2] > 1:
                 cnt += 1
                 port = Port(anchor=atom)

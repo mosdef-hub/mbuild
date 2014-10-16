@@ -14,11 +14,11 @@ class MpcMonomer(Compound):
 
         # Transform the coordinate system of mpc such that the two carbon atoms
         # that are part of the backbone are on the y axis, c_backbone at the origin.
-        C_top = self.atom[37]
+        C_top = self.atoms[37]
         # this can be achieved with the following alternative syntax:
         # C_top = self.labels["atom[37]"]
         # C_top = self.labels["atom"][37]
-        C_bottom = self.atom[1]
+        C_bottom = self.atoms[1]
 
         y_axis_transform(self, new_origin=C_top, point_on_y_axis=C_bottom)
 

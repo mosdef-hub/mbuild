@@ -86,14 +86,12 @@ class Trajectory(md.Trajectory):
                 for atom in res.atoms:
                     new_atom = Atom(str(atom.name), self.xyz[frame, idx])
                     chain_compound.add(new_atom, label="{0}[$]".format(atom.name))
-                    chain_compound.add(new_atom, label="atom[$]", containment=False)
                     atom_mapping[atom] = new_atom
                     idx += 1
 
         for a1, a2 in self.topology.bonds:
             atom1 = atom_mapping[a1]
             atom2 = atom_mapping[a2]
-            part.add(Bond(atom1, atom2), label="bond[$]")
 
         return part
 

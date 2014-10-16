@@ -39,12 +39,12 @@ class Bilayer(Compound):
         spacing = np.array([0, 0, spacing_z])
         for point in mask:
             top_lipid = deepcopy(lipid)
-            translate(top_lipid, -top_lipid.atom[ref_atom] + spacing)
+            translate(top_lipid, -top_lipid.atoms[ref_atom] + spacing)
             translate(top_lipid, point)
             self.add(top_lipid)
 
             bot_lipid = deepcopy(lipid)
-            translate(bot_lipid, -bot_lipid.atom[ref_atom] + spacing)
+            translate(bot_lipid, -bot_lipid.atoms[ref_atom] + spacing)
             rotate_around_x(bot_lipid, np.pi)
             translate(bot_lipid, point)
             self.add(bot_lipid)

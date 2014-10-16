@@ -55,7 +55,11 @@ class Compound(MBase, PartMixin, HasPartsMixin):
             periodicity = np.array([0.0, 0.0, 0.0])
         self.periodicity = periodicity
 
+    @property
     def atoms(self):
+        return self.atom_list_by_kind(excludeG=True)
+
+    def yield_atoms(self):
         return self._yield_parts(Atom)
 
     def bonds(self):
@@ -78,7 +82,7 @@ class Compound(MBase, PartMixin, HasPartsMixin):
         list = []
         id_to_idx = dict()
         idx = 0
-        for atom in self.atoms():
+        for atom in self.yield_atoms():
             if not (excludeG and atom.kind == "G"):
                 if kind == '*':
                     list.append(atom)
@@ -95,7 +99,7 @@ class Compound(MBase, PartMixin, HasPartsMixin):
             return list
 
     def n_atoms(self):
-        return sum([1 for _ in self.atoms()])
+        return sum([1 for _ in self.yield_atoms()])
 
     def n_bonds(self):
         return sum([1 for _ in self.bonds()])
@@ -187,7 +191,7 @@ class Compound(MBase, PartMixin, HasPartsMixin):
         return np.sqrt((d ** 2).sum(axis=-1))
 
     def center_of_mass(self):
-        return sum(atom.pos for atom in self.atoms())/len([atom for atom in self.atoms()])
+        return sum(atom.pos for atom in self.yield_atoms())/len([atom for atom in self.yield_atoms()])
 
     def boundingbox(self, excludeG=True):
         """Compute the bounding box of the compound.
@@ -205,7 +209,7 @@ class Compound(MBase, PartMixin, HasPartsMixin):
         maxy = -np.inf
         maxz = -np.inf
 
-        for a in self.atoms():
+        for a in self.yield_atoms():
             if excludeG and a.kind == 'G':
                 continue
             if a.pos[0] < minx:
@@ -246,7 +250,7 @@ class Compound(MBase, PartMixin, HasPartsMixin):
         assert np.any(self.periodicity)
         box = self.boundingbox()
         translate(self, -box.mins)
-        for atom in self.atoms():
+        for atom in self.yield_atoms():
             for k, c in enumerate(atom.pos):
                 if self.periodicity[k]:
                     if c < 0.0:

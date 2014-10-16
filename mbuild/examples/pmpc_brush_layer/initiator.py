@@ -15,17 +15,17 @@ class Initiator(Compound):
 
         # Transform the coordinate system such that the two carbon atoms
         # that are part of the backbone are on the y axis, C_1 at the origin.
-        y_axis_transform(self, new_origin=self.atom[0], point_on_y_axis=self.atom[21])
+        y_axis_transform(self, new_origin=self.atoms[0], point_on_y_axis=self.atoms[21])
 
         # Add bottom port
-        self.add(Port(anchor=self.atom[0]), 'down')
+        self.add(Port(anchor=self.atoms[0]), 'down')
         # Place the port.
-        translate(self.down, self.atom[0] + np.array([0.0, -0.07, 0.0]))
+        translate(self.down, self.atoms[0] + np.array([0.0, -0.07, 0.0]))
 
         # Add top port.
-        self.add(Port(anchor=self.atom[21]), 'up')
+        self.add(Port(anchor=self.atoms[21]), 'up')
         # Place the port.
-        translate(self.up, self.atom[21] + np.array([0.0, 0.07, 0.0]))
+        translate(self.up, self.atoms[21] + np.array([0.0, 0.07, 0.0]))
 
 if __name__ == "__main__":
     m = Initiator()

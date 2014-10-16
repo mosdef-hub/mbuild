@@ -69,11 +69,11 @@ class TiledCompound(Compound):
             for child in self.parts:
                 if child.__class__ != tile.__class__:
                     continue
-                for idx, atom in enumerate(child.atoms()):
+                for idx, atom in enumerate(child.yield_atoms()):
                     atom.uid = idx
 
             # Build a kdtree of all atoms.
-            atom_list = np.array([atom for atom in self.atoms()])
+            atom_list = np.array([atom for atom in self.yield_atoms()])
             atom_kdtree = PeriodicCKDTree([atom.pos for atom in atom_list],
                     bounds=self.periodicity)
 
@@ -122,7 +122,7 @@ class TiledCompound(Compound):
             for child in self.parts:
                 if child.__class__ != tile.__class__:
                     continue
-                for atom in child.atoms():
+                for atom in child.yield_atoms():
                     del atom.uid
 
 if __name__ == "__main__":
