@@ -97,7 +97,7 @@ take a look at it!::
     $     methane = Methane()
     $     methane.visualize()
 
-.. note:: The `visualize()` method currently invokes a very primative call to
+.. note:: The `visualize()` method currently invokes a very primitive call to
           VMD from the command-line. If it fails for you but you do have VMD
           installed, the method works by writing an intermediate output file
           named `visualize_Methane.pdb` which you can load yourself. We are
