@@ -7,6 +7,7 @@ import pytest
 from mbuild.examples.ethane.ethane import Ethane
 from mbuild.testing.tools import get_fn
 import numpy as np
+from mbuild.trajectory import Trajectory
 
 
 class TestHoomdXml:
@@ -16,15 +17,14 @@ class TestHoomdXml:
         lj_units = {'mass': 72.0,
                     'distance': 0.6, 
                     'energy': 0.4}
-        from mbuild.formats.hoomdxml import load_hoomdxml
-        traj, opt_data = load_hoomdxml(get_fn('ecer2.hoomdxml'), lj_units=lj_units)
-        return traj, opt_data
+        traj = Trajectory.load(get_fn('ecer2.hoomdxml'), lj_units=lj_units)
+        return traj
 
     # def test_load_and_create(self):
     #     methyl = load_mol2('methyl.mol2')
     #
     def test_write(self, molecule):
-        molecule[0].save('ecer2-saved.hoomdxml')
+        molecule.save('ecer2-saved.hoomdxml')
 
     def test_update_from_file(self):
         ethane = Ethane()

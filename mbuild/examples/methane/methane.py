@@ -22,6 +22,9 @@ class Methane(Compound):
         self.add(Atom(kind='H', pos=[0, -0.15, 0]), 'hc[$]')
         self.add(Bond(self.atoms[0], self.hc[3]))
 
-if __name__ == "__main__":
+def main():
     methane = Methane()
     methane.visualize()
+
+if __name__ == "__main__":
+    main()
