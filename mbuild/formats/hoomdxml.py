@@ -1,12 +1,14 @@
 from future.builtins import range
+from numpy import sqrt
 
 from mdtraj.formats.registry import _FormatRegistry
 
 
 @_FormatRegistry.register_loader('.hoomdxml')
-def load_hoomdxml(filename, optional_nodes=True):
+def load_hoomdxml(filename, optional_nodes=True, lj_units=None):
     """Load a HOOMD-blue XML file form disk.
 
+    Note: lj_units need to be normalized by nm, kJ/mol, and amu
     TODO: better way to read optional nodes
     Args:
         filename (str): Path to xml file.
@@ -14,7 +16,33 @@ def load_hoomdxml(filename, optional_nodes=True):
 
     Returns:
         traj (md.Trajectory):
+        optional_data (dict): A Dictionary of DataFrames containing optional
+        information.
     """
+
+    # get fundamental LJ units
+    if lj_units is None:
+        lj_units = {'distance': 1.0,
+                    'energy': 1.0,
+                    'mass': 1.0}
+    else:
+        assert isinstance(lj_units, dict)
+        assert 'distance' in lj_units
+        assert 'energy' in lj_units
+        assert 'mass' in lj_units
+
+    # other derived LJ units
+    lj_units['time'] = (sqrt(lj_units['mass'] * lj_units['distance']**2.0
+                        / lj_units['energy']))
+    lj_units['velocity'] = lj_units['distance'] / lj_units['time']
+    lj_units['acceleration'] = lj_units['distance'] / lj_units['time']**2.0
+    lj_units['diameter'] = lj_units['distance']
+    lj_units['charge'] = 1.0
+    # TODO: figure out charge
+    lj_units['moment_inertia'] = lj_units['mass'] * lj_units['distance']**2.0
+    lj_units['image'] = 1.0
+    lj_units['body'] = 1.0
+    lj_units['orientation'] = 1.0
 
     from xml.etree import cElementTree
 
@@ -28,10 +56,35 @@ def load_hoomdxml(filename, optional_nodes=True):
 
     config = tree.getroot().find('configuration')
     # Required nodes for valid HOOMD simulation: box, position and type.
+    # TODO: funciton to check all permutations of cases for attribute strings
     box = config.find('box')
-    lx = float(box.attrib['lx'])
-    ly = float(box.attrib['ly'])
-    lz = float(box.attrib['lz'])
+    for L in ['lx', 'LX', 'lX', 'Lx']:
+        try:
+            lx = float(box.attrib[L]) * lj_units['distance']
+            break
+        except KeyError:
+            pass
+    else:
+        raise ValueError('Unable to find box length in x direction')
+
+    for L in ['ly', 'LY', 'lY', 'Ly']:
+        try:
+            ly = float(box.attrib[L]) * lj_units['distance']
+            break
+        except KeyError:
+            pass
+    else:
+        raise ValueError('Unable to find box length in y direction')
+
+    for L in ['lz', 'LZ', 'lZ', 'Lz']:
+        try:
+            lz = float(box.attrib[L]) * lj_units['distance']
+            break
+        except KeyError:
+            pass
+    else:
+        raise ValueError('Unable to find box length in z direction')
+
     try:
         xy = float(box.attrib['xy'])
         xz = float(box.attrib['xz'])
@@ -47,7 +100,7 @@ def load_hoomdxml(filename, optional_nodes=True):
 
     xyz = list()
     for n, pos in enumerate(config.find('position').text.splitlines()[1:]):
-        xyz.append([float(x) for x in pos.split()])
+        xyz.append([float(x) * lj_units['distance'] for x in pos.split()])
     n_atoms = n + 1
 
     # TODO: Create custom elements based on type names. Probably want a prefix
@@ -68,7 +121,8 @@ def load_hoomdxml(filename, optional_nodes=True):
             try:
                 node_text = config.find(node).text.splitlines()[1:]
                 for raw_line in node_text:
-                    parsed_line = [int(x) if x.isdigit() else float(x) for x in raw_line.split()]
+                    parsed_line = [int(x) if x.isdigit() else float(x) * lj_units[node] 
+                            for x in raw_line.split()]
                     parsed_node_text.append(parsed_line)
                 per_particle_df[node] = parsed_node_text
             except AttributeError as err:
@@ -116,8 +170,7 @@ def load_hoomdxml(filename, optional_nodes=True):
 
     traj = Trajectory(xyz=np.array(xyz, dtype=np.float64), topology=top)
     traj.unitcell_vectors = unitcell_vectors
-    if optional_nodes:
-        return traj, optional_data
+    traj.extra = optional_data
     return traj
 
 
@@ -173,8 +226,6 @@ def save_hoomdxml(traj, step=-1, optional_nodes=None, filename='mbuild.xml'):
 
 if __name__ == "__main__":
     from mbuild.testing.tools import get_fn
-    #traj, optional_data = load_hoomdxml(get_fn('triblock.hoomdxml'), optional_nodes=True)
-    # save_hoomdxml(traj, filename='init_out.xml')
 
     import numpy as np
 

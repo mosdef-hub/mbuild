@@ -27,7 +27,6 @@ def solvent_box(solvent, box):
     solvent_box = Box(lengths=solvent.periodicity)
     num_replicas = np.ceil(box.lengths / solvent_box.lengths)
     num_replicas = num_replicas.astype('int')
-    print num_replicas
     compound = Compound()
     for xi in range(num_replicas[0]):
         for yi in range(num_replicas[1]):
@@ -38,7 +37,7 @@ def solvent_box(solvent, box):
                 # Remove atoms outside the host's box and anything bonded to them.
                 guest_atoms = list()
                 guest_atom_pos_list = list()
-                for atom in temp_solvent.atoms():
+                for atom in temp_solvent.yield_atoms():
                     guest_atoms.append(atom)
                     guest_atom_pos_list.append(atom.pos)
                 guest_atom_pos_list = np.array(guest_atom_pos_list)
@@ -75,13 +74,12 @@ def solvate(host_compound, guest_compound, host_box, guest_box, overlap=vdw_radi
     # TODO: we may want to make sure that the axes of the two boxes line up
 
     # Replicate the guest so that it fills or overfills the host box.
-    host_atom_list = [atom for atom in host_compound.atoms() if atom.kind != 'G']
+    host_atom_list = [atom for atom in host_compound.yield_atoms() if atom.kind != 'G']
     host_atom_pos_list = [atom.pos for atom in host_atom_list]
     kdtree = PeriodicCKDTree(host_atom_pos_list)
 
     num_replicas = np.ceil(host_box.lengths / guest_box.lengths)
     num_replicas = num_replicas.astype('int')
-    print num_replicas
     for xi in range(num_replicas[0]):
         for yi in range(num_replicas[1]):
             for zi in range(num_replicas[2]):
@@ -91,7 +89,7 @@ def solvate(host_compound, guest_compound, host_box, guest_box, overlap=vdw_radi
                 # Remove atoms outside the host's box and anything bonded to them.
                 guest_atoms = list()
                 guest_atom_pos_list = list()
-                for atom in guest.atoms():
+                for atom in guest.yield_atoms():
                     guest_atoms.append(atom)
                     guest_atom_pos_list.append(atom.pos)
                 guest_atom_pos_list = np.array(guest_atom_pos_list)
@@ -106,7 +104,7 @@ def solvate(host_compound, guest_compound, host_box, guest_box, overlap=vdw_radi
 
                 # Remove overlapping atoms and anything bonded to them.
                 atoms_to_remove = set()
-                for guest_atom in guest.atoms():
+                for guest_atom in guest.yield_atoms():
                     _, neighbors = kdtree.query(guest_atom.pos, k=10)
                     for host_atom_idx in neighbors:
                         if host_atom_idx < len(host_atom_list):

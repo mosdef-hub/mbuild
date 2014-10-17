@@ -238,7 +238,7 @@ def vec_angle(v1, v2):
 
 def _extract_atom_positions(compound):
     arr = np.fromiter(
-        chain.from_iterable(atom.pos for atom in compound.atoms()),
+        chain.from_iterable(atom.pos for atom in compound.yield_atoms()),
         dtype=np.float64)
     arrnx3 = arr.reshape((-1, 3))
     return arrnx3
@@ -246,7 +246,7 @@ def _extract_atom_positions(compound):
 
 def _write_back_atom_positions(compound, arrnx3):
     arr = arrnx3.reshape((-1))
-    for i, atom in enumerate(compound.atoms()):
+    for i, atom in enumerate(compound.yield_atoms()):
         atom.pos = np.array([arr[3 * i], arr[3 * i + 1], arr[3 * i + 2]])
 
 
@@ -282,9 +282,9 @@ def _createEquivalenceTransform(equiv):
             self_points = np.vstack([self_points, pair[0].pos])
             other_points = np.vstack([other_points, pair[1].pos])
         if isinstance(pair[0], Compound):
-            for atom0 in pair[0].atoms():
+            for atom0 in pair[0].yield_atoms():
                 self_points = np.vstack([self_points, atom0.pos])
-            for atom1 in pair[1].atoms():
+            for atom1 in pair[1].yield_atoms():
                 other_points = np.vstack([other_points, atom1.pos])
 
     T = RigidTransform(self_points, other_points)

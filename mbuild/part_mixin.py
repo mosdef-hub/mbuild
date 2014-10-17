@@ -1,17 +1,19 @@
-from mbuild.mbase import MBase
-
 __author__ = 'sallai'
 
-class PartMixin(object):
-    def __init__(self, *args, **kwargs):
-        # The parent compound that contains this compound (can be None if this compound is the root of the
-        # containment hierarchy.)
 
+class PartMixin(object):
+    """A base class that designates a part in a hierarchy. ""'
+
+    Attribute:
+        parent (Compound): The parent Compound that contains this part Can be
+        None if this compound is the root of the containment hierarchy.
+    """
+    def __init__(self, *args, **kwargs):
         super(PartMixin, self).__init__()
 
         self.parent = None
 
-        # The set of other compounds that reference this compound with labels
+        # The set of other compounds that reference this compound with labels.
         self.referrers = set()
 
     def ancestors(self):

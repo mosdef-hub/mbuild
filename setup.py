@@ -51,12 +51,11 @@ setup(
         'Intended Audience :: Science/Research',
         'License :: OSI Approved :: GNU Lesser General Public License v2 or later (LGPLv2+)',
         'Natural Language :: English',
-        #'Programming Language :: Python :: 2.6',
         'Programming Language :: Python :: 2.7',
     ],
     test_suite='tests',
     cmdclass={
-      'test':PyTest,
+      'test': PyTest,
     },
     extras_require={
       'testing': ['pytest'],

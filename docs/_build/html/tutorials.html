@@ -1,0 +1,506 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Tutorials &mdash; mbuild 0.4.1beta documentation</title>
+  
+
+  
+  
+
+  
+  <link href='https://fonts.googleapis.com/css?family=Lato:400,700|Roboto+Slab:400,700|Inconsolata:400,700' rel='stylesheet' type='text/css'>
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+    <link rel="top" title="mbuild 0.4.1beta documentation" href="index.html"/>
+        <link rel="next" title="mbuild package" href="apidoc/mbuild.html"/>
+        <link rel="prev" title="Installation" href="installation.html"/> 
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/modernizr/2.6.2/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-nav-search">
+        <a href="index.html" class="fa fa-home"> mbuild</a>
+        <div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+        
+        
+            <ul>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="installation.html#install-with-pip">Install with pip</a></li>
+<li class="toctree-l2"><a class="reference internal" href="installation.html#dependencies">Dependencies</a></li>
+<li class="toctree-l2"><a class="reference internal" href="installation.html#testing-your-installation">Testing your installation</a></li>
+</ul>
+</li>
+</ul>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="">Tutorials</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#methane-atoms-bonds-and-compounds">Methane: Atoms, Bonds and Compounds</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#ethane-reading-from-files-ports-and-coordinate-transforms">Ethane: Reading from files, Ports and coordinate transforms</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#monolayer-complex-hierarchies-masks-tiling-and-writing-to-files">Monolayer: Complex hierarchies, masks, tiling and writing to files</a></li>
+</ul>
+</li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="apidoc/mbuild.html">mbuild package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="apidoc/mbuild.html#subpackages">Subpackages</a></li>
+<li class="toctree-l2"><a class="reference internal" href="apidoc/mbuild.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="apidoc/mbuild.html#module-mbuild.atom">mbuild.atom module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="apidoc/mbuild.html#module-mbuild.bond">mbuild.bond module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="apidoc/mbuild.html#module-mbuild.box">mbuild.box module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="apidoc/mbuild.html#module-mbuild.compound">mbuild.compound module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="apidoc/mbuild.html#module-mbuild.coordinate_transform">mbuild.coordinate_transform module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="apidoc/mbuild.html#module-mbuild.has_parts_mixin">mbuild.has_parts_mixin module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="apidoc/mbuild.html#module-mbuild.mbase">mbuild.mbase module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="apidoc/mbuild.html#module-mbuild.orderedset">mbuild.orderedset module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="apidoc/mbuild.html#module-mbuild.part_mixin">mbuild.part_mixin module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="apidoc/mbuild.html#module-mbuild.periodic_kdtree">mbuild.periodic_kdtree module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="apidoc/mbuild.html#module-mbuild.port">mbuild.port module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="apidoc/mbuild.html#module-mbuild.topology">mbuild.topology module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="apidoc/mbuild.html#module-mbuild.trajectory">mbuild.trajectory module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="apidoc/mbuild.html#module-mbuild.treeview">mbuild.treeview module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="apidoc/mbuild.html#module-mbuild">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="apidoc/mbuild.tools.html">mbuild.tools package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="apidoc/mbuild.tools.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="apidoc/mbuild.tools.html#module-mbuild.tools.compute">mbuild.tools.compute module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="apidoc/mbuild.tools.html#module-mbuild.tools.mask">mbuild.tools.mask module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="apidoc/mbuild.tools.html#module-mbuild.tools.polymer">mbuild.tools.polymer module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="apidoc/mbuild.tools.html#module-mbuild.tools.solvent">mbuild.tools.solvent module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="apidoc/mbuild.tools.html#module-mbuild.tools.tiled_compound">mbuild.tools.tiled_compound module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="apidoc/mbuild.tools.html#module-mbuild.tools">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="apidoc/mbuild.formats.html">mbuild.formats package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="apidoc/mbuild.formats.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="apidoc/mbuild.formats.html#module-mbuild.formats.gromacs">mbuild.formats.gromacs module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="apidoc/mbuild.formats.html#module-mbuild.formats.hoomdxml">mbuild.formats.hoomdxml module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="apidoc/mbuild.formats.html#module-mbuild.formats.lammps">mbuild.formats.lammps module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="apidoc/mbuild.formats.html#module-mbuild.formats.lammps_data">mbuild.formats.lammps_data module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="apidoc/mbuild.formats.html#module-mbuild.formats.mol2">mbuild.formats.mol2 module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="apidoc/mbuild.formats.html#module-mbuild.formats.xyz">mbuild.formats.xyz module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="apidoc/mbuild.formats.html#module-mbuild.formats">Module contents</a></li>
+</ul>
+</li>
+</ul>
+
+        
+      </div>
+      &nbsp;
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="index.html">mbuild</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="index.html">Docs</a> &raquo;</li>
+      
+    <li>Tutorials</li>
+      <li class="wy-breadcrumbs-aside">
+        
+          <a href="_sources/tutorials.txt" rel="nofollow"> View page source</a>
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main">
+            
+  <div class="section" id="tutorials">
+<h1>Tutorials<a class="headerlink" href="#tutorials" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="methane-atoms-bonds-and-compounds">
+<h2>Methane: Atoms, Bonds and Compounds<a class="headerlink" href="#methane-atoms-bonds-and-compounds" title="Permalink to this headline">¶</a></h2>
+<p>In this example, we&#8217;ll cover the core classes that make up an mBuild structure
+by building a methane molecule.</p>
+<p>The primary building block in mBuild is a <tt class="docutils literal"><span class="pre">Compound</span></tt>. Anything you construct
+will inherit from this class. Let&#8217;s start with some basic imports and
+initialization:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">mbuild.compound</span> <span class="kn">import</span> <span class="n">Compound</span>
+
+
+<span class="k">class</span> <span class="nc">Methane</span><span class="p">(</span><span class="n">Compound</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">Methane</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>The other parts used in building molecules are <tt class="docutils literal"><span class="pre">Atoms</span></tt> and <tt class="docutils literal"><span class="pre">Bonds</span></tt>. Either of
+them can be added to a <tt class="docutils literal"><span class="pre">Compound</span></tt> using its <tt class="docutils literal"><span class="pre">add()</span></tt> method. Let&#8217;s add a carbon
+and a hydrogen atom to our <a href="#id1"><span class="problematic" id="id2">``</span></a>Methane`:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">mbuild.compound</span> <span class="kn">import</span> <span class="n">Compound</span>
+<span class="kn">from</span> <span class="nn">mbuild.atom</span> <span class="kn">import</span> <span class="n">Atom</span>
+<span class="kn">from</span> <span class="nn">mbuild.bond</span> <span class="kn">import</span> <span class="n">Bond</span>
+
+
+<span class="k">class</span> <span class="nc">Methane</span><span class="p">(</span><span class="n">Compound</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">Methane</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">()</span>
+        <span class="n">carbon</span> <span class="o">=</span> <span class="n">Atom</span><span class="p">(</span><span class="n">kind</span><span class="o">=</span><span class="s">&#39;C&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">carbon</span><span class="p">)</span>
+
+        <span class="n">hydrogen</span> <span class="o">=</span> <span class="n">Atom</span><span class="p">(</span><span class="n">kind</span><span class="o">=</span><span class="s">&#39;H&#39;</span><span class="p">,</span> <span class="n">pos</span><span class="o">=</span><span class="p">[</span><span class="mf">0.15</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">hydrogen</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s">&#39;hc[$]&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>By default a created <tt class="docutils literal"><span class="pre">Atom</span></tt> will be placed at <tt class="docutils literal"><span class="pre">0,</span> <span class="pre">0,</span> <span class="pre">0</span></tt> as indicated by its
+<tt class="docutils literal"><span class="pre">pos</span></tt> attribute. All positions in mBuild are stored in nanometers. The
+<tt class="docutils literal"><span class="pre">Atom</span></tt> objects contained in a <tt class="docutils literal"><span class="pre">Compound</span></tt> can be referenced via the
+<tt class="docutils literal"><span class="pre">atoms</span></tt> attribute which returns a list of all <tt class="docutils literal"><span class="pre">Atoms</span></tt> including those
+in any sub-compounds.</p>
+<p>Any part added to a <tt class="docutils literal"><span class="pre">Compound</span></tt> can be given an optional, descriptive string
+label. If the label ends with the characters <tt class="docutils literal"><span class="pre">[$]</span></tt>, a list will be created
+in the labels. Any subsequent parts added to the <tt class="docutils literal"><span class="pre">Compound</span></tt> with the same
+label prefix will be appended to the list. In the example above, we&#8217;ve labeled
+the hydrogen as <tt class="docutils literal"><span class="pre">hc[$]</span></tt>. So this first part, with the label prefix <tt class="docutils literal"><span class="pre">hc</span></tt>, is
+now referenceable via <tt class="docutils literal"><span class="pre">self.hc[0]</span></tt>. The next part added with the label <tt class="docutils literal"><span class="pre">hc[$]</span></tt>
+will be referenceable via <tt class="docutils literal"><span class="pre">self.hc[1]</span></tt>.</p>
+<p>Now let&#8217;s use these styles of referencing to connect the carbon to the hydrogen:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">mbuild.compound</span> <span class="kn">import</span> <span class="n">Compound</span>
+<span class="kn">from</span> <span class="nn">mbuild.atom</span> <span class="kn">import</span> <span class="n">Atom</span>
+<span class="kn">from</span> <span class="nn">mbuild.bond</span> <span class="kn">import</span> <span class="n">Bond</span>
+
+
+<span class="k">class</span> <span class="nc">Methane</span><span class="p">(</span><span class="n">Compound</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">Methane</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">()</span>
+        <span class="n">carbon</span> <span class="o">=</span> <span class="n">Atom</span><span class="p">(</span><span class="n">kind</span><span class="o">=</span><span class="s">&#39;C&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">carbon</span><span class="p">)</span>
+
+        <span class="n">hydrogen</span> <span class="o">=</span> <span class="n">Atom</span><span class="p">(</span><span class="n">kind</span><span class="o">=</span><span class="s">&#39;H&#39;</span><span class="p">,</span> <span class="n">pos</span><span class="o">=</span><span class="p">[</span><span class="mf">0.15</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">hydrogen</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s">&#39;hc[$]&#39;</span><span class="p">)</span>
+
+        <span class="n">ch_bond</span> <span class="o">=</span> <span class="n">Bond</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">atoms</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">hc</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">ch_bond</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>As you can see, the carbon is placed in the zero index of the <tt class="docutils literal"><span class="pre">atoms</span></tt> attribute.
+The hydrogen could be referenced via <tt class="docutils literal"><span class="pre">self.atoms[1]</span></tt> but since we gave it a
+fancy label, it&#8217;s also referenceable via <tt class="docutils literal"><span class="pre">hc[0]</span></tt>.</p>
+<p>Like <tt class="docutils literal"><span class="pre">Atoms</span></tt>, <tt class="docutils literal"><span class="pre">Bonds</span></tt> also have a descriptive <tt class="docutils literal"><span class="pre">kind</span></tt> attribute. By default,
+<tt class="docutils literal"><span class="pre">kind</span></tt> is set to <tt class="docutils literal"><span class="pre">'{0}-{1}'.format(atom1.kind,</span> <span class="pre">atom2.kind)</span></tt>.</p>
+<p>Alright now that we&#8217;ve got the basics, let&#8217;s finish building our <tt class="docutils literal"><span class="pre">Methane</span></tt> and
+take a look at it:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">mbuild.compound</span> <span class="kn">import</span> <span class="n">Compound</span>
+<span class="kn">from</span> <span class="nn">mbuild.atom</span> <span class="kn">import</span> <span class="n">Atom</span>
+<span class="kn">from</span> <span class="nn">mbuild.bond</span> <span class="kn">import</span> <span class="n">Bond</span>
+
+
+<span class="k">class</span> <span class="nc">Methane</span><span class="p">(</span><span class="n">Compound</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">Methane</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">()</span>
+        <span class="n">carbon</span> <span class="o">=</span> <span class="n">Atom</span><span class="p">(</span><span class="n">kind</span><span class="o">=</span><span class="s">&#39;C&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">carbon</span><span class="p">)</span>
+
+        <span class="n">hydrogen</span> <span class="o">=</span> <span class="n">Atom</span><span class="p">(</span><span class="n">kind</span><span class="o">=</span><span class="s">&#39;H&#39;</span><span class="p">,</span> <span class="n">pos</span><span class="o">=</span><span class="p">[</span><span class="mf">0.15</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">hydrogen</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s">&#39;hc[$]&#39;</span><span class="p">)</span>
+
+        <span class="n">ch_bond</span> <span class="o">=</span> <span class="n">Bond</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">atoms</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">hc</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">ch_bond</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">Atom</span><span class="p">(</span><span class="n">kind</span><span class="o">=</span><span class="s">&#39;H&#39;</span><span class="p">,</span> <span class="n">pos</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mf">0.15</span><span class="p">,</span> <span class="mi">0</span><span class="p">]),</span> <span class="s">&#39;hc[$]&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">Bond</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">atoms</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">hc</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">Atom</span><span class="p">(</span><span class="n">kind</span><span class="o">=</span><span class="s">&#39;H&#39;</span><span class="p">,</span> <span class="n">pos</span><span class="o">=</span><span class="p">[</span><span class="o">-</span><span class="mf">0.15</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]),</span> <span class="s">&#39;hc[$]&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">Bond</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">atoms</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">hc</span><span class="p">[</span><span class="mi">2</span><span class="p">]))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">Atom</span><span class="p">(</span><span class="n">kind</span><span class="o">=</span><span class="s">&#39;H&#39;</span><span class="p">,</span> <span class="n">pos</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.15</span><span class="p">,</span> <span class="mi">0</span><span class="p">]),</span> <span class="s">&#39;hc[$]&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">Bond</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">atoms</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">hc</span><span class="p">[</span><span class="mi">3</span><span class="p">]))</span>
+
+<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&quot;__main__&quot;</span><span class="p">:</span>
+     <span class="n">methane</span> <span class="o">=</span> <span class="n">Methane</span><span class="p">()</span>
+     <span class="n">methane</span><span class="o">.</span><span class="n">visualize</span><span class="p">()</span>
+</pre></div>
+</div>
+<a class="reference internal image-reference" href="_images/methane.png"><img alt="Methane molecule." class="align-center" src="_images/methane.png" style="width: 256.0px; height: 256.0px;" /></a>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">The <tt class="docutils literal"><span class="pre">visualize()</span></tt> method currently invokes a very primative call to
+VMD from the command-line. If it fails for you but you do have VMD
+installed, the method works by writing an intermediate output file
+named <tt class="docutils literal"><span class="pre">visualize_Methane.pdb</span></tt> which you can load yourself. We are
+currently working on creating a more robust and useful interface VMD
+but any help would be appreciated (see issue #32).</p>
+</div>
+</div>
+<div class="section" id="ethane-reading-from-files-ports-and-coordinate-transforms">
+<h2>Ethane: Reading from files, Ports and coordinate transforms<a class="headerlink" href="#ethane-reading-from-files-ports-and-coordinate-transforms" title="Permalink to this headline">¶</a></h2>
+<p>In this example, we&#8217;ll cover reading molecular components from files, introduce
+the concept of <tt class="docutils literal"><span class="pre">Ports</span></tt> and start using some coordinate transforms.</p>
+<p>As you probably noticed while creating your methane mocule in the last tutorial,
+manually adding <tt class="docutils literal"><span class="pre">Atoms</span></tt> and <tt class="docutils literal"><span class="pre">Bonds</span></tt> to a <tt class="docutils literal"><span class="pre">Compound</span></tt> is a bit cumbersome.
+The easiest way to create small, reusable components, such as methyls, amines or
+monomers, is to hand draw them using software like <a class="reference external" href="http://avogadro.cc/wiki/Main_Page">Avogadro</a>
+and export them as either a .pdb or .mol2 file (the file should contain
+connectivity information).</p>
+<p>Let&#8217;s start by reading a methyl group from a .pdb file:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">mbuild.compound</span> <span class="kn">import</span> <span class="n">Compound</span>
+<span class="kn">from</span> <span class="nn">mbuild.testing.tools</span> <span class="kn">import</span> <span class="n">get_fn</span>
+
+
+<span class="k">class</span> <span class="nc">Methyl</span><span class="p">(</span><span class="n">Compound</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">Methyl</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">append_from_file</span><span class="p">(</span><span class="n">get_fn</span><span class="p">(</span><span class="s">&#39;methyl.pdb&#39;</span><span class="p">))</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">The <tt class="docutils literal"><span class="pre">get_fn()</span></tt> function will look up a file name in <tt class="docutils literal"><span class="pre">mbuild/testing/reference</span></tt>
+where we keep all of the systems we use for testing. This is purely a convenience function
+that we heartlessly copied from the developers of MDTraj.</p>
+</div>
+<p>Now let&#8217;s use our first coordinate transform to center the methyl at its carbon
+atom:</p>
+<div class="highlight-python"><div class="highlight"><pre>   from mbuild.compound import Compound
+   from mbuild.testing.tools import get_fn
+   from mbuild.coordinate_transform import translate
+
+
+   class Methyl(Compound):
+       def __init__(self):
+           super(Methyl, self).__init__(self)
+
+           self.append_from_file(get_fn(&#39;methyl.pdb&#39;))
+
+           translate(self, -self.C[0])
+
+here that when referring to the ``Atom`` object in a mathematical
+</pre></div>
+</div>
+<p>expression, we operate directly on its coordinates. This functionality is
+currently implemented for addition and subtraction only.</p>
+<p>So now we have a methyl group loaded up and centered. In order to connect
+<tt class="docutils literal"><span class="pre">Compounds</span></tt> in mBuild, we make use of a special type of <tt class="docutils literal"><span class="pre">Compound</span></tt>: the <tt class="docutils literal"><span class="pre">Port</span></tt>.
+A <tt class="docutils literal"><span class="pre">Port</span></tt> is a <tt class="docutils literal"><span class="pre">Compound</span></tt> with four &#8220;ghost&#8221; <tt class="docutils literal"><span class="pre">Atoms</span></tt> (of kind &#8216;G&#8217; by convention).
+In addition <tt class="docutils literal"><span class="pre">Ports</span></tt> have an <tt class="docutils literal"><span class="pre">anchor</span></tt> attribute which typically points to an
+<tt class="docutils literal"><span class="pre">Atom</span></tt> that the <tt class="docutils literal"><span class="pre">Port</span></tt> should be associated with. In our methyl group, the
+<tt class="docutils literal"><span class="pre">Port</span></tt> should be anchored to the carbon atom so that we can now form <tt class="docutils literal"><span class="pre">Bonds</span></tt>
+to this carbon:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">mbuild.compound</span> <span class="kn">import</span> <span class="n">Compound</span>
+<span class="kn">from</span> <span class="nn">mbuild.testing.tools</span> <span class="kn">import</span> <span class="n">get_fn</span>
+<span class="kn">from</span> <span class="nn">mbuild.coordinate_transform</span> <span class="kn">import</span> <span class="n">translate</span>
+<span class="kn">from</span> <span class="nn">mbuild.port</span> <span class="kn">import</span> <span class="n">Port</span>
+
+
+<span class="k">class</span> <span class="nc">Methyl</span><span class="p">(</span><span class="n">Compound</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">Methyl</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">append_from_file</span><span class="p">(</span><span class="n">get_fn</span><span class="p">(</span><span class="s">&#39;methyl.pdb&#39;</span><span class="p">))</span>
+
+        <span class="n">translate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">C</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">Port</span><span class="p">(</span><span class="n">anchor</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">C</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="s">&#39;up&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>By default, <tt class="docutils literal"><span class="pre">Ports</span></tt> are created to point in the y-direction. Typically,
+<tt class="docutils literal"><span class="pre">Ports</span></tt> should point in the direction of the <tt class="docutils literal"><span class="pre">Bond</span></tt> we want to create.
+Since the methyl group is already oriented towards the y-direction, let&#8217;s simply
+move the port a tiny bit away from the carbon:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+
+<span class="kn">from</span> <span class="nn">mbuild.compound</span> <span class="kn">import</span> <span class="n">Compound</span>
+<span class="kn">from</span> <span class="nn">mbuild.port</span> <span class="kn">import</span> <span class="n">Port</span>
+<span class="kn">from</span> <span class="nn">mbuild.coordinate_transform</span> <span class="kn">import</span> <span class="n">translate</span>
+<span class="kn">from</span> <span class="nn">mbuild.testing.tools</span> <span class="kn">import</span> <span class="n">get_fn</span>
+
+
+<span class="k">class</span> <span class="nc">Methyl</span><span class="p">(</span><span class="n">Compound</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">Methyl</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">append_from_file</span><span class="p">(</span><span class="n">get_fn</span><span class="p">(</span><span class="s">&#39;methyl.pdb&#39;</span><span class="p">))</span>
+
+        <span class="n">translate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">C</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">Port</span><span class="p">(</span><span class="n">anchor</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">C</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="s">&#39;down&#39;</span><span class="p">)</span>
+        <span class="n">translate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">down</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.07</span><span class="p">,</span> <span class="mi">0</span><span class="p">]))</span>
+
+<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="n">methyl</span> <span class="o">=</span> <span class="n">Methyl</span><span class="p">()</span>
+    <span class="n">methyl</span><span class="o">.</span><span class="n">visualize</span><span class="p">(</span><span class="n">show_ports</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>By default, <tt class="docutils literal"><span class="pre">Ports</span></tt> are never output from the mBuild structure. However,
+it can be useful to look at a molecule with the <tt class="docutils literal"><span class="pre">Ports</span></tt> to check your work as
+you go. The default VMD settings don&#8217;t show ports very well so let&#8217;s change
+the representation style to small vdW spheres:</p>
+<a class="reference internal image-reference" href="_images/methyl_port.png"><img alt="Methyl group with one Port." class="align-center" src="_images/methyl_port.png" style="width: 283.5px; height: 259.5px;" /></a>
+<p>When two <tt class="docutils literal"><span class="pre">Ports</span></tt> are connected, they are forced to overlap in space and their
+parent <tt class="docutils literal"><span class="pre">Compounds</span></tt> are rotated and translated by the same amount. If we tried
+to connect two of our <tt class="docutils literal"><span class="pre">Methyls</span></tt> right now, not only would the <tt class="docutils literal"><span class="pre">Ports</span></tt> overlap
+perfectly, but the carbons and hydrogens would also perfectly overlap. What we
+need is a second <tt class="docutils literal"><span class="pre">Port</span></tt> facing the opposite direction.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">By convention, we try to label <tt class="docutils literal"><span class="pre">Ports</span></tt> successively as &#8216;down&#8217;, &#8216;up&#8217;, &#8216;left&#8217;,
+&#8216;right&#8217;, &#8216;front&#8217;, &#8216;back&#8217; which should roughly correspond to the relative
+directions that they face. Additionally, when we attach <tt class="docutils literal"><span class="pre">Ports</span></tt> to surfaces,
+we try to make them point upward or outward and label these as <tt class="docutils literal"><span class="pre">up</span></tt>. This is a
+bit tricky to enforce because the system is so flexible so use your best judgement
+and try to be consistent! The more components we collect in our library with the
+same labeling conventions, the easier it becomes to build ever more complex
+structures.</p>
+</div>
+<p>So let&#8217;s add that second <tt class="docutils literal"><span class="pre">Port</span></tt> facing in the opposite direction so that we
+can attach the <tt class="docutils literal"><span class="pre">Methyl</span></tt> <em>to</em> and <em>from</em> other <tt class="docutils literal"><span class="pre">Compounds</span></tt>:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">numpy</span> <span class="kn">import</span> <span class="n">pi</span>
+
+<span class="kn">from</span> <span class="nn">mbuild.compound</span> <span class="kn">import</span> <span class="n">Compound</span>
+<span class="kn">from</span> <span class="nn">mbuild.port</span> <span class="kn">import</span> <span class="n">Port</span>
+<span class="kn">from</span> <span class="nn">mbuild.coordinate_transform</span> <span class="kn">import</span> <span class="n">rotate_around_z</span><span class="p">,</span> <span class="n">translate</span>
+<span class="kn">from</span> <span class="nn">mbuild.testing.tools</span> <span class="kn">import</span> <span class="n">get_fn</span>
+
+
+<span class="k">class</span> <span class="nc">Methyl</span><span class="p">(</span><span class="n">Compound</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">Methyl</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">kind</span><span class="o">=</span><span class="s">&#39;methyl&#39;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">append_from_file</span><span class="p">(</span><span class="n">get_fn</span><span class="p">(</span><span class="s">&#39;methyl.pdb&#39;</span><span class="p">))</span>
+
+        <span class="n">translate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">C</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">Port</span><span class="p">(</span><span class="n">anchor</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">C</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="s">&#39;down&#39;</span><span class="p">)</span>
+        <span class="n">translate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">down</span><span class="p">,</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.07</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">Port</span><span class="p">(</span><span class="n">anchor</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">C</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="s">&#39;up&#39;</span><span class="p">)</span>
+        <span class="n">rotate_around_z</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">up</span><span class="p">,</span> <span class="n">pi</span><span class="p">)</span>
+        <span class="n">translate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">down</span><span class="p">,</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.07</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span>
+</pre></div>
+</div>
+<p>Now the fun part: stick &#8216;em together to create an ethane:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">mbuild.compound</span> <span class="kn">import</span> <span class="n">Compound</span>
+<span class="kn">from</span> <span class="nn">mbuild.examples.ethane.methyl</span> <span class="kn">import</span> <span class="n">Methyl</span>
+<span class="kn">from</span> <span class="nn">mbuild.coordinate_transform</span> <span class="kn">import</span> <span class="n">equivalence_transform</span>
+
+<span class="k">class</span> <span class="nc">Ethane</span><span class="p">(</span><span class="n">Compound</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">Ethane</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">kind</span><span class="o">=</span><span class="s">&#39;ethane&#39;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">Methyl</span><span class="p">(),</span> <span class="s">&quot;m1&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">Methyl</span><span class="p">(),</span> <span class="s">&quot;m2&quot;</span><span class="p">)</span>
+        <span class="n">equivalence_transform</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">m1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">m1</span><span class="o">.</span><span class="n">up</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">m2</span><span class="o">.</span><span class="n">down</span><span class="p">)</span>
+
+<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="n">ethane</span> <span class="o">=</span> <span class="n">Ethane</span><span class="p">()</span>
+    <span class="n">ethane</span><span class="o">.</span><span class="n">visualize</span><span class="p">(</span><span class="n">show_ports</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+</pre></div>
+</div>
+<a class="reference internal image-reference" href="_images/ethane.png"><img alt="Ethane with all Ports shown." class="align-center" src="_images/ethane.png" style="width: 239.5px; height: 345.5px;" /></a>
+<p>The <tt class="docutils literal"><span class="pre">equivalence_transform()</span></tt> function takes a <tt class="docutils literal"><span class="pre">Compound</span></tt> and then rotates
+and translates it such that two other <tt class="docutils literal"><span class="pre">Compounds</span></tt> overlap. Typically, as in
+this case, those two other <tt class="docutils literal"><span class="pre">Compounds</span></tt> are <tt class="docutils literal"><span class="pre">Ports</span></tt>.</p>
+</div>
+<div class="section" id="monolayer-complex-hierarchies-masks-tiling-and-writing-to-files">
+<h2>Monolayer: Complex hierarchies, masks, tiling and writing to files<a class="headerlink" href="#monolayer-complex-hierarchies-masks-tiling-and-writing-to-files" title="Permalink to this headline">¶</a></h2>
+<p>Write-up coming soon! See <tt class="docutils literal"><span class="pre">mbuild/examples/alkane_monolayer</span></tt> to take a look yourself.</p>
+</div>
+</div>
+
+
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="apidoc/mbuild.html" class="btn btn-neutral float-right" title="mbuild package"/>Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="installation.html" class="btn btn-neutral" title="Installation"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2014, Vanderbilt University.
+    </p>
+  </div>
+
+  <a href="https://github.com/snide/sphinx_rtd_theme">Sphinx theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'0.4.1beta',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

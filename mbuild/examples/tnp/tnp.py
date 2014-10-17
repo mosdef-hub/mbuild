@@ -1,4 +1,4 @@
-import numpy as np
+from numpy import sqrt, pi
 
 from mbuild.compound import Compound
 from mbuild.tools.polymer import Polymer
@@ -13,12 +13,12 @@ class Tnp(Compound):
         """Initialize a tethered nanoparticle.
 
         Args:
-            ball_radius (float):
-            n_chains (int):
-            chain_length (int):
-            monomer (Compound, optional):
+            ball_radius (float): Radius of the nanoparticle.
+            n_chains (int): Number of chains to attach to the nanoparticle.
+            chain_length (int): Length of the chains being attached.
+            monomer (Compound, optional): Type of chain being attached.
         """
-        Compound.__init__(self)
+        super(Tnp, self).__init__(self)
 
         if not monomer:
             monomer = Bead(particle_kind='t')
@@ -37,7 +37,8 @@ class Tnp(Compound):
         # apply chains to mask
         apply_mask(self.np, chain_proto , mask, guest_port_name="down")
 
-        self.add_bond('np', 'np', np.sqrt(4*ball_radius*ball_radius*np.pi/n)-.5, np.sqrt(4*ball_radius*ball_radius*np.pi/n)+.5)
+        self.add_bond('np', 'np', sqrt(4 * ball_radius**2 * pi / n) - 0.5,
+                                  sqrt(4 * ball_radius**2 * pi / n) + 0.5)
         self.add_bond('np', 't', 0.1, 0.3)
         self.add_bond('t', 'np', 0.1, 0.3)
 

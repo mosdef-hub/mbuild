@@ -1,5 +1,3 @@
-__author__ = 'sallai'
-
 import numpy as np
 
 from mbuild.atom import Atom
@@ -16,7 +14,7 @@ class Bead(Compound):
         Args:
             particle_kind (str): Descriptive name for the Bead.
         """
-        Compound.__init__(self)
+        super(Bead, self).__init__(self)
 
         self.add(Atom(kind=particle_kind), particle_kind)
 

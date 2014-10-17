@@ -1,3 +1,5 @@
+from __future__ import print_function
+
 from mbuild.mbase import MBase
 from mbuild.part_mixin import PartMixin
 
@@ -102,7 +104,7 @@ class Bond(MBase, PartMixin):
         
         # remember the topmost component being deepcopied
         if len(memo) == 0:
-            print 'bond is root of deepcopy'
+            print('bond is root of deepcopy')
             memo[0] = self
         memo[id(self)] = newone
         

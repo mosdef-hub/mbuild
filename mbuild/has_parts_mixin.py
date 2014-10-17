@@ -1,5 +1,4 @@
 from collections import OrderedDict
-from mbuild.mbase import MBase
 from mbuild.orderedset import OrderedSet
 from mbuild.part_mixin import PartMixin
 
@@ -7,6 +6,8 @@ __author__ = 'sallai'
 
 
 class HasPartsMixin(object):
+    """A base class that provides functionality to contain other parts."""
+
     def __init__(self, *args, **kwargs):
         super(HasPartsMixin, self).__init__()
 
@@ -57,12 +58,13 @@ class HasPartsMixin(object):
             # Support batch add via lists, tuples and sets.
             if isinstance(new_part, (list, tuple, set)):
                 for elem in new_part:
-                    assert(elem.parent is None)
+                    assert (elem.parent is None)
                     self.add(elem)
                     elem.parent = self
                 return
-            # Is the following assertion necessary? Seems to be handled above.
-            assert(new_part.parent is None)
+
+            assert new_part.parent is None, "Part {} already has a parent: {}".format(
+                new_part, new_part.parent)
             self.parts.add(new_part)
             new_part.parent = self
 
@@ -85,12 +87,12 @@ class HasPartsMixin(object):
                 label = label_pattern.format(count)
 
             if not replace and label in self.labels:
-                raise Exception("Label {0} already exists in {1}".format(label, self))
+                raise Exception(
+                    "Label {0} already exists in {1}".format(label, self))
             else:
                 self.labels[label] = new_part
 
         new_part.referrers.add(self)
-
 
     def remove(self, objs_to_remove):
         """Remove a part (Atom, Bond or Compound) from the Compound by value.
@@ -120,7 +122,6 @@ class HasPartsMixin(object):
             if isinstance(part, HasPartsMixin) and len(objs_to_remove) > 0:
                 part.remove(objs_to_remove)
 
-
     def post_remove(self, removed_part):
         removed_part.parent = None
         # Remove labels in the hierarchy pointing to this part.
@@ -130,8 +131,6 @@ class HasPartsMixin(object):
                 for label, referred_part in referrer.labels.items():
                     if referred_part is removed_part:
                         del referrer.labels[label]
-                        # TODO:
-                        # if label matches some_label[num], check if label some_label is an empty array, and remove it
                         referrers_to_remove.add(referrer)
         removed_part.referrers.difference_update(referrers_to_remove)
 
@@ -145,15 +144,12 @@ class HasPartsMixin(object):
         for label in labels_to_delete:
             del removed_part.labels[label]
 
-        # # If removing an atom, make sure to remove the bonds it's part of.
-        # if isinstance(removed_part, Atom):
-        #     for bond in removed_part.bonds:
-        #         if bond.parent is not None:
-        #             bond.parent.remove(bond)
-
     def __getattr__(self, attr):
-        assert "labels" != attr, "HasPartsMixin __init__ never called. Make sure to call super().__init__() in the __init__ method of your class."
+        unsuper = ("HasPartsMixin __init__ never called. Make sure to call"
+                   " super().__init__() in the __init__ method of your class.")
+        assert "labels" != attr, unsuper
         if attr in self.labels:
             return self.labels[attr]
         else:
-            raise AttributeError("'{}' object has no attribute '{}'".format(self.__class__.__name__, attr))
+            raise AttributeError("'{}' object has no attribute '{}'".format(
+                self.__class__.__name__, attr))

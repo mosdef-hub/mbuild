@@ -69,11 +69,11 @@ class TiledCompound(Compound):
             for child in self.parts:
                 if child.__class__ != tile.__class__:
                     continue
-                for idx, atom in enumerate(child.atoms()):
+                for idx, atom in enumerate(child.yield_atoms()):
                     atom.uid = idx
 
             # Build a kdtree of all atoms.
-            atom_list = np.array([atom for atom in self.atoms()])
+            atom_list = np.array([atom for atom in self.yield_atoms()])
             atom_kdtree = PeriodicCKDTree([atom.pos for atom in atom_list],
                     bounds=self.periodicity)
 
@@ -82,7 +82,7 @@ class TiledCompound(Compound):
             
             # Update connectivity.
             bonds_to_remove = set()
-            for bond in self.bonds():
+            for bond in self.yield_bonds():
                 if bond.distance(self.periodicity) > bond_dist_thres:
                     # Find new pair for atom1
                     dists, idxs = atom_kdtree.query(bond.atom1.pos, k=10)
@@ -122,11 +122,11 @@ class TiledCompound(Compound):
             for child in self.parts:
                 if child.__class__ != tile.__class__:
                     continue
-                for atom in child.atoms():
+                for atom in child.yield_atoms():
                     del atom.uid
 
 if __name__ == "__main__":
-    from mbuild.examples.pmpc_brush_layer.surface import Surface
+    from mbuild.examples.alkane_monolayer.surface import Surface
     surface = Surface()
     tc = TiledCompound(surface, 2, 3, 1, kind="tiled_surface")
     tc.visualize()

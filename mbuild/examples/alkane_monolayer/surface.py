@@ -1,4 +1,6 @@
-from mbuild.coordinate_transform import *
+import numpy as np
+
+from mbuild.coordinate_transform import rotate_around_x, translate
 from mbuild.compound import Compound
 from mbuild.port import Port
 from mbuild.testing.tools import get_fn
@@ -6,7 +8,7 @@ from mbuild.tools.tiled_compound import TiledCompound
 
 
 class Surface(Compound):
-    """ """
+    """A beta-cristobalite substrate with Ports on every surface oxygen. """
     def __init__(self):
         super(Surface, self).__init__()
 
@@ -14,11 +16,11 @@ class Surface(Compound):
         self.periodicity = np.array([4.7689, 4.13, 0.0])
 
         cnt = 0
-        for atom in self.atoms():
+        for atom in self.yield_atoms():
             if atom.kind == 'O' and atom.pos[2] > 1:
                 cnt += 1
                 port = Port(anchor=atom)
-                rotate_around_x(port, pi/2)
+                rotate_around_x(port, np.pi/2)
                 translate(port, atom + np.array([0, 0, .1]))
                 self.add(port, 'port_{}'.format(cnt))
 

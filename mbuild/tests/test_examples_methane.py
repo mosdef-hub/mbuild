@@ -11,13 +11,13 @@ class TestExamplesMethane:
         return Methane()
 
     def test_n_atoms(self, methane):
-        assert methane.n_atoms() == 5
-        assert methane.n_bonds() == 4
+        assert methane.n_atoms == 5
+        assert methane.n_bonds == 4
 
     def test_atom_types(self, methane):
-        assert methane.c.kind == "C"
-        assert methane.h1.kind == "H"
-        assert methane.h2.kind == "H"
-        assert methane.h3.kind == "H"
-        assert methane.h4.kind == "H"
+        assert methane.atoms[0].kind == "C"
+        assert methane.hc[0].kind == "H"
+        assert methane.hc[1].kind == "H"
+        assert methane.hc[2].kind == "H"
+        assert methane.hc[3].kind == "H"
 
