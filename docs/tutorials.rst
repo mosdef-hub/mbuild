@@ -112,6 +112,7 @@ take a look at it::
           methane.visualize()
 
 .. figure:: images/methane.png
+    :align: center
     :scale: 50%
     :alt: Methane molecule.
 
@@ -227,6 +228,7 @@ move the port a tiny bit away from the carbon::
         methyl.visualize(show_ports=True)
 
 .. figure:: images/methyl_port.png
+    :align: center
     :scale: 50%
     :alt: Methyl group with one Port.
 
@@ -298,6 +300,7 @@ Now the fun part: Stick 'em together to create an ethane::
 
 
 .. figure:: images/ethane.png
+    :align: center
     :scale: 50%
     :alt: Ethane with all Ports shown.
 
