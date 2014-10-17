@@ -15,8 +15,20 @@ from orderedset import OrderedSet
 
 class Compound(MBase, PartMixin, HasPartsMixin):
     """A building block in the mBuild hierarchy.
-   
-    *** add eloquent description here ***
+
+    Compound is the superclass of all composite building blocks in the mBuild hierarchy,
+    that is, all composite building blocks must inherit from compound, either directly
+    or indirectly. The design of Compound follows the Composite design pattern ( Gamma,
+    Erich; Richard Helm; Ralph Johnson; John M. Vlissides (1995). Design Patterns:
+    Elements of Reusable Object-Oriented Software. Addison-Wesley. p. 395. ISBN
+    0-201-63361-2.), with Compound being the composite, and Atom playing the role of primitive (leaf) part.
+
+    Compound maintains a list of parts (contained Compounds, Atoms, Bonds, etc., that inherit
+    from PartMixin), and provides a means to tag the parts with labels, so that the parts can
+    easily looked up later. Labels may also point to objects outside the Compound's containment hierarchy.
+    Compound has built-in support for copying and deepcopying Compound hierarchies, enumerating atoms
+    or bonds in the hierarchy, proximity based searches, visualization, I/O operations, and a number
+    of other convenience methods.
 
     Attributes:
         kind (str): The type of Compound.
@@ -122,6 +134,7 @@ class Compound(MBase, PartMixin, HasPartsMixin):
 
     def referenced_ports(self):
         from mbuild.port import Port
+
         return [port for port in self.labels.values() if isinstance(port, Port)]
 
     def post_remove(self, removed_part):
@@ -138,6 +151,7 @@ class Compound(MBase, PartMixin, HasPartsMixin):
     def append_from_file(self, filename, relative_to_module=None, frame=0):
         """Append to Compound with information from a Trajectory file. """
         from mbuild.trajectory import Trajectory
+
         traj = Trajectory.load(filename, relative_to_module=relative_to_module)
 
         self.append_from_trajectory(traj, frame=frame)
@@ -145,6 +159,7 @@ class Compound(MBase, PartMixin, HasPartsMixin):
     def update_from_file(self, filename, relative_to_module=None, frame=0):
         """Update Compound with information from a Trajectory file. """
         from mbuild.trajectory import Trajectory
+
         traj = Trajectory.load(filename, relative_to_module=relative_to_module)
 
         self.update_from_trajectory(traj, frame=frame)
@@ -167,11 +182,13 @@ class Compound(MBase, PartMixin, HasPartsMixin):
     def to_trajectory(self, show_ports=False):
         """Convert the Compound to a Trajectory. """
         from mbuild.trajectory import Trajectory
+
         return Trajectory.from_compound(self, show_ports)
 
     @classmethod
     def load(cls, filename, relative_to_module=None, frame=0):
         from mbuild.trajectory import Trajectory
+
         traj = Trajectory.load(filename, relative_to_module=relative_to_module)
         return traj.to_compound(frame=frame)
 
@@ -189,6 +206,7 @@ class Compound(MBase, PartMixin, HasPartsMixin):
         traj = self.to_trajectory(show_ports)
         traj.save(filename=filename)
         import os
+
         try:
             os.system('vmd {}'.format(filename))
         except OSError:
@@ -202,7 +220,7 @@ class Compound(MBase, PartMixin, HasPartsMixin):
         return np.sqrt((d ** 2).sum(axis=-1))
 
     def center_of_mass(self):
-        return sum(atom.pos for atom in self.yield_atoms())/len([atom for atom in self.yield_atoms()])
+        return sum(atom.pos for atom in self.yield_atoms()) / len([atom for atom in self.yield_atoms()])
 
     def boundingbox(self, excludeG=True):
         """Compute the bounding box of the compound.
@@ -277,7 +295,7 @@ class Compound(MBase, PartMixin, HasPartsMixin):
         for a1 in self.atom_list_by_kind(type_a):
             nearest = self.atoms_in_range(a1.pos, dmax)
             for a2 in nearest:
-                if (a2.kind==type_b) and (dmin <= self.min_periodic_distance(a2.pos, a1.pos) <= dmax):
+                if (a2.kind == type_b) and (dmin <= self.min_periodic_distance(a2.pos, a1.pos) <= dmax):
                     self.add(Bond(a1, a2, kind=kind))
 
     def __deepcopy__(self, memo):
@@ -324,6 +342,6 @@ class Compound(MBase, PartMixin, HasPartsMixin):
         # Copy referrers that do not point out of the hierarchy.
         for r in self.referrers:
             if memo[0] in r.ancestors():
-                newone.referrers.add(deepcopy(r,memo))
+                newone.referrers.add(deepcopy(r, memo))
 
         return newone
