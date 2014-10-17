@@ -121,7 +121,17 @@ take a look at it::
 Ethane: Reading from files, Ports and coordinate transforms
 -----------------------------------------------------------
 
-Read methyl group from pdb file (get_fn convenience function)::
+In this example, we'll cover reading molecular components from files, introduce
+the concept of ``Ports`` and start using some coordinate transforms.
+
+As you probably noticed while creating your methane mocule in the last tutorial,
+manually adding ``Atoms`` and ``Bonds`` to a ``Compound`` is a bit cumbersome.
+The easiest way to create small, reusable components, such as methyls, amines or
+monomers, is to hand draw them using software like `Avogadro <http://avogadro.cc/wiki/Main_Page>`_
+and export them as either a .pdb or .mol2 file (the file should contain
+connectivity information).
+
+Let's start by reading a methyl group from a .pdb file::
 
     from mbuild.compound import Compound
     from mbuild.testing.tools import get_fn
@@ -133,7 +143,13 @@ Read methyl group from pdb file (get_fn convenience function)::
 
             self.append_from_file(get_fn('methyl.pdb'))
 
-Translation::
+.. note:: The ``get_fn()`` function will look up a file name in
+``mbuild/testing/reference`` where we keep all of the systems we use for testing.
+This is purely a convenience function that we heartlessly copied from the
+developers of MDTraj.
+
+Now let's use our first coordinate transform to center the methyl at its carbon
+atom::
 
     from mbuild.compound import Compound
     from mbuild.testing.tools import get_fn
@@ -148,7 +164,17 @@ Translation::
 
             translate(self, -self.C[0])
 
-Ports, anchoring them and naming::
+Note here that when referring to the ``Atom`` object in a mathematical
+expression, we operate directly on its coordinates. This functionality is
+currently implemented for addition and subtraction only.
+
+So now we have a methyl group loaded up and centered. In order to connect
+``Compounds`` in mBuild, we make use of a special type of ``Compound``: the ``Port``.
+A ``Port`` is a ``Compound`` with four "ghost" ``Atoms`` (of type 'G' by convention).
+In addition ``Ports`` have an ``anchor`` attribute which typically points to an
+``Atom`` that the ``Port`` should be associated with. In our methyl group, the
+``Port`` should be anchored to the carbon atom so that we can now form ``Bonds``
+to this carbon::
 
     from mbuild.compound import Compound
     from mbuild.testing.tools import get_fn
@@ -166,7 +192,8 @@ Ports, anchoring them and naming::
 
             self.add(Port(anchor=self.C[0]), 'up')
 
-Orienting the port::
+
+By default, ``Ports`` are created to point in the y-direction. Orienting the port::
 
     import numpy as np
 
@@ -242,6 +269,6 @@ Now the fun part. Stick em together with the equivalence transform::
         ethane = Ethane()
         ethane.visualize()
 
-pMPC: Complex hierarchies, masks, tiling and writing to files
--------------------------------------------------------------
+Monolayer: Complex hierarchies, masks, tiling and writing to files
+------------------------------------------------------------------
 

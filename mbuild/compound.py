@@ -57,17 +57,68 @@ class Compound(MBase, PartMixin, HasPartsMixin):
 
     @property
     def atoms(self):
+        """A list of all Atoms in the Compound and sub-Compounds. """
         return self.atom_list_by_kind(excludeG=True)
 
     def yield_atoms(self):
         return self._yield_parts(Atom)
 
     @property
+    def n_atoms(self):
+        return sum([1 for _ in self.yield_atoms()])
+
+    def atom_list_by_kind(self, kind='*', excludeG=False, with_id_to_idx_mapping=False):
+        atom_list = []
+        id_to_idx = dict()
+        idx = 0
+        for atom in self.yield_atoms():
+            if not (excludeG and atom.kind == "G"):
+                if kind == '*':
+                    atom_list.append(atom)
+                    id_to_idx[id(atom)] = idx
+                    idx += 1
+                elif atom.kind == kind:
+                    atom_list.append(atom)
+                    id_to_idx[id(atom)] = idx
+                    idx += 1
+
+        if with_id_to_idx_mapping:
+            return atom_list, id_to_idx
+        else:
+            return atom_list
+
+    @property
     def bonds(self):
+        """A list of all Bonds in the Compound and sub-Compounds. """
         return self.bond_list_by_kind()
 
     def yield_bonds(self):
         return self._yield_parts(Bond)
+
+    @property
+    def n_bonds(self):
+        return sum([1 for _ in self.yield_bonds()])
+
+    def bond_list_by_kind(self, kind='*', with_id_to_idx_mapping=False):
+        bond_list = []
+        id_to_idx = dict()
+
+        idx = 0
+        for bond in self.yield_bonds():
+            if kind == '*':
+                bond_list.append(bond)
+                id_to_idx[id(bond)] = idx
+                idx += 1
+
+            elif bond.kind == kind:
+                bond_list.append(bond)
+                id_to_idx[id(bond)] = idx
+                idx += 1
+
+        if with_id_to_idx_mapping:
+            return bond_list, id_to_idx
+        else:
+            return bond_list
 
     def referenced_ports(self):
         from mbuild.port import Port
@@ -82,53 +133,8 @@ class Compound(MBase, PartMixin, HasPartsMixin):
                 if bond.parent is not None:
                     bond.parent.remove(bond)
 
-    def atom_list_by_kind(self, kind='*', excludeG=False, with_id_to_idx_mapping=False):
-        list = []
-        id_to_idx = dict()
-        idx = 0
-        for atom in self.yield_atoms():
-            if not (excludeG and atom.kind == "G"):
-                if kind == '*':
-                    list.append(atom)
-                    id_to_idx[id(atom)] = idx
-                    idx += 1
-                elif atom.kind == kind:
-                    list.append(atom)
-                    id_to_idx[id(atom)] = idx
-                    idx += 1
-
-        if with_id_to_idx_mapping:
-            return list, id_to_idx
-        else:
-            return list
-
-    def n_atoms(self):
-        return sum([1 for _ in self.yield_atoms()])
-
-    def n_bonds(self):
-        return sum([1 for _ in self.yield_bonds()])
-
-    def bond_list_by_kind(self, kind='*', with_id_to_idx_mapping=False):
-        list = []
-        id_to_idx = dict()
-
-        idx = 0
-        for bond in self.yield_bonds():
-            if kind == '*':
-                list.append(bond)
-                id_to_idx[id(bond)] = idx
-                idx += 1
-
-            elif bond.kind == kind:
-                list.append(bond)
-                id_to_idx[id(bond)] = idx
-                idx += 1
-
-        if with_id_to_idx_mapping:
-            return list, id_to_idx
-        else:
-            return list
-
+    # Interface to Trajectory for reading/writing.
+    # --------------------------------------------
     def append_from_file(self, filename, relative_to_module=None, frame=0):
         """Append to Compound with information from a Trajectory file. """
         from mbuild.trajectory import Trajectory
@@ -169,6 +175,8 @@ class Compound(MBase, PartMixin, HasPartsMixin):
         traj = Trajectory.load(filename, relative_to_module=relative_to_module)
         return traj.to_compound(frame=frame)
 
+    # Convenience functions
+    # ---------------------
     def visualize(self, show_ports=False):
         """Visualize the Compound using VMD.
 
@@ -186,7 +194,6 @@ class Compound(MBase, PartMixin, HasPartsMixin):
         except OSError:
             print("Visualization with VMD failed. Make sure you it is installed"
                   "correctly and launchable from the command line via 'vmd'.")
-
 
     def min_periodic_distance(self, x0, x1):
         """Vectorized distance calculation considering minimum image. """
@@ -250,7 +257,7 @@ class Compound(MBase, PartMixin, HasPartsMixin):
         return [atoms[idx] for idx in idxs]
 
     def wrap(self):
-        """ """
+        """Wrap a periodic Compound. """
         assert np.any(self.periodicity)
         box = self.boundingbox()
         translate(self, -box.mins)
@@ -262,9 +269,11 @@ class Compound(MBase, PartMixin, HasPartsMixin):
                     if c > self.periodicity[k]:
                         atom.pos[k] = c - self.periodicity[k]
 
-
     def add_bond(self, type_a, type_b, dmin, dmax, kind=None):
-        """ai-bj distance is in [dmin, dmax] => add bond a1xb(ai,bj) (symmetric)."""
+        """Add Bonds between all pairs of Atoms of types a/b within [dmin, dmax].
+
+        TODO: testing for periodic boundaries.
+        """
         for a1 in self.atom_list_by_kind(type_a):
             nearest = self.atoms_in_range(a1.pos, dmax)
             for a2 in nearest:
@@ -278,16 +287,16 @@ class Compound(MBase, PartMixin, HasPartsMixin):
             memo[0] = self
         memo[id(self)] = newone
 
-        # first copy those attributes that don't need deepcopying
+        # First copy those attributes that don't need deepcopying.
         newone.kind = deepcopy(self.kind, memo)
         newone.periodicity = deepcopy(self.periodicity, memo)
 
-        # create empty containers
+        # Create empty containers.
         newone.parts = OrderedSet()
         newone.labels = OrderedDict()
         newone.referrers = set()
 
-        # Copy the parent of everybody, except topmost compound being deepcopied.
+        # Copy the parent of everybody, except topmost Compound being deepcopied.
         if memo[0] == self:
             newone.parent = None
         else:
@@ -297,9 +306,9 @@ class Compound(MBase, PartMixin, HasPartsMixin):
         for part in self.parts:
             if isinstance(part, Bond):
                 if memo[0] in part.atom1.ancestors() and memo[0] in part.atom2.ancestors():
-                    newone.parts.add(deepcopy(part,memo))
+                    newone.parts.add(deepcopy(part, memo))
             else:
-                newone.parts.add(deepcopy(part,memo))
+                newone.parts.add(deepcopy(part, memo))
 
         # Copy labels, except bonds with atoms outside the hierarchy
         for k, v in self.labels.items():

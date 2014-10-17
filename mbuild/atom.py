@@ -53,7 +53,6 @@ class Atom(MBase, PartMixin):
         # self.referrers = set()
         self.bonds = set()
 
-
     def bonded_atoms(self, memo=dict()):
         """Return a list of atoms bonded to self. """
         for bond in self.bonds:
