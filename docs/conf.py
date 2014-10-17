@@ -14,8 +14,13 @@
 
 import sys
 import os
-
+import mock
 import mbuild.version
+
+#MOCK_MODULES = ['numpy', 'numpy.linalg', 'numpy.array', 'scipy', 'mdtraj']
+MOCK_MODULES = []
+for mod_name in MOCK_MODULES:
+    sys.modules[mod_name] = mock.Mock()
 
 on_rtd = os.environ.get('READTHEDOCS', None) == 'True'
 
