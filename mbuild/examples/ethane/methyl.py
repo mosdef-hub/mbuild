@@ -15,9 +15,9 @@ class Methyl(Compound):
 
         translate(self, -self.C[0])
 
-        self.add(Port(anchor=self.C[0]), 'up')
-        rotate_around_z(self.up, np.pi)
-        translate(self.up, [0, -0.07, 0])
+        #self.add(Port(anchor=self.C[0]), 'up')
+        #rotate_around_z(self.up, np.pi)
+        #translate(self.up, [0, -0.07, 0])
 
         self.add(Port(anchor=self.C[0]), 'down')
         translate(self.down, [0, -0.07, 0])
