@@ -6,7 +6,7 @@ Methane: Atoms, Bonds and Compounds
 In this example, we'll cover the core classes that make up an mBuild structure
 by building a methane molecule.
 
-The primary building block in mBuild is a `Compound`. Anything you construct
+The primary building block in mBuild is a ``Compound``. Anything you construct
 will inherit from this class. Let's start with some basic imports and
 initialization::
 
@@ -121,7 +121,7 @@ take a look at it::
 Ethane: Reading from files, Ports and coordinate transforms
 -----------------------------------------------------------
 
-Read methyl group from pdb file::
+Read methyl group from pdb file (get_fn convenience function)::
 
     from mbuild.compound import Compound
     from mbuild.testing.tools import get_fn
@@ -191,7 +191,7 @@ Orienting the port::
         methyl = Methyl()
         methyl.visualize(show_ports=True)
 
-Default behavior is to never use ports.
+Default behavior is to never show ports.
 Can be useful to visualize when building.
 Default VMD settings are kind of crappy for this - try small vdw spheres.
 
