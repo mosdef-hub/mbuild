@@ -111,6 +111,11 @@ take a look at it::
           methane = Methane()
           methane.visualize()
 
+.. figure:: images/methane.png
+    :alt: Methane molecule.
+
+     A methane molecule.
+
 .. note:: The ``visualize()`` method currently invokes a very primative call to
           VMD from the command-line. If it fails for you but you do have VMD
           installed, the method works by writing an intermediate output file
@@ -192,8 +197,10 @@ to this carbon::
 
             self.add(Port(anchor=self.C[0]), 'up')
 
-
-By default, ``Ports`` are created to point in the y-direction. Orienting the port::
+By default, ``Ports`` are created to point in the y-direction. Typically,
+``Ports`` should point in the direction of the ``Bond`` we want to create.
+Since the methyl group is already oriented towards the y-direction, let's simply
+move the port a tiny bit away from the carbon::
 
     import numpy as np
 
@@ -218,11 +225,33 @@ By default, ``Ports`` are created to point in the y-direction. Orienting the por
         methyl = Methyl()
         methyl.visualize(show_ports=True)
 
-Default behavior is to never show ports.
-Can be useful to visualize when building.
-Default VMD settings are kind of crappy for this - try small vdw spheres.
+.. figure:: images/methyl_port.png
+    :alt: Methyl group with one Port.
 
-Add a second port so we can work in both directions::
+     A methyl group with one ``Port``.
+
+By default, ``Ports`` are never output from the mBuild structure. However,
+it can be useful to look at a molecule with the ``Ports`` to check your work as
+you go. The default VMD settings don't show ports where well so let's change
+the representation style to small vdW spheres:
+
+When two ``Ports`` are connected, they are forced to overlap in space and their
+parent ``Compounds`` are rotated and translated by the same amount. If we tried
+to connect two of our ``Methyls`` right now, not only would the ``Ports`` overlap
+perfectly, but the carbons and hydrogens would also perfectly overlap. What we
+need is a second ``Port`` facing the opposite direction.
+
+.. note:: By convention, we try to label ``Ports`` successively as 'down', 'up',
+'left', 'right', 'front', 'back' which should roughly correspond to the relative
+directions that they face. Additionally, when we attach ``Ports`` to surfaces,
+we try to make them point upward or outward and label these as ``up``. This is a
+bit tricky to enforce because the system is so flexible so use your best judgement
+and try to be consistent! The more components we collect in our library with the
+same labeling conventions, the easier it becomes to build ever more complex
+structures.
+
+So let's add that second ``Port`` facing in the opposite direction so that we
+can attach the ``Methyl`` *to* and *from* other ``Compounds``::
 
     from numpy import pi
 
@@ -247,11 +276,7 @@ Add a second port so we can work in both directions::
             rotate_around_z(self.up, pi)
             translate(self.down, [0, -0.07, 0])
 
-    if __name__ == '__main__':
-        methyl = Methyl()
-        methyl.visualize(show_ports=True)
-
-Now the fun part. Stick em together with the equivalence transform::
+Now the fun part: Stick 'em together to create an ethane::
 
     from mbuild.compound import Compound
     from mbuild.examples.ethane.methyl import Methyl
@@ -269,6 +294,18 @@ Now the fun part. Stick em together with the equivalence transform::
         ethane = Ethane()
         ethane.visualize()
 
+
+.. figure:: images/ethane.png
+    :alt: Ethane with all Ports shown.
+
+     An ethane molecule with all four ``Ports`` shown overlapping.
+
+The ``equivalence_transform()`` function takes a ``Compound`` and then rotates
+and translates it such that two other ``Compounds`` overlap. Typically, as in
+this case, those two other ``Compounds`` are ``Ports``.
+
 Monolayer: Complex hierarchies, masks, tiling and writing to files
 ------------------------------------------------------------------
+
+Write-up coming soon! See ``mbuild/examples/alkane_monolayer`` to take a look yourself.
 
