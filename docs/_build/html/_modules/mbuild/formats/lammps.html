@@ -1,0 +1,601 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>mbuild.formats.lammps &mdash; mbuild 0.4.1beta documentation</title>
+  
+
+  
+  
+
+  
+  <link href='https://fonts.googleapis.com/css?family=Lato:400,700|Roboto+Slab:400,700|Inconsolata:400,700' rel='stylesheet' type='text/css'>
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  
+
+  
+    <link rel="top" title="mbuild 0.4.1beta documentation" href="../../../index.html"/>
+        <link rel="up" title="Module code" href="../../index.html"/> 
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/modernizr/2.6.2/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-nav-search">
+        <a href="../../../index.html" class="fa fa-home"> mbuild</a>
+        <div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+        
+        
+            <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../installation.html">Installation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../installation.html#install-with-pip">Install with pip</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../installation.html#dependencies">Dependencies</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../installation.html#testing-your-installation">Testing your installation</a></li>
+</ul>
+</li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../tutorials.html">Tutorials</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../tutorials.html#methane-atoms-bonds-and-compounds">Methane: Atoms, Bonds and Compounds</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../tutorials.html#ethane-reading-from-files-ports-and-coordinate-transforms">Ethane: Reading from files, Ports and coordinate transforms</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../tutorials.html#monolayer-complex-hierarchies-masks-tiling-and-writing-to-files">Monolayer: Complex hierarchies, masks, tiling and writing to files</a></li>
+</ul>
+</li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../apidoc/mbuild.html">mbuild package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../apidoc/mbuild.html#subpackages">Subpackages</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../apidoc/mbuild.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../apidoc/mbuild.html#module-mbuild.atom">mbuild.atom module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../apidoc/mbuild.html#module-mbuild.bond">mbuild.bond module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../apidoc/mbuild.html#module-mbuild.box">mbuild.box module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../apidoc/mbuild.html#module-mbuild.compound">mbuild.compound module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../apidoc/mbuild.html#module-mbuild.coordinate_transform">mbuild.coordinate_transform module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../apidoc/mbuild.html#module-mbuild.has_parts_mixin">mbuild.has_parts_mixin module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../apidoc/mbuild.html#module-mbuild.mbase">mbuild.mbase module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../apidoc/mbuild.html#module-mbuild.orderedset">mbuild.orderedset module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../apidoc/mbuild.html#module-mbuild.part_mixin">mbuild.part_mixin module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../apidoc/mbuild.html#module-mbuild.periodic_kdtree">mbuild.periodic_kdtree module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../apidoc/mbuild.html#module-mbuild.port">mbuild.port module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../apidoc/mbuild.html#module-mbuild.topology">mbuild.topology module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../apidoc/mbuild.html#module-mbuild.trajectory">mbuild.trajectory module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../apidoc/mbuild.html#module-mbuild.treeview">mbuild.treeview module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../apidoc/mbuild.html#module-mbuild">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../../apidoc/mbuild.tools.html">mbuild.tools package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../apidoc/mbuild.tools.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../apidoc/mbuild.tools.html#module-mbuild.tools.compute">mbuild.tools.compute module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../apidoc/mbuild.tools.html#module-mbuild.tools.mask">mbuild.tools.mask module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../apidoc/mbuild.tools.html#module-mbuild.tools.polymer">mbuild.tools.polymer module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../apidoc/mbuild.tools.html#module-mbuild.tools.solvent">mbuild.tools.solvent module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../apidoc/mbuild.tools.html#module-mbuild.tools.tiled_compound">mbuild.tools.tiled_compound module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../apidoc/mbuild.tools.html#module-mbuild.tools">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../../apidoc/mbuild.formats.html">mbuild.formats package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../apidoc/mbuild.formats.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../apidoc/mbuild.formats.html#module-mbuild.formats.gromacs">mbuild.formats.gromacs module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../apidoc/mbuild.formats.html#module-mbuild.formats.hoomdxml">mbuild.formats.hoomdxml module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../apidoc/mbuild.formats.html#module-mbuild.formats.lammps">mbuild.formats.lammps module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../apidoc/mbuild.formats.html#module-mbuild.formats.lammps_data">mbuild.formats.lammps_data module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../apidoc/mbuild.formats.html#module-mbuild.formats.mol2">mbuild.formats.mol2 module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../apidoc/mbuild.formats.html#module-mbuild.formats.xyz">mbuild.formats.xyz module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../apidoc/mbuild.formats.html#module-mbuild.formats">Module contents</a></li>
+</ul>
+</li>
+</ul>
+
+        
+      </div>
+      &nbsp;
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="../../../index.html">mbuild</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../../../index.html">Docs</a> &raquo;</li>
+      
+          <li><a href="../../index.html">Module code</a> &raquo;</li>
+      
+    <li>mbuild.formats.lammps</li>
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main">
+            
+  <h1>Source code for mbuild.formats.lammps</h1><div class="highlight"><pre>
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">print_function</span><span class="p">,</span> <span class="n">division</span>
+
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">itertools</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+
+<span class="kn">from</span> <span class="nn">mdtraj.utils</span> <span class="kn">import</span> <span class="n">ensure_type</span><span class="p">,</span> <span class="n">cast_indices</span><span class="p">,</span> <span class="n">in_units_of</span>
+<span class="kn">from</span> <span class="nn">mdtraj.formats.registry</span> <span class="kn">import</span> <span class="n">_FormatRegistry</span>
+<span class="kn">from</span> <span class="nn">mdtraj.utils.six</span> <span class="kn">import</span> <span class="n">string_types</span>
+<span class="kn">from</span> <span class="nn">mdtraj.utils.six.moves</span> <span class="kn">import</span> <span class="nb">xrange</span>
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;LAMMPSTrajectoryFile&#39;</span><span class="p">,</span> <span class="s">&#39;load_lammpstrj&#39;</span><span class="p">]</span>
+
+
+<span class="k">class</span> <span class="nc">_EOF</span><span class="p">(</span><span class="ne">IOError</span><span class="p">):</span>
+    <span class="k">pass</span>
+
+
+<span class="nd">@_FormatRegistry.register_loader</span><span class="p">(</span><span class="s">&#39;.lammpstrj&#39;</span><span class="p">)</span>
+<div class="viewcode-block" id="load_lammpstrj"><a class="viewcode-back" href="../../../apidoc/mbuild.formats.html#mbuild.formats.lammps.load_lammpstrj">[docs]</a><span class="k">def</span> <span class="nf">load_lammpstrj</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">top</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">stride</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">atom_indices</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                   <span class="n">frame</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">unit_set</span><span class="o">=</span><span class="s">&#39;real&#39;</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Load a LAMMPS trajectory file.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    filename : str</span>
+<span class="sd">        String filename of LAMMPS trajectory file.</span>
+<span class="sd">    top : {str, Trajectory, Topology}</span>
+<span class="sd">        The lammpstrj format does not contain topology information. Pass in</span>
+<span class="sd">        either the path to a pdb file, a trajectory, or a topology to supply</span>
+<span class="sd">        this information.</span>
+<span class="sd">    stride : int, default=None</span>
+<span class="sd">        Only read every stride-th frame</span>
+<span class="sd">    atom_indices : array_like, optional</span>
+<span class="sd">        If not none, then read only a subset of the atoms coordinates from the</span>
+<span class="sd">        file.</span>
+<span class="sd">    frame : int, optional</span>
+<span class="sd">        Use this option to load only a single frame from a trajectory on disk.</span>
+<span class="sd">        If frame is None, the default, the entire trajectory will be loaded.</span>
+<span class="sd">        If supplied, ``stride`` will be ignored.</span>
+<span class="sd">    unit_set : str, optional</span>
+<span class="sd">        The LAMMPS unit set that the simulation was performed in. See</span>
+<span class="sd">        http://lammps.sandia.gov/doc/units.html for options. Currently supported</span>
+<span class="sd">        unit sets: &#39;real&#39;.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    trajectory : md.Trajectory</span>
+<span class="sd">        The resulting trajectory, as an md.Trajectory object.</span>
+
+<span class="sd">    See Also</span>
+<span class="sd">    --------</span>
+<span class="sd">    mdtraj.LAMMPSTrajectoryFile :  Low level interface to lammpstrj files</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="kn">from</span> <span class="nn">mdtraj.core.trajectory</span> <span class="kn">import</span> <span class="n">_parse_topology</span><span class="p">,</span> <span class="n">Trajectory</span>
+
+    <span class="c"># we make it not required in the signature, but required here. although this</span>
+    <span class="c"># is a little weird, its good because this function is usually called by a</span>
+    <span class="c"># dispatch from load(), where top comes from **kwargs. So if its not supplied</span>
+    <span class="c"># we want to give the user an informative error message</span>
+    <span class="k">if</span> <span class="n">top</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&#39;&quot;top&quot; argument is required for load_lammpstrj&#39;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">string_types</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s">&#39;filename must be of type string for load_lammpstrj. &#39;</span>
+                        <span class="s">&#39;you supplied </span><span class="si">%s</span><span class="s">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">filename</span><span class="p">)))</span>
+
+    <span class="n">topology</span> <span class="o">=</span> <span class="n">_parse_topology</span><span class="p">(</span><span class="n">top</span><span class="p">)</span>
+    <span class="n">atom_indices</span> <span class="o">=</span> <span class="n">cast_indices</span><span class="p">(</span><span class="n">atom_indices</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">atom_indices</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="n">topology</span> <span class="o">=</span> <span class="n">topology</span><span class="o">.</span><span class="n">subset</span><span class="p">(</span><span class="n">atom_indices</span><span class="p">)</span>
+
+    <span class="k">with</span> <span class="n">LAMMPSTrajectoryFile</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">n_atoms</span><span class="o">=</span><span class="n">topology</span><span class="o">.</span><span class="n">_numAtoms</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">unit_set</span> <span class="o">==</span> <span class="s">&#39;real&#39;</span><span class="p">:</span>
+            <span class="n">f</span><span class="o">.</span><span class="n">distance_unit</span> <span class="o">==</span> <span class="s">&#39;angstroms&#39;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&#39;Unsupported unit set specified: {}.&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">unit_set</span><span class="p">))</span>
+        <span class="k">if</span> <span class="n">frame</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">f</span><span class="o">.</span><span class="n">seek</span><span class="p">(</span><span class="n">frame</span><span class="p">)</span>
+            <span class="n">xyz</span><span class="p">,</span> <span class="n">cell_lengths</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">n_frames</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">atom_indices</span><span class="o">=</span><span class="n">atom_indices</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">xyz</span><span class="p">,</span> <span class="n">cell_lengths</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">stride</span><span class="o">=</span><span class="n">stride</span><span class="p">,</span> <span class="n">atom_indices</span><span class="o">=</span><span class="n">atom_indices</span><span class="p">)</span>
+
+        <span class="n">in_units_of</span><span class="p">(</span><span class="n">xyz</span><span class="p">,</span> <span class="n">f</span><span class="o">.</span><span class="n">distance_unit</span><span class="p">,</span> <span class="n">Trajectory</span><span class="o">.</span><span class="n">_distance_unit</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">cell_lengths</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">in_units_of</span><span class="p">(</span><span class="n">cell_lengths</span><span class="p">,</span> <span class="n">f</span><span class="o">.</span><span class="n">distance_unit</span><span class="p">,</span> <span class="n">Trajectory</span><span class="o">.</span><span class="n">_distance_unit</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+            <span class="c"># Assume that its a rectilinear box</span>
+            <span class="n">cell_angles</span> <span class="o">=</span> <span class="mf">90.0</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">ones_like</span><span class="p">(</span><span class="n">cell_lengths</span><span class="p">)</span>
+
+    <span class="n">time</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">xyz</span><span class="p">))</span>
+    <span class="k">if</span> <span class="n">frame</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="n">time</span> <span class="o">+=</span> <span class="n">frame</span>
+    <span class="k">elif</span> <span class="n">stride</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="n">time</span> <span class="o">*=</span> <span class="n">stride</span>
+
+    <span class="n">t</span> <span class="o">=</span> <span class="n">Trajectory</span><span class="p">(</span><span class="n">xyz</span><span class="o">=</span><span class="n">xyz</span><span class="p">,</span> <span class="n">topology</span><span class="o">=</span><span class="n">topology</span><span class="p">,</span> <span class="n">time</span><span class="o">=</span><span class="n">time</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">cell_lengths</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="n">t</span><span class="o">.</span><span class="n">unitcell_lengths</span> <span class="o">=</span> <span class="n">cell_lengths</span>
+        <span class="n">t</span><span class="o">.</span><span class="n">unitcell_angles</span> <span class="o">=</span> <span class="n">cell_angles</span>
+    <span class="k">return</span> <span class="n">t</span>
+
+</div>
+<span class="nd">@_FormatRegistry.register_fileobject</span><span class="p">(</span><span class="s">&#39;.lammpstrj&#39;</span><span class="p">)</span>
+<div class="viewcode-block" id="LAMMPSTrajectoryFile"><a class="viewcode-back" href="../../../apidoc/mbuild.formats.html#mbuild.formats.lammps.LAMMPSTrajectoryFile">[docs]</a><span class="k">class</span> <span class="nc">LAMMPSTrajectoryFile</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Interface for reading and writing to a LAMMPS lammpstrj files.</span>
+<span class="sd">    This is a file-like object, that both reading or writing depending</span>
+<span class="sd">    on the `mode` flag. It implements the context manager protocol,</span>
+<span class="sd">    so you can also use it with the python &#39;with&#39; statement.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    filename : str</span>
+<span class="sd">        The filename to open. A path to a file on disk.</span>
+<span class="sd">    n_atoms : int</span>
+<span class="sd">        The number of atoms in the system. This is _required_ when mode == &#39;r&#39;</span>
+<span class="sd">        and irrelivant when mode == &#39;w&#39;.</span>
+<span class="sd">    mode : {&#39;r&#39;, &#39;w&#39;}</span>
+<span class="sd">        The mode in which to open the file, either &#39;r&#39; for read or &#39;w&#39; for</span>
+<span class="sd">        write.</span>
+<span class="sd">    force_overwrite : bool</span>
+<span class="sd">        If opened in write mode, and a file by the name of `filename` already</span>
+<span class="sd">        exists on disk, should we overwrite it?</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span>  <span class="n">n_atoms</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s">&#39;r&#39;</span><span class="p">,</span> <span class="n">force_overwrite</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Open a LAMMPS lammpstrj file for reading/writing.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_is_open</span> <span class="o">=</span> <span class="bp">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_filename</span> <span class="o">=</span> <span class="n">filename</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_n_atoms</span> <span class="o">=</span> <span class="n">n_atoms</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_mode</span> <span class="o">=</span> <span class="n">mode</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_frame_index</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="c"># track which line we&#39;re on. this is not essential, but its useful</span>
+        <span class="c"># when reporting errors to the user to say what line it occured on.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_line_counter</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="k">if</span> <span class="n">mode</span> <span class="o">==</span> <span class="s">&#39;r&#39;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">n_atoms</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&#39;To open a lammpstrj file in mode=&quot;r&quot;, you &#39;</span>
+                                 <span class="s">&#39;must supply the number of atoms, &quot;n_atoms&quot;&#39;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">filename</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="ne">IOError</span><span class="p">(</span><span class="s">&quot;The file &#39;</span><span class="si">%s</span><span class="s">&#39; doesn&#39;t exist&quot;</span> <span class="o">%</span> <span class="n">filename</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_fh</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s">&#39;r&#39;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_is_open</span> <span class="o">=</span> <span class="bp">True</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_fh</span><span class="o">.</span><span class="n">readline</span><span class="p">()</span>  <span class="c"># read comment</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_line_counter</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="k">elif</span> <span class="n">mode</span> <span class="o">==</span> <span class="s">&#39;w&#39;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">force_overwrite</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">IOError</span><span class="p">(</span><span class="s">&quot;The file &#39;</span><span class="si">%s</span><span class="s">&#39; already exists&quot;</span> <span class="o">%</span> <span class="n">filename</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_fh</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s">&#39;w&#39;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_is_open</span> <span class="o">=</span> <span class="bp">True</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&#39;mode must be one of &quot;r&quot; or &quot;w&quot;. &#39;</span>
+                             <span class="s">&#39;you supplied &quot;{}&quot;&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">mode</span><span class="p">))</span>
+
+<div class="viewcode-block" id="LAMMPSTrajectoryFile.close"><a class="viewcode-back" href="../../../apidoc/mbuild.formats.html#mbuild.formats.lammps.LAMMPSTrajectoryFile.close">[docs]</a>    <span class="k">def</span> <span class="nf">close</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Close the lammpstrj file. &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_is_open</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_fh</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_is_open</span> <span class="o">=</span> <span class="bp">False</span>
+</div>
+    <span class="k">def</span> <span class="nf">__del__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+<div class="viewcode-block" id="LAMMPSTrajectoryFile.__enter__"><a class="viewcode-back" href="../../../apidoc/mbuild.formats.html#mbuild.formats.lammps.LAMMPSTrajectoryFile.__enter__">[docs]</a>    <span class="k">def</span> <span class="nf">__enter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Support the context manager protocol. &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span>
+</div>
+<div class="viewcode-block" id="LAMMPSTrajectoryFile.__exit__"><a class="viewcode-back" href="../../../apidoc/mbuild.formats.html#mbuild.formats.lammps.LAMMPSTrajectoryFile.__exit__">[docs]</a>    <span class="k">def</span> <span class="nf">__exit__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">exc_info</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Support the context manager protocol. &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+</div>
+<div class="viewcode-block" id="LAMMPSTrajectoryFile.read"><a class="viewcode-back" href="../../../apidoc/mbuild.formats.html#mbuild.formats.lammps.LAMMPSTrajectoryFile.read">[docs]</a>    <span class="k">def</span> <span class="nf">read</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n_frames</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">stride</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">atom_indices</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Read data from a lammpstrj file</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        n_frames : int, None</span>
+<span class="sd">            The number of frames you would like to read from the file.</span>
+<span class="sd">            If None, all of the remaining frames will be loaded.</span>
+<span class="sd">        stride : np.ndarray, optional</span>
+<span class="sd">            Read only every stride-th frame.</span>
+<span class="sd">        atom_indices : array_like, optional</span>
+<span class="sd">            If not none, then read only a subset of the atoms coordinates</span>
+<span class="sd">            from the file.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        xyz : np.ndarray, shape=(n_frames, n_atoms, 3), dtype=np.float32</span>
+<span class="sd">            The cartesian coordinates, in angstroms</span>
+<span class="sd">        cell_lengths : {np.ndarray, None}</span>
+<span class="sd">            If the file contains unitcell lengths, they will be returned as an</span>
+<span class="sd">            array of shape=(n_frames, 3). Otherwise, unitcell_angles will be</span>
+<span class="sd">            None.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_mode</span> <span class="o">==</span> <span class="s">&#39;r&#39;</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&#39;read() is only available when file is opened &#39;</span>
+                             <span class="s">&#39;in mode=&quot;r&quot;&#39;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">n_frames</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">frame_counter</span> <span class="o">=</span> <span class="n">itertools</span><span class="o">.</span><span class="n">count</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">frame_counter</span> <span class="o">=</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">n_frames</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">stride</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">stride</span> <span class="o">=</span> <span class="mi">1</span>
+
+        <span class="n">coords</span><span class="p">,</span> <span class="n">boxes</span> <span class="o">=</span> <span class="p">[],</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">frame_counter</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">coord</span><span class="p">,</span> <span class="n">box</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_read</span><span class="p">()</span>
+                <span class="k">if</span> <span class="n">atom_indices</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+                    <span class="n">coord</span> <span class="o">=</span> <span class="n">coord</span><span class="p">[</span><span class="n">atom_indices</span><span class="p">,</span> <span class="p">:]</span>
+            <span class="k">except</span> <span class="n">_EOF</span><span class="p">:</span>
+                <span class="k">break</span>
+
+            <span class="n">coords</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">coord</span><span class="p">)</span>
+            <span class="n">boxes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">box</span><span class="p">)</span>
+
+            <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">stride</span> <span class="o">-</span> <span class="mi">1</span><span class="p">):</span>
+                <span class="c"># throw away these frames</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_read</span><span class="p">()</span>
+                <span class="k">except</span> <span class="n">_EOF</span><span class="p">:</span>
+                    <span class="k">break</span>
+
+        <span class="k">return</span> <span class="n">coords</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">boxes</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+</div>
+    <span class="k">def</span> <span class="nf">_read</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Read a single frame. &quot;&quot;&quot;</span>
+        <span class="n">box</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span>
+
+        <span class="c"># --- begin header ---</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_fh</span><span class="o">.</span><span class="n">readline</span><span class="p">()</span>  <span class="c"># ITEM: TIMESTEP</span>
+        <span class="n">step</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_fh</span><span class="o">.</span><span class="n">readline</span><span class="p">())</span>  <span class="c"># timestep</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_fh</span><span class="o">.</span><span class="n">readline</span><span class="p">()</span>  <span class="c"># ITEM: NUMBER OF ATOMS</span>
+        <span class="n">n_atoms</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_fh</span><span class="o">.</span><span class="n">readline</span><span class="p">())</span>  <span class="c"># num atoms</span>
+        <span class="k">assert</span><span class="p">(</span><span class="n">n_atoms</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">_n_atoms</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_fh</span><span class="o">.</span><span class="n">readline</span><span class="p">()</span>  <span class="c"># ITEM: BOX BOUNDS xx xx xx</span>
+        <span class="n">box</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fh</span><span class="o">.</span><span class="n">readline</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>  <span class="c"># x-dim of box</span>
+        <span class="n">box</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fh</span><span class="o">.</span><span class="n">readline</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>  <span class="c"># y-dim of box</span>
+        <span class="n">box</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fh</span><span class="o">.</span><span class="n">readline</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>  <span class="c"># z-dim of box</span>
+        <span class="n">box</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">box</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>  <span class="c"># box lengths</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_fh</span><span class="o">.</span><span class="n">readline</span><span class="p">()</span>  <span class="c"># ITEM: ATOMS ...</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_line_counter</span> <span class="o">+=</span> <span class="mi">9</span>
+        <span class="c"># --- end header ---</span>
+
+        <span class="n">xyz</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_n_atoms</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
+        <span class="n">types</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_n_atoms</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="s">&#39;int&#39;</span><span class="p">)</span>
+
+        <span class="c"># --- begin body ---</span>
+        <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">n_atoms</span><span class="p">):</span>
+            <span class="n">line</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fh</span><span class="o">.</span><span class="n">readline</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">line</span> <span class="o">==</span> <span class="s">&#39;&#39;</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">_EOF</span><span class="p">()</span>
+            <span class="n">temp</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">atom_index</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">temp</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+                <span class="n">types</span><span class="p">[</span><span class="n">atom_index</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">temp</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+                <span class="n">xyz</span><span class="p">[</span><span class="n">atom_index</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="nb">float</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">temp</span><span class="p">[</span><span class="mi">2</span><span class="p">:</span><span class="mi">5</span><span class="p">]]</span>
+            <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">IOError</span><span class="p">(</span><span class="s">&#39;lammpstrj parse error on line {:d} of &quot;{:s}&quot;. &#39;</span>
+                              <span class="s">&#39;This file does not appear to be a valid &#39;</span>
+                              <span class="s">&#39;lammpstrj file.&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">_line_counter</span><span class="p">,</span>  <span class="bp">self</span><span class="o">.</span><span class="n">_filename</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_line_counter</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="c"># --- end body ---</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_frame_index</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="k">return</span> <span class="n">xyz</span><span class="p">,</span> <span class="n">box</span>
+
+<div class="viewcode-block" id="LAMMPSTrajectoryFile.write"><a class="viewcode-back" href="../../../apidoc/mbuild.formats.html#mbuild.formats.lammps.LAMMPSTrajectoryFile.write">[docs]</a>    <span class="k">def</span> <span class="nf">write</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">xyz</span><span class="p">,</span> <span class="n">cell_lengths</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Write one or more frames of data to a lammpstrj file</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        xyz : np.ndarray, shape=(n_frames, n_atoms, 3)</span>
+<span class="sd">            The cartesian coordinates of the atoms to write. By convention, the</span>
+<span class="sd">            lengths should be in units of angstroms.</span>
+<span class="sd">        cell_lengths : np.ndarray, shape=(n_frames, 3), dtype=float32, optional</span>
+<span class="sd">            The length of the periodic box in each frame, in each direction,</span>
+<span class="sd">            `a`, `b`, `c`. By convention the lengths should be in units</span>
+<span class="sd">            of angstroms.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_mode</span> <span class="o">==</span> <span class="s">&#39;w&#39;</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&#39;write() is only available when file is opened &#39;</span>
+                             <span class="s">&#39;in mode=&quot;w&quot;&#39;</span><span class="p">)</span>
+
+        <span class="n">xyz</span> <span class="o">=</span> <span class="n">ensure_type</span><span class="p">(</span><span class="n">xyz</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="s">&#39;xyz&#39;</span><span class="p">,</span> <span class="n">can_be_none</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+                <span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="bp">None</span><span class="p">,</span> <span class="bp">None</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span> <span class="n">warn_on_cast</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+                <span class="n">add_newaxis_on_deficient_ndim</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+        <span class="n">cell_lengths</span> <span class="o">=</span> <span class="n">ensure_type</span><span class="p">(</span><span class="n">cell_lengths</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="s">&#39;cell_lengths&#39;</span><span class="p">,</span>
+                <span class="n">can_be_none</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">xyz</span><span class="p">),</span> <span class="mi">3</span><span class="p">),</span> <span class="n">warn_on_cast</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+                <span class="n">add_newaxis_on_deficient_ndim</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_w_has_box</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="c"># this is the first write()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_n_atoms</span> <span class="o">=</span> <span class="n">xyz</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_fh</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&#39;TITLE : Created by MDTraj with </span><span class="si">%d</span><span class="s"> atoms</span><span class="se">\n</span><span class="s">&#39;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">_n_atoms</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">cell_lengths</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_w_has_box</span> <span class="o">=</span> <span class="bp">False</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_w_has_box</span> <span class="o">=</span> <span class="bp">True</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">_w_has_box</span> <span class="ow">is</span> <span class="bp">True</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">cell_lengths</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&#39;This lammpstrj file must contain unitcell &#39;</span>
+                                 <span class="s">&#39;information&#39;</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">_w_has_box</span> <span class="ow">is</span> <span class="bp">False</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">cell_lengths</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&#39;This lammpstrj file must not contain unitcell&#39;</span>
+                                 <span class="s">&#39; information&#39;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">()</span>
+
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">xyz</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
+            <span class="k">for</span> <span class="n">j</span><span class="p">,</span> <span class="n">coord</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">xyz</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)):</span>
+                <span class="n">lfdone</span> <span class="o">=</span> <span class="bp">False</span>
+                <span class="n">out</span> <span class="o">=</span> <span class="s">&quot;</span><span class="si">%8.3f</span><span class="s">&quot;</span> <span class="o">%</span> <span class="n">coord</span>
+                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">out</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">8</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&#39;Overflow error&#39;</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_fh</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">out</span><span class="p">)</span>
+                <span class="k">if</span> <span class="p">(</span><span class="n">j</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span> <span class="o">%</span> <span class="mi">10</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_fh</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&quot;</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">)</span>
+                    <span class="n">lfdone</span> <span class="o">=</span> <span class="bp">True</span>
+
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">lfdone</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_fh</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&quot;</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">cell_lengths</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_fh</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&quot;</span><span class="si">%8.3f</span><span class="s"> </span><span class="si">%8.3f</span><span class="s"> </span><span class="si">%8.3f</span><span class="se">\n</span><span class="s">&quot;</span> <span class="o">%</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">cell_lengths</span><span class="p">[</span><span class="n">i</span><span class="p">]))</span>
+</div>
+<div class="viewcode-block" id="LAMMPSTrajectoryFile.seek"><a class="viewcode-back" href="../../../apidoc/mbuild.formats.html#mbuild.formats.lammps.LAMMPSTrajectoryFile.seek">[docs]</a>    <span class="k">def</span> <span class="nf">seek</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">offset</span><span class="p">,</span> <span class="n">whence</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Move to a new file position</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        offset : int</span>
+<span class="sd">            A number of frames.</span>
+<span class="sd">        whence : {0, 1, 2}</span>
+<span class="sd">            0: offset from start of file, offset should be &gt;=0.</span>
+<span class="sd">            1: move relative to the current position, positive or negative</span>
+<span class="sd">            2: move relative to the end of file, offset should be &lt;= 0.</span>
+<span class="sd">            Seeking beyond the end of a file is not supported</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_mode</span> <span class="o">==</span> <span class="s">&#39;r&#39;</span><span class="p">:</span>
+            <span class="n">advance</span><span class="p">,</span> <span class="n">absolute</span> <span class="o">=</span> <span class="bp">None</span><span class="p">,</span> <span class="bp">None</span>
+            <span class="k">if</span> <span class="n">whence</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">offset</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">offset</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_frame_index</span><span class="p">:</span>
+                    <span class="n">advance</span> <span class="o">=</span> <span class="n">offset</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">_frame_index</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">absolute</span> <span class="o">=</span> <span class="n">offset</span>
+            <span class="k">elif</span> <span class="n">whence</span> <span class="o">==</span> <span class="mi">1</span> <span class="ow">and</span> <span class="n">offset</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">advance</span> <span class="o">=</span> <span class="n">offset</span>
+            <span class="k">elif</span> <span class="n">whence</span> <span class="o">==</span> <span class="mi">1</span> <span class="ow">and</span> <span class="n">offset</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">absolute</span> <span class="o">=</span> <span class="n">offset</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">_frame_index</span>
+            <span class="k">elif</span> <span class="n">whence</span> <span class="o">==</span> <span class="mi">2</span> <span class="ow">and</span> <span class="n">offset</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s">&#39;offsets from the end are not supported yet&#39;</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">IOError</span><span class="p">(</span><span class="s">&#39;Invalid argument&#39;</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">advance</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">advance</span><span class="p">):</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_read</span><span class="p">()</span>  <span class="c"># advance and throw away these frames</span>
+            <span class="k">elif</span> <span class="n">absolute</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_fh</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_fh</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_filename</span><span class="p">,</span> <span class="s">&#39;r&#39;</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_fh</span><span class="o">.</span><span class="n">readline</span><span class="p">()</span>  <span class="c"># read comment</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_frame_index</span> <span class="o">=</span> <span class="mi">0</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_line_counter</span> <span class="o">=</span> <span class="mi">1</span>
+                <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">absolute</span><span class="p">):</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_read</span><span class="p">()</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">()</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s">&#39;offsets in write mode are not supported yet&#39;</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="LAMMPSTrajectoryFile.tell"><a class="viewcode-back" href="../../../apidoc/mbuild.formats.html#mbuild.formats.lammps.LAMMPSTrajectoryFile.tell">[docs]</a>    <span class="k">def</span> <span class="nf">tell</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Current file position</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        offset : int</span>
+<span class="sd">            The current frame in the file.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_frame_index</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="LAMMPSTrajectoryFile.__len__"><a class="viewcode-back" href="../../../apidoc/mbuild.formats.html#mbuild.formats.lammps.LAMMPSTrajectoryFile.__len__">[docs]</a>    <span class="k">def</span> <span class="nf">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="s">&quot;Number of frames in the file&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">()</span>
+</pre></div></div></div>
+
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2014, Vanderbilt University.
+    </p>
+  </div>
+
+  <a href="https://github.com/snide/sphinx_rtd_theme">Sphinx theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../../',
+            VERSION:'0.4.1beta',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="../../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../../_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../../../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

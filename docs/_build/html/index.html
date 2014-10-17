@@ -1,0 +1,275 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>mBuild: a hierarchical, component based molecule builder &mdash; mbuild 0.4.1beta documentation</title>
+  
+
+  
+  
+
+  
+  <link href='https://fonts.googleapis.com/css?family=Lato:400,700|Roboto+Slab:400,700|Inconsolata:400,700' rel='stylesheet' type='text/css'>
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+    <link rel="top" title="mbuild 0.4.1beta documentation" href="#"/>
+        <link rel="next" title="Installation" href="installation.html"/> 
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/modernizr/2.6.2/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-nav-search">
+        <a href="#" class="fa fa-home"> mbuild</a>
+        <div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+        
+        
+            <ul>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="installation.html#install-with-pip">Install with pip</a></li>
+<li class="toctree-l2"><a class="reference internal" href="installation.html#dependencies">Dependencies</a></li>
+<li class="toctree-l2"><a class="reference internal" href="installation.html#testing-your-installation">Testing your installation</a></li>
+</ul>
+</li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="tutorials.html">Tutorials</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="tutorials.html#methane-atoms-bonds-and-compounds">Methane: Atoms, Bonds and Compounds</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorials.html#ethane-reading-from-files-ports-and-coordinate-transforms">Ethane: Reading from files, Ports and coordinate transforms</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorials.html#monolayer-complex-hierarchies-masks-tiling-and-writing-to-files">Monolayer: Complex hierarchies, masks, tiling and writing to files</a></li>
+</ul>
+</li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="apidoc/mbuild.html">mbuild package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="apidoc/mbuild.html#subpackages">Subpackages</a></li>
+<li class="toctree-l2"><a class="reference internal" href="apidoc/mbuild.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="apidoc/mbuild.html#module-mbuild.atom">mbuild.atom module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="apidoc/mbuild.html#module-mbuild.bond">mbuild.bond module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="apidoc/mbuild.html#module-mbuild.box">mbuild.box module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="apidoc/mbuild.html#module-mbuild.compound">mbuild.compound module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="apidoc/mbuild.html#module-mbuild.coordinate_transform">mbuild.coordinate_transform module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="apidoc/mbuild.html#module-mbuild.has_parts_mixin">mbuild.has_parts_mixin module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="apidoc/mbuild.html#module-mbuild.mbase">mbuild.mbase module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="apidoc/mbuild.html#module-mbuild.orderedset">mbuild.orderedset module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="apidoc/mbuild.html#module-mbuild.part_mixin">mbuild.part_mixin module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="apidoc/mbuild.html#module-mbuild.periodic_kdtree">mbuild.periodic_kdtree module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="apidoc/mbuild.html#module-mbuild.port">mbuild.port module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="apidoc/mbuild.html#module-mbuild.topology">mbuild.topology module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="apidoc/mbuild.html#module-mbuild.trajectory">mbuild.trajectory module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="apidoc/mbuild.html#module-mbuild.treeview">mbuild.treeview module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="apidoc/mbuild.html#module-mbuild">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="apidoc/mbuild.tools.html">mbuild.tools package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="apidoc/mbuild.tools.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="apidoc/mbuild.tools.html#module-mbuild.tools.compute">mbuild.tools.compute module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="apidoc/mbuild.tools.html#module-mbuild.tools.mask">mbuild.tools.mask module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="apidoc/mbuild.tools.html#module-mbuild.tools.polymer">mbuild.tools.polymer module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="apidoc/mbuild.tools.html#module-mbuild.tools.solvent">mbuild.tools.solvent module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="apidoc/mbuild.tools.html#module-mbuild.tools.tiled_compound">mbuild.tools.tiled_compound module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="apidoc/mbuild.tools.html#module-mbuild.tools">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="apidoc/mbuild.formats.html">mbuild.formats package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="apidoc/mbuild.formats.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="apidoc/mbuild.formats.html#module-mbuild.formats.gromacs">mbuild.formats.gromacs module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="apidoc/mbuild.formats.html#module-mbuild.formats.hoomdxml">mbuild.formats.hoomdxml module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="apidoc/mbuild.formats.html#module-mbuild.formats.lammps">mbuild.formats.lammps module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="apidoc/mbuild.formats.html#module-mbuild.formats.lammps_data">mbuild.formats.lammps_data module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="apidoc/mbuild.formats.html#module-mbuild.formats.mol2">mbuild.formats.mol2 module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="apidoc/mbuild.formats.html#module-mbuild.formats.xyz">mbuild.formats.xyz module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="apidoc/mbuild.formats.html#module-mbuild.formats">Module contents</a></li>
+</ul>
+</li>
+</ul>
+
+        
+      </div>
+      &nbsp;
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="#">mbuild</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="#">Docs</a> &raquo;</li>
+      
+    <li>mBuild: a hierarchical, component based molecule builder</li>
+      <li class="wy-breadcrumbs-aside">
+        
+          <a href="_sources/index.txt" rel="nofollow"> View page source</a>
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main">
+            
+  <div class="section" id="mbuild-a-hierarchical-component-based-molecule-builder">
+<h1>mBuild: a hierarchical, component based molecule builder<a class="headerlink" href="#mbuild-a-hierarchical-component-based-molecule-builder" title="Permalink to this headline">¶</a></h1>
+<p>mBuild is a component based molecule builder tool used to assemble complex
+molecular systems from reusable parts for molecular dynamics simulations.</p>
+<ul class="simple">
+<li>Documentation: <a class="reference external" href="http://mbuild.rtfd.org/en/develop/">http://mbuild.rtfd.org/en/develop/</a></li>
+</ul>
+<div class="section" id="installation">
+<h2>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="installation.html#install-with-pip">Install with pip</a></li>
+<li class="toctree-l2"><a class="reference internal" href="installation.html#dependencies">Dependencies</a></li>
+<li class="toctree-l2"><a class="reference internal" href="installation.html#testing-your-installation">Testing your installation</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+<div class="section" id="tutorials">
+<h2>Tutorials<a class="headerlink" href="#tutorials" title="Permalink to this headline">¶</a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="tutorials.html">Tutorials</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="tutorials.html#methane-atoms-bonds-and-compounds">Methane: Atoms, Bonds and Compounds</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorials.html#ethane-reading-from-files-ports-and-coordinate-transforms">Ethane: Reading from files, Ports and coordinate transforms</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorials.html#monolayer-complex-hierarchies-masks-tiling-and-writing-to-files">Monolayer: Complex hierarchies, masks, tiling and writing to files</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+<div class="section" id="api-reference">
+<h2>API Reference<a class="headerlink" href="#api-reference" title="Permalink to this headline">¶</a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="apidoc/mbuild.html">mbuild package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="apidoc/mbuild.tools.html">mbuild.tools package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="apidoc/mbuild.formats.html">mbuild.formats package</a></li>
+</ul>
+</div>
+</div>
+<div class="section" id="license">
+<h2>License<a class="headerlink" href="#license" title="Permalink to this headline">¶</a></h2>
+<p>mBuild is licensed under the Lesser GNU General Public License (LGPL v2.1+).</p>
+</div>
+<div class="section" id="indices-and-tables">
+<h2>Indices and tables<a class="headerlink" href="#indices-and-tables" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li><a class="reference internal" href="genindex.html"><em>Index</em></a></li>
+<li><a class="reference internal" href="py-modindex.html"><em>Module Index</em></a></li>
+<li><a class="reference internal" href="search.html"><em>Search Page</em></a></li>
+</ul>
+<a class="reference external image-reference" href="http://badge.fury.io/py/mbuild"><img alt="https://badge.fury.io/py/mbuild.png" src="https://badge.fury.io/py/mbuild.png" /></a>
+<a class="reference external image-reference" href="https://travis-ci.org/sallai/mbuild"><img alt="https://travis-ci.org/sallai/mbuild.png?branch=develop" src="https://travis-ci.org/sallai/mbuild.png?branch=develop" /></a>
+<a class="reference external image-reference" href="https://coveralls.io/r/sallai/mbuild?branch=develop"><img alt="https://coveralls.io/repos/sallai/mbuild/badge.png?branch=develop" src="https://coveralls.io/repos/sallai/mbuild/badge.png?branch=develop" /></a>
+<a class="reference external image-reference" href="http://mbuild.readthedocs.org/en/develop/"><img alt="Documentation Status" src="https://readthedocs.org/projects/mbuild/badge/?version=develop" /></a>
+</div>
+</div>
+
+
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="installation.html" class="btn btn-neutral float-right" title="Installation"/>Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2014, Vanderbilt University.
+    </p>
+  </div>
+
+  <a href="https://github.com/snide/sphinx_rtd_theme">Sphinx theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'0.4.1beta',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>
