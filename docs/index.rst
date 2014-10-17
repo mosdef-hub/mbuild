@@ -19,9 +19,8 @@ Installation
 Tutorials
 ---------
 .. toctree::
-   :glob:
 
-   tutorials/*
+   tutorials
 
 API Reference
 -------------
