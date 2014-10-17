@@ -17,7 +17,7 @@ initialization::
         def __init__(self):
             super(Methane, self).__init__()
 
-.. note:: The use of the ``super()`` method is required here to resolve
+.. :: The use of the ``super()`` method is required here to resolve
           ``Compound``'s `multiple inheritance <http://stackoverflow.com/questions/3277367/how-does-pythons-super-work-with-multiple-inheritance>`_
           from the ``MBase``, ``PartMixin`` and ``HasPartsMixin`` classes.
 
@@ -149,8 +149,8 @@ Let's start by reading a methyl group from a .pdb file::
             self.append_from_file(get_fn('methyl.pdb'))
 
 .. note:: The ``get_fn()`` function will look up a file name in ``mbuild/testing/reference``
-where we keep all of the systems we use for testing. This is purely a convenience function
-that we heartlessly copied from the developers of MDTraj.
+          where we keep all of the systems we use for testing. This is purely a convenience function
+          that we heartlessly copied from the developers of MDTraj.
 
 Now let's use our first coordinate transform to center the methyl at its carbon
 atom::
@@ -168,7 +168,7 @@ atom::
 
             translate(self, -self.C[0])
 
-Note here that when referring to the ``Atom`` object in a mathematical
+ here that when referring to the ``Atom`` object in a mathematical
 expression, we operate directly on its coordinates. This functionality is
 currently implemented for addition and subtraction only.
 
@@ -223,16 +223,16 @@ move the port a tiny bit away from the carbon::
     if __name__ == '__main__':
         methyl = Methyl()
         methyl.visualize(show_ports=True)
+    
+By default, ``Ports`` are never output from the mBuild structure. However,
+it can be useful to look at a molecule with the ``Ports`` to check your work as
+you go. The default VMD settings don't show ports very well so let's change
+the representation style to small vdW spheres:
 
 .. image:: images/methyl_port.png
     :align: center
     :scale: 50%
     :alt: Methyl group with one Port.
-
-By default, ``Ports`` are never output from the mBuild structure. However,
-it can be useful to look at a molecule with the ``Ports`` to check your work as
-you go. The default VMD settings don't show ports very well so let's change
-the representation style to small vdW spheres:
 
 When two ``Ports`` are connected, they are forced to overlap in space and their
 parent ``Compounds`` are rotated and translated by the same amount. If we tried
@@ -240,14 +240,14 @@ to connect two of our ``Methyls`` right now, not only would the ``Ports`` overla
 perfectly, but the carbons and hydrogens would also perfectly overlap. What we
 need is a second ``Port`` facing the opposite direction.
 
-.. note:: By convention, we try to label ``Ports`` successively as 'down', 'up',
-'left', 'right', 'front', 'back' which should roughly correspond to the relative
-directions that they face. Additionally, when we attach ``Ports`` to surfaces,
-we try to make them point upward or outward and label these as ``up``. This is a
-bit tricky to enforce because the system is so flexible so use your best judgement
-and try to be consistent! The more components we collect in our library with the
-same labeling conventions, the easier it becomes to build ever more complex
-structures.
+.. note:: By convention, we try to label ``Ports`` successively as 'down', 'up', 'left',
+          'right', 'front', 'back' which should roughly correspond to the relative
+          directions that they face. Additionally, when we attach ``Ports`` to surfaces,
+          we try to make them point upward or outward and label these as ``up``. This is a
+          bit tricky to enforce because the system is so flexible so use your best judgement
+          and try to be consistent! The more components we collect in our library with the
+          same labeling conventions, the easier it becomes to build ever more complex
+          structures.
 
 So let's add that second ``Port`` facing in the opposite direction so that we
 can attach the ``Methyl`` *to* and *from* other ``Compounds``::
@@ -275,7 +275,7 @@ can attach the ``Methyl`` *to* and *from* other ``Compounds``::
             rotate_around_z(self.up, pi)
             translate(self.down, [0, -0.07, 0])
 
-Now the fun part: Stick 'em together to create an ethane::
+Now the fun part: stick 'em together to create an ethane::
 
     from mbuild.compound import Compound
     from mbuild.examples.ethane.methyl import Methyl
@@ -291,7 +291,7 @@ Now the fun part: Stick 'em together to create an ethane::
 
     if __name__ == '__main__':
         ethane = Ethane()
-        ethane.visualize()
+        ethane.visualize(show_ports=True)
 
 
 .. image:: images/ethane.png
