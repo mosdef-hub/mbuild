@@ -174,7 +174,7 @@ currently implemented for addition and subtraction only.
 
 So now we have a methyl group loaded up and centered. In order to connect
 ``Compounds`` in mBuild, we make use of a special type of ``Compound``: the ``Port``.
-A ``Port`` is a ``Compound`` with four "ghost" ``Atoms`` (of type 'G' by convention).
+A ``Port`` is a ``Compound`` with four "ghost" ``Atoms`` (of kind 'G' by convention).
 In addition ``Ports`` have an ``anchor`` attribute which typically points to an
 ``Atom`` that the ``Port`` should be associated with. In our methyl group, the
 ``Port`` should be anchored to the carbon atom so that we can now form ``Bonds``
@@ -231,7 +231,7 @@ move the port a tiny bit away from the carbon::
 
 By default, ``Ports`` are never output from the mBuild structure. However,
 it can be useful to look at a molecule with the ``Ports`` to check your work as
-you go. The default VMD settings don't show ports where well so let's change
+you go. The default VMD settings don't show ports very well so let's change
 the representation style to small vdW spheres:
 
 When two ``Ports`` are connected, they are forced to overlap in space and their
