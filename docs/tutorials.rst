@@ -111,12 +111,10 @@ take a look at it::
           methane = Methane()
           methane.visualize()
 
-.. figure:: images/methane.png
+.. image:: images/methane.png
     :align: center
     :scale: 50%
     :alt: Methane molecule.
-
-     A methane molecule.
 
 .. note:: The ``visualize()`` method currently invokes a very primative call to
           VMD from the command-line. If it fails for you but you do have VMD
@@ -227,12 +225,10 @@ move the port a tiny bit away from the carbon::
         methyl = Methyl()
         methyl.visualize(show_ports=True)
 
-.. figure:: images/methyl_port.png
+.. image:: images/methyl_port.png
     :align: center
     :scale: 50%
     :alt: Methyl group with one Port.
-
-     A methyl group with one ``Port``.
 
 By default, ``Ports`` are never output from the mBuild structure. However,
 it can be useful to look at a molecule with the ``Ports`` to check your work as
@@ -299,12 +295,10 @@ Now the fun part: Stick 'em together to create an ethane::
         ethane.visualize()
 
 
-.. figure:: images/ethane.png
+.. image:: images/ethane.png
     :align: center
     :scale: 50%
     :alt: Ethane with all Ports shown.
-
-     An ethane molecule with all four ``Ports`` shown overlapping.
 
 The ``equivalence_transform()`` function takes a ``Compound`` and then rotates
 and translates it such that two other ``Compounds`` overlap. Typically, as in
