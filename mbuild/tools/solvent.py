@@ -27,7 +27,6 @@ def solvent_box(solvent, box):
     solvent_box = Box(lengths=solvent.periodicity)
     num_replicas = np.ceil(box.lengths / solvent_box.lengths)
     num_replicas = num_replicas.astype('int')
-    print num_replicas
     compound = Compound()
     for xi in range(num_replicas[0]):
         for yi in range(num_replicas[1]):
@@ -81,7 +80,6 @@ def solvate(host_compound, guest_compound, host_box, guest_box, overlap=vdw_radi
 
     num_replicas = np.ceil(host_box.lengths / guest_box.lengths)
     num_replicas = num_replicas.astype('int')
-    print num_replicas
     for xi in range(num_replicas[0]):
         for yi in range(num_replicas[1]):
             for zi in range(num_replicas[2]):

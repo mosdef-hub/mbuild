@@ -158,10 +158,10 @@ class Compound(MBase, PartMixin, HasPartsMixin):
         """
         self.to_trajectory().save(filename, **kwargs)
 
-    def to_trajectory(self):
+    def to_trajectory(self, show_ports=False):
         """Convert the Compound to a Trajectory. """
         from mbuild.trajectory import Trajectory
-        return Trajectory.from_compound(self)
+        return Trajectory.from_compound(self, show_ports)
 
     @classmethod
     def load(cls, filename, relative_to_module=None, frame=0):
@@ -169,7 +169,7 @@ class Compound(MBase, PartMixin, HasPartsMixin):
         traj = Trajectory.load(filename, relative_to_module=relative_to_module)
         return traj.to_compound(frame=frame)
 
-    def visualize(self):
+    def visualize(self, show_ports=False):
         """Visualize the Compound using VMD.
 
         Assumes you have VMD installed and can call it from the command line via
@@ -178,7 +178,7 @@ class Compound(MBase, PartMixin, HasPartsMixin):
         TODO: Make more useful/robust. Look into pizza.py's vmd.py.
         """
         filename = 'visualize_{}.pdb'.format(self.__class__.__name__)
-        traj = self.to_trajectory()
+        traj = self.to_trajectory(show_ports)
         traj.save(filename=filename)
         import os
         try:

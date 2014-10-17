@@ -33,8 +33,10 @@ class Trajectory(md.Trajectory):
             super(Trajectory, self).__init__(*args, **kwargs)
 
     @classmethod
-    def from_compound(cls, compound):
-        atom_list, atom_id_to_idx = compound.atom_list_by_kind('*', excludeG=True, with_id_to_idx_mapping=True)
+    def from_compound(cls, compound, show_ports=False):
+        exclude = not show_ports
+        atom_list, atom_id_to_idx = compound.atom_list_by_kind(
+            '*', excludeG=exclude, with_id_to_idx_mapping=True)
 
         t = Topology.from_compound(compound, atom_list=atom_list)
 
@@ -66,13 +68,11 @@ class Trajectory(md.Trajectory):
                     atoms[idx].pos = self.xyz[frame, idx]
                     idx += 1
 
-
     def to_compound(self, part=None, frame=0):
         if part is None:
             part = Compound()
 
         assert(isinstance(part, Compound))
-
         atom_mapping = {}
         idx = 0
         for chain in self.topology.chains:
@@ -225,7 +225,7 @@ if __name__ == "__main__":
 
     compound = t1.to_compound()
 
-    print compound
+    print(compound)
 
     t2 = Trajectory.from_compound(compound)
     t2.save("../../../mbuild/tests/methyl2.pdb")
