@@ -1,8 +1,5 @@
 numpy
 scipy
-cython
-pandas
-mdtraj
 future
 networkx
 sphinxcontrib-napoleon

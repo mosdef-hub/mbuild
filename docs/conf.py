@@ -18,7 +18,7 @@ import mock
 import mbuild.version
 
 #MOCK_MODULES = ['numpy', 'numpy.linalg', 'numpy.array', 'scipy', 'mdtraj']
-MOCK_MODULES = []
+MOCK_MODULES = ['pandas', 'mdtraj']
 for mod_name in MOCK_MODULES:
     sys.modules[mod_name] = mock.Mock()
 
