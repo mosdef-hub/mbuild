@@ -148,10 +148,9 @@ Let's start by reading a methyl group from a .pdb file::
 
             self.append_from_file(get_fn('methyl.pdb'))
 
-.. note:: The ``get_fn()`` function will look up a file name in
-``mbuild/testing/reference`` where we keep all of the systems we use for testing.
-This is purely a convenience function that we heartlessly copied from the
-developers of MDTraj.
+.. note:: The ``get_fn()`` function will look up a file name in ``mbuild/testing/reference``
+where we keep all of the systems we use for testing. This is purely a convenience function
+that we heartlessly copied from the developers of MDTraj.
 
 Now let's use our first coordinate transform to center the methyl at its carbon
 atom::
