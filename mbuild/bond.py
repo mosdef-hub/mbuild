@@ -1,13 +1,12 @@
 from __future__ import print_function
+from copy import deepcopy
+
+import numpy as np
 
 from mbuild.mbase import MBase
 from mbuild.part_mixin import PartMixin
 
 __author__ = 'sallai'
-
-from copy import deepcopy
-
-import numpy as np
 
 
 class Bond(MBase, PartMixin):
@@ -46,13 +45,10 @@ class Bond(MBase, PartMixin):
         else:
             self.kind = '{0}-{1}'.format(atom1.kind, atom2.kind)
 
-        # self.parent = None
-
         # Ensure Atoms in Bond know about the Bond.
         atom1.bonds.add(self)
         atom2.bonds.add(self)
 
-        # self.referrers = set()
 
     @property
     def atom1(self):
@@ -61,19 +57,6 @@ class Bond(MBase, PartMixin):
     @property
     def atom2(self):
         return self._atom2
-
-    # def ancestors(self):
-    #     """Generate all ancestors of the Compound recursively.
-    #
-    #     Yields:
-    #         ancestor (Compound): A Compound one or more levels higher in the
-    #             hierarchy.
-    #
-    #     """
-    #     yield self.parent
-    #     if self.parent is not None:
-    #         for a in self.parent.ancestors():
-    #             yield a
 
     def other_atom(self, atom):
         """Returns the other Atom in the Bond. """

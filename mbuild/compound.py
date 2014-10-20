@@ -16,15 +16,16 @@ from orderedset import OrderedSet
 class Compound(MBase, PartMixin, HasPartsMixin):
     """A building block in the mBuild hierarchy.
 
-    Compound is the superclass of all composite building blocks in the mBuild hierarchy,
-    that is, all composite building blocks must inherit from compound, either directly
-    or indirectly. The design of Compound follows the Composite design pattern ( Gamma,
+    Compound is the superclass of all composite building blocks in the mBuild hierarchy.
+    That is, all composite building blocks must inherit from compound, either directly
+    or indirectly. The design of Compound follows the Composite design pattern (Gamma,
     Erich; Richard Helm; Ralph Johnson; John M. Vlissides (1995). Design Patterns:
     Elements of Reusable Object-Oriented Software. Addison-Wesley. p. 395. ISBN
-    0-201-63361-2.), with Compound being the composite, and Atom playing the role of primitive (leaf) part.
+    0-201-63361-2.), with Compound being the composite, and Atom playing the role
+    of the primitive (leaf) part.
 
     Compound maintains a list of parts (contained Compounds, Atoms, Bonds, etc., that inherit
-    from PartMixin), and provides a means to tag the parts with labels, so that the parts can
+    from PartMixin), and provides a means to tag the parts with labels, so that the parts can be
     easily looked up later. Labels may also point to objects outside the Compound's containment hierarchy.
     Compound has built-in support for copying and deepcopying Compound hierarchies, enumerating atoms
     or bonds in the hierarchy, proximity based searches, visualization, I/O operations, and a number
@@ -227,7 +228,7 @@ class Compound(MBase, PartMixin, HasPartsMixin):
 
         Args:
             excludeG (bool): Exclude Atoms of kind 'G' (typically reserved for
-                             Ports).
+                Ports).
         Returns:
             Box: Simulation box initialzied with min and max coordinates.
         """
