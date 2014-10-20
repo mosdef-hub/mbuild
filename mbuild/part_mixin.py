@@ -6,7 +6,7 @@ class PartMixin(object):
 
     Attribute:
         parent (Compound): The parent Compound that contains this part Can be
-        None if this compound is the root of the containment hierarchy.
+            None if this compound is the root of the containment hierarchy.
     """
     def __init__(self, *args, **kwargs):
         super(PartMixin, self).__init__()

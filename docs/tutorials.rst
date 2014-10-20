@@ -17,7 +17,7 @@ initialization::
         def __init__(self):
             super(Methane, self).__init__()
 
-.. :: The use of the ``super()`` method is required here to resolve
+.. note:: The use of the ``super()`` method is required here to resolve
           ``Compound``'s `multiple inheritance <http://stackoverflow.com/questions/3277367/how-does-pythons-super-work-with-multiple-inheritance>`_
           from the ``MBase``, ``PartMixin`` and ``HasPartsMixin`` classes.
 

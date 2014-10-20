@@ -91,6 +91,7 @@ class Trajectory(md.Trajectory):
         for a1, a2 in self.topology.bonds:
             atom1 = atom_mapping[a1]
             atom2 = atom_mapping[a2]
+            part.add(Bond(atom1, atom2))
 
         return part
 

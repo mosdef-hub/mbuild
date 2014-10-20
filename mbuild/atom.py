@@ -92,19 +92,19 @@ class Atom(MBase, PartMixin):
         cls = self.__class__
         newone = cls.__new__(cls)
 
-        # remember the topmost component being deepcopied
+        # Remember the topmost component being deepcopied.
         if len(memo) == 0:
             memo[0] = self
         memo[id(self)] = newone
 
-        # copy fields that don't need recursion
+        # Copy fields that don't need recursion.
         newone.referrers = set()
         newone.bonds = set()
         newone.kind = deepcopy(self.kind, memo)
         newone.pos = deepcopy(self.pos, memo)
         newone.charge = deepcopy(self.charge, memo)
 
-        # copy the parent of everybody, except the topmost compound being deepcopied
+        # Copy the parent of everybody, except the topmost compound being tom1deepcopied.
         if memo[0] == self or isinstance(memo[0], Bond):
             newone.parent = None
         else:
