@@ -16,9 +16,8 @@ class Ethane(Compound):
 
 def main():
     ethane = Ethane()
-    ethane = ethane.to_trajectory()
-    ethane.top.find_forcefield_terms()
-    ethane.save('ethane.hoomdxml')
+    return ethane
+
 
 if __name__ == "__main__":
     main()
