@@ -78,7 +78,7 @@ class Compound(MBase, PartMixin, HasPartsMixin):
 
     @property
     def n_atoms(self):
-        return sum([1 for _ in self.yield_atoms()])
+        return sum([1 for _ in self.atom_list_by_kind(excludeG=True)])
 
     def atom_list_by_kind(self, kind='*', excludeG=False, with_id_to_idx_mapping=False):
         atom_list = []
