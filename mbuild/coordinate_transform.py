@@ -9,8 +9,8 @@ from numpy.linalg import *
 
 class CoordinateTransform(object):
     def __init__(self, T=None):
-        if (T == None):
-            T = eye(4);
+        if T is None:
+            T = eye(4)
 
         self.T = T
         self.Tinv = inv(T)

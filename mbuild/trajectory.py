@@ -19,18 +19,52 @@ from mbuild.formats.mol2 import save_mol2
 from mbuild.formats.xyz import save_xyz
 
 
-class Trajectory(md.Trajectory):
+class Trajectory(object):
 
     def __init__(self, *args, **kwargs):
         self._atom_kdtrees = {}
 
         if "trajectory" in kwargs:
-            # we're casting an md.Trajectory to mbuild Trajectory
+            # we're wrapping an mdtraj Trajectory passed as a kwarg
             trajectory = kwargs["trajectory"]
-            assert(isinstance(trajectory, md.Trajectory))
-            super(Trajectory, self).__init__(trajectory.xyz, trajectory.topology, time=trajectory.time, unitcell_lengths=trajectory.unitcell_lengths, unitcell_angles=trajectory.unitcell_angles)
+            self._w_trajectory = trajectory
         else:
-            super(Trajectory, self).__init__(*args, **kwargs)
+            # we're wrapping an newly created md.Trajectory
+            self._w_trajectory = md.Trajectory(*args, **kwargs)
+
+        # wrap the topology
+        self._w_trajectory.topology = Topology(topology=self._w_trajectory.topology)
+
+    @property
+    def topology(self):
+        return self._w_trajectory.topology
+
+    @topology.setter
+    def topology(self, t):
+
+        if hasattr(t, '_w_topology'):
+            # it's a wrapper -- use it as is
+            self._w_trajectory.topology = t
+        else:
+            assert isinstance(t, md.Topology)
+            # it's an mdtraj topology -- wrap it
+            self._w_trajectory.topology = Topology(topology=t)
+
+    @property
+    def top(self):
+        return self._topology
+
+    @top.setter
+    def top(self,t):
+        self.topology = t
+
+    def __getattr__(self, attr_name):
+        return getattr(self._w_trajectory, attr_name)
+
+    def __setattr__(self, key, value):
+        if key in ['unitcell_vectors', 'unitcell_lengths', 'unitcell_angles', 'xyz', 'time']:
+            self._w_trajectory.__setattr__(key, value)
+        self.__dict__[key] = value
 
     @classmethod
     def from_compound(cls, compound, show_ports=False):
@@ -218,8 +252,25 @@ class Trajectory(md.Trajectory):
         elif filename.startswith("data.") or filename.startswith(".lmp"):
             save_lammps_data(traj=self, filename=filename, **kwargs)
         else:
-            super(Trajectory, self).save(filename, **kwargs)
+            self._w_trajectory.save(filename, **kwargs)
 
+
+    def __getitem__(self, key):
+        "Get a slice of this trajectory"
+        return self._w_trajectory.slice(key)
+
+    def __str__(self):
+        return "<%s>" % (self._string_summary_basic())
+
+    def __repr__(self):
+        return "<%s at 0x%02x>" % (self._string_summary_basic(), id(self))
+
+    def _string_summary_basic(self):
+        """Basic summary of traj in string form."""
+        unitcell_str = 'and unitcells' if self._have_unitcell else 'without unitcells'
+        value = "mbuild.Trajectory with %d frames, %d atoms, %d residues, %s" % (
+                    self.n_frames, self.n_atoms, self.n_residues, unitcell_str)
+        return value
 
 if __name__ == "__main__":
     t1 = Trajectory.load("../../../mbuild/tests/methyl.pdb")
