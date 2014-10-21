@@ -9,18 +9,30 @@ from mdtraj.core.element import Element
 from mdtraj.core import element as elem
 
 
-class Topology(MDTTopology):
+class Topology(object):
     """Derivative of MDTraj's Topology class with additional functionalities.
 
     Most notably, provides conversion to and from mBuild Compounds.
     """
-    def __init__(self):
+    def __init__(self, topology=None):
         """Initialize an mBuild Topology. """
-        super(Topology, self).__init__()
+
+        if topology is not None:
+            self._w_topology = topology
+        else:
+            self._w_topology = MDTTopology()
+
+        # extra member variables on top of mdtraj's functionality
         self._ff_bonds = []
         self._ff_angles = []
         self._ff_dihedrals = []
         self._ff_impropers = []
+
+
+    def __getattr__(self, attr_name):
+        # redirect attribute access to the wrapped topology
+        return getattr(self.__dict__['_w_topology'], attr_name)
+
 
     @property
     def ff_bonds(self):

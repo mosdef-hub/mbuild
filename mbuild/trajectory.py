@@ -19,18 +19,48 @@ from mbuild.formats.mol2 import save_mol2
 from mbuild.formats.xyz import save_xyz
 
 
-class Trajectory(md.Trajectory):
+class Trajectory(object):
 
     def __init__(self, *args, **kwargs):
         self._atom_kdtrees = {}
 
         if "trajectory" in kwargs:
-            # we're casting an md.Trajectory to mbuild Trajectory
+            # we're wrapping an mdtraj Trajectory passed as a kwarg
             trajectory = kwargs["trajectory"]
-            assert(isinstance(trajectory, md.Trajectory))
-            super(Trajectory, self).__init__(trajectory.xyz, trajectory.topology, time=trajectory.time, unitcell_lengths=trajectory.unitcell_lengths, unitcell_angles=trajectory.unitcell_angles)
+            self._w_trajectory = trajectory
         else:
-            super(Trajectory, self).__init__(*args, **kwargs)
+            # we're wrapping an newly created md.Trajectory
+            self._w_trajectory = md.Trajectory(*args, **kwargs)
+
+        # wrap the topology
+        self._w_trajectory.topology = Topology(topology=self._w_trajectory.topology)
+
+    @property
+    def topology(self):
+        return self._w_trajectory.topology
+
+    @topology.setter
+    def topology(self, t):
+
+        if hasattr(t, '_w_topology'):
+            # it's a wrapper -- use it as is
+            self._w_trajectory.topology = t
+        else:
+            assert isinstance(t, md.Topology)
+            # it's an mdtraj topology -- wrap it
+            self._w_trajectory.topology = Topology(topology=t)
+
+    @property
+    def top(self):
+        return self._topology
+
+    @top.setter
+    def top(self,t):
+        self.topology = t
+
+    def __getattr__(self, attr_name):
+        return getattr(self._w_trajectory, attr_name)
+
 
     @classmethod
     def from_compound(cls, compound, show_ports=False):
