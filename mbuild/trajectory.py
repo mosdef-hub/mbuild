@@ -61,6 +61,10 @@ class Trajectory(object):
     def __getattr__(self, attr_name):
         return getattr(self._w_trajectory, attr_name)
 
+    def __setattr__(self, key, value):
+        if key in ['unitcell_vectors', 'unitcell_lengths', 'unitcell_angles', 'xyz', 'time']:
+            self._w_trajectory.__setattr__(key, value)
+        self.__dict__[key] = value
 
     @classmethod
     def from_compound(cls, compound, show_ports=False):
@@ -247,8 +251,25 @@ class Trajectory(object):
         elif filename.startswith("data.") or filename.startswith(".lmp"):
             save_lammps_data(traj=self, filename=filename, **kwargs)
         else:
-            super(Trajectory, self).save(filename, **kwargs)
+            self._w_trajectory.save(filename, **kwargs)
 
+
+    def __getitem__(self, key):
+        "Get a slice of this trajectory"
+        return self._w_trajectory.slice(key)
+
+    def __str__(self):
+        return "<%s>" % (self._string_summary_basic())
+
+    def __repr__(self):
+        return "<%s at 0x%02x>" % (self._string_summary_basic(), id(self))
+
+    def _string_summary_basic(self):
+        """Basic summary of traj in string form."""
+        unitcell_str = 'and unitcells' if self._have_unitcell else 'without unitcells'
+        value = "mbuild.Trajectory with %d frames, %d atoms, %d residues, %s" % (
+                    self.n_frames, self.n_atoms, self.n_residues, unitcell_str)
+        return value
 
 if __name__ == "__main__":
     t1 = Trajectory.load("../../../mbuild/tests/methyl.pdb")

@@ -1,3 +1,5 @@
+import mdtraj
+
 __author__ = 'sallai'
 import itertools
 from copy import deepcopy
@@ -32,6 +34,16 @@ class Topology(object):
     def __getattr__(self, attr_name):
         # redirect attribute access to the wrapped topology
         return getattr(self.__dict__['_w_topology'], attr_name)
+
+    @classmethod
+    def from_dataframe(cls, atoms, bonds=None):
+        return Topology(topology=mdtraj.Topology.from_dataframe(atoms, bonds))
+
+    @classmethod
+    def from_openmm(cls, value):
+        return Topology(topology=mdtraj.Topology.from_openmm(value))
+
+
 
 
     @property
