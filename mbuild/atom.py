@@ -1,13 +1,10 @@
-from mbuild.mbase import MBase
-from mbuild.part_mixin import PartMixin
-
-__author__ = 'sallai'
-
 from copy import deepcopy
 
 import numpy as np
 
 from mbuild.bond import Bond
+from mbuild.mbase import MBase
+from mbuild.part_mixin import PartMixin
 
 
 class Atom(MBase, PartMixin):
@@ -49,8 +46,6 @@ class Atom(MBase, PartMixin):
         self.kind = kind
         self.pos = np.asarray(pos, dtype=float)
         self.charge = charge
-        # self.parent = None
-        # self.referrers = set()
         self.bonds = set()
 
     def bonded_atoms(self, memo=dict()):
@@ -100,11 +95,13 @@ class Atom(MBase, PartMixin):
         # Copy fields that don't need recursion.
         newone.referrers = set()
         newone.bonds = set()
+
+        # Do the rest recursively.
         newone.kind = deepcopy(self.kind, memo)
         newone.pos = deepcopy(self.pos, memo)
         newone.charge = deepcopy(self.charge, memo)
 
-        # Copy the parent of everybody, except the topmost compound being tom1deepcopied.
+        # Copy parents, except the topmost compound being deepcopied.
         if memo[0] == self or isinstance(memo[0], Bond):
             newone.parent = None
         else:

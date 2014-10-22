@@ -195,7 +195,7 @@ class Compound(MBase, PartMixin, HasPartsMixin):
         Assumes you have VMD installed and can call it from the command line via
         'vmd'.
 
-        TODO: Make more useful/robust. Look into pizza.py's vmd.py.
+        TODO: Look into pizza.py's vmd.py. See issue #32.
         """
         filename = 'visualize_{}.pdb'.format(self.__class__.__name__)
         traj = self.to_trajectory(show_ports)
@@ -255,14 +255,14 @@ class Compound(MBase, PartMixin, HasPartsMixin):
         return Box(mins=min_coords, maxs=max_coords)
 
     def atoms_in_range(self, point, radius, max_items=10):
-        """Find all Atoms within a radius of a point.
+        """Return the indices of Atoms within a radius of a point.
 
         Args:
-            point:
-            radius:
-            max_items:
+            point (list): The reference point in cartesian coordinates.
+            radius (float): Find Atoms within this radius.
+            max_items (int): Maximum number of Atoms to find.
         Returns:
-            list of Atoms within range
+            List of Atoms within specified range.
         """
         atoms = self.atom_list_by_kind(excludeG=True)
         traj = self.to_trajectory()

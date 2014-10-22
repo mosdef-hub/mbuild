@@ -1,5 +1,3 @@
-__author__ = 'sallai'
-
 import numpy as np
 
 
@@ -10,7 +8,6 @@ class Box(object):
        mins (np.ndarray of floats): Minimum x, y, z coordinates.
        maxs (np.ndarray of floats): Maximum x, y, z coordinates.
        lengths (np.ndarray of floats): Box length in x, y and z directions. 
-
     """
 
     def __init__(self, lengths=None, mins=None, maxs=None):
@@ -28,7 +25,6 @@ class Box(object):
             maxs (np.ndarray of floats, optional): Maximum x, y, z coordinates.
             lengths (np.ndarray of floats, optional): Box length in x, y and z
                 directions. 
-
         """
         if lengths is not None:
             assert(mins is None and maxs is None)

@@ -2,7 +2,6 @@ import mdtraj
 
 __author__ = 'sallai'
 import itertools
-from copy import deepcopy
 
 import numpy as np
 
@@ -24,15 +23,14 @@ class Topology(object):
         else:
             self._w_topology = MDTTopology()
 
-        # extra member variables on top of mdtraj's functionality
+        # Member variables extending mdtraj's functionality.
         self._ff_bonds = []
         self._ff_angles = []
         self._ff_dihedrals = []
         self._ff_impropers = []
 
-
     def __getattr__(self, attr_name):
-        # redirect attribute access to the wrapped topology
+        """Redirect attribute access to the wrapped topology. """
         return getattr(self.__dict__['_w_topology'], attr_name)
 
     @classmethod
@@ -42,9 +40,6 @@ class Topology(object):
     @classmethod
     def from_openmm(cls, value):
         return Topology(topology=mdtraj.Topology.from_openmm(value))
-
-
-
 
     @property
     def ff_bonds(self):

@@ -85,23 +85,23 @@ class Bond(MBase, PartMixin):
         cls = self.__class__
         newone = cls.__new__(cls)
         
-        # remember the topmost component being deepcopied
+        # Remember the topmost component being deepcopied.
         if len(memo) == 0:
             print('bond is root of deepcopy')
             memo[0] = self
         memo[id(self)] = newone
         
-        # copy fields that don't need recursion
+        # Copy fields that don't need recursion.
         newone.kind = self.kind
         newone.referrers = set()
 
-        # do the rest recursively        
+        # Do the rest recursively.
         newone._atom1 = deepcopy(self.atom1, memo)
         newone._atom2 = deepcopy(self.atom2, memo)
         newone._atom1.bonds.add(newone)
         newone._atom2.bonds.add(newone)
 
-        # copy the parent of everybody, except the topmost compound being deepcopied
+        # Copy parents, except the topmost compound being deepcopied.
         if memo[0] == self:
             newone.parent = None
         else:
