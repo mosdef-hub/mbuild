@@ -124,8 +124,12 @@ class Compound(MBase, PartMixin, HasPartsMixin):
             return bond_list
 
     def referenced_ports(self):
-        from mbuild.port import Port
+        """Find all Ports referenced by this Compound.
 
+        Returns:
+            A list of Ports currently referenced by this Compound.
+        """
+        from mbuild.port import Port
         return [port for port in self.labels.values() if isinstance(port, Port)]
 
     def post_remove(self, removed_part):
