@@ -10,7 +10,7 @@ class TestExamplesMethane:
         from mbuild.examples.methane.methane import Methane
         return Methane()
 
-    def test_n_atoms(self, methane):
+    def test_numbers(self, methane):
         assert methane.n_atoms == 5
         assert methane.n_bonds == 4
 

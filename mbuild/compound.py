@@ -132,8 +132,8 @@ class Compound(MBase, PartMixin, HasPartsMixin):
         from mbuild.port import Port
         return [port for port in self.labels.values() if isinstance(port, Port)]
 
-    def post_remove(self, removed_part):
-        super(Compound, self).post_remove(removed_part)
+    def _remove(self, removed_part):
+        super(Compound, self)._remove(removed_part)
 
         # If removing an atom, make sure to remove the bonds it's part of.
         if isinstance(removed_part, Atom):

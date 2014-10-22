@@ -115,14 +115,14 @@ class HasPartsMixin(object):
         objs_to_remove.difference_update(intersection)
 
         for removed_part in intersection:
-            self.post_remove(removed_part)
+            self._remove(removed_part)
 
         # Remove the part recursively from sub-components.
         for part in self.parts:
             if isinstance(part, HasPartsMixin) and len(objs_to_remove) > 0:
                 part.remove(objs_to_remove)
 
-    def post_remove(self, removed_part):
+    def _remove(self, removed_part):
         removed_part.parent = None
         # Remove labels in the hierarchy pointing to this part.
         referrers_to_remove = set()
