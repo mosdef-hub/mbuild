@@ -35,8 +35,7 @@ class Trajectory(md.Trajectory):
     @classmethod
     def from_compound(cls, compound, show_ports=False):
         exclude = not show_ports
-        atom_list, atom_id_to_idx = compound.atom_list_by_kind(
-            '*', excludeG=exclude, with_id_to_idx_mapping=True)
+        atom_list = compound.atom_list_by_kind('*', excludeG=exclude)
 
         t = Topology.from_compound(compound, atom_list=atom_list)
 
@@ -59,14 +58,11 @@ class Trajectory(md.Trajectory):
     def update_compound(self, compound, frame=0):
         assert(isinstance(compound, Compound))
 
-        atoms, atom_id_to_idx = compound.atom_list_by_kind('*', excludeG=True, with_id_to_idx_mapping=True)
-
-        idx = 0
         for chain in self.topology.chains:
             for res in chain.residues:
                 for atom in res.atoms:
-                    atoms[idx].pos = self.xyz[frame, idx]
-                    idx += 1
+                    idx = atom.index
+                    compound.atoms[idx].pos = self.xyz[frame, idx]
 
     def to_compound(self, part=None, frame=0):
         if part is None:

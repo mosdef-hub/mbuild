@@ -178,7 +178,6 @@ class ForcefieldBond(object):
         else:
             self.kind = '{0}-{1}'.format(atom1.name, atom2.name)
 
-
     @property
     def atom1(self):
         return self._atom1

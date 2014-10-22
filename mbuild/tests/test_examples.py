@@ -24,10 +24,12 @@ class TestExamples:
         assert ethane.n_atoms == 8
         assert ethane.n_bonds == 7
         ethane = ethane.to_trajectory()
+
         ethane.top.find_forcefield_terms()
         assert ethane.topology.n_ff_bonds == 7
         assert ethane.topology.n_ff_angles == 12
         assert ethane.topology.n_ff_dihedrals == 9
+
         ethane.save('ethane.hoomdxml')
 
     def test_methane(self):
