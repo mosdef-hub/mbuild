@@ -1,3 +1,4 @@
+from collections import defaultdict
 from copy import deepcopy
 
 import numpy as np
@@ -25,7 +26,7 @@ class Atom(MBase, PartMixin):
         bonds (set of Bond): Every Bond that the Atom is a part of.
 
     """
-    __slots__ = ['kind', 'pos', 'charge', 'parent', 'referrers', 'bonds', 'uid']
+    __slots__ = ['kind', 'pos', 'charge', 'parent', 'referrers', 'bonds', 'uid', '_extras']
 
     def __init__(self, kind, pos=None, charge=0.0):
         """Initialize an Atom.
@@ -47,6 +48,7 @@ class Atom(MBase, PartMixin):
         self.pos = np.asarray(pos, dtype=float)
         self.charge = charge
         self.bonds = set()
+        self._extras = None
 
     def bonded_atoms(self, memo=dict()):
         """Return a list of atoms bonded to self. """
@@ -56,6 +58,12 @@ class Atom(MBase, PartMixin):
                 memo[id(bonded_atom)] = bonded_atom
                 bonded_atom.bonded_atoms(memo)
         return memo.values()
+
+    @property
+    def extras(self):
+        if self._extras is None:
+            self._extras = defaultdict(lambda: None)
+        return self._extras
 
     def __add__(self, other):
         if isinstance(other, Atom):
@@ -100,6 +108,7 @@ class Atom(MBase, PartMixin):
         newone.kind = deepcopy(self.kind, memo)
         newone.pos = deepcopy(self.pos, memo)
         newone.charge = deepcopy(self.charge, memo)
+        newone._extras = deepcopy(self._extras, memo)
 
         # Copy parents, except the topmost compound being deepcopied.
         if memo[0] == self or isinstance(memo[0], Bond):

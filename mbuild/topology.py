@@ -45,6 +45,35 @@ class Topology(object):
     def ff_bonds(self):
         return iter(self._ff_bonds)
 
+    def to_bondgraph(self):
+        """Create a NetworkX graph from the atoms and bonds in this topology
+
+        Returns
+        -------
+        g : nx.Graph
+            A graph whose nodes are the Atoms in this topology, and
+            whose edges are the bonds
+
+        See Also
+        --------
+        atoms
+        bonds
+
+        Notes
+        -----
+        This method requires the NetworkX python package.
+        """
+        from mdtraj.utils import import_
+        nx = import_('networkx')
+        g = nx.Graph()
+
+        atoms_atoms = [(a, {'element': a.element, 'name': a.name}) for a in self.atoms]
+
+        g.add_nodes_from(atoms_atoms)
+        g.add_edges_from(self.bonds)
+        return g
+
+
     @property
     def ff_angles(self):
         return iter(self._ff_angles)
