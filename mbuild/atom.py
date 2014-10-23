@@ -60,10 +60,21 @@ class Atom(MBase, PartMixin):
         return memo.values()
 
     @property
+    def neighbors(self):
+        return [bond.other_atom(self) for bond in self.bonds]
+
+    @property
     def extras(self):
         if self._extras is None:
-            self._extras = defaultdict(lambda: None)
+            # self._extras = defaultdict(lambda: None)
+            self._extras = dict()
         return self._extras
+
+    def __getattr__(self, item):
+        if self._extras and item in self._extras:
+            return self._extras[item]
+        else:
+            raise AttributeError
 
     def __add__(self, other):
         if isinstance(other, Atom):
