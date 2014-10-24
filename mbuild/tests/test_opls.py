@@ -48,4 +48,4 @@ class TestTools:
 
 if __name__ == "__main__":
     import pdb
-    TestTools().test_all_molecules()
+    TestTools().test_all_molecules(only_run='biphenyl')
