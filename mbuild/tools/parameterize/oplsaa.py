@@ -34,7 +34,7 @@ def opls_atomtypes(compound):
 
     max_iter = 10
     for iter_cnt in range(max_iter):
-        print ("Iteration {}".format(iter_cnt))
+        #print ("Iteration {}".format(iter_cnt))
 
         # For comparing the lengths of the white- and blacklists.
         old_len = 0
@@ -99,7 +99,10 @@ def neighbor_types(atom):
 
 
 def check_neighbor(neighbor, rule_ids):
-    """Ensure that neighbor is valid candidate. """
+    """Ensure that neighbor is valid candidate.
+
+    Checks that every rule in `rule_ids` is in the white- and not the blacklist.
+    """
     rule_ids = set(rule_ids)
     rule_ids.intersection_update(neighbor.opls_whitelist)
     rule_ids.difference_update(neighbor.opls_blacklist)
@@ -198,7 +201,7 @@ def carbon(atom):
     assert valency < 5, 'Found carbon with valency {}.'.format(valency)
 
     if valency == 4:
-        for rule_id in ['135', '136', '137', '138', '139']:
+        for rule_id in ['135', '136', '137', '138', '139', '149']:
             run_rule(atom, rule_id)
     elif valency == 3:
         for rule_id in ['141', '142', '143', '145', '145B']:
@@ -301,7 +304,7 @@ def opls_144(atom):
 # Benzene
 def opls_145(atom):
     # Benzene C - 12 site JACS,112,4768-90. Use #145B for biphenyl
-    if neighbor_types(atom)['C'] == 2 and neighbor_types(atom)['H'] == 1:
+    if neighbor_types(atom)['C'] >= 2:
         r = Rings(atom, 6)
         # 2 rings, because we count the traversal in both directions.
         if len(r.rings) == 2:
@@ -317,19 +320,19 @@ def opls_145(atom):
 def opls_145B(atom):
     # Biphenyl C1
     if neighbor_types(atom)['C'] == 3:
-        r = Rings(atom, 6)
+        six_member_rings = Rings(atom, 6).rings
         # 2 rings, because we count the traversal in both directions.
-        if len(r.rings) == 2:
-            for c in r.rings[0]:
+        if len(six_member_rings) == 2:
+            for c in six_member_rings[0]:
                 if not (c.kind == 'C' and len(c.neighbors) == 3):
                     break
             else:
                 for neighbor in atom.neighbors:
-                    if neighbor not in r.rings[0]:
-                        r = Rings(neighbor, 6)
+                    if neighbor not in six_member_rings[0]:
+                        new_six_member_rings = Rings(neighbor, 6).rings
                         # 2 rings, because we count the traversal in both directions.
-                        if len(r.rings) == 2:
-                            for c in r.rings[0]:
+                        if len(new_six_member_rings) == 2:
+                            for c in new_six_member_rings[0]:
                                 if not (c.kind == 'C' and len(
                                         c.neighbors) == 3):
                                     break
@@ -351,20 +354,35 @@ def opls_146(atom):
             blacklist(atom, 140)
 
 
-if __name__ == "__main__":
-    # m = Alkane(n=3)
-    # opls_atomtypes(alkane)
-    #
-    # for atom in alkane.yield_atoms():
-    # print "atom kind={} opls_type={}".format(atom.kind, atom.extras['opls_type'])
+#def opls_147
+    # Napthalene fusion C (C9)
 
-    m = Compound()
-    # m.append_from_file(get_fn('isopropane.pdb'))
-    # m.append_from_file(get_fn('cyclohexane.pdb'))
-    # m.append_from_file(get_fn('neopentane.pdb'))
-    # m.append_from_file(get_fn('benzene.pdb'))
-    # m.append_from_file(get_fn('1-propene.pdb'))
-    m.append_from_file(get_opls_fn('biphenyl.pdb'))
+#def opls_148(atom):
+    # C: CH3, toluene
+
+def opls_149(atom):
+    # C: CH2, ethyl benzene
+    if neighbor_types(atom)['C'] == 2 and neighbor_types(atom)['H'] == 2:
+        for neighbor in atom.neighbors:
+            if neighbor.kind == 'C':
+                rule_ids = set(['145'])
+                if check_neighbor(neighbor, rule_ids):
+                    whitelist(atom, 149)
+                    blacklist(atom, 136)
+
+
+if __name__ == "__main__":
+    import pdb
+
+
+    # m = Alkane(n=3)
+    # m = Compound.load(get_fn('isopropane.pdb'))
+    # m = Compound.load(get_fn('cyclohexane.pdb'))
+    # m = Compound.load(get_fn('neopentane.pdb'))
+    # m = Compound.load(get_fn('benzene.pdb'))
+    # m = Compound.load(get_fn('1-propene.pdb'))
+    m = Compound.load(get_opls_fn('biphenyl.pdb'))
+
     opls_atomtypes(m)
 
     for atom in m.atoms:
