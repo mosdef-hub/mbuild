@@ -1,0 +1,158 @@
+; OPLSAA topology for pyrrolidine
+; 
+; Jorgensen, W. L.; Tirado-Rives, J. Proc. Natl. Acad. Sci. U.S.A. 2005, 102, 6665.
+; Carl Caleman, Paul J. van Maaren, Minyan Hong, Jochen S. Hub, Luciano T. Costa and David van der Spoel, Force Field Benchmark of Organic Liquids: Density, Enthalpy of Vaporization, Heat Capacities, Surface Tension, Isothermal Compressibility, Volumetric Expansion Coefficient, and Dielectric Constant, J. Chem. Theor. Comput. 8 (2012) http://dx.doi.org/10.1021/ct200731v
+;
+;
+#include "oplsaaff.itp"
+[ moleculetype ]
+; Name            nrexcl
+pyrrolidine  3
+
+[ atoms ]
+;   nr       type  resnr residue  atom   cgnr     charge       mass  typeB    chargeB      massB
+         1  opls_907         1       LIG         C         1      0.08    12.011
+         2  opls_901         1       LIG         N         2     -0.78   14.0067
+         3  opls_907         1       LIG         C         3      0.08    12.011
+         4  opls_136         1       LIG         C         4     -0.12    12.011
+         5  opls_136         1       LIG         C         5     -0.12    12.011
+         6  opls_911         1       LIG         H         6      0.06     1.008
+         7  opls_911         1       LIG         H         7      0.06     1.008
+         8  opls_140         1       LIG         H         8      0.06     1.008
+         9  opls_140         1       LIG         H         9      0.06     1.008
+        10  opls_140         1       LIG         H        10      0.06     1.008
+        11  opls_140         1       LIG         H        11      0.06     1.008
+        12  opls_911         1       LIG         H        12      0.06     1.008
+        13  opls_911         1       LIG         H        13      0.06     1.008
+        14  opls_910         1       LIG         H        14      0.38     1.008
+
+[ bonds ]
+;  ai    aj funct            c0            c1            c2            c3
+    1     2     1 
+    1     5     1 
+    1    12     1 
+    1    13     1 
+    2     3     1 
+    2    14     1 
+    3     4     1 
+    3     6     1 
+    3     7     1 
+    4     5     1 
+    4     8     1 
+    4     9     1 
+    5    10     1 
+    5    11     1 
+
+[ pairs ]
+;  ai    aj funct            c0            c1            c2            c3
+    1     6     1 
+    1     7     1 
+    1     8     1 
+    1     9     1 
+    2     8     1 
+    2     9     1 
+    2    10     1 
+    2    11     1 
+    3    10     1 
+    3    11     1 
+    3    12     1 
+    3    13     1 
+    4    12     1 
+    4    13     1 
+    4    14     1 
+    5     6     1 
+    5     7     1 
+    5    14     1 
+    6     8     1 
+    6     9     1 
+    6    14     1 
+    7     8     1 
+    7     9     1 
+    7    14     1 
+    8    10     1 
+    8    11     1 
+    9    10     1 
+    9    11     1 
+   10    12     1 
+   10    13     1 
+   11    12     1 
+   11    13     1 
+   12    14     1 
+   13    14     1 
+
+[ angles ]
+;  ai    aj    ak funct            c0            c1            c2            c3
+    2     1     5     1 
+    2     1    12     1 
+    2     1    13     1 
+    5     1    12     1 
+    5     1    13     1 
+   12     1    13     1 
+    1     2     3     1 
+    1     2    14     1 
+    3     2    14     1 
+    2     3     4     1 
+    2     3     6     1 
+    2     3     7     1 
+    4     3     6     1 
+    4     3     7     1 
+    6     3     7     1 
+    3     4     5     1 
+    3     4     8     1 
+    3     4     9     1 
+    5     4     8     1 
+    5     4     9     1 
+    8     4     9     1 
+    1     5     4     1 
+    1     5    10     1 
+    1     5    11     1 
+    4     5    10     1 
+    4     5    11     1 
+   10     5    11     1 
+
+[ dihedrals ]
+;  ai    aj    ak    al funct            c0            c1            c2            c3            c4            c5
+    5     1     2     3     3 
+    5     1     2    14     3 
+   12     1     2     3     3 
+   12     1     2    14     3 
+   13     1     2     3     3 
+   13     1     2    14     3 
+    2     1     5     4     3 
+    2     1     5    10     3 
+    2     1     5    11     3 
+   12     1     5     4     3 
+   12     1     5    10     3 
+   12     1     5    11     3 
+   13     1     5     4     3 
+   13     1     5    10     3 
+   13     1     5    11     3 
+    1     2     3     4     3 
+    1     2     3     6     3 
+    1     2     3     7     3 
+   14     2     3     4     3 
+   14     2     3     6     3 
+   14     2     3     7     3 
+    2     3     4     5     3 
+    2     3     4     8     3 
+    2     3     4     9     3 
+    6     3     4     5     3 
+    6     3     4     8     3 
+    6     3     4     9     3 
+    7     3     4     5     3 
+    7     3     4     8     3 
+    7     3     4     9     3 
+    3     4     5     1     3 
+    3     4     5    10     3 
+    3     4     5    11     3 
+    8     4     5     1     3 
+    8     4     5    10     3 
+    8     4     5    11     3 
+    9     4     5     1     3 
+    9     4     5    10     3 
+    9     4     5    11     3 
+
+[ system ]
+pyrrolidine GAS
+[ molecules ]
+pyrrolidine 1

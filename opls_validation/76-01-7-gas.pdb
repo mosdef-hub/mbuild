@@ -1,0 +1,14 @@
+TITLE     pentachloroethane GAS
+REMARK    THIS IS A SIMULATION BOX
+CRYST1  100.000  100.000  100.000  90.00  90.00  90.00 P 1           1
+MODEL        1
+ATOM      1  CL  LIG     1      49.338  52.004  49.608  1.00  0.00            
+ATOM      2  C   LIG     1      50.028  50.604  50.457  1.00  0.00            
+ATOM      3  CL  LIG     1      48.967  50.434  51.877  1.00  0.00            
+ATOM      4  CL  LIG     1      51.728  50.974  50.858  1.00  0.00            
+ATOM      5  C   LIG     1      49.918  49.374  49.557  1.00  0.00            
+ATOM      6  H   LIG     1      48.868  49.154  49.338  1.00  0.00            
+ATOM      7  CL  LIG     1      50.648  49.564  47.948  1.00  0.00            
+ATOM      8  CL  LIG     1      50.508  47.894  50.357  1.00  0.00            
+TER
+ENDMDL

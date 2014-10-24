@@ -1,0 +1,15 @@
+TITLE     dimethyl-sulfide GAS
+REMARK    THIS IS A SIMULATION BOX
+CRYST1  100.000  100.000  100.000  90.00  90.00  90.00 P 1           1
+MODEL        1
+ATOM      1  C   LIG     1      50.475  49.586  51.173  1.00  0.00            
+ATOM      2  H   LIG     1      51.506  49.376  50.863  1.00  0.00            
+ATOM      3  H   LIG     1      50.256  50.646  51.273  1.00  0.00            
+ATOM      4  H   LIG     1      50.256  49.146  52.143  1.00  0.00            
+ATOM      5  S   LIG     1      49.326  48.926  49.943  1.00  0.00            
+ATOM      6  C   LIG     1      49.526  50.346  48.833  1.00  0.00            
+ATOM      7  H   LIG     1      50.516  50.286  48.363  1.00  0.00            
+ATOM      8  H   LIG     1      48.726  50.376  48.093  1.00  0.00            
+ATOM      9  H   LIG     1      49.415  51.316  49.313  1.00  0.00            
+TER
+ENDMDL
