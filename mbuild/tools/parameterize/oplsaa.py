@@ -18,11 +18,10 @@ neighbor_types_map = {}
 def opls_atomtypes(compound):
     """Determine OPLS-aa atomtypes for all atoms in `compound`.
 
-    This is where everything is orchastrated and the outer iteration happens.
+    This is where everything is orchestrated and the outer iteration happens.
 
 
     TODO: look into factoring out functions for different rings (see 145)
-    TODO: factor out into "lookup neighbor" function (see 144, 146)
     """
     # Build a map to all of the supported opls_* functions.
     for fn, fcn in sys.modules[__name__].__dict__.items():
@@ -34,11 +33,10 @@ def opls_atomtypes(compound):
         prepare(atom)
 
     max_iter = 10
-    iter_cnt = 0
-    while True:
+    for iter_cnt in range(max_iter):
         print ("Iteration {}".format(iter_cnt))
 
-        # For comparing the lengths of the white- and blacklists .
+        # For comparing the lengths of the white- and blacklists.
         old_len = 0
         new_len = 0
         for atom in compound.yield_atoms():
@@ -60,11 +58,8 @@ def opls_atomtypes(compound):
         # Nothing changed, we're done!
         if old_len == new_len:
             break
-
-        iter_cnt += 1
-        if max_iter == iter_cnt:
-            warn("Reached maximum iterations. Something probably went wrong.")
-            break
+    else:
+        warn("Reached maximum iterations. Something probably went wrong.")
 
 
 def prepare(atom):
@@ -103,10 +98,11 @@ def neighbor_types(atom):
     return rval
 
 
-def check_neighbor(atom, rule_ids):
+def check_neighbor(neighbor, rule_ids):
+    """Ensure that neighbor is valid candidate. """
     rule_ids = set(rule_ids)
-    rule_ids.intersection_update(atom.opls_whitelist)
-    rule_ids.difference_update(atom.opls_blacklist)
+    rule_ids.intersection_update(neighbor.opls_whitelist)
+    rule_ids.difference_update(neighbor.opls_blacklist)
     return rule_ids
 
 
@@ -145,9 +141,9 @@ def get_opls_fn(name):
 
 
 class Rings(object):
-    """Find all rings of specified lengths that the atom is a part of.
+    """Find all rings of a specified length that the atom is a part of.
 
-    Will find each ring twice because it traverses the graph in both directions.
+    Note: Finds each ring twice because the graph is traversed in both directions.
     """
     def __init__(self, atom, ring_length):
         """Initialize a ring bearer. """
