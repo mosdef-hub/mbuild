@@ -191,9 +191,9 @@ class Rings(object):
             # Found a dead end.
             del self.current_path[-1]
 
-# ----------------------------------------------------#
-# Some filters for each element to break up the code #
-#----------------------------------------------------#
+#-----------------------------------------------#
+# Filters for each element to break up the code #
+#-----------------------------------------------#
 
 
 def carbon(atom):
@@ -220,6 +220,22 @@ def hydrogen(atom):
     else:
         print "Found no rules for {}-valent hydrogen".format(valency)
 
+#---------------------------------------------------------#
+# Filters for some specific patterns to break up the code #
+#---------------------------------------------------------#
+
+
+def benzene(atom):
+    """Check if atom is part of a single benzene ring. """
+    benzene = Rings(atom, 6).rings
+    # 2 rings, because we count the traversal in both directions.
+    if len(benzene) == 2:
+        for c in benzene[0]:
+            if not (c.kind == 'C' and len(c.neighbors) == 3):
+                break
+        else:
+            return benzene[0]  # Only return one direction of the ring.
+    return False
 
 #----------------#
 # House of rules #
@@ -300,19 +316,7 @@ def opls_144(atom):
             whitelist(atom, 144)
             blacklist(atom, 140)
 
-def benzene(atom):
-    """Check if atom is part of a single benzene ring. """
-    benzene = Rings(atom, 6).rings
-    # 2 rings, because we count the traversal in both directions.
-    if len(benzene) == 2:
-        for c in benzene[0]:
-            if not (c.kind == 'C' and len(c.neighbors) == 3):
-                break
-        else:
-            return benzene[0]  # Only return one direction of the ring.
-    return False
 
-# Benzene
 def opls_145(atom):
     # Benzene C - 12 site JACS,112,4768-90. Use #145B for biphenyl
     if neighbor_types(atom)['C'] >= 2:
@@ -335,30 +339,7 @@ def opls_145B(atom):
                         blacklist(atom, [141, 142, 143])
                         # Blacklist benzene carbon.
                         blacklist(atom, 145)
-        """
-        six_member_rings = Rings(atom, 6).rings
-        # 2 rings, because we count the traversal in both directions.
-        if len(six_member_rings) == 2:
-            for c in six_member_rings[0]:
-                if not (c.kind == 'C' and len(c.neighbors) == 3):
-                    break
-            else:
-                for neighbor in atom.neighbors:
-                    if neighbor not in six_member_rings[0]:
-                        new_six_member_rings = Rings(neighbor, 6).rings
-                        # 2 rings, because we count the traversal in both directions.
-                        if len(new_six_member_rings) == 2:
-                            for c in new_six_member_rings[0]:
-                                if not (c.kind == 'C' and len(
-                                        c.neighbors) == 3):
-                                    break
-                            else:
-                                whitelist(atom, '145B')
-                                # Blacklist alkene carbons (with valency 3).
-                                blacklist(atom, [141, 142, 143])
-                                # Blacklist benzene carbon.
-                                blacklist(atom, 145)
-        """
+
 
 def opls_146(atom):
     # Benzene H - 12 site.
