@@ -113,7 +113,8 @@ class Topology(object):
         neighbors_2.remove(node_1)
 
         for pair in itertools.product(neighbors_1, neighbors_2):
-            self.add_ff_dihedral(pair[0], node_1, node_2, pair[1])
+            if pair[0] != pair[1]:
+                self.add_ff_dihedral(pair[0], node_1, node_2, pair[1])
 
     def find_forcefield_terms(self, bonds=True, angles=True, dihedrals=True,
                               impropers=True):
