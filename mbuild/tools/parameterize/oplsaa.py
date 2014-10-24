@@ -201,7 +201,7 @@ def carbon(atom):
     assert valency < 5, 'Found carbon with valency {}.'.format(valency)
 
     if valency == 4:
-        for rule_id in ['135', '136', '137', '138', '139', '149']:
+        for rule_id in ['135', '136', '137', '138', '139', '148', '149']:
             run_rule(atom, rule_id)
     elif valency == 3:
         for rule_id in ['141', '142', '143', '145', '145B']:
@@ -350,15 +350,23 @@ def opls_146(atom):
         rule_ids = set(['145'])
         if check_neighbor(atom.neighbors[0], rule_ids):
             whitelist(atom, 146)
-            blacklist(atom, 144)
-            blacklist(atom, 140)
+            blacklist(atom, [140, 144])
 
 
 #def opls_147
     # Napthalene fusion C (C9)
 
-#def opls_148(atom):
+def opls_148(atom):
     # C: CH3, toluene
+    if neighbor_types(atom)['C'] == 1 and neighbor_types(atom)['H'] == 3:
+        for neighbor in atom.neighbors:
+            if neighbor.kind == 'C':
+                rule_ids = set(['145'])
+                if check_neighbor(neighbor, rule_ids):
+                    whitelist(atom, 148)
+                    # Blacklist alkane carbons (with valency 4).
+                    blacklist(atom, [135, 136, 137, 138])
+
 
 def opls_149(atom):
     # C: CH2, ethyl benzene
@@ -368,7 +376,8 @@ def opls_149(atom):
                 rule_ids = set(['145'])
                 if check_neighbor(neighbor, rule_ids):
                     whitelist(atom, 149)
-                    blacklist(atom, 136)
+                    # Blacklist alkane carbons (with valency 4).
+                    blacklist(atom, [135, 136, 137, 138])
 
 
 if __name__ == "__main__":

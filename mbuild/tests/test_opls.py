@@ -12,14 +12,17 @@ from mbuild.tools.parameterize.oplsaa import opls_atomtypes
 
 class TestTools:
 
-    def test_all_molecules(self):
+    def test_all_molecules(self, only_run=None):
         top_files = glob.glob('../../opls_validation/*.top')
-        for top in top_files:
+        for top in top_files[::-1]:
             top_name = os.path.split(top)[-1]
             loaded = load_top(top)
             if loaded:
                 compound, known_opls_types, mol_name = loaded
             else:
+                continue
+
+            if only_run and only_run != mol_name:
                 continue
 
             print "Typing {} ({})...".format(mol_name, top_name)
@@ -41,7 +44,6 @@ class TestTools:
                     mol_name, top_name, zip(generated_opls_types, known_opls_types))
             assert all([a == b for a, b in both]), message
             print "passed.\n"
-            print "Types: {}\n".format(zip(generated_opls_types, known_opls_types))
 
 
 if __name__ == "__main__":
