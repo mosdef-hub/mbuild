@@ -14,7 +14,7 @@ class TestTools:
 
     def test_all_molecules(self, only_run=None):
         top_files = glob.glob('../../opls_validation/*.top')
-        for top in top_files:
+        for top in top_files[::-1]:
             top_name = os.path.split(top)[-1]
             loaded = load_top(top)
             if loaded:
@@ -26,7 +26,6 @@ class TestTools:
                 continue
 
             print "Typing {} ({})...".format(mol_name, top_name)
-
             opls_atomtypes(compound)
             generated_opls_types = list()
             for i, atom in enumerate(compound.atoms):
@@ -37,6 +36,7 @@ class TestTools:
                 message = "Found multiple or no OPLS types for atom {} in {} ({}): {}".format(
                         i, mol_name, top_name, opls_type)
                 assert len(opls_type) == 1, message
+                #print i+1, opls_type, atom.opls_whitelist, atom.opls_blacklist
                 generated_opls_types.append(opls_type[0])
 
             both = zip(generated_opls_types, known_opls_types)
