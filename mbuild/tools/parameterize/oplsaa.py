@@ -150,6 +150,15 @@ def get_opls_fn(name):
     return fn
 
 
+def no_pattern(atom, valency):
+    warn("No connectivity patterns matched {} with valency {} and neighbors "
+         "{}.".format(atom, valency, neighbor_types(atom).items()))
+
+
+def no_rule(atom, valency):
+    warn("Found no rules for {}-valent {}.".format(valency, atom))
+
+
 class Rings(object):
     """Find all rings of a specified length that the atom is a part of.
 
@@ -229,7 +238,7 @@ def carbon(atom):
             for rule_id in [218]:
                 run_rule(atom, rule_id)
         else:
-            print "No connectivity patterns matched {} with valency {}.".format(atom, valency)
+            no_pattern(atom, valency)
     elif valency == 3:
         if neighbor_types(atom)['H'] == 2 and neighbor_types(atom)['C'] == 1:
             for rule_id in [143]:
@@ -247,10 +256,9 @@ def carbon(atom):
             for rule_id in [232]:
                 run_rule(atom, rule_id)
         else:
-            print "No connectivity patterns matched {} with valency {}.".format(atom, valency)
+            no_pattern(atom, valency)
     else:
-        print "Found no rules for {}-valent carbon.".format(valency)
-
+        no_rule(atom, valency)
 
 def hydrogen(atom):
     valency = len(atom.bonds)
@@ -264,9 +272,9 @@ def hydrogen(atom):
             for rule_id in [155]:
                 run_rule(atom, rule_id)
         else:
-            print "No connectivity patterns matched {} with valency {}.".format(atom, valency)
+            no_pattern(atom, valency)
     else:
-        print "Found no rules for {}-valent hydrogen".format(valency)
+        no_rule(atom, valency)
 
 
 def oxygen(atom):
@@ -279,15 +287,15 @@ def oxygen(atom):
             for rule_id in [154]:
                 run_rule(atom, rule_id)
         else:
-            print "No connectivity patterns matched {} with valency {}.".format(atom, valency)
+            no_pattern(atom, valency)
     elif valency == 1:
         if neighbor_types(atom)['C'] == 1:
             for rule_id in [278]:
                 run_rule(atom, rule_id)
         else:
-            print "No connectivity patterns matched {} with valency {}.".format(atom, valency)
+            no_pattern(atom, valency)
     else:
-        print "Found no rules for {}-valent carbon.".format(valency)
+        no_rule(atom, valency)
 
 #---------------------------------------------------------#
 # Filters for some specific patterns to break up the code #
