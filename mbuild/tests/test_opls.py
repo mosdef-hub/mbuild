@@ -14,7 +14,7 @@ class TestTools:
 
     def test_all_molecules(self, only_run=None):
         top_files = glob.glob('../../opls_validation/*.top')
-        for top in top_files[::-1]:
+        for top in top_files:
             top_name = os.path.split(top)[-1]
             loaded = load_top(top)
             if loaded:
@@ -48,4 +48,4 @@ class TestTools:
 
 if __name__ == "__main__":
     import pdb
-    TestTools().test_all_molecules(only_run='biphenyl')
+    TestTools().test_all_molecules()

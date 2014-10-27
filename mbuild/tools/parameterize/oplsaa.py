@@ -49,8 +49,10 @@ def opls_atomtypes(compound):
                 carbon(atom)
             elif atom.kind == 'H':
                 hydrogen(atom)
+            elif atom.kind == 'O':
+                oxygen(atom)
             else:
-                warn('Atom kind {} not supported'.format(atom.kind))
+                warn("Atom kind '{}' not supported".format(atom.kind))
 
             new_len += len(atom.opls_whitelist)
             new_len += len(atom.opls_blacklist)
@@ -98,12 +100,17 @@ def neighbor_types(atom):
     return rval
 
 
-def check_neighbor(neighbor, rule_ids):
-    """Ensure that neighbor is valid candidate.
+def check_atom(neighbor, input_rule_ids):
+    """Ensure that atom is valid candidate.
 
     Checks that every rule in `rule_ids` is in the white- and not the blacklist.
     """
-    rule_ids = set(rule_ids)
+    rule_ids = set()
+    if isinstance(input_rule_ids, (list, tuple, set)):
+        for r in input_rule_ids:
+            rule_ids.add(str(r))
+    else:
+        rule_ids.add(str(input_rule_ids))
     rule_ids.intersection_update(neighbor.opls_whitelist)
     rule_ids.difference_update(neighbor.opls_blacklist)
     return rule_ids
@@ -201,10 +208,10 @@ def carbon(atom):
     assert valency < 5, 'Found carbon with valency {}.'.format(valency)
 
     if valency == 4:
-        for rule_id in ['135', '136', '137', '138', '139', '148', '149']:
+        for rule_id in ['135', '136', '137', '138', '139', '148', '149', '218']:
             run_rule(atom, rule_id)
     elif valency == 3:
-        for rule_id in ['141', '142', '143', '145', '145B']:
+        for rule_id in ['141', '142', '143', '145', '145B', '221', '232']:
             run_rule(atom, rule_id)
     else:
         print "Found no rules for {}-valent carbon.".format(valency)
@@ -215,10 +222,25 @@ def hydrogen(atom):
     assert valency < 2, 'Found hydrogen with valency {}'.format(valency)
 
     if valency == 1:
-        for rule_id in ['140', '144', '146']:
+        for rule_id in ['140', '144', '146', '155', '279']:
             run_rule(atom, rule_id)
     else:
         print "Found no rules for {}-valent hydrogen".format(valency)
+
+
+def oxygen(atom):
+    valency = len(atom.bonds)
+    # TODO: check if OPLS has parameters for things like hydronium
+    assert valency < 3, 'Found oxygen with valency {}.'.format(valency)
+
+    if valency == 2:
+        for rule_id in ['154']:
+            run_rule(atom, rule_id)
+    elif valency == 1:
+        for rule_id in ['278']:
+            run_rule(atom, rule_id)
+    else:
+        print "Found no rules for {}-valent carbon.".format(valency)
 
 #---------------------------------------------------------#
 # Filters for some specific patterns to break up the code #
@@ -311,8 +333,8 @@ def opls_144(atom):
     # alkene H (H-C=)
     if neighbor_types(atom)['C'] == 1:
         # Make sure that the carbon is an alkene carbon.
-        rule_ids = set(['141', '142', '143'])
-        if check_neighbor(atom.neighbors[0], rule_ids):
+        rule_ids = [141, 142, 143]
+        if check_atom(atom.neighbors[0], rule_ids):
             whitelist(atom, 144)
             blacklist(atom, 140)
 
@@ -329,6 +351,7 @@ def opls_145(atom):
 def opls_145B(atom):
     # Biphenyl C1
     if neighbor_types(atom)['C'] == 3:
+        # Store for checking for neighbors outside the first ring.
         ring_one = benzene(atom)
         if ring_one:
             for neighbor in atom.neighbors:
@@ -344,8 +367,7 @@ def opls_145B(atom):
 def opls_146(atom):
     # Benzene H - 12 site.
     if neighbor_types(atom)['C'] == 1:
-        rule_ids = set(['145'])
-        if check_neighbor(atom.neighbors[0], rule_ids):
+        if check_atom(atom.neighbors[0], 145):
             whitelist(atom, 146)
             blacklist(atom, [140, 144])
 
@@ -353,13 +375,13 @@ def opls_146(atom):
 #def opls_147
     # Napthalene fusion C (C9)
 
+
 def opls_148(atom):
     # C: CH3, toluene
     if neighbor_types(atom)['C'] == 1 and neighbor_types(atom)['H'] == 3:
         for neighbor in atom.neighbors:
             if neighbor.kind == 'C':
-                rule_ids = set(['145'])
-                if check_neighbor(neighbor, rule_ids):
+                if check_atom(neighbor, 145):
                     whitelist(atom, 148)
                     # Blacklist alkane carbons (with valency 4).
                     blacklist(atom, [135, 136, 137, 138])
@@ -370,16 +392,84 @@ def opls_149(atom):
     if neighbor_types(atom)['C'] == 2 and neighbor_types(atom)['H'] == 2:
         for neighbor in atom.neighbors:
             if neighbor.kind == 'C':
-                rule_ids = set(['145'])
-                if check_neighbor(neighbor, rule_ids):
+                if check_atom(neighbor, 145):
                     whitelist(atom, 149)
                     # Blacklist alkane carbons (with valency 4).
                     blacklist(atom, [135, 136, 137, 138])
 
 
+def opls_154(atom):
+    # all-atom O: mono alcohols
+    if neighbor_types(atom)['C'] == 1 and neighbor_types(atom)['H'] == 1:
+        whitelist(atom, 154)
+
+
+def opls_155(atom):
+    # all-atom O: mono alcohols
+    if neighbor_types(atom)['O'] == 1:
+        if check_atom(atom.neighbors[0], 154):
+            whitelist(atom, 155)
+
+
+def opls_218(atom):
+    # C in CH2OH - benzyl alcohols
+    if (neighbor_types(atom)['C'] == 1 and
+        neighbor_types(atom)['H'] == 2 and
+        neighbor_types(atom)['O'] == 1):
+        for neighbor in atom.neighbors:
+            if neighbor.kind == 'C':
+                benzene_carbon = check_atom(neighbor, 145)
+            if neighbor.kind == 'O':
+                alcohol_oxygen = check_atom(neighbor, 154)
+        if benzene_carbon and alcohol_oxygen:
+            whitelist(atom, 218)
+            # Blacklist alkane carbons (with valency 4).
+            blacklist(atom, [135, 136, 137, 138])
+
+
+def opls_221(atom):
+    # C(CH2OH)   - benzyl alcohols
+    if neighbor_types(atom)['C'] == 3:
+        if check_atom(atom, 145):  # Already identified as part of benzene.
+            for neighbor in atom.neighbors:
+                if check_atom(neighbor, 218):
+                    whitelist(atom, 221)
+                    # Blacklist a bunch of 3-valent carbons.
+                    blacklist(atom, [141, 142, 143, 145, '145B'])
+
+
+def opls_232(atom):
+    # C: C=0 in benzaldehyde, acetophenone (CH)
+    if (neighbor_types(atom)['C'] == 1 and
+        neighbor_types(atom)['H'] == 1 and
+        neighbor_types(atom)['O'] == 1):
+        for neighbor in atom.neighbors:
+            if neighbor.kind == 'C':
+                benzene_carbon = check_atom(neighbor, 145)
+            if neighbor.kind == 'O':
+                aldehyde_oxygen = check_atom(neighbor, 278)
+        if benzene_carbon and aldehyde_oxygen:
+            whitelist(atom, 232)
+            # Blacklist a bunch of 3-valent carbons.
+            blacklist(atom, [141, 142, 143, 145, '145B'])
+
+
+def opls_278(atom):
+    # AA O: aldehyde
+    if neighbor_types(atom)['C'] == 1:
+        whitelist(atom, 278)
+
+
+def opls_279(atom):
+    # AA H-alpha in aldehyde & formamide
+    if neighbor_types(atom)['C'] == 1:
+        if check_atom(atom.neighbors[0], [232, 277, 282]):
+            whitelist(atom, 279)
+            blacklist(atom, [140, 144, 146])
+
+
 if __name__ == "__main__":
     import pdb
-
 
     # m = Alkane(n=3)
     # m = Compound.load(get_fn('isopropane.pdb'))
