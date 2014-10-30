@@ -29,10 +29,11 @@ class Brush(Compound):
         self.add(self.silane.down, label="port", containment=False)
 
 if __name__ == "__main__":
-    m = Brush(chain_length=20, alpha=pi/4)
+    m = Brush(chain_length=5, alpha=pi/4)
     m = m.to_trajectory()
 
-    m.save(filename='brush.xyz')
+    m.xyz[-1] *= 10.0
+    m.save(filename='brush.mol2')
 
     #from mbuild.plot import Plot
     #Plot(m).show()

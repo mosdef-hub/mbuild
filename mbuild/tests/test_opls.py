@@ -6,17 +6,18 @@
 import glob
 import os
 
-from opls_validation.gromacs import load_top
+from mbuild.testing.tools import load_top_opls
 from mbuild.tools.parameterize.oplsaa import opls_atomtypes
 
 
 class TestTools:
 
     def test_all_molecules(self, only_run=None):
+        # Path doesn't work for py.test and is probably bad practice anyways.
         top_files = glob.glob('../../opls_validation/*.top')
-        for top in top_files[::-1]:
+        for top in top_files:
             top_name = os.path.split(top)[-1]
-            loaded = load_top(top)
+            loaded = load_top_opls(top)
             if loaded:
                 compound, known_opls_types, mol_name = loaded
             else:

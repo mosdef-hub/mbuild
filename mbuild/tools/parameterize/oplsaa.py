@@ -86,7 +86,7 @@ def neighbor_types(atom):
     The dict maintained is `neighbor_types_map` and is organized as follows:
         atom: defaultdict{element: number of neighbors of that element type}
 
-    E.g. for an atom with 3 carbon and 1 hydrogen neighbor:
+    E.g. for an atom with 3 carbon and 1 hydrogen neighbors:
         Atom: {'C': 3, 'H': 1}
     """
     if atom in neighbor_types_map:
@@ -170,11 +170,6 @@ class Rings(object):
         self.current_path = list()
         self.branch_points = OrderedSet()
         self.ring_length = ring_length
-        self.find_rings(atom)
-
-    def find_rings(self, atom):
-        """Find all rings (twice) that this atom is a part of. """
-        self.current_path = list()
         self.current_path.append(atom)
         self.step(atom)
 
@@ -259,6 +254,7 @@ def carbon(atom):
             no_pattern(atom, valency)
     else:
         no_rule(atom, valency)
+
 
 def hydrogen(atom):
     valency = len(atom.bonds)
