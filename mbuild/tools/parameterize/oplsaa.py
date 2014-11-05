@@ -68,14 +68,14 @@ def opls_atomtypes(compound, debug=False):
         opls_type = [a for a in opls_type]
 
         if debug:
-            atom.opls_type = opls_type
+            atom.extras['opls_type'] = opls_type
         else:
             if len(opls_type) == 1:
-                atom.opls_type = opls_type[0]
+                atom.extras['opls_type'] = opls_type[0]
             else:
                 warn("CHECK YOUR TOPOLOGY. Found multiple or no OPLS types for atom {0} ({1}): {2}.".format(
                         i, atom.kind, opls_type))
-                atom.opls_type = "XXX"
+                atom.extras['opls_type'] = "XXX"
 
 def prepare(atom):
     """Add white- and blacklists to atom. """
@@ -500,12 +500,17 @@ if __name__ == "__main__":
     m = Compound.load(get_opls_fn('1-propene.pdb'))
     # m = Compound.load(get_opls_fn('biphenyl.pdb'))
 
+    from mbuild.examples.alkane_monolayer.alkane_monolayer import AlkaneMonolayer
+    m = AlkaneMonolayer(chain_length=3)
+
     opls_atomtypes(m)
 
     for atom in m.atoms:
-        print "Atom kind={}, opls_whitelist={},  opls_blacklist={}".format(
-            atom.kind, atom.opls_whitelist, atom.opls_blacklist)
+        #print "Atom kind={}, opls_whitelist={},  opls_blacklist={}".format(
+        #    atom.kind, atom.opls_whitelist, atom.opls_blacklist)
 
+        print "Atom kind={}, opls_type={}".format(
+            atom.kind, atom.opls_type)
 
 
 
