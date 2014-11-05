@@ -16,14 +16,14 @@ class Silane(Compound):
 
         # Transform the coordinate system such that the silicon atom is at the
         # origin and the oxygen atoms are on the x axis.
-        x_axis_transform(self, new_origin=self.SI[0], point_on_x_axis=self.O[0])
+        x_axis_transform(self, new_origin=self.Si[0], point_on_x_axis=self.O[0])
 
         # Add bottom port.
-        self.add(Port(anchor=self.SI[0]), 'down')
+        self.add(Port(anchor=self.Si[0]), 'down')
         translate(self.down, np.array([0, -.07, 0]))
 
         # Add top port.
-        self.add(Port(anchor=self.SI[0]), 'up')
+        self.add(Port(anchor=self.Si[0]), 'up')
         translate(self.up, np.array([0, .07, 0]))
 
 if __name__ == "__main__":

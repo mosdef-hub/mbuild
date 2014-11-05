@@ -292,7 +292,7 @@ def oxygen(atom):
     assert valency < 3, 'Found oxygen with valency {}.'.format(valency)
 
     if valency == 2:
-        if neighbor_types(atom)['H'] == 1 and neighbor_types(atom)['C']:
+        if neighbor_types(atom)['H'] == 1 and neighbor_types(atom)['C'] == 1:
             for rule_id in [154]:
                 run_rule(atom, rule_id)
         else:
