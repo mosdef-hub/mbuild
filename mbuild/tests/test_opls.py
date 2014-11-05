@@ -27,18 +27,14 @@ class TestTools:
                 continue
 
             print "Typing {} ({})...".format(mol_name, top_name)
-            opls_atomtypes(compound)
+            opls_atomtypes(compound, debug=True)
             generated_opls_types = list()
             for i, atom in enumerate(compound.atoms):
-                # TODO: make less dirty
-                opls_type = atom.opls_whitelist - atom.opls_blacklist
-                opls_type = [a for a in opls_type]
-
                 message = "Found multiple or no OPLS types for atom {} in {} ({}): {}".format(
-                        i, mol_name, top_name, opls_type)
-                assert len(opls_type) == 1, message
+                        i, mol_name, top_name, atom.opls_type)
+                assert len(atom.opls_type) == 1, message
                 #print i+1, opls_type, atom.opls_whitelist, atom.opls_blacklist
-                generated_opls_types.append(opls_type[0])
+                generated_opls_types.append(atom.opls_type[0])
 
             both = zip(generated_opls_types, known_opls_types)
             message = "Found inconsistent OPLS types in {} ({}): {}".format(
@@ -49,4 +45,4 @@ class TestTools:
 
 if __name__ == "__main__":
     import pdb
-    TestTools().test_all_molecules()
+    TestTools().test_all_molecules('anisole')

@@ -15,7 +15,7 @@ rules = dict()
 neighbor_types_map = {}
 
 
-def opls_atomtypes(compound):
+def opls_atomtypes(compound, debug=False):
     """Determine OPLS-aa atomtypes for all atoms in `compound`.
 
     This is where everything is orchestrated and the outer iteration happens.
@@ -63,6 +63,19 @@ def opls_atomtypes(compound):
     else:
         warn("Reached maximum iterations. Something probably went wrong.")
 
+    for i, atom in enumerate(compound.atoms):
+        opls_type = atom.opls_whitelist - atom.opls_blacklist
+        opls_type = [a for a in opls_type]
+
+        if debug:
+            atom.opls_type = opls_type
+        else:
+            if len(opls_type) == 1:
+                atom.opls_type = opls_type[0]
+            else:
+                warn("CHECK YOUR TOPOLOGY. Found multiple or no OPLS types for atom {0} ({1}): {2}.".format(
+                        i, atom.kind, opls_type))
+                atom.opls_type = "XXX"
 
 def prepare(atom):
     """Add white- and blacklists to atom. """
