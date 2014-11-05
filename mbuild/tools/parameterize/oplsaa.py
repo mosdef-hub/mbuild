@@ -181,7 +181,6 @@ class Rings(object):
         """Initialize a ring bearer. """
         self.rings = list()
         self.current_path = list()
-        self.branch_points = OrderedSet()
         self.ring_length = ring_length
         self.current_path.append(atom)
         self.step(atom)
@@ -189,17 +188,16 @@ class Rings(object):
     def step(self, atom):
         neighbors = atom.neighbors
         if len(neighbors) > 1:
-            if len(neighbors) > 2:
-                self.branch_points.add(atom)
             for n in neighbors:
                 # Check to see if we found a ring.
-                if len(self.current_path) > 2 and n == self.current_path[0]:
+                current_length = len(self.current_path)
+                if current_length > 2 and n == self.current_path[0]:
                     self.rings.append(copy(self.current_path))
                 # Prevent stepping backwards.
                 elif n in self.current_path:
                     continue
                 else:
-                    if len(self.current_path) < self.ring_length:
+                    if current_length < self.ring_length:
                         # Take another step.
                         self.current_path.append(n)
                         self.step(n)
@@ -209,8 +207,6 @@ class Rings(object):
             else:
                 # Finished looping over all neighbors.
                 del self.current_path[-1]
-                if atom in self.branch_points:
-                    self.branch_points.discard(atom)
         else:
             # Found a dead end.
             del self.current_path[-1]
