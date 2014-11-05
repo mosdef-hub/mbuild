@@ -52,7 +52,7 @@ def load_top_opls(toppath):
             elif current == 'atoms':
                 opls_string = stripped.split()[1]
                 if 'opls' not in opls_string:
-                    print "Found none 'opls' type in {} ({}): {}.".format(
+                    print "Found non 'opls' type in {} ({}): {}.".format(
                         mol_name, filename, opls_string)
                     print "Ignoring file. Need to come up with proper support.\n"
                     return
