@@ -292,7 +292,7 @@ def oxygen(atom):
     assert valency < 3, 'Found oxygen with valency {}.'.format(valency)
 
     if valency == 2:
-        if neighbor_types(atom)['H'] == 1 and neighbor_types(atom)['C'] == 1:
+        if neighbor_types(atom)['H'] == 1 and neighbor_types(atom)['C']:
             for rule_id in [154]:
                 run_rule(atom, rule_id)
         else:
@@ -505,12 +505,12 @@ if __name__ == "__main__":
 
     opls_atomtypes(m)
 
-    for atom in m.atoms:
-        #print "Atom kind={}, opls_whitelist={},  opls_blacklist={}".format(
-        #    atom.kind, atom.opls_whitelist, atom.opls_blacklist)
-
-        print "Atom kind={}, opls_type={}".format(
-            atom.kind, atom.opls_type)
+    for i, atom in enumerate(m.atoms):
+        if i > 1799:
+            #print "Atom kind={}, opls_whitelist={},  opls_blacklist={}".format(
+            #    atom.kind, atom.opls_whitelist, atom.opls_blacklist)
+            print "Atom kind={}, opls_type={}".format(
+                atom.kind, atom.opls_type)
 
 
 
