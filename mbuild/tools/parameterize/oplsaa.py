@@ -10,12 +10,147 @@ from mbuild.orderedset import OrderedSet
 
 # Map opls ids to the functions that check for them.
 rules = dict()
+rule_map = dict()
 
 # Globally maintained neighbor information (see `neighbor_types()`).
 neighbor_types_map = {}
 
 
-def opls_atomtypes(compound, debug=False):
+
+class OplsDecorator(object):
+    pass
+
+class Element(OplsDecorator):
+    def __init__(self, element_type):
+        self.element_type = element_type
+
+    def __call__(self, f):
+        # this must be called 'wrapped'
+        def wrapped(atom):
+            if atom.kind == self.element_type:
+                return f(atom)
+        return wrapped
+
+class NeighborCount(OplsDecorator):
+    def __init__(self, count):
+        self.count = count
+
+    def __call__(self, f):
+        # this must be called 'wrapped'
+        def wrapped(atom):
+            if len(atom.neighbors) == self.count:
+                return f(atom)
+        return wrapped
+
+class NeighborsExactly(OplsDecorator):
+    def __init__(self, neighbor_type, count):
+        self.neighbor_type = neighbor_type
+        self.count = count
+
+    def __call__(self, f):
+        # this must be called 'wrapped'
+        def wrapped(atom):
+            if self.neighbor_type in neighbor_types(atom) and neighbor_types(atom)[self.neighbor_type] == self.count:
+                return f(atom)
+        return wrapped
+
+class NeighborsAtLeast(OplsDecorator):
+    def __init__(self, neighbor_type, count):
+        self.neighbor_type = neighbor_type
+        self.count = count
+
+    def __call__(self, f):
+        # this must be called 'wrapped'
+        def wrapped(atom):
+            if self.neighbor_type in neighbor_types(atom) and neighbor_types(atom)[self.neighbor_type] >= self.count:
+                return f(atom)
+        return wrapped
+
+class NeighborsAtMost(OplsDecorator):
+    def __init__(self, neighbor_type, count):
+        self.neighbor_type = neighbor_type
+        self.count = count
+
+    def __call__(self, f):
+        # this must be called 'wrapped'
+        def wrapped(atom):
+            if self.neighbor_type in neighbor_types(atom) and neighbor_types(atom)[self.neighbor_type] <= self.count:
+                return f(atom)
+        return wrapped
+
+class Whitelist(OplsDecorator):
+    def __init__(self, rule_numbers):
+        self.rule_numbers = rule_numbers
+
+    def __call__(self, f):
+        # this must be called 'wrapped'
+        def wrapped(atom):
+            if f(atom):
+                whitelist(atom, self.rule_numbers)
+                return True
+
+        return wrapped
+
+class Blacklist(OplsDecorator):
+    def __init__(self, rule_numbers):
+        self.rule_numbers = rule_numbers
+
+    def __call__(self, f):
+        # this must be called 'wrapped'
+        def wrapped(atom):
+            if f(atom):
+                blacklist(atom, self.rule_numbers)
+                return True
+
+        return wrapped
+
+
+
+def get_decorator_objects_by_type(decorated_function, decorator_type):
+    rval = []
+
+    # find an object of decorator_type in the function's closure (there should be only one)
+    for cell in decorated_function.func_closure:
+        closure_entry = cell.cell_contents
+        if isinstance(closure_entry, decorator_type):
+            rval.append(closure_entry)
+            break
+
+    # find a function called wrapper in the function's closure, and recurse on that
+    for cell in decorated_function.func_closure:
+        closure_entry = cell.cell_contents
+        if hasattr(closure_entry, '__name__') and closure_entry.__name__ is "wrapped":
+            wrapped_decorator_objects = get_decorator_objects_by_type(closure_entry, decorator_type)
+            rval += wrapped_decorator_objects
+            break
+
+    return rval
+
+
+
+# def get_decorator_objects(decorated_function):
+#     rval = []
+#
+#     # find an object of decorator_type in the function's closure (there should be only one)
+#     for cell in decorated_function.func_closure:
+#         closure_entry = cell.cell_contents
+#         if isinstance(closure_entry, decorator_type):
+#             rval.append(closure_entry)
+#             break
+#
+#     # find a function called wrapper in the function's closure, and recurse on that
+#     for cell in decorated_function.func_closure:
+#         closure_entry = cell.cell_contents
+#         if hasattr(closure_entry, '__name__') and closure_entry.__name__ is "wrapped":
+#             wrapped_decorator_objects = get_decorator_objects_by_type(closure_entry, decorator_type)
+#             rval += wrapped_decorator_objects
+#             break
+#
+#     return rval
+
+
+
+def atomtypes_opls(compound, debug=False):
     """Determine OPLS-aa atomtypes for all atoms in `compound`.
 
     This is where everything is orchestrated and the outer iteration happens.
@@ -27,6 +162,40 @@ def opls_atomtypes(compound, debug=False):
     for fn, fcn in sys.modules[__name__].__dict__.items():
         if fn.startswith('opls_'):
             rules[fn.split("_")[1]] = fcn
+
+
+    for rule_number, rule  in rules.items():
+        decorators = get_decorator_objects_by_type(rule, OplsDecorator)
+
+        element_type = None
+        neighbor_count = None
+        for dec in decorators:
+            if isinstance(dec, Element):
+                element_type = dec.element_type
+            if isinstance(dec, NeighborCount):
+                neighbor_count = dec.count
+
+        if element_type and (neighbor_count is None):
+            if element_type not in rule_map:
+                rule_map[element_type] = dict()
+
+            if '*' not in rule_map[element_type]:
+                rule_map[element_type]['*'] = []
+
+            rule_map[element_type]['*'].append(rule)
+
+        elif element_type and (neighbor_count is not None):
+            if element_type not in rule_map:
+                rule_map[element_type] = dict()
+
+            if neighbor_count not in rule_map[element_type]:
+                rule_map[element_type][neighbor_count] = []
+
+            rule_map[element_type][neighbor_count].append(rule_number)
+        else:
+            warn('rule {} has no element type'.format(rule_number))
+
+    # print rule_map
 
     # Add white- and blacklists to all atoms.
     for atom in compound.yield_atoms():
@@ -45,14 +214,31 @@ def opls_atomtypes(compound, debug=False):
 
             if atom.kind == 'G':  # Ignore Ports.
                 continue
-            elif atom.kind == 'C':
-                carbon(atom)
-            elif atom.kind == 'H':
-                hydrogen(atom)
-            elif atom.kind == 'O':
-                oxygen(atom)
+            # elif atom.kind == 'C':
+            #     carbon(atom)
+            # elif atom.kind == 'H':
+            #     hydrogen(atom)
+            # elif atom.kind == 'O':
+            #     oxygen(atom)
+
+
+            if atom.kind in rule_map:
+                if '*' in rule_map[atom.kind]:
+                    for rule in rule_map[atom.kind]['*']:
+                        run_rule(atom,rule)
+
+                if len(atom.neighbors) in rule_map[atom.kind]:
+                    for rule in rule_map[atom.kind][len(atom.neighbors)]:
+                        run_rule(atom, rule)
+                else:
+                    warn("No rule for {}-neighbor '{}' atom".format(len(atom.neighbors), atom.kind))
             else:
-                warn("Atom kind '{}' not supported".format(atom.kind))
+                warn("No rule for atom kind '{}'".format(atom.kind))
+
+
+
+            # else:
+            #     warn("Atom kind '{}' not supported".format(atom.kind))
 
             new_len += len(atom.opls_whitelist)
             new_len += len(atom.opls_blacklist)
@@ -216,91 +402,93 @@ class Rings(object):
 #-----------------------------------------------#
 
 
-def carbon(atom):
-    valency = len(atom.bonds)
-    assert valency < 5, 'Found carbon with valency {}.'.format(valency)
+# def carbon(atom):
+#     valency = len(atom.bonds)
+#     assert valency < 5, 'Found carbon with valency {}.'.format(valency)
+#
+#     if valency == 4:
+#         if neighbor_types(atom)['H'] == 4:
+#             for rule_id in [138]:
+#                 run_rule(atom, rule_id)
+#         elif neighbor_types(atom)['H'] == 3 and neighbor_types(atom)['C'] == 1:
+#             for rule_id in [135, 148]:
+#                 run_rule(atom, rule_id)
+#         elif neighbor_types(atom)['H'] == 2 and neighbor_types(atom)['C'] == 2:
+#             for rule_id in [136, 149, 218]:
+#                 run_rule(atom, rule_id)
+#         elif neighbor_types(atom)['H'] == 1 and neighbor_types(atom)['C'] == 3:
+#             for rule_id in [137]:
+#                 run_rule(atom, rule_id)
+#         elif neighbor_types(atom)['C'] == 4:
+#             for rule_id in [139]:
+#                 run_rule(atom, rule_id)
+#         elif (neighbor_types(atom)['C'] == 1 and
+#               neighbor_types(atom)['O'] == 1 and
+#               neighbor_types(atom)['H'] == 2):
+#             for rule_id in [218]:
+#                 run_rule(atom, rule_id)
+#         else:
+#             no_pattern(atom, valency)
+#     elif valency == 3:
+#         if neighbor_types(atom)['H'] == 2 and neighbor_types(atom)['C'] == 1:
+#             for rule_id in [143]:
+#                 run_rule(atom, rule_id)
+#         elif neighbor_types(atom)['H'] == 1 and neighbor_types(atom)['C'] == 2:
+#             for rule_id in [142, 145]:
+#                 run_rule(atom, rule_id)
+#         elif neighbor_types(atom)['C'] == 3:
+#             for rule_id in [141, 145, '145B', 221]:
+#                 run_rule(atom, rule_id)
+#         elif neighbor_types(atom)['C'] >= 2:
+#             for rule_id in [145]:
+#                 run_rule(atom, rule_id)
+#         elif neighbor_types(atom)['C'] >= 1 and neighbor_types(atom)['O'] == 1:
+#             for rule_id in [232]:
+#                 run_rule(atom, rule_id)
+#         else:
+#             no_pattern(atom, valency)
+#     else:
+#         no_rule(atom, valency)
+#
+#
+# def hydrogen(atom):
+#     valency = len(atom.bonds)
+#     assert valency < 2, 'Found hydrogen with valency {}'.format(valency)
+#
+#     if valency == 1:
+#         if neighbor_types(atom)['C'] == 1:
+#             for rule_id in [140, 144, 146, 279]:
+#                 run_rule(atom, rule_id)
+#         elif neighbor_types(atom)['O'] == 1:
+#             for rule_id in [155]:
+#                 run_rule(atom, rule_id)
+#         else:
+#             no_pattern(atom, valency)
+#     else:
+#         no_rule(atom, valency)
+#
+#
+# def oxygen(atom):
+#     valency = len(atom.bonds)
+#     # TODO: check if OPLS has parameters for things like hydronium
+#     assert valency < 3, 'Found oxygen with valency {}.'.format(valency)
+#
+#     if valency == 2:
+#         if neighbor_types(atom)['H'] == 1 and neighbor_types(atom)['C'] == 1:
+#             for rule_id in [154]:
+#                 run_rule(atom, rule_id)
+#         else:
+#             no_pattern(atom, valency)
+#     elif valency == 1:
+#         if neighbor_types(atom)['C'] == 1:
+#             for rule_id in [278]:
+#                 run_rule(atom, rule_id)
+#         else:
+#             no_pattern(atom, valency)
+#     else:
+#         no_rule(atom, valency)
+#
 
-    if valency == 4:
-        if neighbor_types(atom)['H'] == 4:
-            for rule_id in [138]:
-                run_rule(atom, rule_id)
-        elif neighbor_types(atom)['H'] == 3 and neighbor_types(atom)['C'] == 1:
-            for rule_id in [135, 148]:
-                run_rule(atom, rule_id)
-        elif neighbor_types(atom)['H'] == 2 and neighbor_types(atom)['C'] == 2:
-            for rule_id in [136, 149, 218]:
-                run_rule(atom, rule_id)
-        elif neighbor_types(atom)['H'] == 1 and neighbor_types(atom)['C'] == 3:
-            for rule_id in [137]:
-                run_rule(atom, rule_id)
-        elif neighbor_types(atom)['C'] == 4:
-            for rule_id in [139]:
-                run_rule(atom, rule_id)
-        elif (neighbor_types(atom)['C'] == 1 and
-              neighbor_types(atom)['O'] == 1 and
-              neighbor_types(atom)['H'] == 2):
-            for rule_id in [218]:
-                run_rule(atom, rule_id)
-        else:
-            no_pattern(atom, valency)
-    elif valency == 3:
-        if neighbor_types(atom)['H'] == 2 and neighbor_types(atom)['C'] == 1:
-            for rule_id in [143]:
-                run_rule(atom, rule_id)
-        elif neighbor_types(atom)['H'] == 1 and neighbor_types(atom)['C'] == 2:
-            for rule_id in [142, 145]:
-                run_rule(atom, rule_id)
-        elif neighbor_types(atom)['C'] == 3:
-            for rule_id in [141, 145, '145B', 221]:
-                run_rule(atom, rule_id)
-        elif neighbor_types(atom)['C'] >= 2:
-            for rule_id in [145]:
-                run_rule(atom, rule_id)
-        elif neighbor_types(atom)['C'] >= 1 and neighbor_types(atom)['O'] == 1:
-            for rule_id in [232]:
-                run_rule(atom, rule_id)
-        else:
-            no_pattern(atom, valency)
-    else:
-        no_rule(atom, valency)
-
-
-def hydrogen(atom):
-    valency = len(atom.bonds)
-    assert valency < 2, 'Found hydrogen with valency {}'.format(valency)
-
-    if valency == 1:
-        if neighbor_types(atom)['C'] == 1:
-            for rule_id in [140, 144, 146, 279]:
-                run_rule(atom, rule_id)
-        elif neighbor_types(atom)['O'] == 1:
-            for rule_id in [155]:
-                run_rule(atom, rule_id)
-        else:
-            no_pattern(atom, valency)
-    else:
-        no_rule(atom, valency)
-
-
-def oxygen(atom):
-    valency = len(atom.bonds)
-    # TODO: check if OPLS has parameters for things like hydronium
-    assert valency < 3, 'Found oxygen with valency {}.'.format(valency)
-
-    if valency == 2:
-        if neighbor_types(atom)['H'] == 1 and neighbor_types(atom)['C'] == 1:
-            for rule_id in [154]:
-                run_rule(atom, rule_id)
-        else:
-            no_pattern(atom, valency)
-    elif valency == 1:
-        if neighbor_types(atom)['C'] == 1:
-            for rule_id in [278]:
-                run_rule(atom, rule_id)
-        else:
-            no_pattern(atom, valency)
-    else:
-        no_rule(atom, valency)
 
 #---------------------------------------------------------#
 # Filters for some specific patterns to break up the code #
@@ -325,68 +513,117 @@ def benzene(atom):
 
 
 # Alkanes
+@Element('C')
+@NeighborCount(4)
+@NeighborsExactly('C', 1)
+@NeighborsExactly('H', 3)
+@Whitelist(135)
 def opls_135(atom):
     # alkane CH3
-    whitelist(atom, 135)
+    return True
 
 
+@Element('C')
+@NeighborCount(4)
+@NeighborsExactly('C', 2)
+@NeighborsExactly('H', 2)
+@Whitelist(136)
 def opls_136(atom):
     # alkane CH2
-    whitelist(atom, 136)
+    return True
 
-
+@Element('C')
+@NeighborCount(4)
+@NeighborsExactly('C', 3)
+@NeighborsExactly('H', 1)
+@Whitelist(137)
 def opls_137(atom):
     # alkane CH
-    whitelist(atom, 137)
+    return True
 
 
+@Element('C')
+@NeighborCount(4)
+@NeighborsExactly('H', 4)
+@Whitelist(138)
 def opls_138(atom):
     # alkane CH4
-    whitelist(atom, 138)
+    return True
 
 
+@Element('C')
+@NeighborCount(4)
+@NeighborsExactly('C', 4)
+@Whitelist(139)
 def opls_139(atom):
     # alkane C
-    whitelist(atom, 139)
+    return True
 
 
+@Element('H')
+@NeighborCount(1)
+@NeighborsExactly('C', 1)
+@Whitelist(140)
 def opls_140(atom):
     # alkane H
-    whitelist(atom, 140)
+    return True
 
 
 # Alkenes
+
+@Element('C')
+@NeighborCount(3)
+@NeighborsExactly('C', 3)
+@Whitelist(141)
 def opls_141(atom):
     # alkene C (R2-C=)
-    whitelist(atom, 141)
+    return True
 
 
+@Element('C')
+@NeighborCount(3)
+@NeighborsExactly('C', 2)
+@NeighborsExactly('H', 1)
+@Whitelist(142)
 def opls_142(atom):
     # alkene C (RH-C=)
-    whitelist(atom, 142)
+    return True
 
 
+@Element('C')
+@NeighborCount(3)
+@NeighborsExactly('C', 1)
+@NeighborsExactly('H', 2)
+@Whitelist(143)
 def opls_143(atom):
     # alkene C (H2-C=)
-    whitelist(atom, 143)
+    return True
 
-
+@Element('H')
+@NeighborCount(1)
+@NeighborsExactly('C', 1)
+@Whitelist(144)
+@Blacklist(140)
 def opls_144(atom):
     # alkene H (H-C=)
     # Make sure that the carbon is an alkene carbon.
     rule_ids = [141, 142, 143]
-    if check_atom(atom.neighbors[0], rule_ids):
-        whitelist(atom, 144)
-        blacklist(atom, 140)
+    return check_atom(atom.neighbors[0], rule_ids)
 
-
+@Element('C')
+@NeighborCount(3)
+@NeighborsAtLeast('C', 2)
+@Whitelist(145)
+@Blacklist([141, 142])
 def opls_145(atom):
     # Benzene C - 12 site JACS,112,4768-90. Use #145B for biphenyl
-    if benzene(atom):
-        whitelist(atom, 145)
-        blacklist(atom, [141, 142])
+    return benzene(atom)
 
-
+@Element('C')
+@NeighborCount(3)
+@NeighborsExactly('C', 3)
+@Whitelist('145B')
+@Blacklist([141, 145])
 def opls_145B(atom):
     # Biphenyl C1
     # Store for checking for neighbors outside the first ring.
@@ -395,50 +632,68 @@ def opls_145B(atom):
         for neighbor in atom.neighbors:
             if neighbor not in ring_one:
                 if benzene(neighbor):
-                    whitelist(atom, '145B')
-                    blacklist(atom, [141, 145])
+                    return True
 
-
+@Element('H')
+@NeighborCount(1)
+@Whitelist(146)
+@Blacklist([140, 144])
 def opls_146(atom):
     # Benzene H - 12 site.
-    if check_atom(atom.neighbors[0], 145):
-        whitelist(atom, 146)
-        blacklist(atom, [140, 144])
-
+    return check_atom(atom.neighbors[0], 145)
 
 #def opls_147
     # Napthalene fusion C (C9)
 
-
+@Element('C')
+@NeighborCount(4)
+@NeighborsExactly('C', 1)
+@NeighborsExactly('H', 3)
+@Whitelist(148)
+@Blacklist(135)
 def opls_148(atom):
     # C: CH3, toluene
     for neighbor in atom.neighbors:
         if neighbor.kind == 'C':
             if check_atom(neighbor, 145):
-                whitelist(atom, 148)
-                blacklist(atom, 135)
+                return True
 
-
+@Element('C')
+@NeighborCount(4)
+@NeighborsExactly('C', 2)
+@NeighborsExactly('H', 2)
+@Whitelist(149)
+@Blacklist(136)
 def opls_149(atom):
     # C: CH2, ethyl benzene
     for neighbor in atom.neighbors:
         if neighbor.kind == 'C':
             if check_atom(neighbor, 145):
-                whitelist(atom, 149)
-                blacklist(atom, 136)
+                return True
 
-
+@Element('O')
+@NeighborCount(2)
+@NeighborsExactly('H', 1)
+@Whitelist(154)
 def opls_154(atom):
     # all-atom O: mono alcohols
-    whitelist(atom, 154)
+    return True
 
-
+@Element('H')
+@NeighborCount(1)
+@NeighborsExactly('O', 1)
+@Whitelist(155)
 def opls_155(atom):
     # all-atom H(O): mono alcohols, OP(=O)2
-    if check_atom(atom.neighbors[0], 154):
-        whitelist(atom, 155)
+    return check_atom(atom.neighbors[0], 154)
 
 
+@Element('C')
+@NeighborCount(4)
+@NeighborsExactly('O', 1)
+@NeighborsExactly('C', 1)
+@NeighborsExactly('H', 2)
+@Whitelist(218)
 def opls_218(atom):
     # C in CH2OH - benzyl alcohols
     benzene_carbon = False
@@ -449,19 +704,25 @@ def opls_218(atom):
         if neighbor.kind == 'O':
             alcohol_oxygen = check_atom(neighbor, 154)
     if benzene_carbon and alcohol_oxygen:
-        whitelist(atom, 218)
+        return True
 
-
+@Element('C')
+@NeighborCount(3)
+@NeighborsExactly('C', 3)
+@Whitelist(221)
+@Blacklist([141, 145, '145B'])
 def opls_221(atom):
     # C(CH2OH)   - benzyl alcohols
     if check_atom(atom, 145):  # Already identified as part of benzene.
         for neighbor in atom.neighbors:
             if check_atom(neighbor, 218):
-                whitelist(atom, 221)
-                # Blacklist 3-valent carbons w/ 3 carbon neighbors.
-                blacklist(atom, [141, 145, '145B'])
+                return True
 
-
+@Element('C')
+@NeighborCount(3)
+@NeighborsAtLeast('C', 1)
+@NeighborsExactly('O', 1)
+@Whitelist(232)
 def opls_232(atom):
     # C: C=0 in benzaldehyde, acetophenone (CH)
     for neighbor in atom.neighbors:
@@ -470,39 +731,46 @@ def opls_232(atom):
         if neighbor.kind == 'O':
             aldehyde_oxygen = check_atom(neighbor, 278)
     if benzene_carbon and aldehyde_oxygen:
-        whitelist(atom, 232)
+        return True
 
-
+@Element('O')
+@NeighborCount(1)
+@NeighborsAtLeast('C', 1)
+@Whitelist(278)
 def opls_278(atom):
     # AA O: aldehyde
-    whitelist(atom, 278)
+    return True
 
 
+@Element('H')
+@NeighborCount(1)
+@NeighborsAtLeast('C', 1)
+@Whitelist(279)
+@Blacklist([140, 144, 146])
 def opls_279(atom):
     # AA H-alpha in aldehyde & formamide
-    if check_atom(atom.neighbors[0], [232, 277]):
-        whitelist(atom, 279)
-        blacklist(atom, [140, 144, 146])
-
+    return check_atom(atom.neighbors[0], [232, 277])
 
 if __name__ == "__main__":
     import pdb
 
-    # m = Alkane(n=3)
+    from mbuild.examples.methane.methane import Methane
+
+    m = Methane()
     # m = Compound.load(get_opls_fn('isopropane.pdb'))
     # m = Compound.load(get_opls_fn('cyclohexane.pdb'))
     # m = Compound.load(get_opls_fn('neopentane.pdb'))
     # m = Compound.load(get_opls_fn('benzene.pdb'))
-    m = Compound.load(get_opls_fn('1-propene.pdb'))
+    # m = Compound.load(get_opls_fn('1-propene.pdb'))
     # m = Compound.load(get_opls_fn('biphenyl.pdb'))
 
-    from mbuild.examples.alkane_monolayer.alkane_monolayer import AlkaneMonolayer
-    m = AlkaneMonolayer(chain_length=3)
+    # from mbuild.examples.alkane_monolayer.alkane_monolayer import AlkaneMonolayer
+    # m = AlkaneMonolayer(chain_length=3)
 
-    opls_atomtypes(m)
+    atomtypes_opls(m)
 
     for i, atom in enumerate(m.atoms):
-        if i > 1799:
+        # if i > 1799:
             #print "Atom kind={}, opls_whitelist={},  opls_blacklist={}".format(
             #    atom.kind, atom.opls_whitelist, atom.opls_blacklist)
             print "Atom kind={}, opls_type={}".format(

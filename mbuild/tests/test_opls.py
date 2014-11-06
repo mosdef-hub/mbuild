@@ -7,7 +7,7 @@ import glob
 import os
 
 from mbuild.testing.tools import load_top_opls
-from mbuild.tools.parameterize.oplsaa import opls_atomtypes
+from mbuild.tools.parameterize.oplsaa import atomtypes_opls
 
 
 class TestTools:
@@ -15,7 +15,7 @@ class TestTools:
     def test_all_molecules(self, only_run=None):
         # Path doesn't work for py.test and is probably bad practice anyways.
         top_files = glob.glob('../../opls_validation/*.top')
-        for top in top_files:
+        for top in top_files[::-1]:
             top_name = os.path.split(top)[-1]
             loaded = load_top_opls(top)
             if loaded:
@@ -27,7 +27,7 @@ class TestTools:
                 continue
 
             print "Typing {} ({})...".format(mol_name, top_name)
-            opls_atomtypes(compound, debug=True)
+            atomtypes_opls(compound, debug=True)
             generated_opls_types = list()
             for i, atom in enumerate(compound.atoms):
                 message = "Found multiple or no OPLS types for atom {} in {} ({}): {}".format(
@@ -45,4 +45,4 @@ class TestTools:
 
 if __name__ == "__main__":
     import pdb
-    TestTools().test_all_molecules('anisole')
+    TestTools().test_all_molecules()
