@@ -4,18 +4,17 @@ import os
 from warnings import warn
 from pkg_resources import resource_filename
 import sys
+from itertools import combinations_with_replacement
 
 from mbuild.compound import Compound
 from mbuild.orderedset import OrderedSet
 
 # Map opls ids to the functions that check for them.
-rules = dict()
+rule_number_to_rule = dict()
 rule_map = dict()
 
 # Globally maintained neighbor information (see `neighbor_types()`).
 neighbor_types_map = {}
-
-
 
 class OplsDecorator(object):
     pass
@@ -80,7 +79,11 @@ class NeighborsAtMost(OplsDecorator):
 
 class Whitelist(OplsDecorator):
     def __init__(self, rule_numbers):
-        self.rule_numbers = rule_numbers
+        if isinstance(rule_numbers, (list, tuple, set)):
+            self.rule_numbers = list(map(str, rule_numbers))
+            self.rule_numbers.sort()
+        else:
+            self.rule_numbers = [str(rule_numbers)]
 
     def __call__(self, f):
         # this must be called 'wrapped'
@@ -93,7 +96,12 @@ class Whitelist(OplsDecorator):
 
 class Blacklist(OplsDecorator):
     def __init__(self, rule_numbers):
-        self.rule_numbers = rule_numbers
+        if isinstance(rule_numbers, (list, tuple, set)):
+            self.rule_numbers = list(map(str,rule_numbers))
+            self.rule_numbers.sort()
+        else:
+            self.rule_numbers = [str(rule_numbers)]
+
 
     def __call__(self, f):
         # this must be called 'wrapped'
@@ -149,6 +157,30 @@ def get_decorator_objects_by_type(decorated_function, decorator_type):
 #     return rval
 
 
+def check_neighbors_exactly(pattern, neighbor_type, count):
+    cnt = 0
+    for elem in pattern:
+        if elem == neighbor_type:
+            cnt+=1
+
+    return cnt == count
+
+def check_neighbors_at_least(pattern, neighbor_type, count):
+    cnt = 0
+    for elem in pattern:
+        if elem == neighbor_type:
+            cnt+=1
+
+    return cnt >= count
+
+def check_neighbors_at_least(pattern, neighbor_type, count):
+    cnt = 0
+    for elem in pattern:
+        if elem == neighbor_type:
+            cnt+=1
+
+    return cnt <= count
+
 
 def atomtypes_opls(compound, debug=False):
     """Determine OPLS-aa atomtypes for all atoms in `compound`.
@@ -161,10 +193,9 @@ def atomtypes_opls(compound, debug=False):
     # Build a map to all of the supported opls_* functions.
     for fn, fcn in sys.modules[__name__].__dict__.items():
         if fn.startswith('opls_'):
-            rules[fn.split("_")[1]] = fcn
+            rule_number_to_rule[fn.split("_")[1]] = fcn
 
-
-    for rule_number, rule  in rules.items():
+    for rule_number, rule in rule_number_to_rule.items():
         decorators = get_decorator_objects_by_type(rule, OplsDecorator)
 
         element_type = None
@@ -197,6 +228,108 @@ def atomtypes_opls(compound, debug=False):
 
     # print rule_map
 
+
+    supported_atom_types = set()
+    for rule_number, rule in rule_number_to_rule.items():
+        decorators = get_decorator_objects_by_type(rule, OplsDecorator)
+
+        element_type = None
+        for dec in decorators:
+            if isinstance(dec, Element):
+                assert element_type is None, "Duplicate element type decorators on rule {}".format(rule_number)
+                element_type = dec.element_type
+                supported_atom_types.add(element_type)
+
+    supported_atom_types = list(supported_atom_types)
+    supported_atom_types.sort()
+
+    print(supported_atom_types)
+
+
+    rule_matches = dict()
+    for rule_number, rule in rule_number_to_rule.items():
+        decorators = get_decorator_objects_by_type(rule, OplsDecorator)
+
+        element_type = None
+        neighbor_count = None
+        rule_string = []
+
+        for dec in decorators:
+            if isinstance(dec, Element):
+                assert element_type is None, "Duplicate element type decorators on rule {}".format(rule_number)
+                element_type = dec.element_type
+            if isinstance(dec, NeighborCount):
+                assert neighbor_count is None, "Duplicate neighbor count decorators on rule {}".format(rule_number)
+                neighbor_count = dec.count
+
+        all_patterns = set(combinations_with_replacement(supported_atom_types, neighbor_count))
+
+        removed_patterns = set()
+        for dec in decorators:
+            if isinstance(dec, NeighborsExactly):
+                for pattern in all_patterns:
+                    if not pattern.count(dec.neighbor_type)==dec.count:
+                        removed_patterns.add(pattern)
+            if isinstance(dec, NeighborsAtLeast):
+                for pattern in all_patterns:
+                    if not pattern.count(dec.neighbor_type)>=dec.count:
+                        removed_patterns.add(pattern)
+            if isinstance(dec, NeighborsAtMost):
+                for pattern in all_patterns:
+                    if not pattern.count(dec.neighbor_type)<=dec.count:
+                        removed_patterns.add(pattern)
+
+        all_patterns.difference_update(removed_patterns)
+
+        for pattern in all_patterns:
+            if (element_type, pattern) not in rule_matches:
+                rule_matches[(element_type, pattern)] = set([rule_number])
+            else:
+                rule_matches[(element_type, pattern)].add(rule_number)
+
+
+    print rule_matches
+
+    for k, rules in rule_matches.items():
+        import networkx as nx
+        if len(rules) > 1:
+            element_type, pattern = k
+
+            G = nx.DiGraph()
+
+            for rule_number in rules:
+                blacklisted_rules = set()
+                decorators = get_decorator_objects_by_type(rule_number_to_rule[rule_number], OplsDecorator)
+
+                for dec in decorators:
+                    if isinstance(dec, Blacklist):
+                        blacklisted_rules.update(dec.rule_numbers)
+
+                for blacklisted_rule in blacklisted_rules:
+                    # if blacklisted_rule not in rules:
+                    #
+
+                    G.add_edge(rule_number, blacklisted_rule)
+
+            # check if connected
+            if not nx.is_connected(G.to_undirected()):
+                warn("for pattern {} rule graph {} is not connected: {}".format(pattern, rule_number, G.edges()))
+
+            # check if DAG
+            if not nx.is_directed_acyclic_graph(G):
+                warn("for pattern {} rule graph {} is not a DAG: {}".format(pattern, rule_number, G.edges()))
+
+            # check if there's a unique sink
+            sinks = []
+            for node in G.nodes():
+                if len(nx.descendants(G, node)) == 0:
+                    sinks.append(node)
+
+            if len(sinks)>1:
+                warn("for pattern {} rule graph {} has multiple sinks ({}): {} ".format(pattern, rule_number, sinks, G.edges()))
+
+
+
     # Add white- and blacklists to all atoms.
     for atom in compound.yield_atoms():
         prepare(atom)
@@ -214,18 +347,11 @@ def atomtypes_opls(compound, debug=False):
 
             if atom.kind == 'G':  # Ignore Ports.
                 continue
-            # elif atom.kind == 'C':
-            #     carbon(atom)
-            # elif atom.kind == 'H':
-            #     hydrogen(atom)
-            # elif atom.kind == 'O':
-            #     oxygen(atom)
-
 
             if atom.kind in rule_map:
                 if '*' in rule_map[atom.kind]:
                     for rule in rule_map[atom.kind]['*']:
-                        run_rule(atom,rule)
+                        run_rule(atom, rule)
 
                 if len(atom.neighbors) in rule_map[atom.kind]:
                     for rule in rule_map[atom.kind][len(atom.neighbors)]:
@@ -234,11 +360,6 @@ def atomtypes_opls(compound, debug=False):
                     warn("No rule for {}-neighbor '{}' atom".format(len(atom.neighbors), atom.kind))
             else:
                 warn("No rule for atom kind '{}'".format(atom.kind))
-
-
-
-            # else:
-            #     warn("Atom kind '{}' not supported".format(atom.kind))
 
             new_len += len(atom.opls_whitelist)
             new_len += len(atom.opls_blacklist)
@@ -273,7 +394,7 @@ def run_rule(atom, rule_id):
     """Execute the rule function for a specified OPLS-aa atomtype. """
     if not rule_id in atom.opls_blacklist and not rule_id in atom.opls_whitelist:
         try:
-            rule_fn = rules[str(rule_id)]
+            rule_fn = rule_number_to_rule[str(rule_id)]
         except KeyError:
             raise KeyError('Rule for {} not implemented'.format(rule_id))
         rule_fn(atom)
@@ -775,6 +896,3 @@ if __name__ == "__main__":
             #    atom.kind, atom.opls_whitelist, atom.opls_blacklist)
             print "Atom kind={}, opls_type={}".format(
                 atom.kind, atom.opls_type)
-
-
-
