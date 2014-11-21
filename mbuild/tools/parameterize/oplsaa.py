@@ -1,12 +1,11 @@
 from collections import defaultdict
 from copy import copy
+from itertools import combinations_with_replacement
 import os
-from warnings import warn
 from pkg_resources import resource_filename
 import sys
-from itertools import combinations_with_replacement
+from warnings import warn
 
-from mbuild.compound import Compound
 from mbuild.orderedset import OrderedSet
 
 # Map opls ids to the functions that check for them.
@@ -16,8 +15,10 @@ rule_map = dict()
 # Globally maintained neighbor information (see `neighbor_types()`).
 neighbor_types_map = {}
 
+
 class OplsDecorator(object):
     pass
+
 
 class Element(OplsDecorator):
     def __init__(self, element_type):
@@ -30,6 +31,7 @@ class Element(OplsDecorator):
                 return f(atom)
         return wrapped
 
+
 class NeighborCount(OplsDecorator):
     def __init__(self, count):
         self.count = count
@@ -41,6 +43,7 @@ class NeighborCount(OplsDecorator):
                 return f(atom)
         return wrapped
 
+
 class NeighborsExactly(OplsDecorator):
     def __init__(self, neighbor_type, count):
         self.neighbor_type = neighbor_type
@@ -49,9 +52,11 @@ class NeighborsExactly(OplsDecorator):
     def __call__(self, f):
         # this must be called 'wrapped'
         def wrapped(atom):
-            if self.neighbor_type in neighbor_types(atom) and neighbor_types(atom)[self.neighbor_type] == self.count:
+            if (self.neighbor_type in neighbor_types(atom) and
+                        neighbor_types(atom)[self.neighbor_type] == self.count):
                 return f(atom)
         return wrapped
+
 
 class NeighborsAtLeast(OplsDecorator):
     def __init__(self, neighbor_type, count):
@@ -61,9 +66,11 @@ class NeighborsAtLeast(OplsDecorator):
     def __call__(self, f):
         # this must be called 'wrapped'
         def wrapped(atom):
-            if self.neighbor_type in neighbor_types(atom) and neighbor_types(atom)[self.neighbor_type] >= self.count:
+            if (self.neighbor_type in neighbor_types(atom) and
+                    neighbor_types(atom)[self.neighbor_type] >= self.count):
                 return f(atom)
         return wrapped
+
 
 class NeighborsAtMost(OplsDecorator):
     def __init__(self, neighbor_type, count):
@@ -73,9 +80,11 @@ class NeighborsAtMost(OplsDecorator):
     def __call__(self, f):
         # this must be called 'wrapped'
         def wrapped(atom):
-            if self.neighbor_type in neighbor_types(atom) and neighbor_types(atom)[self.neighbor_type] <= self.count:
+            if (self.neighbor_type in neighbor_types(atom) and
+                    neighbor_types(atom)[self.neighbor_type] <= self.count):
                 return f(atom)
         return wrapped
+
 
 class Whitelist(OplsDecorator):
     def __init__(self, rule_numbers):
@@ -89,42 +98,64 @@ class Whitelist(OplsDecorator):
         # this must be called 'wrapped'
         def wrapped(atom):
             if f(atom):
-                whitelist(atom, self.rule_numbers)
+                self.whitelist(atom)
                 return True
-
         return wrapped
+
+    def whitelist(self, atom):
+        """Whitelist an OPLS-aa atomtype for an atom. """
+        if isinstance(self.rule_numbers, (list, tuple, set)):
+            for rule in self.rule_numbers:
+                atom.opls_whitelist.add(str(rule))
+        else:
+            atom.opls_whitelist.add(str(self.rule_numbers))
+
 
 class Blacklist(OplsDecorator):
     def __init__(self, rule_numbers):
         if isinstance(rule_numbers, (list, tuple, set)):
-            self.rule_numbers = list(map(str,rule_numbers))
+            self.rule_numbers = list(map(str, rule_numbers))
             self.rule_numbers.sort()
         else:
             self.rule_numbers = [str(rule_numbers)]
-
 
     def __call__(self, f):
         # this must be called 'wrapped'
         def wrapped(atom):
             if f(atom):
-                blacklist(atom, self.rule_numbers)
+                self.blacklist(atom)
                 return True
-
         return wrapped
 
+    def blacklist(self, atom):
+        """Blacklist an OPLS-aa atomtype for an atom. """
+        if isinstance(self.rule_numbers, (list, tuple, set)):
+            for rule in self.rule_numbers:
+                atom.opls_blacklist.add(str(rule))
+        else:
+            atom.opls_blacklist.add(str(self.rule_numbers))
 
 
 def get_decorator_objects_by_type(decorated_function, decorator_type):
+    """
+
+    Args:
+        decorated_function:
+        decorator_type:
+
+    Returns:
+        rval:
+    """
     rval = []
 
-    # find an object of decorator_type in the function's closure (there should be only one)
+    # Find an object of decorator_type in the function's closure (there should be only one)
     for cell in decorated_function.func_closure:
         closure_entry = cell.cell_contents
         if isinstance(closure_entry, decorator_type):
             rval.append(closure_entry)
             break
 
-    # find a function called wrapper in the function's closure, and recurse on that
+    # Find a function called `wrapper` in the function's closure, and recurse on that.
     for cell in decorated_function.func_closure:
         closure_entry = cell.cell_contents
         if hasattr(closure_entry, '__name__') and closure_entry.__name__ is "wrapped":
@@ -135,69 +166,28 @@ def get_decorator_objects_by_type(decorated_function, decorator_type):
     return rval
 
 
-
-# def get_decorator_objects(decorated_function):
-#     rval = []
-#
-#     # find an object of decorator_type in the function's closure (there should be only one)
-#     for cell in decorated_function.func_closure:
-#         closure_entry = cell.cell_contents
-#         if isinstance(closure_entry, decorator_type):
-#             rval.append(closure_entry)
-#             break
-#
-#     # find a function called wrapper in the function's closure, and recurse on that
-#     for cell in decorated_function.func_closure:
-#         closure_entry = cell.cell_contents
-#         if hasattr(closure_entry, '__name__') and closure_entry.__name__ is "wrapped":
-#             wrapped_decorator_objects = get_decorator_objects_by_type(closure_entry, decorator_type)
-#             rval += wrapped_decorator_objects
-#             break
-#
-#     return rval
+def check_duplicate_element(element_type, rule_number):
+    assert element_type is None, ("Duplicate element type decorators on rule "
+                                  "{}".format(rule_number))
 
 
-def check_neighbors_exactly(pattern, neighbor_type, count):
-    cnt = 0
-    for elem in pattern:
-        if elem == neighbor_type:
-            cnt+=1
-
-    return cnt == count
-
-def check_neighbors_at_least(pattern, neighbor_type, count):
-    cnt = 0
-    for elem in pattern:
-        if elem == neighbor_type:
-            cnt+=1
-
-    return cnt >= count
-
-def check_neighbors_at_least(pattern, neighbor_type, count):
-    cnt = 0
-    for elem in pattern:
-        if elem == neighbor_type:
-            cnt+=1
-
-    return cnt <= count
+def check_duplicate_neighbor_count(neighbor_count, rule_number):
+    assert neighbor_count is None, ("Duplicate neighbor count decorators on "
+                                    "rule {}".format(rule_number))
 
 
-def atomtypes_opls(compound, debug=False):
-    """Determine OPLS-aa atomtypes for all atoms in `compound`.
+def sanitize():
+    """Analyze all rules for possible inconsistencies.
 
-    This is where everything is orchestrated and the outer iteration happens.
-
-
-    TODO: look into factoring out functions for different rings (see 145)
+    This function serves primarily as a tool for developers who intend to add
+    new rules or modify existing ones. Ideally, it will help you identify and
+    correct logical inconsistencies as early as possible.
     """
-    # Build a map to all of the supported opls_* functions.
-    for fn, fcn in sys.modules[__name__].__dict__.items():
-        if fn.startswith('opls_'):
-            rule_number_to_rule[fn.split("_")[1]] = fcn
+    import networkx as nx
 
+     # Build up a tree of element types-->neighbor counts-->rules.
     for rule_number, rule in rule_number_to_rule.items():
         decorators = get_decorator_objects_by_type(rule, OplsDecorator)
-
         element_type = None
         neighbor_count = None
         for dec in decorators:
@@ -206,79 +196,67 @@ def atomtypes_opls(compound, debug=False):
             if isinstance(dec, NeighborCount):
                 neighbor_count = dec.count
 
-        if element_type and (neighbor_count is None):
-            if element_type not in rule_map:
-                rule_map[element_type] = dict()
+        if not element_type:
+            warn('Rule {} has no element type'.format(rule_number))
+        if not neighbor_count:
+            warn('Rule {} has no neighbor count'.format(rule_number))
 
-            if '*' not in rule_map[element_type]:
-                rule_map[element_type]['*'] = []
+        if element_type not in rule_map:
+            rule_map[element_type] = dict()
+        if neighbor_count not in rule_map[element_type]:
+            rule_map[element_type][neighbor_count] = []
+        rule_map[element_type][neighbor_count].append(rule_number)
 
-            rule_map[element_type]['*'].append(rule)
-
-        elif element_type and (neighbor_count is not None):
-            if element_type not in rule_map:
-                rule_map[element_type] = dict()
-
-            if neighbor_count not in rule_map[element_type]:
-                rule_map[element_type][neighbor_count] = []
-
-            rule_map[element_type][neighbor_count].append(rule_number)
-        else:
-            warn('rule {} has no element type'.format(rule_number))
-
-    # print rule_map
-
-
-    supported_atom_types = set()
+    # Find all elements currently supported by rules.
+    supported_elements = set()
     for rule_number, rule in rule_number_to_rule.items():
         decorators = get_decorator_objects_by_type(rule, OplsDecorator)
 
         element_type = None
         for dec in decorators:
             if isinstance(dec, Element):
-                assert element_type is None, "Duplicate element type decorators on rule {}".format(rule_number)
+                check_duplicate_element(element_type, rule_number)
                 element_type = dec.element_type
-                supported_atom_types.add(element_type)
+                supported_elements.add(element_type)
+    supported_elements = list(supported_elements)
+    supported_elements.sort()
 
-    supported_atom_types = list(supported_atom_types)
-    supported_atom_types.sort()
-
-    print(supported_atom_types)
-
-
+    # Find all elements and combinations of neighbor types that have a rule.
+    # Rule matches is structured as follows:
+    #   key: (element, (neighbor element 1, neighbor element 2, etc..))
+    #   value: set(rule numbers)
+    # Example entry (from time of writing this comment):
+    #   ('C', ('C', 'C', 'H')): set(['145', '142'])
     rule_matches = dict()
     for rule_number, rule in rule_number_to_rule.items():
         decorators = get_decorator_objects_by_type(rule, OplsDecorator)
 
         element_type = None
         neighbor_count = None
-        rule_string = []
-
         for dec in decorators:
             if isinstance(dec, Element):
-                assert element_type is None, "Duplicate element type decorators on rule {}".format(rule_number)
                 element_type = dec.element_type
             if isinstance(dec, NeighborCount):
-                assert neighbor_count is None, "Duplicate neighbor count decorators on rule {}".format(rule_number)
+                check_duplicate_neighbor_count(neighbor_count, rule_number)
                 neighbor_count = dec.count
+        # All POSSIBLE combinations of elements and neighbors.
+        all_patterns = set(combinations_with_replacement(supported_elements, neighbor_count))
 
-        all_patterns = set(combinations_with_replacement(supported_atom_types, neighbor_count))
-
+        # Remove the ones that don't actually have a rule.
         removed_patterns = set()
         for dec in decorators:
             if isinstance(dec, NeighborsExactly):
                 for pattern in all_patterns:
-                    if not pattern.count(dec.neighbor_type)==dec.count:
+                    if not pattern.count(dec.neighbor_type) == dec.count:
                         removed_patterns.add(pattern)
             if isinstance(dec, NeighborsAtLeast):
                 for pattern in all_patterns:
-                    if not pattern.count(dec.neighbor_type)>=dec.count:
+                    if not pattern.count(dec.neighbor_type) >= dec.count:
                         removed_patterns.add(pattern)
             if isinstance(dec, NeighborsAtMost):
                 for pattern in all_patterns:
-                    if not pattern.count(dec.neighbor_type)<=dec.count:
+                    if not pattern.count(dec.neighbor_type) <= dec.count:
                         removed_patterns.add(pattern)
-
         all_patterns.difference_update(removed_patterns)
 
         for pattern in all_patterns:
@@ -287,16 +265,12 @@ def atomtypes_opls(compound, debug=False):
             else:
                 rule_matches[(element_type, pattern)].add(rule_number)
 
-
-    print rule_matches
-
-    for k, rules in rule_matches.items():
-        import networkx as nx
+    #
+    for key, rules in rule_matches.items():
+        # Only consider patterns matched by multiple rules.
         if len(rules) > 1:
-            element_type, pattern = k
-
+            element_type, pattern = key
             G = nx.DiGraph()
-
             for rule_number in rules:
                 blacklisted_rules = set()
                 decorators = get_decorator_objects_by_type(rule_number_to_rule[rule_number], OplsDecorator)
@@ -304,11 +278,7 @@ def atomtypes_opls(compound, debug=False):
                 for dec in decorators:
                     if isinstance(dec, Blacklist):
                         blacklisted_rules.update(dec.rule_numbers)
-
                 for blacklisted_rule in blacklisted_rules:
-                    # if blacklisted_rule not in rules:
-                    #
-
                     G.add_edge(rule_number, blacklisted_rule)
 
             # check if connected
@@ -329,6 +299,18 @@ def atomtypes_opls(compound, debug=False):
                 warn("for pattern {} rule graph {} has multiple sinks ({}): {} ".format(pattern, rule_number, sinks, G.edges()))
 
 
+def atomtypes_opls(compound, debug=True):
+    """Determine OPLS-aa atomtypes for all atoms in `compound`.
+
+    This is where everything is orchestrated and the outer iteration happens.
+    """
+    # Build a map to all of the supported opls_* functions.
+    for fn, fcn in sys.modules[__name__].__dict__.items():
+        if fn.startswith('opls_'):
+            rule_number_to_rule[fn.split("_")[1]] = fcn
+
+    if debug:
+        sanitize()
 
     # Add white- and blacklists to all atoms.
     for atom in compound.yield_atoms():
@@ -336,8 +318,6 @@ def atomtypes_opls(compound, debug=False):
 
     max_iter = 10
     for iter_cnt in range(max_iter):
-        #print ("Iteration {}".format(iter_cnt))
-
         # For comparing the lengths of the white- and blacklists.
         old_len = 0
         new_len = 0
@@ -349,10 +329,6 @@ def atomtypes_opls(compound, debug=False):
                 continue
 
             if atom.kind in rule_map:
-                if '*' in rule_map[atom.kind]:
-                    for rule in rule_map[atom.kind]['*']:
-                        run_rule(atom, rule)
-
                 if len(atom.neighbors) in rule_map[atom.kind]:
                     for rule in rule_map[atom.kind][len(atom.neighbors)]:
                         run_rule(atom, rule)
@@ -374,15 +350,13 @@ def atomtypes_opls(compound, debug=False):
         opls_type = atom.opls_whitelist - atom.opls_blacklist
         opls_type = [a for a in opls_type]
 
-        if debug:
-            atom.extras['opls_type'] = opls_type
+        if len(opls_type) == 1:
+            atom.extras['opls_type'] = opls_type[0]
         else:
-            if len(opls_type) == 1:
-                atom.extras['opls_type'] = opls_type[0]
-            else:
-                warn("CHECK YOUR TOPOLOGY. Found multiple or no OPLS types for atom {0} ({1}): {2}.".format(
-                        i, atom.kind, opls_type))
-                atom.extras['opls_type'] = "XXX"
+            warn("CHECK YOUR TOPOLOGY. Found multiple or no OPLS types for atom {0} ({1}): {2}.".format(
+                    i, atom.kind, opls_type))
+            atom.extras['opls_type'] = "XXX"
+
 
 def prepare(atom):
     """Add white- and blacklists to atom. """
@@ -436,22 +410,6 @@ def check_atom(neighbor, input_rule_ids):
     return rule_ids
 
 
-def whitelist(atom, rule):
-    """Whitelist an OPLS-aa atomtype for an atom. """
-    if isinstance(rule, (list, tuple, set)):
-        for r in rule:
-            atom.opls_whitelist.add(str(r))
-    else:
-        atom.opls_whitelist.add(str(rule))
-
-
-def blacklist(atom, rule):
-    """Blacklist an OPLS-aa atomtype for an atom. """
-    if isinstance(rule, (list, tuple, set)):
-        for r in rule:
-            atom.opls_blacklist.add(str(r))
-    else:
-        atom.opls_blacklist.add(str(rule))
 
 
 def get_opls_fn(name):
@@ -468,15 +426,6 @@ def get_opls_fn(name):
         raise ValueError('Sorry! {} does not exists. If you just '
                          'added it, you\'ll have to re install'.format(fn))
     return fn
-
-
-def no_pattern(atom, valency):
-    warn("No connectivity patterns matched {} with valency {} and neighbors "
-         "{}.".format(atom, valency, neighbor_types(atom).items()))
-
-
-def no_rule(atom, valency):
-    warn("Found no rules for {}-valent {}.".format(valency, atom))
 
 
 class Rings(object):
@@ -518,99 +467,6 @@ class Rings(object):
             # Found a dead end.
             del self.current_path[-1]
 
-#-----------------------------------------------#
-# Filters for each element to break up the code #
-#-----------------------------------------------#
-
-
-# def carbon(atom):
-#     valency = len(atom.bonds)
-#     assert valency < 5, 'Found carbon with valency {}.'.format(valency)
-#
-#     if valency == 4:
-#         if neighbor_types(atom)['H'] == 4:
-#             for rule_id in [138]:
-#                 run_rule(atom, rule_id)
-#         elif neighbor_types(atom)['H'] == 3 and neighbor_types(atom)['C'] == 1:
-#             for rule_id in [135, 148]:
-#                 run_rule(atom, rule_id)
-#         elif neighbor_types(atom)['H'] == 2 and neighbor_types(atom)['C'] == 2:
-#             for rule_id in [136, 149, 218]:
-#                 run_rule(atom, rule_id)
-#         elif neighbor_types(atom)['H'] == 1 and neighbor_types(atom)['C'] == 3:
-#             for rule_id in [137]:
-#                 run_rule(atom, rule_id)
-#         elif neighbor_types(atom)['C'] == 4:
-#             for rule_id in [139]:
-#                 run_rule(atom, rule_id)
-#         elif (neighbor_types(atom)['C'] == 1 and
-#               neighbor_types(atom)['O'] == 1 and
-#               neighbor_types(atom)['H'] == 2):
-#             for rule_id in [218]:
-#                 run_rule(atom, rule_id)
-#         else:
-#             no_pattern(atom, valency)
-#     elif valency == 3:
-#         if neighbor_types(atom)['H'] == 2 and neighbor_types(atom)['C'] == 1:
-#             for rule_id in [143]:
-#                 run_rule(atom, rule_id)
-#         elif neighbor_types(atom)['H'] == 1 and neighbor_types(atom)['C'] == 2:
-#             for rule_id in [142, 145]:
-#                 run_rule(atom, rule_id)
-#         elif neighbor_types(atom)['C'] == 3:
-#             for rule_id in [141, 145, '145B', 221]:
-#                 run_rule(atom, rule_id)
-#         elif neighbor_types(atom)['C'] >= 2:
-#             for rule_id in [145]:
-#                 run_rule(atom, rule_id)
-#         elif neighbor_types(atom)['C'] >= 1 and neighbor_types(atom)['O'] == 1:
-#             for rule_id in [232]:
-#                 run_rule(atom, rule_id)
-#         else:
-#             no_pattern(atom, valency)
-#     else:
-#         no_rule(atom, valency)
-#
-#
-# def hydrogen(atom):
-#     valency = len(atom.bonds)
-#     assert valency < 2, 'Found hydrogen with valency {}'.format(valency)
-#
-#     if valency == 1:
-#         if neighbor_types(atom)['C'] == 1:
-#             for rule_id in [140, 144, 146, 279]:
-#                 run_rule(atom, rule_id)
-#         elif neighbor_types(atom)['O'] == 1:
-#             for rule_id in [155]:
-#                 run_rule(atom, rule_id)
-#         else:
-#             no_pattern(atom, valency)
-#     else:
-#         no_rule(atom, valency)
-#
-#
-# def oxygen(atom):
-#     valency = len(atom.bonds)
-#     # TODO: check if OPLS has parameters for things like hydronium
-#     assert valency < 3, 'Found oxygen with valency {}.'.format(valency)
-#
-#     if valency == 2:
-#         if neighbor_types(atom)['H'] == 1 and neighbor_types(atom)['C'] == 1:
-#             for rule_id in [154]:
-#                 run_rule(atom, rule_id)
-#         else:
-#             no_pattern(atom, valency)
-#     elif valency == 1:
-#         if neighbor_types(atom)['C'] == 1:
-#             for rule_id in [278]:
-#                 run_rule(atom, rule_id)
-#         else:
-#             no_pattern(atom, valency)
-#     else:
-#         no_rule(atom, valency)
-#
-
-
 #---------------------------------------------------------#
 # Filters for some specific patterns to break up the code #
 #---------------------------------------------------------#
@@ -640,7 +496,7 @@ def benzene(atom):
 @NeighborsExactly('H', 3)
 @Whitelist(135)
 def opls_135(atom):
-    # alkane CH3
+    """alkane CH3 """
     return True
 
 
@@ -650,8 +506,9 @@ def opls_135(atom):
 @NeighborsExactly('H', 2)
 @Whitelist(136)
 def opls_136(atom):
-    # alkane CH2
+    """alkane CH2 """
     return True
+
 
 @Element('C')
 @NeighborCount(4)
@@ -659,7 +516,7 @@ def opls_136(atom):
 @NeighborsExactly('H', 1)
 @Whitelist(137)
 def opls_137(atom):
-    # alkane CH
+    """alkane CH """
     return True
 
 
@@ -668,7 +525,7 @@ def opls_137(atom):
 @NeighborsExactly('H', 4)
 @Whitelist(138)
 def opls_138(atom):
-    # alkane CH4
+    """alkane CH4 """
     return True
 
 
@@ -677,7 +534,7 @@ def opls_138(atom):
 @NeighborsExactly('C', 4)
 @Whitelist(139)
 def opls_139(atom):
-    # alkane C
+    """alkane C """
     return True
 
 
@@ -686,18 +543,17 @@ def opls_139(atom):
 @NeighborsExactly('C', 1)
 @Whitelist(140)
 def opls_140(atom):
-    # alkane H
+    """alkane H """
     return True
 
 
 # Alkenes
-
 @Element('C')
 @NeighborCount(3)
 @NeighborsExactly('C', 3)
 @Whitelist(141)
 def opls_141(atom):
-    # alkene C (R2-C=)
+    """alkene C (R2-C=) """
     return True
 
 
@@ -707,7 +563,7 @@ def opls_141(atom):
 @NeighborsExactly('H', 1)
 @Whitelist(142)
 def opls_142(atom):
-    # alkene C (RH-C=)
+    """alkene C (RH-C=) """
     return True
 
 
@@ -717,8 +573,9 @@ def opls_142(atom):
 @NeighborsExactly('H', 2)
 @Whitelist(143)
 def opls_143(atom):
-    # alkene C (H2-C=)
+    """alkene C (H2-C=) """
     return True
+
 
 @Element('H')
 @NeighborCount(1)
@@ -726,10 +583,11 @@ def opls_143(atom):
 @Whitelist(144)
 @Blacklist(140)
 def opls_144(atom):
-    # alkene H (H-C=)
+    """alkene H (H-C=) """
     # Make sure that the carbon is an alkene carbon.
     rule_ids = [141, 142, 143]
     return check_atom(atom.neighbors[0], rule_ids)
+
 
 @Element('C')
 @NeighborCount(3)
@@ -737,8 +595,9 @@ def opls_144(atom):
 @Whitelist(145)
 @Blacklist([141, 142])
 def opls_145(atom):
-    # Benzene C - 12 site JACS,112,4768-90. Use #145B for biphenyl
+    """Benzene C - 12 site JACS,112,4768-90. Use #145B for biphenyl """
     return benzene(atom)
+
 
 @Element('C')
 @NeighborCount(3)
@@ -746,8 +605,8 @@ def opls_145(atom):
 @Whitelist('145B')
 @Blacklist([141, 145])
 def opls_145B(atom):
-    # Biphenyl C1
-    # Store for checking for neighbors outside the first ring.
+    """Biphenyl C1 """
+    # Store for checking neighbors outside the first ring.
     ring_one = benzene(atom)
     if ring_one:
         for neighbor in atom.neighbors:
@@ -755,16 +614,19 @@ def opls_145B(atom):
                 if benzene(neighbor):
                     return True
 
+
 @Element('H')
 @NeighborCount(1)
 @Whitelist(146)
 @Blacklist([140, 144])
 def opls_146(atom):
-    # Benzene H - 12 site.
+    """Benzene H - 12 site. """
     return check_atom(atom.neighbors[0], 145)
+
 
 #def opls_147
     # Napthalene fusion C (C9)
+
 
 @Element('C')
 @NeighborCount(4)
@@ -773,11 +635,12 @@ def opls_146(atom):
 @Whitelist(148)
 @Blacklist(135)
 def opls_148(atom):
-    # C: CH3, toluene
+    """C: CH3, toluene """
     for neighbor in atom.neighbors:
         if neighbor.kind == 'C':
             if check_atom(neighbor, 145):
                 return True
+
 
 @Element('C')
 @NeighborCount(4)
@@ -786,26 +649,28 @@ def opls_148(atom):
 @Whitelist(149)
 @Blacklist(136)
 def opls_149(atom):
-    # C: CH2, ethyl benzene
+    """C: CH2, ethyl benzene """
     for neighbor in atom.neighbors:
         if neighbor.kind == 'C':
             if check_atom(neighbor, 145):
                 return True
+
 
 @Element('O')
 @NeighborCount(2)
 @NeighborsExactly('H', 1)
 @Whitelist(154)
 def opls_154(atom):
-    # all-atom O: mono alcohols
+    """all-atom O: mono alcohols """
     return True
+
 
 @Element('H')
 @NeighborCount(1)
 @NeighborsExactly('O', 1)
 @Whitelist(155)
 def opls_155(atom):
-    # all-atom H(O): mono alcohols, OP(=O)2
+    """all-atom H(O): mono alcohols, OP(=O)2 """
     return check_atom(atom.neighbors[0], 154)
 
 
@@ -816,7 +681,7 @@ def opls_155(atom):
 @NeighborsExactly('H', 2)
 @Whitelist(218)
 def opls_218(atom):
-    # C in CH2OH - benzyl alcohols
+    """C in CH2OH - benzyl alcohols """
     benzene_carbon = False
     alcohol_oxygen = False
     for neighbor in atom.neighbors:
@@ -827,13 +692,14 @@ def opls_218(atom):
     if benzene_carbon and alcohol_oxygen:
         return True
 
+
 @Element('C')
 @NeighborCount(3)
 @NeighborsExactly('C', 3)
 @Whitelist(221)
 @Blacklist([141, 145, '145B'])
 def opls_221(atom):
-    # C(CH2OH)   - benzyl alcohols
+    """C(CH2OH)   - benzyl alcohols """
     if check_atom(atom, 145):  # Already identified as part of benzene.
         for neighbor in atom.neighbors:
             if check_atom(neighbor, 218):
@@ -845,7 +711,7 @@ def opls_221(atom):
 @NeighborsExactly('O', 1)
 @Whitelist(232)
 def opls_232(atom):
-    # C: C=0 in benzaldehyde, acetophenone (CH)
+    """C: C=0 in benzaldehyde, acetophenone (CH) """
     for neighbor in atom.neighbors:
         if neighbor.kind == 'C':
             benzene_carbon = check_atom(neighbor, 145)
@@ -854,12 +720,13 @@ def opls_232(atom):
     if benzene_carbon and aldehyde_oxygen:
         return True
 
+
 @Element('O')
 @NeighborCount(1)
 @NeighborsAtLeast('C', 1)
 @Whitelist(278)
 def opls_278(atom):
-    # AA O: aldehyde
+    """AA O: aldehyd """
     return True
 
 
@@ -869,15 +736,18 @@ def opls_278(atom):
 @Whitelist(279)
 @Blacklist([140, 144, 146])
 def opls_279(atom):
-    # AA H-alpha in aldehyde & formamide
+    """AA H-alpha in aldehyde & formamidee """
     return check_atom(atom.neighbors[0], [232, 277])
+
 
 if __name__ == "__main__":
     import pdb
-
+    from mbuild.compound import Compound
     from mbuild.examples.methane.methane import Methane
+    #from mbuild.examples.ethane.ethane import Ethane
 
     m = Methane()
+    # m = Ethane()
     # m = Compound.load(get_opls_fn('isopropane.pdb'))
     # m = Compound.load(get_opls_fn('cyclohexane.pdb'))
     # m = Compound.load(get_opls_fn('neopentane.pdb'))

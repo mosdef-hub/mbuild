@@ -22,7 +22,6 @@ class TestTools:
                 compound, known_opls_types, mol_name = loaded
             else:
                 continue
-
             if only_run and only_run != mol_name:
                 continue
 
@@ -45,4 +44,4 @@ class TestTools:
 
 if __name__ == "__main__":
     import pdb
-    TestTools().test_all_molecules()
+    TestTools().test_all_molecules('benzene')
