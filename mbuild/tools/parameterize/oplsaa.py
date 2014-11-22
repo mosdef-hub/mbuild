@@ -384,7 +384,7 @@ def atomtypes_opls(compound, debug=True):
         else:
             warn("CHECK YOUR TOPOLOGY. Found multiple or no OPLS types for atom {0} ({1}): {2}.".format(
                     i, atom.kind, opls_type))
-            atom.extras['opls_type'] = "XXX"
+            atom.extras['opls_type'] = ', '.join(opls_type)
 
 
 def prepare(atom):
@@ -438,8 +438,6 @@ def check_atom(neighbor, input_rule_ids):
     rule_ids.intersection_update(neighbor.opls_whitelist)
     rule_ids.difference_update(neighbor.opls_blacklist)
     return rule_ids
-
-
 
 
 def get_opls_fn(name):
