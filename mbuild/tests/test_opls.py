@@ -44,4 +44,5 @@ class TestTools:
 
 if __name__ == "__main__":
     import pdb
-    TestTools().test_all_molecules('benzene')
+    #TestTools().test_all_molecules('benzene')
+    TestTools().test_all_molecules()

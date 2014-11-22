@@ -6,6 +6,9 @@ from pkg_resources import resource_filename
 import sys
 from warnings import warn
 
+import networkx as nx
+import matplotlib.pyplot as plt
+
 from mbuild.orderedset import OrderedSet
 
 # Map opls ids to the functions that check for them.
@@ -181,11 +184,11 @@ def sanitize():
 
     This function serves primarily as a tool for developers who intend to add
     new rules or modify existing ones. Ideally, it will help you identify and
-    correct logical inconsistencies as early as possible.
+    correct logical inconsistencies as early as possible. Additionally, it
+    suggests other rules that you may want to consider blacklisting.
     """
-    import networkx as nx
 
-     # Build up a tree of element types-->neighbor counts-->rules.
+    # Build up a tree of element types-->neighbor counts-->rules.
     for rule_number, rule in rule_number_to_rule.items():
         decorators = get_decorator_objects_by_type(rule, OplsDecorator)
         element_type = None
@@ -265,38 +268,64 @@ def sanitize():
             else:
                 rule_matches[(element_type, pattern)].add(rule_number)
 
-    #
+    # Build directed graphs showing which rules blacklist each other.
     for key, rules in rule_matches.items():
         # Only consider patterns matched by multiple rules.
-        if len(rules) > 1:
-            element_type, pattern = key
-            G = nx.DiGraph()
-            for rule_number in rules:
-                blacklisted_rules = set()
-                decorators = get_decorator_objects_by_type(rule_number_to_rule[rule_number], OplsDecorator)
+        if len(rules) < 2:
+            continue
 
-                for dec in decorators:
-                    if isinstance(dec, Blacklist):
-                        blacklisted_rules.update(dec.rule_numbers)
-                for blacklisted_rule in blacklisted_rules:
-                    G.add_edge(rule_number, blacklisted_rule)
+        element_type, pattern = key
+        G = nx.DiGraph()
+        for rule_number in rules:
+            blacklisted_rules = set()
+            decorators = get_decorator_objects_by_type(rule_number_to_rule[rule_number], OplsDecorator)
 
-            # check if connected
-            if not nx.is_connected(G.to_undirected()):
-                warn("for pattern {} rule graph {} is not connected: {}".format(pattern, rule_number, G.edges()))
+            for dec in decorators:
+                if isinstance(dec, Blacklist):
+                    blacklisted_rules.update(dec.rule_numbers)
+            for blacklisted_rule in blacklisted_rules:
+                G.add_edge(rule_number, blacklisted_rule)
 
-            # check if DAG
-            if not nx.is_directed_acyclic_graph(G):
-                warn("for pattern {} rule graph {} is not a DAG: {}".format(pattern, rule_number, G.edges()))
+        # Check if graph is connected.
+        if not nx.is_connected(G.to_undirected()):
+            draw_rule_graph('unconnected', G, element_type, pattern)
 
-            # check if there's a unique sink
-            sinks = []
-            for node in G.nodes():
-                if len(nx.descendants(G, node)) == 0:
-                    sinks.append(node)
+        # Check if DAG.
+        if not nx.is_directed_acyclic_graph(G):
+            draw_rule_graph('not_DAG', G, element_type, pattern)
 
-            if len(sinks)>1:
-                warn("for pattern {} rule graph {} has multiple sinks ({}): {} ".format(pattern, rule_number, sinks, G.edges()))
+        # Check if there are multiple sinks. This is not necessarily incorrect.
+        sinks = []
+        for node in G.nodes():
+            if len(nx.descendants(G, node)) == 0:
+                sinks.append(node)
+        if len(sinks) > 1:
+            draw_rule_graph('multiple_sinks', G, element_type, pattern, sinks)
+
+
+def draw_rule_graph(issue, G, element, pattern, sinks=None):
+    """
+    Args:
+        issue:
+        G:
+        element:
+        pattern:
+        sinks:
+    """
+    nx.draw(G, pos=nx.circular_layout(G), node_size=1000)
+    fig_name = '{}-element_{}-pattern_{}.png'.format(issue, element, ''.join(pattern))
+    plt.savefig(fig_name)
+    plt.clf()
+
+    if issue == 'unconnected':
+        phrase = 'is not connected'
+    elif issue == 'not_DAG':
+        phrase = 'is not a DAG'
+    elif issue == 'multiple_sinks':
+        assert sinks is not None
+        phrase = 'has multiple sinks: {}'.format(sinks)
+
+    warn("{} connected to {} {}. See '{}'".format(element, pattern, phrase, fig_name))
 
 
 def atomtypes_opls(compound, debug=True):
@@ -351,7 +380,7 @@ def atomtypes_opls(compound, debug=True):
         opls_type = [a for a in opls_type]
 
         if len(opls_type) == 1:
-            atom.extras['opls_type'] = opls_type[0]
+            atom.extras['opls_type'] = [opls_type[0]]
         else:
             warn("CHECK YOUR TOPOLOGY. Found multiple or no OPLS types for atom {0} ({1}): {2}.".format(
                     i, atom.kind, opls_type))
@@ -366,7 +395,8 @@ def prepare(atom):
 
 def run_rule(atom, rule_id):
     """Execute the rule function for a specified OPLS-aa atomtype. """
-    if not rule_id in atom.opls_blacklist and not rule_id in atom.opls_whitelist:
+    #if not rule_id in atom.opls_blacklist and not rule_id in atom.opls_whitelist:
+    if rule_id not in atom.opls_whitelist:
         try:
             rule_fn = rule_number_to_rule[str(rule_id)]
         except KeyError:
@@ -603,7 +633,7 @@ def opls_145(atom):
 @NeighborCount(3)
 @NeighborsExactly('C', 3)
 @Whitelist('145B')
-@Blacklist([141, 145])
+@Blacklist([145])
 def opls_145B(atom):
     """Biphenyl C1 """
     # Store for checking neighbors outside the first ring.
@@ -617,6 +647,7 @@ def opls_145B(atom):
 
 @Element('H')
 @NeighborCount(1)
+@NeighborsExactly('C', 1)
 @Whitelist(146)
 @Blacklist([140, 144])
 def opls_146(atom):
@@ -697,7 +728,7 @@ def opls_218(atom):
 @NeighborCount(3)
 @NeighborsExactly('C', 3)
 @Whitelist(221)
-@Blacklist([141, 145, '145B'])
+@Blacklist([145, '145B'])
 def opls_221(atom):
     """C(CH2OH)   - benzyl alcohols """
     if check_atom(atom, 145):  # Already identified as part of benzene.
