@@ -1,5 +1,4 @@
 from collections import defaultdict
-from copy import copy
 from itertools import combinations_with_replacement
 import os
 from pkg_resources import resource_filename
@@ -10,6 +9,8 @@ import networkx as nx
 import matplotlib.pyplot as plt
 
 from mbuild.orderedset import OrderedSet
+
+from chemical_groups import benzene
 
 # Map opls ids to the functions that check for them.
 rule_number_to_rule = dict()
@@ -109,9 +110,9 @@ class Whitelist(OplsDecorator):
         """Whitelist an OPLS-aa atomtype for an atom. """
         if isinstance(self.rule_numbers, (list, tuple, set)):
             for rule in self.rule_numbers:
-                atom.opls_whitelist.add(str(rule))
+                atom.whitelist.add(str(rule))
         else:
-            atom.opls_whitelist.add(str(self.rule_numbers))
+            atom.whitelist.add(str(self.rule_numbers))
 
 
 class Blacklist(OplsDecorator):
@@ -134,9 +135,9 @@ class Blacklist(OplsDecorator):
         """Blacklist an OPLS-aa atomtype for an atom. """
         if isinstance(self.rule_numbers, (list, tuple, set)):
             for rule in self.rule_numbers:
-                atom.opls_blacklist.add(str(rule))
+                atom.blacklist.add(str(rule))
         else:
-            atom.opls_blacklist.add(str(self.rule_numbers))
+            atom.blacklist.add(str(self.rule_numbers))
 
 
 def get_decorator_objects_by_type(decorated_function, decorator_type):
@@ -351,8 +352,8 @@ def atomtypes_opls(compound, debug=True):
         old_len = 0
         new_len = 0
         for atom in compound.yield_atoms():
-            old_len += len(atom.opls_whitelist)
-            old_len += len(atom.opls_blacklist)
+            old_len += len(atom.whitelist)
+            old_len += len(atom.blacklist)
 
             if atom.kind == 'G':  # Ignore Ports.
                 continue
@@ -366,8 +367,8 @@ def atomtypes_opls(compound, debug=True):
             else:
                 warn("No rule for atom kind '{}'".format(atom.kind))
 
-            new_len += len(atom.opls_whitelist)
-            new_len += len(atom.opls_blacklist)
+            new_len += len(atom.whitelist)
+            new_len += len(atom.blacklist)
 
         # Nothing changed, we're done!
         if old_len == new_len:
@@ -376,7 +377,7 @@ def atomtypes_opls(compound, debug=True):
         warn("Reached maximum iterations. Something probably went wrong.")
 
     for i, atom in enumerate(compound.atoms):
-        opls_type = atom.opls_whitelist - atom.opls_blacklist
+        opls_type = atom.whitelist - atom.blacklist
         opls_type = [a for a in opls_type]
 
         if len(opls_type) == 1:
@@ -389,14 +390,14 @@ def atomtypes_opls(compound, debug=True):
 
 def prepare(atom):
     """Add white- and blacklists to atom. """
-    atom.extras['opls_whitelist'] = OrderedSet()
-    atom.extras['opls_blacklist'] = OrderedSet()
+    atom.extras['whitelist'] = OrderedSet()
+    atom.extras['blacklist'] = OrderedSet()
 
 
 def run_rule(atom, rule_id):
     """Execute the rule function for a specified OPLS-aa atomtype. """
-    #if not rule_id in atom.opls_blacklist and not rule_id in atom.opls_whitelist:
-    if rule_id not in atom.opls_whitelist:
+    #if not rule_id in atom.blacklist and not rule_id in atom.whitelist:
+    if rule_id not in atom.whitelist:
         try:
             rule_fn = rule_number_to_rule[str(rule_id)]
         except KeyError:
@@ -405,39 +406,42 @@ def run_rule(atom, rule_id):
 
 
 def neighbor_types(atom):
-    """Maintains number of neighbors of each element type for all atoms.
+    """Returns the number of neighbors of each element type for an `atom`.
 
     The dict maintained is `neighbor_types_map` and is organized as follows:
         atom: defaultdict{element: number of neighbors of that element type}
-
     E.g. for an atom with 3 carbon and 1 hydrogen neighbors:
         Atom: {'C': 3, 'H': 1}
+
+    If the queried `atom` is not already in `neighbor_types_map`, it entry will
+    be added.
     """
-    if atom in neighbor_types_map:
-        return neighbor_types_map[atom]
-    else:
-        rval = defaultdict(int)
+    if atom not in neighbor_types_map:
+        neighbors = defaultdict(int)
         for b in atom.bonds:
             kind = b.other_atom(atom).kind
-            rval[kind] += 1
-        neighbor_types_map[atom] = rval
-    return rval
+            neighbors[kind] += 1
+        neighbor_types_map[atom] = neighbors
+    return neighbor_types_map[atom]
 
 
-def check_atom(neighbor, input_rule_ids):
-    """Ensure that atom is valid candidate.
+def check_atom(atom, input_rule_ids):
+    """Check if any of the rules in `input_rule_ids` are in the whitelist.
 
-    Checks that every rule in `rule_ids` is in the white- and not the blacklist.
+    This means that the atom was once identified as being elligible for at least
+    one of these rules. This can be useful for checking, e.g. if a carbon was
+    ever identified as being part of a benzene ring.
     """
     rule_ids = set()
     if isinstance(input_rule_ids, (list, tuple, set)):
-        for r in input_rule_ids:
-            rule_ids.add(str(r))
+        for rule in input_rule_ids:
+            rule_ids.add(str(rule))
     else:
         rule_ids.add(str(input_rule_ids))
-    rule_ids.intersection_update(neighbor.opls_whitelist)
-    rule_ids.difference_update(neighbor.opls_blacklist)
-    return rule_ids
+
+    for rule in rule_ids:
+        if rule in atom.whitelist:
+            return True
 
 
 def get_opls_fn(name):
@@ -455,62 +459,6 @@ def get_opls_fn(name):
                          'added it, you\'ll have to re install'.format(fn))
     return fn
 
-
-class Rings(object):
-    """Find all rings of a specified length that the atom is a part of.
-
-    Note: Finds each ring twice because the graph is traversed in both directions.
-    """
-    def __init__(self, atom, ring_length):
-        """Initialize a ring bearer. """
-        self.rings = list()
-        self.current_path = list()
-        self.ring_length = ring_length
-        self.current_path.append(atom)
-        self.step(atom)
-
-    def step(self, atom):
-        neighbors = atom.neighbors
-        if len(neighbors) > 1:
-            for n in neighbors:
-                # Check to see if we found a ring.
-                current_length = len(self.current_path)
-                if current_length > 2 and n == self.current_path[0]:
-                    self.rings.append(copy(self.current_path))
-                # Prevent stepping backwards.
-                elif n in self.current_path:
-                    continue
-                else:
-                    if current_length < self.ring_length:
-                        # Take another step.
-                        self.current_path.append(n)
-                        self.step(n)
-                    else:
-                        # Reached max length.
-                        continue
-            else:
-                # Finished looping over all neighbors.
-                del self.current_path[-1]
-        else:
-            # Found a dead end.
-            del self.current_path[-1]
-
-#---------------------------------------------------------#
-# Filters for some specific patterns to break up the code #
-#---------------------------------------------------------#
-
-
-def benzene(atom):
-    """Check if atom is part of a single benzene ring. """
-    benzene = Rings(atom, 6).rings
-    # 2 rings, because we count the traversal in both directions.
-    if len(benzene) == 2:
-        for c in benzene[0]:
-            if not (c.kind == 'C' and len(c.neighbors) == 3):
-                break
-        else:
-            return benzene[0]  # Only return one direction of the ring.
-    return False
 
 #----------------#
 # House of rules #
@@ -791,7 +739,7 @@ if __name__ == "__main__":
 
     for i, atom in enumerate(m.atoms):
         # if i > 1799:
-            #print "Atom kind={}, opls_whitelist={},  opls_blacklist={}".format(
-            #    atom.kind, atom.opls_whitelist, atom.opls_blacklist)
+            #print "Atom kind={}, whitelist={},  blacklist={}".format(
+            #    atom.kind, atom.whitelist, atom.blacklist)
             print "Atom kind={}, opls_type={}".format(
                 atom.kind, atom.opls_type)
