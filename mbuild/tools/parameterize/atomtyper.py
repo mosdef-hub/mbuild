@@ -25,16 +25,10 @@ def find_atomtypes(compound, forcefield='OPLS-AA', debug=True):
             if fn.startswith('opls_'):
                 rule_number_to_rule[fn.split("_")[1]] = fcn
 
-    # Filter for element and neighbor count to avoid unneccessary calls.
     build_rule_map()
-
-    # Check for logical inconsistencies.
     if debug:
         sanitize()
-
-    # Add white- and blacklists to all atoms.
-    for atom in compound.yield_atoms():
-        prepare(atom)
+    prepare_compound(compound)
 
     max_iter = 10
     for iter_cnt in range(max_iter):
@@ -66,22 +60,14 @@ def find_atomtypes(compound, forcefield='OPLS-AA', debug=True):
     else:
         warn("Reached maximum iterations. Something probably went wrong.")
 
-    for i, atom in enumerate(compound.atoms):
-        atomtype = atom.whitelist - atom.blacklist
-        atomtype = [a for a in atomtype]
-
-        if len(atomtype) == 1:
-            atom.extras['atomtype'] = [atomtype[0]]
-        else:
-            warn("CHECK YOUR TOPOLOGY. Found multiple or no types for atom {0} ({1}): {2}.".format(
-                    i, atom.kind, atomtype))
-            atom.extras['atomtype'] = ', '.join(atomtype)
+    resolve_atomtypes(compound)
 
 
-def prepare(atom):
-    """Add white- and blacklists to atom. """
-    atom.extras['whitelist'] = OrderedSet()
-    atom.extras['blacklist'] = OrderedSet()
+def prepare_compound(compound):
+    """Add white- and blacklists to each `atom` in `compound`. """
+    for atom in compound.yield_atoms():
+        atom.extras['whitelist'] = OrderedSet()
+        atom.extras['blacklist'] = OrderedSet()
 
 
 def build_rule_map():
@@ -116,6 +102,20 @@ def run_rule(atom, rule_id):
         except KeyError:
             raise KeyError('Rule for {} not implemented'.format(rule_id))
         rule_fn(atom)
+
+
+def resolve_atomtypes(compound):
+    """Determine the final atomtype from the white- and blacklists."""
+    for i, atom in enumerate(compound.atoms):
+        atomtype = atom.whitelist - atom.blacklist
+        atomtype = [a for a in atomtype]
+
+        if len(atomtype) == 1:
+            atom.extras['atomtype'] = [atomtype[0]]
+        else:
+            warn("CHECK YOUR TOPOLOGY. Found multiple or no types for atom {0} ({1}): {2}.".format(
+                    i, atom.kind, atomtype))
+            atom.extras['atomtype'] = ', '.join(atomtype)
 
 
 def neighbor_types(atom):
@@ -294,8 +294,6 @@ def sanitize():
     suggests other rules that you may want to consider blacklisting.
     """
 
-
-
     # Find all elements currently supported by rules.
     supported_elements = set()
     for rule_number, rule in rule_number_to_rule.items():
@@ -363,6 +361,7 @@ def sanitize():
         element_type, pattern = key
         G = nx.DiGraph()
         for rule_number in rules:
+            G.add_node(rule_number)
             blacklisted_rules = set()
             decorators = get_decorator_objects_by_type(rule_number_to_rule[rule_number], RuleDecorator)
 
@@ -386,11 +385,21 @@ def sanitize():
             if len(nx.descendants(G, node)) == 0:
                 sinks.append(node)
         if len(sinks) > 1:
-            draw_rule_graph('multiple_sinks', G, element_type, pattern, sinks)
+            draw_rule_graph('multiple_sinks', G, element_type, pattern,
+                            sinks=sinks)
+
+        # Check if there are multiple sources. This is not necessarily incorrect.
+        sources = []
+        for node in G.nodes():
+            if len(nx.ancestors(G, node)) == 0:
+                sources.append(node)
+        if len(sources) > 1:
+            draw_rule_graph('multiple_sources', G, element_type, pattern,
+                            sources=sources)
 
 
 def get_decorator_objects_by_type(decorated_function, decorator_type):
-    """
+    """Find all decorators of a particular type on a function.
 
     Args:
         decorated_function:
@@ -399,23 +408,22 @@ def get_decorator_objects_by_type(decorated_function, decorator_type):
     Returns:
         rval:
     """
-    rval = []
-
-    # Find an object of decorator_type in the function's closure (there should be only one)
+    decorators = []
+    # Find an object of decorator_type in the function's closure. There should
+    # be only one.
     for cell in decorated_function.func_closure:
         closure_entry = cell.cell_contents
         if isinstance(closure_entry, decorator_type):
-            rval.append(closure_entry)
+            decorators.append(closure_entry)
             break
-
     # Find a function called `wrapper` in the function's closure, and recurse on that.
     for cell in decorated_function.func_closure:
         closure_entry = cell.cell_contents
         if hasattr(closure_entry, '__name__') and closure_entry.__name__ is "wrapped":
             wrapped_decorator_objects = get_decorator_objects_by_type(closure_entry, decorator_type)
-            rval += wrapped_decorator_objects
+            decorators += wrapped_decorator_objects
             break
-    return rval
+    return decorators
 
 
 def check_duplicate_element(element_type, rule_number):
@@ -428,7 +436,7 @@ def check_duplicate_neighbor_count(neighbor_count, rule_number):
                                     "rule {}".format(rule_number))
 
 
-def draw_rule_graph(issue, G, element, pattern, sinks=None):
+def draw_rule_graph(issue, G, element, pattern, sinks=None, sources=None):
     """
     Args:
         issue:
@@ -437,8 +445,18 @@ def draw_rule_graph(issue, G, element, pattern, sinks=None):
         pattern:
         sinks:
     """
-    nx.draw(G, pos=nx.circular_layout(G), node_size=1000)
-    fig_name = '{}-element_{}-pattern_{}.png'.format(issue, element, ''.join(pattern))
+    colors = []
+    for node in G.nodes_iter():
+        if sinks and node in sinks:
+            colors.append('blue')
+        elif sources and node in sources:
+            colors.append('blue')
+        else:
+            colors.append('red')
+
+    nx.draw_circular(G, node_size=1000, node_color=colors)
+    fig_name = '{}-element_{}-pattern_{}.png'.format(
+        issue, element, ''.join(pattern))
     plt.savefig(fig_name)
     plt.clf()
 
@@ -449,5 +467,9 @@ def draw_rule_graph(issue, G, element, pattern, sinks=None):
     elif issue == 'multiple_sinks':
         assert sinks is not None
         phrase = 'has multiple sinks: {}'.format(sinks)
+    elif issue == 'multiple_sources':
+        assert sources is not None
+        phrase = 'has multiple sources: {}'.format(sources)
 
-    warn("{} connected to {} {}. See '{}'".format(element, pattern, phrase, fig_name))
+    warn("{} connected to {} {}. See '{}'".format(
+        element, pattern, phrase, fig_name))

@@ -225,9 +225,11 @@ def opls_221(atom):
             if check_atom(neighbor, 218):
                 return True
 
+
 @Element('C')
 @NeighborCount(3)
-@NeighborsAtLeast('C', 1)
+@NeighborsExactly('C', 1)
+@NeighborsExactly('H', 1)
 @NeighborsExactly('O', 1)
 @Whitelist(232)
 def opls_232(atom):
@@ -241,13 +243,40 @@ def opls_232(atom):
         return True
 
 
+@Element('C')
+@NeighborCount(3)
+@NeighborsExactly('C', 2)
+@NeighborsExactly('O', 1)
+@Whitelist(233)
+@Blacklist(145)
+def opls_233(atom):
+    """C: C=0 in acetophenone (CMe) """
+    for neighbor in atom.neighbors:
+        if neighbor.kind == 'C':
+            benzene_carbon = check_atom(neighbor, 145)
+        if neighbor.kind == 'O':
+            aldehyde_oxygen = check_atom(neighbor, 278)
+    if benzene_carbon and aldehyde_oxygen:
+        return True
+
+
 @Element('O')
 @NeighborCount(1)
-@NeighborsAtLeast('C', 1)
+@NeighborsExactly('C', 1)
 @Whitelist(278)
 def opls_278(atom):
-    """AA O: aldehyd """
+    """AA O: aldehyde """
     return True
+
+
+@Element('O')
+@NeighborCount(1)
+@NeighborsExactly('C', 1)
+@Whitelist(281)
+@Blacklist(278)
+def opls_281(atom):
+    """AA O: ketone """
+    return check_atom(atom.neighbors[0], 233)
 
 
 @Element('H')
@@ -258,6 +287,88 @@ def opls_278(atom):
 def opls_279(atom):
     """AA H-alpha in aldehyde & formamidee """
     return check_atom(atom.neighbors[0], [232, 277])
+
+
+@Element('C')
+@NeighborCount(4)
+@NeighborsExactly('C', 3)
+@NeighborsExactly('H', 1)
+@Whitelist(515)
+@Blacklist(137)
+def opls_515(atom):
+    """all-atom C: CH, isopropyl benzene """
+    for neighbor in atom.neighbors:
+        if neighbor.kind == 'C':
+            if check_atom(neighbor, 145):
+                return True
+
+
+@Element('C')
+@NeighborCount(3)
+@NeighborsExactly('C', 3)
+@Whitelist(724)
+@Blacklist([145, 221])
+def opls_724(atom):
+    """C(CF3) trifluoromethylbenzene """
+    for neighbor in atom.neighbors:
+        if neighbor.kind == 'C':
+            if check_atom(neighbor, 725):
+                return True
+
+
+@Element('C')
+@NeighborCount(4)
+@NeighborsExactly('C', 1)
+@NeighborsExactly('F', 3)
+@Whitelist(725)
+def opls_725(atom):
+    """CF3 trifluoromethylbenzene """
+    for neighbor in atom.neighbors:
+        if neighbor.kind == 'C':
+            if check_atom(neighbor, 145):
+                return True
+
+
+@Element('F')
+@NeighborCount(1)
+@NeighborsExactly('C', 1)
+@Whitelist(726)
+def opls_726(atom):
+    """F trifluoromethylbenzene """
+    return check_atom(atom.neighbors[0], 725)
+
+
+@Element('N')
+@NeighborCount(3)
+@NeighborsExactly('O', 2)
+@NeighborsExactly('C', 1)
+@Whitelist(760)
+def opls_760(atom):
+    """N in nitro R-NO2 """
+    return True
+
+
+@Element('O')
+@NeighborCount(1)
+@NeighborsExactly('N', 1)
+@Whitelist(761)
+def opls_761(atom):
+    """O in nitro R-NO2 """
+    return True
+
+
+@Element('C')
+@NeighborCount(3)
+@NeighborsExactly('C', 2)
+@NeighborsExactly('N', 1)
+@Whitelist(768)
+@Blacklist([145])
+def opls_768(atom):
+    """C(NO2) nitrobenzene """
+    if check_atom(atom, 145):  # Already identified as part of benzene.
+        for neighbor in atom.neighbors:
+            if check_atom(neighbor, 760):
+                return True
 
 
 def get_opls_fn(name):

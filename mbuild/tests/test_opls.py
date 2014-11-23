@@ -36,7 +36,9 @@ class TestTools:
 
             both = zip(generated_opls_types, known_opls_types)
             message = "Found inconsistent OPLS types in {} ({}): {}".format(
-                    mol_name, top_name, zip(generated_opls_types, known_opls_types))
+                    mol_name, top_name, zip(range(len(generated_opls_types)),
+                                            generated_opls_types,
+                                            known_opls_types))
             assert all([a == b for a, b in both]), message
             print "passed.\n"
 
