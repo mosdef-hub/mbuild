@@ -3,8 +3,8 @@ from itertools import combinations_with_replacement
 import sys
 from warnings import warn
 
-import networkx as nx
 import matplotlib.pyplot as plt
+import networkx as nx
 
 from mbuild.orderedset import OrderedSet
 
@@ -29,45 +29,8 @@ def find_atomtypes(compound, forcefield='OPLS-AA', debug=True):
     if debug:
         sanitize()
     prepare_compound(compound)
-
-    max_iter = 10
-    for iter_cnt in range(max_iter):
-        # For comparing the lengths of the white- and blacklists.
-        old_len = 0
-        new_len = 0
-        for atom in compound.yield_atoms():
-            old_len += len(atom.whitelist)
-            old_len += len(atom.blacklist)
-
-            if atom.kind == 'G':  # Ignore Ports.
-                continue
-
-            if atom.kind in rule_map:
-                if len(atom.neighbors) in rule_map[atom.kind]:
-                    for rule in rule_map[atom.kind][len(atom.neighbors)]:
-                        run_rule(atom, rule)
-                else:
-                    warn("No rule for {}-neighbor '{}' atom".format(len(atom.neighbors), atom.kind))
-            else:
-                warn("No rule for atom kind '{}'".format(atom.kind))
-
-            new_len += len(atom.whitelist)
-            new_len += len(atom.blacklist)
-
-        # Nothing changed, we're done!
-        if old_len == new_len:
-            break
-    else:
-        warn("Reached maximum iterations. Something probably went wrong.")
-
+    iterate_rules(compound, max_iter=10)
     resolve_atomtypes(compound)
-
-
-def prepare_compound(compound):
-    """Add white- and blacklists to each `atom` in `compound`. """
-    for atom in compound.yield_atoms():
-        atom.extras['whitelist'] = OrderedSet()
-        atom.extras['blacklist'] = OrderedSet()
 
 
 def build_rule_map():
@@ -92,6 +55,55 @@ def build_rule_map():
         if neighbor_count not in rule_map[element_type]:
             rule_map[element_type][neighbor_count] = []
         rule_map[element_type][neighbor_count].append(rule_number)
+
+
+def prepare_compound(compound):
+    """Add white- and blacklists to each `atom` in `compound`. """
+    for atom in compound.yield_atoms():
+        atom.extras['whitelist'] = OrderedSet()
+        atom.extras['blacklist'] = OrderedSet()
+
+
+def iterate_rules(compound, max_iter=10):
+    """Iteratively run all the rules until the white- and backlists converge.
+
+    NOTE: We only add and never remove from the white- and blacklists so we
+          don't need to check the lengths for each individual atom.
+
+    Args:
+        compound:
+        max_iter:
+    """
+    for iter_cnt in range(max_iter):
+        # For comparing the lengths of the white- and blacklists.
+        old_len = 0
+        new_len = 0
+        for atom in compound.yield_atoms():
+            old_len += len(atom.whitelist)
+            old_len += len(atom.blacklist)
+
+            if atom.kind == 'G':  # Ignore Ports.
+                continue
+
+            # Only run rules with matching element and neighbor counts.
+            if atom.kind in rule_map:
+                if len(atom.neighbors) in rule_map[atom.kind]:
+                    for rule in rule_map[atom.kind][len(atom.neighbors)]:
+                        run_rule(atom, rule)
+                else:
+                    warn("No rule for {}-neighbor '{}' atom".format(
+                        len(atom.neighbors), atom.kind))
+            else:
+                warn("No rule for atom kind '{}'".format(atom.kind))
+
+            new_len += len(atom.whitelist)
+            new_len += len(atom.blacklist)
+
+        # Nothing changed, we're done!
+        if old_len == new_len:
+            break
+    else:
+        warn("Reached maximum iterations. Something probably went wrong.")
 
 
 def run_rule(atom, rule_id):
@@ -385,6 +397,12 @@ def sanitize():
             if len(nx.descendants(G, node)) == 0:
                 sinks.append(node)
         if len(sinks) > 1:
+            # Cases with multiple sinks that we can safely ignore.
+            # TODO: Provide more robust way to add approved exceptions.
+            if '141' in sinks and '142' in sinks and '145' in G.nodes():
+                # This case occurs because 145 requires AT LEAST 2 carbon
+                # neighbors (3 total) and thus can match multiple patterns.
+                continue
             draw_rule_graph('multiple_sinks', G, element_type, pattern,
                             sinks=sinks)
 
@@ -445,6 +463,8 @@ def draw_rule_graph(issue, G, element, pattern, sinks=None, sources=None):
         pattern:
         sinks:
     """
+
+    # TODO: color unconnected nodes
     colors = []
     for node in G.nodes_iter():
         if sinks and node in sinks:

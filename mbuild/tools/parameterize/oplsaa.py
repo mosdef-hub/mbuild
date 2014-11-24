@@ -1,14 +1,12 @@
-from chemical_groups import benzene
-
-from atomtyper import (find_atomtypes, Element, NeighborCount, NeighborsAtLeast,
+from atomtyper import (Element, NeighborCount, NeighborsAtLeast,
     NeighborsAtMost, NeighborsExactly, Whitelist, Blacklist, check_atom)
+from chemical_groups import benzene, dioxolan13
 
 
 # -------------- #
 # House of rules #
 # -------------- #
 
-# Alkanes
 @Element('C')
 @NeighborCount(4)
 @NeighborsExactly('C', 1)
@@ -66,7 +64,6 @@ def opls_140(atom):
     return True
 
 
-# Alkenes
 @Element('C')
 @NeighborCount(3)
 @NeighborsExactly('C', 3)
@@ -269,16 +266,6 @@ def opls_278(atom):
     return True
 
 
-@Element('O')
-@NeighborCount(1)
-@NeighborsExactly('C', 1)
-@Whitelist(281)
-@Blacklist(278)
-def opls_281(atom):
-    """AA O: ketone """
-    return check_atom(atom.neighbors[0], 233)
-
-
 @Element('H')
 @NeighborCount(1)
 @NeighborsAtLeast('C', 1)
@@ -287,6 +274,16 @@ def opls_281(atom):
 def opls_279(atom):
     """AA H-alpha in aldehyde & formamidee """
     return check_atom(atom.neighbors[0], [232, 277])
+
+
+@Element('O')
+@NeighborCount(1)
+@NeighborsExactly('C', 1)
+@Whitelist(281)
+@Blacklist(278)
+def opls_281(atom):
+    """AA O: ketone """
+    return check_atom(atom.neighbors[0], 233)
 
 
 @Element('C')
@@ -362,13 +359,78 @@ def opls_761(atom):
 @NeighborsExactly('C', 2)
 @NeighborsExactly('N', 1)
 @Whitelist(768)
-@Blacklist([145])
+@Blacklist(145)
 def opls_768(atom):
     """C(NO2) nitrobenzene """
     if check_atom(atom, 145):  # Already identified as part of benzene.
         for neighbor in atom.neighbors:
             if check_atom(neighbor, 760):
                 return True
+
+
+@Element('C')
+@NeighborCount(3)
+@NeighborsExactly('C', 2)
+@NeighborsExactly('N', 1)
+@Whitelist(768)
+@Blacklist(145)
+def opls_768(atom):
+    """C(NO2) nitrobenzene """
+    if check_atom(atom, 145):  # Already identified as part of benzene.
+        for neighbor in atom.neighbors:
+            if check_atom(neighbor, 760):
+                return True
+
+
+@Element('O')
+@NeighborCount(1)
+@NeighborsExactly('C', 1)
+@Whitelist(771)
+@Blacklist([278, 281])
+def opls_771(atom):
+    """propylene carbonate O """
+    return dioxolan13(atom.neighbors[0])
+
+
+@Element('C')
+@NeighborCount(3)
+@NeighborsExactly('O', 3)
+@Whitelist(772)
+def opls_772(atom):
+    """propylene carbonate C=O """
+    return dioxolan13(atom)
+
+
+@Element('O')
+@NeighborCount(2)
+@NeighborsExactly('C', 2)
+@Whitelist(773)
+def opls_773(atom):
+    """propylene carbonate OS """
+    return dioxolan13(atom)
+
+
+@Element('C')
+@NeighborCount(4)
+@NeighborsExactly('C', 1)
+@NeighborsExactly('O', 1)
+@NeighborsExactly('H', 2)
+@Whitelist(774)
+@Blacklist(218)
+def opls_774(atom):
+    """propylene carbonate C in CH2 """
+    return dioxolan13(atom)
+
+
+@Element('H')
+@NeighborCount(1)
+@NeighborsExactly('C', 1)
+@Whitelist(777)
+@Blacklist([140, 279])
+def opls_777(atom):
+    """propylene carbonate H in CH2 """
+    return check_atom(atom.neighbors[0], 774)
+
 
 
 def get_opls_fn(name):
@@ -407,6 +469,7 @@ if __name__ == "__main__":
     # from mbuild.examples.alkane_monolayer.alkane_monolayer import AlkaneMonolayer
     # m = AlkaneMonolayer(chain_length=3)
 
+    from atomtyper import find_atomtypes
     find_atomtypes(m, forcefield='OPLS-AA')
 
     for i, atom in enumerate(m.atoms):

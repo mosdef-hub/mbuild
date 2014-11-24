@@ -44,12 +44,27 @@ class Rings(object):
 
 def benzene(atom):
     """Check if atom is part of a single benzene ring. """
-    benzene = Rings(atom, 6).rings
+    ring = Rings(atom, 6).rings
     # 2 rings, because we count the traversal in both directions.
-    if len(benzene) == 2:
-        for c in benzene[0]:
-            if not (c.kind == 'C' and len(c.neighbors) == 3):
+    if len(ring) == 2:
+        for at in ring[0]:
+            if not (at.kind == 'C' and len(at.neighbors) == 3):
                 break
         else:
-            return benzene[0]  # Only return one direction of the ring.
+            return ring[0]  # Only return one direction of the ring.
+    return False
+
+
+def dioxolan13(atom):
+    """Check if the atom is part of a single 1,3-dioxolan ring. """
+    ring = Rings(atom, 5).rings
+    # 2 rings, because we count the traversal in both directions.
+    if len(ring) == 2:
+        sequence = []
+        for at in ring[0]:
+            if not (at.kind == 'C' or at.kind == 'O'):
+                break
+            sequence.append(at.kind)
+        if ''.join(sequence) in ['CCOCO', 'COCOC', 'OCOCC', 'COCCO', 'OCCOC']:
+            return True
     return False
