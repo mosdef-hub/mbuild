@@ -1,6 +1,6 @@
 from atomtyper import (Element, NeighborCount, NeighborsAtLeast,
     NeighborsAtMost, NeighborsExactly, Whitelist, Blacklist, check_atom)
-from chemical_groups import benzene, dioxolan13
+from chemical_groups import benzene, dioxolane13
 
 
 # -------------- #
@@ -270,9 +270,9 @@ def opls_278(atom):
 @NeighborCount(1)
 @NeighborsAtLeast('C', 1)
 @Whitelist(279)
-@Blacklist([140, 144, 146])
+@Blacklist(140)
 def opls_279(atom):
-    """AA H-alpha in aldehyde & formamidee """
+    """AA H-alpha in aldehyde & formamide """
     return check_atom(atom.neighbors[0], [232, 277])
 
 
@@ -284,6 +284,62 @@ def opls_279(atom):
 def opls_281(atom):
     """AA O: ketone """
     return check_atom(atom.neighbors[0], 233)
+
+
+@Element('C')
+@NeighborCount(3)
+@NeighborsExactly('O', 2)
+@NeighborsExactly('C', 1)
+@Whitelist(465)
+def opls_465(atom):
+    """AA C: esters - for R on C=O use #280-#282 """
+    return True
+
+
+@Element('O')
+@NeighborCount(1)
+@NeighborsExactly('C', 1)
+@Whitelist(466)
+@Blacklist(278)
+def opls_466(atom):
+    """AA =O: esters """
+    return check_atom(atom.neighbors[0], 465)
+
+
+@Element('O')
+@NeighborCount(2)
+@NeighborsExactly('C', 2)
+@Whitelist(467)
+def opls_467(atom):
+    """AA -OR: ester """
+    for neighbor in atom.neighbors:
+        if check_atom(neighbor, 465):
+            return True
+    return False
+
+
+@Element('H')
+@NeighborCount(1)
+@NeighborsExactly('C', 1)
+@Whitelist(469)
+@Blacklist(140)
+def opls_469(atom):
+    """methoxy Hs in esters """
+    return check_atom(atom.neighbors[0], 490)
+
+
+@Element('C')
+@NeighborCount(4)
+@NeighborsExactly('C', 1)
+@NeighborsExactly('O', 1)
+@NeighborsExactly('H', 2)
+@Whitelist(490)
+def opls_490(atom):
+    """C(H2OS) ethyl ester """
+    for neighbor in atom.neighbors:
+        if check_atom(neighbor, 467):
+            return True
+    return False
 
 
 @Element('C')
@@ -386,10 +442,16 @@ def opls_768(atom):
 @NeighborCount(1)
 @NeighborsExactly('C', 1)
 @Whitelist(771)
-@Blacklist([278, 281])
+@Blacklist(278)
 def opls_771(atom):
     """propylene carbonate O """
-    return dioxolan13(atom.neighbors[0])
+    if dioxolane13(atom.neighbors[0]):
+        for neighbors_neighbor in atom.neighbors[0].neighbors:
+            if neighbors_neighbor.kind != 'O':
+                return False
+        else:
+            return True
+    return False
 
 
 @Element('C')
@@ -398,16 +460,17 @@ def opls_771(atom):
 @Whitelist(772)
 def opls_772(atom):
     """propylene carbonate C=O """
-    return dioxolan13(atom)
+    return dioxolane13(atom)
 
 
 @Element('O')
 @NeighborCount(2)
 @NeighborsExactly('C', 2)
 @Whitelist(773)
+@Blacklist(467)
 def opls_773(atom):
     """propylene carbonate OS """
-    return dioxolan13(atom)
+    return dioxolane13(atom)
 
 
 @Element('C')
@@ -416,21 +479,20 @@ def opls_773(atom):
 @NeighborsExactly('O', 1)
 @NeighborsExactly('H', 2)
 @Whitelist(774)
-@Blacklist(218)
+@Blacklist([218, 490])
 def opls_774(atom):
     """propylene carbonate C in CH2 """
-    return dioxolan13(atom)
+    return dioxolane13(atom)
 
 
 @Element('H')
 @NeighborCount(1)
 @NeighborsExactly('C', 1)
 @Whitelist(777)
-@Blacklist([140, 279])
+@Blacklist(140)
 def opls_777(atom):
     """propylene carbonate H in CH2 """
     return check_atom(atom.neighbors[0], 774)
-
 
 
 def get_opls_fn(name):

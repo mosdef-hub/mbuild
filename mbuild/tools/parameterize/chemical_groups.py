@@ -1,4 +1,5 @@
 from copy import copy
+from collections import deque
 
 
 class Rings(object):
@@ -55,16 +56,38 @@ def benzene(atom):
     return False
 
 
-def dioxolan13(atom):
-    """Check if the atom is part of a single 1,3-dioxolan ring. """
+def furan(atom):
+    """Check if the atom is part of a furan ring.
+
+    TODO: This function seems kind of clunky and probably not 100% robust.
+          Things to
+    """
     ring = Rings(atom, 5).rings
     # 2 rings, because we count the traversal in both directions.
     if len(ring) == 2:
-        sequence = []
-        for at in ring[0]:
-            if not (at.kind == 'C' or at.kind == 'O'):
-                break
-            sequence.append(at.kind)
-        if ''.join(sequence) in ['CCOCO', 'COCOC', 'OCOCC', 'COCCO', 'OCCOC']:
-            return True
+        sequence = [a.kind for a in ring[0]]
+        if ''.join(sequence) in ['CCCCO', 'CCCOC', 'CCOCC', 'COCCC', 'OCCCC']:
+            return ring[0]
     return False
+
+
+def dioxolane13(atom):
+    """Check if the atom is part of a single 1,3-dioxolane ring. """
+    ring = Rings(atom, 5).rings
+    # 2 rings, because we count the traversal in both directions.
+    if len(ring) == 2:
+        sequence = [a.kind for a in ring[0]]
+        if ''.join(sequence) in ['COCOC', 'OCOCC', 'COCCO', 'OCCOC', 'CCOCO']:
+            return ring[0]
+    return False
+
+
+
+
+
+
+
+
+
+
+
