@@ -15,6 +15,9 @@ rule_map = dict()
 # Globally maintained neighbor information (see `neighbor_types()`).
 neighbor_types_map = {}
 
+#
+neighbor_whitelist_map = {}
+
 
 def find_atomtypes(compound, forcefield='OPLS-AA', debug=True):
     """Determine atomtypes for all atoms in `compound`. """
@@ -143,11 +146,45 @@ def neighbor_types(atom):
     """
     if atom not in neighbor_types_map:
         neighbors = defaultdict(int)
-        for b in atom.bonds:
-            kind = b.other_atom(atom).kind
+        for neighbor in atom.neighbors:
+            kind = neighbor.kind
             neighbors[kind] += 1
         neighbor_types_map[atom] = neighbors
     return neighbor_types_map[atom]
+
+
+def neighbor_whitelist_types(atom):
+    """Returns the number of neighbors of each element type for an `atom`.
+
+    The dict maintained is `neighbor_types_map` and is organized as follows:
+        atom: defaultdict{element: number of neighbors of that element type}
+    E.g. for an atom with 3 carbon and 1 hydrogen neighbors:
+        Atom: {'C': 3, 'H': 1}
+
+    If the queried `atom` is not already in `neighbor_types_map`, it entry will
+    be added.
+    """
+    if atom in neighbor_whitelist_map:
+        return neighbor_whitelist_map[atom]
+    else:
+        return dict()
+
+
+def append_neighbor_whitelist(atom, whitelist_type):
+    """Returns the number of neighbors of each element type for an `atom`.
+
+    The dict maintained is `neighbor_types_map` and is organized as follows:
+        atom: defaultdict{element: number of neighbors of that element type}
+    E.g. for an atom with 3 carbon and 1 hydrogen neighbors:
+        Atom: {'C': 3, 'H': 1}
+
+    If the queried `atom` is not already in `neighbor_types_map`, it entry will
+    be added.
+    """
+    for neighbor in atom.neighbors:
+        if neighbor not in neighbor_whitelist_map:
+            neighbor_whitelist_map[neighbor] = defaultdict(int)
+        neighbor_whitelist_map[neighbor][whitelist_type] += 1
 
 
 def check_atom(atom, input_rule_ids):
@@ -186,6 +223,20 @@ class Element(RuleDecorator):
         def wrapped(atom):
             if atom.kind == self.element_type:
                 return f(atom)
+
+        return wrapped
+
+
+class InWhitelist(RuleDecorator):
+    def __init__(self, element_type):
+        self.element_type = element_type
+
+    def __call__(self, f):
+        # this must be called 'wrapped'
+        def wrapped(atom):
+            if self.element_type in atom.whitelist:
+                return f(atom)
+
         return wrapped
 
 
@@ -203,53 +254,96 @@ class NeighborCount(RuleDecorator):
 
 class NeighborsExactly(RuleDecorator):
     def __init__(self, neighbor_type, count):
+        if isinstance(neighbor_type, (list, tuple, set)):
+            neighbor_type = [str(x) for x in neighbor_type]
+        else:
+            neighbor_type = [str(neighbor_type)]
         self.neighbor_type = neighbor_type
         self.count = count
 
     def __call__(self, f):
         # this must be called 'wrapped'
         def wrapped(atom):
-            if (self.neighbor_type in neighbor_types(atom) and
-                        neighbor_types(atom)[self.neighbor_type] == self.count):
+            # if (self.neighbor_type in neighbor_types(atom) and
+            #         neighbor_types(atom)[self.neighbor_type] == self.count):
+            #     return f(atom)
+            # elif (self.neighbor_type in neighbor_whitelist_types(atom) and
+            #         neighbor_whitelist_types(atom)[self.neighbor_type] == self.count):
+            #     return f(atom)
+
+            match_count = 0
+            for neighbor_type in self.neighbor_type:
+                if neighbor_type in neighbor_types(atom):
+                    match_count += neighbor_types(atom)[neighbor_type]
+                elif neighbor_type in neighbor_whitelist_types(atom):
+                    match_count += neighbor_whitelist_types(atom)[neighbor_type]
+
+            if match_count == self.count:
                 return f(atom)
         return wrapped
 
 
 class NeighborsAtLeast(RuleDecorator):
     def __init__(self, neighbor_type, count):
+        if isinstance(neighbor_type, (list, tuple, set)):
+            neighbor_type = [str(x) for x in neighbor_type]
+        else:
+            neighbor_type = [str(neighbor_type)]
         self.neighbor_type = neighbor_type
         self.count = count
 
     def __call__(self, f):
         # this must be called 'wrapped'
         def wrapped(atom):
-            if (self.neighbor_type in neighbor_types(atom) and
-                    neighbor_types(atom)[self.neighbor_type] >= self.count):
+            # if (self.neighbor_type in neighbor_types(atom) and
+            #         neighbor_types(atom)[self.neighbor_type] >= self.count):
+            #     return f(atom)
+            # elif (self.neighbor_type in neighbor_whitelist_types(atom) and
+            #         neighbor_whitelist_types(atom)[self.neighbor_type] >= self.count):
+            #     return f(atom)
+
+            match_count = 0
+            for neighbor_type in self.neighbor_type:
+                if neighbor_type in neighbor_types(atom):
+                    match_count += neighbor_types(atom)[neighbor_type]
+                elif neighbor_type in neighbor_whitelist_types(atom):
+                    match_count += neighbor_whitelist_types(atom)[neighbor_type]
+
+            if match_count >= self.count:
                 return f(atom)
         return wrapped
 
 
 class NeighborsAtMost(RuleDecorator):
     def __init__(self, neighbor_type, count):
+        if isinstance(neighbor_type, (list, tuple, set)):
+            neighbor_type = [str(x) for x in neighbor_type]
+        else:
+            neighbor_type = [str(neighbor_type)]
         self.neighbor_type = neighbor_type
         self.count = count
 
     def __call__(self, f):
         # this must be called 'wrapped'
         def wrapped(atom):
-            if (self.neighbor_type in neighbor_types(atom) and
-                    neighbor_types(atom)[self.neighbor_type] <= self.count):
+            match_count = 0
+            for neighbor_type in self.neighbor_type:
+                if neighbor_type in neighbor_types(atom):
+                    match_count += neighbor_types(atom)[neighbor_type]
+                elif neighbor_type in neighbor_whitelist_types(atom):
+                    match_count += neighbor_whitelist_types(atom)[neighbor_type]
+
+            if match_count <= self.count:
                 return f(atom)
         return wrapped
 
 
 class Whitelist(RuleDecorator):
-    def __init__(self, rule_numbers):
-        if isinstance(rule_numbers, (list, tuple, set)):
-            self.rule_numbers = list(map(str, rule_numbers))
-            self.rule_numbers.sort()
+    def __init__(self, rule_number):
+        if isinstance(rule_number, (list, tuple, set)):
+            warn("Rules should only whitelist themselves.")
         else:
-            self.rule_numbers = [str(rule_numbers)]
+            self.rule_number = str(rule_number)
 
     def __call__(self, f):
         # this must be called 'wrapped'
@@ -261,11 +355,8 @@ class Whitelist(RuleDecorator):
 
     def whitelist(self, atom):
         """Whitelist an OPLS-aa atomtype for an atom. """
-        if isinstance(self.rule_numbers, (list, tuple, set)):
-            for rule in self.rule_numbers:
-                atom.whitelist.add(str(rule))
-        else:
-            atom.whitelist.add(str(self.rule_numbers))
+        atom.whitelist.add(str(self.rule_number))
+        append_neighbor_whitelist(atom, self.rule_number)
 
 
 class Blacklist(RuleDecorator):
