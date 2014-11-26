@@ -24,19 +24,22 @@ def solvent_box(solvent, box):
     """
     if np.all(solvent.periodicity == 0):
         solvent.periodicity = solvent.boundingbox().lengths
-    solvent_box = Box(lengths=solvent.periodicity)
-    num_replicas = np.ceil(box.lengths / solvent_box.lengths)
+    #solvent_box = Box(lengths=solvent.periodicity)
+    num_replicas = np.ceil(box.lengths / solvent.periodicity)   # is this right?
     num_replicas = num_replicas.astype('int')
     compound = Compound()
-    for xi in range(num_replicas[0]):
-        for yi in range(num_replicas[1]):
-            for zi in range(num_replicas[2]):
-                temp_solvent = deepcopy(solvent)
-                translate(temp_solvent, -solvent_box.mins + box.mins + np.array([xi, yi, zi])*solvent_box.lengths)
+    translate(solvent, -solvent.boundingbox().mins+box.mins)
+    for xi in range(num_replicas[0]):   # x replicas
+        for yi in range(num_replicas[1]):   # y replicas
+            for zi in range(num_replicas[2]):   # z replicas
+                temp_solvent = deepcopy(solvent)   # copy of solvent with box
+                # translate solvent box
+                translate(temp_solvent, 
+                        np.array([xi, yi, zi])*solvent.periodicity)
 
                 # Remove atoms outside the host's box and anything bonded to them.
-                guest_atoms = list()
-                guest_atom_pos_list = list()
+                guest_atoms = list()   # atoms in box
+                guest_atom_pos_list = list()   # positions of atoms in box
                 for atom in temp_solvent.yield_atoms():
                     guest_atoms.append(atom)
                     guest_atom_pos_list.append(atom.pos)
