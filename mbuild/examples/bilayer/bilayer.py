@@ -104,9 +104,9 @@ def main():
     ecerns = Trajectory.load(get_fn('ecer2.hoomdxml'))
     ecerns = ecerns.to_compound()
 
-    bilayer = Bilayer(ecerns, n_lipids_x=5, n_lipids_y=5,
+    bilayer = Bilayer(ecerns, n_lipids_x=50, n_lipids_y=50,
             area_per_lipid=1.4, solvent=water, ref_atom=0, 
-            spacing_z=0.5, n_solvent=3000)
+            spacing_z=0.5, solvent_per_lipid=10)
 
     #test_water_box = Box(mins=[-5, 6, -13], maxs=[15, 9, -8])
     #test_water = solvent_box(water, test_water_box)

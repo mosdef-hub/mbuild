@@ -113,7 +113,7 @@ class Trajectory(object):
             atom2 = atom_mapping[a2]
             part.add(Bond(atom1, atom2))
 
-        if np.all(self.unitcell_lengths[0]):
+        if (np.any(self.unitcell_lengths) and np.any(self.unitcell_lengths[0])):
             part.periodicity = self.unitcell_lengths[0]
         else: 
             part.periodicity = np.array([0., 0., 0.])
