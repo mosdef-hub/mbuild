@@ -38,7 +38,7 @@ setup(
     author='Janos Sallai, Christoph Klein',
     author_email='janos.sallai@vanderbilt.edu, christoph.klein@vanderbilt.edu',
     url='https://github.com/sallai/mbuild',
-    download_url='https://github.com/sallai/mbuild/tarball/0.4.1',
+    download_url='https://github.com/sallai/mbuild/tarball/{}'.format(mbuild.version.short_version),
     packages=find_packages(),
     package_data={'mbuild' : ['testing/reference/*']},
     package_dir={'mbuild': 'mbuild'},
