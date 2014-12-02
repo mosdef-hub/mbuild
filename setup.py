@@ -7,6 +7,7 @@ from setuptools import setup, find_packages
 from setuptools.command.test import test as TestCommand
 import mbuild.version
 
+
 requirements_lines = [line.strip() for line in open('requirements.txt').readlines()]
 reqs = list(filter(None, requirements_lines))
 
