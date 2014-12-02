@@ -7,7 +7,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>mbuild.box &mdash; mbuild 0.4.1beta documentation</title>
+  <title>mbuild.box &mdash; mbuild 0.4.2beta documentation</title>
   
 
   
@@ -28,7 +28,7 @@
   
 
   
-    <link rel="top" title="mbuild 0.4.1beta documentation" href="../../index.html"/>
+    <link rel="top" title="mbuild 0.4.2beta documentation" href="../../index.html"/>
         <link rel="up" title="Module code" href="../index.html"/> 
 
   
@@ -87,8 +87,8 @@
 <li class="toctree-l2"><a class="reference internal" href="../../apidoc/mbuild.html#module-mbuild.part_mixin">mbuild.part_mixin module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../apidoc/mbuild.html#module-mbuild.periodic_kdtree">mbuild.periodic_kdtree module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../apidoc/mbuild.html#module-mbuild.port">mbuild.port module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../apidoc/mbuild.html#module-mbuild.topology">mbuild.topology module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../apidoc/mbuild.html#module-mbuild.trajectory">mbuild.trajectory module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../apidoc/mbuild.html#mbuild-topology-module">mbuild.topology module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../apidoc/mbuild.html#mbuild-trajectory-module">mbuild.trajectory module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../apidoc/mbuild.html#module-mbuild.treeview">mbuild.treeview module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../apidoc/mbuild.html#module-mbuild">Module contents</a></li>
 </ul>
@@ -106,11 +106,11 @@
 <li class="toctree-l1"><a class="reference internal" href="../../apidoc/mbuild.formats.html">mbuild.formats package</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="../../apidoc/mbuild.formats.html#submodules">Submodules</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../apidoc/mbuild.formats.html#module-mbuild.formats.gromacs">mbuild.formats.gromacs module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../apidoc/mbuild.formats.html#module-mbuild.formats.hoomdxml">mbuild.formats.hoomdxml module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../apidoc/mbuild.formats.html#module-mbuild.formats.lammps">mbuild.formats.lammps module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../apidoc/mbuild.formats.html#module-mbuild.formats.lammps_data">mbuild.formats.lammps_data module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../apidoc/mbuild.formats.html#mbuild-formats-hoomdxml-module">mbuild.formats.hoomdxml module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../apidoc/mbuild.formats.html#mbuild-formats-lammps-module">mbuild.formats.lammps module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../apidoc/mbuild.formats.html#mbuild-formats-lammps-data-module">mbuild.formats.lammps_data module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../apidoc/mbuild.formats.html#module-mbuild.formats.mol2">mbuild.formats.mol2 module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../apidoc/mbuild.formats.html#module-mbuild.formats.xyz">mbuild.formats.xyz module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../apidoc/mbuild.formats.html#mbuild-formats-xyz-module">mbuild.formats.xyz module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../apidoc/mbuild.formats.html#module-mbuild.formats">Module contents</a></li>
 </ul>
 </li>
@@ -149,19 +149,16 @@
           <div role="main">
             
   <h1>Source code for mbuild.box</h1><div class="highlight"><pre>
-<span class="n">__author__</span> <span class="o">=</span> <span class="s">&#39;sallai&#39;</span>
-
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
 
 
-<div class="viewcode-block" id="Box"><a class="viewcode-back" href="../../apidoc/mbuild.html#mbuild.box.Box">[docs]</a><span class="k">class</span> <span class="nc">Box</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<div class="viewcode-block" id="Box"><a class="viewcode-back" href="../../mbuild.html#mbuild.box.Box">[docs]</a><span class="k">class</span> <span class="nc">Box</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;A box representing the bounds of the system.</span>
 
 <span class="sd">    Attributes:</span>
 <span class="sd">       mins (np.ndarray of floats): Minimum x, y, z coordinates.</span>
 <span class="sd">       maxs (np.ndarray of floats): Maximum x, y, z coordinates.</span>
 <span class="sd">       lengths (np.ndarray of floats): Box length in x, y and z directions. </span>
-
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lengths</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">mins</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">maxs</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
@@ -179,7 +176,6 @@
 <span class="sd">            maxs (np.ndarray of floats, optional): Maximum x, y, z coordinates.</span>
 <span class="sd">            lengths (np.ndarray of floats, optional): Box length in x, y and z</span>
 <span class="sd">                directions. </span>
-
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">lengths</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
             <span class="k">assert</span><span class="p">(</span><span class="n">mins</span> <span class="ow">is</span> <span class="bp">None</span> <span class="ow">and</span> <span class="n">maxs</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">)</span>
@@ -206,19 +202,19 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_lengths</span>
 
     <span class="nd">@mins.setter</span>
-<div class="viewcode-block" id="Box.mins"><a class="viewcode-back" href="../../apidoc/mbuild.html#mbuild.box.Box.mins">[docs]</a>    <span class="k">def</span> <span class="nf">mins</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mins</span><span class="p">):</span>
+<div class="viewcode-block" id="Box.mins"><a class="viewcode-back" href="../../mbuild.html#mbuild.box.Box.mins">[docs]</a>    <span class="k">def</span> <span class="nf">mins</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mins</span><span class="p">):</span>
         <span class="k">assert</span> <span class="n">mins</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_mins</span> <span class="o">=</span> <span class="n">mins</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_lengths</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">maxs</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">mins</span>
 </div>
     <span class="nd">@maxs.setter</span>
-<div class="viewcode-block" id="Box.maxs"><a class="viewcode-back" href="../../apidoc/mbuild.html#mbuild.box.Box.maxs">[docs]</a>    <span class="k">def</span> <span class="nf">maxs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">maxes</span><span class="p">):</span>
+<div class="viewcode-block" id="Box.maxs"><a class="viewcode-back" href="../../mbuild.html#mbuild.box.Box.maxs">[docs]</a>    <span class="k">def</span> <span class="nf">maxs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">maxes</span><span class="p">):</span>
         <span class="k">assert</span> <span class="n">maxes</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_maxs</span> <span class="o">=</span> <span class="n">maxes</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_lengths</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">maxs</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">mins</span>
 </div>
     <span class="nd">@lengths.setter</span>
-<div class="viewcode-block" id="Box.lengths"><a class="viewcode-back" href="../../apidoc/mbuild.html#mbuild.box.Box.lengths">[docs]</a>    <span class="k">def</span> <span class="nf">lengths</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lengths</span><span class="p">):</span>
+<div class="viewcode-block" id="Box.lengths"><a class="viewcode-back" href="../../mbuild.html#mbuild.box.Box.lengths">[docs]</a>    <span class="k">def</span> <span class="nf">lengths</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lengths</span><span class="p">):</span>
         <span class="k">assert</span> <span class="n">lengths</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_maxs</span> <span class="o">+=</span> <span class="mf">0.5</span><span class="o">*</span><span class="n">lengths</span> <span class="o">-</span> <span class="mf">0.5</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">lengths</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_mins</span> <span class="o">-=</span> <span class="mf">0.5</span><span class="o">*</span><span class="n">lengths</span> <span class="o">-</span> <span class="mf">0.5</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">lengths</span>
@@ -256,7 +252,7 @@
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'../../',
-            VERSION:'0.4.1beta',
+            VERSION:'0.4.2beta',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true

@@ -7,7 +7,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>mbuild.examples.bilayer package &mdash; mbuild 0.4.1beta documentation</title>
+  <title>mbuild.examples.bilayer package &mdash; mbuild 0.4.2beta documentation</title>
   
 
   
@@ -28,7 +28,7 @@
   
 
   
-    <link rel="top" title="mbuild 0.4.1beta documentation" href="../index.html"/>
+    <link rel="top" title="mbuild 0.4.2beta documentation" href="../index.html"/>
         <link rel="up" title="mbuild.examples package" href="mbuild.examples.html"/>
         <link rel="next" title="mbuild.examples.ethane package" href="mbuild.examples.ethane.html"/>
         <link rel="prev" title="mbuild.examples.alkane_monolayer package" href="mbuild.examples.alkane_monolayer.html"/> 
@@ -89,8 +89,8 @@
 <li class="toctree-l2"><a class="reference internal" href="mbuild.html#module-mbuild.part_mixin">mbuild.part_mixin module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="mbuild.html#module-mbuild.periodic_kdtree">mbuild.periodic_kdtree module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="mbuild.html#module-mbuild.port">mbuild.port module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="mbuild.html#module-mbuild.topology">mbuild.topology module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="mbuild.html#module-mbuild.trajectory">mbuild.trajectory module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="mbuild.html#mbuild-topology-module">mbuild.topology module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="mbuild.html#mbuild-trajectory-module">mbuild.trajectory module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="mbuild.html#module-mbuild.treeview">mbuild.treeview module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="mbuild.html#module-mbuild">Module contents</a></li>
 </ul>
@@ -108,11 +108,11 @@
 <li class="toctree-l1"><a class="reference internal" href="mbuild.formats.html">mbuild.formats package</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="mbuild.formats.html#submodules">Submodules</a></li>
 <li class="toctree-l2"><a class="reference internal" href="mbuild.formats.html#module-mbuild.formats.gromacs">mbuild.formats.gromacs module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="mbuild.formats.html#module-mbuild.formats.hoomdxml">mbuild.formats.hoomdxml module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="mbuild.formats.html#module-mbuild.formats.lammps">mbuild.formats.lammps module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="mbuild.formats.html#module-mbuild.formats.lammps_data">mbuild.formats.lammps_data module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="mbuild.formats.html#mbuild-formats-hoomdxml-module">mbuild.formats.hoomdxml module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="mbuild.formats.html#mbuild-formats-lammps-module">mbuild.formats.lammps module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="mbuild.formats.html#mbuild-formats-lammps-data-module">mbuild.formats.lammps_data module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="mbuild.formats.html#module-mbuild.formats.mol2">mbuild.formats.mol2 module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="mbuild.formats.html#module-mbuild.formats.xyz">mbuild.formats.xyz module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="mbuild.formats.html#mbuild-formats-xyz-module">mbuild.formats.xyz module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="mbuild.formats.html#module-mbuild.formats">Module contents</a></li>
 </ul>
 </li>
@@ -163,8 +163,8 @@
 <span id="mbuild-examples-bilayer-bilayer-module"></span><h2>mbuild.examples.bilayer.bilayer module<a class="headerlink" href="#module-mbuild.examples.bilayer.bilayer" title="Permalink to this headline">¶</a></h2>
 <dl class="class">
 <dt id="mbuild.examples.bilayer.bilayer.Bilayer">
-<em class="property">class </em><tt class="descclassname">mbuild.examples.bilayer.bilayer.</tt><tt class="descname">Bilayer</tt><big>(</big><em>lipid</em>, <em>ref_atom=0</em>, <em>n_lipids_x=10</em>, <em>n_lipids_y=10</em>, <em>apl=1.0</em>, <em>solvent=None</em>, <em>lipid_box=None</em>, <em>spacing_z=0.5</em><big>)</big><a class="reference internal" href="../_modules/mbuild/examples/bilayer/bilayer.html#Bilayer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.examples.bilayer.bilayer.Bilayer" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="mbuild.html#mbuild.compound.Compound" title="mbuild.compound.Compound"><tt class="xref py py-class docutils literal"><span class="pre">mbuild.compound.Compound</span></tt></a></p>
+<em class="property">class </em><tt class="descclassname">mbuild.examples.bilayer.bilayer.</tt><tt class="descname">Bilayer</tt><big>(</big><em>lipids</em>, <em>ref_atoms</em>, <em>n_lipids_x=10</em>, <em>n_lipids_y=10</em>, <em>area_per_lipid=1.0</em>, <em>solvent=None</em>, <em>lipid_box=None</em>, <em>spacing_z=0.5</em>, <em>solvent_per_lipid=None</em>, <em>n_solvent=None</em>, <em>random_seed=12345</em>, <em>mirror=True</em><big>)</big><a class="reference internal" href="../_modules/mbuild/examples/bilayer/bilayer.html#Bilayer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.examples.bilayer.bilayer.Bilayer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="../mbuild.html#mbuild.compound.Compound" title="mbuild.compound.Compound"><tt class="xref py py-class docutils literal"><span class="pre">mbuild.compound.Compound</span></tt></a></p>
 <p>Create a lipid bilayer and add solvent above and below.</p>
 <dl class="attribute">
 <dt id="mbuild.examples.bilayer.bilayer.Bilayer.__delattr__">
@@ -288,8 +288,28 @@ hierarchy.</td>
 
 <dl class="method">
 <dt id="mbuild.examples.bilayer.bilayer.Bilayer.atom_list_by_kind">
-<tt class="descname">atom_list_by_kind</tt><big>(</big><em>kind='*'</em>, <em>excludeG=False</em>, <em>with_id_to_idx_mapping=False</em><big>)</big><a class="headerlink" href="#mbuild.examples.bilayer.bilayer.Bilayer.atom_list_by_kind" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<tt class="descname">atom_list_by_kind</tt><big>(</big><em>kind='*'</em>, <em>excludeG=False</em><big>)</big><a class="headerlink" href="#mbuild.examples.bilayer.bilayer.Bilayer.atom_list_by_kind" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a list of Atoms filtered by their kind.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>kind</strong> (<a class="reference external" href="http://docs.python.org/2.7/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Return only atoms of this type. &#8216;*&#8217; indicates all.</li>
+<li><strong>excludeG</strong> (<a class="reference external" href="http://docs.python.org/2.7/library/functions.html#bool" title="(in Python v2.7)"><em>bool</em></a>) &#8211; Exclude Port particles of kind &#8216;G&#8217;.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>atom_list</strong> &#8211;
+A list of Atoms.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">list</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
 
 <dl class="attribute">
 <dt id="mbuild.examples.bilayer.bilayer.Bilayer.atoms">
@@ -300,12 +320,20 @@ hierarchy.</td>
 <dl class="method">
 <dt id="mbuild.examples.bilayer.bilayer.Bilayer.atoms_in_range">
 <tt class="descname">atoms_in_range</tt><big>(</big><em>point</em>, <em>radius</em>, <em>max_items=10</em><big>)</big><a class="headerlink" href="#mbuild.examples.bilayer.bilayer.Bilayer.atoms_in_range" title="Permalink to this definition">¶</a></dt>
-<dd><p>Find all Atoms within a radius of a point.</p>
+<dd><p>Return the indices of Atoms within a radius of a point.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">list of Atoms within range</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>point</strong> (<a class="reference external" href="http://docs.python.org/2.7/library/functions.html#list" title="(in Python v2.7)"><em>list</em></a>) &#8211; The reference point in cartesian coordinates.</li>
+<li><strong>radius</strong> (<a class="reference external" href="http://docs.python.org/2.7/library/functions.html#float" title="(in Python v2.7)"><em>float</em></a>) &#8211; Find Atoms within this radius.</li>
+<li><strong>max_items</strong> (<a class="reference external" href="http://docs.python.org/2.7/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a>) &#8211; Maximum number of Atoms to find.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">List of Atoms within specified range.</p>
+</td>
 </tr>
 </tbody>
 </table>
@@ -313,7 +341,7 @@ hierarchy.</td>
 
 <dl class="method">
 <dt id="mbuild.examples.bilayer.bilayer.Bilayer.bond_list_by_kind">
-<tt class="descname">bond_list_by_kind</tt><big>(</big><em>kind='*'</em>, <em>with_id_to_idx_mapping=False</em><big>)</big><a class="headerlink" href="#mbuild.examples.bilayer.bilayer.Bilayer.bond_list_by_kind" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">bond_list_by_kind</tt><big>(</big><em>kind='*'</em><big>)</big><a class="headerlink" href="#mbuild.examples.bilayer.bilayer.Bilayer.bond_list_by_kind" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="attribute">
@@ -341,9 +369,37 @@ Ports).</td>
 </table>
 </dd></dl>
 
+<dl class="attribute">
+<dt id="mbuild.examples.bilayer.bilayer.Bilayer.center">
+<tt class="descname">center</tt><a class="headerlink" href="#mbuild.examples.bilayer.bilayer.Bilayer.center" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
 <dl class="method">
-<dt id="mbuild.examples.bilayer.bilayer.Bilayer.center_of_mass">
-<tt class="descname">center_of_mass</tt><big>(</big><big>)</big><a class="headerlink" href="#mbuild.examples.bilayer.bilayer.Bilayer.center_of_mass" title="Permalink to this definition">¶</a></dt>
+<dt id="mbuild.examples.bilayer.bilayer.Bilayer.check_fractions">
+<tt class="descname">check_fractions</tt><big>(</big><big>)</big><a class="reference internal" href="../_modules/mbuild/examples/bilayer/bilayer.html#Bilayer.check_fractions"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.examples.bilayer.bilayer.Bilayer.check_fractions" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="mbuild.examples.bilayer.bilayer.Bilayer.check_ref_atoms">
+<tt class="descname">check_ref_atoms</tt><big>(</big><big>)</big><a class="reference internal" href="../_modules/mbuild/examples/bilayer/bilayer.html#Bilayer.check_ref_atoms"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.examples.bilayer.bilayer.Bilayer.check_ref_atoms" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="mbuild.examples.bilayer.bilayer.Bilayer.create_layer">
+<tt class="descname">create_layer</tt><big>(</big><em>lipid_labels=None</em>, <em>flip_orientation=False</em><big>)</big><a class="reference internal" href="../_modules/mbuild/examples/bilayer/bilayer.html#Bilayer.create_layer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.examples.bilayer.bilayer.Bilayer.create_layer" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>top</strong> (<a class="reference external" href="http://docs.python.org/2.7/library/functions.html#bool" title="(in Python v2.7)"><em>bool</em></a>) &#8211; Top (no rotation) or bottom (rotate about x) layer</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="mbuild.examples.bilayer.bilayer.Bilayer.lipid_box">
+<tt class="descname">lipid_box</tt><a class="reference internal" href="../_modules/mbuild/examples/bilayer/bilayer.html#Bilayer.lipid_box"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.examples.bilayer.bilayer.Bilayer.lipid_box" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="classmethod">
@@ -367,15 +423,24 @@ Ports).</td>
 <tt class="descname">n_bonds</tt><a class="headerlink" href="#mbuild.examples.bilayer.bilayer.Bilayer.n_bonds" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
-<dl class="method">
-<dt id="mbuild.examples.bilayer.bilayer.Bilayer.post_remove">
-<tt class="descname">post_remove</tt><big>(</big><em>removed_part</em><big>)</big><a class="headerlink" href="#mbuild.examples.bilayer.bilayer.Bilayer.post_remove" title="Permalink to this definition">¶</a></dt>
+<dl class="attribute">
+<dt id="mbuild.examples.bilayer.bilayer.Bilayer.n_each_lipid_per_layer">
+<tt class="descname">n_each_lipid_per_layer</tt><a class="reference internal" href="../_modules/mbuild/examples/bilayer/bilayer.html#Bilayer.n_each_lipid_per_layer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.examples.bilayer.bilayer.Bilayer.n_each_lipid_per_layer" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="method">
 <dt id="mbuild.examples.bilayer.bilayer.Bilayer.referenced_ports">
 <tt class="descname">referenced_ports</tt><big>(</big><big>)</big><a class="headerlink" href="#mbuild.examples.bilayer.bilayer.Bilayer.referenced_ports" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Find all Ports referenced by this Compound.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">A list of Ports currently referenced by this Compound.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
 
 <dl class="method">
 <dt id="mbuild.examples.bilayer.bilayer.Bilayer.remove">
@@ -398,6 +463,17 @@ remove duplicates.</td>
 <tt class="descname">save</tt><big>(</big><em>filename</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#mbuild.examples.bilayer.bilayer.Bilayer.save" title="Permalink to this definition">¶</a></dt>
 <dd><p>Save the Compound to a file.</p>
 <p>This creates an intermediate Trajectory object.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="mbuild.examples.bilayer.bilayer.Bilayer.solvate_bilayer">
+<tt class="descname">solvate_bilayer</tt><big>(</big><big>)</big><a class="reference internal" href="../_modules/mbuild/examples/bilayer/bilayer.html#Bilayer.solvate_bilayer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.examples.bilayer.bilayer.Bilayer.solvate_bilayer" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="mbuild.examples.bilayer.bilayer.Bilayer.solvent_per_layer">
+<tt class="descname">solvent_per_layer</tt><a class="reference internal" href="../_modules/mbuild/examples/bilayer/bilayer.html#Bilayer.solvent_per_layer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.examples.bilayer.bilayer.Bilayer.solvent_per_layer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Figure out the number of solvent molecules per single layer.</p>
 </dd></dl>
 
 <dl class="method">
@@ -424,7 +500,7 @@ remove duplicates.</td>
 <dd><p>Visualize the Compound using VMD.</p>
 <p>Assumes you have VMD installed and can call it from the command line via
 &#8216;vmd&#8217;.</p>
-<p>TODO: Make more useful/robust. Look into pizza.py&#8217;s vmd.py.</p>
+<p>TODO: Look into pizza.py&#8217;s vmd.py. See issue #32.</p>
 </dd></dl>
 
 <dl class="method">
@@ -494,7 +570,7 @@ remove duplicates.</td>
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'../',
-            VERSION:'0.4.1beta',
+            VERSION:'0.4.2beta',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true

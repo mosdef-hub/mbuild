@@ -1,0 +1,149 @@
+; OPLSAA topology for benzaldehyde
+; 
+; Jorgensen, W. L.; Tirado-Rives, J. Proc. Natl. Acad. Sci. U.S.A. 2005, 102, 6665.
+; Carl Caleman, Paul J. van Maaren, Minyan Hong, Jochen S. Hub, Luciano T. Costa and David van der Spoel, Force Field Benchmark of Organic Liquids: Density, Enthalpy of Vaporization, Heat Capacities, Surface Tension, Isothermal Compressibility, Volumetric Expansion Coefficient, and Dielectric Constant, J. Chem. Theor. Comput. 8 (2012) http://dx.doi.org/10.1021/ct200731v
+;
+;
+#include "oplsaaff.itp"
+[ moleculetype ]
+; Name            nrexcl
+benzaldehyde  3
+
+[ atoms ]
+;   nr       type  resnr residue  atom   cgnr     charge       mass  typeB    chargeB      massB
+         1  opls_145         1       LIG         C         1    -0.115    12.011
+         2  opls_146         1       LIG         H         2     0.115     1.008
+         3  opls_145         1       LIG         C         3    -0.115    12.011
+         4  opls_146         1       LIG         H         4     0.115     1.008
+         5  opls_145         1       LIG         C         5    -0.115    12.011
+         6  opls_146         1       LIG         H         6     0.115     1.008
+         7  opls_145         1       LIG         C         7    -0.115    12.011
+         8  opls_146         1       LIG         H         8     0.115     1.008
+         9  opls_145         1       LIG         C         9    -0.115    12.011
+        10  opls_146         1       LIG         H        10     0.115     1.008
+        11  opls_145         1       LIG         C        11    -0.115    12.011
+        12  opls_232         1       LIG         C        12     0.565    12.011
+        13  opls_279         1       LIG         H        13     0.000     1.008
+        14  opls_278         1       LIG         O        14     -0.45   15.9994
+
+[ bonds ]
+;  ai    aj funct            c0            c1            c2            c3
+    1     2     1 
+    1     3     1 
+    1    11     1 
+    3     4     1 
+    3     5     1 
+    5     6     1 
+    5     7     1 
+    7     8     1 
+    7     9     1 
+    9    10     1 
+    9    11     1 
+   11    12     1 
+   12    13     1 
+   12    14     1 
+
+[ pairs ]
+;  ai    aj funct            c0            c1            c2            c3
+    1     6     1 
+    1     7     1 
+    1    10     1 
+    1    13     1 
+    1    14     1 
+    2     4     1 
+    2     5     1 
+    2     9     1 
+    2    12     1 
+    3     8     1 
+    3     9     1 
+    3    12     1 
+    4     6     1 
+    4     7     1 
+    4    11     1 
+    5    10     1 
+    5    11     1 
+    6     8     1 
+    6     9     1 
+    7    12     1 
+    8    10     1 
+    8    11     1 
+    9    13     1 
+    9    14     1 
+   10    12     1 
+
+[ angles ]
+;  ai    aj    ak funct            c0            c1            c2            c3
+    2     1     3     1 
+    2     1    11     1 
+    3     1    11     1 
+    1     3     4     1 
+    1     3     5     1 
+    4     3     5     1 
+    3     5     6     1 
+    3     5     7     1 
+    6     5     7     1 
+    5     7     8     1 
+    5     7     9     1 
+    8     7     9     1 
+    7     9    10     1 
+    7     9    11     1 
+   10     9    11     1 
+    1    11     9     1 
+    1    11    12     1 
+    9    11    12     1 
+   11    12    13     1 
+   11    12    14     1 
+   13    12    14     1 
+
+[ dihedrals ]
+;  ai    aj    ak    al funct            c0            c1            c2            c3            c4            c5
+    2     1     3     4     3 
+    2     1     3     5     3 
+   11     1     3     4     3 
+   11     1     3     5     3 
+    2     1    11     9     3 
+    2     1    11    12     3 
+    3     1    11     9     3 
+    3     1    11    12     3 
+    1     3     5     6     3 
+    1     3     5     7     3 
+    4     3     5     6     3 
+    4     3     5     7     3 
+    3     5     7     8     3 
+    3     5     7     9     3 
+    6     5     7     8     3 
+    6     5     7     9     3 
+    5     7     9    10     3 
+    5     7     9    11     3 
+    8     7     9    10     3 
+    8     7     9    11     3 
+    7     9    11     1     3 
+    7     9    11    12     3 
+   10     9    11     1     3 
+   10     9    11    12     3 
+    1    11    12    13     3 
+    1    11    12    14     3 
+    9    11    12    13     3 
+    9    11    12    14     3 
+
+; added, improper
+    1    11     3     2     1   180     4.6     2
+    3     1     5     4     1   180     4.6     2
+    5     3     7     6     1   180     4.6     2
+    7     5     9     8     1   180     4.6     2
+    9     7    11    10     1   180     4.6     2
+   11     9     1    12     1   180     4.6     2
+; ring_180
+    1     3     5     7     1   180     4.6     2
+    3     5     7     9     1   180     4.6     2
+    5     7     9    11     1   180     4.6     2
+    7     9    11     1     1   180     4.6     2
+    9    11     1     3     1   180     4.6     2
+   11     1     3     5     1   180     4.6     2
+
+; Added DvdS 2010-12-21
+12 13 14 11 1    180     4.6     2
+[ system ]
+benzaldehyde GAS
+[ molecules ]
+benzaldehyde 1

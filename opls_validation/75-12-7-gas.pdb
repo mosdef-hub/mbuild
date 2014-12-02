@@ -1,0 +1,12 @@
+TITLE     formamide GAS
+REMARK    THIS IS A SIMULATION BOX
+CRYST1  100.000  100.000  100.000  90.00  90.00  90.00 P 1           1
+MODEL        1
+ATOM      1  O   LIG     1      49.307  49.733  48.495  1.00  0.00            
+ATOM      2  C   LIG     1      49.487  50.203  49.615  1.00  0.00            
+ATOM      3  H   LIG     1      49.297  51.223  49.955  1.00  0.00            
+ATOM      4  N   LIG     1      50.367  49.713  50.485  1.00  0.00            
+ATOM      5  H   LIG     1      50.717  48.773  50.345  1.00  0.00            
+ATOM      6  H   LIG     1      50.827  50.353  51.105  1.00  0.00            
+TER
+ENDMDL

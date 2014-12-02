@@ -1,0 +1,216 @@
+; OPLSAA topology for triethyl-phosphate
+; 
+; Jorgensen, W. L.; Tirado-Rives, J. Proc. Natl. Acad. Sci. U.S.A. 2005, 102, 6665.
+; Carl Caleman, Paul J. van Maaren, Minyan Hong, Jochen S. Hub, Luciano T. Costa and David van der Spoel, Force Field Benchmark of Organic Liquids: Density, Enthalpy of Vaporization, Heat Capacities, Surface Tension, Isothermal Compressibility, Volumetric Expansion Coefficient, and Dielectric Constant, J. Chem. Theor. Comput. 8 (2012) http://dx.doi.org/10.1021/ct200731v
+;
+;
+#include "oplsaaff.itp"
+[ moleculetype ]
+; Name            nrexcl
+triethyl-phosphate  3
+
+[ atoms ]
+;   nr       type  resnr residue  atom   cgnr     charge       mass  typeB    chargeB      massB
+         1  opls_135         1       UNK         C         1     -0.18    12.011
+         2  opls_140         1       UNK         H         2      0.06     1.008
+         3  opls_140         1       UNK         H         3      0.06     1.008
+         4  opls_140         1       UNK         H         4      0.06     1.008
+         5  opls_443         1       UNK         C         5       0.3    12.011
+         6  opls_444         1       UNK         H         6     -0.03     1.008
+         7  opls_444         1       UNK         H         7     -0.03     1.008
+         8  opls_442         1       UNK         O         8      -0.6   15.9994
+         9  opls_440         1       UNK         P         9         2   30.9738
+        10  opls_442         1       UNK         O        10      -0.6   15.9994
+        11  opls_443         1       UNK         C        11       0.3    12.011
+        12  opls_444         1       UNK         H        12     -0.03     1.008
+        13  opls_444         1       UNK         H        13     -0.03     1.008
+        14  opls_135         1       UNK         C        14     -0.18    12.011
+        15  opls_140         1       UNK         H        15      0.06     1.008
+        16  opls_140         1       UNK         H        16      0.06     1.008
+        17  opls_140         1       UNK         H        17      0.06     1.008
+        18  opls_441         1       UNK         O        18     -0.92   15.9994
+        19  opls_442         1       UNK         O        19      -0.6   15.9994
+        20  opls_443         1       UNK         C        20       0.3    12.011
+        21  opls_444         1       UNK         H        21     -0.03     1.008
+        22  opls_444         1       UNK         H        22     -0.03     1.008
+        23  opls_135         1       UNK         C        23     -0.18    12.011
+        24  opls_140         1       UNK         H        24      0.06     1.008
+        25  opls_140         1       UNK         H        25      0.06     1.008
+        26  opls_140         1       UNK         H        26      0.06     1.008
+
+[ bonds ]
+;  ai    aj funct            c0            c1            c2            c3
+    1     2     1 
+    1     3     1 
+    1     4     1 
+    1     5     1 
+    5     6     1 
+    5     7     1 
+    5     8     1 
+    8     9     1 
+    9    10     1 
+    9    18     1 
+    9    19     1 
+   10    11     1 
+   11    12     1 
+   11    13     1 
+   11    14     1 
+   14    15     1 
+   14    16     1 
+   14    17     1 
+   19    20     1 
+   20    21     1 
+   20    22     1 
+   20    23     1 
+   23    24     1 
+   23    25     1 
+   23    26     1 
+
+[ pairs ]
+;  ai    aj funct            c0            c1            c2            c3
+    1     9     1 
+    2     6     1 
+    2     7     1 
+    2     8     1 
+    3     6     1 
+    3     7     1 
+    3     8     1 
+    4     6     1 
+    4     7     1 
+    4     8     1 
+    5    10     1 
+    5    18     1 
+    5    19     1 
+    6     9     1 
+    7     9     1 
+    8    11     1 
+    8    20     1 
+    9    12     1 
+    9    13     1 
+    9    14     1 
+    9    21     1 
+    9    22     1 
+    9    23     1 
+   10    15     1 
+   10    16     1 
+   10    17     1 
+   10    20     1 
+   11    18     1 
+   11    19     1 
+   12    15     1 
+   12    16     1 
+   12    17     1 
+   13    15     1 
+   13    16     1 
+   13    17     1 
+   18    20     1 
+   19    24     1 
+   19    25     1 
+   19    26     1 
+   21    24     1 
+   21    25     1 
+   21    26     1 
+   22    24     1 
+   22    25     1 
+   22    26     1 
+
+[ angles ]
+;  ai    aj    ak funct            c0            c1            c2            c3
+    2     1     3     1 
+    2     1     4     1 
+    2     1     5     1 
+    3     1     4     1 
+    3     1     5     1 
+    4     1     5     1 
+    1     5     6     1 
+    1     5     7     1 
+    1     5     8     1 
+    6     5     7     1 
+    6     5     8     1 
+    7     5     8     1 
+    5     8     9     1 
+    8     9    10     1 
+    8     9    18     1 
+    8     9    19     1 
+   10     9    18     1 
+   10     9    19     1 
+   18     9    19     1 
+    9    10    11     1 
+   10    11    12     1 
+   10    11    13     1 
+   10    11    14     1 
+   12    11    13     1 
+   12    11    14     1 
+   13    11    14     1 
+   11    14    15     1 
+   11    14    16     1 
+   11    14    17     1 
+   15    14    16     1 
+   15    14    17     1 
+   16    14    17     1 
+    9    19    20     1 
+   19    20    21     1 
+   19    20    22     1 
+   19    20    23     1 
+   21    20    22     1 
+   21    20    23     1 
+   22    20    23     1 
+   20    23    24     1 
+   20    23    25     1 
+   20    23    26     1 
+   24    23    25     1 
+   24    23    26     1 
+   25    23    26     1 
+
+[ dihedrals ]
+;  ai    aj    ak    al funct            c0            c1            c2            c3            c4            c5
+    2     1     5     6     3 
+    2     1     5     7     3 
+    2     1     5     8     3 
+    3     1     5     6     3 
+    3     1     5     7     3 
+    3     1     5     8     3 
+    4     1     5     6     3 
+    4     1     5     7     3 
+    4     1     5     8     3 
+    1     5     8     9     3 
+    6     5     8     9     3 
+    7     5     8     9     3 
+    5     8     9    10     3 
+    5     8     9    18     3 
+    5     8     9    19     3 
+    8     9    10    11     3 
+   18     9    10    11     3 
+   19     9    10    11     3 
+    8     9    19    20     3 
+   10     9    19    20     3 
+   18     9    19    20     3 
+    9    10    11    12     3 
+    9    10    11    13     3 
+    9    10    11    14     3 
+   10    11    14    15     3 
+   10    11    14    16     3 
+   10    11    14    17     3 
+   12    11    14    15     3 
+   12    11    14    16     3 
+   12    11    14    17     3 
+   13    11    14    15     3 
+   13    11    14    16     3 
+   13    11    14    17     3 
+    9    19    20    21     3 
+    9    19    20    22     3 
+    9    19    20    23     3 
+   19    20    23    24     3 
+   19    20    23    25     3 
+   19    20    23    26     3 
+   21    20    23    24     3 
+   21    20    23    25     3 
+   21    20    23    26     3 
+   22    20    23    24     3 
+   22    20    23    25     3 
+   22    20    23    26     3 
+
+[ system ]
+triethyl-phosphate GAS
+[ molecules ]
+triethyl-phosphate 1

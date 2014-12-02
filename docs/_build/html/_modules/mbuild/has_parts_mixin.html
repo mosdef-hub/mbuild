@@ -7,7 +7,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>mbuild.has_parts_mixin &mdash; mbuild 0.4.1beta documentation</title>
+  <title>mbuild.has_parts_mixin &mdash; mbuild 0.4.2beta documentation</title>
   
 
   
@@ -28,7 +28,7 @@
   
 
   
-    <link rel="top" title="mbuild 0.4.1beta documentation" href="../../index.html"/>
+    <link rel="top" title="mbuild 0.4.2beta documentation" href="../../index.html"/>
         <link rel="up" title="Module code" href="../index.html"/> 
 
   
@@ -87,8 +87,8 @@
 <li class="toctree-l2"><a class="reference internal" href="../../apidoc/mbuild.html#module-mbuild.part_mixin">mbuild.part_mixin module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../apidoc/mbuild.html#module-mbuild.periodic_kdtree">mbuild.periodic_kdtree module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../apidoc/mbuild.html#module-mbuild.port">mbuild.port module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../apidoc/mbuild.html#module-mbuild.topology">mbuild.topology module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../apidoc/mbuild.html#module-mbuild.trajectory">mbuild.trajectory module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../apidoc/mbuild.html#mbuild-topology-module">mbuild.topology module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../apidoc/mbuild.html#mbuild-trajectory-module">mbuild.trajectory module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../apidoc/mbuild.html#module-mbuild.treeview">mbuild.treeview module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../apidoc/mbuild.html#module-mbuild">Module contents</a></li>
 </ul>
@@ -106,11 +106,11 @@
 <li class="toctree-l1"><a class="reference internal" href="../../apidoc/mbuild.formats.html">mbuild.formats package</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="../../apidoc/mbuild.formats.html#submodules">Submodules</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../apidoc/mbuild.formats.html#module-mbuild.formats.gromacs">mbuild.formats.gromacs module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../apidoc/mbuild.formats.html#module-mbuild.formats.hoomdxml">mbuild.formats.hoomdxml module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../apidoc/mbuild.formats.html#module-mbuild.formats.lammps">mbuild.formats.lammps module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../apidoc/mbuild.formats.html#module-mbuild.formats.lammps_data">mbuild.formats.lammps_data module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../apidoc/mbuild.formats.html#mbuild-formats-hoomdxml-module">mbuild.formats.hoomdxml module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../apidoc/mbuild.formats.html#mbuild-formats-lammps-module">mbuild.formats.lammps module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../apidoc/mbuild.formats.html#mbuild-formats-lammps-data-module">mbuild.formats.lammps_data module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../apidoc/mbuild.formats.html#module-mbuild.formats.mol2">mbuild.formats.mol2 module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../apidoc/mbuild.formats.html#module-mbuild.formats.xyz">mbuild.formats.xyz module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../apidoc/mbuild.formats.html#mbuild-formats-xyz-module">mbuild.formats.xyz module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../apidoc/mbuild.formats.html#module-mbuild.formats">Module contents</a></li>
 </ul>
 </li>
@@ -150,13 +150,14 @@
             
   <h1>Source code for mbuild.has_parts_mixin</h1><div class="highlight"><pre>
 <span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">OrderedDict</span>
+
 <span class="kn">from</span> <span class="nn">mbuild.orderedset</span> <span class="kn">import</span> <span class="n">OrderedSet</span>
 <span class="kn">from</span> <span class="nn">mbuild.part_mixin</span> <span class="kn">import</span> <span class="n">PartMixin</span>
 
 <span class="n">__author__</span> <span class="o">=</span> <span class="s">&#39;sallai&#39;</span>
 
 
-<div class="viewcode-block" id="HasPartsMixin"><a class="viewcode-back" href="../../apidoc/mbuild.html#mbuild.has_parts_mixin.HasPartsMixin">[docs]</a><span class="k">class</span> <span class="nc">HasPartsMixin</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<div class="viewcode-block" id="HasPartsMixin"><a class="viewcode-back" href="../../mbuild.html#mbuild.has_parts_mixin.HasPartsMixin">[docs]</a><span class="k">class</span> <span class="nc">HasPartsMixin</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;A base class that provides functionality to contain other parts.&quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
@@ -188,7 +189,7 @@
                 <span class="k">for</span> <span class="n">subpart</span> <span class="ow">in</span> <span class="n">part</span><span class="o">.</span><span class="n">_yield_parts</span><span class="p">(</span><span class="n">part_type</span><span class="p">):</span>
                     <span class="k">yield</span> <span class="n">subpart</span>
 
-<div class="viewcode-block" id="HasPartsMixin.add"><a class="viewcode-back" href="../../apidoc/mbuild.html#mbuild.has_parts_mixin.HasPartsMixin.add">[docs]</a>    <span class="k">def</span> <span class="nf">add</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">new_part</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">containment</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">replace</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+<div class="viewcode-block" id="HasPartsMixin.add"><a class="viewcode-back" href="../../mbuild.html#mbuild.has_parts_mixin.HasPartsMixin.add">[docs]</a>    <span class="k">def</span> <span class="nf">add</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">new_part</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">containment</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">replace</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Add a part to the Compound.</span>
 
 <span class="sd">        Note:</span>
@@ -245,7 +246,7 @@
 
         <span class="n">new_part</span><span class="o">.</span><span class="n">referrers</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
 </div>
-<div class="viewcode-block" id="HasPartsMixin.remove"><a class="viewcode-back" href="../../apidoc/mbuild.html#mbuild.has_parts_mixin.HasPartsMixin.remove">[docs]</a>    <span class="k">def</span> <span class="nf">remove</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">objs_to_remove</span><span class="p">):</span>
+<div class="viewcode-block" id="HasPartsMixin.remove"><a class="viewcode-back" href="../../mbuild.html#mbuild.has_parts_mixin.HasPartsMixin.remove">[docs]</a>    <span class="k">def</span> <span class="nf">remove</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">objs_to_remove</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Remove a part (Atom, Bond or Compound) from the Compound by value.</span>
 
 <span class="sd">        Args:</span>
@@ -266,14 +267,14 @@
         <span class="n">objs_to_remove</span><span class="o">.</span><span class="n">difference_update</span><span class="p">(</span><span class="n">intersection</span><span class="p">)</span>
 
         <span class="k">for</span> <span class="n">removed_part</span> <span class="ow">in</span> <span class="n">intersection</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">post_remove</span><span class="p">(</span><span class="n">removed_part</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_remove</span><span class="p">(</span><span class="n">removed_part</span><span class="p">)</span>
 
         <span class="c"># Remove the part recursively from sub-components.</span>
         <span class="k">for</span> <span class="n">part</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">parts</span><span class="p">:</span>
             <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">part</span><span class="p">,</span> <span class="n">HasPartsMixin</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">objs_to_remove</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
                 <span class="n">part</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">objs_to_remove</span><span class="p">)</span>
 </div>
-<div class="viewcode-block" id="HasPartsMixin.post_remove"><a class="viewcode-back" href="../../apidoc/mbuild.html#mbuild.has_parts_mixin.HasPartsMixin.post_remove">[docs]</a>    <span class="k">def</span> <span class="nf">post_remove</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">removed_part</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">_remove</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">removed_part</span><span class="p">):</span>
         <span class="n">removed_part</span><span class="o">.</span><span class="n">parent</span> <span class="o">=</span> <span class="bp">None</span>
         <span class="c"># Remove labels in the hierarchy pointing to this part.</span>
         <span class="n">referrers_to_remove</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
@@ -294,7 +295,7 @@
                     <span class="n">labels_to_delete</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">label</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">label</span> <span class="ow">in</span> <span class="n">labels_to_delete</span><span class="p">:</span>
             <span class="k">del</span> <span class="n">removed_part</span><span class="o">.</span><span class="n">labels</span><span class="p">[</span><span class="n">label</span><span class="p">]</span>
-</div>
+
     <span class="k">def</span> <span class="nf">__getattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">attr</span><span class="p">):</span>
         <span class="n">unsuper</span> <span class="o">=</span> <span class="p">(</span><span class="s">&quot;HasPartsMixin __init__ never called. Make sure to call&quot;</span>
                    <span class="s">&quot; super().__init__() in the __init__ method of your class.&quot;</span><span class="p">)</span>
@@ -334,7 +335,7 @@
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'../../',
-            VERSION:'0.4.1beta',
+            VERSION:'0.4.2beta',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true

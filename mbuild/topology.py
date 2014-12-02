@@ -1,6 +1,7 @@
+import mdtraj
+
 __author__ = 'sallai'
 import itertools
-from copy import deepcopy
 
 import numpy as np
 
@@ -9,22 +10,69 @@ from mdtraj.core.element import Element
 from mdtraj.core import element as elem
 
 
-class Topology(MDTTopology):
+class Topology(object):
     """Derivative of MDTraj's Topology class with additional functionalities.
 
     Most notably, provides conversion to and from mBuild Compounds.
     """
-    def __init__(self):
+    def __init__(self, topology=None):
         """Initialize an mBuild Topology. """
-        super(Topology, self).__init__()
+
+        if topology is not None:
+            self._w_topology = topology
+        else:
+            self._w_topology = MDTTopology()
+
+        # Member variables extending mdtraj's functionality.
         self._ff_bonds = []
         self._ff_angles = []
         self._ff_dihedrals = []
         self._ff_impropers = []
 
+    def __getattr__(self, attr_name):
+        """Redirect attribute access to the wrapped topology. """
+        return getattr(self.__dict__['_w_topology'], attr_name)
+
+    @classmethod
+    def from_dataframe(cls, atoms, bonds=None):
+        return Topology(topology=mdtraj.Topology.from_dataframe(atoms, bonds))
+
+    @classmethod
+    def from_openmm(cls, value):
+        return Topology(topology=mdtraj.Topology.from_openmm(value))
+
     @property
     def ff_bonds(self):
         return iter(self._ff_bonds)
+
+    def to_bondgraph(self):
+        """Create a NetworkX graph from the atoms and bonds in this topology
+
+        Returns
+        -------
+        g : nx.Graph
+            A graph whose nodes are the Atoms in this topology, and
+            whose edges are the bonds
+
+        See Also
+        --------
+        atoms
+        bonds
+
+        Notes
+        -----
+        This method requires the NetworkX python package.
+        """
+        from mdtraj.utils import import_
+        nx = import_('networkx')
+        g = nx.Graph()
+
+        atoms_atoms = [(a, {'element': a.element, 'name': a.name}) for a in self.atoms]
+
+        g.add_nodes_from(atoms_atoms)
+        g.add_edges_from(self.bonds)
+        return g
+
 
     @property
     def ff_angles(self):
@@ -94,7 +142,8 @@ class Topology(MDTTopology):
         neighbors_2.remove(node_1)
 
         for pair in itertools.product(neighbors_1, neighbors_2):
-            self.add_ff_dihedral(pair[0], node_1, node_2, pair[1])
+            if pair[0] != pair[1]:
+                self.add_ff_dihedral(pair[0], node_1, node_2, pair[1])
 
     def find_forcefield_terms(self, bonds=True, angles=True, dihedrals=True,
                               impropers=True):
@@ -177,7 +226,6 @@ class ForcefieldBond(object):
             self.kind = kind
         else:
             self.kind = '{0}-{1}'.format(atom1.name, atom2.name)
-
 
     @property
     def atom1(self):

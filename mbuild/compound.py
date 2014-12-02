@@ -16,20 +16,22 @@ from orderedset import OrderedSet
 class Compound(MBase, PartMixin, HasPartsMixin):
     """A building block in the mBuild hierarchy.
 
-    Compound is the superclass of all composite building blocks in the mBuild hierarchy.
-    That is, all composite building blocks must inherit from compound, either directly
-    or indirectly. The design of Compound follows the Composite design pattern (Gamma,
-    Erich; Richard Helm; Ralph Johnson; John M. Vlissides (1995). Design Patterns:
-    Elements of Reusable Object-Oriented Software. Addison-Wesley. p. 395. ISBN
-    0-201-63361-2.), with Compound being the composite, and Atom playing the role
-    of the primitive (leaf) part.
+    Compound is the superclass of all composite building blocks in the mBuild
+    hierarchy. That is, all composite building blocks must inherit from
+    compound, either directly or indirectly. The design of Compound follows the
+    Composite design pattern (Gamma, Erich; Richard Helm; Ralph Johnson; John
+    M. Vlissides (1995). Design Patterns: Elements of Reusable Object-Oriented
+    Software. Addison-Wesley. p. 395. ISBN 0-201-63361-2.), with Compound being
+    the composite, and Atom playing the role of the primitive (leaf) part.
 
-    Compound maintains a list of parts (contained Compounds, Atoms, Bonds, etc., that inherit
-    from PartMixin), and provides a means to tag the parts with labels, so that the parts can be
-    easily looked up later. Labels may also point to objects outside the Compound's containment hierarchy.
-    Compound has built-in support for copying and deepcopying Compound hierarchies, enumerating atoms
-    or bonds in the hierarchy, proximity based searches, visualization, I/O operations, and a number
-    of other convenience methods.
+    Compound maintains a list of parts (contained Compounds, Atoms, Bonds,
+    etc., that inherit from PartMixin), and provides a means to tag the parts
+    with labels, so that the parts can be easily looked up later. Labels may
+    also point to objects outside the Compound's containment hierarchy.
+    Compound has built-in support for copying and deepcopying Compound
+    hierarchies, enumerating atoms or bonds in the hierarchy, proximity based
+    searches, visualization, I/O operations, and a number of other convenience
+    methods.
 
     Attributes:
         kind (str): The type of Compound.
@@ -54,7 +56,6 @@ class Compound(MBase, PartMixin, HasPartsMixin):
                 Compound in the x, y and z directions.
 
         """
-
         super(Compound, self).__init__()
 
         # Set kind to classname if not specified.
@@ -78,25 +79,24 @@ class Compound(MBase, PartMixin, HasPartsMixin):
 
     @property
     def n_atoms(self):
-        return sum([1 for _ in self.atom_list_by_kind(excludeG=True)])
+        return len(self.atoms)
 
-    def atom_list_by_kind(self, kind='*', excludeG=False, with_id_to_idx_mapping=False):
+    def atom_list_by_kind(self, kind='*', excludeG=False):
+        """Return a list of Atoms filtered by their kind.
+
+        Args:
+            kind (str): Return only atoms of this type. '*' indicates all.
+            excludeG (bool): Exclude Port particles of kind 'G'.
+        Returns:
+            atom_list (list): A list of Atoms.
+        """
         atom_list = []
-        id_to_idx = dict()
-        idx = 0
         for atom in self.yield_atoms():
             if not (excludeG and atom.kind == "G"):
                 if kind == '*':
                     atom_list.append(atom)
-                    id_to_idx[id(atom)] = idx
-                    idx += 1
                 elif atom.kind == kind:
                     atom_list.append(atom)
-                    id_to_idx[id(atom)] = idx
-                    idx += 1
-
-        if with_id_to_idx_mapping:
-            return atom_list, id_to_idx
         else:
             return atom_list
 
@@ -110,36 +110,29 @@ class Compound(MBase, PartMixin, HasPartsMixin):
 
     @property
     def n_bonds(self):
-        return sum([1 for _ in self.yield_bonds()])
+        return len(self.bonds)
 
-    def bond_list_by_kind(self, kind='*', with_id_to_idx_mapping=False):
+    def bond_list_by_kind(self, kind='*'):
         bond_list = []
-        id_to_idx = dict()
-
-        idx = 0
         for bond in self.yield_bonds():
             if kind == '*':
                 bond_list.append(bond)
-                id_to_idx[id(bond)] = idx
-                idx += 1
-
             elif bond.kind == kind:
                 bond_list.append(bond)
-                id_to_idx[id(bond)] = idx
-                idx += 1
-
-        if with_id_to_idx_mapping:
-            return bond_list, id_to_idx
         else:
             return bond_list
 
     def referenced_ports(self):
-        from mbuild.port import Port
+        """Find all Ports referenced by this Compound.
 
+        Returns:
+            A list of Ports currently referenced by this Compound.
+        """
+        from mbuild.port import Port
         return [port for port in self.labels.values() if isinstance(port, Port)]
 
-    def post_remove(self, removed_part):
-        super(Compound, self).post_remove(removed_part)
+    def _remove(self, removed_part):
+        super(Compound, self)._remove(removed_part)
 
         # If removing an atom, make sure to remove the bonds it's part of.
         if isinstance(removed_part, Atom):
@@ -201,7 +194,7 @@ class Compound(MBase, PartMixin, HasPartsMixin):
         Assumes you have VMD installed and can call it from the command line via
         'vmd'.
 
-        TODO: Make more useful/robust. Look into pizza.py's vmd.py.
+        TODO: Look into pizza.py's vmd.py. See issue #32.
         """
         filename = 'visualize_{}.pdb'.format(self.__class__.__name__)
         traj = self.to_trajectory(show_ports)
@@ -220,7 +213,8 @@ class Compound(MBase, PartMixin, HasPartsMixin):
         d = np.where(d > 0.5 * self.periodicity, self.periodicity - d, d)
         return np.sqrt((d ** 2).sum(axis=-1))
 
-    def center_of_mass(self):
+    @property
+    def center(self):
         return sum(atom.pos for atom in self.yield_atoms()) / len([atom for atom in self.yield_atoms()])
 
     def boundingbox(self, excludeG=True):
@@ -261,14 +255,14 @@ class Compound(MBase, PartMixin, HasPartsMixin):
         return Box(mins=min_coords, maxs=max_coords)
 
     def atoms_in_range(self, point, radius, max_items=10):
-        """Find all Atoms within a radius of a point.
+        """Return the indices of Atoms within a radius of a point.
 
         Args:
-            point:
-            radius:
-            max_items:
+            point (list): The reference point in cartesian coordinates.
+            radius (float): Find Atoms within this radius.
+            max_items (int): Maximum number of Atoms to find.
         Returns:
-            list of Atoms within range
+            List of Atoms within specified range.
         """
         atoms = self.atom_list_by_kind(excludeG=True)
         traj = self.to_trajectory()

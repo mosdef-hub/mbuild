@@ -7,7 +7,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>mbuild.formats package &mdash; mbuild 0.4.1beta documentation</title>
+  <title>mbuild.formats package &mdash; mbuild 0.4.2beta documentation</title>
   
 
   
@@ -28,7 +28,7 @@
   
 
   
-    <link rel="top" title="mbuild 0.4.1beta documentation" href="../index.html"/>
+    <link rel="top" title="mbuild 0.4.2beta documentation" href="../index.html"/>
         <link rel="prev" title="mbuild.tools package" href="mbuild.tools.html"/> 
 
   
@@ -85,9 +85,9 @@
 <li class="toctree-l2"><a class="reference internal" href="mbuild.html#module-mbuild.mbase">mbuild.mbase module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="mbuild.html#module-mbuild.orderedset">mbuild.orderedset module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="mbuild.html#module-mbuild.part_mixin">mbuild.part_mixin module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="mbuild.html#mbuild-periodic-kdtree-module">mbuild.periodic_kdtree module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="mbuild.html#module-mbuild.periodic_kdtree">mbuild.periodic_kdtree module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="mbuild.html#module-mbuild.port">mbuild.port module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="mbuild.html#module-mbuild.topology">mbuild.topology module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="mbuild.html#mbuild-topology-module">mbuild.topology module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="mbuild.html#mbuild-trajectory-module">mbuild.trajectory module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="mbuild.html#module-mbuild.treeview">mbuild.treeview module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="mbuild.html#module-mbuild">Module contents</a></li>
@@ -98,19 +98,19 @@
 <li class="toctree-l2"><a class="reference internal" href="mbuild.tools.html#module-mbuild.tools.compute">mbuild.tools.compute module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="mbuild.tools.html#module-mbuild.tools.mask">mbuild.tools.mask module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="mbuild.tools.html#module-mbuild.tools.polymer">mbuild.tools.polymer module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="mbuild.tools.html#mbuild-tools-solvent-module">mbuild.tools.solvent module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="mbuild.tools.html#mbuild-tools-tiled-compound-module">mbuild.tools.tiled_compound module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="mbuild.tools.html#module-mbuild.tools.solvent">mbuild.tools.solvent module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="mbuild.tools.html#module-mbuild.tools.tiled_compound">mbuild.tools.tiled_compound module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="mbuild.tools.html#module-mbuild.tools">Module contents</a></li>
 </ul>
 </li>
 <li class="toctree-l1 current"><a class="current reference internal" href="">mbuild.formats package</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#submodules">Submodules</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#module-mbuild.formats.gromacs">mbuild.formats.gromacs module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#module-mbuild.formats.hoomdxml">mbuild.formats.hoomdxml module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#module-mbuild.formats.lammps">mbuild.formats.lammps module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#module-mbuild.formats.lammps_data">mbuild.formats.lammps_data module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#mbuild-formats-hoomdxml-module">mbuild.formats.hoomdxml module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#mbuild-formats-lammps-module">mbuild.formats.lammps module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#mbuild-formats-lammps-data-module">mbuild.formats.lammps_data module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#module-mbuild.formats.mol2">mbuild.formats.mol2 module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#module-mbuild.formats.xyz">mbuild.formats.xyz module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#mbuild-formats-xyz-module">mbuild.formats.xyz module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#module-mbuild.formats">Module contents</a></li>
 </ul>
 </li>
@@ -162,319 +162,14 @@
 </dd></dl>
 
 </div>
-<div class="section" id="module-mbuild.formats.hoomdxml">
-<span id="mbuild-formats-hoomdxml-module"></span><h2>mbuild.formats.hoomdxml module<a class="headerlink" href="#module-mbuild.formats.hoomdxml" title="Permalink to this headline">¶</a></h2>
-<dl class="function">
-<dt id="mbuild.formats.hoomdxml.load_hoomdxml">
-<tt class="descclassname">mbuild.formats.hoomdxml.</tt><tt class="descname">load_hoomdxml</tt><big>(</big><em>filename</em>, <em>optional_nodes=True</em>, <em>lj_units=None</em><big>)</big><a class="reference internal" href="../_modules/mbuild/formats/hoomdxml.html#load_hoomdxml"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.formats.hoomdxml.load_hoomdxml" title="Permalink to this definition">¶</a></dt>
-<dd><p>Load a HOOMD-blue XML file form disk.</p>
-<p>Note: lj_units need to be normalized by nm, kJ/mol, and amu
-TODO: better way to read optional nodes
-:param filename: Path to xml file.
-:type filename: str</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><strong>traj</strong> &#8211;<p>optional_data (dict): A Dictionary of DataFrames containing optional
-information.</p>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">md.Trajectory</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="function">
-<dt id="mbuild.formats.hoomdxml.save_hoomdxml">
-<tt class="descclassname">mbuild.formats.hoomdxml.</tt><tt class="descname">save_hoomdxml</tt><big>(</big><em>traj</em>, <em>step=-1</em>, <em>optional_nodes=None</em>, <em>filename='mbuild.xml'</em><big>)</big><a class="reference internal" href="../_modules/mbuild/formats/hoomdxml.html#save_hoomdxml"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.formats.hoomdxml.save_hoomdxml" title="Permalink to this definition">¶</a></dt>
-<dd><p>Output a Trajectory as a HOOMD XML file.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>traj</strong> (<em>md.Trajectory</em>) &#8211; The Trajectory to be output.</li>
-<li><strong>filename</strong> (<em>str, optional</em>) &#8211; Path of the output file.</li>
-</ul>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
+<div class="section" id="mbuild-formats-hoomdxml-module">
+<h2>mbuild.formats.hoomdxml module<a class="headerlink" href="#mbuild-formats-hoomdxml-module" title="Permalink to this headline">¶</a></h2>
 </div>
-<div class="section" id="module-mbuild.formats.lammps">
-<span id="mbuild-formats-lammps-module"></span><h2>mbuild.formats.lammps module<a class="headerlink" href="#module-mbuild.formats.lammps" title="Permalink to this headline">¶</a></h2>
-<dl class="class">
-<dt id="mbuild.formats.lammps.LAMMPSTrajectoryFile">
-<em class="property">class </em><tt class="descclassname">mbuild.formats.lammps.</tt><tt class="descname">LAMMPSTrajectoryFile</tt><big>(</big><em>filename</em>, <em>n_atoms=None</em>, <em>mode='r'</em>, <em>force_overwrite=True</em><big>)</big><a class="reference internal" href="../_modules/mbuild/formats/lammps.html#LAMMPSTrajectoryFile"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.formats.lammps.LAMMPSTrajectoryFile" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference external" href="http://docs.python.org/2.7/library/functions.html#object" title="(in Python v2.7)"><tt class="xref py py-class docutils literal"><span class="pre">object</span></tt></a></p>
-<p>Interface for reading and writing to a LAMMPS lammpstrj files.
-This is a file-like object, that both reading or writing depending
-on the <cite>mode</cite> flag. It implements the context manager protocol,
-so you can also use it with the python &#8216;with&#8217; statement.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>filename</strong> (<a class="reference external" href="http://docs.python.org/2.7/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; The filename to open. A path to a file on disk.</li>
-<li><strong>n_atoms</strong> (<a class="reference external" href="http://docs.python.org/2.7/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a>) &#8211; The number of atoms in the system. This is _required_ when mode == &#8216;r&#8217;
-and irrelivant when mode == &#8216;w&#8217;.</li>
-<li><strong>mode</strong> (<em>{&#8216;r&#8217;, &#8216;w&#8217;}</em>) &#8211; The mode in which to open the file, either &#8216;r&#8217; for read or &#8216;w&#8217; for
-write.</li>
-<li><strong>force_overwrite</strong> (<a class="reference external" href="http://docs.python.org/2.7/library/functions.html#bool" title="(in Python v2.7)"><em>bool</em></a>) &#8211; If opened in write mode, and a file by the name of <cite>filename</cite> already
-exists on disk, should we overwrite it?</li>
-</ul>
-</td>
-</tr>
-</tbody>
-</table>
-<dl class="attribute">
-<dt id="mbuild.formats.lammps.LAMMPSTrajectoryFile.__delattr__">
-<tt class="descname">__delattr__</tt><a class="headerlink" href="#mbuild.formats.lammps.LAMMPSTrajectoryFile.__delattr__" title="Permalink to this definition">¶</a></dt>
-<dd><p>x.__delattr__(&#8216;name&#8217;) &lt;==&gt; del x.name</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="mbuild.formats.lammps.LAMMPSTrajectoryFile.__enter__">
-<tt class="descname">__enter__</tt><big>(</big><big>)</big><a class="reference internal" href="../_modules/mbuild/formats/lammps.html#LAMMPSTrajectoryFile.__enter__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.formats.lammps.LAMMPSTrajectoryFile.__enter__" title="Permalink to this definition">¶</a></dt>
-<dd><p>Support the context manager protocol.</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="mbuild.formats.lammps.LAMMPSTrajectoryFile.__exit__">
-<tt class="descname">__exit__</tt><big>(</big><em>*exc_info</em><big>)</big><a class="reference internal" href="../_modules/mbuild/formats/lammps.html#LAMMPSTrajectoryFile.__exit__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.formats.lammps.LAMMPSTrajectoryFile.__exit__" title="Permalink to this definition">¶</a></dt>
-<dd><p>Support the context manager protocol.</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="mbuild.formats.lammps.LAMMPSTrajectoryFile.__format__">
-<tt class="descname">__format__</tt><big>(</big><big>)</big><a class="headerlink" href="#mbuild.formats.lammps.LAMMPSTrajectoryFile.__format__" title="Permalink to this definition">¶</a></dt>
-<dd><p>default object formatter</p>
-</dd></dl>
-
-<dl class="attribute">
-<dt id="mbuild.formats.lammps.LAMMPSTrajectoryFile.__getattribute__">
-<tt class="descname">__getattribute__</tt><a class="headerlink" href="#mbuild.formats.lammps.LAMMPSTrajectoryFile.__getattribute__" title="Permalink to this definition">¶</a></dt>
-<dd><p>x.__getattribute__(&#8216;name&#8217;) &lt;==&gt; x.name</p>
-</dd></dl>
-
-<dl class="attribute">
-<dt id="mbuild.formats.lammps.LAMMPSTrajectoryFile.__hash__">
-<tt class="descname">__hash__</tt><a class="headerlink" href="#mbuild.formats.lammps.LAMMPSTrajectoryFile.__hash__" title="Permalink to this definition">¶</a></dt>
-<dd><p>x.__hash__() &lt;==&gt; hash(x)</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="mbuild.formats.lammps.LAMMPSTrajectoryFile.__len__">
-<tt class="descname">__len__</tt><big>(</big><big>)</big><a class="reference internal" href="../_modules/mbuild/formats/lammps.html#LAMMPSTrajectoryFile.__len__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.formats.lammps.LAMMPSTrajectoryFile.__len__" title="Permalink to this definition">¶</a></dt>
-<dd><p>Number of frames in the file</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="mbuild.formats.lammps.LAMMPSTrajectoryFile.__reduce__">
-<tt class="descname">__reduce__</tt><big>(</big><big>)</big><a class="headerlink" href="#mbuild.formats.lammps.LAMMPSTrajectoryFile.__reduce__" title="Permalink to this definition">¶</a></dt>
-<dd><p>helper for pickle</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="mbuild.formats.lammps.LAMMPSTrajectoryFile.__reduce_ex__">
-<tt class="descname">__reduce_ex__</tt><big>(</big><big>)</big><a class="headerlink" href="#mbuild.formats.lammps.LAMMPSTrajectoryFile.__reduce_ex__" title="Permalink to this definition">¶</a></dt>
-<dd><p>helper for pickle</p>
-</dd></dl>
-
-<dl class="attribute">
-<dt id="mbuild.formats.lammps.LAMMPSTrajectoryFile.__repr__">
-<tt class="descname">__repr__</tt><a class="headerlink" href="#mbuild.formats.lammps.LAMMPSTrajectoryFile.__repr__" title="Permalink to this definition">¶</a></dt>
-<dd><p>x.__repr__() &lt;==&gt; repr(x)</p>
-</dd></dl>
-
-<dl class="attribute">
-<dt id="mbuild.formats.lammps.LAMMPSTrajectoryFile.__setattr__">
-<tt class="descname">__setattr__</tt><a class="headerlink" href="#mbuild.formats.lammps.LAMMPSTrajectoryFile.__setattr__" title="Permalink to this definition">¶</a></dt>
-<dd><p>x.__setattr__(&#8216;name&#8217;, value) &lt;==&gt; x.name = value</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="mbuild.formats.lammps.LAMMPSTrajectoryFile.__sizeof__">
-<tt class="descname">__sizeof__</tt><big>(</big><big>)</big> &rarr; int<a class="headerlink" href="#mbuild.formats.lammps.LAMMPSTrajectoryFile.__sizeof__" title="Permalink to this definition">¶</a></dt>
-<dd><p>size of object in memory, in bytes</p>
-</dd></dl>
-
-<dl class="attribute">
-<dt id="mbuild.formats.lammps.LAMMPSTrajectoryFile.__str__">
-<tt class="descname">__str__</tt><a class="headerlink" href="#mbuild.formats.lammps.LAMMPSTrajectoryFile.__str__" title="Permalink to this definition">¶</a></dt>
-<dd><p>x.__str__() &lt;==&gt; str(x)</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="mbuild.formats.lammps.LAMMPSTrajectoryFile.close">
-<tt class="descname">close</tt><big>(</big><big>)</big><a class="reference internal" href="../_modules/mbuild/formats/lammps.html#LAMMPSTrajectoryFile.close"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.formats.lammps.LAMMPSTrajectoryFile.close" title="Permalink to this definition">¶</a></dt>
-<dd><p>Close the lammpstrj file.</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="mbuild.formats.lammps.LAMMPSTrajectoryFile.read">
-<tt class="descname">read</tt><big>(</big><em>n_frames=None</em>, <em>stride=None</em>, <em>atom_indices=None</em><big>)</big><a class="reference internal" href="../_modules/mbuild/formats/lammps.html#LAMMPSTrajectoryFile.read"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.formats.lammps.LAMMPSTrajectoryFile.read" title="Permalink to this definition">¶</a></dt>
-<dd><p>Read data from a lammpstrj file</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>n_frames</strong> (<em>int, None</em>) &#8211; The number of frames you would like to read from the file.
-If None, all of the remaining frames will be loaded.</li>
-<li><strong>stride</strong> (<em>np.ndarray, optional</em>) &#8211; Read only every stride-th frame.</li>
-<li><strong>atom_indices</strong> (<em>array_like, optional</em>) &#8211; If not none, then read only a subset of the atoms coordinates
-from the file.</li>
-</ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><ul class="simple">
-<li><strong>xyz</strong> (<em>np.ndarray, shape=(n_frames, n_atoms, 3), dtype=np.float32</em>) &#8211;
-The cartesian coordinates, in angstroms</li>
-<li><strong>cell_lengths</strong> (<em>{np.ndarray, None}</em>) &#8211;
-If the file contains unitcell lengths, they will be returned as an
-array of shape=(n_frames, 3). Otherwise, unitcell_angles will be
-None.</li>
-</ul>
-</p>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="method">
-<dt id="mbuild.formats.lammps.LAMMPSTrajectoryFile.seek">
-<tt class="descname">seek</tt><big>(</big><em>offset</em>, <em>whence=0</em><big>)</big><a class="reference internal" href="../_modules/mbuild/formats/lammps.html#LAMMPSTrajectoryFile.seek"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.formats.lammps.LAMMPSTrajectoryFile.seek" title="Permalink to this definition">¶</a></dt>
-<dd><p>Move to a new file position</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>offset</strong> (<a class="reference external" href="http://docs.python.org/2.7/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a>) &#8211; A number of frames.</li>
-<li><strong>whence</strong> (<em>{0, 1, 2}</em>) &#8211; 0: offset from start of file, offset should be &gt;=0.
-1: move relative to the current position, positive or negative
-2: move relative to the end of file, offset should be &lt;= 0.
-Seeking beyond the end of a file is not supported</li>
-</ul>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="method">
-<dt id="mbuild.formats.lammps.LAMMPSTrajectoryFile.tell">
-<tt class="descname">tell</tt><big>(</big><big>)</big><a class="reference internal" href="../_modules/mbuild/formats/lammps.html#LAMMPSTrajectoryFile.tell"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.formats.lammps.LAMMPSTrajectoryFile.tell" title="Permalink to this definition">¶</a></dt>
-<dd><p>Current file position</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><strong>offset</strong> &#8211;
-The current frame in the file.</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">int</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="method">
-<dt id="mbuild.formats.lammps.LAMMPSTrajectoryFile.write">
-<tt class="descname">write</tt><big>(</big><em>xyz</em>, <em>cell_lengths=None</em><big>)</big><a class="reference internal" href="../_modules/mbuild/formats/lammps.html#LAMMPSTrajectoryFile.write"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.formats.lammps.LAMMPSTrajectoryFile.write" title="Permalink to this definition">¶</a></dt>
-<dd><p>Write one or more frames of data to a lammpstrj file</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>xyz</strong> (<em>np.ndarray, shape=(n_frames, n_atoms, 3)</em>) &#8211; The cartesian coordinates of the atoms to write. By convention, the
-lengths should be in units of angstroms.</li>
-<li><strong>cell_lengths</strong> (<em>np.ndarray, shape=(n_frames, 3), dtype=float32, optional</em>) &#8211; The length of the periodic box in each frame, in each direction,
-<cite>a</cite>, <cite>b</cite>, <cite>c</cite>. By convention the lengths should be in units
-of angstroms.</li>
-</ul>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-</dd></dl>
-
-<dl class="function">
-<dt id="mbuild.formats.lammps.load_lammpstrj">
-<tt class="descclassname">mbuild.formats.lammps.</tt><tt class="descname">load_lammpstrj</tt><big>(</big><em>filename</em>, <em>top=None</em>, <em>stride=None</em>, <em>atom_indices=None</em>, <em>frame=None</em>, <em>unit_set='real'</em><big>)</big><a class="reference internal" href="../_modules/mbuild/formats/lammps.html#load_lammpstrj"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.formats.lammps.load_lammpstrj" title="Permalink to this definition">¶</a></dt>
-<dd><p>Load a LAMMPS trajectory file.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>filename</strong> (<a class="reference external" href="http://docs.python.org/2.7/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; String filename of LAMMPS trajectory file.</li>
-<li><strong>top</strong> (<em>{str, Trajectory, Topology}</em>) &#8211; The lammpstrj format does not contain topology information. Pass in
-either the path to a pdb file, a trajectory, or a topology to supply
-this information.</li>
-<li><strong>stride</strong> (<em>int, default=None</em>) &#8211; Only read every stride-th frame</li>
-<li><strong>atom_indices</strong> (<em>array_like, optional</em>) &#8211; If not none, then read only a subset of the atoms coordinates from the
-file.</li>
-<li><strong>frame</strong> (<em>int, optional</em>) &#8211; Use this option to load only a single frame from a trajectory on disk.
-If frame is None, the default, the entire trajectory will be loaded.
-If supplied, <tt class="docutils literal"><span class="pre">stride</span></tt> will be ignored.</li>
-<li><strong>unit_set</strong> (<em>str, optional</em>) &#8211; The LAMMPS unit set that the simulation was performed in. See
-<a class="reference external" href="http://lammps.sandia.gov/doc/units.html">http://lammps.sandia.gov/doc/units.html</a> for options. Currently supported
-unit sets: &#8216;real&#8217;.</li>
-</ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>trajectory</strong> &#8211;
-The resulting trajectory, as an md.Trajectory object.</p>
-</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">md.Trajectory</p>
-</td>
-</tr>
-</tbody>
-</table>
-<div class="admonition seealso">
-<p class="first admonition-title">See also</p>
-<dl class="last docutils">
-<dt><tt class="xref py py-func docutils literal"><span class="pre">mdtraj.LAMMPSTrajectoryFile()</span></tt></dt>
-<dd>Low level interface to lammpstrj files</dd>
-</dl>
+<div class="section" id="mbuild-formats-lammps-module">
+<h2>mbuild.formats.lammps module<a class="headerlink" href="#mbuild-formats-lammps-module" title="Permalink to this headline">¶</a></h2>
 </div>
-</dd></dl>
-
-</div>
-<div class="section" id="module-mbuild.formats.lammps_data">
-<span id="mbuild-formats-lammps-data-module"></span><h2>mbuild.formats.lammps_data module<a class="headerlink" href="#module-mbuild.formats.lammps_data" title="Permalink to this headline">¶</a></h2>
-<dl class="function">
-<dt id="mbuild.formats.lammps_data.save_lammps_data">
-<tt class="descclassname">mbuild.formats.lammps_data.</tt><tt class="descname">save_lammps_data</tt><big>(</big><em>traj</em>, <em>step=-1</em>, <em>filename='data.mbuild'</em>, <em>unit_set='real'</em><big>)</big><a class="reference internal" href="../_modules/mbuild/formats/lammps_data.html#save_lammps_data"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.formats.lammps_data.save_lammps_data" title="Permalink to this definition">¶</a></dt>
-<dd><p>Output a Trajectory as a LAMMPS data file.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>traj</strong> (<em>Trajectory</em>) &#8211; The Trajectory to be output.</li>
-<li><strong>step</strong> (<em>int, optional</em>) &#8211; The frame in traj to save. Default is last frame.</li>
-<li><strong>filename</strong> (<em>str, optional</em>) &#8211; Path of the output file.</li>
-<li><strong>unit_set</strong> (<em>str, optional</em>) &#8211; The LAMMPS unit set to write the data file in.</li>
-</ul>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
+<div class="section" id="mbuild-formats-lammps-data-module">
+<h2>mbuild.formats.lammps_data module<a class="headerlink" href="#mbuild-formats-lammps-data-module" title="Permalink to this headline">¶</a></h2>
 </div>
 <div class="section" id="module-mbuild.formats.mol2">
 <span id="mbuild-formats-mol2-module"></span><h2>mbuild.formats.mol2 module<a class="headerlink" href="#module-mbuild.formats.mol2" title="Permalink to this headline">¶</a></h2>
@@ -497,13 +192,8 @@ The resulting trajectory, as an md.Trajectory object.</p>
 </dd></dl>
 
 </div>
-<div class="section" id="module-mbuild.formats.xyz">
-<span id="mbuild-formats-xyz-module"></span><h2>mbuild.formats.xyz module<a class="headerlink" href="#module-mbuild.formats.xyz" title="Permalink to this headline">¶</a></h2>
-<dl class="function">
-<dt id="mbuild.formats.xyz.save_xyz">
-<tt class="descclassname">mbuild.formats.xyz.</tt><tt class="descname">save_xyz</tt><big>(</big><em>traj</em>, <em>step=-1</em>, <em>filename='mbuild.xyz'</em><big>)</big><a class="reference internal" href="../_modules/mbuild/formats/xyz.html#save_xyz"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.formats.xyz.save_xyz" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
+<div class="section" id="mbuild-formats-xyz-module">
+<h2>mbuild.formats.xyz module<a class="headerlink" href="#mbuild-formats-xyz-module" title="Permalink to this headline">¶</a></h2>
 </div>
 <div class="section" id="module-mbuild.formats">
 <span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-mbuild.formats" title="Permalink to this headline">¶</a></h2>
@@ -546,7 +236,7 @@ The resulting trajectory, as an md.Trajectory object.</p>
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'../',
-            VERSION:'0.4.1beta',
+            VERSION:'0.4.2beta',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true

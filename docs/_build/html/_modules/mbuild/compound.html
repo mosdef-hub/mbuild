@@ -7,7 +7,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>mbuild.compound &mdash; mbuild 0.4.1beta documentation</title>
+  <title>mbuild.compound &mdash; mbuild 0.4.2beta documentation</title>
   
 
   
@@ -28,7 +28,7 @@
   
 
   
-    <link rel="top" title="mbuild 0.4.1beta documentation" href="../../index.html"/>
+    <link rel="top" title="mbuild 0.4.2beta documentation" href="../../index.html"/>
         <link rel="up" title="Module code" href="../index.html"/> 
 
   
@@ -87,8 +87,8 @@
 <li class="toctree-l2"><a class="reference internal" href="../../apidoc/mbuild.html#module-mbuild.part_mixin">mbuild.part_mixin module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../apidoc/mbuild.html#module-mbuild.periodic_kdtree">mbuild.periodic_kdtree module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../apidoc/mbuild.html#module-mbuild.port">mbuild.port module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../apidoc/mbuild.html#module-mbuild.topology">mbuild.topology module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../apidoc/mbuild.html#module-mbuild.trajectory">mbuild.trajectory module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../apidoc/mbuild.html#mbuild-topology-module">mbuild.topology module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../apidoc/mbuild.html#mbuild-trajectory-module">mbuild.trajectory module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../apidoc/mbuild.html#module-mbuild.treeview">mbuild.treeview module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../apidoc/mbuild.html#module-mbuild">Module contents</a></li>
 </ul>
@@ -106,11 +106,11 @@
 <li class="toctree-l1"><a class="reference internal" href="../../apidoc/mbuild.formats.html">mbuild.formats package</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="../../apidoc/mbuild.formats.html#submodules">Submodules</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../apidoc/mbuild.formats.html#module-mbuild.formats.gromacs">mbuild.formats.gromacs module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../apidoc/mbuild.formats.html#module-mbuild.formats.hoomdxml">mbuild.formats.hoomdxml module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../apidoc/mbuild.formats.html#module-mbuild.formats.lammps">mbuild.formats.lammps module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../apidoc/mbuild.formats.html#module-mbuild.formats.lammps_data">mbuild.formats.lammps_data module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../apidoc/mbuild.formats.html#mbuild-formats-hoomdxml-module">mbuild.formats.hoomdxml module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../apidoc/mbuild.formats.html#mbuild-formats-lammps-module">mbuild.formats.lammps module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../apidoc/mbuild.formats.html#mbuild-formats-lammps-data-module">mbuild.formats.lammps_data module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../apidoc/mbuild.formats.html#module-mbuild.formats.mol2">mbuild.formats.mol2 module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../apidoc/mbuild.formats.html#module-mbuild.formats.xyz">mbuild.formats.xyz module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../apidoc/mbuild.formats.html#mbuild-formats-xyz-module">mbuild.formats.xyz module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../apidoc/mbuild.formats.html#module-mbuild.formats">Module contents</a></li>
 </ul>
 </li>
@@ -164,22 +164,25 @@
 <span class="kn">from</span> <span class="nn">orderedset</span> <span class="kn">import</span> <span class="n">OrderedSet</span>
 
 
-<div class="viewcode-block" id="Compound"><a class="viewcode-back" href="../../apidoc/mbuild.html#mbuild.compound.Compound">[docs]</a><span class="k">class</span> <span class="nc">Compound</span><span class="p">(</span><span class="n">MBase</span><span class="p">,</span> <span class="n">PartMixin</span><span class="p">,</span> <span class="n">HasPartsMixin</span><span class="p">):</span>
+<div class="viewcode-block" id="Compound"><a class="viewcode-back" href="../../mbuild.html#mbuild.compound.Compound">[docs]</a><span class="k">class</span> <span class="nc">Compound</span><span class="p">(</span><span class="n">MBase</span><span class="p">,</span> <span class="n">PartMixin</span><span class="p">,</span> <span class="n">HasPartsMixin</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;A building block in the mBuild hierarchy.</span>
 
-<span class="sd">    Compound is the superclass of all composite building blocks in the mBuild hierarchy,</span>
-<span class="sd">    that is, all composite building blocks must inherit from compound, either directly</span>
-<span class="sd">    or indirectly. The design of Compound follows the Composite design pattern ( Gamma,</span>
-<span class="sd">    Erich; Richard Helm; Ralph Johnson; John M. Vlissides (1995). Design Patterns:</span>
-<span class="sd">    Elements of Reusable Object-Oriented Software. Addison-Wesley. p. 395. ISBN</span>
-<span class="sd">    0-201-63361-2.), with Compound being the composite, and Atom playing the role of primitive (leaf) part.</span>
+<span class="sd">    Compound is the superclass of all composite building blocks in the mBuild</span>
+<span class="sd">    hierarchy. That is, all composite building blocks must inherit from</span>
+<span class="sd">    compound, either directly or indirectly. The design of Compound follows the</span>
+<span class="sd">    Composite design pattern (Gamma, Erich; Richard Helm; Ralph Johnson; John</span>
+<span class="sd">    M. Vlissides (1995). Design Patterns: Elements of Reusable Object-Oriented</span>
+<span class="sd">    Software. Addison-Wesley. p. 395. ISBN 0-201-63361-2.), with Compound being</span>
+<span class="sd">    the composite, and Atom playing the role of the primitive (leaf) part.</span>
 
-<span class="sd">    Compound maintains a list of parts (contained Compounds, Atoms, Bonds, etc., that inherit</span>
-<span class="sd">    from PartMixin), and provides a means to tag the parts with labels, so that the parts can</span>
-<span class="sd">    easily looked up later. Labels may also point to objects outside the Compound&#39;s containment hierarchy.</span>
-<span class="sd">    Compound has built-in support for copying and deepcopying Compound hierarchies, enumerating atoms</span>
-<span class="sd">    or bonds in the hierarchy, proximity based searches, visualization, I/O operations, and a number</span>
-<span class="sd">    of other convenience methods.</span>
+<span class="sd">    Compound maintains a list of parts (contained Compounds, Atoms, Bonds,</span>
+<span class="sd">    etc., that inherit from PartMixin), and provides a means to tag the parts</span>
+<span class="sd">    with labels, so that the parts can be easily looked up later. Labels may</span>
+<span class="sd">    also point to objects outside the Compound&#39;s containment hierarchy.</span>
+<span class="sd">    Compound has built-in support for copying and deepcopying Compound</span>
+<span class="sd">    hierarchies, enumerating atoms or bonds in the hierarchy, proximity based</span>
+<span class="sd">    searches, visualization, I/O operations, and a number of other convenience</span>
+<span class="sd">    methods.</span>
 
 <span class="sd">    Attributes:</span>
 <span class="sd">        kind (str): The type of Compound.</span>
@@ -204,7 +207,6 @@
 <span class="sd">                Compound in the x, y and z directions.</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
-
         <span class="nb">super</span><span class="p">(</span><span class="n">Compound</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">()</span>
 
         <span class="c"># Set kind to classname if not specified.</span>
@@ -219,77 +221,69 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">periodicity</span> <span class="o">=</span> <span class="n">periodicity</span>
 
     <span class="nd">@property</span>
-<div class="viewcode-block" id="Compound.atoms"><a class="viewcode-back" href="../../apidoc/mbuild.html#mbuild.compound.Compound.atoms">[docs]</a>    <span class="k">def</span> <span class="nf">atoms</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="Compound.atoms"><a class="viewcode-back" href="../../mbuild.html#mbuild.compound.Compound.atoms">[docs]</a>    <span class="k">def</span> <span class="nf">atoms</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;A list of all Atoms in the Compound and sub-Compounds. &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">atom_list_by_kind</span><span class="p">(</span><span class="n">excludeG</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
 </div>
-<div class="viewcode-block" id="Compound.yield_atoms"><a class="viewcode-back" href="../../apidoc/mbuild.html#mbuild.compound.Compound.yield_atoms">[docs]</a>    <span class="k">def</span> <span class="nf">yield_atoms</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="Compound.yield_atoms"><a class="viewcode-back" href="../../mbuild.html#mbuild.compound.Compound.yield_atoms">[docs]</a>    <span class="k">def</span> <span class="nf">yield_atoms</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_yield_parts</span><span class="p">(</span><span class="n">Atom</span><span class="p">)</span>
 </div>
     <span class="nd">@property</span>
-<div class="viewcode-block" id="Compound.n_atoms"><a class="viewcode-back" href="../../apidoc/mbuild.html#mbuild.compound.Compound.n_atoms">[docs]</a>    <span class="k">def</span> <span class="nf">n_atoms</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="nb">sum</span><span class="p">([</span><span class="mi">1</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">yield_atoms</span><span class="p">()])</span>
+<div class="viewcode-block" id="Compound.n_atoms"><a class="viewcode-back" href="../../mbuild.html#mbuild.compound.Compound.n_atoms">[docs]</a>    <span class="k">def</span> <span class="nf">n_atoms</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">atoms</span><span class="p">)</span>
 </div>
-<div class="viewcode-block" id="Compound.atom_list_by_kind"><a class="viewcode-back" href="../../apidoc/mbuild.html#mbuild.compound.Compound.atom_list_by_kind">[docs]</a>    <span class="k">def</span> <span class="nf">atom_list_by_kind</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">kind</span><span class="o">=</span><span class="s">&#39;*&#39;</span><span class="p">,</span> <span class="n">excludeG</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">with_id_to_idx_mapping</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+<div class="viewcode-block" id="Compound.atom_list_by_kind"><a class="viewcode-back" href="../../mbuild.html#mbuild.compound.Compound.atom_list_by_kind">[docs]</a>    <span class="k">def</span> <span class="nf">atom_list_by_kind</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">kind</span><span class="o">=</span><span class="s">&#39;*&#39;</span><span class="p">,</span> <span class="n">excludeG</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return a list of Atoms filtered by their kind.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            kind (str): Return only atoms of this type. &#39;*&#39; indicates all.</span>
+<span class="sd">            excludeG (bool): Exclude Port particles of kind &#39;G&#39;.</span>
+<span class="sd">        Returns:</span>
+<span class="sd">            atom_list (list): A list of Atoms.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">atom_list</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="n">id_to_idx</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
-        <span class="n">idx</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="k">for</span> <span class="n">atom</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">yield_atoms</span><span class="p">():</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">excludeG</span> <span class="ow">and</span> <span class="n">atom</span><span class="o">.</span><span class="n">kind</span> <span class="o">==</span> <span class="s">&quot;G&quot;</span><span class="p">):</span>
                 <span class="k">if</span> <span class="n">kind</span> <span class="o">==</span> <span class="s">&#39;*&#39;</span><span class="p">:</span>
                     <span class="n">atom_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">atom</span><span class="p">)</span>
-                    <span class="n">id_to_idx</span><span class="p">[</span><span class="nb">id</span><span class="p">(</span><span class="n">atom</span><span class="p">)]</span> <span class="o">=</span> <span class="n">idx</span>
-                    <span class="n">idx</span> <span class="o">+=</span> <span class="mi">1</span>
                 <span class="k">elif</span> <span class="n">atom</span><span class="o">.</span><span class="n">kind</span> <span class="o">==</span> <span class="n">kind</span><span class="p">:</span>
                     <span class="n">atom_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">atom</span><span class="p">)</span>
-                    <span class="n">id_to_idx</span><span class="p">[</span><span class="nb">id</span><span class="p">(</span><span class="n">atom</span><span class="p">)]</span> <span class="o">=</span> <span class="n">idx</span>
-                    <span class="n">idx</span> <span class="o">+=</span> <span class="mi">1</span>
-
-        <span class="k">if</span> <span class="n">with_id_to_idx_mapping</span><span class="p">:</span>
-            <span class="k">return</span> <span class="n">atom_list</span><span class="p">,</span> <span class="n">id_to_idx</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">atom_list</span>
 </div>
     <span class="nd">@property</span>
-<div class="viewcode-block" id="Compound.bonds"><a class="viewcode-back" href="../../apidoc/mbuild.html#mbuild.compound.Compound.bonds">[docs]</a>    <span class="k">def</span> <span class="nf">bonds</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="Compound.bonds"><a class="viewcode-back" href="../../mbuild.html#mbuild.compound.Compound.bonds">[docs]</a>    <span class="k">def</span> <span class="nf">bonds</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;A list of all Bonds in the Compound and sub-Compounds. &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">bond_list_by_kind</span><span class="p">()</span>
 </div>
-<div class="viewcode-block" id="Compound.yield_bonds"><a class="viewcode-back" href="../../apidoc/mbuild.html#mbuild.compound.Compound.yield_bonds">[docs]</a>    <span class="k">def</span> <span class="nf">yield_bonds</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="Compound.yield_bonds"><a class="viewcode-back" href="../../mbuild.html#mbuild.compound.Compound.yield_bonds">[docs]</a>    <span class="k">def</span> <span class="nf">yield_bonds</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_yield_parts</span><span class="p">(</span><span class="n">Bond</span><span class="p">)</span>
 </div>
     <span class="nd">@property</span>
-<div class="viewcode-block" id="Compound.n_bonds"><a class="viewcode-back" href="../../apidoc/mbuild.html#mbuild.compound.Compound.n_bonds">[docs]</a>    <span class="k">def</span> <span class="nf">n_bonds</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="nb">sum</span><span class="p">([</span><span class="mi">1</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">yield_bonds</span><span class="p">()])</span>
+<div class="viewcode-block" id="Compound.n_bonds"><a class="viewcode-back" href="../../mbuild.html#mbuild.compound.Compound.n_bonds">[docs]</a>    <span class="k">def</span> <span class="nf">n_bonds</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bonds</span><span class="p">)</span>
 </div>
-<div class="viewcode-block" id="Compound.bond_list_by_kind"><a class="viewcode-back" href="../../apidoc/mbuild.html#mbuild.compound.Compound.bond_list_by_kind">[docs]</a>    <span class="k">def</span> <span class="nf">bond_list_by_kind</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">kind</span><span class="o">=</span><span class="s">&#39;*&#39;</span><span class="p">,</span> <span class="n">with_id_to_idx_mapping</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+<div class="viewcode-block" id="Compound.bond_list_by_kind"><a class="viewcode-back" href="../../mbuild.html#mbuild.compound.Compound.bond_list_by_kind">[docs]</a>    <span class="k">def</span> <span class="nf">bond_list_by_kind</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">kind</span><span class="o">=</span><span class="s">&#39;*&#39;</span><span class="p">):</span>
         <span class="n">bond_list</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="n">id_to_idx</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
-
-        <span class="n">idx</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="k">for</span> <span class="n">bond</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">yield_bonds</span><span class="p">():</span>
             <span class="k">if</span> <span class="n">kind</span> <span class="o">==</span> <span class="s">&#39;*&#39;</span><span class="p">:</span>
                 <span class="n">bond_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">bond</span><span class="p">)</span>
-                <span class="n">id_to_idx</span><span class="p">[</span><span class="nb">id</span><span class="p">(</span><span class="n">bond</span><span class="p">)]</span> <span class="o">=</span> <span class="n">idx</span>
-                <span class="n">idx</span> <span class="o">+=</span> <span class="mi">1</span>
-
             <span class="k">elif</span> <span class="n">bond</span><span class="o">.</span><span class="n">kind</span> <span class="o">==</span> <span class="n">kind</span><span class="p">:</span>
                 <span class="n">bond_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">bond</span><span class="p">)</span>
-                <span class="n">id_to_idx</span><span class="p">[</span><span class="nb">id</span><span class="p">(</span><span class="n">bond</span><span class="p">)]</span> <span class="o">=</span> <span class="n">idx</span>
-                <span class="n">idx</span> <span class="o">+=</span> <span class="mi">1</span>
-
-        <span class="k">if</span> <span class="n">with_id_to_idx_mapping</span><span class="p">:</span>
-            <span class="k">return</span> <span class="n">bond_list</span><span class="p">,</span> <span class="n">id_to_idx</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">bond_list</span>
 </div>
-<div class="viewcode-block" id="Compound.referenced_ports"><a class="viewcode-back" href="../../apidoc/mbuild.html#mbuild.compound.Compound.referenced_ports">[docs]</a>    <span class="k">def</span> <span class="nf">referenced_ports</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="kn">from</span> <span class="nn">mbuild.port</span> <span class="kn">import</span> <span class="n">Port</span>
+<div class="viewcode-block" id="Compound.referenced_ports"><a class="viewcode-back" href="../../mbuild.html#mbuild.compound.Compound.referenced_ports">[docs]</a>    <span class="k">def</span> <span class="nf">referenced_ports</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Find all Ports referenced by this Compound.</span>
 
+<span class="sd">        Returns:</span>
+<span class="sd">            A list of Ports currently referenced by this Compound.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="kn">from</span> <span class="nn">mbuild.port</span> <span class="kn">import</span> <span class="n">Port</span>
         <span class="k">return</span> <span class="p">[</span><span class="n">port</span> <span class="k">for</span> <span class="n">port</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">labels</span><span class="o">.</span><span class="n">values</span><span class="p">()</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">port</span><span class="p">,</span> <span class="n">Port</span><span class="p">)]</span>
 </div>
-<div class="viewcode-block" id="Compound.post_remove"><a class="viewcode-back" href="../../apidoc/mbuild.html#mbuild.compound.Compound.post_remove">[docs]</a>    <span class="k">def</span> <span class="nf">post_remove</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">removed_part</span><span class="p">):</span>
-        <span class="nb">super</span><span class="p">(</span><span class="n">Compound</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">post_remove</span><span class="p">(</span><span class="n">removed_part</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">_remove</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">removed_part</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">Compound</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">_remove</span><span class="p">(</span><span class="n">removed_part</span><span class="p">)</span>
 
         <span class="c"># If removing an atom, make sure to remove the bonds it&#39;s part of.</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">removed_part</span><span class="p">,</span> <span class="n">Atom</span><span class="p">):</span>
@@ -298,8 +292,8 @@
                     <span class="n">bond</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">bond</span><span class="p">)</span>
 
     <span class="c"># Interface to Trajectory for reading/writing.</span>
-    <span class="c"># --------------------------------------------</span></div>
-<div class="viewcode-block" id="Compound.append_from_file"><a class="viewcode-back" href="../../apidoc/mbuild.html#mbuild.compound.Compound.append_from_file">[docs]</a>    <span class="k">def</span> <span class="nf">append_from_file</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">relative_to_module</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">frame</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+    <span class="c"># --------------------------------------------</span>
+<div class="viewcode-block" id="Compound.append_from_file"><a class="viewcode-back" href="../../mbuild.html#mbuild.compound.Compound.append_from_file">[docs]</a>    <span class="k">def</span> <span class="nf">append_from_file</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">relative_to_module</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">frame</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Append to Compound with information from a Trajectory file. &quot;&quot;&quot;</span>
         <span class="kn">from</span> <span class="nn">mbuild.trajectory</span> <span class="kn">import</span> <span class="n">Trajectory</span>
 
@@ -307,7 +301,7 @@
 
         <span class="bp">self</span><span class="o">.</span><span class="n">append_from_trajectory</span><span class="p">(</span><span class="n">traj</span><span class="p">,</span> <span class="n">frame</span><span class="o">=</span><span class="n">frame</span><span class="p">)</span>
 </div>
-<div class="viewcode-block" id="Compound.update_from_file"><a class="viewcode-back" href="../../apidoc/mbuild.html#mbuild.compound.Compound.update_from_file">[docs]</a>    <span class="k">def</span> <span class="nf">update_from_file</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">relative_to_module</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">frame</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+<div class="viewcode-block" id="Compound.update_from_file"><a class="viewcode-back" href="../../mbuild.html#mbuild.compound.Compound.update_from_file">[docs]</a>    <span class="k">def</span> <span class="nf">update_from_file</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">relative_to_module</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">frame</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Update Compound with information from a Trajectory file. &quot;&quot;&quot;</span>
         <span class="kn">from</span> <span class="nn">mbuild.trajectory</span> <span class="kn">import</span> <span class="n">Trajectory</span>
 
@@ -315,29 +309,29 @@
 
         <span class="bp">self</span><span class="o">.</span><span class="n">update_from_trajectory</span><span class="p">(</span><span class="n">traj</span><span class="p">,</span> <span class="n">frame</span><span class="o">=</span><span class="n">frame</span><span class="p">)</span>
 </div>
-<div class="viewcode-block" id="Compound.append_from_trajectory"><a class="viewcode-back" href="../../apidoc/mbuild.html#mbuild.compound.Compound.append_from_trajectory">[docs]</a>    <span class="k">def</span> <span class="nf">append_from_trajectory</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">traj</span><span class="p">,</span> <span class="n">frame</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+<div class="viewcode-block" id="Compound.append_from_trajectory"><a class="viewcode-back" href="../../mbuild.html#mbuild.compound.Compound.append_from_trajectory">[docs]</a>    <span class="k">def</span> <span class="nf">append_from_trajectory</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">traj</span><span class="p">,</span> <span class="n">frame</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Append the Trajectory&#39;s topology (atoms, bonds). &quot;&quot;&quot;</span>
         <span class="n">traj</span><span class="o">.</span><span class="n">to_compound</span><span class="p">(</span><span class="n">part</span><span class="o">=</span><span class="bp">self</span><span class="p">,</span> <span class="n">frame</span><span class="o">=</span><span class="n">frame</span><span class="p">)</span>
 </div>
-<div class="viewcode-block" id="Compound.update_from_trajectory"><a class="viewcode-back" href="../../apidoc/mbuild.html#mbuild.compound.Compound.update_from_trajectory">[docs]</a>    <span class="k">def</span> <span class="nf">update_from_trajectory</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">traj</span><span class="p">,</span> <span class="n">frame</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+<div class="viewcode-block" id="Compound.update_from_trajectory"><a class="viewcode-back" href="../../mbuild.html#mbuild.compound.Compound.update_from_trajectory">[docs]</a>    <span class="k">def</span> <span class="nf">update_from_trajectory</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">traj</span><span class="p">,</span> <span class="n">frame</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Update the Compound with the Trajectory&#39;s topology. &quot;&quot;&quot;</span>
         <span class="n">traj</span><span class="o">.</span><span class="n">update_compound</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">frame</span><span class="o">=</span><span class="n">frame</span><span class="p">)</span>
 </div>
-<div class="viewcode-block" id="Compound.save"><a class="viewcode-back" href="../../apidoc/mbuild.html#mbuild.compound.Compound.save">[docs]</a>    <span class="k">def</span> <span class="nf">save</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<div class="viewcode-block" id="Compound.save"><a class="viewcode-back" href="../../mbuild.html#mbuild.compound.Compound.save">[docs]</a>    <span class="k">def</span> <span class="nf">save</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Save the Compound to a file.</span>
 
 <span class="sd">        This creates an intermediate Trajectory object.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">to_trajectory</span><span class="p">()</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
 </div>
-<div class="viewcode-block" id="Compound.to_trajectory"><a class="viewcode-back" href="../../apidoc/mbuild.html#mbuild.compound.Compound.to_trajectory">[docs]</a>    <span class="k">def</span> <span class="nf">to_trajectory</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">show_ports</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+<div class="viewcode-block" id="Compound.to_trajectory"><a class="viewcode-back" href="../../mbuild.html#mbuild.compound.Compound.to_trajectory">[docs]</a>    <span class="k">def</span> <span class="nf">to_trajectory</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">show_ports</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Convert the Compound to a Trajectory. &quot;&quot;&quot;</span>
         <span class="kn">from</span> <span class="nn">mbuild.trajectory</span> <span class="kn">import</span> <span class="n">Trajectory</span>
 
         <span class="k">return</span> <span class="n">Trajectory</span><span class="o">.</span><span class="n">from_compound</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">show_ports</span><span class="p">)</span>
 </div>
     <span class="nd">@classmethod</span>
-<div class="viewcode-block" id="Compound.load"><a class="viewcode-back" href="../../apidoc/mbuild.html#mbuild.compound.Compound.load">[docs]</a>    <span class="k">def</span> <span class="nf">load</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">relative_to_module</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">frame</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+<div class="viewcode-block" id="Compound.load"><a class="viewcode-back" href="../../mbuild.html#mbuild.compound.Compound.load">[docs]</a>    <span class="k">def</span> <span class="nf">load</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">relative_to_module</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">frame</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
         <span class="kn">from</span> <span class="nn">mbuild.trajectory</span> <span class="kn">import</span> <span class="n">Trajectory</span>
 
         <span class="n">traj</span> <span class="o">=</span> <span class="n">Trajectory</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">relative_to_module</span><span class="o">=</span><span class="n">relative_to_module</span><span class="p">)</span>
@@ -345,13 +339,13 @@
 
     <span class="c"># Convenience functions</span>
     <span class="c"># ---------------------</span></div>
-<div class="viewcode-block" id="Compound.visualize"><a class="viewcode-back" href="../../apidoc/mbuild.html#mbuild.compound.Compound.visualize">[docs]</a>    <span class="k">def</span> <span class="nf">visualize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">show_ports</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+<div class="viewcode-block" id="Compound.visualize"><a class="viewcode-back" href="../../mbuild.html#mbuild.compound.Compound.visualize">[docs]</a>    <span class="k">def</span> <span class="nf">visualize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">show_ports</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Visualize the Compound using VMD.</span>
 
 <span class="sd">        Assumes you have VMD installed and can call it from the command line via</span>
 <span class="sd">        &#39;vmd&#39;.</span>
 
-<span class="sd">        TODO: Make more useful/robust. Look into pizza.py&#39;s vmd.py.</span>
+<span class="sd">        TODO: Look into pizza.py&#39;s vmd.py. See issue #32.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">filename</span> <span class="o">=</span> <span class="s">&#39;visualize_{}.pdb&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__class__</span><span class="o">.</span><span class="n">__name__</span><span class="p">)</span>
         <span class="n">traj</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">to_trajectory</span><span class="p">(</span><span class="n">show_ports</span><span class="p">)</span>
@@ -364,21 +358,22 @@
             <span class="k">print</span><span class="p">(</span><span class="s">&quot;Visualization with VMD failed. Make sure you it is installed&quot;</span>
                   <span class="s">&quot;correctly and launchable from the command line via &#39;vmd&#39;.&quot;</span><span class="p">)</span>
 </div>
-<div class="viewcode-block" id="Compound.min_periodic_distance"><a class="viewcode-back" href="../../apidoc/mbuild.html#mbuild.compound.Compound.min_periodic_distance">[docs]</a>    <span class="k">def</span> <span class="nf">min_periodic_distance</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x0</span><span class="p">,</span> <span class="n">x1</span><span class="p">):</span>
+<div class="viewcode-block" id="Compound.min_periodic_distance"><a class="viewcode-back" href="../../mbuild.html#mbuild.compound.Compound.min_periodic_distance">[docs]</a>    <span class="k">def</span> <span class="nf">min_periodic_distance</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x0</span><span class="p">,</span> <span class="n">x1</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Vectorized distance calculation considering minimum image. &quot;&quot;&quot;</span>
         <span class="n">d</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">x0</span> <span class="o">-</span> <span class="n">x1</span><span class="p">)</span>
         <span class="n">d</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">d</span> <span class="o">&gt;</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">periodicity</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">periodicity</span> <span class="o">-</span> <span class="n">d</span><span class="p">,</span> <span class="n">d</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">((</span><span class="n">d</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">))</span>
 </div>
-<div class="viewcode-block" id="Compound.center_of_mass"><a class="viewcode-back" href="../../apidoc/mbuild.html#mbuild.compound.Compound.center_of_mass">[docs]</a>    <span class="k">def</span> <span class="nf">center_of_mass</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="nd">@property</span>
+<div class="viewcode-block" id="Compound.center"><a class="viewcode-back" href="../../mbuild.html#mbuild.compound.Compound.center">[docs]</a>    <span class="k">def</span> <span class="nf">center</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="nb">sum</span><span class="p">(</span><span class="n">atom</span><span class="o">.</span><span class="n">pos</span> <span class="k">for</span> <span class="n">atom</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">yield_atoms</span><span class="p">())</span> <span class="o">/</span> <span class="nb">len</span><span class="p">([</span><span class="n">atom</span> <span class="k">for</span> <span class="n">atom</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">yield_atoms</span><span class="p">()])</span>
 </div>
-<div class="viewcode-block" id="Compound.boundingbox"><a class="viewcode-back" href="../../apidoc/mbuild.html#mbuild.compound.Compound.boundingbox">[docs]</a>    <span class="k">def</span> <span class="nf">boundingbox</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">excludeG</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+<div class="viewcode-block" id="Compound.boundingbox"><a class="viewcode-back" href="../../mbuild.html#mbuild.compound.Compound.boundingbox">[docs]</a>    <span class="k">def</span> <span class="nf">boundingbox</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">excludeG</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Compute the bounding box of the compound.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            excludeG (bool): Exclude Atoms of kind &#39;G&#39; (typically reserved for</span>
-<span class="sd">                             Ports).</span>
+<span class="sd">                Ports).</span>
 <span class="sd">        Returns:</span>
 <span class="sd">            Box: Simulation box initialzied with min and max coordinates.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -410,22 +405,22 @@
 
         <span class="k">return</span> <span class="n">Box</span><span class="p">(</span><span class="n">mins</span><span class="o">=</span><span class="n">min_coords</span><span class="p">,</span> <span class="n">maxs</span><span class="o">=</span><span class="n">max_coords</span><span class="p">)</span>
 </div>
-<div class="viewcode-block" id="Compound.atoms_in_range"><a class="viewcode-back" href="../../apidoc/mbuild.html#mbuild.compound.Compound.atoms_in_range">[docs]</a>    <span class="k">def</span> <span class="nf">atoms_in_range</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">point</span><span class="p">,</span> <span class="n">radius</span><span class="p">,</span> <span class="n">max_items</span><span class="o">=</span><span class="mi">10</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Find all Atoms within a radius of a point.</span>
+<div class="viewcode-block" id="Compound.atoms_in_range"><a class="viewcode-back" href="../../mbuild.html#mbuild.compound.Compound.atoms_in_range">[docs]</a>    <span class="k">def</span> <span class="nf">atoms_in_range</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">point</span><span class="p">,</span> <span class="n">radius</span><span class="p">,</span> <span class="n">max_items</span><span class="o">=</span><span class="mi">10</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return the indices of Atoms within a radius of a point.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            point:</span>
-<span class="sd">            radius:</span>
-<span class="sd">            max_items:</span>
+<span class="sd">            point (list): The reference point in cartesian coordinates.</span>
+<span class="sd">            radius (float): Find Atoms within this radius.</span>
+<span class="sd">            max_items (int): Maximum number of Atoms to find.</span>
 <span class="sd">        Returns:</span>
-<span class="sd">            list of Atoms within range</span>
+<span class="sd">            List of Atoms within specified range.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">atoms</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">atom_list_by_kind</span><span class="p">(</span><span class="n">excludeG</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
         <span class="n">traj</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">to_trajectory</span><span class="p">()</span>
         <span class="n">idxs</span> <span class="o">=</span> <span class="n">traj</span><span class="o">.</span><span class="n">atoms_in_range_idx</span><span class="p">(</span><span class="n">point</span><span class="p">,</span> <span class="n">radius</span><span class="p">,</span> <span class="n">max_items</span><span class="o">=</span><span class="n">max_items</span><span class="p">)</span>
         <span class="k">return</span> <span class="p">[</span><span class="n">atoms</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="k">for</span> <span class="n">idx</span> <span class="ow">in</span> <span class="n">idxs</span><span class="p">]</span>
 </div>
-<div class="viewcode-block" id="Compound.wrap"><a class="viewcode-back" href="../../apidoc/mbuild.html#mbuild.compound.Compound.wrap">[docs]</a>    <span class="k">def</span> <span class="nf">wrap</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="Compound.wrap"><a class="viewcode-back" href="../../mbuild.html#mbuild.compound.Compound.wrap">[docs]</a>    <span class="k">def</span> <span class="nf">wrap</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Wrap a periodic Compound. &quot;&quot;&quot;</span>
         <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">periodicity</span><span class="p">)</span>
         <span class="n">box</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">boundingbox</span><span class="p">()</span>
@@ -438,7 +433,7 @@
                     <span class="k">if</span> <span class="n">c</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">periodicity</span><span class="p">[</span><span class="n">k</span><span class="p">]:</span>
                         <span class="n">atom</span><span class="o">.</span><span class="n">pos</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">c</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">periodicity</span><span class="p">[</span><span class="n">k</span><span class="p">]</span>
 </div>
-<div class="viewcode-block" id="Compound.add_bond"><a class="viewcode-back" href="../../apidoc/mbuild.html#mbuild.compound.Compound.add_bond">[docs]</a>    <span class="k">def</span> <span class="nf">add_bond</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">type_a</span><span class="p">,</span> <span class="n">type_b</span><span class="p">,</span> <span class="n">dmin</span><span class="p">,</span> <span class="n">dmax</span><span class="p">,</span> <span class="n">kind</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+<div class="viewcode-block" id="Compound.add_bond"><a class="viewcode-back" href="../../mbuild.html#mbuild.compound.Compound.add_bond">[docs]</a>    <span class="k">def</span> <span class="nf">add_bond</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">type_a</span><span class="p">,</span> <span class="n">type_b</span><span class="p">,</span> <span class="n">dmin</span><span class="p">,</span> <span class="n">dmax</span><span class="p">,</span> <span class="n">kind</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Add Bonds between all pairs of Atoms of types a/b within [dmin, dmax].</span>
 
 <span class="sd">        TODO: testing for periodic boundaries.</span>
@@ -526,7 +521,7 @@
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'../../',
-            VERSION:'0.4.1beta',
+            VERSION:'0.4.2beta',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true

@@ -1,13 +1,11 @@
-from mbuild.mbase import MBase
-from mbuild.part_mixin import PartMixin
-
-__author__ = 'sallai'
-
+from collections import defaultdict
 from copy import deepcopy
 
 import numpy as np
 
 from mbuild.bond import Bond
+from mbuild.mbase import MBase
+from mbuild.part_mixin import PartMixin
 
 
 class Atom(MBase, PartMixin):
@@ -28,7 +26,7 @@ class Atom(MBase, PartMixin):
         bonds (set of Bond): Every Bond that the Atom is a part of.
 
     """
-    __slots__ = ['kind', 'pos', 'charge', 'parent', 'referrers', 'bonds', 'uid']
+    __slots__ = ['kind', 'pos', 'charge', 'parent', 'referrers', 'bonds', 'uid', '_extras']
 
     def __init__(self, kind, pos=None, charge=0.0):
         """Initialize an Atom.
@@ -49,9 +47,8 @@ class Atom(MBase, PartMixin):
         self.kind = kind
         self.pos = np.asarray(pos, dtype=float)
         self.charge = charge
-        # self.parent = None
-        # self.referrers = set()
         self.bonds = set()
+        self._extras = None
 
     def bonded_atoms(self, memo=dict()):
         """Return a list of atoms bonded to self. """
@@ -61,6 +58,22 @@ class Atom(MBase, PartMixin):
                 memo[id(bonded_atom)] = bonded_atom
                 bonded_atom.bonded_atoms(memo)
         return memo.values()
+
+    @property
+    def neighbors(self):
+        return [bond.other_atom(self) for bond in self.bonds]
+
+    @property
+    def extras(self):
+        if self._extras is None:
+            self._extras = dict()
+        return self._extras
+
+    def __getattr__(self, item):
+        if self._extras and item in self._extras:
+            return self._extras[item]
+        else:
+            raise AttributeError
 
     def __add__(self, other):
         if isinstance(other, Atom):
@@ -100,11 +113,14 @@ class Atom(MBase, PartMixin):
         # Copy fields that don't need recursion.
         newone.referrers = set()
         newone.bonds = set()
+
+        # Do the rest recursively.
         newone.kind = deepcopy(self.kind, memo)
         newone.pos = deepcopy(self.pos, memo)
         newone.charge = deepcopy(self.charge, memo)
+        newone._extras = deepcopy(self._extras, memo)
 
-        # Copy the parent of everybody, except the topmost compound being tom1deepcopied.
+        # Copy parents, except the topmost compound being deepcopied.
         if memo[0] == self or isinstance(memo[0], Bond):
             newone.parent = None
         else:

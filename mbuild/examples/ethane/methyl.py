@@ -11,7 +11,7 @@ class Methyl(Compound):
     def __init__(self):
         super(Methyl, self).__init__(self)
 
-        self.append_from_file(get_fn('methyl.pdb'))
+        self.append_from_file(get_fn('methyl.mol2'))
 
         translate(self, -self.C[0])
 

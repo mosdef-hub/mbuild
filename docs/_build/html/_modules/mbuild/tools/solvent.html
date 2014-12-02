@@ -7,7 +7,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>mbuild.tools.solvent &mdash; mbuild 0.4.1beta documentation</title>
+  <title>mbuild.tools.solvent &mdash; mbuild 0.4.2beta documentation</title>
   
 
   
@@ -28,7 +28,7 @@
   
 
   
-    <link rel="top" title="mbuild 0.4.1beta documentation" href="../../../index.html"/>
+    <link rel="top" title="mbuild 0.4.2beta documentation" href="../../../index.html"/>
         <link rel="up" title="Module code" href="../../index.html"/> 
 
   
@@ -87,8 +87,8 @@
 <li class="toctree-l2"><a class="reference internal" href="../../../apidoc/mbuild.html#module-mbuild.part_mixin">mbuild.part_mixin module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../apidoc/mbuild.html#module-mbuild.periodic_kdtree">mbuild.periodic_kdtree module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../apidoc/mbuild.html#module-mbuild.port">mbuild.port module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../../apidoc/mbuild.html#module-mbuild.topology">mbuild.topology module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../../apidoc/mbuild.html#module-mbuild.trajectory">mbuild.trajectory module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../apidoc/mbuild.html#mbuild-topology-module">mbuild.topology module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../apidoc/mbuild.html#mbuild-trajectory-module">mbuild.trajectory module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../apidoc/mbuild.html#module-mbuild.treeview">mbuild.treeview module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../apidoc/mbuild.html#module-mbuild">Module contents</a></li>
 </ul>
@@ -106,11 +106,11 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../apidoc/mbuild.formats.html">mbuild.formats package</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="../../../apidoc/mbuild.formats.html#submodules">Submodules</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../apidoc/mbuild.formats.html#module-mbuild.formats.gromacs">mbuild.formats.gromacs module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../../apidoc/mbuild.formats.html#module-mbuild.formats.hoomdxml">mbuild.formats.hoomdxml module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../../apidoc/mbuild.formats.html#module-mbuild.formats.lammps">mbuild.formats.lammps module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../../apidoc/mbuild.formats.html#module-mbuild.formats.lammps_data">mbuild.formats.lammps_data module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../apidoc/mbuild.formats.html#mbuild-formats-hoomdxml-module">mbuild.formats.hoomdxml module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../apidoc/mbuild.formats.html#mbuild-formats-lammps-module">mbuild.formats.lammps module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../apidoc/mbuild.formats.html#mbuild-formats-lammps-data-module">mbuild.formats.lammps_data module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../apidoc/mbuild.formats.html#module-mbuild.formats.mol2">mbuild.formats.mol2 module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../../apidoc/mbuild.formats.html#module-mbuild.formats.xyz">mbuild.formats.xyz module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../apidoc/mbuild.formats.html#mbuild-formats-xyz-module">mbuild.formats.xyz module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../apidoc/mbuild.formats.html#module-mbuild.formats">Module contents</a></li>
 </ul>
 </li>
@@ -161,11 +161,11 @@
 <span class="kn">from</span> <span class="nn">mbuild.coordinate_transform</span> <span class="kn">import</span> <span class="n">translate</span>
 
 
-<div class="viewcode-block" id="vdw_radius"><a class="viewcode-back" href="../../../apidoc/mbuild.tools.html#mbuild.tools.solvent.vdw_radius">[docs]</a><span class="k">def</span> <span class="nf">vdw_radius</span><span class="p">(</span><span class="n">atomic_number</span><span class="p">):</span>
+<div class="viewcode-block" id="vdw_radius"><a class="viewcode-back" href="../../../mbuild.tools.html#mbuild.tools.solvent.vdw_radius">[docs]</a><span class="k">def</span> <span class="nf">vdw_radius</span><span class="p">(</span><span class="n">atomic_number</span><span class="p">):</span>
     <span class="k">return</span> <span class="mf">0.2</span>
 
 </div>
-<div class="viewcode-block" id="solvent_box"><a class="viewcode-back" href="../../../apidoc/mbuild.tools.html#mbuild.tools.solvent.solvent_box">[docs]</a><span class="k">def</span> <span class="nf">solvent_box</span><span class="p">(</span><span class="n">solvent</span><span class="p">,</span> <span class="n">box</span><span class="p">):</span>
+<div class="viewcode-block" id="solvent_box"><a class="viewcode-back" href="../../../mbuild.tools.html#mbuild.tools.solvent.solvent_box">[docs]</a><span class="k">def</span> <span class="nf">solvent_box</span><span class="p">(</span><span class="n">solvent</span><span class="p">,</span> <span class="n">box</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Fill a box with solvent.</span>
 
 <span class="sd">    Args:</span>
@@ -175,19 +175,23 @@
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">solvent</span><span class="o">.</span><span class="n">periodicity</span> <span class="o">==</span> <span class="mi">0</span><span class="p">):</span>
         <span class="n">solvent</span><span class="o">.</span><span class="n">periodicity</span> <span class="o">=</span> <span class="n">solvent</span><span class="o">.</span><span class="n">boundingbox</span><span class="p">()</span><span class="o">.</span><span class="n">lengths</span>
-    <span class="n">solvent_box</span> <span class="o">=</span> <span class="n">Box</span><span class="p">(</span><span class="n">lengths</span><span class="o">=</span><span class="n">solvent</span><span class="o">.</span><span class="n">periodicity</span><span class="p">)</span>
-    <span class="n">num_replicas</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">box</span><span class="o">.</span><span class="n">lengths</span> <span class="o">/</span> <span class="n">solvent_box</span><span class="o">.</span><span class="n">lengths</span><span class="p">)</span>
+    <span class="c">#solvent_box = Box(lengths=solvent.periodicity)</span>
+    <span class="n">num_replicas</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">box</span><span class="o">.</span><span class="n">lengths</span> <span class="o">/</span> <span class="n">solvent</span><span class="o">.</span><span class="n">periodicity</span><span class="p">)</span>   <span class="c"># is this right?</span>
     <span class="n">num_replicas</span> <span class="o">=</span> <span class="n">num_replicas</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s">&#39;int&#39;</span><span class="p">)</span>
+    <span class="k">print</span><span class="p">(</span><span class="n">num_replicas</span><span class="p">)</span>
     <span class="n">compound</span> <span class="o">=</span> <span class="n">Compound</span><span class="p">()</span>
-    <span class="k">for</span> <span class="n">xi</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_replicas</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
-        <span class="k">for</span> <span class="n">yi</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_replicas</span><span class="p">[</span><span class="mi">1</span><span class="p">]):</span>
-            <span class="k">for</span> <span class="n">zi</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_replicas</span><span class="p">[</span><span class="mi">2</span><span class="p">]):</span>
-                <span class="n">temp_solvent</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="n">solvent</span><span class="p">)</span>
-                <span class="n">translate</span><span class="p">(</span><span class="n">temp_solvent</span><span class="p">,</span> <span class="o">-</span><span class="n">solvent_box</span><span class="o">.</span><span class="n">mins</span> <span class="o">+</span> <span class="n">box</span><span class="o">.</span><span class="n">mins</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">xi</span><span class="p">,</span> <span class="n">yi</span><span class="p">,</span> <span class="n">zi</span><span class="p">])</span><span class="o">*</span><span class="n">solvent_box</span><span class="o">.</span><span class="n">lengths</span><span class="p">)</span>
+    <span class="n">translate</span><span class="p">(</span><span class="n">solvent</span><span class="p">,</span> <span class="o">-</span><span class="n">solvent</span><span class="o">.</span><span class="n">boundingbox</span><span class="p">()</span><span class="o">.</span><span class="n">mins</span><span class="o">+</span><span class="n">box</span><span class="o">.</span><span class="n">mins</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">xi</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_replicas</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>   <span class="c"># x replicas</span>
+        <span class="k">for</span> <span class="n">yi</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_replicas</span><span class="p">[</span><span class="mi">1</span><span class="p">]):</span>   <span class="c"># y replicas</span>
+            <span class="k">for</span> <span class="n">zi</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_replicas</span><span class="p">[</span><span class="mi">2</span><span class="p">]):</span>   <span class="c"># z replicas</span>
+                <span class="n">temp_solvent</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="n">solvent</span><span class="p">)</span>   <span class="c"># copy of solvent with box</span>
+                <span class="c"># translate solvent box</span>
+                <span class="n">translate</span><span class="p">(</span><span class="n">temp_solvent</span><span class="p">,</span> 
+                        <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">xi</span><span class="p">,</span> <span class="n">yi</span><span class="p">,</span> <span class="n">zi</span><span class="p">])</span><span class="o">*</span><span class="n">solvent</span><span class="o">.</span><span class="n">periodicity</span><span class="p">)</span>
 
                 <span class="c"># Remove atoms outside the host&#39;s box and anything bonded to them.</span>
-                <span class="n">guest_atoms</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
-                <span class="n">guest_atom_pos_list</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+                <span class="n">guest_atoms</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>   <span class="c"># atoms in box</span>
+                <span class="n">guest_atom_pos_list</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>   <span class="c"># positions of atoms in box</span>
                 <span class="k">for</span> <span class="n">atom</span> <span class="ow">in</span> <span class="n">temp_solvent</span><span class="o">.</span><span class="n">yield_atoms</span><span class="p">():</span>
                     <span class="n">guest_atoms</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">atom</span><span class="p">)</span>
                     <span class="n">guest_atom_pos_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">atom</span><span class="o">.</span><span class="n">pos</span><span class="p">)</span>
@@ -204,7 +208,7 @@
     <span class="k">return</span> <span class="n">compound</span>
 
 </div>
-<div class="viewcode-block" id="solvate"><a class="viewcode-back" href="../../../apidoc/mbuild.tools.html#mbuild.tools.solvent.solvate">[docs]</a><span class="k">def</span> <span class="nf">solvate</span><span class="p">(</span><span class="n">host_compound</span><span class="p">,</span> <span class="n">guest_compound</span><span class="p">,</span> <span class="n">host_box</span><span class="p">,</span> <span class="n">guest_box</span><span class="p">,</span> <span class="n">overlap</span><span class="o">=</span><span class="n">vdw_radius</span><span class="p">):</span>
+<div class="viewcode-block" id="solvate"><a class="viewcode-back" href="../../../mbuild.tools.html#mbuild.tools.solvent.solvate">[docs]</a><span class="k">def</span> <span class="nf">solvate</span><span class="p">(</span><span class="n">host_compound</span><span class="p">,</span> <span class="n">guest_compound</span><span class="p">,</span> <span class="n">host_box</span><span class="p">,</span> <span class="n">guest_box</span><span class="p">,</span> <span class="n">overlap</span><span class="o">=</span><span class="n">vdw_radius</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Solvate a Compound in a Box.</span>
 
 <span class="sd">    Typical usage of this function would be to use a pre-equilibrated solvent</span>
@@ -295,7 +299,7 @@
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'../../../',
-            VERSION:'0.4.1beta',
+            VERSION:'0.4.2beta',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true

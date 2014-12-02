@@ -9,8 +9,8 @@ from numpy.linalg import *
 
 class CoordinateTransform(object):
     def __init__(self, T=None):
-        if (T == None):
-            T = eye(4);
+        if T is None:
+            T = eye(4)
 
         self.T = T
         self.Tinv = inv(T)
@@ -317,6 +317,7 @@ def equivalence_transform(compound, from_positions=None, to_positions=None,
             compound.add(Bond(from_positions, to_positions))
 
 
+# this is a translate by rather than translate to
 def translate(compound, v):
     atom_positions = _extract_atom_positions(compound)
     atom_positions = Translation(v).applyTo(atom_positions)

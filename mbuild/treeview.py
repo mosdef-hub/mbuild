@@ -1,11 +1,11 @@
-# import os
-# import glob
 import Tkinter
 import ttk
-from compound import *
+from compound import Compound
+from atom import Atom
+from bond import Bond
+
 
 class TreeView(object):
-
     def __init__(self, compound, **kwargs):
         self.compound = compound
         self.nodemap = {"root": compound}
@@ -15,50 +15,42 @@ class TreeView(object):
         if tree.set(node, "type") != 'compound':
             return
 
-        # path = tree.set(node, "fullpath")
-        # tree.delete(*tree.get_children(node))
-
-        parent = tree.parent(node)
-
         compound = self.nodemap[node]
 
-
         for child in tree.get_children(node):
-            # print tree.item(child)
             if tree.item(child)['text'] == 'dummy':
                 tree.delete(child)
 
         for v in compound.parts:
             ptype = None
-            if isinstance(v,Compound):
+            if isinstance(v, Compound):
                 ptype = "compound"
-            if isinstance(v,Atom):
+            if isinstance(v, Atom):
                 ptype = "atom"
-            if isinstance(v,Bond):
+            if isinstance(v, Bond):
                 ptype = "bond"
 
             if not v in self.nodemap.values():
-                # find a reference to the object
+                # Find a reference to the object.
                 k = 'na'
-                for rk,rv in compound.labels.iteritems():
+                for rk, rv in compound.labels.iteritems():
                     if v is rv:
                         k = rk
                         break
-
-                id = tree.insert(node, "end", text=k, values=[k, ptype, v.__str__(), str(v.__class__)])
+                id = tree.insert(node, "end", text=k,
+                                 values=[k, ptype, v.__str__(),
+                                         str(v.__class__)])
                 self.nodemap[id] = v
-
                 if ptype == 'compound':
                     tree.insert(id, "end", text="dummy")
-
 
     def populate_roots(self, tree):
         k = ""
         ptype = "compound"
         v = self.compound
-        node = tree.insert("", "end", text="root", values=[k, ptype, v.kind, str(v.__class__)])
+        node = tree.insert("", "end", text="root",
+                           values=[k, ptype, v.kind, str(v.__class__)])
 
-        # node = tree.insert('', 'end', text=str(self.compound.__class__), values=[str(self.compound.__class__), "compound"])
         self.nodemap[node] = self.compound
         self.populate_tree(tree, node)
 
@@ -91,11 +83,10 @@ class TreeView(object):
         hsb = ttk.Scrollbar(orient="horizontal")
 
         tree = ttk.Treeview(columns=("label", "type", "kind", "class"),
-            displaycolumns=("label", "kind", "class"), yscrollcommand=lambda f, l: self.autoscroll(vsb, f, l),
-            xscrollcommand=lambda f, l: self.autoscroll(hsb, f, l))
-
+                            displaycolumns=("label", "kind", "class"),
+                            yscrollcommand=lambda f, l: self.autoscroll(vsb, f, l),
+                            xscrollcommand=lambda f, l: self.autoscroll(hsb, f, l))
         tree.compoundTreeView = self
-
 
         vsb['command'] = tree.yview
         hsb['command'] = tree.xview
@@ -110,10 +101,9 @@ class TreeView(object):
         tree.bind('<<TreeviewOpen>>', self.update_tree)
         tree.bind('<Double-Button-1>', self.change_dir)
 
-
         self.populate_roots(tree)
 
-        # Arrange the tree and its scrollbars in the toplevel
+        # Arrange the tree and its scrollbars in the toplevel.
         tree.grid(column=0, row=0, sticky='nswe')
         vsb.grid(column=1, row=0, sticky='ns')
         hsb.grid(column=0, row=1, sticky='ew')
@@ -122,7 +112,9 @@ class TreeView(object):
 
         root.mainloop()
 
+
 if __name__ == "__main__":
-    from ethane import Ethane
+    from mbuild.examples.ethane.ethane import Ethane
+
     ethane = Ethane()
     TreeView(ethane).show()

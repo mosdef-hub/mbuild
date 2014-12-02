@@ -1,0 +1,14 @@
+TITLE     1122-tetrachloroethane GAS
+REMARK    THIS IS A SIMULATION BOX
+CRYST1  100.000  100.000  100.000  90.00  90.00  90.00 P 1           1
+MODEL        1
+ATOM      1  CL  LIG     1      50.072  47.983  49.309  1.00  0.00            
+ATOM      2  C   LIG     1      49.802  49.383  50.379  1.00  0.00            
+ATOM      3  H   LIG     1      50.312  49.083  51.289  1.00  0.00            
+ATOM      4  CL  LIG     1      48.132  49.563  50.969  1.00  0.00            
+ATOM      5  C   LIG     1      50.392  50.613  49.689  1.00  0.00            
+ATOM      6  H   LIG     1      51.422  50.443  49.369  1.00  0.00            
+ATOM      7  CL  LIG     1      49.422  50.913  48.229  1.00  0.00            
+ATOM      8  CL  LIG     1      50.442  52.023  50.769  1.00  0.00            
+TER
+ENDMDL
