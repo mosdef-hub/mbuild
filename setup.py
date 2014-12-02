@@ -5,6 +5,7 @@ import os
 import sys
 from setuptools import setup, find_packages
 from setuptools.command.test import test as TestCommand
+import mbuild.version
 
 requirements_lines = [line.strip() for line in open('requirements.txt').readlines()]
 reqs = list(filter(None, requirements_lines))
@@ -31,7 +32,7 @@ class PyTest(TestCommand):
 
 setup(
     name='mbuild',
-    version='0.4.1',
+    version=mbuild.version.short_version,
     description='mbuild is a component based molecule builder tool to assemble large molecular systems from reusable parts for molecular dynamics simulations',
     long_description=readme + '\n\n' + history,
     author='Janos Sallai, Christoph Klein',
