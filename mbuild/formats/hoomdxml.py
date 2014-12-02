@@ -1,5 +1,4 @@
 from future.builtins import range
-from numpy import sqrt
 
 from mdtraj.formats.registry import _FormatRegistry
 
@@ -19,6 +18,13 @@ def load_hoomdxml(filename, optional_nodes=True, lj_units=None):
         optional_data (dict): A Dictionary of DataFrames containing optional
         information.
     """
+    from xml.etree import cElementTree
+
+    import numpy as np
+    import pandas as pd
+
+    from mbuild.trajectory import Trajectory
+    from mbuild.topology import Topology
 
     # get fundamental LJ units
     if lj_units is None:
@@ -32,7 +38,7 @@ def load_hoomdxml(filename, optional_nodes=True, lj_units=None):
         assert 'mass' in lj_units
 
     # other derived LJ units
-    lj_units['time'] = (sqrt(lj_units['mass'] * lj_units['distance']**2.0
+    lj_units['time'] = (np.sqrt(lj_units['mass'] * lj_units['distance']**2.0
                         / lj_units['energy']))
     lj_units['velocity'] = lj_units['distance'] / lj_units['time']
     lj_units['acceleration'] = lj_units['distance'] / lj_units['time']**2.0
@@ -44,13 +50,6 @@ def load_hoomdxml(filename, optional_nodes=True, lj_units=None):
     lj_units['body'] = 1.0
     lj_units['orientation'] = 1.0
 
-    from xml.etree import cElementTree
-
-    import numpy as np
-    import pandas as pd
-
-    from mbuild.trajectory import Trajectory
-    from mbuild.topology import Topology
 
     tree = cElementTree.parse(filename)
 

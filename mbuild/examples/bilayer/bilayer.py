@@ -164,7 +164,7 @@ class Bilayer(Compound):
                         -new_lipid.atoms[self.ref_atoms[i]] + self.spacing)
                 # Move to point on mask
                 if flip_orientation == True:
-                    t_com = new_lipid.center()
+                    t_com = new_lipid.center
                     t_com[2] = 0.0
                     # TODO(tim): function for this? 
                     # e.g., rotate_around_x_keep_com(compound, bool(3))
@@ -222,28 +222,14 @@ def main():
     rotate_around_y(chol, -45.0*np.pi/180)
     lipids = [(ecerns, 0.5), (chol, 0.5)] 
 
-    import cProfile, pstats, StringIO
-    #pr=cProfile.Profile()
-    #pr.enable()
     bilayer = Bilayer(lipids, n_lipids_x=15, n_lipids_y=15,
             area_per_lipid=1.4, solvent=water, ref_atoms=[1, 6], 
             spacing_z=0.7, solvent_per_lipid=20, mirror=False)
-    """
-    pr.disable()
-    s = StringIO.StringIO()
-    sortby = 'tottime'
-    ps = pstats.Stats(pr, stream=s).sort_stats(sortby)
-    ps.print_stats()
-    print s.getvalue()
-    """
-
-    #test_water_box = Box(mins=[-5, 6, -13], maxs=[15, 9, -8])
-    #test_water = solvent_box(water, test_water_box)
-    #test_water.save(filename='water_test.hoomdxml')
 
     bilayer = bilayer.to_trajectory()
     bilayer.topology.load_ff_bonds()
     bilayer.save(filename='bilayer.hoomdxml')
+
     import os
     os.system('vmd_MACOSXX86 -e vis.vmd')
 
