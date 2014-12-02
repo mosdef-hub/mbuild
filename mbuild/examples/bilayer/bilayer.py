@@ -1,12 +1,13 @@
 import warnings
 from copy import deepcopy
-from random import seed, randint
+from random import seed, randint, shuffle
 
 import numpy as np
 
 from mbuild.box import Box
 from mbuild.compound import Compound
 from mbuild.coordinate_transform import translate, rotate_around_x, rotate_around_y
+from mbuild.coordinate_transform import rotate_around_z
 from mbuild.tools.mask import grid_mask_2d
 from mbuild.tools.solvent import solvent_box
 
@@ -16,7 +17,7 @@ class Bilayer(Compound):
     def __init__(self, lipids, ref_atoms, n_lipids_x=10, n_lipids_y=10, 
                  area_per_lipid=1.0, solvent=None, lipid_box=None, 
                  spacing_z=0.5, solvent_per_lipid=None, n_solvent=None,
-                 random_seed=12345):
+                 random_seed=12345, mirror=True):
         """
         Note: This example is still pretty immature as it only represents some
         brief scratch work. Feel free to flesh it out!
@@ -38,109 +39,174 @@ class Bilayer(Compound):
             solvent_per_lipid (int, optional): Number of solvent molecules per lipid
             n_solvent(int, optional): *Total* number of solvent molecules
             random_seed: seed for random number generator for filling in lipids
+            mirror (bool): make top and bottom layers mirrors of each other if True
         """
         super(Bilayer, self).__init__()
 
-        #TODO: right now this doesn't check to make sure the fractions of each lipid
-        # adds up to 1.0. The last value is just what's left after all of the other ones
-        # have been added. At the very least, this should check to make sure the given
-        # fractions don't add up to > 1.
+        # set constants from constructor call
+        self.lipids = lipids
+        self.solvent = solvent
+        self.apl = area_per_lipid
+        self.n_lipids_x = n_lipids_x
+        self.n_lipids_y = n_lipids_y
+        self.ref_atoms = ref_atoms
+        self.spacing_z = spacing_z
+        self.mirror = mirror
+        self.random_seed = random_seed
+        self.n_solvent = n_solvent
+        self.solvent_per_lipid = solvent_per_lipid
+        self._lipid_box = lipid_box
+
+        # why do i have to initialize these 2?
+        self._n_each_lipid_per_layer = []
+        self._solvent_per_layer = None
+
+        # a few calculations to figure things out
+        self.n_lipids_per_layer = self.n_lipids_x * self.n_lipids_y
+        self.spacing = np.array([0, 0, spacing_z])
+        self.mask = grid_mask_2d(n_lipids_x, n_lipids_y)   # lipid locations
+        self.mask *= np.sqrt(self.apl * self.n_lipids_per_layer)
+
+        # safety checks
+        self.check_fractions()
+        self.check_ref_atoms()
+
+        # containers for lipids and solvent
+        self.lipid_components = Compound()
+        self.solvent_components = Compound()
+
+        # assemble the lipid layers
+        # TODO(tim): random number seed here?
+        seed(self.random_seed)   
+        top_layer, top_lipid_labels = self.create_layer()
+        self.lipid_components.add(top_layer)
+        if self.mirror == True:
+            bottom_layer, bottom_lipid_labels = self.create_layer(
+                    lipid_labels=top_lipid_labels,
+                    flip_orientation=True)
+        else:
+            bottom_layer, bottom_lipid_labels = self.create_layer(
+                    flip_orientation=True)
+        self.lipid_components.add(bottom_layer)
+
+        # solvate the lipids
+        self.solvate_bilayer()
+
+        # add everything to the big list
+        self.add(self.lipid_components)
+        self.add(self.solvent_components)
+        # TODO(tim): shift everything so that the lipids are centered in the box?
+
+    @property 
+    def solvent_per_layer(self):
+        """
+        Figure out the number of solvent molecules per single layer.
+
+        """
+        if self._solvent_per_layer:
+            return self._solvent_per_layer
+
+        assert not (self.solvent_per_lipid is None and self.n_solvent is None)
+        if self.solvent_per_lipid is not None:
+            assert self.n_solvent is None
+            self._solvent_per_layer = self.n_lipids_per_layer * self.solvent_per_lipid
+        elif self.n_solvent is not None:
+            assert self.solvent_per_lipid is None
+            self._solvent_per_layer = self.n_solvent / 2
+        return self._solvent_per_layer
+
+    def check_fractions(self):
         frac_sum = 0
-        for lipid in lipids:
+        for lipid in self.lipids:
             frac_sum += lipid[1]
-        assert frac_sum <= 1.0
-        if frac_sum != 1.0:
-            new = 1.0 - frac_sum + lipids[-1][1]
-            warn_message = 'Warning: lipid fractions do not add up to 1.0. '
-            warn_message += 'Adjusting fraction of lipids[-1] to %f.' % new
-            warnings.warn(warn_message)
-        # still, if frac_sum < 1.0, then lipids[-1] is not going to be in the same
-        # abundance specified by the input
-        
+        assert frac_sum == 1.0, 'Bilayer builder error: Lipid fractions do not add up to 1.'
 
-        # specify exactly one of either solvent_per_lipid or n_solvent
-        # and use to get number of lipids per layer
-        solvent_per_layer = 0
-        assert not (solvent_per_lipid is None and n_solvent is None)
-        if solvent_per_lipid is not None:
-            assert n_solvent is None
-            solvent_per_layer = n_lipids_x * n_lipids_y * solvent_per_lipid
-        elif n_solvent is not None:
-            assert solvent_per_lipid is None
-            solvent_per_layer = n_solvent / 2
+    def check_ref_atoms(self):
+        assert len(self.ref_atoms) == len(self.lipids)
 
-        # parse lipids to figure out how many of each lipid to add
-        # TODO: make simpler for single-component bilayers
-        assert len(ref_atoms) == len(lipids)
-        n_lipids_per_layer = n_lipids_x * n_lipids_y
-        n_each_lipid_per_layer = []
-        for lipid in lipids[:-1]:
-            n_each_lipid_per_layer.append(int(round(lipid[1] * n_lipids_per_layer)))
-        n_each_lipid_per_layer.append(
-                n_lipids_per_layer - sum(n_each_lipid_per_layer))
-        assert len(n_each_lipid_per_layer) == len(lipids)
+    @property
+    def n_each_lipid_per_layer(self):
+        import pdb
+        if self._n_each_lipid_per_layer:
+            return self._n_each_lipid_per_layer
 
-        # create points and stretch to fit in box
-        mask = grid_mask_2d(n_lipids_x, n_lipids_y)
-        mask *= np.sqrt(area_per_lipid * n_lipids_x * n_lipids_y)
+        self._n_each_lipid_per_layer = []
+        for lipid in self.lipids[:-1]:
+            self._n_each_lipid_per_layer.append(
+                    int(round(lipid[1] * self.n_lipids_per_layer)))
+        # TODO: give warning if frac*n different than actual
+        # rounding errors may make this off by 1, so just do total - whats_been_added
+        self._n_each_lipid_per_layer.append(
+                self.n_lipids_per_layer - sum(self._n_each_lipid_per_layer))
+        assert len(self._n_each_lipid_per_layer) == len(self.lipids)
+        return self._n_each_lipid_per_layer
 
-        # now give a lipid label to each point
-        # TODO: this seems unnecessarily ugly, make more elegant
-        labels = np.zeros([mask.shape[0]], dtype=np.uint8)
-        seed(random_seed)
-        while not labels.all():
-            which_point = randint(0, labels.shape[0]-1)   # random index of labels
-            if not labels[which_point]:   # if it hasn't been specified
-                which_lipid = randint(0, len(n_each_lipid_per_layer)-1)
-                if n_each_lipid_per_layer[which_lipid] > 0:
-                    labels[which_point] = which_lipid + 1   # cannot be 0 for np.all
-                    n_each_lipid_per_layer[which_lipid] -= 1
-                else:
-                    labels[which_point] = 0
+    def create_layer(self, lipid_labels=None, flip_orientation=False):
+        """
+        Args:
+            top (bool): Top (no rotation) or bottom (rotate about x) layer
+        """
+        layer = Compound()
+        if not lipid_labels:
+            lipid_labels = range(self.n_lipids_per_layer)
+            shuffle(lipid_labels)
+        lipids_placed = 0
+        for i, n_of_lipid_type in enumerate(self.n_each_lipid_per_layer):
+            current_type = self.lipids[i][0]
+            for n_this_lipid_type in range(n_of_lipid_type):
+                new_lipid = deepcopy(current_type)
+                random_index = lipid_labels[lipids_placed]
+                position = self.mask[random_index]
 
-        spacing = np.array([0, 0, spacing_z])
-        for i, point in enumerate(mask):
-            top_lipid = deepcopy(lipids[labels[i]-1][0])
-            translate(top_lipid, -top_lipid.atoms[ref_atoms[labels[i]-1]] + spacing)
-            translate(top_lipid, point)
-            self.add(top_lipid)
+                # Zero and space in z-direction
+                translate(
+                        new_lipid,
+                        -new_lipid.atoms[self.ref_atoms[i]] + self.spacing)
+                # Move to point on mask
+                if flip_orientation == True:
+                    t_com = new_lipid.center_of_mass()
+                    t_com[2] = 0.0
+                    # TODO(tim): function for this? 
+                    # e.g., rotate_around_x_keep_com(compound, bool(3))
+                    translate(new_lipid, -t_com)
+                    rotate_around_x(new_lipid, np.pi)
+                    translate(new_lipid, t_com)
+                translate(new_lipid, position)
+                layer.add(new_lipid)
+                lipids_placed += 1
+        return layer, lipid_labels
 
-            bot_lipid = deepcopy(lipids[labels[i]-1][0])
-            translate(bot_lipid, -bot_lipid.atoms[ref_atoms[labels[i]-1]] + spacing)
-            rotate_around_x(bot_lipid, np.pi)
-            translate(bot_lipid, point)
-            self.add(bot_lipid)
-
-        if lipid_box is None:
-            lipid_box = self.boundingbox()
+    @property
+    def lipid_box(self):
+        if self._lipid_box:
+            return self._lipid_box
+        else:
+            self._lipid_box = self.lipid_components.boundingbox()
             # add buffer around lipid box
-            lipid_box.mins -= np.array([0.5*np.sqrt(area_per_lipid),
-                0.5*np.sqrt(area_per_lipid), 0.5*np.sqrt(area_per_lipid)])
-            lipid_box.maxs += np.array([0.5*np.sqrt(area_per_lipid),
-                0.5*np.sqrt(area_per_lipid), 0.5*np.sqrt(area_per_lipid)])
-            #lipid_box.lengths = lipid_box.lengths * np.array([1.0, 1.0, 3.0])
+            self._lipid_box.mins -= np.array(
+                    [0.5*np.sqrt(self.apl),
+                     0.5*np.sqrt(self.apl),
+                     0.5*np.sqrt(self.apl)])
+            self._lipid_box.maxs += np.array(
+                    [0.5*np.sqrt(self.apl),
+                     0.5*np.sqrt(self.apl),
+                     0.5*np.sqrt(self.apl)])
+            return self._lipid_box
 
-        #self.save('lipids.hoomdxml')
-        
-        # add buffer space between lipid and solvent boxes
-        # figure out size of solvent boxes based on number of lipids
-        solvent_number_density = solvent.n_atoms / np.prod(solvent.periodicity)
-        water_box_z = solvent_per_layer / (lipid_box.lengths[0]
-                * lipid_box.lengths[1] * solvent_number_density)
+    def solvate_bilayer(self):
+        solvent_number_density = self.solvent.n_atoms / np.prod(self.solvent.periodicity)
+        import pdb
+        water_box_z = self.solvent_per_layer / (self.lipid_box.lengths[0]
+                * self.lipid_box.lengths[1] * solvent_number_density)
 
-
-        top_box = Box(mins=[lipid_box.mins[0], lipid_box.mins[1], lipid_box.maxs[2]],
-                      maxs=[lipid_box.maxs[0], lipid_box.maxs[1], 
-                          lipid_box.maxs[2]+water_box_z])
-        bot_box = Box(mins=[lipid_box.mins[0], lipid_box.mins[1], 
-                        lipid_box.mins[2]-water_box_z],
-                      maxs=[lipid_box.maxs[0], lipid_box.maxs[1], lipid_box.mins[2]])
-
-        top_solvent = solvent_box(solvent, top_box)
-        self.add(top_solvent)
-        bottom_solvent = solvent_box(solvent, bot_box)
-        self.add(bottom_solvent)
-
+        bilayer_solvent_box = Box(mins=[self.lipid_box.mins[0],
+                                self.lipid_box.mins[1], 
+                                self.lipid_box.maxs[2]],
+                              maxs=[self.lipid_box.maxs[0],
+                                    self.lipid_box.maxs[1], 
+                                    self.lipid_box.maxs[2] + 2 * water_box_z])
+        self.solvent_components.add(
+                solvent_box(self.solvent, bilayer_solvent_box))
 
 def main():
     from mbuild.trajectory import Trajectory
@@ -156,9 +222,20 @@ def main():
     rotate_around_y(chol, -45.0*np.pi/180)
     lipids = [(ecerns, 0.5), (chol, 0.5)] 
 
-    bilayer = Bilayer(lipids, n_lipids_x=10, n_lipids_y=10,
-            area_per_lipid=1.4, solvent=water, ref_atoms=[0, 6], 
-            spacing_z=0.5, solvent_per_lipid=10)
+    import cProfile, pstats, StringIO
+    #pr=cProfile.Profile()
+    #pr.enable()
+    bilayer = Bilayer(lipids, n_lipids_x=15, n_lipids_y=15,
+            area_per_lipid=1.4, solvent=water, ref_atoms=[1, 6], 
+            spacing_z=0.7, solvent_per_lipid=20, mirror=False)
+    """
+    pr.disable()
+    s = StringIO.StringIO()
+    sortby = 'tottime'
+    ps = pstats.Stats(pr, stream=s).sort_stats(sortby)
+    ps.print_stats()
+    print s.getvalue()
+    """
 
     #test_water_box = Box(mins=[-5, 6, -13], maxs=[15, 9, -8])
     #test_water = solvent_box(water, test_water_box)
@@ -167,6 +244,8 @@ def main():
     bilayer = bilayer.to_trajectory()
     bilayer.topology.load_ff_bonds()
     bilayer.save(filename='bilayer.hoomdxml')
+    import os
+    os.system('vmd_MACOSXX86 -e vis.vmd')
 
 if __name__ == "__main__":
     main()
