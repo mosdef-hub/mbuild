@@ -112,6 +112,11 @@ class Trajectory(object):
             atom1 = atom_mapping[a1]
             atom2 = atom_mapping[a2]
             part.add(Bond(atom1, atom2))
+
+        if (np.any(self.unitcell_lengths) and np.any(self.unitcell_lengths[0])):
+            part.periodicity = self.unitcell_lengths[0]
+        else: 
+            part.periodicity = np.array([0., 0., 0.])
         return part
 
     def append_compound(self, compound):
