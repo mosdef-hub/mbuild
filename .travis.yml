@@ -18,7 +18,6 @@ install:
   - pip install coveralls
   - pip install pytest
   - pip install simtk.unit
-  - pip install wheel
   - pip install sphinx
   - pip install sphinx_rtd_theme
   - pip install -r requirements.txt --use-mirrors
