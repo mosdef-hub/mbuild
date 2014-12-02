@@ -4,14 +4,14 @@ mBuild: a hierarchical, component based molecule builder
 .. image:: https://badge.fury.io/py/mbuild.png
     :target: http://badge.fury.io/py/mbuild
     
-.. image:: https://travis-ci.org/sallai/mbuild.png?branch=develop
+.. image:: https://travis-ci.org/sallai/mbuild.png?branch=master
         :target: https://travis-ci.org/sallai/mbuild
         
-.. image:: https://coveralls.io/repos/sallai/mbuild/badge.png?branch=develop 
-        :target: https://coveralls.io/r/sallai/mbuild?branch=develop
+.. image:: https://coveralls.io/repos/sallai/mbuild/badge.png?branch=master
+        :target: https://coveralls.io/r/sallai/mbuild?branch=master
 
-.. image:: https://readthedocs.org/projects/mbuild/badge/?version=develop
-        :target: http://mbuild.readthedocs.org/en/develop/
+.. image:: https://readthedocs.org/projects/mbuild/badge/?version=master
+        :target: http://mbuild.readthedocs.org/en/master/
         :alt: Documentation Status
 
 mBuild is a component based molecule builder tool used to assemble complex
