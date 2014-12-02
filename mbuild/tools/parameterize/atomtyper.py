@@ -28,6 +28,13 @@ def find_atomtypes(compound, forcefield='OPLS-AA', debug=True):
             if fn.startswith('opls_'):
                 rule_number_to_rule[fn.split("_")[1]] = fcn
 
+    elif forcefield == 'UFF':
+        import uff
+        # Build a map to all of the supported opls_* functions.
+        for fn, fcn in sys.modules[uff.__name__].__dict__.items():
+            if fn.startswith('uff_'):
+                rule_number_to_rule[fn.split("_")[1]] = fcn
+
     build_rule_map()
     if debug:
         sanitize()
@@ -252,88 +259,54 @@ class NeighborCount(RuleDecorator):
         return wrapped
 
 
-class NeighborsExactly(RuleDecorator):
+class NeighborsBase(RuleDecorator):
     def __init__(self, neighbor_type, count):
-        if isinstance(neighbor_type, (list, tuple, set)):
-            neighbor_type = [str(x) for x in neighbor_type]
-        else:
-            neighbor_type = [str(neighbor_type)]
+        neighbor_type = str(neighbor_type)
         self.neighbor_type = neighbor_type
         self.count = count
+
+    def match_count(self, atom):
+        if self.neighbor_type in neighbor_types(atom):
+            match_count = neighbor_types(atom)[self.neighbor_type]
+        elif self.neighbor_type in neighbor_whitelist_types(atom):
+            match_count = neighbor_whitelist_types(atom)[self.neighbor_type]
+        else:
+            match_count = 0
+        return match_count
+
+
+class NeighborsExactly(NeighborsBase):
+    def __init__(self, neighbor_type, count):
+        super(NeighborsExactly, self).__init__(neighbor_type, count)
 
     def __call__(self, f):
         # this must be called 'wrapped'
         def wrapped(atom):
-            # if (self.neighbor_type in neighbor_types(atom) and
-            #         neighbor_types(atom)[self.neighbor_type] == self.count):
-            #     return f(atom)
-            # elif (self.neighbor_type in neighbor_whitelist_types(atom) and
-            #         neighbor_whitelist_types(atom)[self.neighbor_type] == self.count):
-            #     return f(atom)
-
-            match_count = 0
-            for neighbor_type in self.neighbor_type:
-                if neighbor_type in neighbor_types(atom):
-                    match_count += neighbor_types(atom)[neighbor_type]
-                elif neighbor_type in neighbor_whitelist_types(atom):
-                    match_count += neighbor_whitelist_types(atom)[neighbor_type]
-
-            if match_count == self.count:
+            if self.match_count(atom) == self.count:
                 return f(atom)
         return wrapped
 
 
-class NeighborsAtLeast(RuleDecorator):
+class NeighborsAtLeast(NeighborsBase):
     def __init__(self, neighbor_type, count):
-        if isinstance(neighbor_type, (list, tuple, set)):
-            neighbor_type = [str(x) for x in neighbor_type]
-        else:
-            neighbor_type = [str(neighbor_type)]
-        self.neighbor_type = neighbor_type
-        self.count = count
+        super(NeighborsAtLeast, self).__init__(neighbor_type, count)
 
     def __call__(self, f):
         # this must be called 'wrapped'
         def wrapped(atom):
-            # if (self.neighbor_type in neighbor_types(atom) and
-            #         neighbor_types(atom)[self.neighbor_type] >= self.count):
-            #     return f(atom)
-            # elif (self.neighbor_type in neighbor_whitelist_types(atom) and
-            #         neighbor_whitelist_types(atom)[self.neighbor_type] >= self.count):
-            #     return f(atom)
-
-            match_count = 0
-            for neighbor_type in self.neighbor_type:
-                if neighbor_type in neighbor_types(atom):
-                    match_count += neighbor_types(atom)[neighbor_type]
-                elif neighbor_type in neighbor_whitelist_types(atom):
-                    match_count += neighbor_whitelist_types(atom)[neighbor_type]
-
-            if match_count >= self.count:
+            if self.match_count(atom) >= self.count:
                 return f(atom)
         return wrapped
 
 
-class NeighborsAtMost(RuleDecorator):
+class NeighborsAtMost(NeighborsBase):
     def __init__(self, neighbor_type, count):
-        if isinstance(neighbor_type, (list, tuple, set)):
-            neighbor_type = [str(x) for x in neighbor_type]
-        else:
-            neighbor_type = [str(neighbor_type)]
-        self.neighbor_type = neighbor_type
-        self.count = count
+        super(NeighborsAtMost, self).__init__(neighbor_type, count)
 
     def __call__(self, f):
         # this must be called 'wrapped'
         def wrapped(atom):
-            match_count = 0
-            for neighbor_type in self.neighbor_type:
-                if neighbor_type in neighbor_types(atom):
-                    match_count += neighbor_types(atom)[neighbor_type]
-                elif neighbor_type in neighbor_whitelist_types(atom):
-                    match_count += neighbor_whitelist_types(atom)[neighbor_type]
-
-            if match_count <= self.count:
+            if self.match_count(atom) <= self.count:
                 return f(atom)
         return wrapped
 
@@ -439,11 +412,11 @@ def sanitize():
                 for pattern in all_patterns:
                     if not pattern.count(dec.neighbor_type) == dec.count:
                         removed_patterns.add(pattern)
-            if isinstance(dec, NeighborsAtLeast):
+            elif isinstance(dec, NeighborsAtLeast):
                 for pattern in all_patterns:
                     if not pattern.count(dec.neighbor_type) >= dec.count:
                         removed_patterns.add(pattern)
-            if isinstance(dec, NeighborsAtMost):
+            elif isinstance(dec, NeighborsAtMost):
                 for pattern in all_patterns:
                     if not pattern.count(dec.neighbor_type) <= dec.count:
                         removed_patterns.add(pattern)

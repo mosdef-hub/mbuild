@@ -254,6 +254,27 @@ def opls_233(atom):
         return True
 
 
+@Element('C')
+@InWhitelist(145)
+@NeighborCount(3)
+@NeighborsExactly('C', 2)
+@NeighborsExactly('CL', 1)
+@Whitelist(263)
+@Blacklist(145)
+def opls_263(atom):
+    """C(Cl) chlorobenzene """
+    return True
+
+
+@Element('CL')
+@NeighborCount(1)
+@NeighborsExactly('C', 1)
+@Whitelist(264)
+def opls_264(atom):
+    """Cl chlorobenzene """
+    return benzene(atom.neighbors[0])
+
+
 @Element('O')
 @NeighborCount(1)
 @NeighborsExactly('C', 1)
@@ -265,12 +286,15 @@ def opls_278(atom):
 
 @Element('H')
 @NeighborCount(1)
-@NeighborsAtLeast('C', 1)
+@NeighborsExactly('C', 1)
+@NeighborsExactly(277, 1)
 @Whitelist(279)
 @Blacklist(140)
 def opls_279(atom):
     """AA H-alpha in aldehyde & formamide """
-    return check_atom(atom.neighbors[0], [232, 277])
+    # TODO: 232 needs to blacklist 277
+    #return check_atom(atom.neighbors[0], [232, 277])
+    return True
 
 
 @Element('O')
@@ -473,6 +497,18 @@ def opls_777(atom):
     return True
 
 
+@Element('C')
+@InWhitelist(145)
+@NeighborCount(3)
+@NeighborsExactly('C', 2)
+@NeighborsExactly('N', 1)
+@Whitelist(916)
+@Blacklist(145)
+def opls_916(atom):
+    """C(NH2) aniline """
+    return True
+
+
 def get_opls_fn(name):
     """Get the full path to a file used to validate the OPLS-aa atomtyper.
 
@@ -514,4 +550,4 @@ if __name__ == "__main__":
 
     for i, atom in enumerate(m.atoms):
         print "Atom kind={}, opls_type={}".format(
-            atom.kind, atom.atom_type)
+            atom.kind, atom.atomtype)

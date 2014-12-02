@@ -66,7 +66,6 @@ class Atom(MBase, PartMixin):
     @property
     def extras(self):
         if self._extras is None:
-            # self._extras = defaultdict(lambda: None)
             self._extras = dict()
         return self._extras
 
