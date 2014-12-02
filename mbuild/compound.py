@@ -214,7 +214,8 @@ class Compound(MBase, PartMixin, HasPartsMixin):
         d = np.where(d > 0.5 * self.periodicity, self.periodicity - d, d)
         return np.sqrt((d ** 2).sum(axis=-1))
 
-    def center_of_mass(self):
+    @property
+    def center(self):
         return sum(atom.pos for atom in self.yield_atoms()) / len([atom for atom in self.yield_atoms()])
 
     def boundingbox(self, excludeG=True):
