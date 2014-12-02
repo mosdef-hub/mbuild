@@ -7,7 +7,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>mbuild.tools.mask &mdash; mbuild 0.4.1beta documentation</title>
+  <title>mbuild.tools.mask &mdash; mbuild 0.4.2beta documentation</title>
   
 
   
@@ -28,7 +28,7 @@
   
 
   
-    <link rel="top" title="mbuild 0.4.1beta documentation" href="../../../index.html"/>
+    <link rel="top" title="mbuild 0.4.2beta documentation" href="../../../index.html"/>
         <link rel="up" title="Module code" href="../../index.html"/> 
 
   
@@ -87,8 +87,8 @@
 <li class="toctree-l2"><a class="reference internal" href="../../../apidoc/mbuild.html#module-mbuild.part_mixin">mbuild.part_mixin module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../apidoc/mbuild.html#module-mbuild.periodic_kdtree">mbuild.periodic_kdtree module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../apidoc/mbuild.html#module-mbuild.port">mbuild.port module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../../apidoc/mbuild.html#module-mbuild.topology">mbuild.topology module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../../apidoc/mbuild.html#module-mbuild.trajectory">mbuild.trajectory module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../apidoc/mbuild.html#mbuild-topology-module">mbuild.topology module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../apidoc/mbuild.html#mbuild-trajectory-module">mbuild.trajectory module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../apidoc/mbuild.html#module-mbuild.treeview">mbuild.treeview module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../apidoc/mbuild.html#module-mbuild">Module contents</a></li>
 </ul>
@@ -106,11 +106,11 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../apidoc/mbuild.formats.html">mbuild.formats package</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="../../../apidoc/mbuild.formats.html#submodules">Submodules</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../apidoc/mbuild.formats.html#module-mbuild.formats.gromacs">mbuild.formats.gromacs module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../../apidoc/mbuild.formats.html#module-mbuild.formats.hoomdxml">mbuild.formats.hoomdxml module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../../apidoc/mbuild.formats.html#module-mbuild.formats.lammps">mbuild.formats.lammps module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../../apidoc/mbuild.formats.html#module-mbuild.formats.lammps_data">mbuild.formats.lammps_data module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../apidoc/mbuild.formats.html#mbuild-formats-hoomdxml-module">mbuild.formats.hoomdxml module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../apidoc/mbuild.formats.html#mbuild-formats-lammps-module">mbuild.formats.lammps module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../apidoc/mbuild.formats.html#mbuild-formats-lammps-data-module">mbuild.formats.lammps_data module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../apidoc/mbuild.formats.html#module-mbuild.formats.mol2">mbuild.formats.mol2 module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../../apidoc/mbuild.formats.html#module-mbuild.formats.xyz">mbuild.formats.xyz module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../apidoc/mbuild.formats.html#mbuild-formats-xyz-module">mbuild.formats.xyz module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../apidoc/mbuild.formats.html#module-mbuild.formats">Module contents</a></li>
 </ul>
 </li>
@@ -158,7 +158,7 @@
 <span class="kn">from</span> <span class="nn">mbuild.coordinate_transform</span> <span class="kn">import</span> <span class="n">equivalence_transform</span>
 
 
-<div class="viewcode-block" id="apply_mask"><a class="viewcode-back" href="../../../apidoc/mbuild.tools.html#mbuild.tools.mask.apply_mask">[docs]</a><span class="k">def</span> <span class="nf">apply_mask</span><span class="p">(</span><span class="n">host</span><span class="p">,</span> <span class="n">guest</span><span class="p">,</span> <span class="n">mask</span><span class="p">,</span> <span class="n">guest_port_name</span><span class="o">=</span><span class="s">&quot;port&quot;</span><span class="p">,</span> <span class="n">backfill</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+<div class="viewcode-block" id="apply_mask"><a class="viewcode-back" href="../../../mbuild.tools.html#mbuild.tools.mask.apply_mask">[docs]</a><span class="k">def</span> <span class="nf">apply_mask</span><span class="p">(</span><span class="n">host</span><span class="p">,</span> <span class="n">guest</span><span class="p">,</span> <span class="n">mask</span><span class="p">,</span> <span class="n">guest_port_name</span><span class="o">=</span><span class="s">&quot;port&quot;</span><span class="p">,</span> <span class="n">backfill</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Attach guest Compounds to a host Compound in the pattern of a mask.</span>
 
 <span class="sd">    Args:</span>
@@ -206,20 +206,20 @@
                 <span class="n">host</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">new_backfill</span><span class="p">)</span>
 
 </div>
-<div class="viewcode-block" id="random_mask_3d"><a class="viewcode-back" href="../../../apidoc/mbuild.tools.html#mbuild.tools.mask.random_mask_3d">[docs]</a><span class="k">def</span> <span class="nf">random_mask_3d</span><span class="p">(</span><span class="n">num_sites</span><span class="p">):</span>
+<div class="viewcode-block" id="random_mask_3d"><a class="viewcode-back" href="../../../mbuild.tools.html#mbuild.tools.mask.random_mask_3d">[docs]</a><span class="k">def</span> <span class="nf">random_mask_3d</span><span class="p">(</span><span class="n">num_sites</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot; &quot;&quot;&quot;</span>
     <span class="n">mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">((</span><span class="n">num_sites</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
     <span class="k">return</span> <span class="n">mask</span>
 
 </div>
-<div class="viewcode-block" id="random_mask_2d"><a class="viewcode-back" href="../../../apidoc/mbuild.tools.html#mbuild.tools.mask.random_mask_2d">[docs]</a><span class="k">def</span> <span class="nf">random_mask_2d</span><span class="p">(</span><span class="n">num_sites</span><span class="p">):</span>
+<div class="viewcode-block" id="random_mask_2d"><a class="viewcode-back" href="../../../mbuild.tools.html#mbuild.tools.mask.random_mask_2d">[docs]</a><span class="k">def</span> <span class="nf">random_mask_2d</span><span class="p">(</span><span class="n">num_sites</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot; &quot;&quot;&quot;</span>
     <span class="n">mask</span> <span class="o">=</span> <span class="n">random_mask_3d</span><span class="p">(</span><span class="n">num_sites</span><span class="p">)</span>
     <span class="n">mask</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
     <span class="k">return</span> <span class="n">mask</span>
 
 </div>
-<div class="viewcode-block" id="grid_mask_2d"><a class="viewcode-back" href="../../../apidoc/mbuild.tools.html#mbuild.tools.mask.grid_mask_2d">[docs]</a><span class="k">def</span> <span class="nf">grid_mask_2d</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">m</span><span class="p">):</span>
+<div class="viewcode-block" id="grid_mask_2d"><a class="viewcode-back" href="../../../mbuild.tools.html#mbuild.tools.mask.grid_mask_2d">[docs]</a><span class="k">def</span> <span class="nf">grid_mask_2d</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">m</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot; &quot;&quot;&quot;</span>
     <span class="n">mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="n">n</span><span class="o">*</span><span class="n">m</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
     <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
@@ -229,7 +229,7 @@
     <span class="k">return</span> <span class="n">mask</span>
 
 </div>
-<div class="viewcode-block" id="grid_mask_3d"><a class="viewcode-back" href="../../../apidoc/mbuild.tools.html#mbuild.tools.mask.grid_mask_3d">[docs]</a><span class="k">def</span> <span class="nf">grid_mask_3d</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">m</span><span class="p">,</span> <span class="n">l</span><span class="p">):</span>
+<div class="viewcode-block" id="grid_mask_3d"><a class="viewcode-back" href="../../../mbuild.tools.html#mbuild.tools.mask.grid_mask_3d">[docs]</a><span class="k">def</span> <span class="nf">grid_mask_3d</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">m</span><span class="p">,</span> <span class="n">l</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot; &quot;&quot;&quot;</span>
     <span class="n">mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="n">n</span><span class="o">*</span><span class="n">m</span><span class="o">*</span><span class="n">l</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
     <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
@@ -241,7 +241,7 @@
     <span class="k">return</span> <span class="n">mask</span>
 
 </div>
-<div class="viewcode-block" id="sphere_mask"><a class="viewcode-back" href="../../../apidoc/mbuild.tools.html#mbuild.tools.mask.sphere_mask">[docs]</a><span class="k">def</span> <span class="nf">sphere_mask</span><span class="p">(</span><span class="n">N</span><span class="p">):</span>
+<div class="viewcode-block" id="sphere_mask"><a class="viewcode-back" href="../../../mbuild.tools.html#mbuild.tools.mask.sphere_mask">[docs]</a><span class="k">def</span> <span class="nf">sphere_mask</span><span class="p">(</span><span class="n">N</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Generate N evenly distributed points on the unit sphere.</span>
 
 <span class="sd">    Sphere is centered at the origin. Alrgorithm based on the &#39;Golden Spiral&#39;.</span>
@@ -263,7 +263,7 @@
     <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">column_stack</span><span class="p">((</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span><span class="p">))</span>
 
 </div>
-<div class="viewcode-block" id="disk_mask"><a class="viewcode-back" href="../../../apidoc/mbuild.tools.html#mbuild.tools.mask.disk_mask">[docs]</a><span class="k">def</span> <span class="nf">disk_mask</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
+<div class="viewcode-block" id="disk_mask"><a class="viewcode-back" href="../../../mbuild.tools.html#mbuild.tools.mask.disk_mask">[docs]</a><span class="k">def</span> <span class="nf">disk_mask</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot; &quot;&quot;&quot;</span>
     <span class="n">radius</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">n</span><span class="p">)</span> <span class="o">/</span> <span class="nb">float</span><span class="p">(</span><span class="n">n</span><span class="p">))</span>
 
@@ -271,8 +271,8 @@
     <span class="n">theta</span> <span class="o">=</span> <span class="n">golden_angle</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">n</span><span class="p">)</span>
 
     <span class="n">points</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">n</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span>
-    <span class="n">points</span><span class="p">[:,</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span>
-    <span class="n">points</span><span class="p">[:,</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span>
+    <span class="n">points</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span>
+    <span class="n">points</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span>
     <span class="n">points</span> <span class="o">*=</span> <span class="n">radius</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="n">n</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
 
     <span class="k">return</span> <span class="n">points</span></div>
@@ -306,7 +306,7 @@
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'../../../',
-            VERSION:'0.4.1beta',
+            VERSION:'0.4.2beta',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true

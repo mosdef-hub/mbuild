@@ -1,0 +1,762 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>mbuild.tools.parameterize.oplsaa &mdash; mbuild 0.4.2beta documentation</title>
+  
+
+  
+  
+
+  
+  <link href='https://fonts.googleapis.com/css?family=Lato:400,700|Roboto+Slab:400,700|Inconsolata:400,700' rel='stylesheet' type='text/css'>
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
+  
+
+  
+    <link rel="top" title="mbuild 0.4.2beta documentation" href="../../../../index.html"/>
+        <link rel="up" title="Module code" href="../../../index.html"/> 
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/modernizr/2.6.2/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-nav-search">
+        <a href="../../../../index.html" class="fa fa-home"> mbuild</a>
+        <div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+        
+        
+            <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../installation.html">Installation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../../installation.html#install-with-pip">Install with pip</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../installation.html#dependencies">Dependencies</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../installation.html#testing-your-installation">Testing your installation</a></li>
+</ul>
+</li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../tutorials.html">Tutorials</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../../tutorials.html#methane-atoms-bonds-and-compounds">Methane: Atoms, Bonds and Compounds</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../tutorials.html#ethane-reading-from-files-ports-and-coordinate-transforms">Ethane: Reading from files, Ports and coordinate transforms</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../tutorials.html#monolayer-complex-hierarchies-masks-tiling-and-writing-to-files">Monolayer: Complex hierarchies, masks, tiling and writing to files</a></li>
+</ul>
+</li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../apidoc/mbuild.html">mbuild package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../../apidoc/mbuild.html#subpackages">Subpackages</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../apidoc/mbuild.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../apidoc/mbuild.html#module-mbuild.atom">mbuild.atom module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../apidoc/mbuild.html#module-mbuild.bond">mbuild.bond module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../apidoc/mbuild.html#module-mbuild.box">mbuild.box module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../apidoc/mbuild.html#module-mbuild.compound">mbuild.compound module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../apidoc/mbuild.html#module-mbuild.coordinate_transform">mbuild.coordinate_transform module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../apidoc/mbuild.html#module-mbuild.has_parts_mixin">mbuild.has_parts_mixin module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../apidoc/mbuild.html#module-mbuild.mbase">mbuild.mbase module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../apidoc/mbuild.html#module-mbuild.orderedset">mbuild.orderedset module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../apidoc/mbuild.html#module-mbuild.part_mixin">mbuild.part_mixin module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../apidoc/mbuild.html#module-mbuild.periodic_kdtree">mbuild.periodic_kdtree module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../apidoc/mbuild.html#module-mbuild.port">mbuild.port module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../apidoc/mbuild.html#mbuild-topology-module">mbuild.topology module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../apidoc/mbuild.html#mbuild-trajectory-module">mbuild.trajectory module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../apidoc/mbuild.html#module-mbuild.treeview">mbuild.treeview module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../apidoc/mbuild.html#module-mbuild">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../apidoc/mbuild.tools.html">mbuild.tools package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../../apidoc/mbuild.tools.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../apidoc/mbuild.tools.html#module-mbuild.tools.compute">mbuild.tools.compute module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../apidoc/mbuild.tools.html#module-mbuild.tools.mask">mbuild.tools.mask module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../apidoc/mbuild.tools.html#module-mbuild.tools.polymer">mbuild.tools.polymer module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../apidoc/mbuild.tools.html#module-mbuild.tools.solvent">mbuild.tools.solvent module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../apidoc/mbuild.tools.html#module-mbuild.tools.tiled_compound">mbuild.tools.tiled_compound module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../apidoc/mbuild.tools.html#module-mbuild.tools">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../apidoc/mbuild.formats.html">mbuild.formats package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../../apidoc/mbuild.formats.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../apidoc/mbuild.formats.html#module-mbuild.formats.gromacs">mbuild.formats.gromacs module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../apidoc/mbuild.formats.html#mbuild-formats-hoomdxml-module">mbuild.formats.hoomdxml module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../apidoc/mbuild.formats.html#mbuild-formats-lammps-module">mbuild.formats.lammps module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../apidoc/mbuild.formats.html#mbuild-formats-lammps-data-module">mbuild.formats.lammps_data module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../apidoc/mbuild.formats.html#module-mbuild.formats.mol2">mbuild.formats.mol2 module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../apidoc/mbuild.formats.html#mbuild-formats-xyz-module">mbuild.formats.xyz module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../apidoc/mbuild.formats.html#module-mbuild.formats">Module contents</a></li>
+</ul>
+</li>
+</ul>
+
+        
+      </div>
+      &nbsp;
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="../../../../index.html">mbuild</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../../../../index.html">Docs</a> &raquo;</li>
+      
+          <li><a href="../../../index.html">Module code</a> &raquo;</li>
+      
+    <li>mbuild.tools.parameterize.oplsaa</li>
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main">
+            
+  <h1>Source code for mbuild.tools.parameterize.oplsaa</h1><div class="highlight"><pre>
+<span class="kn">from</span> <span class="nn">atomtyper</span> <span class="kn">import</span> <span class="p">(</span><span class="n">Element</span><span class="p">,</span> <span class="n">NeighborCount</span><span class="p">,</span> <span class="n">NeighborsAtLeast</span><span class="p">,</span>
+    <span class="n">NeighborsAtMost</span><span class="p">,</span> <span class="n">NeighborsExactly</span><span class="p">,</span> <span class="n">Whitelist</span><span class="p">,</span> <span class="n">Blacklist</span><span class="p">,</span> <span class="n">check_atom</span><span class="p">,</span>
+    <span class="n">InWhitelist</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">chemical_groups</span> <span class="kn">import</span> <span class="n">benzene</span><span class="p">,</span> <span class="n">dioxolane13</span>
+
+
+<span class="c"># -------------- #</span>
+<span class="c"># House of rules #</span>
+<span class="c"># -------------- #</span>
+
+<span class="nd">@Element</span><span class="p">(</span><span class="s">&#39;C&#39;</span><span class="p">)</span>
+<span class="nd">@NeighborCount</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span>
+<span class="nd">@NeighborsExactly</span><span class="p">(</span><span class="s">&#39;C&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="nd">@NeighborsExactly</span><span class="p">(</span><span class="s">&#39;H&#39;</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+<span class="nd">@Whitelist</span><span class="p">(</span><span class="mi">135</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">opls_135</span><span class="p">(</span><span class="n">atom</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;alkane CH3 &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="bp">True</span>
+
+
+<span class="nd">@Element</span><span class="p">(</span><span class="s">&#39;C&#39;</span><span class="p">)</span>
+<span class="nd">@NeighborCount</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span>
+<span class="nd">@NeighborsExactly</span><span class="p">(</span><span class="s">&#39;C&#39;</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+<span class="nd">@NeighborsExactly</span><span class="p">(</span><span class="s">&#39;H&#39;</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+<span class="nd">@Whitelist</span><span class="p">(</span><span class="mi">136</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">opls_136</span><span class="p">(</span><span class="n">atom</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;alkane CH2 &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="bp">True</span>
+
+
+<span class="nd">@Element</span><span class="p">(</span><span class="s">&#39;C&#39;</span><span class="p">)</span>
+<span class="nd">@NeighborCount</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span>
+<span class="nd">@NeighborsExactly</span><span class="p">(</span><span class="s">&#39;C&#39;</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+<span class="nd">@NeighborsExactly</span><span class="p">(</span><span class="s">&#39;H&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="nd">@Whitelist</span><span class="p">(</span><span class="mi">137</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">opls_137</span><span class="p">(</span><span class="n">atom</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;alkane CH &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="bp">True</span>
+
+
+<span class="nd">@Element</span><span class="p">(</span><span class="s">&#39;C&#39;</span><span class="p">)</span>
+<span class="nd">@NeighborCount</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span>
+<span class="nd">@NeighborsExactly</span><span class="p">(</span><span class="s">&#39;H&#39;</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span>
+<span class="nd">@Whitelist</span><span class="p">(</span><span class="mi">138</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">opls_138</span><span class="p">(</span><span class="n">atom</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;alkane CH4 &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="bp">True</span>
+
+
+<span class="nd">@Element</span><span class="p">(</span><span class="s">&#39;C&#39;</span><span class="p">)</span>
+<span class="nd">@NeighborCount</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span>
+<span class="nd">@NeighborsExactly</span><span class="p">(</span><span class="s">&#39;C&#39;</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span>
+<span class="nd">@Whitelist</span><span class="p">(</span><span class="mi">139</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">opls_139</span><span class="p">(</span><span class="n">atom</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;alkane C &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="bp">True</span>
+
+
+<span class="nd">@Element</span><span class="p">(</span><span class="s">&#39;H&#39;</span><span class="p">)</span>
+<span class="nd">@NeighborCount</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+<span class="nd">@NeighborsExactly</span><span class="p">(</span><span class="s">&#39;C&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="nd">@Whitelist</span><span class="p">(</span><span class="mi">140</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">opls_140</span><span class="p">(</span><span class="n">atom</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;alkane H &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="bp">True</span>
+
+
+<span class="nd">@Element</span><span class="p">(</span><span class="s">&#39;C&#39;</span><span class="p">)</span>
+<span class="nd">@NeighborCount</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+<span class="nd">@NeighborsExactly</span><span class="p">(</span><span class="s">&#39;C&#39;</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+<span class="nd">@Whitelist</span><span class="p">(</span><span class="mi">141</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">opls_141</span><span class="p">(</span><span class="n">atom</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;alkene C (R2-C=) &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="bp">True</span>
+
+
+<span class="nd">@Element</span><span class="p">(</span><span class="s">&#39;C&#39;</span><span class="p">)</span>
+<span class="nd">@NeighborCount</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+<span class="nd">@NeighborsExactly</span><span class="p">(</span><span class="s">&#39;C&#39;</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+<span class="nd">@NeighborsExactly</span><span class="p">(</span><span class="s">&#39;H&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="nd">@Whitelist</span><span class="p">(</span><span class="mi">142</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">opls_142</span><span class="p">(</span><span class="n">atom</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;alkene C (RH-C=) &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="bp">True</span>
+
+
+<span class="nd">@Element</span><span class="p">(</span><span class="s">&#39;C&#39;</span><span class="p">)</span>
+<span class="nd">@NeighborCount</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+<span class="nd">@NeighborsExactly</span><span class="p">(</span><span class="s">&#39;C&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="nd">@NeighborsExactly</span><span class="p">(</span><span class="s">&#39;H&#39;</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+<span class="nd">@Whitelist</span><span class="p">(</span><span class="mi">143</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">opls_143</span><span class="p">(</span><span class="n">atom</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;alkene C (H2-C=) &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="bp">True</span>
+
+
+<span class="nd">@Element</span><span class="p">(</span><span class="s">&#39;H&#39;</span><span class="p">)</span>
+<span class="nd">@NeighborCount</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+<span class="nd">@NeighborsExactly</span><span class="p">(</span><span class="s">&#39;C&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="nd">@Whitelist</span><span class="p">(</span><span class="mi">144</span><span class="p">)</span>
+<span class="nd">@Blacklist</span><span class="p">(</span><span class="mi">140</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">opls_144</span><span class="p">(</span><span class="n">atom</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;alkene H (H-C=) &quot;&quot;&quot;</span>
+    <span class="c"># Make sure that the carbon is an alkene carbon.</span>
+    <span class="n">rule_ids</span> <span class="o">=</span> <span class="p">[</span><span class="mi">141</span><span class="p">,</span> <span class="mi">142</span><span class="p">,</span> <span class="mi">143</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">check_atom</span><span class="p">(</span><span class="n">atom</span><span class="o">.</span><span class="n">neighbors</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">rule_ids</span><span class="p">)</span>
+
+
+<span class="nd">@Element</span><span class="p">(</span><span class="s">&#39;C&#39;</span><span class="p">)</span>
+<span class="nd">@NeighborCount</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+<span class="nd">@NeighborsAtLeast</span><span class="p">(</span><span class="s">&#39;C&#39;</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+<span class="nd">@Whitelist</span><span class="p">(</span><span class="mi">145</span><span class="p">)</span>
+<span class="nd">@Blacklist</span><span class="p">([</span><span class="mi">141</span><span class="p">,</span> <span class="mi">142</span><span class="p">])</span>
+<span class="k">def</span> <span class="nf">opls_145</span><span class="p">(</span><span class="n">atom</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Benzene C - 12 site JACS,112,4768-90. Use #145B for biphenyl &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">benzene</span><span class="p">(</span><span class="n">atom</span><span class="p">)</span>
+
+
+<span class="nd">@Element</span><span class="p">(</span><span class="s">&#39;C&#39;</span><span class="p">)</span>
+<span class="nd">@NeighborCount</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+<span class="nd">@NeighborsExactly</span><span class="p">(</span><span class="s">&#39;C&#39;</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+<span class="nd">@Whitelist</span><span class="p">(</span><span class="s">&#39;145B&#39;</span><span class="p">)</span>
+<span class="nd">@Blacklist</span><span class="p">([</span><span class="mi">145</span><span class="p">])</span>
+<span class="k">def</span> <span class="nf">opls_145B</span><span class="p">(</span><span class="n">atom</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Biphenyl C1 &quot;&quot;&quot;</span>
+    <span class="c"># Store for checking neighbors outside the first ring.</span>
+    <span class="n">ring_one</span> <span class="o">=</span> <span class="n">benzene</span><span class="p">(</span><span class="n">atom</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">ring_one</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">neighbor</span> <span class="ow">in</span> <span class="n">atom</span><span class="o">.</span><span class="n">neighbors</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">neighbor</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">ring_one</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">benzene</span><span class="p">(</span><span class="n">neighbor</span><span class="p">):</span>
+                    <span class="k">return</span> <span class="bp">True</span>
+
+
+<span class="nd">@Element</span><span class="p">(</span><span class="s">&#39;H&#39;</span><span class="p">)</span>
+<span class="nd">@NeighborCount</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+<span class="nd">@NeighborsExactly</span><span class="p">(</span><span class="s">&#39;C&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="nd">@Whitelist</span><span class="p">(</span><span class="mi">146</span><span class="p">)</span>
+<span class="nd">@Blacklist</span><span class="p">([</span><span class="mi">140</span><span class="p">,</span> <span class="mi">144</span><span class="p">])</span>
+<span class="k">def</span> <span class="nf">opls_146</span><span class="p">(</span><span class="n">atom</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Benzene H - 12 site. &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">check_atom</span><span class="p">(</span><span class="n">atom</span><span class="o">.</span><span class="n">neighbors</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="mi">145</span><span class="p">)</span>
+
+
+<span class="nd">@Element</span><span class="p">(</span><span class="s">&#39;C&#39;</span><span class="p">)</span>
+<span class="nd">@NeighborCount</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span>
+<span class="nd">@NeighborsExactly</span><span class="p">(</span><span class="s">&#39;C&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="nd">@NeighborsExactly</span><span class="p">(</span><span class="s">&#39;H&#39;</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+<span class="nd">@Whitelist</span><span class="p">(</span><span class="mi">148</span><span class="p">)</span>
+<span class="nd">@Blacklist</span><span class="p">(</span><span class="mi">135</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">opls_148</span><span class="p">(</span><span class="n">atom</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;C: CH3, toluene &quot;&quot;&quot;</span>
+    <span class="k">for</span> <span class="n">neighbor</span> <span class="ow">in</span> <span class="n">atom</span><span class="o">.</span><span class="n">neighbors</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">neighbor</span><span class="o">.</span><span class="n">kind</span> <span class="o">==</span> <span class="s">&#39;C&#39;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">check_atom</span><span class="p">(</span><span class="n">neighbor</span><span class="p">,</span> <span class="mi">145</span><span class="p">):</span>
+                <span class="k">return</span> <span class="bp">True</span>
+
+
+<span class="nd">@Element</span><span class="p">(</span><span class="s">&#39;C&#39;</span><span class="p">)</span>
+<span class="nd">@NeighborCount</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span>
+<span class="nd">@NeighborsExactly</span><span class="p">(</span><span class="s">&#39;C&#39;</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+<span class="nd">@NeighborsExactly</span><span class="p">(</span><span class="s">&#39;H&#39;</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+<span class="nd">@Whitelist</span><span class="p">(</span><span class="mi">149</span><span class="p">)</span>
+<span class="nd">@Blacklist</span><span class="p">(</span><span class="mi">136</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">opls_149</span><span class="p">(</span><span class="n">atom</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;C: CH2, ethyl benzene &quot;&quot;&quot;</span>
+    <span class="k">for</span> <span class="n">neighbor</span> <span class="ow">in</span> <span class="n">atom</span><span class="o">.</span><span class="n">neighbors</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">neighbor</span><span class="o">.</span><span class="n">kind</span> <span class="o">==</span> <span class="s">&#39;C&#39;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">check_atom</span><span class="p">(</span><span class="n">neighbor</span><span class="p">,</span> <span class="mi">145</span><span class="p">):</span>
+                <span class="k">return</span> <span class="bp">True</span>
+
+
+<span class="nd">@Element</span><span class="p">(</span><span class="s">&#39;O&#39;</span><span class="p">)</span>
+<span class="nd">@NeighborCount</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+<span class="nd">@NeighborsExactly</span><span class="p">(</span><span class="s">&#39;H&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="nd">@Whitelist</span><span class="p">(</span><span class="mi">154</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">opls_154</span><span class="p">(</span><span class="n">atom</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;all-atom O: mono alcohols &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="bp">True</span>
+
+
+<span class="nd">@Element</span><span class="p">(</span><span class="s">&#39;H&#39;</span><span class="p">)</span>
+<span class="nd">@NeighborCount</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+<span class="nd">@NeighborsExactly</span><span class="p">(</span><span class="s">&#39;O&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="nd">@Whitelist</span><span class="p">(</span><span class="mi">155</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">opls_155</span><span class="p">(</span><span class="n">atom</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;all-atom H(O): mono alcohols, OP(=O)2 &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">check_atom</span><span class="p">(</span><span class="n">atom</span><span class="o">.</span><span class="n">neighbors</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="mi">154</span><span class="p">)</span>
+
+
+<span class="nd">@Element</span><span class="p">(</span><span class="s">&#39;C&#39;</span><span class="p">)</span>
+<span class="nd">@NeighborCount</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span>
+<span class="nd">@NeighborsExactly</span><span class="p">(</span><span class="s">&#39;O&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="nd">@NeighborsExactly</span><span class="p">(</span><span class="s">&#39;C&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="nd">@NeighborsExactly</span><span class="p">(</span><span class="s">&#39;H&#39;</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+<span class="nd">@Whitelist</span><span class="p">(</span><span class="mi">218</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">opls_218</span><span class="p">(</span><span class="n">atom</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;C in CH2OH - benzyl alcohols &quot;&quot;&quot;</span>
+    <span class="n">benzene_carbon</span> <span class="o">=</span> <span class="bp">False</span>
+    <span class="n">alcohol_oxygen</span> <span class="o">=</span> <span class="bp">False</span>
+    <span class="k">for</span> <span class="n">neighbor</span> <span class="ow">in</span> <span class="n">atom</span><span class="o">.</span><span class="n">neighbors</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">neighbor</span><span class="o">.</span><span class="n">kind</span> <span class="o">==</span> <span class="s">&#39;C&#39;</span><span class="p">:</span>
+            <span class="n">benzene_carbon</span> <span class="o">=</span> <span class="n">check_atom</span><span class="p">(</span><span class="n">neighbor</span><span class="p">,</span> <span class="mi">145</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">neighbor</span><span class="o">.</span><span class="n">kind</span> <span class="o">==</span> <span class="s">&#39;O&#39;</span><span class="p">:</span>
+            <span class="n">alcohol_oxygen</span> <span class="o">=</span> <span class="n">check_atom</span><span class="p">(</span><span class="n">neighbor</span><span class="p">,</span> <span class="mi">154</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">benzene_carbon</span> <span class="ow">and</span> <span class="n">alcohol_oxygen</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">True</span>
+
+
+<span class="nd">@Element</span><span class="p">(</span><span class="s">&#39;C&#39;</span><span class="p">)</span>
+<span class="nd">@NeighborCount</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+<span class="nd">@NeighborsExactly</span><span class="p">(</span><span class="s">&#39;C&#39;</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+<span class="nd">@Whitelist</span><span class="p">(</span><span class="mi">221</span><span class="p">)</span>
+<span class="nd">@Blacklist</span><span class="p">([</span><span class="mi">145</span><span class="p">,</span> <span class="s">&#39;145B&#39;</span><span class="p">])</span>
+<span class="k">def</span> <span class="nf">opls_221</span><span class="p">(</span><span class="n">atom</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;C(CH2OH)   - benzyl alcohols &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">check_atom</span><span class="p">(</span><span class="n">atom</span><span class="p">,</span> <span class="mi">145</span><span class="p">):</span>  <span class="c"># Already identified as part of benzene.</span>
+        <span class="k">for</span> <span class="n">neighbor</span> <span class="ow">in</span> <span class="n">atom</span><span class="o">.</span><span class="n">neighbors</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">check_atom</span><span class="p">(</span><span class="n">neighbor</span><span class="p">,</span> <span class="mi">218</span><span class="p">):</span>
+                <span class="k">return</span> <span class="bp">True</span>
+
+
+<span class="nd">@Element</span><span class="p">(</span><span class="s">&#39;C&#39;</span><span class="p">)</span>
+<span class="nd">@NeighborCount</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+<span class="nd">@NeighborsExactly</span><span class="p">(</span><span class="s">&#39;C&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="nd">@NeighborsExactly</span><span class="p">(</span><span class="s">&#39;H&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="nd">@NeighborsExactly</span><span class="p">(</span><span class="s">&#39;O&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="nd">@Whitelist</span><span class="p">(</span><span class="mi">232</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">opls_232</span><span class="p">(</span><span class="n">atom</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;C: C=0 in benzaldehyde, acetophenone (CH) &quot;&quot;&quot;</span>
+    <span class="k">for</span> <span class="n">neighbor</span> <span class="ow">in</span> <span class="n">atom</span><span class="o">.</span><span class="n">neighbors</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">neighbor</span><span class="o">.</span><span class="n">kind</span> <span class="o">==</span> <span class="s">&#39;C&#39;</span><span class="p">:</span>
+            <span class="n">benzene_carbon</span> <span class="o">=</span> <span class="n">check_atom</span><span class="p">(</span><span class="n">neighbor</span><span class="p">,</span> <span class="mi">145</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">neighbor</span><span class="o">.</span><span class="n">kind</span> <span class="o">==</span> <span class="s">&#39;O&#39;</span><span class="p">:</span>
+            <span class="n">aldehyde_oxygen</span> <span class="o">=</span> <span class="n">check_atom</span><span class="p">(</span><span class="n">neighbor</span><span class="p">,</span> <span class="mi">278</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">benzene_carbon</span> <span class="ow">and</span> <span class="n">aldehyde_oxygen</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">True</span>
+
+
+<span class="nd">@Element</span><span class="p">(</span><span class="s">&#39;C&#39;</span><span class="p">)</span>
+<span class="nd">@NeighborCount</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+<span class="nd">@NeighborsExactly</span><span class="p">(</span><span class="s">&#39;C&#39;</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+<span class="nd">@NeighborsExactly</span><span class="p">(</span><span class="s">&#39;O&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="nd">@Whitelist</span><span class="p">(</span><span class="mi">233</span><span class="p">)</span>
+<span class="nd">@Blacklist</span><span class="p">(</span><span class="mi">145</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">opls_233</span><span class="p">(</span><span class="n">atom</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;C: C=0 in acetophenone (CMe) &quot;&quot;&quot;</span>
+    <span class="k">for</span> <span class="n">neighbor</span> <span class="ow">in</span> <span class="n">atom</span><span class="o">.</span><span class="n">neighbors</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">neighbor</span><span class="o">.</span><span class="n">kind</span> <span class="o">==</span> <span class="s">&#39;C&#39;</span><span class="p">:</span>
+            <span class="n">benzene_carbon</span> <span class="o">=</span> <span class="n">check_atom</span><span class="p">(</span><span class="n">neighbor</span><span class="p">,</span> <span class="mi">145</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">neighbor</span><span class="o">.</span><span class="n">kind</span> <span class="o">==</span> <span class="s">&#39;O&#39;</span><span class="p">:</span>
+            <span class="n">aldehyde_oxygen</span> <span class="o">=</span> <span class="n">check_atom</span><span class="p">(</span><span class="n">neighbor</span><span class="p">,</span> <span class="mi">278</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">benzene_carbon</span> <span class="ow">and</span> <span class="n">aldehyde_oxygen</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">True</span>
+
+
+<span class="nd">@Element</span><span class="p">(</span><span class="s">&#39;C&#39;</span><span class="p">)</span>
+<span class="nd">@InWhitelist</span><span class="p">(</span><span class="mi">145</span><span class="p">)</span>
+<span class="nd">@NeighborCount</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+<span class="nd">@NeighborsExactly</span><span class="p">(</span><span class="s">&#39;C&#39;</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+<span class="nd">@NeighborsExactly</span><span class="p">(</span><span class="s">&#39;CL&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="nd">@Whitelist</span><span class="p">(</span><span class="mi">263</span><span class="p">)</span>
+<span class="nd">@Blacklist</span><span class="p">(</span><span class="mi">145</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">opls_263</span><span class="p">(</span><span class="n">atom</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;C(Cl) chlorobenzene &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="bp">True</span>
+
+
+<span class="nd">@Element</span><span class="p">(</span><span class="s">&#39;CL&#39;</span><span class="p">)</span>
+<span class="nd">@NeighborCount</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+<span class="nd">@NeighborsExactly</span><span class="p">(</span><span class="s">&#39;C&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="nd">@Whitelist</span><span class="p">(</span><span class="mi">264</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">opls_264</span><span class="p">(</span><span class="n">atom</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Cl chlorobenzene &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">benzene</span><span class="p">(</span><span class="n">atom</span><span class="o">.</span><span class="n">neighbors</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+
+
+<span class="nd">@Element</span><span class="p">(</span><span class="s">&#39;O&#39;</span><span class="p">)</span>
+<span class="nd">@NeighborCount</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+<span class="nd">@NeighborsExactly</span><span class="p">(</span><span class="s">&#39;C&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="nd">@Whitelist</span><span class="p">(</span><span class="mi">278</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">opls_278</span><span class="p">(</span><span class="n">atom</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;AA O: aldehyde &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="bp">True</span>
+
+
+<span class="nd">@Element</span><span class="p">(</span><span class="s">&#39;H&#39;</span><span class="p">)</span>
+<span class="nd">@NeighborCount</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+<span class="nd">@NeighborsExactly</span><span class="p">(</span><span class="s">&#39;C&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="nd">@NeighborsExactly</span><span class="p">(</span><span class="mi">277</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="nd">@Whitelist</span><span class="p">(</span><span class="mi">279</span><span class="p">)</span>
+<span class="nd">@Blacklist</span><span class="p">(</span><span class="mi">140</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">opls_279</span><span class="p">(</span><span class="n">atom</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;AA H-alpha in aldehyde &amp; formamide &quot;&quot;&quot;</span>
+    <span class="c"># TODO: 232 needs to blacklist 277</span>
+    <span class="c">#return check_atom(atom.neighbors[0], [232, 277])</span>
+    <span class="k">return</span> <span class="bp">True</span>
+
+
+<span class="nd">@Element</span><span class="p">(</span><span class="s">&#39;O&#39;</span><span class="p">)</span>
+<span class="nd">@NeighborCount</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+<span class="nd">@NeighborsExactly</span><span class="p">(</span><span class="s">&#39;C&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="nd">@NeighborsExactly</span><span class="p">(</span><span class="s">&#39;233&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="nd">@Whitelist</span><span class="p">(</span><span class="mi">281</span><span class="p">)</span>
+<span class="nd">@Blacklist</span><span class="p">(</span><span class="mi">278</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">opls_281</span><span class="p">(</span><span class="n">atom</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;AA O: ketone &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="bp">True</span>
+
+
+<span class="nd">@Element</span><span class="p">(</span><span class="s">&#39;C&#39;</span><span class="p">)</span>
+<span class="nd">@NeighborCount</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+<span class="nd">@NeighborsExactly</span><span class="p">(</span><span class="s">&#39;O&#39;</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+<span class="nd">@NeighborsExactly</span><span class="p">(</span><span class="s">&#39;C&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="nd">@Whitelist</span><span class="p">(</span><span class="mi">465</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">opls_465</span><span class="p">(</span><span class="n">atom</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;AA C: esters - for R on C=O use #280-#282 &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="bp">True</span>
+
+
+<span class="nd">@Element</span><span class="p">(</span><span class="s">&#39;O&#39;</span><span class="p">)</span>
+<span class="nd">@NeighborCount</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+<span class="nd">@NeighborsExactly</span><span class="p">(</span><span class="s">&#39;C&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="nd">@NeighborsExactly</span><span class="p">(</span><span class="s">&#39;465&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="nd">@Whitelist</span><span class="p">(</span><span class="mi">466</span><span class="p">)</span>
+<span class="nd">@Blacklist</span><span class="p">(</span><span class="mi">278</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">opls_466</span><span class="p">(</span><span class="n">atom</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;AA =O: esters &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="bp">True</span>
+
+
+<span class="nd">@Element</span><span class="p">(</span><span class="s">&#39;O&#39;</span><span class="p">)</span>
+<span class="nd">@NeighborCount</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+<span class="nd">@NeighborsExactly</span><span class="p">(</span><span class="s">&#39;C&#39;</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+<span class="nd">@NeighborsAtLeast</span><span class="p">(</span><span class="s">&#39;465&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="nd">@Whitelist</span><span class="p">(</span><span class="mi">467</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">opls_467</span><span class="p">(</span><span class="n">atom</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;AA -OR: ester &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="bp">True</span>
+
+
+<span class="nd">@Element</span><span class="p">(</span><span class="s">&#39;H&#39;</span><span class="p">)</span>
+<span class="nd">@NeighborCount</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+<span class="nd">@NeighborsExactly</span><span class="p">(</span><span class="s">&#39;C&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="nd">@NeighborsExactly</span><span class="p">(</span><span class="s">&#39;490&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="nd">@Whitelist</span><span class="p">(</span><span class="mi">469</span><span class="p">)</span>
+<span class="nd">@Blacklist</span><span class="p">(</span><span class="mi">140</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">opls_469</span><span class="p">(</span><span class="n">atom</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;methoxy Hs in esters &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="bp">True</span>
+
+
+<span class="nd">@Element</span><span class="p">(</span><span class="s">&#39;C&#39;</span><span class="p">)</span>
+<span class="nd">@NeighborCount</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span>
+<span class="nd">@NeighborsExactly</span><span class="p">(</span><span class="s">&#39;C&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="nd">@NeighborsExactly</span><span class="p">(</span><span class="s">&#39;O&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="nd">@NeighborsExactly</span><span class="p">(</span><span class="s">&#39;467&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="nd">@NeighborsExactly</span><span class="p">(</span><span class="s">&#39;H&#39;</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+<span class="nd">@Whitelist</span><span class="p">(</span><span class="mi">490</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">opls_490</span><span class="p">(</span><span class="n">atom</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;C(H2OS) ethyl ester &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="bp">True</span>
+
+
+<span class="nd">@Element</span><span class="p">(</span><span class="s">&#39;C&#39;</span><span class="p">)</span>
+<span class="nd">@NeighborCount</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span>
+<span class="nd">@NeighborsExactly</span><span class="p">(</span><span class="s">&#39;C&#39;</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+<span class="nd">@NeighborsExactly</span><span class="p">(</span><span class="s">&#39;145&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="nd">@NeighborsExactly</span><span class="p">(</span><span class="s">&#39;H&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="nd">@Whitelist</span><span class="p">(</span><span class="mi">515</span><span class="p">)</span>
+<span class="nd">@Blacklist</span><span class="p">(</span><span class="mi">137</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">opls_515</span><span class="p">(</span><span class="n">atom</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;all-atom C: CH, isopropyl benzene &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="bp">True</span>
+
+
+<span class="nd">@Element</span><span class="p">(</span><span class="s">&#39;C&#39;</span><span class="p">)</span>
+<span class="nd">@InWhitelist</span><span class="p">(</span><span class="s">&#39;145&#39;</span><span class="p">)</span>
+<span class="nd">@NeighborCount</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+<span class="nd">@NeighborsExactly</span><span class="p">(</span><span class="s">&#39;C&#39;</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+<span class="nd">@NeighborsExactly</span><span class="p">(</span><span class="s">&#39;725&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="nd">@Whitelist</span><span class="p">(</span><span class="mi">724</span><span class="p">)</span>
+<span class="nd">@Blacklist</span><span class="p">([</span><span class="mi">145</span><span class="p">,</span> <span class="mi">221</span><span class="p">])</span>
+<span class="k">def</span> <span class="nf">opls_724</span><span class="p">(</span><span class="n">atom</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;C(CF3) trifluoromethylbenzene &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="bp">True</span>
+
+
+<span class="nd">@Element</span><span class="p">(</span><span class="s">&#39;C&#39;</span><span class="p">)</span>
+<span class="nd">@NeighborCount</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span>
+<span class="nd">@NeighborsExactly</span><span class="p">(</span><span class="s">&#39;C&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="nd">@NeighborsExactly</span><span class="p">(</span><span class="s">&#39;145&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="nd">@NeighborsExactly</span><span class="p">(</span><span class="s">&#39;F&#39;</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+<span class="nd">@Whitelist</span><span class="p">(</span><span class="mi">725</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">opls_725</span><span class="p">(</span><span class="n">atom</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;CF3 trifluoromethylbenzene &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="bp">True</span>
+
+
+<span class="nd">@Element</span><span class="p">(</span><span class="s">&#39;F&#39;</span><span class="p">)</span>
+<span class="nd">@NeighborCount</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+<span class="nd">@NeighborsExactly</span><span class="p">(</span><span class="s">&#39;C&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="nd">@NeighborsExactly</span><span class="p">(</span><span class="s">&#39;725&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="nd">@Whitelist</span><span class="p">(</span><span class="mi">726</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">opls_726</span><span class="p">(</span><span class="n">atom</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;F trifluoromethylbenzene &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="bp">True</span>
+
+
+<span class="nd">@Element</span><span class="p">(</span><span class="s">&#39;N&#39;</span><span class="p">)</span>
+<span class="nd">@NeighborCount</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+<span class="nd">@NeighborsExactly</span><span class="p">(</span><span class="s">&#39;O&#39;</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+<span class="nd">@NeighborsExactly</span><span class="p">(</span><span class="s">&#39;C&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="nd">@Whitelist</span><span class="p">(</span><span class="mi">760</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">opls_760</span><span class="p">(</span><span class="n">atom</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;N in nitro R-NO2 &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="bp">True</span>
+
+
+<span class="nd">@Element</span><span class="p">(</span><span class="s">&#39;O&#39;</span><span class="p">)</span>
+<span class="nd">@NeighborCount</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+<span class="nd">@NeighborsExactly</span><span class="p">(</span><span class="s">&#39;N&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="nd">@Whitelist</span><span class="p">(</span><span class="mi">761</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">opls_761</span><span class="p">(</span><span class="n">atom</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;O in nitro R-NO2 &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="bp">True</span>
+
+
+<span class="nd">@Element</span><span class="p">(</span><span class="s">&#39;C&#39;</span><span class="p">)</span>
+<span class="nd">@InWhitelist</span><span class="p">(</span><span class="s">&#39;145&#39;</span><span class="p">)</span>
+<span class="nd">@NeighborCount</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+<span class="nd">@NeighborsExactly</span><span class="p">(</span><span class="s">&#39;C&#39;</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+<span class="nd">@NeighborsExactly</span><span class="p">(</span><span class="s">&#39;N&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="nd">@NeighborsExactly</span><span class="p">(</span><span class="s">&#39;760&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="nd">@Whitelist</span><span class="p">(</span><span class="mi">768</span><span class="p">)</span>
+<span class="nd">@Blacklist</span><span class="p">(</span><span class="mi">145</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">opls_768</span><span class="p">(</span><span class="n">atom</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;C(NO2) nitrobenzene &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="bp">True</span>
+
+
+<span class="nd">@Element</span><span class="p">(</span><span class="s">&#39;O&#39;</span><span class="p">)</span>
+<span class="nd">@NeighborCount</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+<span class="nd">@NeighborsExactly</span><span class="p">(</span><span class="s">&#39;C&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="nd">@Whitelist</span><span class="p">(</span><span class="mi">771</span><span class="p">)</span>
+<span class="nd">@Blacklist</span><span class="p">(</span><span class="mi">278</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">opls_771</span><span class="p">(</span><span class="n">atom</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;propylene carbonate O &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">dioxolane13</span><span class="p">(</span><span class="n">atom</span><span class="o">.</span><span class="n">neighbors</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
+        <span class="k">for</span> <span class="n">neighbors_neighbor</span> <span class="ow">in</span> <span class="n">atom</span><span class="o">.</span><span class="n">neighbors</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">neighbors</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">neighbors_neighbor</span><span class="o">.</span><span class="n">kind</span> <span class="o">!=</span> <span class="s">&#39;O&#39;</span><span class="p">:</span>
+                <span class="k">return</span> <span class="bp">False</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">True</span>
+    <span class="k">return</span> <span class="bp">False</span>
+
+
+<span class="nd">@Element</span><span class="p">(</span><span class="s">&#39;C&#39;</span><span class="p">)</span>
+<span class="nd">@NeighborCount</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+<span class="nd">@NeighborsExactly</span><span class="p">(</span><span class="s">&#39;O&#39;</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+<span class="nd">@Whitelist</span><span class="p">(</span><span class="mi">772</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">opls_772</span><span class="p">(</span><span class="n">atom</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;propylene carbonate C=O &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">dioxolane13</span><span class="p">(</span><span class="n">atom</span><span class="p">)</span>
+
+
+<span class="nd">@Element</span><span class="p">(</span><span class="s">&#39;O&#39;</span><span class="p">)</span>
+<span class="nd">@NeighborCount</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+<span class="nd">@NeighborsExactly</span><span class="p">(</span><span class="s">&#39;C&#39;</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+<span class="nd">@Whitelist</span><span class="p">(</span><span class="mi">773</span><span class="p">)</span>
+<span class="nd">@Blacklist</span><span class="p">(</span><span class="mi">467</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">opls_773</span><span class="p">(</span><span class="n">atom</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;propylene carbonate OS &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">dioxolane13</span><span class="p">(</span><span class="n">atom</span><span class="p">)</span>
+
+
+<span class="nd">@Element</span><span class="p">(</span><span class="s">&#39;C&#39;</span><span class="p">)</span>
+<span class="nd">@NeighborCount</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span>
+<span class="nd">@NeighborsExactly</span><span class="p">(</span><span class="s">&#39;C&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="nd">@NeighborsExactly</span><span class="p">(</span><span class="s">&#39;O&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="nd">@NeighborsExactly</span><span class="p">(</span><span class="s">&#39;H&#39;</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+<span class="nd">@Whitelist</span><span class="p">(</span><span class="mi">774</span><span class="p">)</span>
+<span class="nd">@Blacklist</span><span class="p">([</span><span class="mi">218</span><span class="p">,</span> <span class="mi">490</span><span class="p">])</span>
+<span class="k">def</span> <span class="nf">opls_774</span><span class="p">(</span><span class="n">atom</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;propylene carbonate C in CH2 &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">dioxolane13</span><span class="p">(</span><span class="n">atom</span><span class="p">)</span>
+
+
+<span class="nd">@Element</span><span class="p">(</span><span class="s">&#39;H&#39;</span><span class="p">)</span>
+<span class="nd">@NeighborCount</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+<span class="nd">@NeighborsExactly</span><span class="p">(</span><span class="s">&#39;C&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="nd">@NeighborsExactly</span><span class="p">(</span><span class="s">&#39;774&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="nd">@Whitelist</span><span class="p">(</span><span class="mi">777</span><span class="p">)</span>
+<span class="nd">@Blacklist</span><span class="p">(</span><span class="mi">140</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">opls_777</span><span class="p">(</span><span class="n">atom</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;propylene carbonate H in CH2 &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="bp">True</span>
+
+
+<span class="nd">@Element</span><span class="p">(</span><span class="s">&#39;C&#39;</span><span class="p">)</span>
+<span class="nd">@InWhitelist</span><span class="p">(</span><span class="mi">145</span><span class="p">)</span>
+<span class="nd">@NeighborCount</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+<span class="nd">@NeighborsExactly</span><span class="p">(</span><span class="s">&#39;C&#39;</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+<span class="nd">@NeighborsExactly</span><span class="p">(</span><span class="s">&#39;N&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="nd">@Whitelist</span><span class="p">(</span><span class="mi">916</span><span class="p">)</span>
+<span class="nd">@Blacklist</span><span class="p">(</span><span class="mi">145</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">opls_916</span><span class="p">(</span><span class="n">atom</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;C(NH2) aniline &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="bp">True</span>
+
+
+<div class="viewcode-block" id="get_opls_fn"><a class="viewcode-back" href="../../../../mbuild.tools.parameterize.html#mbuild.tools.parameterize.oplsaa.get_opls_fn">[docs]</a><span class="k">def</span> <span class="nf">get_opls_fn</span><span class="p">(</span><span class="n">name</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Get the full path to a file used to validate the OPLS-aa atomtyper.</span>
+
+<span class="sd">    In the source distribution, these files are in ``opls_validation``.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        name (str): Name of the file to load.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="kn">import</span> <span class="nn">os</span>
+    <span class="kn">from</span> <span class="nn">pkg_resources</span> <span class="kn">import</span> <span class="n">resource_filename</span>
+    <span class="n">fn</span> <span class="o">=</span> <span class="n">resource_filename</span><span class="p">(</span><span class="s">&#39;mbuild&#39;</span><span class="p">,</span>
+                           <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="s">&#39;..&#39;</span><span class="p">,</span> <span class="s">&#39;opls_validation&#39;</span><span class="p">,</span> <span class="n">name</span><span class="p">))</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">fn</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&#39;Sorry! {} does not exists. If you just &#39;</span>
+                         <span class="s">&#39;added it, you</span><span class="se">\&#39;</span><span class="s">ll have to re install&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">fn</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">fn</span>
+
+</div>
+<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="kn">import</span> <span class="nn">pdb</span>
+    <span class="kn">from</span> <span class="nn">mbuild.compound</span> <span class="kn">import</span> <span class="n">Compound</span>
+    <span class="kn">from</span> <span class="nn">mbuild.examples.methane.methane</span> <span class="kn">import</span> <span class="n">Methane</span>
+    <span class="c">#from mbuild.examples.ethane.ethane import Ethane</span>
+
+    <span class="n">m</span> <span class="o">=</span> <span class="n">Methane</span><span class="p">()</span>
+    <span class="c"># m = Ethane()</span>
+    <span class="c"># m = Compound.load(get_opls_fn(&#39;isopropane.pdb&#39;))</span>
+    <span class="c"># m = Compound.load(get_opls_fn(&#39;cyclohexane.pdb&#39;))</span>
+    <span class="c"># m = Compound.load(get_opls_fn(&#39;neopentane.pdb&#39;))</span>
+    <span class="c"># m = Compound.load(get_opls_fn(&#39;benzene.pdb&#39;))</span>
+    <span class="c"># m = Compound.load(get_opls_fn(&#39;1-propene.pdb&#39;))</span>
+    <span class="c"># m = Compound.load(get_opls_fn(&#39;biphenyl.pdb&#39;))</span>
+
+    <span class="c"># from mbuild.examples.alkane_monolayer.alkane_monolayer import AlkaneMonolayer</span>
+    <span class="c"># m = AlkaneMonolayer(chain_length=3)</span>
+
+    <span class="kn">from</span> <span class="nn">atomtyper</span> <span class="kn">import</span> <span class="n">find_atomtypes</span>
+    <span class="n">find_atomtypes</span><span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="n">forcefield</span><span class="o">=</span><span class="s">&#39;OPLS-AA&#39;</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">atom</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">m</span><span class="o">.</span><span class="n">atoms</span><span class="p">):</span>
+        <span class="k">print</span> <span class="s">&quot;Atom kind={}, opls_type={}&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+            <span class="n">atom</span><span class="o">.</span><span class="n">kind</span><span class="p">,</span> <span class="n">atom</span><span class="o">.</span><span class="n">atomtype</span><span class="p">)</span>
+</pre></div>
+
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2014, Vanderbilt University.
+    </p>
+  </div>
+
+  <a href="https://github.com/snide/sphinx_rtd_theme">Sphinx theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../../../',
+            VERSION:'0.4.2beta',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="../../../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../../../_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../../../../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

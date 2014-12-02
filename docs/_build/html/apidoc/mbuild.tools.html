@@ -7,7 +7,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>mbuild.tools package &mdash; mbuild 0.4.1beta documentation</title>
+  <title>mbuild.tools package &mdash; mbuild 0.4.2beta documentation</title>
   
 
   
@@ -28,7 +28,7 @@
   
 
   
-    <link rel="top" title="mbuild 0.4.1beta documentation" href="../index.html"/>
+    <link rel="top" title="mbuild 0.4.2beta documentation" href="../index.html"/>
         <link rel="next" title="mbuild.formats package" href="mbuild.formats.html"/>
         <link rel="prev" title="mbuild.tools package" href=""/> 
 
@@ -88,8 +88,8 @@
 <li class="toctree-l2"><a class="reference internal" href="mbuild.html#module-mbuild.part_mixin">mbuild.part_mixin module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="mbuild.html#module-mbuild.periodic_kdtree">mbuild.periodic_kdtree module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="mbuild.html#module-mbuild.port">mbuild.port module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="mbuild.html#module-mbuild.topology">mbuild.topology module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="mbuild.html#module-mbuild.trajectory">mbuild.trajectory module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="mbuild.html#mbuild-topology-module">mbuild.topology module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="mbuild.html#mbuild-trajectory-module">mbuild.trajectory module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="mbuild.html#module-mbuild.treeview">mbuild.treeview module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="mbuild.html#module-mbuild">Module contents</a></li>
 </ul>
@@ -107,11 +107,11 @@
 <li class="toctree-l1"><a class="reference internal" href="mbuild.formats.html">mbuild.formats package</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="mbuild.formats.html#submodules">Submodules</a></li>
 <li class="toctree-l2"><a class="reference internal" href="mbuild.formats.html#module-mbuild.formats.gromacs">mbuild.formats.gromacs module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="mbuild.formats.html#module-mbuild.formats.hoomdxml">mbuild.formats.hoomdxml module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="mbuild.formats.html#module-mbuild.formats.lammps">mbuild.formats.lammps module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="mbuild.formats.html#module-mbuild.formats.lammps_data">mbuild.formats.lammps_data module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="mbuild.formats.html#mbuild-formats-hoomdxml-module">mbuild.formats.hoomdxml module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="mbuild.formats.html#mbuild-formats-lammps-module">mbuild.formats.lammps module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="mbuild.formats.html#mbuild-formats-lammps-data-module">mbuild.formats.lammps_data module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="mbuild.formats.html#module-mbuild.formats.mol2">mbuild.formats.mol2 module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="mbuild.formats.html#module-mbuild.formats.xyz">mbuild.formats.xyz module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="mbuild.formats.html#mbuild-formats-xyz-module">mbuild.formats.xyz module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="mbuild.formats.html#module-mbuild.formats">Module contents</a></li>
 </ul>
 </li>
@@ -254,7 +254,7 @@ frame.</td>
 <dl class="class">
 <dt id="mbuild.tools.polymer.Polymer">
 <em class="property">class </em><tt class="descclassname">mbuild.tools.polymer.</tt><tt class="descname">Polymer</tt><big>(</big><em>proto</em>, <em>port_labels=('up'</em>, <em>'down')</em>, <em>n=2</em><big>)</big><a class="reference internal" href="../_modules/mbuild/tools/polymer.html#Polymer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.tools.polymer.Polymer" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="mbuild.html#mbuild.compound.Compound" title="mbuild.compound.Compound"><tt class="xref py py-class docutils literal"><span class="pre">mbuild.compound.Compound</span></tt></a></p>
+<dd><p>Bases: <a class="reference internal" href="../mbuild.html#mbuild.compound.Compound" title="mbuild.compound.Compound"><tt class="xref py py-class docutils literal"><span class="pre">mbuild.compound.Compound</span></tt></a></p>
 <dl class="attribute">
 <dt id="mbuild.tools.polymer.Polymer.__delattr__">
 <tt class="descname">__delattr__</tt><a class="headerlink" href="#mbuild.tools.polymer.Polymer.__delattr__" title="Permalink to this definition">¶</a></dt>
@@ -377,8 +377,28 @@ hierarchy.</td>
 
 <dl class="method">
 <dt id="mbuild.tools.polymer.Polymer.atom_list_by_kind">
-<tt class="descname">atom_list_by_kind</tt><big>(</big><em>kind='*'</em>, <em>excludeG=False</em>, <em>with_id_to_idx_mapping=False</em><big>)</big><a class="headerlink" href="#mbuild.tools.polymer.Polymer.atom_list_by_kind" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<tt class="descname">atom_list_by_kind</tt><big>(</big><em>kind='*'</em>, <em>excludeG=False</em><big>)</big><a class="headerlink" href="#mbuild.tools.polymer.Polymer.atom_list_by_kind" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a list of Atoms filtered by their kind.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>kind</strong> (<a class="reference external" href="http://docs.python.org/2.7/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Return only atoms of this type. &#8216;*&#8217; indicates all.</li>
+<li><strong>excludeG</strong> (<a class="reference external" href="http://docs.python.org/2.7/library/functions.html#bool" title="(in Python v2.7)"><em>bool</em></a>) &#8211; Exclude Port particles of kind &#8216;G&#8217;.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>atom_list</strong> &#8211;
+A list of Atoms.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">list</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
 
 <dl class="attribute">
 <dt id="mbuild.tools.polymer.Polymer.atoms">
@@ -389,12 +409,20 @@ hierarchy.</td>
 <dl class="method">
 <dt id="mbuild.tools.polymer.Polymer.atoms_in_range">
 <tt class="descname">atoms_in_range</tt><big>(</big><em>point</em>, <em>radius</em>, <em>max_items=10</em><big>)</big><a class="headerlink" href="#mbuild.tools.polymer.Polymer.atoms_in_range" title="Permalink to this definition">¶</a></dt>
-<dd><p>Find all Atoms within a radius of a point.</p>
+<dd><p>Return the indices of Atoms within a radius of a point.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">list of Atoms within range</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>point</strong> (<a class="reference external" href="http://docs.python.org/2.7/library/functions.html#list" title="(in Python v2.7)"><em>list</em></a>) &#8211; The reference point in cartesian coordinates.</li>
+<li><strong>radius</strong> (<a class="reference external" href="http://docs.python.org/2.7/library/functions.html#float" title="(in Python v2.7)"><em>float</em></a>) &#8211; Find Atoms within this radius.</li>
+<li><strong>max_items</strong> (<a class="reference external" href="http://docs.python.org/2.7/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a>) &#8211; Maximum number of Atoms to find.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">List of Atoms within specified range.</p>
+</td>
 </tr>
 </tbody>
 </table>
@@ -402,7 +430,7 @@ hierarchy.</td>
 
 <dl class="method">
 <dt id="mbuild.tools.polymer.Polymer.bond_list_by_kind">
-<tt class="descname">bond_list_by_kind</tt><big>(</big><em>kind='*'</em>, <em>with_id_to_idx_mapping=False</em><big>)</big><a class="headerlink" href="#mbuild.tools.polymer.Polymer.bond_list_by_kind" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">bond_list_by_kind</tt><big>(</big><em>kind='*'</em><big>)</big><a class="headerlink" href="#mbuild.tools.polymer.Polymer.bond_list_by_kind" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="attribute">
@@ -430,9 +458,9 @@ Ports).</td>
 </table>
 </dd></dl>
 
-<dl class="method">
-<dt id="mbuild.tools.polymer.Polymer.center_of_mass">
-<tt class="descname">center_of_mass</tt><big>(</big><big>)</big><a class="headerlink" href="#mbuild.tools.polymer.Polymer.center_of_mass" title="Permalink to this definition">¶</a></dt>
+<dl class="attribute">
+<dt id="mbuild.tools.polymer.Polymer.center">
+<tt class="descname">center</tt><a class="headerlink" href="#mbuild.tools.polymer.Polymer.center" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="classmethod">
@@ -457,14 +485,18 @@ Ports).</td>
 <dd></dd></dl>
 
 <dl class="method">
-<dt id="mbuild.tools.polymer.Polymer.post_remove">
-<tt class="descname">post_remove</tt><big>(</big><em>removed_part</em><big>)</big><a class="headerlink" href="#mbuild.tools.polymer.Polymer.post_remove" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
 <dt id="mbuild.tools.polymer.Polymer.referenced_ports">
 <tt class="descname">referenced_ports</tt><big>(</big><big>)</big><a class="headerlink" href="#mbuild.tools.polymer.Polymer.referenced_ports" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Find all Ports referenced by this Compound.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">A list of Ports currently referenced by this Compound.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
 
 <dl class="method">
 <dt id="mbuild.tools.polymer.Polymer.remove">
@@ -513,7 +545,7 @@ remove duplicates.</td>
 <dd><p>Visualize the Compound using VMD.</p>
 <p>Assumes you have VMD installed and can call it from the command line via
 &#8216;vmd&#8217;.</p>
-<p>TODO: Make more useful/robust. Look into pizza.py&#8217;s vmd.py.</p>
+<p>TODO: Look into pizza.py&#8217;s vmd.py. See issue #32.</p>
 </dd></dl>
 
 <dl class="method">
@@ -539,7 +571,7 @@ remove duplicates.</td>
 <span id="mbuild-tools-solvent-module"></span><h2>mbuild.tools.solvent module<a class="headerlink" href="#module-mbuild.tools.solvent" title="Permalink to this headline">¶</a></h2>
 <dl class="function">
 <dt id="mbuild.tools.solvent.solvate">
-<tt class="descclassname">mbuild.tools.solvent.</tt><tt class="descname">solvate</tt><big>(</big><em>host_compound</em>, <em>guest_compound</em>, <em>host_box</em>, <em>guest_box</em>, <em>overlap=&lt;function vdw_radius at 0x06C9C030&gt;</em><big>)</big><a class="reference internal" href="../_modules/mbuild/tools/solvent.html#solvate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.tools.solvent.solvate" title="Permalink to this definition">¶</a></dt>
+<tt class="descclassname">mbuild.tools.solvent.</tt><tt class="descname">solvate</tt><big>(</big><em>host_compound</em>, <em>guest_compound</em>, <em>host_box</em>, <em>guest_box</em>, <em>overlap=&lt;function vdw_radius at 0x1064a6320&gt;</em><big>)</big><a class="reference internal" href="../_modules/mbuild/tools/solvent.html#solvate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.tools.solvent.solvate" title="Permalink to this definition">¶</a></dt>
 <dd><p>Solvate a Compound in a Box.</p>
 <p>Typical usage of this function would be to use a pre-equilibrated solvent
 system as the guest which will then be replicated to fill the host&#8217;s Box.
@@ -577,24 +609,10 @@ All Compounds that have overlapping Atoms with the host are removed.</p>
 <dl class="class">
 <dt id="mbuild.tools.tiled_compound.TiledCompound">
 <em class="property">class </em><tt class="descclassname">mbuild.tools.tiled_compound.</tt><tt class="descname">TiledCompound</tt><big>(</big><em>tile</em>, <em>n_x=1</em>, <em>n_y=1</em>, <em>n_z=1</em>, <em>kind=None</em><big>)</big><a class="reference internal" href="../_modules/mbuild/tools/tiled_compound.html#TiledCompound"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.tools.tiled_compound.TiledCompound" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="mbuild.html#mbuild.compound.Compound" title="mbuild.compound.Compound"><tt class="xref py py-class docutils literal"><span class="pre">mbuild.compound.Compound</span></tt></a></p>
+<dd><p>Bases: <a class="reference internal" href="../mbuild.html#mbuild.compound.Compound" title="mbuild.compound.Compound"><tt class="xref py py-class docutils literal"><span class="pre">mbuild.compound.Compound</span></tt></a></p>
 <p>Replicates a Compound in any cartesian direction(s).</p>
 <p>Correctly updates connectivity while respecting periodic boundary
 conditions.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>tile</strong> (<em>Compound</em>) &#8211; The Compound to be replicated.</li>
-<li><strong>n_x</strong> (<a class="reference external" href="http://docs.python.org/2.7/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a>) &#8211; Number of times to replicate tile in the x-direction.</li>
-<li><strong>n_y</strong> (<a class="reference external" href="http://docs.python.org/2.7/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a>) &#8211; Number of times to replicate tile in the y-direction.</li>
-<li><strong>n_z</strong> (<a class="reference external" href="http://docs.python.org/2.7/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a>) &#8211; Number of times to replicate tile in the z-direction.</li>
-</ul>
-</td>
-</tr>
-</tbody>
-</table>
 <dl class="attribute">
 <dt id="mbuild.tools.tiled_compound.TiledCompound.__delattr__">
 <tt class="descname">__delattr__</tt><a class="headerlink" href="#mbuild.tools.tiled_compound.TiledCompound.__delattr__" title="Permalink to this definition">¶</a></dt>
@@ -717,8 +735,28 @@ hierarchy.</td>
 
 <dl class="method">
 <dt id="mbuild.tools.tiled_compound.TiledCompound.atom_list_by_kind">
-<tt class="descname">atom_list_by_kind</tt><big>(</big><em>kind='*'</em>, <em>excludeG=False</em>, <em>with_id_to_idx_mapping=False</em><big>)</big><a class="headerlink" href="#mbuild.tools.tiled_compound.TiledCompound.atom_list_by_kind" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<tt class="descname">atom_list_by_kind</tt><big>(</big><em>kind='*'</em>, <em>excludeG=False</em><big>)</big><a class="headerlink" href="#mbuild.tools.tiled_compound.TiledCompound.atom_list_by_kind" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a list of Atoms filtered by their kind.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>kind</strong> (<a class="reference external" href="http://docs.python.org/2.7/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Return only atoms of this type. &#8216;*&#8217; indicates all.</li>
+<li><strong>excludeG</strong> (<a class="reference external" href="http://docs.python.org/2.7/library/functions.html#bool" title="(in Python v2.7)"><em>bool</em></a>) &#8211; Exclude Port particles of kind &#8216;G&#8217;.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>atom_list</strong> &#8211;
+A list of Atoms.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">list</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
 
 <dl class="attribute">
 <dt id="mbuild.tools.tiled_compound.TiledCompound.atoms">
@@ -729,12 +767,20 @@ hierarchy.</td>
 <dl class="method">
 <dt id="mbuild.tools.tiled_compound.TiledCompound.atoms_in_range">
 <tt class="descname">atoms_in_range</tt><big>(</big><em>point</em>, <em>radius</em>, <em>max_items=10</em><big>)</big><a class="headerlink" href="#mbuild.tools.tiled_compound.TiledCompound.atoms_in_range" title="Permalink to this definition">¶</a></dt>
-<dd><p>Find all Atoms within a radius of a point.</p>
+<dd><p>Return the indices of Atoms within a radius of a point.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">list of Atoms within range</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>point</strong> (<a class="reference external" href="http://docs.python.org/2.7/library/functions.html#list" title="(in Python v2.7)"><em>list</em></a>) &#8211; The reference point in cartesian coordinates.</li>
+<li><strong>radius</strong> (<a class="reference external" href="http://docs.python.org/2.7/library/functions.html#float" title="(in Python v2.7)"><em>float</em></a>) &#8211; Find Atoms within this radius.</li>
+<li><strong>max_items</strong> (<a class="reference external" href="http://docs.python.org/2.7/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a>) &#8211; Maximum number of Atoms to find.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">List of Atoms within specified range.</p>
+</td>
 </tr>
 </tbody>
 </table>
@@ -742,7 +788,7 @@ hierarchy.</td>
 
 <dl class="method">
 <dt id="mbuild.tools.tiled_compound.TiledCompound.bond_list_by_kind">
-<tt class="descname">bond_list_by_kind</tt><big>(</big><em>kind='*'</em>, <em>with_id_to_idx_mapping=False</em><big>)</big><a class="headerlink" href="#mbuild.tools.tiled_compound.TiledCompound.bond_list_by_kind" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">bond_list_by_kind</tt><big>(</big><em>kind='*'</em><big>)</big><a class="headerlink" href="#mbuild.tools.tiled_compound.TiledCompound.bond_list_by_kind" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="attribute">
@@ -770,9 +816,9 @@ Ports).</td>
 </table>
 </dd></dl>
 
-<dl class="method">
-<dt id="mbuild.tools.tiled_compound.TiledCompound.center_of_mass">
-<tt class="descname">center_of_mass</tt><big>(</big><big>)</big><a class="headerlink" href="#mbuild.tools.tiled_compound.TiledCompound.center_of_mass" title="Permalink to this definition">¶</a></dt>
+<dl class="attribute">
+<dt id="mbuild.tools.tiled_compound.TiledCompound.center">
+<tt class="descname">center</tt><a class="headerlink" href="#mbuild.tools.tiled_compound.TiledCompound.center" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="classmethod">
@@ -797,14 +843,18 @@ Ports).</td>
 <dd></dd></dl>
 
 <dl class="method">
-<dt id="mbuild.tools.tiled_compound.TiledCompound.post_remove">
-<tt class="descname">post_remove</tt><big>(</big><em>removed_part</em><big>)</big><a class="headerlink" href="#mbuild.tools.tiled_compound.TiledCompound.post_remove" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
 <dt id="mbuild.tools.tiled_compound.TiledCompound.referenced_ports">
 <tt class="descname">referenced_ports</tt><big>(</big><big>)</big><a class="headerlink" href="#mbuild.tools.tiled_compound.TiledCompound.referenced_ports" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Find all Ports referenced by this Compound.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">A list of Ports currently referenced by this Compound.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
 
 <dl class="method">
 <dt id="mbuild.tools.tiled_compound.TiledCompound.remove">
@@ -853,7 +903,7 @@ remove duplicates.</td>
 <dd><p>Visualize the Compound using VMD.</p>
 <p>Assumes you have VMD installed and can call it from the command line via
 &#8216;vmd&#8217;.</p>
-<p>TODO: Make more useful/robust. Look into pizza.py&#8217;s vmd.py.</p>
+<p>TODO: Look into pizza.py&#8217;s vmd.py. See issue #32.</p>
 </dd></dl>
 
 <dl class="method">
@@ -918,7 +968,7 @@ remove duplicates.</td>
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'../',
-            VERSION:'0.4.1beta',
+            VERSION:'0.4.2beta',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true

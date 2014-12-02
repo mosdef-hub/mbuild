@@ -7,7 +7,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>mbuild.periodic_kdtree &mdash; mbuild 0.4.1beta documentation</title>
+  <title>mbuild.periodic_kdtree &mdash; mbuild 0.4.2beta documentation</title>
   
 
   
@@ -28,7 +28,7 @@
   
 
   
-    <link rel="top" title="mbuild 0.4.1beta documentation" href="../../index.html"/>
+    <link rel="top" title="mbuild 0.4.2beta documentation" href="../../index.html"/>
         <link rel="up" title="Module code" href="../index.html"/> 
 
   
@@ -87,8 +87,8 @@
 <li class="toctree-l2"><a class="reference internal" href="../../apidoc/mbuild.html#module-mbuild.part_mixin">mbuild.part_mixin module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../apidoc/mbuild.html#module-mbuild.periodic_kdtree">mbuild.periodic_kdtree module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../apidoc/mbuild.html#module-mbuild.port">mbuild.port module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../apidoc/mbuild.html#module-mbuild.topology">mbuild.topology module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../apidoc/mbuild.html#module-mbuild.trajectory">mbuild.trajectory module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../apidoc/mbuild.html#mbuild-topology-module">mbuild.topology module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../apidoc/mbuild.html#mbuild-trajectory-module">mbuild.trajectory module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../apidoc/mbuild.html#module-mbuild.treeview">mbuild.treeview module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../apidoc/mbuild.html#module-mbuild">Module contents</a></li>
 </ul>
@@ -106,11 +106,11 @@
 <li class="toctree-l1"><a class="reference internal" href="../../apidoc/mbuild.formats.html">mbuild.formats package</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="../../apidoc/mbuild.formats.html#submodules">Submodules</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../apidoc/mbuild.formats.html#module-mbuild.formats.gromacs">mbuild.formats.gromacs module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../apidoc/mbuild.formats.html#module-mbuild.formats.hoomdxml">mbuild.formats.hoomdxml module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../apidoc/mbuild.formats.html#module-mbuild.formats.lammps">mbuild.formats.lammps module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../apidoc/mbuild.formats.html#module-mbuild.formats.lammps_data">mbuild.formats.lammps_data module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../apidoc/mbuild.formats.html#mbuild-formats-hoomdxml-module">mbuild.formats.hoomdxml module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../apidoc/mbuild.formats.html#mbuild-formats-lammps-module">mbuild.formats.lammps module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../apidoc/mbuild.formats.html#mbuild-formats-lammps-data-module">mbuild.formats.lammps_data module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../apidoc/mbuild.formats.html#module-mbuild.formats.mol2">mbuild.formats.mol2 module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../apidoc/mbuild.formats.html#module-mbuild.formats.xyz">mbuild.formats.xyz module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../apidoc/mbuild.formats.html#mbuild-formats-xyz-module">mbuild.formats.xyz module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../apidoc/mbuild.formats.html#module-mbuild.formats">Module contents</a></li>
 </ul>
 </li>
@@ -205,7 +205,7 @@
     <span class="k">return</span> <span class="n">xs_to_try</span>
 
 
-<div class="viewcode-block" id="PeriodicKDTree"><a class="viewcode-back" href="../../apidoc/mbuild.html#mbuild.periodic_kdtree.PeriodicKDTree">[docs]</a><span class="k">class</span> <span class="nc">PeriodicKDTree</span><span class="p">(</span><span class="n">KDTree</span><span class="p">):</span>
+<div class="viewcode-block" id="PeriodicKDTree"><a class="viewcode-back" href="../../mbuild.html#mbuild.periodic_kdtree.PeriodicKDTree">[docs]</a><span class="k">class</span> <span class="nc">PeriodicKDTree</span><span class="p">(</span><span class="n">KDTree</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    kd-tree for quick nearest-neighbor lookup with periodic boundaries</span>
 
@@ -299,20 +299,20 @@
                     <span class="n">real_x</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">eps</span><span class="p">))</span>
         <span class="k">return</span> <span class="n">results</span>
 
-<div class="viewcode-block" id="PeriodicKDTree.query_ball_tree"><a class="viewcode-back" href="../../apidoc/mbuild.html#mbuild.periodic_kdtree.PeriodicKDTree.query_ball_tree">[docs]</a>    <span class="k">def</span> <span class="nf">query_ball_tree</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">p</span><span class="o">=</span><span class="mf">2.</span><span class="p">,</span> <span class="n">eps</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+<div class="viewcode-block" id="PeriodicKDTree.query_ball_tree"><a class="viewcode-back" href="../../mbuild.html#mbuild.periodic_kdtree.PeriodicKDTree.query_ball_tree">[docs]</a>    <span class="k">def</span> <span class="nf">query_ball_tree</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">p</span><span class="o">=</span><span class="mf">2.</span><span class="p">,</span> <span class="n">eps</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">()</span>
 </div>
-<div class="viewcode-block" id="PeriodicKDTree.query_pairs"><a class="viewcode-back" href="../../apidoc/mbuild.html#mbuild.periodic_kdtree.PeriodicKDTree.query_pairs">[docs]</a>    <span class="k">def</span> <span class="nf">query_pairs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">p</span><span class="o">=</span><span class="mf">2.</span><span class="p">,</span> <span class="n">eps</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+<div class="viewcode-block" id="PeriodicKDTree.query_pairs"><a class="viewcode-back" href="../../mbuild.html#mbuild.periodic_kdtree.PeriodicKDTree.query_pairs">[docs]</a>    <span class="k">def</span> <span class="nf">query_pairs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">p</span><span class="o">=</span><span class="mf">2.</span><span class="p">,</span> <span class="n">eps</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">()</span>
 </div>
-<div class="viewcode-block" id="PeriodicKDTree.count_neighbors"><a class="viewcode-back" href="../../apidoc/mbuild.html#mbuild.periodic_kdtree.PeriodicKDTree.count_neighbors">[docs]</a>    <span class="k">def</span> <span class="nf">count_neighbors</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">p</span><span class="o">=</span><span class="mf">2.</span><span class="p">):</span>
+<div class="viewcode-block" id="PeriodicKDTree.count_neighbors"><a class="viewcode-back" href="../../mbuild.html#mbuild.periodic_kdtree.PeriodicKDTree.count_neighbors">[docs]</a>    <span class="k">def</span> <span class="nf">count_neighbors</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">p</span><span class="o">=</span><span class="mf">2.</span><span class="p">):</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">()</span>
 </div>
-<div class="viewcode-block" id="PeriodicKDTree.sparse_distance_matrix"><a class="viewcode-back" href="../../apidoc/mbuild.html#mbuild.periodic_kdtree.PeriodicKDTree.sparse_distance_matrix">[docs]</a>    <span class="k">def</span> <span class="nf">sparse_distance_matrix</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">,</span> <span class="n">max_distance</span><span class="p">,</span> <span class="n">p</span><span class="o">=</span><span class="mf">2.</span><span class="p">):</span>
+<div class="viewcode-block" id="PeriodicKDTree.sparse_distance_matrix"><a class="viewcode-back" href="../../mbuild.html#mbuild.periodic_kdtree.PeriodicKDTree.sparse_distance_matrix">[docs]</a>    <span class="k">def</span> <span class="nf">sparse_distance_matrix</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">,</span> <span class="n">max_distance</span><span class="p">,</span> <span class="n">p</span><span class="o">=</span><span class="mf">2.</span><span class="p">):</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">()</span>
 
 </div></div>
-<div class="viewcode-block" id="PeriodicCKDTree"><a class="viewcode-back" href="../../apidoc/mbuild.html#mbuild.periodic_kdtree.PeriodicCKDTree">[docs]</a><span class="k">class</span> <span class="nc">PeriodicCKDTree</span><span class="p">(</span><span class="n">cKDTree</span><span class="p">):</span>
+<div class="viewcode-block" id="PeriodicCKDTree"><a class="viewcode-back" href="../../mbuild.html#mbuild.periodic_kdtree.PeriodicCKDTree">[docs]</a><span class="k">class</span> <span class="nc">PeriodicCKDTree</span><span class="p">(</span><span class="n">cKDTree</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Cython kd-tree for quick nearest-neighbor lookup with periodic boundaries</span>
 
@@ -406,7 +406,7 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&quot;Invalid k in periodic_kdtree._KDTree__query&quot;</span><span class="p">)</span>
 
-<div class="viewcode-block" id="PeriodicCKDTree.query"><a class="viewcode-back" href="../../apidoc/mbuild.html#mbuild.periodic_kdtree.PeriodicCKDTree.query">[docs]</a>    <span class="k">def</span> <span class="nf">query</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">eps</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">p</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">distance_upper_bound</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">):</span>
+<div class="viewcode-block" id="PeriodicCKDTree.query"><a class="viewcode-back" href="../../mbuild.html#mbuild.periodic_kdtree.PeriodicCKDTree.query">[docs]</a>    <span class="k">def</span> <span class="nf">query</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">eps</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">p</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">distance_upper_bound</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Query the kd-tree for nearest neighbors</span>
 
@@ -509,7 +509,7 @@
                 <span class="n">real_x</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">eps</span><span class="p">))</span>
         <span class="k">return</span> <span class="n">results</span>
 
-<div class="viewcode-block" id="PeriodicCKDTree.query_ball_point"><a class="viewcode-back" href="../../apidoc/mbuild.html#mbuild.periodic_kdtree.PeriodicCKDTree.query_ball_point">[docs]</a>    <span class="k">def</span> <span class="nf">query_ball_point</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">p</span><span class="o">=</span><span class="mf">2.</span><span class="p">,</span> <span class="n">eps</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+<div class="viewcode-block" id="PeriodicCKDTree.query_ball_point"><a class="viewcode-back" href="../../mbuild.html#mbuild.periodic_kdtree.PeriodicCKDTree.query_ball_point">[docs]</a>    <span class="k">def</span> <span class="nf">query_ball_point</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">p</span><span class="o">=</span><span class="mf">2.</span><span class="p">,</span> <span class="n">eps</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Find all points within distance r of point(s) x.</span>
 
@@ -553,16 +553,16 @@
                 <span class="n">result</span><span class="p">[</span><span class="n">c</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__query_ball_point</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="n">c</span><span class="p">],</span> <span class="n">r</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">eps</span><span class="p">)</span>
             <span class="k">return</span> <span class="n">result</span>
 </div>
-<div class="viewcode-block" id="PeriodicCKDTree.query_ball_tree"><a class="viewcode-back" href="../../apidoc/mbuild.html#mbuild.periodic_kdtree.PeriodicCKDTree.query_ball_tree">[docs]</a>    <span class="k">def</span> <span class="nf">query_ball_tree</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">p</span><span class="o">=</span><span class="mf">2.</span><span class="p">,</span> <span class="n">eps</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+<div class="viewcode-block" id="PeriodicCKDTree.query_ball_tree"><a class="viewcode-back" href="../../mbuild.html#mbuild.periodic_kdtree.PeriodicCKDTree.query_ball_tree">[docs]</a>    <span class="k">def</span> <span class="nf">query_ball_tree</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">p</span><span class="o">=</span><span class="mf">2.</span><span class="p">,</span> <span class="n">eps</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">()</span>
 </div>
-<div class="viewcode-block" id="PeriodicCKDTree.query_pairs"><a class="viewcode-back" href="../../apidoc/mbuild.html#mbuild.periodic_kdtree.PeriodicCKDTree.query_pairs">[docs]</a>    <span class="k">def</span> <span class="nf">query_pairs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">p</span><span class="o">=</span><span class="mf">2.</span><span class="p">,</span> <span class="n">eps</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+<div class="viewcode-block" id="PeriodicCKDTree.query_pairs"><a class="viewcode-back" href="../../mbuild.html#mbuild.periodic_kdtree.PeriodicCKDTree.query_pairs">[docs]</a>    <span class="k">def</span> <span class="nf">query_pairs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">p</span><span class="o">=</span><span class="mf">2.</span><span class="p">,</span> <span class="n">eps</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">()</span>
 </div>
-<div class="viewcode-block" id="PeriodicCKDTree.count_neighbors"><a class="viewcode-back" href="../../apidoc/mbuild.html#mbuild.periodic_kdtree.PeriodicCKDTree.count_neighbors">[docs]</a>    <span class="k">def</span> <span class="nf">count_neighbors</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">p</span><span class="o">=</span><span class="mf">2.</span><span class="p">):</span>
+<div class="viewcode-block" id="PeriodicCKDTree.count_neighbors"><a class="viewcode-back" href="../../mbuild.html#mbuild.periodic_kdtree.PeriodicCKDTree.count_neighbors">[docs]</a>    <span class="k">def</span> <span class="nf">count_neighbors</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">p</span><span class="o">=</span><span class="mf">2.</span><span class="p">):</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">()</span>
 </div>
-<div class="viewcode-block" id="PeriodicCKDTree.sparse_distance_matrix"><a class="viewcode-back" href="../../apidoc/mbuild.html#mbuild.periodic_kdtree.PeriodicCKDTree.sparse_distance_matrix">[docs]</a>    <span class="k">def</span> <span class="nf">sparse_distance_matrix</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">,</span> <span class="n">max_distance</span><span class="p">,</span> <span class="n">p</span><span class="o">=</span><span class="mf">2.</span><span class="p">):</span>
+<div class="viewcode-block" id="PeriodicCKDTree.sparse_distance_matrix"><a class="viewcode-back" href="../../mbuild.html#mbuild.periodic_kdtree.PeriodicCKDTree.sparse_distance_matrix">[docs]</a>    <span class="k">def</span> <span class="nf">sparse_distance_matrix</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">,</span> <span class="n">max_distance</span><span class="p">,</span> <span class="n">p</span><span class="o">=</span><span class="mf">2.</span><span class="p">):</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">()</span></div></div>
 </pre></div>
 
@@ -594,7 +594,7 @@
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'../../',
-            VERSION:'0.4.1beta',
+            VERSION:'0.4.2beta',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true
