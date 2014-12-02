@@ -1,0 +1,14 @@
+TITLE     chloroethane GAS
+REMARK    THIS IS A SIMULATION BOX
+CRYST1  100.000  100.000  100.000  90.00  90.00  90.00 P 1           1
+MODEL        1
+ATOM      1  C   LIG     1      50.274  50.633  50.424  1.00  0.00            
+ATOM      2  H   LIG     1      51.014  50.403  51.194  1.00  0.00            
+ATOM      3  H   LIG     1      50.574  51.393  49.704  1.00  0.00            
+ATOM      4  H   LIG     1      49.424  50.923  51.044  1.00  0.00            
+ATOM      5  C   LIG     1      49.894  49.363  49.654  1.00  0.00            
+ATOM      6  H   LIG     1      49.464  48.623  50.324  1.00  0.00            
+ATOM      7  H   LIG     1      50.744  48.883  49.164  1.00  0.00            
+ATOM      8  CL  LIG     1      48.614  49.783  48.494  1.00  0.00            
+TER
+ENDMDL

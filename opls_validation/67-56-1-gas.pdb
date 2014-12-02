@@ -1,0 +1,12 @@
+TITLE     methanol GAS
+REMARK    THIS IS A SIMULATION BOX
+CRYST1  100.000  100.000  100.000  90.00  90.00  90.00 P 1           1
+MODEL        1
+ATOM      1  C   LIG     1      49.794  50.040  50.327  1.00  0.00            
+ATOM      2  H   LIG     1      48.864  50.060  49.747  1.00  0.00            
+ATOM      3  H   LIG     1      49.984  49.030  50.667  1.00  0.00            
+ATOM      4  H   LIG     1      49.844  50.750  51.157  1.00  0.00            
+ATOM      5  O   LIG     1      50.853  50.320  49.437  1.00  0.00            
+ATOM      6  H   LIG     1      50.663  49.800  48.667  1.00  0.00            
+TER
+ENDMDL

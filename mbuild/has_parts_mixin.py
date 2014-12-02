@@ -1,4 +1,5 @@
 from collections import OrderedDict
+
 from mbuild.orderedset import OrderedSet
 from mbuild.part_mixin import PartMixin
 

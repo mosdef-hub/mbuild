@@ -38,7 +38,7 @@ class AlkaneMonolayer(Compound):
         # If no binding sites are provided, attach chains to all sites.
         if mask is None:
             from mbuild.tools.mask import random_mask_2d
-            mask = random_mask_2d(tile_x * 10, tile_y * 10)
+            mask = random_mask_2d(tile_x * 10 + tile_y * 10)
 
         # Attach chains to specified binding sites. Other sites get a hydrogen.
         apply_mask(self.tiled_surface, alkylsilane, mask,

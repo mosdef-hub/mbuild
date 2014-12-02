@@ -1,0 +1,13 @@
+TITLE     nitromethane GAS
+REMARK    THIS IS A SIMULATION BOX
+CRYST1  100.000  100.000  100.000  90.00  90.00  90.00 P 1           1
+MODEL        1
+ATOM      1  C   LIG     1      50.344  49.866  50.507  1.00  0.00            
+ATOM      2  H   LIG     1      50.845  48.906  50.407  1.00  0.00            
+ATOM      3  H   LIG     1      51.144  50.586  50.707  1.00  0.00            
+ATOM      4  H   LIG     1      49.714  49.766  51.387  1.00  0.00            
+ATOM      5  N   LIG     1      49.564  50.216  49.287  1.00  0.00            
+ATOM      6  O   LIG     1      49.664  49.556  48.257  1.00  0.00            
+ATOM      7  O   LIG     1      48.724  51.106  49.447  1.00  0.00            
+TER
+ENDMDL

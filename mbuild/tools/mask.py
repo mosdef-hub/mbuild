@@ -120,8 +120,8 @@ def disk_mask(n):
     theta = golden_angle * np.arange(n)
 
     points = np.zeros((n, 2))
-    points[:,0] = np.cos(theta)
-    points[:,1] = np.sin(theta)
+    points[:, 0] = np.cos(theta)
+    points[:, 1] = np.sin(theta)
     points *= radius.reshape((n, 1))
 
     return points

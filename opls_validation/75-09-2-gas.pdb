@@ -1,0 +1,11 @@
+TITLE     dichloromethane GAS
+REMARK    THIS IS A SIMULATION BOX
+CRYST1  100.000  100.000  100.000  90.00  90.00  90.00 P 1           1
+MODEL        1
+ATOM      1  CL  LIG     1      51.628  49.626  50.184  1.00  0.00            
+ATOM      2  C   LIG     1      49.878  49.886  49.964  1.00  0.00            
+ATOM      3  H   LIG     1      49.488  49.566  50.924  1.00  0.00            
+ATOM      4  H   LIG     1      49.568  49.306  49.094  1.00  0.00            
+ATOM      5  CL  LIG     1      49.438  51.616  49.834  1.00  0.00            
+TER
+ENDMDL

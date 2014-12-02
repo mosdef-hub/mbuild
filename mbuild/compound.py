@@ -17,7 +17,7 @@ class Compound(MBase, PartMixin, HasPartsMixin):
     """A building block in the mBuild hierarchy.
 
     Compound is the superclass of all composite building blocks in the mBuild
-    hierarchy.  That is, all composite building blocks must inherit from
+    hierarchy. That is, all composite building blocks must inherit from
     compound, either directly or indirectly. The design of Compound follows the
     Composite design pattern (Gamma, Erich; Richard Helm; Ralph Johnson; John
     M. Vlissides (1995). Design Patterns: Elements of Reusable Object-Oriented
@@ -56,7 +56,6 @@ class Compound(MBase, PartMixin, HasPartsMixin):
                 Compound in the x, y and z directions.
 
         """
-
         super(Compound, self).__init__()
 
         # Set kind to classname if not specified.

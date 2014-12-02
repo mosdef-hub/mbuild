@@ -1,0 +1,15 @@
+TITLE     2-chloroethanol GAS
+REMARK    THIS IS A SIMULATION BOX
+CRYST1  100.000  100.000  100.000  90.00  90.00  90.00 P 1           1
+MODEL        1
+ATOM      1  CL  LIG     1      50.380  48.407  51.740  1.00  0.00            
+ATOM      2  C   LIG     1      50.680  49.437  50.310  1.00  0.00            
+ATOM      3  H   LIG     1      50.840  48.707  49.520  1.00  0.00            
+ATOM      4  H   LIG     1      51.620  49.977  50.430  1.00  0.00            
+ATOM      5  C   LIG     1      49.490  50.327  49.970  1.00  0.00            
+ATOM      6  H   LIG     1      49.370  51.037  50.790  1.00  0.00            
+ATOM      7  H   LIG     1      48.720  49.557  49.950  1.00  0.00            
+ATOM      8  O   LIG     1      49.820  51.017  48.780  1.00  0.00            
+ATOM      9  H   LIG     1      49.080  51.537  48.510  1.00  0.00            
+TER
+ENDMDL

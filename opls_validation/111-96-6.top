@@ -1,0 +1,186 @@
+; OPLSAA topology for diethylene-glycol-dimethyl-ether
+; 
+; Jorgensen, W. L.; Tirado-Rives, J. Proc. Natl. Acad. Sci. U.S.A. 2005, 102, 6665.
+; Carl Caleman, Paul J. van Maaren, Minyan Hong, Jochen S. Hub, Luciano T. Costa and David van der Spoel, Force Field Benchmark of Organic Liquids: Density, Enthalpy of Vaporization, Heat Capacities, Surface Tension, Isothermal Compressibility, Volumetric Expansion Coefficient, and Dielectric Constant, J. Chem. Theor. Comput. 8 (2012) http://dx.doi.org/10.1021/ct200731v
+;
+;
+#include "oplsaaff.itp"
+[ moleculetype ]
+; Name            nrexcl
+diethylene-glycol-dimethyl-ether  3
+
+[ atoms ]
+;   nr       type  resnr residue  atom   cgnr     charge       mass  typeB    chargeB      massB
+         1  opls_181         1       LIG         C         1      0.11    12.011
+         2  opls_185         1       LIG         H         2      0.03     1.008
+         3  opls_185         1       LIG         H         3      0.03     1.008
+         4  opls_185         1       LIG         H         4      0.03     1.008
+         5  opls_180         1       LIG         O         5      -0.4   15.9994
+         6  opls_182         1       LIG         C         6      0.14    12.011
+         7  opls_185         1       LIG         H         7      0.03     1.008
+         8  opls_185         1       LIG         H         8      0.03     1.008
+         9  opls_182         1       LIG         C         9      0.14    12.011
+        10  opls_185         1       LIG         H        10      0.03     1.008
+        11  opls_185         1       LIG         H        11      0.03     1.008
+        12  opls_180         1       LIG         O        12      -0.4   15.9994
+        13  opls_182         1       LIG         C        13      0.14    12.011
+        14  opls_185         1       LIG         H        14      0.03     1.008
+        15  opls_185         1       LIG         H        15      0.03     1.008
+        16  opls_182         1       LIG         C        16      0.14    12.011
+        17  opls_185         1       LIG         H        17      0.03     1.008
+        18  opls_185         1       LIG         H        18      0.03     1.008
+        19  opls_180         1       LIG         O        19      -0.4   15.9994
+        20  opls_181         1       LIG         C        20      0.11    12.011
+        21  opls_185         1       LIG         H        21      0.03     1.008
+        22  opls_185         1       LIG         H        22      0.03     1.008
+        23  opls_185         1       LIG         H        23      0.03     1.008
+
+[ bonds ]
+;  ai    aj funct            c0            c1            c2            c3
+    1     2     1 
+    1     3     1 
+    1     4     1 
+    1     5     1 
+    5     6     1 
+    6     7     1 
+    6     8     1 
+    6     9     1 
+    9    10     1 
+    9    11     1 
+    9    12     1 
+   12    13     1 
+   13    14     1 
+   13    15     1 
+   13    16     1 
+   16    17     1 
+   16    18     1 
+   16    19     1 
+   19    20     1 
+   20    21     1 
+   20    22     1 
+   20    23     1 
+
+[ pairs ]
+;  ai    aj funct            c0            c1            c2            c3
+    1     7     1 
+    1     8     1 
+    1     9     1 
+    2     6     1 
+    3     6     1 
+    4     6     1 
+    5    10     1 
+    5    11     1 
+    5    12     1 
+    6    13     1 
+    7    10     1 
+    7    11     1 
+    7    12     1 
+    8    10     1 
+    8    11     1 
+    8    12     1 
+    9    14     1 
+    9    15     1 
+    9    16     1 
+   10    13     1 
+   11    13     1 
+   12    17     1 
+   12    18     1 
+   12    19     1 
+   13    20     1 
+   14    17     1 
+   14    18     1 
+   14    19     1 
+   15    17     1 
+   15    18     1 
+   15    19     1 
+   16    21     1 
+   16    22     1 
+   16    23     1 
+   17    20     1 
+   18    20     1 
+
+[ angles ]
+;  ai    aj    ak funct            c0            c1            c2            c3
+    2     1     3     1 
+    2     1     4     1 
+    2     1     5     1 
+    3     1     4     1 
+    3     1     5     1 
+    4     1     5     1 
+    1     5     6     1 
+    5     6     7     1 
+    5     6     8     1 
+    5     6     9     1 
+    7     6     8     1 
+    7     6     9     1 
+    8     6     9     1 
+    6     9    10     1 
+    6     9    11     1 
+    6     9    12     1 
+   10     9    11     1 
+   10     9    12     1 
+   11     9    12     1 
+    9    12    13     1 
+   12    13    14     1 
+   12    13    15     1 
+   12    13    16     1 
+   14    13    15     1 
+   14    13    16     1 
+   15    13    16     1 
+   13    16    17     1 
+   13    16    18     1 
+   13    16    19     1 
+   17    16    18     1 
+   17    16    19     1 
+   18    16    19     1 
+   16    19    20     1 
+   19    20    21     1 
+   19    20    22     1 
+   19    20    23     1 
+   21    20    22     1 
+   21    20    23     1 
+   22    20    23     1 
+
+[ dihedrals ]
+;  ai    aj    ak    al funct            c0            c1            c2            c3            c4            c5
+    2     1     5     6     3 
+    3     1     5     6     3 
+    4     1     5     6     3 
+    1     5     6     7     3 
+    1     5     6     8     3 
+    1     5     6     9     3 
+    5     6     9    10     3 
+    5     6     9    11     3 
+    5     6     9    12     3 
+    7     6     9    10     3 
+    7     6     9    11     3 
+    7     6     9    12     3 
+    8     6     9    10     3 
+    8     6     9    11     3 
+    8     6     9    12     3 
+    6     9    12    13     3 
+   10     9    12    13     3 
+   11     9    12    13     3 
+    9    12    13    14     3 
+    9    12    13    15     3 
+    9    12    13    16     3 
+   12    13    16    17     3 
+   12    13    16    18     3 
+   12    13    16    19     3 
+   14    13    16    17     3 
+   14    13    16    18     3 
+   14    13    16    19     3 
+   15    13    16    17     3 
+   15    13    16    18     3 
+   15    13    16    19     3 
+   13    16    19    20     3 
+   17    16    19    20     3 
+   18    16    19    20     3 
+   16    19    20    21     3 
+   16    19    20    22     3 
+   16    19    20    23     3 
+
+[ system ]
+diethylene-glycol-dimethyl-ether GAS
+[ molecules ]
+diethylene-glycol-dimethyl-ether 1

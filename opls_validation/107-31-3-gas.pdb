@@ -1,0 +1,14 @@
+TITLE     methyl-formate GAS
+REMARK    THIS IS A SIMULATION BOX
+CRYST1  100.000  100.000  100.000  90.00  90.00  90.00 P 1           1
+MODEL        1
+ATOM      1  C   LIG     1      49.005  49.721  49.655  1.00  0.00            
+ATOM      2  O   LIG     1      49.895  50.271  50.595  1.00  0.00            
+ATOM      3  C   LIG     1      51.215  50.401  50.455  1.00  0.00            
+ATOM      4  O   LIG     1      51.825  50.361  49.385  1.00  0.00            
+ATOM      5  H   LIG     1      51.685  50.521  51.425  1.00  0.00            
+ATOM      6  H   LIG     1      49.265  48.671  49.525  1.00  0.00            
+ATOM      7  H   LIG     1      48.095  49.801  50.255  1.00  0.00            
+ATOM      8  H   LIG     1      49.015  50.251  48.705  1.00  0.00            
+TER
+ENDMDL

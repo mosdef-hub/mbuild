@@ -1,0 +1,193 @@
+; OPLSAA topology for isoquinoline
+; 
+; Jorgensen, W. L.; Tirado-Rives, J. Proc. Natl. Acad. Sci. U.S.A. 2005, 102, 6665.
+; Carl Caleman, Paul J. van Maaren, Minyan Hong, Jochen S. Hub, Luciano T. Costa and David van der Spoel, Force Field Benchmark of Organic Liquids: Density, Enthalpy of Vaporization, Heat Capacities, Surface Tension, Isothermal Compressibility, Volumetric Expansion Coefficient, and Dielectric Constant, J. Chem. Theor. Comput. 8 (2012) http://dx.doi.org/10.1021/ct200731v
+;
+;
+#include "oplsaaff.itp"
+[ moleculetype ]
+; Name            nrexcl
+isoquinoline  3
+
+[ atoms ]
+;   nr       type  resnr residue  atom   cgnr     charge       mass  typeB    chargeB      massB
+         1  opls_610         1       UNK         C         1    -0.307    12.011
+         2  opls_609         1       UNK         C         2    -0.070    12.011
+         3  opls_618         1       UNK         H         3     0.114     1.008
+         4  opls_608         1       UNK         C         4    -0.112    12.011
+         5  opls_617         1       UNK         H         5     0.113     1.008
+         6  opls_607         1       UNK         C         6    -0.197    12.011
+         7  opls_616         1       UNK         H         7     0.133     1.008
+         8  opls_606         1       UNK         C         8    -0.008    12.011
+         9  opls_615         1       UNK         H         9     0.119     1.008
+        10  opls_612         1       UNK         C        10    -0.051    12.011
+        11  opls_605         1       UNK         C        11    -0.359    12.011
+        12  opls_614         1       UNK         H        12     0.146     1.008
+        13  opls_604         1       UNK         C        13     0.425    12.011
+        14  opls_613         1       UNK         H        14     0.028     1.008
+        15  opls_603         1       UNK         N        15    -0.694   14.0067
+        16  opls_611         1       UNK         C        16     0.563    12.011
+        17  opls_619         1       UNK         H        17     0.157     1.008
+
+[ bonds ]
+;  ai    aj funct            c0            c1            c2            c3
+    1     2     1 
+    1    10     1 
+    1    16     1 
+    2     3     1 
+    2     4     1 
+    4     5     1 
+    4     6     1 
+    6     7     1 
+    6     8     1 
+    8     9     1 
+    8    10     1 
+   10    11     1 
+   11    12     1 
+   11    13     1 
+   13    14     1 
+   13    15     1 
+   15    16     1 
+   16    17     1 
+
+[ pairs ]
+;  ai    aj funct            c0            c1            c2            c3
+    1     5     1 
+    1     6     1 
+    1     9     1 
+    1    12     1 
+    1    13     1 
+    2     7     1 
+    2     8     1 
+    2    11     1 
+    2    15     1 
+    2    17     1 
+    3     5     1 
+    3     6     1 
+    3    10     1 
+    3    16     1 
+    4     9     1 
+    4    10     1 
+    4    16     1 
+    5     7     1 
+    5     8     1 
+    6    11     1 
+    7     9     1 
+    7    10     1 
+    8    12     1 
+    8    13     1 
+    8    16     1 
+    9    11     1 
+   10    14     1 
+   10    15     1 
+   10    17     1 
+   11    16     1 
+   12    14     1 
+   12    15     1 
+   13    17     1 
+   14    16     1 
+
+[ angles ]
+;  ai    aj    ak funct            c0            c1            c2            c3
+    2     1    10     1 
+    2     1    16     1 
+   10     1    16     1 
+    1     2     3     1 
+    1     2     4     1 
+    3     2     4     1 
+    2     4     5     1 
+    2     4     6     1 
+    5     4     6     1 
+    4     6     7     1 
+    4     6     8     1 
+    7     6     8     1 
+    6     8     9     1 
+    6     8    10     1 
+    9     8    10     1 
+    1    10     8     1 
+    1    10    11     1 
+    8    10    11     1 
+   10    11    12     1 
+   10    11    13     1 
+   12    11    13     1 
+   11    13    14     1 
+   11    13    15     1 
+   14    13    15     1 
+   13    15    16     1 
+    1    16    15     1 
+    1    16    17     1 
+   15    16    17     1 
+
+[ dihedrals ]
+;  ai    aj    ak    al funct            c0            c1            c2            c3            c4            c5
+   10     1     2     3     3 
+   10     1     2     4     3 
+   16     1     2     3     3 
+   16     1     2     4     3 
+    2     1    10     8     3 
+    2     1    10    11     3 
+   16     1    10     8     3 
+   16     1    10    11     3 
+    2     1    16    15     3 
+    2     1    16    17     3 
+   10     1    16    15     3 
+   10     1    16    17     3 
+    1     2     4     5     3 
+    1     2     4     6     3 
+    3     2     4     5     3 
+    3     2     4     6     3 
+    2     4     6     7     3 
+    2     4     6     8     3 
+    5     4     6     7     3 
+    5     4     6     8     3 
+    4     6     8     9     3 
+    4     6     8    10     3 
+    7     6     8     9     3 
+    7     6     8    10     3 
+    6     8    10     1     3 
+    6     8    10    11     3 
+    9     8    10     1     3 
+    9     8    10    11     3 
+    1    10    11    12     3 
+    1    10    11    13     3 
+    8    10    11    12     3 
+    8    10    11    13     3 
+   10    11    13    14     3 
+   10    11    13    15     3 
+   12    11    13    14     3 
+   12    11    13    15     3 
+   11    13    15    16     3 
+   14    13    15    16     3 
+   13    15    16     1     3 
+   13    15    16    17     3 
+
+; added, improper
+    2     1     4     3     1   180     4.6     2
+    4     2     6     5     1   180     4.6     2
+    6     4     8     7     1   180     4.6     2
+    8     6    10     9     1   180     4.6     2
+   11    10    13    12     1   180     4.6     2
+   13    11    15    14     1   180     4.6     2
+   16    15     2    17     1   180     4.6     2
+
+    1    16    10     2     1   180     4.6     2     
+   10     8     1    11     1   180     4.6     2
+
+; ring_180
+    1     2     4     6     1   180     4.6     2
+    2     4     6     8     1   180     4.6     2
+    4     6     8    10     1   180     4.6     2
+    6     8    10     1     1   180     4.6     2
+    8    10     1     2     1   180     4.6     2
+   10     1     2     4     1   180     4.6     2
+    1    10    11    13     1   180     4.6     2
+   10    11    13    15     1   180     4.6     2
+   11    13    15    16     1   180     4.6     2
+   13    15    16     1     1   180     4.6     2
+   15    16     1    10     1   180     4.6     2
+   16     1    10    11     1   180     4.6     2
+
+[ system ]
+isoquinoline GAS
+[ molecules ]
+isoquinoline 1

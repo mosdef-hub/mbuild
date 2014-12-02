@@ -1,0 +1,11 @@
+TITLE     formic-acid GAS
+REMARK    THIS IS A SIMULATION BOX
+CRYST1  100.000  100.000  100.000  90.00  90.00  90.00 P 1           1
+MODEL        1
+ATOM      1  H   LIG     1      51.004  49.566  50.912  1.00  0.00            
+ATOM      2  C   LIG     1      50.344  50.146  50.252  1.00  0.00            
+ATOM      3  O   LIG     1      50.674  51.006  49.442  1.00  0.00            
+ATOM      4  O   LIG     1      49.144  49.506  50.122  1.00  0.00            
+ATOM      5  H   LIG     1      48.834  49.776  49.272  1.00  0.00            
+TER
+ENDMDL
