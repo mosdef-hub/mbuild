@@ -164,7 +164,7 @@ class Bilayer(Compound):
                         -new_lipid.atoms[self.ref_atoms[i]] + self.spacing)
                 # Move to point on mask
                 if flip_orientation == True:
-                    t_com = new_lipid.center_of_mass()
+                    t_com = new_lipid.center()
                     t_com[2] = 0.0
                     # TODO(tim): function for this? 
                     # e.g., rotate_around_x_keep_com(compound, bool(3))
