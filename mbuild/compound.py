@@ -173,11 +173,11 @@ class Compound(MBase, PartMixin, HasPartsMixin):
         """
         self.to_trajectory().save(filename, **kwargs)
 
-    def to_trajectory(self, show_ports=False):
+    def to_trajectory(self, show_ports=False, **kwargs):
         """Convert the Compound to a Trajectory. """
         from mbuild.trajectory import Trajectory
 
-        return Trajectory.from_compound(self, show_ports)
+        return Trajectory.from_compound(self, show_ports, **kwargs)
 
     @classmethod
     def load(cls, filename, relative_to_module=None, frame=0):
@@ -204,7 +204,7 @@ class Compound(MBase, PartMixin, HasPartsMixin):
         try:
             os.system('vmd {}'.format(filename))
         except OSError:
-            print("Visualization with VMD failed. Make sure you it is installed"
+            print("Visualization with VMD failed. Make sure it is installed"
                   "correctly and launchable from the command line via 'vmd'.")
 
     def min_periodic_distance(self, x0, x1):
@@ -215,7 +215,7 @@ class Compound(MBase, PartMixin, HasPartsMixin):
 
     @property
     def center(self):
-        return sum(atom.pos for atom in self.yield_atoms()) / len([atom for atom in self.yield_atoms()])
+        return sum(atom.pos for atom in self.atoms) / self.n_atoms
 
     def boundingbox(self, excludeG=True):
         """Compute the bounding box of the compound.

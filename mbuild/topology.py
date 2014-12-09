@@ -170,7 +170,8 @@ class Topology(object):
                         pass
 
     @classmethod
-    def from_compound(cls, compound, atom_list=None, bond_list=None):
+    def from_compound(cls, compound, atom_list=None, bond_list=None,
+                      chain_types=None, residue_types=None):
         """Create a Topology from a Compound.
 
         Args:
@@ -180,23 +181,62 @@ class Topology(object):
         Returns:
             out (mbuild.Topology):
         """
+        if isinstance(chain_types, list):
+            chain_types = tuple(chain_types)
+        if isinstance(residue_types, list):
+            residue_types = tuple(residue_types)
         out = cls()
         atom_mapping = {}
 
-        c = out.add_chain()
-        r = out.add_residue("RES", c)
+        default_chain = out.add_chain()
+        default_residue = out.add_residue("RES", default_chain)
 
-        if atom_list is None:
-            atom_list = compound.atoms
+        last_residue_compound = None
+        last_chain_compound = None
+        last_residue = None
+        last_chain = None
 
-        for atom in atom_list:
+        for atom in compound.yield_atoms():
+            if atom.kind == 'G':
+                continue
+            # Chains
+            for parent in atom.ancestors():
+                if chain_types and isinstance(parent, chain_types):
+                    if parent != last_chain_compound:
+                        last_chain_compound = parent
+                        last_chain = out.add_chain()
+                        last_chain_default_residue = out.add_residue("RES", last_chain)
+                        last_chain.compound = last_chain_compound
+                        #print("Found new chain: {}".format(last_chain_compound))
+                    break
+            else:
+                last_chain = default_chain
+                last_chain.compound = last_chain_compound
+
+            # Residues
+            for parent in atom.ancestors():
+                if residue_types and isinstance(parent, residue_types):
+                    if parent != last_residue_compound:
+                        last_residue_compound = parent
+                        last_residue = out.add_residue(parent.__class__.__name__, last_chain)
+                        last_residue.compound = last_residue_compound
+                        #print("Found new residue: {}".format(last_residue))
+                    break
+            else:
+                if last_chain != default_chain:
+                    last_residue = last_chain_default_residue
+                else:
+                    last_residue = default_residue
+                last_residue.compound = last_residue_compound
+
+            # Add the actual atoms
             try:
-                e = elem.get_by_symbol(atom.kind)
+                ele = elem.get_by_symbol(atom.kind)
             except:
-                e = Element(1000, atom.kind, atom.kind, 1.0)
-
-            a = out.add_atom(atom.kind, e, r)
-            atom_mapping[atom] = a
+               ele = Element(1000, atom.kind, atom.kind, 1.0)
+            at = out.add_atom(atom.kind, ele, last_residue)
+            #print("Added {} to residue {} in chain {}".format(atom, last_residue, last_chain))
+            atom_mapping[atom] = at
 
         if bond_list is None:
             bond_list = compound.bonds
@@ -357,3 +397,4 @@ class ForcefieldDihedral(object):
     def __repr__(self):
         return "Dihedral{0}({1}, {2}, {3}, {4})".format(
             id(self), self.atom1, self.atom2, self.atom3, self.atom4)
+

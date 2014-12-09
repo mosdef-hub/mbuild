@@ -4,6 +4,7 @@ from numpy import pi
 
 from mbuild.compound import Compound
 from mbuild.examples.alkane_monolayer.surface import Surface
+from mbuild.examples.pmpc_brush_layer.mpc_monomer import MpcMonomer
 from mbuild.examples.pmpc_brush_layer.brush import Brush
 from mbuild.tools.mask import apply_mask, random_mask_2d
 from mbuild.tools.tiled_compound import TiledCompound
@@ -27,13 +28,15 @@ class BrushLayer(Compound):
 
 
 def main():
-    mask = random_mask_2d(20)
-    brush_layer = BrushLayer(chain_length=20, alpha=pi/4, mask=mask, tile_x=3, tile_y=2)
-    brush_layer.visualize()
+    mask = random_mask_2d(2)
+    brush_layer = BrushLayer(chain_length=3, alpha=pi/4, mask=mask, tile_x=1, tile_y=1)
+    #brush_layer.visualize()
+ 
+    brush_layer = brush_layer.to_trajectory(chain_types = [Surface, Brush],
+                                            residue_types=[MpcMonomer])
 
-    brush_layer = brush_layer.to_trajectory()
+
     brush_layer.topology.find_forcefield_terms()
-
     brush_layer.save(filename='brush_layer.hoomdxml')
 
 if __name__ == "__main__":
