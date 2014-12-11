@@ -214,7 +214,7 @@ def main():
 
     water = Trajectory.load(get_fn('water.hoomdxml'))
     water = water.to_compound()
-    ecerns = Trajectory.load(get_fn('ecer2.hoomdxml'))intrfer9
+    ecerns = Trajectory.load(get_fn('ecer2.hoomdxml'))
 
     ecerns = ecerns.to_compound()
     chol = Trajectory.load(get_fn('cg-chol.hoomdxml'))
