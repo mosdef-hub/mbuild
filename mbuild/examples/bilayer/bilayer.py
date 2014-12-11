@@ -214,7 +214,8 @@ def main():
 
     water = Trajectory.load(get_fn('water.hoomdxml'))
     water = water.to_compound()
-    ecerns = Trajectory.load(get_fn('ecer2.hoomdxml'))
+    ecerns = Trajectory.load(get_fn('ecer2.hoomdxml'))intrfer9
+
     ecerns = ecerns.to_compound()
     chol = Trajectory.load(get_fn('cg-chol.hoomdxml'))
     chol = chol.to_compound()
@@ -231,7 +232,7 @@ def main():
     bilayer.save(filename='bilayer.hoomdxml')
 
     import os
-    os.system('vmd_MACOSXX86 -e vis.vmd')
+    os.system('vmd -e vis.vmd')
 
 if __name__ == "__main__":
     main()
