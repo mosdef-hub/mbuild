@@ -245,6 +245,7 @@ class Topology(object):
             a1 = bond.atom1
             a2 = bond.atom2
             out.add_bond(atom_mapping[a1], atom_mapping[a2])
+
         return out
 
 

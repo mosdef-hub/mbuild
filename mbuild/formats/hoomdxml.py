@@ -120,8 +120,11 @@ def load_hoomdxml(filename, optional_nodes=True, lj_units=None):
             try:
                 node_text = config.find(node).text.splitlines()[1:]
                 for raw_line in node_text:
+                    # TODO: not robust when e.g. charges are provided as ints
                     parsed_line = [int(x) if x.isdigit() else float(x) * lj_units[node] 
                             for x in raw_line.split()]
+                    if len(parsed_line) == 1:
+                        parsed_line = parsed_line[0]
                     parsed_node_text.append(parsed_line)
                 per_particle_df[node] = parsed_node_text
             except AttributeError as err:
@@ -169,7 +172,7 @@ def load_hoomdxml(filename, optional_nodes=True, lj_units=None):
 
     traj = Trajectory(xyz=np.array(xyz, dtype=np.float64), topology=top)
     traj.unitcell_vectors = unitcell_vectors
-    traj.extra = optional_data
+    traj.extras = optional_data
     return traj
 
 

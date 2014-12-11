@@ -10,7 +10,7 @@ from mbuild.box import Box
 from mbuild.compound import Compound
 from mbuild.formats.hoomdxml import save_hoomdxml
 from mbuild.periodic_kdtree import PeriodicCKDTree
-from mbuild.topology import Topology
+from mbuild.topology import Topology, ForcefieldAngle
 from mbuild.formats.gromacs import save_gromacs
 from mbuild.formats.lammps_data import save_lammps_data
 from mbuild.formats.mol2 import save_mol2
@@ -107,6 +107,22 @@ class Trajectory(object):
                     new_atom = Atom(str(atom.name), self.xyz[frame, atom.index])
                     chain_compound.add(new_atom, label="{0}[$]".format(atom.name))
                     atom_mapping[atom] = new_atom
+
+        if hasattr(self, 'extras'):
+            if 'per_particle' in self.extras:
+                properties = self.extras['per_particle'].columns
+                for i, atom in enumerate(part.atoms):
+                    for prop in properties:
+                        atom.extras[prop] = self.extras['per_particle'].loc[i, prop]
+
+            if 'angle' in self.extras:
+                part.extras['angle'] = list()
+                for _, angle in self.extras['angle'].iterrows():
+                    new_angle = ForcefieldAngle(angle['id0'],
+                                                angle['id1'],
+                                                angle['id2'],
+                                                angle['angletype'])
+                    part.extras['angle'].append(new_angle)
 
         for a1, a2 in self.topology.bonds:
             atom1 = atom_mapping[a1]
@@ -251,3 +267,12 @@ class Trajectory(object):
         value = "mbuild.Trajectory with %d frames, %d atoms, %d residues, %s" % (
                     self.n_frames, self.n_atoms, self.n_residues, unitcell_str)
         return value
+
+
+if __name__ == "__main__":
+    import pdb
+    from testing.tools import get_fn
+    traj = Trajectory.load(get_fn('ecer2.hoomdxml'))
+    comp = traj.to_compound()
+
+    pdb.set_trace()

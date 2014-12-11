@@ -37,7 +37,7 @@ class Atom(MBase, PartMixin):
             charge (float, optional): Partial charge on the atom.
 
         """
-        super(Atom, self).__init__(kind, pos=pos, charge=charge)
+        super(Atom, self).__init__(kind, pos=pos)
 
         assert (isinstance(kind, basestring))
 
@@ -46,7 +46,6 @@ class Atom(MBase, PartMixin):
 
         self.kind = kind
         self.pos = np.asarray(pos, dtype=float)
-        self.charge = charge
         self.bonds = set()
         self._extras = None
 
