@@ -82,7 +82,7 @@ class Compound(MBase, PartMixin, HasPartsMixin):
         if self._extras and item in self._extras:
             return self._extras[item]
         else:
-            raise AttributeError
+            return super(Compound, self).__getattr__(item)
 
     @property
     def atoms(self):
