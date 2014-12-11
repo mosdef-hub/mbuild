@@ -11,6 +11,10 @@ from mbuild.testing.tools import get_fn
 
 class TestCompound:
 
+    @pytest.fixture(autouse=True)
+    def initdir(self, tmpdir):
+        tmpdir.chdir()
+
     def test_load_and_create(self):
         Compound.load(get_fn('methyl.pdb'))
 

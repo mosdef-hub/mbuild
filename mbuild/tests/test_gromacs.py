@@ -7,6 +7,10 @@ import pytest
 
 class TestGromacs:
 
+    @pytest.fixture(autouse=True)
+    def initdir(self, tmpdir):
+        tmpdir.chdir()
+
     @pytest.fixture
     def ethane(self):
         from mbuild.examples.ethane.ethane import Ethane

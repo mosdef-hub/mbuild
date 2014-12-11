@@ -5,6 +5,10 @@ __author__ = 'sallai'
 
 class TestExamplesMethane:
 
+    @pytest.fixture(autouse=True)
+    def initdir(self, tmpdir):
+        tmpdir.chdir()
+
     @pytest.fixture
     def methane(self):
         from mbuild.examples.methane.methane import Methane
