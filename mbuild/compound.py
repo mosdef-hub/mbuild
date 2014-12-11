@@ -69,6 +69,21 @@ class Compound(MBase, PartMixin, HasPartsMixin):
             periodicity = np.array([0.0, 0.0, 0.0])
         self.periodicity = periodicity
 
+        # allow storing extra stuff in a dict (created on-demand)
+        self._extras = None
+
+    @property
+    def extras(self):
+        if self._extras is None:
+            self._extras = dict()
+        return self._extras
+
+    def __getattr__(self, item):
+        if self._extras and item in self._extras:
+            return self._extras[item]
+        else:
+            raise AttributeError
+
     @property
     def atoms(self):
         """A list of all Atoms in the Compound and sub-Compounds. """
@@ -338,5 +353,7 @@ class Compound(MBase, PartMixin, HasPartsMixin):
         for r in self.referrers:
             if memo[0] in r.ancestors():
                 newone.referrers.add(deepcopy(r, memo))
+
+        newone._extras = deepcopy(self._extras, memo)
 
         return newone
