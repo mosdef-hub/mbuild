@@ -5,12 +5,17 @@
 
 import glob
 import os
+import pytest
 
 from mbuild.testing.tools import load_top_opls
 from mbuild.tools.parameterize.atomtyper import find_atomtypes
 
 
 class TestTools:
+
+    @pytest.fixture(autouse=True)
+    def initdir(self, tmpdir):
+        tmpdir.chdir()
 
     def test_all_molecules(self, only_run=None):
         # Path doesn't work for py.test and is probably bad practice anyways.

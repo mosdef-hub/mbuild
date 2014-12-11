@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 """Tests for `mbuild.tools` module. """
+import pytest
 import numpy as np
 
 from mbuild.trajectory import Trajectory
@@ -9,6 +10,10 @@ from mbuild.testing.tools import get_fn
 
 
 class TestTools:
+
+    @pytest.fixture(autouse=True)
+    def initdir(self, tmpdir):
+        tmpdir.chdir()
 
     def test_center_of_mass(self):
         e_ceramide_ns = Trajectory.load(get_fn('e-ceramide-ns.pdb'))

@@ -2,9 +2,15 @@
 # -*- coding: utf-8 -*-
 
 """Tests for `mbuild.examples` module. """
+import pytest
 
 
 class TestExamples:
+
+    @pytest.fixture(autouse=True)
+    def initdir(self, tmpdir):
+        tmpdir.chdir()
+
 
     def test_alkane(self):
         import mbuild.examples.alkane.alkane as example

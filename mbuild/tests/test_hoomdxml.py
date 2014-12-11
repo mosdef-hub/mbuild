@@ -11,6 +11,9 @@ from mbuild.trajectory import Trajectory
 
 
 class TestHoomdXml:
+    @pytest.fixture(autouse=True)
+    def initdir(self, tmpdir):
+        tmpdir.chdir()
 
     @pytest.fixture
     def molecule(self):
