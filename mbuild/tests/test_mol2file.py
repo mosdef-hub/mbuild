@@ -7,12 +7,9 @@ from mbuild.examples.ethane.methyl import Methyl
 from mbuild.trajectory import Trajectory
 from mbuild.testing.tools import get_fn
 
+from base_test import BaseTest
 
-class TestMol2:
-
-    @pytest.fixture(autouse=True)
-    def initdir(self, tmpdir):
-        tmpdir.chdir()
+class TestMol2(BaseTest):
 
     def test_load_and_create(self):
         methyl = Trajectory.load(get_fn('methyl.mol2'))

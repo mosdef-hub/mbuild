@@ -7,13 +7,10 @@ import pytest
 from mbuild.compound import Compound
 from mbuild.examples.ethane.methyl import Methyl
 from mbuild.testing.tools import get_fn
+from base_test import BaseTest
 
 
-class TestCompound:
-
-    @pytest.fixture(autouse=True)
-    def initdir(self, tmpdir):
-        tmpdir.chdir()
+class TestCompound(BaseTest):
 
     def test_load_and_create(self):
         Compound.load(get_fn('methyl.pdb'))

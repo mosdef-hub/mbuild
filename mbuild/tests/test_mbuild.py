@@ -3,12 +3,10 @@
 
 """Tests for `mbuild` module. """
 import pytest
+from base_test import BaseTest
 
-class TestMbuild:
+class TestMbuild(BaseTest):
 
-    @pytest.fixture(autouse=True)
-    def initdir(self, tmpdir):
-        tmpdir.chdir()
 
     def setUp(self):
         pass

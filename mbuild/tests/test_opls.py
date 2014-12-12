@@ -10,22 +10,19 @@ from mbuild.testing import tools
 
 from mbuild.testing.tools import load_top_opls
 from mbuild.tools.parameterize.atomtyper import find_atomtypes
+from base_test import BaseTest
 
 
-class TestTools:
 
-    @pytest.fixture(autouse=True)
-    def initdir(self, tmpdir):
-        tmpdir.chdir()
+class TestTools(BaseTest):
 
     def test_all_molecules(self, only_run=None):
         # Path doesn't work for py.test and is probably bad practice anyways.
-        opls_validation_resource_dir = tools.resource_filename('mbuild','../opls_validation')
-        top_files = glob.glob(os.path.join(opls_validation_resource_dir, '*.top'))
+        resource_dir = tools.resource_filename('mbuild', '../opls_validation')
+        top_files = glob.glob(os.path.join(resource_dir, '*.top'))
 
         correctly_implemented = 9
-
-        for i,top in enumerate(top_files[::-1]):
+        for i, top in enumerate(top_files[::-1]):
             if i == correctly_implemented:
                 break
 

@@ -8,12 +8,10 @@ from mbuild.examples.ethane.ethane import Ethane
 from mbuild.testing.tools import get_fn
 import numpy as np
 from mbuild.trajectory import Trajectory
+from base_test import BaseTest
 
 
-class TestHoomdXml:
-    @pytest.fixture(autouse=True)
-    def initdir(self, tmpdir):
-        tmpdir.chdir()
+class TestHoomdXml(BaseTest):
 
     @pytest.fixture
     def molecule(self):

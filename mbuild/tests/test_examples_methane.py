@@ -1,13 +1,10 @@
 import pytest
+from base_test import BaseTest
 
 __author__ = 'sallai'
 
 
-class TestExamplesMethane:
-
-    @pytest.fixture(autouse=True)
-    def initdir(self, tmpdir):
-        tmpdir.chdir()
+class TestExamplesMethane(BaseTest):
 
     @pytest.fixture
     def methane(self):

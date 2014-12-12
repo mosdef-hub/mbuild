@@ -3,13 +3,10 @@
 
 """Tests for `mbuild.formats.xyz` module. """
 import pytest
+from base_test import BaseTest
 
 
-class TestXyz:
-
-    @pytest.fixture(autouse=True)
-    def initdir(self, tmpdir):
-        tmpdir.chdir()
+class TestXyz(BaseTest):
 
     @pytest.fixture
     def ethane(self):

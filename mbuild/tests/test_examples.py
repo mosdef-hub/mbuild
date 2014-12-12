@@ -3,14 +3,10 @@
 
 """Tests for `mbuild.examples` module. """
 import pytest
+from base_test import BaseTest
 
 
-class TestExamples:
-
-    @pytest.fixture(autouse=True)
-    def initdir(self, tmpdir):
-        tmpdir.chdir()
-
+class TestExample(BaseTest):
 
     def test_alkane(self):
         import mbuild.examples.alkane.alkane as example

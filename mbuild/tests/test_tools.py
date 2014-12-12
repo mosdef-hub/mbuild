@@ -7,13 +7,9 @@ import numpy as np
 
 from mbuild.trajectory import Trajectory
 from mbuild.testing.tools import get_fn
+from base_test import BaseTest
 
-
-class TestTools:
-
-    @pytest.fixture(autouse=True)
-    def initdir(self, tmpdir):
-        tmpdir.chdir()
+class TestTools(BaseTest):
 
     def test_center_of_mass(self):
         e_ceramide_ns = Trajectory.load(get_fn('e-ceramide-ns.pdb'))

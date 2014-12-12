@@ -3,13 +3,11 @@
 
 """Tests for `mbuild.formats.gromacs` module. """
 import pytest
+from base_test import BaseTest
 
 
-class TestGromacs:
+class TestGromacs(BaseTest):
 
-    @pytest.fixture(autouse=True)
-    def initdir(self, tmpdir):
-        tmpdir.chdir()
 
     @pytest.fixture
     def ethane(self):
