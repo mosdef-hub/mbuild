@@ -5,7 +5,8 @@ import numpy as np
 from mbuild.atom import Atom
 from mbuild.compound import Compound
 from mbuild.port import Port
-from mbuild.coordinate_transform import translate, rotate_around_z
+from mbuild.coordinate_transform import translate, rotate_around_z, translate_to, \
+    _extract_atom_positions
 
 
 class C3(Compound):

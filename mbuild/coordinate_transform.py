@@ -324,6 +324,13 @@ def translate(compound, v):
     _write_back_atom_positions(compound, atom_positions)
 
 
+def translate_to(compound, v):
+    atom_positions = _extract_atom_positions(compound)
+    atom_positions -= atom_positions.min(axis=0)
+    atom_positions = Translation(v).applyTo(atom_positions)
+    _write_back_atom_positions(compound, atom_positions)
+
+
 def rotate_around_z(compound, theta):
     atom_positions = _extract_atom_positions(compound)
     atom_positions = RotationAroundZ(theta).applyTo(atom_positions)
