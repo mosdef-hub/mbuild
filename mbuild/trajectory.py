@@ -63,7 +63,7 @@ class Trajectory(object):
         exclude = not show_ports
         atom_list = compound.atom_list_by_kind('*', excludeG=exclude)
 
-        t = Topology.from_compound(compound, atom_list=atom_list, **kwargs)
+        t = Topology.from_compound(compound, show_ports=show_ports, **kwargs)
 
         n_atoms = len(atom_list)
         xyz = np.ndarray(shape=(1, n_atoms, 3), dtype='float')

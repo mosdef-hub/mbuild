@@ -170,7 +170,7 @@ class Topology(object):
                         pass
 
     @classmethod
-    def from_compound(cls, compound, atom_list=None, bond_list=None,
+    def from_compound(cls, compound, bond_list=None, show_ports=False,
                       chain_types=None, residue_types=None):
         """Create a Topology from a Compound.
 
@@ -197,7 +197,7 @@ class Topology(object):
         last_chain = None
 
         for atom in compound.yield_atoms():
-            if atom.kind == 'G':
+            if not show_ports and atom.kind == 'G':
                 continue
             # Chains
             for parent in atom.ancestors():
