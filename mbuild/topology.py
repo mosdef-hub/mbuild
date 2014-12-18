@@ -124,6 +124,11 @@ class Topology(object):
             self._ff_dihedrals.append(ForcefieldDihedral(
                 atom4, atom3, atom2, atom1))
 
+    def add_ff_improper(self, atom1, atom2, atom3, atom4):
+        atoms = self.sort_atoms_alphabetically([atom2, atom3, atom4])
+        self._ff_impropers.append(ForcefieldDihedral(
+                atom1, atoms[0], atoms[1], atoms[2], improper=True))
+
     def load_ff_bonds(self):
         """Convert from (Atom1, Atom2) to ForcefieldBonds. """
         for bond in self.bonds:
@@ -145,6 +150,11 @@ class Topology(object):
             if pair[0] != pair[1]:
                 self.add_ff_dihedral(pair[0], node_1, node_2, pair[1])
 
+    def enumerate_impropers(self, node, neighbors):
+        """Find all impropers around a node. """
+        for triplet in itertools.combinations(neighbors, 3):
+            self.add_ff_improper(node, triplet[0], triplet[1], triplet[2])
+
     def find_forcefield_terms(self, bonds=True, angles=True, dihedrals=True,
                               impropers=True):
         """Convert Bonds to ForcefieldBonds and find angles and dihedrals. """
@@ -165,9 +175,8 @@ class Topology(object):
                                 if len(neighbors_2) > 1:
                                     self.enumerate_dihedrals(
                                         node_1, neighbors_1, node_2, neighbors_2)
-                    if impropers:
-                        # TODO: implement
-                        pass
+                    if impropers and len(neighbors_1) >= 3:
+                        self.enumerate_impropers(node_1, neighbors_1)
 
     @classmethod
     def from_compound(cls, compound, bond_list=None, show_ports=False,
@@ -358,7 +367,7 @@ class ForcefieldDihedral(object):
         kind (str, optional): Descriptive name for the dihedral.
     """
 
-    def __init__(self, atom1, atom2, atom3, atom4, kind=None):
+    def __init__(self, atom1, atom2, atom3, atom4, kind=None, improper=False):
         """
         """
         self._atom1 = atom1
@@ -370,6 +379,7 @@ class ForcefieldDihedral(object):
         else:
             self.kind = '{0}-{1}-{2}-{3}'.format(
                 atom1.name, atom2.name, atom3.name, atom4.name)
+        self.improper = improper
 
     @property
     def atom1(self):
