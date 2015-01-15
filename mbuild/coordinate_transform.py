@@ -1,13 +1,15 @@
 __author__ = 'sallai'
 
-# from mbuild.tools import createEquivalenceTransform
-from itertools import *
+from itertools import chain
+
 from numpy import *
-import numpy as np
-from numpy.linalg import *
+from numpy.linalg import norm, svd, inv
 
 
 class CoordinateTransform(object):
+    """
+
+    """
     def __init__(self, T=None):
         if T is None:
             T = eye(4)
@@ -15,35 +17,31 @@ class CoordinateTransform(object):
         self.T = T
         self.Tinv = inv(T)
 
-    def applyTo(self, A):
+    def apply_to(self, A):
+        """Apply the coordinate transformation to points in A.
+
+        Args:
+            A (np.array, shape=(n, 3)): An array of points.
+        Returns:
+            transformed points (np.array, shape=(n, 3)): The transformed points
+                from A.
         """
-        Apply the coordinate transformation to points in A
-        :param A: list of points (nx3)
-        :return: transformed list of points (nx3)
-        """
-        (rows, cols) = A.shape
+        rows, cols = A.shape
         A_new = zeros((rows, 4))
         A_new = hstack([A, ones((rows, 1))])
 
         A_new = transpose(self.T.dot(transpose(A_new)))
         return A_new[:, 0:cols]
 
-    def applyInverseTo(self, A):
-        """
-        Apply the inverse coordinate transformation to points in A
-        :param A: list of points (nx3)
-        :return: transformed list of points (nx3)
-        """
-        (rows, cols) = A.shape
-        A_new = zeros((rows, 4))
-        A_new = hstack([A, ones((rows, 1))])
-
-        A_new = transpose(self.Tinv.dot(transpose(A_new)))
-        return A_new[:, 0:cols]
-
 
 class Translation(CoordinateTransform):
+    """Cartesian translation. """
     def __init__(self, P):
+        """
+
+        Args:
+            P:
+        """
         T = eye(4)
         T[0, 3] = P[0]
         T[1, 3] = P[1]
@@ -52,7 +50,13 @@ class Translation(CoordinateTransform):
 
 
 class RotationAroundZ(CoordinateTransform):
+    """Rotation around the z-axis. """
     def __init__(self, theta):
+        """
+
+        Args:
+            theta:
+        """
         T = eye(4)
         T[0, 0] = cos(theta)
         T[0, 1] = -sin(theta)
@@ -62,7 +66,13 @@ class RotationAroundZ(CoordinateTransform):
 
 
 class RotationAroundY(CoordinateTransform):
+    """Rotation around the y-axis. """
     def __init__(self, theta):
+        """
+
+        Args:
+            theta:
+        """
         T = eye(4)
         T[0, 0] = cos(theta)
         T[0, 2] = sin(theta)
@@ -72,7 +82,13 @@ class RotationAroundY(CoordinateTransform):
 
 
 class RotationAroundX(CoordinateTransform):
+    """Rotation around the x-axis. """
     def __init__(self, theta):
+        """
+
+        Args:
+            theta:
+        """
         T = eye(4)
         T[1, 1] = cos(theta)
         T[1, 2] = -sin(theta)
@@ -82,8 +98,14 @@ class RotationAroundX(CoordinateTransform):
 
 
 class Rotation(CoordinateTransform):
+    """Rotation around vector by angle theta. """
     def __init__(self, theta, around):
-        # rotation around vector around by angle theta
+        """
+
+        Args:
+            theta:
+            around:
+        """
         assert around.size == 3
 
         T = eye(4)
@@ -92,7 +114,7 @@ class Rotation(CoordinateTransform):
         c = cos(theta)
         t = 1 - c
 
-        n = around / linalg.norm(around)
+        n = around / norm(around)
 
         x = n[0]
         y = n[1]
@@ -106,7 +128,14 @@ class Rotation(CoordinateTransform):
 
 
 class ChangeOfBasis(CoordinateTransform):
+    """ """
     def __init__(self, basis, origin=array([0.0, 0.0, 0.0])):
+        """
+
+        Args:
+            basis:
+            origin:
+        """
         assert shape(basis) == (3, 3)
 
         T = eye(4)
@@ -119,9 +148,18 @@ class ChangeOfBasis(CoordinateTransform):
 
 
 class AxisTransform(CoordinateTransform):
-    def __init__(self, new_origin=array([0.0, 0.0, 0.0]),
+    """ """
+    def __init__(self,
+                 new_origin=array([0.0, 0.0, 0.0]),
                  point_on_x_axis=array([1.0, 0.0, 0.0]),
                  point_on_xy_plane=array([1.0, 1.0, 0.0])):
+        """
+
+        Args:
+            new_origin:
+            point_on_x_axis:
+            point_on_xy_plane:
+        """
         # change the basis such that p1 is the origin, p2 is on the x axis and p3 is in the xy plane
         p1 = new_origin
         p2 = point_on_x_axis  # positive x axis
@@ -152,16 +190,19 @@ class AxisTransform(CoordinateTransform):
 
 
 class RigidTransform(CoordinateTransform):
-    """
-    Computes the rigid transformation that maps points A to points B
-    see http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.173.2196&rep=rep1&type=pdf
-    :param A: list of points (nx3) in source coordinate system
-    :param B: list of points (nx3) in destination coordinate system
-    :return: the CoordinateTransformation object
+    """Computes the rigid transformation that maps points A to points B.
+
+    See http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.173.2196&rep=rep1&type=pdf
     """
 
     def __init__(self, A, B):
-        (rows, cols) = shape(A)
+        """
+
+        Args:
+            A: list of points (nx3) in source coordinate system
+            B: list of points (nx3) in destination coordinate system
+        """
+        rows, cols = shape(A)
         centroid_A = mean(A, axis=0)
         centroid_B = mean(B, axis=0)
         centroid_A.shape = (1, 3)
@@ -169,36 +210,24 @@ class RigidTransform(CoordinateTransform):
 
         H = zeros((3, 3), dtype=float)
 
-        for i in range(0, rows):
+        for i in range(rows):
             H = H + transpose(A[i, :] - centroid_A).dot((B[i, :] - centroid_B))
 
         U, s, V = svd(H)
-
-        # print "centroid_A:" + str(centroid_A)
-        # print "H:" + str(H)
-
-        # print "U:" + str(U)
         V = transpose(V)
-        # print "V:" + str(V)
-
         R = V.dot(transpose(U))
-        # print "R:" + str(R)
 
         C_A = eye(3)
-        C_A = vstack(
-            [hstack([C_A, transpose(centroid_A) * -1.0]), array([0, 0, 0, 1])])
-        # print "C_A:" + str(C_A)
+        C_A = vstack([hstack([C_A, transpose(centroid_A) * -1.0]),
+                      array([0, 0, 0, 1])])
 
         R_new = eye(3)
-        R_new = vstack(
-            [hstack([R, array([[0], [0], [0]])]), array([0, 0, 0, 1])])
-        # print "R_new:" + str(R_new)
+        R_new = vstack([hstack([R, array([[0], [0], [0]])]),
+                        array([0, 0, 0, 1])])
 
         C_B = eye(3)
-
-        C_B = vstack(
-            [hstack([C_B, transpose(centroid_B)]), array([0, 0, 0, 1])])
-        # print "C_B:" + str(C_B)
+        C_B = vstack([hstack([C_B, transpose(centroid_B)]),
+                      array([0, 0, 0, 1])])
 
         T = C_B.dot(R_new).dot(C_A)
 
@@ -206,12 +235,12 @@ class RigidTransform(CoordinateTransform):
 
 
 def unit_vector(vector):
-    """ Returns the unit vector of the vector.  """
-    return vector / linalg.norm(vector)
+    """Returns the unit vector of the vector.  """
+    return vector / norm(vector)
 
 
 def vec_angle(v1, v2):
-    """ Returns the angle in radians between vectors 'v1' and 'v2'
+    """Returns the angle in radians between vectors 'v1' and 'v2'
 
             >>> angle_between((1, 0, 0), (0, 1, 0))
             1.5707963267948966
@@ -227,41 +256,49 @@ def vec_angle(v1, v2):
     if abs(d - 1.0) < 0.000000001:
         angle = 0.0
     else:
-        angle = np.arccos(d)
+        angle = arccos(d)
     if isnan(angle):
         if (v1_u == v2_u).all():
             return 0.0
         else:
-            return np.pi
+            return pi
     return angle
 
 
 def _extract_atom_positions(compound):
-    arr = np.fromiter(
+    """Extracts all atom positions from `compound` into an ndarray.
+
+    Args:
+        compound (Compound):
+    Returns:
+        array (np.ndarray, shape=(n, 3)):
+    """
+    arr = fromiter(
         chain.from_iterable(atom.pos for atom in compound.yield_atoms()),
-        dtype=np.float64)
-    arrnx3 = arr.reshape((-1, 3))
-    return arrnx3
+        dtype=float64)
+    return arr.reshape((-1, 3))
 
 
 def _write_back_atom_positions(compound, arrnx3):
     arr = arrnx3.reshape((-1))
     for i, atom in enumerate(compound.yield_atoms()):
-        atom.pos = np.array([arr[3 * i], arr[3 * i + 1], arr[3 * i + 2]])
+        atom.pos = array([arr[3 * i], arr[3 * i + 1], arr[3 * i + 2]])
 
 
-def _createEquivalenceTransform(equiv):
+def _create_equivalence_transform(equiv):
     """Compute an equivalence transformation that transforms this compound
     to another compound's coordinate system.
 
-    :param other: the other point cloud
-    :param equiv: list of equivalent points
-    :returns: the coordinatetransform object that transforms this point cloud to the other point cloud's coordinates system
+    Args:
+        equiv (np.ndarray, shape=(n, 3): array of equivalent points
+    Returns:
+        The `CoordinateTransform` object that transforms this point cloud to the
+        other point cloud's coordinates system.
     """
 
-    self_points = np.array([])
+    self_points = array([])
     self_points.shape = (0, 3)
-    other_points = np.array([])
+    other_points = array([])
     other_points.shape = (0, 3)
 
     from compound import Compound
@@ -277,42 +314,42 @@ def _createEquivalenceTransform(equiv):
                             'and pair[1] is a {1}'.format(type(pair[0]), type(pair[1])))
 
         if isinstance(pair[0], Atom):
-            self_points = np.vstack([self_points, pair[0].pos])
-            other_points = np.vstack([other_points, pair[1].pos])
+            self_points = vstack([self_points, pair[0].pos])
+            other_points = vstack([other_points, pair[1].pos])
         if isinstance(pair[0], Compound):
             for atom0 in pair[0].yield_atoms():
-                self_points = np.vstack([self_points, atom0.pos])
+                self_points = vstack([self_points, atom0.pos])
             for atom1 in pair[1].yield_atoms():
-                other_points = np.vstack([other_points, atom1.pos])
+                other_points = vstack([other_points, atom1.pos])
 
     T = RigidTransform(self_points, other_points)
     return T
 
 
-def equivalence_transform(compound, from_positions=None, to_positions=None,
-                          add_bond=True):
+def equivalence_transform(compound, from_positions, to_positions, add_bond=True):
     """Computes an affine transformation that maps the from_positions to the
     respective to_positions, and applies this transformation to the compound.
 
     Args:
+        compound (Compound): The `Compound` to be transformed.
+        from_positions:
+        to_positions:
     """
     from mbuild.port import Port
 
     if isinstance(from_positions, (list, tuple)) and isinstance(to_positions, (list, tuple)):
         equivalence_pairs = zip(from_positions, to_positions)
     elif isinstance(from_positions, Port) and isinstance(to_positions, Port):
-        # Extract up port first.
         equivalence_pairs = choose_correct_port(from_positions, to_positions)
     else:
         equivalence_pairs = [(from_positions, to_positions)]
 
-    T = _createEquivalenceTransform(equivalence_pairs)
+    T = _create_equivalence_transform(equivalence_pairs)
     atom_positions = _extract_atom_positions(compound)
-    atom_positions = T.applyTo(atom_positions)
+    atom_positions = T.apply_to(atom_positions)
     _write_back_atom_positions(compound, atom_positions)
 
     if add_bond:
-        from mbuild.port import Port
         from mbuild.bond import Bond
 
         if isinstance(from_positions, Port) and isinstance(to_positions, Port):
@@ -320,27 +357,38 @@ def equivalence_transform(compound, from_positions=None, to_positions=None,
 
 
 def choose_correct_port(from_port, to_port):
-    """
+    """Chooses the direction when using an equivalence transform on two Ports.
+
+    Each Port object actually contains 2 sets of 4 atoms, either of which can be
+    used to make a connection with an equivalence transform. This function
+    chooses the set of 4 atoms that makes the anchor atoms not overlap which is
+    the intended behavior for most use-cases.
+
+    TODO: -Increase robustness for cases where the anchors are a different
+           distance from their respective ports.
+          -Provide options in `equivalence_transform` to override this behavior.
 
     Args:
-        from_port:
-        to_port:
+        from_port (Port):
+        to_port (Port):
     Returns:
-        equivalence_pairs (
+        equivalence_pairs (2-tuple of Ports): Technically, a tuple of the Ports'
+            sub-Compounds ('up' or 'down') that are used to make the correct
+            connection between components.
     """
 
     # First we try matching the two 'up' ports.
-    T = _createEquivalenceTransform([(from_port.up, to_port.up)])
-    _ = T.applyTo(np.array(from_port.anchor.pos, ndmin=2))
+    T = _create_equivalence_transform([(from_port.up, to_port.up)])
+    _ = T.apply_to(array(from_port.anchor.pos, ndmin=2))
 
-    dist_between_anchors_up_up = np.linalg.norm(from_port.anchor - to_port.anchor)
+    dist_between_anchors_up_up = norm(from_port.anchor - to_port.anchor)
 
     # Then matching a 'down' with an 'up' port.
-    T = _createEquivalenceTransform([(from_port.down, to_port.up)])
-    _ = T.applyTo(np.array(from_port.anchor.pos, ndmin=2))
+    T = _create_equivalence_transform([(from_port.down, to_port.up)])
+    _ = T.apply_to(array(from_port.anchor.pos, ndmin=2))
 
     # Determine which transform places the anchors further away from each other
-    dist_between_anchors_down_up = np.linalg.norm(from_port.anchor - to_port.anchor)
+    dist_between_anchors_down_up = norm(from_port.anchor - to_port.anchor)
     difference_between_distances = dist_between_anchors_down_up - dist_between_anchors_up_up
 
     if difference_between_distances > 0:
@@ -350,35 +398,34 @@ def choose_correct_port(from_port, to_port):
     return [(correct_port, to_port.up)]
 
 
-# this is a translate by rather than translate to
 def translate(compound, v):
     atom_positions = _extract_atom_positions(compound)
-    atom_positions = Translation(v).applyTo(atom_positions)
+    atom_positions = Translation(v).apply_to(atom_positions)
     _write_back_atom_positions(compound, atom_positions)
 
 
 def translate_to(compound, v):
     atom_positions = _extract_atom_positions(compound)
     atom_positions -= atom_positions.min(axis=0)
-    atom_positions = Translation(v).applyTo(atom_positions)
+    atom_positions = Translation(v).apply_to(atom_positions)
     _write_back_atom_positions(compound, atom_positions)
 
 
 def rotate_around_z(compound, theta):
     atom_positions = _extract_atom_positions(compound)
-    atom_positions = RotationAroundZ(theta).applyTo(atom_positions)
+    atom_positions = RotationAroundZ(theta).apply_to(atom_positions)
     _write_back_atom_positions(compound, atom_positions)
 
 
 def rotate_around_y(compound, theta):
     atom_positions = _extract_atom_positions(compound)
-    atom_positions = RotationAroundY(theta).applyTo(atom_positions)
+    atom_positions = RotationAroundY(theta).apply_to(atom_positions)
     _write_back_atom_positions(compound, atom_positions)
 
 
 def rotate_around_x(compound, theta):
     atom_positions = _extract_atom_positions(compound)
-    atom_positions = RotationAroundX(theta).applyTo(atom_positions)
+    atom_positions = RotationAroundX(theta).apply_to(atom_positions)
     _write_back_atom_positions(compound, atom_positions)
 
 
@@ -397,7 +444,7 @@ def x_axis_transform(compound, new_origin=array([0.0, 0.0, 0.0]),
     atom_positions = _extract_atom_positions(compound)
     atom_positions = AxisTransform(new_origin=new_origin,
                                    point_on_x_axis=point_on_x_axis,
-                                   point_on_xy_plane=point_on_xy_plane).applyTo(
+                                   point_on_xy_plane=point_on_xy_plane).apply_to(
         atom_positions)
     _write_back_atom_positions(compound, atom_positions)
 

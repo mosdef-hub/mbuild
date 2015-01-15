@@ -3,7 +3,6 @@ from __future__ import division
 from copy import deepcopy
 import numpy as np
 
-from mbuild.compound import Compound
 from mbuild.coordinate_transform import equivalence_transform
 
 
