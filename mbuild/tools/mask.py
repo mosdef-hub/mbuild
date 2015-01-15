@@ -26,7 +26,7 @@ def apply_mask(host, guest, mask, guest_port_name="port", backfill=None):
     port_positions = np.empty(shape=(n_ports, 3))
     port_list = list()
     for port_idx, port in enumerate(host.referenced_ports()):
-        port_positions[port_idx, :] = port.middle.pos
+        port_positions[port_idx, :] = port.up.middle.pos
         port_list.append(port)
 
     used_ports = list()  # Keep track of used ports for backfilling.

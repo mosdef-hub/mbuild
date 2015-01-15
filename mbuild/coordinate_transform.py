@@ -270,13 +270,11 @@ def _createEquivalenceTransform(equiv):
     for pair in equiv:
         if not isinstance(pair, tuple) or len(pair) != 2:
             raise Exception('Equivalence pair not a 2-tuple')
-        if not ((isinstance(pair[0], Compound) and isinstance(pair[1],
-                                                              Compound)) or (
-                    isinstance(pair[0], Atom) and isinstance(pair[1], Atom))):
-            raise Exception(
-                'Equivalence pair type mismatch: pair[0] is a ' + str(
-                    type(pair[0])) + ' and pair[1] is a ' + str(
-                    type(pair[1])))
+        if not ((isinstance(pair[0], Compound) and isinstance(pair[1], Compound)) or
+                (isinstance(pair[0], Atom) and isinstance(pair[1], Atom))):
+            # TODO: is the Atom and Atom comparison necessary?
+            raise Exception('Equivalence pair type mismatch: pair[0] is a {0} '
+                            'and pair[1] is a {1}'.format(type(pair[0]), type(pair[1])))
 
         if isinstance(pair[0], Atom):
             self_points = np.vstack([self_points, pair[0].pos])
@@ -293,14 +291,18 @@ def _createEquivalenceTransform(equiv):
 
 def equivalence_transform(compound, from_positions=None, to_positions=None,
                           add_bond=True):
-    """Computes an affine transformation that maps the from_positions to the respective
-    to_positions, and applies this transformation to the compound.
-    :param equivalence_pairs: list of equivalence pairs (tuples)
-    """
+    """Computes an affine transformation that maps the from_positions to the
+    respective to_positions, and applies this transformation to the compound.
 
-    if isinstance(from_positions, (list, tuple)) and isinstance(to_positions,
-                                                                (list, tuple)):
+    Args:
+    """
+    from mbuild.port import Port
+
+    if isinstance(from_positions, (list, tuple)) and isinstance(to_positions, (list, tuple)):
         equivalence_pairs = zip(from_positions, to_positions)
+    elif isinstance(from_positions, Port) and isinstance(to_positions, Port):
+        # Extract up port first.
+        equivalence_pairs = choose_correct_port(from_positions, to_positions)
     else:
         equivalence_pairs = [(from_positions, to_positions)]
 
@@ -315,6 +317,37 @@ def equivalence_transform(compound, from_positions=None, to_positions=None,
 
         if isinstance(from_positions, Port) and isinstance(to_positions, Port):
             compound.add(Bond(from_positions, to_positions))
+
+
+def choose_correct_port(from_port, to_port):
+    """
+
+    Args:
+        from_port:
+        to_port:
+    Returns:
+        equivalence_pairs (
+    """
+
+    # First we try matching the two 'up' ports.
+    T = _createEquivalenceTransform([(from_port.up, to_port.up)])
+    _ = T.applyTo(np.array(from_port.anchor.pos, ndmin=2))
+
+    dist_between_anchors_up_up = np.linalg.norm(from_port.anchor - to_port.anchor)
+
+    # Then matching a 'down' with an 'up' port.
+    T = _createEquivalenceTransform([(from_port.down, to_port.up)])
+    _ = T.applyTo(np.array(from_port.anchor.pos, ndmin=2))
+
+    # Determine which transform places the anchors further away from each other
+    dist_between_anchors_down_up = np.linalg.norm(from_port.anchor - to_port.anchor)
+    difference_between_distances = dist_between_anchors_down_up - dist_between_anchors_up_up
+
+    if difference_between_distances > 0:
+        correct_port = from_port.down
+    else:
+        correct_port = from_port.up
+    return [(correct_port, to_port.up)]
 
 
 # this is a translate by rather than translate to

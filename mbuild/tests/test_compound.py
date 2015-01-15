@@ -33,13 +33,13 @@ class TestCompound(BaseTest):
         assert sum([1 for x in non_ports if x.kind != 'G']) == 8
 
         with_G = ethane.atom_list_by_kind()
-        assert len(with_G) == 24
+        assert len(with_G) == 40
 
         only_H = ethane.atom_list_by_kind('H')
         assert sum([1 for x in only_H if x.kind == 'H']) == 6
 
         only_G = ethane.atom_list_by_kind('G')
-        assert sum([1 for x in only_G if x.kind == 'G']) == 16
+        assert sum([1 for x in only_G if x.kind == 'G']) == 32
 
     def test_bond_list_by_kind(self, ethane):
         C_H_bonds = ethane.bond_list_by_kind(kind='C-H')

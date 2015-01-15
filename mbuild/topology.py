@@ -1,6 +1,3 @@
-import mdtraj
-
-__author__ = 'sallai'
 import itertools
 
 import numpy as np
@@ -35,11 +32,11 @@ class Topology(object):
 
     @classmethod
     def from_dataframe(cls, atoms, bonds=None):
-        return Topology(topology=mdtraj.Topology.from_dataframe(atoms, bonds))
+        return Topology(topology=MDTTopology.from_dataframe(atoms, bonds))
 
     @classmethod
     def from_openmm(cls, value):
-        return Topology(topology=mdtraj.Topology.from_openmm(value))
+        return Topology(topology=MDTTopology.from_openmm(value))
 
     @property
     def ff_bonds(self):
@@ -143,7 +140,7 @@ class Topology(object):
         """Find all dihedrals around a pair of nodes. """
         # We need to make sure we don't remove the node from the neighbor lists
         # that we will be re-using in the following iterations.
-        neighbors_1 = set(neighbors_1) - set([node_2])
+        neighbors_1 = set(neighbors_1) - {node_2}
         neighbors_2.remove(node_1)
 
         for pair in itertools.product(neighbors_1, neighbors_2):
