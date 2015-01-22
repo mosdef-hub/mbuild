@@ -7,9 +7,7 @@ from numpy.linalg import norm, svd, inv
 
 
 class CoordinateTransform(object):
-    """
-
-    """
+    """  """
     def __init__(self, T=None):
         if T is None:
             T = eye(4)
@@ -160,30 +158,28 @@ class AxisTransform(CoordinateTransform):
             point_on_x_axis:
             point_on_xy_plane:
         """
-        # change the basis such that p1 is the origin, p2 is on the x axis and p3 is in the xy plane
+        # Change the basis such that p1 is the origin, p2 is on the x axis and
+        # p3 is in the xy plane.
         p1 = new_origin
         p2 = point_on_x_axis  # positive x axis
         p3 = point_on_xy_plane  # positive y part of the x axis
 
-        # the direction vector of our new x axis
+        # The direction vector of our new x axis.
         newx = unit_vector(p2 - p1)
         p3_u = unit_vector(p3 - p1)
         newz = unit_vector(cross(newx, p3_u))
         newy = cross(newz, newx)
 
-        # print "newx=" +str(newx)
-        # print "newy=" +str(newy)
-        # print "newz=" +str(newz)
-
-        # translation that moves new_origin to the origin
+        # Translation that moves new_origin to the origin.
         T_tr = eye(4)
         T_tr[0:3, 3:4] = -array([p1]).transpose()
 
-        # rotation that moves newx to the x axis, newy to the y axis, newz to the z axis
+        # Rotation that moves newx to the x axis, newy to the y axis, newz to
+        # the z axis.
         B = eye(4)
         B[0:3, 0:3] = vstack((newx, newy, newz))
 
-        # the concatentaion of translation and rotation
+        # The concatentaion of translation and rotation.
         B_tr = dot(B, T_tr)
 
         super(AxisTransform, self).__init__(B_tr)

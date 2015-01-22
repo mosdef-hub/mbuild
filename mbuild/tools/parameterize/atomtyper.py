@@ -12,6 +12,9 @@ from mbuild.orderedset import OrderedSet
 rule_number_to_rule = dict()
 rule_map = dict()
 
+# Used for more descriptive output when sanitizing rules.
+rule_number_to_doc_string = dict()
+
 # Globally maintained neighbor information (see `neighbor_types()`).
 neighbor_types_map = {}
 
@@ -30,7 +33,7 @@ def find_atomtypes(compound, forcefield='OPLS-AA', debug=True):
 
     elif forcefield == 'UFF':
         import uff
-        # Build a map to all of the supported opls_* functions.
+        # Build a map to all of the supported uff_* functions.
         for fn, fcn in sys.modules[uff.__name__].__dict__.items():
             if fn.startswith('uff_'):
                 rule_number_to_rule[fn.split("_")[1]] = fcn
@@ -218,7 +221,11 @@ def check_atom(atom, input_rule_ids):
 
 
 class RuleDecorator(object):
-    pass
+    @staticmethod
+    def extract_doc_string(f):
+        if f.func_doc:
+            rule_number = f.func_name.split("_")[1]
+            rule_number_to_doc_string[rule_number] = f.func_doc
 
 
 class Element(RuleDecorator):
@@ -226,11 +233,11 @@ class Element(RuleDecorator):
         self.element_type = element_type
 
     def __call__(self, f):
+        self.extract_doc_string(f)
         # this must be called 'wrapped'
         def wrapped(atom):
             if atom.kind == self.element_type:
                 return f(atom)
-
         return wrapped
 
 
@@ -239,11 +246,11 @@ class InWhitelist(RuleDecorator):
         self.element_type = element_type
 
     def __call__(self, f):
+        self.extract_doc_string(f)
         # this must be called 'wrapped'
         def wrapped(atom):
             if self.element_type in atom.whitelist:
                 return f(atom)
-
         return wrapped
 
 
@@ -252,6 +259,7 @@ class NeighborCount(RuleDecorator):
         self.count = count
 
     def __call__(self, f):
+        self.extract_doc_string(f)
         # this must be called 'wrapped'
         def wrapped(atom):
             if len(atom.neighbors) == self.count:
@@ -280,6 +288,7 @@ class NeighborsExactly(NeighborsBase):
         super(NeighborsExactly, self).__init__(neighbor_type, count)
 
     def __call__(self, f):
+        self.extract_doc_string(f)
         # this must be called 'wrapped'
         def wrapped(atom):
             if self.match_count(atom) == self.count:
@@ -292,6 +301,7 @@ class NeighborsAtLeast(NeighborsBase):
         super(NeighborsAtLeast, self).__init__(neighbor_type, count)
 
     def __call__(self, f):
+        self.extract_doc_string(f)
         # this must be called 'wrapped'
         def wrapped(atom):
             if self.match_count(atom) >= self.count:
@@ -304,6 +314,7 @@ class NeighborsAtMost(NeighborsBase):
         super(NeighborsAtMost, self).__init__(neighbor_type, count)
 
     def __call__(self, f):
+        self.extract_doc_string(f)
         # this must be called 'wrapped'
         def wrapped(atom):
             if self.match_count(atom) <= self.count:
@@ -319,6 +330,7 @@ class Whitelist(RuleDecorator):
             self.rule_number = str(rule_number)
 
     def __call__(self, f):
+        self.extract_doc_string(f)
         # this must be called 'wrapped'
         def wrapped(atom):
             if f(atom):
@@ -341,6 +353,7 @@ class Blacklist(RuleDecorator):
             self.rule_numbers = [str(rule_numbers)]
 
     def __call__(self, f):
+        self.extract_doc_string(f)
         # this must be called 'wrapped'
         def wrapped(atom):
             if f(atom):
@@ -385,11 +398,11 @@ def sanitize():
     supported_elements.sort()
 
     # Find all elements and combinations of neighbor types that have a rule.
-    # Rule matches is structured as follows:
-    #   key: (element, (neighbor element 1, neighbor element 2, etc..))
-    #   value: set(rule numbers)
+    # `rule_matches` is structured as follows:
+    #     key: (element, (neighbor element 1, neighbor element 2, etc..))
+    #     value: set(rule numbers)
     # Example entry (from time of writing this comment):
-    #   ('C', ('C', 'C', 'H')): set(['145', '142'])
+    #     ('C', ('C', 'C', 'H')): set(['145', '142'])
     rule_matches = dict()
     for rule_number, rule in rule_number_to_rule.items():
         decorators = get_decorator_objects_by_type(rule, RuleDecorator)
@@ -403,7 +416,8 @@ def sanitize():
                 check_duplicate_neighbor_count(neighbor_count, rule_number)
                 neighbor_count = dec.count
         # All POSSIBLE combinations of elements and neighbors.
-        all_patterns = set(combinations_with_replacement(supported_elements, neighbor_count))
+        all_patterns = set(combinations_with_replacement(supported_elements,
+                                                         neighbor_count))
 
         # Remove the ones that don't actually have a rule.
         removed_patterns = set()
@@ -424,7 +438,7 @@ def sanitize():
 
         for pattern in all_patterns:
             if (element_type, pattern) not in rule_matches:
-                rule_matches[(element_type, pattern)] = set([rule_number])
+                rule_matches[(element_type, pattern)] = {rule_number}
             else:
                 rule_matches[(element_type, pattern)].add(rule_number)
 
@@ -439,7 +453,8 @@ def sanitize():
         for rule_number in rules:
             G.add_node(rule_number)
             blacklisted_rules = set()
-            decorators = get_decorator_objects_by_type(rule_number_to_rule[rule_number], RuleDecorator)
+            decorators = get_decorator_objects_by_type(
+                rule_number_to_rule[rule_number], RuleDecorator)
 
             for dec in decorators:
                 if isinstance(dec, Blacklist):
@@ -447,11 +462,9 @@ def sanitize():
             for blacklisted_rule in blacklisted_rules:
                 G.add_edge(rule_number, blacklisted_rule)
 
-        # Check if graph is connected.
         if not nx.is_connected(G.to_undirected()):
             draw_rule_graph('unconnected', G, element_type, pattern)
 
-        # Check if DAG.
         if not nx.is_directed_acyclic_graph(G):
             draw_rule_graph('not_DAG', G, element_type, pattern)
 
@@ -498,7 +511,7 @@ def get_decorator_objects_by_type(decorated_function, decorator_type):
         if isinstance(closure_entry, decorator_type):
             decorators.append(closure_entry)
             break
-    # Find a function called `wrapper` in the function's closure, and recurse on that.
+    # Find a function called `wrapper` in the function's closure, and recurse.
     for cell in decorated_function.func_closure:
         closure_entry = cell.cell_contents
         if hasattr(closure_entry, '__name__') and closure_entry.__name__ is "wrapped":
@@ -527,6 +540,19 @@ def draw_rule_graph(issue, G, element, pattern, sinks=None, sources=None):
         pattern:
         sinks:
     """
+    if issue == 'unconnected':
+        phrase = 'is not connected'
+    elif issue == 'not_DAG':
+        phrase = 'is not a DAG'
+    elif issue == 'multiple_sinks':
+        assert sinks is not None
+        phrase = 'has multiple sinks: {}'.format(sinks)
+    elif issue == 'multiple_sources':
+        assert sources is not None
+        phrase = 'has multiple sources: {}'.format(sources)
+    else:
+        warn("Can't draw rule graph. Unrecognized issue: {}".format(issue))
+        return
 
     # TODO: color unconnected nodes
     colors = []
@@ -538,22 +564,18 @@ def draw_rule_graph(issue, G, element, pattern, sinks=None, sources=None):
         else:
             colors.append('red')
 
-    nx.draw_circular(G, node_size=1000, node_color=colors)
+    labels = {rule: '{}\n{}'.format(rule, doc) for rule, doc in
+              rule_number_to_doc_string.iteritems() if rule in G.nodes()}
+
+    pos = nx.circular_layout(G)
+    nx.draw_networkx_nodes(G, pos, node_size=1000, node_color=colors)
+    nx.draw_networkx_edges(G, pos)
+    nx.draw_networkx_labels(G, pos, labels=labels)
+
     fig_name = '{}-element_{}-pattern_{}.png'.format(
         issue, element, ''.join(pattern))
     plt.savefig(fig_name)
     plt.clf()
-
-    if issue == 'unconnected':
-        phrase = 'is not connected'
-    elif issue == 'not_DAG':
-        phrase = 'is not a DAG'
-    elif issue == 'multiple_sinks':
-        assert sinks is not None
-        phrase = 'has multiple sinks: {}'.format(sinks)
-    elif issue == 'multiple_sources':
-        assert sources is not None
-        phrase = 'has multiple sources: {}'.format(sources)
 
     warn("{} connected to {} {}. See '{}'".format(
         element, pattern, phrase, fig_name))

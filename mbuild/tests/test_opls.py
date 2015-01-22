@@ -5,13 +5,12 @@
 
 import glob
 import os
-import pytest
+
 from mbuild.testing import tools
 
 from mbuild.testing.tools import load_top_opls
 from mbuild.tools.parameterize.atomtyper import find_atomtypes
 from base_test import BaseTest
-
 
 
 class TestTools(BaseTest):
