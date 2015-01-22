@@ -2,5 +2,6 @@ __author__ = 'sallai'
 
 
 class MBase(object):
-    def __init__(self, *args, **kwargs):
-        super(MBase, self).__init__(*args, **kwargs)
+    """The common base object that all mBuild components inherit from. """
+    def __init__(self):
+        super(MBase, self).__init__()

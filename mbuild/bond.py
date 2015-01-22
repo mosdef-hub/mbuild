@@ -27,7 +27,7 @@ class Bond(MBase, PartMixin):
             atom2 (Atom): Second Atom or Port in the bond.
 
         """
-        super(Bond, self).__init__(atom1, atom2, kind=kind)
+        super(Bond, self).__init__()
         assert(not atom1 == atom2)
 
         # If a Port is used to initialize a Bond, the Atom that the Port is

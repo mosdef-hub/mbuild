@@ -1,7 +1,9 @@
-from atomtyper import (Element, NeighborCount, NeighborsAtLeast,
-    NeighborsAtMost, NeighborsExactly, Whitelist, Blacklist, check_atom,
-    InWhitelist)
-from chemical_groups import benzene, dioxolane13
+from mbuild.tools.parameterize.atomtyper import (Element, NeighborCount,
+                                                 NeighborsAtLeast,
+                                                 NeighborsExactly, Whitelist,
+                                                 Blacklist, check_atom,
+                                                 InWhitelist)
+from mbuild.tools.parameterize.chemical_groups import benzene, dioxolane13
 
 
 # -------------- #
@@ -293,7 +295,7 @@ def opls_278(atom):
 def opls_279(atom):
     """AA H-alpha in aldehyde & formamide """
     # TODO: 232 needs to blacklist 277
-    #return check_atom(atom.neighbors[0], [232, 277])
+    # return check_atom(atom.neighbors[0], [232, 277])
     return True
 
 
@@ -512,26 +514,26 @@ def opls_916(atom):
 def get_opls_fn(name):
     """Get the full path to a file used to validate the OPLS-aa atomtyper.
 
-    In the source distribution, these files are in ``opls_validation``.
+    In the mbuild source distribution, these files are in ``opls_validation``.
 
     Args:
         name (str): Name of the file to load.
     """
     import os
     from pkg_resources import resource_filename
+
     fn = resource_filename('mbuild',
                            os.path.join('..', 'opls_validation', name))
     if not os.path.exists(fn):
         raise ValueError('Sorry! {} does not exists. If you just '
-                         'added it, you\'ll have to re install'.format(fn))
+                         'added it, you\'ll have to re-install'.format(fn))
     return fn
 
 
 if __name__ == "__main__":
-    import pdb
-    from mbuild.compound import Compound
+    from atomtyper import find_atomtypes
     from mbuild.examples.methane.methane import Methane
-    #from mbuild.examples.ethane.ethane import Ethane
+    # from mbuild.examples.ethane.ethane import Ethane
 
     m = Methane()
     # m = Ethane()
@@ -542,12 +544,8 @@ if __name__ == "__main__":
     # m = Compound.load(get_opls_fn('1-propene.pdb'))
     # m = Compound.load(get_opls_fn('biphenyl.pdb'))
 
-    # from mbuild.examples.alkane_monolayer.alkane_monolayer import AlkaneMonolayer
-    # m = AlkaneMonolayer(chain_length=3)
-
-    from atomtyper import find_atomtypes
     find_atomtypes(m, forcefield='OPLS-AA')
 
-    for i, atom in enumerate(m.atoms):
+    for i, a in enumerate(m.atoms):
         print "Atom kind={}, opls_type={}".format(
-            atom.kind, atom.atomtype)
+            a.kind, a.atomtype)

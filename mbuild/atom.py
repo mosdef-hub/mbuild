@@ -1,4 +1,3 @@
-from collections import defaultdict
 from copy import deepcopy
 
 import numpy as np
@@ -26,7 +25,8 @@ class Atom(MBase, PartMixin):
         bonds (set of Bond): Every Bond that the Atom is a part of.
 
     """
-    __slots__ = ['kind', 'pos', 'charge', 'parent', 'referrers', 'bonds', 'uid', '_extras']
+    __slots__ = ['kind', 'pos', 'charge', 'parent', 'referrers', 'bonds',
+                 'uid', '_extras']
 
     def __init__(self, kind, pos=None, charge=0.0):
         """Initialize an Atom.
@@ -37,20 +37,23 @@ class Atom(MBase, PartMixin):
             charge (float, optional): Partial charge on the atom.
 
         """
-        super(Atom, self).__init__(kind, pos=pos)
+        super(Atom, self).__init__()
 
-        assert (isinstance(kind, basestring))
+        assert isinstance(kind, basestring)
 
         if pos is None:
             pos = np.array([0, 0, 0], dtype=float)
 
         self.kind = kind
         self.pos = np.asarray(pos, dtype=float)
+        self.charge = charge
         self.bonds = set()
         self._extras = None
 
-    def bonded_atoms(self, memo=dict()):
-        """Return a list of atoms bonded to self. """
+    def bonded_atoms(self, memo=None):
+        """Return a list of Atoms bonded to self. """
+        if memo is None:
+            memo = dict()
         for bond in self.bonds:
             bonded_atom = bond.other_atom(self)
             if id(bonded_atom) not in memo:
@@ -60,10 +63,12 @@ class Atom(MBase, PartMixin):
 
     @property
     def neighbors(self):
+        """Return a list of all neighboring Atoms. """
         return [bond.other_atom(self) for bond in self.bonds]
 
     @property
     def extras(self):
+        """Return the Atom's optional, extra attributes. """
         if self._extras is None:
             self._extras = dict()
         return self._extras

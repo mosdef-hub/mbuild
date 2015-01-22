@@ -3,14 +3,14 @@ from copy import deepcopy
 
 import numpy as np
 
-from atom import Atom
-from bond import Bond
-from box import Box
+from mbuild.atom import Atom
+from mbuild.bond import Bond
+from mbuild.box import Box
 from mbuild.coordinate_transform import translate
 from mbuild.mbase import MBase
 from mbuild.has_parts_mixin import HasPartsMixin
 from mbuild.part_mixin import PartMixin
-from orderedset import OrderedSet
+from mbuild.orderedset import OrderedSet
 
 
 class Compound(MBase, PartMixin, HasPartsMixin):
@@ -48,8 +48,8 @@ class Compound(MBase, PartMixin, HasPartsMixin):
     """
 
     def __init__(self, kind=None, periodicity=None):
-        """Construct a new Compound. 
-        
+        """Construct a new Compound.
+
         Args:
             kind (str, optional): The type of Compound.
             periodicity (np.ndarray, optional): The periodic distance of the
@@ -74,6 +74,7 @@ class Compound(MBase, PartMixin, HasPartsMixin):
 
     @property
     def extras(self):
+        """Return the Compound's optional, extra attributes. """
         if self._extras is None:
             self._extras = dict()
         return self._extras
@@ -90,10 +91,12 @@ class Compound(MBase, PartMixin, HasPartsMixin):
         return self.atom_list_by_kind(excludeG=True)
 
     def yield_atoms(self):
+        """ """
         return self._yield_parts(Atom)
 
     @property
     def n_atoms(self):
+        """Return the number of Atoms in the Compound. """
         return len(self.atoms)
 
     def atom_list_by_kind(self, kind='*', excludeG=False):
@@ -112,8 +115,7 @@ class Compound(MBase, PartMixin, HasPartsMixin):
                     atom_list.append(atom)
                 elif atom.kind == kind:
                     atom_list.append(atom)
-        else:
-            return atom_list
+        return atom_list
 
     @property
     def bonds(self):
@@ -121,21 +123,29 @@ class Compound(MBase, PartMixin, HasPartsMixin):
         return self.bond_list_by_kind()
 
     def yield_bonds(self):
+        """ """
         return self._yield_parts(Bond)
 
     @property
     def n_bonds(self):
+        """Return the number of Bonds in the Compound. """
         return len(self.bonds)
 
     def bond_list_by_kind(self, kind='*'):
+        """Return a list of Bonds filtered by their kind.
+
+        Args:
+            kind (str): Return only Bonds of this type. '*' indicates all.
+        Returns:
+            bond_list (list): A list of Bonds.
+        """
         bond_list = []
         for bond in self.yield_bonds():
             if kind == '*':
                 bond_list.append(bond)
             elif bond.kind == kind:
                 bond_list.append(bond)
-        else:
-            return bond_list
+        return bond_list
 
     def referenced_ports(self):
         """Find all Ports referenced by this Compound.
@@ -196,6 +206,15 @@ class Compound(MBase, PartMixin, HasPartsMixin):
 
     @classmethod
     def load(cls, filename, relative_to_module=None, frame=0):
+        """Load a file into a Compound.
+
+        Args:
+            filename:
+            relative_to_module:
+            frame:
+        Returns:
+            Compound
+        """
         from mbuild.trajectory import Trajectory
 
         traj = Trajectory.load(filename, relative_to_module=relative_to_module)
@@ -222,14 +241,15 @@ class Compound(MBase, PartMixin, HasPartsMixin):
             print("Visualization with VMD failed. Make sure it is installed"
                   "correctly and launchable from the command line via 'vmd'.")
 
-    def min_periodic_distance(self, x0, x1):
+    def min_periodic_distance(self, xyz0, xyz1):
         """Vectorized distance calculation considering minimum image. """
-        d = np.abs(x0 - x1)
+        d = np.abs(xyz0 - xyz1)
         d = np.where(d > 0.5 * self.periodicity, self.periodicity - d, d)
         return np.sqrt((d ** 2).sum(axis=-1))
 
     @property
     def center(self):
+        """The cartesian center of the Compound based on its Atoms. """
         return sum(atom.pos for atom in self.atoms) / self.n_atoms
 
     def boundingbox(self, excludeG=True):
@@ -248,21 +268,21 @@ class Compound(MBase, PartMixin, HasPartsMixin):
         maxy = -np.inf
         maxz = -np.inf
 
-        for a in self.yield_atoms():
-            if excludeG and a.kind == 'G':
+        for atom in self.yield_atoms():
+            if excludeG and atom.kind == 'G':
                 continue
-            if a.pos[0] < minx:
-                minx = a.pos[0]
-            if a.pos[0] > maxx:
-                maxx = a.pos[0]
-            if a.pos[1] < miny:
-                miny = a.pos[1]
-            if a.pos[1] > maxy:
-                maxy = a.pos[1]
-            if a.pos[2] < minz:
-                minz = a.pos[2]
-            if a.pos[2] > maxz:
-                maxz = a.pos[2]
+            if atom.pos[0] < minx:
+                minx = atom.pos[0]
+            if atom.pos[0] > maxx:
+                maxx = atom.pos[0]
+            if atom.pos[1] < miny:
+                miny = atom.pos[1]
+            if atom.pos[1] > maxy:
+                maxy = atom.pos[1]
+            if atom.pos[2] < minz:
+                minz = atom.pos[2]
+            if atom.pos[2] > maxz:
+                maxz = atom.pos[2]
 
         min_coords = np.array([minx, miny, minz])
         max_coords = np.array([maxx, maxy, maxz])
@@ -290,15 +310,15 @@ class Compound(MBase, PartMixin, HasPartsMixin):
         box = self.boundingbox()
         translate(self, -box.mins)
         for atom in self.yield_atoms():
-            for k, c in enumerate(atom.pos):
-                if self.periodicity[k]:
-                    if c < 0.0:
-                        atom.pos[k] = self.periodicity[k] + c
-                    if c > self.periodicity[k]:
-                        atom.pos[k] = c - self.periodicity[k]
+            for i, coordinate in enumerate(atom.pos):
+                if self.periodicity[i]:
+                    if coordinate < 0.0:
+                        atom.pos[i] = self.periodicity[i] + coordinate
+                    if coordinate > self.periodicity[i]:
+                        atom.pos[i] = coordinate - self.periodicity[i]
 
     def add_bond(self, type_a, type_b, dmin, dmax, kind=None):
-        """Add Bonds between all pairs of Atoms of types a/b within [dmin, dmax].
+        """Add Bonds between all Atom pairs of types a/b within [dmin, dmax].
 
         TODO: testing for periodic boundaries.
         """
@@ -324,7 +344,7 @@ class Compound(MBase, PartMixin, HasPartsMixin):
         newone.labels = OrderedDict()
         newone.referrers = set()
 
-        # Copy the parent of everybody, except topmost Compound being deepcopied.
+        # Copy the parent of everyone, except topmost Compound being deepcopied.
         if memo[0] == self:
             newone.parent = None
         else:

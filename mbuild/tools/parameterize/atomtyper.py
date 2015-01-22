@@ -25,18 +25,18 @@ neighbor_whitelist_map = {}
 def find_atomtypes(compound, forcefield='OPLS-AA', debug=True):
     """Determine atomtypes for all atoms in `compound`. """
     if forcefield == 'OPLS-AA':
-        import oplsaa
+        import mbuild.tools.parameterize.oplsaa as oplsaa
         # Build a map to all of the supported opls_* functions.
-        for fn, fcn in sys.modules[oplsaa.__name__].__dict__.items():
-            if fn.startswith('opls_'):
-                rule_number_to_rule[fn.split("_")[1]] = fcn
+        for func_name, func in sys.modules[oplsaa.__name__].__dict__.items():
+            if func_name.startswith('opls_'):
+                rule_number_to_rule[func_name.split("_")[1]] = func
 
     elif forcefield == 'UFF':
-        import uff
+        import mbuild.tools.parameterize.uff as uff
         # Build a map to all of the supported uff_* functions.
-        for fn, fcn in sys.modules[uff.__name__].__dict__.items():
-            if fn.startswith('uff_'):
-                rule_number_to_rule[fn.split("_")[1]] = fcn
+        for func_name, func in sys.modules[uff.__name__].__dict__.items():
+            if func_name.startswith('uff_'):
+                rule_number_to_rule[func_name.split("_")[1]] = func
 
     build_rule_map()
     if debug:
@@ -71,7 +71,11 @@ def build_rule_map():
 
 
 def prepare_compound(compound):
-    """Add white- and blacklists to each `atom` in `compound`. """
+    """Add white- and blacklists to each `atom` in `compound`.
+
+    The use of ordered sets is not strictly necessary but it helps when
+    debugging because it shows the order in which rules are added.
+    """
     for atom in compound.yield_atoms():
         atom.extras['whitelist'] = OrderedSet()
         atom.extras['blacklist'] = OrderedSet()
@@ -87,7 +91,7 @@ def iterate_rules(compound, max_iter=10):
         compound:
         max_iter:
     """
-    for iter_cnt in range(max_iter):
+    for _ in range(max_iter):
         # For comparing the lengths of the white- and blacklists.
         old_len = 0
         new_len = 0
@@ -138,8 +142,8 @@ def resolve_atomtypes(compound):
         if len(atomtype) == 1:
             atom.extras['atomtype'] = [atomtype[0]]
         else:
-            warn("CHECK YOUR TOPOLOGY. Found multiple or no types for atom {0} ({1}): {2}.".format(
-                    i, atom.kind, atomtype))
+            warn("CHECK YOUR TOPOLOGY. Found multiple or no types for atom "
+                 "{0} ({1}): {2}.".format(i, atom.kind, atomtype))
             atom.extras['atomtype'] = ', '.join(atomtype)
 
 
@@ -200,9 +204,9 @@ def append_neighbor_whitelist(atom, whitelist_type):
 def check_atom(atom, input_rule_ids):
     """Check if any of the rules in `input_rule_ids` are in the whitelist.
 
-    This means that the atom was once identified as being elligible for at least
-    one of these rules. This can be useful for checking, e.g. if a carbon was
-    ever identified as being part of a benzene ring.
+    This means that the atom was once identified as being elligible for at
+    least one of these rules. This can be useful for checking, e.g. if a carbon
+    was ever identified as being part of a benzene ring.
     """
     rule_ids = set()
     if isinstance(input_rule_ids, (list, tuple, set)):
@@ -221,53 +225,58 @@ def check_atom(atom, input_rule_ids):
 
 
 class RuleDecorator(object):
+    """Base class for rule decorators. """
     @staticmethod
-    def extract_doc_string(f):
-        if f.func_doc:
-            rule_number = f.func_name.split("_")[1]
-            rule_number_to_doc_string[rule_number] = f.func_doc
+    def extract_doc_string(func):
+        if func.func_doc:
+            rule_number = func.func_name.split("_")[1]
+            rule_number_to_doc_string[rule_number] = func.func_doc
 
 
 class Element(RuleDecorator):
+    """Designate the element that this rule applies to. """
     def __init__(self, element_type):
         self.element_type = element_type
 
-    def __call__(self, f):
-        self.extract_doc_string(f)
-        # this must be called 'wrapped'
-        def wrapped(atom):
+    def __call__(self, func):
+        self.extract_doc_string(func)
+
+        def wrapped(atom):  # this must be called 'wrapped'
             if atom.kind == self.element_type:
-                return f(atom)
+                return func(atom)
         return wrapped
 
 
 class InWhitelist(RuleDecorator):
+    """Checks if this atom already has different rule whitelisted. """
     def __init__(self, element_type):
         self.element_type = element_type
 
-    def __call__(self, f):
-        self.extract_doc_string(f)
-        # this must be called 'wrapped'
-        def wrapped(atom):
+    def __call__(self, func):
+        self.extract_doc_string(func)
+
+        def wrapped(atom):  # this must be called 'wrapped'
             if self.element_type in atom.whitelist:
-                return f(atom)
+                return func(atom)
         return wrapped
 
 
 class NeighborCount(RuleDecorator):
+    """Designate the number of neighbors an atom must have for this rule. """
     def __init__(self, count):
         self.count = count
 
-    def __call__(self, f):
-        self.extract_doc_string(f)
-        # this must be called 'wrapped'
-        def wrapped(atom):
+    def __call__(self, func):
+        self.extract_doc_string(func)
+
+        def wrapped(atom):  # this must be called 'wrapped'
             if len(atom.neighbors) == self.count:
-                return f(atom)
+                return func(atom)
         return wrapped
 
 
 class NeighborsBase(RuleDecorator):
+    """Super class for rule decorators that count types of neighbors. """
     def __init__(self, neighbor_type, count):
         neighbor_type = str(neighbor_type)
         self.neighbor_type = neighbor_type
@@ -284,67 +293,81 @@ class NeighborsBase(RuleDecorator):
 
 
 class NeighborsExactly(NeighborsBase):
+    """Designate the rule's exact number of neighbors of a specific type.
+
+    The "specific type" can either be an element or a whitelisted rule.
+    """
     def __init__(self, neighbor_type, count):
         super(NeighborsExactly, self).__init__(neighbor_type, count)
 
-    def __call__(self, f):
-        self.extract_doc_string(f)
-        # this must be called 'wrapped'
-        def wrapped(atom):
+    def __call__(self, func):
+        self.extract_doc_string(func)
+
+        def wrapped(atom):  # this must be called 'wrapped'
             if self.match_count(atom) == self.count:
-                return f(atom)
+                return func(atom)
         return wrapped
 
 
 class NeighborsAtLeast(NeighborsBase):
+    """Designate the rule's minimum number of neighbors of a specific type.
+
+    The "specific type" can either be an element or a whitelisted rule.
+    """
     def __init__(self, neighbor_type, count):
         super(NeighborsAtLeast, self).__init__(neighbor_type, count)
 
-    def __call__(self, f):
-        self.extract_doc_string(f)
-        # this must be called 'wrapped'
-        def wrapped(atom):
+    def __call__(self, func):
+        self.extract_doc_string(func)
+
+        def wrapped(atom):  # this must be called 'wrapped'
             if self.match_count(atom) >= self.count:
-                return f(atom)
+                return func(atom)
         return wrapped
 
 
 class NeighborsAtMost(NeighborsBase):
+    """Designate the rule's maximum number of neighbors of a specific type.
+
+    The "specific type" can either be an element or a whitelisted rule.
+    """
     def __init__(self, neighbor_type, count):
         super(NeighborsAtMost, self).__init__(neighbor_type, count)
 
-    def __call__(self, f):
-        self.extract_doc_string(f)
-        # this must be called 'wrapped'
-        def wrapped(atom):
+    def __call__(self, func):
+        self.extract_doc_string(func)
+
+        def wrapped(atom):  # this must be called 'wrapped'
             if self.match_count(atom) <= self.count:
-                return f(atom)
+                return func(atom)
         return wrapped
 
 
 class Whitelist(RuleDecorator):
+    """Whitelist an atomtype for an atom. """
     def __init__(self, rule_number):
         if isinstance(rule_number, (list, tuple, set)):
             warn("Rules should only whitelist themselves.")
         else:
             self.rule_number = str(rule_number)
 
-    def __call__(self, f):
-        self.extract_doc_string(f)
-        # this must be called 'wrapped'
-        def wrapped(atom):
-            if f(atom):
+    def __call__(self, func):
+        self.extract_doc_string(func)
+
+        def wrapped(atom):  # this must be called 'wrapped'
+            if func(atom):
                 self.whitelist(atom)
                 return True
         return wrapped
 
     def whitelist(self, atom):
-        """Whitelist an OPLS-aa atomtype for an atom. """
+        """Add the rule to the atom's whitelist. """
         atom.whitelist.add(str(self.rule_number))
         append_neighbor_whitelist(atom, self.rule_number)
 
 
 class Blacklist(RuleDecorator):
+    """Blacklist an atomtype for an atom. """
     def __init__(self, rule_numbers):
         if isinstance(rule_numbers, (list, tuple, set)):
             self.rule_numbers = list(map(str, rule_numbers))
@@ -352,17 +375,17 @@ class Blacklist(RuleDecorator):
         else:
             self.rule_numbers = [str(rule_numbers)]
 
-    def __call__(self, f):
-        self.extract_doc_string(f)
-        # this must be called 'wrapped'
-        def wrapped(atom):
-            if f(atom):
+    def __call__(self, func):
+        self.extract_doc_string(func)
+
+        def wrapped(atom):  # this must be called 'wrapped'
+            if func(atom):
                 self.blacklist(atom)
                 return True
         return wrapped
 
     def blacklist(self, atom):
-        """Blacklist an OPLS-aa atomtype for an atom. """
+        """Add the rule to the atom's blacklist. """
         if isinstance(self.rule_numbers, (list, tuple, set)):
             for rule in self.rule_numbers:
                 atom.blacklist.add(str(rule))
@@ -382,8 +405,66 @@ def sanitize():
     correct logical inconsistencies as early as possible. Additionally, it
     suggests other rules that you may want to consider blacklisting.
     """
+    supported_elements = find_all_supported_elements()
+    rule_matches = find_all_rule_matches(supported_elements)
 
-    # Find all elements currently supported by rules.
+    # Build directed graphs showing which rules blacklist each other.
+    for key, rules in rule_matches.items():
+        # Only consider patterns matched by multiple rules.
+        if len(rules) < 2:
+            continue
+
+        element_type, pattern = key
+        graph = nx.DiGraph()
+        for rule_number in rules:
+            graph.add_node(rule_number)
+            blacklisted_rules = set()
+            decorators = get_decorator_objects_by_type(
+                rule_number_to_rule[rule_number], RuleDecorator)
+
+            for dec in decorators:
+                if isinstance(dec, Blacklist):
+                    blacklisted_rules.update(dec.rule_numbers)
+            for blacklisted_rule in blacklisted_rules:
+                graph.add_edge(rule_number, blacklisted_rule)
+
+        if not nx.is_connected(graph.to_undirected()):
+            draw_rule_graph('unconnected', graph, element_type, pattern)
+
+        if not nx.is_directed_acyclic_graph(graph):
+            draw_rule_graph('not_DAG', graph, element_type, pattern)
+
+        # Check for multiple sinks. This is not necessarily incorrect.
+        sinks = []
+        for node in graph.nodes():
+            if len(nx.descendants(graph, node)) == 0:
+                sinks.append(node)
+        if len(sinks) > 1:
+            # Cases with multiple sinks that we can safely ignore.
+            # TODO: Provide more robust way to add approved exceptions.
+            if '141' in sinks and '142' in sinks and '145' in graph.nodes():
+                # This case occurs because 145 requires AT LEAST 2 carbon
+                # neighbors (3 total) and thus can match multiple patterns.
+                continue
+            draw_rule_graph('multiple_sinks', graph, element_type, pattern,
+                            sinks=sinks)
+
+        # Check for multiple sources. This is not necessarily incorrect.
+        sources = []
+        for node in graph.nodes():
+            if len(nx.ancestors(graph, node)) == 0:
+                sources.append(node)
+        if len(sources) > 1:
+            draw_rule_graph('multiple_sources', graph, element_type, pattern,
+                            sources=sources)
+
+
+def find_all_supported_elements():
+    """Find all elements currently supported by rules.
+
+    Returns:
+        supported_elements (list): A sorted list of all the supported elements.
+    """
     supported_elements = set()
     for rule_number, rule in rule_number_to_rule.items():
         decorators = get_decorator_objects_by_type(rule, RuleDecorator)
@@ -396,13 +477,20 @@ def sanitize():
                 supported_elements.add(element_type)
     supported_elements = list(supported_elements)
     supported_elements.sort()
+    return supported_elements
 
-    # Find all elements and combinations of neighbor types that have a rule.
-    # `rule_matches` is structured as follows:
-    #     key: (element, (neighbor element 1, neighbor element 2, etc..))
-    #     value: set(rule numbers)
-    # Example entry (from time of writing this comment):
-    #     ('C', ('C', 'C', 'H')): set(['145', '142'])
+
+def find_all_rule_matches(supported_elements):
+    """Find all elements and combinations of neighbor types that have a rule.
+
+    Returns:
+        rule_matches (dict): All patterns and rules that apply. The dictionary
+            is structured as follows:
+                key: (element, (neighbor element 1, neighbor element 2, etc..))
+                value: set(rule numbers)
+            Example entry (from time of writing this comment):
+                ('C', ('C', 'C', 'H')): set(['145', '142'])
+    """
     rule_matches = dict()
     for rule_number, rule in rule_number_to_rule.items():
         decorators = get_decorator_objects_by_type(rule, RuleDecorator)
@@ -441,56 +529,7 @@ def sanitize():
                 rule_matches[(element_type, pattern)] = {rule_number}
             else:
                 rule_matches[(element_type, pattern)].add(rule_number)
-
-    # Build directed graphs showing which rules blacklist each other.
-    for key, rules in rule_matches.items():
-        # Only consider patterns matched by multiple rules.
-        if len(rules) < 2:
-            continue
-
-        element_type, pattern = key
-        G = nx.DiGraph()
-        for rule_number in rules:
-            G.add_node(rule_number)
-            blacklisted_rules = set()
-            decorators = get_decorator_objects_by_type(
-                rule_number_to_rule[rule_number], RuleDecorator)
-
-            for dec in decorators:
-                if isinstance(dec, Blacklist):
-                    blacklisted_rules.update(dec.rule_numbers)
-            for blacklisted_rule in blacklisted_rules:
-                G.add_edge(rule_number, blacklisted_rule)
-
-        if not nx.is_connected(G.to_undirected()):
-            draw_rule_graph('unconnected', G, element_type, pattern)
-
-        if not nx.is_directed_acyclic_graph(G):
-            draw_rule_graph('not_DAG', G, element_type, pattern)
-
-        # Check if there are multiple sinks. This is not necessarily incorrect.
-        sinks = []
-        for node in G.nodes():
-            if len(nx.descendants(G, node)) == 0:
-                sinks.append(node)
-        if len(sinks) > 1:
-            # Cases with multiple sinks that we can safely ignore.
-            # TODO: Provide more robust way to add approved exceptions.
-            if '141' in sinks and '142' in sinks and '145' in G.nodes():
-                # This case occurs because 145 requires AT LEAST 2 carbon
-                # neighbors (3 total) and thus can match multiple patterns.
-                continue
-            draw_rule_graph('multiple_sinks', G, element_type, pattern,
-                            sinks=sinks)
-
-        # Check if there are multiple sources. This is not necessarily incorrect.
-        sources = []
-        for node in G.nodes():
-            if len(nx.ancestors(G, node)) == 0:
-                sources.append(node)
-        if len(sources) > 1:
-            draw_rule_graph('multiple_sources', G, element_type, pattern,
-                            sources=sources)
+    return rule_matches
 
 
 def get_decorator_objects_by_type(decorated_function, decorator_type):
@@ -515,30 +554,49 @@ def get_decorator_objects_by_type(decorated_function, decorator_type):
     for cell in decorated_function.func_closure:
         closure_entry = cell.cell_contents
         if hasattr(closure_entry, '__name__') and closure_entry.__name__ is "wrapped":
-            wrapped_decorator_objects = get_decorator_objects_by_type(closure_entry, decorator_type)
+            wrapped_decorator_objects = get_decorator_objects_by_type(
+                closure_entry, decorator_type)
             decorators += wrapped_decorator_objects
             break
     return decorators
 
 
 def check_duplicate_element(element_type, rule_number):
+    """Used to catch rules with multiple @Element decorators.
+
+    Args:
+        element_type (str): The element type in the decorator. This is only
+            used to check if it has been assigned previously.
+        rule_number (int): The decorated rule in question.
+    """
     assert element_type is None, ("Duplicate element type decorators on rule "
                                   "{}".format(rule_number))
 
 
 def check_duplicate_neighbor_count(neighbor_count, rule_number):
+    """Used to catch rules with multiple @NeighborCount decorators.
+
+    Args:
+        neighbor_count (int): The neighbor count in the decorator. This is only
+            used to check if it has been assigned previously.
+        rule_number (int): The decorated rule in question.
+    """
     assert neighbor_count is None, ("Duplicate neighbor count decorators on "
                                     "rule {}".format(rule_number))
 
 
-def draw_rule_graph(issue, G, element, pattern, sinks=None, sources=None):
-    """
+def draw_rule_graph(issue, graph, element, pattern, sinks=None, sources=None):
+    """Visualize the blacklist graph for a pattern with a logical inconsitency.
+
     Args:
-        issue:
-        G:
-        element:
-        pattern:
-        sinks:
+        issue (str): Descriptive string of the logical inconsistency. Used for
+            labeling purposes.
+        graph (nx.DiGraph): The blacklist graph.
+        element (str): The type of element that the conflicting rules describe.
+        pattern (tuple of str): The immediate neighbors of the element in
+            question.
+        sinks (list of nodes, optional): Nodes that are sinks in the graph.
+        sources (list of nodes, optional): Nodes that are sources in the graph.
     """
     if issue == 'unconnected':
         phrase = 'is not connected'
@@ -556,7 +614,7 @@ def draw_rule_graph(issue, G, element, pattern, sinks=None, sources=None):
 
     # TODO: color unconnected nodes
     colors = []
-    for node in G.nodes_iter():
+    for node in graph.nodes_iter():
         if sinks and node in sinks:
             colors.append('blue')
         elif sources and node in sources:
@@ -565,12 +623,12 @@ def draw_rule_graph(issue, G, element, pattern, sinks=None, sources=None):
             colors.append('red')
 
     labels = {rule: '{}\n{}'.format(rule, doc) for rule, doc in
-              rule_number_to_doc_string.iteritems() if rule in G.nodes()}
+              rule_number_to_doc_string.iteritems() if rule in graph.nodes()}
 
-    pos = nx.circular_layout(G)
-    nx.draw_networkx_nodes(G, pos, node_size=1000, node_color=colors)
-    nx.draw_networkx_edges(G, pos)
-    nx.draw_networkx_labels(G, pos, labels=labels)
+    pos = nx.circular_layout(graph)
+    nx.draw_networkx_nodes(graph, pos, node_size=1000, node_color=colors)
+    nx.draw_networkx_edges(graph, pos)
+    nx.draw_networkx_labels(graph, pos, labels=labels)
 
     fig_name = '{}-element_{}-pattern_{}.png'.format(
         issue, element, ''.join(pattern))

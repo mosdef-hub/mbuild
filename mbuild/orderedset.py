@@ -1,8 +1,9 @@
 import collections
 from copy import deepcopy
 
-class OrderedSet(collections.Set):
 
+class OrderedSet(collections.Set):
+    """ """
     def __init__(self, iterable=()):
         self.d = collections.OrderedDict.fromkeys(iterable)
 
@@ -35,14 +36,13 @@ class OrderedSet(collections.Set):
         if len(self) > len(other):
             return False
 
-        for e1,e2 in zip(self, other):
+        for e1, e2 in zip(self, other):
             if e1 != e2:
                 return False
         return True
 
-    ### General Methods
     def __del__(self):
-        self.d.clear()                    # remove circular labels
+        self.d.clear()  # remove circular labels
 
     def __repr__(self):
         class_name = self.__class__.__name__
@@ -53,11 +53,5 @@ class OrderedSet(collections.Set):
     def __deepcopy__(self, memo):
         result = OrderedSet()
         for elt in self:
-            result.add(deepcopy(elt,memo))
+            result.add(deepcopy(elt, memo))
         return result
-#
-# if __name__ == '__main__':
-#     print(OrderedSet('abracadaba'))
-#     print(OrderedSet('simsalabim'))
-#     x = OrderedSet('abracadaba')
-#     # doesn't raise "Exception TypeError: TypeError('list indices must be integers, not NoneType',) in ignored"
