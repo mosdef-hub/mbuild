@@ -8,18 +8,20 @@ import networkx as nx
 
 from mbuild.orderedset import OrderedSet
 
-# Map ids to the functions that check for them.
+# Map rule ids to the functions that check for them (see `find_atomtypes()`).
 rule_number_to_rule = dict()
+
+# Organizes the rules (see `build_rule_map()`).
 rule_map = dict()
+
+# Global neighbor information (see `neighbor_types()`).
+neighbor_types_map = dict()
+
+# Global neighbor whitelist information (see `neighbor_whitelist_types()`).
+neighbor_whitelist_map = dict()
 
 # Used for more descriptive output when sanitizing rules.
 rule_number_to_doc_string = dict()
-
-# Globally maintained neighbor information (see `neighbor_types()`).
-neighbor_types_map = {}
-
-#
-neighbor_whitelist_map = {}
 
 
 def find_atomtypes(compound, forcefield='OPLS-AA', debug=True):
@@ -84,18 +86,17 @@ def prepare_compound(compound):
 def iterate_rules(compound, max_iter=10):
     """Iteratively run all the rules until the white- and backlists converge.
 
-    NOTE: We only add and never remove from the white- and blacklists so we
-          don't need to check the lengths for each individual atom.
-
     Args:
-        compound:
-        max_iter:
+        compound (Compound): The Compound being parameterized.
+        max_iter (int, optional): The maximum number of iterations.
     """
     for _ in range(max_iter):
         # For comparing the lengths of the white- and blacklists.
         old_len = 0
         new_len = 0
         for atom in compound.yield_atoms():
+            # We only add and never remove from the white- and blacklists so we
+            # do not need to check the lengths for each individual atom.
             old_len += len(atom.whitelist)
             old_len += len(atom.blacklist)
 
@@ -134,7 +135,7 @@ def run_rule(atom, rule_id):
 
 
 def resolve_atomtypes(compound):
-    """Determine the final atomtype from the white- and blacklists."""
+    """Determine the final atomtypes from the white- and blacklists."""
     for i, atom in enumerate(compound.atoms):
         atomtype = atom.whitelist - atom.blacklist
         atomtype = [a for a in atomtype]
@@ -147,7 +148,7 @@ def resolve_atomtypes(compound):
             atom.extras['atomtype'] = ', '.join(atomtype)
 
 
-def neighbor_types(atom):
+def neighbor_element_types(atom):
     """Returns the number of neighbors of each element type for an `atom`.
 
     The dict maintained is `neighbor_types_map` and is organized as follows:
@@ -155,7 +156,7 @@ def neighbor_types(atom):
     E.g. for an atom with 3 carbon and 1 hydrogen neighbors:
         Atom: {'C': 3, 'H': 1}
 
-    If the queried `atom` is not already in `neighbor_types_map`, it entry will
+    If the queried `atom` is not already in `neighbor_types_map`, its entry will
     be added.
     """
     if atom not in neighbor_types_map:
@@ -168,15 +169,19 @@ def neighbor_types(atom):
 
 
 def neighbor_whitelist_types(atom):
-    """Returns the number of neighbors of each element type for an `atom`.
+    """Returns the number of neighbors of each type of whitelisted rule.
 
-    The dict maintained is `neighbor_types_map` and is organized as follows:
-        atom: defaultdict{element: number of neighbors of that element type}
-    E.g. for an atom with 3 carbon and 1 hydrogen neighbors:
-        Atom: {'C': 3, 'H': 1}
+    The dict maintained is `neighbor_whitelist_map` and is organized as follows:
+        atom: defaultdict{rule id: number of neighbors with rule id whitelisted}
+    E.g. for a carbon atom in the middle of an alkane chain:
+        Atom: {'136': 2, '140': 2}
 
-    If the queried `atom` is not already in `neighbor_types_map`, it entry will
-    be added.
+    If the queried `atom` is not already in `neighbor_whitelist_map`, an empty
+    dict is returned. This behavior differs from `neighbor_element_types()`
+    because whitelisted rules are not known a priori. New entries are only
+    added when the @Whitelist decorator is used.
+
+    See `increment_neighbor_whitelist()`.
     """
     if atom in neighbor_whitelist_map:
         return neighbor_whitelist_map[atom]
@@ -184,17 +189,8 @@ def neighbor_whitelist_types(atom):
         return dict()
 
 
-def append_neighbor_whitelist(atom, whitelist_type):
-    """Returns the number of neighbors of each element type for an `atom`.
-
-    The dict maintained is `neighbor_types_map` and is organized as follows:
-        atom: defaultdict{element: number of neighbors of that element type}
-    E.g. for an atom with 3 carbon and 1 hydrogen neighbors:
-        Atom: {'C': 3, 'H': 1}
-
-    If the queried `atom` is not already in `neighbor_types_map`, it entry will
-    be added.
-    """
+def increment_neighbor_whitelist(atom, whitelist_type):
+    """Increment the counts in an atom's `neighbor_whitelist_map` entry. """
     for neighbor in atom.neighbors:
         if neighbor not in neighbor_whitelist_map:
             neighbor_whitelist_map[neighbor] = defaultdict(int)
@@ -205,7 +201,7 @@ def check_atom(atom, input_rule_ids):
     """Check if any of the rules in `input_rule_ids` are in the whitelist.
 
     This means that the atom was once identified as being elligible for at
-    least one of these rules. This can be useful for checking, e.g. if a carbon
+    least one of these rules. This can be useful for checking, e.g., if a carbon
     was ever identified as being part of a benzene ring.
     """
     rule_ids = set()
@@ -283,8 +279,8 @@ class NeighborsBase(RuleDecorator):
         self.count = count
 
     def match_count(self, atom):
-        if self.neighbor_type in neighbor_types(atom):
-            match_count = neighbor_types(atom)[self.neighbor_type]
+        if self.neighbor_type in neighbor_element_types(atom):
+            match_count = neighbor_element_types(atom)[self.neighbor_type]
         elif self.neighbor_type in neighbor_whitelist_types(atom):
             match_count = neighbor_whitelist_types(atom)[self.neighbor_type]
         else:
@@ -363,7 +359,7 @@ class Whitelist(RuleDecorator):
     def whitelist(self, atom):
         """Add the rule to the atom's whitelist. """
         atom.whitelist.add(str(self.rule_number))
-        append_neighbor_whitelist(atom, self.rule_number)
+        increment_neighbor_whitelist(atom, self.rule_number)
 
 
 class Blacklist(RuleDecorator):
@@ -625,13 +621,19 @@ def draw_rule_graph(issue, graph, element, pattern, sinks=None, sources=None):
     labels = {rule: '{}\n{}'.format(rule, doc) for rule, doc in
               rule_number_to_doc_string.iteritems() if rule in graph.nodes()}
 
-    pos = nx.circular_layout(graph)
+    pos = nx.spring_layout(graph)
     nx.draw_networkx_nodes(graph, pos, node_size=1000, node_color=colors)
     nx.draw_networkx_edges(graph, pos)
     nx.draw_networkx_labels(graph, pos, labels=labels)
 
+    # TODO: Prettier way to show the doc strings on the blacklist graph.
+    plt.axis('off')
+    xmin, xmax = plt.xlim()
+    plt.xlim(xmin*1.5, xmax*1.5)
+
     fig_name = '{}-element_{}-pattern_{}.png'.format(
         issue, element, ''.join(pattern))
+    plt.tight_layout()
     plt.savefig(fig_name)
     plt.clf()
 
