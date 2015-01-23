@@ -7,13 +7,12 @@ from mbuild.atom import Atom
 from mbuild.bond import Bond
 from mbuild.box import Box
 from mbuild.coordinate_transform import translate
-from mbuild.mbase import MBase
 from mbuild.has_parts_mixin import HasPartsMixin
 from mbuild.part_mixin import PartMixin
 from mbuild.orderedset import OrderedSet
 
 
-class Compound(MBase, PartMixin, HasPartsMixin):
+class Compound(PartMixin, HasPartsMixin):
     """A building block in the mBuild hierarchy.
 
     Compound is the superclass of all composite building blocks in the mBuild
@@ -33,32 +32,28 @@ class Compound(MBase, PartMixin, HasPartsMixin):
     searches, visualization, I/O operations, and a number of other convenience
     methods.
 
+    Args:
+        kind (str, optional): The type of Compound. Defaults to the class' name.
+        periodicity (np.ndarray, shape=(1, 3) optional): The periodic distance
+            of the Compound in the x, y and z directions. Defaults to zeros.
+
     Attributes:
         kind (str): The type of Compound.
-        periodicity (np.ndarray): The periodic distance of the
-                Compound in the x, y and z directions.
-        parts (OrderedSet): All Atom, Bond and Compound instances that this
-            Compound is a parent of.
-        labels (OrderedDict): Strings referring to parts. This is primarily a
-            convenience functionality.
-        parent (Compound): Compound to which this Compound belongs.
-        referrers (set of Compound): Compounds with labels referring to this
-            Compound.
+        periodicity (np.ndarray): The periodic distance of the Compound in the
+            x, y and z directions. Defaults to zeros.
+        parts (OrderedSet): Contains all child parts. Parts can be Atom, Bond
+            or Compound (they must inherit from PartMixin).
+        labels (OrderedDict): Labels to Compound/Atom mappings. These do not
+            necessarily need not be in self.parts.
+        parent (Compound): The parent Compound that contains this part Can be
+            None if this compound is the root of the containment hierarchy.
+        referrers (set):  Other compounds that reference this part with
+            labels.
 
     """
-
     def __init__(self, kind=None, periodicity=None):
-        """Construct a new Compound.
-
-        Args:
-            kind (str, optional): The type of Compound.
-            periodicity (np.ndarray, optional): The periodic distance of the
-                Compound in the x, y and z directions.
-
-        """
         super(Compound, self).__init__()
 
-        # Set kind to classname if not specified.
         if kind:
             self.kind = kind
         else:
@@ -69,7 +64,7 @@ class Compound(MBase, PartMixin, HasPartsMixin):
             periodicity = np.array([0.0, 0.0, 0.0])
         self.periodicity = periodicity
 
-        # allow storing extra stuff in a dict (created on-demand)
+        # Allow storing extra stuff in a dict (created on-demand).
         self._extras = None
 
     @property

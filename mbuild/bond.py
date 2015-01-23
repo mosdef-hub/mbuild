@@ -3,13 +3,12 @@ from copy import deepcopy
 
 import numpy as np
 
-from mbuild.mbase import MBase
 from mbuild.part_mixin import PartMixin
 
 __author__ = 'sallai'
 
 
-class Bond(MBase, PartMixin):
+class Bond(PartMixin):
     """Connection between two Atoms.
 
     Attributes:

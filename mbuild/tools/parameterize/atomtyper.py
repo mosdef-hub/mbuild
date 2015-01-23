@@ -181,7 +181,7 @@ def neighbor_whitelist_types(atom):
     because whitelisted rules are not known a priori. New entries are only
     added when the @Whitelist decorator is used.
 
-    See `increment_neighbor_whitelist()`.
+    See Also `increment_neighbor_whitelist()`.
     """
     if atom in neighbor_whitelist_map:
         return neighbor_whitelist_map[atom]

@@ -7,16 +7,18 @@ __author__ = 'sallai'
 
 
 class HasPartsMixin(object):
-    """A base class that provides functionality to contain other parts."""
+    """A base class that provides functionality to contain other parts.
 
-    def __init__(self, *args, **kwargs):
+    Attributes:
+        parts (OrderedSet): Contains all child parts. Parts can be Atom, Bond
+            or Compound (they must inherit from PartMixin).
+        labels (OrderedDict): Labels to Compound/Atom mappings. These do not
+            necessarily need not be in self.parts.
+
+    """
+    def __init__(self):
         super(HasPartsMixin, self).__init__()
-
-        # Contains all child parts. Parts can be Atom, Bond or Compound.
         self.parts = OrderedSet()
-
-        # Labels to Compound/Atom mappings. These do not necessarily need not
-        # be in self.parts.
         self.labels = OrderedDict()
 
     def _yield_parts(self, part_type):
@@ -33,7 +35,7 @@ class HasPartsMixin(object):
             # Parts local to the current Compound.
             if isinstance(part, part_type):
                 yield part
-            # Parts in further down the hierarchy.
+            # Parts further down the hierarchy.
             if isinstance(part, HasPartsMixin):
                 for subpart in part._yield_parts(part_type):
                     yield subpart
@@ -50,9 +52,11 @@ class HasPartsMixin(object):
             new_part (Atom, Bond or Compound): The object to be added to this
                 Compound.
             label (str, optional): A descriptive string for the part.
-            containment (bool, optional):
-            replace (bool, optional):
-            inherit_periodicity (bool, optional):
+            containment (bool, optional): Add the part to self.parts. Defaults
+                to True.
+            replace (bool, optional): Replace the label if it already exists.
+                Defaults to False.
+
         """
         assert isinstance(new_part, (PartMixin, list, tuple, set))
         if containment:
@@ -78,9 +82,8 @@ class HasPartsMixin(object):
         if label is not None:
             if label.endswith("[$]"):
                 label = label[:-3]
-                if not label in self.labels:
+                if label not in self.labels:
                     self.labels[label] = []
-
                 label_pattern = label + "[{}]"
 
                 count = len(self.labels[label])
@@ -92,7 +95,6 @@ class HasPartsMixin(object):
                     "Label {0} already exists in {1}".format(label, self))
             else:
                 self.labels[label] = new_part
-
         new_part.referrers.add(self)
 
     def remove(self, objs_to_remove):
@@ -105,7 +107,6 @@ class HasPartsMixin(object):
         """
         if not isinstance(objs_to_remove, (list, tuple, set)):
             objs_to_remove = [objs_to_remove]
-
         objs_to_remove = set(objs_to_remove)
 
         if len(objs_to_remove) == 0:
@@ -124,7 +125,9 @@ class HasPartsMixin(object):
                 part.remove(objs_to_remove)
 
     def _remove(self, removed_part):
+        """Remove labels pointing to this part and vice versa. """
         removed_part.parent = None
+
         # Remove labels in the hierarchy pointing to this part.
         referrers_to_remove = set()
         for referrer in removed_part.referrers:
@@ -139,16 +142,16 @@ class HasPartsMixin(object):
         labels_to_delete = []
         if isinstance(removed_part, HasPartsMixin):
             for label, part in removed_part.labels.items():
-                if not removed_part in part.ancestors():
+                if removed_part not in part.ancestors():
                     part.referrers.remove(removed_part)
                     labels_to_delete.append(label)
         for label in labels_to_delete:
             del removed_part.labels[label]
 
     def __getattr__(self, attr):
-        unsuper = ("HasPartsMixin __init__ never called. Make sure to call"
-                   " super().__init__() in the __init__ method of your class.")
-        assert "labels" != attr, unsuper
+        assert "labels" != attr, ("HasPartsMixin __init__ never called. Make "
+                                  "sure to call super().__init__() in the "
+                                  "__init__ method of your class.")
         if attr in self.labels:
             return self.labels[attr]
         else:
