@@ -82,7 +82,7 @@
 <li class="toctree-l2"><a class="reference internal" href="../../apidoc/mbuild.html#module-mbuild.compound">mbuild.compound module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../apidoc/mbuild.html#module-mbuild.coordinate_transform">mbuild.coordinate_transform module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../apidoc/mbuild.html#module-mbuild.has_parts_mixin">mbuild.has_parts_mixin module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../apidoc/mbuild.html#module-mbuild.mbase">mbuild.mbase module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../apidoc/mbuild.html#mbuild-mbase-module">mbuild.mbase module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../apidoc/mbuild.html#module-mbuild.orderedset">mbuild.orderedset module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../apidoc/mbuild.html#module-mbuild.part_mixin">mbuild.part_mixin module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../apidoc/mbuild.html#module-mbuild.periodic_kdtree">mbuild.periodic_kdtree module</a></li>
@@ -158,16 +158,18 @@
 
 
 <div class="viewcode-block" id="HasPartsMixin"><a class="viewcode-back" href="../../mbuild.html#mbuild.has_parts_mixin.HasPartsMixin">[docs]</a><span class="k">class</span> <span class="nc">HasPartsMixin</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;A base class that provides functionality to contain other parts.&quot;&quot;&quot;</span>
+    <span class="sd">&quot;&quot;&quot;A base class that provides functionality to contain other parts.</span>
 
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="sd">    Attributes:</span>
+<span class="sd">        parts (OrderedSet): Contains all child parts. Parts can be Atom, Bond</span>
+<span class="sd">            or Compound (they must inherit from PartMixin).</span>
+<span class="sd">        labels (OrderedDict): Labels to Compound/Atom mappings. These do not</span>
+<span class="sd">            necessarily need not be in self.parts.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">(</span><span class="n">HasPartsMixin</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">()</span>
-
-        <span class="c"># Contains all child parts. Parts can be Atom, Bond or Compound.</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">parts</span> <span class="o">=</span> <span class="n">OrderedSet</span><span class="p">()</span>
-
-        <span class="c"># Labels to Compound/Atom mappings. These do not necessarily need not</span>
-        <span class="c"># be in self.parts.</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">labels</span> <span class="o">=</span> <span class="n">OrderedDict</span><span class="p">()</span>
 
     <span class="k">def</span> <span class="nf">_yield_parts</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">part_type</span><span class="p">):</span>
@@ -179,12 +181,13 @@
 <span class="sd">        Yields:</span>
 <span class="sd">            part/subpart (Atom, Bond, Compound): A part in the hierarchy</span>
 <span class="sd">                matching the specified type.</span>
+
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">for</span> <span class="n">part</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">parts</span><span class="p">:</span>
             <span class="c"># Parts local to the current Compound.</span>
             <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">part</span><span class="p">,</span> <span class="n">part_type</span><span class="p">):</span>
                 <span class="k">yield</span> <span class="n">part</span>
-            <span class="c"># Parts in further down the hierarchy.</span>
+            <span class="c"># Parts further down the hierarchy.</span>
             <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">part</span><span class="p">,</span> <span class="n">HasPartsMixin</span><span class="p">):</span>
                 <span class="k">for</span> <span class="n">subpart</span> <span class="ow">in</span> <span class="n">part</span><span class="o">.</span><span class="n">_yield_parts</span><span class="p">(</span><span class="n">part_type</span><span class="p">):</span>
                     <span class="k">yield</span> <span class="n">subpart</span>
@@ -201,9 +204,11 @@
 <span class="sd">            new_part (Atom, Bond or Compound): The object to be added to this</span>
 <span class="sd">                Compound.</span>
 <span class="sd">            label (str, optional): A descriptive string for the part.</span>
-<span class="sd">            containment (bool, optional):</span>
-<span class="sd">            replace (bool, optional):</span>
-<span class="sd">            inherit_periodicity (bool, optional):</span>
+<span class="sd">            containment (bool, optional): Add the part to self.parts. Defaults</span>
+<span class="sd">                to True.</span>
+<span class="sd">            replace (bool, optional): Replace the label if it already exists.</span>
+<span class="sd">                Defaults to False.</span>
+
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">new_part</span><span class="p">,</span> <span class="p">(</span><span class="n">PartMixin</span><span class="p">,</span> <span class="nb">list</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">,</span> <span class="nb">set</span><span class="p">))</span>
         <span class="k">if</span> <span class="n">containment</span><span class="p">:</span>
@@ -229,9 +234,8 @@
         <span class="k">if</span> <span class="n">label</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">label</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s">&quot;[$]&quot;</span><span class="p">):</span>
                 <span class="n">label</span> <span class="o">=</span> <span class="n">label</span><span class="p">[:</span><span class="o">-</span><span class="mi">3</span><span class="p">]</span>
-                <span class="k">if</span> <span class="ow">not</span> <span class="n">label</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">labels</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">label</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">labels</span><span class="p">:</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">labels</span><span class="p">[</span><span class="n">label</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
-
                 <span class="n">label_pattern</span> <span class="o">=</span> <span class="n">label</span> <span class="o">+</span> <span class="s">&quot;[{}]&quot;</span>
 
                 <span class="n">count</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">labels</span><span class="p">[</span><span class="n">label</span><span class="p">])</span>
@@ -243,20 +247,19 @@
                     <span class="s">&quot;Label {0} already exists in {1}&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">label</span><span class="p">,</span> <span class="bp">self</span><span class="p">))</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">labels</span><span class="p">[</span><span class="n">label</span><span class="p">]</span> <span class="o">=</span> <span class="n">new_part</span>
-
         <span class="n">new_part</span><span class="o">.</span><span class="n">referrers</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
 </div>
 <div class="viewcode-block" id="HasPartsMixin.remove"><a class="viewcode-back" href="../../mbuild.html#mbuild.has_parts_mixin.HasPartsMixin.remove">[docs]</a>    <span class="k">def</span> <span class="nf">remove</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">objs_to_remove</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Remove a part (Atom, Bond or Compound) from the Compound by value.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            objs_to_remove (set of parts): All objects to be removed from the</span>
+<span class="sd">            objs_to_remove (set of Parts): All objects to be removed from the</span>
 <span class="sd">                hierarchy. If this is not a set, it will be cast to one to</span>
 <span class="sd">                remove duplicates.</span>
+
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">objs_to_remove</span><span class="p">,</span> <span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">,</span> <span class="nb">set</span><span class="p">)):</span>
             <span class="n">objs_to_remove</span> <span class="o">=</span> <span class="p">[</span><span class="n">objs_to_remove</span><span class="p">]</span>
-
         <span class="n">objs_to_remove</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">objs_to_remove</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">objs_to_remove</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
@@ -275,11 +278,13 @@
                 <span class="n">part</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">objs_to_remove</span><span class="p">)</span>
 </div>
     <span class="k">def</span> <span class="nf">_remove</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">removed_part</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Remove labels pointing to this part and vice versa. &quot;&quot;&quot;</span>
         <span class="n">removed_part</span><span class="o">.</span><span class="n">parent</span> <span class="o">=</span> <span class="bp">None</span>
+
         <span class="c"># Remove labels in the hierarchy pointing to this part.</span>
         <span class="n">referrers_to_remove</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
         <span class="k">for</span> <span class="n">referrer</span> <span class="ow">in</span> <span class="n">removed_part</span><span class="o">.</span><span class="n">referrers</span><span class="p">:</span>
-            <span class="k">if</span> <span class="ow">not</span> <span class="n">removed_part</span> <span class="ow">in</span> <span class="n">referrer</span><span class="o">.</span><span class="n">ancestors</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">removed_part</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">referrer</span><span class="o">.</span><span class="n">ancestors</span><span class="p">():</span>
                 <span class="k">for</span> <span class="n">label</span><span class="p">,</span> <span class="n">referred_part</span> <span class="ow">in</span> <span class="n">referrer</span><span class="o">.</span><span class="n">labels</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
                     <span class="k">if</span> <span class="n">referred_part</span> <span class="ow">is</span> <span class="n">removed_part</span><span class="p">:</span>
                         <span class="k">del</span> <span class="n">referrer</span><span class="o">.</span><span class="n">labels</span><span class="p">[</span><span class="n">label</span><span class="p">]</span>
@@ -290,16 +295,16 @@
         <span class="n">labels_to_delete</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">removed_part</span><span class="p">,</span> <span class="n">HasPartsMixin</span><span class="p">):</span>
             <span class="k">for</span> <span class="n">label</span><span class="p">,</span> <span class="n">part</span> <span class="ow">in</span> <span class="n">removed_part</span><span class="o">.</span><span class="n">labels</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-                <span class="k">if</span> <span class="ow">not</span> <span class="n">removed_part</span> <span class="ow">in</span> <span class="n">part</span><span class="o">.</span><span class="n">ancestors</span><span class="p">():</span>
+                <span class="k">if</span> <span class="n">removed_part</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">part</span><span class="o">.</span><span class="n">ancestors</span><span class="p">():</span>
                     <span class="n">part</span><span class="o">.</span><span class="n">referrers</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">removed_part</span><span class="p">)</span>
                     <span class="n">labels_to_delete</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">label</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">label</span> <span class="ow">in</span> <span class="n">labels_to_delete</span><span class="p">:</span>
             <span class="k">del</span> <span class="n">removed_part</span><span class="o">.</span><span class="n">labels</span><span class="p">[</span><span class="n">label</span><span class="p">]</span>
 
     <span class="k">def</span> <span class="nf">__getattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">attr</span><span class="p">):</span>
-        <span class="n">unsuper</span> <span class="o">=</span> <span class="p">(</span><span class="s">&quot;HasPartsMixin __init__ never called. Make sure to call&quot;</span>
-                   <span class="s">&quot; super().__init__() in the __init__ method of your class.&quot;</span><span class="p">)</span>
-        <span class="k">assert</span> <span class="s">&quot;labels&quot;</span> <span class="o">!=</span> <span class="n">attr</span><span class="p">,</span> <span class="n">unsuper</span>
+        <span class="k">assert</span> <span class="s">&quot;labels&quot;</span> <span class="o">!=</span> <span class="n">attr</span><span class="p">,</span> <span class="p">(</span><span class="s">&quot;HasPartsMixin __init__ never called. Make &quot;</span>
+                                  <span class="s">&quot;sure to call super().__init__() in the &quot;</span>
+                                  <span class="s">&quot;__init__ method of your class.&quot;</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">attr</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">labels</span><span class="p">:</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">labels</span><span class="p">[</span><span class="n">attr</span><span class="p">]</span>
         <span class="k">else</span><span class="p">:</span>

@@ -30,6 +30,7 @@ class HasPartsMixin(object):
         Yields:
             part/subpart (Atom, Bond, Compound): A part in the hierarchy
                 matching the specified type.
+
         """
         for part in self.parts:
             # Parts local to the current Compound.
@@ -101,9 +102,10 @@ class HasPartsMixin(object):
         """Remove a part (Atom, Bond or Compound) from the Compound by value.
 
         Args:
-            objs_to_remove (set of parts): All objects to be removed from the
+            objs_to_remove (set of Parts): All objects to be removed from the
                 hierarchy. If this is not a set, it will be cast to one to
                 remove duplicates.
+
         """
         if not isinstance(objs_to_remove, (list, tuple, set)):
             objs_to_remove = [objs_to_remove]

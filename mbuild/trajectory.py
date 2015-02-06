@@ -10,11 +10,12 @@ from mbuild.box import Box
 from mbuild.compound import Compound
 from mbuild.formats.hoomdxml import save_hoomdxml
 from mbuild.periodic_kdtree import PeriodicCKDTree
-from mbuild.topology import Topology, ForcefieldAngle
+from mbuild.topology import Topology, ForcefieldAngle, ForcefieldDihedral
 from mbuild.formats.gromacs import save_gromacs
 from mbuild.formats.lammps_data import save_lammps_data
 from mbuild.formats.mol2 import save_mol2
 from mbuild.formats.xyz import save_xyz
+
 
 
 class Trajectory(object):
@@ -124,12 +125,23 @@ class Trajectory(object):
                                                 angle['angletype'])
                     part.extras['angle'].append(new_angle)
 
+            if 'dihedral' in self.extras:
+                part.extras['dihedral'] = list()
+                for _, dihedral in self.extras['dihedral'].iterrows():
+                    new_dihedral = ForcefieldDihedral(dihedral['id0'],
+                                                      dihedral['id1'],
+                                                      dihedral['id2'],
+                                                      dihedral['id3'],
+                                                      dihedral['dihedraltype'],
+                                                      dihedral['improper'])
+                    part.extras['dihedral'].append(new_dihedral)
+
         for a1, a2 in self.topology.bonds:
             atom1 = atom_mapping[a1]
             atom2 = atom_mapping[a2]
             part.add(Bond(atom1, atom2))
 
-        if (np.any(self.unitcell_lengths) and np.any(self.unitcell_lengths[0])):
+        if np.any(self.unitcell_lengths) and np.any(self.unitcell_lengths[0]):
             part.periodicity = self.unitcell_lengths[0]
         else: 
             part.periodicity = np.array([0., 0., 0.])

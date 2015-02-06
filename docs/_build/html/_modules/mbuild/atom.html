@@ -82,7 +82,7 @@
 <li class="toctree-l2"><a class="reference internal" href="../../apidoc/mbuild.html#module-mbuild.compound">mbuild.compound module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../apidoc/mbuild.html#module-mbuild.coordinate_transform">mbuild.coordinate_transform module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../apidoc/mbuild.html#module-mbuild.has_parts_mixin">mbuild.has_parts_mixin module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../apidoc/mbuild.html#module-mbuild.mbase">mbuild.mbase module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../apidoc/mbuild.html#mbuild-mbase-module">mbuild.mbase module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../apidoc/mbuild.html#module-mbuild.orderedset">mbuild.orderedset module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../apidoc/mbuild.html#module-mbuild.part_mixin">mbuild.part_mixin module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../apidoc/mbuild.html#module-mbuild.periodic_kdtree">mbuild.periodic_kdtree module</a></li>
@@ -149,17 +149,15 @@
           <div role="main">
             
   <h1>Source code for mbuild.atom</h1><div class="highlight"><pre>
-<span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">defaultdict</span>
 <span class="kn">from</span> <span class="nn">copy</span> <span class="kn">import</span> <span class="n">deepcopy</span>
 
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
 
 <span class="kn">from</span> <span class="nn">mbuild.bond</span> <span class="kn">import</span> <span class="n">Bond</span>
-<span class="kn">from</span> <span class="nn">mbuild.mbase</span> <span class="kn">import</span> <span class="n">MBase</span>
 <span class="kn">from</span> <span class="nn">mbuild.part_mixin</span> <span class="kn">import</span> <span class="n">PartMixin</span>
 
 
-<div class="viewcode-block" id="Atom"><a class="viewcode-back" href="../../mbuild.html#mbuild.atom.Atom">[docs]</a><span class="k">class</span> <span class="nc">Atom</span><span class="p">(</span><span class="n">MBase</span><span class="p">,</span> <span class="n">PartMixin</span><span class="p">):</span>
+<div class="viewcode-block" id="Atom"><a class="viewcode-back" href="../../mbuild.html#mbuild.atom.Atom">[docs]</a><span class="k">class</span> <span class="nc">Atom</span><span class="p">(</span><span class="n">PartMixin</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Elementary container class - typically a leaf in the hierarchy.</span>
 
 <span class="sd">    Note:</span>
@@ -177,7 +175,8 @@
 <span class="sd">        bonds (set of Bond): Every Bond that the Atom is a part of.</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">__slots__</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;kind&#39;</span><span class="p">,</span> <span class="s">&#39;pos&#39;</span><span class="p">,</span> <span class="s">&#39;charge&#39;</span><span class="p">,</span> <span class="s">&#39;parent&#39;</span><span class="p">,</span> <span class="s">&#39;referrers&#39;</span><span class="p">,</span> <span class="s">&#39;bonds&#39;</span><span class="p">,</span> <span class="s">&#39;uid&#39;</span><span class="p">,</span> <span class="s">&#39;_extras&#39;</span><span class="p">]</span>
+    <span class="n">__slots__</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;kind&#39;</span><span class="p">,</span> <span class="s">&#39;pos&#39;</span><span class="p">,</span> <span class="s">&#39;charge&#39;</span><span class="p">,</span> <span class="s">&#39;parent&#39;</span><span class="p">,</span> <span class="s">&#39;referrers&#39;</span><span class="p">,</span> <span class="s">&#39;bonds&#39;</span><span class="p">,</span>
+                 <span class="s">&#39;uid&#39;</span><span class="p">,</span> <span class="s">&#39;_extras&#39;</span><span class="p">]</span>
 
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">kind</span><span class="p">,</span> <span class="n">pos</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">charge</span><span class="o">=</span><span class="mf">0.0</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Initialize an Atom.</span>
@@ -188,9 +187,9 @@
 <span class="sd">            charge (float, optional): Partial charge on the atom.</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="nb">super</span><span class="p">(</span><span class="n">Atom</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">kind</span><span class="p">,</span> <span class="n">pos</span><span class="o">=</span><span class="n">pos</span><span class="p">,</span> <span class="n">charge</span><span class="o">=</span><span class="n">charge</span><span class="p">)</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">Atom</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">()</span>
 
-        <span class="k">assert</span> <span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">kind</span><span class="p">,</span> <span class="nb">basestring</span><span class="p">))</span>
+        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">kind</span><span class="p">,</span> <span class="nb">basestring</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">pos</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
             <span class="n">pos</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
@@ -201,8 +200,10 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">bonds</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_extras</span> <span class="o">=</span> <span class="bp">None</span>
 
-<div class="viewcode-block" id="Atom.bonded_atoms"><a class="viewcode-back" href="../../mbuild.html#mbuild.atom.Atom.bonded_atoms">[docs]</a>    <span class="k">def</span> <span class="nf">bonded_atoms</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">memo</span><span class="o">=</span><span class="nb">dict</span><span class="p">()):</span>
-        <span class="sd">&quot;&quot;&quot;Return a list of atoms bonded to self. &quot;&quot;&quot;</span>
+<div class="viewcode-block" id="Atom.bonded_atoms"><a class="viewcode-back" href="../../mbuild.html#mbuild.atom.Atom.bonded_atoms">[docs]</a>    <span class="k">def</span> <span class="nf">bonded_atoms</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">memo</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return a list of Atoms bonded to self. &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">memo</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">memo</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
         <span class="k">for</span> <span class="n">bond</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">bonds</span><span class="p">:</span>
             <span class="n">bonded_atom</span> <span class="o">=</span> <span class="n">bond</span><span class="o">.</span><span class="n">other_atom</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
             <span class="k">if</span> <span class="nb">id</span><span class="p">(</span><span class="n">bonded_atom</span><span class="p">)</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">memo</span><span class="p">:</span>
@@ -212,10 +213,12 @@
 </div>
     <span class="nd">@property</span>
 <div class="viewcode-block" id="Atom.neighbors"><a class="viewcode-back" href="../../mbuild.html#mbuild.atom.Atom.neighbors">[docs]</a>    <span class="k">def</span> <span class="nf">neighbors</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return a list of all neighboring Atoms. &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="p">[</span><span class="n">bond</span><span class="o">.</span><span class="n">other_atom</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="k">for</span> <span class="n">bond</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">bonds</span><span class="p">]</span>
 </div>
     <span class="nd">@property</span>
 <div class="viewcode-block" id="Atom.extras"><a class="viewcode-back" href="../../mbuild.html#mbuild.atom.Atom.extras">[docs]</a>    <span class="k">def</span> <span class="nf">extras</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return the Atom&#39;s optional, extra attributes. &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_extras</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_extras</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_extras</span>
@@ -268,7 +271,6 @@
         <span class="c"># Do the rest recursively.</span>
         <span class="n">newone</span><span class="o">.</span><span class="n">kind</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">kind</span><span class="p">,</span> <span class="n">memo</span><span class="p">)</span>
         <span class="n">newone</span><span class="o">.</span><span class="n">pos</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pos</span><span class="p">,</span> <span class="n">memo</span><span class="p">)</span>
-        <span class="n">newone</span><span class="o">.</span><span class="n">charge</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">charge</span><span class="p">,</span> <span class="n">memo</span><span class="p">)</span>
         <span class="n">newone</span><span class="o">.</span><span class="n">_extras</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_extras</span><span class="p">,</span> <span class="n">memo</span><span class="p">)</span>
 
         <span class="c"># Copy parents, except the topmost compound being deepcopied.</span>

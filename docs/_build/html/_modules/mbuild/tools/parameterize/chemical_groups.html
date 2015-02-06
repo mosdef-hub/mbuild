@@ -82,7 +82,7 @@
 <li class="toctree-l2"><a class="reference internal" href="../../../../apidoc/mbuild.html#module-mbuild.compound">mbuild.compound module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../apidoc/mbuild.html#module-mbuild.coordinate_transform">mbuild.coordinate_transform module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../apidoc/mbuild.html#module-mbuild.has_parts_mixin">mbuild.has_parts_mixin module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../../../apidoc/mbuild.html#module-mbuild.mbase">mbuild.mbase module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../apidoc/mbuild.html#mbuild-mbase-module">mbuild.mbase module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../apidoc/mbuild.html#module-mbuild.orderedset">mbuild.orderedset module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../apidoc/mbuild.html#module-mbuild.part_mixin">mbuild.part_mixin module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../apidoc/mbuild.html#module-mbuild.periodic_kdtree">mbuild.periodic_kdtree module</a></li>
@@ -150,13 +150,13 @@
             
   <h1>Source code for mbuild.tools.parameterize.chemical_groups</h1><div class="highlight"><pre>
 <span class="kn">from</span> <span class="nn">copy</span> <span class="kn">import</span> <span class="n">copy</span>
-<span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">deque</span>
 
 
 <div class="viewcode-block" id="Rings"><a class="viewcode-back" href="../../../../mbuild.tools.parameterize.html#mbuild.tools.parameterize.chemical_groups.Rings">[docs]</a><span class="k">class</span> <span class="nc">Rings</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Find all rings of a specified length that the atom is a part of.</span>
 
-<span class="sd">    Note: Finds each ring twice because the graph is traversed in both directions.</span>
+<span class="sd">    Note: Finds each ring twice because the graph is traversed in both</span>
+<span class="sd">        directions.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">atom</span><span class="p">,</span> <span class="n">ring_length</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Initialize a ring bearer. &quot;&quot;&quot;</span>
@@ -168,21 +168,22 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">step</span><span class="p">(</span><span class="n">atom</span><span class="p">)</span>
 
 <div class="viewcode-block" id="Rings.step"><a class="viewcode-back" href="../../../../mbuild.tools.parameterize.html#mbuild.tools.parameterize.chemical_groups.Rings.step">[docs]</a>    <span class="k">def</span> <span class="nf">step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">atom</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Take one step along the graph from atom. &quot;&quot;&quot;</span>
         <span class="n">neighbors</span> <span class="o">=</span> <span class="n">atom</span><span class="o">.</span><span class="n">neighbors</span>
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">neighbors</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
-            <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">neighbors</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">neighbor</span> <span class="ow">in</span> <span class="n">neighbors</span><span class="p">:</span>
                 <span class="c"># Check to see if we found a ring.</span>
                 <span class="n">current_length</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">current_path</span><span class="p">)</span>
-                <span class="k">if</span> <span class="n">current_length</span> <span class="o">&gt;</span> <span class="mi">2</span> <span class="ow">and</span> <span class="n">n</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">current_path</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
+                <span class="k">if</span> <span class="n">current_length</span> <span class="o">&gt;</span> <span class="mi">2</span> <span class="ow">and</span> <span class="n">neighbor</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">current_path</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">rings</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">copy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">current_path</span><span class="p">))</span>
                 <span class="c"># Prevent stepping backwards.</span>
-                <span class="k">elif</span> <span class="n">n</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">current_path</span><span class="p">:</span>
+                <span class="k">elif</span> <span class="n">neighbor</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">current_path</span><span class="p">:</span>
                     <span class="k">continue</span>
                 <span class="k">else</span><span class="p">:</span>
                     <span class="k">if</span> <span class="n">current_length</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">ring_length</span><span class="p">:</span>
                         <span class="c"># Take another step.</span>
-                        <span class="bp">self</span><span class="o">.</span><span class="n">current_path</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">n</span><span class="p">)</span>
-                        <span class="bp">self</span><span class="o">.</span><span class="n">step</span><span class="p">(</span><span class="n">n</span><span class="p">)</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">current_path</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">neighbor</span><span class="p">)</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">step</span><span class="p">(</span><span class="n">neighbor</span><span class="p">)</span>
                     <span class="k">else</span><span class="p">:</span>
                         <span class="c"># Reached max length.</span>
                         <span class="k">continue</span>
@@ -199,8 +200,8 @@
     <span class="n">ring</span> <span class="o">=</span> <span class="n">Rings</span><span class="p">(</span><span class="n">atom</span><span class="p">,</span> <span class="mi">6</span><span class="p">)</span><span class="o">.</span><span class="n">rings</span>
     <span class="c"># 2 rings, because we count the traversal in both directions.</span>
     <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">ring</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
-        <span class="k">for</span> <span class="n">at</span> <span class="ow">in</span> <span class="n">ring</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
-            <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">at</span><span class="o">.</span><span class="n">kind</span> <span class="o">==</span> <span class="s">&#39;C&#39;</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">at</span><span class="o">.</span><span class="n">neighbors</span><span class="p">)</span> <span class="o">==</span> <span class="mi">3</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">ring_atom</span> <span class="ow">in</span> <span class="n">ring</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">ring_atom</span><span class="o">.</span><span class="n">kind</span> <span class="o">==</span> <span class="s">&#39;C&#39;</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">ring_atom</span><span class="o">.</span><span class="n">neighbors</span><span class="p">)</span> <span class="o">==</span> <span class="mi">3</span><span class="p">):</span>
                 <span class="k">break</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">ring</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>  <span class="c"># Only return one direction of the ring.</span>
@@ -216,7 +217,7 @@
     <span class="n">ring</span> <span class="o">=</span> <span class="n">Rings</span><span class="p">(</span><span class="n">atom</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span><span class="o">.</span><span class="n">rings</span>
     <span class="c"># 2 rings, because we count the traversal in both directions.</span>
     <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">ring</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
-        <span class="n">sequence</span> <span class="o">=</span> <span class="p">[</span><span class="n">a</span><span class="o">.</span><span class="n">kind</span> <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">ring</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span>
+        <span class="n">sequence</span> <span class="o">=</span> <span class="p">[</span><span class="n">ring_atom</span><span class="o">.</span><span class="n">kind</span> <span class="k">for</span> <span class="n">ring_atom</span> <span class="ow">in</span> <span class="n">ring</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span>
         <span class="k">if</span> <span class="s">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">sequence</span><span class="p">)</span> <span class="ow">in</span> <span class="p">[</span><span class="s">&#39;CCCCO&#39;</span><span class="p">,</span> <span class="s">&#39;CCCOC&#39;</span><span class="p">,</span> <span class="s">&#39;CCOCC&#39;</span><span class="p">,</span> <span class="s">&#39;COCCC&#39;</span><span class="p">,</span> <span class="s">&#39;OCCCC&#39;</span><span class="p">]:</span>
             <span class="k">return</span> <span class="n">ring</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
     <span class="k">return</span> <span class="bp">False</span>
@@ -227,7 +228,7 @@
     <span class="n">ring</span> <span class="o">=</span> <span class="n">Rings</span><span class="p">(</span><span class="n">atom</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span><span class="o">.</span><span class="n">rings</span>
     <span class="c"># 2 rings, because we count the traversal in both directions.</span>
     <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">ring</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
-        <span class="n">sequence</span> <span class="o">=</span> <span class="p">[</span><span class="n">a</span><span class="o">.</span><span class="n">kind</span> <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">ring</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span>
+        <span class="n">sequence</span> <span class="o">=</span> <span class="p">[</span><span class="n">ring_atom</span><span class="o">.</span><span class="n">kind</span> <span class="k">for</span> <span class="n">ring_atom</span> <span class="ow">in</span> <span class="n">ring</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span>
         <span class="k">if</span> <span class="s">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">sequence</span><span class="p">)</span> <span class="ow">in</span> <span class="p">[</span><span class="s">&#39;COCOC&#39;</span><span class="p">,</span> <span class="s">&#39;OCOCC&#39;</span><span class="p">,</span> <span class="s">&#39;COCCO&#39;</span><span class="p">,</span> <span class="s">&#39;OCCOC&#39;</span><span class="p">,</span> <span class="s">&#39;CCOCO&#39;</span><span class="p">]:</span>
             <span class="k">return</span> <span class="n">ring</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
     <span class="k">return</span> <span class="bp">False</span>

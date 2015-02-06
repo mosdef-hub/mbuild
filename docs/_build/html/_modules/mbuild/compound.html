@@ -82,7 +82,7 @@
 <li class="toctree-l2"><a class="reference internal" href="../../apidoc/mbuild.html#module-mbuild.compound">mbuild.compound module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../apidoc/mbuild.html#module-mbuild.coordinate_transform">mbuild.coordinate_transform module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../apidoc/mbuild.html#module-mbuild.has_parts_mixin">mbuild.has_parts_mixin module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../apidoc/mbuild.html#module-mbuild.mbase">mbuild.mbase module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../apidoc/mbuild.html#mbuild-mbase-module">mbuild.mbase module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../apidoc/mbuild.html#module-mbuild.orderedset">mbuild.orderedset module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../apidoc/mbuild.html#module-mbuild.part_mixin">mbuild.part_mixin module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../apidoc/mbuild.html#module-mbuild.periodic_kdtree">mbuild.periodic_kdtree module</a></li>
@@ -154,17 +154,16 @@
 
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
 
-<span class="kn">from</span> <span class="nn">atom</span> <span class="kn">import</span> <span class="n">Atom</span>
-<span class="kn">from</span> <span class="nn">bond</span> <span class="kn">import</span> <span class="n">Bond</span>
-<span class="kn">from</span> <span class="nn">box</span> <span class="kn">import</span> <span class="n">Box</span>
+<span class="kn">from</span> <span class="nn">mbuild.atom</span> <span class="kn">import</span> <span class="n">Atom</span>
+<span class="kn">from</span> <span class="nn">mbuild.bond</span> <span class="kn">import</span> <span class="n">Bond</span>
+<span class="kn">from</span> <span class="nn">mbuild.box</span> <span class="kn">import</span> <span class="n">Box</span>
 <span class="kn">from</span> <span class="nn">mbuild.coordinate_transform</span> <span class="kn">import</span> <span class="n">translate</span>
-<span class="kn">from</span> <span class="nn">mbuild.mbase</span> <span class="kn">import</span> <span class="n">MBase</span>
 <span class="kn">from</span> <span class="nn">mbuild.has_parts_mixin</span> <span class="kn">import</span> <span class="n">HasPartsMixin</span>
 <span class="kn">from</span> <span class="nn">mbuild.part_mixin</span> <span class="kn">import</span> <span class="n">PartMixin</span>
-<span class="kn">from</span> <span class="nn">orderedset</span> <span class="kn">import</span> <span class="n">OrderedSet</span>
+<span class="kn">from</span> <span class="nn">mbuild.orderedset</span> <span class="kn">import</span> <span class="n">OrderedSet</span>
 
 
-<div class="viewcode-block" id="Compound"><a class="viewcode-back" href="../../mbuild.html#mbuild.compound.Compound">[docs]</a><span class="k">class</span> <span class="nc">Compound</span><span class="p">(</span><span class="n">MBase</span><span class="p">,</span> <span class="n">PartMixin</span><span class="p">,</span> <span class="n">HasPartsMixin</span><span class="p">):</span>
+<div class="viewcode-block" id="Compound"><a class="viewcode-back" href="../../mbuild.html#mbuild.compound.Compound">[docs]</a><span class="k">class</span> <span class="nc">Compound</span><span class="p">(</span><span class="n">PartMixin</span><span class="p">,</span> <span class="n">HasPartsMixin</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;A building block in the mBuild hierarchy.</span>
 
 <span class="sd">    Compound is the superclass of all composite building blocks in the mBuild</span>
@@ -184,32 +183,28 @@
 <span class="sd">    searches, visualization, I/O operations, and a number of other convenience</span>
 <span class="sd">    methods.</span>
 
+<span class="sd">    Args:</span>
+<span class="sd">        kind (str, optional): The type of Compound. Defaults to the class&#39; name.</span>
+<span class="sd">        periodicity (np.ndarray, shape=(1, 3) optional): The periodic distance</span>
+<span class="sd">            of the Compound in the x, y and z directions. Defaults to zeros.</span>
+
 <span class="sd">    Attributes:</span>
 <span class="sd">        kind (str): The type of Compound.</span>
-<span class="sd">        periodicity (np.ndarray): The periodic distance of the</span>
-<span class="sd">                Compound in the x, y and z directions.</span>
-<span class="sd">        parts (OrderedSet): All Atom, Bond and Compound instances that this</span>
-<span class="sd">            Compound is a parent of.</span>
-<span class="sd">        labels (OrderedDict): Strings referring to parts. This is primarily a</span>
-<span class="sd">            convenience functionality.</span>
-<span class="sd">        parent (Compound): Compound to which this Compound belongs.</span>
-<span class="sd">        referrers (set of Compound): Compounds with labels referring to this</span>
-<span class="sd">            Compound.</span>
+<span class="sd">        periodicity (np.ndarray): The periodic distance of the Compound in the</span>
+<span class="sd">            x, y and z directions. Defaults to zeros.</span>
+<span class="sd">        parts (OrderedSet): Contains all child parts. Parts can be Atom, Bond</span>
+<span class="sd">            or Compound (they must inherit from PartMixin).</span>
+<span class="sd">        labels (OrderedDict): Labels to Compound/Atom mappings. These do not</span>
+<span class="sd">            necessarily need not be in self.parts.</span>
+<span class="sd">        parent (Compound): The parent Compound that contains this part Can be</span>
+<span class="sd">            None if this compound is the root of the containment hierarchy.</span>
+<span class="sd">        referrers (set):  Other compounds that reference this part with</span>
+<span class="sd">            labels.</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
-
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">kind</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">periodicity</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Construct a new Compound. </span>
-<span class="sd">        </span>
-<span class="sd">        Args:</span>
-<span class="sd">            kind (str, optional): The type of Compound.</span>
-<span class="sd">            periodicity (np.ndarray, optional): The periodic distance of the</span>
-<span class="sd">                Compound in the x, y and z directions.</span>
-
-<span class="sd">        &quot;&quot;&quot;</span>
         <span class="nb">super</span><span class="p">(</span><span class="n">Compound</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">()</span>
 
-        <span class="c"># Set kind to classname if not specified.</span>
         <span class="k">if</span> <span class="n">kind</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">kind</span> <span class="o">=</span> <span class="n">kind</span>
         <span class="k">else</span><span class="p">:</span>
@@ -220,16 +215,34 @@
             <span class="n">periodicity</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">])</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">periodicity</span> <span class="o">=</span> <span class="n">periodicity</span>
 
+        <span class="c"># Allow storing extra stuff in a dict (created on-demand).</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_extras</span> <span class="o">=</span> <span class="bp">None</span>
+
+    <span class="nd">@property</span>
+<div class="viewcode-block" id="Compound.extras"><a class="viewcode-back" href="../../mbuild.html#mbuild.compound.Compound.extras">[docs]</a>    <span class="k">def</span> <span class="nf">extras</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return the Compound&#39;s optional, extra attributes. &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_extras</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_extras</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_extras</span>
+</div>
+    <span class="k">def</span> <span class="nf">__getattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">item</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_extras</span> <span class="ow">and</span> <span class="n">item</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_extras</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_extras</span><span class="p">[</span><span class="n">item</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="nb">super</span><span class="p">(</span><span class="n">Compound</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__getattr__</span><span class="p">(</span><span class="n">item</span><span class="p">)</span>
+
     <span class="nd">@property</span>
 <div class="viewcode-block" id="Compound.atoms"><a class="viewcode-back" href="../../mbuild.html#mbuild.compound.Compound.atoms">[docs]</a>    <span class="k">def</span> <span class="nf">atoms</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;A list of all Atoms in the Compound and sub-Compounds. &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">atom_list_by_kind</span><span class="p">(</span><span class="n">excludeG</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
 </div>
 <div class="viewcode-block" id="Compound.yield_atoms"><a class="viewcode-back" href="../../mbuild.html#mbuild.compound.Compound.yield_atoms">[docs]</a>    <span class="k">def</span> <span class="nf">yield_atoms</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_yield_parts</span><span class="p">(</span><span class="n">Atom</span><span class="p">)</span>
 </div>
     <span class="nd">@property</span>
 <div class="viewcode-block" id="Compound.n_atoms"><a class="viewcode-back" href="../../mbuild.html#mbuild.compound.Compound.n_atoms">[docs]</a>    <span class="k">def</span> <span class="nf">n_atoms</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return the number of Atoms in the Compound. &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">atoms</span><span class="p">)</span>
 </div>
 <div class="viewcode-block" id="Compound.atom_list_by_kind"><a class="viewcode-back" href="../../mbuild.html#mbuild.compound.Compound.atom_list_by_kind">[docs]</a>    <span class="k">def</span> <span class="nf">atom_list_by_kind</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">kind</span><span class="o">=</span><span class="s">&#39;*&#39;</span><span class="p">,</span> <span class="n">excludeG</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
@@ -248,8 +261,7 @@
                     <span class="n">atom_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">atom</span><span class="p">)</span>
                 <span class="k">elif</span> <span class="n">atom</span><span class="o">.</span><span class="n">kind</span> <span class="o">==</span> <span class="n">kind</span><span class="p">:</span>
                     <span class="n">atom_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">atom</span><span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">return</span> <span class="n">atom_list</span>
+        <span class="k">return</span> <span class="n">atom_list</span>
 </div>
     <span class="nd">@property</span>
 <div class="viewcode-block" id="Compound.bonds"><a class="viewcode-back" href="../../mbuild.html#mbuild.compound.Compound.bonds">[docs]</a>    <span class="k">def</span> <span class="nf">bonds</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -257,21 +269,29 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">bond_list_by_kind</span><span class="p">()</span>
 </div>
 <div class="viewcode-block" id="Compound.yield_bonds"><a class="viewcode-back" href="../../mbuild.html#mbuild.compound.Compound.yield_bonds">[docs]</a>    <span class="k">def</span> <span class="nf">yield_bonds</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_yield_parts</span><span class="p">(</span><span class="n">Bond</span><span class="p">)</span>
 </div>
     <span class="nd">@property</span>
 <div class="viewcode-block" id="Compound.n_bonds"><a class="viewcode-back" href="../../mbuild.html#mbuild.compound.Compound.n_bonds">[docs]</a>    <span class="k">def</span> <span class="nf">n_bonds</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return the number of Bonds in the Compound. &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bonds</span><span class="p">)</span>
 </div>
 <div class="viewcode-block" id="Compound.bond_list_by_kind"><a class="viewcode-back" href="../../mbuild.html#mbuild.compound.Compound.bond_list_by_kind">[docs]</a>    <span class="k">def</span> <span class="nf">bond_list_by_kind</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">kind</span><span class="o">=</span><span class="s">&#39;*&#39;</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return a list of Bonds filtered by their kind.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            kind (str): Return only Bonds of this type. &#39;*&#39; indicates all.</span>
+<span class="sd">        Returns:</span>
+<span class="sd">            bond_list (list): A list of Bonds.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">bond_list</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">for</span> <span class="n">bond</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">yield_bonds</span><span class="p">():</span>
             <span class="k">if</span> <span class="n">kind</span> <span class="o">==</span> <span class="s">&#39;*&#39;</span><span class="p">:</span>
                 <span class="n">bond_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">bond</span><span class="p">)</span>
             <span class="k">elif</span> <span class="n">bond</span><span class="o">.</span><span class="n">kind</span> <span class="o">==</span> <span class="n">kind</span><span class="p">:</span>
                 <span class="n">bond_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">bond</span><span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">return</span> <span class="n">bond_list</span>
+        <span class="k">return</span> <span class="n">bond_list</span>
 </div>
 <div class="viewcode-block" id="Compound.referenced_ports"><a class="viewcode-back" href="../../mbuild.html#mbuild.compound.Compound.referenced_ports">[docs]</a>    <span class="k">def</span> <span class="nf">referenced_ports</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Find all Ports referenced by this Compound.</span>
@@ -283,9 +303,9 @@
         <span class="k">return</span> <span class="p">[</span><span class="n">port</span> <span class="k">for</span> <span class="n">port</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">labels</span><span class="o">.</span><span class="n">values</span><span class="p">()</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">port</span><span class="p">,</span> <span class="n">Port</span><span class="p">)]</span>
 </div>
     <span class="k">def</span> <span class="nf">_remove</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">removed_part</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;If removing an atom, make sure to remove the bonds it&#39;s part of. &quot;&quot;&quot;</span>
         <span class="nb">super</span><span class="p">(</span><span class="n">Compound</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">_remove</span><span class="p">(</span><span class="n">removed_part</span><span class="p">)</span>
 
-        <span class="c"># If removing an atom, make sure to remove the bonds it&#39;s part of.</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">removed_part</span><span class="p">,</span> <span class="n">Atom</span><span class="p">):</span>
             <span class="k">for</span> <span class="n">bond</span> <span class="ow">in</span> <span class="n">removed_part</span><span class="o">.</span><span class="n">bonds</span><span class="p">:</span>
                 <span class="k">if</span> <span class="n">bond</span><span class="o">.</span><span class="n">parent</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
@@ -324,14 +344,23 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">to_trajectory</span><span class="p">()</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
 </div>
-<div class="viewcode-block" id="Compound.to_trajectory"><a class="viewcode-back" href="../../mbuild.html#mbuild.compound.Compound.to_trajectory">[docs]</a>    <span class="k">def</span> <span class="nf">to_trajectory</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">show_ports</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+<div class="viewcode-block" id="Compound.to_trajectory"><a class="viewcode-back" href="../../mbuild.html#mbuild.compound.Compound.to_trajectory">[docs]</a>    <span class="k">def</span> <span class="nf">to_trajectory</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">show_ports</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Convert the Compound to a Trajectory. &quot;&quot;&quot;</span>
         <span class="kn">from</span> <span class="nn">mbuild.trajectory</span> <span class="kn">import</span> <span class="n">Trajectory</span>
 
-        <span class="k">return</span> <span class="n">Trajectory</span><span class="o">.</span><span class="n">from_compound</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">show_ports</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">Trajectory</span><span class="o">.</span><span class="n">from_compound</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">show_ports</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
 </div>
     <span class="nd">@classmethod</span>
 <div class="viewcode-block" id="Compound.load"><a class="viewcode-back" href="../../mbuild.html#mbuild.compound.Compound.load">[docs]</a>    <span class="k">def</span> <span class="nf">load</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">relative_to_module</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">frame</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Load a file into a Compound.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            filename:</span>
+<span class="sd">            relative_to_module:</span>
+<span class="sd">            frame:</span>
+<span class="sd">        Returns:</span>
+<span class="sd">            Compound</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="kn">from</span> <span class="nn">mbuild.trajectory</span> <span class="kn">import</span> <span class="n">Trajectory</span>
 
         <span class="n">traj</span> <span class="o">=</span> <span class="n">Trajectory</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">relative_to_module</span><span class="o">=</span><span class="n">relative_to_module</span><span class="p">)</span>
@@ -355,18 +384,19 @@
         <span class="k">try</span><span class="p">:</span>
             <span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="s">&#39;vmd {}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">filename</span><span class="p">))</span>
         <span class="k">except</span> <span class="ne">OSError</span><span class="p">:</span>
-            <span class="k">print</span><span class="p">(</span><span class="s">&quot;Visualization with VMD failed. Make sure you it is installed&quot;</span>
+            <span class="k">print</span><span class="p">(</span><span class="s">&quot;Visualization with VMD failed. Make sure it is installed&quot;</span>
                   <span class="s">&quot;correctly and launchable from the command line via &#39;vmd&#39;.&quot;</span><span class="p">)</span>
 </div>
-<div class="viewcode-block" id="Compound.min_periodic_distance"><a class="viewcode-back" href="../../mbuild.html#mbuild.compound.Compound.min_periodic_distance">[docs]</a>    <span class="k">def</span> <span class="nf">min_periodic_distance</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x0</span><span class="p">,</span> <span class="n">x1</span><span class="p">):</span>
+<div class="viewcode-block" id="Compound.min_periodic_distance"><a class="viewcode-back" href="../../mbuild.html#mbuild.compound.Compound.min_periodic_distance">[docs]</a>    <span class="k">def</span> <span class="nf">min_periodic_distance</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">xyz0</span><span class="p">,</span> <span class="n">xyz1</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Vectorized distance calculation considering minimum image. &quot;&quot;&quot;</span>
-        <span class="n">d</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">x0</span> <span class="o">-</span> <span class="n">x1</span><span class="p">)</span>
+        <span class="n">d</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">xyz0</span> <span class="o">-</span> <span class="n">xyz1</span><span class="p">)</span>
         <span class="n">d</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">d</span> <span class="o">&gt;</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">periodicity</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">periodicity</span> <span class="o">-</span> <span class="n">d</span><span class="p">,</span> <span class="n">d</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">((</span><span class="n">d</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">))</span>
 </div>
     <span class="nd">@property</span>
 <div class="viewcode-block" id="Compound.center"><a class="viewcode-back" href="../../mbuild.html#mbuild.compound.Compound.center">[docs]</a>    <span class="k">def</span> <span class="nf">center</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="nb">sum</span><span class="p">(</span><span class="n">atom</span><span class="o">.</span><span class="n">pos</span> <span class="k">for</span> <span class="n">atom</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">yield_atoms</span><span class="p">())</span> <span class="o">/</span> <span class="nb">len</span><span class="p">([</span><span class="n">atom</span> <span class="k">for</span> <span class="n">atom</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">yield_atoms</span><span class="p">()])</span>
+        <span class="sd">&quot;&quot;&quot;The cartesian center of the Compound based on its Atoms. &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">sum</span><span class="p">(</span><span class="n">atom</span><span class="o">.</span><span class="n">pos</span> <span class="k">for</span> <span class="n">atom</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">atoms</span><span class="p">)</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_atoms</span>
 </div>
 <div class="viewcode-block" id="Compound.boundingbox"><a class="viewcode-back" href="../../mbuild.html#mbuild.compound.Compound.boundingbox">[docs]</a>    <span class="k">def</span> <span class="nf">boundingbox</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">excludeG</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Compute the bounding box of the compound.</span>
@@ -384,21 +414,21 @@
         <span class="n">maxy</span> <span class="o">=</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span>
         <span class="n">maxz</span> <span class="o">=</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span>
 
-        <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">yield_atoms</span><span class="p">():</span>
-            <span class="k">if</span> <span class="n">excludeG</span> <span class="ow">and</span> <span class="n">a</span><span class="o">.</span><span class="n">kind</span> <span class="o">==</span> <span class="s">&#39;G&#39;</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">atom</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">yield_atoms</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">excludeG</span> <span class="ow">and</span> <span class="n">atom</span><span class="o">.</span><span class="n">kind</span> <span class="o">==</span> <span class="s">&#39;G&#39;</span><span class="p">:</span>
                 <span class="k">continue</span>
-            <span class="k">if</span> <span class="n">a</span><span class="o">.</span><span class="n">pos</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">minx</span><span class="p">:</span>
-                <span class="n">minx</span> <span class="o">=</span> <span class="n">a</span><span class="o">.</span><span class="n">pos</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-            <span class="k">if</span> <span class="n">a</span><span class="o">.</span><span class="n">pos</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">maxx</span><span class="p">:</span>
-                <span class="n">maxx</span> <span class="o">=</span> <span class="n">a</span><span class="o">.</span><span class="n">pos</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-            <span class="k">if</span> <span class="n">a</span><span class="o">.</span><span class="n">pos</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">miny</span><span class="p">:</span>
-                <span class="n">miny</span> <span class="o">=</span> <span class="n">a</span><span class="o">.</span><span class="n">pos</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
-            <span class="k">if</span> <span class="n">a</span><span class="o">.</span><span class="n">pos</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">maxy</span><span class="p">:</span>
-                <span class="n">maxy</span> <span class="o">=</span> <span class="n">a</span><span class="o">.</span><span class="n">pos</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
-            <span class="k">if</span> <span class="n">a</span><span class="o">.</span><span class="n">pos</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">minz</span><span class="p">:</span>
-                <span class="n">minz</span> <span class="o">=</span> <span class="n">a</span><span class="o">.</span><span class="n">pos</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
-            <span class="k">if</span> <span class="n">a</span><span class="o">.</span><span class="n">pos</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">maxz</span><span class="p">:</span>
-                <span class="n">maxz</span> <span class="o">=</span> <span class="n">a</span><span class="o">.</span><span class="n">pos</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">atom</span><span class="o">.</span><span class="n">pos</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">minx</span><span class="p">:</span>
+                <span class="n">minx</span> <span class="o">=</span> <span class="n">atom</span><span class="o">.</span><span class="n">pos</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">atom</span><span class="o">.</span><span class="n">pos</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">maxx</span><span class="p">:</span>
+                <span class="n">maxx</span> <span class="o">=</span> <span class="n">atom</span><span class="o">.</span><span class="n">pos</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">atom</span><span class="o">.</span><span class="n">pos</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">miny</span><span class="p">:</span>
+                <span class="n">miny</span> <span class="o">=</span> <span class="n">atom</span><span class="o">.</span><span class="n">pos</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">atom</span><span class="o">.</span><span class="n">pos</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">maxy</span><span class="p">:</span>
+                <span class="n">maxy</span> <span class="o">=</span> <span class="n">atom</span><span class="o">.</span><span class="n">pos</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">atom</span><span class="o">.</span><span class="n">pos</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">minz</span><span class="p">:</span>
+                <span class="n">minz</span> <span class="o">=</span> <span class="n">atom</span><span class="o">.</span><span class="n">pos</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">atom</span><span class="o">.</span><span class="n">pos</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">maxz</span><span class="p">:</span>
+                <span class="n">maxz</span> <span class="o">=</span> <span class="n">atom</span><span class="o">.</span><span class="n">pos</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
 
         <span class="n">min_coords</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">minx</span><span class="p">,</span> <span class="n">miny</span><span class="p">,</span> <span class="n">minz</span><span class="p">])</span>
         <span class="n">max_coords</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">maxx</span><span class="p">,</span> <span class="n">maxy</span><span class="p">,</span> <span class="n">maxz</span><span class="p">])</span>
@@ -426,15 +456,15 @@
         <span class="n">box</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">boundingbox</span><span class="p">()</span>
         <span class="n">translate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">-</span><span class="n">box</span><span class="o">.</span><span class="n">mins</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">atom</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">yield_atoms</span><span class="p">():</span>
-            <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">c</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">atom</span><span class="o">.</span><span class="n">pos</span><span class="p">):</span>
-                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">periodicity</span><span class="p">[</span><span class="n">k</span><span class="p">]:</span>
-                    <span class="k">if</span> <span class="n">c</span> <span class="o">&lt;</span> <span class="mf">0.0</span><span class="p">:</span>
-                        <span class="n">atom</span><span class="o">.</span><span class="n">pos</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">periodicity</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">+</span> <span class="n">c</span>
-                    <span class="k">if</span> <span class="n">c</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">periodicity</span><span class="p">[</span><span class="n">k</span><span class="p">]:</span>
-                        <span class="n">atom</span><span class="o">.</span><span class="n">pos</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">c</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">periodicity</span><span class="p">[</span><span class="n">k</span><span class="p">]</span>
+            <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">coordinate</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">atom</span><span class="o">.</span><span class="n">pos</span><span class="p">):</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">periodicity</span><span class="p">[</span><span class="n">i</span><span class="p">]:</span>
+                    <span class="k">if</span> <span class="n">coordinate</span> <span class="o">&lt;</span> <span class="mf">0.0</span><span class="p">:</span>
+                        <span class="n">atom</span><span class="o">.</span><span class="n">pos</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">periodicity</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+</span> <span class="n">coordinate</span>
+                    <span class="k">if</span> <span class="n">coordinate</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">periodicity</span><span class="p">[</span><span class="n">i</span><span class="p">]:</span>
+                        <span class="n">atom</span><span class="o">.</span><span class="n">pos</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">coordinate</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">periodicity</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
 </div>
 <div class="viewcode-block" id="Compound.add_bond"><a class="viewcode-back" href="../../mbuild.html#mbuild.compound.Compound.add_bond">[docs]</a>    <span class="k">def</span> <span class="nf">add_bond</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">type_a</span><span class="p">,</span> <span class="n">type_b</span><span class="p">,</span> <span class="n">dmin</span><span class="p">,</span> <span class="n">dmax</span><span class="p">,</span> <span class="n">kind</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Add Bonds between all pairs of Atoms of types a/b within [dmin, dmax].</span>
+        <span class="sd">&quot;&quot;&quot;Add Bonds between all Atom pairs of types a/b within [dmin, dmax].</span>
 
 <span class="sd">        TODO: testing for periodic boundaries.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -460,7 +490,7 @@
         <span class="n">newone</span><span class="o">.</span><span class="n">labels</span> <span class="o">=</span> <span class="n">OrderedDict</span><span class="p">()</span>
         <span class="n">newone</span><span class="o">.</span><span class="n">referrers</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
 
-        <span class="c"># Copy the parent of everybody, except topmost Compound being deepcopied.</span>
+        <span class="c"># Copy the parent of everyone, except topmost Compound being deepcopied.</span>
         <span class="k">if</span> <span class="n">memo</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="p">:</span>
             <span class="n">newone</span><span class="o">.</span><span class="n">parent</span> <span class="o">=</span> <span class="bp">None</span>
         <span class="k">else</span><span class="p">:</span>
@@ -489,6 +519,8 @@
         <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">referrers</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">memo</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="ow">in</span> <span class="n">r</span><span class="o">.</span><span class="n">ancestors</span><span class="p">():</span>
                 <span class="n">newone</span><span class="o">.</span><span class="n">referrers</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="n">memo</span><span class="p">))</span>
+
+        <span class="n">newone</span><span class="o">.</span><span class="n">_extras</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_extras</span><span class="p">,</span> <span class="n">memo</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="n">newone</span></div>
 </pre></div>

@@ -81,7 +81,7 @@
 <li class="toctree-l2"><a class="reference internal" href="apidoc/mbuild.html#module-mbuild.compound">mbuild.compound module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="apidoc/mbuild.html#module-mbuild.coordinate_transform">mbuild.coordinate_transform module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="apidoc/mbuild.html#module-mbuild.has_parts_mixin">mbuild.has_parts_mixin module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="apidoc/mbuild.html#module-mbuild.mbase">mbuild.mbase module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="apidoc/mbuild.html#mbuild-mbase-module">mbuild.mbase module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="apidoc/mbuild.html#module-mbuild.orderedset">mbuild.orderedset module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="apidoc/mbuild.html#module-mbuild.part_mixin">mbuild.part_mixin module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="apidoc/mbuild.html#module-mbuild.periodic_kdtree">mbuild.periodic_kdtree module</a></li>
@@ -276,7 +276,7 @@
 <dl class="class">
 <dt id="mbuild.atom.Atom">
 <em class="property">class </em><tt class="descclassname">mbuild.atom.</tt><tt class="descname">Atom</tt><big>(</big><em>kind</em>, <em>pos=None</em>, <em>charge=0.0</em><big>)</big><a class="reference internal" href="_modules/mbuild/atom.html#Atom"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.atom.Atom" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="#mbuild.mbase.MBase" title="mbuild.mbase.MBase"><tt class="xref py py-class docutils literal"><span class="pre">mbuild.mbase.MBase</span></tt></a>, <a class="reference internal" href="#mbuild.part_mixin.PartMixin" title="mbuild.part_mixin.PartMixin"><tt class="xref py py-class docutils literal"><span class="pre">mbuild.part_mixin.PartMixin</span></tt></a></p>
+<dd><p>Bases: <a class="reference internal" href="#mbuild.part_mixin.PartMixin" title="mbuild.part_mixin.PartMixin"><tt class="xref py py-class docutils literal"><span class="pre">mbuild.part_mixin.PartMixin</span></tt></a></p>
 <p>Elementary container class - typically a leaf in the hierarchy.</p>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
@@ -399,8 +399,8 @@ hierarchy.</td>
 
 <dl class="method">
 <dt id="mbuild.atom.Atom.bonded_atoms">
-<tt class="descname">bonded_atoms</tt><big>(</big><em>memo={}</em><big>)</big><a class="reference internal" href="_modules/mbuild/atom.html#Atom.bonded_atoms"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.atom.Atom.bonded_atoms" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return a list of atoms bonded to self.</p>
+<tt class="descname">bonded_atoms</tt><big>(</big><em>memo=None</em><big>)</big><a class="reference internal" href="_modules/mbuild/atom.html#Atom.bonded_atoms"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.atom.Atom.bonded_atoms" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a list of Atoms bonded to self.</p>
 </dd></dl>
 
 <dl class="attribute">
@@ -416,7 +416,8 @@ hierarchy.</td>
 <dl class="attribute">
 <dt id="mbuild.atom.Atom.extras">
 <tt class="descname">extras</tt><a class="reference internal" href="_modules/mbuild/atom.html#Atom.extras"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.atom.Atom.extras" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Return the Atom&#8217;s optional, extra attributes.</p>
+</dd></dl>
 
 <dl class="attribute">
 <dt>
@@ -426,7 +427,8 @@ hierarchy.</td>
 <dl class="attribute">
 <dt id="mbuild.atom.Atom.neighbors">
 <tt class="descname">neighbors</tt><a class="reference internal" href="_modules/mbuild/atom.html#Atom.neighbors"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.atom.Atom.neighbors" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Return a list of all neighboring Atoms.</p>
+</dd></dl>
 
 <dl class="attribute">
 <dt>
@@ -456,7 +458,7 @@ hierarchy.</td>
 <dl class="class">
 <dt id="mbuild.bond.Bond">
 <em class="property">class </em><tt class="descclassname">mbuild.bond.</tt><tt class="descname">Bond</tt><big>(</big><em>atom1</em>, <em>atom2</em>, <em>kind=None</em><big>)</big><a class="reference internal" href="_modules/mbuild/bond.html#Bond"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.bond.Bond" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="#mbuild.mbase.MBase" title="mbuild.mbase.MBase"><tt class="xref py py-class docutils literal"><span class="pre">mbuild.mbase.MBase</span></tt></a>, <a class="reference internal" href="#mbuild.part_mixin.PartMixin" title="mbuild.part_mixin.PartMixin"><tt class="xref py py-class docutils literal"><span class="pre">mbuild.part_mixin.PartMixin</span></tt></a></p>
+<dd><p>Bases: <a class="reference internal" href="#mbuild.part_mixin.PartMixin" title="mbuild.part_mixin.PartMixin"><tt class="xref py py-class docutils literal"><span class="pre">mbuild.part_mixin.PartMixin</span></tt></a></p>
 <p>Connection between two Atoms.</p>
 <dl class="attribute">
 <dt id="mbuild.bond.Bond.atom1">
@@ -688,7 +690,7 @@ hierarchy.</td>
 <dl class="class">
 <dt id="mbuild.compound.Compound">
 <em class="property">class </em><tt class="descclassname">mbuild.compound.</tt><tt class="descname">Compound</tt><big>(</big><em>kind=None</em>, <em>periodicity=None</em><big>)</big><a class="reference internal" href="_modules/mbuild/compound.html#Compound"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.compound.Compound" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="#mbuild.mbase.MBase" title="mbuild.mbase.MBase"><tt class="xref py py-class docutils literal"><span class="pre">mbuild.mbase.MBase</span></tt></a>, <a class="reference internal" href="#mbuild.part_mixin.PartMixin" title="mbuild.part_mixin.PartMixin"><tt class="xref py py-class docutils literal"><span class="pre">mbuild.part_mixin.PartMixin</span></tt></a>, <a class="reference internal" href="#mbuild.has_parts_mixin.HasPartsMixin" title="mbuild.has_parts_mixin.HasPartsMixin"><tt class="xref py py-class docutils literal"><span class="pre">mbuild.has_parts_mixin.HasPartsMixin</span></tt></a></p>
+<dd><p>Bases: <a class="reference internal" href="#mbuild.part_mixin.PartMixin" title="mbuild.part_mixin.PartMixin"><tt class="xref py py-class docutils literal"><span class="pre">mbuild.part_mixin.PartMixin</span></tt></a>, <a class="reference internal" href="#mbuild.has_parts_mixin.HasPartsMixin" title="mbuild.has_parts_mixin.HasPartsMixin"><tt class="xref py py-class docutils literal"><span class="pre">mbuild.has_parts_mixin.HasPartsMixin</span></tt></a></p>
 <p>A building block in the mBuild hierarchy.</p>
 <p>Compound is the superclass of all composite building blocks in the mBuild
 hierarchy. That is, all composite building blocks must inherit from
@@ -705,6 +707,19 @@ Compound has built-in support for copying and deepcopying Compound
 hierarchies, enumerating atoms or bonds in the hierarchy, proximity based
 searches, visualization, I/O operations, and a number of other convenience
 methods.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>kind</strong> (<em>str, optional</em>) &#8211; The type of Compound. Defaults to the class&#8217; name.</li>
+<li><strong>periodicity</strong> (<em>np.ndarray, shape=(1, 3) optional</em>) &#8211; The periodic distance
+of the Compound in the x, y and z directions. Defaults to zeros.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
 <dl class="attribute">
 <dt id="mbuild.compound.Compound.kind">
 <tt class="descname">kind</tt><a class="headerlink" href="#mbuild.compound.Compound.kind" title="Permalink to this definition">¶</a></dt>
@@ -716,39 +731,40 @@ methods.</p>
 <dt id="mbuild.compound.Compound.periodicity">
 <tt class="descname">periodicity</tt><a class="headerlink" href="#mbuild.compound.Compound.periodicity" title="Permalink to this definition">¶</a></dt>
 <dd><p><em>np.ndarray</em></p>
-<p>The periodic distance of the
-Compound in the x, y and z directions.</p>
+<p>The periodic distance of the Compound in the
+x, y and z directions. Defaults to zeros.</p>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="mbuild.compound.Compound.parts">
 <tt class="descname">parts</tt><a class="headerlink" href="#mbuild.compound.Compound.parts" title="Permalink to this definition">¶</a></dt>
 <dd><p><em>OrderedSet</em></p>
-<p>All Atom, Bond and Compound instances that this
-Compound is a parent of.</p>
+<p>Contains all child parts. Parts can be Atom, Bond
+or Compound (they must inherit from PartMixin).</p>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="mbuild.compound.Compound.labels">
 <tt class="descname">labels</tt><a class="headerlink" href="#mbuild.compound.Compound.labels" title="Permalink to this definition">¶</a></dt>
 <dd><p><em>OrderedDict</em></p>
-<p>Strings referring to parts. This is primarily a
-convenience functionality.</p>
+<p>Labels to Compound/Atom mappings. These do not
+necessarily need not be in self.parts.</p>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="mbuild.compound.Compound.parent">
 <tt class="descname">parent</tt><a class="headerlink" href="#mbuild.compound.Compound.parent" title="Permalink to this definition">¶</a></dt>
 <dd><p><em>Compound</em></p>
-<p>Compound to which this Compound belongs.</p>
+<p>The parent Compound that contains this part Can be
+None if this compound is the root of the containment hierarchy.</p>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="mbuild.compound.Compound.referrers">
 <tt class="descname">referrers</tt><a class="headerlink" href="#mbuild.compound.Compound.referrers" title="Permalink to this definition">¶</a></dt>
-<dd><p><em>set of Compound</em></p>
-<p>Compounds with labels referring to this
-Compound.</p>
+<dd><p><em>set</em></p>
+<p>Other compounds that reference this part with
+labels.</p>
 </dd></dl>
 
 <dl class="attribute">
@@ -829,6 +845,10 @@ instead be used to add a reference to the part to self.labels. See
 <li><strong>new_part</strong> (<em>Atom, Bond or Compound</em>) &#8211; The object to be added to this
 Compound.</li>
 <li><strong>label</strong> (<em>str, optional</em>) &#8211; A descriptive string for the part.</li>
+<li><strong>containment</strong> (<em>bool, optional</em>) &#8211; Add the part to self.parts. Defaults
+to True.</li>
+<li><strong>replace</strong> (<em>bool, optional</em>) &#8211; Replace the label if it already exists.
+Defaults to False.</li>
 </ul>
 </td>
 </tr>
@@ -839,7 +859,7 @@ Compound.</li>
 <dl class="method">
 <dt id="mbuild.compound.Compound.add_bond">
 <tt class="descname">add_bond</tt><big>(</big><em>type_a</em>, <em>type_b</em>, <em>dmin</em>, <em>dmax</em>, <em>kind=None</em><big>)</big><a class="reference internal" href="_modules/mbuild/compound.html#Compound.add_bond"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.compound.Compound.add_bond" title="Permalink to this definition">¶</a></dt>
-<dd><p>Add Bonds between all pairs of Atoms of types a/b within [dmin, dmax].</p>
+<dd><p>Add Bonds between all Atom pairs of types a/b within [dmin, dmax].</p>
 <p>TODO: testing for periodic boundaries.</p>
 </dd></dl>
 
@@ -927,7 +947,21 @@ A list of Atoms.</p>
 <dl class="method">
 <dt id="mbuild.compound.Compound.bond_list_by_kind">
 <tt class="descname">bond_list_by_kind</tt><big>(</big><em>kind='*'</em><big>)</big><a class="reference internal" href="_modules/mbuild/compound.html#Compound.bond_list_by_kind"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.compound.Compound.bond_list_by_kind" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Return a list of Bonds filtered by their kind.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>kind</strong> (<a class="reference external" href="http://docs.python.org/2.7/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Return only Bonds of this type. &#8216;*&#8217; indicates all.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>bond_list</strong> &#8211;
+A list of Bonds.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">list</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
 
 <dl class="attribute">
 <dt id="mbuild.compound.Compound.bonds">
@@ -957,28 +991,46 @@ Ports).</td>
 <dl class="attribute">
 <dt id="mbuild.compound.Compound.center">
 <tt class="descname">center</tt><a class="reference internal" href="_modules/mbuild/compound.html#Compound.center"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.compound.Compound.center" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>The cartesian center of the Compound based on its Atoms.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="mbuild.compound.Compound.extras">
+<tt class="descname">extras</tt><a class="reference internal" href="_modules/mbuild/compound.html#Compound.extras"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.compound.Compound.extras" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the Compound&#8217;s optional, extra attributes.</p>
+</dd></dl>
 
 <dl class="classmethod">
 <dt id="mbuild.compound.Compound.load">
 <em class="property">classmethod </em><tt class="descname">load</tt><big>(</big><em>filename</em>, <em>relative_to_module=None</em>, <em>frame=0</em><big>)</big><a class="reference internal" href="_modules/mbuild/compound.html#Compound.load"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.compound.Compound.load" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Load a file into a Compound.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">Compound</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
 
 <dl class="method">
 <dt id="mbuild.compound.Compound.min_periodic_distance">
-<tt class="descname">min_periodic_distance</tt><big>(</big><em>x0</em>, <em>x1</em><big>)</big><a class="reference internal" href="_modules/mbuild/compound.html#Compound.min_periodic_distance"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.compound.Compound.min_periodic_distance" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">min_periodic_distance</tt><big>(</big><em>xyz0</em>, <em>xyz1</em><big>)</big><a class="reference internal" href="_modules/mbuild/compound.html#Compound.min_periodic_distance"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.compound.Compound.min_periodic_distance" title="Permalink to this definition">¶</a></dt>
 <dd><p>Vectorized distance calculation considering minimum image.</p>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="mbuild.compound.Compound.n_atoms">
 <tt class="descname">n_atoms</tt><a class="reference internal" href="_modules/mbuild/compound.html#Compound.n_atoms"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.compound.Compound.n_atoms" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Return the number of Atoms in the Compound.</p>
+</dd></dl>
 
 <dl class="attribute">
 <dt id="mbuild.compound.Compound.n_bonds">
 <tt class="descname">n_bonds</tt><a class="reference internal" href="_modules/mbuild/compound.html#Compound.n_bonds"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.compound.Compound.n_bonds" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Return the number of Bonds in the Compound.</p>
+</dd></dl>
 
 <dl class="method">
 <dt id="mbuild.compound.Compound.referenced_ports">
@@ -1002,7 +1054,7 @@ Ports).</td>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>objs_to_remove</strong> (<em>set of parts</em>) &#8211; All objects to be removed from the
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>objs_to_remove</strong> (<em>set of Parts</em>) &#8211; All objects to be removed from the
 hierarchy. If this is not a set, it will be cast to one to
 remove duplicates.</td>
 </tr>
@@ -1019,7 +1071,7 @@ remove duplicates.</td>
 
 <dl class="method">
 <dt id="mbuild.compound.Compound.to_trajectory">
-<tt class="descname">to_trajectory</tt><big>(</big><em>show_ports=False</em><big>)</big><a class="reference internal" href="_modules/mbuild/compound.html#Compound.to_trajectory"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.compound.Compound.to_trajectory" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">to_trajectory</tt><big>(</big><em>show_ports=False</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="_modules/mbuild/compound.html#Compound.to_trajectory"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.compound.Compound.to_trajectory" title="Permalink to this definition">¶</a></dt>
 <dd><p>Convert the Compound to a Trajectory.</p>
 </dd></dl>
 
@@ -1130,19 +1182,20 @@ remove duplicates.</td>
 </dd></dl>
 
 <dl class="method">
-<dt id="mbuild.coordinate_transform.AxisTransform.applyInverseTo">
-<tt class="descname">applyInverseTo</tt><big>(</big><em>A</em><big>)</big><a class="headerlink" href="#mbuild.coordinate_transform.AxisTransform.applyInverseTo" title="Permalink to this definition">¶</a></dt>
-<dd><p>Apply the inverse coordinate transformation to points in A
-:param A: list of points (nx3)
-:return: transformed list of points (nx3)</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="mbuild.coordinate_transform.AxisTransform.applyTo">
-<tt class="descname">applyTo</tt><big>(</big><em>A</em><big>)</big><a class="headerlink" href="#mbuild.coordinate_transform.AxisTransform.applyTo" title="Permalink to this definition">¶</a></dt>
-<dd><p>Apply the coordinate transformation to points in A
-:param A: list of points (nx3)
-:return: transformed list of points (nx3)</p>
+<dt id="mbuild.coordinate_transform.AxisTransform.apply_to">
+<tt class="descname">apply_to</tt><big>(</big><em>A</em><big>)</big><a class="headerlink" href="#mbuild.coordinate_transform.AxisTransform.apply_to" title="Permalink to this definition">¶</a></dt>
+<dd><p>Apply the coordinate transformation to points in A.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>A</strong> (<em>np.array, shape=(n, 3)</em>) &#8211; An array of points.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">transformed points (np.array, shape=(n, 3)): The transformed points
+from A.</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 </dd></dl>
@@ -1212,19 +1265,20 @@ remove duplicates.</td>
 </dd></dl>
 
 <dl class="method">
-<dt id="mbuild.coordinate_transform.ChangeOfBasis.applyInverseTo">
-<tt class="descname">applyInverseTo</tt><big>(</big><em>A</em><big>)</big><a class="headerlink" href="#mbuild.coordinate_transform.ChangeOfBasis.applyInverseTo" title="Permalink to this definition">¶</a></dt>
-<dd><p>Apply the inverse coordinate transformation to points in A
-:param A: list of points (nx3)
-:return: transformed list of points (nx3)</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="mbuild.coordinate_transform.ChangeOfBasis.applyTo">
-<tt class="descname">applyTo</tt><big>(</big><em>A</em><big>)</big><a class="headerlink" href="#mbuild.coordinate_transform.ChangeOfBasis.applyTo" title="Permalink to this definition">¶</a></dt>
-<dd><p>Apply the coordinate transformation to points in A
-:param A: list of points (nx3)
-:return: transformed list of points (nx3)</p>
+<dt id="mbuild.coordinate_transform.ChangeOfBasis.apply_to">
+<tt class="descname">apply_to</tt><big>(</big><em>A</em><big>)</big><a class="headerlink" href="#mbuild.coordinate_transform.ChangeOfBasis.apply_to" title="Permalink to this definition">¶</a></dt>
+<dd><p>Apply the coordinate transformation to points in A.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>A</strong> (<em>np.array, shape=(n, 3)</em>) &#8211; An array of points.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">transformed points (np.array, shape=(n, 3)): The transformed points
+from A.</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 </dd></dl>
@@ -1294,19 +1348,20 @@ remove duplicates.</td>
 </dd></dl>
 
 <dl class="method">
-<dt id="mbuild.coordinate_transform.CoordinateTransform.applyInverseTo">
-<tt class="descname">applyInverseTo</tt><big>(</big><em>A</em><big>)</big><a class="reference internal" href="_modules/mbuild/coordinate_transform.html#CoordinateTransform.applyInverseTo"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.coordinate_transform.CoordinateTransform.applyInverseTo" title="Permalink to this definition">¶</a></dt>
-<dd><p>Apply the inverse coordinate transformation to points in A
-:param A: list of points (nx3)
-:return: transformed list of points (nx3)</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="mbuild.coordinate_transform.CoordinateTransform.applyTo">
-<tt class="descname">applyTo</tt><big>(</big><em>A</em><big>)</big><a class="reference internal" href="_modules/mbuild/coordinate_transform.html#CoordinateTransform.applyTo"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.coordinate_transform.CoordinateTransform.applyTo" title="Permalink to this definition">¶</a></dt>
-<dd><p>Apply the coordinate transformation to points in A
-:param A: list of points (nx3)
-:return: transformed list of points (nx3)</p>
+<dt id="mbuild.coordinate_transform.CoordinateTransform.apply_to">
+<tt class="descname">apply_to</tt><big>(</big><em>A</em><big>)</big><a class="reference internal" href="_modules/mbuild/coordinate_transform.html#CoordinateTransform.apply_to"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.coordinate_transform.CoordinateTransform.apply_to" title="Permalink to this definition">¶</a></dt>
+<dd><p>Apply the coordinate transformation to points in A.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>A</strong> (<em>np.array, shape=(n, 3)</em>) &#8211; An array of points.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">transformed points (np.array, shape=(n, 3)): The transformed points
+from A.</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 </dd></dl>
@@ -1315,11 +1370,8 @@ remove duplicates.</td>
 <dt id="mbuild.coordinate_transform.RigidTransform">
 <em class="property">class </em><tt class="descclassname">mbuild.coordinate_transform.</tt><tt class="descname">RigidTransform</tt><big>(</big><em>A</em>, <em>B</em><big>)</big><a class="reference internal" href="_modules/mbuild/coordinate_transform.html#RigidTransform"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.coordinate_transform.RigidTransform" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#mbuild.coordinate_transform.CoordinateTransform" title="mbuild.coordinate_transform.CoordinateTransform"><tt class="xref py py-class docutils literal"><span class="pre">mbuild.coordinate_transform.CoordinateTransform</span></tt></a></p>
-<p>Computes the rigid transformation that maps points A to points B
-see <a class="reference external" href="http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.173.2196&amp;rep=rep1&amp;type=pdf">http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.173.2196&amp;rep=rep1&amp;type=pdf</a>
-:param A: list of points (nx3) in source coordinate system
-:param B: list of points (nx3) in destination coordinate system
-:return: the CoordinateTransformation object</p>
+<p>Computes the rigid transformation that maps points A to points B.</p>
+<p>See <a class="reference external" href="http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.173.2196&amp;rep=rep1&amp;type=pdf">http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.173.2196&amp;rep=rep1&amp;type=pdf</a></p>
 <dl class="attribute">
 <dt id="mbuild.coordinate_transform.RigidTransform.__delattr__">
 <tt class="descname">__delattr__</tt><a class="headerlink" href="#mbuild.coordinate_transform.RigidTransform.__delattr__" title="Permalink to this definition">¶</a></dt>
@@ -1381,19 +1433,20 @@ see <a class="reference external" href="http://citeseerx.ist.psu.edu/viewdoc/dow
 </dd></dl>
 
 <dl class="method">
-<dt id="mbuild.coordinate_transform.RigidTransform.applyInverseTo">
-<tt class="descname">applyInverseTo</tt><big>(</big><em>A</em><big>)</big><a class="headerlink" href="#mbuild.coordinate_transform.RigidTransform.applyInverseTo" title="Permalink to this definition">¶</a></dt>
-<dd><p>Apply the inverse coordinate transformation to points in A
-:param A: list of points (nx3)
-:return: transformed list of points (nx3)</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="mbuild.coordinate_transform.RigidTransform.applyTo">
-<tt class="descname">applyTo</tt><big>(</big><em>A</em><big>)</big><a class="headerlink" href="#mbuild.coordinate_transform.RigidTransform.applyTo" title="Permalink to this definition">¶</a></dt>
-<dd><p>Apply the coordinate transformation to points in A
-:param A: list of points (nx3)
-:return: transformed list of points (nx3)</p>
+<dt id="mbuild.coordinate_transform.RigidTransform.apply_to">
+<tt class="descname">apply_to</tt><big>(</big><em>A</em><big>)</big><a class="headerlink" href="#mbuild.coordinate_transform.RigidTransform.apply_to" title="Permalink to this definition">¶</a></dt>
+<dd><p>Apply the coordinate transformation to points in A.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>A</strong> (<em>np.array, shape=(n, 3)</em>) &#8211; An array of points.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">transformed points (np.array, shape=(n, 3)): The transformed points
+from A.</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 </dd></dl>
@@ -1402,6 +1455,7 @@ see <a class="reference external" href="http://citeseerx.ist.psu.edu/viewdoc/dow
 <dt id="mbuild.coordinate_transform.Rotation">
 <em class="property">class </em><tt class="descclassname">mbuild.coordinate_transform.</tt><tt class="descname">Rotation</tt><big>(</big><em>theta</em>, <em>around</em><big>)</big><a class="reference internal" href="_modules/mbuild/coordinate_transform.html#Rotation"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.coordinate_transform.Rotation" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#mbuild.coordinate_transform.CoordinateTransform" title="mbuild.coordinate_transform.CoordinateTransform"><tt class="xref py py-class docutils literal"><span class="pre">mbuild.coordinate_transform.CoordinateTransform</span></tt></a></p>
+<p>Rotation around vector by angle theta.</p>
 <dl class="attribute">
 <dt id="mbuild.coordinate_transform.Rotation.__delattr__">
 <tt class="descname">__delattr__</tt><a class="headerlink" href="#mbuild.coordinate_transform.Rotation.__delattr__" title="Permalink to this definition">¶</a></dt>
@@ -1463,19 +1517,20 @@ see <a class="reference external" href="http://citeseerx.ist.psu.edu/viewdoc/dow
 </dd></dl>
 
 <dl class="method">
-<dt id="mbuild.coordinate_transform.Rotation.applyInverseTo">
-<tt class="descname">applyInverseTo</tt><big>(</big><em>A</em><big>)</big><a class="headerlink" href="#mbuild.coordinate_transform.Rotation.applyInverseTo" title="Permalink to this definition">¶</a></dt>
-<dd><p>Apply the inverse coordinate transformation to points in A
-:param A: list of points (nx3)
-:return: transformed list of points (nx3)</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="mbuild.coordinate_transform.Rotation.applyTo">
-<tt class="descname">applyTo</tt><big>(</big><em>A</em><big>)</big><a class="headerlink" href="#mbuild.coordinate_transform.Rotation.applyTo" title="Permalink to this definition">¶</a></dt>
-<dd><p>Apply the coordinate transformation to points in A
-:param A: list of points (nx3)
-:return: transformed list of points (nx3)</p>
+<dt id="mbuild.coordinate_transform.Rotation.apply_to">
+<tt class="descname">apply_to</tt><big>(</big><em>A</em><big>)</big><a class="headerlink" href="#mbuild.coordinate_transform.Rotation.apply_to" title="Permalink to this definition">¶</a></dt>
+<dd><p>Apply the coordinate transformation to points in A.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>A</strong> (<em>np.array, shape=(n, 3)</em>) &#8211; An array of points.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">transformed points (np.array, shape=(n, 3)): The transformed points
+from A.</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 </dd></dl>
@@ -1484,6 +1539,7 @@ see <a class="reference external" href="http://citeseerx.ist.psu.edu/viewdoc/dow
 <dt id="mbuild.coordinate_transform.RotationAroundX">
 <em class="property">class </em><tt class="descclassname">mbuild.coordinate_transform.</tt><tt class="descname">RotationAroundX</tt><big>(</big><em>theta</em><big>)</big><a class="reference internal" href="_modules/mbuild/coordinate_transform.html#RotationAroundX"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.coordinate_transform.RotationAroundX" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#mbuild.coordinate_transform.CoordinateTransform" title="mbuild.coordinate_transform.CoordinateTransform"><tt class="xref py py-class docutils literal"><span class="pre">mbuild.coordinate_transform.CoordinateTransform</span></tt></a></p>
+<p>Rotation around the x-axis.</p>
 <dl class="attribute">
 <dt id="mbuild.coordinate_transform.RotationAroundX.__delattr__">
 <tt class="descname">__delattr__</tt><a class="headerlink" href="#mbuild.coordinate_transform.RotationAroundX.__delattr__" title="Permalink to this definition">¶</a></dt>
@@ -1545,19 +1601,20 @@ see <a class="reference external" href="http://citeseerx.ist.psu.edu/viewdoc/dow
 </dd></dl>
 
 <dl class="method">
-<dt id="mbuild.coordinate_transform.RotationAroundX.applyInverseTo">
-<tt class="descname">applyInverseTo</tt><big>(</big><em>A</em><big>)</big><a class="headerlink" href="#mbuild.coordinate_transform.RotationAroundX.applyInverseTo" title="Permalink to this definition">¶</a></dt>
-<dd><p>Apply the inverse coordinate transformation to points in A
-:param A: list of points (nx3)
-:return: transformed list of points (nx3)</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="mbuild.coordinate_transform.RotationAroundX.applyTo">
-<tt class="descname">applyTo</tt><big>(</big><em>A</em><big>)</big><a class="headerlink" href="#mbuild.coordinate_transform.RotationAroundX.applyTo" title="Permalink to this definition">¶</a></dt>
-<dd><p>Apply the coordinate transformation to points in A
-:param A: list of points (nx3)
-:return: transformed list of points (nx3)</p>
+<dt id="mbuild.coordinate_transform.RotationAroundX.apply_to">
+<tt class="descname">apply_to</tt><big>(</big><em>A</em><big>)</big><a class="headerlink" href="#mbuild.coordinate_transform.RotationAroundX.apply_to" title="Permalink to this definition">¶</a></dt>
+<dd><p>Apply the coordinate transformation to points in A.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>A</strong> (<em>np.array, shape=(n, 3)</em>) &#8211; An array of points.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">transformed points (np.array, shape=(n, 3)): The transformed points
+from A.</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 </dd></dl>
@@ -1566,6 +1623,7 @@ see <a class="reference external" href="http://citeseerx.ist.psu.edu/viewdoc/dow
 <dt id="mbuild.coordinate_transform.RotationAroundY">
 <em class="property">class </em><tt class="descclassname">mbuild.coordinate_transform.</tt><tt class="descname">RotationAroundY</tt><big>(</big><em>theta</em><big>)</big><a class="reference internal" href="_modules/mbuild/coordinate_transform.html#RotationAroundY"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.coordinate_transform.RotationAroundY" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#mbuild.coordinate_transform.CoordinateTransform" title="mbuild.coordinate_transform.CoordinateTransform"><tt class="xref py py-class docutils literal"><span class="pre">mbuild.coordinate_transform.CoordinateTransform</span></tt></a></p>
+<p>Rotation around the y-axis.</p>
 <dl class="attribute">
 <dt id="mbuild.coordinate_transform.RotationAroundY.__delattr__">
 <tt class="descname">__delattr__</tt><a class="headerlink" href="#mbuild.coordinate_transform.RotationAroundY.__delattr__" title="Permalink to this definition">¶</a></dt>
@@ -1627,19 +1685,20 @@ see <a class="reference external" href="http://citeseerx.ist.psu.edu/viewdoc/dow
 </dd></dl>
 
 <dl class="method">
-<dt id="mbuild.coordinate_transform.RotationAroundY.applyInverseTo">
-<tt class="descname">applyInverseTo</tt><big>(</big><em>A</em><big>)</big><a class="headerlink" href="#mbuild.coordinate_transform.RotationAroundY.applyInverseTo" title="Permalink to this definition">¶</a></dt>
-<dd><p>Apply the inverse coordinate transformation to points in A
-:param A: list of points (nx3)
-:return: transformed list of points (nx3)</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="mbuild.coordinate_transform.RotationAroundY.applyTo">
-<tt class="descname">applyTo</tt><big>(</big><em>A</em><big>)</big><a class="headerlink" href="#mbuild.coordinate_transform.RotationAroundY.applyTo" title="Permalink to this definition">¶</a></dt>
-<dd><p>Apply the coordinate transformation to points in A
-:param A: list of points (nx3)
-:return: transformed list of points (nx3)</p>
+<dt id="mbuild.coordinate_transform.RotationAroundY.apply_to">
+<tt class="descname">apply_to</tt><big>(</big><em>A</em><big>)</big><a class="headerlink" href="#mbuild.coordinate_transform.RotationAroundY.apply_to" title="Permalink to this definition">¶</a></dt>
+<dd><p>Apply the coordinate transformation to points in A.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>A</strong> (<em>np.array, shape=(n, 3)</em>) &#8211; An array of points.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">transformed points (np.array, shape=(n, 3)): The transformed points
+from A.</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 </dd></dl>
@@ -1648,6 +1707,7 @@ see <a class="reference external" href="http://citeseerx.ist.psu.edu/viewdoc/dow
 <dt id="mbuild.coordinate_transform.RotationAroundZ">
 <em class="property">class </em><tt class="descclassname">mbuild.coordinate_transform.</tt><tt class="descname">RotationAroundZ</tt><big>(</big><em>theta</em><big>)</big><a class="reference internal" href="_modules/mbuild/coordinate_transform.html#RotationAroundZ"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.coordinate_transform.RotationAroundZ" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#mbuild.coordinate_transform.CoordinateTransform" title="mbuild.coordinate_transform.CoordinateTransform"><tt class="xref py py-class docutils literal"><span class="pre">mbuild.coordinate_transform.CoordinateTransform</span></tt></a></p>
+<p>Rotation around the z-axis.</p>
 <dl class="attribute">
 <dt id="mbuild.coordinate_transform.RotationAroundZ.__delattr__">
 <tt class="descname">__delattr__</tt><a class="headerlink" href="#mbuild.coordinate_transform.RotationAroundZ.__delattr__" title="Permalink to this definition">¶</a></dt>
@@ -1709,19 +1769,20 @@ see <a class="reference external" href="http://citeseerx.ist.psu.edu/viewdoc/dow
 </dd></dl>
 
 <dl class="method">
-<dt id="mbuild.coordinate_transform.RotationAroundZ.applyInverseTo">
-<tt class="descname">applyInverseTo</tt><big>(</big><em>A</em><big>)</big><a class="headerlink" href="#mbuild.coordinate_transform.RotationAroundZ.applyInverseTo" title="Permalink to this definition">¶</a></dt>
-<dd><p>Apply the inverse coordinate transformation to points in A
-:param A: list of points (nx3)
-:return: transformed list of points (nx3)</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="mbuild.coordinate_transform.RotationAroundZ.applyTo">
-<tt class="descname">applyTo</tt><big>(</big><em>A</em><big>)</big><a class="headerlink" href="#mbuild.coordinate_transform.RotationAroundZ.applyTo" title="Permalink to this definition">¶</a></dt>
-<dd><p>Apply the coordinate transformation to points in A
-:param A: list of points (nx3)
-:return: transformed list of points (nx3)</p>
+<dt id="mbuild.coordinate_transform.RotationAroundZ.apply_to">
+<tt class="descname">apply_to</tt><big>(</big><em>A</em><big>)</big><a class="headerlink" href="#mbuild.coordinate_transform.RotationAroundZ.apply_to" title="Permalink to this definition">¶</a></dt>
+<dd><p>Apply the coordinate transformation to points in A.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>A</strong> (<em>np.array, shape=(n, 3)</em>) &#8211; An array of points.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">transformed points (np.array, shape=(n, 3)): The transformed points
+from A.</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 </dd></dl>
@@ -1730,6 +1791,7 @@ see <a class="reference external" href="http://citeseerx.ist.psu.edu/viewdoc/dow
 <dt id="mbuild.coordinate_transform.Translation">
 <em class="property">class </em><tt class="descclassname">mbuild.coordinate_transform.</tt><tt class="descname">Translation</tt><big>(</big><em>P</em><big>)</big><a class="reference internal" href="_modules/mbuild/coordinate_transform.html#Translation"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.coordinate_transform.Translation" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#mbuild.coordinate_transform.CoordinateTransform" title="mbuild.coordinate_transform.CoordinateTransform"><tt class="xref py py-class docutils literal"><span class="pre">mbuild.coordinate_transform.CoordinateTransform</span></tt></a></p>
+<p>Cartesian translation.</p>
 <dl class="attribute">
 <dt id="mbuild.coordinate_transform.Translation.__delattr__">
 <tt class="descname">__delattr__</tt><a class="headerlink" href="#mbuild.coordinate_transform.Translation.__delattr__" title="Permalink to this definition">¶</a></dt>
@@ -1791,29 +1853,68 @@ see <a class="reference external" href="http://citeseerx.ist.psu.edu/viewdoc/dow
 </dd></dl>
 
 <dl class="method">
-<dt id="mbuild.coordinate_transform.Translation.applyInverseTo">
-<tt class="descname">applyInverseTo</tt><big>(</big><em>A</em><big>)</big><a class="headerlink" href="#mbuild.coordinate_transform.Translation.applyInverseTo" title="Permalink to this definition">¶</a></dt>
-<dd><p>Apply the inverse coordinate transformation to points in A
-:param A: list of points (nx3)
-:return: transformed list of points (nx3)</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="mbuild.coordinate_transform.Translation.applyTo">
-<tt class="descname">applyTo</tt><big>(</big><em>A</em><big>)</big><a class="headerlink" href="#mbuild.coordinate_transform.Translation.applyTo" title="Permalink to this definition">¶</a></dt>
-<dd><p>Apply the coordinate transformation to points in A
-:param A: list of points (nx3)
-:return: transformed list of points (nx3)</p>
+<dt id="mbuild.coordinate_transform.Translation.apply_to">
+<tt class="descname">apply_to</tt><big>(</big><em>A</em><big>)</big><a class="headerlink" href="#mbuild.coordinate_transform.Translation.apply_to" title="Permalink to this definition">¶</a></dt>
+<dd><p>Apply the coordinate transformation to points in A.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>A</strong> (<em>np.array, shape=(n, 3)</em>) &#8211; An array of points.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">transformed points (np.array, shape=(n, 3)): The transformed points
+from A.</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 </dd></dl>
 
 <dl class="function">
+<dt id="mbuild.coordinate_transform.choose_correct_port">
+<tt class="descclassname">mbuild.coordinate_transform.</tt><tt class="descname">choose_correct_port</tt><big>(</big><em>from_port</em>, <em>to_port</em><big>)</big><a class="reference internal" href="_modules/mbuild/coordinate_transform.html#choose_correct_port"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.coordinate_transform.choose_correct_port" title="Permalink to this definition">¶</a></dt>
+<dd><p>Chooses the direction when using an equivalence transform on two Ports.</p>
+<p>Each Port object actually contains 2 sets of 4 atoms, either of which can be
+used to make a connection with an equivalence transform. This function
+chooses the set of 4 atoms that makes the anchor atoms not overlap which is
+the intended behavior for most use-cases.</p>
+<dl class="docutils">
+<dt>TODO: -Increase robustness for cases where the anchors are a different</dt>
+<dd><blockquote class="first">
+<div>distance from their respective ports.</div></blockquote>
+<p class="last">-Provide options in <cite>equivalence_transform</cite> to override this behavior.</p>
+</dd>
+</dl>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><strong>equivalence_pairs</strong> &#8211;
+Technically, a tuple of the Ports&#8217;<blockquote>
+<div>sub-Compounds (&#8216;up&#8217; or &#8216;down&#8217;) that are used to make the correct
+connection between components.</div></blockquote>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">2-tuple of Ports</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
 <dt id="mbuild.coordinate_transform.equivalence_transform">
-<tt class="descclassname">mbuild.coordinate_transform.</tt><tt class="descname">equivalence_transform</tt><big>(</big><em>compound</em>, <em>from_positions=None</em>, <em>to_positions=None</em>, <em>add_bond=True</em><big>)</big><a class="reference internal" href="_modules/mbuild/coordinate_transform.html#equivalence_transform"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.coordinate_transform.equivalence_transform" title="Permalink to this definition">¶</a></dt>
-<dd><p>Computes an affine transformation that maps the from_positions to the respective
-to_positions, and applies this transformation to the compound.
-:param equivalence_pairs: list of equivalence pairs (tuples)</p>
+<tt class="descclassname">mbuild.coordinate_transform.</tt><tt class="descname">equivalence_transform</tt><big>(</big><em>compound</em>, <em>from_positions</em>, <em>to_positions</em>, <em>add_bond=True</em><big>)</big><a class="reference internal" href="_modules/mbuild/coordinate_transform.html#equivalence_transform"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.coordinate_transform.equivalence_transform" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes an affine transformation that maps the from_positions to the
+respective to_positions, and applies this transformation to the compound.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>compound</strong> (<em>Compound</em>) &#8211; The <cite>Compound</cite> to be transformed.</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="function">
@@ -1834,6 +1935,11 @@ to_positions, and applies this transformation to the compound.
 <dl class="function">
 <dt id="mbuild.coordinate_transform.translate">
 <tt class="descclassname">mbuild.coordinate_transform.</tt><tt class="descname">translate</tt><big>(</big><em>compound</em>, <em>v</em><big>)</big><a class="reference internal" href="_modules/mbuild/coordinate_transform.html#translate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.coordinate_transform.translate" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="mbuild.coordinate_transform.translate_to">
+<tt class="descclassname">mbuild.coordinate_transform.</tt><tt class="descname">translate_to</tt><big>(</big><em>compound</em>, <em>v</em><big>)</big><a class="reference internal" href="_modules/mbuild/coordinate_transform.html#translate_to"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.coordinate_transform.translate_to" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="function">
@@ -1871,9 +1977,25 @@ to_positions, and applies this transformation to the compound.
 <span id="mbuild-has-parts-mixin-module"></span><h2>mbuild.has_parts_mixin module<a class="headerlink" href="#module-mbuild.has_parts_mixin" title="Permalink to this headline">¶</a></h2>
 <dl class="class">
 <dt id="mbuild.has_parts_mixin.HasPartsMixin">
-<em class="property">class </em><tt class="descclassname">mbuild.has_parts_mixin.</tt><tt class="descname">HasPartsMixin</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="_modules/mbuild/has_parts_mixin.html#HasPartsMixin"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.has_parts_mixin.HasPartsMixin" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><tt class="descclassname">mbuild.has_parts_mixin.</tt><tt class="descname">HasPartsMixin</tt><a class="reference internal" href="_modules/mbuild/has_parts_mixin.html#HasPartsMixin"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.has_parts_mixin.HasPartsMixin" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference external" href="http://docs.python.org/2.7/library/functions.html#object" title="(in Python v2.7)"><tt class="xref py py-class docutils literal"><span class="pre">object</span></tt></a></p>
 <p>A base class that provides functionality to contain other parts.</p>
+<dl class="attribute">
+<dt id="mbuild.has_parts_mixin.HasPartsMixin.parts">
+<tt class="descname">parts</tt><a class="headerlink" href="#mbuild.has_parts_mixin.HasPartsMixin.parts" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>OrderedSet</em></p>
+<p>Contains all child parts. Parts can be Atom, Bond
+or Compound (they must inherit from PartMixin).</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="mbuild.has_parts_mixin.HasPartsMixin.labels">
+<tt class="descname">labels</tt><a class="headerlink" href="#mbuild.has_parts_mixin.HasPartsMixin.labels" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>OrderedDict</em></p>
+<p>Labels to Compound/Atom mappings. These do not
+necessarily need not be in self.parts.</p>
+</dd></dl>
+
 <dl class="attribute">
 <dt id="mbuild.has_parts_mixin.HasPartsMixin.__delattr__">
 <tt class="descname">__delattr__</tt><a class="headerlink" href="#mbuild.has_parts_mixin.HasPartsMixin.__delattr__" title="Permalink to this definition">¶</a></dt>
@@ -1952,6 +2074,10 @@ instead be used to add a reference to the part to self.labels. See
 <li><strong>new_part</strong> (<em>Atom, Bond or Compound</em>) &#8211; The object to be added to this
 Compound.</li>
 <li><strong>label</strong> (<em>str, optional</em>) &#8211; A descriptive string for the part.</li>
+<li><strong>containment</strong> (<em>bool, optional</em>) &#8211; Add the part to self.parts. Defaults
+to True.</li>
+<li><strong>replace</strong> (<em>bool, optional</em>) &#8211; Replace the label if it already exists.
+Defaults to False.</li>
 </ul>
 </td>
 </tr>
@@ -1967,7 +2093,7 @@ Compound.</li>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>objs_to_remove</strong> (<em>set of parts</em>) &#8211; All objects to be removed from the
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>objs_to_remove</strong> (<em>set of Parts</em>) &#8211; All objects to be removed from the
 hierarchy. If this is not a set, it will be cast to one to
 remove duplicates.</td>
 </tr>
@@ -1978,74 +2104,8 @@ remove duplicates.</td>
 </dd></dl>
 
 </div>
-<div class="section" id="module-mbuild.mbase">
-<span id="mbuild-mbase-module"></span><h2>mbuild.mbase module<a class="headerlink" href="#module-mbuild.mbase" title="Permalink to this headline">¶</a></h2>
-<dl class="class">
-<dt id="mbuild.mbase.MBase">
-<em class="property">class </em><tt class="descclassname">mbuild.mbase.</tt><tt class="descname">MBase</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="_modules/mbuild/mbase.html#MBase"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.mbase.MBase" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference external" href="http://docs.python.org/2.7/library/functions.html#object" title="(in Python v2.7)"><tt class="xref py py-class docutils literal"><span class="pre">object</span></tt></a></p>
-<dl class="attribute">
-<dt id="mbuild.mbase.MBase.__delattr__">
-<tt class="descname">__delattr__</tt><a class="headerlink" href="#mbuild.mbase.MBase.__delattr__" title="Permalink to this definition">¶</a></dt>
-<dd><p>x.__delattr__(&#8216;name&#8217;) &lt;==&gt; del x.name</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="mbuild.mbase.MBase.__format__">
-<tt class="descname">__format__</tt><big>(</big><big>)</big><a class="headerlink" href="#mbuild.mbase.MBase.__format__" title="Permalink to this definition">¶</a></dt>
-<dd><p>default object formatter</p>
-</dd></dl>
-
-<dl class="attribute">
-<dt id="mbuild.mbase.MBase.__getattribute__">
-<tt class="descname">__getattribute__</tt><a class="headerlink" href="#mbuild.mbase.MBase.__getattribute__" title="Permalink to this definition">¶</a></dt>
-<dd><p>x.__getattribute__(&#8216;name&#8217;) &lt;==&gt; x.name</p>
-</dd></dl>
-
-<dl class="attribute">
-<dt id="mbuild.mbase.MBase.__hash__">
-<tt class="descname">__hash__</tt><a class="headerlink" href="#mbuild.mbase.MBase.__hash__" title="Permalink to this definition">¶</a></dt>
-<dd><p>x.__hash__() &lt;==&gt; hash(x)</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="mbuild.mbase.MBase.__reduce__">
-<tt class="descname">__reduce__</tt><big>(</big><big>)</big><a class="headerlink" href="#mbuild.mbase.MBase.__reduce__" title="Permalink to this definition">¶</a></dt>
-<dd><p>helper for pickle</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="mbuild.mbase.MBase.__reduce_ex__">
-<tt class="descname">__reduce_ex__</tt><big>(</big><big>)</big><a class="headerlink" href="#mbuild.mbase.MBase.__reduce_ex__" title="Permalink to this definition">¶</a></dt>
-<dd><p>helper for pickle</p>
-</dd></dl>
-
-<dl class="attribute">
-<dt id="mbuild.mbase.MBase.__repr__">
-<tt class="descname">__repr__</tt><a class="headerlink" href="#mbuild.mbase.MBase.__repr__" title="Permalink to this definition">¶</a></dt>
-<dd><p>x.__repr__() &lt;==&gt; repr(x)</p>
-</dd></dl>
-
-<dl class="attribute">
-<dt id="mbuild.mbase.MBase.__setattr__">
-<tt class="descname">__setattr__</tt><a class="headerlink" href="#mbuild.mbase.MBase.__setattr__" title="Permalink to this definition">¶</a></dt>
-<dd><p>x.__setattr__(&#8216;name&#8217;, value) &lt;==&gt; x.name = value</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="mbuild.mbase.MBase.__sizeof__">
-<tt class="descname">__sizeof__</tt><big>(</big><big>)</big> &rarr; int<a class="headerlink" href="#mbuild.mbase.MBase.__sizeof__" title="Permalink to this definition">¶</a></dt>
-<dd><p>size of object in memory, in bytes</p>
-</dd></dl>
-
-<dl class="attribute">
-<dt id="mbuild.mbase.MBase.__str__">
-<tt class="descname">__str__</tt><a class="headerlink" href="#mbuild.mbase.MBase.__str__" title="Permalink to this definition">¶</a></dt>
-<dd><p>x.__str__() &lt;==&gt; str(x)</p>
-</dd></dl>
-
-</dd></dl>
-
+<div class="section" id="mbuild-mbase-module">
+<h2>mbuild.mbase module<a class="headerlink" href="#mbuild-mbase-module" title="Permalink to this headline">¶</a></h2>
 </div>
 <div class="section" id="module-mbuild.orderedset">
 <span id="mbuild-orderedset-module"></span><h2>mbuild.orderedset module<a class="headerlink" href="#module-mbuild.orderedset" title="Permalink to this headline">¶</a></h2>
@@ -2134,7 +2194,7 @@ remove duplicates.</td>
 <span id="mbuild-part-mixin-module"></span><h2>mbuild.part_mixin module<a class="headerlink" href="#module-mbuild.part_mixin" title="Permalink to this headline">¶</a></h2>
 <dl class="class">
 <dt id="mbuild.part_mixin.PartMixin">
-<em class="property">class </em><tt class="descclassname">mbuild.part_mixin.</tt><tt class="descname">PartMixin</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="_modules/mbuild/part_mixin.html#PartMixin"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.part_mixin.PartMixin" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><tt class="descclassname">mbuild.part_mixin.</tt><tt class="descname">PartMixin</tt><a class="reference internal" href="_modules/mbuild/part_mixin.html#PartMixin"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.part_mixin.PartMixin" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference external" href="http://docs.python.org/2.7/library/functions.html#object" title="(in Python v2.7)"><tt class="xref py py-class docutils literal"><span class="pre">object</span></tt></a></p>
 <p>A base class that designates a part in a hierarchy. &#8220;&#8221;&#8217;</p>
 <dl class="docutils">
@@ -2142,6 +2202,8 @@ remove duplicates.</td>
 <dd><dl class="first last docutils">
 <dt>parent (Compound): The parent Compound that contains this part Can be</dt>
 <dd>None if this compound is the root of the containment hierarchy.</dd>
+<dt>referrers (set):  Other compounds that reference this part with</dt>
+<dd>labels.</dd>
 </dl>
 </dd>
 </dl>
@@ -2942,6 +3004,10 @@ instead be used to add a reference to the part to self.labels. See
 <li><strong>new_part</strong> (<em>Atom, Bond or Compound</em>) &#8211; The object to be added to this
 Compound.</li>
 <li><strong>label</strong> (<em>str, optional</em>) &#8211; A descriptive string for the part.</li>
+<li><strong>containment</strong> (<em>bool, optional</em>) &#8211; Add the part to self.parts. Defaults
+to True.</li>
+<li><strong>replace</strong> (<em>bool, optional</em>) &#8211; Replace the label if it already exists.
+Defaults to False.</li>
 </ul>
 </td>
 </tr>
@@ -2952,7 +3018,7 @@ Compound.</li>
 <dl class="method">
 <dt id="mbuild.port.Port.add_bond">
 <tt class="descname">add_bond</tt><big>(</big><em>type_a</em>, <em>type_b</em>, <em>dmin</em>, <em>dmax</em>, <em>kind=None</em><big>)</big><a class="headerlink" href="#mbuild.port.Port.add_bond" title="Permalink to this definition">¶</a></dt>
-<dd><p>Add Bonds between all pairs of Atoms of types a/b within [dmin, dmax].</p>
+<dd><p>Add Bonds between all Atom pairs of types a/b within [dmin, dmax].</p>
 <p>TODO: testing for periodic boundaries.</p>
 </dd></dl>
 
@@ -3040,7 +3106,21 @@ A list of Atoms.</p>
 <dl class="method">
 <dt id="mbuild.port.Port.bond_list_by_kind">
 <tt class="descname">bond_list_by_kind</tt><big>(</big><em>kind='*'</em><big>)</big><a class="headerlink" href="#mbuild.port.Port.bond_list_by_kind" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Return a list of Bonds filtered by their kind.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>kind</strong> (<a class="reference external" href="http://docs.python.org/2.7/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Return only Bonds of this type. &#8216;*&#8217; indicates all.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>bond_list</strong> &#8211;
+A list of Bonds.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">list</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
 
 <dl class="attribute">
 <dt id="mbuild.port.Port.bonds">
@@ -3070,28 +3150,46 @@ Ports).</td>
 <dl class="attribute">
 <dt id="mbuild.port.Port.center">
 <tt class="descname">center</tt><a class="headerlink" href="#mbuild.port.Port.center" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>The cartesian center of the Compound based on its Atoms.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="mbuild.port.Port.extras">
+<tt class="descname">extras</tt><a class="headerlink" href="#mbuild.port.Port.extras" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the Compound&#8217;s optional, extra attributes.</p>
+</dd></dl>
 
 <dl class="classmethod">
 <dt id="mbuild.port.Port.load">
 <em class="property">classmethod </em><tt class="descname">load</tt><big>(</big><em>filename</em>, <em>relative_to_module=None</em>, <em>frame=0</em><big>)</big><a class="headerlink" href="#mbuild.port.Port.load" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Load a file into a Compound.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">Compound</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
 
 <dl class="method">
 <dt id="mbuild.port.Port.min_periodic_distance">
-<tt class="descname">min_periodic_distance</tt><big>(</big><em>x0</em>, <em>x1</em><big>)</big><a class="headerlink" href="#mbuild.port.Port.min_periodic_distance" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">min_periodic_distance</tt><big>(</big><em>xyz0</em>, <em>xyz1</em><big>)</big><a class="headerlink" href="#mbuild.port.Port.min_periodic_distance" title="Permalink to this definition">¶</a></dt>
 <dd><p>Vectorized distance calculation considering minimum image.</p>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="mbuild.port.Port.n_atoms">
 <tt class="descname">n_atoms</tt><a class="headerlink" href="#mbuild.port.Port.n_atoms" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Return the number of Atoms in the Compound.</p>
+</dd></dl>
 
 <dl class="attribute">
 <dt id="mbuild.port.Port.n_bonds">
 <tt class="descname">n_bonds</tt><a class="headerlink" href="#mbuild.port.Port.n_bonds" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Return the number of Bonds in the Compound.</p>
+</dd></dl>
 
 <dl class="method">
 <dt id="mbuild.port.Port.referenced_ports">
@@ -3115,7 +3213,7 @@ Ports).</td>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>objs_to_remove</strong> (<em>set of parts</em>) &#8211; All objects to be removed from the
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>objs_to_remove</strong> (<em>set of Parts</em>) &#8211; All objects to be removed from the
 hierarchy. If this is not a set, it will be cast to one to
 remove duplicates.</td>
 </tr>
@@ -3132,7 +3230,7 @@ remove duplicates.</td>
 
 <dl class="method">
 <dt id="mbuild.port.Port.to_trajectory">
-<tt class="descname">to_trajectory</tt><big>(</big><em>show_ports=False</em><big>)</big><a class="headerlink" href="#mbuild.port.Port.to_trajectory" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">to_trajectory</tt><big>(</big><em>show_ports=False</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#mbuild.port.Port.to_trajectory" title="Permalink to this definition">¶</a></dt>
 <dd><p>Convert the Compound to a Trajectory.</p>
 </dd></dl>
 

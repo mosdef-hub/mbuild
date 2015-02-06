@@ -152,9 +152,9 @@ class Compound(PartMixin, HasPartsMixin):
         return [port for port in self.labels.values() if isinstance(port, Port)]
 
     def _remove(self, removed_part):
+        """If removing an atom, make sure to remove the bonds it's part of. """
         super(Compound, self)._remove(removed_part)
 
-        # If removing an atom, make sure to remove the bonds it's part of.
         if isinstance(removed_part, Atom):
             for bond in removed_part.bonds:
                 if bond.parent is not None:

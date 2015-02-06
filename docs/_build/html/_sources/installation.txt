@@ -4,8 +4,9 @@ Installation
 
 Install with pip
 ----------------
+::
 
- $ pip install mbuild
+    $ pip install mbuild
 
 Dependencies
 ------------
@@ -45,8 +46,8 @@ Testing your installation
 -------------------------
 
 mBuild uses `py.test` for unit testing. To run them simply type run the
-following while in the base directory:
+following while in the base directory::
 
- $ py.test
+    $ py.test
 
 We need a LOT more tests so any help here is especially welcome!

@@ -83,7 +83,7 @@
 <li class="toctree-l2"><a class="reference internal" href="apidoc/mbuild.html#module-mbuild.compound">mbuild.compound module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="apidoc/mbuild.html#module-mbuild.coordinate_transform">mbuild.coordinate_transform module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="apidoc/mbuild.html#module-mbuild.has_parts_mixin">mbuild.has_parts_mixin module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="apidoc/mbuild.html#module-mbuild.mbase">mbuild.mbase module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="apidoc/mbuild.html#mbuild-mbase-module">mbuild.mbase module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="apidoc/mbuild.html#module-mbuild.orderedset">mbuild.orderedset module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="apidoc/mbuild.html#module-mbuild.part_mixin">mbuild.part_mixin module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="apidoc/mbuild.html#module-mbuild.periodic_kdtree">mbuild.periodic_kdtree module</a></li>
@@ -257,7 +257,7 @@ take a look at it:</p>
      <span class="n">methane</span><span class="o">.</span><span class="n">visualize</span><span class="p">()</span>
 </pre></div>
 </div>
-<a class="reference internal image-reference" href="_images/methane.png"><img alt="Methane molecule." class="align-center" src="_images/methane.png" style="width: 256.0px; height: 256.0px;" /></a>
+<a class="reference internal image-reference" href="_images/methane.png"><img alt="Methane molecule." class="align-center" src="_images/methane.png" /></a>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
 <p class="last">The <tt class="docutils literal"><span class="pre">visualize()</span></tt> method currently invokes a very primative call to
@@ -298,23 +298,22 @@ that we heartlessly copied from the developers of MDTraj.</p>
 </div>
 <p>Now let&#8217;s use our first coordinate transform to center the methyl at its carbon
 atom:</p>
-<div class="highlight-python"><div class="highlight"><pre>   from mbuild.compound import Compound
-   from mbuild.testing.tools import get_fn
-   from mbuild.coordinate_transform import translate
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">mbuild.compound</span> <span class="kn">import</span> <span class="n">Compound</span>
+<span class="kn">from</span> <span class="nn">mbuild.testing.tools</span> <span class="kn">import</span> <span class="n">get_fn</span>
+<span class="kn">from</span> <span class="nn">mbuild.coordinate_transform</span> <span class="kn">import</span> <span class="n">translate</span>
 
 
-   class Methyl(Compound):
-       def __init__(self):
-           super(Methyl, self).__init__(self)
+<span class="k">class</span> <span class="nc">Methyl</span><span class="p">(</span><span class="n">Compound</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">Methyl</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
 
-           self.append_from_file(get_fn(&#39;methyl.pdb&#39;))
+        <span class="bp">self</span><span class="o">.</span><span class="n">append_from_file</span><span class="p">(</span><span class="n">get_fn</span><span class="p">(</span><span class="s">&#39;methyl.pdb&#39;</span><span class="p">))</span>
 
-           translate(self, -self.C[0])
-
-here that when referring to the ``Atom`` object in a mathematical
+        <span class="n">translate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">C</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
 </pre></div>
 </div>
-<p>expression, we operate directly on its coordinates. This functionality is
+<p>Here that when referring to the <tt class="docutils literal"><span class="pre">Atom</span></tt> object in a mathematical
+expression, we operate directly on its coordinates. This functionality is
 currently implemented for addition and subtraction only.</p>
 <p>So now we have a methyl group loaded up and centered. In order to connect
 <tt class="docutils literal"><span class="pre">Compounds</span></tt> in mBuild, we make use of a special type of <tt class="docutils literal"><span class="pre">Compound</span></tt>: the <tt class="docutils literal"><span class="pre">Port</span></tt>.
@@ -372,7 +371,7 @@ move the port a tiny bit away from the carbon:</p>
 it can be useful to look at a molecule with the <tt class="docutils literal"><span class="pre">Ports</span></tt> to check your work as
 you go. The default VMD settings don&#8217;t show ports very well so let&#8217;s change
 the representation style to small vdW spheres:</p>
-<a class="reference internal image-reference" href="_images/methyl_port.png"><img alt="Methyl group with one Port." class="align-center" src="_images/methyl_port.png" style="width: 283.5px; height: 259.5px;" /></a>
+<a class="reference internal image-reference" href="_images/methyl_port.png"><img alt="Methyl group with one Port." class="align-center" src="_images/methyl_port.png" /></a>
 <p>When two <tt class="docutils literal"><span class="pre">Ports</span></tt> are connected, they are forced to overlap in space and their
 parent <tt class="docutils literal"><span class="pre">Compounds</span></tt> are rotated and translated by the same amount. If we tried
 to connect two of our <tt class="docutils literal"><span class="pre">Methyls</span></tt> right now, not only would the <tt class="docutils literal"><span class="pre">Ports</span></tt> overlap
@@ -433,7 +432,7 @@ can attach the <tt class="docutils literal"><span class="pre">Methyl</span></tt>
     <span class="n">ethane</span><span class="o">.</span><span class="n">visualize</span><span class="p">(</span><span class="n">show_ports</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
 </pre></div>
 </div>
-<a class="reference internal image-reference" href="_images/ethane.png"><img alt="Ethane with all Ports shown." class="align-center" src="_images/ethane.png" style="width: 239.5px; height: 345.5px;" /></a>
+<a class="reference internal image-reference" href="_images/ethane.png"><img alt="Ethane with all Ports shown." class="align-center" src="_images/ethane.png" /></a>
 <p>The <tt class="docutils literal"><span class="pre">equivalence_transform()</span></tt> function takes a <tt class="docutils literal"><span class="pre">Compound</span></tt> and then rotates
 and translates it such that two other <tt class="docutils literal"><span class="pre">Compounds</span></tt> overlap. Typically, as in
 this case, those two other <tt class="docutils literal"><span class="pre">Compounds</span></tt> are <tt class="docutils literal"><span class="pre">Ports</span></tt>.</p>

@@ -81,7 +81,7 @@
 <li class="toctree-l2"><a class="reference internal" href="apidoc/mbuild.html#module-mbuild.compound">mbuild.compound module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="apidoc/mbuild.html#module-mbuild.coordinate_transform">mbuild.coordinate_transform module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="apidoc/mbuild.html#module-mbuild.has_parts_mixin">mbuild.has_parts_mixin module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="apidoc/mbuild.html#module-mbuild.mbase">mbuild.mbase module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="apidoc/mbuild.html#mbuild-mbase-module">mbuild.mbase module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="apidoc/mbuild.html#module-mbuild.orderedset">mbuild.orderedset module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="apidoc/mbuild.html#module-mbuild.part_mixin">mbuild.part_mixin module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="apidoc/mbuild.html#module-mbuild.periodic_kdtree">mbuild.periodic_kdtree module</a></li>
@@ -347,6 +347,10 @@ instead be used to add a reference to the part to self.labels. See
 <li><strong>new_part</strong> (<em>Atom, Bond or Compound</em>) &#8211; The object to be added to this
 Compound.</li>
 <li><strong>label</strong> (<em>str, optional</em>) &#8211; A descriptive string for the part.</li>
+<li><strong>containment</strong> (<em>bool, optional</em>) &#8211; Add the part to self.parts. Defaults
+to True.</li>
+<li><strong>replace</strong> (<em>bool, optional</em>) &#8211; Replace the label if it already exists.
+Defaults to False.</li>
 </ul>
 </td>
 </tr>
@@ -357,7 +361,7 @@ Compound.</li>
 <dl class="method">
 <dt id="mbuild.tools.polymer.Polymer.add_bond">
 <tt class="descname">add_bond</tt><big>(</big><em>type_a</em>, <em>type_b</em>, <em>dmin</em>, <em>dmax</em>, <em>kind=None</em><big>)</big><a class="headerlink" href="#mbuild.tools.polymer.Polymer.add_bond" title="Permalink to this definition">¶</a></dt>
-<dd><p>Add Bonds between all pairs of Atoms of types a/b within [dmin, dmax].</p>
+<dd><p>Add Bonds between all Atom pairs of types a/b within [dmin, dmax].</p>
 <p>TODO: testing for periodic boundaries.</p>
 </dd></dl>
 
@@ -445,7 +449,21 @@ A list of Atoms.</p>
 <dl class="method">
 <dt id="mbuild.tools.polymer.Polymer.bond_list_by_kind">
 <tt class="descname">bond_list_by_kind</tt><big>(</big><em>kind='*'</em><big>)</big><a class="headerlink" href="#mbuild.tools.polymer.Polymer.bond_list_by_kind" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Return a list of Bonds filtered by their kind.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>kind</strong> (<a class="reference external" href="http://docs.python.org/2.7/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Return only Bonds of this type. &#8216;*&#8217; indicates all.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>bond_list</strong> &#8211;
+A list of Bonds.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">list</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
 
 <dl class="attribute">
 <dt id="mbuild.tools.polymer.Polymer.bonds">
@@ -475,28 +493,46 @@ Ports).</td>
 <dl class="attribute">
 <dt id="mbuild.tools.polymer.Polymer.center">
 <tt class="descname">center</tt><a class="headerlink" href="#mbuild.tools.polymer.Polymer.center" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>The cartesian center of the Compound based on its Atoms.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="mbuild.tools.polymer.Polymer.extras">
+<tt class="descname">extras</tt><a class="headerlink" href="#mbuild.tools.polymer.Polymer.extras" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the Compound&#8217;s optional, extra attributes.</p>
+</dd></dl>
 
 <dl class="classmethod">
 <dt id="mbuild.tools.polymer.Polymer.load">
 <em class="property">classmethod </em><tt class="descname">load</tt><big>(</big><em>filename</em>, <em>relative_to_module=None</em>, <em>frame=0</em><big>)</big><a class="headerlink" href="#mbuild.tools.polymer.Polymer.load" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Load a file into a Compound.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">Compound</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
 
 <dl class="method">
 <dt id="mbuild.tools.polymer.Polymer.min_periodic_distance">
-<tt class="descname">min_periodic_distance</tt><big>(</big><em>x0</em>, <em>x1</em><big>)</big><a class="headerlink" href="#mbuild.tools.polymer.Polymer.min_periodic_distance" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">min_periodic_distance</tt><big>(</big><em>xyz0</em>, <em>xyz1</em><big>)</big><a class="headerlink" href="#mbuild.tools.polymer.Polymer.min_periodic_distance" title="Permalink to this definition">¶</a></dt>
 <dd><p>Vectorized distance calculation considering minimum image.</p>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="mbuild.tools.polymer.Polymer.n_atoms">
 <tt class="descname">n_atoms</tt><a class="headerlink" href="#mbuild.tools.polymer.Polymer.n_atoms" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Return the number of Atoms in the Compound.</p>
+</dd></dl>
 
 <dl class="attribute">
 <dt id="mbuild.tools.polymer.Polymer.n_bonds">
 <tt class="descname">n_bonds</tt><a class="headerlink" href="#mbuild.tools.polymer.Polymer.n_bonds" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Return the number of Bonds in the Compound.</p>
+</dd></dl>
 
 <dl class="method">
 <dt id="mbuild.tools.polymer.Polymer.referenced_ports">
@@ -520,7 +556,7 @@ Ports).</td>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>objs_to_remove</strong> (<em>set of parts</em>) &#8211; All objects to be removed from the
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>objs_to_remove</strong> (<em>set of Parts</em>) &#8211; All objects to be removed from the
 hierarchy. If this is not a set, it will be cast to one to
 remove duplicates.</td>
 </tr>
@@ -537,7 +573,7 @@ remove duplicates.</td>
 
 <dl class="method">
 <dt id="mbuild.tools.polymer.Polymer.to_trajectory">
-<tt class="descname">to_trajectory</tt><big>(</big><em>show_ports=False</em><big>)</big><a class="headerlink" href="#mbuild.tools.polymer.Polymer.to_trajectory" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">to_trajectory</tt><big>(</big><em>show_ports=False</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#mbuild.tools.polymer.Polymer.to_trajectory" title="Permalink to this definition">¶</a></dt>
 <dd><p>Convert the Compound to a Trajectory.</p>
 </dd></dl>
 
@@ -585,7 +621,7 @@ remove duplicates.</td>
 <span id="mbuild-tools-solvent-module"></span><h2>mbuild.tools.solvent module<a class="headerlink" href="#module-mbuild.tools.solvent" title="Permalink to this headline">¶</a></h2>
 <dl class="function">
 <dt id="mbuild.tools.solvent.solvate">
-<tt class="descclassname">mbuild.tools.solvent.</tt><tt class="descname">solvate</tt><big>(</big><em>host_compound</em>, <em>guest_compound</em>, <em>host_box</em>, <em>guest_box</em>, <em>overlap=&lt;function vdw_radius at 0x1064ac320&gt;</em><big>)</big><a class="reference internal" href="_modules/mbuild/tools/solvent.html#solvate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.tools.solvent.solvate" title="Permalink to this definition">¶</a></dt>
+<tt class="descclassname">mbuild.tools.solvent.</tt><tt class="descname">solvate</tt><big>(</big><em>host_compound</em>, <em>guest_compound</em>, <em>host_box</em>, <em>guest_box</em>, <em>overlap=&lt;function vdw_radius at 0x1063a5500&gt;</em><big>)</big><a class="reference internal" href="_modules/mbuild/tools/solvent.html#solvate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.tools.solvent.solvate" title="Permalink to this definition">¶</a></dt>
 <dd><p>Solvate a Compound in a Box.</p>
 <p>Typical usage of this function would be to use a pre-equilibrated solvent
 system as the guest which will then be replicated to fill the host&#8217;s Box.
@@ -705,6 +741,10 @@ instead be used to add a reference to the part to self.labels. See
 <li><strong>new_part</strong> (<em>Atom, Bond or Compound</em>) &#8211; The object to be added to this
 Compound.</li>
 <li><strong>label</strong> (<em>str, optional</em>) &#8211; A descriptive string for the part.</li>
+<li><strong>containment</strong> (<em>bool, optional</em>) &#8211; Add the part to self.parts. Defaults
+to True.</li>
+<li><strong>replace</strong> (<em>bool, optional</em>) &#8211; Replace the label if it already exists.
+Defaults to False.</li>
 </ul>
 </td>
 </tr>
@@ -715,7 +755,7 @@ Compound.</li>
 <dl class="method">
 <dt id="mbuild.tools.tiled_compound.TiledCompound.add_bond">
 <tt class="descname">add_bond</tt><big>(</big><em>type_a</em>, <em>type_b</em>, <em>dmin</em>, <em>dmax</em>, <em>kind=None</em><big>)</big><a class="headerlink" href="#mbuild.tools.tiled_compound.TiledCompound.add_bond" title="Permalink to this definition">¶</a></dt>
-<dd><p>Add Bonds between all pairs of Atoms of types a/b within [dmin, dmax].</p>
+<dd><p>Add Bonds between all Atom pairs of types a/b within [dmin, dmax].</p>
 <p>TODO: testing for periodic boundaries.</p>
 </dd></dl>
 
@@ -803,7 +843,21 @@ A list of Atoms.</p>
 <dl class="method">
 <dt id="mbuild.tools.tiled_compound.TiledCompound.bond_list_by_kind">
 <tt class="descname">bond_list_by_kind</tt><big>(</big><em>kind='*'</em><big>)</big><a class="headerlink" href="#mbuild.tools.tiled_compound.TiledCompound.bond_list_by_kind" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Return a list of Bonds filtered by their kind.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>kind</strong> (<a class="reference external" href="http://docs.python.org/2.7/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Return only Bonds of this type. &#8216;*&#8217; indicates all.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>bond_list</strong> &#8211;
+A list of Bonds.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">list</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
 
 <dl class="attribute">
 <dt id="mbuild.tools.tiled_compound.TiledCompound.bonds">
@@ -833,28 +887,46 @@ Ports).</td>
 <dl class="attribute">
 <dt id="mbuild.tools.tiled_compound.TiledCompound.center">
 <tt class="descname">center</tt><a class="headerlink" href="#mbuild.tools.tiled_compound.TiledCompound.center" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>The cartesian center of the Compound based on its Atoms.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="mbuild.tools.tiled_compound.TiledCompound.extras">
+<tt class="descname">extras</tt><a class="headerlink" href="#mbuild.tools.tiled_compound.TiledCompound.extras" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the Compound&#8217;s optional, extra attributes.</p>
+</dd></dl>
 
 <dl class="classmethod">
 <dt id="mbuild.tools.tiled_compound.TiledCompound.load">
 <em class="property">classmethod </em><tt class="descname">load</tt><big>(</big><em>filename</em>, <em>relative_to_module=None</em>, <em>frame=0</em><big>)</big><a class="headerlink" href="#mbuild.tools.tiled_compound.TiledCompound.load" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Load a file into a Compound.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">Compound</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
 
 <dl class="method">
 <dt id="mbuild.tools.tiled_compound.TiledCompound.min_periodic_distance">
-<tt class="descname">min_periodic_distance</tt><big>(</big><em>x0</em>, <em>x1</em><big>)</big><a class="headerlink" href="#mbuild.tools.tiled_compound.TiledCompound.min_periodic_distance" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">min_periodic_distance</tt><big>(</big><em>xyz0</em>, <em>xyz1</em><big>)</big><a class="headerlink" href="#mbuild.tools.tiled_compound.TiledCompound.min_periodic_distance" title="Permalink to this definition">¶</a></dt>
 <dd><p>Vectorized distance calculation considering minimum image.</p>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="mbuild.tools.tiled_compound.TiledCompound.n_atoms">
 <tt class="descname">n_atoms</tt><a class="headerlink" href="#mbuild.tools.tiled_compound.TiledCompound.n_atoms" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Return the number of Atoms in the Compound.</p>
+</dd></dl>
 
 <dl class="attribute">
 <dt id="mbuild.tools.tiled_compound.TiledCompound.n_bonds">
 <tt class="descname">n_bonds</tt><a class="headerlink" href="#mbuild.tools.tiled_compound.TiledCompound.n_bonds" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Return the number of Bonds in the Compound.</p>
+</dd></dl>
 
 <dl class="method">
 <dt id="mbuild.tools.tiled_compound.TiledCompound.referenced_ports">
@@ -878,12 +950,18 @@ Ports).</td>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>objs_to_remove</strong> (<em>set of parts</em>) &#8211; All objects to be removed from the
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>objs_to_remove</strong> (<em>set of Parts</em>) &#8211; All objects to be removed from the
 hierarchy. If this is not a set, it will be cast to one to
 remove duplicates.</td>
 </tr>
 </tbody>
 </table>
+</dd></dl>
+
+<dl class="method">
+<dt id="mbuild.tools.tiled_compound.TiledCompound.replicate_tiles">
+<tt class="descname">replicate_tiles</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/mbuild/tools/tiled_compound.html#TiledCompound.replicate_tiles"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.tools.tiled_compound.TiledCompound.replicate_tiles" title="Permalink to this definition">¶</a></dt>
+<dd><p>Replicate and place periodic tiles.</p>
 </dd></dl>
 
 <dl class="method">
@@ -894,8 +972,14 @@ remove duplicates.</td>
 </dd></dl>
 
 <dl class="method">
+<dt id="mbuild.tools.tiled_compound.TiledCompound.stitch_bonds">
+<tt class="descname">stitch_bonds</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/mbuild/tools/tiled_compound.html#TiledCompound.stitch_bonds"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.tools.tiled_compound.TiledCompound.stitch_bonds" title="Permalink to this definition">¶</a></dt>
+<dd><p>Stitch bonds across periodic boundaries.</p>
+</dd></dl>
+
+<dl class="method">
 <dt id="mbuild.tools.tiled_compound.TiledCompound.to_trajectory">
-<tt class="descname">to_trajectory</tt><big>(</big><em>show_ports=False</em><big>)</big><a class="headerlink" href="#mbuild.tools.tiled_compound.TiledCompound.to_trajectory" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">to_trajectory</tt><big>(</big><em>show_ports=False</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#mbuild.tools.tiled_compound.TiledCompound.to_trajectory" title="Permalink to this definition">¶</a></dt>
 <dd><p>Convert the Compound to a Trajectory.</p>
 </dd></dl>
 

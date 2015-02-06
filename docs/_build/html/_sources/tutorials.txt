@@ -168,7 +168,7 @@ atom::
 
             translate(self, -self.C[0])
 
- here that when referring to the ``Atom`` object in a mathematical
+Here that when referring to the ``Atom`` object in a mathematical
 expression, we operate directly on its coordinates. This functionality is
 currently implemented for addition and subtraction only.
 

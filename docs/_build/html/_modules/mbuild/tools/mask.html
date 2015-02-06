@@ -82,7 +82,7 @@
 <li class="toctree-l2"><a class="reference internal" href="../../../apidoc/mbuild.html#module-mbuild.compound">mbuild.compound module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../apidoc/mbuild.html#module-mbuild.coordinate_transform">mbuild.coordinate_transform module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../apidoc/mbuild.html#module-mbuild.has_parts_mixin">mbuild.has_parts_mixin module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../../apidoc/mbuild.html#module-mbuild.mbase">mbuild.mbase module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../apidoc/mbuild.html#mbuild-mbase-module">mbuild.mbase module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../apidoc/mbuild.html#module-mbuild.orderedset">mbuild.orderedset module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../apidoc/mbuild.html#module-mbuild.part_mixin">mbuild.part_mixin module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../apidoc/mbuild.html#module-mbuild.periodic_kdtree">mbuild.periodic_kdtree module</a></li>
@@ -154,7 +154,6 @@
 <span class="kn">from</span> <span class="nn">copy</span> <span class="kn">import</span> <span class="n">deepcopy</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
 
-<span class="kn">from</span> <span class="nn">mbuild.compound</span> <span class="kn">import</span> <span class="n">Compound</span>
 <span class="kn">from</span> <span class="nn">mbuild.coordinate_transform</span> <span class="kn">import</span> <span class="n">equivalence_transform</span>
 
 
@@ -177,7 +176,7 @@
     <span class="n">port_positions</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="n">n_ports</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
     <span class="n">port_list</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
     <span class="k">for</span> <span class="n">port_idx</span><span class="p">,</span> <span class="n">port</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">host</span><span class="o">.</span><span class="n">referenced_ports</span><span class="p">()):</span>
-        <span class="n">port_positions</span><span class="p">[</span><span class="n">port_idx</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">port</span><span class="o">.</span><span class="n">middle</span><span class="o">.</span><span class="n">pos</span>
+        <span class="n">port_positions</span><span class="p">[</span><span class="n">port_idx</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">port</span><span class="o">.</span><span class="n">up</span><span class="o">.</span><span class="n">middle</span><span class="o">.</span><span class="n">pos</span>
         <span class="n">port_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">port</span><span class="p">)</span>
 
     <span class="n">used_ports</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>  <span class="c"># Keep track of used ports for backfilling.</span>

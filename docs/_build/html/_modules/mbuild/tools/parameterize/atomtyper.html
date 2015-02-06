@@ -82,7 +82,7 @@
 <li class="toctree-l2"><a class="reference internal" href="../../../../apidoc/mbuild.html#module-mbuild.compound">mbuild.compound module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../apidoc/mbuild.html#module-mbuild.coordinate_transform">mbuild.coordinate_transform module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../apidoc/mbuild.html#module-mbuild.has_parts_mixin">mbuild.has_parts_mixin module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../../../apidoc/mbuild.html#module-mbuild.mbase">mbuild.mbase module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../apidoc/mbuild.html#mbuild-mbase-module">mbuild.mbase module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../apidoc/mbuild.html#module-mbuild.orderedset">mbuild.orderedset module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../apidoc/mbuild.html#module-mbuild.part_mixin">mbuild.part_mixin module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../apidoc/mbuild.html#module-mbuild.periodic_kdtree">mbuild.periodic_kdtree module</a></li>
@@ -159,32 +159,37 @@
 
 <span class="kn">from</span> <span class="nn">mbuild.orderedset</span> <span class="kn">import</span> <span class="n">OrderedSet</span>
 
-<span class="c"># Map ids to the functions that check for them.</span>
+<span class="c"># Map rule ids to the functions that check for them (see `find_atomtypes()`).</span>
 <span class="n">rule_number_to_rule</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+
+<span class="c"># Organizes the rules (see `build_rule_map()`).</span>
 <span class="n">rule_map</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
 
-<span class="c"># Globally maintained neighbor information (see `neighbor_types()`).</span>
-<span class="n">neighbor_types_map</span> <span class="o">=</span> <span class="p">{}</span>
+<span class="c"># Global neighbor information (see `neighbor_types()`).</span>
+<span class="n">neighbor_types_map</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
 
-<span class="c">#</span>
-<span class="n">neighbor_whitelist_map</span> <span class="o">=</span> <span class="p">{}</span>
+<span class="c"># Global neighbor whitelist information (see `neighbor_whitelist_types()`).</span>
+<span class="n">neighbor_whitelist_map</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+
+<span class="c"># Used for more descriptive output when sanitizing rules.</span>
+<span class="n">rule_number_to_doc_string</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
 
 
 <div class="viewcode-block" id="find_atomtypes"><a class="viewcode-back" href="../../../../mbuild.tools.parameterize.html#mbuild.tools.parameterize.atomtyper.find_atomtypes">[docs]</a><span class="k">def</span> <span class="nf">find_atomtypes</span><span class="p">(</span><span class="n">compound</span><span class="p">,</span> <span class="n">forcefield</span><span class="o">=</span><span class="s">&#39;OPLS-AA&#39;</span><span class="p">,</span> <span class="n">debug</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Determine atomtypes for all atoms in `compound`. &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="n">forcefield</span> <span class="o">==</span> <span class="s">&#39;OPLS-AA&#39;</span><span class="p">:</span>
-        <span class="kn">import</span> <span class="nn">oplsaa</span>
+        <span class="kn">import</span> <span class="nn">mbuild.tools.parameterize.oplsaa</span> <span class="kn">as</span> <span class="nn">oplsaa</span>
         <span class="c"># Build a map to all of the supported opls_* functions.</span>
-        <span class="k">for</span> <span class="n">fn</span><span class="p">,</span> <span class="n">fcn</span> <span class="ow">in</span> <span class="n">sys</span><span class="o">.</span><span class="n">modules</span><span class="p">[</span><span class="n">oplsaa</span><span class="o">.</span><span class="n">__name__</span><span class="p">]</span><span class="o">.</span><span class="n">__dict__</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-            <span class="k">if</span> <span class="n">fn</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s">&#39;opls_&#39;</span><span class="p">):</span>
-                <span class="n">rule_number_to_rule</span><span class="p">[</span><span class="n">fn</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&quot;_&quot;</span><span class="p">)[</span><span class="mi">1</span><span class="p">]]</span> <span class="o">=</span> <span class="n">fcn</span>
+        <span class="k">for</span> <span class="n">func_name</span><span class="p">,</span> <span class="n">func</span> <span class="ow">in</span> <span class="n">sys</span><span class="o">.</span><span class="n">modules</span><span class="p">[</span><span class="n">oplsaa</span><span class="o">.</span><span class="n">__name__</span><span class="p">]</span><span class="o">.</span><span class="n">__dict__</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">func_name</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s">&#39;opls_&#39;</span><span class="p">):</span>
+                <span class="n">rule_number_to_rule</span><span class="p">[</span><span class="n">func_name</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&quot;_&quot;</span><span class="p">)[</span><span class="mi">1</span><span class="p">]]</span> <span class="o">=</span> <span class="n">func</span>
 
     <span class="k">elif</span> <span class="n">forcefield</span> <span class="o">==</span> <span class="s">&#39;UFF&#39;</span><span class="p">:</span>
-        <span class="kn">import</span> <span class="nn">uff</span>
-        <span class="c"># Build a map to all of the supported opls_* functions.</span>
-        <span class="k">for</span> <span class="n">fn</span><span class="p">,</span> <span class="n">fcn</span> <span class="ow">in</span> <span class="n">sys</span><span class="o">.</span><span class="n">modules</span><span class="p">[</span><span class="n">uff</span><span class="o">.</span><span class="n">__name__</span><span class="p">]</span><span class="o">.</span><span class="n">__dict__</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-            <span class="k">if</span> <span class="n">fn</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s">&#39;uff_&#39;</span><span class="p">):</span>
-                <span class="n">rule_number_to_rule</span><span class="p">[</span><span class="n">fn</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&quot;_&quot;</span><span class="p">)[</span><span class="mi">1</span><span class="p">]]</span> <span class="o">=</span> <span class="n">fcn</span>
+        <span class="kn">import</span> <span class="nn">mbuild.tools.parameterize.uff</span> <span class="kn">as</span> <span class="nn">uff</span>
+        <span class="c"># Build a map to all of the supported uff_* functions.</span>
+        <span class="k">for</span> <span class="n">func_name</span><span class="p">,</span> <span class="n">func</span> <span class="ow">in</span> <span class="n">sys</span><span class="o">.</span><span class="n">modules</span><span class="p">[</span><span class="n">uff</span><span class="o">.</span><span class="n">__name__</span><span class="p">]</span><span class="o">.</span><span class="n">__dict__</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">func_name</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s">&#39;uff_&#39;</span><span class="p">):</span>
+                <span class="n">rule_number_to_rule</span><span class="p">[</span><span class="n">func_name</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&quot;_&quot;</span><span class="p">)[</span><span class="mi">1</span><span class="p">]]</span> <span class="o">=</span> <span class="n">func</span>
 
     <span class="n">build_rule_map</span><span class="p">()</span>
     <span class="k">if</span> <span class="n">debug</span><span class="p">:</span>
@@ -219,7 +224,11 @@
 
 </div>
 <div class="viewcode-block" id="prepare_compound"><a class="viewcode-back" href="../../../../mbuild.tools.parameterize.html#mbuild.tools.parameterize.atomtyper.prepare_compound">[docs]</a><span class="k">def</span> <span class="nf">prepare_compound</span><span class="p">(</span><span class="n">compound</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Add white- and blacklists to each `atom` in `compound`. &quot;&quot;&quot;</span>
+    <span class="sd">&quot;&quot;&quot;Add white- and blacklists to each `atom` in `compound`.</span>
+
+<span class="sd">    The use of ordered sets is not strictly necessary but it helps when</span>
+<span class="sd">    debugging because it shows the order in which rules are added.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">for</span> <span class="n">atom</span> <span class="ow">in</span> <span class="n">compound</span><span class="o">.</span><span class="n">yield_atoms</span><span class="p">():</span>
         <span class="n">atom</span><span class="o">.</span><span class="n">extras</span><span class="p">[</span><span class="s">&#39;whitelist&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">OrderedSet</span><span class="p">()</span>
         <span class="n">atom</span><span class="o">.</span><span class="n">extras</span><span class="p">[</span><span class="s">&#39;blacklist&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">OrderedSet</span><span class="p">()</span>
@@ -228,18 +237,17 @@
 <div class="viewcode-block" id="iterate_rules"><a class="viewcode-back" href="../../../../mbuild.tools.parameterize.html#mbuild.tools.parameterize.atomtyper.iterate_rules">[docs]</a><span class="k">def</span> <span class="nf">iterate_rules</span><span class="p">(</span><span class="n">compound</span><span class="p">,</span> <span class="n">max_iter</span><span class="o">=</span><span class="mi">10</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Iteratively run all the rules until the white- and backlists converge.</span>
 
-<span class="sd">    NOTE: We only add and never remove from the white- and blacklists so we</span>
-<span class="sd">          don&#39;t need to check the lengths for each individual atom.</span>
-
 <span class="sd">    Args:</span>
-<span class="sd">        compound:</span>
-<span class="sd">        max_iter:</span>
+<span class="sd">        compound (Compound): The Compound being parameterized.</span>
+<span class="sd">        max_iter (int, optional): The maximum number of iterations.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">for</span> <span class="n">iter_cnt</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">max_iter</span><span class="p">):</span>
+    <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">max_iter</span><span class="p">):</span>
         <span class="c"># For comparing the lengths of the white- and blacklists.</span>
         <span class="n">old_len</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="n">new_len</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="k">for</span> <span class="n">atom</span> <span class="ow">in</span> <span class="n">compound</span><span class="o">.</span><span class="n">yield_atoms</span><span class="p">():</span>
+            <span class="c"># We only add and never remove from the white- and blacklists so we</span>
+            <span class="c"># do not need to check the lengths for each individual atom.</span>
             <span class="n">old_len</span> <span class="o">+=</span> <span class="nb">len</span><span class="p">(</span><span class="n">atom</span><span class="o">.</span><span class="n">whitelist</span><span class="p">)</span>
             <span class="n">old_len</span> <span class="o">+=</span> <span class="nb">len</span><span class="p">(</span><span class="n">atom</span><span class="o">.</span><span class="n">blacklist</span><span class="p">)</span>
 
@@ -278,7 +286,7 @@
 
 </div>
 <div class="viewcode-block" id="resolve_atomtypes"><a class="viewcode-back" href="../../../../mbuild.tools.parameterize.html#mbuild.tools.parameterize.atomtyper.resolve_atomtypes">[docs]</a><span class="k">def</span> <span class="nf">resolve_atomtypes</span><span class="p">(</span><span class="n">compound</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Determine the final atomtype from the white- and blacklists.&quot;&quot;&quot;</span>
+    <span class="sd">&quot;&quot;&quot;Determine the final atomtypes from the white- and blacklists.&quot;&quot;&quot;</span>
     <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">atom</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">compound</span><span class="o">.</span><span class="n">atoms</span><span class="p">):</span>
         <span class="n">atomtype</span> <span class="o">=</span> <span class="n">atom</span><span class="o">.</span><span class="n">whitelist</span> <span class="o">-</span> <span class="n">atom</span><span class="o">.</span><span class="n">blacklist</span>
         <span class="n">atomtype</span> <span class="o">=</span> <span class="p">[</span><span class="n">a</span> <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">atomtype</span><span class="p">]</span>
@@ -286,12 +294,12 @@
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">atomtype</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
             <span class="n">atom</span><span class="o">.</span><span class="n">extras</span><span class="p">[</span><span class="s">&#39;atomtype&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">atomtype</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">warn</span><span class="p">(</span><span class="s">&quot;CHECK YOUR TOPOLOGY. Found multiple or no types for atom {0} ({1}): {2}.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
-                    <span class="n">i</span><span class="p">,</span> <span class="n">atom</span><span class="o">.</span><span class="n">kind</span><span class="p">,</span> <span class="n">atomtype</span><span class="p">))</span>
+            <span class="n">warn</span><span class="p">(</span><span class="s">&quot;CHECK YOUR TOPOLOGY. Found multiple or no types for atom &quot;</span>
+                 <span class="s">&quot;{0} ({1}): {2}.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">atom</span><span class="o">.</span><span class="n">kind</span><span class="p">,</span> <span class="n">atomtype</span><span class="p">))</span>
             <span class="n">atom</span><span class="o">.</span><span class="n">extras</span><span class="p">[</span><span class="s">&#39;atomtype&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">atomtype</span><span class="p">)</span>
 
 </div>
-<div class="viewcode-block" id="neighbor_types"><a class="viewcode-back" href="../../../../mbuild.tools.parameterize.html#mbuild.tools.parameterize.atomtyper.neighbor_types">[docs]</a><span class="k">def</span> <span class="nf">neighbor_types</span><span class="p">(</span><span class="n">atom</span><span class="p">):</span>
+<div class="viewcode-block" id="neighbor_element_types"><a class="viewcode-back" href="../../../../mbuild.tools.parameterize.html#mbuild.tools.parameterize.atomtyper.neighbor_element_types">[docs]</a><span class="k">def</span> <span class="nf">neighbor_element_types</span><span class="p">(</span><span class="n">atom</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Returns the number of neighbors of each element type for an `atom`.</span>
 
 <span class="sd">    The dict maintained is `neighbor_types_map` and is organized as follows:</span>
@@ -299,7 +307,7 @@
 <span class="sd">    E.g. for an atom with 3 carbon and 1 hydrogen neighbors:</span>
 <span class="sd">        Atom: {&#39;C&#39;: 3, &#39;H&#39;: 1}</span>
 
-<span class="sd">    If the queried `atom` is not already in `neighbor_types_map`, it entry will</span>
+<span class="sd">    If the queried `atom` is not already in `neighbor_types_map`, its entry will</span>
 <span class="sd">    be added.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="n">atom</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">neighbor_types_map</span><span class="p">:</span>
@@ -312,15 +320,19 @@
 
 </div>
 <div class="viewcode-block" id="neighbor_whitelist_types"><a class="viewcode-back" href="../../../../mbuild.tools.parameterize.html#mbuild.tools.parameterize.atomtyper.neighbor_whitelist_types">[docs]</a><span class="k">def</span> <span class="nf">neighbor_whitelist_types</span><span class="p">(</span><span class="n">atom</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Returns the number of neighbors of each element type for an `atom`.</span>
+    <span class="sd">&quot;&quot;&quot;Returns the number of neighbors of each type of whitelisted rule.</span>
 
-<span class="sd">    The dict maintained is `neighbor_types_map` and is organized as follows:</span>
-<span class="sd">        atom: defaultdict{element: number of neighbors of that element type}</span>
-<span class="sd">    E.g. for an atom with 3 carbon and 1 hydrogen neighbors:</span>
-<span class="sd">        Atom: {&#39;C&#39;: 3, &#39;H&#39;: 1}</span>
+<span class="sd">    The dict maintained is `neighbor_whitelist_map` and is organized as follows:</span>
+<span class="sd">        atom: defaultdict{rule id: number of neighbors with rule id whitelisted}</span>
+<span class="sd">    E.g. for a carbon atom in the middle of an alkane chain:</span>
+<span class="sd">        Atom: {&#39;136&#39;: 2, &#39;140&#39;: 2}</span>
 
-<span class="sd">    If the queried `atom` is not already in `neighbor_types_map`, it entry will</span>
-<span class="sd">    be added.</span>
+<span class="sd">    If the queried `atom` is not already in `neighbor_whitelist_map`, an empty</span>
+<span class="sd">    dict is returned. This behavior differs from `neighbor_element_types()`</span>
+<span class="sd">    because whitelisted rules are not known a priori. New entries are only</span>
+<span class="sd">    added when the @Whitelist decorator is used.</span>
+
+<span class="sd">    See Also `increment_neighbor_whitelist()`.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="n">atom</span> <span class="ow">in</span> <span class="n">neighbor_whitelist_map</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">neighbor_whitelist_map</span><span class="p">[</span><span class="n">atom</span><span class="p">]</span>
@@ -328,17 +340,8 @@
         <span class="k">return</span> <span class="nb">dict</span><span class="p">()</span>
 
 </div>
-<div class="viewcode-block" id="append_neighbor_whitelist"><a class="viewcode-back" href="../../../../mbuild.tools.parameterize.html#mbuild.tools.parameterize.atomtyper.append_neighbor_whitelist">[docs]</a><span class="k">def</span> <span class="nf">append_neighbor_whitelist</span><span class="p">(</span><span class="n">atom</span><span class="p">,</span> <span class="n">whitelist_type</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Returns the number of neighbors of each element type for an `atom`.</span>
-
-<span class="sd">    The dict maintained is `neighbor_types_map` and is organized as follows:</span>
-<span class="sd">        atom: defaultdict{element: number of neighbors of that element type}</span>
-<span class="sd">    E.g. for an atom with 3 carbon and 1 hydrogen neighbors:</span>
-<span class="sd">        Atom: {&#39;C&#39;: 3, &#39;H&#39;: 1}</span>
-
-<span class="sd">    If the queried `atom` is not already in `neighbor_types_map`, it entry will</span>
-<span class="sd">    be added.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<div class="viewcode-block" id="increment_neighbor_whitelist"><a class="viewcode-back" href="../../../../mbuild.tools.parameterize.html#mbuild.tools.parameterize.atomtyper.increment_neighbor_whitelist">[docs]</a><span class="k">def</span> <span class="nf">increment_neighbor_whitelist</span><span class="p">(</span><span class="n">atom</span><span class="p">,</span> <span class="n">whitelist_type</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Increment the counts in an atom&#39;s `neighbor_whitelist_map` entry. &quot;&quot;&quot;</span>
     <span class="k">for</span> <span class="n">neighbor</span> <span class="ow">in</span> <span class="n">atom</span><span class="o">.</span><span class="n">neighbors</span><span class="p">:</span>
         <span class="k">if</span> <span class="n">neighbor</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">neighbor_whitelist_map</span><span class="p">:</span>
             <span class="n">neighbor_whitelist_map</span><span class="p">[</span><span class="n">neighbor</span><span class="p">]</span> <span class="o">=</span> <span class="n">defaultdict</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
@@ -348,9 +351,9 @@
 <div class="viewcode-block" id="check_atom"><a class="viewcode-back" href="../../../../mbuild.tools.parameterize.html#mbuild.tools.parameterize.atomtyper.check_atom">[docs]</a><span class="k">def</span> <span class="nf">check_atom</span><span class="p">(</span><span class="n">atom</span><span class="p">,</span> <span class="n">input_rule_ids</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Check if any of the rules in `input_rule_ids` are in the whitelist.</span>
 
-<span class="sd">    This means that the atom was once identified as being elligible for at least</span>
-<span class="sd">    one of these rules. This can be useful for checking, e.g. if a carbon was</span>
-<span class="sd">    ever identified as being part of a benzene ring.</span>
+<span class="sd">    This means that the atom was once identified as being elligible for at</span>
+<span class="sd">    least one of these rules. This can be useful for checking, e.g., if a carbon</span>
+<span class="sd">    was ever identified as being part of a benzene ring.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">rule_ids</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">input_rule_ids</span><span class="p">,</span> <span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">,</span> <span class="nb">set</span><span class="p">)):</span>
@@ -369,56 +372,66 @@
 
 </div>
 <div class="viewcode-block" id="RuleDecorator"><a class="viewcode-back" href="../../../../mbuild.tools.parameterize.html#mbuild.tools.parameterize.atomtyper.RuleDecorator">[docs]</a><span class="k">class</span> <span class="nc">RuleDecorator</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
-    <span class="k">pass</span>
+    <span class="sd">&quot;&quot;&quot;Base class for rule decorators. &quot;&quot;&quot;</span>
+    <span class="nd">@staticmethod</span>
+<div class="viewcode-block" id="RuleDecorator.extract_doc_string"><a class="viewcode-back" href="../../../../mbuild.tools.parameterize.html#mbuild.tools.parameterize.atomtyper.RuleDecorator.extract_doc_string">[docs]</a>    <span class="k">def</span> <span class="nf">extract_doc_string</span><span class="p">(</span><span class="n">func</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">func</span><span class="o">.</span><span class="n">func_doc</span><span class="p">:</span>
+            <span class="n">rule_number</span> <span class="o">=</span> <span class="n">func</span><span class="o">.</span><span class="n">func_name</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&quot;_&quot;</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span>
+            <span class="n">rule_number_to_doc_string</span><span class="p">[</span><span class="n">rule_number</span><span class="p">]</span> <span class="o">=</span> <span class="n">func</span><span class="o">.</span><span class="n">func_doc</span>
 
-</div>
+</div></div>
 <div class="viewcode-block" id="Element"><a class="viewcode-back" href="../../../../mbuild.tools.parameterize.html#mbuild.tools.parameterize.atomtyper.Element">[docs]</a><span class="k">class</span> <span class="nc">Element</span><span class="p">(</span><span class="n">RuleDecorator</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Designate the element that this rule applies to. &quot;&quot;&quot;</span>
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">element_type</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">element_type</span> <span class="o">=</span> <span class="n">element_type</span>
 
-    <span class="k">def</span> <span class="nf">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">f</span><span class="p">):</span>
-        <span class="c"># this must be called &#39;wrapped&#39;</span>
-        <span class="k">def</span> <span class="nf">wrapped</span><span class="p">(</span><span class="n">atom</span><span class="p">):</span>
-            <span class="k">if</span> <span class="n">atom</span><span class="o">.</span><span class="n">kind</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">element_type</span><span class="p">:</span>
-                <span class="k">return</span> <span class="n">f</span><span class="p">(</span><span class="n">atom</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">func</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">extract_doc_string</span><span class="p">(</span><span class="n">func</span><span class="p">)</span>
 
+        <span class="k">def</span> <span class="nf">wrapped</span><span class="p">(</span><span class="n">atom</span><span class="p">):</span>  <span class="c"># this must be called &#39;wrapped&#39;</span>
+            <span class="k">if</span> <span class="n">atom</span><span class="o">.</span><span class="n">kind</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">element_type</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">func</span><span class="p">(</span><span class="n">atom</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">wrapped</span>
 
 </div>
 <div class="viewcode-block" id="InWhitelist"><a class="viewcode-back" href="../../../../mbuild.tools.parameterize.html#mbuild.tools.parameterize.atomtyper.InWhitelist">[docs]</a><span class="k">class</span> <span class="nc">InWhitelist</span><span class="p">(</span><span class="n">RuleDecorator</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Checks if this atom already has different rule whitelisted. &quot;&quot;&quot;</span>
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">element_type</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">element_type</span> <span class="o">=</span> <span class="n">element_type</span>
 
-    <span class="k">def</span> <span class="nf">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">f</span><span class="p">):</span>
-        <span class="c"># this must be called &#39;wrapped&#39;</span>
-        <span class="k">def</span> <span class="nf">wrapped</span><span class="p">(</span><span class="n">atom</span><span class="p">):</span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">element_type</span> <span class="ow">in</span> <span class="n">atom</span><span class="o">.</span><span class="n">whitelist</span><span class="p">:</span>
-                <span class="k">return</span> <span class="n">f</span><span class="p">(</span><span class="n">atom</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">func</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">extract_doc_string</span><span class="p">(</span><span class="n">func</span><span class="p">)</span>
 
+        <span class="k">def</span> <span class="nf">wrapped</span><span class="p">(</span><span class="n">atom</span><span class="p">):</span>  <span class="c"># this must be called &#39;wrapped&#39;</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">element_type</span> <span class="ow">in</span> <span class="n">atom</span><span class="o">.</span><span class="n">whitelist</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">func</span><span class="p">(</span><span class="n">atom</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">wrapped</span>
 
 </div>
 <div class="viewcode-block" id="NeighborCount"><a class="viewcode-back" href="../../../../mbuild.tools.parameterize.html#mbuild.tools.parameterize.atomtyper.NeighborCount">[docs]</a><span class="k">class</span> <span class="nc">NeighborCount</span><span class="p">(</span><span class="n">RuleDecorator</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Designate the number of neighbors an atom must have for this rule. &quot;&quot;&quot;</span>
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">count</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">count</span> <span class="o">=</span> <span class="n">count</span>
 
-    <span class="k">def</span> <span class="nf">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">f</span><span class="p">):</span>
-        <span class="c"># this must be called &#39;wrapped&#39;</span>
-        <span class="k">def</span> <span class="nf">wrapped</span><span class="p">(</span><span class="n">atom</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">func</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">extract_doc_string</span><span class="p">(</span><span class="n">func</span><span class="p">)</span>
+
+        <span class="k">def</span> <span class="nf">wrapped</span><span class="p">(</span><span class="n">atom</span><span class="p">):</span>  <span class="c"># this must be called &#39;wrapped&#39;</span>
             <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">atom</span><span class="o">.</span><span class="n">neighbors</span><span class="p">)</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">count</span><span class="p">:</span>
-                <span class="k">return</span> <span class="n">f</span><span class="p">(</span><span class="n">atom</span><span class="p">)</span>
+                <span class="k">return</span> <span class="n">func</span><span class="p">(</span><span class="n">atom</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">wrapped</span>
 
 </div>
 <div class="viewcode-block" id="NeighborsBase"><a class="viewcode-back" href="../../../../mbuild.tools.parameterize.html#mbuild.tools.parameterize.atomtyper.NeighborsBase">[docs]</a><span class="k">class</span> <span class="nc">NeighborsBase</span><span class="p">(</span><span class="n">RuleDecorator</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Super class for rule decorators that count types of neighbors. &quot;&quot;&quot;</span>
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">neighbor_type</span><span class="p">,</span> <span class="n">count</span><span class="p">):</span>
         <span class="n">neighbor_type</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">neighbor_type</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">neighbor_type</span> <span class="o">=</span> <span class="n">neighbor_type</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">count</span> <span class="o">=</span> <span class="n">count</span>
 
 <div class="viewcode-block" id="NeighborsBase.match_count"><a class="viewcode-back" href="../../../../mbuild.tools.parameterize.html#mbuild.tools.parameterize.atomtyper.NeighborsBase.match_count">[docs]</a>    <span class="k">def</span> <span class="nf">match_count</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">atom</span><span class="p">):</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">neighbor_type</span> <span class="ow">in</span> <span class="n">neighbor_types</span><span class="p">(</span><span class="n">atom</span><span class="p">):</span>
-            <span class="n">match_count</span> <span class="o">=</span> <span class="n">neighbor_types</span><span class="p">(</span><span class="n">atom</span><span class="p">)[</span><span class="bp">self</span><span class="o">.</span><span class="n">neighbor_type</span><span class="p">]</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">neighbor_type</span> <span class="ow">in</span> <span class="n">neighbor_element_types</span><span class="p">(</span><span class="n">atom</span><span class="p">):</span>
+            <span class="n">match_count</span> <span class="o">=</span> <span class="n">neighbor_element_types</span><span class="p">(</span><span class="n">atom</span><span class="p">)[</span><span class="bp">self</span><span class="o">.</span><span class="n">neighbor_type</span><span class="p">]</span>
         <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">neighbor_type</span> <span class="ow">in</span> <span class="n">neighbor_whitelist_types</span><span class="p">(</span><span class="n">atom</span><span class="p">):</span>
             <span class="n">match_count</span> <span class="o">=</span> <span class="n">neighbor_whitelist_types</span><span class="p">(</span><span class="n">atom</span><span class="p">)[</span><span class="bp">self</span><span class="o">.</span><span class="n">neighbor_type</span><span class="p">]</span>
         <span class="k">else</span><span class="p">:</span>
@@ -427,63 +440,81 @@
 
 </div></div>
 <div class="viewcode-block" id="NeighborsExactly"><a class="viewcode-back" href="../../../../mbuild.tools.parameterize.html#mbuild.tools.parameterize.atomtyper.NeighborsExactly">[docs]</a><span class="k">class</span> <span class="nc">NeighborsExactly</span><span class="p">(</span><span class="n">NeighborsBase</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Designate the rule&#39;s exact number of neighbors of a specific type.</span>
+
+<span class="sd">    The &quot;specific type&quot; can either be an element or a whitelisted rule.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">neighbor_type</span><span class="p">,</span> <span class="n">count</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">(</span><span class="n">NeighborsExactly</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">neighbor_type</span><span class="p">,</span> <span class="n">count</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">f</span><span class="p">):</span>
-        <span class="c"># this must be called &#39;wrapped&#39;</span>
-        <span class="k">def</span> <span class="nf">wrapped</span><span class="p">(</span><span class="n">atom</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">func</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">extract_doc_string</span><span class="p">(</span><span class="n">func</span><span class="p">)</span>
+
+        <span class="k">def</span> <span class="nf">wrapped</span><span class="p">(</span><span class="n">atom</span><span class="p">):</span>  <span class="c"># this must be called &#39;wrapped&#39;</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">match_count</span><span class="p">(</span><span class="n">atom</span><span class="p">)</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">count</span><span class="p">:</span>
-                <span class="k">return</span> <span class="n">f</span><span class="p">(</span><span class="n">atom</span><span class="p">)</span>
+                <span class="k">return</span> <span class="n">func</span><span class="p">(</span><span class="n">atom</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">wrapped</span>
 
 </div>
 <div class="viewcode-block" id="NeighborsAtLeast"><a class="viewcode-back" href="../../../../mbuild.tools.parameterize.html#mbuild.tools.parameterize.atomtyper.NeighborsAtLeast">[docs]</a><span class="k">class</span> <span class="nc">NeighborsAtLeast</span><span class="p">(</span><span class="n">NeighborsBase</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Designate the rule&#39;s minimum number of neighbors of a specific type.</span>
+
+<span class="sd">    The &quot;specific type&quot; can either be an element or a whitelisted rule.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">neighbor_type</span><span class="p">,</span> <span class="n">count</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">(</span><span class="n">NeighborsAtLeast</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">neighbor_type</span><span class="p">,</span> <span class="n">count</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">f</span><span class="p">):</span>
-        <span class="c"># this must be called &#39;wrapped&#39;</span>
-        <span class="k">def</span> <span class="nf">wrapped</span><span class="p">(</span><span class="n">atom</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">func</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">extract_doc_string</span><span class="p">(</span><span class="n">func</span><span class="p">)</span>
+
+        <span class="k">def</span> <span class="nf">wrapped</span><span class="p">(</span><span class="n">atom</span><span class="p">):</span>  <span class="c"># this must be called &#39;wrapped&#39;</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">match_count</span><span class="p">(</span><span class="n">atom</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">count</span><span class="p">:</span>
-                <span class="k">return</span> <span class="n">f</span><span class="p">(</span><span class="n">atom</span><span class="p">)</span>
+                <span class="k">return</span> <span class="n">func</span><span class="p">(</span><span class="n">atom</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">wrapped</span>
 
 </div>
 <div class="viewcode-block" id="NeighborsAtMost"><a class="viewcode-back" href="../../../../mbuild.tools.parameterize.html#mbuild.tools.parameterize.atomtyper.NeighborsAtMost">[docs]</a><span class="k">class</span> <span class="nc">NeighborsAtMost</span><span class="p">(</span><span class="n">NeighborsBase</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Designate the rule&#39;s maximum number of neighbors of a specific type.</span>
+
+<span class="sd">    The &quot;specific type&quot; can either be an element or a whitelisted rule.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">neighbor_type</span><span class="p">,</span> <span class="n">count</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">(</span><span class="n">NeighborsAtMost</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">neighbor_type</span><span class="p">,</span> <span class="n">count</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">f</span><span class="p">):</span>
-        <span class="c"># this must be called &#39;wrapped&#39;</span>
-        <span class="k">def</span> <span class="nf">wrapped</span><span class="p">(</span><span class="n">atom</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">func</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">extract_doc_string</span><span class="p">(</span><span class="n">func</span><span class="p">)</span>
+
+        <span class="k">def</span> <span class="nf">wrapped</span><span class="p">(</span><span class="n">atom</span><span class="p">):</span>  <span class="c"># this must be called &#39;wrapped&#39;</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">match_count</span><span class="p">(</span><span class="n">atom</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">count</span><span class="p">:</span>
-                <span class="k">return</span> <span class="n">f</span><span class="p">(</span><span class="n">atom</span><span class="p">)</span>
+                <span class="k">return</span> <span class="n">func</span><span class="p">(</span><span class="n">atom</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">wrapped</span>
 
 </div>
 <div class="viewcode-block" id="Whitelist"><a class="viewcode-back" href="../../../../mbuild.tools.parameterize.html#mbuild.tools.parameterize.atomtyper.Whitelist">[docs]</a><span class="k">class</span> <span class="nc">Whitelist</span><span class="p">(</span><span class="n">RuleDecorator</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Whitelist an atomtype for an atom. &quot;&quot;&quot;</span>
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rule_number</span><span class="p">):</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">rule_number</span><span class="p">,</span> <span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">,</span> <span class="nb">set</span><span class="p">)):</span>
             <span class="n">warn</span><span class="p">(</span><span class="s">&quot;Rules should only whitelist themselves.&quot;</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">rule_number</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">rule_number</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">f</span><span class="p">):</span>
-        <span class="c"># this must be called &#39;wrapped&#39;</span>
-        <span class="k">def</span> <span class="nf">wrapped</span><span class="p">(</span><span class="n">atom</span><span class="p">):</span>
-            <span class="k">if</span> <span class="n">f</span><span class="p">(</span><span class="n">atom</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">func</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">extract_doc_string</span><span class="p">(</span><span class="n">func</span><span class="p">)</span>
+
+        <span class="k">def</span> <span class="nf">wrapped</span><span class="p">(</span><span class="n">atom</span><span class="p">):</span>  <span class="c"># this must be called &#39;wrapped&#39;</span>
+            <span class="k">if</span> <span class="n">func</span><span class="p">(</span><span class="n">atom</span><span class="p">):</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">whitelist</span><span class="p">(</span><span class="n">atom</span><span class="p">)</span>
                 <span class="k">return</span> <span class="bp">True</span>
         <span class="k">return</span> <span class="n">wrapped</span>
 
 <div class="viewcode-block" id="Whitelist.whitelist"><a class="viewcode-back" href="../../../../mbuild.tools.parameterize.html#mbuild.tools.parameterize.atomtyper.Whitelist.whitelist">[docs]</a>    <span class="k">def</span> <span class="nf">whitelist</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">atom</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Whitelist an OPLS-aa atomtype for an atom. &quot;&quot;&quot;</span>
+        <span class="sd">&quot;&quot;&quot;Add the rule to the atom&#39;s whitelist. &quot;&quot;&quot;</span>
         <span class="n">atom</span><span class="o">.</span><span class="n">whitelist</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">rule_number</span><span class="p">))</span>
-        <span class="n">append_neighbor_whitelist</span><span class="p">(</span><span class="n">atom</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">rule_number</span><span class="p">)</span>
+        <span class="n">increment_neighbor_whitelist</span><span class="p">(</span><span class="n">atom</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">rule_number</span><span class="p">)</span>
 
 </div></div>
 <div class="viewcode-block" id="Blacklist"><a class="viewcode-back" href="../../../../mbuild.tools.parameterize.html#mbuild.tools.parameterize.atomtyper.Blacklist">[docs]</a><span class="k">class</span> <span class="nc">Blacklist</span><span class="p">(</span><span class="n">RuleDecorator</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Blacklist an atomtype for an atom. &quot;&quot;&quot;</span>
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rule_numbers</span><span class="p">):</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">rule_numbers</span><span class="p">,</span> <span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">,</span> <span class="nb">set</span><span class="p">)):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">rule_numbers</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="n">rule_numbers</span><span class="p">))</span>
@@ -491,16 +522,17 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">rule_numbers</span> <span class="o">=</span> <span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">rule_numbers</span><span class="p">)]</span>
 
-    <span class="k">def</span> <span class="nf">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">f</span><span class="p">):</span>
-        <span class="c"># this must be called &#39;wrapped&#39;</span>
-        <span class="k">def</span> <span class="nf">wrapped</span><span class="p">(</span><span class="n">atom</span><span class="p">):</span>
-            <span class="k">if</span> <span class="n">f</span><span class="p">(</span><span class="n">atom</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">func</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">extract_doc_string</span><span class="p">(</span><span class="n">func</span><span class="p">)</span>
+
+        <span class="k">def</span> <span class="nf">wrapped</span><span class="p">(</span><span class="n">atom</span><span class="p">):</span>  <span class="c"># this must be called &#39;wrapped&#39;</span>
+            <span class="k">if</span> <span class="n">func</span><span class="p">(</span><span class="n">atom</span><span class="p">):</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">blacklist</span><span class="p">(</span><span class="n">atom</span><span class="p">)</span>
                 <span class="k">return</span> <span class="bp">True</span>
         <span class="k">return</span> <span class="n">wrapped</span>
 
 <div class="viewcode-block" id="Blacklist.blacklist"><a class="viewcode-back" href="../../../../mbuild.tools.parameterize.html#mbuild.tools.parameterize.atomtyper.Blacklist.blacklist">[docs]</a>    <span class="k">def</span> <span class="nf">blacklist</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">atom</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Blacklist an OPLS-aa atomtype for an atom. &quot;&quot;&quot;</span>
+        <span class="sd">&quot;&quot;&quot;Add the rule to the atom&#39;s blacklist. &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">rule_numbers</span><span class="p">,</span> <span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">,</span> <span class="nb">set</span><span class="p">)):</span>
             <span class="k">for</span> <span class="n">rule</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">rule_numbers</span><span class="p">:</span>
                 <span class="n">atom</span><span class="o">.</span><span class="n">blacklist</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">rule</span><span class="p">))</span>
@@ -520,8 +552,66 @@
 <span class="sd">    correct logical inconsistencies as early as possible. Additionally, it</span>
 <span class="sd">    suggests other rules that you may want to consider blacklisting.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">supported_elements</span> <span class="o">=</span> <span class="n">find_all_supported_elements</span><span class="p">()</span>
+    <span class="n">rule_matches</span> <span class="o">=</span> <span class="n">find_all_rule_matches</span><span class="p">(</span><span class="n">supported_elements</span><span class="p">)</span>
 
-    <span class="c"># Find all elements currently supported by rules.</span>
+    <span class="c"># Build directed graphs showing which rules blacklist each other.</span>
+    <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">rules</span> <span class="ow">in</span> <span class="n">rule_matches</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="c"># Only consider patterns matched by multiple rules.</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">rules</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">2</span><span class="p">:</span>
+            <span class="k">continue</span>
+
+        <span class="n">element_type</span><span class="p">,</span> <span class="n">pattern</span> <span class="o">=</span> <span class="n">key</span>
+        <span class="n">graph</span> <span class="o">=</span> <span class="n">nx</span><span class="o">.</span><span class="n">DiGraph</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">rule_number</span> <span class="ow">in</span> <span class="n">rules</span><span class="p">:</span>
+            <span class="n">graph</span><span class="o">.</span><span class="n">add_node</span><span class="p">(</span><span class="n">rule_number</span><span class="p">)</span>
+            <span class="n">blacklisted_rules</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+            <span class="n">decorators</span> <span class="o">=</span> <span class="n">get_decorator_objects_by_type</span><span class="p">(</span>
+                <span class="n">rule_number_to_rule</span><span class="p">[</span><span class="n">rule_number</span><span class="p">],</span> <span class="n">RuleDecorator</span><span class="p">)</span>
+
+            <span class="k">for</span> <span class="n">dec</span> <span class="ow">in</span> <span class="n">decorators</span><span class="p">:</span>
+                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">dec</span><span class="p">,</span> <span class="n">Blacklist</span><span class="p">):</span>
+                    <span class="n">blacklisted_rules</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">dec</span><span class="o">.</span><span class="n">rule_numbers</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">blacklisted_rule</span> <span class="ow">in</span> <span class="n">blacklisted_rules</span><span class="p">:</span>
+                <span class="n">graph</span><span class="o">.</span><span class="n">add_edge</span><span class="p">(</span><span class="n">rule_number</span><span class="p">,</span> <span class="n">blacklisted_rule</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">nx</span><span class="o">.</span><span class="n">is_connected</span><span class="p">(</span><span class="n">graph</span><span class="o">.</span><span class="n">to_undirected</span><span class="p">()):</span>
+            <span class="n">draw_rule_graph</span><span class="p">(</span><span class="s">&#39;unconnected&#39;</span><span class="p">,</span> <span class="n">graph</span><span class="p">,</span> <span class="n">element_type</span><span class="p">,</span> <span class="n">pattern</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">nx</span><span class="o">.</span><span class="n">is_directed_acyclic_graph</span><span class="p">(</span><span class="n">graph</span><span class="p">):</span>
+            <span class="n">draw_rule_graph</span><span class="p">(</span><span class="s">&#39;not_DAG&#39;</span><span class="p">,</span> <span class="n">graph</span><span class="p">,</span> <span class="n">element_type</span><span class="p">,</span> <span class="n">pattern</span><span class="p">)</span>
+
+        <span class="c"># Check for multiple sinks. This is not necessarily incorrect.</span>
+        <span class="n">sinks</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">graph</span><span class="o">.</span><span class="n">nodes</span><span class="p">():</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">nx</span><span class="o">.</span><span class="n">descendants</span><span class="p">(</span><span class="n">graph</span><span class="p">,</span> <span class="n">node</span><span class="p">))</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">sinks</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">node</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">sinks</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="c"># Cases with multiple sinks that we can safely ignore.</span>
+            <span class="c"># TODO: Provide more robust way to add approved exceptions.</span>
+            <span class="k">if</span> <span class="s">&#39;141&#39;</span> <span class="ow">in</span> <span class="n">sinks</span> <span class="ow">and</span> <span class="s">&#39;142&#39;</span> <span class="ow">in</span> <span class="n">sinks</span> <span class="ow">and</span> <span class="s">&#39;145&#39;</span> <span class="ow">in</span> <span class="n">graph</span><span class="o">.</span><span class="n">nodes</span><span class="p">():</span>
+                <span class="c"># This case occurs because 145 requires AT LEAST 2 carbon</span>
+                <span class="c"># neighbors (3 total) and thus can match multiple patterns.</span>
+                <span class="k">continue</span>
+            <span class="n">draw_rule_graph</span><span class="p">(</span><span class="s">&#39;multiple_sinks&#39;</span><span class="p">,</span> <span class="n">graph</span><span class="p">,</span> <span class="n">element_type</span><span class="p">,</span> <span class="n">pattern</span><span class="p">,</span>
+                            <span class="n">sinks</span><span class="o">=</span><span class="n">sinks</span><span class="p">)</span>
+
+        <span class="c"># Check for multiple sources. This is not necessarily incorrect.</span>
+        <span class="n">sources</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">graph</span><span class="o">.</span><span class="n">nodes</span><span class="p">():</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">nx</span><span class="o">.</span><span class="n">ancestors</span><span class="p">(</span><span class="n">graph</span><span class="p">,</span> <span class="n">node</span><span class="p">))</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">sources</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">node</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">sources</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">draw_rule_graph</span><span class="p">(</span><span class="s">&#39;multiple_sources&#39;</span><span class="p">,</span> <span class="n">graph</span><span class="p">,</span> <span class="n">element_type</span><span class="p">,</span> <span class="n">pattern</span><span class="p">,</span>
+                            <span class="n">sources</span><span class="o">=</span><span class="n">sources</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="find_all_supported_elements"><a class="viewcode-back" href="../../../../mbuild.tools.parameterize.html#mbuild.tools.parameterize.atomtyper.find_all_supported_elements">[docs]</a><span class="k">def</span> <span class="nf">find_all_supported_elements</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;Find all elements currently supported by rules.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        supported_elements (list): A sorted list of all the supported elements.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">supported_elements</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
     <span class="k">for</span> <span class="n">rule_number</span><span class="p">,</span> <span class="n">rule</span> <span class="ow">in</span> <span class="n">rule_number_to_rule</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
         <span class="n">decorators</span> <span class="o">=</span> <span class="n">get_decorator_objects_by_type</span><span class="p">(</span><span class="n">rule</span><span class="p">,</span> <span class="n">RuleDecorator</span><span class="p">)</span>
@@ -534,13 +624,20 @@
                 <span class="n">supported_elements</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">element_type</span><span class="p">)</span>
     <span class="n">supported_elements</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">supported_elements</span><span class="p">)</span>
     <span class="n">supported_elements</span><span class="o">.</span><span class="n">sort</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">supported_elements</span>
 
-    <span class="c"># Find all elements and combinations of neighbor types that have a rule.</span>
-    <span class="c"># Rule matches is structured as follows:</span>
-    <span class="c">#   key: (element, (neighbor element 1, neighbor element 2, etc..))</span>
-    <span class="c">#   value: set(rule numbers)</span>
-    <span class="c"># Example entry (from time of writing this comment):</span>
-    <span class="c">#   (&#39;C&#39;, (&#39;C&#39;, &#39;C&#39;, &#39;H&#39;)): set([&#39;145&#39;, &#39;142&#39;])</span>
+</div>
+<div class="viewcode-block" id="find_all_rule_matches"><a class="viewcode-back" href="../../../../mbuild.tools.parameterize.html#mbuild.tools.parameterize.atomtyper.find_all_rule_matches">[docs]</a><span class="k">def</span> <span class="nf">find_all_rule_matches</span><span class="p">(</span><span class="n">supported_elements</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Find all elements and combinations of neighbor types that have a rule.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        rule_matches (dict): All patterns and rules that apply. The dictionary</span>
+<span class="sd">            is structured as follows:</span>
+<span class="sd">                key: (element, (neighbor element 1, neighbor element 2, etc..))</span>
+<span class="sd">                value: set(rule numbers)</span>
+<span class="sd">            Example entry (from time of writing this comment):</span>
+<span class="sd">                (&#39;C&#39;, (&#39;C&#39;, &#39;C&#39;, &#39;H&#39;)): set([&#39;145&#39;, &#39;142&#39;])</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">rule_matches</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
     <span class="k">for</span> <span class="n">rule_number</span><span class="p">,</span> <span class="n">rule</span> <span class="ow">in</span> <span class="n">rule_number_to_rule</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
         <span class="n">decorators</span> <span class="o">=</span> <span class="n">get_decorator_objects_by_type</span><span class="p">(</span><span class="n">rule</span><span class="p">,</span> <span class="n">RuleDecorator</span><span class="p">)</span>
@@ -554,7 +651,8 @@
                 <span class="n">check_duplicate_neighbor_count</span><span class="p">(</span><span class="n">neighbor_count</span><span class="p">,</span> <span class="n">rule_number</span><span class="p">)</span>
                 <span class="n">neighbor_count</span> <span class="o">=</span> <span class="n">dec</span><span class="o">.</span><span class="n">count</span>
         <span class="c"># All POSSIBLE combinations of elements and neighbors.</span>
-        <span class="n">all_patterns</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">combinations_with_replacement</span><span class="p">(</span><span class="n">supported_elements</span><span class="p">,</span> <span class="n">neighbor_count</span><span class="p">))</span>
+        <span class="n">all_patterns</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">combinations_with_replacement</span><span class="p">(</span><span class="n">supported_elements</span><span class="p">,</span>
+                                                         <span class="n">neighbor_count</span><span class="p">))</span>
 
         <span class="c"># Remove the ones that don&#39;t actually have a rule.</span>
         <span class="n">removed_patterns</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
@@ -575,60 +673,10 @@
 
         <span class="k">for</span> <span class="n">pattern</span> <span class="ow">in</span> <span class="n">all_patterns</span><span class="p">:</span>
             <span class="k">if</span> <span class="p">(</span><span class="n">element_type</span><span class="p">,</span> <span class="n">pattern</span><span class="p">)</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">rule_matches</span><span class="p">:</span>
-                <span class="n">rule_matches</span><span class="p">[(</span><span class="n">element_type</span><span class="p">,</span> <span class="n">pattern</span><span class="p">)]</span> <span class="o">=</span> <span class="nb">set</span><span class="p">([</span><span class="n">rule_number</span><span class="p">])</span>
+                <span class="n">rule_matches</span><span class="p">[(</span><span class="n">element_type</span><span class="p">,</span> <span class="n">pattern</span><span class="p">)]</span> <span class="o">=</span> <span class="p">{</span><span class="n">rule_number</span><span class="p">}</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">rule_matches</span><span class="p">[(</span><span class="n">element_type</span><span class="p">,</span> <span class="n">pattern</span><span class="p">)]</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">rule_number</span><span class="p">)</span>
-
-    <span class="c"># Build directed graphs showing which rules blacklist each other.</span>
-    <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">rules</span> <span class="ow">in</span> <span class="n">rule_matches</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-        <span class="c"># Only consider patterns matched by multiple rules.</span>
-        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">rules</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">2</span><span class="p">:</span>
-            <span class="k">continue</span>
-
-        <span class="n">element_type</span><span class="p">,</span> <span class="n">pattern</span> <span class="o">=</span> <span class="n">key</span>
-        <span class="n">G</span> <span class="o">=</span> <span class="n">nx</span><span class="o">.</span><span class="n">DiGraph</span><span class="p">()</span>
-        <span class="k">for</span> <span class="n">rule_number</span> <span class="ow">in</span> <span class="n">rules</span><span class="p">:</span>
-            <span class="n">G</span><span class="o">.</span><span class="n">add_node</span><span class="p">(</span><span class="n">rule_number</span><span class="p">)</span>
-            <span class="n">blacklisted_rules</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
-            <span class="n">decorators</span> <span class="o">=</span> <span class="n">get_decorator_objects_by_type</span><span class="p">(</span><span class="n">rule_number_to_rule</span><span class="p">[</span><span class="n">rule_number</span><span class="p">],</span> <span class="n">RuleDecorator</span><span class="p">)</span>
-
-            <span class="k">for</span> <span class="n">dec</span> <span class="ow">in</span> <span class="n">decorators</span><span class="p">:</span>
-                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">dec</span><span class="p">,</span> <span class="n">Blacklist</span><span class="p">):</span>
-                    <span class="n">blacklisted_rules</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">dec</span><span class="o">.</span><span class="n">rule_numbers</span><span class="p">)</span>
-            <span class="k">for</span> <span class="n">blacklisted_rule</span> <span class="ow">in</span> <span class="n">blacklisted_rules</span><span class="p">:</span>
-                <span class="n">G</span><span class="o">.</span><span class="n">add_edge</span><span class="p">(</span><span class="n">rule_number</span><span class="p">,</span> <span class="n">blacklisted_rule</span><span class="p">)</span>
-
-        <span class="c"># Check if graph is connected.</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">nx</span><span class="o">.</span><span class="n">is_connected</span><span class="p">(</span><span class="n">G</span><span class="o">.</span><span class="n">to_undirected</span><span class="p">()):</span>
-            <span class="n">draw_rule_graph</span><span class="p">(</span><span class="s">&#39;unconnected&#39;</span><span class="p">,</span> <span class="n">G</span><span class="p">,</span> <span class="n">element_type</span><span class="p">,</span> <span class="n">pattern</span><span class="p">)</span>
-
-        <span class="c"># Check if DAG.</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">nx</span><span class="o">.</span><span class="n">is_directed_acyclic_graph</span><span class="p">(</span><span class="n">G</span><span class="p">):</span>
-            <span class="n">draw_rule_graph</span><span class="p">(</span><span class="s">&#39;not_DAG&#39;</span><span class="p">,</span> <span class="n">G</span><span class="p">,</span> <span class="n">element_type</span><span class="p">,</span> <span class="n">pattern</span><span class="p">)</span>
-
-        <span class="c"># Check if there are multiple sinks. This is not necessarily incorrect.</span>
-        <span class="n">sinks</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">G</span><span class="o">.</span><span class="n">nodes</span><span class="p">():</span>
-            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">nx</span><span class="o">.</span><span class="n">descendants</span><span class="p">(</span><span class="n">G</span><span class="p">,</span> <span class="n">node</span><span class="p">))</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-                <span class="n">sinks</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">node</span><span class="p">)</span>
-        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">sinks</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
-            <span class="c"># Cases with multiple sinks that we can safely ignore.</span>
-            <span class="c"># TODO: Provide more robust way to add approved exceptions.</span>
-            <span class="k">if</span> <span class="s">&#39;141&#39;</span> <span class="ow">in</span> <span class="n">sinks</span> <span class="ow">and</span> <span class="s">&#39;142&#39;</span> <span class="ow">in</span> <span class="n">sinks</span> <span class="ow">and</span> <span class="s">&#39;145&#39;</span> <span class="ow">in</span> <span class="n">G</span><span class="o">.</span><span class="n">nodes</span><span class="p">():</span>
-                <span class="c"># This case occurs because 145 requires AT LEAST 2 carbon</span>
-                <span class="c"># neighbors (3 total) and thus can match multiple patterns.</span>
-                <span class="k">continue</span>
-            <span class="n">draw_rule_graph</span><span class="p">(</span><span class="s">&#39;multiple_sinks&#39;</span><span class="p">,</span> <span class="n">G</span><span class="p">,</span> <span class="n">element_type</span><span class="p">,</span> <span class="n">pattern</span><span class="p">,</span>
-                            <span class="n">sinks</span><span class="o">=</span><span class="n">sinks</span><span class="p">)</span>
-
-        <span class="c"># Check if there are multiple sources. This is not necessarily incorrect.</span>
-        <span class="n">sources</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">G</span><span class="o">.</span><span class="n">nodes</span><span class="p">():</span>
-            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">nx</span><span class="o">.</span><span class="n">ancestors</span><span class="p">(</span><span class="n">G</span><span class="p">,</span> <span class="n">node</span><span class="p">))</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-                <span class="n">sources</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">node</span><span class="p">)</span>
-        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">sources</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
-            <span class="n">draw_rule_graph</span><span class="p">(</span><span class="s">&#39;multiple_sources&#39;</span><span class="p">,</span> <span class="n">G</span><span class="p">,</span> <span class="n">element_type</span><span class="p">,</span> <span class="n">pattern</span><span class="p">,</span>
-                            <span class="n">sources</span><span class="o">=</span><span class="n">sources</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">rule_matches</span>
 
 </div>
 <div class="viewcode-block" id="get_decorator_objects_by_type"><a class="viewcode-back" href="../../../../mbuild.tools.parameterize.html#mbuild.tools.parameterize.atomtyper.get_decorator_objects_by_type">[docs]</a><span class="k">def</span> <span class="nf">get_decorator_objects_by_type</span><span class="p">(</span><span class="n">decorated_function</span><span class="p">,</span> <span class="n">decorator_type</span><span class="p">):</span>
@@ -649,52 +697,54 @@
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">closure_entry</span><span class="p">,</span> <span class="n">decorator_type</span><span class="p">):</span>
             <span class="n">decorators</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">closure_entry</span><span class="p">)</span>
             <span class="k">break</span>
-    <span class="c"># Find a function called `wrapper` in the function&#39;s closure, and recurse on that.</span>
+    <span class="c"># Find a function called `wrapper` in the function&#39;s closure, and recurse.</span>
     <span class="k">for</span> <span class="n">cell</span> <span class="ow">in</span> <span class="n">decorated_function</span><span class="o">.</span><span class="n">func_closure</span><span class="p">:</span>
         <span class="n">closure_entry</span> <span class="o">=</span> <span class="n">cell</span><span class="o">.</span><span class="n">cell_contents</span>
         <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">closure_entry</span><span class="p">,</span> <span class="s">&#39;__name__&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="n">closure_entry</span><span class="o">.</span><span class="n">__name__</span> <span class="ow">is</span> <span class="s">&quot;wrapped&quot;</span><span class="p">:</span>
-            <span class="n">wrapped_decorator_objects</span> <span class="o">=</span> <span class="n">get_decorator_objects_by_type</span><span class="p">(</span><span class="n">closure_entry</span><span class="p">,</span> <span class="n">decorator_type</span><span class="p">)</span>
+            <span class="n">wrapped_decorator_objects</span> <span class="o">=</span> <span class="n">get_decorator_objects_by_type</span><span class="p">(</span>
+                <span class="n">closure_entry</span><span class="p">,</span> <span class="n">decorator_type</span><span class="p">)</span>
             <span class="n">decorators</span> <span class="o">+=</span> <span class="n">wrapped_decorator_objects</span>
             <span class="k">break</span>
     <span class="k">return</span> <span class="n">decorators</span>
 
 </div>
 <div class="viewcode-block" id="check_duplicate_element"><a class="viewcode-back" href="../../../../mbuild.tools.parameterize.html#mbuild.tools.parameterize.atomtyper.check_duplicate_element">[docs]</a><span class="k">def</span> <span class="nf">check_duplicate_element</span><span class="p">(</span><span class="n">element_type</span><span class="p">,</span> <span class="n">rule_number</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Used to catch rules with multiple @Element decorators.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        element_type (str): The element type in the decorator. This is only</span>
+<span class="sd">            used to check if it has been assigned previously.</span>
+<span class="sd">        rule_number (int): The decorated rule in question.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">assert</span> <span class="n">element_type</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">,</span> <span class="p">(</span><span class="s">&quot;Duplicate element type decorators on rule &quot;</span>
                                   <span class="s">&quot;{}&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">rule_number</span><span class="p">))</span>
 
 </div>
 <div class="viewcode-block" id="check_duplicate_neighbor_count"><a class="viewcode-back" href="../../../../mbuild.tools.parameterize.html#mbuild.tools.parameterize.atomtyper.check_duplicate_neighbor_count">[docs]</a><span class="k">def</span> <span class="nf">check_duplicate_neighbor_count</span><span class="p">(</span><span class="n">neighbor_count</span><span class="p">,</span> <span class="n">rule_number</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Used to catch rules with multiple @NeighborCount decorators.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        neighbor_count (int): The neighbor count in the decorator. This is only</span>
+<span class="sd">            used to check if it has been assigned previously.</span>
+<span class="sd">        rule_number (int): The decorated rule in question.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">assert</span> <span class="n">neighbor_count</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">,</span> <span class="p">(</span><span class="s">&quot;Duplicate neighbor count decorators on &quot;</span>
                                     <span class="s">&quot;rule {}&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">rule_number</span><span class="p">))</span>
 
 </div>
-<div class="viewcode-block" id="draw_rule_graph"><a class="viewcode-back" href="../../../../mbuild.tools.parameterize.html#mbuild.tools.parameterize.atomtyper.draw_rule_graph">[docs]</a><span class="k">def</span> <span class="nf">draw_rule_graph</span><span class="p">(</span><span class="n">issue</span><span class="p">,</span> <span class="n">G</span><span class="p">,</span> <span class="n">element</span><span class="p">,</span> <span class="n">pattern</span><span class="p">,</span> <span class="n">sinks</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">sources</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+<div class="viewcode-block" id="draw_rule_graph"><a class="viewcode-back" href="../../../../mbuild.tools.parameterize.html#mbuild.tools.parameterize.atomtyper.draw_rule_graph">[docs]</a><span class="k">def</span> <span class="nf">draw_rule_graph</span><span class="p">(</span><span class="n">issue</span><span class="p">,</span> <span class="n">graph</span><span class="p">,</span> <span class="n">element</span><span class="p">,</span> <span class="n">pattern</span><span class="p">,</span> <span class="n">sinks</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">sources</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Visualize the blacklist graph for a pattern with a logical inconsitency.</span>
+
 <span class="sd">    Args:</span>
-<span class="sd">        issue:</span>
-<span class="sd">        G:</span>
-<span class="sd">        element:</span>
-<span class="sd">        pattern:</span>
-<span class="sd">        sinks:</span>
+<span class="sd">        issue (str): Descriptive string of the logical inconsistency. Used for</span>
+<span class="sd">            labeling purposes.</span>
+<span class="sd">        graph (nx.DiGraph): The blacklist graph.</span>
+<span class="sd">        element (str): The type of element that the conflicting rules describe.</span>
+<span class="sd">        pattern (tuple of str): The immediate neighbors of the element in</span>
+<span class="sd">            question.</span>
+<span class="sd">        sinks (list of nodes, optional): Nodes that are sinks in the graph.</span>
+<span class="sd">        sources (list of nodes, optional): Nodes that are sources in the graph.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-
-    <span class="c"># TODO: color unconnected nodes</span>
-    <span class="n">colors</span> <span class="o">=</span> <span class="p">[]</span>
-    <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">G</span><span class="o">.</span><span class="n">nodes_iter</span><span class="p">():</span>
-        <span class="k">if</span> <span class="n">sinks</span> <span class="ow">and</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">sinks</span><span class="p">:</span>
-            <span class="n">colors</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s">&#39;blue&#39;</span><span class="p">)</span>
-        <span class="k">elif</span> <span class="n">sources</span> <span class="ow">and</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">sources</span><span class="p">:</span>
-            <span class="n">colors</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s">&#39;blue&#39;</span><span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">colors</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s">&#39;red&#39;</span><span class="p">)</span>
-
-    <span class="n">nx</span><span class="o">.</span><span class="n">draw_circular</span><span class="p">(</span><span class="n">G</span><span class="p">,</span> <span class="n">node_size</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span> <span class="n">node_color</span><span class="o">=</span><span class="n">colors</span><span class="p">)</span>
-    <span class="n">fig_name</span> <span class="o">=</span> <span class="s">&#39;{}-element_{}-pattern_{}.png&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
-        <span class="n">issue</span><span class="p">,</span> <span class="n">element</span><span class="p">,</span> <span class="s">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">pattern</span><span class="p">))</span>
-    <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">fig_name</span><span class="p">)</span>
-    <span class="n">plt</span><span class="o">.</span><span class="n">clf</span><span class="p">()</span>
-
     <span class="k">if</span> <span class="n">issue</span> <span class="o">==</span> <span class="s">&#39;unconnected&#39;</span><span class="p">:</span>
         <span class="n">phrase</span> <span class="o">=</span> <span class="s">&#39;is not connected&#39;</span>
     <span class="k">elif</span> <span class="n">issue</span> <span class="o">==</span> <span class="s">&#39;not_DAG&#39;</span><span class="p">:</span>
@@ -705,6 +755,38 @@
     <span class="k">elif</span> <span class="n">issue</span> <span class="o">==</span> <span class="s">&#39;multiple_sources&#39;</span><span class="p">:</span>
         <span class="k">assert</span> <span class="n">sources</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span>
         <span class="n">phrase</span> <span class="o">=</span> <span class="s">&#39;has multiple sources: {}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">sources</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">warn</span><span class="p">(</span><span class="s">&quot;Can&#39;t draw rule graph. Unrecognized issue: {}&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">issue</span><span class="p">))</span>
+        <span class="k">return</span>
+
+    <span class="c"># TODO: color unconnected nodes</span>
+    <span class="n">colors</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">graph</span><span class="o">.</span><span class="n">nodes_iter</span><span class="p">():</span>
+        <span class="k">if</span> <span class="n">sinks</span> <span class="ow">and</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">sinks</span><span class="p">:</span>
+            <span class="n">colors</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s">&#39;blue&#39;</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">sources</span> <span class="ow">and</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">sources</span><span class="p">:</span>
+            <span class="n">colors</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s">&#39;blue&#39;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">colors</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s">&#39;red&#39;</span><span class="p">)</span>
+
+    <span class="n">labels</span> <span class="o">=</span> <span class="p">{</span><span class="n">rule</span><span class="p">:</span> <span class="s">&#39;{}</span><span class="se">\n</span><span class="s">{}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">rule</span><span class="p">,</span> <span class="n">doc</span><span class="p">)</span> <span class="k">for</span> <span class="n">rule</span><span class="p">,</span> <span class="n">doc</span> <span class="ow">in</span>
+              <span class="n">rule_number_to_doc_string</span><span class="o">.</span><span class="n">iteritems</span><span class="p">()</span> <span class="k">if</span> <span class="n">rule</span> <span class="ow">in</span> <span class="n">graph</span><span class="o">.</span><span class="n">nodes</span><span class="p">()}</span>
+
+    <span class="n">pos</span> <span class="o">=</span> <span class="n">nx</span><span class="o">.</span><span class="n">spring_layout</span><span class="p">(</span><span class="n">graph</span><span class="p">)</span>
+    <span class="n">nx</span><span class="o">.</span><span class="n">draw_networkx_nodes</span><span class="p">(</span><span class="n">graph</span><span class="p">,</span> <span class="n">pos</span><span class="p">,</span> <span class="n">node_size</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span> <span class="n">node_color</span><span class="o">=</span><span class="n">colors</span><span class="p">)</span>
+    <span class="n">nx</span><span class="o">.</span><span class="n">draw_networkx_edges</span><span class="p">(</span><span class="n">graph</span><span class="p">,</span> <span class="n">pos</span><span class="p">)</span>
+    <span class="n">nx</span><span class="o">.</span><span class="n">draw_networkx_labels</span><span class="p">(</span><span class="n">graph</span><span class="p">,</span> <span class="n">pos</span><span class="p">,</span> <span class="n">labels</span><span class="o">=</span><span class="n">labels</span><span class="p">)</span>
+
+    <span class="c"># TODO: Prettier way to show the doc strings on the blacklist graph.</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">axis</span><span class="p">(</span><span class="s">&#39;off&#39;</span><span class="p">)</span>
+    <span class="n">xmin</span><span class="p">,</span> <span class="n">xmax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">xlim</span><span class="p">()</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">xlim</span><span class="p">(</span><span class="n">xmin</span><span class="o">*</span><span class="mf">1.5</span><span class="p">,</span> <span class="n">xmax</span><span class="o">*</span><span class="mf">1.5</span><span class="p">)</span>
+
+    <span class="n">fig_name</span> <span class="o">=</span> <span class="s">&#39;{}-element_{}-pattern_{}.png&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+        <span class="n">issue</span><span class="p">,</span> <span class="n">element</span><span class="p">,</span> <span class="s">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">pattern</span><span class="p">))</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">fig_name</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">clf</span><span class="p">()</span>
 
     <span class="n">warn</span><span class="p">(</span><span class="s">&quot;{} connected to {} {}. See &#39;{}&#39;&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
         <span class="n">element</span><span class="p">,</span> <span class="n">pattern</span><span class="p">,</span> <span class="n">phrase</span><span class="p">,</span> <span class="n">fig_name</span><span class="p">))</span></div>

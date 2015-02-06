@@ -82,7 +82,7 @@
 <li class="toctree-l2"><a class="reference internal" href="../../../apidoc/mbuild.html#module-mbuild.compound">mbuild.compound module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../apidoc/mbuild.html#module-mbuild.coordinate_transform">mbuild.coordinate_transform module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../apidoc/mbuild.html#module-mbuild.has_parts_mixin">mbuild.has_parts_mixin module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../../apidoc/mbuild.html#module-mbuild.mbase">mbuild.mbase module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../apidoc/mbuild.html#mbuild-mbase-module">mbuild.mbase module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../apidoc/mbuild.html#module-mbuild.orderedset">mbuild.orderedset module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../apidoc/mbuild.html#module-mbuild.part_mixin">mbuild.part_mixin module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../apidoc/mbuild.html#module-mbuild.periodic_kdtree">mbuild.periodic_kdtree module</a></li>
@@ -149,8 +149,8 @@
           <div role="main">
             
   <h1>Source code for mbuild.formats.gromacs</h1><div class="highlight"><pre>
-<span class="k">def</span> <span class="nf">save_gromacs</span><span class="p">(</span><span class="n">traj</span><span class="p">,</span> <span class="n">step</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span> <span class="n">basename</span><span class="o">=</span><span class="s">&#39;mbuild&#39;</span><span class="p">,</span> <span class="n">forcefield</span><span class="o">=</span><span class="s">&#39;opls-aa&#39;</span><span class="p">):</span>
-<div class="viewcode-block" id="save_gromacs"><a class="viewcode-back" href="../../../mbuild.formats.html#mbuild.formats.gromacs.save_gromacs">[docs]</a>    <span class="sd">&quot;&quot;&quot;Output a Trajectory as a GROMACS .gro and .top file.</span>
+<div class="viewcode-block" id="save_gromacs"><a class="viewcode-back" href="../../../mbuild.formats.html#mbuild.formats.gromacs.save_gromacs">[docs]</a><span class="k">def</span> <span class="nf">save_gromacs</span><span class="p">(</span><span class="n">traj</span><span class="p">,</span> <span class="n">step</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span> <span class="n">basename</span><span class="o">=</span><span class="s">&#39;mbuild&#39;</span><span class="p">,</span> <span class="n">forcefield</span><span class="o">=</span><span class="s">&#39;opls-aa&#39;</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Output a Trajectory as a GROMACS .gro and .top file.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        traj:</span>
@@ -171,8 +171,9 @@
         <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\n</span><span class="s">[ atoms ]</span><span class="se">\n</span><span class="s">&#39;</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">atom</span> <span class="ow">in</span> <span class="n">traj</span><span class="o">.</span><span class="n">topology</span><span class="o">.</span><span class="n">atoms</span><span class="p">:</span>
             <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&#39;{:d} {:s} {:d} {:s} {:s} {:d} {:8.4f} {:8.4f}</span><span class="se">\n</span><span class="s">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
-               <span class="n">atom</span><span class="o">.</span><span class="n">index</span><span class="p">,</span> <span class="n">atom</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">atom</span><span class="o">.</span><span class="n">residue</span><span class="o">.</span><span class="n">index</span><span class="p">,</span> <span class="n">atom</span><span class="o">.</span><span class="n">residue</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
-               <span class="n">atom</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="n">atom</span><span class="o">.</span><span class="n">element</span><span class="o">.</span><span class="n">mass</span><span class="p">))</span>
+                <span class="n">atom</span><span class="o">.</span><span class="n">index</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">atom</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">atom</span><span class="o">.</span><span class="n">residue</span><span class="o">.</span><span class="n">index</span><span class="p">,</span>
+                <span class="n">atom</span><span class="o">.</span><span class="n">residue</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+                <span class="n">atom</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="n">atom</span><span class="o">.</span><span class="n">element</span><span class="o">.</span><span class="n">mass</span><span class="p">))</span>
 
         <span class="k">if</span> <span class="n">traj</span><span class="o">.</span><span class="n">topology</span><span class="o">.</span><span class="n">_ff_bonds</span><span class="p">:</span>
             <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\n</span><span class="s">[ bonds ]</span><span class="se">\n</span><span class="s">&#39;</span><span class="p">)</span>
@@ -218,8 +219,10 @@
             <span class="n">box</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">box</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="n">box</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">]))</span>
         <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\n</span><span class="s">&#39;</span><span class="p">)</span>
 
-<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&quot;__main__&quot;</span><span class="p">:</span></div>
+</div>
+<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&quot;__main__&quot;</span><span class="p">:</span>
     <span class="kn">from</span> <span class="nn">mbuild.examples.ethane.ethane</span> <span class="kn">import</span> <span class="n">Ethane</span>
+
     <span class="n">ethane</span> <span class="o">=</span> <span class="n">Ethane</span><span class="p">()</span><span class="o">.</span><span class="n">to_trajectory</span><span class="p">()</span>
     <span class="n">ethane</span><span class="o">.</span><span class="n">topology</span><span class="o">.</span><span class="n">find_forcefield_terms</span><span class="p">()</span>
     <span class="n">save_gromacs</span><span class="p">(</span><span class="n">ethane</span><span class="p">,</span> <span class="n">basename</span><span class="o">=</span><span class="s">&#39;ethane&#39;</span><span class="p">)</span>

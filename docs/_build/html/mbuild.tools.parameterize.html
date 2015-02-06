@@ -81,7 +81,7 @@
 <li class="toctree-l2"><a class="reference internal" href="apidoc/mbuild.html#module-mbuild.compound">mbuild.compound module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="apidoc/mbuild.html#module-mbuild.coordinate_transform">mbuild.coordinate_transform module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="apidoc/mbuild.html#module-mbuild.has_parts_mixin">mbuild.has_parts_mixin module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="apidoc/mbuild.html#module-mbuild.mbase">mbuild.mbase module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="apidoc/mbuild.html#mbuild-mbase-module">mbuild.mbase module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="apidoc/mbuild.html#module-mbuild.orderedset">mbuild.orderedset module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="apidoc/mbuild.html#module-mbuild.part_mixin">mbuild.part_mixin module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="apidoc/mbuild.html#module-mbuild.periodic_kdtree">mbuild.periodic_kdtree module</a></li>
@@ -158,6 +158,7 @@
 <dt id="mbuild.tools.parameterize.atomtyper.Blacklist">
 <em class="property">class </em><tt class="descclassname">mbuild.tools.parameterize.atomtyper.</tt><tt class="descname">Blacklist</tt><big>(</big><em>rule_numbers</em><big>)</big><a class="reference internal" href="_modules/mbuild/tools/parameterize/atomtyper.html#Blacklist"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.tools.parameterize.atomtyper.Blacklist" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#mbuild.tools.parameterize.atomtyper.RuleDecorator" title="mbuild.tools.parameterize.atomtyper.RuleDecorator"><tt class="xref py py-class docutils literal"><span class="pre">mbuild.tools.parameterize.atomtyper.RuleDecorator</span></tt></a></p>
+<p>Blacklist an atomtype for an atom.</p>
 <dl class="attribute">
 <dt id="mbuild.tools.parameterize.atomtyper.Blacklist.__delattr__">
 <tt class="descname">__delattr__</tt><a class="headerlink" href="#mbuild.tools.parameterize.atomtyper.Blacklist.__delattr__" title="Permalink to this definition">¶</a></dt>
@@ -221,8 +222,13 @@
 <dl class="method">
 <dt id="mbuild.tools.parameterize.atomtyper.Blacklist.blacklist">
 <tt class="descname">blacklist</tt><big>(</big><em>atom</em><big>)</big><a class="reference internal" href="_modules/mbuild/tools/parameterize/atomtyper.html#Blacklist.blacklist"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.tools.parameterize.atomtyper.Blacklist.blacklist" title="Permalink to this definition">¶</a></dt>
-<dd><p>Blacklist an OPLS-aa atomtype for an atom.</p>
+<dd><p>Add the rule to the atom&#8217;s blacklist.</p>
 </dd></dl>
+
+<dl class="staticmethod">
+<dt id="mbuild.tools.parameterize.atomtyper.Blacklist.extract_doc_string">
+<em class="property">static </em><tt class="descname">extract_doc_string</tt><big>(</big><em>func</em><big>)</big><a class="headerlink" href="#mbuild.tools.parameterize.atomtyper.Blacklist.extract_doc_string" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
 
 </dd></dl>
 
@@ -230,6 +236,7 @@
 <dt id="mbuild.tools.parameterize.atomtyper.Element">
 <em class="property">class </em><tt class="descclassname">mbuild.tools.parameterize.atomtyper.</tt><tt class="descname">Element</tt><big>(</big><em>element_type</em><big>)</big><a class="reference internal" href="_modules/mbuild/tools/parameterize/atomtyper.html#Element"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.tools.parameterize.atomtyper.Element" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#mbuild.tools.parameterize.atomtyper.RuleDecorator" title="mbuild.tools.parameterize.atomtyper.RuleDecorator"><tt class="xref py py-class docutils literal"><span class="pre">mbuild.tools.parameterize.atomtyper.RuleDecorator</span></tt></a></p>
+<p>Designate the element that this rule applies to.</p>
 <dl class="attribute">
 <dt id="mbuild.tools.parameterize.atomtyper.Element.__delattr__">
 <tt class="descname">__delattr__</tt><a class="headerlink" href="#mbuild.tools.parameterize.atomtyper.Element.__delattr__" title="Permalink to this definition">¶</a></dt>
@@ -290,12 +297,18 @@
 <dd><p>x.__str__() &lt;==&gt; str(x)</p>
 </dd></dl>
 
+<dl class="staticmethod">
+<dt id="mbuild.tools.parameterize.atomtyper.Element.extract_doc_string">
+<em class="property">static </em><tt class="descname">extract_doc_string</tt><big>(</big><em>func</em><big>)</big><a class="headerlink" href="#mbuild.tools.parameterize.atomtyper.Element.extract_doc_string" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
 </dd></dl>
 
 <dl class="class">
 <dt id="mbuild.tools.parameterize.atomtyper.InWhitelist">
 <em class="property">class </em><tt class="descclassname">mbuild.tools.parameterize.atomtyper.</tt><tt class="descname">InWhitelist</tt><big>(</big><em>element_type</em><big>)</big><a class="reference internal" href="_modules/mbuild/tools/parameterize/atomtyper.html#InWhitelist"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.tools.parameterize.atomtyper.InWhitelist" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#mbuild.tools.parameterize.atomtyper.RuleDecorator" title="mbuild.tools.parameterize.atomtyper.RuleDecorator"><tt class="xref py py-class docutils literal"><span class="pre">mbuild.tools.parameterize.atomtyper.RuleDecorator</span></tt></a></p>
+<p>Checks if this atom already has different rule whitelisted.</p>
 <dl class="attribute">
 <dt id="mbuild.tools.parameterize.atomtyper.InWhitelist.__delattr__">
 <tt class="descname">__delattr__</tt><a class="headerlink" href="#mbuild.tools.parameterize.atomtyper.InWhitelist.__delattr__" title="Permalink to this definition">¶</a></dt>
@@ -356,12 +369,18 @@
 <dd><p>x.__str__() &lt;==&gt; str(x)</p>
 </dd></dl>
 
+<dl class="staticmethod">
+<dt id="mbuild.tools.parameterize.atomtyper.InWhitelist.extract_doc_string">
+<em class="property">static </em><tt class="descname">extract_doc_string</tt><big>(</big><em>func</em><big>)</big><a class="headerlink" href="#mbuild.tools.parameterize.atomtyper.InWhitelist.extract_doc_string" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
 </dd></dl>
 
 <dl class="class">
 <dt id="mbuild.tools.parameterize.atomtyper.NeighborCount">
 <em class="property">class </em><tt class="descclassname">mbuild.tools.parameterize.atomtyper.</tt><tt class="descname">NeighborCount</tt><big>(</big><em>count</em><big>)</big><a class="reference internal" href="_modules/mbuild/tools/parameterize/atomtyper.html#NeighborCount"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.tools.parameterize.atomtyper.NeighborCount" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#mbuild.tools.parameterize.atomtyper.RuleDecorator" title="mbuild.tools.parameterize.atomtyper.RuleDecorator"><tt class="xref py py-class docutils literal"><span class="pre">mbuild.tools.parameterize.atomtyper.RuleDecorator</span></tt></a></p>
+<p>Designate the number of neighbors an atom must have for this rule.</p>
 <dl class="attribute">
 <dt id="mbuild.tools.parameterize.atomtyper.NeighborCount.__delattr__">
 <tt class="descname">__delattr__</tt><a class="headerlink" href="#mbuild.tools.parameterize.atomtyper.NeighborCount.__delattr__" title="Permalink to this definition">¶</a></dt>
@@ -422,12 +441,19 @@
 <dd><p>x.__str__() &lt;==&gt; str(x)</p>
 </dd></dl>
 
+<dl class="staticmethod">
+<dt id="mbuild.tools.parameterize.atomtyper.NeighborCount.extract_doc_string">
+<em class="property">static </em><tt class="descname">extract_doc_string</tt><big>(</big><em>func</em><big>)</big><a class="headerlink" href="#mbuild.tools.parameterize.atomtyper.NeighborCount.extract_doc_string" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
 </dd></dl>
 
 <dl class="class">
 <dt id="mbuild.tools.parameterize.atomtyper.NeighborsAtLeast">
 <em class="property">class </em><tt class="descclassname">mbuild.tools.parameterize.atomtyper.</tt><tt class="descname">NeighborsAtLeast</tt><big>(</big><em>neighbor_type</em>, <em>count</em><big>)</big><a class="reference internal" href="_modules/mbuild/tools/parameterize/atomtyper.html#NeighborsAtLeast"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.tools.parameterize.atomtyper.NeighborsAtLeast" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#mbuild.tools.parameterize.atomtyper.NeighborsBase" title="mbuild.tools.parameterize.atomtyper.NeighborsBase"><tt class="xref py py-class docutils literal"><span class="pre">mbuild.tools.parameterize.atomtyper.NeighborsBase</span></tt></a></p>
+<p>Designate the rule&#8217;s minimum number of neighbors of a specific type.</p>
+<p>The &#8220;specific type&#8221; can either be an element or a whitelisted rule.</p>
 <dl class="attribute">
 <dt id="mbuild.tools.parameterize.atomtyper.NeighborsAtLeast.__delattr__">
 <tt class="descname">__delattr__</tt><a class="headerlink" href="#mbuild.tools.parameterize.atomtyper.NeighborsAtLeast.__delattr__" title="Permalink to this definition">¶</a></dt>
@@ -488,6 +514,11 @@
 <dd><p>x.__str__() &lt;==&gt; str(x)</p>
 </dd></dl>
 
+<dl class="staticmethod">
+<dt id="mbuild.tools.parameterize.atomtyper.NeighborsAtLeast.extract_doc_string">
+<em class="property">static </em><tt class="descname">extract_doc_string</tt><big>(</big><em>func</em><big>)</big><a class="headerlink" href="#mbuild.tools.parameterize.atomtyper.NeighborsAtLeast.extract_doc_string" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
 <dl class="method">
 <dt id="mbuild.tools.parameterize.atomtyper.NeighborsAtLeast.match_count">
 <tt class="descname">match_count</tt><big>(</big><em>atom</em><big>)</big><a class="headerlink" href="#mbuild.tools.parameterize.atomtyper.NeighborsAtLeast.match_count" title="Permalink to this definition">¶</a></dt>
@@ -499,6 +530,8 @@
 <dt id="mbuild.tools.parameterize.atomtyper.NeighborsAtMost">
 <em class="property">class </em><tt class="descclassname">mbuild.tools.parameterize.atomtyper.</tt><tt class="descname">NeighborsAtMost</tt><big>(</big><em>neighbor_type</em>, <em>count</em><big>)</big><a class="reference internal" href="_modules/mbuild/tools/parameterize/atomtyper.html#NeighborsAtMost"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.tools.parameterize.atomtyper.NeighborsAtMost" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#mbuild.tools.parameterize.atomtyper.NeighborsBase" title="mbuild.tools.parameterize.atomtyper.NeighborsBase"><tt class="xref py py-class docutils literal"><span class="pre">mbuild.tools.parameterize.atomtyper.NeighborsBase</span></tt></a></p>
+<p>Designate the rule&#8217;s maximum number of neighbors of a specific type.</p>
+<p>The &#8220;specific type&#8221; can either be an element or a whitelisted rule.</p>
 <dl class="attribute">
 <dt id="mbuild.tools.parameterize.atomtyper.NeighborsAtMost.__delattr__">
 <tt class="descname">__delattr__</tt><a class="headerlink" href="#mbuild.tools.parameterize.atomtyper.NeighborsAtMost.__delattr__" title="Permalink to this definition">¶</a></dt>
@@ -559,6 +592,11 @@
 <dd><p>x.__str__() &lt;==&gt; str(x)</p>
 </dd></dl>
 
+<dl class="staticmethod">
+<dt id="mbuild.tools.parameterize.atomtyper.NeighborsAtMost.extract_doc_string">
+<em class="property">static </em><tt class="descname">extract_doc_string</tt><big>(</big><em>func</em><big>)</big><a class="headerlink" href="#mbuild.tools.parameterize.atomtyper.NeighborsAtMost.extract_doc_string" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
 <dl class="method">
 <dt id="mbuild.tools.parameterize.atomtyper.NeighborsAtMost.match_count">
 <tt class="descname">match_count</tt><big>(</big><em>atom</em><big>)</big><a class="headerlink" href="#mbuild.tools.parameterize.atomtyper.NeighborsAtMost.match_count" title="Permalink to this definition">¶</a></dt>
@@ -570,6 +608,7 @@
 <dt id="mbuild.tools.parameterize.atomtyper.NeighborsBase">
 <em class="property">class </em><tt class="descclassname">mbuild.tools.parameterize.atomtyper.</tt><tt class="descname">NeighborsBase</tt><big>(</big><em>neighbor_type</em>, <em>count</em><big>)</big><a class="reference internal" href="_modules/mbuild/tools/parameterize/atomtyper.html#NeighborsBase"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.tools.parameterize.atomtyper.NeighborsBase" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#mbuild.tools.parameterize.atomtyper.RuleDecorator" title="mbuild.tools.parameterize.atomtyper.RuleDecorator"><tt class="xref py py-class docutils literal"><span class="pre">mbuild.tools.parameterize.atomtyper.RuleDecorator</span></tt></a></p>
+<p>Super class for rule decorators that count types of neighbors.</p>
 <dl class="attribute">
 <dt id="mbuild.tools.parameterize.atomtyper.NeighborsBase.__delattr__">
 <tt class="descname">__delattr__</tt><a class="headerlink" href="#mbuild.tools.parameterize.atomtyper.NeighborsBase.__delattr__" title="Permalink to this definition">¶</a></dt>
@@ -630,6 +669,11 @@
 <dd><p>x.__str__() &lt;==&gt; str(x)</p>
 </dd></dl>
 
+<dl class="staticmethod">
+<dt id="mbuild.tools.parameterize.atomtyper.NeighborsBase.extract_doc_string">
+<em class="property">static </em><tt class="descname">extract_doc_string</tt><big>(</big><em>func</em><big>)</big><a class="headerlink" href="#mbuild.tools.parameterize.atomtyper.NeighborsBase.extract_doc_string" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
 <dl class="method">
 <dt id="mbuild.tools.parameterize.atomtyper.NeighborsBase.match_count">
 <tt class="descname">match_count</tt><big>(</big><em>atom</em><big>)</big><a class="reference internal" href="_modules/mbuild/tools/parameterize/atomtyper.html#NeighborsBase.match_count"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.tools.parameterize.atomtyper.NeighborsBase.match_count" title="Permalink to this definition">¶</a></dt>
@@ -641,6 +685,8 @@
 <dt id="mbuild.tools.parameterize.atomtyper.NeighborsExactly">
 <em class="property">class </em><tt class="descclassname">mbuild.tools.parameterize.atomtyper.</tt><tt class="descname">NeighborsExactly</tt><big>(</big><em>neighbor_type</em>, <em>count</em><big>)</big><a class="reference internal" href="_modules/mbuild/tools/parameterize/atomtyper.html#NeighborsExactly"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.tools.parameterize.atomtyper.NeighborsExactly" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#mbuild.tools.parameterize.atomtyper.NeighborsBase" title="mbuild.tools.parameterize.atomtyper.NeighborsBase"><tt class="xref py py-class docutils literal"><span class="pre">mbuild.tools.parameterize.atomtyper.NeighborsBase</span></tt></a></p>
+<p>Designate the rule&#8217;s exact number of neighbors of a specific type.</p>
+<p>The &#8220;specific type&#8221; can either be an element or a whitelisted rule.</p>
 <dl class="attribute">
 <dt id="mbuild.tools.parameterize.atomtyper.NeighborsExactly.__delattr__">
 <tt class="descname">__delattr__</tt><a class="headerlink" href="#mbuild.tools.parameterize.atomtyper.NeighborsExactly.__delattr__" title="Permalink to this definition">¶</a></dt>
@@ -701,6 +747,11 @@
 <dd><p>x.__str__() &lt;==&gt; str(x)</p>
 </dd></dl>
 
+<dl class="staticmethod">
+<dt id="mbuild.tools.parameterize.atomtyper.NeighborsExactly.extract_doc_string">
+<em class="property">static </em><tt class="descname">extract_doc_string</tt><big>(</big><em>func</em><big>)</big><a class="headerlink" href="#mbuild.tools.parameterize.atomtyper.NeighborsExactly.extract_doc_string" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
 <dl class="method">
 <dt id="mbuild.tools.parameterize.atomtyper.NeighborsExactly.match_count">
 <tt class="descname">match_count</tt><big>(</big><em>atom</em><big>)</big><a class="headerlink" href="#mbuild.tools.parameterize.atomtyper.NeighborsExactly.match_count" title="Permalink to this definition">¶</a></dt>
@@ -712,6 +763,7 @@
 <dt id="mbuild.tools.parameterize.atomtyper.RuleDecorator">
 <em class="property">class </em><tt class="descclassname">mbuild.tools.parameterize.atomtyper.</tt><tt class="descname">RuleDecorator</tt><a class="reference internal" href="_modules/mbuild/tools/parameterize/atomtyper.html#RuleDecorator"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.tools.parameterize.atomtyper.RuleDecorator" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference external" href="http://docs.python.org/2.7/library/functions.html#object" title="(in Python v2.7)"><tt class="xref py py-class docutils literal"><span class="pre">object</span></tt></a></p>
+<p>Base class for rule decorators.</p>
 <dl class="attribute">
 <dt id="mbuild.tools.parameterize.atomtyper.RuleDecorator.__delattr__">
 <tt class="descname">__delattr__</tt><a class="headerlink" href="#mbuild.tools.parameterize.atomtyper.RuleDecorator.__delattr__" title="Permalink to this definition">¶</a></dt>
@@ -772,12 +824,18 @@
 <dd><p>x.__str__() &lt;==&gt; str(x)</p>
 </dd></dl>
 
+<dl class="staticmethod">
+<dt id="mbuild.tools.parameterize.atomtyper.RuleDecorator.extract_doc_string">
+<em class="property">static </em><tt class="descname">extract_doc_string</tt><big>(</big><em>func</em><big>)</big><a class="reference internal" href="_modules/mbuild/tools/parameterize/atomtyper.html#RuleDecorator.extract_doc_string"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.tools.parameterize.atomtyper.RuleDecorator.extract_doc_string" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
 </dd></dl>
 
 <dl class="class">
 <dt id="mbuild.tools.parameterize.atomtyper.Whitelist">
 <em class="property">class </em><tt class="descclassname">mbuild.tools.parameterize.atomtyper.</tt><tt class="descname">Whitelist</tt><big>(</big><em>rule_number</em><big>)</big><a class="reference internal" href="_modules/mbuild/tools/parameterize/atomtyper.html#Whitelist"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.tools.parameterize.atomtyper.Whitelist" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#mbuild.tools.parameterize.atomtyper.RuleDecorator" title="mbuild.tools.parameterize.atomtyper.RuleDecorator"><tt class="xref py py-class docutils literal"><span class="pre">mbuild.tools.parameterize.atomtyper.RuleDecorator</span></tt></a></p>
+<p>Whitelist an atomtype for an atom.</p>
 <dl class="attribute">
 <dt id="mbuild.tools.parameterize.atomtyper.Whitelist.__delattr__">
 <tt class="descname">__delattr__</tt><a class="headerlink" href="#mbuild.tools.parameterize.atomtyper.Whitelist.__delattr__" title="Permalink to this definition">¶</a></dt>
@@ -838,26 +896,17 @@
 <dd><p>x.__str__() &lt;==&gt; str(x)</p>
 </dd></dl>
 
+<dl class="staticmethod">
+<dt id="mbuild.tools.parameterize.atomtyper.Whitelist.extract_doc_string">
+<em class="property">static </em><tt class="descname">extract_doc_string</tt><big>(</big><em>func</em><big>)</big><a class="headerlink" href="#mbuild.tools.parameterize.atomtyper.Whitelist.extract_doc_string" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
 <dl class="method">
 <dt id="mbuild.tools.parameterize.atomtyper.Whitelist.whitelist">
 <tt class="descname">whitelist</tt><big>(</big><em>atom</em><big>)</big><a class="reference internal" href="_modules/mbuild/tools/parameterize/atomtyper.html#Whitelist.whitelist"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.tools.parameterize.atomtyper.Whitelist.whitelist" title="Permalink to this definition">¶</a></dt>
-<dd><p>Whitelist an OPLS-aa atomtype for an atom.</p>
+<dd><p>Add the rule to the atom&#8217;s whitelist.</p>
 </dd></dl>
 
-</dd></dl>
-
-<dl class="function">
-<dt id="mbuild.tools.parameterize.atomtyper.append_neighbor_whitelist">
-<tt class="descclassname">mbuild.tools.parameterize.atomtyper.</tt><tt class="descname">append_neighbor_whitelist</tt><big>(</big><em>atom</em>, <em>whitelist_type</em><big>)</big><a class="reference internal" href="_modules/mbuild/tools/parameterize/atomtyper.html#append_neighbor_whitelist"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.tools.parameterize.atomtyper.append_neighbor_whitelist" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns the number of neighbors of each element type for an <cite>atom</cite>.</p>
-<dl class="docutils">
-<dt>The dict maintained is <cite>neighbor_types_map</cite> and is organized as follows:</dt>
-<dd>atom: defaultdict{element: number of neighbors of that element type}</dd>
-<dt>E.g. for an atom with 3 carbon and 1 hydrogen neighbors:</dt>
-<dd>Atom: {&#8216;C&#8217;: 3, &#8216;H&#8217;: 1}</dd>
-</dl>
-<p>If the queried <cite>atom</cite> is not already in <cite>neighbor_types_map</cite>, it entry will
-be added.</p>
 </dd></dl>
 
 <dl class="function">
@@ -870,25 +919,115 @@ be added.</p>
 <dt id="mbuild.tools.parameterize.atomtyper.check_atom">
 <tt class="descclassname">mbuild.tools.parameterize.atomtyper.</tt><tt class="descname">check_atom</tt><big>(</big><em>atom</em>, <em>input_rule_ids</em><big>)</big><a class="reference internal" href="_modules/mbuild/tools/parameterize/atomtyper.html#check_atom"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.tools.parameterize.atomtyper.check_atom" title="Permalink to this definition">¶</a></dt>
 <dd><p>Check if any of the rules in <cite>input_rule_ids</cite> are in the whitelist.</p>
-<p>This means that the atom was once identified as being elligible for at least
-one of these rules. This can be useful for checking, e.g. if a carbon was
-ever identified as being part of a benzene ring.</p>
+<p>This means that the atom was once identified as being elligible for at
+least one of these rules. This can be useful for checking, e.g., if a carbon
+was ever identified as being part of a benzene ring.</p>
 </dd></dl>
 
 <dl class="function">
 <dt id="mbuild.tools.parameterize.atomtyper.check_duplicate_element">
 <tt class="descclassname">mbuild.tools.parameterize.atomtyper.</tt><tt class="descname">check_duplicate_element</tt><big>(</big><em>element_type</em>, <em>rule_number</em><big>)</big><a class="reference internal" href="_modules/mbuild/tools/parameterize/atomtyper.html#check_duplicate_element"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.tools.parameterize.atomtyper.check_duplicate_element" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Used to catch rules with multiple &#64;Element decorators.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>element_type</strong> (<a class="reference external" href="http://docs.python.org/2.7/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; The element type in the decorator. This is only
+used to check if it has been assigned previously.</li>
+<li><strong>rule_number</strong> (<a class="reference external" href="http://docs.python.org/2.7/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a>) &#8211; The decorated rule in question.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
 
 <dl class="function">
 <dt id="mbuild.tools.parameterize.atomtyper.check_duplicate_neighbor_count">
 <tt class="descclassname">mbuild.tools.parameterize.atomtyper.</tt><tt class="descname">check_duplicate_neighbor_count</tt><big>(</big><em>neighbor_count</em>, <em>rule_number</em><big>)</big><a class="reference internal" href="_modules/mbuild/tools/parameterize/atomtyper.html#check_duplicate_neighbor_count"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.tools.parameterize.atomtyper.check_duplicate_neighbor_count" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Used to catch rules with multiple &#64;NeighborCount decorators.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>neighbor_count</strong> (<a class="reference external" href="http://docs.python.org/2.7/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a>) &#8211; The neighbor count in the decorator. This is only
+used to check if it has been assigned previously.</li>
+<li><strong>rule_number</strong> (<a class="reference external" href="http://docs.python.org/2.7/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a>) &#8211; The decorated rule in question.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
 
 <dl class="function">
 <dt id="mbuild.tools.parameterize.atomtyper.draw_rule_graph">
-<tt class="descclassname">mbuild.tools.parameterize.atomtyper.</tt><tt class="descname">draw_rule_graph</tt><big>(</big><em>issue</em>, <em>G</em>, <em>element</em>, <em>pattern</em>, <em>sinks=None</em>, <em>sources=None</em><big>)</big><a class="reference internal" href="_modules/mbuild/tools/parameterize/atomtyper.html#draw_rule_graph"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.tools.parameterize.atomtyper.draw_rule_graph" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<tt class="descclassname">mbuild.tools.parameterize.atomtyper.</tt><tt class="descname">draw_rule_graph</tt><big>(</big><em>issue</em>, <em>graph</em>, <em>element</em>, <em>pattern</em>, <em>sinks=None</em>, <em>sources=None</em><big>)</big><a class="reference internal" href="_modules/mbuild/tools/parameterize/atomtyper.html#draw_rule_graph"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.tools.parameterize.atomtyper.draw_rule_graph" title="Permalink to this definition">¶</a></dt>
+<dd><p>Visualize the blacklist graph for a pattern with a logical inconsitency.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>issue</strong> (<a class="reference external" href="http://docs.python.org/2.7/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Descriptive string of the logical inconsistency. Used for
+labeling purposes.</li>
+<li><strong>graph</strong> (<em>nx.DiGraph</em>) &#8211; The blacklist graph.</li>
+<li><strong>element</strong> (<a class="reference external" href="http://docs.python.org/2.7/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; The type of element that the conflicting rules describe.</li>
+<li><strong>pattern</strong> (<em>tuple of str</em>) &#8211; The immediate neighbors of the element in
+question.</li>
+<li><strong>sinks</strong> (<em>list of nodes, optional</em>) &#8211; Nodes that are sinks in the graph.</li>
+<li><strong>sources</strong> (<em>list of nodes, optional</em>) &#8211; Nodes that are sources in the graph.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="mbuild.tools.parameterize.atomtyper.find_all_rule_matches">
+<tt class="descclassname">mbuild.tools.parameterize.atomtyper.</tt><tt class="descname">find_all_rule_matches</tt><big>(</big><em>supported_elements</em><big>)</big><a class="reference internal" href="_modules/mbuild/tools/parameterize/atomtyper.html#find_all_rule_matches"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.tools.parameterize.atomtyper.find_all_rule_matches" title="Permalink to this definition">¶</a></dt>
+<dd><p>Find all elements and combinations of neighbor types that have a rule.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><strong>rule_matches</strong> &#8211;
+All patterns and rules that apply. The dictionary<blockquote>
+<div><dl class="docutils">
+<dt>is structured as follows:</dt>
+<dd>key: (element, (neighbor element 1, neighbor element 2, etc..))
+value: set(rule numbers)</dd>
+<dt>Example entry (from time of writing this comment):</dt>
+<dd>(&#8216;C&#8217;, (&#8216;C&#8217;, &#8216;C&#8217;, &#8216;H&#8217;)): set([&#8216;145&#8217;, &#8216;142&#8217;])</dd>
+</dl>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">dict</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="mbuild.tools.parameterize.atomtyper.find_all_supported_elements">
+<tt class="descclassname">mbuild.tools.parameterize.atomtyper.</tt><tt class="descname">find_all_supported_elements</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/mbuild/tools/parameterize/atomtyper.html#find_all_supported_elements"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.tools.parameterize.atomtyper.find_all_supported_elements" title="Permalink to this definition">¶</a></dt>
+<dd><p>Find all elements currently supported by rules.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><strong>supported_elements</strong> &#8211;
+A sorted list of all the supported elements.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">list</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
 
 <dl class="function">
 <dt id="mbuild.tools.parameterize.atomtyper.find_atomtypes">
@@ -911,18 +1050,32 @@ ever identified as being part of a benzene ring.</p>
 </dd></dl>
 
 <dl class="function">
-<dt id="mbuild.tools.parameterize.atomtyper.iterate_rules">
-<tt class="descclassname">mbuild.tools.parameterize.atomtyper.</tt><tt class="descname">iterate_rules</tt><big>(</big><em>compound</em>, <em>max_iter=10</em><big>)</big><a class="reference internal" href="_modules/mbuild/tools/parameterize/atomtyper.html#iterate_rules"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.tools.parameterize.atomtyper.iterate_rules" title="Permalink to this definition">¶</a></dt>
-<dd><p>Iteratively run all the rules until the white- and backlists converge.</p>
-<dl class="docutils">
-<dt>NOTE: We only add and never remove from the white- and blacklists so we</dt>
-<dd>don&#8217;t need to check the lengths for each individual atom.</dd>
-</dl>
+<dt id="mbuild.tools.parameterize.atomtyper.increment_neighbor_whitelist">
+<tt class="descclassname">mbuild.tools.parameterize.atomtyper.</tt><tt class="descname">increment_neighbor_whitelist</tt><big>(</big><em>atom</em>, <em>whitelist_type</em><big>)</big><a class="reference internal" href="_modules/mbuild/tools/parameterize/atomtyper.html#increment_neighbor_whitelist"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.tools.parameterize.atomtyper.increment_neighbor_whitelist" title="Permalink to this definition">¶</a></dt>
+<dd><p>Increment the counts in an atom&#8217;s <cite>neighbor_whitelist_map</cite> entry.</p>
 </dd></dl>
 
 <dl class="function">
-<dt id="mbuild.tools.parameterize.atomtyper.neighbor_types">
-<tt class="descclassname">mbuild.tools.parameterize.atomtyper.</tt><tt class="descname">neighbor_types</tt><big>(</big><em>atom</em><big>)</big><a class="reference internal" href="_modules/mbuild/tools/parameterize/atomtyper.html#neighbor_types"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.tools.parameterize.atomtyper.neighbor_types" title="Permalink to this definition">¶</a></dt>
+<dt id="mbuild.tools.parameterize.atomtyper.iterate_rules">
+<tt class="descclassname">mbuild.tools.parameterize.atomtyper.</tt><tt class="descname">iterate_rules</tt><big>(</big><em>compound</em>, <em>max_iter=10</em><big>)</big><a class="reference internal" href="_modules/mbuild/tools/parameterize/atomtyper.html#iterate_rules"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.tools.parameterize.atomtyper.iterate_rules" title="Permalink to this definition">¶</a></dt>
+<dd><p>Iteratively run all the rules until the white- and backlists converge.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>compound</strong> (<em>Compound</em>) &#8211; The Compound being parameterized.</li>
+<li><strong>max_iter</strong> (<em>int, optional</em>) &#8211; The maximum number of iterations.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="mbuild.tools.parameterize.atomtyper.neighbor_element_types">
+<tt class="descclassname">mbuild.tools.parameterize.atomtyper.</tt><tt class="descname">neighbor_element_types</tt><big>(</big><em>atom</em><big>)</big><a class="reference internal" href="_modules/mbuild/tools/parameterize/atomtyper.html#neighbor_element_types"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.tools.parameterize.atomtyper.neighbor_element_types" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns the number of neighbors of each element type for an <cite>atom</cite>.</p>
 <dl class="docutils">
 <dt>The dict maintained is <cite>neighbor_types_map</cite> and is organized as follows:</dt>
@@ -930,34 +1083,39 @@ ever identified as being part of a benzene ring.</p>
 <dt>E.g. for an atom with 3 carbon and 1 hydrogen neighbors:</dt>
 <dd>Atom: {&#8216;C&#8217;: 3, &#8216;H&#8217;: 1}</dd>
 </dl>
-<p>If the queried <cite>atom</cite> is not already in <cite>neighbor_types_map</cite>, it entry will
+<p>If the queried <cite>atom</cite> is not already in <cite>neighbor_types_map</cite>, its entry will
 be added.</p>
 </dd></dl>
 
 <dl class="function">
 <dt id="mbuild.tools.parameterize.atomtyper.neighbor_whitelist_types">
 <tt class="descclassname">mbuild.tools.parameterize.atomtyper.</tt><tt class="descname">neighbor_whitelist_types</tt><big>(</big><em>atom</em><big>)</big><a class="reference internal" href="_modules/mbuild/tools/parameterize/atomtyper.html#neighbor_whitelist_types"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.tools.parameterize.atomtyper.neighbor_whitelist_types" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns the number of neighbors of each element type for an <cite>atom</cite>.</p>
+<dd><p>Returns the number of neighbors of each type of whitelisted rule.</p>
 <dl class="docutils">
-<dt>The dict maintained is <cite>neighbor_types_map</cite> and is organized as follows:</dt>
-<dd>atom: defaultdict{element: number of neighbors of that element type}</dd>
-<dt>E.g. for an atom with 3 carbon and 1 hydrogen neighbors:</dt>
-<dd>Atom: {&#8216;C&#8217;: 3, &#8216;H&#8217;: 1}</dd>
+<dt>The dict maintained is <cite>neighbor_whitelist_map</cite> and is organized as follows:</dt>
+<dd>atom: defaultdict{rule id: number of neighbors with rule id whitelisted}</dd>
+<dt>E.g. for a carbon atom in the middle of an alkane chain:</dt>
+<dd>Atom: {&#8216;136&#8217;: 2, &#8216;140&#8217;: 2}</dd>
 </dl>
-<p>If the queried <cite>atom</cite> is not already in <cite>neighbor_types_map</cite>, it entry will
-be added.</p>
+<p>If the queried <cite>atom</cite> is not already in <cite>neighbor_whitelist_map</cite>, an empty
+dict is returned. This behavior differs from <cite>neighbor_element_types()</cite>
+because whitelisted rules are not known a priori. New entries are only
+added when the &#64;Whitelist decorator is used.</p>
+<p>See Also <cite>increment_neighbor_whitelist()</cite>.</p>
 </dd></dl>
 
 <dl class="function">
 <dt id="mbuild.tools.parameterize.atomtyper.prepare_compound">
 <tt class="descclassname">mbuild.tools.parameterize.atomtyper.</tt><tt class="descname">prepare_compound</tt><big>(</big><em>compound</em><big>)</big><a class="reference internal" href="_modules/mbuild/tools/parameterize/atomtyper.html#prepare_compound"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.tools.parameterize.atomtyper.prepare_compound" title="Permalink to this definition">¶</a></dt>
 <dd><p>Add white- and blacklists to each <cite>atom</cite> in <cite>compound</cite>.</p>
+<p>The use of ordered sets is not strictly necessary but it helps when
+debugging because it shows the order in which rules are added.</p>
 </dd></dl>
 
 <dl class="function">
 <dt id="mbuild.tools.parameterize.atomtyper.resolve_atomtypes">
 <tt class="descclassname">mbuild.tools.parameterize.atomtyper.</tt><tt class="descname">resolve_atomtypes</tt><big>(</big><em>compound</em><big>)</big><a class="reference internal" href="_modules/mbuild/tools/parameterize/atomtyper.html#resolve_atomtypes"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.tools.parameterize.atomtyper.resolve_atomtypes" title="Permalink to this definition">¶</a></dt>
-<dd><p>Determine the final atomtype from the white- and blacklists.</p>
+<dd><p>Determine the final atomtypes from the white- and blacklists.</p>
 </dd></dl>
 
 <dl class="function">
@@ -984,7 +1142,10 @@ suggests other rules that you may want to consider blacklisting.</p>
 <em class="property">class </em><tt class="descclassname">mbuild.tools.parameterize.chemical_groups.</tt><tt class="descname">Rings</tt><big>(</big><em>atom</em>, <em>ring_length</em><big>)</big><a class="reference internal" href="_modules/mbuild/tools/parameterize/chemical_groups.html#Rings"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.tools.parameterize.chemical_groups.Rings" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference external" href="http://docs.python.org/2.7/library/functions.html#object" title="(in Python v2.7)"><tt class="xref py py-class docutils literal"><span class="pre">object</span></tt></a></p>
 <p>Find all rings of a specified length that the atom is a part of.</p>
-<p>Note: Finds each ring twice because the graph is traversed in both directions.</p>
+<dl class="docutils">
+<dt>Note: Finds each ring twice because the graph is traversed in both</dt>
+<dd>directions.</dd>
+</dl>
 <dl class="attribute">
 <dt id="mbuild.tools.parameterize.chemical_groups.Rings.__delattr__">
 <tt class="descname">__delattr__</tt><a class="headerlink" href="#mbuild.tools.parameterize.chemical_groups.Rings.__delattr__" title="Permalink to this definition">¶</a></dt>
@@ -1048,7 +1209,8 @@ suggests other rules that you may want to consider blacklisting.</p>
 <dl class="method">
 <dt id="mbuild.tools.parameterize.chemical_groups.Rings.step">
 <tt class="descname">step</tt><big>(</big><em>atom</em><big>)</big><a class="reference internal" href="_modules/mbuild/tools/parameterize/chemical_groups.html#Rings.step"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.tools.parameterize.chemical_groups.Rings.step" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Take one step along the graph from atom.</p>
+</dd></dl>
 
 </dd></dl>
 
@@ -1081,7 +1243,7 @@ suggests other rules that you may want to consider blacklisting.</p>
 <dt id="mbuild.tools.parameterize.oplsaa.get_opls_fn">
 <tt class="descclassname">mbuild.tools.parameterize.oplsaa.</tt><tt class="descname">get_opls_fn</tt><big>(</big><em>name</em><big>)</big><a class="reference internal" href="_modules/mbuild/tools/parameterize/oplsaa.html#get_opls_fn"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.tools.parameterize.oplsaa.get_opls_fn" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get the full path to a file used to validate the OPLS-aa atomtyper.</p>
-<p>In the source distribution, these files are in <tt class="docutils literal"><span class="pre">opls_validation</span></tt>.</p>
+<p>In the mbuild source distribution, these files are in <tt class="docutils literal"><span class="pre">opls_validation</span></tt>.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />

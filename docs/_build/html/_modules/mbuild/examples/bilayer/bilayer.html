@@ -82,7 +82,7 @@
 <li class="toctree-l2"><a class="reference internal" href="../../../../apidoc/mbuild.html#module-mbuild.compound">mbuild.compound module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../apidoc/mbuild.html#module-mbuild.coordinate_transform">mbuild.coordinate_transform module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../apidoc/mbuild.html#module-mbuild.has_parts_mixin">mbuild.has_parts_mixin module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../../../apidoc/mbuild.html#module-mbuild.mbase">mbuild.mbase module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../apidoc/mbuild.html#mbuild-mbase-module">mbuild.mbase module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../apidoc/mbuild.html#module-mbuild.orderedset">mbuild.orderedset module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../apidoc/mbuild.html#module-mbuild.part_mixin">mbuild.part_mixin module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../apidoc/mbuild.html#module-mbuild.periodic_kdtree">mbuild.periodic_kdtree module</a></li>
@@ -315,7 +315,7 @@
                         <span class="o">-</span><span class="n">new_lipid</span><span class="o">.</span><span class="n">atoms</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">ref_atoms</span><span class="p">[</span><span class="n">i</span><span class="p">]]</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">spacing</span><span class="p">)</span>
                 <span class="c"># Move to point on mask</span>
                 <span class="k">if</span> <span class="n">flip_orientation</span> <span class="o">==</span> <span class="bp">True</span><span class="p">:</span>
-                    <span class="n">t_com</span> <span class="o">=</span> <span class="n">new_lipid</span><span class="o">.</span><span class="n">center_of_mass</span><span class="p">()</span>
+                    <span class="n">t_com</span> <span class="o">=</span> <span class="n">new_lipid</span><span class="o">.</span><span class="n">center</span>
                     <span class="n">t_com</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.0</span>
                     <span class="c"># TODO(tim): function for this? </span>
                     <span class="c"># e.g., rotate_around_x_keep_com(compound, bool(3))</span>
@@ -366,6 +366,7 @@
     <span class="n">water</span> <span class="o">=</span> <span class="n">Trajectory</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">get_fn</span><span class="p">(</span><span class="s">&#39;water.hoomdxml&#39;</span><span class="p">))</span>
     <span class="n">water</span> <span class="o">=</span> <span class="n">water</span><span class="o">.</span><span class="n">to_compound</span><span class="p">()</span>
     <span class="n">ecerns</span> <span class="o">=</span> <span class="n">Trajectory</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">get_fn</span><span class="p">(</span><span class="s">&#39;ecer2.hoomdxml&#39;</span><span class="p">))</span>
+
     <span class="n">ecerns</span> <span class="o">=</span> <span class="n">ecerns</span><span class="o">.</span><span class="n">to_compound</span><span class="p">()</span>
     <span class="n">chol</span> <span class="o">=</span> <span class="n">Trajectory</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">get_fn</span><span class="p">(</span><span class="s">&#39;cg-chol.hoomdxml&#39;</span><span class="p">))</span>
     <span class="n">chol</span> <span class="o">=</span> <span class="n">chol</span><span class="o">.</span><span class="n">to_compound</span><span class="p">()</span>
@@ -373,30 +374,16 @@
     <span class="n">rotate_around_y</span><span class="p">(</span><span class="n">chol</span><span class="p">,</span> <span class="o">-</span><span class="mf">45.0</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">/</span><span class="mi">180</span><span class="p">)</span>
     <span class="n">lipids</span> <span class="o">=</span> <span class="p">[(</span><span class="n">ecerns</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">),</span> <span class="p">(</span><span class="n">chol</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">)]</span> 
 
-    <span class="kn">import</span> <span class="nn">cProfile</span><span class="o">,</span> <span class="nn">pstats</span><span class="o">,</span> <span class="nn">StringIO</span>
-    <span class="c">#pr=cProfile.Profile()</span>
-    <span class="c">#pr.enable()</span>
     <span class="n">bilayer</span> <span class="o">=</span> <span class="n">Bilayer</span><span class="p">(</span><span class="n">lipids</span><span class="p">,</span> <span class="n">n_lipids_x</span><span class="o">=</span><span class="mi">15</span><span class="p">,</span> <span class="n">n_lipids_y</span><span class="o">=</span><span class="mi">15</span><span class="p">,</span>
             <span class="n">area_per_lipid</span><span class="o">=</span><span class="mf">1.4</span><span class="p">,</span> <span class="n">solvent</span><span class="o">=</span><span class="n">water</span><span class="p">,</span> <span class="n">ref_atoms</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">6</span><span class="p">],</span> 
             <span class="n">spacing_z</span><span class="o">=</span><span class="mf">0.7</span><span class="p">,</span> <span class="n">solvent_per_lipid</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">mirror</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
-    <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    pr.disable()</span>
-<span class="sd">    s = StringIO.StringIO()</span>
-<span class="sd">    sortby = &#39;tottime&#39;</span>
-<span class="sd">    ps = pstats.Stats(pr, stream=s).sort_stats(sortby)</span>
-<span class="sd">    ps.print_stats()</span>
-<span class="sd">    print s.getvalue()</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-
-    <span class="c">#test_water_box = Box(mins=[-5, 6, -13], maxs=[15, 9, -8])</span>
-    <span class="c">#test_water = solvent_box(water, test_water_box)</span>
-    <span class="c">#test_water.save(filename=&#39;water_test.hoomdxml&#39;)</span>
 
     <span class="n">bilayer</span> <span class="o">=</span> <span class="n">bilayer</span><span class="o">.</span><span class="n">to_trajectory</span><span class="p">()</span>
     <span class="n">bilayer</span><span class="o">.</span><span class="n">topology</span><span class="o">.</span><span class="n">load_ff_bonds</span><span class="p">()</span>
     <span class="n">bilayer</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">filename</span><span class="o">=</span><span class="s">&#39;bilayer.hoomdxml&#39;</span><span class="p">)</span>
+
     <span class="kn">import</span> <span class="nn">os</span>
-    <span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="s">&#39;vmd_MACOSXX86 -e vis.vmd&#39;</span><span class="p">)</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="s">&#39;vmd -e vis.vmd&#39;</span><span class="p">)</span>
 </div>
 <span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&quot;__main__&quot;</span><span class="p">:</span>
     <span class="n">main</span><span class="p">()</span>
