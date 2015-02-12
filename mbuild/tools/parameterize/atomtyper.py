@@ -140,12 +140,16 @@ def resolve_atomtypes(compound):
         atomtype = atom.whitelist - atom.blacklist
         atomtype = [a for a in atomtype]
 
-        if len(atomtype) == 1:
-            atom.extras['atomtype'] = [atomtype[0]]
+        if not atom.extras.get('atomtype'):  # It hasn't been set manually.
+            if len(atomtype) == 1:
+                atom.extras['atomtype'] = [atomtype[0]]
+            else:
+                warn("CHECK YOUR TOPOLOGY. Found multiple or no types for atom "
+                     "{0} ({1}): {2}.".format(i, atom.kind, atomtype))
+                atom.extras['atomtype'] = ', '.join(atomtype)
         else:
-            warn("CHECK YOUR TOPOLOGY. Found multiple or no types for atom "
-                 "{0} ({1}): {2}.".format(i, atom.kind, atomtype))
-            atom.extras['atomtype'] = ', '.join(atomtype)
+            warn("Using user provided atomtype of {0} for atom {1}.".format(
+                atom.extras['atomtype'], atom))
 
 
 def neighbor_element_types(atom):
@@ -158,6 +162,7 @@ def neighbor_element_types(atom):
 
     If the queried `atom` is not already in `neighbor_types_map`, its entry will
     be added.
+
     """
     if atom not in neighbor_types_map:
         neighbors = defaultdict(int)

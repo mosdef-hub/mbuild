@@ -25,19 +25,17 @@ class BrushLayer(Compound):
         brush_proto = Brush(chain_length=chain_length, alpha=alpha)
 
         if mask is None:
-            mask == random_mask_2d()
+            mask == random_mask_2d(5)
         apply_mask(self.tiled_surface, brush_proto, mask)
 
 
 def main():
     mask = random_mask_2d(1)
     brush_layer = BrushLayer(chain_length=3, alpha=pi/4, mask=mask, tile_x=1, tile_y=1)
-    find_atomtypes(brush_layer, forcefield='OPLS-aa')
 
     brush_layer = brush_layer.to_trajectory(chain_types=[Betacristobalite, Brush],
                                             residue_types=[MpcMonomer])
     brush_layer.topology.find_forcefield_terms()
-    print brush_layer.top.n_ff_bonds,  brush_layer.top.n_ff_angles, brush_layer.top.n_ff_dihedrals
     brush_layer.save(filename='brush_layer.top')
 
 if __name__ == "__main__":

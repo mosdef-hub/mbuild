@@ -30,5 +30,6 @@ class Brush(Compound):
         self.add(self.silane.down, label="port", containment=False)
 
 if __name__ == "__main__":
-    m = Brush(chain_length=5, alpha=pi/4)
-    m.visualize(show_ports=True)
+    brush = Brush(chain_length=1, alpha=pi/4)
+    brush.save(filename='brush.mol2')
+    #brush.visualize(show_ports=True)

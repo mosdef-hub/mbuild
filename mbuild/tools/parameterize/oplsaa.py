@@ -323,7 +323,7 @@ def opls_441(atom):
 @Element('O')
 @NeighborCount(2)
 @NeighborsExactly('P', 1)
-@NeighborsExactly('C', 2)
+@NeighborsExactly('C', 1)
 @Whitelist(442)
 def opls_442(atom):
     """OMe in Me2PO4-, Me2PO4H   dimethylphosphate """
@@ -347,6 +347,7 @@ def opls_443(atom):
 @NeighborsExactly('C', 1)
 @NeighborsExactly(443, 1)
 @Whitelist(444)
+@Blacklist([140, 144])
 def opls_444(atom):
     """H in Me2PO4-, Me2PO4H   6-31+G* CHELPG """
     # TODO: check validity of using this for -CH2-O-P(=O)(-O^-)-O-CH2-

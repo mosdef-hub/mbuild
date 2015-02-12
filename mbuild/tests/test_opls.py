@@ -15,10 +15,10 @@ from base_test import BaseTest
 
 class TestTools(BaseTest):
     def test_all_molecules(self, only_run=None):
-        # Path doesn't work for py.test and is probably bad practice anyways.
         resource_dir = tools.resource_filename('mbuild', '../opls_validation')
         top_files = glob.glob(os.path.join(resource_dir, '*.top'))
 
+        # Please update this file if you implement atom typing for a test case.
         implemented_tests_path = os.path.join(resource_dir,
                                               'implemented_opls_tests.txt')
         correctly_implemented = [line.strip() for line in
