@@ -225,7 +225,7 @@ class Compound(PartMixin, HasPartsMixin):
 
         TODO: Look into pizza.py's vmd.py. See issue #32.
         """
-        filename = 'visualize_{}.pdb'.format(self.__class__.__name__)
+        filename = 'visualize_{}.mol2'.format(self.__class__.__name__)
         traj = self.to_trajectory(show_ports)
         traj.save(filename=filename)
         import os

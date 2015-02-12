@@ -36,6 +36,7 @@ def main():
     brush_layer = brush_layer.to_trajectory(chain_types=[Betacristobalite, Brush],
                                             residue_types=[MpcMonomer])
     brush_layer.topology.find_forcefield_terms()
+    # 2462, 4707, 6716
     brush_layer.save(filename='brush_layer.top')
 
 if __name__ == "__main__":
