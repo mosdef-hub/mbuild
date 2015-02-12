@@ -197,7 +197,7 @@ class Compound(PartMixin, HasPartsMixin):
         """Convert the Compound to a Trajectory. """
         from mbuild.trajectory import Trajectory
 
-        return Trajectory.from_compound(self, show_ports, **kwargs)
+        return Trajectory.from_compound(self, show_ports=show_ports, **kwargs)
 
     @classmethod
     def load(cls, filename, relative_to_module=None, frame=0):

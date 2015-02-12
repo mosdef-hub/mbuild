@@ -94,7 +94,6 @@ class Trajectory(object):
     def to_compound(self, part=None, frame=0):
         if part is None:
             part = Compound()
-
         assert(isinstance(part, Compound))
         atom_mapping = {}
         for chain in self.topology.chains:

@@ -120,6 +120,7 @@ class Atom(PartMixin):
         # Do the rest recursively.
         newone.kind = deepcopy(self.kind, memo)
         newone.pos = deepcopy(self.pos, memo)
+        newone.charge = deepcopy(self.charge, memo)
         newone._extras = deepcopy(self._extras, memo)
 
         # Copy parents, except the topmost compound being deepcopied.

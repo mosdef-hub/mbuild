@@ -16,11 +16,10 @@ class Ethane(Compound):
 
 def main():
     ethane = Ethane()
+    ethane.to_trajectory()
     return ethane
 
 
 if __name__ == "__main__":
     ethane = main()
     ethane.visualize(show_ports=True)
-    import pdb
-    pdb.set_trace()

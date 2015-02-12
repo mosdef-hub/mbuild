@@ -64,9 +64,9 @@ class Topology(object):
         nx = import_('networkx')
         g = nx.Graph()
 
-        atoms_atoms = [(a, {'element': a.element, 'name': a.name}) for a in self.atoms]
+        atoms = [(a, {'element': a.element, 'name': a.name}) for a in self.atoms]
 
-        g.add_nodes_from(atoms_atoms)
+        g.add_nodes_from(atoms)
         g.add_edges_from(self.bonds)
         return g
 
@@ -187,6 +187,7 @@ class Topology(object):
         Returns:
             out (mbuild.Topology):
         """
+
         if isinstance(chain_types, list):
             chain_types = tuple(chain_types)
         if isinstance(residue_types, list):
@@ -241,6 +242,11 @@ class Topology(object):
             except:
                ele = Element(1000, atom.kind, atom.kind, 1.0)
             at = out.add_atom(atom.kind, ele, last_residue)
+            at.charge = atom.charge
+
+            if hasattr(atom, 'extras'):
+                if 'atomtype' in atom.extras:
+                    at.atomtype = atom.atomtype
             #print("Added {} to residue {} in chain {}".format(atom, last_residue, last_chain))
             atom_mapping[atom] = at
 

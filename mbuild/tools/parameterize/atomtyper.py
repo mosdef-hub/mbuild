@@ -26,14 +26,14 @@ rule_number_to_doc_string = dict()
 
 def find_atomtypes(compound, forcefield='OPLS-AA', debug=True):
     """Determine atomtypes for all atoms in `compound`. """
-    if forcefield == 'OPLS-AA':
+    if forcefield.lower() == 'opls-aa':
         import mbuild.tools.parameterize.oplsaa as oplsaa
         # Build a map to all of the supported opls_* functions.
         for func_name, func in sys.modules[oplsaa.__name__].__dict__.items():
             if func_name.startswith('opls_'):
                 rule_number_to_rule[func_name.split("_")[1]] = func
 
-    elif forcefield == 'UFF':
+    elif forcefield == 'uff':
         import mbuild.tools.parameterize.uff as uff
         # Build a map to all of the supported uff_* functions.
         for func_name, func in sys.modules[uff.__name__].__dict__.items():

@@ -137,39 +137,36 @@ def opls_145B(atom):
 @Element('H')
 @NeighborCount(1)
 @NeighborsExactly('C', 1)
+@NeighborsExactly(145, 1)
 @Whitelist(146)
 @Blacklist([140, 144])
 def opls_146(atom):
     """Benzene H - 12 site. """
-    return check_atom(atom.neighbors[0], 145)
+    return True
 
 
 @Element('C')
 @NeighborCount(4)
 @NeighborsExactly('C', 1)
+@NeighborsExactly(145, 1)
 @NeighborsExactly('H', 3)
 @Whitelist(148)
 @Blacklist(135)
 def opls_148(atom):
     """C: CH3, toluene """
-    for neighbor in atom.neighbors:
-        if neighbor.kind == 'C':
-            if check_atom(neighbor, 145):
-                return True
+    return True
 
 
 @Element('C')
 @NeighborCount(4)
 @NeighborsExactly('C', 2)
+@NeighborsExactly(145, 1)
 @NeighborsExactly('H', 2)
 @Whitelist(149)
 @Blacklist(136)
 def opls_149(atom):
     """C: CH2, ethyl benzene """
-    for neighbor in atom.neighbors:
-        if neighbor.kind == 'C':
-            if check_atom(neighbor, 145):
-                return True
+    return True
 
 
 @Element('O')
@@ -184,76 +181,62 @@ def opls_154(atom):
 @Element('H')
 @NeighborCount(1)
 @NeighborsExactly('O', 1)
+@NeighborsExactly(154, 1)
 @Whitelist(155)
 def opls_155(atom):
     """all-atom H(O): mono alcohols, OP(=O)2 """
-    return check_atom(atom.neighbors[0], 154)
+    return True
 
 
 @Element('C')
 @NeighborCount(4)
 @NeighborsExactly('O', 1)
+@NeighborsExactly(154, 1)
 @NeighborsExactly('C', 1)
+@NeighborsExactly(145, 1)
 @NeighborsExactly('H', 2)
 @Whitelist(218)
 def opls_218(atom):
     """C in CH2OH - benzyl alcohols """
-    benzene_carbon = False
-    alcohol_oxygen = False
-    for neighbor in atom.neighbors:
-        if neighbor.kind == 'C':
-            benzene_carbon = check_atom(neighbor, 145)
-        if neighbor.kind == 'O':
-            alcohol_oxygen = check_atom(neighbor, 154)
-    if benzene_carbon and alcohol_oxygen:
-        return True
+    return True
 
 
 @Element('C')
 @NeighborCount(3)
 @NeighborsExactly('C', 3)
+@NeighborsExactly(218, 1)
+@NeighborsExactly(145, 2)
 @Whitelist(221)
 @Blacklist([145, '145B'])
 def opls_221(atom):
     """C(CH2OH)   - benzyl alcohols """
-    if check_atom(atom, 145):  # Already identified as part of benzene.
-        for neighbor in atom.neighbors:
-            if check_atom(neighbor, 218):
-                return True
+    return True
 
 
 @Element('C')
 @NeighborCount(3)
 @NeighborsExactly('C', 1)
+@NeighborsExactly(145, 1)
 @NeighborsExactly('H', 1)
 @NeighborsExactly('O', 1)
+@NeighborsExactly(278, 1)
 @Whitelist(232)
 def opls_232(atom):
     """C: C=0 in benzaldehyde, acetophenone (CH) """
-    for neighbor in atom.neighbors:
-        if neighbor.kind == 'C':
-            benzene_carbon = check_atom(neighbor, 145)
-        if neighbor.kind == 'O':
-            aldehyde_oxygen = check_atom(neighbor, 278)
-    if benzene_carbon and aldehyde_oxygen:
-        return True
+    return True
 
 
 @Element('C')
 @NeighborCount(3)
 @NeighborsExactly('C', 2)
+@NeighborsExactly(145, 1)
 @NeighborsExactly('O', 1)
+@NeighborsExactly(278, 1)
 @Whitelist(233)
 @Blacklist(145)
 def opls_233(atom):
     """C: C=0 in acetophenone (CMe) """
-    for neighbor in atom.neighbors:
-        if neighbor.kind == 'C':
-            benzene_carbon = check_atom(neighbor, 145)
-        if neighbor.kind == 'O':
-            aldehyde_oxygen = check_atom(neighbor, 278)
-    if benzene_carbon and aldehyde_oxygen:
-        return True
+    return True
 
 
 @Element('C')
@@ -289,14 +272,14 @@ def opls_278(atom):
 @Element('H')
 @NeighborCount(1)
 @NeighborsExactly('C', 1)
-@NeighborsExactly(277, 1)
+#@NeighborsExactly(277, 1)
 @Whitelist(279)
 @Blacklist(140)
 def opls_279(atom):
     """AA H-alpha in aldehyde & formamide """
     # TODO: 232 needs to blacklist 277
-    # return check_atom(atom.neighbors[0], [232, 277])
-    return True
+    return check_atom(atom.neighbors[0], [232, 277])
+    #return True
 
 
 @Element('O')
