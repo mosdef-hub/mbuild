@@ -371,20 +371,21 @@ def choose_correct_port(from_port, to_port):
         equivalence_pairs (2-tuple of Ports): Technically, a tuple of the Ports'
             sub-Compounds ('up' or 'down') that are used to make the correct
             connection between components.
-    """
 
+    """
     # First we try matching the two 'up' ports.
     T = _create_equivalence_transform([(from_port.up, to_port.up)])
-    _ = T.apply_to(array(from_port.anchor.pos, ndmin=2))
+    new_position = T.apply_to(array(from_port.anchor.pos, ndmin=2))
 
-    dist_between_anchors_up_up = norm(from_port.anchor - to_port.anchor)
+    #dist_between_anchors_up_up = norm(from_port.anchor - to_port.anchor)
+    dist_between_anchors_up_up = norm(new_position[0] - to_port.anchor.pos)
 
     # Then matching a 'down' with an 'up' port.
     T = _create_equivalence_transform([(from_port.down, to_port.up)])
-    _ = T.apply_to(array(from_port.anchor.pos, ndmin=2))
+    new_position = T.apply_to(array(from_port.anchor.pos, ndmin=2))
 
     # Determine which transform places the anchors further away from each other
-    dist_between_anchors_down_up = norm(from_port.anchor - to_port.anchor)
+    dist_between_anchors_down_up = norm(new_position[0] - to_port.anchor.pos)
     difference_between_distances = dist_between_anchors_down_up - dist_between_anchors_up_up
 
     if difference_between_distances > 0:

@@ -3,7 +3,7 @@
 
 """Tests for `mbuild.formats.mol2` module. """
 import pytest
-from mbuild.examples.ethane.methyl import Methyl
+from mbuild.components.small_groups.ch3 import Ch3
 from mbuild.trajectory import Trajectory
 from mbuild.testing.tools import get_fn
 
@@ -16,7 +16,7 @@ class TestMol2(BaseTest):
         methyl.to_compound()
 
     def test_load_into(self):
-        methyl = Methyl()
+        methyl = Ch3()
         methyl.update_from_file(get_fn('methyl.mol2'))
 
     def test_save(self):

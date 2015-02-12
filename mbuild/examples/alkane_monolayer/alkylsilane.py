@@ -3,7 +3,7 @@ from mbuild.coordinate_transform import equivalence_transform
 from mbuild.compound import Compound
 
 from mbuild.examples.alkane.alkane import Alkane
-from silane import Silane
+from mbuild.components.small_groups.silane import Silane
 
 
 class AlkylSilane(Compound):

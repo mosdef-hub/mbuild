@@ -5,7 +5,7 @@
 import pytest
 
 from mbuild.compound import Compound
-from mbuild.examples.ethane.methyl import Methyl
+from mbuild.components.small_groups.ch3 import Ch3
 from mbuild.testing.tools import get_fn
 from base_test import BaseTest
 
@@ -16,7 +16,7 @@ class TestCompound(BaseTest):
         Compound.load(get_fn('methyl.pdb'))
 
     def test_update_from_file(self):
-        methyl = Methyl()
+        methyl = Ch3()
         methyl.update_from_file(get_fn("methyl.pdb"))
 
     def test_save(self):
@@ -33,13 +33,13 @@ class TestCompound(BaseTest):
         assert sum([1 for x in non_ports if x.kind != 'G']) == 8
 
         with_G = ethane.atom_list_by_kind()
-        assert len(with_G) == 40
+        assert len(with_G) == 24
 
         only_H = ethane.atom_list_by_kind('H')
         assert sum([1 for x in only_H if x.kind == 'H']) == 6
 
         only_G = ethane.atom_list_by_kind('G')
-        assert sum([1 for x in only_G if x.kind == 'G']) == 32
+        assert sum([1 for x in only_G if x.kind == 'G']) == 16
 
     def test_bond_list_by_kind(self, ethane):
         C_H_bonds = ethane.bond_list_by_kind(kind='C-H')

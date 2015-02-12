@@ -2,8 +2,8 @@ from mbuild.compound import Compound
 from mbuild.tools.polymer import Polymer
 from mbuild.coordinate_transform import equivalence_transform
 
-from mbuild.examples.alkane.ch2 import Ch2
-from mbuild.examples.ethane.methyl import Methyl
+from mbuild.components.small_groups.ch2 import Ch2
+from mbuild.components.small_groups.ch3 import Ch3
 
 
 class Alkane(Compound):
@@ -29,15 +29,15 @@ class Alkane(Compound):
         self.add(chain, 'chain')
 
         if cap_front:
-            self.add(Methyl(), "methyl_front")
+            self.add(Ch3(), "methyl_front")
             equivalence_transform(
-                self.chain, self.chain.up, self.methyl_front.down)
+                self.chain, self.chain.up, self.methyl_front.up)
         else:
             # Hoist port label to Alkane level.
             self.add(chain.up, 'up', containment=False)
 
         if cap_end:
-            self.add(Methyl(), 'methyl_end')
+            self.add(Ch3(), 'methyl_end')
             equivalence_transform(
                 self.methyl_end, self.methyl_end.up, self.chain.down)
         else:
@@ -46,9 +46,10 @@ class Alkane(Compound):
 
 
 def main():
-    n = 3
+    n = 5
     alkane = Alkane(n=n, cap_front=True, cap_end=True)
 
+    alkane.visualize(show_ports=True)
     alkane = alkane.to_trajectory()
     alkane.top.find_forcefield_terms()
 

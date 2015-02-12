@@ -10,12 +10,11 @@ class Betacristobalite(Compound):
     """The beta-cristobalite form of SiO2.
 
     Area per port specifies the density of attachment sites in nm^2.
-        -0.2 nm^2 / port is the most physically accurate.
-        -0.25 nm^2 / port is the typical density of alkane monolayers on
-         SiO2 although these are actually grown on amorphous SiO2 in
-         experiment.
-         This particular file is the same as the 0.2 file with its
-         dimensions stretched in the x- and y-dimensions.
+    * 0.2 nm^2 / port is the most physically accurate.
+    * 0.25 nm^2 / port is the typical density of alkane monolayers on SiO2
+      although these are actually grown on amorphous SiO2 in experiment.
+      This particular file is the same as the 0.2 file with its dimensions
+      stretched in the x- and y-dimensions.
 
     See http://www.wikiwand.com/en/Silicon_dioxide for more info on the various
     crystal forms.
@@ -31,11 +30,13 @@ class Betacristobalite(Compound):
         super(Betacristobalite, self).__init__()
 
         if area_per_port == 0.2:
-            self.append_from_file('beta-cristobalite.pdb')
+            self.append_from_file('beta-cristobalite.pdb',
+                                  relative_to_module=self.__module__)
             self.periodicity = np.array([4.7689, 4.13, 0.0])
         elif area_per_port == 0.25:
 
-            self.append_from_file('beta-cristobalite-expanded.mol2')
+            self.append_from_file('beta-cristobalite-expanded.mol2',
+                                  relative_to_module=True)
             self.periodicity = np.array([5.3888, 4.6669, 0.0])
 
         cnt = 0

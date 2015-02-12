@@ -1,5 +1,5 @@
 from mbuild.compound import Compound
-from mbuild.examples.ethane.methyl import Methyl
+from mbuild.components.small_groups.ch3 import Ch3
 from mbuild.coordinate_transform import equivalence_transform
 
 
@@ -9,9 +9,9 @@ class Ethane(Compound):
         """Connect two methyl groups to form an ethane. """
         super(Ethane, self).__init__(kind='Ethane')
 
-        self.add(Methyl(), "m1")
-        self.add(Methyl(), "m2")
-        equivalence_transform(self.m1, self.m1.up, self.m2.down)
+        self.add(Ch3(), "methyl1")
+        self.add(Ch3(), "methyl2")
+        equivalence_transform(self.methyl1, self.methyl1.up, self.methyl2.up)
 
 
 def main():
@@ -21,5 +21,6 @@ def main():
 
 if __name__ == "__main__":
     ethane = main()
+    ethane.visualize(show_ports=True)
     import pdb
     pdb.set_trace()

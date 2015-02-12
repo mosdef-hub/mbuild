@@ -10,7 +10,7 @@ class Ch2(Compound):
     def __init__(self):
         super(Ch2, self).__init__(self)
 
-        self.append_from_file('ch2.pdb')
+        self.append_from_file('ch2.pdb', relative_to_module=self.__module__)
 
         self.add(Port(anchor=self.C[0]), 'up')
         translate(self.up, np.array([0, 0.07, 0]))

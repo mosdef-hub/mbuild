@@ -3,16 +3,13 @@ import numpy as np
 from mbuild.coordinate_transform import x_axis_transform, translate
 from mbuild.compound import Compound
 from mbuild.port import Port
-from mbuild.testing.tools import get_fn
 
 
 class Silane(Compound):
     """An Si(OH)2 group with two ports. """
     def __init__(self, ):
         super(Silane, self).__init__()
-
-        # Look for data file in same directory as this python module.
-        self.append_from_file(get_fn('silane.pdb'))
+        self.append_from_file('silane.pdb', relative_to_module=self.__module__)
 
         # Transform the coordinate system such that the silicon atom is at the
         # origin and the oxygen atoms are on the x axis.
@@ -28,4 +25,4 @@ class Silane(Compound):
 
 if __name__ == "__main__":
     m = Silane()
-    m.visualize()
+    m.visualize(show_ports=True)

@@ -5,7 +5,7 @@ from mbuild.tools.tiled_compound import TiledCompound
 from mbuild.tools.mask import apply_mask
 
 from alkylsilane import AlkylSilane
-from surface import Surface
+from mbuild.components.surfaces.betacristobalite import Betacristobalite
 
 
 class AlkaneMonolayer(Compound):
@@ -22,7 +22,7 @@ class AlkaneMonolayer(Compound):
         """
         super(AlkaneMonolayer, self).__init__()
 
-        surface = Surface()
+        surface = Betacristobalite()
         # Replicate the surface
         tc = TiledCompound(surface, tile_x, tile_y, 1, kind="tiled_surface")
 

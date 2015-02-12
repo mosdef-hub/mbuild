@@ -245,7 +245,11 @@ class Compound(PartMixin, HasPartsMixin):
     @property
     def center(self):
         """The cartesian center of the Compound based on its Atoms. """
-        return sum(atom.pos for atom in self.atoms) / self.n_atoms
+        try:
+            return sum(atom.pos for atom in self.atoms) / self.n_atoms
+        except ZeroDivisionError:  # Compound only contains 'G' atoms.
+            atoms = self.atom_list_by_kind('G')
+            return sum(atom.pos for atom in atoms) / len(atoms)
 
     def boundingbox(self, excludeG=True):
         """Compute the bounding box of the compound.

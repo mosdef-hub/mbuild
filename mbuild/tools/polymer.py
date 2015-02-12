@@ -35,6 +35,7 @@ class Polymer(Compound):
         self.add(first_part.labels[port_labels[1]], port_labels[1], containment=False)
 
 if __name__ == "__main__":
-    from mbuild.examples.alkane.ch2 import Ch2
+    from mbuild.components.small_groups.ch2 import Ch2
     ch2 = Ch2()
     m = Polymer(ch2, n=13, port_labels=("up", "down"))
+    m.visualize(show_ports=True)

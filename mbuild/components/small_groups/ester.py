@@ -10,7 +10,7 @@ class Ester(Compound):
     def __init__(self):
         super(Ester, self).__init__(self)
 
-        self.append_from_file('ester.pdb')
+        self.append_from_file('ester.pdb', relative_to_module=self.__module__)
         translate(self, -self.C[0])
 
         self.add(Port(anchor=self.O[1]), 'up')

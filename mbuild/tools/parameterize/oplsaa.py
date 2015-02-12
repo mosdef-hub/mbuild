@@ -302,11 +302,71 @@ def opls_279(atom):
 @Element('O')
 @NeighborCount(1)
 @NeighborsExactly('C', 1)
-@NeighborsExactly('233', 1)
+@NeighborsExactly(233, 1)
 @Whitelist(281)
 @Blacklist(278)
 def opls_281(atom):
     """AA O: ketone """
+    return True
+
+
+@Element('N')
+@NeighborCount(4)
+@Whitelist(288)
+def opls_288(atom):
+    """N (R4N+)  JPC,90,2174 (1986) """
+    return True
+
+
+@Element('P')
+@NeighborCount(4)
+@NeighborsExactly('O', 4)
+@Whitelist(440)
+def opls_440(atom):
+    """P in Me2PO4-, Me2PO4H """
+    return True
+
+
+@Element('O')
+@NeighborCount(1)
+@NeighborsExactly('P', 1)
+@Whitelist(441)
+def opls_441(atom):
+    """O= in Me2PO4-, Me2PO4H """
+    # TODO: check validity of using this for -CH2-O-P(=O)(-O^-)-O-CH2-
+    return True
+
+
+@Element('O')
+@NeighborCount(2)
+@NeighborsExactly('P', 1)
+@NeighborsExactly('C', 2)
+@Whitelist(442)
+def opls_442(atom):
+    """OMe in Me2PO4-, Me2PO4H   dimethylphosphate """
+    return True
+
+
+@Element('C')
+@NeighborCount(4)
+@NeighborsExactly('O', 1)
+@NeighborsExactly(442, 1)
+@NeighborsAtLeast('H', 2)
+@Whitelist(443)
+def opls_443(atom):
+    """C in Me2PO4-, Me2PO4H   dimethylphosphate """
+    # TODO: check validity of using this for -CH2-O-P(=O)(-O^-)-O-CH2-
+    return True
+
+
+@Element('H')
+@NeighborCount(1)
+@NeighborsExactly('C', 1)
+@NeighborsExactly(443, 1)
+@Whitelist(444)
+def opls_444(atom):
+    """H in Me2PO4-, Me2PO4H   6-31+G* CHELPG """
+    # TODO: check validity of using this for -CH2-O-P(=O)(-O^-)-O-CH2-
     return True
 
 
@@ -338,6 +398,17 @@ def opls_466(atom):
 @Whitelist(467)
 def opls_467(atom):
     """AA -OR: ester """
+    return True
+
+
+@Element('C')
+@NeighborCount(4)
+@NeighborsExactly('H', 3)
+@NeighborsExactly('O', 1)
+@NeighborsAtLeast('467', 1)
+@Whitelist(468)
+def opls_468(atom):
+    """methoxy C in esters - see also #490-#492 """
     return True
 
 
