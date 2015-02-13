@@ -3,7 +3,6 @@ import numpy as np
 from mbuild.coordinate_transform import translate, y_axis_transform
 from mbuild.compound import Compound
 from mbuild.port import Port
-from mbuild.testing.tools import get_fn
 
 
 class Initiator(Compound):
@@ -11,7 +10,7 @@ class Initiator(Compound):
         super(Initiator, self).__init__(self)
 
         # Look for data file in same directory as this python module.
-        self.append_from_file(get_fn('initiator.pdb'))
+        self.append_from_file('initiator.pdb')
 
         # Transform the coordinate system such that the two carbon atoms
         # that are part of the backbone are on the y axis, C_1 at the origin.
@@ -28,6 +27,7 @@ class Initiator(Compound):
         translate(self.up, self.atoms[21] + np.array([0.0, 0.07, 0.0]))
 
 if __name__ == "__main__":
-    m = Initiator()
+    ini = Initiator()
+    ini.visualize(show_ports=True)
 
 

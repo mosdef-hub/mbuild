@@ -1,5 +1,3 @@
-from mbuild.atom import Atom
-from mbuild.port import Port
 from mbuild.compound import Compound
 from mbuild.tools.tiled_compound import TiledCompound
 from mbuild.tools.mask import apply_mask
@@ -12,7 +10,7 @@ from mbuild.components.atoms.H import H
 class AlkaneMonolayer(Compound):
     """An akylsilane monolayer on beta-cristobalite. """
 
-    def __init__(self, tile_x=1, tile_y=1, chain_length=10, mask=None):
+    def __init__(self, mask, tile_x=1, tile_y=1, chain_length=10):
         """Create an alkylsilane monolayer on beta-cristobalite.
 
         Args:
@@ -24,19 +22,12 @@ class AlkaneMonolayer(Compound):
         super(AlkaneMonolayer, self).__init__()
 
         surface = Betacristobalite()
-        # Replicate the surface
+        # Replicate the surface.
         tc = TiledCompound(surface, tile_x, tile_y, 1, kind="tiled_surface")
-
         self.add(tc, 'tiled_surface')
-        self.periodicity = tc.periodicity
 
         alkylsilane = AlkylSilane(chain_length)
         hydrogen = H()
-
-        # If no binding sites are provided, attach chains to all sites.
-        if mask is None:
-            from mbuild.tools.mask import random_mask_2d
-            mask = random_mask_2d(tile_x * 10 + tile_y * 10)
 
         # Attach chains to specified binding sites. Other sites get a hydrogen.
         apply_mask(self.tiled_surface, alkylsilane, mask, backfill=hydrogen)

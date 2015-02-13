@@ -6,19 +6,19 @@ from mbuild.coordinate_transform import equivalence_transform
 
 from mbuild.components.small_groups.silane import Silane
 from mbuild.components.small_groups.ch3 import Ch3
-from mpc_monomer import MpcMonomer
+from mpc import MPC
 from initiator import Initiator
 
 
-class Brush(Compound):
+class PMPC(Compound):
     """ """
     def __init__(self, chain_length=4, alpha=pi/4):
-        super(Brush, self).__init__(self)
+        super(PMPC, self).__init__(self)
 
         # Add parts
         self.add(Silane(), 'silane')
         self.add(Initiator(), 'initiator')
-        self.add(Polymer(MpcMonomer(alpha=alpha), n=chain_length,
+        self.add(Polymer(MPC(alpha=alpha), n=chain_length,
                          port_labels=('up', 'down')), 'pmpc')
         self.add(Ch3(), 'methyl')
 
@@ -27,9 +27,8 @@ class Brush(Compound):
         equivalence_transform(self.methyl, self.methyl.up, self.pmpc.up)
 
         # Make self.port point to silane.bottom_port
-        self.add(self.silane.down, label="down", containment=False)
+        self.add(self.silane.down, label='down', containment=False)
 
 if __name__ == "__main__":
-    brush = Brush(chain_length=1, alpha=pi/4)
-    brush.save(filename='brush.mol2')
-    #brush.visualize(show_ports=True)
+    pmpc = PMPC(chain_length=1, alpha=pi/4)
+    pmpc.visualize(show_ports=True)

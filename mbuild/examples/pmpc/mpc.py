@@ -1,16 +1,15 @@
 from mbuild.coordinate_transform import translate, y_axis_transform, rotate_around_y
 from mbuild.compound import Compound
 from mbuild.port import Port
-from mbuild.testing.tools import get_fn
 
 
-class MpcMonomer(Compound):
+class MPC(Compound):
     """A 2-(methacryloloxy) ethyl phosophorylcholine monomer."""
     def __init__(self, alpha=0):
-        super(MpcMonomer, self).__init__(self)
+        super(MPC, self).__init__(self)
 
         # Look for data file in same directory as this python module.
-        self.append_from_file(get_fn('mpc.pdb'))
+        self.append_from_file('mpc.pdb')
 
         # Transform the coordinate system of mpc such that the two carbon atoms
         # that are part of the backbone are on the y axis, c_backbone at the origin.
@@ -32,6 +31,5 @@ class MpcMonomer(Compound):
         translate(self.down, C_bottom - (C_bottom - C_top)*1.50)
 
 if __name__ == "__main__":
-    monomer = MpcMonomer().to_trajectory()
-
-    monomer.save(filename='mpc.xyz')
+    monomer = MPC()
+    monomer.visualize(show_ports=True)
