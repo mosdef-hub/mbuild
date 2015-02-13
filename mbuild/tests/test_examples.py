@@ -38,8 +38,8 @@ class TestExample(BaseTest):
         import mbuild.examples.methane.methane as example
         example.main()
 
-    def test_pmpc_brush_layer(self):
-        import mbuild.examples.pmpc_brush_layer.pmpc_brush_layer as example
+    def test_pmpc(self):
+        import mbuild.examples.pmpc.pmpc_brush_layer as example
         example.main()
 
     def test_reload(self):

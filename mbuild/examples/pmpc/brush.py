@@ -10,10 +10,10 @@ from mpc import MPC
 from initiator import Initiator
 
 
-class PMPC(Compound):
+class Brush(Compound):
     """ """
     def __init__(self, chain_length=4, alpha=pi/4):
-        super(PMPC, self).__init__(self)
+        super(Brush, self).__init__(self)
 
         # Add parts
         self.add(Silane(), 'silane')
@@ -30,5 +30,5 @@ class PMPC(Compound):
         self.add(self.silane.down, label='down', containment=False)
 
 if __name__ == "__main__":
-    pmpc = PMPC(chain_length=1, alpha=pi/4)
+    pmpc = Brush(chain_length=1, alpha=pi/4)
     pmpc.visualize(show_ports=True)

@@ -2,7 +2,7 @@ from __future__ import division, print_function
 
 from numpy import pi
 
-from mbuild.examples.pmpc_brush_layer.brush import Brush
+from mbuild.examples.pmpc.brush import Brush
 from mbuild.coordinate_transform import rotate_around_z
 
 
