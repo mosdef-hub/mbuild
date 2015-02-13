@@ -4,9 +4,11 @@ from copy import deepcopy
 import numpy as np
 
 from mbuild.coordinate_transform import equivalence_transform
+from mbuild.tools.validation import assert_port_exists
 
 
-def apply_mask(host, guest, mask, guest_port_name="port", backfill=None):
+def apply_mask(host, guest, mask, guest_port_name='down', backfill=None,
+               backfill_port_name='up'):
     """Attach guest Compounds to a host Compound in the pattern of a mask.
 
     Args:
@@ -16,6 +18,7 @@ def apply_mask(host, guest, mask, guest_port_name="port", backfill=None):
         guest_port_name (str):
         backfill (Compound, optional):
     """
+    assert_port_exists(guest_port_name, guest)
     box = host.boundingbox(excludeG=False)
     mask = mask * box.lengths + box.mins
 
@@ -28,11 +31,11 @@ def apply_mask(host, guest, mask, guest_port_name="port", backfill=None):
         port_positions[port_idx, :] = port.up.middle.pos
         port_list.append(port)
 
-    used_ports = list()  # Keep track of used ports for backfilling.
+    used_ports = set()  # Keep track of used ports for backfilling.
     for point in mask:
         closest_point_idx = np.argmin(host.min_periodic_distance(point, port_positions))
         closest_port = port_list[closest_point_idx]
-        used_ports.append(closest_port)
+        used_ports.add(closest_port)
 
         # Attach the guest to the closest port.
         new_guest = deepcopy(guest)
@@ -44,13 +47,14 @@ def apply_mask(host, guest, mask, guest_port_name="port", backfill=None):
         port_positions[closest_point_idx, :] = np.array([np.inf, np.inf, np.inf])
 
     if backfill:
+        assert_port_exists(backfill_port_name, backfill)
         # Attach the backfilling Compound to unused ports.
         for port in port_list:
             if port not in used_ports:
                 new_backfill = deepcopy(backfill)
                 # Might make sense to have a backfill_port_name option...
                 equivalence_transform(
-                    new_backfill, new_backfill.labels[guest_port_name], port)
+                    new_backfill, new_backfill.labels[backfill_port_name], port)
                 host.add(new_backfill)
 
 

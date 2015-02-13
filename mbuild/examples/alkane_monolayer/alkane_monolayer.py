@@ -6,6 +6,7 @@ from mbuild.tools.mask import apply_mask
 
 from alkylsilane import AlkylSilane
 from mbuild.components.surfaces.betacristobalite import Betacristobalite
+from mbuild.components.atoms.H import H
 
 
 class AlkaneMonolayer(Compound):
@@ -30,10 +31,7 @@ class AlkaneMonolayer(Compound):
         self.periodicity = tc.periodicity
 
         alkylsilane = AlkylSilane(chain_length)
-        # Create a hydrogen Atom with a Port. See issue #21 on github.
-        hydrogen = Compound()
-        hydrogen.add(Atom('H'), 'H')
-        hydrogen.add(Port(anchor=hydrogen.H), 'down')
+        hydrogen = H()
 
         # If no binding sites are provided, attach chains to all sites.
         if mask is None:
@@ -41,8 +39,7 @@ class AlkaneMonolayer(Compound):
             mask = random_mask_2d(tile_x * 10 + tile_y * 10)
 
         # Attach chains to specified binding sites. Other sites get a hydrogen.
-        apply_mask(self.tiled_surface, alkylsilane, mask,
-                   guest_port_name='down', backfill=hydrogen)
+        apply_mask(self.tiled_surface, alkylsilane, mask, backfill=hydrogen)
 
 
 def main():

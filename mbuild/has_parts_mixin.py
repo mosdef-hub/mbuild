@@ -41,7 +41,8 @@ class HasPartsMixin(object):
                 for subpart in part._yield_parts(part_type):
                     yield subpart
 
-    def add(self, new_part, label=None, containment=True, replace=False):
+    def add(self, new_part, label=None, containment=True, replace=False,
+            inherit_periodicity=True):
         """Add a part to the Compound.
 
         Note:
@@ -97,6 +98,9 @@ class HasPartsMixin(object):
             else:
                 self.labels[label] = new_part
         new_part.referrers.add(self)
+
+        if inherit_periodicity and hasattr(new_part, 'periodicity'):
+            self._inherit_periodicity(new_part.periodicity)
 
     def remove(self, objs_to_remove):
         """Remove a part (Atom, Bond or Compound) from the Compound by value.

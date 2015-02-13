@@ -23,15 +23,16 @@ class Polymer(Compound):
             if last_part is None:
                 first_part = this_part
             else:
-                # transform this part, such that it's bottom port is rotated+translated to the last part's top port
+                # Transform this part, such that it's bottom port is rotated
+                # and translated to the last part's top port.
                 equivalence_transform(this_part, this_part.labels[port_labels[1]],
                                       last_part.labels[port_labels[0]])
             last_part = this_part
 
-        # hoist the last part's top port to be the top port of the polymer
+        # Hoist the last part's top port to be the top port of the polymer.
         self.add(last_part.labels[port_labels[0]], port_labels[0], containment=False)
 
-        # hoist the first part's bottom port to be the bottom port of the polymer
+        # Hoist the first part's bottom port to be the bottom port of the polymer.
         self.add(first_part.labels[port_labels[1]], port_labels[1], containment=False)
 
 if __name__ == "__main__":

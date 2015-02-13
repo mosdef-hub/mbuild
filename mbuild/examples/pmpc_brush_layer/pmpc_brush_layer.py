@@ -7,7 +7,6 @@ from mbuild.components.surfaces.betacristobalite import Betacristobalite
 from mbuild.examples.pmpc_brush_layer.mpc_monomer import MpcMonomer
 from mbuild.examples.pmpc_brush_layer.brush import Brush
 from mbuild.tools.mask import apply_mask, random_mask_2d
-from mbuild.tools.parameterize.atomtyper import find_atomtypes
 from mbuild.tools.tiled_compound import TiledCompound
 
 
@@ -36,7 +35,6 @@ def main():
     brush_layer = brush_layer.to_trajectory(chain_types=[Betacristobalite, Brush],
                                             residue_types=[MpcMonomer])
     brush_layer.topology.find_forcefield_terms()
-    # 2462, 4707, 6716
     brush_layer.save(filename='brush_layer.top')
 
 if __name__ == "__main__":

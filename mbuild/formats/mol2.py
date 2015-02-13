@@ -10,10 +10,14 @@ def save_mol2(traj, step=-1, filename='mbuild.mol2'):
 
     """
     bond_list = list()
-    for bond_n, bond in enumerate(traj.top.bonds):
-        bond_list.append("{0} {1} {2} 1\n".format(
-                bond_n + 1, bond[0].index + 1, bond[1].index + 1))
-    n_bonds = bond_n + 1
+    if len(traj.top._bonds) > 0:
+        for bond_n, bond in enumerate(traj.top.bonds):
+            bond_list.append("{0} {1} {2} 1\n".format(
+                    bond_n + 1, bond[0].index + 1, bond[1].index + 1))
+
+        n_bonds = bond_n + 1
+    else:
+        n_bonds = 0
 
     with open(filename, 'w') as mol2_file:
         mol2_file.write("@<TRIPOS>MOLECULE\n")

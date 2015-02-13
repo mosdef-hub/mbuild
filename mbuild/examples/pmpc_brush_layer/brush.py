@@ -27,7 +27,7 @@ class Brush(Compound):
         equivalence_transform(self.methyl, self.methyl.up, self.pmpc.up)
 
         # Make self.port point to silane.bottom_port
-        self.add(self.silane.down, label="port", containment=False)
+        self.add(self.silane.down, label="down", containment=False)
 
 if __name__ == "__main__":
     brush = Brush(chain_length=1, alpha=pi/4)

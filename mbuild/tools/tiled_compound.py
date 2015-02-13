@@ -115,11 +115,9 @@ class TiledCompound(Compound):
                             break
                     assert atom2_image is not None
 
-                    # Mark bond for removal.
+                    # Mark old bond for removal and add new ones.
                     bonds_to_remove.add(bond)
-                    # Add bond between atom1 and atom2_image.
                     self.add(Bond(bond.atom1, atom2_image))
-                    # Add bond between atom1_image and atom2.
                     self.add(Bond(atom1_image, bond.atom2))
 
             # Remove all marked bonds.

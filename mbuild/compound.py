@@ -160,6 +160,10 @@ class Compound(PartMixin, HasPartsMixin):
                 if bond.parent is not None:
                     bond.parent.remove(bond)
 
+    def _inherit_periodicity(self, periodicity):
+        """Inherit the periodicity of a Compound that was added.  """
+        self.periodicity = periodicity
+
     # Interface to Trajectory for reading/writing.
     # --------------------------------------------
     def append_from_file(self, filename, relative_to_module=None, frame=0):

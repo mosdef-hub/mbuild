@@ -13,9 +13,7 @@ class PartMixin(object):
     """
     def __init__(self):
         super(PartMixin, self).__init__()
-
         self.parent = None
-
         # The set of other compounds that reference this compound with labels.
         self.referrers = set()
 
