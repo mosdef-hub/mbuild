@@ -84,12 +84,11 @@ class Trajectory(object):
         return traj
 
     def update_compound(self, compound, frame=0):
-        assert(isinstance(compound, Compound))
+        assert isinstance(compound, Compound)
 
-        for chain in self.topology.chains:
-            for res in chain.residues:
-                for atom in res.atoms:
-                    compound.atoms[atom.index].pos = self.xyz[frame, atom.index]
+        atoms = compound.atoms
+        for atom in self.topology.atoms:
+            atoms[atom.index].pos = self.xyz[frame, atom.index]
 
     def to_compound(self, part=None, frame=0):
         if part is None:

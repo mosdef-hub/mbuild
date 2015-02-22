@@ -121,17 +121,12 @@ def opls_145(atom):
 @Element('C')
 @NeighborCount(3)
 @NeighborsExactly('C', 3)
+@NeighborsExactly('145', 3)
 @Whitelist('145B')
 @Blacklist([145])
 def opls_145B(atom):
     """Biphenyl C1 """
-    # Store for checking neighbors outside the first ring.
-    ring_one = benzene(atom)
-    if ring_one:
-        for neighbor in atom.neighbors:
-            if neighbor not in ring_one:
-                if benzene(neighbor):
-                    return True
+    return True
 
 
 @Element('H')
