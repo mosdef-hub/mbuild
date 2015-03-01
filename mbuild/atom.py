@@ -66,6 +66,10 @@ class Atom(PartMixin):
         return [bond.other_atom(self) for bond in self.bonds]
 
     @property
+    def n_bonds(self):
+        return len(self.bonds)
+
+    @property
     def extras(self):
         """Return the Atom's optional, extra attributes. """
         if self._extras is None:
