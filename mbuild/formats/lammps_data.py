@@ -39,17 +39,17 @@ def save_lammps_data(traj, step=-1, filename='data.mbuild', unit_set='real'):
     atom_type_n = 1
     for chain in traj.top.chains:
         for atom in chain.atoms:
-            if atom.name not in numeric_types:
-                numeric_types[atom.name] = atom_type_n
+            if atom.atomtype not in numeric_types:
+                numeric_types[atom.atomtype] = atom_type_n
                 mass = in_units_of(atom.element.mass, 'grams/moles', _mass_unit)
                 mass_list.append('{0:d} {1:8.4f} # {2}\n'.format(
-                    atom_type_n, mass, atom.name))
+                    atom_type_n, mass, atom.atomtype))
                 atom_type_n += 1
             x, y, z = in_units_of(traj.xyz[step][atom.index], 'nanometers',
                                   _distance_unit)
             entry = '{0:-d} {1:-d} {2:-d} {3:5.8f} {4:8.5f} {5:8.5f} {6:8.5f}  # {7}\n'.format(
-                atom.index + 1, chain.index + 1, numeric_types[atom.name],
-                0.0, x, y, z, atom.name)
+                atom.index + 1, chain.index + 1, numeric_types[atom.atomtype],
+                atom.charge, x, y, z, atom.atomtype)
             atom_list.append(entry)
 
     n_atom_types = len(numeric_types)

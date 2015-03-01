@@ -231,8 +231,8 @@ def main():
     bilayer.topology.load_ff_bonds()
     bilayer.save(filename='bilayer.hoomdxml')
 
-    import os
-    os.system('vmd -e vis.vmd')
+    #import os
+    #os.system('vmd -e vis.vmd')
 
 if __name__ == "__main__":
     main()

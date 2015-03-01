@@ -247,6 +247,8 @@ class Topology(object):
             if hasattr(atom, 'extras'):
                 if 'atomtype' in atom.extras:
                     at.atomtype = atom.atomtype
+                else:
+                    at.atomtype = atom.kind
             #print("Added {} to residue {} in chain {}".format(atom, last_residue, last_chain))
             atom_mapping[atom] = at
 

@@ -36,7 +36,16 @@ class TestExample(BaseTest):
 
     def test_methane(self):
         import mbuild.examples.methane.methane as example
-        example.main()
+        methane = example.main()
+
+        assert methane.n_atoms == 5
+        assert methane.n_bonds == 4
+
+        assert methane.atoms[0].kind == "C"
+        assert methane.hc[0].kind == "H"
+        assert methane.hc[1].kind == "H"
+        assert methane.hc[2].kind == "H"
+        assert methane.hc[3].kind == "H"
 
     def test_pmpc(self):
         import mbuild.examples.pmpc.pmpc_brush_layer as example

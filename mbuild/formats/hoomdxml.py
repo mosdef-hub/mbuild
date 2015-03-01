@@ -205,7 +205,7 @@ def save_hoomdxml(traj, step=-1, optional_nodes=None, filename='mbuild.xml'):
 
         xml_file.write("""<type num="{0}">\n""".format(traj.n_atoms))
         for atom in traj.top.atoms:
-            xml_file.write("{0}\n".format(atom.name))
+            xml_file.write("{0}\n".format(atom.atomtype))
         xml_file.write("</type>\n")
 
         optional_directives = [('bonds', 2), ('angles', 3), ('dihedrals', 4),

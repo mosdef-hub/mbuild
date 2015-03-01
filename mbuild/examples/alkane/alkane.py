@@ -49,7 +49,6 @@ def main():
     n = 5
     alkane = Alkane(n=n, cap_front=True, cap_end=True)
 
-    alkane.visualize(show_ports=True)
     alkane = alkane.to_trajectory()
     alkane.top.find_forcefield_terms()
 

@@ -18,11 +18,11 @@ def save_gromacs(traj, step=-1, basename='mbuild', forcefield='opls-aa'):
         f.write('mbuild 3\n')
 
         f.write('\n[ atoms ]\n')
-        for atom in traj.topology.atoms:
+        for i, atom in enumerate(traj.topology.atoms):
             f.write('{:8d} {:5s} {:8d} {:5s} {:5s} {:8d} {:8.4f} {:8.4f}\n'.format(
-                atom.index + 1, atom.name, atom.residue.index,
+                atom.index + 1, 'opls_' + atom.atomtype, atom.residue.index,
                 atom.residue.name,
-                atom.name, 1, atom.charge, atom.element.mass))
+                atom.name, i+1, atom.charge, atom.element.mass))
 
         if traj.topology._ff_bonds:
             f.write('\n[ bonds ]\n')

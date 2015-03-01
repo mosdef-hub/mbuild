@@ -13,7 +13,8 @@ from mbuild.tools.parameterize.atomtyper import find_atomtypes
 from base_test import BaseTest
 
 
-class TestTools(BaseTest):
+class TestOPLS(BaseTest):
+
     def test_all_molecules(self, only_run=None):
         resource_dir = tools.resource_filename('mbuild', '../opls_validation')
         top_files = glob.glob(os.path.join(resource_dir, '*.top'))
@@ -43,8 +44,8 @@ class TestTools(BaseTest):
                 message = ('Found multiple or no OPLS types for atom {} in {} ({}): {}\n'
                            'Should be atomtype: {}'.format(
                     i, mol_name, top_name, atom.atomtype, known_opls_types[i]))
-                assert len(atom.atomtype) == 1, message
-                generated_opls_types.append(atom.atomtype[0])
+                assert isinstance(atom.atomtype, str), message
+                generated_opls_types.append(atom.atomtype)
 
             both = zip(generated_opls_types, known_opls_types)
             message = "Found inconsistent OPLS types in {} ({}): {}".format(
@@ -57,5 +58,5 @@ class TestTools(BaseTest):
 
 if __name__ == "__main__":
     import pdb
-    # TestTools().test_all_molecules('ethylene-carbonate')
-    TestTools().test_all_molecules()
+    # TestOPLS().test_all_molecules('ethylene-carbonate')
+    TestOPLS().test_all_molecules()

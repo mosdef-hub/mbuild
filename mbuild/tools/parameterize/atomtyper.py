@@ -142,7 +142,7 @@ def resolve_atomtypes(compound):
 
         if not atom.extras.get('atomtype'):  # It hasn't been set manually.
             if len(atomtype) == 1:
-                atom.extras['atomtype'] = [atomtype[0]]
+                atom.extras['atomtype'] = atomtype[0]
             else:
                 warn("CHECK YOUR TOPOLOGY. Found multiple or no types for atom "
                      "{0} ({1}): {2}.".format(i, atom.kind, atomtype))

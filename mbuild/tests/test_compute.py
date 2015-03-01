@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-"""Tests for `mbuild.tools` module. """
+"""Tests for `mbuild.tools.compute` module. """
 import pytest
 import numpy as np
 
@@ -9,13 +9,13 @@ from mbuild.trajectory import Trajectory
 from mbuild.testing.tools import get_fn
 from base_test import BaseTest
 
-class TestTools(BaseTest):
+class TestCompute(BaseTest):
 
     def test_center_of_mass(self):
         e_ceramide_ns = Trajectory.load(get_fn('e-ceramide-ns.pdb'))
 
-        from mdtraj import compute_center_of_mass
-        mdtraj_com = compute_center_of_mass(e_ceramide_ns)
+        import mdtraj as md
+        mdtraj_com = md.compute_center_of_mass(e_ceramide_ns)
         from mbuild.tools.compute import compute_center_of_mass
         mbuild_com = compute_center_of_mass(e_ceramide_ns)
         assert mdtraj_com.all() == mbuild_com.all()
