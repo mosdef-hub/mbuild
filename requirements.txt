@@ -1,10 +1,4 @@
-distribute>=0.6.28
 future
-networkx
-sphinxcontrib-napoleon
-numpy>=1.7.0
-scipy
 matplotlib
-cython>=0.19
 mdtraj
-pandas
+networkx
