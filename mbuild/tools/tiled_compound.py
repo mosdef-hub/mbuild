@@ -16,7 +16,7 @@ class TiledCompound(Compound):
     Correctly updates connectivity while respecting periodic boundary
     conditions.
     """
-    def __init__(self, tile, n_x=1, n_y=1, n_z=1, kind=None):
+    def __init__(self, tile, n_tiles=None, kind=None):
         """
         Args:
             tile (Compound): The Compound to be replicated.
@@ -29,6 +29,9 @@ class TiledCompound(Compound):
         assert isinstance(tile, Compound)
         super(TiledCompound, self).__init__()
 
+        if not n_tiles:
+            n_tiles = (1, 1, 1)
+        n_x, n_y, n_z = n_tiles
         assert n_x > 0 and n_y > 0 and n_z > 0, "Number of tiles must be positive."
 
         # Check that the tile is periodic in the requested dimensions.

@@ -65,10 +65,10 @@
 </li>
 </ul>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../../../tutorials.html">Tutorials</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="../../../tutorials.html#methane-atoms-bonds-and-compounds">Methane: Atoms, Bonds and Compounds</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../../tutorials.html#ethane-reading-from-files-ports-and-coordinate-transforms">Ethane: Reading from files, Ports and coordinate transforms</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../../tutorials.html#monolayer-complex-hierarchies-masks-tiling-and-writing-to-files">Monolayer: Complex hierarchies, masks, tiling and writing to files</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../tutorials/tutorials.html">Tutorials</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../tutorials/tutorials.html#methane-atoms-bonds-and-compounds">Methane: Atoms, Bonds and Compounds</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../tutorials/tutorials.html#ethane-reading-from-files-ports-and-coordinate-transforms">Ethane: Reading from files, Ports and coordinate transforms</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../tutorials/tutorials.html#monolayer-complex-hierarchies-masks-tiling-and-writing-to-files">Monolayer: Complex hierarchies, masks, tiling and writing to files</a></li>
 </ul>
 </li>
 </ul>
@@ -155,9 +155,11 @@
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
 
 <span class="kn">from</span> <span class="nn">mbuild.coordinate_transform</span> <span class="kn">import</span> <span class="n">equivalence_transform</span>
+<span class="kn">from</span> <span class="nn">mbuild.tools.validation</span> <span class="kn">import</span> <span class="n">assert_port_exists</span>
 
 
-<div class="viewcode-block" id="apply_mask"><a class="viewcode-back" href="../../../mbuild.tools.html#mbuild.tools.mask.apply_mask">[docs]</a><span class="k">def</span> <span class="nf">apply_mask</span><span class="p">(</span><span class="n">host</span><span class="p">,</span> <span class="n">guest</span><span class="p">,</span> <span class="n">mask</span><span class="p">,</span> <span class="n">guest_port_name</span><span class="o">=</span><span class="s">&quot;port&quot;</span><span class="p">,</span> <span class="n">backfill</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+<div class="viewcode-block" id="apply_mask"><a class="viewcode-back" href="../../../mbuild.tools.html#mbuild.tools.mask.apply_mask">[docs]</a><span class="k">def</span> <span class="nf">apply_mask</span><span class="p">(</span><span class="n">host</span><span class="p">,</span> <span class="n">guest</span><span class="p">,</span> <span class="n">mask</span><span class="p">,</span> <span class="n">guest_port_name</span><span class="o">=</span><span class="s">&#39;down&#39;</span><span class="p">,</span> <span class="n">backfill</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+               <span class="n">backfill_port_name</span><span class="o">=</span><span class="s">&#39;up&#39;</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Attach guest Compounds to a host Compound in the pattern of a mask.</span>
 
 <span class="sd">    Args:</span>
@@ -167,6 +169,7 @@
 <span class="sd">        guest_port_name (str):</span>
 <span class="sd">        backfill (Compound, optional):</span>
 <span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">assert_port_exists</span><span class="p">(</span><span class="n">guest_port_name</span><span class="p">,</span> <span class="n">guest</span><span class="p">)</span>
     <span class="n">box</span> <span class="o">=</span> <span class="n">host</span><span class="o">.</span><span class="n">boundingbox</span><span class="p">(</span><span class="n">excludeG</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
     <span class="n">mask</span> <span class="o">=</span> <span class="n">mask</span> <span class="o">*</span> <span class="n">box</span><span class="o">.</span><span class="n">lengths</span> <span class="o">+</span> <span class="n">box</span><span class="o">.</span><span class="n">mins</span>
 
@@ -179,11 +182,11 @@
         <span class="n">port_positions</span><span class="p">[</span><span class="n">port_idx</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">port</span><span class="o">.</span><span class="n">up</span><span class="o">.</span><span class="n">middle</span><span class="o">.</span><span class="n">pos</span>
         <span class="n">port_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">port</span><span class="p">)</span>
 
-    <span class="n">used_ports</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>  <span class="c"># Keep track of used ports for backfilling.</span>
+    <span class="n">used_ports</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>  <span class="c"># Keep track of used ports for backfilling.</span>
     <span class="k">for</span> <span class="n">point</span> <span class="ow">in</span> <span class="n">mask</span><span class="p">:</span>
         <span class="n">closest_point_idx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argmin</span><span class="p">(</span><span class="n">host</span><span class="o">.</span><span class="n">min_periodic_distance</span><span class="p">(</span><span class="n">point</span><span class="p">,</span> <span class="n">port_positions</span><span class="p">))</span>
         <span class="n">closest_port</span> <span class="o">=</span> <span class="n">port_list</span><span class="p">[</span><span class="n">closest_point_idx</span><span class="p">]</span>
-        <span class="n">used_ports</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">closest_port</span><span class="p">)</span>
+        <span class="n">used_ports</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">closest_port</span><span class="p">)</span>
 
         <span class="c"># Attach the guest to the closest port.</span>
         <span class="n">new_guest</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="n">guest</span><span class="p">)</span>
@@ -195,13 +198,14 @@
         <span class="n">port_positions</span><span class="p">[</span><span class="n">closest_point_idx</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">])</span>
 
     <span class="k">if</span> <span class="n">backfill</span><span class="p">:</span>
+        <span class="n">assert_port_exists</span><span class="p">(</span><span class="n">backfill_port_name</span><span class="p">,</span> <span class="n">backfill</span><span class="p">)</span>
         <span class="c"># Attach the backfilling Compound to unused ports.</span>
         <span class="k">for</span> <span class="n">port</span> <span class="ow">in</span> <span class="n">port_list</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">port</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">used_ports</span><span class="p">:</span>
                 <span class="n">new_backfill</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="n">backfill</span><span class="p">)</span>
                 <span class="c"># Might make sense to have a backfill_port_name option...</span>
                 <span class="n">equivalence_transform</span><span class="p">(</span>
-                    <span class="n">new_backfill</span><span class="p">,</span> <span class="n">new_backfill</span><span class="o">.</span><span class="n">labels</span><span class="p">[</span><span class="n">guest_port_name</span><span class="p">],</span> <span class="n">port</span><span class="p">)</span>
+                    <span class="n">new_backfill</span><span class="p">,</span> <span class="n">new_backfill</span><span class="o">.</span><span class="n">labels</span><span class="p">[</span><span class="n">backfill_port_name</span><span class="p">],</span> <span class="n">port</span><span class="p">)</span>
                 <span class="n">host</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">new_backfill</span><span class="p">)</span>
 
 </div>

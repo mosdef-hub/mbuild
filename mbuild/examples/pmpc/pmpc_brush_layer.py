@@ -19,7 +19,7 @@ class PMPCLayer(Compound):
         super(PMPCLayer, self).__init__()
 
         surface = Betacristobalite()
-        tc = TiledCompound(surface, tile_x, tile_y, 1, kind="tiled_surface")
+        tc = TiledCompound(surface, (tile_x, tile_y, 1), kind="tiled_surface")
         self.add(tc, 'tiled_surface')
 
         brush = Brush(chain_length=chain_length, alpha=alpha)

@@ -33,5 +33,5 @@ class AmorphousSilica(Compound):
 
 if __name__ == "__main__":
     s = AmorphousSilica()
-    m = TiledCompound(s, n_x=2, n_y=1, n_z=1, kind="tiled")
+    m = TiledCompound(s, n_tiles=(2, 1, 1), kind="tiled")
     m.visualize(show_ports=True)

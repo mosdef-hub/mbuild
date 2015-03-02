@@ -15,9 +15,7 @@ if sys.argv[-1] == 'publish':
     os.system('python setup.py sdist upload')
     sys.exit()
 
-readme = open('README.rst').read()
-history = open('HISTORY.rst').read().replace('.. :changelog:', '')
-
+readme = open('README.md').read()
 
 class PyTest(TestCommand):
     def finalize_options(self):
@@ -35,7 +33,7 @@ setup(
     name='mbuild',
     version=mbuild.version.short_version,
     description='mbuild is a component based molecule builder tool to assemble large molecular systems from reusable parts for molecular dynamics simulations',
-    long_description=readme + '\n\n' + history,
+    long_description=readme,
     author='Janos Sallai, Christoph Klein',
     author_email='janos.sallai@vanderbilt.edu, christoph.klein@vanderbilt.edu',
     url='https://github.com/sallai/mbuild',

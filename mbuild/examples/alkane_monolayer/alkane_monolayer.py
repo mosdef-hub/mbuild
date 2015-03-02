@@ -23,7 +23,7 @@ class AlkaneMonolayer(Compound):
 
         surface = Betacristobalite()
         # Replicate the surface.
-        tc = TiledCompound(surface, tile_x, tile_y, 1, kind="tiled_surface")
+        tc = TiledCompound(surface, (tile_x, tile_y, 1), kind="tiled_surface")
         self.add(tc, 'tiled_surface')
 
         alkylsilane = AlkylSilane(chain_length)

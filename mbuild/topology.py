@@ -189,8 +189,10 @@ class Topology(object):
 
         Args:
             compound:
-            atom_list:
             bond_list:
+            show_ports:
+            chain_types:
+            residue_types:
         Returns:
             out (mbuild.Topology):
         """

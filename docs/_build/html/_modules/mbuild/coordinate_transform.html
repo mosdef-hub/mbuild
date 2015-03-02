@@ -65,10 +65,10 @@
 </li>
 </ul>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../../tutorials.html">Tutorials</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="../../tutorials.html#methane-atoms-bonds-and-compounds">Methane: Atoms, Bonds and Compounds</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../tutorials.html#ethane-reading-from-files-ports-and-coordinate-transforms">Ethane: Reading from files, Ports and coordinate transforms</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../tutorials.html#monolayer-complex-hierarchies-masks-tiling-and-writing-to-files">Monolayer: Complex hierarchies, masks, tiling and writing to files</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorials/tutorials.html">Tutorials</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../tutorials/tutorials.html#methane-atoms-bonds-and-compounds">Methane: Atoms, Bonds and Compounds</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../tutorials/tutorials.html#ethane-reading-from-files-ports-and-coordinate-transforms">Ethane: Reading from files, Ports and coordinate transforms</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../tutorials/tutorials.html#monolayer-complex-hierarchies-masks-tiling-and-writing-to-files">Monolayer: Complex hierarchies, masks, tiling and writing to files</a></li>
 </ul>
 </li>
 </ul>
@@ -522,20 +522,21 @@
 <span class="sd">        equivalence_pairs (2-tuple of Ports): Technically, a tuple of the Ports&#39;</span>
 <span class="sd">            sub-Compounds (&#39;up&#39; or &#39;down&#39;) that are used to make the correct</span>
 <span class="sd">            connection between components.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
 
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="c"># First we try matching the two &#39;up&#39; ports.</span>
     <span class="n">T</span> <span class="o">=</span> <span class="n">_create_equivalence_transform</span><span class="p">([(</span><span class="n">from_port</span><span class="o">.</span><span class="n">up</span><span class="p">,</span> <span class="n">to_port</span><span class="o">.</span><span class="n">up</span><span class="p">)])</span>
-    <span class="n">_</span> <span class="o">=</span> <span class="n">T</span><span class="o">.</span><span class="n">apply_to</span><span class="p">(</span><span class="n">array</span><span class="p">(</span><span class="n">from_port</span><span class="o">.</span><span class="n">anchor</span><span class="o">.</span><span class="n">pos</span><span class="p">,</span> <span class="n">ndmin</span><span class="o">=</span><span class="mi">2</span><span class="p">))</span>
+    <span class="n">new_position</span> <span class="o">=</span> <span class="n">T</span><span class="o">.</span><span class="n">apply_to</span><span class="p">(</span><span class="n">array</span><span class="p">(</span><span class="n">from_port</span><span class="o">.</span><span class="n">anchor</span><span class="o">.</span><span class="n">pos</span><span class="p">,</span> <span class="n">ndmin</span><span class="o">=</span><span class="mi">2</span><span class="p">))</span>
 
-    <span class="n">dist_between_anchors_up_up</span> <span class="o">=</span> <span class="n">norm</span><span class="p">(</span><span class="n">from_port</span><span class="o">.</span><span class="n">anchor</span> <span class="o">-</span> <span class="n">to_port</span><span class="o">.</span><span class="n">anchor</span><span class="p">)</span>
+    <span class="c">#dist_between_anchors_up_up = norm(from_port.anchor - to_port.anchor)</span>
+    <span class="n">dist_between_anchors_up_up</span> <span class="o">=</span> <span class="n">norm</span><span class="p">(</span><span class="n">new_position</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">to_port</span><span class="o">.</span><span class="n">anchor</span><span class="o">.</span><span class="n">pos</span><span class="p">)</span>
 
     <span class="c"># Then matching a &#39;down&#39; with an &#39;up&#39; port.</span>
     <span class="n">T</span> <span class="o">=</span> <span class="n">_create_equivalence_transform</span><span class="p">([(</span><span class="n">from_port</span><span class="o">.</span><span class="n">down</span><span class="p">,</span> <span class="n">to_port</span><span class="o">.</span><span class="n">up</span><span class="p">)])</span>
-    <span class="n">_</span> <span class="o">=</span> <span class="n">T</span><span class="o">.</span><span class="n">apply_to</span><span class="p">(</span><span class="n">array</span><span class="p">(</span><span class="n">from_port</span><span class="o">.</span><span class="n">anchor</span><span class="o">.</span><span class="n">pos</span><span class="p">,</span> <span class="n">ndmin</span><span class="o">=</span><span class="mi">2</span><span class="p">))</span>
+    <span class="n">new_position</span> <span class="o">=</span> <span class="n">T</span><span class="o">.</span><span class="n">apply_to</span><span class="p">(</span><span class="n">array</span><span class="p">(</span><span class="n">from_port</span><span class="o">.</span><span class="n">anchor</span><span class="o">.</span><span class="n">pos</span><span class="p">,</span> <span class="n">ndmin</span><span class="o">=</span><span class="mi">2</span><span class="p">))</span>
 
     <span class="c"># Determine which transform places the anchors further away from each other</span>
-    <span class="n">dist_between_anchors_down_up</span> <span class="o">=</span> <span class="n">norm</span><span class="p">(</span><span class="n">from_port</span><span class="o">.</span><span class="n">anchor</span> <span class="o">-</span> <span class="n">to_port</span><span class="o">.</span><span class="n">anchor</span><span class="p">)</span>
+    <span class="n">dist_between_anchors_down_up</span> <span class="o">=</span> <span class="n">norm</span><span class="p">(</span><span class="n">new_position</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">to_port</span><span class="o">.</span><span class="n">anchor</span><span class="o">.</span><span class="n">pos</span><span class="p">)</span>
     <span class="n">difference_between_distances</span> <span class="o">=</span> <span class="n">dist_between_anchors_down_up</span> <span class="o">-</span> <span class="n">dist_between_anchors_up_up</span>
 
     <span class="k">if</span> <span class="n">difference_between_distances</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>

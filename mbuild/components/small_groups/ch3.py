@@ -1,8 +1,6 @@
-import numpy as np
-
 from mbuild.compound import Compound
 from mbuild.port import Port
-from mbuild.coordinate_transform import translate, rotate_around_z
+from mbuild.coordinate_transform import translate
 
 
 class Ch3(Compound):

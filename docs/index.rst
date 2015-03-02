@@ -20,7 +20,7 @@ Tutorials
 ---------
 .. toctree::
 
-   tutorials
+   tutorials/tutorials
 
 API Reference
 -------------

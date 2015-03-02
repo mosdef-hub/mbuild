@@ -65,10 +65,10 @@
 </li>
 </ul>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../../../../tutorials.html">Tutorials</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="../../../../tutorials.html#methane-atoms-bonds-and-compounds">Methane: Atoms, Bonds and Compounds</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../../../tutorials.html#ethane-reading-from-files-ports-and-coordinate-transforms">Ethane: Reading from files, Ports and coordinate transforms</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../../../tutorials.html#monolayer-complex-hierarchies-masks-tiling-and-writing-to-files">Monolayer: Complex hierarchies, masks, tiling and writing to files</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../tutorials/tutorials.html">Tutorials</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../../tutorials/tutorials.html#methane-atoms-bonds-and-compounds">Methane: Atoms, Bonds and Compounds</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../tutorials/tutorials.html#ethane-reading-from-files-ports-and-coordinate-transforms">Ethane: Reading from files, Ports and coordinate transforms</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../tutorials/tutorials.html#monolayer-complex-hierarchies-masks-tiling-and-writing-to-files">Monolayer: Complex hierarchies, masks, tiling and writing to files</a></li>
 </ul>
 </li>
 </ul>
@@ -177,14 +177,14 @@
 
 <div class="viewcode-block" id="find_atomtypes"><a class="viewcode-back" href="../../../../mbuild.tools.parameterize.html#mbuild.tools.parameterize.atomtyper.find_atomtypes">[docs]</a><span class="k">def</span> <span class="nf">find_atomtypes</span><span class="p">(</span><span class="n">compound</span><span class="p">,</span> <span class="n">forcefield</span><span class="o">=</span><span class="s">&#39;OPLS-AA&#39;</span><span class="p">,</span> <span class="n">debug</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Determine atomtypes for all atoms in `compound`. &quot;&quot;&quot;</span>
-    <span class="k">if</span> <span class="n">forcefield</span> <span class="o">==</span> <span class="s">&#39;OPLS-AA&#39;</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">forcefield</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s">&#39;opls-aa&#39;</span><span class="p">:</span>
         <span class="kn">import</span> <span class="nn">mbuild.tools.parameterize.oplsaa</span> <span class="kn">as</span> <span class="nn">oplsaa</span>
         <span class="c"># Build a map to all of the supported opls_* functions.</span>
         <span class="k">for</span> <span class="n">func_name</span><span class="p">,</span> <span class="n">func</span> <span class="ow">in</span> <span class="n">sys</span><span class="o">.</span><span class="n">modules</span><span class="p">[</span><span class="n">oplsaa</span><span class="o">.</span><span class="n">__name__</span><span class="p">]</span><span class="o">.</span><span class="n">__dict__</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
             <span class="k">if</span> <span class="n">func_name</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s">&#39;opls_&#39;</span><span class="p">):</span>
                 <span class="n">rule_number_to_rule</span><span class="p">[</span><span class="n">func_name</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&quot;_&quot;</span><span class="p">)[</span><span class="mi">1</span><span class="p">]]</span> <span class="o">=</span> <span class="n">func</span>
 
-    <span class="k">elif</span> <span class="n">forcefield</span> <span class="o">==</span> <span class="s">&#39;UFF&#39;</span><span class="p">:</span>
+    <span class="k">elif</span> <span class="n">forcefield</span> <span class="o">==</span> <span class="s">&#39;uff&#39;</span><span class="p">:</span>
         <span class="kn">import</span> <span class="nn">mbuild.tools.parameterize.uff</span> <span class="kn">as</span> <span class="nn">uff</span>
         <span class="c"># Build a map to all of the supported uff_* functions.</span>
         <span class="k">for</span> <span class="n">func_name</span><span class="p">,</span> <span class="n">func</span> <span class="ow">in</span> <span class="n">sys</span><span class="o">.</span><span class="n">modules</span><span class="p">[</span><span class="n">uff</span><span class="o">.</span><span class="n">__name__</span><span class="p">]</span><span class="o">.</span><span class="n">__dict__</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
@@ -291,12 +291,16 @@
         <span class="n">atomtype</span> <span class="o">=</span> <span class="n">atom</span><span class="o">.</span><span class="n">whitelist</span> <span class="o">-</span> <span class="n">atom</span><span class="o">.</span><span class="n">blacklist</span>
         <span class="n">atomtype</span> <span class="o">=</span> <span class="p">[</span><span class="n">a</span> <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">atomtype</span><span class="p">]</span>
 
-        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">atomtype</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
-            <span class="n">atom</span><span class="o">.</span><span class="n">extras</span><span class="p">[</span><span class="s">&#39;atomtype&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">atomtype</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">atom</span><span class="o">.</span><span class="n">extras</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;atomtype&#39;</span><span class="p">):</span>  <span class="c"># It hasn&#39;t been set manually.</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">atomtype</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="n">atom</span><span class="o">.</span><span class="n">extras</span><span class="p">[</span><span class="s">&#39;atomtype&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">atomtype</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">warn</span><span class="p">(</span><span class="s">&quot;CHECK YOUR TOPOLOGY. Found multiple or no types for atom &quot;</span>
+                     <span class="s">&quot;{0} ({1}): {2}.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">atom</span><span class="o">.</span><span class="n">kind</span><span class="p">,</span> <span class="n">atomtype</span><span class="p">))</span>
+                <span class="n">atom</span><span class="o">.</span><span class="n">extras</span><span class="p">[</span><span class="s">&#39;atomtype&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">atomtype</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">warn</span><span class="p">(</span><span class="s">&quot;CHECK YOUR TOPOLOGY. Found multiple or no types for atom &quot;</span>
-                 <span class="s">&quot;{0} ({1}): {2}.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">atom</span><span class="o">.</span><span class="n">kind</span><span class="p">,</span> <span class="n">atomtype</span><span class="p">))</span>
-            <span class="n">atom</span><span class="o">.</span><span class="n">extras</span><span class="p">[</span><span class="s">&#39;atomtype&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">atomtype</span><span class="p">)</span>
+            <span class="n">warn</span><span class="p">(</span><span class="s">&quot;Using user provided atomtype of {0} for atom {1}.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                <span class="n">atom</span><span class="o">.</span><span class="n">extras</span><span class="p">[</span><span class="s">&#39;atomtype&#39;</span><span class="p">],</span> <span class="n">atom</span><span class="p">))</span>
 
 </div>
 <div class="viewcode-block" id="neighbor_element_types"><a class="viewcode-back" href="../../../../mbuild.tools.parameterize.html#mbuild.tools.parameterize.atomtyper.neighbor_element_types">[docs]</a><span class="k">def</span> <span class="nf">neighbor_element_types</span><span class="p">(</span><span class="n">atom</span><span class="p">):</span>
@@ -309,6 +313,7 @@
 
 <span class="sd">    If the queried `atom` is not already in `neighbor_types_map`, its entry will</span>
 <span class="sd">    be added.</span>
+
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="n">atom</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">neighbor_types_map</span><span class="p">:</span>
         <span class="n">neighbors</span> <span class="o">=</span> <span class="n">defaultdict</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>

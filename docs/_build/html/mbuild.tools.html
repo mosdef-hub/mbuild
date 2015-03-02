@@ -64,10 +64,10 @@
 </li>
 </ul>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="tutorials.html">Tutorials</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="tutorials.html#methane-atoms-bonds-and-compounds">Methane: Atoms, Bonds and Compounds</a></li>
-<li class="toctree-l2"><a class="reference internal" href="tutorials.html#ethane-reading-from-files-ports-and-coordinate-transforms">Ethane: Reading from files, Ports and coordinate transforms</a></li>
-<li class="toctree-l2"><a class="reference internal" href="tutorials.html#monolayer-complex-hierarchies-masks-tiling-and-writing-to-files">Monolayer: Complex hierarchies, masks, tiling and writing to files</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorials/tutorials.html">Tutorials</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="tutorials/tutorials.html#methane-atoms-bonds-and-compounds">Methane: Atoms, Bonds and Compounds</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorials/tutorials.html#ethane-reading-from-files-ports-and-coordinate-transforms">Ethane: Reading from files, Ports and coordinate transforms</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorials/tutorials.html#monolayer-complex-hierarchies-masks-tiling-and-writing-to-files">Monolayer: Complex hierarchies, masks, tiling and writing to files</a></li>
 </ul>
 </li>
 </ul>
@@ -218,7 +218,7 @@ frame.</td>
 <span id="mbuild-tools-mask-module"></span><h2>mbuild.tools.mask module<a class="headerlink" href="#module-mbuild.tools.mask" title="Permalink to this headline">¶</a></h2>
 <dl class="function">
 <dt id="mbuild.tools.mask.apply_mask">
-<tt class="descclassname">mbuild.tools.mask.</tt><tt class="descname">apply_mask</tt><big>(</big><em>host</em>, <em>guest</em>, <em>mask</em>, <em>guest_port_name='port'</em>, <em>backfill=None</em><big>)</big><a class="reference internal" href="_modules/mbuild/tools/mask.html#apply_mask"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.tools.mask.apply_mask" title="Permalink to this definition">¶</a></dt>
+<tt class="descclassname">mbuild.tools.mask.</tt><tt class="descname">apply_mask</tt><big>(</big><em>host</em>, <em>guest</em>, <em>mask</em>, <em>guest_port_name='down'</em>, <em>backfill=None</em>, <em>backfill_port_name='up'</em><big>)</big><a class="reference internal" href="_modules/mbuild/tools/mask.html#apply_mask"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.tools.mask.apply_mask" title="Permalink to this definition">¶</a></dt>
 <dd><p>Attach guest Compounds to a host Compound in the pattern of a mask.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -331,7 +331,7 @@ frame.</td>
 
 <dl class="method">
 <dt id="mbuild.tools.polymer.Polymer.add">
-<tt class="descname">add</tt><big>(</big><em>new_part</em>, <em>label=None</em>, <em>containment=True</em>, <em>replace=False</em><big>)</big><a class="headerlink" href="#mbuild.tools.polymer.Polymer.add" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">add</tt><big>(</big><em>new_part</em>, <em>label=None</em>, <em>containment=True</em>, <em>replace=False</em>, <em>inherit_periodicity=True</em><big>)</big><a class="headerlink" href="#mbuild.tools.polymer.Polymer.add" title="Permalink to this definition">¶</a></dt>
 <dd><p>Add a part to the Compound.</p>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
@@ -504,7 +504,7 @@ Ports).</td>
 
 <dl class="classmethod">
 <dt id="mbuild.tools.polymer.Polymer.load">
-<em class="property">classmethod </em><tt class="descname">load</tt><big>(</big><em>filename</em>, <em>relative_to_module=None</em>, <em>frame=0</em><big>)</big><a class="headerlink" href="#mbuild.tools.polymer.Polymer.load" title="Permalink to this definition">¶</a></dt>
+<em class="property">classmethod </em><tt class="descname">load</tt><big>(</big><em>filename</em>, <em>relative_to_module=None</em>, <em>frame=0</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#mbuild.tools.polymer.Polymer.load" title="Permalink to this definition">¶</a></dt>
 <dd><p>Load a file into a Compound.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -621,7 +621,7 @@ remove duplicates.</td>
 <span id="mbuild-tools-solvent-module"></span><h2>mbuild.tools.solvent module<a class="headerlink" href="#module-mbuild.tools.solvent" title="Permalink to this headline">¶</a></h2>
 <dl class="function">
 <dt id="mbuild.tools.solvent.solvate">
-<tt class="descclassname">mbuild.tools.solvent.</tt><tt class="descname">solvate</tt><big>(</big><em>host_compound</em>, <em>guest_compound</em>, <em>host_box</em>, <em>guest_box</em>, <em>overlap=&lt;function vdw_radius at 0x1063a5500&gt;</em><big>)</big><a class="reference internal" href="_modules/mbuild/tools/solvent.html#solvate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.tools.solvent.solvate" title="Permalink to this definition">¶</a></dt>
+<tt class="descclassname">mbuild.tools.solvent.</tt><tt class="descname">solvate</tt><big>(</big><em>host_compound</em>, <em>guest_compound</em>, <em>host_box</em>, <em>guest_box</em>, <em>overlap=&lt;function vdw_radius at 0x106c87c08&gt;</em><big>)</big><a class="reference internal" href="_modules/mbuild/tools/solvent.html#solvate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.tools.solvent.solvate" title="Permalink to this definition">¶</a></dt>
 <dd><p>Solvate a Compound in a Box.</p>
 <p>Typical usage of this function would be to use a pre-equilibrated solvent
 system as the guest which will then be replicated to fill the host&#8217;s Box.
@@ -658,7 +658,7 @@ All Compounds that have overlapping Atoms with the host are removed.</p>
 <span id="mbuild-tools-tiled-compound-module"></span><h2>mbuild.tools.tiled_compound module<a class="headerlink" href="#module-mbuild.tools.tiled_compound" title="Permalink to this headline">¶</a></h2>
 <dl class="class">
 <dt id="mbuild.tools.tiled_compound.TiledCompound">
-<em class="property">class </em><tt class="descclassname">mbuild.tools.tiled_compound.</tt><tt class="descname">TiledCompound</tt><big>(</big><em>tile</em>, <em>n_x=1</em>, <em>n_y=1</em>, <em>n_z=1</em>, <em>kind=None</em><big>)</big><a class="reference internal" href="_modules/mbuild/tools/tiled_compound.html#TiledCompound"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.tools.tiled_compound.TiledCompound" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><tt class="descclassname">mbuild.tools.tiled_compound.</tt><tt class="descname">TiledCompound</tt><big>(</big><em>tile</em>, <em>n_tiles=None</em>, <em>kind=None</em><big>)</big><a class="reference internal" href="_modules/mbuild/tools/tiled_compound.html#TiledCompound"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.tools.tiled_compound.TiledCompound" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="mbuild.html#mbuild.compound.Compound" title="mbuild.compound.Compound"><tt class="xref py py-class docutils literal"><span class="pre">mbuild.compound.Compound</span></tt></a></p>
 <p>Replicates a Compound in any cartesian direction(s).</p>
 <p>Correctly updates connectivity while respecting periodic boundary
@@ -725,7 +725,7 @@ conditions.</p>
 
 <dl class="method">
 <dt id="mbuild.tools.tiled_compound.TiledCompound.add">
-<tt class="descname">add</tt><big>(</big><em>new_part</em>, <em>label=None</em>, <em>containment=True</em>, <em>replace=False</em><big>)</big><a class="headerlink" href="#mbuild.tools.tiled_compound.TiledCompound.add" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">add</tt><big>(</big><em>new_part</em>, <em>label=None</em>, <em>containment=True</em>, <em>replace=False</em>, <em>inherit_periodicity=True</em><big>)</big><a class="headerlink" href="#mbuild.tools.tiled_compound.TiledCompound.add" title="Permalink to this definition">¶</a></dt>
 <dd><p>Add a part to the Compound.</p>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
@@ -898,7 +898,7 @@ Ports).</td>
 
 <dl class="classmethod">
 <dt id="mbuild.tools.tiled_compound.TiledCompound.load">
-<em class="property">classmethod </em><tt class="descname">load</tt><big>(</big><em>filename</em>, <em>relative_to_module=None</em>, <em>frame=0</em><big>)</big><a class="headerlink" href="#mbuild.tools.tiled_compound.TiledCompound.load" title="Permalink to this definition">¶</a></dt>
+<em class="property">classmethod </em><tt class="descname">load</tt><big>(</big><em>filename</em>, <em>relative_to_module=None</em>, <em>frame=0</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#mbuild.tools.tiled_compound.TiledCompound.load" title="Permalink to this definition">¶</a></dt>
 <dd><p>Load a file into a Compound.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
