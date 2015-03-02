@@ -1,6 +1,7 @@
 from copy import deepcopy
 
 import numpy as np
+from six import string_types
 
 from mbuild.bond import Bond
 from mbuild.part_mixin import PartMixin
@@ -38,7 +39,7 @@ class Atom(PartMixin):
         """
         super(Atom, self).__init__()
 
-        assert isinstance(kind, basestring)
+        assert isinstance(kind, string_types)
 
         if pos is None:
             pos = np.array([0, 0, 0], dtype=float)

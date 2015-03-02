@@ -6,8 +6,9 @@
 import glob
 import os
 
-from mbuild.testing import tools
+from six import string_types
 
+from mbuild.testing import tools
 from mbuild.testing.tools import load_top_opls
 from mbuild.tools.parameterize.atomtyper import find_atomtypes
 from base_test import BaseTest
@@ -38,13 +39,13 @@ class TestOPLS(BaseTest):
 
 
             print("Typing {} ({})...".format(mol_name, top_name))
-            find_atomtypes(compound, forcefield='OPLS-AA')
+            find_atomtypes(compound, forcefield='OPLS-AA', debug=False)
             generated_opls_types = list()
             for i, atom in enumerate(compound.atoms):
                 message = ('Found multiple or no OPLS types for atom {} in {} ({}): {}\n'
                            'Should be atomtype: {}'.format(
                     i, mol_name, top_name, atom.atomtype, known_opls_types[i]))
-                assert isinstance(atom.atomtype, str), message
+                assert isinstance(atom.atomtype, string_types), message
                 generated_opls_types.append(atom.atomtype)
 
             both = zip(generated_opls_types, known_opls_types)
