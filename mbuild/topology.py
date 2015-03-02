@@ -31,9 +31,10 @@ class Topology(object):
         return getattr(self._w_topology, attr_name)
 
     def __setattr__(self, key, value):
-        try:
+        if key in ['chains', 'n_chains', 'residues', 'n_residues', 'atoms',
+                   'n_atoms', 'bonds', 'n_bonds']:
             self._w_topology.__setattr__(key, value)
-        except KeyError:
+        else:
             self.__dict__[key] = value
 
     @classmethod
@@ -250,11 +251,10 @@ class Topology(object):
             at = out.add_atom(atom.kind, ele, last_residue)
             at.charge = atom.charge
 
-            if hasattr(atom, 'extras'):
-                if 'atomtype' in atom.extras:
-                    at.atomtype = atom.atomtype
-                else:
-                    at.atomtype = atom.kind
+            try:
+                at.atomtype = atom.atomtype
+            except AttributeError:
+                at.atomtype = atom.kind
             #print("Added {} to residue {} in chain {}".format(atom, last_residue, last_chain))
             atom_mapping[atom] = at
 

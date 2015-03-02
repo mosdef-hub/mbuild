@@ -257,9 +257,12 @@ class Trajectory(object):
         return getattr(self._w_trajectory, attr_name)
 
     def __setattr__(self, key, value):
-        try:
+        if key in ['n_frames', 'n_atoms', 'n_residues', 'time', 'timestep',
+                   'topology', 'top', 'xyz', 'unitcell_volumes',
+                   'unitcell_vectors', 'unitcell_lengths', 'unitcell_angles',
+                   '_have_unitcell']:
             self._w_trajectory.__setattr__(key, value)
-        except KeyError:
+        else:
             self.__dict__[key] = value
 
     def __getitem__(self, key):

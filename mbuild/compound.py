@@ -204,7 +204,7 @@ class Compound(PartMixin, HasPartsMixin):
         return Trajectory.from_compound(self, show_ports=show_ports, **kwargs)
 
     @classmethod
-    def load(cls, filename, relative_to_module=None, frame=0):
+    def load(cls, filename, relative_to_module=None, frame=0, **kwargs):
         """Load a file into a Compound.
 
         Args:
@@ -216,7 +216,8 @@ class Compound(PartMixin, HasPartsMixin):
         """
         from mbuild.trajectory import Trajectory
 
-        traj = Trajectory.load(filename, relative_to_module=relative_to_module)
+        traj = Trajectory.load(filename, relative_to_module=relative_to_module,
+                               **kwargs)
         return traj.to_compound(frame=frame)
 
     # Convenience functions
