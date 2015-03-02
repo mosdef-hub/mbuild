@@ -248,7 +248,7 @@ class Trajectory(object):
             save_xyz(traj=self, filename=filename, **kwargs)
         elif filename.endswith(".mol2"):
             save_mol2(traj=self, filename=filename, **kwargs)
-        elif filename.startswith("data.") or filename.startswith(".lmp"):
+        elif filename.startswith("data.") or filename.endswith((".lmp", ".lammps")):
             save_lammps_data(traj=self, filename=filename, **kwargs)
         else:
             self._w_trajectory.save(filename, **kwargs)
@@ -257,9 +257,10 @@ class Trajectory(object):
         return getattr(self._w_trajectory, attr_name)
 
     def __setattr__(self, key, value):
-        if key in ['unitcell_vectors', 'unitcell_lengths', 'unitcell_angles', 'xyz', 'time']:
+        try:
             self._w_trajectory.__setattr__(key, value)
-        self.__dict__[key] = value
+        except KeyError:
+            self.__dict__[key] = value
 
     def __getitem__(self, key):
         """Get a slice of this trajectory"""
@@ -277,12 +278,3 @@ class Trajectory(object):
         value = "mbuild.Trajectory with %d frames, %d atoms, %d residues, %s" % (
                     self.n_frames, self.n_atoms, self.n_residues, unitcell_str)
         return value
-
-
-if __name__ == "__main__":
-    import pdb
-    from testing.tools import get_fn
-    traj = Trajectory.load(get_fn('ecer2.hoomdxml'))
-    comp = traj.to_compound()
-
-    pdb.set_trace()

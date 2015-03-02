@@ -28,7 +28,13 @@ class Topology(object):
 
     def __getattr__(self, attr_name):
         """Redirect attribute access to the wrapped topology. """
-        return getattr(self.__dict__['_w_topology'], attr_name)
+        return getattr(self._w_topology, attr_name)
+
+    def __setattr__(self, key, value):
+        try:
+            self._w_topology.__setattr__(key, value)
+        except KeyError:
+            self.__dict__[key] = value
 
     @classmethod
     def from_dataframe(cls, atoms, bonds=None):
@@ -239,8 +245,8 @@ class Topology(object):
             # Add the actual atoms
             try:
                 ele = elem.get_by_symbol(atom.kind)
-            except:
-               ele = Element(1000, atom.kind, atom.kind, 1.0)
+            except KeyError:
+                ele = Element(1000, atom.kind, atom.kind, 1.0)
             at = out.add_atom(atom.kind, ele, last_residue)
             at.charge = atom.charge
 
