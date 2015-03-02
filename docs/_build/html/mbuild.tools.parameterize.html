@@ -55,66 +55,19 @@
       <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
         
         
-            <ul>
-<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="installation.html#install-with-pip">Install with pip</a></li>
-<li class="toctree-l2"><a class="reference internal" href="installation.html#dependencies">Dependencies</a></li>
-<li class="toctree-l2"><a class="reference internal" href="installation.html#testing-your-installation">Testing your installation</a></li>
+            <!-- Local TOC -->
+            <div class="local-toc"><ul>
+<li><a class="reference internal" href="#">mbuild.tools.parameterize package</a><ul>
+<li><a class="reference internal" href="#submodules">Submodules</a></li>
+<li><a class="reference internal" href="#module-mbuild.tools.parameterize.atomtyper">mbuild.tools.parameterize.atomtyper module</a></li>
+<li><a class="reference internal" href="#module-mbuild.tools.parameterize.chemical_groups">mbuild.tools.parameterize.chemical_groups module</a></li>
+<li><a class="reference internal" href="#module-mbuild.tools.parameterize.oplsaa">mbuild.tools.parameterize.oplsaa module</a></li>
+<li><a class="reference internal" href="#module-mbuild.tools.parameterize.uff">mbuild.tools.parameterize.uff module</a></li>
+<li><a class="reference internal" href="#module-mbuild.tools.parameterize">Module contents</a></li>
 </ul>
 </li>
 </ul>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="tutorials/tutorials.html">Tutorials</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="tutorials/tutorials.html#methane-atoms-bonds-and-compounds">Methane: Atoms, Bonds and Compounds</a></li>
-<li class="toctree-l2"><a class="reference internal" href="tutorials/tutorials.html#ethane-reading-from-files-ports-and-coordinate-transforms">Ethane: Reading from files, Ports and coordinate transforms</a></li>
-<li class="toctree-l2"><a class="reference internal" href="tutorials/tutorials.html#monolayer-complex-hierarchies-masks-tiling-and-writing-to-files">Monolayer: Complex hierarchies, masks, tiling and writing to files</a></li>
-</ul>
-</li>
-</ul>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="apidoc/mbuild.html">mbuild package</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="apidoc/mbuild.html#subpackages">Subpackages</a></li>
-<li class="toctree-l2"><a class="reference internal" href="apidoc/mbuild.html#submodules">Submodules</a></li>
-<li class="toctree-l2"><a class="reference internal" href="apidoc/mbuild.html#module-mbuild.atom">mbuild.atom module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="apidoc/mbuild.html#module-mbuild.bond">mbuild.bond module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="apidoc/mbuild.html#module-mbuild.box">mbuild.box module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="apidoc/mbuild.html#module-mbuild.compound">mbuild.compound module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="apidoc/mbuild.html#module-mbuild.coordinate_transform">mbuild.coordinate_transform module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="apidoc/mbuild.html#module-mbuild.has_parts_mixin">mbuild.has_parts_mixin module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="apidoc/mbuild.html#mbuild-mbase-module">mbuild.mbase module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="apidoc/mbuild.html#module-mbuild.orderedset">mbuild.orderedset module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="apidoc/mbuild.html#module-mbuild.part_mixin">mbuild.part_mixin module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="apidoc/mbuild.html#module-mbuild.periodic_kdtree">mbuild.periodic_kdtree module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="apidoc/mbuild.html#module-mbuild.port">mbuild.port module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="apidoc/mbuild.html#mbuild-topology-module">mbuild.topology module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="apidoc/mbuild.html#mbuild-trajectory-module">mbuild.trajectory module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="apidoc/mbuild.html#module-mbuild.treeview">mbuild.treeview module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="apidoc/mbuild.html#module-mbuild">Module contents</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="apidoc/mbuild.tools.html">mbuild.tools package</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="apidoc/mbuild.tools.html#submodules">Submodules</a></li>
-<li class="toctree-l2"><a class="reference internal" href="apidoc/mbuild.tools.html#module-mbuild.tools.compute">mbuild.tools.compute module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="apidoc/mbuild.tools.html#module-mbuild.tools.mask">mbuild.tools.mask module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="apidoc/mbuild.tools.html#module-mbuild.tools.polymer">mbuild.tools.polymer module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="apidoc/mbuild.tools.html#module-mbuild.tools.solvent">mbuild.tools.solvent module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="apidoc/mbuild.tools.html#module-mbuild.tools.tiled_compound">mbuild.tools.tiled_compound module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="apidoc/mbuild.tools.html#module-mbuild.tools">Module contents</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="apidoc/mbuild.formats.html">mbuild.formats package</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="apidoc/mbuild.formats.html#submodules">Submodules</a></li>
-<li class="toctree-l2"><a class="reference internal" href="apidoc/mbuild.formats.html#module-mbuild.formats.gromacs">mbuild.formats.gromacs module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="apidoc/mbuild.formats.html#mbuild-formats-hoomdxml-module">mbuild.formats.hoomdxml module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="apidoc/mbuild.formats.html#mbuild-formats-lammps-module">mbuild.formats.lammps module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="apidoc/mbuild.formats.html#mbuild-formats-lammps-data-module">mbuild.formats.lammps_data module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="apidoc/mbuild.formats.html#module-mbuild.formats.mol2">mbuild.formats.mol2 module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="apidoc/mbuild.formats.html#mbuild-formats-xyz-module">mbuild.formats.xyz module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="apidoc/mbuild.formats.html#module-mbuild.formats">Module contents</a></li>
-</ul>
-</li>
-</ul>
-
+</div>
         
       </div>
       &nbsp;

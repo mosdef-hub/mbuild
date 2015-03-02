@@ -37,5 +37,5 @@ if __name__ == "__main__":
     find_atomtypes(m, forcefield='UFF')
 
     for i, atom in enumerate(m.atoms):
-        print "Atom kind={}, uff_type={}".format(
-            atom.kind, atom.atomtype)
+        print("Atom kind={}, uff_type={}".format(
+            atom.kind, atom.atomtype))

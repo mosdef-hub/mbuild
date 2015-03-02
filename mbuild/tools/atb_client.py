@@ -1,5 +1,8 @@
-import warnings
+from __future__ import print_function
+
 import httplib2
+import warnings
+
 __author__ = 'sallai'
 
 
@@ -85,5 +88,5 @@ if __name__ == "__main__":
     atb = AtbClient()
     results = atb.search("C6H12O6")
     for molecule_id, uri in results.iteritems():
-        print atb.retrieve_itp(molecule_id)
+        print(atb.retrieve_itp(molecule_id))
 

@@ -1,3 +1,5 @@
+from __future__ import print_function
+
 import os
 
 from pkg_resources import resource_filename
@@ -52,9 +54,9 @@ def load_top_opls(toppath):
             elif current == 'atoms':
                 opls_string = stripped.split()[1]
                 if 'opls' not in opls_string:
-                    print "Found non 'opls' type in {} ({}): {}.".format(
-                        mol_name, filename, opls_string)
-                    print "Ignoring file. Need to come up with proper support.\n"
+                    print("Found non 'opls' type in {} ({}): {}.".format(
+                        mol_name, filename, opls_string))
+                    print("Ignoring file. Need to come up with proper support.\n")
                     return
                 opls_types.append(opls_string.split('_')[1])
             elif current == 'bonds':

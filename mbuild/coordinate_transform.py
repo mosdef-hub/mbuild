@@ -626,11 +626,8 @@ if __name__ == "__main__":
                 [1.0, 0.0, 0.0, 1.0], [0.0, 1.0, 0.0, 1.0]])
 
     v1_prime = dot(B_tr, v1.transpose()).transpose()
-    print "the image of v1=" + str(v1) + " is v1_prime=" + str(v1_prime)
 
     AT = AxisTransform(new_origin=v_tr,
                        point_on_x_axis=[2.0 + 0.5, 3.0 + sqrt(3) / 2, 4.0],
                        point_on_xy_plane=[2.0, 4.0, 4.0])
     v1_prime_tr_AT = AT.apply(v1[:, 0:3])
-    print "the image of v1=" + str(v1[:, 0:3]) + " is v1_prime_tr_AT=" + str(
-        v1_prime_tr_AT)

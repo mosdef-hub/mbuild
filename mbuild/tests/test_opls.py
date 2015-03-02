@@ -37,8 +37,8 @@ class TestOPLS(BaseTest):
                 continue
 
 
-            print "Typing {} ({})...".format(mol_name, top_name)
-            find_atomtypes(compound, forcefield='OPLS-AA', debug=True)
+            print("Typing {} ({})...".format(mol_name, top_name))
+            find_atomtypes(compound, forcefield='OPLS-AA')
             generated_opls_types = list()
             for i, atom in enumerate(compound.atoms):
                 message = ('Found multiple or no OPLS types for atom {} in {} ({}): {}\n'
@@ -53,7 +53,7 @@ class TestOPLS(BaseTest):
                                         generated_opls_types,
                                         known_opls_types))
             assert all([a == b for a, b in both]), message
-            print "passed.\n"
+            print("Passed.\n")
 
 
 if __name__ == "__main__":
