@@ -229,9 +229,9 @@ class RuleDecorator(object):
     """Base class for rule decorators. """
     @staticmethod
     def extract_doc_string(func):
-        if func.func_doc:
-            rule_number = func.func_name.split("_")[1]
-            rule_number_to_doc_string[rule_number] = func.func_doc
+        if func.__doc__:
+            rule_number = func.__name__.split("_")[1]
+            rule_number_to_doc_string[rule_number] = func.__doc__
 
 
 class Element(RuleDecorator):
@@ -546,13 +546,13 @@ def get_decorator_objects_by_type(decorated_function, decorator_type):
     decorators = []
     # Find an object of decorator_type in the function's closure. There should
     # be only one.
-    for cell in decorated_function.func_closure:
+    for cell in decorated_function.__closure__:
         closure_entry = cell.cell_contents
         if isinstance(closure_entry, decorator_type):
             decorators.append(closure_entry)
             break
     # Find a function called `wrapper` in the function's closure, and recurse.
-    for cell in decorated_function.func_closure:
+    for cell in decorated_function.__closure__:
         closure_entry = cell.cell_contents
         if hasattr(closure_entry, '__name__') and closure_entry.__name__ is "wrapped":
             wrapped_decorator_objects = get_decorator_objects_by_type(

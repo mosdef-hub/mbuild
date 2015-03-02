@@ -1,3 +1,4 @@
+from past.builtins import range
 import warnings
 from copy import deepcopy
 from random import seed, randint, shuffle

@@ -2,9 +2,11 @@ from numpy import sqrt, pi
 
 from mbuild.compound import Compound
 from mbuild.tools.polymer import Polymer
-from mbuild.examples.tnp.sphere import Sphere
-from mbuild.examples.tnp.bead import Bead
 from mbuild.tools.mask import apply_mask, sphere_mask
+
+
+from .bead import Bead
+from .sphere import Sphere
 
 
 class Tnp(Compound):

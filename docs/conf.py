@@ -52,6 +52,10 @@ autosummary_generate = True
 autodoc_default_flags = ['members', 'inherited-members']
 
 _python_doc_base = 'http://docs.python.org/2.7'
+
+import pip
+pip.main(['install', 'sphinxcontrib-napoleon'])
+
 intersphinx_mapping = {
     _python_doc_base: None,
     'http://docs.scipy.org/doc/numpy': None,

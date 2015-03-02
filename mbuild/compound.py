@@ -148,7 +148,7 @@ class Compound(PartMixin, HasPartsMixin):
         Returns:
             A list of Ports currently referenced by this Compound.
         """
-        from mbuild.port import Port
+        from .port import Port
         return [port for port in self.labels.values() if isinstance(port, Port)]
 
     def _remove(self, removed_part):
@@ -168,7 +168,7 @@ class Compound(PartMixin, HasPartsMixin):
     # --------------------------------------------
     def append_from_file(self, filename, relative_to_module=None, frame=0):
         """Append to Compound with information from a Trajectory file. """
-        from mbuild.trajectory import Trajectory
+        from .trajectory import Trajectory
 
         traj = Trajectory.load(filename, relative_to_module=relative_to_module)
 
@@ -176,7 +176,7 @@ class Compound(PartMixin, HasPartsMixin):
 
     def update_from_file(self, filename, relative_to_module=None, frame=0):
         """Update Compound with information from a Trajectory file. """
-        from mbuild.trajectory import Trajectory
+        from .trajectory import Trajectory
 
         traj = Trajectory.load(filename, relative_to_module=relative_to_module)
 
@@ -199,7 +199,7 @@ class Compound(PartMixin, HasPartsMixin):
 
     def to_trajectory(self, show_ports=False, **kwargs):
         """Convert the Compound to a Trajectory. """
-        from mbuild.trajectory import Trajectory
+        from .trajectory import Trajectory
 
         return Trajectory.from_compound(self, show_ports=show_ports, **kwargs)
 
@@ -214,7 +214,7 @@ class Compound(PartMixin, HasPartsMixin):
         Returns:
             Compound
         """
-        from mbuild.trajectory import Trajectory
+        from .trajectory import Trajectory
 
         traj = Trajectory.load(filename, relative_to_module=relative_to_module,
                                **kwargs)

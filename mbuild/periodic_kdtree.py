@@ -5,11 +5,12 @@
 #
 # Written by Patrick Varilly, 6 Jul 2012
 # Released under the scipy license
+from builtins import range
+import itertools
+import heapq
 
 import numpy as np
 from scipy.spatial import KDTree, cKDTree
-import itertools
-import heapq
 
 def _gen_relevant_images(x, bounds, distance_upper_bound):
     # Map x onto the canonical unit cell, then produce the relevant
@@ -29,7 +30,7 @@ def _gen_relevant_images(x, bounds, distance_upper_bound):
     m = len(x)
 
     xs_to_try = [real_x]
-    for i in xrange(m):
+    for i in range(m):
         if bounds[i] > 0.0:
             disp = np.zeros(m)
             disp[i] = bounds[i]

@@ -16,9 +16,7 @@ To use mbuild, the following libraries and software will need to be installed.
         We develop mainly on 64-bit Mac and Windows machines. TravisCI is
         currently only set up to perform testing on Debian.
 
-    `Python <http://python.org>`_ == 2.7
-         Once our unit tests flesh out a bit more, we intend to add support
-         for 3.4+
+    `Python <http://python.org>`_ = 2.7, 3.3+
 
     `MDTraj <http://mdtraj.org/>`_ >=1.0.0
         MDTraj is a Python library for reading, writing and analyizing

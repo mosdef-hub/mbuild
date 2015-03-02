@@ -7,10 +7,11 @@ from mbuild.tools.mask import apply_mask, random_mask_2d
 from mbuild.tools.parameterize.atomtyper import find_atomtypes
 from mbuild.tools.tiled_compound import TiledCompound
 
-from brush import Brush
 from mbuild.components.atoms.H import H
 from mbuild.components.surfaces.betacristobalite import Betacristobalite
-from mpc import MPC
+
+from .brush import Brush
+from .mpc import MPC
 
 
 class PMPCLayer(Compound):

@@ -31,8 +31,8 @@ def save_mol2(traj, step=-1, filename='mbuild.mol2'):
         for atom in traj.top.atoms:
             x, y, z = traj.xyz[step][atom.index]
             mol2_file.write("{0:d} {1:s} {2:8.4f} {3:8.4f} {4:8.4f} {5} {6:d} {7:s} {8:8.4f}\n".format(
-                    atom.index + 1, atom.name, float(x), float(y), float(z), atom.name,
-                    atom.residue.index + 1, atom.residue, 0.0))
+                atom.index + 1, atom.name, x, y, z, atom.name,
+                atom.residue.index + 1, atom.residue.name, 0.0))
         if bond_list:
             mol2_file.write("@<TRIPOS>BOND\n")
             for entry in bond_list:

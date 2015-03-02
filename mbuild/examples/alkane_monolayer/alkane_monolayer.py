@@ -2,7 +2,7 @@ from mbuild.compound import Compound
 from mbuild.tools.tiled_compound import TiledCompound
 from mbuild.tools.mask import apply_mask
 
-from alkylsilane import AlkylSilane
+from .alkylsilane import AlkylSilane
 from mbuild.components.surfaces.betacristobalite import Betacristobalite
 from mbuild.components.atoms.H import H
 

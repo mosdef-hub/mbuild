@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 """Tests for `mbuild.formats.mol2` module. """
-import pytest
+
 from mbuild.components.small_groups.ch3 import Ch3
 from mbuild.trajectory import Trajectory
 from mbuild.testing.tools import get_fn
