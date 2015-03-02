@@ -3,6 +3,7 @@
 [![Linux Build Status](https://travis-ci.org/sallai/mbuild.png?branch=master)](https://travis-ci.org/sallai/mbuild)
 [![Test Coverage](https://coveralls.io/repos/sallai/mbuild/badge.png?branch=master)](https://coveralls.io/r/sallai/mbuild)
 [![PyPI Version](https://badge.fury.io/py/mbuild.png)](https://pypi.python.org/pypi/mbuild)
+[![Documentation Status](https://readthedocs.org/projects/mbuild/badge/?version=develop)](http://mbuild.readthedocs.org/en/develop)
 
 With just a few lines of mBuild code, you can assemble reusable components into
 complex molecular systems for molecular dynamics simulations.
