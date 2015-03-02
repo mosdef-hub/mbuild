@@ -18,10 +18,7 @@ To use mbuild, the following libraries and software will need to be installed.
 
     `Python <http://python.org>`_ == 2.7
          Once our unit tests flesh out a bit more, we intend to add support
-         for >=2.6.
-
-    `NumPy <http://numpy.scipy.org/>`_ >= 1.6.0
-        Numpy is the base package for numerical computing in python.
+         for 3.4+
 
     `MDTraj <http://mdtraj.org/>`_ >=1.0.0
         MDTraj is a Python library for reading, writing and analyizing
@@ -35,7 +32,7 @@ Optional packages:
         we only use a (very) thin wrapper to call it from the command-line
         when you want to look at a Compound that you've built. A more robust
         integration with partial control from Python is planned in the near
-        future (see issue [#32](/../../issues/32)).
+        future.
 
 To make your life easier, we recommend that you use a pre-packaged Python
 distribution like `Enthought's Canopy <https://www.enthought.com/products/canopy/>`_
