@@ -37,11 +37,11 @@ and a hydrogen atom to our ``Methane`::
             self.add(hydrogen, label='hc[$]')
 
 By default a created ``Atom`` will be placed at ``0, 0, 0`` as indicated by its
-``pos`` attribute. All positions in mBuild are stored in nanometers. The
-``Atom`` objects contained in a ``Compound`` can be referenced via the
-``atoms`` attribute which returns a list of all ``Atoms`` including those
-in any sub-compounds.
+``pos`` attribute.  The ``Atom`` objects contained in a ``Compound`` can be
+referenced via the ``atoms`` attribute which returns a list of all ``Atoms``
+including those in any sub-compounds.
 
+.. note::  All positions in mBuild are stored in nanometers.
 
 Any part added to a ``Compound`` can be given an optional, descriptive string
 label. If the label ends with the characters ``[$]``, a list will be created
