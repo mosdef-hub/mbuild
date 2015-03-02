@@ -67,10 +67,10 @@
 </li>
 </ul>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../tutorials.html">Tutorials</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="../tutorials.html#methane-atoms-bonds-and-compounds">Methane: Atoms, Bonds and Compounds</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../tutorials.html#ethane-reading-from-files-ports-and-coordinate-transforms">Ethane: Reading from files, Ports and coordinate transforms</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../tutorials.html#monolayer-complex-hierarchies-masks-tiling-and-writing-to-files">Monolayer: Complex hierarchies, masks, tiling and writing to files</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorials/tutorials.html">Tutorials</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../tutorials/tutorials.html#methane-atoms-bonds-and-compounds">Methane: Atoms, Bonds and Compounds</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../tutorials/tutorials.html#ethane-reading-from-files-ports-and-coordinate-transforms">Ethane: Reading from files, Ports and coordinate transforms</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../tutorials/tutorials.html#monolayer-complex-hierarchies-masks-tiling-and-writing-to-files">Monolayer: Complex hierarchies, masks, tiling and writing to files</a></li>
 </ul>
 </li>
 </ul>
@@ -228,7 +228,7 @@
 
 <dl class="method">
 <dt id="mbuild.examples.tnp.bead.Bead.add">
-<tt class="descname">add</tt><big>(</big><em>new_part</em>, <em>label=None</em>, <em>containment=True</em>, <em>replace=False</em><big>)</big><a class="headerlink" href="#mbuild.examples.tnp.bead.Bead.add" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">add</tt><big>(</big><em>new_part</em>, <em>label=None</em>, <em>containment=True</em>, <em>replace=False</em>, <em>inherit_periodicity=True</em><big>)</big><a class="headerlink" href="#mbuild.examples.tnp.bead.Bead.add" title="Permalink to this definition">¶</a></dt>
 <dd><p>Add a part to the Compound.</p>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
@@ -244,6 +244,10 @@ instead be used to add a reference to the part to self.labels. See
 <li><strong>new_part</strong> (<em>Atom, Bond or Compound</em>) &#8211; The object to be added to this
 Compound.</li>
 <li><strong>label</strong> (<em>str, optional</em>) &#8211; A descriptive string for the part.</li>
+<li><strong>containment</strong> (<em>bool, optional</em>) &#8211; Add the part to self.parts. Defaults
+to True.</li>
+<li><strong>replace</strong> (<em>bool, optional</em>) &#8211; Replace the label if it already exists.
+Defaults to False.</li>
 </ul>
 </td>
 </tr>
@@ -254,7 +258,7 @@ Compound.</li>
 <dl class="method">
 <dt id="mbuild.examples.tnp.bead.Bead.add_bond">
 <tt class="descname">add_bond</tt><big>(</big><em>type_a</em>, <em>type_b</em>, <em>dmin</em>, <em>dmax</em>, <em>kind=None</em><big>)</big><a class="headerlink" href="#mbuild.examples.tnp.bead.Bead.add_bond" title="Permalink to this definition">¶</a></dt>
-<dd><p>Add Bonds between all pairs of Atoms of types a/b within [dmin, dmax].</p>
+<dd><p>Add Bonds between all Atom pairs of types a/b within [dmin, dmax].</p>
 <p>TODO: testing for periodic boundaries.</p>
 </dd></dl>
 
@@ -342,7 +346,21 @@ A list of Atoms.</p>
 <dl class="method">
 <dt id="mbuild.examples.tnp.bead.Bead.bond_list_by_kind">
 <tt class="descname">bond_list_by_kind</tt><big>(</big><em>kind='*'</em><big>)</big><a class="headerlink" href="#mbuild.examples.tnp.bead.Bead.bond_list_by_kind" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Return a list of Bonds filtered by their kind.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>kind</strong> (<a class="reference external" href="http://docs.python.org/2.7/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Return only Bonds of this type. &#8216;*&#8217; indicates all.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>bond_list</strong> &#8211;
+A list of Bonds.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">list</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
 
 <dl class="attribute">
 <dt id="mbuild.examples.tnp.bead.Bead.bonds">
@@ -372,28 +390,46 @@ Ports).</td>
 <dl class="attribute">
 <dt id="mbuild.examples.tnp.bead.Bead.center">
 <tt class="descname">center</tt><a class="headerlink" href="#mbuild.examples.tnp.bead.Bead.center" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>The cartesian center of the Compound based on its Atoms.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="mbuild.examples.tnp.bead.Bead.extras">
+<tt class="descname">extras</tt><a class="headerlink" href="#mbuild.examples.tnp.bead.Bead.extras" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the Compound&#8217;s optional, extra attributes.</p>
+</dd></dl>
 
 <dl class="classmethod">
 <dt id="mbuild.examples.tnp.bead.Bead.load">
-<em class="property">classmethod </em><tt class="descname">load</tt><big>(</big><em>filename</em>, <em>relative_to_module=None</em>, <em>frame=0</em><big>)</big><a class="headerlink" href="#mbuild.examples.tnp.bead.Bead.load" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<em class="property">classmethod </em><tt class="descname">load</tt><big>(</big><em>filename</em>, <em>relative_to_module=None</em>, <em>frame=0</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#mbuild.examples.tnp.bead.Bead.load" title="Permalink to this definition">¶</a></dt>
+<dd><p>Load a file into a Compound.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">Compound</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
 
 <dl class="method">
 <dt id="mbuild.examples.tnp.bead.Bead.min_periodic_distance">
-<tt class="descname">min_periodic_distance</tt><big>(</big><em>x0</em>, <em>x1</em><big>)</big><a class="headerlink" href="#mbuild.examples.tnp.bead.Bead.min_periodic_distance" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">min_periodic_distance</tt><big>(</big><em>xyz0</em>, <em>xyz1</em><big>)</big><a class="headerlink" href="#mbuild.examples.tnp.bead.Bead.min_periodic_distance" title="Permalink to this definition">¶</a></dt>
 <dd><p>Vectorized distance calculation considering minimum image.</p>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="mbuild.examples.tnp.bead.Bead.n_atoms">
 <tt class="descname">n_atoms</tt><a class="headerlink" href="#mbuild.examples.tnp.bead.Bead.n_atoms" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Return the number of Atoms in the Compound.</p>
+</dd></dl>
 
 <dl class="attribute">
 <dt id="mbuild.examples.tnp.bead.Bead.n_bonds">
 <tt class="descname">n_bonds</tt><a class="headerlink" href="#mbuild.examples.tnp.bead.Bead.n_bonds" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Return the number of Bonds in the Compound.</p>
+</dd></dl>
 
 <dl class="method">
 <dt id="mbuild.examples.tnp.bead.Bead.referenced_ports">
@@ -417,7 +453,7 @@ Ports).</td>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>objs_to_remove</strong> (<em>set of parts</em>) &#8211; All objects to be removed from the
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>objs_to_remove</strong> (<em>set of Parts</em>) &#8211; All objects to be removed from the
 hierarchy. If this is not a set, it will be cast to one to
 remove duplicates.</td>
 </tr>
@@ -427,14 +463,14 @@ remove duplicates.</td>
 
 <dl class="method">
 <dt id="mbuild.examples.tnp.bead.Bead.save">
-<tt class="descname">save</tt><big>(</big><em>filename</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#mbuild.examples.tnp.bead.Bead.save" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">save</tt><big>(</big><em>filename</em>, <em>show_ports=False</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#mbuild.examples.tnp.bead.Bead.save" title="Permalink to this definition">¶</a></dt>
 <dd><p>Save the Compound to a file.</p>
 <p>This creates an intermediate Trajectory object.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="mbuild.examples.tnp.bead.Bead.to_trajectory">
-<tt class="descname">to_trajectory</tt><big>(</big><em>show_ports=False</em><big>)</big><a class="headerlink" href="#mbuild.examples.tnp.bead.Bead.to_trajectory" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">to_trajectory</tt><big>(</big><em>show_ports=False</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#mbuild.examples.tnp.bead.Bead.to_trajectory" title="Permalink to this definition">¶</a></dt>
 <dd><p>Convert the Compound to a Trajectory.</p>
 </dd></dl>
 
@@ -547,7 +583,7 @@ remove duplicates.</td>
 
 <dl class="method">
 <dt id="mbuild.examples.tnp.sphere.Sphere.add">
-<tt class="descname">add</tt><big>(</big><em>new_part</em>, <em>label=None</em>, <em>containment=True</em>, <em>replace=False</em><big>)</big><a class="headerlink" href="#mbuild.examples.tnp.sphere.Sphere.add" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">add</tt><big>(</big><em>new_part</em>, <em>label=None</em>, <em>containment=True</em>, <em>replace=False</em>, <em>inherit_periodicity=True</em><big>)</big><a class="headerlink" href="#mbuild.examples.tnp.sphere.Sphere.add" title="Permalink to this definition">¶</a></dt>
 <dd><p>Add a part to the Compound.</p>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
@@ -563,6 +599,10 @@ instead be used to add a reference to the part to self.labels. See
 <li><strong>new_part</strong> (<em>Atom, Bond or Compound</em>) &#8211; The object to be added to this
 Compound.</li>
 <li><strong>label</strong> (<em>str, optional</em>) &#8211; A descriptive string for the part.</li>
+<li><strong>containment</strong> (<em>bool, optional</em>) &#8211; Add the part to self.parts. Defaults
+to True.</li>
+<li><strong>replace</strong> (<em>bool, optional</em>) &#8211; Replace the label if it already exists.
+Defaults to False.</li>
 </ul>
 </td>
 </tr>
@@ -573,7 +613,7 @@ Compound.</li>
 <dl class="method">
 <dt id="mbuild.examples.tnp.sphere.Sphere.add_bond">
 <tt class="descname">add_bond</tt><big>(</big><em>type_a</em>, <em>type_b</em>, <em>dmin</em>, <em>dmax</em>, <em>kind=None</em><big>)</big><a class="headerlink" href="#mbuild.examples.tnp.sphere.Sphere.add_bond" title="Permalink to this definition">¶</a></dt>
-<dd><p>Add Bonds between all pairs of Atoms of types a/b within [dmin, dmax].</p>
+<dd><p>Add Bonds between all Atom pairs of types a/b within [dmin, dmax].</p>
 <p>TODO: testing for periodic boundaries.</p>
 </dd></dl>
 
@@ -661,7 +701,21 @@ A list of Atoms.</p>
 <dl class="method">
 <dt id="mbuild.examples.tnp.sphere.Sphere.bond_list_by_kind">
 <tt class="descname">bond_list_by_kind</tt><big>(</big><em>kind='*'</em><big>)</big><a class="headerlink" href="#mbuild.examples.tnp.sphere.Sphere.bond_list_by_kind" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Return a list of Bonds filtered by their kind.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>kind</strong> (<a class="reference external" href="http://docs.python.org/2.7/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Return only Bonds of this type. &#8216;*&#8217; indicates all.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>bond_list</strong> &#8211;
+A list of Bonds.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">list</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
 
 <dl class="attribute">
 <dt id="mbuild.examples.tnp.sphere.Sphere.bonds">
@@ -691,28 +745,46 @@ Ports).</td>
 <dl class="attribute">
 <dt id="mbuild.examples.tnp.sphere.Sphere.center">
 <tt class="descname">center</tt><a class="headerlink" href="#mbuild.examples.tnp.sphere.Sphere.center" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>The cartesian center of the Compound based on its Atoms.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="mbuild.examples.tnp.sphere.Sphere.extras">
+<tt class="descname">extras</tt><a class="headerlink" href="#mbuild.examples.tnp.sphere.Sphere.extras" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the Compound&#8217;s optional, extra attributes.</p>
+</dd></dl>
 
 <dl class="classmethod">
 <dt id="mbuild.examples.tnp.sphere.Sphere.load">
-<em class="property">classmethod </em><tt class="descname">load</tt><big>(</big><em>filename</em>, <em>relative_to_module=None</em>, <em>frame=0</em><big>)</big><a class="headerlink" href="#mbuild.examples.tnp.sphere.Sphere.load" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<em class="property">classmethod </em><tt class="descname">load</tt><big>(</big><em>filename</em>, <em>relative_to_module=None</em>, <em>frame=0</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#mbuild.examples.tnp.sphere.Sphere.load" title="Permalink to this definition">¶</a></dt>
+<dd><p>Load a file into a Compound.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">Compound</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
 
 <dl class="method">
 <dt id="mbuild.examples.tnp.sphere.Sphere.min_periodic_distance">
-<tt class="descname">min_periodic_distance</tt><big>(</big><em>x0</em>, <em>x1</em><big>)</big><a class="headerlink" href="#mbuild.examples.tnp.sphere.Sphere.min_periodic_distance" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">min_periodic_distance</tt><big>(</big><em>xyz0</em>, <em>xyz1</em><big>)</big><a class="headerlink" href="#mbuild.examples.tnp.sphere.Sphere.min_periodic_distance" title="Permalink to this definition">¶</a></dt>
 <dd><p>Vectorized distance calculation considering minimum image.</p>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="mbuild.examples.tnp.sphere.Sphere.n_atoms">
 <tt class="descname">n_atoms</tt><a class="headerlink" href="#mbuild.examples.tnp.sphere.Sphere.n_atoms" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Return the number of Atoms in the Compound.</p>
+</dd></dl>
 
 <dl class="attribute">
 <dt id="mbuild.examples.tnp.sphere.Sphere.n_bonds">
 <tt class="descname">n_bonds</tt><a class="headerlink" href="#mbuild.examples.tnp.sphere.Sphere.n_bonds" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Return the number of Bonds in the Compound.</p>
+</dd></dl>
 
 <dl class="method">
 <dt id="mbuild.examples.tnp.sphere.Sphere.referenced_ports">
@@ -736,7 +808,7 @@ Ports).</td>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>objs_to_remove</strong> (<em>set of parts</em>) &#8211; All objects to be removed from the
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>objs_to_remove</strong> (<em>set of Parts</em>) &#8211; All objects to be removed from the
 hierarchy. If this is not a set, it will be cast to one to
 remove duplicates.</td>
 </tr>
@@ -746,14 +818,14 @@ remove duplicates.</td>
 
 <dl class="method">
 <dt id="mbuild.examples.tnp.sphere.Sphere.save">
-<tt class="descname">save</tt><big>(</big><em>filename</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#mbuild.examples.tnp.sphere.Sphere.save" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">save</tt><big>(</big><em>filename</em>, <em>show_ports=False</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#mbuild.examples.tnp.sphere.Sphere.save" title="Permalink to this definition">¶</a></dt>
 <dd><p>Save the Compound to a file.</p>
 <p>This creates an intermediate Trajectory object.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="mbuild.examples.tnp.sphere.Sphere.to_trajectory">
-<tt class="descname">to_trajectory</tt><big>(</big><em>show_ports=False</em><big>)</big><a class="headerlink" href="#mbuild.examples.tnp.sphere.Sphere.to_trajectory" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">to_trajectory</tt><big>(</big><em>show_ports=False</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#mbuild.examples.tnp.sphere.Sphere.to_trajectory" title="Permalink to this definition">¶</a></dt>
 <dd><p>Convert the Compound to a Trajectory.</p>
 </dd></dl>
 
@@ -866,7 +938,7 @@ remove duplicates.</td>
 
 <dl class="method">
 <dt id="mbuild.examples.tnp.tnp.Tnp.add">
-<tt class="descname">add</tt><big>(</big><em>new_part</em>, <em>label=None</em>, <em>containment=True</em>, <em>replace=False</em><big>)</big><a class="headerlink" href="#mbuild.examples.tnp.tnp.Tnp.add" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">add</tt><big>(</big><em>new_part</em>, <em>label=None</em>, <em>containment=True</em>, <em>replace=False</em>, <em>inherit_periodicity=True</em><big>)</big><a class="headerlink" href="#mbuild.examples.tnp.tnp.Tnp.add" title="Permalink to this definition">¶</a></dt>
 <dd><p>Add a part to the Compound.</p>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
@@ -882,6 +954,10 @@ instead be used to add a reference to the part to self.labels. See
 <li><strong>new_part</strong> (<em>Atom, Bond or Compound</em>) &#8211; The object to be added to this
 Compound.</li>
 <li><strong>label</strong> (<em>str, optional</em>) &#8211; A descriptive string for the part.</li>
+<li><strong>containment</strong> (<em>bool, optional</em>) &#8211; Add the part to self.parts. Defaults
+to True.</li>
+<li><strong>replace</strong> (<em>bool, optional</em>) &#8211; Replace the label if it already exists.
+Defaults to False.</li>
 </ul>
 </td>
 </tr>
@@ -892,7 +968,7 @@ Compound.</li>
 <dl class="method">
 <dt id="mbuild.examples.tnp.tnp.Tnp.add_bond">
 <tt class="descname">add_bond</tt><big>(</big><em>type_a</em>, <em>type_b</em>, <em>dmin</em>, <em>dmax</em>, <em>kind=None</em><big>)</big><a class="headerlink" href="#mbuild.examples.tnp.tnp.Tnp.add_bond" title="Permalink to this definition">¶</a></dt>
-<dd><p>Add Bonds between all pairs of Atoms of types a/b within [dmin, dmax].</p>
+<dd><p>Add Bonds between all Atom pairs of types a/b within [dmin, dmax].</p>
 <p>TODO: testing for periodic boundaries.</p>
 </dd></dl>
 
@@ -980,7 +1056,21 @@ A list of Atoms.</p>
 <dl class="method">
 <dt id="mbuild.examples.tnp.tnp.Tnp.bond_list_by_kind">
 <tt class="descname">bond_list_by_kind</tt><big>(</big><em>kind='*'</em><big>)</big><a class="headerlink" href="#mbuild.examples.tnp.tnp.Tnp.bond_list_by_kind" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Return a list of Bonds filtered by their kind.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>kind</strong> (<a class="reference external" href="http://docs.python.org/2.7/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Return only Bonds of this type. &#8216;*&#8217; indicates all.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>bond_list</strong> &#8211;
+A list of Bonds.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">list</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
 
 <dl class="attribute">
 <dt id="mbuild.examples.tnp.tnp.Tnp.bonds">
@@ -1010,28 +1100,46 @@ Ports).</td>
 <dl class="attribute">
 <dt id="mbuild.examples.tnp.tnp.Tnp.center">
 <tt class="descname">center</tt><a class="headerlink" href="#mbuild.examples.tnp.tnp.Tnp.center" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>The cartesian center of the Compound based on its Atoms.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="mbuild.examples.tnp.tnp.Tnp.extras">
+<tt class="descname">extras</tt><a class="headerlink" href="#mbuild.examples.tnp.tnp.Tnp.extras" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the Compound&#8217;s optional, extra attributes.</p>
+</dd></dl>
 
 <dl class="classmethod">
 <dt id="mbuild.examples.tnp.tnp.Tnp.load">
-<em class="property">classmethod </em><tt class="descname">load</tt><big>(</big><em>filename</em>, <em>relative_to_module=None</em>, <em>frame=0</em><big>)</big><a class="headerlink" href="#mbuild.examples.tnp.tnp.Tnp.load" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<em class="property">classmethod </em><tt class="descname">load</tt><big>(</big><em>filename</em>, <em>relative_to_module=None</em>, <em>frame=0</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#mbuild.examples.tnp.tnp.Tnp.load" title="Permalink to this definition">¶</a></dt>
+<dd><p>Load a file into a Compound.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">Compound</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
 
 <dl class="method">
 <dt id="mbuild.examples.tnp.tnp.Tnp.min_periodic_distance">
-<tt class="descname">min_periodic_distance</tt><big>(</big><em>x0</em>, <em>x1</em><big>)</big><a class="headerlink" href="#mbuild.examples.tnp.tnp.Tnp.min_periodic_distance" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">min_periodic_distance</tt><big>(</big><em>xyz0</em>, <em>xyz1</em><big>)</big><a class="headerlink" href="#mbuild.examples.tnp.tnp.Tnp.min_periodic_distance" title="Permalink to this definition">¶</a></dt>
 <dd><p>Vectorized distance calculation considering minimum image.</p>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="mbuild.examples.tnp.tnp.Tnp.n_atoms">
 <tt class="descname">n_atoms</tt><a class="headerlink" href="#mbuild.examples.tnp.tnp.Tnp.n_atoms" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Return the number of Atoms in the Compound.</p>
+</dd></dl>
 
 <dl class="attribute">
 <dt id="mbuild.examples.tnp.tnp.Tnp.n_bonds">
 <tt class="descname">n_bonds</tt><a class="headerlink" href="#mbuild.examples.tnp.tnp.Tnp.n_bonds" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Return the number of Bonds in the Compound.</p>
+</dd></dl>
 
 <dl class="method">
 <dt id="mbuild.examples.tnp.tnp.Tnp.referenced_ports">
@@ -1055,7 +1163,7 @@ Ports).</td>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>objs_to_remove</strong> (<em>set of parts</em>) &#8211; All objects to be removed from the
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>objs_to_remove</strong> (<em>set of Parts</em>) &#8211; All objects to be removed from the
 hierarchy. If this is not a set, it will be cast to one to
 remove duplicates.</td>
 </tr>
@@ -1065,14 +1173,14 @@ remove duplicates.</td>
 
 <dl class="method">
 <dt id="mbuild.examples.tnp.tnp.Tnp.save">
-<tt class="descname">save</tt><big>(</big><em>filename</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#mbuild.examples.tnp.tnp.Tnp.save" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">save</tt><big>(</big><em>filename</em>, <em>show_ports=False</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#mbuild.examples.tnp.tnp.Tnp.save" title="Permalink to this definition">¶</a></dt>
 <dd><p>Save the Compound to a file.</p>
 <p>This creates an intermediate Trajectory object.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="mbuild.examples.tnp.tnp.Tnp.to_trajectory">
-<tt class="descname">to_trajectory</tt><big>(</big><em>show_ports=False</em><big>)</big><a class="headerlink" href="#mbuild.examples.tnp.tnp.Tnp.to_trajectory" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">to_trajectory</tt><big>(</big><em>show_ports=False</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#mbuild.examples.tnp.tnp.Tnp.to_trajectory" title="Permalink to this definition">¶</a></dt>
 <dd><p>Convert the Compound to a Trajectory.</p>
 </dd></dl>
 
@@ -1190,7 +1298,7 @@ remove duplicates.</td>
 
 <dl class="method">
 <dt id="mbuild.examples.tnp.tnp_box.TnpBox.add">
-<tt class="descname">add</tt><big>(</big><em>new_part</em>, <em>label=None</em>, <em>containment=True</em>, <em>replace=False</em><big>)</big><a class="headerlink" href="#mbuild.examples.tnp.tnp_box.TnpBox.add" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">add</tt><big>(</big><em>new_part</em>, <em>label=None</em>, <em>containment=True</em>, <em>replace=False</em>, <em>inherit_periodicity=True</em><big>)</big><a class="headerlink" href="#mbuild.examples.tnp.tnp_box.TnpBox.add" title="Permalink to this definition">¶</a></dt>
 <dd><p>Add a part to the Compound.</p>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
@@ -1206,6 +1314,10 @@ instead be used to add a reference to the part to self.labels. See
 <li><strong>new_part</strong> (<em>Atom, Bond or Compound</em>) &#8211; The object to be added to this
 Compound.</li>
 <li><strong>label</strong> (<em>str, optional</em>) &#8211; A descriptive string for the part.</li>
+<li><strong>containment</strong> (<em>bool, optional</em>) &#8211; Add the part to self.parts. Defaults
+to True.</li>
+<li><strong>replace</strong> (<em>bool, optional</em>) &#8211; Replace the label if it already exists.
+Defaults to False.</li>
 </ul>
 </td>
 </tr>
@@ -1216,7 +1328,7 @@ Compound.</li>
 <dl class="method">
 <dt id="mbuild.examples.tnp.tnp_box.TnpBox.add_bond">
 <tt class="descname">add_bond</tt><big>(</big><em>type_a</em>, <em>type_b</em>, <em>dmin</em>, <em>dmax</em>, <em>kind=None</em><big>)</big><a class="headerlink" href="#mbuild.examples.tnp.tnp_box.TnpBox.add_bond" title="Permalink to this definition">¶</a></dt>
-<dd><p>Add Bonds between all pairs of Atoms of types a/b within [dmin, dmax].</p>
+<dd><p>Add Bonds between all Atom pairs of types a/b within [dmin, dmax].</p>
 <p>TODO: testing for periodic boundaries.</p>
 </dd></dl>
 
@@ -1304,7 +1416,21 @@ A list of Atoms.</p>
 <dl class="method">
 <dt id="mbuild.examples.tnp.tnp_box.TnpBox.bond_list_by_kind">
 <tt class="descname">bond_list_by_kind</tt><big>(</big><em>kind='*'</em><big>)</big><a class="headerlink" href="#mbuild.examples.tnp.tnp_box.TnpBox.bond_list_by_kind" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Return a list of Bonds filtered by their kind.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>kind</strong> (<a class="reference external" href="http://docs.python.org/2.7/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Return only Bonds of this type. &#8216;*&#8217; indicates all.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>bond_list</strong> &#8211;
+A list of Bonds.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">list</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
 
 <dl class="attribute">
 <dt id="mbuild.examples.tnp.tnp_box.TnpBox.bonds">
@@ -1334,28 +1460,46 @@ Ports).</td>
 <dl class="attribute">
 <dt id="mbuild.examples.tnp.tnp_box.TnpBox.center">
 <tt class="descname">center</tt><a class="headerlink" href="#mbuild.examples.tnp.tnp_box.TnpBox.center" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>The cartesian center of the Compound based on its Atoms.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="mbuild.examples.tnp.tnp_box.TnpBox.extras">
+<tt class="descname">extras</tt><a class="headerlink" href="#mbuild.examples.tnp.tnp_box.TnpBox.extras" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the Compound&#8217;s optional, extra attributes.</p>
+</dd></dl>
 
 <dl class="classmethod">
 <dt id="mbuild.examples.tnp.tnp_box.TnpBox.load">
-<em class="property">classmethod </em><tt class="descname">load</tt><big>(</big><em>filename</em>, <em>relative_to_module=None</em>, <em>frame=0</em><big>)</big><a class="headerlink" href="#mbuild.examples.tnp.tnp_box.TnpBox.load" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<em class="property">classmethod </em><tt class="descname">load</tt><big>(</big><em>filename</em>, <em>relative_to_module=None</em>, <em>frame=0</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#mbuild.examples.tnp.tnp_box.TnpBox.load" title="Permalink to this definition">¶</a></dt>
+<dd><p>Load a file into a Compound.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">Compound</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
 
 <dl class="method">
 <dt id="mbuild.examples.tnp.tnp_box.TnpBox.min_periodic_distance">
-<tt class="descname">min_periodic_distance</tt><big>(</big><em>x0</em>, <em>x1</em><big>)</big><a class="headerlink" href="#mbuild.examples.tnp.tnp_box.TnpBox.min_periodic_distance" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">min_periodic_distance</tt><big>(</big><em>xyz0</em>, <em>xyz1</em><big>)</big><a class="headerlink" href="#mbuild.examples.tnp.tnp_box.TnpBox.min_periodic_distance" title="Permalink to this definition">¶</a></dt>
 <dd><p>Vectorized distance calculation considering minimum image.</p>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="mbuild.examples.tnp.tnp_box.TnpBox.n_atoms">
 <tt class="descname">n_atoms</tt><a class="headerlink" href="#mbuild.examples.tnp.tnp_box.TnpBox.n_atoms" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Return the number of Atoms in the Compound.</p>
+</dd></dl>
 
 <dl class="attribute">
 <dt id="mbuild.examples.tnp.tnp_box.TnpBox.n_bonds">
 <tt class="descname">n_bonds</tt><a class="headerlink" href="#mbuild.examples.tnp.tnp_box.TnpBox.n_bonds" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Return the number of Bonds in the Compound.</p>
+</dd></dl>
 
 <dl class="method">
 <dt id="mbuild.examples.tnp.tnp_box.TnpBox.referenced_ports">
@@ -1379,7 +1523,7 @@ Ports).</td>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>objs_to_remove</strong> (<em>set of parts</em>) &#8211; All objects to be removed from the
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>objs_to_remove</strong> (<em>set of Parts</em>) &#8211; All objects to be removed from the
 hierarchy. If this is not a set, it will be cast to one to
 remove duplicates.</td>
 </tr>
@@ -1389,14 +1533,14 @@ remove duplicates.</td>
 
 <dl class="method">
 <dt id="mbuild.examples.tnp.tnp_box.TnpBox.save">
-<tt class="descname">save</tt><big>(</big><em>filename</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#mbuild.examples.tnp.tnp_box.TnpBox.save" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">save</tt><big>(</big><em>filename</em>, <em>show_ports=False</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#mbuild.examples.tnp.tnp_box.TnpBox.save" title="Permalink to this definition">¶</a></dt>
 <dd><p>Save the Compound to a file.</p>
 <p>This creates an intermediate Trajectory object.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="mbuild.examples.tnp.tnp_box.TnpBox.to_trajectory">
-<tt class="descname">to_trajectory</tt><big>(</big><em>show_ports=False</em><big>)</big><a class="headerlink" href="#mbuild.examples.tnp.tnp_box.TnpBox.to_trajectory" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">to_trajectory</tt><big>(</big><em>show_ports=False</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#mbuild.examples.tnp.tnp_box.TnpBox.to_trajectory" title="Permalink to this definition">¶</a></dt>
 <dd><p>Convert the Compound to a Trajectory.</p>
 </dd></dl>
 

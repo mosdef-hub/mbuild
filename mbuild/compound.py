@@ -190,17 +190,17 @@ class Compound(PartMixin, HasPartsMixin):
         """Update the Compound with the Trajectory's topology. """
         traj.update_compound(self, frame=frame)
 
-    def save(self, filename, **kwargs):
+    def save(self, filename, show_ports=False, **kwargs):
         """Save the Compound to a file.
 
         This creates an intermediate Trajectory object.
         """
-        self.to_trajectory().save(filename, **kwargs)
+        traj = self.to_trajectory(show_ports=show_ports, **kwargs)
+        traj.save(filename, **kwargs)
 
     def to_trajectory(self, show_ports=False, **kwargs):
         """Convert the Compound to a Trajectory. """
         from .trajectory import Trajectory
-
         return Trajectory.from_compound(self, show_ports=show_ports, **kwargs)
 
     @classmethod
@@ -230,7 +230,7 @@ class Compound(PartMixin, HasPartsMixin):
 
         TODO: Look into pizza.py's vmd.py. See issue #32.
         """
-        filename = 'visualize_{}.mol2'.format(self.__class__.__name__)
+        filename = 'visualize_{}.lammps'.format(self.__class__.__name__)
         traj = self.to_trajectory(show_ports)
         traj.save(filename=filename)
         import os

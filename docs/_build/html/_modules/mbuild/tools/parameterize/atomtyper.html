@@ -380,9 +380,9 @@
     <span class="sd">&quot;&quot;&quot;Base class for rule decorators. &quot;&quot;&quot;</span>
     <span class="nd">@staticmethod</span>
 <div class="viewcode-block" id="RuleDecorator.extract_doc_string"><a class="viewcode-back" href="../../../../mbuild.tools.parameterize.html#mbuild.tools.parameterize.atomtyper.RuleDecorator.extract_doc_string">[docs]</a>    <span class="k">def</span> <span class="nf">extract_doc_string</span><span class="p">(</span><span class="n">func</span><span class="p">):</span>
-        <span class="k">if</span> <span class="n">func</span><span class="o">.</span><span class="n">func_doc</span><span class="p">:</span>
-            <span class="n">rule_number</span> <span class="o">=</span> <span class="n">func</span><span class="o">.</span><span class="n">func_name</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&quot;_&quot;</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span>
-            <span class="n">rule_number_to_doc_string</span><span class="p">[</span><span class="n">rule_number</span><span class="p">]</span> <span class="o">=</span> <span class="n">func</span><span class="o">.</span><span class="n">func_doc</span>
+        <span class="k">if</span> <span class="n">func</span><span class="o">.</span><span class="n">__doc__</span><span class="p">:</span>
+            <span class="n">rule_number</span> <span class="o">=</span> <span class="n">func</span><span class="o">.</span><span class="n">__name__</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&quot;_&quot;</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span>
+            <span class="n">rule_number_to_doc_string</span><span class="p">[</span><span class="n">rule_number</span><span class="p">]</span> <span class="o">=</span> <span class="n">func</span><span class="o">.</span><span class="n">__doc__</span>
 
 </div></div>
 <div class="viewcode-block" id="Element"><a class="viewcode-back" href="../../../../mbuild.tools.parameterize.html#mbuild.tools.parameterize.atomtyper.Element">[docs]</a><span class="k">class</span> <span class="nc">Element</span><span class="p">(</span><span class="n">RuleDecorator</span><span class="p">):</span>
@@ -697,13 +697,13 @@
     <span class="n">decorators</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="c"># Find an object of decorator_type in the function&#39;s closure. There should</span>
     <span class="c"># be only one.</span>
-    <span class="k">for</span> <span class="n">cell</span> <span class="ow">in</span> <span class="n">decorated_function</span><span class="o">.</span><span class="n">func_closure</span><span class="p">:</span>
+    <span class="k">for</span> <span class="n">cell</span> <span class="ow">in</span> <span class="n">decorated_function</span><span class="o">.</span><span class="n">__closure__</span><span class="p">:</span>
         <span class="n">closure_entry</span> <span class="o">=</span> <span class="n">cell</span><span class="o">.</span><span class="n">cell_contents</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">closure_entry</span><span class="p">,</span> <span class="n">decorator_type</span><span class="p">):</span>
             <span class="n">decorators</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">closure_entry</span><span class="p">)</span>
             <span class="k">break</span>
     <span class="c"># Find a function called `wrapper` in the function&#39;s closure, and recurse.</span>
-    <span class="k">for</span> <span class="n">cell</span> <span class="ow">in</span> <span class="n">decorated_function</span><span class="o">.</span><span class="n">func_closure</span><span class="p">:</span>
+    <span class="k">for</span> <span class="n">cell</span> <span class="ow">in</span> <span class="n">decorated_function</span><span class="o">.</span><span class="n">__closure__</span><span class="p">:</span>
         <span class="n">closure_entry</span> <span class="o">=</span> <span class="n">cell</span><span class="o">.</span><span class="n">cell_contents</span>
         <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">closure_entry</span><span class="p">,</span> <span class="s">&#39;__name__&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="n">closure_entry</span><span class="o">.</span><span class="n">__name__</span> <span class="ow">is</span> <span class="s">&quot;wrapped&quot;</span><span class="p">:</span>
             <span class="n">wrapped_decorator_objects</span> <span class="o">=</span> <span class="n">get_decorator_objects_by_type</span><span class="p">(</span>

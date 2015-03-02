@@ -178,27 +178,6 @@ for each frame.</td>
 </table>
 </dd></dl>
 
-<dl class="function">
-<dt id="mbuild.tools.compute.compute_inertia_tensor">
-<tt class="descclassname">mbuild.tools.compute.</tt><tt class="descname">compute_inertia_tensor</tt><big>(</big><em>traj</em>, <em>masses=None</em><big>)</big><a class="reference internal" href="../_modules/mbuild/tools/compute.html#compute_inertia_tensor"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.tools.compute.compute_inertia_tensor" title="Permalink to this definition">¶</a></dt>
-<dd><p>Calculates the moment of inertia tensor for each frame.</p>
-<p>Function adapted from MDAnalysis (<a class="reference external" href="https://code.google.com/p/mdanalysis/">https://code.google.com/p/mdanalysis/</a>)</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>traj</strong> (<em>Trajectory</em>) &#8211; Trajectory to compute center of mass for.</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>I</strong> &#8211;
-Moment of inertia tensor for each
-frame.</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">np.ndarray, shape=(n_frames, 3, 3</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
 </div>
 <div class="section" id="module-mbuild.tools.mask">
 <span id="mbuild-tools-mask-module"></span><h2>mbuild.tools.mask module<a class="headerlink" href="#module-mbuild.tools.mask" title="Permalink to this headline">¶</a></h2>
@@ -552,7 +531,7 @@ remove duplicates.</td>
 
 <dl class="method">
 <dt id="mbuild.tools.polymer.Polymer.save">
-<tt class="descname">save</tt><big>(</big><em>filename</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#mbuild.tools.polymer.Polymer.save" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">save</tt><big>(</big><em>filename</em>, <em>show_ports=False</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#mbuild.tools.polymer.Polymer.save" title="Permalink to this definition">¶</a></dt>
 <dd><p>Save the Compound to a file.</p>
 <p>This creates an intermediate Trajectory object.</p>
 </dd></dl>
@@ -607,7 +586,7 @@ remove duplicates.</td>
 <span id="mbuild-tools-solvent-module"></span><h2>mbuild.tools.solvent module<a class="headerlink" href="#module-mbuild.tools.solvent" title="Permalink to this headline">¶</a></h2>
 <dl class="function">
 <dt id="mbuild.tools.solvent.solvate">
-<tt class="descclassname">mbuild.tools.solvent.</tt><tt class="descname">solvate</tt><big>(</big><em>host_compound</em>, <em>guest_compound</em>, <em>host_box</em>, <em>guest_box</em>, <em>overlap=&lt;function vdw_radius at 0x106c87c08&gt;</em><big>)</big><a class="reference internal" href="../_modules/mbuild/tools/solvent.html#solvate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.tools.solvent.solvate" title="Permalink to this definition">¶</a></dt>
+<tt class="descclassname">mbuild.tools.solvent.</tt><tt class="descname">solvate</tt><big>(</big><em>host_compound</em>, <em>guest_compound</em>, <em>host_box</em>, <em>guest_box</em>, <em>overlap=&lt;function vdw_radius at 0x1089c02a8&gt;</em><big>)</big><a class="reference internal" href="../_modules/mbuild/tools/solvent.html#solvate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.tools.solvent.solvate" title="Permalink to this definition">¶</a></dt>
 <dd><p>Solvate a Compound in a Box.</p>
 <p>Typical usage of this function would be to use a pre-equilibrated solvent
 system as the guest which will then be replicated to fill the host&#8217;s Box.
@@ -952,7 +931,7 @@ remove duplicates.</td>
 
 <dl class="method">
 <dt id="mbuild.tools.tiled_compound.TiledCompound.save">
-<tt class="descname">save</tt><big>(</big><em>filename</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#mbuild.tools.tiled_compound.TiledCompound.save" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">save</tt><big>(</big><em>filename</em>, <em>show_ports=False</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#mbuild.tools.tiled_compound.TiledCompound.save" title="Permalink to this definition">¶</a></dt>
 <dd><p>Save the Compound to a file.</p>
 <p>This creates an intermediate Trajectory object.</p>
 </dd></dl>

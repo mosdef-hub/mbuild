@@ -64,10 +64,10 @@
 </li>
 </ul>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="tutorials.html">Tutorials</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="tutorials.html#methane-atoms-bonds-and-compounds">Methane: Atoms, Bonds and Compounds</a></li>
-<li class="toctree-l2"><a class="reference internal" href="tutorials.html#ethane-reading-from-files-ports-and-coordinate-transforms">Ethane: Reading from files, Ports and coordinate transforms</a></li>
-<li class="toctree-l2"><a class="reference internal" href="tutorials.html#monolayer-complex-hierarchies-masks-tiling-and-writing-to-files">Monolayer: Complex hierarchies, masks, tiling and writing to files</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorials/tutorials.html">Tutorials</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="tutorials/tutorials.html#methane-atoms-bonds-and-compounds">Methane: Atoms, Bonds and Compounds</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorials/tutorials.html#ethane-reading-from-files-ports-and-coordinate-transforms">Ethane: Reading from files, Ports and coordinate transforms</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorials/tutorials.html#monolayer-complex-hierarchies-masks-tiling-and-writing-to-files">Monolayer: Complex hierarchies, masks, tiling and writing to files</a></li>
 </ul>
 </li>
 </ul>
@@ -221,7 +221,7 @@
 
 <dl class="method">
 <dt id="mbuild.examples.tnp.bead.Bead.add">
-<tt class="descname">add</tt><big>(</big><em>new_part</em>, <em>label=None</em>, <em>containment=True</em>, <em>replace=False</em><big>)</big><a class="headerlink" href="#mbuild.examples.tnp.bead.Bead.add" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">add</tt><big>(</big><em>new_part</em>, <em>label=None</em>, <em>containment=True</em>, <em>replace=False</em>, <em>inherit_periodicity=True</em><big>)</big><a class="headerlink" href="#mbuild.examples.tnp.bead.Bead.add" title="Permalink to this definition">¶</a></dt>
 <dd><p>Add a part to the Compound.</p>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
@@ -394,7 +394,7 @@ Ports).</td>
 
 <dl class="classmethod">
 <dt id="mbuild.examples.tnp.bead.Bead.load">
-<em class="property">classmethod </em><tt class="descname">load</tt><big>(</big><em>filename</em>, <em>relative_to_module=None</em>, <em>frame=0</em><big>)</big><a class="headerlink" href="#mbuild.examples.tnp.bead.Bead.load" title="Permalink to this definition">¶</a></dt>
+<em class="property">classmethod </em><tt class="descname">load</tt><big>(</big><em>filename</em>, <em>relative_to_module=None</em>, <em>frame=0</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#mbuild.examples.tnp.bead.Bead.load" title="Permalink to this definition">¶</a></dt>
 <dd><p>Load a file into a Compound.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -456,7 +456,7 @@ remove duplicates.</td>
 
 <dl class="method">
 <dt id="mbuild.examples.tnp.bead.Bead.save">
-<tt class="descname">save</tt><big>(</big><em>filename</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#mbuild.examples.tnp.bead.Bead.save" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">save</tt><big>(</big><em>filename</em>, <em>show_ports=False</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#mbuild.examples.tnp.bead.Bead.save" title="Permalink to this definition">¶</a></dt>
 <dd><p>Save the Compound to a file.</p>
 <p>This creates an intermediate Trajectory object.</p>
 </dd></dl>
@@ -576,7 +576,7 @@ remove duplicates.</td>
 
 <dl class="method">
 <dt id="mbuild.examples.tnp.sphere.Sphere.add">
-<tt class="descname">add</tt><big>(</big><em>new_part</em>, <em>label=None</em>, <em>containment=True</em>, <em>replace=False</em><big>)</big><a class="headerlink" href="#mbuild.examples.tnp.sphere.Sphere.add" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">add</tt><big>(</big><em>new_part</em>, <em>label=None</em>, <em>containment=True</em>, <em>replace=False</em>, <em>inherit_periodicity=True</em><big>)</big><a class="headerlink" href="#mbuild.examples.tnp.sphere.Sphere.add" title="Permalink to this definition">¶</a></dt>
 <dd><p>Add a part to the Compound.</p>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
@@ -749,7 +749,7 @@ Ports).</td>
 
 <dl class="classmethod">
 <dt id="mbuild.examples.tnp.sphere.Sphere.load">
-<em class="property">classmethod </em><tt class="descname">load</tt><big>(</big><em>filename</em>, <em>relative_to_module=None</em>, <em>frame=0</em><big>)</big><a class="headerlink" href="#mbuild.examples.tnp.sphere.Sphere.load" title="Permalink to this definition">¶</a></dt>
+<em class="property">classmethod </em><tt class="descname">load</tt><big>(</big><em>filename</em>, <em>relative_to_module=None</em>, <em>frame=0</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#mbuild.examples.tnp.sphere.Sphere.load" title="Permalink to this definition">¶</a></dt>
 <dd><p>Load a file into a Compound.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -811,7 +811,7 @@ remove duplicates.</td>
 
 <dl class="method">
 <dt id="mbuild.examples.tnp.sphere.Sphere.save">
-<tt class="descname">save</tt><big>(</big><em>filename</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#mbuild.examples.tnp.sphere.Sphere.save" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">save</tt><big>(</big><em>filename</em>, <em>show_ports=False</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#mbuild.examples.tnp.sphere.Sphere.save" title="Permalink to this definition">¶</a></dt>
 <dd><p>Save the Compound to a file.</p>
 <p>This creates an intermediate Trajectory object.</p>
 </dd></dl>
@@ -931,7 +931,7 @@ remove duplicates.</td>
 
 <dl class="method">
 <dt id="mbuild.examples.tnp.tnp.Tnp.add">
-<tt class="descname">add</tt><big>(</big><em>new_part</em>, <em>label=None</em>, <em>containment=True</em>, <em>replace=False</em><big>)</big><a class="headerlink" href="#mbuild.examples.tnp.tnp.Tnp.add" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">add</tt><big>(</big><em>new_part</em>, <em>label=None</em>, <em>containment=True</em>, <em>replace=False</em>, <em>inherit_periodicity=True</em><big>)</big><a class="headerlink" href="#mbuild.examples.tnp.tnp.Tnp.add" title="Permalink to this definition">¶</a></dt>
 <dd><p>Add a part to the Compound.</p>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
@@ -1104,7 +1104,7 @@ Ports).</td>
 
 <dl class="classmethod">
 <dt id="mbuild.examples.tnp.tnp.Tnp.load">
-<em class="property">classmethod </em><tt class="descname">load</tt><big>(</big><em>filename</em>, <em>relative_to_module=None</em>, <em>frame=0</em><big>)</big><a class="headerlink" href="#mbuild.examples.tnp.tnp.Tnp.load" title="Permalink to this definition">¶</a></dt>
+<em class="property">classmethod </em><tt class="descname">load</tt><big>(</big><em>filename</em>, <em>relative_to_module=None</em>, <em>frame=0</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#mbuild.examples.tnp.tnp.Tnp.load" title="Permalink to this definition">¶</a></dt>
 <dd><p>Load a file into a Compound.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -1166,7 +1166,7 @@ remove duplicates.</td>
 
 <dl class="method">
 <dt id="mbuild.examples.tnp.tnp.Tnp.save">
-<tt class="descname">save</tt><big>(</big><em>filename</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#mbuild.examples.tnp.tnp.Tnp.save" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">save</tt><big>(</big><em>filename</em>, <em>show_ports=False</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#mbuild.examples.tnp.tnp.Tnp.save" title="Permalink to this definition">¶</a></dt>
 <dd><p>Save the Compound to a file.</p>
 <p>This creates an intermediate Trajectory object.</p>
 </dd></dl>
@@ -1291,7 +1291,7 @@ remove duplicates.</td>
 
 <dl class="method">
 <dt id="mbuild.examples.tnp.tnp_box.TnpBox.add">
-<tt class="descname">add</tt><big>(</big><em>new_part</em>, <em>label=None</em>, <em>containment=True</em>, <em>replace=False</em><big>)</big><a class="headerlink" href="#mbuild.examples.tnp.tnp_box.TnpBox.add" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">add</tt><big>(</big><em>new_part</em>, <em>label=None</em>, <em>containment=True</em>, <em>replace=False</em>, <em>inherit_periodicity=True</em><big>)</big><a class="headerlink" href="#mbuild.examples.tnp.tnp_box.TnpBox.add" title="Permalink to this definition">¶</a></dt>
 <dd><p>Add a part to the Compound.</p>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
@@ -1464,7 +1464,7 @@ Ports).</td>
 
 <dl class="classmethod">
 <dt id="mbuild.examples.tnp.tnp_box.TnpBox.load">
-<em class="property">classmethod </em><tt class="descname">load</tt><big>(</big><em>filename</em>, <em>relative_to_module=None</em>, <em>frame=0</em><big>)</big><a class="headerlink" href="#mbuild.examples.tnp.tnp_box.TnpBox.load" title="Permalink to this definition">¶</a></dt>
+<em class="property">classmethod </em><tt class="descname">load</tt><big>(</big><em>filename</em>, <em>relative_to_module=None</em>, <em>frame=0</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#mbuild.examples.tnp.tnp_box.TnpBox.load" title="Permalink to this definition">¶</a></dt>
 <dd><p>Load a file into a Compound.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -1526,7 +1526,7 @@ remove duplicates.</td>
 
 <dl class="method">
 <dt id="mbuild.examples.tnp.tnp_box.TnpBox.save">
-<tt class="descname">save</tt><big>(</big><em>filename</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#mbuild.examples.tnp.tnp_box.TnpBox.save" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">save</tt><big>(</big><em>filename</em>, <em>show_ports=False</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#mbuild.examples.tnp.tnp_box.TnpBox.save" title="Permalink to this definition">¶</a></dt>
 <dd><p>Save the Compound to a file.</p>
 <p>This creates an intermediate Trajectory object.</p>
 </dd></dl>
