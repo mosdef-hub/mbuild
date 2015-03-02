@@ -1,7 +1,7 @@
 ## mBuild: a hierarchical, component based molecule builder
 
 [![Linux Build Status](https://travis-ci.org/sallai/mbuild.png?branch=master)](https://travis-ci.org/sallai/mbuild)
-[![Test Coverage](https://coveralls.io/repos/sallai/mbuild/badge.png?branch=master)](https://coveralls.io/r/sallai/mbuild)
+[![Test Coverage](https://coveralls.io/repos/sallai/mbuild/badge.png?branch=develop)](https://coveralls.io/r/sallai/mbuild)
 [![PyPI Version](https://badge.fury.io/py/mbuild.png)](https://pypi.python.org/pypi/mbuild)
 [![Documentation Status](https://readthedocs.org/projects/mbuild/badge/?version=develop)](http://mbuild.readthedocs.org/en/develop)
 
