@@ -157,6 +157,7 @@ class Compound(PartMixin, HasPartsMixin):
 
         if isinstance(removed_part, Atom):
             for bond in removed_part.bonds:
+                bond.other_atom(removed_part).bonds.remove(bond)
                 if bond.parent is not None:
                     bond.parent.remove(bond)
 

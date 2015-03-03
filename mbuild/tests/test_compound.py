@@ -56,3 +56,12 @@ class TestCompound(BaseTest):
         group = ethane.atoms_in_range(ethane.atoms[0].pos, 0.141, max_items=4)
         assert sum([1 for x in group if x.kind == 'H']) == 3
         assert sum([1 for x in group if x.kind == 'C']) == 1
+
+    def test_remove(self, ethane):
+        hydrogens = ethane.atom_list_by_kind("H")
+        ethane.remove(hydrogens)
+
+        assert ethane.n_atoms == 2
+        assert ethane.n_bonds == 1
+        for atom in ethane:
+            assert atom.n_bonds == 1
