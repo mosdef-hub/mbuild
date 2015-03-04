@@ -6,8 +6,8 @@ from mbuild.coordinate_transform import equivalence_transform
 
 from mbuild.components.small_groups.silane import Silane
 from mbuild.components.small_groups.ch3 import Ch3
-from .mpc import MPC
-from .initiator import Initiator
+from mbuild.examples.pmpc.mpc import MPC
+from mbuild.examples.pmpc.initiator import Initiator
 
 
 class Brush(Compound):

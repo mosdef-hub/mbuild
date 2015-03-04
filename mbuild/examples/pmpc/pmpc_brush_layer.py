@@ -10,8 +10,8 @@ from mbuild.tools.tiled_compound import TiledCompound
 from mbuild.components.atoms.H import H
 from mbuild.components.surfaces.betacristobalite import Betacristobalite
 
-from .brush import Brush
-from .mpc import MPC
+from mbuild.examples.pmpc.brush import Brush
+from mbuild.examples.pmpc.mpc import MPC
 
 
 class PMPCLayer(Compound):

@@ -63,5 +63,5 @@ class TestCompound(BaseTest):
 
         assert ethane.n_atoms == 2
         assert ethane.n_bonds == 1
-        for atom in ethane:
+        for atom in ethane.atoms:
             assert atom.n_bonds == 1
