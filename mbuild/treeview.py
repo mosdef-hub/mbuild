@@ -1,8 +1,8 @@
 import Tkinter
 import ttk
-from compound import Compound
-from atom import Atom
-from bond import Bond
+from mbuild.compound import Compound
+from mbuild.atom import Atom
+from mbuild.bond import Bond
 
 
 class TreeView(object):

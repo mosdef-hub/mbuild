@@ -1,8 +1,9 @@
 from __future__ import division
 
-from functools import reduce
-
 import numpy as np
+
+
+__all__ = ['compute_center_of_mass']
 
 
 def compute_center_of_mass(traj, masses=None):

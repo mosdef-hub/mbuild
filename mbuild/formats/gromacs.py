@@ -1,3 +1,6 @@
+__all__ = ['save_gromacs']
+
+
 def save_gromacs(traj, step=-1, basename='mbuild', forcefield='opls-aa'):
     """Output a Trajectory as a GROMACS .gro and .top file.
 

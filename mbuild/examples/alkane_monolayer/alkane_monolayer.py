@@ -1,13 +1,11 @@
-from mbuild.compound import Compound
-from mbuild.tools.tiled_compound import TiledCompound
-from mbuild.tools.mask import apply_mask
+import mbuild as mb
 
 from mbuild.components.surfaces.betacristobalite import Betacristobalite
 from mbuild.components.atoms.H import H
 from mbuild.examples.alkane_monolayer.alkylsilane import AlkylSilane
 
 
-class AlkaneMonolayer(Compound):
+class AlkaneMonolayer(mb.Compound):
     """An akylsilane monolayer on beta-cristobalite. """
 
     def __init__(self, mask, tile_x=1, tile_y=1, chain_length=10):
@@ -23,14 +21,14 @@ class AlkaneMonolayer(Compound):
 
         surface = Betacristobalite()
         # Replicate the surface.
-        tc = TiledCompound(surface, n_tiles=(tile_x, tile_y, 1), kind="tiled_surface")
+        tc = mb.TiledCompound(surface, n_tiles=(tile_x, tile_y, 1), kind="tiled_surface")
         self.add(tc, 'tiled_surface')
 
         alkylsilane = AlkylSilane(chain_length)
         hydrogen = H()
 
         # Attach chains to specified binding sites. Other sites get a hydrogen.
-        apply_mask(host=self.tiled_surface, guest=alkylsilane, mask=mask,
+        mb.apply_mask(host=self.tiled_surface, guest=alkylsilane, mask=mask,
                    backfill=hydrogen)
 
 

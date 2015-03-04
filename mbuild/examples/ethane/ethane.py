@@ -1,9 +1,9 @@
-from mbuild.compound import Compound
+import mbuild as mb
+
 from mbuild.components.small_groups.ch3 import Ch3
-from mbuild.coordinate_transform import equivalence_transform
 
 
-class Ethane(Compound):
+class Ethane(mb.Compound):
     """An ethane molecule. """
     def __init__(self):
         """Connect two methyl groups to form an ethane. """
@@ -11,7 +11,7 @@ class Ethane(Compound):
 
         self.add(Ch3(), "methyl1")
         self.add(Ch3(), "methyl2")
-        equivalence_transform(self.methyl1, self.methyl1.up, self.methyl2.up)
+        mb.equivalence_transform(self.methyl1, self.methyl1.up, self.methyl2.up)
 
 
 def main():

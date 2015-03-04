@@ -3,32 +3,29 @@ from copy import deepcopy
 
 from numpy import pi
 
-from mbuild.compound import Compound
-from mbuild.coordinate_transform import translate, rotate_around_x,\
-    rotate_around_y, rotate_around_z
-from mbuild.tools.mask import grid_mask_3d
+import mbuild as mb
 
 from mbuild.examples.tnp.tnp import Tnp
 
 
-class TnpBox(Compound):
+class TnpBox(mb.Compound):
     """Several tethered nanoparticles randomly dispersed in a Box. """
     def __init__(self):
         super(TnpBox, self).__init__(self)
 
         tnp_proto = Tnp(ball_radius=5, n_chains=5, chain_length=8)
 
-        mask = grid_mask_3d(3, 3, 3) * 100
+        mask = mb.grid_mask_3d(3, 3, 3) * 100
 
         rnd = random.Random()
         rnd.seed(1928)
 
         for pos in mask:
             tnp = deepcopy(tnp_proto)
-            rotate_around_x(tnp, rnd.uniform(0, 2 * pi))
-            rotate_around_y(tnp, rnd.uniform(0, 2 * pi))
-            rotate_around_z(tnp, rnd.uniform(0, 2 * pi))
-            translate(tnp, pos)
+            mb.rotate_around_x(tnp, rnd.uniform(0, 2 * pi))
+            mb.rotate_around_y(tnp, rnd.uniform(0, 2 * pi))
+            mb.rotate_around_z(tnp, rnd.uniform(0, 2 * pi))
+            mb.translate(tnp, pos)
             self.add(tnp)
 
 if __name__ == "__main__":

@@ -3,6 +3,8 @@ from copy import deepcopy
 from mbuild.coordinate_transform import equivalence_transform
 from mbuild.compound import Compound
 
+__all__ = ['Polymer']
+
 
 class Polymer(Compound):
     """ """

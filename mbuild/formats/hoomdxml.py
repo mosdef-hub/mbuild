@@ -3,6 +3,8 @@ from future.builtins import range
 from mdtraj.formats.registry import _FormatRegistry
 
 
+__all__ = ['load_hoomdxml', 'save_hoomdxml']
+
 @_FormatRegistry.register_loader('.hoomdxml')
 def load_hoomdxml(filename, optional_nodes=True, lj_units=None):
     """Load a HOOMD-blue XML file form disk.

@@ -1,12 +1,10 @@
-from mbuild.compound import Compound
-from mbuild.tools.polymer import Polymer
-from mbuild.coordinate_transform import equivalence_transform
+import mbuild as mb
 
 from mbuild.components.small_groups.ch2 import Ch2
 from mbuild.components.small_groups.ch3 import Ch3
 
 
-class Alkane(Compound):
+class Alkane(mb.Compound):
     """An alkane which may optionally end with a hydrogen or a Port."""
     def __init__(self, n=3, cap_front=True, cap_end=True):
         """Initialize an Alkane Compound.
@@ -25,12 +23,12 @@ class Alkane(Compound):
             n += 1
         if not cap_end:
             n += 1
-        chain = Polymer(Ch2(), n=n-2, port_labels=('up', 'down'))
+        chain = mb.Polymer(Ch2(), n=n-2, port_labels=('up', 'down'))
         self.add(chain, 'chain')
 
         if cap_front:
             self.add(Ch3(), "methyl_front")
-            equivalence_transform(
+            mb.equivalence_transform(
                 self.chain, self.chain.up, self.methyl_front.up)
         else:
             # Hoist port label to Alkane level.
@@ -38,7 +36,7 @@ class Alkane(Compound):
 
         if cap_end:
             self.add(Ch3(), 'methyl_end')
-            equivalence_transform(
+            mb.equivalence_transform(
                 self.methyl_end, self.methyl_end.up, self.chain.down)
         else:
             # Hoist port label to Alkane level.

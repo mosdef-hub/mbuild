@@ -2,8 +2,9 @@ from __future__ import division, print_function
 
 from numpy import pi
 
+import mbuild as mb
+
 from mbuild.examples.pmpc.brush import Brush
-from mbuild.coordinate_transform import rotate_around_z
 
 
 def main():
@@ -14,7 +15,7 @@ def main():
 
     # Create another compound, rotate it and write it to file.
     brush2 = Brush()
-    rotate_around_z(brush2, pi/2)
+    mb.rotate_around_z(brush2, pi/2)
     brush2.save("brush2.pdb")
 
     # Load brush2.pdb into brush1, modifying the atom positions of brush1.

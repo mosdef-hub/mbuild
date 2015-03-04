@@ -1,5 +1,3 @@
-__author__ = 'CTK'
-
 
 def assert_port_exists(port_name, compound):
     """Ensure that a Port label exists in a Compound.  """

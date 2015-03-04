@@ -4,8 +4,10 @@ import operator
 
 from mdtraj.utils import in_units_of
 
+__all__ = ['save_lammpsdata']
 
-def save_lammps_data(traj, step=-1, filename='data.mbuild', unit_set='real', **kwargs):
+
+def save_lammpsdata(traj, step=-1, filename='data.mbuild', unit_set='real', **kwargs):
     """Output a Trajectory as a LAMMPS data file.
 
     Args:

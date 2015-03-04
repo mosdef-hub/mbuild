@@ -6,6 +6,11 @@ from numpy import *
 from numpy.linalg import norm, svd, inv
 
 
+__all__ = ['rotate_around_x', 'rotate_around_y', 'rotate_around_z',
+           'equivalence_transform', 'translate', 'translate_to',
+           'x_axis_transform', 'y_axis_transform']
+
+
 class CoordinateTransform(object):
     """  """
     def __init__(self, T=None):
@@ -336,7 +341,7 @@ def equivalence_transform(compound, from_positions, to_positions, add_bond=True)
     if isinstance(from_positions, (list, tuple)) and isinstance(to_positions, (list, tuple)):
         equivalence_pairs = zip(from_positions, to_positions)
     elif isinstance(from_positions, Port) and isinstance(to_positions, Port):
-        equivalence_pairs = choose_correct_port(from_positions, to_positions)
+        equivalence_pairs = _choose_correct_port(from_positions, to_positions)
     else:
         equivalence_pairs = [(from_positions, to_positions)]
 
@@ -352,7 +357,7 @@ def equivalence_transform(compound, from_positions, to_positions, add_bond=True)
             compound.add(Bond(from_positions, to_positions))
 
 
-def choose_correct_port(from_port, to_port):
+def _choose_correct_port(from_port, to_port):
     """Chooses the direction when using an equivalence transform on two Ports.
 
     Each Port object actually contains 2 sets of 4 atoms, either of which can be

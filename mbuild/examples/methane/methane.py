@@ -1,26 +1,24 @@
-from mbuild.compound import Compound
-from mbuild.atom import Atom
-from mbuild.bond import Bond
+import mbuild as mb
 
 
-class Methane(Compound):
+class Methane(mb.Compound):
     def __init__(self):
         super(Methane, self).__init__()
-        carbon = Atom(kind='C')
+        carbon = mb.Atom(kind='C')
         self.add(carbon)
 
-        hydrogen = Atom(kind='H', pos=[0.15, 0, 0])
+        hydrogen = mb.Atom(kind='H', pos=[0.15, 0, 0])
         self.add(hydrogen, label='hc[$]')
 
-        ch_bond = Bond(self.atoms[0], self.hc[0])
+        ch_bond = mb.Bond(self.atoms[0], self.hc[0])
         self.add(ch_bond)
 
-        self.add(Atom(kind='H', pos=[0, 0.15, 0]), 'hc[$]')
-        self.add(Bond(self.atoms[0], self.hc[1]))
-        self.add(Atom(kind='H', pos=[-0.15, 0, 0]), 'hc[$]')
-        self.add(Bond(self.atoms[0], self.hc[2]))
-        self.add(Atom(kind='H', pos=[0, -0.15, 0]), 'hc[$]')
-        self.add(Bond(self.atoms[0], self.hc[3]))
+        self.add(mb.Atom(kind='H', pos=[0, 0.15, 0]), 'hc[$]')
+        self.add(mb.Bond(self.atoms[0], self.hc[1]))
+        self.add(mb.Atom(kind='H', pos=[-0.15, 0, 0]), 'hc[$]')
+        self.add(mb.Bond(self.atoms[0], self.hc[2]))
+        self.add(mb.Atom(kind='H', pos=[0, -0.15, 0]), 'hc[$]')
+        self.add(mb.Bond(self.atoms[0], self.hc[3]))
 
 def main():
     methane = Methane()

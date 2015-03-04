@@ -12,6 +12,9 @@ from mbuild.part_mixin import PartMixin
 from mbuild.orderedset import OrderedSet
 
 
+__all__ = ['Compound']
+
+
 class Compound(PartMixin, HasPartsMixin):
     """A building block in the mBuild hierarchy.
 
@@ -231,7 +234,7 @@ class Compound(PartMixin, HasPartsMixin):
 
         TODO: Look into pizza.py's vmd.py. See issue #32.
         """
-        filename = 'visualize_{}.lammps'.format(self.__class__.__name__)
+        filename = 'visualize_{}.mol2'.format(self.__class__.__name__)
         traj = self.to_trajectory(show_ports)
         traj.save(filename=filename)
         import os

@@ -1,13 +1,9 @@
 from numpy import pi, arctan2, arcsin
 
-from mbuild.atom import Atom
-from mbuild.port import Port
-from mbuild.compound import Compound
-from mbuild.coordinate_transform import rotate_around_z, rotate_around_y, translate
-from mbuild.tools.mask import sphere_mask
+import mbuild as mb
 
 
-class Sphere(Compound):
+class Sphere(mb.Compound):
     """A spherical arangement of particles with Ports. """
     def __init__(self, n=65, radius=1, port_distance_from_surface=.07):
         """Initialize a Sphere object.
@@ -20,26 +16,26 @@ class Sphere(Compound):
         super(Sphere, self).__init__(self)
 
         # Generate 65 points on the surface of a unit sphere.
-        mask = sphere_mask(n)
+        mask = mb.sphere_mask(n)
 
         # Magnify the unit sphere by the provided radius.
         mask *= radius
 
         # Create particles and Ports at mask positions.
         for i, pos in enumerate(mask):
-            particle = Atom(kind="np", pos=pos)
+            particle = mb.Atom(kind="np", pos=pos)
             self.add(particle, "np_{}".format(i))
-            port = Port(anchor=particle)
+            port = mb.Port(anchor=particle)
             self.add(port, "port_{}".format(i))
 
             # Make the top of the port point toward the positive x axis.
-            rotate_around_z(port, -pi/2)
+            mb.rotate_around_z(port, -pi/2)
             # Raise up (or down) the top of the port in the z direction.
-            rotate_around_y(port, -arcsin(pos[2]/radius))
+            mb.rotate_around_y(port, -arcsin(pos[2]/radius))
             # Rotate the Port along the z axis.
-            rotate_around_z(port, arctan2(pos[1], pos[0]))
+            mb.rotate_around_z(port, arctan2(pos[1], pos[0]))
             # Move the Port a bit away from the surface of the Sphere.
-            translate(port, pos + (pos/radius * port_distance_from_surface))
+            mb.translate(port, pos + (pos/radius * port_distance_from_surface))
 
 if __name__ == "__main__":
     m = Sphere(n=65, radius=2)

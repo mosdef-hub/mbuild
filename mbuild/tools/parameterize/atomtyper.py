@@ -8,6 +8,9 @@ import networkx as nx
 
 from mbuild.orderedset import OrderedSet
 
+__all__ = ['find_atomtypes']
+
+
 # Map rule ids to the functions that check for them (see `find_atomtypes()`).
 rule_number_to_rule = dict()
 

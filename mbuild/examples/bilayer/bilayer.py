@@ -1,19 +1,12 @@
-from past.builtins import range
-import warnings
 from copy import deepcopy
-from random import seed, randint, shuffle
+from random import seed, shuffle
 
 import numpy as np
 
-from mbuild.box import Box
-from mbuild.compound import Compound
-from mbuild.coordinate_transform import translate, rotate_around_x, rotate_around_y
-from mbuild.coordinate_transform import rotate_around_z
-from mbuild.tools.mask import grid_mask_2d
-from mbuild.tools.solvent import solvent_box
+import mbuild as mb
 
 
-class Bilayer(Compound):
+class Bilayer(mb.Compound):
     """Create a lipid bilayer and add solvent above and below. """
     def __init__(self, lipids, ref_atoms, n_lipids_x=10, n_lipids_y=10, 
                  area_per_lipid=1.0, solvent=None, lipid_box=None, 
@@ -65,7 +58,7 @@ class Bilayer(Compound):
         # a few calculations to figure things out
         self.n_lipids_per_layer = self.n_lipids_x * self.n_lipids_y
         self.spacing = np.array([0, 0, spacing_z])
-        self.mask = grid_mask_2d(n_lipids_x, n_lipids_y)   # lipid locations
+        self.mask = mb.grid_mask_2d(n_lipids_x, n_lipids_y)   # lipid locations
         self.mask *= np.sqrt(self.apl * self.n_lipids_per_layer)
 
         # safety checks
@@ -73,8 +66,8 @@ class Bilayer(Compound):
         self.check_ref_atoms()
 
         # containers for lipids and solvent
-        self.lipid_components = Compound()
-        self.solvent_components = Compound()
+        self.lipid_components = mb.Compound()
+        self.solvent_components = mb.Compound()
 
         # assemble the lipid layers
         # TODO(tim): random number seed here?
@@ -147,32 +140,31 @@ class Bilayer(Compound):
         Args:
             top (bool): Top (no rotation) or bottom (rotate about x) layer
         """
-        layer = Compound()
+        layer = mb.Compound()
         if not lipid_labels:
-            lipid_labels = range(self.n_lipids_per_layer)
+            lipid_labels = list(range(self.n_lipids_per_layer))
             shuffle(lipid_labels)
         lipids_placed = 0
         for i, n_of_lipid_type in enumerate(self.n_each_lipid_per_layer):
             current_type = self.lipids[i][0]
-            for n_this_lipid_type in range(n_of_lipid_type):
+            for n_this_lipid_type in list(range(n_of_lipid_type)):
                 new_lipid = deepcopy(current_type)
                 random_index = lipid_labels[lipids_placed]
                 position = self.mask[random_index]
 
                 # Zero and space in z-direction
-                translate(
-                        new_lipid,
-                        -new_lipid.atoms[self.ref_atoms[i]] + self.spacing)
+                mb.translate(new_lipid,
+                             -new_lipid.atoms[self.ref_atoms[i]] + self.spacing)
                 # Move to point on mask
                 if flip_orientation == True:
                     t_com = new_lipid.center
                     t_com[2] = 0.0
                     # TODO(tim): function for this? 
                     # e.g., rotate_around_x_keep_com(compound, bool(3))
-                    translate(new_lipid, -t_com)
-                    rotate_around_x(new_lipid, np.pi)
-                    translate(new_lipid, t_com)
-                translate(new_lipid, position)
+                    mb.translate(new_lipid, -t_com)
+                    mb.rotate_around_x(new_lipid, np.pi)
+                    mb.translate(new_lipid, t_com)
+                mb.translate(new_lipid, position)
                 layer.add(new_lipid)
                 lipids_placed += 1
         return layer, lipid_labels
@@ -200,28 +192,28 @@ class Bilayer(Compound):
         water_box_z = self.solvent_per_layer / (self.lipid_box.lengths[0]
                 * self.lipid_box.lengths[1] * solvent_number_density)
 
-        bilayer_solvent_box = Box(mins=[self.lipid_box.mins[0],
-                                self.lipid_box.mins[1], 
-                                self.lipid_box.maxs[2]],
-                              maxs=[self.lipid_box.maxs[0],
-                                    self.lipid_box.maxs[1], 
-                                    self.lipid_box.maxs[2] + 2 * water_box_z])
-        self.solvent_components.add(
-                solvent_box(self.solvent, bilayer_solvent_box))
+        bilayer_solvent_box = mb.Box(mins=[self.lipid_box.mins[0],
+                                           self.lipid_box.mins[1],
+                                           self.lipid_box.maxs[2]],
+                                     maxs=[self.lipid_box.maxs[0],
+                                           self.lipid_box.maxs[1],
+                                           self.lipid_box.maxs[2] + 2 * water_box_z])
+        self.solvent_components.add(mb.solvent_box(self.solvent,
+                                                bilayer_solvent_box))
+
 
 def main():
-    from mbuild.trajectory import Trajectory
     from mbuild.testing.tools import get_fn
 
-    water = Trajectory.load(get_fn('water.hoomdxml'))
+    water = mb.Trajectory.load(get_fn('water.hoomdxml'))
     water = water.to_compound()
-    ecerns = Trajectory.load(get_fn('ecer2.hoomdxml'))
+    ecerns = mb.Trajectory.load(get_fn('ecer2.hoomdxml'))
 
     ecerns = ecerns.to_compound()
-    chol = Trajectory.load(get_fn('cg-chol.hoomdxml'))
+    chol = mb.Trajectory.load(get_fn('cg-chol.hoomdxml'))
     chol = chol.to_compound()
-    rotate_around_x(chol, -135.0*np.pi/180)
-    rotate_around_y(chol, -45.0*np.pi/180)
+    mb.rotate_around_x(chol, -135.0*np.pi/180)
+    mb.rotate_around_y(chol, -45.0*np.pi/180)
     lipids = [(ecerns, 0.5), (chol, 0.5)] 
 
     bilayer = Bilayer(lipids, n_lipids_x=15, n_lipids_y=15,

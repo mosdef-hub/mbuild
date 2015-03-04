@@ -1,9 +1,7 @@
-from mbuild.coordinate_transform import translate, y_axis_transform, rotate_around_y
-from mbuild.compound import Compound
-from mbuild.port import Port
+import mbuild as mb
 
 
-class MPC(Compound):
+class MPC(mb.Compound):
     """A 2-(methacryloloxy) ethyl phosophorylcholine monomer."""
     def __init__(self, alpha=0):
         super(MPC, self).__init__(self)
@@ -19,16 +17,16 @@ class MPC(Compound):
         # C_top = self.labels["atom"][37]
         C_bottom = self.atoms[1]
 
-        y_axis_transform(self, new_origin=C_top, point_on_y_axis=C_bottom)
+        mb.y_axis_transform(self, new_origin=C_top, point_on_y_axis=C_bottom)
 
         # Add top port.
-        self.add(Port(anchor=C_top), 'up')
-        translate(self.up, C_top - (C_top - C_bottom)*1.50)
+        self.add(mb.Port(anchor=C_top), 'up')
+        mb.translate(self.up, C_top - (C_top - C_bottom)*1.50)
 
         # Add bottom port
-        self.add(Port(anchor=C_bottom), 'down')
-        rotate_around_y(self.down, alpha)
-        translate(self.down, C_bottom - (C_bottom - C_top)*1.50)
+        self.add(mb.Port(anchor=C_bottom), 'down')
+        mb.rotate_around_y(self.down, alpha)
+        mb.translate(self.down, C_bottom - (C_bottom - C_top)*1.50)
 
 if __name__ == "__main__":
     monomer = MPC()

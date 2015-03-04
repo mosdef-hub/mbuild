@@ -12,10 +12,9 @@ from mbuild.formats.hoomdxml import save_hoomdxml
 from mbuild.periodic_kdtree import PeriodicCKDTree
 from mbuild.topology import Topology, ForcefieldAngle, ForcefieldDihedral
 from mbuild.formats.gromacs import save_gromacs
-from mbuild.formats.lammps_data import save_lammps_data
+from mbuild.formats.hoomdxml import save_hoomdxml
+from mbuild.formats.lammps import save_lammpsdata
 from mbuild.formats.mol2 import save_mol2
-from mbuild.formats.xyz import save_xyz
-
 
 
 class Trajectory(object):
@@ -244,12 +243,10 @@ class Trajectory(object):
         elif filename.endswith(".gro") or filename.endswith(".top"):
             basename = ''.join(filename.split('.')[:-1])
             save_gromacs(traj=self, basename=basename, **kwargs)
-        elif filename.endswith(".xyz"):
-            save_xyz(traj=self, filename=filename, **kwargs)
         elif filename.endswith(".mol2"):
             save_mol2(traj=self, filename=filename, **kwargs)
         elif filename.startswith("data.") or filename.endswith((".lmp", ".lammps")):
-            save_lammps_data(traj=self, filename=filename, **kwargs)
+            save_lammpsdata(traj=self, filename=filename, **kwargs)
         else:
             self._w_trajectory.save(filename, **kwargs)
 

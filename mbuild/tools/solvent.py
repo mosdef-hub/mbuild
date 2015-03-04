@@ -9,6 +9,8 @@ from mbuild.compound import Compound
 from mbuild.periodic_kdtree import PeriodicCKDTree
 from mbuild.coordinate_transform import translate
 
+__all__ = ['solvent_box', 'solvate']
+
 
 def vdw_radius(atomic_number):
     return 0.2

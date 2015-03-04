@@ -1,15 +1,12 @@
 from numpy import sqrt, pi
 
-from mbuild.compound import Compound
-from mbuild.tools.polymer import Polymer
-from mbuild.tools.mask import apply_mask, sphere_mask
-
+import mbuild as mb
 
 from mbuild.examples.tnp.bead import Bead
 from mbuild.examples.tnp.sphere import Sphere
 
 
-class Tnp(Compound):
+class Tnp(mb.Compound):
     """A spherical nanoparticle with tethered chains. """
     def __init__(self, ball_radius=10, n_chains=4, chain_length=10, monomer=None):
         """Initialize a tethered nanoparticle.
@@ -29,15 +26,15 @@ class Tnp(Compound):
         self.add(Sphere(n=n, radius=ball_radius, port_distance_from_surface=0.7), "np")
 
         # generate 65 points on the surface of a unit sphere
-        mask = sphere_mask(n_chains)
+        mask = mb.sphere_mask(n_chains)
 
         # magnify it a bit
         mask *= ball_radius
 
-        chain_proto = Polymer(monomer, n=chain_length)
+        chain_proto = mb.Polymer(monomer, n=chain_length)
 
         # apply chains to mask
-        apply_mask(self.np, chain_proto , mask, guest_port_name="down")
+        mb.apply_mask(self.np, chain_proto , mask, guest_port_name="down")
 
         self.add_bond('np', 'np', sqrt(4 * ball_radius**2 * pi / n) - 0.5,
                                   sqrt(4 * ball_radius**2 * pi / n) + 0.5)
