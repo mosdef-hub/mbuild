@@ -1,9 +1,9 @@
 ## mBuild: a hierarchical, component based molecule builder
 
 [![Linux Build Status](https://travis-ci.org/sallai/mbuild.png?branch=master)](https://travis-ci.org/sallai/mbuild)
-[![Test Coverage](https://coveralls.io/repos/sallai/mbuild/badge.png?branch=develop)](https://coveralls.io/r/sallai/mbuild)
+[![Test Coverage](https://coveralls.io/repos/sallai/mbuild/badge.png?branch=master)](https://coveralls.io/r/sallai/mbuild)
 [![PyPI Version](https://badge.fury.io/py/mbuild.png)](https://pypi.python.org/pypi/mbuild)
-[![Documentation Status](https://readthedocs.org/projects/mbuild/badge/?version=develop)](http://mbuild.readthedocs.org/en/develop)
+[![Documentation Status](https://readthedocs.org/projects/mbuild/badge/?version=latest)](http://mbuild.readthedocs.org/en/latest)
 
 With just a few lines of mBuild code, you can assemble reusable components into
 complex molecular systems for molecular dynamics simulations.
@@ -15,7 +15,7 @@ complex molecular systems for molecular dynamics simulations.
   worry about keeping track of bonds when constructing chemically bonded
   structures from smaller components.
 
-To learn more, get started or contribute, check out our [website](http://mbuild.rtfd.org/en/master/).
+To learn more, get started or contribute, check out our [website](http://mbuild.rtfd.org/en/latest/).
 
 #### Example system
 
