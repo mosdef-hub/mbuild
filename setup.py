@@ -4,7 +4,7 @@ With just a few lines of mBuild code, you can assemble reusable components into
 complex molecular systems for molecular dynamics simulations. mBuild is
 designed to minimize or even eliminate the need to explicitly translate and
 orient components when building systems: you simply tell it to connect two
-pieces! mBuild also keeps track of the system’s topology so you don’t have to
+pieces! mBuild also keeps track of the system's topology so you don't have to
 worry about manually defining bonds when constructing chemically bonded
 structures from smaller components.
 """
