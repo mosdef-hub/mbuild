@@ -22,7 +22,7 @@ To learn more, get started or contribute, check out our [website](http://mbuild.
 Components in dashed boxes are drawn by hand using, e.g.,
 [Avogadro](http://avogadro.cc/wiki/Main_Page) or generated elsewhere. Each
 component is wrapped as a simple python class with user defined attachment
-sites, or ports. That's the hard part! Now mBuild can do the rest. Each component
+sites, or ports. That's the "hard" part! Now mBuild can do the rest. Each component
 further down the hierarchy is, again, a simple python class that describes
 which piece should connect to which piece.
 
