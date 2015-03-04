@@ -145,4 +145,4 @@ if __name__ == "__main__":
     ethane = Ethane()
     ethane = ethane.to_trajectory()
     ethane.top.find_forcefield_terms()
-    save_lammps_data(ethane, filename='data.ethane')
+    save_lammpsdata(ethane, filename='data.ethane')
