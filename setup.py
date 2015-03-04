@@ -1,12 +1,16 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-
 import os
 import sys
 from setuptools import setup, find_packages
 from setuptools.command.test import test as TestCommand
+
 import mbuild.version
 
+try:
+    import mdtraj
+except ImportError:
+    print('Building and running mbuild requires mdtraj. See '
+          'http://mdtraj.org/latest/installation.html for help!', file=sys.stderr)
+    sys.exit(1)
 
 requirements_lines = [line.strip() for line in open('requirements.txt').readlines()]
 reqs = list(filter(None, requirements_lines))
@@ -16,6 +20,7 @@ if sys.argv[-1] == 'publish':
     sys.exit()
 
 readme = open('README.md').read()
+
 
 class PyTest(TestCommand):
     def finalize_options(self):

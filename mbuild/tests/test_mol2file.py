@@ -1,13 +1,8 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-
-"""Tests for `mbuild.formats.mol2` module. """
-
 from mbuild.components.small_groups.ch3 import Ch3
 from mbuild.trajectory import Trajectory
 from mbuild.testing.tools import get_fn
 
-from base_test import BaseTest
+from mbuild.tests.base_test import BaseTest
 
 class TestMol2(BaseTest):
 

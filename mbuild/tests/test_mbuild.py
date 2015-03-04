@@ -1,9 +1,4 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-
-"""Tests for `mbuild` module. """
-import pytest
-from base_test import BaseTest
+from mbuild.tests.base_test import BaseTest
 
 class TestMbuild(BaseTest):
 

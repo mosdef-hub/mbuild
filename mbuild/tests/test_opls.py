@@ -1,8 +1,3 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-
-"""Tests for `mbuild.tools.parameterize` module. """
-
 import glob
 import os
 
@@ -11,7 +6,7 @@ from six import string_types
 from mbuild.testing import tools
 from mbuild.testing.tools import load_top_opls
 from mbuild.tools.parameterize.atomtyper import find_atomtypes
-from base_test import BaseTest
+from mbuild.tests.base_test import BaseTest
 
 
 class TestOPLS(BaseTest):

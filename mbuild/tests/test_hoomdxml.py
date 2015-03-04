@@ -1,8 +1,3 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-
-"""Tests for `mbuild.hoomdxmlfile` module. """
-
 import pytest
 import numpy as np
 
@@ -10,7 +5,7 @@ from mbuild.compound import Compound
 from mbuild.examples.ethane.ethane import Ethane
 from mbuild.testing.tools import get_fn
 
-from base_test import BaseTest
+from mbuild.tests.base_test import BaseTest
 
 
 class TestHoomdXml(BaseTest):

@@ -4,7 +4,8 @@ import numpy as np
 
 from mbuild.trajectory import Trajectory
 from mbuild.testing.tools import get_fn
-from base_test import BaseTest
+from mbuild.tests.base_test import BaseTest
+
 
 class TestCompute(BaseTest):
 

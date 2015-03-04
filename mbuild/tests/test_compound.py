@@ -1,13 +1,9 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-
-"""Tests for `mbuild.compound` module. """
 import pytest
 
 from mbuild.compound import Compound
 from mbuild.components.small_groups.ch3 import Ch3
 from mbuild.testing.tools import get_fn
-from base_test import BaseTest
+from mbuild.tests.base_test import BaseTest
 
 
 class TestCompound(BaseTest):

@@ -1,9 +1,5 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-
-"""Tests for `mbuild.formats.gromacs` module. """
 import pytest
-from base_test import BaseTest
+from mbuild.tests.base_test import BaseTest
 
 
 class TestGromacs(BaseTest):

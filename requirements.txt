@@ -1,5 +1,4 @@
 future
 matplotlib
-mdtraj
 networkx
 six
