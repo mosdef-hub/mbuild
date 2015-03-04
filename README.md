@@ -12,7 +12,7 @@ complex molecular systems for molecular dynamics simulations.
   orient components when building systems: you simply tell it to connect two
   pieces!
 * mBuild keeps track of the system's topology so you don't have to
-  worry about keeping track of bonds when constructing chemically bonded
+  worry about manually defining bonds when constructing chemically bonded
   structures from smaller components.
 
 To learn more, get started or contribute, check out our [website](http://mbuild.rtfd.org/en/latest/).
