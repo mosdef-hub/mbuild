@@ -11,21 +11,18 @@ __author__ = 'sallai'
 class Bond(PartMixin):
     """Connection between two Atoms.
 
-    Attributes:
-        atom1 (Atom): First Atom in the bond.
-        atom2 (Atom): Second Atom in the bond.
-        parent (Compound): Compound to which the Bond belongs.
+    Attributes
+    ----------
+    atom1 : mb.Atom
+        First Atom in the bond.
+    atom2 : mb.Atom
+        Second Atom in the bond.
+    parent : mb.Compound
+        Compound to which the Bond belongs.
     """
     __slots__ = ['_atom1', '_atom2', 'kind', 'parent', 'referrers']
 
     def __init__(self, atom1, atom2, kind=None):
-        """Initialize a Bond.
-
-        Args:
-            atom1 (Atom): First Atom or Port in the bond.
-            atom2 (Atom): Second Atom or Port in the bond.
-
-        """
         super(Bond, self).__init__()
         assert(not atom1 == atom2)
 
@@ -48,7 +45,6 @@ class Bond(PartMixin):
         atom1.bonds.add(self)
         atom2.bonds.add(self)
 
-
     @property
     def atom1(self):
         return self._atom1
@@ -65,7 +61,7 @@ class Bond(PartMixin):
             return self._atom1
 
     def distance(self, periodicity=np.array([0.0, 0.0, 0.0])):
-        """Vectorized distance calculation considering minimum image. """
+        """Calculate the bond distance considering minimum image. """
         d = np.abs(self.atom1 - self.atom2)
         d = np.where(d > 0.5 * periodicity, periodicity - d, d)
         return np.sqrt((d ** 2).sum(axis=-1))

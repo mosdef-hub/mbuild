@@ -14,6 +14,9 @@ from mbuild.orderedset import OrderedSet
 
 __all__ = ['Compound']
 
+def load():
+    pass
+
 
 class Compound(PartMixin, HasPartsMixin):
     """A building block in the mBuild hierarchy.
@@ -35,23 +38,32 @@ class Compound(PartMixin, HasPartsMixin):
     searches, visualization, I/O operations, and a number of other convenience
     methods.
 
-    Args:
-        kind (str, optional): The type of Compound. Defaults to the class' name.
-        periodicity (np.ndarray, shape=(1, 3) optional): The periodic distance
-            of the Compound in the x, y and z directions. Defaults to zeros.
+    Parameters
+    ----------
+    kind : str, optional
+        The type of Compound. Defaults to the class' name.
+    periodicity : np.ndarray, shape=(3,), dtype=float, optional
+        The periodic lengths of the Compound in the x, y and z directions.
+        Defaults to zeros which is treated as non-periodic.
 
-    Attributes:
-        kind (str): The type of Compound.
-        periodicity (np.ndarray): The periodic distance of the Compound in the
-            x, y and z directions. Defaults to zeros.
-        parts (OrderedSet): Contains all child parts. Parts can be Atom, Bond
-            or Compound (they must inherit from PartMixin).
-        labels (OrderedDict): Labels to Compound/Atom mappings. These do not
-            necessarily need not be in self.parts.
-        parent (Compound): The parent Compound that contains this part Can be
-            None if this compound is the root of the containment hierarchy.
-        referrers (set):  Other compounds that reference this part with
-            labels.
+    Attributes
+    ----------
+    kind : str
+        The type of Compound. Defaults to the class' name.
+    periodicity : np.ndarray, shape=(3,), dtype=float, optional
+        The periodic lengths of the Compound in the x, y and z directions.
+        Defaults to zeros which is treated as non-periodic.
+    parts : OrderedSet
+        Contains all child parts. Parts can be Atom, Bond or Compound - anything
+        that inherits from PartMixin.
+    labels : OrderedDict
+        Labels to Compound/Atom mappings. These do not necessarily need not be
+        in parts.
+    parent : mb.Compound
+        The parent Compound that contains this part. Can be None if this
+        compound is the root of the containment hierarchy.
+    referrers : set
+        Other compounds that reference this part with labels.
 
     """
     def __init__(self, kind=None, periodicity=None):
@@ -100,11 +112,17 @@ class Compound(PartMixin, HasPartsMixin):
     def atom_list_by_kind(self, kind='*', excludeG=False):
         """Return a list of Atoms filtered by their kind.
 
-        Args:
-            kind (str): Return only atoms of this type. '*' indicates all.
-            excludeG (bool): Exclude Port particles of kind 'G'.
-        Returns:
-            atom_list (list): A list of Atoms.
+        Parameters
+        ----------
+        kind : str
+            Return only atoms of this type. '*' indicates all.
+        excludeG : bool
+            Exclude Port particles of kind 'G' - reserved for Ports.
+
+        Returns
+        -------
+        atom_list : list
+            List of Atoms matching the inputs.
         """
         atom_list = []
         for atom in self.yield_atoms():
@@ -130,13 +148,7 @@ class Compound(PartMixin, HasPartsMixin):
         return len(self.bonds)
 
     def bond_list_by_kind(self, kind='*'):
-        """Return a list of Bonds filtered by their kind.
-
-        Args:
-            kind (str): Return only Bonds of this type. '*' indicates all.
-        Returns:
-            bond_list (list): A list of Bonds.
-        """
+        """Return a list of Bonds filtered by their kind. """
         bond_list = []
         for bond in self.yield_bonds():
             if kind == '*':
@@ -146,11 +158,7 @@ class Compound(PartMixin, HasPartsMixin):
         return bond_list
 
     def referenced_ports(self):
-        """Find all Ports referenced by this Compound.
-
-        Returns:
-            A list of Ports currently referenced by this Compound.
-        """
+        """Return all Ports referenced by this Compound. """
         from mbuild.port import Port
         return [port for port in self.labels.values() if isinstance(port, Port)]
 
@@ -261,14 +269,7 @@ class Compound(PartMixin, HasPartsMixin):
             return sum(atom.pos for atom in atoms) / len(atoms)
 
     def boundingbox(self, excludeG=True):
-        """Compute the bounding box of the compound.
-
-        Args:
-            excludeG (bool): Exclude Atoms of kind 'G' (typically reserved for
-                Ports).
-        Returns:
-            Box: Simulation box initialzied with min and max coordinates.
-        """
+        """Compute the bounding box of the compound. """
         minx = np.inf
         miny = np.inf
         minz = np.inf
@@ -298,14 +299,22 @@ class Compound(PartMixin, HasPartsMixin):
         return Box(mins=min_coords, maxs=max_coords)
 
     def atoms_in_range(self, point, radius, max_items=10):
-        """Return the indices of Atoms within a radius of a point.
+        """Return the indices of atoms within a radius of a point.
 
-        Args:
-            point (list): The reference point in cartesian coordinates.
-            radius (float): Find Atoms within this radius.
-            max_items (int): Maximum number of Atoms to find.
-        Returns:
-            List of Atoms within specified range.
+        Parameters
+        ----------
+        point : array-like, shape=(3,), dtype=float
+            The reference point in cartesian coordinates.
+        radius : float
+            Find Atoms within this radius.
+        max_items : int
+            Maximum number of atoms to find.
+
+        Returns
+        -------
+        atoms : list
+            List of atoms within specified range.
+
         """
         atoms = self.atom_list_by_kind(excludeG=True)
         traj = self.to_trajectory()

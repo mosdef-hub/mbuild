@@ -7,7 +7,7 @@ from mbuild.coordinate_transform import translate, rotate_around_z
 
 
 class H(Compound):
-    """A hydrogen atom with two overlayed ports. """
+    """A hydrogen atom with two overlayed ports."""
     def __init__(self):
         super(H, self).__init__(self)
         self.add(Atom('H'), 'H')

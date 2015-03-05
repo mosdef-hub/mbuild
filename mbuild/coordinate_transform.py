@@ -21,14 +21,7 @@ class CoordinateTransform(object):
         self.Tinv = inv(T)
 
     def apply_to(self, A):
-        """Apply the coordinate transformation to points in A.
-
-        Args:
-            A (np.array, shape=(n, 3)): An array of points.
-        Returns:
-            transformed points (np.array, shape=(n, 3)): The transformed points
-                from A.
-        """
+        """Apply the coordinate transformation to points in A. """
         rows, cols = A.shape
         A_new = zeros((rows, 4))
         A_new = hstack([A, ones((rows, 1))])
@@ -40,11 +33,6 @@ class CoordinateTransform(object):
 class Translation(CoordinateTransform):
     """Cartesian translation. """
     def __init__(self, P):
-        """
-
-        Args:
-            P:
-        """
         T = eye(4)
         T[0, 3] = P[0]
         T[1, 3] = P[1]
@@ -55,11 +43,6 @@ class Translation(CoordinateTransform):
 class RotationAroundZ(CoordinateTransform):
     """Rotation around the z-axis. """
     def __init__(self, theta):
-        """
-
-        Args:
-            theta:
-        """
         T = eye(4)
         T[0, 0] = cos(theta)
         T[0, 1] = -sin(theta)
@@ -71,11 +54,6 @@ class RotationAroundZ(CoordinateTransform):
 class RotationAroundY(CoordinateTransform):
     """Rotation around the y-axis. """
     def __init__(self, theta):
-        """
-
-        Args:
-            theta:
-        """
         T = eye(4)
         T[0, 0] = cos(theta)
         T[0, 2] = sin(theta)
@@ -87,11 +65,6 @@ class RotationAroundY(CoordinateTransform):
 class RotationAroundX(CoordinateTransform):
     """Rotation around the x-axis. """
     def __init__(self, theta):
-        """
-
-        Args:
-            theta:
-        """
         T = eye(4)
         T[1, 1] = cos(theta)
         T[1, 2] = -sin(theta)
@@ -103,12 +76,6 @@ class RotationAroundX(CoordinateTransform):
 class Rotation(CoordinateTransform):
     """Rotation around vector by angle theta. """
     def __init__(self, theta, around):
-        """
-
-        Args:
-            theta:
-            around:
-        """
         assert around.size == 3
 
         T = eye(4)
@@ -132,14 +99,10 @@ class Rotation(CoordinateTransform):
 
 class ChangeOfBasis(CoordinateTransform):
     """ """
-    def __init__(self, basis, origin=array([0.0, 0.0, 0.0])):
-        """
-
-        Args:
-            basis:
-            origin:
-        """
+    def __init__(self, basis, origin=None):
         assert shape(basis) == (3, 3)
+        if not origin:
+            array([0.0, 0.0, 0.0])
 
         T = eye(4)
 
@@ -152,17 +115,14 @@ class ChangeOfBasis(CoordinateTransform):
 
 class AxisTransform(CoordinateTransform):
     """ """
-    def __init__(self,
-                 new_origin=array([0.0, 0.0, 0.0]),
-                 point_on_x_axis=array([1.0, 0.0, 0.0]),
-                 point_on_xy_plane=array([1.0, 1.0, 0.0])):
-        """
-
-        Args:
-            new_origin:
-            point_on_x_axis:
-            point_on_xy_plane:
-        """
+    def __init__(self, new_origin=None, point_on_x_axis=None,
+                 point_on_xy_plane=None):
+        if not new_origin:
+            array([0.0, 0.0, 0.0])
+        if not point_on_x_axis:
+            array([1.0, 0.0, 0.0])
+        if not point_on_xy_axis:
+            array([1.0, 1.0, 0.0])
         # Change the basis such that p1 is the origin, p2 is on the x axis and
         # p3 is in the xy plane.
         p1 = new_origin
@@ -199,9 +159,13 @@ class RigidTransform(CoordinateTransform):
     def __init__(self, A, B):
         """
 
-        Args:
-            A: list of points (nx3) in source coordinate system
-            B: list of points (nx3) in destination coordinate system
+        Parameters
+        ----------
+        A : np.ndarray, shape=(n, 3), dtype=float
+            Points in source coordinate system.
+        B : np.ndarray, shape=(n, 3), dtype=float
+            Points in destination coordinate system.
+
         """
         rows, cols = shape(A)
         centroid_A = mean(A, axis=0)
@@ -236,22 +200,22 @@ class RigidTransform(CoordinateTransform):
 
 
 def unit_vector(vector):
-    """Returns the unit vector of the vector.  """
+    """Returns the unit vector of the vector. """
     return vector / norm(vector)
 
 
 def vec_angle(v1, v2):
     """Returns the angle in radians between vectors 'v1' and 'v2'
 
-            >>> angle_between((1, 0, 0), (0, 1, 0))
-            1.5707963267948966
-            >>> angle_between((1, 0, 0), (1, 0, 0))
-            0.0
-            >>> angle_between((1, 0, 0), (-1, 0, 0))
-            3.141592653589793
+    >>> vec_angle((1, 0, 0), (0, 1, 0))
+    1.5707963267948966
+    >>> vec_angle((1, 0, 0), (1, 0, 0))
+    0.0
+    >>> vec_angle((1, 0, 0), (-1, 0, 0))
+    3.141592653589793
     """
-    v1_u = CoordinateTransform.unit_vector(v1)
-    v2_u = CoordinateTransform.unit_vector(v2)
+    v1_u = unit_vector(v1)
+    v2_u = unit_vector(v2)
 
     d = dot(v1_u, v2_u)
     if abs(d - 1.0) < 0.000000001:
@@ -267,13 +231,7 @@ def vec_angle(v1, v2):
 
 
 def _extract_atom_positions(compound):
-    """Extracts all atom positions from `compound` into an ndarray.
-
-    Args:
-        compound (Compound):
-    Returns:
-        array (np.ndarray, shape=(n, 3)):
-    """
+    """Extracts all atom positions from `compound` into an ndarray. """
     arr = fromiter(
         chain.from_iterable(atom.pos for atom in compound.yield_atoms()),
         dtype=float64)
@@ -290,13 +248,18 @@ def _create_equivalence_transform(equiv):
     """Compute an equivalence transformation that transforms this compound
     to another compound's coordinate system.
 
-    Args:
-        equiv (np.ndarray, shape=(n, 3): array of equivalent points
-    Returns:
-        The `CoordinateTransform` object that transforms this point cloud to the
-        other point cloud's coordinates system.
-    """
+    Parameters
+    ----------
+    equiv : np.ndarray, shape=(n, 3), dtype=float
+        Array of equivalent points.
 
+    Returns
+    -------
+    T : CoordinateTransform
+        Transform that maps this point cloud to the other point cloud's
+        coordinates system.
+
+    """
     self_points = array([])
     self_points.shape = (0, 3)
     other_points = array([])
@@ -331,10 +294,15 @@ def equivalence_transform(compound, from_positions, to_positions, add_bond=True)
     """Computes an affine transformation that maps the from_positions to the
     respective to_positions, and applies this transformation to the compound.
 
-    Args:
-        compound (Compound): The `Compound` to be transformed.
-        from_positions:
-        to_positions:
+    Parameters
+    ----------
+    compound : mb.Compound
+        The Compound to be transformed.
+    from_positions : np.ndarray, shape=(n, 3), dtype=float
+        Original positions.
+    to_positions : np.ndarray, shape=(n, 3), dtype=float
+        New positions.
+
     """
     from mbuild.port import Port
 
@@ -369,13 +337,16 @@ def _choose_correct_port(from_port, to_port):
            distance from their respective ports.
           -Provide options in `equivalence_transform` to override this behavior.
 
-    Args:
-        from_port (Port):
-        to_port (Port):
-    Returns:
-        equivalence_pairs (2-tuple of Ports): Technically, a tuple of the Ports'
-            sub-Compounds ('up' or 'down') that are used to make the correct
-            connection between components.
+    Parameters
+    ----------
+    from_port : mb.Port
+    to_port : mb.Port
+
+    Returns
+    -------
+    equivalence_pairs : tuple of Ports, shape=(2,)
+        Technically, a tuple of the Ports' sub-Compounds ('up' or 'down')
+        that are used to make the correct connection between components.
 
     """
     # First we try matching the two 'up' ports.

@@ -9,7 +9,7 @@ from mbuild.coordinate_transform import translate, rotate_around_z
 
 
 class C3(Compound):
-    """A tri-valent, planar carbon. """
+    """A tri-valent, planar carbon."""
     def __init__(self):
         super(C3, self).__init__(self)
         self.add(Atom('C'), 'C')

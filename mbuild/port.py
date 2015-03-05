@@ -8,7 +8,25 @@ from mbuild.coordinate_transform import rotate_around_z
 
 
 class Port(Compound):
-    """A set of four ghost Atoms used to connect parts. """
+    """A set of four ghost Atoms used to connect parts.
+
+    Parameters
+    ----------
+    anchor : mb.Atom, optional, default=None
+        An atom associated with the port. Used to form bonds.
+
+    Attributes
+    ----------
+    anchor : mb.Atom, optional, default=None
+        An atom associated with the port. Used to form bonds.
+    up : mb.Compound
+        Collection of 4 ghost particles used to perform equivalence transforms.
+        Faces the opposite direction as self.down.
+    down : mb.Compound
+        Collection of 4 ghost particles used to perform equivalence transforms.
+        Faces the opposite direction as self.up.
+
+    """
     def __init__(self, anchor=None):
         super(Port, self).__init__(kind='Port')
         self.anchor = anchor

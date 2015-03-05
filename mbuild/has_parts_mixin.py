@@ -9,11 +9,14 @@ __author__ = 'sallai'
 class HasPartsMixin(object):
     """A base class that provides functionality to contain other parts.
 
-    Attributes:
-        parts (OrderedSet): Contains all child parts. Parts can be Atom, Bond
-            or Compound (they must inherit from PartMixin).
-        labels (OrderedDict): Labels to Compound/Atom mappings. These do not
-            necessarily need not be in self.parts.
+    Attributes
+    ----------
+    parts : OrderedSet
+        Contains all child parts. Parts can be Atom, Bond or Compound - anything
+        that inherits from PartMixin.
+    labels : OrderedDict
+        Labels to Compound/Atom mappings. These do not necessarily need not be
+        in parts.
 
     """
     def __init__(self):
@@ -22,16 +25,7 @@ class HasPartsMixin(object):
         self.labels = OrderedDict()
 
     def _yield_parts(self, part_type):
-        """Generate all parts of a specified type in the Compound recursively.
-
-        Args:
-            part_type (Atom, Bond, Compound): The type of parts to yield.
-
-        Yields:
-            part/subpart (Atom, Bond, Compound): A part in the hierarchy
-                matching the specified type.
-
-        """
+        """Yield parts of a specified type in the Compound recursively. """
         for part in self.parts:
             # Parts local to the current Compound.
             if isinstance(part, part_type):
@@ -50,14 +44,16 @@ class HasPartsMixin(object):
             instead be used to add a reference to the part to self.labels. See
             'containment' argument.
 
-        Args:
-            new_part (Atom, Bond or Compound): The object to be added to this
-                Compound.
-            label (str, optional): A descriptive string for the part.
-            containment (bool, optional): Add the part to self.parts. Defaults
-                to True.
-            replace (bool, optional): Replace the label if it already exists.
-                Defaults to False.
+        Parameters
+        ----------
+        new_part : mb.Atom, mb.Bond or mb.Compound
+            The object to be added to this Compound.
+        label : str, optional
+            A descriptive string for the part.
+        containment : bool, optional, default=True
+            Add the part to self.parts.
+        replace : bool, optional, default=True
+            Replace the label if it already exists.
 
         """
         assert isinstance(new_part, (PartMixin, list, tuple, set))
@@ -103,14 +99,7 @@ class HasPartsMixin(object):
             self._inherit_periodicity(new_part.periodicity)
 
     def remove(self, objs_to_remove):
-        """Remove a part (Atom, Bond or Compound) from the Compound by value.
-
-        Args:
-            objs_to_remove (set of Parts): All objects to be removed from the
-                hierarchy. If this is not a set, it will be cast to one to
-                remove duplicates.
-
-        """
+        """Remove parts (Atom, Bond or Compound) from the Compound. """
         if not isinstance(objs_to_remove, (list, tuple, set)):
             objs_to_remove = [objs_to_remove]
         objs_to_remove = set(objs_to_remove)
