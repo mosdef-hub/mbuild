@@ -1,7 +1,15 @@
 from collections import OrderedDict
 from copy import deepcopy
+import os
+import sys
 
 import numpy as np
+import mdtraj as md
+
+from mbuild.formats.gromacs import save_gromacs
+from mbuild.formats.hoomdxml import save_hoomdxml
+from mbuild.formats.lammps import save_lammpsdata
+from mbuild.formats.mol2 import save_mol2
 
 from mbuild.atom import Atom
 from mbuild.bond import Bond
@@ -12,10 +20,37 @@ from mbuild.part_mixin import PartMixin
 from mbuild.orderedset import OrderedSet
 
 
-__all__ = ['Compound']
+__all__ = ['load', 'Compound']
 
-def load():
-    pass
+
+def load(filename, relative_to_module=None, compound=None, load_top=True,
+         frame=-1, **kwargs):
+    """ """
+
+    # For mbuild *.py files with a class that wraps a structure file in its own
+    # folder. E.g., you build a system from ~/foo.py and it imports from
+    # ~/bar/baz.py where baz.py loads ~/bar/baz.pdb.
+    if relative_to_module:
+        current_dir = os.path.dirname(os.path.realpath(
+            sys.modules[relative_to_module].__file__))
+        filename = os.path.join(current_dir, filename)
+
+    # This can return a md.Trajectory or an mb.Compound.
+    loaded = md.load(filename, **kwargs)
+
+    if compound:
+        assert compound.n_atoms == loaded.n_atoms, ('The compound you are loading '
+            'into has a different number of atoms than {0}: {1} vs. {2}'.format(
+                filename, compound.n_atoms, loaded.n_atoms))
+    else:
+        compound = Compound()
+
+    if isinstance(loaded, md.Trajectory):
+        compound.from_trajectory(loaded, frame=frame)
+    if isinstance(loaded, Compound):
+        return loaded
+
+    return compound
 
 
 class Compound(PartMixin, HasPartsMixin):
@@ -178,59 +213,112 @@ class Compound(PartMixin, HasPartsMixin):
 
     # Interface to Trajectory for reading/writing.
     # --------------------------------------------
-    def append_from_file(self, filename, relative_to_module=None, frame=0):
-        """Append to Compound with information from a Trajectory file. """
-        from mbuild.trajectory import Trajectory
+    def from_trajectory(self, traj, frame=-1):
+        """Extract atoms and bonds from a md.Trajectory.
 
-        traj = Trajectory.load(filename, relative_to_module=relative_to_module)
+        Will create sub-compounds for every chain if there is more than one
+        and sub-sub-compounds for every residue.
 
-        self.append_from_trajectory(traj, frame=frame)
+        Parameters
+        ----------
+        traj : md.Trajectory
+            The trajectory to load.
+        frame : int
+            The frame to take coordinates from.
 
-    def update_from_file(self, filename, relative_to_module=None, frame=0):
-        """Update Compound with information from a Trajectory file. """
-        from mbuild.trajectory import Trajectory
+        """
+        atom_mapping = {}
+        for chain in traj.topology.chains:
+            if traj.topology.n_chains > 1:
+                chain_compound = Compound()
+                self.add(chain_compound, "chain[$]")
+            else:
+                chain_compound = self
+            for res in chain.residues:
+                for atom in res.atoms:
+                    new_atom = Atom(str(atom.name), traj.xyz[frame, atom.index])
+                    chain_compound.add(new_atom, label="{0}[$]".format(atom.name))
+                    atom_mapping[atom] = new_atom
 
-        traj = Trajectory.load(filename, relative_to_module=relative_to_module)
+        for a1, a2 in traj.topology.bonds:
+            atom1 = atom_mapping[a1]
+            atom2 = atom_mapping[a2]
+            self.add(Bond(atom1, atom2))
 
-        self.update_from_trajectory(traj, frame=frame)
+        if np.any(traj.unitcell_lengths) and np.any(traj.unitcell_lengths[0]):
+            self.periodicity = traj.unitcell_lengths[0]
+        else:
+            self.periodicity = np.array([0., 0., 0.])
 
-    def append_from_trajectory(self, traj, frame=0):
-        """Append the Trajectory's topology (atoms, bonds). """
-        traj.to_compound(part=self, frame=frame)
+    def to_trajectory(self, show_ports=False, **kwargs):
+        """Convert to an md.Trajectory using the compound as the topology. """
+        exclude = not show_ports
+        atom_list = self.atom_list_by_kind('*', excludeG=exclude)
 
-    def update_from_trajectory(self, traj, frame=0):
-        """Update the Compound with the Trajectory's topology. """
-        traj.update_compound(self, frame=frame)
+        # FLATTEN COMPOUND SO THAT ALL THE TOPOLOGY FUNCTIONS WORK
+
+        # Coordinates.
+        n_atoms = len(atom_list)
+        xyz = np.ndarray(shape=(1, n_atoms, 3), dtype='float')
+        for idx, atom in enumerate(atom_list):
+            xyz[0, idx] = atom.pos
+
+        # Unitcell information.
+        box = self.boundingbox()
+        unitcell_lengths = np.empty(3)
+        for dim, val in enumerate(self.periodicity):
+            if val:
+                unitcell_lengths[dim] = val
+            else:
+                unitcell_lengths[dim] = box.lengths[dim]
+
+        return md.Trajectory(xyz, self, unitcell_lengths=unitcell_lengths,
+                             unitcell_angles=np.array([90, 90, 90]))
 
     def save(self, filename, show_ports=False, **kwargs):
         """Save the Compound to a file.
 
         This creates an intermediate Trajectory object.
         """
-        traj = self.to_trajectory(show_ports=show_ports, **kwargs)
-        traj.save(filename, **kwargs)
+        if filename.endswith(".hoomdxml"):
+            save_hoomdxml(traj=self, filename=filename, **kwargs)
+        elif filename.endswith(".gro") or filename.endswith(".top"):
+            basename = ''.join(filename.split('.')[:-1])
+            save_gromacs(traj=self, basename=basename, **kwargs)
+        elif filename.endswith(".mol2"):
+            save_mol2(traj=self, filename=filename, **kwargs)
+        elif filename.startswith("data.") or filename.endswith((".lmp", ".lammps")):
+            save_lammpsdata(traj=self, filename=filename, **kwargs)
+        else:
+            traj = self.to_trajectory(show_ports=show_ports, **kwargs)
+            traj.save(filename, **kwargs)
 
-    def to_trajectory(self, show_ports=False, **kwargs):
-        """Convert the Compound to a Trajectory. """
-        from mbuild.trajectory import Trajectory
-        return Trajectory.from_compound(self, show_ports=show_ports, **kwargs)
 
-    @classmethod
-    def load(cls, filename, relative_to_module=None, frame=0, **kwargs):
-        """Load a file into a Compound.
+    # def append_from_file(self, filename, relative_to_module=None, frame=0):
+    #     """Append to Compound with information from a Trajectory file. """
+    #     from mbuild.trajectory import Trajectory
+    #
+    #     traj = Trajectory.load(filename, relative_to_module=relative_to_module)
+    #
+    #     self.append_from_trajectory(traj, frame=frame)
+    #
+    # def update_from_file(self, filename, relative_to_module=None, frame=0):
+    #     """Update Compound with information from a Trajectory file. """
+    #     from mbuild.trajectory import Trajectory
+    #
+    #     traj = Trajectory.load(filename, relative_to_module=relative_to_module)
+    #
+    #     self.update_from_trajectory(traj, frame=frame)
+    #
+    # def append_from_trajectory(self, traj, frame=0):
+    #     """Append the Trajectory's topology (atoms, bonds). """
+    #     traj.to_compound(part=self, frame=frame)
+    #
+    # def update_from_trajectory(self, traj, frame=0):
+    #     """Update the Compound with the Trajectory's topology. """
+    #     traj.update_compound(self, frame=frame)
 
-        Args:
-            filename:
-            relative_to_module:
-            frame:
-        Returns:
-            Compound
-        """
-        from mbuild.trajectory import Trajectory
 
-        traj = Trajectory.load(filename, relative_to_module=relative_to_module,
-                               **kwargs)
-        return traj.to_compound(frame=frame)
 
     # Convenience functions
     # ---------------------

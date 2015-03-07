@@ -1,34 +1,35 @@
-from future.builtins import range
-
+import numpy as np
+import pandas as pd
+from xml.etree import cElementTree
 from mdtraj.formats.registry import _FormatRegistry
+
+from mbuild.compound import Compound
 
 
 __all__ = ['load_hoomdxml', 'save_hoomdxml']
+
 
 @_FormatRegistry.register_loader('.hoomdxml')
 def load_hoomdxml(filename, optional_nodes=True, lj_units=None):
     """Load a HOOMD-blue XML file form disk.
 
     Note: lj_units need to be normalized by nm, kJ/mol, and amu
-    TODO: better way to read optional nodes
-    Args:
-        filename (str): Path to xml file.
-        optional_nodes(bool, optional):
 
-    Returns:
-        traj (md.Trajectory):
-        optional_data (dict): A Dictionary of DataFrames containing optional
-        information.
+    Required nodes for valid HOOMD simulation: box, position and type.
+
+    Parameters
+    ----------
+    filename : str
+        Path to xml file.
+    optional_nodes : bool, optional
+        Read all nodes in file other than 'box', 'position' and 'type'.
+
+    Returns
+    -------
+    compound : mb.Compound
+
     """
-    from xml.etree import cElementTree
-
-    import numpy as np
-    import pandas as pd
-
-    from mbuild.trajectory import Trajectory
-    from mbuild.topology import Topology
-
-    # get fundamental LJ units
+    # Get fundamental LJ units.
     if lj_units is None:
         lj_units = {'distance': 1.0,
                     'energy': 1.0,
@@ -39,7 +40,7 @@ def load_hoomdxml(filename, optional_nodes=True, lj_units=None):
         assert 'energy' in lj_units
         assert 'mass' in lj_units
 
-    # other derived LJ units
+    # Other derived LJ units.
     lj_units['time'] = (np.sqrt(lj_units['mass'] * lj_units['distance']**2.0
                         / lj_units['energy']))
     lj_units['velocity'] = lj_units['distance'] / lj_units['time']
@@ -52,57 +53,19 @@ def load_hoomdxml(filename, optional_nodes=True, lj_units=None):
     lj_units['body'] = 1.0
     lj_units['orientation'] = 1.0
 
-
+    compound = Compound()
     tree = cElementTree.parse(filename)
-
     config = tree.getroot().find('configuration')
-    # Required nodes for valid HOOMD simulation: box, position and type.
-    # TODO: funciton to check all permutations of cases for attribute strings
+
+    # Unitcell info.
     box = config.find('box')
-    for L in ['lx', 'LX', 'lX', 'Lx']:
-        try:
-            lx = float(box.attrib[L]) * lj_units['distance']
-            break
-        except KeyError:
-            pass
-    else:
-        raise ValueError('Unable to find box length in x direction')
+    unitcell_vectors = _unitcell_vectors(box) * lj_units['distance']
 
-    for L in ['ly', 'LY', 'lY', 'Ly']:
-        try:
-            ly = float(box.attrib[L]) * lj_units['distance']
-            break
-        except KeyError:
-            pass
-    else:
-        raise ValueError('Unable to find box length in y direction')
-
-    for L in ['lz', 'LZ', 'lZ', 'Lz']:
-        try:
-            lz = float(box.attrib[L]) * lj_units['distance']
-            break
-        except KeyError:
-            pass
-    else:
-        raise ValueError('Unable to find box length in z direction')
-
-    try:
-        xy = float(box.attrib['xy'])
-        xz = float(box.attrib['xz'])
-        yz = float(box.attrib['yz'])
-    except:
-        xy = 0.0
-        xz = 0.0
-        yz = 0.0
-
-    unitcell_vectors = np.array([[[lx,  xy*ly, xz*lz],
-                                  [0.0, ly,    yz*lz],
-                                  [0.0, 0.0,   lz   ]]])
-
+    # Coordinates.
     xyz = list()
-    for n, pos in enumerate(config.find('position').text.splitlines()[1:]):
+    for pos in config.find('position').text.splitlines()[1:]:
         xyz.append([float(x) * lj_units['distance'] for x in pos.split()])
-    n_atoms = n + 1
+    n_atoms = len(xyz)
 
     # TODO: Create custom elements based on type names. Probably want a prefix
     #       or suffix to avoid overwriting atomic elements.
@@ -110,7 +73,6 @@ def load_hoomdxml(filename, optional_nodes=True, lj_units=None):
     for atom_type in config.find('type').text.splitlines()[1:]:
         atom_types.append(atom_type)
 
-    # TODO: Read angles/dihedrals/impropers into ff_X topology attributes.
     optional_data = dict()
     if optional_nodes:
         # Create a dataframe with all available per-particle information.
@@ -154,11 +116,6 @@ def load_hoomdxml(filename, optional_nodes=True, lj_units=None):
         # TODO: read wall
         # <wall> has its information stored as attributes
 
-    # found = [node for node in optional_data.keys() if node != 'per_particle']
-    # found.extend([node for node in per_particle_df.columns])
-    # print "Parsed the following optional nodes from '{0}':".format(filename)
-    # print found
-
     atoms_df = pd.DataFrame(atom_types, columns=['name'])
     atoms_df['serial'] = range(n_atoms)
     atoms_df['element'] = ['' for _ in range(n_atoms)]
@@ -170,15 +127,55 @@ def load_hoomdxml(filename, optional_nodes=True, lj_units=None):
         bonds = optional_data['bond'][['id0', 'id1']].values
     else:
         bonds = np.empty(shape=(0, 2), dtype="int")
-    top = Topology.from_dataframe(atoms_df, bonds=bonds)
 
-    traj = Trajectory(xyz=np.array(xyz, dtype=np.float64), topology=top)
-    traj.unitcell_vectors = unitcell_vectors
-    traj.extras = optional_data
-    return traj
+        
+    return compound
 
 
-# TODO: decide if we want this to be a class
+def _unitcell_vectors(box):
+    """Parse unitcell vectors from box node. """
+
+    for L in ['lx', 'LX', 'lX', 'Lx']:
+        try:
+            lx = float(box.attrib[L])
+            break
+        except KeyError:
+            pass
+    else:
+        raise ValueError('Unable to find box length in x direction')
+
+    for L in ['ly', 'LY', 'lY', 'Ly']:
+        try:
+            ly = float(box.attrib[L])
+            break
+        except KeyError:
+            pass
+    else:
+        raise ValueError('Unable to find box length in y direction')
+
+    for L in ['lz', 'LZ', 'lZ', 'Lz']:
+        try:
+            lz = float(box.attrib[L])
+            break
+        except KeyError:
+            pass
+    else:
+        raise ValueError('Unable to find box length in z direction')
+
+    try:
+        xy = float(box.attrib['xy'])
+        xz = float(box.attrib['xz'])
+        yz = float(box.attrib['yz'])
+    except KeyError:
+        xy = 0.0
+        xz = 0.0
+        yz = 0.0
+
+    return np.array([[[lx,   xy*ly, xz*lz],
+                       [0.0,    ly, yz*lz],
+                       [0.0,   0.0,    lz]]])
+
+
 def save_hoomdxml(traj, step=-1, optional_nodes=None, filename='mbuild.xml'):
     """Output a Trajectory as a HOOMD XML file.
 
