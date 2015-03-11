@@ -205,23 +205,19 @@ class Bilayer(mb.Compound):
 def main():
     from mbuild.testing.tools import get_fn
 
-    water = mb.Trajectory.load(get_fn('water.hoomdxml'))
-    water = water.to_compound()
-    ecerns = mb.Trajectory.load(get_fn('ecer2.hoomdxml'))
+    water = mb.load(get_fn('water.hoomdxml'))
+    ecerns = mb.load(get_fn('ecer2.hoomdxml'))
 
-    ecerns = ecerns.to_compound()
-    chol = mb.Trajectory.load(get_fn('cg-chol.hoomdxml'))
-    chol = chol.to_compound()
+    chol = mb.load(get_fn('cg-chol.hoomdxml'))
     mb.rotate_around_x(chol, -135.0*np.pi/180)
     mb.rotate_around_y(chol, -45.0*np.pi/180)
+
     lipids = [(ecerns, 0.5), (chol, 0.5)] 
 
     bilayer = Bilayer(lipids, n_lipids_x=15, n_lipids_y=15,
             area_per_lipid=1.4, solvent=water, ref_atoms=[1, 6], 
             spacing_z=0.7, solvent_per_lipid=20, mirror=False)
 
-    bilayer = bilayer.to_trajectory()
-    bilayer.topology.load_ff_bonds()
     bilayer.save(filename='bilayer.hoomdxml')
 
     #import os

@@ -500,7 +500,7 @@ def opls_771(atom):
     """propylene carbonate O """
     if dioxolane13(atom.neighbors[0]):
         for neighbors_neighbor in atom.neighbors[0].neighbors:
-            if neighbors_neighbor.kind != 'O':
+            if neighbors_neighbor.name != 'O':
                 return False
         else:
             return True
@@ -597,5 +597,5 @@ if __name__ == "__main__":
     find_atomtypes(m, forcefield='OPLS-AA')
 
     for i, a in enumerate(m.atoms):
-        print("Atom kind={}, opls_type={}".format(
+        print("Atom name={}, opls_type={}".format(
             a.kind, a.atomtype))

@@ -1,4 +1,4 @@
-__all__ = ['save_gromacs']
+__all__ = ['load_gromacs', 'GROMACSTopologyFile']
 
 
 def save_gromacs(traj, step=-1, basename='mbuild', forcefield='opls-aa'):
@@ -76,6 +76,6 @@ if __name__ == "__main__":
     from mbuild.examples.ethane.ethane import Ethane
 
     ethane = Ethane().to_trajectory()
-    ethane.topology.find_forcefield_terms()
+    ethane.topology.enumerate_forcefield_terms()
     save_gromacs(ethane, basename='ethane')
 

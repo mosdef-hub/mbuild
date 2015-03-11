@@ -1,8 +1,9 @@
 from __future__ import print_function
 
 import os
-
 from pkg_resources import resource_filename
+
+import mbuild as mb
 
 
 def get_fn(name):
@@ -26,15 +27,12 @@ def get_fn(name):
 
 
 def load_top_opls(toppath):
-    """
-    Args:
-        toppath (str): Path to the top file.
-    """
+    """Load a gromacs .top file parameterized with OPLS types. """
     split_path = os.path.split(toppath)
     filename = split_path[-1]
     pdb_file = "{}-gas.pdb".format(filename[:-4])
     pdb_path = os.path.join(split_path[0], pdb_file)
-    traj = Trajectory.load(pdb_path)
+    traj = mb.load(pdb_path).to_trajectory()
 
     opls_types = list()
     with open(toppath, 'r') as top:
@@ -61,5 +59,4 @@ def load_top_opls(toppath):
                 atom1 = traj.topology.atom(int(stripped.split()[0]) - 1)
                 atom2 = traj.topology.atom(int(stripped.split()[1]) - 1)
                 traj.topology.add_bond(atom1, atom2)
-    compound = traj.to_compound()
-    return compound, opls_types, mol_name
+    return traj.topology, opls_types, mol_name

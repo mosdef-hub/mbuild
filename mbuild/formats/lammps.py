@@ -4,7 +4,7 @@ import operator
 
 from mdtraj.utils import in_units_of
 
-__all__ = ['save_lammpsdata']
+__all__ = ['load_lammpsdata', 'LAMMPSTopologyFile']
 
 
 def save_lammpsdata(traj, step=-1, filename='data.mbuild', unit_set='real', **kwargs):
@@ -144,5 +144,5 @@ if __name__ == "__main__":
 
     ethane = Ethane()
     ethane = ethane.to_trajectory()
-    ethane.top.find_forcefield_terms()
+    ethane.top.enumerate_forcefield_terms()
     save_lammpsdata(ethane, filename='data.ethane')

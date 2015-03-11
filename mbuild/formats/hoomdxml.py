@@ -1,9 +1,12 @@
 import os
 from warnings import warn
 
-from xml.etree import cElementTree
 from mdtraj.formats.registry import _FormatRegistry
+import numpy as np
 from six import string_types
+from xml.etree import cElementTree
+
+import mbuild.core
 
 
 __all__ = ['load_hoomdxml', 'HOOMDTopologyFile']
@@ -54,8 +57,6 @@ class HOOMDTopologyFile(object):
     def __init__(self, filename, mode='r', force_overwrite=True, lj_units=None):
         """Open a HOOMD xml file for reading/writing. """
 
-        from mbuild.compound import Compound
-
         self._is_open = False
         self._filename = filename
         self._mode = mode
@@ -70,7 +71,7 @@ class HOOMDTopologyFile(object):
                 raise IOError("The file '%s' doesn't exist" % filename)
             self._fh = open(filename, 'r')
             self._is_open = True
-            self.compound = Compound()
+            self.compound = mbuild.core.Compound()
         elif mode == 'w':
             if os.path.exists(filename) and not force_overwrite:
                 raise IOError("The file '%s' already exists" % filename)
@@ -90,6 +91,7 @@ class HOOMDTopologyFile(object):
             assert 'distance' in lj_units
             assert 'energy' in lj_units
             assert 'mass' in lj_units
+            self.u = lj_units
 
         # Other derived LJ units.
         self.u['time'] = (np.sqrt(self.u['mass'] * self.u['distance']**2.0 / self.u['energy']))
@@ -105,7 +107,6 @@ class HOOMDTopologyFile(object):
 
     def read(self):
         """ """
-        from mbuild.atom import Atom
 
         tree = cElementTree.parse(self._filename)
         self._config = tree.getroot().find('configuration')
@@ -122,7 +123,7 @@ class HOOMDTopologyFile(object):
         atom_mapping = dict()
         for n, type_coord in enumerate(zip(types, coords)):
             atom_type, xyz = type_coord
-            new_atom = Atom(str(atom_type), [float(x) * self.u['distance']
+            new_atom = mbuild.core.Atom(str(atom_type), [float(x) * self.u['distance']
                                              for x in xyz.split()])
             self.compound.add(new_atom, label="{0}[$]".format(new_atom.kind))
             atom_mapping[n] = new_atom
@@ -156,7 +157,6 @@ class HOOMDTopologyFile(object):
 
     def _read_multi_particle_nodes(self, atom_mapping):
         """ """
-        from mbuild.bond import Bond
 
         for node, n_indices in self.multi_particle_nodes:
             if node not in self.optional_nodes:
@@ -175,7 +175,7 @@ class HOOMDTopologyFile(object):
                         kind = atom_mapping[parsed_line[0]]
                         atom1 = atom_mapping[parsed_line[1]]
                         atom2 = atom_mapping[parsed_line[2]]
-                        new_bond = Bond(atom1, atom2, kind)
+                        new_bond = mbuild.core.Bond(atom1, atom2, kind)
                         self.compound.add(new_bond)
                     else:
                         self.compound.extras[node] = list()
@@ -220,11 +220,11 @@ class HOOMDTopologyFile(object):
             xz = 0.0
             yz = 0.0
 
-        return np.array([[[lx,   xy*ly, xz*lz],
-                           [0.0,    ly, yz*lz],
-                           [0.0,   0.0,    lz]]])
+        return np.array([[lx,   xy*ly, xz*lz],
+                         [0.0,     ly, yz*lz],
+                         [0.0,   0.0,    lz]])
 
-    def write(self, compound, optional_nodes):
+    def write(self, traj, optional_nodes=None):
         """Output a Trajectory as a HOOMD XML file.
 
         Args:
@@ -232,12 +232,11 @@ class HOOMDTopologyFile(object):
             filename (str, optional): Path of the output file.
 
         """
-        self._fh = None
         self._fh.write("""<?xml version="1.3" encoding="UTF-8"?>\n""")
         self._fh.write("""<hoomd_xml>\n""")
         self._fh.write("""<configuration time_step="0">\n""")
 
-        lx, ly, lz = compound.periodicity
+        lx, ly, lz = traj.unitcell_lengths[0]
         xy = 0
         xz = 0
         yz = 0
@@ -245,30 +244,31 @@ class HOOMDTopologyFile(object):
         self._fh.write("""<box lx="{0}" ly="{1}" lz="{2}" xy="{3}" xz="{4}" yz="{5}" />\n""".format(
             lx, ly, lz, xy, xz, yz))
 
-        self._fh.write("""<position num="{0}">\n""".format(compound.n_atoms))
-        for atom in compound.atoms:
-            x, y, z = atom.pos
-            self._fh.write("{0:8.5f} {1:8.5f} {2:8.5f}\n".format(float(x), float(y), float(z)))
+        self._fh.write("""<position num="{0}">\n""".format(traj.n_atoms))
+        for x, y, z in traj.xyz[0]:
+            self._fh.write("{0:8.5f} {1:8.5f} {2:8.5f}\n".format(x, y, z))
         self._fh.write("</position>\n")
 
-        self._fh.write("""<type num="{0}">\n""".format(compound.n_atoms))
-        for atom in compound.atoms:
+        self._fh.write("""<type num="{0}">\n""".format(traj.n_atoms))
+        for atom in traj.top.atoms:
             try:
                 atomtype = atom.atomtype
             except AttributeError:
-                atomtype = atom.kind
+                atomtype = atom.name
             self._fh.write("{0}\n".format(atomtype))
         self._fh.write("</type>\n")
 
         optional_directives = [('bonds', 2), ('angles', 3), ('dihedrals', 4),
                                ('impropers', 4)]
         for directive, n_terms in optional_directives:
-            if getattr(compound, '_ff_{0}'.format(directive)):
+            if optional_nodes and directive not in optional_nodes:
+                continue
+            if getattr(traj.top, '_ff_{0}'.format(directive)):
                 self._fh.write("""<{0}>\n""".format(directive[:-1]))
                 for term in getattr(traj.top, 'ff_{0}'.format(directive)):
-                    entry = '{0} '.format(term.kind)
+                    entry = '{0}'.format(term.kind)
                     for n in range(n_terms):
-                        entry += '{0} '.format(
+                        entry += ' {0}'.format(
                             getattr(term, 'atom{0}'.format(n + 1)).index)
                     entry += '\n'
                     self._fh.write(entry)
@@ -302,5 +302,5 @@ if __name__ == "__main__":
     from mbuild.examples.ethane.ethane import Ethane
 
     ethane = Ethane()
-    ethane.save("ethane.hoomdxml")
+    ethane.save("ethane.hoomdxml", forcefield='OPLS-AA')
 

@@ -4,8 +4,10 @@ from copy import copy
 class Rings(object):
     """Find all rings of a specified length that the atom is a part of.
 
-    Note: Finds each ring twice because the graph is traversed in both
-        directions.
+    Notes
+    -----
+    Finds each ring twice because the graph is traversed in both directions.
+
     """
     def __init__(self, atom, ring_length):
         """Initialize a ring bearer. """
@@ -50,7 +52,7 @@ def benzene(atom):
     # 2 rings, because we count the traversal in both directions.
     if len(ring) == 2:
         for ring_atom in ring[0]:
-            if not (ring_atom.kind == 'C' and len(ring_atom.neighbors) == 3):
+            if not (ring_atom.name == 'C' and len(ring_atom.neighbors) == 3):
                 break
         else:
             return ring[0]  # Only return one direction of the ring.
@@ -61,12 +63,12 @@ def furan(atom):
     """Check if the atom is part of a furan ring.
 
     TODO: This function seems kind of clunky and probably not 100% robust.
-          Things to
+
     """
     ring = Rings(atom, 5).rings
     # 2 rings, because we count the traversal in both directions.
     if len(ring) == 2:
-        sequence = [ring_atom.kind for ring_atom in ring[0]]
+        sequence = [ring_atom.name for ring_atom in ring[0]]
         if ''.join(sequence) in ['CCCCO', 'CCCOC', 'CCOCC', 'COCCC', 'OCCCC']:
             return ring[0]
     return False
@@ -77,7 +79,7 @@ def dioxolane13(atom):
     ring = Rings(atom, 5).rings
     # 2 rings, because we count the traversal in both directions.
     if len(ring) == 2:
-        sequence = [ring_atom.kind for ring_atom in ring[0]]
+        sequence = [ring_atom.name for ring_atom in ring[0]]
         if ''.join(sequence) in ['COCOC', 'OCOCC', 'COCCO', 'OCCOC', 'CCOCO']:
             return ring[0]
     return False

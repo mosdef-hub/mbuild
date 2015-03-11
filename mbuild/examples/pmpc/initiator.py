@@ -8,7 +8,7 @@ class Initiator(mb.Compound):
         super(Initiator, self).__init__(self)
 
         # Look for data file in same directory as this python module.
-        self.append_from_file('initiator.pdb', relative_to_module=self.__module__)
+        mb.load('initiator.pdb', compound=self, relative_to_module=self.__module__)
 
         # Transform the coordinate system such that the two carbon atoms
         # that are part of the backbone are on the y axis, C_1 at the origin.

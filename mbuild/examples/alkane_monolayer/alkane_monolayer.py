@@ -37,11 +37,9 @@ def main():
     mask = grid_mask_2d(8, 8)  # Evenly spaced, 2D grid of points.
     monolayer = AlkaneMonolayer(chain_length=10, mask=mask)
 
-    monolayer = monolayer.to_trajectory(show_ports=True)  # Convert from mbuild to mdtraj
-    monolayer.topology.find_forcefield_terms()  # Find angles/dihedrals from bonds.
-
-    monolayer.save(filename='data.c10-n64', show_ports=True)  # Print a LAMMPS data file.
-    monolayer.save(filename='c10-n64.pdb')  # Print a .pdb file.
+    #monolayer.save(filename='data.c10-n64', show_ports=True)  # Print a LAMMPS data file.
+    monolayer.save(filename='c10-n64.hoomdxml', forcefield='OPLS-AA')  # Print a LAMMPS data file.
+    monolayer.save(filename='c10-n64.pdb', show_ports=True)  # Print a .pdb file.
 
 if __name__ == "__main__":
     main()

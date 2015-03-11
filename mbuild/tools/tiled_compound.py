@@ -1,13 +1,12 @@
-__author__ = 'sallai'
 from copy import deepcopy
 
 import numpy as np
 
-from mbuild.bond import Bond
-from mbuild.port import Port
-from mbuild.compound import Compound
+from mbuild.core import Compound, Port
 from mbuild.coordinate_transform import translate
 from mbuild.periodic_kdtree import PeriodicCKDTree
+
+__all__ = ['TiledCompound']
 
 
 class TiledCompound(Compound):
@@ -26,7 +25,6 @@ class TiledCompound(Compound):
             kind (str, optional):
             label (str, optional):
         """
-        assert isinstance(tile, Compound)
         super(TiledCompound, self).__init__()
 
         if not n_tiles:

@@ -36,17 +36,14 @@ class Tnp(mb.Compound):
         # apply chains to mask
         mb.apply_mask(self.np, chain_proto , mask, guest_port_name="down")
 
-        self.add_bond('np', 'np', sqrt(4 * ball_radius**2 * pi / n) - 0.5,
-                                  sqrt(4 * ball_radius**2 * pi / n) + 0.5)
-        self.add_bond('np', 't', 0.1, 0.3)
-        self.add_bond('t', 'np', 0.1, 0.3)
+        # self.add_bonds('np', 'np', sqrt(4 * ball_radius**2 * pi / n) - 0.5,
+        #                            sqrt(4 * ball_radius**2 * pi / n) + 0.5)
+        # self.add_bonds('np', 't', 0.1, 0.3)
+        # self.add_bonds('t', 'np', 0.1, 0.3)
 
 
 def main():
     nano_particle = Tnp(n_chains=5, chain_length=10)
-    nano_particle = nano_particle.to_trajectory()
-    nano_particle.top.find_forcefield_terms()
-    nano_particle.save(filename='tnp.hoomdxml')
 
 if __name__ == "__main__":
     main()

@@ -260,13 +260,11 @@ def _create_equivalence_transform(equiv):
         coordinates system.
 
     """
+    from mbuild.core import Atom, Compound
     self_points = array([])
     self_points.shape = (0, 3)
     other_points = array([])
     other_points.shape = (0, 3)
-
-    from mbuild.compound import Compound
-    from mbuild.atom import Atom
 
     for pair in equiv:
         if not isinstance(pair, tuple) or len(pair) != 2:
@@ -304,8 +302,7 @@ def equivalence_transform(compound, from_positions, to_positions, add_bond=True)
         New positions.
 
     """
-    from mbuild.port import Port
-
+    from mbuild.core import Port, Bond
     if isinstance(from_positions, (list, tuple)) and isinstance(to_positions, (list, tuple)):
         equivalence_pairs = zip(from_positions, to_positions)
     elif isinstance(from_positions, Port) and isinstance(to_positions, Port):
@@ -319,8 +316,6 @@ def equivalence_transform(compound, from_positions, to_positions, add_bond=True)
     _write_back_atom_positions(compound, atom_positions)
 
     if add_bond:
-        from mbuild.bond import Bond
-
         if isinstance(from_positions, Port) and isinstance(to_positions, Port):
             compound.add(Bond(from_positions, to_positions))
 
@@ -405,7 +400,17 @@ def rotate_around_x(compound, theta):
 def x_axis_transform(compound, new_origin=array([0.0, 0.0, 0.0]),
                      point_on_x_axis=array([1.0, 0.0, 0.0]),
                      point_on_xy_plane=array([1.0, 1.0, 0.0])):
-    from mbuild.atom import Atom
+    """
+
+    Parameters
+    ----------
+    compound:
+    new_origin:
+    point_on_x_axis:
+    point_on_xy_plane:
+
+    """
+    from mbuild.core import Atom
 
     if isinstance(new_origin, Atom):
         new_origin = new_origin.pos

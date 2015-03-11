@@ -4,10 +4,10 @@ from copy import deepcopy
 
 import numpy as np
 
-from mbuild.box import Box
-from mbuild.compound import Compound
+import mbuild.core
 from mbuild.periodic_kdtree import PeriodicCKDTree
 from mbuild.coordinate_transform import translate
+
 
 __all__ = ['solvent_box', 'solvate']
 
@@ -19,18 +19,20 @@ def vdw_radius(atomic_number):
 def solvent_box(solvent, box):
     """Fill a box with solvent.
 
-    Args:
-        solvent (Compound):
-        box (Box):
+    Parameters
+    ----------
+    solvent : Compound
+    box : Box
 
     """
+
     if np.all(solvent.periodicity == 0):
         solvent.periodicity = solvent.boundingbox().lengths
-    #solvent_box = Box(lengths=solvent.periodicity)
     num_replicas = np.ceil(box.lengths / solvent.periodicity)   # is this right?
     num_replicas = num_replicas.astype('int')
     print(num_replicas)
-    compound = Compound()
+
+    compound = mbuild.core.Compound()
     translate(solvent, -solvent.boundingbox().mins+box.mins)
     for xi in range(num_replicas[0]):   # x replicas
         for yi in range(num_replicas[1]):   # y replicas
@@ -74,9 +76,6 @@ def solvate(host_compound, guest_compound, host_box, guest_box, overlap=vdw_radi
         overlap (function): A function which translate atoms to overlap radii.
 
     """
-    assert isinstance(host_box, Box)
-    assert isinstance(guest_box, Box)
-
     # TODO: we may want to make sure that the axes of the two boxes line up
 
     # Replicate the guest so that it fills or overfills the host box.

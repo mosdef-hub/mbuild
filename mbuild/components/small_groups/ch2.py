@@ -16,6 +16,6 @@ class CH2(mb.Compound):
         mb.translate(self.down, [0, -0.07, 0])
 
 if __name__ == '__main__':
-    m = CH2()
-    m.visualize(show_ports=True)
-
+    ch2 = CH2()
+    ch2.visualize(show_ports=True)
+    ch2.save('ch2.hoomdxml')

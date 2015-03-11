@@ -31,8 +31,6 @@ def main():
 if __name__ == "__main__":
     pmpc_layer = main()
     pmpc_layer.visualize(show_ports=True)
-    mb.find_atomtypes(pmpc_layer)
-    pmpc_layer = pmpc_layer.to_trajectory(chain_types=[Betacristobalite, Brush],
-                                          residue_types=[MPC])
-    pmpc_layer.topology.find_forcefield_terms()
-    pmpc_layer.save(filename='brush_layer.top')
+    pmpc_layer = pmpc_layer.save(filename='brush_layer.hoomdxml',
+                                 chain_types=[Betacristobalite, Brush],
+                                 residue_types=[MPC])

@@ -1,7 +1,7 @@
-__author__ = 'CTK'
+__all__ = ['write_mol2']
 
 
-def write_mol2(compound, filename, show_ports=False):
+def write_mol2(filename, traj):
     """Output a Trajectory as a TRIPOS mol2 file.
 
     Parameters
@@ -11,8 +11,9 @@ def write_mol2(compound, filename, show_ports=False):
 
     """
 
-    atoms = compound.atom_list_by_kind(excludeG=not show_ports)
-    bonds = compound.bonds
+    atoms = list(traj.top.atoms)
+    xyz = traj.xyz[0]
+    bonds = list(traj.top.bonds)
 
     with open(filename, 'w') as mol2_file:
         mol2_file.write("@<TRIPOS>MOLECULE\n")
@@ -24,16 +25,16 @@ def write_mol2(compound, filename, show_ports=False):
 
         mol2_file.write("@<TRIPOS>ATOM\n")
         atom_mapping = dict()
-        for n, atom in enumerate(atoms):
-            x, y, z = atom.pos * 10.0  # Nanometers to angstroms.
-            mol2_file.write("{0:d} {1:s} {2:8.4f} {3:8.4f} {4:8.4f} {5} {6:d} {7:s} {8:8.4f}\n".format(
-                n + 1, atom.kind, x, y, z, atom.kind, 1, 'RES', 0.0))
-            atom_mapping[atom] = n + 1
+        for coord, atom in zip(xyz, atoms):
+            x, y, z = coord * 10.0  # Nanometers to angstroms.
+            mol2_file.write("{0:d} {1:s} {2:8.4f} {3:8.4f} {4:8.4f} {5:s} {6:d} {7:s} {8:8.4f}\n".format(
+                atom.index + 1, atom.name, x, y, z, atom.name, 1, atom.residue.name, 0.0))
+            atom_mapping[atom] = atom.index + 1
 
         if len(bonds) > 0:
             mol2_file.write("@<TRIPOS>BOND\n")
             for bond_n, bond in enumerate(bonds):
-                atom1 = atom_mapping[bond.atom1]
-                atom2 = atom_mapping[bond.atom2]
+                atom1 = atom_mapping[bond[0]]
+                atom2 = atom_mapping[bond[1]]
                 mol2_file.write("{0} {1} {2} 1\n".format(bond_n + 1, atom1, atom2))
         mol2_file.write("<@TRIPOS>\n")

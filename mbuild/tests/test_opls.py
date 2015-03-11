@@ -5,6 +5,7 @@ from six import string_types
 
 from mbuild.testing import tools
 from mbuild.testing.tools import load_top_opls
+from mbuild.tools.parameterize.forcefield import prepare_atoms
 from mbuild.tools.parameterize.atomtyper import find_atomtypes
 from mbuild.tests.base_test import BaseTest
 
@@ -16,15 +17,14 @@ class TestOPLS(BaseTest):
         top_files = glob.glob(os.path.join(resource_dir, '*.top'))
 
         # Please update this file if you implement atom typing for a test case.
-        implemented_tests_path = os.path.join(resource_dir,
-                                              'implemented_opls_tests.txt')
-        correctly_implemented = [line.strip() for line in
-                                 open(implemented_tests_path)]
+        implemented_tests_path = os.path.join(resource_dir, 'implemented_opls_tests.txt')
+        correctly_implemented = [line.strip() for line in open(implemented_tests_path)]
+
         for top in top_files:
             top_name = os.path.split(top)[-1]
             loaded = load_top_opls(top)
             if loaded:
-                compound, known_opls_types, mol_name = loaded
+                topology, known_opls_types, mol_name = loaded
             else:
                 continue
             if only_run and only_run != mol_name:
@@ -32,11 +32,11 @@ class TestOPLS(BaseTest):
             elif mol_name not in correctly_implemented:
                 continue
 
-
             print("Typing {} ({})...".format(mol_name, top_name))
-            find_atomtypes(compound, forcefield='OPLS-AA', debug=False)
+            prepare_atoms(topology)
+            find_atomtypes(topology._atoms, forcefield='OPLS-AA', debug=False)
             generated_opls_types = list()
-            for i, atom in enumerate(compound.atoms):
+            for i, atom in enumerate(topology.atoms):
                 message = ('Found multiple or no OPLS types for atom {} in {} ({}): {}\n'
                            'Should be atomtype: {}'.format(
                     i, mol_name, top_name, atom.atomtype, known_opls_types[i]))
@@ -45,9 +45,9 @@ class TestOPLS(BaseTest):
 
             both = zip(generated_opls_types, known_opls_types)
             message = "Found inconsistent OPLS types in {} ({}): {}".format(
-                mol_name, top_name, zip(range(len(generated_opls_types)),
+                mol_name, top_name, list(zip(range(len(generated_opls_types)),
                                         generated_opls_types,
-                                        known_opls_types))
+                                        known_opls_types)))
             assert all([a == b for a, b in both]), message
             print("Passed.\n")
 

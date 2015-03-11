@@ -5,11 +5,6 @@ from warnings import warn
 
 import matplotlib.pyplot as plt
 import networkx as nx
-from orderedset import OrderedSet
-
-
-__all__ = ['find_atomtypes']
-
 
 # Map rule ids to the functions that check for them (see `find_atomtypes()`).
 rule_number_to_rule = dict()
@@ -27,8 +22,31 @@ neighbor_whitelist_map = dict()
 rule_number_to_doc_string = dict()
 
 
-def find_atomtypes(compound, forcefield='OPLS-AA', debug=True):
-    """Determine atomtypes for all atoms in `compound`. """
+def find_atomtypes(atoms, forcefield='OPLS-AA', debug=True):
+    """Determine atomtypes for all atoms.
+
+    This function is fairly general in that it can function on any list of atom
+    objects as long as they have a property `neighbors`, which is a list of
+    other atoms that they are bonded to as well as the attributes `whitelist`
+    and `blacklist` which are sets - if they are ordered sets it simplifies
+    debugging a little bit.
+
+    Parameters
+    ----------
+    atoms : list of Atom objects
+        The atoms whose atomtypes you are looking for.
+    forcefield : str, default='OPLS-AA'
+        The forcefield to apply.
+    debug : bool, default=True
+        Provides debug information about the logical consistency of the
+        atomtyping rules.
+
+    See also
+    --------
+    forcefield.prepare_atoms
+    sanitize
+
+    """
     if forcefield.lower() == 'opls-aa':
         import mbuild.tools.parameterize.oplsaa as oplsaa
         # Build a map to all of the supported opls_* functions.
@@ -46,9 +64,8 @@ def find_atomtypes(compound, forcefield='OPLS-AA', debug=True):
     build_rule_map()
     if debug:
         sanitize()
-    prepare_compound(compound)
-    iterate_rules(compound, max_iter=10)
-    resolve_atomtypes(compound)
+    iterate_rules(atoms, max_iter=10)
+    resolve_atomtypes(atoms)
 
 
 def build_rule_map():
@@ -75,47 +92,40 @@ def build_rule_map():
         rule_map[element_type][neighbor_count].append(rule_number)
 
 
-def prepare_compound(compound):
-    """Add white- and blacklists to each `atom` in `compound`.
-
-    The use of ordered sets is not strictly necessary but it helps when
-    debugging because it shows the order in which rules are added.
-    """
-    for atom in compound.yield_atoms():
-        atom.extras['whitelist'] = OrderedSet()
-        atom.extras['blacklist'] = OrderedSet()
-
-
-def iterate_rules(compound, max_iter=10):
+def iterate_rules(atoms, max_iter=10):
     """Iteratively run all the rules until the white- and backlists converge.
 
-    Args:
-        compound (Compound): The Compound being parameterized.
-        max_iter (int, optional): The maximum number of iterations.
+    Parameters
+    ----------
+    atoms : list of Atom objects
+        The atoms whose atomtypes you are looking for.
+    max_iter : int, optional, default=10
+        The maximum number of iterations.
+
     """
     for _ in range(max_iter):
         # For comparing the lengths of the white- and blacklists.
         old_len = 0
         new_len = 0
-        for atom in compound.yield_atoms():
+        for atom in atoms:
             # We only add and never remove from the white- and blacklists so we
             # do not need to check the lengths for each individual atom.
             old_len += len(atom.whitelist)
             old_len += len(atom.blacklist)
 
-            if atom.kind == 'G':  # Ignore Ports.
+            if atom.name == 'G':  # Ignore Ports.
                 continue
 
             # Only run rules with matching element and neighbor counts.
-            if atom.kind in rule_map:
-                if len(atom.neighbors) in rule_map[atom.kind]:
-                    for rule in rule_map[atom.kind][len(atom.neighbors)]:
+            if atom.name in rule_map:
+                if len(atom.neighbors) in rule_map[atom.name]:
+                    for rule in rule_map[atom.name][len(atom.neighbors)]:
                         run_rule(atom, rule)
                 else:
                     warn("No rule for {}-neighbor '{}' atom".format(
-                        len(atom.neighbors), atom.kind))
+                        len(atom.neighbors), atom.name))
             else:
-                warn("No rule for atom kind '{}'".format(atom.kind))
+                warn("No rule for atom name '{}'".format(atom.name))
 
             new_len += len(atom.whitelist)
             new_len += len(atom.blacklist)
@@ -137,22 +147,22 @@ def run_rule(atom, rule_id):
         rule_fn(atom)
 
 
-def resolve_atomtypes(compound):
+def resolve_atomtypes(atoms):
     """Determine the final atomtypes from the white- and blacklists."""
-    for i, atom in enumerate(compound.atoms):
+    for i, atom in enumerate(atoms):
         atomtype = atom.whitelist - atom.blacklist
         atomtype = [a for a in atomtype]
 
-        if not atom.extras.get('atomtype'):  # It hasn't been set manually.
+        if atom.atomtype == atom.name:  # It hasn't been set manually.
             if len(atomtype) == 1:
-                atom.extras['atomtype'] = atomtype[0]
+                atom.atomtype = atomtype[0]
             else:
                 warn("CHECK YOUR TOPOLOGY. Found multiple or no types for atom "
-                     "{0} ({1}): {2}.".format(i, atom.kind, atomtype))
-                atom.extras['atomtype'] = ', '.join(atomtype)
+                     "{0} ({1}): {2}.".format(i, atom.name, atomtype))
+                atom.atomtype = ', '.join(atomtype)
         else:
             warn("Using user provided atomtype of {0} for atom {1}.".format(
-                atom.extras['atomtype'], atom))
+                atom.atomtype, atom))
 
 
 def neighbor_element_types(atom):
@@ -170,8 +180,8 @@ def neighbor_element_types(atom):
     if atom not in neighbor_types_map:
         neighbors = defaultdict(int)
         for neighbor in atom.neighbors:
-            kind = neighbor.kind
-            neighbors[kind] += 1
+            name = neighbor.name
+            neighbors[name] += 1
         neighbor_types_map[atom] = neighbors
     return neighbor_types_map[atom]
 
@@ -246,7 +256,7 @@ class Element(RuleDecorator):
         self.extract_doc_string(func)
 
         def wrapped(atom):  # this must be called 'wrapped'
-            if atom.kind == self.element_type:
+            if atom.name == self.element_type:
                 return func(atom)
         return wrapped
 
@@ -408,6 +418,7 @@ def sanitize():
     new rules or modify existing ones. Ideally, it will help you identify and
     correct logical inconsistencies as early as possible. Additionally, it
     suggests other rules that you may want to consider blacklisting.
+
     """
     supported_elements = find_all_supported_elements()
     rule_matches = find_all_rule_matches(supported_elements)
@@ -466,8 +477,10 @@ def sanitize():
 def find_all_supported_elements():
     """Find all elements currently supported by rules.
 
-    Returns:
-        supported_elements (list): A sorted list of all the supported elements.
+    Returns
+    -------
+    supported_elements : list
+        A sorted list of all the supported elements.
     """
     supported_elements = set()
     for rule_number, rule in rule_number_to_rule.items():
@@ -487,13 +500,25 @@ def find_all_supported_elements():
 def find_all_rule_matches(supported_elements):
     """Find all elements and combinations of neighbor types that have a rule.
 
-    Returns:
-        rule_matches (dict): All patterns and rules that apply. The dictionary
-            is structured as follows:
-                key: (element, (neighbor element 1, neighbor element 2, etc..))
-                value: set(rule numbers)
-            Example entry (from time of writing this comment):
-                ('C', ('C', 'C', 'H')): set(['145', '142'])
+    Parameters
+    ----------
+    supported_elements : list
+        A sorted list of all the supported elements.
+
+    Returns
+    -------
+    rule_matches : dict
+        All patterns and rules that apply. The dictionary is structured as
+        follows:
+            key: (element, (neighbor element 1, neighbor element 2, etc..))
+            value: set(rule numbers)
+        Example entry (from time of writing this comment):
+            ('C', ('C', 'C', 'H')): set(['145', '142'])
+
+    See also
+    --------
+    find_all_supported_elements
+
     """
     rule_matches = dict()
     for rule_number, rule in rule_number_to_rule.items():
@@ -539,12 +564,15 @@ def find_all_rule_matches(supported_elements):
 def get_decorator_objects_by_type(decorated_function, decorator_type):
     """Find all decorators of a particular type on a function.
 
-    Args:
-        decorated_function:
-        decorator_type:
+    Parameters
+    ----------
+    decorated_function :
+    decorator_type :
 
-    Returns:
-        rval:
+    Returns
+    -------
+    decorators :
+
     """
     decorators = []
     # Find an object of decorator_type in the function's closure. There should
@@ -568,10 +596,14 @@ def get_decorator_objects_by_type(decorated_function, decorator_type):
 def check_duplicate_element(element_type, rule_number):
     """Used to catch rules with multiple @Element decorators.
 
-    Args:
-        element_type (str): The element type in the decorator. This is only
-            used to check if it has been assigned previously.
-        rule_number (int): The decorated rule in question.
+    Parameters
+    ----------
+    element_type : str
+        The element type in the decorator. This is only used to check if it has
+        been assigned previously.
+    rule_number : int
+        The decorated rule in question.
+
     """
     assert element_type is None, ("Duplicate element type decorators on rule "
                                   "{}".format(rule_number))
@@ -580,10 +612,14 @@ def check_duplicate_element(element_type, rule_number):
 def check_duplicate_neighbor_count(neighbor_count, rule_number):
     """Used to catch rules with multiple @NeighborCount decorators.
 
-    Args:
-        neighbor_count (int): The neighbor count in the decorator. This is only
-            used to check if it has been assigned previously.
-        rule_number (int): The decorated rule in question.
+    Parameters
+    ----------
+    neighbor_count : int
+        The neighbor count in the decorator. This is only used to check if it
+         has been assigned previously.
+    rule_number : int
+        The decorated rule in question.
+
     """
     assert neighbor_count is None, ("Duplicate neighbor count decorators on "
                                     "rule {}".format(rule_number))
@@ -592,15 +628,22 @@ def check_duplicate_neighbor_count(neighbor_count, rule_number):
 def draw_rule_graph(issue, graph, element, pattern, sinks=None, sources=None):
     """Visualize the blacklist graph for a pattern with a logical inconsitency.
 
-    Args:
-        issue (str): Descriptive string of the logical inconsistency. Used for
-            labeling purposes.
-        graph (nx.DiGraph): The blacklist graph.
-        element (str): The type of element that the conflicting rules describe.
-        pattern (tuple of str): The immediate neighbors of the element in
-            question.
-        sinks (list of nodes, optional): Nodes that are sinks in the graph.
-        sources (list of nodes, optional): Nodes that are sources in the graph.
+    Parameters
+    ----------
+    issue : str
+        Descriptive string of the logical inconsistency. Used for labeling
+        purposes.
+    graph : networkx.DiGraph
+        The blacklist graph.
+    element : str
+        The type of element that the conflicting rules describe.
+    pattern : tuple of str
+        The immediate neighbors of the element in question.
+    sinks : list of nodes, optional, default=None
+        Nodes that are sinks in the graph.
+    sources : list of nodes, optional, default=None
+        Nodes that are sources in the graph.
+
     """
     if issue == 'unconnected':
         phrase = 'is not connected'
@@ -627,7 +670,7 @@ def draw_rule_graph(issue, graph, element, pattern, sinks=None, sources=None):
             colors.append('red')
 
     labels = {rule: '{}\n{}'.format(rule, doc) for rule, doc in
-              rule_number_to_doc_string.iteritems() if rule in graph.nodes()}
+              rule_number_to_doc_string.items() if rule in graph.nodes()}
 
     pos = nx.spring_layout(graph)
     nx.draw_networkx_nodes(graph, pos, node_size=1000, node_color=colors)

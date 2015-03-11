@@ -1,7 +1,7 @@
 import pytest
 import numpy as np
 
-from mbuild.compound import Compound
+import mbuild as mb
 from mbuild.examples.ethane.ethane import Ethane
 from mbuild.testing.tools import get_fn
 
@@ -15,7 +15,7 @@ class TestHoomdXml(BaseTest):
         lj_units = {'mass': 72.0,
                     'distance': 0.6, 
                     'energy': 0.4}
-        compound = Compound.load(get_fn('ecer2.hoomdxml'), lj_units=lj_units)
+        compound = mb.load(get_fn('ecer2.hoomdxml'), lj_units=lj_units)
         return compound
 
     def test_write(self, molecule):
@@ -23,7 +23,7 @@ class TestHoomdXml(BaseTest):
 
     def test_update_from_file(self):
         ethane = Ethane()
-        ethane.update_from_file(get_fn("ethane.hoomdxml"))
+        ethane.update_coordinates(get_fn("ethane.hoomdxml"))
 
     def test_units(self, molecule):
         positions = np.array([
