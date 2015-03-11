@@ -5,10 +5,12 @@ import sys
 
 import numpy as np
 import mdtraj as md
+from mdtraj.core.element import Element
+from mdtraj.core.element import get_by_symbol
 from orderedset import OrderedSet
 
 from mbuild.formats.hoomdxml import HOOMDTopologyFile
-#from mbuild.formats.lammps import LAMMPSTopologyFIle
+# from mbuild.formats.lammps import LAMMPSTopologyFIle
 from mbuild.formats.mol2 import write_mol2
 
 from mbuild.atom import Atom
@@ -115,7 +117,7 @@ class Compound(PartMixin):
 
     @property
     def atoms(self):
-        """A list of all Atoms in the Compound and sub-Compounds. """
+        """A list of all Atoms in the Compound and sub-Compounds.  """
         return self.atom_list_by_kind(excludeG=True)
 
     def yield_atoms(self):
@@ -246,7 +248,7 @@ class Compound(PartMixin):
                 self.labels[label] = new_part
         new_part.referrers.add(self)
 
-        if (inherit_periodicity and hasattr(new_part, 'periodicity') and
+        if (inherit_periodicity and isinstance(new_part, Compound) and
                 new_part.periodicity.any()):
             self.periodicity = new_part.periodicity
 
@@ -269,10 +271,11 @@ class Compound(PartMixin):
 
         # Remove the part recursively from sub-components.
         for part in self.parts:
-            if isinstance(part, HasPartsMixin) and len(objs_to_remove) > 0:
+            if isinstance(part, Compound) and len(objs_to_remove) > 0:
                 part.remove(objs_to_remove)
 
-    def _remove_bonds(self, removed_part):
+    @staticmethod
+    def _remove_bonds(removed_part):
         """If removing an atom, make sure to remove the bonds it's part of. """
         if isinstance(removed_part, Atom):
             for bond in removed_part.bonds:
@@ -280,7 +283,8 @@ class Compound(PartMixin):
                 if bond.parent is not None:
                     bond.parent.remove(bond)
 
-    def _remove_references(self, removed_part):
+    @staticmethod
+    def _remove_references(removed_part):
         """Remove labels pointing to this part and vice versa. """
         removed_part.parent = None
 
@@ -296,7 +300,7 @@ class Compound(PartMixin):
 
         # Remove labels in this part pointing into the hierarchy.
         labels_to_delete = []
-        if isinstance(removed_part, HasPartsMixin):
+        if isinstance(removed_part, Compound):
             for label, part in removed_part.labels.items():
                 if removed_part not in part.ancestors():
                     part.referrers.remove(removed_part)
@@ -350,7 +354,25 @@ class Compound(PartMixin):
                 self.periodicity = np.array([0., 0., 0.])
 
     def to_trajectory(self, show_ports=False):
-        """Convert to an md.Trajectory using the compound as the topology. """
+        """Convert to an md.Trajectory and flatten the compound.
+
+        This also produces an object subclassed from MDTraj's Topology which
+        can be used in place of an actual MDTraj.Topology.
+
+        Parameters
+        ----------
+        show_ports : bool
+
+        Returns
+        -------
+        trajectory : md.Trajectory
+
+        See also
+        --------
+        _to_topology
+        mbuild.topology
+
+        """
         exclude = not show_ports
         atom_list = self.atom_list_by_kind('*', excludeG=exclude)
 
@@ -378,6 +400,95 @@ class Compound(PartMixin):
         return md.Trajectory(xyz, self, unitcell_lengths=unitcell_lengths,
                              unitcell_angles=np.array([90, 90, 90]))
 
+    def _to_topology(self, bond_list=None, show_ports=False,
+                      chain_types=None, residue_types=None):
+        """Create a Topology from a Compound.
+
+        Parameters
+        ----------
+            compound:
+            bond_list:
+            show_ports:
+            chain_types:
+            residue_types:
+
+        Returns
+        -------
+            out (mbuild.Topology):
+        """
+
+        if isinstance(chain_types, list):
+            chain_types = tuple(chain_types)
+        if isinstance(residue_types, list):
+            residue_types = tuple(residue_types)
+        out = cls()
+        atom_mapping = {}
+
+        default_chain = out.add_chain()
+        default_residue = out.add_residue("RES", default_chain)
+
+        last_residue_compound = None
+        last_chain_compound = None
+        last_residue = None
+        last_chain = None
+
+        for atom in compound.yield_atoms():
+            if not show_ports and atom.kind == 'G':
+                continue
+            # Chains
+            for parent in atom.ancestors():
+                if chain_types and isinstance(parent, chain_types):
+                    if parent != last_chain_compound:
+                        last_chain_compound = parent
+                        last_chain = out.add_chain()
+                        last_chain_default_residue = out.add_residue("RES", last_chain)
+                        last_chain.compound = last_chain_compound
+                        #print("Found new chain: {}".format(last_chain_compound))
+                    break
+            else:
+                last_chain = default_chain
+                last_chain.compound = last_chain_compound
+
+            # Residues
+            for parent in atom.ancestors():
+                if residue_types and isinstance(parent, residue_types):
+                    if parent != last_residue_compound:
+                        last_residue_compound = parent
+                        last_residue = out.add_residue(parent.__class__.__name__, last_chain)
+                        last_residue.compound = last_residue_compound
+                        #print("Found new residue: {}".format(last_residue))
+                    break
+            else:
+                if last_chain != default_chain:
+                    last_residue = last_chain_default_residue
+                else:
+                    last_residue = default_residue
+                last_residue.compound = last_residue_compound
+
+            # Add the actual atoms
+            try:
+                ele = get_by_symbol(atom.kind)
+            except KeyError:
+                ele = Element(1000, atom.kind, atom.kind, 1.0)
+            at = out.add_atom(atom.kind, ele, last_residue)
+            at.charge = atom.charge
+
+            try:
+                at.atomtype = atom.atomtype
+            except AttributeError:
+                at.atomtype = atom.kind
+            #print("Added {} to residue {} in chain {}".format(atom, last_residue, last_chain))
+            atom_mapping[atom] = at
+
+        if bond_list is None:
+            bond_list = compound.bonds
+
+        for idx, bond in enumerate(bond_list):
+            a1 = bond.atom1
+            a2 = bond.atom2
+            out.add_bond(atom_mapping[a1], atom_mapping[a2])
+        return out
+
     def update_coordinates(self, filename):
         """ """
         load(filename, compound=self, coords_only=True)
@@ -394,7 +505,6 @@ class Compound(PartMixin):
         Other Parameters
         ----------------
         force_overwrite : bool
-            For .binpos, .xtc, .dcd. If `filename` already exists, overwrite it.
 
         """
         # grab the extension of the filename
@@ -421,7 +531,7 @@ class Compound(PartMixin):
 
     def save_hoomdxml(self, filename, force_overwrite=True, optional_nodes=None):
         """ """
-        with HOOMDTopologyFile(filename, 'w', force_overwrite=True) as f:
+        with HOOMDTopologyFile(filename, 'w', force_overwrite=force_overwrite) as f:
             f.optional_nodes = optional_nodes
             f.write(self, optional_nodes=optional_nodes)
 
@@ -544,8 +654,10 @@ class Compound(PartMixin):
                 if (a2.kind == type_b) and (dmin <= self.min_periodic_distance(a2.pos, a1.pos) <= dmax):
                     self.add(Bond(a1, a2, kind=kind))
 
+    # Magic
+    # -----
     def __getattr__(self, attr):
-        assert "labels" != attr, ("HasPartsMixin __init__ never called. Make "
+        assert "labels" != attr, ("Compound __init__ never called. Make "
                                   "sure to call super().__init__() in the "
                                   "__init__ method of your class.")
         if attr in self.labels:

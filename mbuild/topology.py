@@ -1,82 +1,23 @@
 import itertools
 
 import numpy as np
-
-from mdtraj.core.topology import Topology as MDTTopology
-from mdtraj.core.element import Element
-from mdtraj.core import element as elem
+import mdtraj as md
 
 
-class Topology(object):
+class Topology(md.Topology):
     """Derivative of MDTraj's Topology class with additional functionalities.
 
     Most notably, provides conversion to and from mBuild Compounds.
     """
-    def __init__(self, topology=None):
-        """Initialize an mBuild Topology. """
-
-        if topology is not None:
-            self._w_topology = topology
-        else:
-            self._w_topology = MDTTopology()
-
-        # Member variables extending mdtraj's functionality.
+    def __init__(self):
         self._ff_bonds = []
         self._ff_angles = []
         self._ff_dihedrals = []
         self._ff_impropers = []
 
-    def __getattr__(self, attr_name):
-        """Redirect attribute access to the wrapped topology. """
-        return getattr(self._w_topology, attr_name)
-
-    def __setattr__(self, key, value):
-        if key in ['chains', 'n_chains', 'residues', 'n_residues', 'atoms',
-                   'n_atoms', 'bonds', 'n_bonds']:
-            self._w_topology.__setattr__(key, value)
-        else:
-            self.__dict__[key] = value
-
-    @classmethod
-    def from_dataframe(cls, atoms, bonds=None):
-        return Topology(topology=MDTTopology.from_dataframe(atoms, bonds))
-
-    @classmethod
-    def from_openmm(cls, value):
-        return Topology(topology=MDTTopology.from_openmm(value))
-
     @property
     def ff_bonds(self):
         return iter(self._ff_bonds)
-
-    def to_bondgraph(self):
-        """Create a NetworkX graph from the atoms and bonds in this topology
-
-        Returns
-        -------
-        g : nx.Graph
-            A graph whose nodes are the Atoms in this topology, and
-            whose edges are the bonds
-
-        See Also
-        --------
-        atoms
-        bonds
-
-        Notes
-        -----
-        This method requires the NetworkX python package.
-        """
-        from mdtraj.utils import import_
-        nx = import_('networkx')
-        g = nx.Graph()
-
-        atoms = [(a, {'element': a.element, 'name': a.name}) for a in self.atoms]
-
-        g.add_nodes_from(atoms)
-        g.add_edges_from(self.bonds)
-        return g
-
 
     @property
     def ff_angles(self):
@@ -106,7 +47,8 @@ class Topology(object):
     def n_ff_impropers(self):
         return sum(1 for _ in self.ff_impropers)
 
-    def sort_atoms_alphabetically(self, atoms):
+    @staticmethod
+    def sort_atoms_alphabetically(atoms):
         """Sort a list of atoms alphabetically by their lowercase names. """
         atoms.sort(key=lambda x: x.name.lower())
         return atoms
@@ -181,94 +123,6 @@ class Topology(object):
                                         node_1, neighbors_1, node_2, neighbors_2)
                     if impropers and len(neighbors_1) >= 3:
                         self.enumerate_impropers(node_1, neighbors_1)
-
-    @classmethod
-    def from_compound(cls, compound, bond_list=None, show_ports=False,
-                      chain_types=None, residue_types=None):
-        """Create a Topology from a Compound.
-
-        Args:
-            compound:
-            bond_list:
-            show_ports:
-            chain_types:
-            residue_types:
-        Returns:
-            out (mbuild.Topology):
-        """
-
-        if isinstance(chain_types, list):
-            chain_types = tuple(chain_types)
-        if isinstance(residue_types, list):
-            residue_types = tuple(residue_types)
-        out = cls()
-        atom_mapping = {}
-
-        default_chain = out.add_chain()
-        default_residue = out.add_residue("RES", default_chain)
-
-        last_residue_compound = None
-        last_chain_compound = None
-        last_residue = None
-        last_chain = None
-
-        for atom in compound.yield_atoms():
-            if not show_ports and atom.kind == 'G':
-                continue
-            # Chains
-            for parent in atom.ancestors():
-                if chain_types and isinstance(parent, chain_types):
-                    if parent != last_chain_compound:
-                        last_chain_compound = parent
-                        last_chain = out.add_chain()
-                        last_chain_default_residue = out.add_residue("RES", last_chain)
-                        last_chain.compound = last_chain_compound
-                        #print("Found new chain: {}".format(last_chain_compound))
-                    break
-            else:
-                last_chain = default_chain
-                last_chain.compound = last_chain_compound
-
-            # Residues
-            for parent in atom.ancestors():
-                if residue_types and isinstance(parent, residue_types):
-                    if parent != last_residue_compound:
-                        last_residue_compound = parent
-                        last_residue = out.add_residue(parent.__class__.__name__, last_chain)
-                        last_residue.compound = last_residue_compound
-                        #print("Found new residue: {}".format(last_residue))
-                    break
-            else:
-                if last_chain != default_chain:
-                    last_residue = last_chain_default_residue
-                else:
-                    last_residue = default_residue
-                last_residue.compound = last_residue_compound
-
-            # Add the actual atoms
-            try:
-                ele = elem.get_by_symbol(atom.kind)
-            except KeyError:
-                ele = Element(1000, atom.kind, atom.kind, 1.0)
-            at = out.add_atom(atom.kind, ele, last_residue)
-            at.charge = atom.charge
-
-            try:
-                at.atomtype = atom.atomtype
-            except AttributeError:
-                at.atomtype = atom.kind
-            #print("Added {} to residue {} in chain {}".format(atom, last_residue, last_chain))
-            atom_mapping[atom] = at
-
-        if bond_list is None:
-            bond_list = compound.bonds
-
-        for idx, bond in enumerate(bond_list):
-            a1 = bond.atom1
-            a2 = bond.atom2
-            out.add_bond(atom_mapping[a1], atom_mapping[a2])
-
-        return out
 
 
 class ForcefieldBond(object):
@@ -421,4 +275,3 @@ class ForcefieldDihedral(object):
     def __repr__(self):
         return "Dihedral{0}({1}, {2}, {3}, {4})".format(
             id(self), self.atom1, self.atom2, self.atom3, self.atom4)
-
