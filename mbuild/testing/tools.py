@@ -4,8 +4,6 @@ import os
 
 from pkg_resources import resource_filename
 
-from mbuild.trajectory import Trajectory
-
 
 def get_fn(name):
     """Get the full path to one of the reference files shipped for testing

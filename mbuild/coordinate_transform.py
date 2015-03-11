@@ -117,11 +117,11 @@ class AxisTransform(CoordinateTransform):
     """ """
     def __init__(self, new_origin=None, point_on_x_axis=None,
                  point_on_xy_plane=None):
-        if not new_origin:
+        if new_origin is None:
             array([0.0, 0.0, 0.0])
-        if not point_on_x_axis:
+        if point_on_x_axis is None:
             array([1.0, 0.0, 0.0])
-        if not point_on_xy_axis:
+        if point_on_xy_plane is None:
             array([1.0, 1.0, 0.0])
         # Change the basis such that p1 is the origin, p2 is on the x axis and
         # p3 is in the xy plane.

@@ -5,8 +5,8 @@ from warnings import warn
 
 import matplotlib.pyplot as plt
 import networkx as nx
+from orderedset import OrderedSet
 
-from mbuild.orderedset import OrderedSet
 
 __all__ = ['find_atomtypes']
 

@@ -1,6 +1,6 @@
 from collections import OrderedDict
 
-from mbuild.orderedset import OrderedSet
+from orderedset import OrderedSet
 from mbuild.part_mixin import PartMixin
 
 __author__ = 'sallai'
@@ -95,7 +95,8 @@ class HasPartsMixin(object):
                 self.labels[label] = new_part
         new_part.referrers.add(self)
 
-        if inherit_periodicity and hasattr(new_part, 'periodicity'):
+        if (inherit_periodicity and hasattr(new_part, 'periodicity') and
+                new_part.periodicity.any()):
             self._inherit_periodicity(new_part.periodicity)
 
     def remove(self, objs_to_remove):

@@ -22,8 +22,9 @@ Dependencies
 To use mbuild, the following libraries and software will need to be installed.
 
     Linux, Mac OS X or Windows operating system
-        We develop mainly on 64-bit Mac and Windows machines. TravisCI is
-        currently only set up to perform testing on Debian.
+        We develop mainly on 64-bit OS X Yosemite and Windows 7 machines.
+        TravisCI is currently only set up to perform testing on Ubuntu 12.04
+        LTS Server Edition 64 bit
 
     `Python <http://python.org>`_ = 2.7 or 3.3+
 

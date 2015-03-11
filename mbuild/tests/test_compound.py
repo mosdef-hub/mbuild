@@ -1,6 +1,6 @@
 import pytest
 
-from mbuild.compound import Compound
+import mbuild as mb
 from mbuild.components.small_groups.ch3 import Ch3
 from mbuild.testing.tools import get_fn
 from mbuild.tests.base_test import BaseTest
@@ -9,14 +9,14 @@ from mbuild.tests.base_test import BaseTest
 class TestCompound(BaseTest):
 
     def test_load_and_create(self):
-        Compound.load(get_fn('methyl.pdb'))
+        mb.load(get_fn('methyl.pdb'))
 
     def test_update_from_file(self):
         methyl = Ch3()
-        methyl.update_from_file(get_fn("methyl.pdb"))
+        methyl.update_coordinates(get_fn("methyl.pdb"))
 
     def test_save(self):
-        methyl = Compound.load(get_fn('methyl.pdb'))
+        methyl = mb.load(get_fn('methyl.pdb'))
         methyl.save(filename='methyl_out.pdb')
 
     @pytest.fixture
