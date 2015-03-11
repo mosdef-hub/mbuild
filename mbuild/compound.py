@@ -15,7 +15,6 @@ from mbuild.atom import Atom
 from mbuild.bond import Bond
 from mbuild.box import Box
 from mbuild.coordinate_transform import translate
-from mbuild.has_parts_mixin import HasPartsMixin
 from mbuild.part_mixin import PartMixin
 
 
@@ -50,7 +49,7 @@ def load(filename, relative_to_module=None, frame=-1, compound=None,
     return compound
 
 
-class Compound(PartMixin, HasPartsMixin):
+class Compound(PartMixin):
     """A building block in the mBuild hierarchy.
 
     Compound is the superclass of all composite building blocks in the mBuild
@@ -111,21 +110,8 @@ class Compound(PartMixin, HasPartsMixin):
             periodicity = np.array([0.0, 0.0, 0.0])
         self.periodicity = periodicity
 
-        # Allow storing extra stuff in a dict (created on-demand).
-        self._extras = None
-
-    @property
-    def extras(self):
-        """Return the Compound's optional, extra attributes. """
-        if self._extras is None:
-            self._extras = dict()
-        return self._extras
-
-    def __getattr__(self, item):
-        if self._extras and item in self._extras:
-            return self._extras[item]
-        else:
-            return super(Compound, self).__getattr__(item)
+        self.parts = OrderedSet()
+        self.labels = OrderedDict()
 
     @property
     def atoms(self):
@@ -189,24 +175,139 @@ class Compound(PartMixin, HasPartsMixin):
                 bond_list.append(bond)
         return bond_list
 
-    def referenced_ports(self):
-        """Return all Ports referenced by this Compound. """
-        from mbuild.port import Port
-        return [port for port in self.labels.values() if isinstance(port, Port)]
+    def _yield_parts(self, part_type):
+        """Yield parts of a specified type in the Compound recursively. """
+        for part in self.parts:
+            # Parts local to the current Compound.
+            if isinstance(part, part_type):
+                yield part
+            # Parts further down the hierarchy.
+            if isinstance(part, Compound):
+                for subpart in part._yield_parts(part_type):
+                    yield subpart
 
-    def _remove(self, removed_part):
+    def add(self, new_part, label=None, containment=True, replace=False,
+            inherit_periodicity=True):
+        """Add a part to the Compound.
+
+        Note:
+            This does not necessarily add the part to self.parts but may
+            instead be used to add a reference to the part to self.labels. See
+            'containment' argument.
+
+        Parameters
+        ----------
+        new_part : mb.Atom, mb.Bond or mb.Compound
+            The object to be added to this Compound.
+        label : str, optional
+            A descriptive string for the part.
+        containment : bool, optional, default=True
+            Add the part to self.parts.
+        replace : bool, optional, default=True
+            Replace the label if it already exists.
+
+        """
+        assert isinstance(new_part, (PartMixin, list, tuple, set))
+        if containment:
+            # Support batch add via lists, tuples and sets.
+            if isinstance(new_part, (list, tuple, set)):
+                for elem in new_part:
+                    assert (elem.parent is None)
+                    self.add(elem)
+                    elem.parent = self
+                return
+
+            assert new_part.parent is None, "Part {} already has a parent: {}".format(
+                new_part, new_part.parent)
+            self.parts.add(new_part)
+            new_part.parent = self
+
+        # Add new_part to labels. Does not currently support batch add.
+        assert isinstance(new_part, PartMixin)
+
+        if not containment and label is None:
+            label = '_{0}[$]'.format(new_part.__class__.__name__)
+
+        if label is not None:
+            if label.endswith("[$]"):
+                label = label[:-3]
+                if label not in self.labels:
+                    self.labels[label] = []
+                label_pattern = label + "[{}]"
+
+                count = len(self.labels[label])
+                self.labels[label].append(new_part)
+                label = label_pattern.format(count)
+
+            if not replace and label in self.labels:
+                raise Exception(
+                    "Label {0} already exists in {1}".format(label, self))
+            else:
+                self.labels[label] = new_part
+        new_part.referrers.add(self)
+
+        if (inherit_periodicity and hasattr(new_part, 'periodicity') and
+                new_part.periodicity.any()):
+            self.periodicity = new_part.periodicity
+
+    def remove(self, objs_to_remove):
+        """Remove parts (Atom, Bond or Compound) from the Compound. """
+        if not isinstance(objs_to_remove, (list, tuple, set)):
+            objs_to_remove = [objs_to_remove]
+        objs_to_remove = set(objs_to_remove)
+
+        if len(objs_to_remove) == 0:
+            return
+
+        intersection = objs_to_remove.intersection(self.parts)
+        self.parts.difference_update(intersection)
+        objs_to_remove.difference_update(intersection)
+
+        for removed_part in intersection:
+            self._remove_bonds(removed_part)
+            self._remove_references(removed_part)
+
+        # Remove the part recursively from sub-components.
+        for part in self.parts:
+            if isinstance(part, HasPartsMixin) and len(objs_to_remove) > 0:
+                part.remove(objs_to_remove)
+
+    def _remove_bonds(self, removed_part):
         """If removing an atom, make sure to remove the bonds it's part of. """
-        super(Compound, self)._remove(removed_part)
-
         if isinstance(removed_part, Atom):
             for bond in removed_part.bonds:
                 bond.other_atom(removed_part).bonds.remove(bond)
                 if bond.parent is not None:
                     bond.parent.remove(bond)
 
-    def _inherit_periodicity(self, periodicity):
-        """Inherit the periodicity of a Compound that was added.  """
-        self.periodicity = periodicity
+    def _remove_references(self, removed_part):
+        """Remove labels pointing to this part and vice versa. """
+        removed_part.parent = None
+
+        # Remove labels in the hierarchy pointing to this part.
+        referrers_to_remove = set()
+        for referrer in removed_part.referrers:
+            if removed_part not in referrer.ancestors():
+                for label, referred_part in referrer.labels.items():
+                    if referred_part is removed_part:
+                        del referrer.labels[label]
+                        referrers_to_remove.add(referrer)
+        removed_part.referrers.difference_update(referrers_to_remove)
+
+        # Remove labels in this part pointing into the hierarchy.
+        labels_to_delete = []
+        if isinstance(removed_part, HasPartsMixin):
+            for label, part in removed_part.labels.items():
+                if removed_part not in part.ancestors():
+                    part.referrers.remove(removed_part)
+                    labels_to_delete.append(label)
+        for label in labels_to_delete:
+            del removed_part.labels[label]
+
+    def referenced_ports(self):
+        """Return all Ports referenced by this Compound. """
+        from mbuild.port import Port
+        return [port for port in self.labels.values() if isinstance(port, Port)]
 
     # Interface to Trajectory for reading/writing.
     # --------------------------------------------
@@ -443,6 +544,16 @@ class Compound(PartMixin, HasPartsMixin):
                 if (a2.kind == type_b) and (dmin <= self.min_periodic_distance(a2.pos, a1.pos) <= dmax):
                     self.add(Bond(a1, a2, kind=kind))
 
+    def __getattr__(self, attr):
+        assert "labels" != attr, ("HasPartsMixin __init__ never called. Make "
+                                  "sure to call super().__init__() in the "
+                                  "__init__ method of your class.")
+        if attr in self.labels:
+            return self.labels[attr]
+        else:
+            raise AttributeError("'{}' object has no attribute '{}'".format(
+                self.__class__.__name__, attr))
+
     def __deepcopy__(self, memo):
         cls = self.__class__
         newone = cls.__new__(cls)
@@ -488,7 +599,5 @@ class Compound(PartMixin, HasPartsMixin):
         for r in self.referrers:
             if memo[0] in r.ancestors():
                 newone.referrers.add(deepcopy(r, memo))
-
-        newone._extras = deepcopy(self._extras, memo)
 
         return newone
