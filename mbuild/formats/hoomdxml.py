@@ -2,7 +2,6 @@ import os
 from warnings import warn
 
 from mdtraj.formats.registry import _FormatRegistry
-import numpy as np
 from six import string_types
 from xml.etree import cElementTree
 
@@ -13,7 +12,7 @@ __all__ = ['load_hoomdxml', 'HOOMDTopologyFile']
 
 
 @_FormatRegistry.register_loader('.hoomdxml')
-def load_hoomdxml(filename, optional_nodes=None, lj_units=None):
+def load_hoomdxml(filename, lj_units=None):
     """Load a HOOMD-blue XML file form disk.
 
     Note: lj_units need to be normalized by nm, kJ/mol, and amu
@@ -24,23 +23,17 @@ def load_hoomdxml(filename, optional_nodes=None, lj_units=None):
     ----------
     filename : str
         Path to xml file.
-    optional_nodes : str, optional, default=['bonds']
-        Read specified nodes in file other than 'box', 'position' and 'type'.
 
     Returns
     -------
     compound : mb.Compound
 
     """
-    if not optional_nodes:
-        optional_nodes = ['bonds']
-
     if not isinstance(filename, string_types):
         raise TypeError('Filename must be of type string for load_lammpstrj. '
                         'you supplied {0}'.format(type(filename)))
 
     with HOOMDTopologyFile(filename, lj_units=lj_units) as f:
-        f.optional_nodes = optional_nodes
         compound = f.read()
     return compound
 
@@ -128,19 +121,16 @@ class HOOMDTopologyFile(object):
             self.compound.add(new_atom, label="{0}[$]".format(new_atom.kind))
             atom_mapping[n] = new_atom
 
-        if self.optional_nodes:
-            self._read_per_particle_nodes()
-            self._read_multi_particle_nodes(atom_mapping)
+        self._read_per_particle_nodes()
+        self._read_multi_particle_nodes(atom_mapping)
 
-            # TODO: read wall
-            # <wall> has its information stored as attributes
+        # TODO: read wall
+        # <wall> has its information stored as attributes
         return self.compound
 
     def _read_per_particle_nodes(self):
         """ """
         for node in self.per_particle_nodes:
-            if node not in self.optional_nodes:
-                continue
             try:
                 node_text = self._config.find(node).text.splitlines()[1:]
             except AttributeError:
@@ -159,8 +149,6 @@ class HOOMDTopologyFile(object):
         """ """
 
         for node, n_indices in self.multi_particle_nodes:
-            if node not in self.optional_nodes:
-                continue
             try:
                 node_text = self._config.find(node).text.splitlines()[1:]
             except AttributeError:
@@ -224,7 +212,7 @@ class HOOMDTopologyFile(object):
                          [0.0,     ly, yz*lz],
                          [0.0,   0.0,    lz]])
 
-    def write(self, traj, optional_nodes=None):
+    def write(self, traj):
         """Output a Trajectory as a HOOMD XML file.
 
         Args:
@@ -261,8 +249,6 @@ class HOOMDTopologyFile(object):
         optional_directives = [('bonds', 2), ('angles', 3), ('dihedrals', 4),
                                ('impropers', 4)]
         for directive, n_terms in optional_directives:
-            if optional_nodes and directive not in optional_nodes:
-                continue
             if getattr(traj.top, '_ff_{0}'.format(directive)):
                 self._fh.write("""<{0}>\n""".format(directive[:-1]))
                 for term in getattr(traj.top, 'ff_{0}'.format(directive)):

@@ -12,12 +12,11 @@ from mdtraj.core.element import get_by_symbol
 from orderedset import OrderedSet
 
 from mbuild.formats.hoomdxml import HOOMDTopologyFile
-# from mbuild.formats.lammps import LAMMPSTopologyFIle
+from mbuild.formats.lammps import LAMMPSTopologyFile
 from mbuild.formats.mol2 import write_mol2
 
 from mbuild.box import Box
 from mbuild.part_mixin import PartMixin
-from mbuild.periodic_kdtree import PeriodicCKDTree
 from mbuild.topology import Topology
 
 
@@ -437,7 +436,6 @@ class Compound(PartMixin):
                         last_chain = top.add_chain()
                         last_chain_default_residue = top.add_residue("RES", last_chain)
                         last_chain.compound = last_chain_compound
-                        #print("Found new chain: {}".format(last_chain_compound))
                     break
             else:
                 last_chain = default_chain
@@ -450,7 +448,6 @@ class Compound(PartMixin):
                         last_residue_compound = parent
                         last_residue = top.add_residue(parent.__class__.__name__, last_chain)
                         last_residue.compound = last_residue_compound
-                        #print("Found new residue: {}".format(last_residue))
                     break
             else:
                 if last_chain != default_chain:
@@ -471,7 +468,6 @@ class Compound(PartMixin):
                 at.atomtype = atom.atomtype
             except AttributeError:
                 at.atomtype = atom.kind
-            #print("Added {} to residue {} in chain {}".format(atom, last_residue, last_chain))
             atom_mapping[atom] = at
 
         for bond in self.bonds:
@@ -510,8 +506,8 @@ class Compound(PartMixin):
                   #'.gro': self.save_gromacs,
                   #'.top': self.save_gromacs,
                   '.mol2': self.save_mol2,
-                  #'.lammps': self.save_lammpsdata,
-                  #'.lmp': self.save_lammpsdata,
+                  '.lammps': self.save_lammpsdata,
+                  '.lmp': self.save_lammpsdata,
                   }
 
         try:
@@ -531,19 +527,21 @@ class Compound(PartMixin):
             traj = self.to_trajectory(show_ports=show_ports)
             return traj.save(filename, **kwargs)
 
-    def save_hoomdxml(self, filename, traj, force_overwrite=True, show_ports=False,
-                      optional_nodes=None, **kwargs):
+    def save_hoomdxml(self, filename, traj, force_overwrite=True, **kwargs):
         """ """
         with HOOMDTopologyFile(filename, 'w', force_overwrite=force_overwrite) as f:
-            f.optional_nodes = optional_nodes
-            f.write(traj, optional_nodes=optional_nodes)
+            f.write(traj)
 
     def save_mol2(self, filename, traj, **kwargs):
         write_mol2(filename, traj)
 
     # def save_gromacs(self):
 
-    # def save_lammpsdata(self):
+    def save_lammpsdata(self, filename, traj, force_overwrite=True, show_ports=False,
+                        **kwargs):
+        """ """
+        with HOOMDTopologyFile(filename, 'w', force_overwrite=force_overwrite) as f:
+            f.write(traj)
 
     # Convenience functions
     # ---------------------
@@ -751,7 +749,8 @@ class Atom(PartMixin):
         Every Bond that the Atom is a part of.
 
     """
-    __slots__ = ['kind', 'pos', 'charge', 'parent', 'referrers', 'bonds', 'uid']
+    __slots__ = ['kind', 'pos', 'charge', 'parent', 'referrers', 'bonds', 'uid',
+                 '_extras']
 
     def __init__(self, kind, pos=None, charge=0.0):
         super(Atom, self).__init__()
@@ -763,6 +762,7 @@ class Atom(PartMixin):
         self.pos = np.asarray(pos, dtype=float)
         self.charge = charge
         self.bonds = set()
+        self._extras = None
 
     def bonded_atoms(self, memo=None):
         """Return a list of Atoms bonded to self. """
@@ -783,6 +783,19 @@ class Atom(PartMixin):
     @property
     def n_bonds(self):
         return len(self.bonds)
+
+    @property
+    def extras(self):
+        """Return the Atom's optional, extra attributes. """
+        if self._extras is None:
+            self._extras = dict()
+        return self._extras
+
+    def __getattr__(self, item):
+        if self._extras and item in self._extras:
+            return self._extras[item]
+        else:
+            raise AttributeError
 
     def __add__(self, other):
         if isinstance(other, Atom):
@@ -827,6 +840,7 @@ class Atom(PartMixin):
         newone.kind = deepcopy(self.kind, memo)
         newone.pos = deepcopy(self.pos, memo)
         newone.charge = deepcopy(self.charge, memo)
+        newone._extras = deepcopy(self._extras, memo)
 
         # Copy parents, except the topmost compound being deepcopied.
         if memo[0] == self or isinstance(memo[0], Bond):
