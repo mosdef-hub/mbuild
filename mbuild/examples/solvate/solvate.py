@@ -1,7 +1,7 @@
 from __future__ import print_function
 
 import mbuild as mb
-from mbuild.testing.tools import get_fn
+from mbuild.components.solvents.water import Water
 from mbuild.examples.ethane.ethane import Ethane
 
 
@@ -14,7 +14,7 @@ def main():
     print("Host (ethane) box: {}".format(host_box))
 
     # Create a water box.
-    water = mb.load(get_fn('spc216.pdb'))
+    water = Water()
     guest_box = water.boundingbox()
     print("Guest (water) box: {}".format(guest_box))
 

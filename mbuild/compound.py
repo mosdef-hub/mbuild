@@ -551,7 +551,7 @@ class Compound(PartMixin):
     def save_lammpsdata(self, filename, traj, force_overwrite=True, show_ports=False,
                         **kwargs):
         """ """
-        with HOOMDTopologyFile(filename, 'w', force_overwrite=force_overwrite) as f:
+        with LAMMPSTopologyFile(filename, 'w', force_overwrite=force_overwrite) as f:
             f.write(traj)
 
     # Convenience functions

@@ -6,21 +6,6 @@ from warnings import warn
 import matplotlib.pyplot as plt
 import networkx as nx
 
-# Map rule ids to the functions that check for them (see `find_atomtypes()`).
-rule_number_to_rule = dict()
-
-# Organizes the rules (see `build_rule_map()`).
-rule_map = dict()
-
-# Global neighbor information (see `neighbor_types()`).
-neighbor_types_map = dict()
-
-# Global neighbor whitelist information (see `neighbor_whitelist_types()`).
-neighbor_whitelist_map = dict()
-
-# Used for more descriptive output when sanitizing rules.
-rule_number_to_doc_string = dict()
-
 
 def find_atomtypes(atoms, forcefield='OPLS-AA', debug=True):
     """Determine atomtypes for all atoms.
@@ -47,6 +32,26 @@ def find_atomtypes(atoms, forcefield='OPLS-AA', debug=True):
     sanitize
 
     """
+    # Map rule ids to the functions that check for them (see `find_atomtypes()`).
+    global rule_number_to_rule
+    rule_number_to_rule = dict()
+
+    # Organizes the rules (see `build_rule_map()`).
+    global rule_map
+    rule_map = dict()
+
+    # Global neighbor information (see `neighbor_types()`).
+    global neighbor_types_map
+    neighbor_types_map = dict()
+
+    # Global neighbor whitelist information (see `neighbor_whitelist_types()`).
+    global neighbor_whitelist_map
+    neighbor_whitelist_map = dict()
+
+    # Used for more descriptive output when sanitizing rules.
+    global rule_number_to_doc_string
+    rule_number_to_doc_string = dict()
+
     if forcefield.lower() == 'opls-aa':
         import mbuild.tools.parameterize.oplsaa as oplsaa
         # Build a map to all of the supported opls_* functions.
@@ -112,9 +117,6 @@ def iterate_rules(atoms, max_iter=10):
             # do not need to check the lengths for each individual atom.
             old_len += len(atom.whitelist)
             old_len += len(atom.blacklist)
-
-            if atom.name == 'G':  # Ignore Ports.
-                continue
 
             # Only run rules with matching element and neighbor counts.
             if atom.name in rule_map:

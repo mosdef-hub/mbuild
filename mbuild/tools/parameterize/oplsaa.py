@@ -581,21 +581,26 @@ def get_opls_fn(name):
 
 
 if __name__ == "__main__":
-    from atomtyper import find_atomtypes
+    import pdb
+    import mbuild as mb
+    from mbuild.tools.parameterize.atomtyper import find_atomtypes
+    from mbuild.tools.parameterize.forcefield import prepare_atoms
     from mbuild.examples.methane.methane import Methane
-    # from mbuild.examples.ethane.ethane import Ethane
+    from mbuild.examples.ethane.ethane import Ethane
 
-    m = Methane()
+    # m = Methane()
     # m = Ethane()
-    # m = Compound.load(get_opls_fn('isopropane.pdb'))
-    # m = Compound.load(get_opls_fn('cyclohexane.pdb'))
-    # m = Compound.load(get_opls_fn('neopentane.pdb'))
-    # m = Compound.load(get_opls_fn('benzene.pdb'))
-    # m = Compound.load(get_opls_fn('1-propene.pdb'))
-    # m = Compound.load(get_opls_fn('biphenyl.pdb'))
+    # m = mb.load(get_opls_fn('isopropane.pdb'))
+    # m = mb.load(get_opls_fn('cyclohexane.pdb'))
+    # m = mb.load(get_opls_fn('neopentane.pdb'))
+    m = mb.load(get_opls_fn('benzene.pdb'))
+    # m = mb.load(get_opls_fn('1-propene.pdb'))
+    # m = mb.load(get_opls_fn('biphenyl.pdb'))
 
-    find_atomtypes(m, forcefield='OPLS-AA')
+    traj = m.to_trajectory()
+    prepare_atoms(traj.top)
+    find_atomtypes(traj.top._atoms, forcefield='OPLS-AA')
 
-    for i, a in enumerate(m.atoms):
+    for i, a in enumerate(traj.top._atoms):
         print("Atom name={}, opls_type={}".format(
-            a.kind, a.atomtype))
+            a.name, a.atomtype))
