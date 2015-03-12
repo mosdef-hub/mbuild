@@ -2,7 +2,8 @@ from copy import deepcopy
 
 import numpy as np
 
-from mbuild.core import Compound, Port
+from mbuild.compound import Compound
+from mbuild.port import Port
 from mbuild.coordinate_transform import translate
 from mbuild.periodic_kdtree import PeriodicCKDTree
 

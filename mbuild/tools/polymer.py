@@ -1,6 +1,6 @@
 from copy import deepcopy
 
-from mbuild.core import Compound
+from mbuild.compound import Compound
 from mbuild.coordinate_transform import equivalence_transform
 
 __all__ = ['Polymer']

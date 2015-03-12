@@ -7,7 +7,7 @@ from mdtraj.utils import in_units_of
 from mdtraj.formats.registry import _FormatRegistry
 from six import string_types
 
-import mbuild.core
+import mbuild.compound
 
 
 __all__ = ['load_lammpsdata', 'LAMMPSTopologyFile']
@@ -70,7 +70,7 @@ class LAMMPSTopologyFile(object):
                 raise IOError("The file '%s' doesn't exist" % filename)
             self._fh = open(filename, 'r')
             self._is_open = True
-            self.compound = mbuild.core.Compound()
+            self.compound = mbuild.compound.Compound()
         elif mode == 'w':
             if os.path.exists(filename) and not force_overwrite:
                 raise IOError("The file '%s' already exists" % filename)

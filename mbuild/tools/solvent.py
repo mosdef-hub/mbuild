@@ -4,7 +4,7 @@ from copy import deepcopy
 
 import numpy as np
 
-import mbuild.core
+import mbuild.compound
 from mbuild.periodic_kdtree import PeriodicCKDTree
 from mbuild.coordinate_transform import translate
 
@@ -32,7 +32,7 @@ def solvent_box(solvent, box):
     num_replicas = num_replicas.astype('int')
     print(num_replicas)
 
-    compound = mbuild.core.Compound()
+    compound = mbuild.compound.Compound()
     translate(solvent, -solvent.boundingbox().mins+box.mins)
     for xi in range(num_replicas[0]):   # x replicas
         for yi in range(num_replicas[1]):   # y replicas

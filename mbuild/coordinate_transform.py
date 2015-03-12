@@ -260,7 +260,8 @@ def _create_equivalence_transform(equiv):
         coordinates system.
 
     """
-    from mbuild.core import Atom, Compound
+    from mbuild.atom import Atom
+    from mbuild.compound import Compound
     self_points = array([])
     self_points.shape = (0, 3)
     other_points = array([])
@@ -302,7 +303,8 @@ def equivalence_transform(compound, from_positions, to_positions, add_bond=True)
         New positions.
 
     """
-    from mbuild.core import Port, Bond
+    from mbuild.port import Port
+    from mbuild.bond import Bond
     if isinstance(from_positions, (list, tuple)) and isinstance(to_positions, (list, tuple)):
         equivalence_pairs = zip(from_positions, to_positions)
     elif isinstance(from_positions, Port) and isinstance(to_positions, Port):
@@ -410,7 +412,7 @@ def x_axis_transform(compound, new_origin=array([0.0, 0.0, 0.0]),
     point_on_xy_plane:
 
     """
-    from mbuild.core import Atom
+    from mbuild.compound import Atom
 
     if isinstance(new_origin, Atom):
         new_origin = new_origin.pos

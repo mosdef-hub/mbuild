@@ -15,12 +15,14 @@ from mbuild.formats.hoomdxml import HOOMDTopologyFile
 from mbuild.formats.lammps import LAMMPSTopologyFile
 from mbuild.formats.mol2 import write_mol2
 
+from mbuild.atom import Atom
 from mbuild.box import Box
+from mbuild.bond import Bond
 from mbuild.part_mixin import PartMixin
 from mbuild.topology import Topology
 
 
-__all__ = ['load', 'Compound', 'Port', 'Atom', 'Bond']
+__all__ = ['load', 'Compound']
 
 
 def load(filename, relative_to_module=None, frame=-1, compound=None,
@@ -114,6 +116,7 @@ class Compound(PartMixin):
 
         self.parts = OrderedSet()
         self.labels = OrderedDict()
+        self._extras = None
 
     @property
     def atoms(self):
@@ -187,6 +190,13 @@ class Compound(PartMixin):
             if isinstance(part, Compound):
                 for subpart in part._yield_parts(part_type):
                     yield subpart
+
+    @property
+    def extras(self):
+        """Return the Atom's optional, extra attributes. """
+        if self._extras is None:
+            self._extras = dict()
+        return self._extras
 
     def add(self, new_part, label=None, containment=True, replace=False,
             inherit_periodicity=True):
@@ -310,6 +320,7 @@ class Compound(PartMixin):
 
     def referenced_ports(self):
         """Return all Ports referenced by this Compound. """
+        from mbuild.port import Port
         return [port for port in self.labels.values() if isinstance(port, Port)]
 
     # Interface to Trajectory for reading/writing.
@@ -627,6 +638,8 @@ class Compound(PartMixin):
                                   "__init__ method of your class.")
         if attr in self.labels:
             return self.labels[attr]
+        elif self._extras and attr in self._extras:
+            return self._extras[attr]
         else:
             raise AttributeError("'{}' object has no attribute '{}'".format(
                 self.__class__.__name__, attr))
@@ -676,272 +689,5 @@ class Compound(PartMixin):
         for r in self.referrers:
             if memo[0] in r.ancestors():
                 newone.referrers.add(deepcopy(r, memo))
-
-        return newone
-
-
-class Port(Compound):
-    """A set of four ghost Atoms used to connect parts.
-
-    Parameters
-    ----------
-    anchor : mb.Atom, optional, default=None
-        An atom associated with the port. Used to form bonds.
-
-    Attributes
-    ----------
-    anchor : mb.Atom, optional, default=None
-        An atom associated with the port. Used to form bonds.
-    up : mb.Compound
-        Collection of 4 ghost particles used to perform equivalence transforms.
-        Faces the opposite direction as self.down.
-    down : mb.Compound
-        Collection of 4 ghost particles used to perform equivalence transforms.
-        Faces the opposite direction as self.up.
-
-    """
-    def __init__(self, anchor=None):
-        super(Port, self).__init__(kind='Port')
-        self.anchor = anchor
-
-        up = Compound()
-        up.add(Atom(kind='G', pos=np.array([0, 0, 0])), 'middle')
-        up.add(Atom(kind='G', pos=np.array([0, 0.02, 0])), 'top')
-        up.add(Atom(kind='G', pos=np.array([-0.02, -0.01, 0])), 'left')
-        up.add(Atom(kind='G', pos=np.array([0.0, -0.02, 0.01])), 'right')
-
-        down = deepcopy(up)
-
-        from mbuild.coordinate_transform import rotate_around_z
-        rotate_around_z(down, np.pi)
-
-        self.add(up, 'up')
-        self.add(down, 'down')
-
-    def __deepcopy__(self, memo):
-        newone = super(Port, self).__deepcopy__(memo)
-        newone.anchor = deepcopy(self.anchor, memo)
-        return newone
-
-
-class Atom(PartMixin):
-    """Elementary container class - typically a leaf in the hierarchy.
-
-    Notes
-    -----
-    Atoms are also used as "ghost" particles in Ports.
-    Atoms can be added and substracted using +/- operators. The result is
-    the addition or subtraction of the Atoms' cartesian coordinates.
-
-    Attributes
-    ----------
-    kind : str
-        The kind of atom, usually the chemical element.
-    pos : np.ndarray, shape=(3,), dtype=float
-        Cartesian coordinates of the atom.
-    charge : float
-        Partial charge on the atom.
-    parent : mb.Compound
-        Compound to which the Atom belongs.
-    referrers : set of mb.Compounds
-        All Compounds that refer to this instance of Atom.
-    bonds : set of mb.Bonds
-        Every Bond that the Atom is a part of.
-
-    """
-    __slots__ = ['kind', 'pos', 'charge', 'parent', 'referrers', 'bonds', 'uid',
-                 '_extras']
-
-    def __init__(self, kind, pos=None, charge=0.0):
-        super(Atom, self).__init__()
-
-        if pos is None:
-            pos = np.array([0, 0, 0], dtype=float)
-
-        self.kind = kind
-        self.pos = np.asarray(pos, dtype=float)
-        self.charge = charge
-        self.bonds = set()
-        self._extras = None
-
-    def bonded_atoms(self, memo=None):
-        """Return a list of Atoms bonded to self. """
-        if memo is None:
-            memo = dict()
-        for bond in self.bonds:
-            bonded_atom = bond.other_atom(self)
-            if id(bonded_atom) not in memo:
-                memo[id(bonded_atom)] = bonded_atom
-                bonded_atom.bonded_atoms(memo)
-        return memo.values()
-
-    @property
-    def neighbors(self):
-        """Return a list of all neighboring Atoms. """
-        return [bond.other_atom(self) for bond in self.bonds]
-
-    @property
-    def n_bonds(self):
-        return len(self.bonds)
-
-    @property
-    def extras(self):
-        """Return the Atom's optional, extra attributes. """
-        if self._extras is None:
-            self._extras = dict()
-        return self._extras
-
-    def __getattr__(self, item):
-        if self._extras and item in self._extras:
-            return self._extras[item]
-        else:
-            raise AttributeError
-
-    def __add__(self, other):
-        if isinstance(other, Atom):
-            other = other.pos
-        return self.pos + other
-
-    def __radd__(self, other):
-        if isinstance(other, Atom):
-            other = other.pos
-        return self.pos + other
-
-    def __sub__(self, other):
-        if isinstance(other, Atom):
-            other = other.pos
-        return self.pos - other
-
-    def __rsub__(self, other):
-        if isinstance(other, Atom):
-            other = other.pos
-        return self.pos - other
-
-    def __neg__(self):
-        return -self.pos
-
-    def __repr__(self):
-        return "Atom{0}({1}, {2})".format(id(self), self.kind, self.pos)
-
-    def __deepcopy__(self, memo):
-        cls = self.__class__
-        newone = cls.__new__(cls)
-
-        # Remember the topmost component being deepcopied.
-        if len(memo) == 0:
-            memo[0] = self
-        memo[id(self)] = newone
-
-        # Copy fields that don't need recursion.
-        newone.referrers = set()
-        newone.bonds = set()
-
-        # Do the rest recursively.
-        newone.kind = deepcopy(self.kind, memo)
-        newone.pos = deepcopy(self.pos, memo)
-        newone.charge = deepcopy(self.charge, memo)
-        newone._extras = deepcopy(self._extras, memo)
-
-        # Copy parents, except the topmost compound being deepcopied.
-        if memo[0] == self or isinstance(memo[0], Bond):
-            newone.parent = None
-        else:
-            newone.parent = deepcopy(self.parent, memo)
-
-        return newone
-
-
-class Bond(PartMixin):
-    """Connection between two Atoms.
-
-    Attributes
-    ----------
-    atom1 : mb.Atom
-        First Atom in the bond.
-    atom2 : mb.Atom
-        Second Atom in the bond.
-    parent : mb.Compound
-        Compound to which the Bond belongs.
-    """
-    __slots__ = ['_atom1', '_atom2', 'kind', 'parent', 'referrers']
-
-    def __init__(self, atom1, atom2, kind=None):
-        super(Bond, self).__init__()
-        assert(not atom1 == atom2)
-
-        # If a Port is used to initialize a Bond, the Atom that the Port is
-        # anchored to will be used to create the Bond.
-        if isinstance(atom1, Port):
-            atom1 = atom1.anchor
-        if isinstance(atom2, Port):
-            atom2 = atom2.anchor
-        self._atom1 = atom1
-        self._atom2 = atom2
-
-        if kind is not None:
-            self.kind = kind
-        else:
-            self.kind = '{0}-{1}'.format(atom1.kind, atom2.kind)
-
-        # Ensure Atoms in Bond know about the Bond.
-        atom1.bonds.add(self)
-        atom2.bonds.add(self)
-
-    @property
-    def atom1(self):
-        return self._atom1
-
-    @property
-    def atom2(self):
-        return self._atom2
-
-    def other_atom(self, atom):
-        """Returns the other Atom in the Bond. """
-        if self._atom1 is atom:
-            return self._atom2
-        elif self._atom2 is atom:
-            return self._atom1
-
-    def distance(self, periodicity=np.array([0.0, 0.0, 0.0])):
-        """Calculate the bond distance considering minimum image. """
-        d = np.abs(self.atom1 - self.atom2)
-        d = np.where(d > 0.5 * periodicity, periodicity - d, d)
-        return np.sqrt((d ** 2).sum(axis=-1))
-
-    def __hash__(self):
-        return id(self.atom1) ^ id(self.atom2)
-
-    def __eq__(self, bond):
-        return isinstance(bond, Bond) and (self.atom1 == bond.atom1 and self.atom2 == bond.atom2
-             or self.atom2 == bond.atom1 and self.atom1 == bond.atom1)
-
-    def __repr__(self):
-        return "Bond{0}({1}, {2})".format(id(self), self.atom1, self.atom2)
-
-    def __deepcopy__(self, memo):
-        cls = self.__class__
-        newone = cls.__new__(cls)
-
-        # Remember the topmost component being deepcopied.
-        if len(memo) == 0:
-            print('bond is root of deepcopy')
-            memo[0] = self
-        memo[id(self)] = newone
-
-        # Copy fields that don't need recursion.
-        newone.kind = self.kind
-        newone.referrers = set()
-
-        # Do the rest recursively.
-        newone._atom1 = deepcopy(self.atom1, memo)
-        newone._atom2 = deepcopy(self.atom2, memo)
-        newone._atom1.bonds.add(newone)
-        newone._atom2.bonds.add(newone)
-
-        # Copy parents, except the topmost compound being deepcopied.
-        if memo[0] == self:
-            newone.parent = None
-        else:
-            newone.parent = deepcopy(self.parent, memo)
 
         return newone

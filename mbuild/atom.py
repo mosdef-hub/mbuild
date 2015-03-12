@@ -1,0 +1,133 @@
+from copy import deepcopy
+
+import numpy as np
+
+from mbuild.bond import Bond
+from mbuild.part_mixin import PartMixin
+
+
+class Atom(PartMixin):
+    """Elementary container class - typically a leaf in the hierarchy.
+
+    Notes
+    -----
+    Atoms are also used as "ghost" particles in Ports.
+    Atoms can be added and substracted using +/- operators. The result is
+    the addition or subtraction of the Atoms' cartesian coordinates.
+
+    Attributes
+    ----------
+    kind : str
+        The kind of atom, usually the chemical element.
+    pos : np.ndarray, shape=(3,), dtype=float
+        Cartesian coordinates of the atom.
+    charge : float
+        Partial charge on the atom.
+    parent : mb.Compound
+        Compound to which the Atom belongs.
+    referrers : set of mb.Compounds
+        All Compounds that refer to this instance of Atom.
+    bonds : set of mb.Bonds
+        Every Bond that the Atom is a part of.
+
+    """
+    __slots__ = ['kind', 'pos', 'charge', 'parent', 'referrers', 'bonds', 'uid',
+                 '_extras']
+
+    def __init__(self, kind, pos=None, charge=0.0):
+        super(Atom, self).__init__()
+
+        if pos is None:
+            pos = np.array([0, 0, 0], dtype=float)
+
+        self.kind = kind
+        self.pos = np.asarray(pos, dtype=float)
+        self.charge = charge
+        self.bonds = set()
+        self._extras = None
+
+    def bonded_atoms(self, memo=None):
+        """Return a list of Atoms bonded to self. """
+        if memo is None:
+            memo = dict()
+        for bond in self.bonds:
+            bonded_atom = bond.other_atom(self)
+            if id(bonded_atom) not in memo:
+                memo[id(bonded_atom)] = bonded_atom
+                bonded_atom.bonded_atoms(memo)
+        return memo.values()
+
+    @property
+    def neighbors(self):
+        """Return a list of all neighboring Atoms. """
+        return [bond.other_atom(self) for bond in self.bonds]
+
+    @property
+    def n_bonds(self):
+        return len(self.bonds)
+
+    @property
+    def extras(self):
+        """Return the Atom's optional, extra attributes. """
+        if self._extras is None:
+            self._extras = dict()
+        return self._extras
+
+    def __getattr__(self, item):
+        if self._extras and item in self._extras:
+            return self._extras[item]
+        else:
+            raise AttributeError
+
+    def __add__(self, other):
+        if isinstance(other, Atom):
+            other = other.pos
+        return self.pos + other
+
+    def __radd__(self, other):
+        if isinstance(other, Atom):
+            other = other.pos
+        return self.pos + other
+
+    def __sub__(self, other):
+        if isinstance(other, Atom):
+            other = other.pos
+        return self.pos - other
+
+    def __rsub__(self, other):
+        if isinstance(other, Atom):
+            other = other.pos
+        return self.pos - other
+
+    def __neg__(self):
+        return -self.pos
+
+    def __repr__(self):
+        return "Atom{0}({1}, {2})".format(id(self), self.kind, self.pos)
+
+    def __deepcopy__(self, memo):
+        cls = self.__class__
+        newone = cls.__new__(cls)
+
+        # Remember the topmost component being deepcopied.
+        if len(memo) == 0:
+            memo[0] = self
+        memo[id(self)] = newone
+
+        # Copy fields that don't need recursion.
+        newone.referrers = set()
+        newone.bonds = set()
+
+        # Do the rest recursively.
+        newone.kind = deepcopy(self.kind, memo)
+        newone.pos = deepcopy(self.pos, memo)
+        newone.charge = deepcopy(self.charge, memo)
+        newone._extras = deepcopy(self._extras, memo)
+
+        # Copy parents, except the topmost compound being deepcopied.
+        if memo[0] == self or isinstance(memo[0], Bond):
+            newone.parent = None
+        else:
+            newone.parent = deepcopy(self.parent, memo)
+
+        return newone
