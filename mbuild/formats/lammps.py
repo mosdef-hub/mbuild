@@ -124,17 +124,16 @@ class LAMMPSTopologyFile(object):
         atom_type_n = 1
         for chain in traj.top.chains:
             for atom in chain.atoms:
-                if atom.atomtype not in numeric_types:
-                    numeric_types[atom.atomtype] = atom_type_n
+                if (atom.name, atom.atomtype) not in numeric_types:
+                    numeric_types[(atom.name, atom.atomtype)] = atom_type_n
                     mass = in_units_of(atom.element.mass, 'grams/moles', self.u['mass'])
-                    mass_list.append('{0:d} {1:8.4f} # {2}\n'.format(
-                        atom_type_n, mass, atom.atomtype))
+                    mass_list.append('{0:d} {1:8.4f} # {2}, {3}\n'.format(
+                        atom_type_n, mass, atom.name, atom.atomtype))
                     atom_type_n += 1
-                x, y, z = in_units_of(traj.xyz[0][atom.index], 'nanometers',
-                                      _distance_unit)
-                entry = '{0:-d} {1:-d} {2:-d} {3:5.8f} {4:8.5f} {5:8.5f} {6:8.5f}  # {7}\n'.format(
-                    atom.index + 1, chain.index + 1, numeric_types[atom.atomtype],
-                    atom.charge, x, y, z, atom.atomtype)
+                x, y, z = in_units_of(traj.xyz[0][atom.index], 'nanometers', self.u['distance'])
+                entry = '{0:-d} {1:-d} {2:-d} {3:5.8f} {4:8.5f} {5:8.5f} {6:8.5f}  # {7}, {8}\n'.format(
+                    atom.index + 1, chain.index + 1, numeric_types[(atom.name, atom.atomtype)],
+                    atom.charge, x, y, z, atom.name, atom.atomtype)
                 atom_list.append(entry)
 
         n_atom_types = len(numeric_types)
@@ -200,18 +199,17 @@ class LAMMPSTopologyFile(object):
         self._fh.write('{0} improper types\n'.format(n_improper_types))
         self._fh.write('\n')
 
-        box = traj.boundingbox(step)
-        for dim, val in enumerate(traj.unitcell_lengths[step]):
-            box.maxs[dim] = box.mins[dim] + val
+        mins = traj.xyz[0].min(axis=0)
+        maxs = mins + traj.unitcell_lengths[0]
 
-        box.mins = in_units_of(box.mins, 'nanometers', _distance_unit)
-        box.maxs = in_units_of(box.maxs, 'nanometers', _distance_unit)
+        mins = in_units_of(mins, 'nanometers', self.u['distance'])
+        maxs = in_units_of(maxs, 'nanometers', self.u['distance'])
         self._fh.write(
-            '{0:10.6f} {1:10.6f} xlo xhi\n'.format(box.mins[0], box.maxs[0]))
+            '{0:10.6f} {1:10.6f} xlo xhi\n'.format(mins[0], maxs[0]))
         self._fh.write(
-            '{0:10.6f} {1:10.6f} ylo yhi\n'.format(box.mins[1], box.maxs[1]))
+            '{0:10.6f} {1:10.6f} ylo yhi\n'.format(mins[1], maxs[1]))
         self._fh.write(
-            '{0:10.6f} {1:10.6f} zlo zhi\n'.format(box.mins[2], box.maxs[2]))
+            '{0:10.6f} {1:10.6f} zlo zhi\n'.format(mins[2], maxs[2]))
 
         for directive in directives_to_write:
             for entry in directive:
