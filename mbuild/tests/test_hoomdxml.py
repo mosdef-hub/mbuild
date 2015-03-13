@@ -25,6 +25,9 @@ class TestHoomdXml(BaseTest):
         ethane = Ethane()
         ethane.update_coordinates(get_fn("ethane.hoomdxml"))
 
+    def test_read_write_compare(self, molecule):
+        pass
+
     def test_units(self, molecule):
         positions = np.array([
              [-0.855480134487, -3.11021924019, -0.716033160686],
@@ -42,3 +45,11 @@ class TestHoomdXml(BaseTest):
              [-0.121015898883, -3.50847649574, -0.732142329216]])
         loaded = molecule.to_trajectory().xyz / 0.6
         assert loaded.all() == positions.all()
+
+if __name__ == "__main__":
+    lj_units = {'mass': 72.0,
+                'distance': 0.6,
+                'energy': 0.4}
+    compound = mb.load(get_fn('ecer2.hoomdxml'), lj_units=lj_units)
+    import pdb
+    pdb.set_trace()

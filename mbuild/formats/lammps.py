@@ -80,34 +80,22 @@ class LAMMPSTopologyFile(object):
             raise ValueError('mode must be one of "r" or "w". '
                              'you supplied "{0}"'.format(mode))
 
-        # Fundamental LJ units.
-        if lj_units is None:
-            self.u = {'distance': 1.0,
-                      'energy': 1.0,
-                      'mass': 1.0}
+        self.u = dict()
+        self.u['radians'] = 'radians'
+        self.u['degrees'] = 'degrees'
+        if unitset == 'real':
+            self.u['distance'] = 'angstroms'
+            self.u['velocity'] = 'angstroms/femtosecond'
+            self.u['energy'] = 'kilocalories/mole'
+            self.u['mass'] = 'grams/mole'
+            self.u['charge'] = 'elementary_charge'
+            self.u['mole'] = 'mole'
         else:
-            assert isinstance(lj_units, dict)
-            assert 'distance' in lj_units
-            assert 'energy' in lj_units
-            assert 'mass' in lj_units
-            self.u = lj_units
-
-        # Other derived LJ units.
-        self.u['time'] = (np.sqrt(self.u['mass'] * self.u['distance']**2.0 / self.u['energy']))
-        self.u['velocity'] = self.u['distance'] / self.u['time']
-        self.u['acceleration'] = self.u['distance'] / self.u['time']**2.0
-        self.u['diameter'] = self.u['distance']
-        self.u['charge'] = 1.0
-        # TODO: figure out charge
-        self.u['moment_inertia'] = self.u['mass'] * self.u['distance']**2.0
-        self.u['image'] = 1.0
-        self.u['body'] = 1.0
-        self.u['orientation'] = 1.0
+            raise Exception("Unsupported unit set specified: {0}".format(unitset))
 
     def read(self):
         """ """
-
-        return self.compound
+        raise NotImplementedError
 
     def _read_unitcell_vectors(self, box):
         """Parse unitcell vectors from box node.  """
@@ -121,18 +109,6 @@ class LAMMPSTopologyFile(object):
             filename (str, optional): Path of the output file.
 
         """
-        _radians_unit = 'radians'
-        _degrees_unit = 'degrees'
-        if unit_set == 'real':
-            _distance_unit = 'angstroms'
-            _velocity_unit = 'angstroms/femtosecond'
-            _energy_unit = 'kilocalories/mole'
-            _mass_unit = 'grams/mole'
-            _charge_unit = 'elementary_charge'
-            _mole_unit = 'mole'
-        else:
-            raise Exception("Unsupported unit set specified: {0}".format(unit_set))
-
         directives_to_write = list()
         mass_list = list()
         mass_list.append('\n')
@@ -150,11 +126,11 @@ class LAMMPSTopologyFile(object):
             for atom in chain.atoms:
                 if atom.atomtype not in numeric_types:
                     numeric_types[atom.atomtype] = atom_type_n
-                    mass = in_units_of(atom.element.mass, 'grams/moles', _mass_unit)
+                    mass = in_units_of(atom.element.mass, 'grams/moles', self.u['mass'])
                     mass_list.append('{0:d} {1:8.4f} # {2}\n'.format(
                         atom_type_n, mass, atom.atomtype))
                     atom_type_n += 1
-                x, y, z = in_units_of(traj.xyz[step][atom.index], 'nanometers',
+                x, y, z = in_units_of(traj.xyz[0][atom.index], 'nanometers',
                                       _distance_unit)
                 entry = '{0:-d} {1:-d} {2:-d} {3:5.8f} {4:8.5f} {5:8.5f} {6:8.5f}  # {7}\n'.format(
                     atom.index + 1, chain.index + 1, numeric_types[atom.atomtype],

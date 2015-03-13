@@ -26,7 +26,7 @@ def apply_mask(host, guest, mask, guest_port_name='down', backfill=None,
     mask = mask * box.lengths + box.mins
 
     n_ports = len(host.referenced_ports())
-    assert(n_ports >= mask.shape[0])
+    assert n_ports >= mask.shape[0], "Not enough ports for mask."
 
     port_positions = np.empty(shape=(n_ports, 3))
     port_list = list()

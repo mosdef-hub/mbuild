@@ -36,7 +36,7 @@ class Bond(PartMixin):
         if kind is not None:
             self.kind = kind
         else:
-            self.kind = '{0}-{1}'.format(atom1.kind, atom2.kind)
+            self.kind = '{0}-{1}'.format(atom1.name, atom2.name)
 
         # Ensure Atoms in Bond know about the Bond.
         atom1.bonds.add(self)

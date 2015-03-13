@@ -1,12 +1,10 @@
 import os
-from warnings import warn
+
+import numpy as np
 
 from mdtraj.formats.registry import _FormatRegistry
-import numpy as np
 from six import string_types
 from xml.etree import cElementTree
-
-import mbuild.compound
 
 
 __all__ = ['load_hoomdxml', 'HOOMDTopologyFile']
@@ -63,9 +61,10 @@ class HOOMDTopologyFile(object):
         if mode == 'r':
             if not os.path.exists(filename):
                 raise IOError("The file '%s' doesn't exist" % filename)
+            from mbuild.compound import Compound
             self._fh = open(filename, 'r')
             self._is_open = True
-            self.compound = mbuild.compound.Compound()
+            self.compound = Compound()
         elif mode == 'w':
             if os.path.exists(filename) and not force_overwrite:
                 raise IOError("The file '%s' already exists" % filename)
@@ -101,6 +100,7 @@ class HOOMDTopologyFile(object):
 
     def read(self):
         """ """
+        from mbuild.atom import Atom
 
         tree = cElementTree.parse(self._filename)
         self._config = tree.getroot().find('configuration')
@@ -117,9 +117,9 @@ class HOOMDTopologyFile(object):
         atom_mapping = dict()
         for n, type_coord in enumerate(zip(types, coords)):
             atom_type, xyz = type_coord
-            new_atom = mbuild.compound.Atom(str(atom_type), [float(x) * self.u['distance']
+            new_atom = Atom(str(atom_type), [float(x) * self.u['distance']
                                              for x in xyz.split()])
-            self.compound.add(new_atom, label="{0}[$]".format(new_atom.kind))
+            self.compound.add(new_atom, label="{0}[$]".format(new_atom.name))
             atom_mapping[n] = new_atom
 
         self._read_per_particle_nodes()
@@ -135,8 +135,8 @@ class HOOMDTopologyFile(object):
             try:
                 node_text = self._config.find(node).text.splitlines()[1:]
             except AttributeError:
-                warn("Specified node '{0}' does not exist in {1}".format(
-                    node, self._filename))
+                # Node does not exist.
+                pass
             else:
                 for raw_line, atom in zip(node_text, self.compound.atoms):
                     # TODO: not robust when e.g. charges are provided as ints
@@ -148,12 +148,13 @@ class HOOMDTopologyFile(object):
 
     def _read_multi_particle_nodes(self, atom_mapping):
         """ """
+        from mbuild.bond import Bond
 
         for node, n_indices in self.multi_particle_nodes:
             try:
                 node_text = self._config.find(node).text.splitlines()[1:]
             except AttributeError:
-                # Node doesn't exist.
+                # Node does not exist.
                 pass
             else:
                 if node != 'bond':
@@ -163,7 +164,7 @@ class HOOMDTopologyFile(object):
                     if node == 'bond':
                         atom1 = atom_mapping[parsed_line[1]]
                         atom2 = atom_mapping[parsed_line[2]]
-                        new_bond = mbuild.compound.Bond(atom1, atom2)
+                        new_bond = Bond(atom1, atom2)
                         self.compound.add(new_bond)
                     else:
                         self.compound.extras[node] = list()

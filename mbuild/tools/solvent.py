@@ -79,7 +79,7 @@ def solvate(host_compound, guest_compound, host_box, guest_box, overlap=vdw_radi
     # TODO: we may want to make sure that the axes of the two boxes line up
 
     # Replicate the guest so that it fills or overfills the host box.
-    host_atom_list = [atom for atom in host_compound.yield_atoms() if atom.kind != 'G']
+    host_atom_list = [atom for atom in host_compound.yield_atoms() if atom.name != 'G']
     host_atom_pos_list = [atom.pos for atom in host_atom_list]
     kdtree = PeriodicCKDTree(host_atom_pos_list)
 

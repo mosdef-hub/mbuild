@@ -20,7 +20,7 @@ class AmorphousSilica(mb.Compound):
                              'add it! '.format(surface_roughness))
         count = 0
         for atom in self.atoms:
-            if atom.kind == 'OB':
+            if atom.name == 'OB':
                 count += 1
                 port = mb.Port(anchor=atom)
                 mb.rotate_around_x(port, np.pi/2)

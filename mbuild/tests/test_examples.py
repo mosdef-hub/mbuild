@@ -28,11 +28,11 @@ class TestExample(BaseTest):
         assert methane.n_atoms == 5
         assert methane.n_bonds == 4
 
-        assert methane.atoms[0].kind == "C"
-        assert methane.hc[0].kind == "H"
-        assert methane.hc[1].kind == "H"
-        assert methane.hc[2].kind == "H"
-        assert methane.hc[3].kind == "H"
+        assert methane.atoms[0].name == "C"
+        assert methane.hc[0].name == "H"
+        assert methane.hc[1].name == "H"
+        assert methane.hc[2].name == "H"
+        assert methane.hc[3].name == "H"
 
     def test_pmpc(self):
         import mbuild.examples.pmpc.pmpc_brush_layer as example

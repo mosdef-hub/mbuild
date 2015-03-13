@@ -31,10 +31,10 @@ class Port(Compound):
         self.anchor = anchor
 
         up = Compound()
-        up.add(Atom(kind='G', pos=[0, 0, 0]), 'middle')
-        up.add(Atom(kind='G', pos=[0, 0.02, 0]), 'top')
-        up.add(Atom(kind='G', pos=[-0.02, -0.01, 0]), 'left')
-        up.add(Atom(kind='G', pos=[0.0, -0.02, 0.01]), 'right')
+        up.add(Atom(name='G', pos=[0, 0, 0]), 'middle')
+        up.add(Atom(name='G', pos=[0, 0.02, 0]), 'top')
+        up.add(Atom(name='G', pos=[-0.02, -0.01, 0]), 'left')
+        up.add(Atom(name='G', pos=[0.0, -0.02, 0.01]), 'right')
 
         down = deepcopy(up)
 

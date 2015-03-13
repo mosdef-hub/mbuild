@@ -17,8 +17,8 @@ class Atom(PartMixin):
 
     Attributes
     ----------
-    kind : str
-        The kind of atom, usually the chemical element.
+    name : str
+        The name of the atom, usually the chemical element.
     pos : np.ndarray, shape=(3,), dtype=float
         Cartesian coordinates of the atom.
     charge : float
@@ -31,16 +31,16 @@ class Atom(PartMixin):
         Every Bond that the Atom is a part of.
 
     """
-    __slots__ = ['kind', 'pos', 'charge', 'parent', 'referrers', 'bonds', 'uid',
+    __slots__ = ['name', 'pos', 'charge', 'parent', 'referrers', 'bonds', 'uid',
                  '_extras']
 
-    def __init__(self, kind, pos=None, charge=0.0):
+    def __init__(self, name, pos=None, charge=0.0):
         super(Atom, self).__init__()
 
         if pos is None:
             pos = np.array([0, 0, 0], dtype=float)
 
-        self.kind = kind
+        self.name = name
         self.pos = np.asarray(pos, dtype=float)
         self.charge = charge
         self.bonds = set()
@@ -103,7 +103,7 @@ class Atom(PartMixin):
         return -self.pos
 
     def __repr__(self):
-        return "Atom{0}({1}, {2})".format(id(self), self.kind, self.pos)
+        return "Atom{0}({1}, {2})".format(id(self), self.name, self.pos)
 
     def __deepcopy__(self, memo):
         cls = self.__class__
@@ -119,7 +119,7 @@ class Atom(PartMixin):
         newone.bonds = set()
 
         # Do the rest recursively.
-        newone.kind = deepcopy(self.kind, memo)
+        newone.name = deepcopy(self.name, memo)
         newone.pos = deepcopy(self.pos, memo)
         newone.charge = deepcopy(self.charge, memo)
         newone._extras = deepcopy(self._extras, memo)

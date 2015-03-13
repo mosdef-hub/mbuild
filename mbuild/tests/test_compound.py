@@ -25,17 +25,17 @@ class TestCompound(BaseTest):
         return Ethane()
 
     def test_atom_list_by_kind(self, ethane):
-        non_ports = ethane.atom_list_by_kind(excludeG=True)
-        assert sum([1 for x in non_ports if x.kind != 'G']) == 8
+        non_ports = ethane.atom_list_by_name(excludeG=True)
+        assert sum([1 for x in non_ports if x.name != 'G']) == 8
 
-        with_G = ethane.atom_list_by_kind()
+        with_G = ethane.atom_list_by_name()
         assert len(with_G) == 24
 
-        only_H = ethane.atom_list_by_kind('H')
-        assert sum([1 for x in only_H if x.kind == 'H']) == 6
+        only_H = ethane.atom_list_by_name('H')
+        assert sum([1 for x in only_H if x.name == 'H']) == 6
 
-        only_G = ethane.atom_list_by_kind('G')
-        assert sum([1 for x in only_G if x.kind == 'G']) == 16
+        only_G = ethane.atom_list_by_name('G')
+        assert sum([1 for x in only_G if x.name == 'G']) == 16
 
     def test_bond_list_by_kind(self, ethane):
         C_H_bonds = ethane.bond_list_by_kind(kind='C-H')
@@ -46,15 +46,15 @@ class TestCompound(BaseTest):
 
     # def test_atoms_in_range(self, ethane):
     #     group = ethane.atoms_in_range(ethane.atoms[0].pos, 0.141)
-    #     assert sum([1 for x in group if x.kind == 'H']) == 3
-    #     assert sum([1 for x in group if x.kind == 'C']) == 2
+    #     assert sum([1 for x in group if x.name == 'H']) == 3
+    #     assert sum([1 for x in group if x.name == 'C']) == 2
     #
     #     group = ethane.atoms_in_range(ethane.atoms[0].pos, 0.141, max_items=4)
-    #     assert sum([1 for x in group if x.kind == 'H']) == 3
-    #     assert sum([1 for x in group if x.kind == 'C']) == 1
+    #     assert sum([1 for x in group if x.name == 'H']) == 3
+    #     assert sum([1 for x in group if x.name == 'C']) == 1
 
     def test_remove(self, ethane):
-        hydrogens = ethane.atom_list_by_kind("H")
+        hydrogens = ethane.atom_list_by_name("H")
         ethane.remove(hydrogens)
 
         assert ethane.n_atoms == 2

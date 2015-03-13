@@ -38,7 +38,7 @@ class Betacristobalite(mb.Compound):
 
         count = 0
         for atom in self.atoms:
-            if atom.kind == 'O' and atom.pos[2] > 1.0:
+            if atom.name == 'O' and atom.pos[2] > 1.0:
                 count += 1
                 port = mb.Port(anchor=atom)
                 mb.rotate_around_x(port, np.pi/2)

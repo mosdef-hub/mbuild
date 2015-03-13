@@ -121,7 +121,7 @@ class Compound(PartMixin):
     @property
     def atoms(self):
         """A list of all Atoms in the Compound and sub-Compounds.  """
-        return self.atom_list_by_kind(excludeG=True)
+        return self.atom_list_by_name(excludeG=True)
 
     def yield_atoms(self):
         """ """
@@ -132,12 +132,12 @@ class Compound(PartMixin):
         """Return the number of Atoms in the Compound. """
         return len(self.atoms)
 
-    def atom_list_by_kind(self, kind='*', excludeG=False):
+    def atom_list_by_name(self, name='*', excludeG=False):
         """Return a list of Atoms filtered by their kind.
 
         Parameters
         ----------
-        kind : str
+        name : str
             Return only atoms of this type. '*' indicates all.
         excludeG : bool
             Exclude Port particles of kind 'G' - reserved for Ports.
@@ -149,10 +149,10 @@ class Compound(PartMixin):
         """
         atom_list = []
         for atom in self.yield_atoms():
-            if not (excludeG and atom.kind == "G"):
-                if kind == '*':
+            if not (excludeG and atom.name == "G"):
+                if name == '*':
                     atom_list.append(atom)
-                elif atom.kind == kind:
+                elif atom.name == name:
                     atom_list.append(atom)
         return atom_list
 
@@ -385,7 +385,7 @@ class Compound(PartMixin):
 
         """
         exclude = not show_ports
-        atom_list = self.atom_list_by_kind('*', excludeG=exclude)
+        atom_list = self.atom_list_by_name('*', excludeG=exclude)
 
         top = self._to_topology(atom_list, chain_types=chain_types,
                                 residue_types=residue_types, forcefield=forcefield)
@@ -469,16 +469,16 @@ class Compound(PartMixin):
 
             # Add the actual atoms
             try:
-                ele = get_by_symbol(atom.kind)
+                ele = get_by_symbol(atom.name)
             except KeyError:
-                ele = Element(1000, atom.kind, atom.kind, 1.0)
-            at = top.add_atom(atom.kind, ele, last_residue)
+                ele = Element(1000, atom.name, atom.name, 1.0)
+            at = top.add_atom(atom.name, ele, last_residue)
             at.charge = atom.charge
 
             try:
                 at.atomtype = atom.atomtype
             except AttributeError:
-                at.atomtype = atom.kind
+                at.atomtype = atom.name
             atom_mapping[atom] = at
 
         for bond in self.bonds:
@@ -580,7 +580,7 @@ class Compound(PartMixin):
         try:
             return sum(atom.pos for atom in self.atoms) / self.n_atoms
         except ZeroDivisionError:  # Compound only contains 'G' atoms.
-            atoms = self.atom_list_by_kind('G')
+            atoms = self.atom_list_by_name('G')
             return sum(atom.pos for atom in atoms) / len(atoms)
 
     def boundingbox(self, excludeG=True):
@@ -593,7 +593,7 @@ class Compound(PartMixin):
         maxz = -np.inf
 
         for atom in self.yield_atoms():
-            if excludeG and atom.kind == 'G':
+            if excludeG and atom.name == 'G':
                 continue
             if atom.pos[0] < minx:
                 minx = atom.pos[0]
@@ -624,10 +624,10 @@ class Compound(PartMixin):
 
         TODO: testing for periodic boundaries.
         """
-        for a1 in self.atom_list_by_kind(type_a):
+        for a1 in self.atom_list_by_name(type_a):
             nearest = self.atoms_in_range(a1.pos, dmax)
             for a2 in nearest:
-                if (a2.kind == type_b) and (dmin <= self.min_periodic_distance(a2.pos, a1.pos) <= dmax):
+                if (a2.name == type_b) and (dmin <= self.min_periodic_distance(a2.pos, a1.pos) <= dmax):
                     self.add(Bond(a1, a2, kind=kind))
 
     # Magic
