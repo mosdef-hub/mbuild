@@ -12,7 +12,7 @@ __all__ = ['load_hoomdxml', 'HOOMDTopologyFile']
 
 @_FormatRegistry.register_loader('.hoomdxml')
 def load_hoomdxml(filename, lj_units=None):
-    """Load a HOOMD-blue XML file form disk.
+    """Load a HOOMD-blue XML file from disk.
 
     Note: lj_units need to be normalized by nm, kJ/mol, and amu
 

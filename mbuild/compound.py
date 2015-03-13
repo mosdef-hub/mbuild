@@ -10,6 +10,7 @@ import mdtraj as md
 from mdtraj.core.element import Element
 from mdtraj.core.element import get_by_symbol
 
+from mbuild.formats.gromacs import GROMACSTopologyFile
 from mbuild.formats.hoomdxml import HOOMDTopologyFile
 from mbuild.formats.lammps import LAMMPSTopologyFile
 from mbuild.formats.mol2 import write_mol2
@@ -543,6 +544,7 @@ class Compound(PartMixin):
         if forcefield:
             from mbuild.tools.parameterize.forcefield import apply_forcefield
             apply_forcefield(top, forcefield)
+            top.forcefield = forcefield
 
         return top
 
@@ -568,8 +570,8 @@ class Compound(PartMixin):
         extension = os.path.splitext(filename)[-1]
 
         savers = {'.hoomdxml': self.save_hoomdxml,
-                  #'.gro': self.save_gromacs,
-                  #'.top': self.save_gromacs,
+                  '.gro': self.save_gromacs,
+                  '.top': self.save_gromacs,
                   '.mol2': self.save_mol2,
                   '.lammps': self.save_lammpsdata,
                   '.lmp': self.save_lammpsdata,
@@ -580,8 +582,8 @@ class Compound(PartMixin):
         except KeyError:  # TODO: better reporting
             saver = None
 
-        if not saver and forcefield:
-            ff_formats = ', '.join(list(savers.keys()).remove('.mol2'))
+        if (not saver or extension == '.mol2') and forcefield:
+            ff_formats = ', '.join(set(savers.keys()) - set(['.mol2']))
             raise ValueError('The only supported formats with forcefield'
                              'information are: {0}'.format(ff_formats))
 
@@ -601,7 +603,15 @@ class Compound(PartMixin):
         """ """
         write_mol2(filename, traj)
 
-    # def save_gromacs(self):
+    def save_gromacs(self, filename, traj, force_overwrite=True, **kwargs):
+        """ """
+        # Create separate file paths for .gro and .top
+        filepath, filename = os.path.split(filename)
+        basename = os.path.splitext(filename)[0]
+        top_filename = os.path.join(filepath, basename + '.top')
+        gro_filename = os.path.join(filepath, basename + '.gro')
+        with GROMACSTopologyFile(top_filename, gro_filename, 'w', force_overwrite=force_overwrite) as f:
+            f.write(traj)
 
     def save_lammpsdata(self, filename, traj, force_overwrite=True, **kwargs):
         """ """

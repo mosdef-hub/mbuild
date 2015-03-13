@@ -17,7 +17,7 @@ class PMPCLayer(mb.Compound):
 
         surface = Betacristobalite()
         tc = mb.TiledCompound(surface, (tile_x, tile_y, 1), kind="tiled_surface")
-        box = tc.boundingbox()
+        box = tc.boundingbox
         mb.translate(tc, -box.mins)
         self.add(tc, 'tiled_surface')
 

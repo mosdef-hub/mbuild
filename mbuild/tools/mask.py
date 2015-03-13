@@ -22,7 +22,7 @@ def apply_mask(host, guest, mask, guest_port_name='down', backfill=None,
         backfill (Compound, optional):
     """
     assert_port_exists(guest_port_name, guest)
-    box = host.boundingbox(exclude_ports=False)
+    box = host.boundingbox
     mask = mask * box.lengths + box.mins
 
     n_ports = len(host.referenced_ports())

@@ -11,6 +11,7 @@ class Topology(MDTrajTopology):
     def __init__(self):
         super(Topology, self).__init__()
 
+        self.forcefield = None
         self._angles = []
         self._dihedrals = []
         self._ff_bonds = []

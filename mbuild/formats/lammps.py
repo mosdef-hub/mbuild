@@ -15,7 +15,7 @@ __all__ = ['load_lammpsdata', 'LAMMPSTopologyFile']
 @_FormatRegistry.register_loader('.lammps')
 @_FormatRegistry.register_loader('.lmp')
 def load_lammpsdata(filename, unitset=None):
-    """Load a LAMMPS data file form disk.
+    """Load a LAMMPS data file from disk.
 
     Parameters
     ----------
