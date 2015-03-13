@@ -1,5 +1,4 @@
 future
 matplotlib
 networkx
-orderedset
 six

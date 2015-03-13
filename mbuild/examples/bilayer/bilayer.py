@@ -174,7 +174,7 @@ class Bilayer(mb.Compound):
         if self._lipid_box:
             return self._lipid_box
         else:
-            self._lipid_box = self.lipid_components.boundingbox()
+            self._lipid_box = self.lipid_components.boundingbox
             # add buffer around lipid box
             self._lipid_box.mins -= np.array(
                     [0.5*np.sqrt(self.apl),

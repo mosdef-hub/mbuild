@@ -9,7 +9,6 @@ import numpy as np
 import mdtraj as md
 from mdtraj.core.element import Element
 from mdtraj.core.element import get_by_symbol
-from orderedset import OrderedSet
 
 from mbuild.formats.hoomdxml import HOOMDTopologyFile
 from mbuild.formats.lammps import LAMMPSTopologyFile
@@ -18,6 +17,7 @@ from mbuild.formats.mol2 import write_mol2
 from mbuild.atom import Atom
 from mbuild.box import Box
 from mbuild.bond import Bond
+from mbuild.orderedset import OrderedSet
 from mbuild.part_mixin import PartMixin
 from mbuild.topology import Topology
 
@@ -121,7 +121,7 @@ class Compound(PartMixin):
     @property
     def atoms(self):
         """A list of all Atoms in the Compound and sub-Compounds.  """
-        return self.atom_list_by_name(excludeG=True)
+        return self.atom_list_by_name(exclude_ports=True)
 
     def yield_atoms(self):
         """ """
@@ -132,14 +132,14 @@ class Compound(PartMixin):
         """Return the number of Atoms in the Compound. """
         return len(self.atoms)
 
-    def atom_list_by_name(self, name='*', excludeG=False):
-        """Return a list of Atoms filtered by their kind.
+    def atom_list_by_name(self, name='*', exclude_ports=False):
+        """Return a list of Atoms filtered by their name.
 
         Parameters
         ----------
         name : str
             Return only atoms of this type. '*' indicates all.
-        excludeG : bool
+        exclude_ports : bool
             Exclude Port particles of kind 'G' - reserved for Ports.
 
         Returns
@@ -149,7 +149,7 @@ class Compound(PartMixin):
         """
         atom_list = []
         for atom in self.yield_atoms():
-            if not (excludeG and atom.name == "G"):
+            if not (exclude_ports and atom.name == "G"):
                 if name == '*':
                     atom_list.append(atom)
                 elif atom.name == name:
@@ -197,6 +197,60 @@ class Compound(PartMixin):
         if self._extras is None:
             self._extras = dict()
         return self._extras
+
+    def visualize(self, show_ports=False):
+        """Visualize the Compound using VMD.
+
+        Assumes you have VMD installed and can call it from the command line via
+        'vmd'.
+
+        TODO: Look into pizza.py's vmd.py. See issue #32.
+        """
+        filename = 'visualize_{}.mol2'.format(self.__class__.__name__)
+        self.save(filename, show_ports=show_ports)
+        import os
+
+        try:
+            os.system('vmd {}'.format(filename))
+        except OSError:
+            print("Visualization with VMD failed. Make sure it is installed"
+                  "correctly and launchable from the command line via 'vmd'.")
+
+    @property
+    def xyz(self):
+        """Get a np.array of all atom coordinates in this compound. """
+        atoms = self.atom_list_by_name()
+        return np.array([atom.pos for atom in atoms])
+
+    @property
+    def center(self):
+        """The cartesian center of the Compound based on its Atoms. """
+        try:
+            return np.mean(self.xyz, axis=0)
+        except ZeroDivisionError:  # Compound only contains 'G' atoms.
+            atoms = self.atom_list_by_name('G')
+            return sum(atom.pos for atom in atoms) / len(atoms)
+
+    @property
+    def boundingbox(self):
+        """Compute the bounding box of the compound. """
+        xyz = self.xyz
+        return Box(mins=xyz.min(axis=0), maxs=xyz.max(axis=0))
+
+    def min_periodic_distance(self, xyz0, xyz1):
+        """Vectorized distance calculation considering minimum image. """
+        d = np.abs(xyz0 - xyz1)
+        d = np.where(d > 0.5 * self.periodicity, self.periodicity - d, d)
+        return np.sqrt((d ** 2).sum(axis=-1))
+
+    def add_bonds(self, type_a, type_b, dmin, dmax, kind=None):
+        """Add Bonds between all pairs of types a/b within [dmin, dmax]. """
+        # TODO: testing for periodic boundaries.
+        for a1 in self.atom_list_by_name(type_a):
+            nearest = self.atoms_in_range(a1.pos, dmax)
+            for a2 in nearest:
+                if (a2.name == type_b) and (dmin <= self.min_periodic_distance(a2.pos, a1.pos) <= dmax):
+                    self.add(Bond(a1, a2, kind=kind))
 
     def add(self, new_part, label=None, containment=True, replace=False,
             inherit_periodicity=True):
@@ -385,7 +439,7 @@ class Compound(PartMixin):
 
         """
         exclude = not show_ports
-        atom_list = self.atom_list_by_name('*', excludeG=exclude)
+        atom_list = self.atom_list_by_name('*', exclude_ports=exclude)
 
         top = self._to_topology(atom_list, chain_types=chain_types,
                                 residue_types=residue_types, forcefield=forcefield)
@@ -396,7 +450,7 @@ class Compound(PartMixin):
             xyz[0, idx] = atom.pos
 
         # Unitcell information.
-        box = self.boundingbox()
+        box = self.boundingbox
         unitcell_lengths = np.empty(3)
         for dim, val in enumerate(self.periodicity):
             if val:
@@ -544,91 +598,16 @@ class Compound(PartMixin):
             f.write(traj)
 
     def save_mol2(self, filename, traj, **kwargs):
+        """ """
         write_mol2(filename, traj)
 
     # def save_gromacs(self):
 
-    def save_lammpsdata(self, filename, traj, force_overwrite=True, show_ports=False,
-                        **kwargs):
+    def save_lammpsdata(self, filename, traj, force_overwrite=True, **kwargs):
         """ """
         with LAMMPSTopologyFile(filename, 'w', force_overwrite=force_overwrite) as f:
             f.write(traj)
 
-    # Convenience functions
-    # ---------------------
-    def visualize(self, show_ports=False):
-        """Visualize the Compound using VMD.
-
-        Assumes you have VMD installed and can call it from the command line via
-        'vmd'.
-
-        TODO: Look into pizza.py's vmd.py. See issue #32.
-        """
-        filename = 'visualize_{}.mol2'.format(self.__class__.__name__)
-        self.save(filename, show_ports=show_ports)
-        import os
-
-        try:
-            os.system('vmd {}'.format(filename))
-        except OSError:
-            print("Visualization with VMD failed. Make sure it is installed"
-                  "correctly and launchable from the command line via 'vmd'.")
-
-    @property
-    def center(self):
-        """The cartesian center of the Compound based on its Atoms. """
-        try:
-            return sum(atom.pos for atom in self.atoms) / self.n_atoms
-        except ZeroDivisionError:  # Compound only contains 'G' atoms.
-            atoms = self.atom_list_by_name('G')
-            return sum(atom.pos for atom in atoms) / len(atoms)
-
-    def boundingbox(self, excludeG=True):
-        """Compute the bounding box of the compound. """
-        minx = np.inf
-        miny = np.inf
-        minz = np.inf
-        maxx = -np.inf
-        maxy = -np.inf
-        maxz = -np.inf
-
-        for atom in self.yield_atoms():
-            if excludeG and atom.name == 'G':
-                continue
-            if atom.pos[0] < minx:
-                minx = atom.pos[0]
-            if atom.pos[0] > maxx:
-                maxx = atom.pos[0]
-            if atom.pos[1] < miny:
-                miny = atom.pos[1]
-            if atom.pos[1] > maxy:
-                maxy = atom.pos[1]
-            if atom.pos[2] < minz:
-                minz = atom.pos[2]
-            if atom.pos[2] > maxz:
-                maxz = atom.pos[2]
-
-        min_coords = np.array([minx, miny, minz])
-        max_coords = np.array([maxx, maxy, maxz])
-
-        return Box(mins=min_coords, maxs=max_coords)
-
-    def min_periodic_distance(self, xyz0, xyz1):
-        """Vectorized distance calculation considering minimum image. """
-        d = np.abs(xyz0 - xyz1)
-        d = np.where(d > 0.5 * self.periodicity, self.periodicity - d, d)
-        return np.sqrt((d ** 2).sum(axis=-1))
-
-    def add_bonds(self, type_a, type_b, dmin, dmax, kind=None):
-        """Add Bonds between all Atom pairs of types a/b within [dmin, dmax].
-
-        TODO: testing for periodic boundaries.
-        """
-        for a1 in self.atom_list_by_name(type_a):
-            nearest = self.atoms_in_range(a1.pos, dmax)
-            for a2 in nearest:
-                if (a2.name == type_b) and (dmin <= self.min_periodic_distance(a2.pos, a1.pos) <= dmax):
-                    self.add(Bond(a1, a2, kind=kind))
 
     # Magic
     # -----

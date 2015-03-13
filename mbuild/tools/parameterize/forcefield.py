@@ -1,6 +1,6 @@
 import itertools
 
-from orderedset import OrderedSet
+from mbuild.orderedset import OrderedSet
 
 from mbuild.tools.parameterize.atomtyper import find_atomtypes
 

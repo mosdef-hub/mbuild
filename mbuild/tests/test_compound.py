@@ -1,5 +1,7 @@
 import pytest
 
+import numpy as np
+
 import mbuild as mb
 from mbuild.components.small_groups.ch3 import CH3
 from mbuild.testing.tools import get_fn
@@ -7,6 +9,16 @@ from mbuild.tests.base_test import BaseTest
 
 
 class TestCompound(BaseTest):
+
+    @pytest.fixture
+    def ethane(self):
+        from mbuild.examples.ethane.ethane import Ethane
+        return Ethane()
+
+    @pytest.fixture
+    def methane(self):
+        from mbuild.examples.methane.methane import Methane
+        return Methane()
 
     def test_load_and_create(self):
         mb.load(get_fn('methyl.pdb'))
@@ -19,13 +31,8 @@ class TestCompound(BaseTest):
         methyl = mb.load(get_fn('methyl.pdb'))
         methyl.save(filename='methyl_out.pdb')
 
-    @pytest.fixture
-    def ethane(self):
-        from mbuild.examples.ethane.ethane import Ethane
-        return Ethane()
-
     def test_atom_list_by_kind(self, ethane):
-        non_ports = ethane.atom_list_by_name(excludeG=True)
+        non_ports = ethane.atom_list_by_name(exclude_ports=True)
         assert sum([1 for x in non_ports if x.name != 'G']) == 8
 
         with_G = ethane.atom_list_by_name()
@@ -61,3 +68,7 @@ class TestCompound(BaseTest):
         assert ethane.n_bonds == 1
         for atom in ethane.atoms:
             assert atom.n_bonds == 1
+
+    def test_center(self, methane):
+        assert np.array_equal(methane.center, np.array([0, 0, 0]))
+        assert np.allclose(mb.Port().center, np.array([0, 0, 2.5e-3]))

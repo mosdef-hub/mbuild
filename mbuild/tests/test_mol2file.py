@@ -7,12 +7,15 @@ from mbuild.tests.base_test import BaseTest
 class TestMol2(BaseTest):
 
     def test_load_and_create(self):
-        methyl = mb.load(get_fn('methyl.mol2'))
+        mb.load(get_fn('methyl.mol2'))
 
-    def test_load_into(self):
+    def test_update_coordinates(self):
         methyl = CH3()
         methyl.update_coordinates(get_fn('methyl.mol2'))
 
     def test_save(self):
         methyl = mb.load(get_fn('methyl.mol2'))
         methyl.save(filename='methyl_out.mol2')
+
+    def test_read_write_compare(self):
+        pass

@@ -15,7 +15,7 @@ def main():
 
     # Create a water box.
     water = Water()
-    guest_box = water.boundingbox()
+    guest_box = water.boundingbox
     print("Guest (water) box: {}".format(guest_box))
 
     # Solvate ethane with water box.

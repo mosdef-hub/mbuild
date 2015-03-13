@@ -27,13 +27,13 @@ def solvent_box(solvent, box):
     """
 
     if np.all(solvent.periodicity == 0):
-        solvent.periodicity = solvent.boundingbox().lengths
+        solvent.periodicity = solvent.boundingbox.lengths
     num_replicas = np.ceil(box.lengths / solvent.periodicity)   # is this right?
     num_replicas = num_replicas.astype('int')
     print(num_replicas)
 
     compound = mbuild.compound.Compound()
-    translate(solvent, -solvent.boundingbox().mins+box.mins)
+    translate(solvent, -solvent.boundingbox.mins + box.mins)
     for xi in range(num_replicas[0]):   # x replicas
         for yi in range(num_replicas[1]):   # y replicas
             for zi in range(num_replicas[2]):   # z replicas

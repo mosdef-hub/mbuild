@@ -7,7 +7,6 @@ from mdtraj.utils import in_units_of
 from mdtraj.formats.registry import _FormatRegistry
 from six import string_types
 
-import mbuild.compound
 
 
 __all__ = ['load_lammpsdata', 'LAMMPSTopologyFile']
@@ -16,16 +15,12 @@ __all__ = ['load_lammpsdata', 'LAMMPSTopologyFile']
 @_FormatRegistry.register_loader('.lammps')
 @_FormatRegistry.register_loader('.lmp')
 def load_lammpsdata(filename, unitset=None):
-    """Load a HOOMD-blue XML file form disk.
-
-    Note: lj_units need to be normalized by nm, kJ/mol, and amu
-
-    Required nodes for valid HOOMD simulation: box, position and type.
+    """Load a LAMMPS data file form disk.
 
     Parameters
     ----------
     filename : str
-        Path to xml file.
+        Path to data file.
     optional_nodes : str, optional, default=['bonds']
         Read specified nodes in file other than 'box', 'position' and 'type'.
 
@@ -54,7 +49,7 @@ class LAMMPSTopologyFile(object):
                             ('improper', 4)]
 
     def __init__(self, filename, mode='r', force_overwrite=True, unitset='real'):
-        """Open a HOOMD xml file for reading/writing. """
+        """Open a LAMMPS data file for reading/writing. """
 
         self._is_open = False
         self._filename = filename
@@ -68,9 +63,10 @@ class LAMMPSTopologyFile(object):
         if mode == 'r':
             if not os.path.exists(filename):
                 raise IOError("The file '%s' doesn't exist" % filename)
+            from mbuild.compound import Compound
             self._fh = open(filename, 'r')
             self._is_open = True
-            self.compound = mbuild.compound.Compound()
+            self.compound = Compound()
         elif mode == 'w':
             if os.path.exists(filename) and not force_overwrite:
                 raise IOError("The file '%s' already exists" % filename)
