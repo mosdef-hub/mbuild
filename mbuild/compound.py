@@ -133,7 +133,7 @@ class Compound(PartMixin):
         """Return the number of Atoms in the Compound. """
         return len(self.atoms)
 
-    def atom_list_by_name(self, name='*', exclude_ports=False):
+    def atom_list_by_name(self, name='*', exclude_ports=True):
         """Return a list of Atoms filtered by their name.
 
         Parameters
@@ -147,6 +147,7 @@ class Compound(PartMixin):
         -------
         atom_list : list
             List of Atoms matching the inputs.
+
         """
         atom_list = []
         for atom in self.yield_atoms():

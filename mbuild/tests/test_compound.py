@@ -32,17 +32,17 @@ class TestCompound(BaseTest):
         methyl.save(filename='methyl_out.pdb')
 
     def test_atom_list_by_kind(self, ethane):
-        non_ports = ethane.atom_list_by_name(exclude_ports=True)
+        non_ports = ethane.atom_list_by_name()
         assert sum([1 for x in non_ports if x.name != 'G']) == 8
 
-        with_G = ethane.atom_list_by_name()
+        with_G = ethane.atom_list_by_name(exclude_ports=False)
         assert len(with_G) == 24
 
         only_H = ethane.atom_list_by_name('H')
-        assert sum([1 for x in only_H if x.name == 'H']) == 6
+        assert sum([1 for _ in only_H]) == 6
 
-        only_G = ethane.atom_list_by_name('G')
-        assert sum([1 for x in only_G if x.name == 'G']) == 16
+        only_G = ethane.atom_list_by_name('G', exclude_ports=False)
+        assert sum([1 for _ in only_G]) == 16
 
     def test_bond_list_by_kind(self, ethane):
         C_H_bonds = ethane.bond_list_by_kind(kind='C-H')
