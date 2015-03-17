@@ -255,7 +255,7 @@ class Compound(PartMixin):
 
     def add_bonds(self, type_a, type_b, dmin, dmax, kind=None):
         """Add Bonds between all pairs of types a/b within [dmin, dmax]. """
-        # TODO: testing for periodic boundaries.
+        # TODO: utils for periodic boundaries.
         for a1 in self.atom_list_by_name(type_a):
             nearest = self.atoms_in_range(a1.pos, dmax)
             for a2 in nearest:
@@ -631,7 +631,6 @@ class Compound(PartMixin):
         """ """
         with LAMMPSTopologyFile(filename, 'w', force_overwrite=force_overwrite) as f:
             f.write(traj)
-
 
     # Magic
     # -----

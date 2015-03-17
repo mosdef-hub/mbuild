@@ -55,7 +55,7 @@ setup(
     download_url='https://github.com/sallai/mbuild/tarball/{}'.format(
         mbuild.version.short_version),
     packages=find_packages(),
-    package_data={'mbuild': ['testing/reference/*']},
+    package_data={'mbuild': ['utils/reference/*']},
     package_dir={'mbuild': 'mbuild'},
     include_package_data=True,
     install_requires=requirements,
@@ -79,6 +79,6 @@ setup(
     test_suite='tests',
     cmdclass={'test': PyTest,
     },
-    extras_require={'testing': ['pytest'],
+    extras_require={'utils': ['pytest'],
     },
 )
