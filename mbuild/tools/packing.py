@@ -108,14 +108,12 @@ def solvate(solute, solvent, box, overlap=0.1):
     out, err = proc.communicate()
 
     # Figure out how many solvent molecules were added...
-    import pdb
-    pdb.set_trace()
     n_solvent_line = [line for line in err.splitlines() if 'Number of SOL molecules' in line][0]
     n_solvent = int(n_solvent_line.split()[-1])
 
     # ...add the appropriate topology information...
     for _ in range(n_solvent):
-        solute.add(solvent, 'SOL[$]')
+        solute.add(deepcopy(solvent), 'SOL[$]')
 
     # ...and the coordinates.
     solute.update_coordinates(solvated_file)
