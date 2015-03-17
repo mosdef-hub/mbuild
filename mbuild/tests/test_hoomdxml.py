@@ -2,7 +2,7 @@ import pytest
 import numpy as np
 
 import mbuild as mb
-from mbuild.testing.tools import get_fn
+from mbuild.utils.io import get_fn
 from mbuild.tests.base_test import BaseTest
 
 

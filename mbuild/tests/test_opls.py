@@ -3,7 +3,7 @@ import os
 
 from six import string_types
 
-from mbuild.testing.tools import load_top_opls, resource_filename
+from mbuild.utils.io import load_top_opls, resource_filename
 from mbuild.tools.parameterize.forcefield import prepare_atoms
 from mbuild.tools.parameterize.atomtyper import find_atomtypes
 from mbuild.tests.base_test import BaseTest

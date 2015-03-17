@@ -1,12 +1,16 @@
 from __future__ import division
 
 from copy import deepcopy
+from distutils.spawn import find_executable
+from subprocess import Popen, PIPE
+import tempfile
 
 import numpy as np
 
-import mbuild.compound
-from mbuild.periodic_kdtree import PeriodicCKDTree
+from mbuild.box import Box
+from mbuild.components.small_groups.h2o import H2O
 from mbuild.coordinate_transform import translate
+from mbuild.periodic_kdtree import PeriodicCKDTree
 
 
 __all__ = ['solvent_box', 'solvate']
@@ -32,7 +36,8 @@ def solvent_box(solvent, box):
     num_replicas = num_replicas.astype('int')
     print(num_replicas)
 
-    compound = mbuild.compound.Compound()
+    from mbuild.compound import Compound
+    compound = Compound()
     translate(solvent, -solvent.boundingbox.mins + box.mins)
     for xi in range(num_replicas[0]):   # x replicas
         for yi in range(num_replicas[1]):   # y replicas
@@ -61,35 +66,78 @@ def solvent_box(solvent, box):
     return compound
 
 
-def solvate(host_compound, guest_compound, host_box, guest_box, overlap=vdw_radius):
-    """Solvate a Compound in a Box.
+def solvate(solute, solvent, box, overlap=0.1):
+    """Solvate a compound in a box of solvent.
 
-    Typical usage of this function would be to use a pre-equilibrated solvent
-    system as the guest which will then be replicated to fill the host's Box.
-    All Compounds that have overlapping Atoms with the host are removed.
+    This function will try to use the solvate tool from gromacs 5.0+. If the
+    'gmx' executable is not on your path, it will default to a (very) slow
+    python implementation. These two approaches will NOT produce identical
+    results - use at your own risk.
 
-    Args:
-        host_compound (Compound):
-        guest_compound (Compound):
-        host_box (Box):
-        guest_box (Box):
-        overlap (function): A function which translate atoms to overlap radii.
+    Parameters
+    ----------
+    solute : mb.Compound
+    solvent : mb.Compound
+    box : mb.Box
+    overlap : float
 
     """
-    # TODO: we may want to make sure that the axes of the two boxes line up
 
+    GMX = find_executable('gmx')
+    if not GMX:  # Use the slow python version.
+        return _solvate(solute, solvent, box, overlap=overlap)
+
+    # Temporary files used by gmx solvate.
+    solute_file = tempfile.mkstemp(suffix='.pdb')[1]
+    translate(solute, -solute.boundingbox.mins)
+    solute.save(solute_file)
+    if solvent == 'water':
+        solvent = H2O()
+        solvent_file = 'spc216.gro'
+    else:
+        #solvent_file = tempfile.mkstemp(suffix='.pdb')[1]
+        solvent_file = 'solvent.pdb'
+        solvent.save(solvent_file)
+    solvated_file = tempfile.mkstemp(suffix='.pdb')[1]
+    box_lengths = ' '.join("{0:.3f}".format(f) for f in box.lengths)
+
+    # Call gmx solvate.
+    gmx_solvate = 'gmx solvate -cp {0} -cs {1} -box {2} -o {3}'.format(
+        solute_file, solvent_file, box_lengths, solvated_file)
+    proc = Popen(gmx_solvate, shell=True, stdout=PIPE, stderr=PIPE, universal_newlines=True)
+    out, err = proc.communicate()
+
+    # Figure out how many solvent molecules were added...
+    n_solvent_line = [line for line in err.splitlines() if 'Number of SOL molecules' in line][0]
+    n_solvent = int(n_solvent_line.split()[-1])
+
+    # ...add the appropriate topology information...
+    for _ in range(n_solvent):
+        solute.add(deepcopy(solvent), 'SOL[$]')
+
+    # ...and the coordinates.
+    solute.update_coordinates(solvated_file)
+    return solute
+
+
+def _solvate(solute, solvent, box, overlap=0.1):
+    """Slow, fairly naive python implementation. """
     # Replicate the guest so that it fills or overfills the host box.
-    host_atom_list = [atom for atom in host_compound.yield_atoms() if atom.name != 'G']
+    host_atom_list = [atom for atom in solute.yield_atoms() if atom.name != 'G']
     host_atom_pos_list = [atom.pos for atom in host_atom_list]
     kdtree = PeriodicCKDTree(host_atom_pos_list)
 
-    num_replicas = np.ceil(host_box.lengths / guest_box.lengths)
+    if solvent.periodicity.all():
+        solvent_box = Box(lengths=solvent.periodicity)
+    else:
+        solvent_box = solvent.boundingbox
+    num_replicas = np.ceil(box.lengths / solvent_box.lengths)
     num_replicas = num_replicas.astype('int')
     for xi in range(num_replicas[0]):
         for yi in range(num_replicas[1]):
             for zi in range(num_replicas[2]):
-                guest = deepcopy(guest_compound)
-                translate(guest, -guest_box.mins + host_box.mins + np.array([xi, yi, zi])*guest_box.lengths)
+                guest = deepcopy(solvent)
+                translate(guest, -solvent_box.mins + box.mins + np.array([xi, yi, zi]) * solvent_box.lengths)
 
                 # Remove atoms outside the host's box and anything bonded to them.
                 guest_atoms = list()
@@ -100,8 +148,8 @@ def solvate(host_compound, guest_compound, host_box, guest_box, overlap=vdw_radi
                 guest_atom_pos_list = np.array(guest_atom_pos_list)
 
                 atoms_to_remove = set()
-                atom_indicies = np.where(np.logical_or(np.any(guest_atom_pos_list < host_box.mins, axis=1),
-                        np.any(guest_atom_pos_list > host_box.maxs, axis=1)))[0]
+                atom_indicies = np.where(np.logical_or(np.any(guest_atom_pos_list < box.mins, axis=1),
+                        np.any(guest_atom_pos_list > box.maxs, axis=1)))[0]
                 for ai in atom_indicies:
                     atoms_to_remove.add(guest_atoms[ai])
                     atoms_to_remove.update(guest_atoms[ai].bonded_atoms())
@@ -114,8 +162,9 @@ def solvate(host_compound, guest_compound, host_box, guest_box, overlap=vdw_radi
                     for host_atom_idx in neighbors:
                         if host_atom_idx < len(host_atom_list):
                             host_atom = host_atom_list[host_atom_idx]
-                            if host_compound.min_periodic_distance(host_atom, guest_atom) < (overlap(host_atom) + overlap(guest_atom)):
+                            if solute.min_periodic_distance(host_atom, guest_atom) < (2 * overlap):
                                 atoms_to_remove.add(guest_atom)
                                 atoms_to_remove.update(guest_atom.bonded_atoms())
                 guest.remove(atoms_to_remove)
-                host_compound.add(guest, "guest_{}_{}_{}".format(xi, yi, zi))
+                solute.add(guest, "guest_{}_{}_{}".format(xi, yi, zi))
+    return solute

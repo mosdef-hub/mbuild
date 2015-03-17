@@ -203,7 +203,7 @@ class Bilayer(mb.Compound):
 
 
 def main():
-    from mbuild.testing.tools import get_fn
+    from mbuild.utils.io import get_fn
 
     water = mb.load(get_fn('water.hoomdxml'))
     ecerns = mb.load(get_fn('ecer2.hoomdxml'))
