@@ -23,7 +23,7 @@ class Sphere(mb.Compound):
 
         # Create particles and Ports at mask positions.
         for i, pos in enumerate(mask):
-            particle = mb.Atom(kind="np", pos=pos)
+            particle = mb.Atom(name="np", pos=pos)
             self.add(particle, "np_{}".format(i))
             port = mb.Port(anchor=particle)
             self.add(port, "port_{}".format(i))

@@ -1,13 +1,13 @@
-__author__ = 'sallai'
 from copy import deepcopy
 
 import numpy as np
 
-from mbuild.bond import Bond
-from mbuild.port import Port
 from mbuild.compound import Compound
+from mbuild.port import Port
 from mbuild.coordinate_transform import translate
 from mbuild.periodic_kdtree import PeriodicCKDTree
+
+__all__ = ['TiledCompound']
 
 
 class TiledCompound(Compound):
@@ -26,7 +26,6 @@ class TiledCompound(Compound):
             kind (str, optional):
             label (str, optional):
         """
-        assert isinstance(tile, Compound)
         super(TiledCompound, self).__init__()
 
         if not n_tiles:
@@ -49,12 +48,13 @@ class TiledCompound(Compound):
         if kind is None:
             kind = tile.kind
         self.kind = kind
-        self.periodicity = np.array([tile.periodicity[0] * n_x,
-                                     tile.periodicity[1] * n_y,
-                                     tile.periodicity[2] * n_z])
+
 
         self.replicate_tiles()
         self.stitch_bonds()
+        self.periodicity = np.array([tile.periodicity[0] * n_x,
+                                     tile.periodicity[1] * n_y,
+                                     tile.periodicity[2] * n_z])
 
     def replicate_tiles(self):
         """Replicate and place periodic tiles. """

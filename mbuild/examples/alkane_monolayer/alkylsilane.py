@@ -22,5 +22,5 @@ if __name__ == "__main__":
     alkyl_silane = AlkylSilane(10)
     alkyl_silane = alkyl_silane.to_trajectory(show_ports=True)
 
-    alkyl_silane.top.find_forcefield_terms()
+    alkyl_silane.top.enumerate_forcefield_terms()
     alkyl_silane.save('as.lammps', show_ports=True)

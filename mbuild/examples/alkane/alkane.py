@@ -1,7 +1,7 @@
 import mbuild as mb
 
-from mbuild.components.small_groups.ch2 import Ch2
-from mbuild.components.small_groups.ch3 import Ch3
+from mbuild.components.small_groups.ch2 import CH2
+from mbuild.components.small_groups.ch3 import CH3
 
 
 class Alkane(mb.Compound):
@@ -23,11 +23,11 @@ class Alkane(mb.Compound):
             n += 1
         if not cap_end:
             n += 1
-        chain = mb.Polymer(Ch2(), n=n-2, port_labels=('up', 'down'))
+        chain = mb.Polymer(CH2(), n=n-2, port_labels=('up', 'down'))
         self.add(chain, 'chain')
 
         if cap_front:
-            self.add(Ch3(), "methyl_front")
+            self.add(CH3(), "methyl_front")
             mb.equivalence_transform(
                 self.chain, self.chain.up, self.methyl_front.up)
         else:
@@ -35,7 +35,7 @@ class Alkane(mb.Compound):
             self.add(chain.up, 'up', containment=False)
 
         if cap_end:
-            self.add(Ch3(), 'methyl_end')
+            self.add(CH3(), 'methyl_end')
             mb.equivalence_transform(
                 self.methyl_end, self.methyl_end.up, self.chain.down)
         else:
@@ -46,9 +46,8 @@ class Alkane(mb.Compound):
 def main():
     n = 5
     alkane = Alkane(n=n, cap_front=True, cap_end=True)
-
-    alkane = alkane.to_trajectory()
-    alkane.top.find_forcefield_terms()
+    alkane.visualize(show_ports=True)
+    alkane.save('alkane.hoomdxml')
 
 if __name__ == "__main__":
     main()

@@ -7,7 +7,7 @@ class MPC(mb.Compound):
         super(MPC, self).__init__(self)
 
         # Look for data file in same directory as this python module.
-        self.append_from_file('mpc.pdb', relative_to_module=self.__module__)
+        mb.load('mpc.pdb', compound=self, relative_to_module=self.__module__)
 
         # Transform the coordinate system of mpc such that the two carbon atoms
         # that are part of the backbone are on the y axis, c_backbone at the origin.

@@ -1,29 +1,34 @@
 import pytest
 import numpy as np
 
-from mbuild.compound import Compound
-from mbuild.examples.ethane.ethane import Ethane
+import mbuild as mb
 from mbuild.testing.tools import get_fn
-
 from mbuild.tests.base_test import BaseTest
 
 
 class TestHoomdXml(BaseTest):
 
     @pytest.fixture
+    def ethane(self):
+        from mbuild.examples.ethane.ethane import Ethane
+        return Ethane()
+
+    @pytest.fixture
     def molecule(self):
         lj_units = {'mass': 72.0,
                     'distance': 0.6, 
                     'energy': 0.4}
-        compound = Compound.load(get_fn('ecer2.hoomdxml'), lj_units=lj_units)
+        compound = mb.load(get_fn('ecer2.hoomdxml'), lj_units=lj_units)
         return compound
 
     def test_write(self, molecule):
         molecule.save('ecer2-saved.hoomdxml')
 
-    def test_update_from_file(self):
-        ethane = Ethane()
-        ethane.update_from_file(get_fn("ethane.hoomdxml"))
+    def test_update_from_file(self, ethane):
+        ethane.update_coordinates(get_fn("ethane.hoomdxml"))
+
+    def test_read_write_compare(self, molecule):
+        pass
 
     def test_units(self, molecule):
         positions = np.array([
@@ -42,3 +47,4 @@ class TestHoomdXml(BaseTest):
              [-0.121015898883, -3.50847649574, -0.732142329216]])
         loaded = molecule.to_trajectory().xyz / 0.6
         assert loaded.all() == positions.all()
+

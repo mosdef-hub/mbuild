@@ -1,31 +1,25 @@
-from __future__ import print_function
 from copy import deepcopy
 
 import numpy as np
 
 from mbuild.part_mixin import PartMixin
 
-__author__ = 'sallai'
-
 
 class Bond(PartMixin):
     """Connection between two Atoms.
 
-    Attributes:
-        atom1 (Atom): First Atom in the bond.
-        atom2 (Atom): Second Atom in the bond.
-        parent (Compound): Compound to which the Bond belongs.
+    Attributes
+    ----------
+    atom1 : mb.Atom
+        First Atom in the bond.
+    atom2 : mb.Atom
+        Second Atom in the bond.
+    parent : mb.Compound
+        Compound to which the Bond belongs.
     """
     __slots__ = ['_atom1', '_atom2', 'kind', 'parent', 'referrers']
 
     def __init__(self, atom1, atom2, kind=None):
-        """Initialize a Bond.
-
-        Args:
-            atom1 (Atom): First Atom or Port in the bond.
-            atom2 (Atom): Second Atom or Port in the bond.
-
-        """
         super(Bond, self).__init__()
         assert(not atom1 == atom2)
 
@@ -42,12 +36,11 @@ class Bond(PartMixin):
         if kind is not None:
             self.kind = kind
         else:
-            self.kind = '{0}-{1}'.format(atom1.kind, atom2.kind)
+            self.kind = '{0}-{1}'.format(atom1.name, atom2.name)
 
         # Ensure Atoms in Bond know about the Bond.
         atom1.bonds.add(self)
         atom2.bonds.add(self)
-
 
     @property
     def atom1(self):
@@ -64,18 +57,11 @@ class Bond(PartMixin):
         elif self._atom2 is atom:
             return self._atom1
 
-    def distance(self, periodicity=np.array([0.0, 0.0, 0.0])):
-        """Vectorized distance calculation considering minimum image. """
+    def distance(self, periodicity):
+        """Calculate the bond distance considering minimum image. """
         d = np.abs(self.atom1 - self.atom2)
         d = np.where(d > 0.5 * periodicity, periodicity - d, d)
         return np.sqrt((d ** 2).sum(axis=-1))
-
-    def __hash__(self):
-        return id(self.atom1) ^ id(self.atom2) 
-
-    def __eq__(self, bond):
-        return isinstance(bond, Bond) and (self.atom1 == bond.atom1 and self.atom2 == bond.atom2
-             or self.atom2 == bond.atom1 and self.atom1 == bond.atom1)
 
     def __repr__(self):
         return "Bond{0}({1}, {2})".format(id(self), self.atom1, self.atom2)
@@ -83,13 +69,13 @@ class Bond(PartMixin):
     def __deepcopy__(self, memo):
         cls = self.__class__
         newone = cls.__new__(cls)
-        
+
         # Remember the topmost component being deepcopied.
         if len(memo) == 0:
             print('bond is root of deepcopy')
             memo[0] = self
         memo[id(self)] = newone
-        
+
         # Copy fields that don't need recursion.
         newone.kind = self.kind
         newone.referrers = set()
@@ -105,5 +91,5 @@ class Bond(PartMixin):
             newone.parent = None
         else:
             newone.parent = deepcopy(self.parent, memo)
-        
+
         return newone

@@ -1,7 +1,6 @@
 from copy import deepcopy
 
 import numpy as np
-from six import string_types
 
 from mbuild.bond import Bond
 from mbuild.part_mixin import PartMixin
@@ -10,41 +9,38 @@ from mbuild.part_mixin import PartMixin
 class Atom(PartMixin):
     """Elementary container class - typically a leaf in the hierarchy.
 
-    Note:
-        -Also used as "ghost" particles in Ports.
-        -Atoms can be added and substracted using +/- operators. The result is
-        the addition or subtraction of the Atoms' cartesian coordinates.
+    Notes
+    -----
+    Atoms are also used as "ghost" particles in Ports.
+    Atoms can be added and substracted using +/- operators. The result is
+    the addition or subtraction of the Atoms' cartesian coordinates.
 
-    Attributes:
-        kind (str): The kind of atom, usually the chemical element.
-        pos (np.ndarray of floats): Cartesian coordinates of the atom.
-        charge (float): Partial charge on the atom.
-        parent (Compound): Compound to which the Atom belongs.
-        referrers (set of Compounds): All Compounds that refer to this instance
-            of Atom.
-        bonds (set of Bond): Every Bond that the Atom is a part of.
+    Attributes
+    ----------
+    name : str
+        The name of the atom, usually the chemical element.
+    pos : np.ndarray, shape=(3,), dtype=float
+        Cartesian coordinates of the atom.
+    charge : float
+        Partial charge on the atom.
+    parent : mb.Compound
+        Compound to which the Atom belongs.
+    referrers : set of mb.Compounds
+        All Compounds that refer to this instance of Atom.
+    bonds : set of mb.Bonds
+        Every Bond that the Atom is a part of.
 
     """
-    __slots__ = ['kind', 'pos', 'charge', 'parent', 'referrers', 'bonds',
-                 'uid', '_extras']
+    __slots__ = ['name', 'pos', 'charge', 'parent', 'referrers', 'bonds', 'uid',
+                 '_extras']
 
-    def __init__(self, kind, pos=None, charge=0.0):
-        """Initialize an Atom.
-
-        Args:
-            kind (str): The kind of atom, usually the chemical element.
-            pos (np.ndarray, optional): Cartesian coordinates of the atom.
-            charge (float, optional): Partial charge on the atom.
-
-        """
+    def __init__(self, name, pos=None, charge=0.0):
         super(Atom, self).__init__()
-
-        assert isinstance(kind, string_types)
 
         if pos is None:
             pos = np.array([0, 0, 0], dtype=float)
 
-        self.kind = kind
+        self.name = name
         self.pos = np.asarray(pos, dtype=float)
         self.charge = charge
         self.bonds = set()
@@ -107,7 +103,7 @@ class Atom(PartMixin):
         return -self.pos
 
     def __repr__(self):
-        return "Atom{0}({1}, {2})".format(id(self), self.kind, self.pos)
+        return "Atom{0}({1}, {2})".format(id(self), self.name, self.pos)
 
     def __deepcopy__(self, memo):
         cls = self.__class__
@@ -123,7 +119,7 @@ class Atom(PartMixin):
         newone.bonds = set()
 
         # Do the rest recursively.
-        newone.kind = deepcopy(self.kind, memo)
+        newone.name = deepcopy(self.name, memo)
         newone.pos = deepcopy(self.pos, memo)
         newone.charge = deepcopy(self.charge, memo)
         newone._extras = deepcopy(self._extras, memo)
@@ -135,4 +131,3 @@ class Atom(PartMixin):
             newone.parent = deepcopy(self.parent, memo)
 
         return newone
-

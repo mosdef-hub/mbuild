@@ -3,7 +3,7 @@ from numpy import pi
 import mbuild as mb
 
 from mbuild.components.small_groups.silane import Silane
-from mbuild.components.small_groups.ch3 import Ch3
+from mbuild.components.small_groups.ch3 import CH3
 from mbuild.examples.pmpc.mpc import MPC
 from mbuild.examples.pmpc.initiator import Initiator
 
@@ -18,7 +18,7 @@ class Brush(mb.Compound):
         self.add(Initiator(), 'initiator')
         self.add(mb.Polymer(MPC(alpha=alpha), n=chain_length,
                          port_labels=('up', 'down')), 'pmpc')
-        self.add(Ch3(), 'methyl')
+        self.add(CH3(), 'methyl')
 
         mb.equivalence_transform(self.initiator, self.initiator.down, self.silane.up)
         mb.equivalence_transform(self.pmpc, self.pmpc.down, self.initiator.up)

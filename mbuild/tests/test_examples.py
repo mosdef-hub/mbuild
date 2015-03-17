@@ -20,14 +20,6 @@ class TestExample(BaseTest):
         ethane = example.main()
         assert ethane.n_atoms == 8
         assert ethane.n_bonds == 7
-        ethane = ethane.to_trajectory()
-
-        ethane.top.find_forcefield_terms()
-        assert ethane.topology.n_ff_bonds == 7
-        assert ethane.topology.n_ff_angles == 12
-        assert ethane.topology.n_ff_dihedrals == 9
-
-        ethane.save('ethane.hoomdxml')
 
     def test_methane(self):
         import mbuild.examples.methane.methane as example
@@ -36,11 +28,11 @@ class TestExample(BaseTest):
         assert methane.n_atoms == 5
         assert methane.n_bonds == 4
 
-        assert methane.atoms[0].kind == "C"
-        assert methane.hc[0].kind == "H"
-        assert methane.hc[1].kind == "H"
-        assert methane.hc[2].kind == "H"
-        assert methane.hc[3].kind == "H"
+        assert methane.atoms[0].name == "C"
+        assert methane.hc[0].name == "H"
+        assert methane.hc[1].name == "H"
+        assert methane.hc[2].name == "H"
+        assert methane.hc[3].name == "H"
 
     def test_pmpc(self):
         import mbuild.examples.pmpc.pmpc_brush_layer as example

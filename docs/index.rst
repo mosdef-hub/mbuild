@@ -29,7 +29,7 @@ further down the hierarchy is, again, a simple python class that describes
 which piece should connect to which piece.
 
 Ultimately, complex systems structures can be created with just a line or two
-of code. Additionally, this approach easily exposes tunable parameters within
+of code. Additionally, this approach seamlessly exposes tunable parameters within
 the hierarchy so you can actually create whole families of structures simply
 by adjusting a variable::
 

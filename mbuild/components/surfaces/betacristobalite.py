@@ -1,12 +1,9 @@
 import numpy as np
 
-from mbuild.coordinate_transform import rotate_around_x, translate
-from mbuild.compound import Compound
-from mbuild.port import Port
-from mbuild.tools.tiled_compound import TiledCompound
+import mbuild as mb
 
 
-class Betacristobalite(Compound):
+class Betacristobalite(mb.Compound):
     """The beta-cristobalite form of SiO2.
 
     Area per port specifies the density of attachment sites in nm^2.
@@ -30,25 +27,25 @@ class Betacristobalite(Compound):
         super(Betacristobalite, self).__init__()
 
         if area_per_port == 0.2:
-            self.append_from_file('beta-cristobalite.pdb',
-                                  relative_to_module=self.__module__)
+            mb.load('beta-cristobalite.pdb', compound=self,
+                    relative_to_module=self.__module__)
             self.periodicity = np.array([4.7689, 4.13, 0.0])
         elif area_per_port == 0.25:
 
-            self.append_from_file('beta-cristobalite-expanded.mol2',
-                                  relative_to_module=True)
+            mb.load('beta-cristobalite-expanded.mol2', compound=self,
+                    relative_to_module=True)
             self.periodicity = np.array([5.3888, 4.6669, 0.0])
 
-        cnt = 0
+        count = 0
         for atom in self.atoms:
-            if atom.kind == 'O' and atom.pos[2] > 1.0:
-                cnt += 1
-                port = Port(anchor=atom)
-                rotate_around_x(port, np.pi/2)
-                translate(port, atom + np.array([0, 0, .1]))
-                self.add(port, 'port_{}'.format(cnt))
+            if atom.name == 'O' and atom.pos[2] > 1.0:
+                count += 1
+                port = mb.Port(anchor=atom)
+                mb.rotate_around_x(port, np.pi/2)
+                mb.translate(port, atom + np.array([0, 0, .1]))
+                self.add(port, 'port_{}'.format(count))
 
 if __name__ == "__main__":
-    s = Betacristobalite()
-    m = TiledCompound(s, n_tiles=(2, 1, 1), kind="tiled")
-    m.visualize(show_ports=True)
+    single = Betacristobalite()
+    multiple = mb.TiledCompound(single, n_tiles=(2, 1, 1), kind="tiled")
+    multiple.visualize(show_ports=True)

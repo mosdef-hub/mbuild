@@ -19,7 +19,7 @@ def main():
     brush2.save("brush2.pdb")
 
     # Load brush2.pdb into brush1, modifying the atom positions of brush1.
-    brush1.update_from_file("brush2.pdb")
+    brush1.update_coordinates("brush2.pdb")
     brush1.save("modified_brush1.pdb")
 
     # Access the internals of the updated brush1.

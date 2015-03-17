@@ -17,6 +17,8 @@ class PMPCLayer(mb.Compound):
 
         surface = Betacristobalite()
         tc = mb.TiledCompound(surface, (tile_x, tile_y, 1), kind="tiled_surface")
+        box = tc.boundingbox
+        mb.translate(tc, -box.mins)
         self.add(tc, 'tiled_surface')
 
         brush = Brush(chain_length=chain_length, alpha=alpha)
@@ -24,15 +26,16 @@ class PMPCLayer(mb.Compound):
 
         mb.apply_mask(self.tiled_surface, brush, mask, backfill=hydrogen)
 
+
 def main():
-    mask = mb.random_mask_2d(1)
-    return PMPCLayer(mask=mask, chain_length=3, alpha=pi/4, tile_x=1, tile_y=1)
+    mask = mb.grid_mask_2d(5, 5)
+    pmpc_layer =  PMPCLayer(mask=mask, chain_length=5, alpha=pi/4, tile_x=2, tile_y=2)
+    return pmpc_layer
+
 
 if __name__ == "__main__":
+
     pmpc_layer = main()
-    pmpc_layer.visualize(show_ports=True)
-    mb.find_atomtypes(pmpc_layer)
-    pmpc_layer = pmpc_layer.to_trajectory(chain_types=[Betacristobalite, Brush],
-                                          residue_types=[MPC])
-    pmpc_layer.topology.find_forcefield_terms()
-    pmpc_layer.save(filename='brush_layer.top')
+    pmpc_layer.save(filename='brush_layer.pdb')
+    #                             chain_types=[Betacristobalite, Brush],
+    #                             residue_types=[MPC])

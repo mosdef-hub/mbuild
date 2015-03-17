@@ -1,82 +1,47 @@
-import itertools
-
-import numpy as np
-
-from mdtraj.core.topology import Topology as MDTTopology
-from mdtraj.core.element import Element
-from mdtraj.core import element as elem
+from mdtraj.core.topology import Topology as MDTrajTopology
+from mdtraj.core.topology import Atom as MDTrajAtom
 
 
-class Topology(object):
-    """Derivative of MDTraj's Topology class with additional functionalities.
+__all__ = ['Topology']
 
-    Most notably, provides conversion to and from mBuild Compounds.
-    """
-    def __init__(self, topology=None):
-        """Initialize an mBuild Topology. """
 
-        if topology is not None:
-            self._w_topology = topology
-        else:
-            self._w_topology = MDTTopology()
+class Topology(MDTrajTopology):
+    """Derivative of MDTraj's Topology class with additional functionality. """
 
-        # Member variables extending mdtraj's functionality.
+    def __init__(self):
+        super(Topology, self).__init__()
+
+        self.forcefield = None
+        self._angles = []
+        self._dihedrals = []
         self._ff_bonds = []
         self._ff_angles = []
         self._ff_dihedrals = []
         self._ff_impropers = []
 
-    def __getattr__(self, attr_name):
-        """Redirect attribute access to the wrapped topology. """
-        return getattr(self._w_topology, attr_name)
+    @property
+    def angles(self):
+        """Iterator over all angles (tuple of three atoms). """
+        return iter(self._angles)
 
-    def __setattr__(self, key, value):
-        if key in ['chains', 'n_chains', 'residues', 'n_residues', 'atoms',
-                   'n_atoms', 'bonds', 'n_bonds']:
-            self._w_topology.__setattr__(key, value)
-        else:
-            self.__dict__[key] = value
+    @property
+    def n_angles(self):
+        """Get the number of angles in the Topology"""
+        return len(self._angles)
 
-    @classmethod
-    def from_dataframe(cls, atoms, bonds=None):
-        return Topology(topology=MDTTopology.from_dataframe(atoms, bonds))
+    @property
+    def dihedrals(self):
+        """Iterator over all dihedrals (tuple of four atoms). """
+        return iter(self._dihedrals)
 
-    @classmethod
-    def from_openmm(cls, value):
-        return Topology(topology=MDTTopology.from_openmm(value))
+    @property
+    def n_dihedrals(self):
+        """Get the number of dihedrals in the Topology. """
+        return len(self._dihedrals)
 
     @property
     def ff_bonds(self):
         return iter(self._ff_bonds)
-
-    def to_bondgraph(self):
-        """Create a NetworkX graph from the atoms and bonds in this topology
-
-        Returns
-        -------
-        g : nx.Graph
-            A graph whose nodes are the Atoms in this topology, and
-            whose edges are the bonds
-
-        See Also
-        --------
-        atoms
-        bonds
-
-        Notes
-        -----
-        This method requires the NetworkX python package.
-        """
-        from mdtraj.utils import import_
-        nx = import_('networkx')
-        g = nx.Graph()
-
-        atoms = [(a, {'element': a.element, 'name': a.name}) for a in self.atoms]
-
-        g.add_nodes_from(atoms)
-        g.add_edges_from(self.bonds)
-        return g
-
 
     @property
     def ff_angles(self):
@@ -92,333 +57,61 @@ class Topology(object):
 
     @property
     def n_ff_bonds(self):
-        return sum(1 for _ in self.ff_bonds)
+        return len(self._ff_bonds)
 
     @property
     def n_ff_angles(self):
-        return sum(1 for _ in self.ff_angles)
+        return len(self._ff_angles)
 
     @property
     def n_ff_dihedrals(self):
-        return sum(1 for _ in self.ff_dihedrals)
+        return len(self._ff_dihedrals)
 
     @property
     def n_ff_impropers(self):
-        return sum(1 for _ in self.ff_impropers)
+        return len(self._ff_impropers)
 
-    def sort_atoms_alphabetically(self, atoms):
-        """Sort a list of atoms alphabetically by their lowercase names. """
-        atoms.sort(key=lambda x: x.name.lower())
-        return atoms
+    def add_ff_bond(self, bond):
+        """ """
+        self._ff_bonds.append(bond)
 
-    def add_ff_bond(self, atom1, atom2):
-        atoms = self.sort_atoms_alphabetically([atom1, atom2])
-        self._ff_bonds.append(ForcefieldBond(*atoms))
+    def add_ff_angle(self, angle):
+        """ """
+        self._ff_angles.append(angle)
 
-    def add_ff_angle(self, atom1, atom2, atom3):
-        atoms = self.sort_atoms_alphabetically([atom1, atom3])
-        self._ff_angles.append(ForcefieldAngle(atoms[0], atom2, atoms[1]))
+    def add_ff_dihedral(self, dihedral):
+        """ """
+        self._ff_dihedrals.append(dihedral)
 
-    def add_ff_dihedral(self, atom1, atom2, atom3, atom4):
-        atoms = self.sort_atoms_alphabetically([atom1, atom4])
-        if atoms[0] == atom1:
-            self._ff_dihedrals.append(ForcefieldDihedral(
-                atom1, atom2, atom3, atom4))
-        elif atoms[1] == atom1:
-            self._ff_dihedrals.append(ForcefieldDihedral(
-                atom4, atom3, atom2, atom1))
-
-    def add_ff_improper(self, atom1, atom2, atom3, atom4):
-        atoms = self.sort_atoms_alphabetically([atom2, atom3, atom4])
-        self._ff_impropers.append(ForcefieldDihedral(
-                atom1, atoms[0], atoms[1], atoms[2], improper=True))
-
-    def load_ff_bonds(self):
-        """Convert from (Atom1, Atom2) to ForcefieldBonds. """
-        for bond in self.bonds:
-            self.add_ff_bond(bond[0], bond[1])
-
-    def enumerate_angles(self, node, neighbors):
-        """Find all angles around a node. """
-        for pair in itertools.combinations(neighbors, 2):
-            self.add_ff_angle(pair[0], node, pair[1])
-
-    def enumerate_dihedrals(self, node_1, neighbors_1, node_2, neighbors_2):
-        """Find all dihedrals around a pair of nodes. """
-        # We need to make sure we don't remove the node from the neighbor lists
-        # that we will be re-using in the following iterations.
-        neighbors_1 = set(neighbors_1) - {node_2}
-        neighbors_2.remove(node_1)
-
-        for pair in itertools.product(neighbors_1, neighbors_2):
-            if pair[0] != pair[1]:
-                self.add_ff_dihedral(pair[0], node_1, node_2, pair[1])
-
-    def enumerate_impropers(self, node, neighbors):
-        """Find all impropers around a node. """
-        for triplet in itertools.combinations(neighbors, 3):
-            self.add_ff_improper(node, triplet[0], triplet[1], triplet[2])
-
-    def find_forcefield_terms(self, bonds=True, angles=True, dihedrals=True,
-                              impropers=True):
-        """Convert Bonds to ForcefieldBonds and find angles and dihedrals. """
-        if bonds:
-            self.load_ff_bonds()
-
-        if any([angles, dihedrals, impropers]):
-            graph = self.to_bondgraph()
-            for node_1 in graph.nodes_iter():
-                neighbors_1 = graph.neighbors(node_1)
-                if len(neighbors_1) > 1:
-                    if angles:
-                        self.enumerate_angles(node_1, neighbors_1)
-                    if dihedrals:
-                        for node_2 in neighbors_1:
-                            if node_2.index > node_1.index:
-                                neighbors_2 = graph.neighbors(node_2)
-                                if len(neighbors_2) > 1:
-                                    self.enumerate_dihedrals(
-                                        node_1, neighbors_1, node_2, neighbors_2)
-                    if impropers and len(neighbors_1) >= 3:
-                        self.enumerate_impropers(node_1, neighbors_1)
-
-    @classmethod
-    def from_compound(cls, compound, bond_list=None, show_ports=False,
-                      chain_types=None, residue_types=None):
-        """Create a Topology from a Compound.
-
-        Args:
-            compound:
-            bond_list:
-            show_ports:
-            chain_types:
-            residue_types:
-        Returns:
-            out (mbuild.Topology):
-        """
-
-        if isinstance(chain_types, list):
-            chain_types = tuple(chain_types)
-        if isinstance(residue_types, list):
-            residue_types = tuple(residue_types)
-        out = cls()
-        atom_mapping = {}
-
-        default_chain = out.add_chain()
-        default_residue = out.add_residue("RES", default_chain)
-
-        last_residue_compound = None
-        last_chain_compound = None
-        last_residue = None
-        last_chain = None
-
-        for atom in compound.yield_atoms():
-            if not show_ports and atom.kind == 'G':
-                continue
-            # Chains
-            for parent in atom.ancestors():
-                if chain_types and isinstance(parent, chain_types):
-                    if parent != last_chain_compound:
-                        last_chain_compound = parent
-                        last_chain = out.add_chain()
-                        last_chain_default_residue = out.add_residue("RES", last_chain)
-                        last_chain.compound = last_chain_compound
-                        #print("Found new chain: {}".format(last_chain_compound))
-                    break
-            else:
-                last_chain = default_chain
-                last_chain.compound = last_chain_compound
-
-            # Residues
-            for parent in atom.ancestors():
-                if residue_types and isinstance(parent, residue_types):
-                    if parent != last_residue_compound:
-                        last_residue_compound = parent
-                        last_residue = out.add_residue(parent.__class__.__name__, last_chain)
-                        last_residue.compound = last_residue_compound
-                        #print("Found new residue: {}".format(last_residue))
-                    break
-            else:
-                if last_chain != default_chain:
-                    last_residue = last_chain_default_residue
-                else:
-                    last_residue = default_residue
-                last_residue.compound = last_residue_compound
-
-            # Add the actual atoms
-            try:
-                ele = elem.get_by_symbol(atom.kind)
-            except KeyError:
-                ele = Element(1000, atom.kind, atom.kind, 1.0)
-            at = out.add_atom(atom.kind, ele, last_residue)
-            at.charge = atom.charge
-
-            try:
-                at.atomtype = atom.atomtype
-            except AttributeError:
-                at.atomtype = atom.kind
-            #print("Added {} to residue {} in chain {}".format(atom, last_residue, last_chain))
-            atom_mapping[atom] = at
-
-        if bond_list is None:
-            bond_list = compound.bonds
-
-        for idx, bond in enumerate(bond_list):
-            a1 = bond.atom1
-            a2 = bond.atom2
-            out.add_bond(atom_mapping[a1], atom_mapping[a2])
-
-        return out
+    def add_ff_improper(self, improper):
+        """ """
+        self._ff_impropers.append(improper)
 
 
-class ForcefieldBond(object):
-    """Connection between two Atoms.
+class Atom(MDTrajAtom):
+    """Derivative of MDTraj's Atom class with additional functionality.
 
-    Attributes:
-        atom1 (Atom): First Atom in the bond.
-        atom2 (Atom): Second Atom in the bond.
-        kind (str, optional): Descriptive name for the bond.
+    Attributes
+    ----------
+    name : str
+        The name of the Atom
+    element : mdtraj.element.Element
+        The element of the Atoms
+    index : int
+        The index of the Atom within its Topology
+    residue : mdtraj.topology.Residue
+        The Residue this Atom belongs to
     """
 
-    def __init__(self, atom1, atom2, kind=None):
-        """
-        """
-        self._atom1 = atom1
-        self._atom2 = atom2
-        if kind:
-            self.kind = kind
-        else:
-            self.kind = '{0}-{1}'.format(atom1.name, atom2.name)
+    def __init__(self, name, element, index, residue, serial=None):
+        super(Atom, self).__init__(name, element, index, residue, serial=serial)
+        self._neighbors = []
 
     @property
-    def atom1(self):
-        return self._atom1
+    def neighbors(self):
+        """Return a list of all neighboring Atoms. """
+        return self._neighbors
 
-    @property
-    def atom2(self):
-        return self._atom2
-
-    def other_atom(self, atom):
-        """Returns the other Atom in the Bond. """
-        if self._atom1 is atom:
-            return self._atom2
-        elif self._atom2 is atom:
-            return self._atom1
-
-    def distance(self, periodicity=np.array([0.0, 0.0, 0.0])):
-        """Vectorized distance calculation considering minimum image. """
-        d = np.abs(self.atom1 - self.atom2)
-        d = np.where(d > 0.5 * periodicity, periodicity - d, d)
-        return np.sqrt((d ** 2).sum(axis=-1))
-
-    def __hash__(self):
-        return id(self.atom1) ^ id(self.atom2)
-
-    def __eq__(self, bond):
-        return (isinstance(bond, ForcefieldBond) and
-                (self.atom1 == bond.atom1 and self.atom2 == bond.atom2 or
-                 self.atom2 == bond.atom1 and self.atom1 == bond.atom1))
-
-    def __repr__(self):
-        return "Bond{0}({1}, {2})".format(id(self), self.atom1, self.atom2)
-
-
-class ForcefieldAngle(object):
-    """Triplet formed by three Atoms and two consecutive Bonds.
-
-    Attributes:
-        atom1 (Atom): First Atom in the angle.
-        atom2 (Atom): Second Atom in the angle.
-        atom3 (Atom): Third Atom in the angle.
-        kind (str, optional): Descriptive name for the angle.
-    """
-
-    def __init__(self, atom1, atom2, atom3, kind=None):
-        """
-        """
-        self._atom1 = atom1
-        self._atom2 = atom2
-        self._atom3 = atom3
-        if kind:
-            self.kind = kind
-        else:
-            self.kind = '{0}-{1}-{2}'.format(atom1.name, atom2.name, atom3.name)
-
-    @property
-    def atom1(self):
-        return self._atom1
-
-    @property
-    def atom2(self):
-        return self._atom2
-
-    @property
-    def atom3(self):
-        return self._atom3
-
-    def __hash__(self):
-        return id(self.atom1) ^ id(self.atom2) ^ id(self.atom3)
-
-    def __eq__(self, angle):
-        return (isinstance(angle, ForcefieldAngle) and
-                (self.atom1 == angle.atom1 and self.atom2 == angle.atom2 and self.atom3 == angle.atom3 or
-                 self.atom3 == angle.atom1 and self.atom2 == angle.atom2 and self.atom1 == angle.atom3))
-
-    def __repr__(self):
-        return "Angle{0}({1}, {2}, {3})".format(
-            id(self), self.atom1, self.atom2, self.atom3)
-
-
-class ForcefieldDihedral(object):
-    """Quadruplet formed by four Atoms, three Bonds and two angles.
-
-    Attributes:
-        atom1 (Atom): First Atom in the dihedral.
-        atom2 (Atom): Second Atom in the dihedral.
-        atom3 (Atom): Third Atom in the dihedral.
-        atom4 (Atom): Fourth Atom in the dihedral.
-        kind (str, optional): Descriptive name for the dihedral.
-    """
-
-    def __init__(self, atom1, atom2, atom3, atom4, kind=None, improper=False):
-        """
-        """
-        self._atom1 = atom1
-        self._atom2 = atom2
-        self._atom3 = atom3
-        self._atom4 = atom4
-        if kind:
-            self.kind = kind
-        else:
-            self.kind = '{0}-{1}-{2}-{3}'.format(
-                atom1.name, atom2.name, atom3.name, atom4.name)
-        self.improper = improper
-
-    @property
-    def atom1(self):
-        return self._atom1
-
-    @property
-    def atom2(self):
-        return self._atom2
-
-    @property
-    def atom3(self):
-        return self._atom3
-
-    @property
-    def atom4(self):
-        return self._atom4
-
-    def __hash__(self):
-        return id(self.atom1) ^ id(self.atom2) ^ id(self.atom3) ^ id(self.atom4)
-
-    def __eq__(self, dihedral):
-        return (isinstance(dihedral, ForcefieldDihedral) and
-                (self.atom1 == dihedral.atom1 and self.atom2 == dihedral.atom2 and self.atom3 == dihedral.atom3 and self.atom4 == dihedral.atom4 or
-                 self.atom4 == dihedral.atom1 and self.atom3 == dihedral.atom2 and self.atom2 == dihedral.atom3 and self.atom1 == dihedral.atom4))
-
-    def __repr__(self):
-        return "Dihedral{0}({1}, {2}, {3}, {4})".format(
-            id(self), self.atom1, self.atom2, self.atom3, self.atom4)
-
+    @neighbors.setter
+    def neighbors(self, bonded_atoms):
+        self._neighbors = bonded_atoms

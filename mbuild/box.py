@@ -4,28 +4,17 @@ import numpy as np
 class Box(object):
     """A box representing the bounds of the system.
 
-    Attributes:
-       mins (np.ndarray of floats): Minimum x, y, z coordinates.
-       maxs (np.ndarray of floats): Maximum x, y, z coordinates.
-       lengths (np.ndarray of floats): Box length in x, y and z directions. 
+    Attributes
+    ----------
+    mins : np.ndarray, shape=(3,), dtype=float
+        Minimum x, y, z coordinates.
+    maxs : np.ndarray, shape=(3,), dtype=float
+        Maximum x, y, z coordinates.
+    lengths : np.ndarray, shape(3,), dtype=float
+        Box length in x, y and z directions.
+
     """
-
     def __init__(self, lengths=None, mins=None, maxs=None):
-        """Construct a simulation box in one of two ways.
-
-        1) Specifying the box length sets the mins to 0.0 and the maxs to
-        lengths.
-        2) Specifying the maxs and mins sets the lengths to maxs-mins.
-
-        Adjusting the length of a box adjusts `maxs` to reflect the change.
-
-        Args:
-            mins (np.ndarray of floats, optional): Minimum x, y, z
-                coordinates.
-            maxs (np.ndarray of floats, optional): Maximum x, y, z coordinates.
-            lengths (np.ndarray of floats, optional): Box length in x, y and z
-                directions. 
-        """
         if lengths is not None:
             assert(mins is None and maxs is None)
             self._mins = np.array([0.0, 0.0, 0.0])

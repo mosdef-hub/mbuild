@@ -1,21 +1,62 @@
+from __future__ import print_function
+
 from collections import OrderedDict
 from copy import deepcopy
+import os
+import sys
 
 import numpy as np
+import mdtraj as md
+from mdtraj.core.element import Element
+from mdtraj.core.element import get_by_symbol
+
+from mbuild.formats.gromacs import GROMACSTopologyFile
+from mbuild.formats.hoomdxml import HOOMDTopologyFile
+from mbuild.formats.lammps import LAMMPSTopologyFile
+from mbuild.formats.mol2 import write_mol2
 
 from mbuild.atom import Atom
-from mbuild.bond import Bond
 from mbuild.box import Box
-from mbuild.coordinate_transform import translate
-from mbuild.has_parts_mixin import HasPartsMixin
-from mbuild.part_mixin import PartMixin
+from mbuild.bond import Bond
 from mbuild.orderedset import OrderedSet
+from mbuild.part_mixin import PartMixin
+from mbuild.topology import Topology
 
 
-__all__ = ['Compound']
+__all__ = ['load', 'Compound']
 
 
-class Compound(PartMixin, HasPartsMixin):
+def load(filename, relative_to_module=None, frame=-1, compound=None,
+         coords_only=False, **kwargs):
+    """ """
+
+    # For mbuild *.py files with a class that wraps a structure file in its own
+    # folder. E.g., you build a system from ~/foo.py and it imports from
+    # ~/bar/baz.py where baz.py loads ~/bar/baz.pdb.
+    if relative_to_module:
+        current_dir = os.path.dirname(os.path.realpath(
+            sys.modules[relative_to_module].__file__))
+        filename = os.path.join(current_dir, filename)
+
+    # This can return a md.Trajectory or an mb.Compound.
+    loaded = md.load(filename, **kwargs)
+
+    if not compound:
+        if isinstance(loaded, Compound):
+            return loaded
+        else:
+            compound = Compound()
+
+    if isinstance(loaded, md.Trajectory):
+        compound.from_trajectory(loaded, frame=frame, coords_only=coords_only)
+    elif isinstance(loaded, Compound):  # Only updating coordinates.
+        assert compound.n_atoms == loaded.n_atoms
+        for atom, loaded_atom in zip(compound.atoms, loaded.atoms):
+            atom.pos = loaded_atom.pos
+    return compound
+
+
+class Compound(PartMixin):
     """A building block in the mBuild hierarchy.
 
     Compound is the superclass of all composite building blocks in the mBuild
@@ -35,23 +76,32 @@ class Compound(PartMixin, HasPartsMixin):
     searches, visualization, I/O operations, and a number of other convenience
     methods.
 
-    Args:
-        kind (str, optional): The type of Compound. Defaults to the class' name.
-        periodicity (np.ndarray, shape=(1, 3) optional): The periodic distance
-            of the Compound in the x, y and z directions. Defaults to zeros.
+    Parameters
+    ----------
+    kind : str, optional, default=self.__class__.__name__
+        The type of Compound.
+    periodicity : np.ndarray, shape=(3,), dtype=float, optional
+        The periodic lengths of the Compound in the x, y and z directions.
+        Defaults to zeros which is treated as non-periodic.
 
-    Attributes:
-        kind (str): The type of Compound.
-        periodicity (np.ndarray): The periodic distance of the Compound in the
-            x, y and z directions. Defaults to zeros.
-        parts (OrderedSet): Contains all child parts. Parts can be Atom, Bond
-            or Compound (they must inherit from PartMixin).
-        labels (OrderedDict): Labels to Compound/Atom mappings. These do not
-            necessarily need not be in self.parts.
-        parent (Compound): The parent Compound that contains this part Can be
-            None if this compound is the root of the containment hierarchy.
-        referrers (set):  Other compounds that reference this part with
-            labels.
+    Attributes
+    ----------
+    kind : str, optional, default=self.__class__.__name__
+        The type of Compound.
+    periodicity : np.ndarray, shape=(3,), dtype=float, optional
+        The periodic lengths of the Compound in the x, y and z directions.
+        Defaults to zeros which is treated as non-periodic.
+    parts : OrderedSet
+        Contains all child parts. Parts can be Atom, Bond or Compound - anything
+        that inherits from PartMixin.
+    labels : OrderedDict
+        Labels to Compound/Atom mappings. These do not necessarily need not be
+        in parts.
+    parent : mb.Compound
+        The parent Compound that contains this part. Can be None if this
+        compound is the root of the containment hierarchy.
+    referrers : set
+        Other compounds that reference this part with labels.
 
     """
     def __init__(self, kind=None, periodicity=None):
@@ -67,26 +117,14 @@ class Compound(PartMixin, HasPartsMixin):
             periodicity = np.array([0.0, 0.0, 0.0])
         self.periodicity = periodicity
 
-        # Allow storing extra stuff in a dict (created on-demand).
+        self.parts = OrderedSet()
+        self.labels = OrderedDict()
         self._extras = None
 
     @property
-    def extras(self):
-        """Return the Compound's optional, extra attributes. """
-        if self._extras is None:
-            self._extras = dict()
-        return self._extras
-
-    def __getattr__(self, item):
-        if self._extras and item in self._extras:
-            return self._extras[item]
-        else:
-            return super(Compound, self).__getattr__(item)
-
-    @property
     def atoms(self):
-        """A list of all Atoms in the Compound and sub-Compounds. """
-        return self.atom_list_by_kind(excludeG=True)
+        """A list of all Atoms in the Compound and sub-Compounds.  """
+        return self.atom_list_by_name(exclude_ports=True)
 
     def yield_atoms(self):
         """ """
@@ -97,21 +135,28 @@ class Compound(PartMixin, HasPartsMixin):
         """Return the number of Atoms in the Compound. """
         return len(self.atoms)
 
-    def atom_list_by_kind(self, kind='*', excludeG=False):
-        """Return a list of Atoms filtered by their kind.
+    def atom_list_by_name(self, name='*', exclude_ports=True):
+        """Return a list of Atoms filtered by their name.
 
-        Args:
-            kind (str): Return only atoms of this type. '*' indicates all.
-            excludeG (bool): Exclude Port particles of kind 'G'.
-        Returns:
-            atom_list (list): A list of Atoms.
+        Parameters
+        ----------
+        name : str
+            Return only atoms of this type. '*' indicates all.
+        exclude_ports : bool
+            Exclude Port particles of kind 'G' - reserved for Ports.
+
+        Returns
+        -------
+        atom_list : list
+            List of Atoms matching the inputs.
+
         """
         atom_list = []
         for atom in self.yield_atoms():
-            if not (excludeG and atom.kind == "G"):
-                if kind == '*':
+            if not (exclude_ports and atom.name == "G"):
+                if name == '*':
                     atom_list.append(atom)
-                elif atom.kind == kind:
+                elif atom.name == name:
                     atom_list.append(atom)
         return atom_list
 
@@ -130,13 +175,7 @@ class Compound(PartMixin, HasPartsMixin):
         return len(self.bonds)
 
     def bond_list_by_kind(self, kind='*'):
-        """Return a list of Bonds filtered by their kind.
-
-        Args:
-            kind (str): Return only Bonds of this type. '*' indicates all.
-        Returns:
-            bond_list (list): A list of Bonds.
-        """
+        """Return a list of Bonds filtered by their kind. """
         bond_list = []
         for bond in self.yield_bonds():
             if kind == '*':
@@ -145,87 +184,24 @@ class Compound(PartMixin, HasPartsMixin):
                 bond_list.append(bond)
         return bond_list
 
-    def referenced_ports(self):
-        """Find all Ports referenced by this Compound.
+    def _yield_parts(self, part_type):
+        """Yield parts of a specified type in the Compound recursively. """
+        for part in self.parts:
+            # Parts local to the current Compound.
+            if isinstance(part, part_type):
+                yield part
+            # Parts further down the hierarchy.
+            if isinstance(part, Compound):
+                for subpart in part._yield_parts(part_type):
+                    yield subpart
 
-        Returns:
-            A list of Ports currently referenced by this Compound.
-        """
-        from mbuild.port import Port
-        return [port for port in self.labels.values() if isinstance(port, Port)]
+    @property
+    def extras(self):
+        """Return the Atom's optional, extra attributes. """
+        if self._extras is None:
+            self._extras = dict()
+        return self._extras
 
-    def _remove(self, removed_part):
-        """If removing an atom, make sure to remove the bonds it's part of. """
-        super(Compound, self)._remove(removed_part)
-
-        if isinstance(removed_part, Atom):
-            for bond in removed_part.bonds:
-                bond.other_atom(removed_part).bonds.remove(bond)
-                if bond.parent is not None:
-                    bond.parent.remove(bond)
-
-    def _inherit_periodicity(self, periodicity):
-        """Inherit the periodicity of a Compound that was added.  """
-        self.periodicity = periodicity
-
-    # Interface to Trajectory for reading/writing.
-    # --------------------------------------------
-    def append_from_file(self, filename, relative_to_module=None, frame=0):
-        """Append to Compound with information from a Trajectory file. """
-        from mbuild.trajectory import Trajectory
-
-        traj = Trajectory.load(filename, relative_to_module=relative_to_module)
-
-        self.append_from_trajectory(traj, frame=frame)
-
-    def update_from_file(self, filename, relative_to_module=None, frame=0):
-        """Update Compound with information from a Trajectory file. """
-        from mbuild.trajectory import Trajectory
-
-        traj = Trajectory.load(filename, relative_to_module=relative_to_module)
-
-        self.update_from_trajectory(traj, frame=frame)
-
-    def append_from_trajectory(self, traj, frame=0):
-        """Append the Trajectory's topology (atoms, bonds). """
-        traj.to_compound(part=self, frame=frame)
-
-    def update_from_trajectory(self, traj, frame=0):
-        """Update the Compound with the Trajectory's topology. """
-        traj.update_compound(self, frame=frame)
-
-    def save(self, filename, show_ports=False, **kwargs):
-        """Save the Compound to a file.
-
-        This creates an intermediate Trajectory object.
-        """
-        traj = self.to_trajectory(show_ports=show_ports, **kwargs)
-        traj.save(filename, **kwargs)
-
-    def to_trajectory(self, show_ports=False, **kwargs):
-        """Convert the Compound to a Trajectory. """
-        from mbuild.trajectory import Trajectory
-        return Trajectory.from_compound(self, show_ports=show_ports, **kwargs)
-
-    @classmethod
-    def load(cls, filename, relative_to_module=None, frame=0, **kwargs):
-        """Load a file into a Compound.
-
-        Args:
-            filename:
-            relative_to_module:
-            frame:
-        Returns:
-            Compound
-        """
-        from mbuild.trajectory import Trajectory
-
-        traj = Trajectory.load(filename, relative_to_module=relative_to_module,
-                               **kwargs)
-        return traj.to_compound(frame=frame)
-
-    # Convenience functions
-    # ---------------------
     def visualize(self, show_ports=False):
         """Visualize the Compound using VMD.
 
@@ -235,8 +211,7 @@ class Compound(PartMixin, HasPartsMixin):
         TODO: Look into pizza.py's vmd.py. See issue #32.
         """
         filename = 'visualize_{}.mol2'.format(self.__class__.__name__)
-        traj = self.to_trajectory(show_ports)
-        traj.save(filename=filename)
+        self.save(filename, show_ports=show_ports)
         import os
 
         try:
@@ -245,96 +220,432 @@ class Compound(PartMixin, HasPartsMixin):
             print("Visualization with VMD failed. Make sure it is installed"
                   "correctly and launchable from the command line via 'vmd'.")
 
+    @property
+    def xyz(self):
+        """Get a np.array of all atom coordinates in this compound. """
+        atoms = self.atom_list_by_name()
+        return np.array([atom.pos for atom in atoms])
+
+    @property
+    def center(self):
+        """The cartesian center of the Compound based on its Atoms. """
+        xyz = self.xyz
+        if xyz.any():
+            return np.mean(self.xyz, axis=0)
+        else:  # It's a port or an empty compound.
+            atoms = self.atom_list_by_name('G', exclude_ports=False)
+            try:
+                return sum(atom.pos for atom in atoms) / len(atoms)
+            except ZeroDivisionError as err:
+                print('Compound contains no atoms.')
+                raise err
+
+
+    @property
+    def boundingbox(self):
+        """Compute the bounding box of the compound. """
+        xyz = self.xyz
+        return Box(mins=xyz.min(axis=0), maxs=xyz.max(axis=0))
+
     def min_periodic_distance(self, xyz0, xyz1):
         """Vectorized distance calculation considering minimum image. """
         d = np.abs(xyz0 - xyz1)
         d = np.where(d > 0.5 * self.periodicity, self.periodicity - d, d)
         return np.sqrt((d ** 2).sum(axis=-1))
 
-    @property
-    def center(self):
-        """The cartesian center of the Compound based on its Atoms. """
-        try:
-            return sum(atom.pos for atom in self.atoms) / self.n_atoms
-        except ZeroDivisionError:  # Compound only contains 'G' atoms.
-            atoms = self.atom_list_by_kind('G')
-            return sum(atom.pos for atom in atoms) / len(atoms)
-
-    def boundingbox(self, excludeG=True):
-        """Compute the bounding box of the compound.
-
-        Args:
-            excludeG (bool): Exclude Atoms of kind 'G' (typically reserved for
-                Ports).
-        Returns:
-            Box: Simulation box initialzied with min and max coordinates.
-        """
-        minx = np.inf
-        miny = np.inf
-        minz = np.inf
-        maxx = -np.inf
-        maxy = -np.inf
-        maxz = -np.inf
-
-        for atom in self.yield_atoms():
-            if excludeG and atom.kind == 'G':
-                continue
-            if atom.pos[0] < minx:
-                minx = atom.pos[0]
-            if atom.pos[0] > maxx:
-                maxx = atom.pos[0]
-            if atom.pos[1] < miny:
-                miny = atom.pos[1]
-            if atom.pos[1] > maxy:
-                maxy = atom.pos[1]
-            if atom.pos[2] < minz:
-                minz = atom.pos[2]
-            if atom.pos[2] > maxz:
-                maxz = atom.pos[2]
-
-        min_coords = np.array([minx, miny, minz])
-        max_coords = np.array([maxx, maxy, maxz])
-
-        return Box(mins=min_coords, maxs=max_coords)
-
-    def atoms_in_range(self, point, radius, max_items=10):
-        """Return the indices of Atoms within a radius of a point.
-
-        Args:
-            point (list): The reference point in cartesian coordinates.
-            radius (float): Find Atoms within this radius.
-            max_items (int): Maximum number of Atoms to find.
-        Returns:
-            List of Atoms within specified range.
-        """
-        atoms = self.atom_list_by_kind(excludeG=True)
-        traj = self.to_trajectory()
-        idxs = traj.atoms_in_range_idx(point, radius, max_items=max_items)
-        return [atoms[idx] for idx in idxs]
-
-    def wrap(self):
-        """Wrap a periodic Compound. """
-        assert np.any(self.periodicity)
-        box = self.boundingbox()
-        translate(self, -box.mins)
-        for atom in self.yield_atoms():
-            for i, coordinate in enumerate(atom.pos):
-                if self.periodicity[i]:
-                    if coordinate < 0.0:
-                        atom.pos[i] = self.periodicity[i] + coordinate
-                    if coordinate > self.periodicity[i]:
-                        atom.pos[i] = coordinate - self.periodicity[i]
-
-    def add_bond(self, type_a, type_b, dmin, dmax, kind=None):
-        """Add Bonds between all Atom pairs of types a/b within [dmin, dmax].
-
-        TODO: testing for periodic boundaries.
-        """
-        for a1 in self.atom_list_by_kind(type_a):
+    def add_bonds(self, type_a, type_b, dmin, dmax, kind=None):
+        """Add Bonds between all pairs of types a/b within [dmin, dmax]. """
+        # TODO: testing for periodic boundaries.
+        for a1 in self.atom_list_by_name(type_a):
             nearest = self.atoms_in_range(a1.pos, dmax)
             for a2 in nearest:
-                if (a2.kind == type_b) and (dmin <= self.min_periodic_distance(a2.pos, a1.pos) <= dmax):
+                if (a2.name == type_b) and (dmin <= self.min_periodic_distance(a2.pos, a1.pos) <= dmax):
                     self.add(Bond(a1, a2, kind=kind))
+
+    def add(self, new_part, label=None, containment=True, replace=False,
+            inherit_periodicity=True):
+        """Add a part to the Compound.
+
+        Note:
+            This does not necessarily add the part to self.parts but may
+            instead be used to add a reference to the part to self.labels. See
+            'containment' argument.
+
+        Parameters
+        ----------
+        new_part : mb.Atom, mb.Bond or mb.Compound
+            The object to be added to this Compound.
+        label : str, optional
+            A descriptive string for the part.
+        containment : bool, optional, default=True
+            Add the part to self.parts.
+        replace : bool, optional, default=True
+            Replace the label if it already exists.
+
+        """
+        assert isinstance(new_part, (PartMixin, list, tuple, set))
+        if containment:
+            # Support batch add via lists, tuples and sets.
+            if isinstance(new_part, (list, tuple, set)):
+                for elem in new_part:
+                    assert (elem.parent is None)
+                    self.add(elem)
+                    elem.parent = self
+                return
+
+            assert new_part.parent is None, "Part {} already has a parent: {}".format(
+                new_part, new_part.parent)
+            self.parts.add(new_part)
+            new_part.parent = self
+
+        # Add new_part to labels. Does not currently support batch add.
+        assert isinstance(new_part, PartMixin)
+
+        if not containment and label is None:
+            label = '_{0}[$]'.format(new_part.__class__.__name__)
+
+        if label is not None:
+            if label.endswith("[$]"):
+                label = label[:-3]
+                if label not in self.labels:
+                    self.labels[label] = []
+                label_pattern = label + "[{}]"
+
+                count = len(self.labels[label])
+                self.labels[label].append(new_part)
+                label = label_pattern.format(count)
+
+            if not replace and label in self.labels:
+                raise Exception(
+                    "Label {0} already exists in {1}".format(label, self))
+            else:
+                self.labels[label] = new_part
+        new_part.referrers.add(self)
+
+        if (inherit_periodicity and isinstance(new_part, Compound) and
+                new_part.periodicity.any()):
+            self.periodicity = new_part.periodicity
+
+    def remove(self, objs_to_remove):
+        """Remove parts (Atom, Bond or Compound) from the Compound. """
+        if not isinstance(objs_to_remove, (list, tuple, set)):
+            objs_to_remove = [objs_to_remove]
+        objs_to_remove = set(objs_to_remove)
+
+        if len(objs_to_remove) == 0:
+            return
+
+        intersection = objs_to_remove.intersection(self.parts)
+        self.parts.difference_update(intersection)
+        objs_to_remove.difference_update(intersection)
+
+        for removed_part in intersection:
+            self._remove_bonds(removed_part)
+            self._remove_references(removed_part)
+
+        # Remove the part recursively from sub-components.
+        for part in self.parts:
+            if isinstance(part, Compound) and len(objs_to_remove) > 0:
+                part.remove(objs_to_remove)
+
+    @staticmethod
+    def _remove_bonds(removed_part):
+        """If removing an atom, make sure to remove the bonds it's part of. """
+        if isinstance(removed_part, Atom):
+            for bond in removed_part.bonds:
+                bond.other_atom(removed_part).bonds.remove(bond)
+                if bond.parent is not None:
+                    bond.parent.remove(bond)
+
+    @staticmethod
+    def _remove_references(removed_part):
+        """Remove labels pointing to this part and vice versa. """
+        removed_part.parent = None
+
+        # Remove labels in the hierarchy pointing to this part.
+        referrers_to_remove = set()
+        for referrer in removed_part.referrers:
+            if removed_part not in referrer.ancestors():
+                for label, referred_part in referrer.labels.items():
+                    if referred_part is removed_part:
+                        del referrer.labels[label]
+                        referrers_to_remove.add(referrer)
+        removed_part.referrers.difference_update(referrers_to_remove)
+
+        # Remove labels in this part pointing into the hierarchy.
+        labels_to_delete = []
+        if isinstance(removed_part, Compound):
+            for label, part in removed_part.labels.items():
+                if removed_part not in part.ancestors():
+                    part.referrers.remove(removed_part)
+                    labels_to_delete.append(label)
+        for label in labels_to_delete:
+            del removed_part.labels[label]
+
+    def referenced_ports(self):
+        """Return all Ports referenced by this Compound. """
+        from mbuild.port import Port
+        return [port for port in self.labels.values() if isinstance(port, Port)]
+
+    # Interface to Trajectory for reading/writing.
+    # --------------------------------------------
+    def from_trajectory(self, traj, frame=-1, coords_only=False):
+        """Extract atoms and bonds from a md.Trajectory.
+
+        Will create sub-compounds for every chain if there is more than one
+        and sub-sub-compounds for every residue.
+
+        Parameters
+        ----------
+        traj : md.Trajectory
+            The trajectory to load.
+        frame : int
+            The frame to take coordinates from.
+
+        """
+        if coords_only:
+            assert traj.n_atoms == self.n_atoms
+            for mdtraj_atom, mbuild_atom in zip(traj.topology.atoms, self.atoms):
+                mbuild_atom.pos = traj.xyz[frame, mdtraj_atom.index]
+            return
+
+        atom_mapping = dict()
+        for chain in traj.topology.chains:
+            if traj.topology.n_chains > 1:
+                chain_compound = Compound()
+                self.add(chain_compound, "chain[$]")
+            else:
+                chain_compound = self
+            for res in chain.residues:
+                for atom in res.atoms:
+                    new_atom = Atom(str(atom.name), traj.xyz[frame, atom.index])
+                    chain_compound.add(new_atom, label="{0}[$]".format(atom.name))
+                    atom_mapping[atom] = new_atom
+
+        for a1, a2 in traj.topology.bonds:
+            atom1 = atom_mapping[a1]
+            atom2 = atom_mapping[a2]
+            self.add(Bond(atom1, atom2))
+
+        if np.any(traj.unitcell_lengths) and np.any(traj.unitcell_lengths[0]):
+            self.periodicity = traj.unitcell_lengths[0]
+        else:
+            self.periodicity = np.array([0., 0., 0.])
+
+    def to_trajectory(self, show_ports=False, chain_types=None,
+                      residue_types=None, forcefield=None):
+        """Convert to an md.Trajectory and flatten the compound.
+
+        This also produces an object subclassed from MDTraj's Topology which
+        can be used in place of an actual MDTraj.Topology.
+
+        Parameters
+        ----------
+        show_ports : bool
+
+        Returns
+        -------
+        trajectory : md.Trajectory
+
+        See also
+        --------
+        _to_topology
+        mbuild.topology
+
+        """
+        exclude = not show_ports
+        atom_list = self.atom_list_by_name('*', exclude_ports=exclude)
+
+        top = self._to_topology(atom_list, chain_types=chain_types,
+                                residue_types=residue_types, forcefield=forcefield)
+
+        # Coordinates.
+        xyz = np.ndarray(shape=(1, top.n_atoms, 3), dtype='float')
+        for idx, atom in enumerate(atom_list):
+            xyz[0, idx] = atom.pos
+
+        # Unitcell information.
+        box = self.boundingbox
+        unitcell_lengths = np.empty(3)
+        for dim, val in enumerate(self.periodicity):
+            if val:
+                unitcell_lengths[dim] = val
+            else:
+                unitcell_lengths[dim] = box.lengths[dim]
+
+        return md.Trajectory(xyz, top, unitcell_lengths=unitcell_lengths,
+                             unitcell_angles=np.array([90, 90, 90]))
+
+    def _to_topology(self, atom_list, chain_types=None, residue_types=None,
+                     forcefield=None):
+        """Create a Topology from a Compound.
+
+        Parameters
+        ----------
+        atom_list :
+        chain_types :
+        residue_types :
+
+        Returns
+        -------
+        top : mbuild.Topology
+
+        """
+
+        if isinstance(chain_types, list):
+            chain_types = tuple(chain_types)
+        if isinstance(residue_types, list):
+            residue_types = tuple(residue_types)
+        top = Topology()
+        atom_mapping = {}
+
+        default_chain = top.add_chain()
+        default_residue = top.add_residue("RES", default_chain)
+
+        last_residue_compound = None
+        last_chain_compound = None
+        last_residue = None
+        last_chain = None
+
+        for atom in atom_list:
+            # Chains
+            for parent in atom.ancestors():
+                if chain_types and isinstance(parent, chain_types):
+                    if parent != last_chain_compound:
+                        last_chain_compound = parent
+                        last_chain = top.add_chain()
+                        last_chain_default_residue = top.add_residue("RES", last_chain)
+                        last_chain.compound = last_chain_compound
+                    break
+            else:
+                last_chain = default_chain
+                last_chain.compound = last_chain_compound
+
+            # Residues
+            for parent in atom.ancestors():
+                if residue_types and isinstance(parent, residue_types):
+                    if parent != last_residue_compound:
+                        last_residue_compound = parent
+                        last_residue = top.add_residue(parent.__class__.__name__, last_chain)
+                        last_residue.compound = last_residue_compound
+                    break
+            else:
+                if last_chain != default_chain:
+                    last_residue = last_chain_default_residue
+                else:
+                    last_residue = default_residue
+                last_residue.compound = last_residue_compound
+
+            # Add the actual atoms
+            try:
+                ele = get_by_symbol(atom.name)
+            except KeyError:
+                ele = Element(1000, atom.name, atom.name, 1.0)
+            at = top.add_atom(atom.name, ele, last_residue)
+            at.charge = atom.charge
+
+            try:
+                at.atomtype = atom.atomtype
+            except AttributeError:
+                at.atomtype = atom.name
+            atom_mapping[atom] = at
+
+        for bond in self.bonds:
+            a1 = bond.atom1
+            a2 = bond.atom2
+            top.add_bond(atom_mapping[a1], atom_mapping[a2])
+
+        if forcefield:
+            from mbuild.tools.parameterize.forcefield import apply_forcefield
+            apply_forcefield(top, forcefield)
+            top.forcefield = forcefield
+
+        return top
+
+    def update_coordinates(self, filename):
+        """ """
+        load(filename, compound=self, coords_only=True)
+
+    def save(self, filename, show_ports=False, forcefield=None, **kwargs):
+        """Save the Compound to a file.
+
+        Parameters
+        ----------
+        filename : str
+            Filesystem path in which to save the trajectory. The extension or
+            prefix will be parsed and will control the format.
+
+        Other Parameters
+        ----------------
+        force_overwrite : bool
+
+        """
+        # grab the extension of the filename
+        extension = os.path.splitext(filename)[-1]
+
+        savers = {'.hoomdxml': self.save_hoomdxml,
+                  '.gro': self.save_gromacs,
+                  '.top': self.save_gromacs,
+                  '.mol2': self.save_mol2,
+                  '.lammps': self.save_lammpsdata,
+                  '.lmp': self.save_lammpsdata,
+                  }
+
+        try:
+            saver = savers[extension]
+        except KeyError:  # TODO: better reporting
+            saver = None
+
+        if (not saver or extension == '.mol2') and forcefield:
+            ff_formats = ', '.join(set(savers.keys()) - set(['.mol2']))
+            raise ValueError('The only supported formats with forcefield'
+                             'information are: {0}'.format(ff_formats))
+
+        if saver:  # mBuild supported saver.
+            traj = self.to_trajectory(forcefield=forcefield, **kwargs)
+            return saver(filename, traj, show_ports=show_ports)
+        else:  # MDTraj supported saver.
+            traj = self.to_trajectory(show_ports=show_ports, **kwargs)
+            return traj.save(filename, **kwargs)
+
+    def save_hoomdxml(self, filename, traj, force_overwrite=True, **kwargs):
+        """ """
+        with HOOMDTopologyFile(filename, 'w', force_overwrite=force_overwrite) as f:
+            f.write(traj)
+
+    def save_mol2(self, filename, traj, **kwargs):
+        """ """
+        write_mol2(filename, traj)
+
+    def save_gromacs(self, filename, traj, force_overwrite=True, **kwargs):
+        """ """
+        # Create separate file paths for .gro and .top
+        filepath, filename = os.path.split(filename)
+        basename = os.path.splitext(filename)[0]
+        top_filename = os.path.join(filepath, basename + '.top')
+        gro_filename = os.path.join(filepath, basename + '.gro')
+        with GROMACSTopologyFile(top_filename, gro_filename, 'w', force_overwrite=force_overwrite) as f:
+            f.write(traj)
+
+    def save_lammpsdata(self, filename, traj, force_overwrite=True, **kwargs):
+        """ """
+        with LAMMPSTopologyFile(filename, 'w', force_overwrite=force_overwrite) as f:
+            f.write(traj)
+
+
+    # Magic
+    # -----
+    def __getattr__(self, attr):
+        assert "labels" != attr, ("Compound __init__ never called. Make "
+                                  "sure to call super().__init__() in the "
+                                  "__init__ method of your class.")
+        if attr in self.labels:
+            return self.labels[attr]
+        elif self._extras and attr in self._extras:
+            return self._extras[attr]
+        else:
+            raise AttributeError("'{}' object has no attribute '{}'".format(
+                self.__class__.__name__, attr))
 
     def __deepcopy__(self, memo):
         cls = self.__class__
@@ -381,7 +692,5 @@ class Compound(PartMixin, HasPartsMixin):
         for r in self.referrers:
             if memo[0] in r.ancestors():
                 newone.referrers.add(deepcopy(r, memo))
-
-        newone._extras = deepcopy(self._extras, memo)
 
         return newone

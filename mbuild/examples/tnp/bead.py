@@ -13,7 +13,7 @@ class Bead(mb.Compound):
         """
         super(Bead, self).__init__(self)
 
-        self.add(mb.Atom(kind=particle_kind), particle_kind)
+        self.add(mb.Atom(name=particle_kind), particle_kind)
 
         self.add(mb.Port(anchor=self.labels[particle_kind]), 'up')
         mb.translate(self.up, np.array([0, 0.7, 0]))

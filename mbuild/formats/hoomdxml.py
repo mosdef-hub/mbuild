@@ -1,252 +1,293 @@
-from future.builtins import range
+import os
+
+import numpy as np
 
 from mdtraj.formats.registry import _FormatRegistry
+from six import string_types
+from xml.etree import cElementTree
 
 
-__all__ = ['load_hoomdxml', 'save_hoomdxml']
+__all__ = ['load_hoomdxml', 'HOOMDTopologyFile']
+
 
 @_FormatRegistry.register_loader('.hoomdxml')
-def load_hoomdxml(filename, optional_nodes=True, lj_units=None):
-    """Load a HOOMD-blue XML file form disk.
+def load_hoomdxml(filename, lj_units=None):
+    """Load a HOOMD-blue XML file from disk.
 
     Note: lj_units need to be normalized by nm, kJ/mol, and amu
-    TODO: better way to read optional nodes
-    Args:
-        filename (str): Path to xml file.
-        optional_nodes(bool, optional):
 
-    Returns:
-        traj (md.Trajectory):
-        optional_data (dict): A Dictionary of DataFrames containing optional
-        information.
+    Required nodes for valid HOOMD simulation: box, position and type.
+
+    Parameters
+    ----------
+    filename : str
+        Path to xml file.
+
+    Returns
+    -------
+    compound : mb.Compound
+
     """
-    from xml.etree import cElementTree
+    if not isinstance(filename, string_types):
+        raise TypeError('Filename must be of type string for load_lammpstrj. '
+                        'you supplied {0}'.format(type(filename)))
 
-    import numpy as np
-    import pandas as pd
-
-    from mbuild.trajectory import Trajectory
-    from mbuild.topology import Topology
-
-    # get fundamental LJ units
-    if lj_units is None:
-        lj_units = {'distance': 1.0,
-                    'energy': 1.0,
-                    'mass': 1.0}
-    else:
-        assert isinstance(lj_units, dict)
-        assert 'distance' in lj_units
-        assert 'energy' in lj_units
-        assert 'mass' in lj_units
-
-    # other derived LJ units
-    lj_units['time'] = (np.sqrt(lj_units['mass'] * lj_units['distance']**2.0
-                        / lj_units['energy']))
-    lj_units['velocity'] = lj_units['distance'] / lj_units['time']
-    lj_units['acceleration'] = lj_units['distance'] / lj_units['time']**2.0
-    lj_units['diameter'] = lj_units['distance']
-    lj_units['charge'] = 1.0
-    # TODO: figure out charge
-    lj_units['moment_inertia'] = lj_units['mass'] * lj_units['distance']**2.0
-    lj_units['image'] = 1.0
-    lj_units['body'] = 1.0
-    lj_units['orientation'] = 1.0
+    with HOOMDTopologyFile(filename, lj_units=lj_units) as f:
+        compound = f.read()
+    return compound
 
 
-    tree = cElementTree.parse(filename)
+@_FormatRegistry.register_fileobject('.hoomdxml')
+class HOOMDTopologyFile(object):
+    """ """
+    per_particle_nodes = ['image', 'velocity', 'acceleration', 'mass',
+                          'diameter', 'charge', 'body', 'orientation',
+                          'moment_inertia']
+    multi_particle_nodes = [('bond', 2), ('angle', 3), ('dihedral', 4),
+                            ('improper', 4)]
 
-    config = tree.getroot().find('configuration')
-    # Required nodes for valid HOOMD simulation: box, position and type.
-    # TODO: funciton to check all permutations of cases for attribute strings
-    box = config.find('box')
-    for L in ['lx', 'LX', 'lX', 'Lx']:
-        try:
-            lx = float(box.attrib[L]) * lj_units['distance']
-            break
-        except KeyError:
-            pass
-    else:
-        raise ValueError('Unable to find box length in x direction')
+    def __init__(self, filename, mode='r', force_overwrite=True, lj_units=None):
+        """Open a HOOMD xml file for reading/writing. """
 
-    for L in ['ly', 'LY', 'lY', 'Ly']:
-        try:
-            ly = float(box.attrib[L]) * lj_units['distance']
-            break
-        except KeyError:
-            pass
-    else:
-        raise ValueError('Unable to find box length in y direction')
+        self._is_open = False
+        self._filename = filename
+        self._mode = mode
+        self._frame_index = 0
+        # Track which line we're on. this is not essential, but its useful
+        # when reporting errors to the user to say what line it occured on.
+        # Looking at you LAMMPS...
+        self._line_counter = 0
 
-    for L in ['lz', 'LZ', 'lZ', 'Lz']:
-        try:
-            lz = float(box.attrib[L]) * lj_units['distance']
-            break
-        except KeyError:
-            pass
-    else:
-        raise ValueError('Unable to find box length in z direction')
+        if mode == 'r':
+            if not os.path.exists(filename):
+                raise IOError("The file '%s' doesn't exist" % filename)
+            from mbuild.compound import Compound
+            self._fh = open(filename, 'r')
+            self._is_open = True
+            self.compound = Compound()
+        elif mode == 'w':
+            if os.path.exists(filename) and not force_overwrite:
+                raise IOError("The file '%s' already exists" % filename)
+            self._fh = open(filename, 'w')
+            self._is_open = True
+        else:
+            raise ValueError('mode must be one of "r" or "w". '
+                             'you supplied "{0}"'.format(mode))
 
-    try:
-        xy = float(box.attrib['xy'])
-        xz = float(box.attrib['xz'])
-        yz = float(box.attrib['yz'])
-    except:
-        xy = 0.0
-        xz = 0.0
-        yz = 0.0
+        # Fundamental LJ units.
+        if lj_units is None:
+            self.u = {'distance': 1.0,
+                      'energy': 1.0,
+                      'mass': 1.0}
+        else:
+            assert isinstance(lj_units, dict)
+            assert 'distance' in lj_units
+            assert 'energy' in lj_units
+            assert 'mass' in lj_units
+            self.u = lj_units
 
-    unitcell_vectors = np.array([[[lx,  xy*ly, xz*lz],
-                                  [0.0, ly,    yz*lz],
-                                  [0.0, 0.0,   lz   ]]])
+        # Other derived LJ units.
+        self.u['time'] = (np.sqrt(self.u['mass'] * self.u['distance']**2.0 / self.u['energy']))
+        self.u['velocity'] = self.u['distance'] / self.u['time']
+        self.u['acceleration'] = self.u['distance'] / self.u['time']**2.0
+        self.u['diameter'] = self.u['distance']
+        self.u['charge'] = 1.0
+        # TODO: figure out charge
+        self.u['moment_inertia'] = self.u['mass'] * self.u['distance']**2.0
+        self.u['image'] = 1.0
+        self.u['body'] = 1.0
+        self.u['orientation'] = 1.0
 
-    xyz = list()
-    for n, pos in enumerate(config.find('position').text.splitlines()[1:]):
-        xyz.append([float(x) * lj_units['distance'] for x in pos.split()])
-    n_atoms = n + 1
+    def read(self):
+        """ """
+        from mbuild.atom import Atom
 
-    # TODO: Create custom elements based on type names. Probably want a prefix
-    #       or suffix to avoid overwriting atomic elements.
-    atom_types = list()
-    for atom_type in config.find('type').text.splitlines()[1:]:
-        atom_types.append(atom_type)
+        tree = cElementTree.parse(self._filename)
+        self._config = tree.getroot().find('configuration')
 
-    # TODO: Read angles/dihedrals/impropers into ff_X topology attributes.
-    optional_data = dict()
-    if optional_nodes:
-        # Create a dataframe with all available per-particle information.
-        per_particle_df = pd.DataFrame()
-        per_particle_nodes = ['image', 'velocity', 'acceleration', 'mass',
-                'diameter', 'charge', 'body', 'orientation', 'moment_inertia']
-        for node in per_particle_nodes:
-            parsed_node_text = list()
-            try:
-                node_text = config.find(node).text.splitlines()[1:]
-                for raw_line in node_text:
-                    # TODO: not robust when e.g. charges are provided as ints
-                    parsed_line = [int(x) if x.isdigit() else float(x) * lj_units[node] 
-                            for x in raw_line.split()]
-                    if len(parsed_line) == 1:
-                        parsed_line = parsed_line[0]
-                    parsed_node_text.append(parsed_line)
-                per_particle_df[node] = parsed_node_text
-            except AttributeError as err:
-                pass
-        if not per_particle_df.empty:
-            optional_data['per_particle'] = per_particle_df
+        # Unitcell info.
+        box = self._config.find('box')
+        unitcell_vectors = self._read_unitcell_vectors(box) * self.u['distance']
+        self.compound.periodicity = np.diag(unitcell_vectors)
 
-        # Add a dataframe for each available multi-particle node.
-        multi_particle_nodes = [('bond', 2), ('angle', 3), ('dihedral', 4),
-                                ('improper', 4)]
-        for node, n_indices in multi_particle_nodes:
-            parsed_node_text = list()
-            try:
-                node_text = config.find(node).text.splitlines()[1:]
-                for raw_line in node_text:
-                    parsed_line = [int(x) if x.isdigit() else x for x in raw_line.split()]
-                    parsed_node_text.append(parsed_line)
-                columns = ['id'+str(n) for n in range(n_indices)]
-                columns.insert(0, node+'type')
-                multi_particle_df = pd.DataFrame(parsed_node_text, columns=columns)
-                optional_data[node] = multi_particle_df
-            except (AttributeError, ValueError) as err:
-                pass
+        # Coordinates and atom types.
+        coords = self._config.find('position').text.splitlines()[1:]
+        types = self._config.find('type').text.splitlines()[1:]
+        n_atoms = len(coords)
+        atom_mapping = dict()
+        for n, type_coord in enumerate(zip(types, coords)):
+            atom_type, xyz = type_coord
+            new_atom = Atom(str(atom_type), [float(x) * self.u['distance']
+                                             for x in xyz.split()])
+            self.compound.add(new_atom, label="{0}[$]".format(new_atom.name))
+            atom_mapping[n] = new_atom
+
+        self._read_per_particle_nodes()
+        self._read_multi_particle_nodes(atom_mapping)
 
         # TODO: read wall
         # <wall> has its information stored as attributes
+        return self.compound
 
-    # found = [node for node in optional_data.keys() if node != 'per_particle']
-    # found.extend([node for node in per_particle_df.columns])
-    # print "Parsed the following optional nodes from '{0}':".format(filename)
-    # print found
+    def _read_per_particle_nodes(self):
+        """ """
+        for node in self.per_particle_nodes:
+            try:
+                node_text = self._config.find(node).text.splitlines()[1:]
+            except AttributeError:
+                # Node does not exist.
+                pass
+            else:
+                for raw_line, atom in zip(node_text, self.compound.atoms):
+                    # TODO: not robust when e.g. charges are provided as ints
+                    parsed_line = [int(x) if x.isdigit() else float(x) * self.u[node]
+                                   for x in raw_line.split()]
+                    if len(parsed_line) == 1:
+                        parsed_line = parsed_line[0]
+                    atom.extras[node] = parsed_line
 
-    atoms_df = pd.DataFrame(atom_types, columns=['name'])
-    atoms_df['serial'] = range(n_atoms)
-    atoms_df['element'] = ['' for _ in range(n_atoms)]
-    atoms_df['resSeq'] = np.ones(n_atoms, dtype='int')
-    atoms_df['resName'] = ['RES' for _ in range(n_atoms)]
-    atoms_df['chainID'] = np.ones(n_atoms, dtype='int')
-    # TODO: Infer chains by finding isolated bonded structures.
-    if 'bond' in optional_data:
-        bonds = optional_data['bond'][['id0', 'id1']].values
-    else:
-        bonds = np.empty(shape=(0, 2), dtype="int")
-    top = Topology.from_dataframe(atoms_df, bonds=bonds)
+    def _read_multi_particle_nodes(self, atom_mapping):
+        """ """
+        from mbuild.bond import Bond
 
-    traj = Trajectory(xyz=np.array(xyz, dtype=np.float64), topology=top)
-    traj.unitcell_vectors = unitcell_vectors
-    traj.extras = optional_data
-    return traj
+        for node, n_indices in self.multi_particle_nodes:
+            try:
+                node_text = self._config.find(node).text.splitlines()[1:]
+            except AttributeError:
+                # Node does not exist.
+                pass
+            else:
+                if node != 'bond':
+                    self.compound.extras[node] = list()
+                for raw_line in node_text:
+                    parsed_line = [int(x) if x.isdigit() else x for x in raw_line.split()]
+                    if node == 'bond':
+                        atom1 = atom_mapping[parsed_line[1]]
+                        atom2 = atom_mapping[parsed_line[2]]
+                        new_bond = Bond(atom1, atom2)
+                        self.compound.add(new_bond)
+                    else:
+                        self.compound.extras[node] = list()
 
+    def _read_unitcell_vectors(self, box):
+        """Parse unitcell vectors from box node.  """
 
-# TODO: decide if we want this to be a class
-def save_hoomdxml(traj, step=-1, optional_nodes=None, filename='mbuild.xml'):
-    """Output a Trajectory as a HOOMD XML file.
+        # TODO: make less horrible.
+        for L in ['lx', 'LX', 'lX', 'Lx']:
+            try:
+                lx = float(box.attrib[L])
+                break
+            except KeyError:
+                pass
+        else:
+            raise ValueError('Unable to find box length in x direction')
 
-    Args:
-        traj (md.Trajectory): The Trajectory to be output.
-        filename (str, optional): Path of the output file.
+        for L in ['ly', 'LY', 'lY', 'Ly']:
+            try:
+                ly = float(box.attrib[L])
+                break
+            except KeyError:
+                pass
+        else:
+            raise ValueError('Unable to find box length in y direction')
 
-    """
-    with open(filename, 'w') as xml_file:
-        xml_file.write("""<?xml version="1.3" encoding="UTF-8"?>\n""")
-        xml_file.write("""<hoomd_xml>\n""")
-        xml_file.write("""<configuration time_step="0">\n""")
+        for L in ['lz', 'LZ', 'lZ', 'Lz']:
+            try:
+                lz = float(box.attrib[L])
+                break
+            except KeyError:
+                pass
+        else:
+            raise ValueError('Unable to find box length in z direction')
 
-        lx, ly, lz = traj.unitcell_lengths[step]
-        xy = traj.unitcell_vectors[0, 1, 0] / ly
-        xz = traj.unitcell_vectors[0, 2, 0] / lz
-        yz = traj.unitcell_vectors[0, 2, 1] / lz
+        try:
+            xy = float(box.attrib['xy'])
+            xz = float(box.attrib['xz'])
+            yz = float(box.attrib['yz'])
+        except KeyError:
+            xy = 0.0
+            xz = 0.0
+            yz = 0.0
 
-        xml_file.write("""<box lx="{0}" ly="{1}" lz="{2}" xy="{3}" xz="{4}" yz="{5}" />\n""".format(lx, ly, lz, xy, xz, yz))
+        return np.array([[lx,   xy*ly, xz*lz],
+                         [0.0,     ly, yz*lz],
+                         [0.0,   0.0,    lz]])
 
-        xml_file.write("""<position num="{0}">\n""".format(traj.n_atoms))
-        for atom in traj.xyz[step]:
-            x, y, z = atom
-            xml_file.write("{0:8.5f} {1:8.5f} {2:8.5f}\n".format(float(x), float(y), float(z)))
-        xml_file.write("</position>\n")
+    def write(self, traj):
+        """Output a Trajectory as a HOOMD XML file.
 
-        xml_file.write("""<type num="{0}">\n""".format(traj.n_atoms))
+        Args:
+            traj (md.Trajectory): The Trajectory to be output.
+            filename (str, optional): Path of the output file.
+
+        """
+        self._fh.write("""<?xml version="1.3" encoding="UTF-8"?>\n""")
+        self._fh.write("""<hoomd_xml>\n""")
+        self._fh.write("""<configuration time_step="0">\n""")
+
+        lx, ly, lz = traj.unitcell_lengths[0]
+        xy = 0
+        xz = 0
+        yz = 0
+
+        self._fh.write("""<box lx="{0}" ly="{1}" lz="{2}" xy="{3}" xz="{4}" yz="{5}" />\n""".format(
+            lx, ly, lz, xy, xz, yz))
+
+        self._fh.write("""<position num="{0}">\n""".format(traj.n_atoms))
+        for x, y, z in traj.xyz[0]:
+            self._fh.write("{0:8.5f} {1:8.5f} {2:8.5f}\n".format(x, y, z))
+        self._fh.write("</position>\n")
+
+        self._fh.write("""<type num="{0}">\n""".format(traj.n_atoms))
         for atom in traj.top.atoms:
-            xml_file.write("{0}\n".format(atom.atomtype))
-        xml_file.write("</type>\n")
+            try:
+                atomtype = atom.atomtype
+            except AttributeError:
+                atomtype = atom.name
+            self._fh.write("{0}\n".format(atomtype))
+        self._fh.write("</type>\n")
 
         optional_directives = [('bonds', 2), ('angles', 3), ('dihedrals', 4),
                                ('impropers', 4)]
         for directive, n_terms in optional_directives:
             if getattr(traj.top, '_ff_{0}'.format(directive)):
-                xml_file.write("""<{0}>\n""".format(directive[:-1]))
+                self._fh.write("""<{0}>\n""".format(directive[:-1]))
                 for term in getattr(traj.top, 'ff_{0}'.format(directive)):
-                    entry = '{0} '.format(term.kind)
+                    entry = '{0}'.format(term.kind)
                     for n in range(n_terms):
-                        entry += '{0} '.format(
+                        entry += ' {0}'.format(
                             getattr(term, 'atom{0}'.format(n + 1)).index)
                     entry += '\n'
-                    xml_file.write(entry)
-                xml_file.write("</{0}>\n".format(directive[:-1]))
+                    self._fh.write(entry)
+                self._fh.write("</{0}>\n".format(directive[:-1]))
 
         # TODO: optional things
-        xml_file.write("</configuration>\n")
-        xml_file.write("</hoomd_xml>\n")
+        self._fh.write("</configuration>\n")
+        self._fh.write("</hoomd_xml>\n")
+
+    def close(self):
+        """Close the HOOMD xml file. """
+        if self._is_open:
+            self._fh.close()
+            self._is_open = False
+
+    def __del__(self):
+        self.close()
+
+    def __enter__(self):
+        """Support the context manager protocol. """
+        return self
+
+    def __exit__(self, *exc_info):
+        """Support the context manager protocol. """
+        self.close()
+
 
 if __name__ == "__main__":
-    from mbuild.testing.tools import get_fn
-
     import numpy as np
 
     from mbuild.examples.ethane.ethane import Ethane
-    from mbuild.coordinate_transform import rotate_around_x
 
     ethane = Ethane()
-    rotate_around_x(ethane, np.pi)
-    ethane = ethane.to_trajectory()
-    ethane.top.find_forcefield_terms()
-    ethane.save("ethane.hoomdxml")
+    ethane.save("ethane.hoomdxml", forcefield='OPLS-AA')
 
-    # ethane.update_from_file("ethane.hoomdxml")
-    #
-    # from mbuild.compound import Compound
-    # c = Compound()
-    # c.append_from_file("ethane.hoomdxml")
-    #
-    # for atom in c.atoms():
-    #     print atom

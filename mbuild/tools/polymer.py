@@ -1,7 +1,7 @@
 from copy import deepcopy
 
-from mbuild.coordinate_transform import equivalence_transform
 from mbuild.compound import Compound
+from mbuild.coordinate_transform import equivalence_transform
 
 __all__ = ['Polymer']
 
@@ -9,12 +9,10 @@ __all__ = ['Polymer']
 class Polymer(Compound):
     """ """
     def __init__(self, proto, port_labels=("up", "down"), n=2):
-        """ """
         if n < 1:
             raise Exception('n must be 1 or more')
-        Compound.__init__(self)
+        super(Polymer, self).__init__()
 
-        assert(isinstance(proto, Compound))
         assert(port_labels[0] in proto.labels)
         assert(port_labels[1] in proto.labels)
 
@@ -38,7 +36,7 @@ class Polymer(Compound):
         self.add(first_part.labels[port_labels[1]], port_labels[1], containment=False)
 
 if __name__ == "__main__":
-    from mbuild.components.small_groups.ch2 import Ch2
-    ch2 = Ch2()
-    m = Polymer(ch2, n=13, port_labels=("up", "down"))
-    m.visualize(show_ports=True)
+    from mbuild.components.small_groups.ch2 import CH2
+    ch2 = CH2()
+    poly = Polymer(ch2, n=13, port_labels=("up", "down"))
+    poly.visualize(show_ports=True)
