@@ -71,4 +71,5 @@ class TestCompound(BaseTest):
 
     def test_center(self, methane):
         assert np.array_equal(methane.center, np.array([0, 0, 0]))
-        assert np.allclose(mb.Port().center, np.array([0, 0, 2.5e-3]))
+        port = mb.Port()
+        assert np.allclose(port.center, np.array([0.0, 0.0, 2.5e-3]))

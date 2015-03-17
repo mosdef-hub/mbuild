@@ -34,7 +34,8 @@ def load(filename, relative_to_module=None, frame=-1, compound=None,
     # folder. E.g., you build a system from ~/foo.py and it imports from
     # ~/bar/baz.py where baz.py loads ~/bar/baz.pdb.
     if relative_to_module:
-        current_dir = os.path.dirname(os.path.realpath(sys.modules[relative_to_module].__file__))
+        current_dir = os.path.dirname(os.path.realpath(
+            sys.modules[relative_to_module].__file__))
         filename = os.path.join(current_dir, filename)
 
     # This can return a md.Trajectory or an mb.Compound.
@@ -49,6 +50,7 @@ def load(filename, relative_to_module=None, frame=-1, compound=None,
     if isinstance(loaded, md.Trajectory):
         compound.from_trajectory(loaded, frame=frame, coords_only=coords_only)
     elif isinstance(loaded, Compound):  # Only updating coordinates.
+        assert compound.n_atoms == loaded.n_atoms
         for atom, loaded_atom in zip(compound.atoms, loaded.atoms):
             atom.pos = loaded_atom.pos
     return compound
@@ -227,11 +229,17 @@ class Compound(PartMixin):
     @property
     def center(self):
         """The cartesian center of the Compound based on its Atoms. """
-        try:
+        xyz = self.xyz
+        if xyz.any():
             return np.mean(self.xyz, axis=0)
-        except ZeroDivisionError:  # Compound only contains 'G' atoms.
-            atoms = self.atom_list_by_name('G')
-            return sum(atom.pos for atom in atoms) / len(atoms)
+        else:  # It's a port or an empty compound.
+            atoms = self.atom_list_by_name('G', exclude_ports=False)
+            try:
+                return sum(atom.pos for atom in atoms) / len(atoms)
+            except ZeroDivisionError as err:
+                print('Compound contains no atoms.')
+                raise err
+
 
     @property
     def boundingbox(self):
@@ -395,6 +403,12 @@ class Compound(PartMixin):
             The frame to take coordinates from.
 
         """
+        if coords_only:
+            assert traj.n_atoms == self.n_atoms
+            for mdtraj_atom, mbuild_atom in zip(traj.topology.atoms, self.atoms):
+                mbuild_atom.pos = traj.xyz[frame, mdtraj_atom.index]
+            return
+
         atom_mapping = dict()
         for chain in traj.topology.chains:
             if traj.topology.n_chains > 1:
@@ -408,16 +422,15 @@ class Compound(PartMixin):
                     chain_compound.add(new_atom, label="{0}[$]".format(atom.name))
                     atom_mapping[atom] = new_atom
 
-        if not coords_only:
-            for a1, a2 in traj.topology.bonds:
-                atom1 = atom_mapping[a1]
-                atom2 = atom_mapping[a2]
-                self.add(Bond(atom1, atom2))
+        for a1, a2 in traj.topology.bonds:
+            atom1 = atom_mapping[a1]
+            atom2 = atom_mapping[a2]
+            self.add(Bond(atom1, atom2))
 
-            if np.any(traj.unitcell_lengths) and np.any(traj.unitcell_lengths[0]):
-                self.periodicity = traj.unitcell_lengths[0]
-            else:
-                self.periodicity = np.array([0., 0., 0.])
+        if np.any(traj.unitcell_lengths) and np.any(traj.unitcell_lengths[0]):
+            self.periodicity = traj.unitcell_lengths[0]
+        else:
+            self.periodicity = np.array([0., 0., 0.])
 
     def to_trajectory(self, show_ports=False, chain_types=None,
                       residue_types=None, forcefield=None):
@@ -589,10 +602,10 @@ class Compound(PartMixin):
                              'information are: {0}'.format(ff_formats))
 
         if saver:  # mBuild supported saver.
-            traj = self.to_trajectory(forcefield=forcefield)
+            traj = self.to_trajectory(forcefield=forcefield, **kwargs)
             return saver(filename, traj, show_ports=show_ports)
         else:  # MDTraj supported saver.
-            traj = self.to_trajectory(show_ports=show_ports)
+            traj = self.to_trajectory(show_ports=show_ports, **kwargs)
             return traj.save(filename, **kwargs)
 
     def save_hoomdxml(self, filename, traj, force_overwrite=True, **kwargs):

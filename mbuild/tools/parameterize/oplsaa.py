@@ -10,6 +10,24 @@ from mbuild.tools.parameterize.chemical_groups import benzene, dioxolane13
 # House of rules #
 # -------------- #
 
+@Element('O')
+@NeighborCount(2)
+@NeighborsExactly('H', 2)
+@Whitelist(111)
+def opls_111(atom):
+    """O TIP3P Water """
+    return True
+
+
+@Element('H')
+@NeighborCount(1)
+@NeighborsExactly(111, 1)
+@Whitelist(112)
+def opls_112(atom):
+    """H TIP3P Water """
+    return True
+
+
 @Element('C')
 @NeighborCount(4)
 @NeighborsExactly('C', 1)
