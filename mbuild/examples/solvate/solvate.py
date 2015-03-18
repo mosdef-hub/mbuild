@@ -2,7 +2,6 @@ from __future__ import print_function
 
 import mbuild as mb
 from mbuild.components.small_groups.h2o import H2O
-from mbuild.components.solvents.water import Water
 from mbuild.examples.ethane.ethane import Ethane
 
 
@@ -15,14 +14,13 @@ def main():
     print("Host box: {}".format(host_box))
 
     # Create a water box.
-    #water = Water()
     water = H2O()
 
     # Solvate ethane with water box.
-    return mb.solvate(ethane, water, host_box)
+    return mb.solvate(ethane, water, 500, host_box)
 
 
 if __name__ == "__main__":
     solvated_ethane = main()
-    #solvated_ethane.visualize()
+    solvated_ethane.visualize()
 
