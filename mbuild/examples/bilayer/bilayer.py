@@ -198,7 +198,7 @@ class Bilayer(mb.Compound):
                                      maxs=[self.lipid_box.maxs[0],
                                            self.lipid_box.maxs[1],
                                            self.lipid_box.maxs[2] + 2 * water_box_z])
-        self.solvent_components.add(mb.solvent_box(self.solvent,
+        self.solvent_components.add(mb.fill_box(self.solvent,
                                                 bilayer_solvent_box))
 
 
