@@ -9,7 +9,7 @@ class Water(mb.Compound):
         super(Water, self).__init__()
 
         mb.load('spc216.pdb', compound=self, relative_to_module=self.__module__)
-        self.periodicity = np.array([1.0, 1.0, 1.0])
+        self.periodicity = np.array([1.86206, 1.86206, 1.86206])
 
 if __name__ == "__main__":
     wat = Water()
