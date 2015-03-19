@@ -6,7 +6,6 @@ from subprocess import Popen, PIPE
 import tempfile
 
 from mbuild.compound import Compound
-from mbuild.coordinate_transform import translate
 
 __all__ = ['fill_box', 'solvate']
 
