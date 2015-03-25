@@ -12,15 +12,21 @@
 # All configuration values have a default; values that are commented out
 # serve to show the default.
 
-import sys
-import os
 import mock
-import mbuild.version
+import os
+import pip
+import sys
 
-#MOCK_MODULES = ['numpy', 'numpy.linalg', 'numpy.array', 'scipy', 'mdtraj']
 MOCK_MODULES = ['pandas', 'mdtraj']
 for mod_name in MOCK_MODULES:
     sys.modules[mod_name] = mock.Mock()
+
+#pip.main(['install', 'sphinxcontrib-napoleon'])
+pip.main(['install', 'numpydoc'])
+
+import mbuild
+import mbuild.version
+
 
 on_rtd = os.environ.get('READTHEDOCS', None) == 'True'
 
@@ -28,7 +34,6 @@ on_rtd = os.environ.get('READTHEDOCS', None) == 'True'
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
-#sys.path.insert(0, os.path.abspath('.'))
 sys.path.insert(0, os.path.abspath('../mbuild'))
 
 # -- General configuration ------------------------------------------------
@@ -45,16 +50,15 @@ extensions = [
     'sphinx.ext.intersphinx',
     'sphinx.ext.viewcode',
     'sphinx.ext.autosummary',
-    'sphinxcontrib.napoleon',
+    #'sphinxcontrib.napoleon',
+    'numpydoc'
 ]
 
 autosummary_generate = True
 autodoc_default_flags = ['members', 'inherited-members']
 
-_python_doc_base = 'http://docs.python.org/2.7'
+_python_doc_base = 'http://docs.python.org/3.4'
 
-import pip
-pip.main(['install', 'sphinxcontrib-napoleon'])
 
 intersphinx_mapping = {
     _python_doc_base: None,
@@ -367,3 +371,6 @@ epub_exclude_files = ['search.html']
 
 # If false, no index is generated.
 #epub_use_index = True
+
+# stackoverflow.com/questions/12206334
+numpydoc_show_class_members = False
