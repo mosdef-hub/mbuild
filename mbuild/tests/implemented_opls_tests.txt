@@ -11,3 +11,4 @@ trifluoromethyl-benzene
 ethylene-carbonate
 gamma-butyrolactone
 124-trimethylbenzene
+anisole

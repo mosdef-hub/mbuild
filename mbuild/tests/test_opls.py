@@ -2,8 +2,9 @@ import glob
 import os
 
 from six import string_types
+from pkg_resources import resource_filename
 
-from mbuild.utils.io import load_top_opls, resource_filename
+from mbuild.utils.io import load_top_opls
 from mbuild.tools.parameterize.forcefield import prepare_atoms
 from mbuild.tools.parameterize.atomtyper import find_atomtypes
 from mbuild.tests.base_test import BaseTest
@@ -16,7 +17,7 @@ class TestOPLS(BaseTest):
         top_files = glob.glob(os.path.join(resource_dir, '*.top'))
 
         # Please update this file if you implement atom typing for a test case.
-        implemented_tests_path = os.path.join(resource_dir, 'implemented_opls_tests.txt')
+        implemented_tests_path = os.path.join(os.path.dirname(__file__), 'implemented_opls_tests.txt')
         correctly_implemented = [line.strip() for line in open(implemented_tests_path)]
 
         for top in top_files:
@@ -53,6 +54,5 @@ class TestOPLS(BaseTest):
 
 
 if __name__ == "__main__":
-    import pdb
     # TestOPLS().test_all_molecules('benzene')
     TestOPLS().test_all_molecules()
