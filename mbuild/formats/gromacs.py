@@ -115,7 +115,7 @@ class GROMACSTopologyFile(object):
         self._topfh.write('mbuild 3\n')
 
         self._topfh.write('\n[ atoms ]\n')
-        for i, atom in enumerate(traj.topology.atoms):
+        for i, atom in enumerate(traj.topology._atoms):
             self._topfh.write('{:8d} {:5s} {:8d} {:5s} {:5s} {:8d} {:8.4f} {:8.4f}\n'.format(
                 atom.index + 1, 'opls_' + atom.atomtype, atom.residue.index,
                 atom.residue.name,
@@ -150,16 +150,15 @@ class GROMACSTopologyFile(object):
         # .gro file
         self._grofh.write('{}\n'.format(basename))
         self._grofh.write('{}\n'.format(traj.n_atoms))
-        for n, data in enumerate(zip(traj.top.atoms, traj.xyz[0])):
-            atom, xyz = data
+        for atom, xyz in zip(traj.top._atoms, traj.xyz[0]):
             self._grofh.write('{:5d}{:<5s}{:5s}{:5d}'
                     '{:8.3f}{:8.3f}{:8.3f}{:8.3f}{:8.3f}{:8.3f}\n'.format(
-                atom.residue.index + 1, atom.residue.name, atom.name, n + 1,
-                xyz[0], xyz[1], xyz[2] + 3, 0.0, 0.0, 0.0))
+                atom.residue.index, atom.residue.name, atom.name, atom.index + 1,
+                xyz[0], xyz[1], xyz[2], 0.0, 0.0, 0.0))
         box = traj.unitcell_vectors[0]
         self._grofh.write('{:10.5f}{:10.5f}{:10.5f}'
-                '{:10.5f}{:10.5f}{:10.5f}'
-                '{:10.5f}{:10.5f}{:10.5f}'.format(
+                          '{:10.5f}{:10.5f}{:10.5f}'
+                          '{:10.5f}{:10.5f}{:10.5f}'.format(
             box[0, 0], box[1, 1], box[2, 2],
             box[1, 0], box[2, 0], box[0, 1],
             box[2, 1], box[0, 2], box[1, 2]))
