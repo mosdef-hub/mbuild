@@ -447,7 +447,8 @@ class Compound(PartMixin):
 
         Parameters
         ----------
-        show_ports : bool
+        show_ports : bool, optional, default=False
+            Include all port atoms when converting to trajectory.
 
         Returns
         -------
