@@ -672,5 +672,4 @@ if __name__ == "__main__":
     find_atomtypes(traj.top._atoms, forcefield='OPLS-AA')
 
     for i, a in enumerate(traj.top._atoms):
-        print("Atom name={}, opls_type={}".format(
-            a.name, a.atomtype))
+        print("Atom name={}, opls_type={}".format(a.name, a.atomtype))

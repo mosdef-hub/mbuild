@@ -1,13 +1,12 @@
-from atomtyper import (Element, NeighborCount, NeighborsAtLeast,
-    NeighborsAtMost, NeighborsExactly, Whitelist, Blacklist, check_atom,
-    InWhitelist)
-from chemical_groups import benzene
+from mbuild.tools.parameterize.atomtyper import (
+    Element, NeighborCount, NeighborsAtLeast, NeighborsExactly, Whitelist,
+    Blacklist, check_atom, InWhitelist)
+from mbuild.tools.parameterize.chemical_groups import benzene, dioxolane13
 
 
 # -------------- #
 # House of rules #
 # -------------- #
-
 
 @Element('C')
 @NeighborCount(4)
@@ -29,13 +28,20 @@ def uff_H_(atom):
 
 if __name__ == "__main__":
     import pdb
+
+    import mbuild as mb
+    from mbuild.tools.parameterize.atomtyper import find_atomtypes
+    from mbuild.tools.parameterize.forcefield import prepare_atoms
+
     from mbuild.examples.methane.methane import Methane
+    from mbuild.examples.ethane.ethane import Ethane
 
     m = Methane()
+    # m = Ethane()
 
-    from atomtyper import find_atomtypes
-    find_atomtypes(m, forcefield='UFF')
+    traj = m.to_trajectory()
+    prepare_atoms(traj.top)
+    find_atomtypes(traj.top._atoms, forcefield='UFF')
 
-    for i, atom in enumerate(m.atoms):
-        print("Atom name={}, uff_type={}".format(
-            atom.name, atom.atomtype))
+    for atom in traj.top._atoms:
+        print("Atom name={}, opls_type={}".format(atom.name, atom.atomtype))
