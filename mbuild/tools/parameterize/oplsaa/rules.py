@@ -590,7 +590,7 @@ def opls_772(atom):
 @NeighborCount(2)
 @NeighborsExactly('C', 2)
 @Whitelist(773)
-@Blacklist(467)
+@Blacklist([467, 180])
 def opls_773(atom):
     """propylene carbonate OS """
     return dioxolane13(atom)
