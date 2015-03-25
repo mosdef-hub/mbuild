@@ -222,8 +222,14 @@ class Compound(PartMixin):
 
     @property
     def xyz(self):
-        """Get a np.array of all atom coordinates in this compound. """
+        """Return all atom coordinates in this compound. """
         atoms = self.atom_list_by_name()
+        return np.array([atom.pos for atom in atoms])
+
+    @property
+    def xyz_with_ports(self):
+        """Return all atom coordinates in this compound including ports. """
+        atoms = self.atom_list_by_name(exclude_ports=False)
         return np.array([atom.pos for atom in atoms])
 
     @property

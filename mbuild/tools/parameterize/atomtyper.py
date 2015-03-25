@@ -7,6 +7,18 @@ import matplotlib.pyplot as plt
 import networkx as nx
 
 
+# Map rule ids to the functions that check for them (see `find_atomtypes()`).
+RULE_NUMBER_TO_RULE = dict()
+# Organizes the rules (see `builrule_map()`).
+RULE_MAP = dict()
+# Global neighbor information (see `neighbor_types()`).
+NEIGHBOR_TYPES_MAP = dict()
+# Global neighbor whitelist information (see `neighbor_whitelist_types()`).
+NEIGHBOR_WHITELIST_MAP = dict()
+# Used for more descriptive output when sanitizing rules.
+RULE_NUMBER_TO_DOC_STRING = dict()
+
+
 def find_atomtypes(atoms, forcefield='OPLS-AA', debug=True):
     """Determine atomtypes for all atoms.
 
@@ -32,39 +44,27 @@ def find_atomtypes(atoms, forcefield='OPLS-AA', debug=True):
     sanitize
 
     """
-    # Map rule ids to the functions that check for them (see `find_atomtypes()`).
-    global rule_number_to_rule
-    rule_number_to_rule = dict()
-
-    # Organizes the rules (see `build_rule_map()`).
-    global rule_map
-    rule_map = dict()
-
-    # Global neighbor information (see `neighbor_types()`).
-    global neighbor_types_map
-    neighbor_types_map = dict()
-
-    # Global neighbor whitelist information (see `neighbor_whitelist_types()`).
-    global neighbor_whitelist_map
-    neighbor_whitelist_map = dict()
-
-    # Used for more descriptive output when sanitizing rules.
-    global rule_number_to_doc_string
-    rule_number_to_doc_string = dict()
+    # Reset all the global variables - required if running atomtyper multiple
+    # times within one python instance.
+    RULE_NUMBER_TO_RULE.clear()
+    RULE_MAP.clear()
+    NEIGHBOR_TYPES_MAP.clear()
+    NEIGHBOR_WHITELIST_MAP.clear()
+    RULE_NUMBER_TO_DOC_STRING.clear()
 
     if forcefield.lower() == 'opls-aa':
-        import mbuild.tools.parameterize.oplsaa as oplsaa
+        import mbuild.tools.parameterize.oplsaa.rules as oplsaa
         # Build a map to all of the supported opls_* functions.
         for func_name, func in sys.modules[oplsaa.__name__].__dict__.items():
             if func_name.startswith('opls_'):
-                rule_number_to_rule[func_name.split("_")[1]] = func
+                RULE_NUMBER_TO_RULE[func_name.split("_")[1]] = func
 
     elif forcefield == 'uff':
-        import mbuild.tools.parameterize.uff as uff
+        import mbuild.tools.parameterize.uff.rules as uff
         # Build a map to all of the supported uff_* functions.
         for func_name, func in sys.modules[uff.__name__].__dict__.items():
             if func_name.startswith('uff_'):
-                rule_number_to_rule[func_name.split("_")[1]] = func
+                RULE_NUMBER_TO_RULE[func_name.split("_")[1]] = func
 
     build_rule_map()
     if debug:
@@ -75,7 +75,7 @@ def find_atomtypes(atoms, forcefield='OPLS-AA', debug=True):
 
 def build_rule_map():
     """Build up a tree of element types-->neighbor counts-->rules. """
-    for rule_number, rule in rule_number_to_rule.items():
+    for rule_number, rule in RULE_NUMBER_TO_RULE.items():
         decorators = get_decorator_objects_by_type(rule, RuleDecorator)
         element_type = None
         neighbor_count = None
@@ -90,11 +90,11 @@ def build_rule_map():
         if not neighbor_count:
             warn('Rule {} has no neighbor count'.format(rule_number))
 
-        if element_type not in rule_map:
-            rule_map[element_type] = dict()
-        if neighbor_count not in rule_map[element_type]:
-            rule_map[element_type][neighbor_count] = []
-        rule_map[element_type][neighbor_count].append(rule_number)
+        if element_type not in RULE_MAP:
+            RULE_MAP[element_type] = dict()
+        if neighbor_count not in RULE_MAP[element_type]:
+            RULE_MAP[element_type][neighbor_count] = []
+        RULE_MAP[element_type][neighbor_count].append(rule_number)
 
 
 def iterate_rules(atoms, max_iter=10):
@@ -119,9 +119,9 @@ def iterate_rules(atoms, max_iter=10):
             old_len += len(atom.blacklist)
 
             # Only run rules with matching element and neighbor counts.
-            if atom.name in rule_map:
-                if len(atom.neighbors) in rule_map[atom.name]:
-                    for rule in rule_map[atom.name][len(atom.neighbors)]:
+            if atom.name in RULE_MAP:
+                if len(atom.neighbors) in RULE_MAP[atom.name]:
+                    for rule in RULE_MAP[atom.name][len(atom.neighbors)]:
                         run_rule(atom, rule)
                 else:
                     warn("No rule for {}-neighbor '{}' atom".format(
@@ -143,7 +143,7 @@ def run_rule(atom, rule_id):
     """Execute the rule function for a specified atomtype. """
     if rule_id not in atom.whitelist:
         try:
-            rule_fn = rule_number_to_rule[str(rule_id)]
+            rule_fn = RULE_NUMBER_TO_RULE[str(rule_id)]
         except KeyError:
             raise KeyError('Rule for {} not implemented'.format(rule_id))
         rule_fn(atom)
@@ -170,51 +170,51 @@ def resolve_atomtypes(atoms):
 def neighbor_element_types(atom):
     """Returns the number of neighbors of each element type for an `atom`.
 
-    The dict maintained is `neighbor_types_map` and is organized as follows:
+    The dict maintained is `NEIGHBOR_TYPES_MAP` and is organized as follows:
         atom: defaultdict{element: number of neighbors of that element type}
     E.g. for an atom with 3 carbon and 1 hydrogen neighbors:
         Atom: {'C': 3, 'H': 1}
 
-    If the queried `atom` is not already in `neighbor_types_map`, its entry will
+    If the queried `atom` is not already in `NEIGHBOR_TYPES_MAP`, its entry will
     be added.
 
     """
-    if atom not in neighbor_types_map:
+    if atom not in NEIGHBOR_TYPES_MAP:
         neighbors = defaultdict(int)
         for neighbor in atom.neighbors:
             name = neighbor.name
             neighbors[name] += 1
-        neighbor_types_map[atom] = neighbors
-    return neighbor_types_map[atom]
+        NEIGHBOR_TYPES_MAP[atom] = neighbors
+    return NEIGHBOR_TYPES_MAP[atom]
 
 
 def neighbor_whitelist_types(atom):
     """Returns the number of neighbors of each type of whitelisted rule.
 
-    The dict maintained is `neighbor_whitelist_map` and is organized as follows:
+    The dict maintained is `NEIGHBOR_WHITELIST_MAP` and is organized as follows:
         atom: defaultdict{rule id: number of neighbors with rule id whitelisted}
     E.g. for a carbon atom in the middle of an alkane chain:
         Atom: {'136': 2, '140': 2}
 
-    If the queried `atom` is not already in `neighbor_whitelist_map`, an empty
+    If the queried `atom` is not already in `NEIGHBOR_WHITELIST_MAP`, an empty
     dict is returned. This behavior differs from `neighbor_element_types()`
     because whitelisted rules are not known a priori. New entries are only
     added when the @Whitelist decorator is used.
 
     See Also `increment_neighbor_whitelist()`.
     """
-    if atom in neighbor_whitelist_map:
-        return neighbor_whitelist_map[atom]
+    if atom in NEIGHBOR_WHITELIST_MAP:
+        return NEIGHBOR_WHITELIST_MAP[atom]
     else:
         return dict()
 
 
 def increment_neighbor_whitelist(atom, whitelist_type):
-    """Increment the counts in an atom's `neighbor_whitelist_map` entry. """
+    """Increment the counts in an atom's `NEIGHBOR_WHITELIST_MAP` entry. """
     for neighbor in atom.neighbors:
-        if neighbor not in neighbor_whitelist_map:
-            neighbor_whitelist_map[neighbor] = defaultdict(int)
-        neighbor_whitelist_map[neighbor][whitelist_type] += 1
+        if neighbor not in NEIGHBOR_WHITELIST_MAP:
+            NEIGHBOR_WHITELIST_MAP[neighbor] = defaultdict(int)
+        NEIGHBOR_WHITELIST_MAP[neighbor][whitelist_type] += 1
 
 
 def check_atom(atom, input_rule_ids):
@@ -246,7 +246,7 @@ class RuleDecorator(object):
     def extract_doc_string(func):
         if func.__doc__:
             rule_number = func.__name__.split("_")[1]
-            rule_number_to_doc_string[rule_number] = func.__doc__
+            RULE_NUMBER_TO_DOC_STRING[rule_number] = func.__doc__
 
 
 class Element(RuleDecorator):
@@ -437,7 +437,7 @@ def sanitize():
             graph.add_node(rule_number)
             blacklisted_rules = set()
             decorators = get_decorator_objects_by_type(
-                rule_number_to_rule[rule_number], RuleDecorator)
+                RULE_NUMBER_TO_RULE[rule_number], RuleDecorator)
 
             for dec in decorators:
                 if isinstance(dec, Blacklist):
@@ -485,7 +485,7 @@ def find_all_supported_elements():
         A sorted list of all the supported elements.
     """
     supported_elements = set()
-    for rule_number, rule in rule_number_to_rule.items():
+    for rule_number, rule in RULE_NUMBER_TO_RULE.items():
         decorators = get_decorator_objects_by_type(rule, RuleDecorator)
 
         element_type = None
@@ -523,7 +523,7 @@ def find_all_rule_matches(supported_elements):
 
     """
     rule_matches = dict()
-    for rule_number, rule in rule_number_to_rule.items():
+    for rule_number, rule in RULE_NUMBER_TO_RULE.items():
         decorators = get_decorator_objects_by_type(rule, RuleDecorator)
 
         element_type = None
@@ -672,7 +672,7 @@ def draw_rule_graph(issue, graph, element, pattern, sinks=None, sources=None):
             colors.append('red')
 
     labels = {rule: '{}\n{}'.format(rule, doc) for rule, doc in
-              rule_number_to_doc_string.items() if rule in graph.nodes()}
+              RULE_NUMBER_TO_DOC_STRING.items() if rule in graph.nodes()}
 
     pos = nx.spring_layout(graph)
     nx.draw_networkx_nodes(graph, pos, node_size=1000, node_color=colors)

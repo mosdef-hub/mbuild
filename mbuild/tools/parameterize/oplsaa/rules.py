@@ -1,8 +1,6 @@
-from mbuild.tools.parameterize.atomtyper import (Element, NeighborCount,
-                                                 NeighborsAtLeast,
-                                                 NeighborsExactly, Whitelist,
-                                                 Blacklist, check_atom,
-                                                 InWhitelist)
+from mbuild.tools.parameterize.atomtyper import (
+    Element, NeighborCount, NeighborsAtLeast, NeighborsExactly, Whitelist,
+    Blacklist, check_atom, InWhitelist)
 from mbuild.tools.parameterize.chemical_groups import benzene, dioxolane13
 
 
@@ -201,6 +199,59 @@ def opls_155(atom):
     return True
 
 
+@Element('O')
+@NeighborCount(2)
+@NeighborsExactly('C', 2)
+@NeighborsExactly(145, 1)
+@Whitelist(179)
+@Blacklist(180)
+def opls_179(atom):
+    """O: anisole """
+    return True
+
+
+@Element('O')
+@NeighborCount(2)
+@NeighborsExactly('C', 2)
+@Whitelist(180)
+def opls_180(atom):
+    """O: dialkyl ether """
+    return True
+
+
+@Element('C')
+@NeighborCount(4)
+@NeighborsExactly('H', 3)
+@NeighborsExactly('O', 1)
+@Whitelist(181)
+def opls_181(atom):
+    """C(H3OR): methyl ether """
+    return True
+
+
+@Element('H')
+@NeighborCount(1)
+@NeighborsExactly('C', 1)
+@Whitelist(185)
+@Blacklist([140, 144])
+def opls_185(atom):
+    """H(COR): alpha H ether """
+    rule_ids = [181, 182, 183, 184]
+    return check_atom(atom.neighbors[0], rule_ids)
+
+
+@Element('C')
+@NeighborCount(3)
+@NeighborsExactly('C', 2)
+@NeighborsExactly(145, 2)
+@NeighborsExactly('O', 1)
+@Whitelist(199)
+@Blacklist(145)
+def opls_199(atom):
+    """C(O,Me): anisole """
+    return True
+
+
 @Element('C')
 @NeighborCount(4)
 @NeighborsExactly('O', 1)
@@ -380,7 +431,7 @@ def opls_465(atom):
 @Element('O')
 @NeighborCount(1)
 @NeighborsExactly('C', 1)
-@NeighborsExactly('465', 1)
+@NeighborsExactly(465, 1)
 @Whitelist(466)
 @Blacklist(278)
 def opls_466(atom):
@@ -391,8 +442,9 @@ def opls_466(atom):
 @Element('O')
 @NeighborCount(2)
 @NeighborsExactly('C', 2)
-@NeighborsAtLeast('465', 1)
+@NeighborsAtLeast(465, 1)
 @Whitelist(467)
+@Blacklist([179, 180])
 def opls_467(atom):
     """AA -OR: ester """
     return True
@@ -402,7 +454,7 @@ def opls_467(atom):
 @NeighborCount(4)
 @NeighborsExactly('H', 3)
 @NeighborsExactly('O', 1)
-@NeighborsAtLeast('467', 1)
+@NeighborsAtLeast(467, 1)
 @Whitelist(468)
 def opls_468(atom):
     """methoxy C in esters - see also #490-#492 """
@@ -412,7 +464,7 @@ def opls_468(atom):
 @Element('H')
 @NeighborCount(1)
 @NeighborsExactly('C', 1)
-@NeighborsExactly('490', 1)
+@NeighborsExactly(490, 1)
 @Whitelist(469)
 @Blacklist(140)
 def opls_469(atom):
@@ -424,7 +476,7 @@ def opls_469(atom):
 @NeighborCount(4)
 @NeighborsExactly('C', 1)
 @NeighborsExactly('O', 1)
-@NeighborsExactly('467', 1)
+@NeighborsExactly(467, 1)
 @NeighborsExactly('H', 2)
 @Whitelist(490)
 def opls_490(atom):
@@ -435,7 +487,7 @@ def opls_490(atom):
 @Element('C')
 @NeighborCount(4)
 @NeighborsExactly('C', 3)
-@NeighborsExactly('145', 1)
+@NeighborsExactly(145, 1)
 @NeighborsExactly('H', 1)
 @Whitelist(515)
 @Blacklist(137)
@@ -538,7 +590,7 @@ def opls_772(atom):
 @NeighborCount(2)
 @NeighborsExactly('C', 2)
 @Whitelist(773)
-@Blacklist(467)
+@Blacklist([467, 180])
 def opls_773(atom):
     """propylene carbonate OS """
     return dioxolane13(atom)
