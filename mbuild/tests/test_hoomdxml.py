@@ -9,11 +9,6 @@ from mbuild.tests.base_test import BaseTest
 class TestHoomdXml(BaseTest):
 
     @pytest.fixture
-    def ethane(self):
-        from mbuild.examples.ethane.ethane import Ethane
-        return Ethane()
-
-    @pytest.fixture
     def molecule(self):
         lj_units = {'mass': 72.0,
                     'distance': 0.6, 

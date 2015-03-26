@@ -12,7 +12,7 @@ from mbuild.tests.base_test import BaseTest
 
 class TestOPLS(BaseTest):
 
-    def test_all_molecules(self, only_run=None):
+    def test_atomtyping(self, only_run=None):
         resource_dir = resource_filename('mbuild', '../opls_validation')
         top_files = glob.glob(os.path.join(resource_dir, '*.top'))
 
@@ -52,7 +52,10 @@ class TestOPLS(BaseTest):
             assert all([a == b for a, b in both]), message
             print("Passed.\n")
 
+    def test_full_parameterization(self, ethane):
+        pass
+
 
 if __name__ == "__main__":
-    # TestOPLS().test_all_molecules('benzene')
-    TestOPLS().test_all_molecules()
+    # TestOPLS().test_atomtyping('benzene')
+    TestOPLS().test_atomtyping()
