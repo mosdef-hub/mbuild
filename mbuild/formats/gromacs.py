@@ -2,7 +2,6 @@ from __future__ import print_function
 
 import os
 
-import simtk.unit as units
 #from mdtraj.utils import in_units_of
 from mdtraj.formats.registry import _FormatRegistry
 from six import string_types
