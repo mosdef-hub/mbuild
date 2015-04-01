@@ -2,7 +2,8 @@ from __future__ import print_function
 
 import os
 
-from mdtraj.utils import in_units_of
+import simtk.unit as units
+#from mdtraj.utils import in_units_of
 from mdtraj.formats.registry import _FormatRegistry
 from six import string_types
 
@@ -82,6 +83,7 @@ class GROMACSTopologyFile(object):
         self.u = dict()
         self.u['radians'] = 'radians'
         self.u['degrees'] = 'degrees'
+        self.u['distance'] = 'nanometers'
         self.u['velocity'] = 'nanometers/picosecond'
         self.u['energy'] = 'kilojoules/mole'
         self.u['mass'] = 'grams/mole'
@@ -117,9 +119,15 @@ class GROMACSTopologyFile(object):
         self._topfh.write('\n[ atoms ]\n')
         for i, atom in enumerate(traj.topology._atoms):
             self._topfh.write('{:8d} {:5s} {:8d} {:5s} {:5s} {:8d} {:8.4f} {:8.4f}\n'.format(
-                atom.index + 1, 'opls_' + atom.atomtype, atom.residue.index,
+                atom.index + 1, atom.atomtype, atom.residue.index,
                 atom.residue.name,
-                atom.name, i+1, atom.charge, atom.element.mass))
+                atom.bondtype, i+1, atom.charge, atom.element.mass))
+
+        if traj.topology._ff_pairs:
+            self._topfh.write('\n[ pairs ]\n')
+            for atom1, atom2 in traj.topology.ff_pairs:
+                self._topfh.write('{:d} {:d}\n'.format(
+                    atom1.index + 1, atom2.index + 1))
 
         if traj.topology._ff_bonds:
             self._topfh.write('\n[ bonds ]\n')
@@ -153,7 +161,7 @@ class GROMACSTopologyFile(object):
         for atom, xyz in zip(traj.top._atoms, traj.xyz[0]):
             self._grofh.write('{:5d}{:<5s}{:5s}{:5d}'
                     '{:8.3f}{:8.3f}{:8.3f}{:8.3f}{:8.3f}{:8.3f}\n'.format(
-                atom.residue.index, atom.residue.name, atom.name, atom.index + 1,
+                atom.residue.index, atom.residue.name, atom.bondtype, atom.index + 1,
                 xyz[0], xyz[1], xyz[2], 0.0, 0.0, 0.0))
         box = traj.unitcell_vectors[0]
         self._grofh.write('{:10.5f}{:10.5f}{:10.5f}'
