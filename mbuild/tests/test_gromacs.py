@@ -11,3 +11,8 @@ class TestGromacs(BaseTest):
 
     def test_read_write_compare(self, ethane):
         pass
+
+if __name__ == "__main__":
+    from mbuild.examples.ethane.ethane import Ethane
+    et = Ethane()
+    TestGromacs().test_write(et)

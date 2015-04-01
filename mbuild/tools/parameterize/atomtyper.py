@@ -651,6 +651,12 @@ def draw_rule_graph(issue, graph, element, pattern, sinks=None, sources=None):
         Nodes that are sources in the graph.
 
     """
+    import os
+    try:  # For use on clusters where the $DISPLAY value may not be set.
+        os.environ['DISPLAY']
+    except KeyError:  # Plots will not be generated.
+        return
+
     if issue == 'unconnected':
         phrase = 'is not connected'
     elif issue == 'not_DAG':
@@ -679,6 +685,7 @@ def draw_rule_graph(issue, graph, element, pattern, sinks=None, sources=None):
               RULE_NUMBER_TO_DOC_STRING.items() if rule in graph.nodes()}
 
     pos = nx.spring_layout(graph)
+
     nx.draw_networkx_nodes(graph, pos, node_size=1000, node_color=colors)
     nx.draw_networkx_edges(graph, pos)
     nx.draw_networkx_labels(graph, pos, labels=labels)

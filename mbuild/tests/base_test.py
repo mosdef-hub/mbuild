@@ -17,3 +17,7 @@ class BaseTest:
         from mbuild.examples.methane.methane import Methane
         return Methane()
 
+    @pytest.fixture
+    def h2o(self):
+        from mbuild.components.small_groups.h2o import H2O
+        return H2O()

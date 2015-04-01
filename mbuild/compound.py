@@ -553,6 +553,7 @@ class Compound(PartMixin):
             at = top.add_atom(atom.name, ele, last_residue)
             at.charge = atom.charge
 
+            at.bondtype = atom.name
             try:
                 at.atomtype = atom.atomtype
             except AttributeError:
