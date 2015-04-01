@@ -22,5 +22,5 @@ def main():
 
 if __name__ == "__main__":
     solvated_ethane = main()
-    solvated_ethane.visualize()
+    #solvated_ethane.visualize()
 

@@ -55,7 +55,8 @@ def load_top_opls(toppath):
                     #     mol_name, filename, opls_string))
                     # print("Ignoring file. Need to come up with proper support.\n")
                     return
-                opls_types.append(opls_string.split('_')[1])
+                #opls_types.append(opls_string.split('_')[1])
+                opls_types.append(opls_string)
             elif current == 'bonds':
                 atom1 = traj.topology.atom(int(stripped.split()[0]) - 1)
                 atom2 = traj.topology.atom(int(stripped.split()[1]) - 1)
