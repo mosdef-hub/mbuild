@@ -144,10 +144,20 @@ class GROMACSTopologyFile(object):
 
         if traj.topology._ff_dihedrals:
             self._topfh.write('\n[ dihedrals ]\n')
+            self._topfh.write('; impropers\n')
             for dihedral in traj.topology.ff_dihedrals:
                 self._topfh.write('{:d} {:d} {:d} {:d} {:d}\n'.format(
                     dihedral.atom1.index + 1, dihedral.atom2.index + 1,
                     dihedral.atom3.index + 1, dihedral.atom4.index + 1, 3))
+
+        #if traj.topology._ff_impropers:
+        self._topfh.write('\n[ dihedrals ]\n')
+        for res in traj.topology.residues:
+            if res.name == 'MPC':
+                atoms = list(res.atoms)
+                self._topfh.write('{:d} {:d} {:d} {:d} {:d} {:.5f} {:.5f}\n'.format(
+                    atoms[40].index + 1, atoms[4].index + 1, atoms[5].index + 1,
+                    atoms[1].index + 1, 2, 180.0, 49.93200))
 
         self._topfh.write('\n[ system ]\n')
         self._topfh.write('{}\n'.format(basename))

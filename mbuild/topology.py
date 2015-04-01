@@ -14,10 +14,11 @@ class Topology(MDTrajTopology):
         self.forcefield = None
         self._angles = []
         self._dihedrals = []
-        self._ff_bonds = []
-        self._ff_angles = []
-        self._ff_dihedrals = []
-        self._ff_impropers = []
+        self._ff_bonds = set()
+        self._ff_angles = set()
+        self._ff_dihedrals = set()
+        self._ff_impropers = set()
+        self._ff_pairs = set()
 
     @property
     def angles(self):
@@ -56,6 +57,10 @@ class Topology(MDTrajTopology):
         return iter(self._ff_impropers)
 
     @property
+    def ff_pairs(self):
+        return iter(self._ff_pairs)
+
+    @property
     def n_ff_bonds(self):
         return len(self._ff_bonds)
 
@@ -73,19 +78,26 @@ class Topology(MDTrajTopology):
 
     def add_ff_bond(self, bond):
         """ """
-        self._ff_bonds.append(bond)
+        self._ff_bonds.add(bond)
 
     def add_ff_angle(self, angle):
         """ """
-        self._ff_angles.append(angle)
+        self._ff_angles.add(angle)
 
     def add_ff_dihedral(self, dihedral):
         """ """
-        self._ff_dihedrals.append(dihedral)
+        self._ff_dihedrals.add(dihedral)
 
     def add_ff_improper(self, improper):
         """ """
-        self._ff_impropers.append(improper)
+        self._ff_impropers.add(improper)
+
+    def gen_pairs(self, n_excl=4):
+        if n_excl == 4:
+            for dihedral in self.ff_dihedrals:
+                self._ff_pairs.add((dihedral.atom1, dihedral.atom4))
+        else:
+            raise ValueError('Unsupported number of pair exclusions.')
 
 
 class Atom(MDTrajAtom):
@@ -101,8 +113,8 @@ class Atom(MDTrajAtom):
         The index of the Atom within its Topology
     residue : mdtraj.topology.Residue
         The Residue this Atom belongs to
-    """
 
+    """
     def __init__(self, name, element, index, residue, serial=None):
         super(Atom, self).__init__(name, element, index, residue, serial=serial)
         self._neighbors = []

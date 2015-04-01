@@ -32,12 +32,7 @@ end structure
 
 
 def fill_box(compound, n_compounds, box, overlap=0.2):
-    """Fill a box with a compound.
-
-    This function will try to use PACKMOL to fill the box. If the 'packmol'
-    executable is not on your path, it will default to a (very) slow python
-    implementation. These two approaches will NOT produce identical results -
-    use at your own risk.
+    """Fill a box with a compound using packmol.
 
     Parameters
     ----------
@@ -78,12 +73,7 @@ def fill_box(compound, n_compounds, box, overlap=0.2):
 
 
 def solvate(solute, solvent, n_solvent, box, overlap=0.2):
-    """Solvate a compound in a box of solvent.
-
-    This function will try to use the solvate tool from gromacs 5.0+. If the
-    'gmx' executable is not on your path, it will default to a (very) slow
-    python implementation. These two approaches will NOT produce identical
-    results - use at your own risk.
+    """Solvate a compound in a box of solvent using packmol.
 
     Parameters
     ----------
@@ -110,7 +100,8 @@ def solvate(solute, solvent, n_solvent, box, overlap=0.2):
     # In angstroms for packmol.
     box_lengths = box.lengths * 10
     overlap *= 10
-    center_solute = (-solute.center + 0.5 * box.lengths) * 10
+    center_solute = (-solute.center + 0.5 * (box.lengths + [0, box.lengths[1], 0])) * 10
+    #center_solute = (-solute.center) * 10
 
     # Build the input file and call packmol.
     input_text = (PACKMOL_HEADER.format(overlap, solvated_pdb) +
