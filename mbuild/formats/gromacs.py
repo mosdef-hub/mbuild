@@ -144,6 +144,7 @@ class GROMACSTopologyFile(object):
 
         if traj.topology._ff_dihedrals:
             self._topfh.write('\n[ dihedrals ]\n')
+            self._topfh.write('; impropers\n')
             for dihedral in traj.topology.ff_dihedrals:
                 self._topfh.write('{:d} {:d} {:d} {:d} {:d}\n'.format(
                     dihedral.atom1.index + 1, dihedral.atom2.index + 1,

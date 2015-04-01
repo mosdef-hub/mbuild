@@ -53,9 +53,12 @@ class TestOPLS(BaseTest):
             print("Passed.\n")
 
     def test_full_parameterization(self, ethane):
-        pass
+        ethane.save('ethane.gro', forcefield='opls-aa')
 
 
 if __name__ == "__main__":
     # TestOPLS().test_atomtyping('benzene')
-    TestOPLS().test_atomtyping()
+    # TestOPLS().test_atomtyping()
+
+    from mbuild.examples.ethane.ethane import Ethane
+    TestOPLS().test_full_parameterization(Ethane())

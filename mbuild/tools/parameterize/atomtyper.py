@@ -70,7 +70,7 @@ def find_atomtypes(atoms, forcefield='OPLS-AA', debug=True):
     if debug:
         sanitize()
     iterate_rules(atoms, max_iter=10)
-    resolve_atomtypes(atoms)
+    resolve_atomtypes(atoms, forcefield)
 
 
 def build_rule_map():
@@ -149,15 +149,19 @@ def run_rule(atom, rule_id):
         rule_fn(atom)
 
 
-def resolve_atomtypes(atoms):
+def resolve_atomtypes(atoms, forcefield):
     """Determine the final atomtypes from the white- and blacklists."""
     for i, atom in enumerate(atoms):
         atomtype = atom.whitelist - atom.blacklist
         atomtype = [a for a in atomtype]
+        if forcefield.lower() == 'opls-aa':
+            prefix = 'opls_'
+        else:
+            prefix = ''
 
         if atom.atomtype == atom.name:  # It hasn't been set manually.
             if len(atomtype) == 1:
-                atom.atomtype = atomtype[0]
+                atom.atomtype = prefix + atomtype[0]
             else:
                 warn("CHECK YOUR TOPOLOGY. Found multiple or no types for atom "
                      "{0} ({1}): {2}.".format(i, atom.name, atomtype))
