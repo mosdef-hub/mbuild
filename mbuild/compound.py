@@ -119,7 +119,7 @@ class Compound(PartMixin):
 
         self.parts = OrderedSet()
         self.labels = OrderedDict()
-        self._extras = None
+        self._extras = dict()
 
     @property
     def atoms(self):
@@ -197,9 +197,7 @@ class Compound(PartMixin):
 
     @property
     def extras(self):
-        """Return the Atom's optional, extra attributes. """
-        if self._extras is None:
-            self._extras = dict()
+        """Return the optional, extra attributes. """
         return self._extras
 
     def visualize(self, show_ports=False):
@@ -331,6 +329,10 @@ class Compound(PartMixin):
         if (inherit_periodicity and isinstance(new_part, Compound) and
                 new_part.periodicity.any()):
             self.periodicity = new_part.periodicity
+
+        from mbuild.port import Port
+        if isinstance(new_part, Compound) and not isinstance(new_part, Port):
+            self.extras.update(new_part.extras)
 
     def remove(self, objs_to_remove):
         """Remove parts (Atom, Bond or Compound) from the Compound. """
@@ -647,7 +649,7 @@ class Compound(PartMixin):
                                   "__init__ method of your class.")
         if attr in self.labels:
             return self.labels[attr]
-        elif self._extras and attr in self._extras:
+        elif attr in self._extras:
             return self._extras[attr]
         else:
             raise AttributeError("'{}' object has no attribute '{}'".format(
@@ -663,6 +665,7 @@ class Compound(PartMixin):
         # First copy those attributes that don't need deepcopying.
         newone.kind = deepcopy(self.kind, memo)
         newone.periodicity = deepcopy(self.periodicity, memo)
+        newone._extras = deepcopy(self._extras, memo)
 
         # Create empty containers.
         newone.parts = OrderedSet()

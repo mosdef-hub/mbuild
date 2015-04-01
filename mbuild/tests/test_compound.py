@@ -1,5 +1,3 @@
-import pytest
-
 import numpy as np
 
 import mbuild as mb
@@ -9,16 +7,6 @@ from mbuild.tests.base_test import BaseTest
 
 
 class TestCompound(BaseTest):
-
-    @pytest.fixture
-    def ethane(self):
-        from mbuild.examples.ethane.ethane import Ethane
-        return Ethane()
-
-    @pytest.fixture
-    def methane(self):
-        from mbuild.examples.methane.methane import Methane
-        return Methane()
 
     def test_load_and_create(self):
         mb.load(get_fn('methyl.pdb'))
