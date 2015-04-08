@@ -32,8 +32,8 @@ The ``Alkane`` example uses the ``polymer`` tool to combine ``Ch2`` and ``Ch3`` 
 units. You also have the option to cap the front and back of the chain or to
 leave a ``Ch2`` group with a dangling port. The ``Silane`` compound is a |Si(OH)2|
 group with two ports facing out from the central Si. Lastly, we combine
-``alkane`` with ``silane`` and hoist the last free port from the
-lower compounds so that we can reference it later.
+``alkane`` with ``silane`` and adding a label to ``AlkylSilane`` which points to
+``silane.down`` so that we can reference it later.
 
 .. image:: ../images/alkylsilane.png
     :align: center
@@ -56,9 +56,8 @@ and z-directions by any number of times - 2, 3 and 1 for our case.
 Next, let's import our monomers and a hydrogen atom that we'll place on
 unoccupied surface sites::
 
-    from .alkylsilane import AlkylSilane
     from mbuild.components.atoms.H import H
-    alkylsilane = AlkylSilane(chain_length)
+    alkylsilane = AlkylSilane(chain_length=10)
     hydrogen = H()
 
 Then we need to tell mBuild how to arrange the chains on the surface. This is
@@ -73,7 +72,7 @@ binding sites identified by the mask::
     mask = grid_mask_2d(8, 8)  # Evenly spaced, 2D grid of points.
 
     # Attach chains to specified binding sites. Other sites get a hydrogen.
-    apply_mask(host=tiled_surface, guest=alkylsilane, mask=mask, backfill=hydrogen)
+    mb.apply_mask(host=tiled_surface, guest=alkylsilane, mask=mask, backfill=hydrogen)
 
 Also note the ``backfill`` optional argument which allows you to place a different
 compound on any unused ports. In this case we want to backfill with hydrogen
@@ -88,6 +87,45 @@ class.
     :alt: Alkylsilane chain with one port at the bottom.
 
 
+Below is the full code to build the monolayer::
 
+    import mbuild as mb
+
+    from mbuild.examples.alkane.alkane import Alkane
+    from mbuild.components.small_groups.silane import Silane
+
+
+    class AlkylSilane(mb.Compound):
+        """A silane functionalized alkane chain with one Port. """
+        def __init__(self, chain_length):
+            super(AlkylSilane, self).__init__()
+
+            alkane = Alkane(chain_length, cap_end=False)
+            self.add(alkane, 'alkane')
+            silane = Silane()
+            self.add(silane, 'silane')
+            mb.equivalence_transform(self.alkane, self.alkane.down, self.silane.up)
+
+            # Hoist silane port to AlkylSilane level.
+            self.add(silane.down, 'down', containment=False)
+
+
+    from mbuild.tools.tiled_compound import TiledCompound
+    from mbuild.components.surfaces.betacristobalite import Betacristobalite
+
+    surface = Betacristobalite()
+    tiled_surface = TiledCompound(surface, n_tiles=(2, 3, 1), kind="tiled_surface")
+
+    from mbuild.components.atoms.H import H
+    alkylsilane = AlkylSilane(chain_length=10)
+    hydrogen = H()
+
+    from mbuild.tools.mask import grid_mask_2d
+    mask = grid_mask_2d(8, 8)  # Evenly spaced, 2D grid of points.
+
+    # Attach chains to specified binding sites. Other sites get a hydrogen.
+    mb.apply_mask(host=tiled_surface, guest=alkylsilane, mask=mask, backfill=hydrogen)
+
+    tiled_surface.visualize()
 
 .. |Si(OH)2| replace:: Si(OH)\ :sub:`2`\
