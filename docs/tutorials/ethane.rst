@@ -13,14 +13,14 @@ connectivity information).
 
 Let's start by reading a methyl group from a .pdb file::
 
-    from mbuild.compound import Compound
+    import mbuild as mb
 
-    class Ch3(Compound):
+    class CH3(mb.Compound):
         """A methyl group. """
         def __init__(self):
-            super(Ch3, self).__init__(self)
+            super(CH3, self).__init__(self)
 
-            self.append_from_file('ch3.pdb', relative_to_module=self.__module__)
+            mb.load('ch3.pdb', compound=self, relative_to_module=self.__module__)
 
 .. note:: The ``relative_to_module`` argument allows you to look for the file
           in directories relative to the current module, rather than where your
@@ -32,17 +32,16 @@ Let's start by reading a methyl group from a .pdb file::
 Now let's use our first coordinate transform to center the methyl at its carbon
 atom::
 
-    from mbuild.compound import Compound
-    from mbuild.coordinate_transform import translate
+   import mbuild as mb
 
 
-    class Ch3(Compound):
-        """A methyl group. """
+    class CH3(mb.Compound):
+
         def __init__(self):
-            super(Ch3, self).__init__(self)
+            super(CH3, self).__init__()
 
-            self.append_from_file('ch3.pdb', relative_to_module=self.__module__)
-            translate(self, -self.C[0])  # Move carbon to origin.
+            mb.load('ch3.pdb', compound=self, relative_to_module=self.__module__)
+            mb.translate(self, -self.C[0])  # Move carbon to origin.
 
 Here, when referring to the ``Atom`` object in a mathematical expression, we
 operate directly on its coordinates. This functionality is currently implemented
@@ -57,39 +56,39 @@ our methyl group, the ``Port`` should be anchored to the carbon atom so that we
 can now form ``Bonds`` to this carbon::
 
 
-    from mbuild.compound import Compound
-    from mbuild.coordinate_transform import translate
+    import mbuild as mb
 
 
-    class Ch3(Compound):
-        """A methyl group. """
+    class CH3(mb.Compound):
+
         def __init__(self):
-            super(Ch3, self).__init__(self)
+            super(CH3, self).__init__()
 
-            self.append_from_file('ch3.pdb', relative_to_module=self.__module__)
-            translate(self, -self.C[0])  # Move carbon to origin.
+            mb.load('ch3.pdb', compound=self, relative_to_module=self.__module__)
+            mb.translate(self, -self.C[0])  # Move carbon to origin.
 
-            self.add(Port(anchor=self.C[0]), 'up')
+            port = mb.Port(anchor=self.C[0])
+            self.add(port, label='up')
 
 By default, ``Ports`` are created to point in the y-direction. Typically,
 ``Ports`` should point in the direction of the ``Bond`` we want to create.
 Since the methyl group is already oriented towards the y-direction, let's simply
 move the port a tiny bit away from the carbon::
 
-    from mbuild.compound import Compound
-    from mbuild.coordinate_transform import translate
+    import mbuild as mb
 
 
-    class Ch3(Compound):
-        """A methyl group. """
+    class CH3(mb.Compound):
+
         def __init__(self):
-            super(Ch3, self).__init__(self)
+            super(CH3, self).__init__()
 
-            self.append_from_file('ch3.pdb', relative_to_module=self.__module__)
-            translate(self, -self.C[0])  # Move carbon to origin.
+            mb.load('ch3.pdb', compound=self, relative_to_module=self.__module__)
+            mb.translate(self, -self.C[0])  # Move carbon to origin.
 
-            self.add(Port(anchor=self.C[0]), 'up')
-            translate(self.up, np.array([0, -0.07, 0]))
+            port = mb.Port(anchor=self.C[0])
+            self.add(port, label='up')
+            mb.translate(self.up, [0, -0.07, 0])
 
 By default, ``Ports`` are never output from the mBuild structure. However,
 it can be useful to look at a molecule with the ``Ports`` to check your work as
@@ -119,16 +118,14 @@ is chosen automatically to prevent this overlap scenario.
 
 Now the fun part: stick 'em together to create an ethane::
 
-    from mbuild.compound import Compound
-    from mbuild.components.small_groups.ch3 import Ch3
-    from mbuild.coordinate_transform import equivalence_transform
+    import mbuild as mb
 
 
-    class Ethane(Compound):
+    class Ethane(mb.Compound):
         """An ethane molecule. """
         def __init__(self):
             """Connect two methyl groups to form an ethane. """
-            super(Ethane, self).__init__(kind='Ethane')
+            super(Ethane, self).__init__()
 
             self.add(Ch3(), "methyl1")
             self.add(Ch3(), "methyl2")
