@@ -11,7 +11,8 @@ class Atom(PartMixin):
 
     Notes
     -----
-    Atoms are also used as "ghost" particles in Ports.
+    Atoms are also used as "ghost" particles in Ports; such atoms are named 'G'.
+
     Atoms can be added and substracted using +/- operators. The result is
     the addition or subtraction of the Atoms' cartesian coordinates.
 

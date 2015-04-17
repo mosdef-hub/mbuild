@@ -21,4 +21,4 @@ def main():
 
 if __name__ == "__main__":
     ethane = main()
-    #ethane.visualize(show_ports=True)
+    ethane.visualize(show_ports=True)

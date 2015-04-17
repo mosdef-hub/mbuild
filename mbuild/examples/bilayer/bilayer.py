@@ -211,20 +211,20 @@ def main():
     from mbuild.components.small_groups.h2o import H2O
 
     water = H2O()
-    ecerns = mb.load(get_fn('ecer2.hoomdxml'))
+    ecerns = mb.load(get_fn('ecer2.pdb'))
 
-    chol = mb.load(get_fn('cg-chol.hoomdxml'))
+    chol = mb.load(get_fn('cg-chol.pdb'))
     # Orient along the z-direction.
     mb.rotate_around_x(chol, -135.0*np.pi/180)
     mb.rotate_around_y(chol, -45.0*np.pi/180)
 
-    lipids = [(ecerns, 0.5), (chol, 0.5)] 
+    lipids = [(ecerns, 0.5), (chol, 0.5)]
 
     bilayer = Bilayer(lipids, n_lipids_x=15, n_lipids_y=15, area_per_lipid=1.4,
                       solvent=water, ref_atoms=[1, 6],  spacing_z=0.7,
                       solvent_per_lipid=20, mirror=False)
 
-    bilayer.save(filename='bilayer.hoomdxml')
+    bilayer.save(filename='bilayer.pdb')
 
     #import os
     #os.system('vmd -e vis.vmd')

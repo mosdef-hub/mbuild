@@ -7,7 +7,6 @@ import mbuild as mb
 from mbuild.components.atoms.H import H
 from mbuild.components.surfaces.betacristobalite import Betacristobalite
 from mbuild.examples.pmpc.brush import Brush
-from mbuild.examples.pmpc.mpc import MPC
 
 
 class PMPCLayer(mb.Compound):

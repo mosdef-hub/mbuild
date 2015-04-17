@@ -9,12 +9,9 @@ import numpy as np
 import mdtraj as md
 from mdtraj.core.element import Element
 from mdtraj.core.element import get_by_symbol
+from mdtraj.html import TrajectoryView, enable_notebook
 
-from mbuild.formats.gromacs import GROMACSTopologyFile
-from mbuild.formats.hoomdxml import HOOMDTopologyFile
-from mbuild.formats.lammps import LAMMPSTopologyFile
 from mbuild.formats.mol2 import write_mol2
-
 from mbuild.atom import Atom
 from mbuild.box import Box
 from mbuild.bond import Bond
@@ -30,15 +27,15 @@ def load(filename, relative_to_module=None, frame=-1, compound=None,
          coords_only=False, **kwargs):
     """ """
 
-    # For mbuild *.py files with a class that wraps a structure file in its own
-    # folder. E.g., you build a system from ~/foo.py and it imports from
-    # ~/bar/baz.py where baz.py loads ~/bar/baz.pdb.
+    # Handle mbuild *.py files containing a class that wraps a structure file
+    # in its own folder. E.g., you build a system from ~/foo.py and it imports
+    # from ~/bar/baz.py where baz.py loads ~/bar/baz.pdb.
     if relative_to_module:
         current_dir = os.path.dirname(os.path.realpath(
             sys.modules[relative_to_module].__file__))
         filename = os.path.join(current_dir, filename)
 
-    # This can return a md.Trajectory or an mb.Compound.
+    # This can return a md.Trajectory or a mb.Compound.
     loaded = md.load(filename, **kwargs)
 
     if not compound:
@@ -208,15 +205,25 @@ class Compound(PartMixin):
 
         TODO: Look into pizza.py's vmd.py. See issue #32.
         """
-        filename = 'visualize_{}.mol2'.format(self.__class__.__name__)
-        self.save(filename, show_ports=show_ports)
-        import os
-
         try:
-            os.system('vmd {}'.format(filename))
-        except OSError:
-            print("Visualization with VMD failed. Make sure it is installed"
-                  "correctly and launchable from the command line via 'vmd'.")
+            __IPYTHON__
+            in_ipython = True
+        except NameError:
+            in_ipython = False
+
+        if in_ipython:
+            enable_notebook()
+            traj = self.to_trajectory()
+            return TrajectoryView(traj, colorBy='atom')
+        else:
+            filename = 'visualize_{}.mol2'.format(self.__class__.__name__)
+            self.save(filename, show_ports=show_ports)
+            import os
+            try:
+                os.system('vmd {}'.format(filename))
+            except OSError:
+                print("Visualization with VMD failed. Make sure it is installed"
+                      "correctly and launchable from the command line via 'vmd'.")
 
     @property
     def xyz(self):
@@ -243,7 +250,6 @@ class Compound(PartMixin):
             except ZeroDivisionError as err:
                 print('Compound contains no atoms.')
                 raise err
-
 
     @property
     def boundingbox(self):
@@ -564,12 +570,6 @@ class Compound(PartMixin):
             a1 = bond.atom1
             a2 = bond.atom2
             top.add_bond(atom_mapping[a1], atom_mapping[a2])
-
-        if forcefield:
-            from mbuild.tools.parameterize.forcefield import apply_forcefield
-            apply_forcefield(top, forcefield)
-            top.forcefield = forcefield
-
         return top
 
     def update_coordinates(self, filename):
@@ -590,7 +590,6 @@ class Compound(PartMixin):
         force_overwrite : bool
 
         """
-        # grab the extension of the filename
         extension = os.path.splitext(filename)[-1]
 
         savers = {'.hoomdxml': self.save_hoomdxml,
@@ -618,29 +617,26 @@ class Compound(PartMixin):
             traj = self.to_trajectory(show_ports=show_ports, **kwargs)
             return traj.save(filename, **kwargs)
 
-    def save_hoomdxml(self, filename, traj, force_overwrite=True, **kwargs):
-        """ """
-        with HOOMDTopologyFile(filename, 'w', force_overwrite=force_overwrite) as f:
-            f.write(traj)
-
     def save_mol2(self, filename, traj, **kwargs):
         """ """
         write_mol2(filename, traj)
 
+    def save_hoomdxml(self, filename, traj, force_overwrite=True, **kwargs):
+        """ """
+        raise NotImplementedError('Interface to InterMol missing')
+
     def save_gromacs(self, filename, traj, force_overwrite=True, **kwargs):
         """ """
+        raise NotImplementedError('Interface to InterMol missing')
         # Create separate file paths for .gro and .top
-        filepath, filename = os.path.split(filename)
-        basename = os.path.splitext(filename)[0]
-        top_filename = os.path.join(filepath, basename + '.top')
-        gro_filename = os.path.join(filepath, basename + '.gro')
-        with GROMACSTopologyFile(top_filename, gro_filename, 'w', force_overwrite=force_overwrite) as f:
-            f.write(traj)
+        # filepath, filename = os.path.split(filename)
+        # basename = os.path.splitext(filename)[0]
+        # top_filename = os.path.join(filepath, basename + '.top')
+        # gro_filename = os.path.join(filepath, basename + '.gro')
 
     def save_lammpsdata(self, filename, traj, force_overwrite=True, **kwargs):
         """ """
-        with LAMMPSTopologyFile(filename, 'w', force_overwrite=force_overwrite) as f:
-            f.write(traj)
+        raise NotImplementedError('Interface to InterMol missing')
 
     # Magic
     # -----

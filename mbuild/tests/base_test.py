@@ -13,6 +13,15 @@ class BaseTest:
         return Ethane()
 
     @pytest.fixture
+    def ethane_box(self):
+        from mbuild.examples.ethane.ethane import Ethane
+        from mbuild.compound import Compound
+        box = Compound()
+        for _ in range(5):
+            box.add(Ethane())
+        return box
+
+    @pytest.fixture
     def methane(self):
         from mbuild.examples.methane.methane import Methane
         return Methane()

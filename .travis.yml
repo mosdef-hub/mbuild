@@ -28,7 +28,7 @@ install:
   - conda create -q -n test-environment python=$TRAVIS_PYTHON_VERSION
   - source activate test-environment
   - conda install -c https://conda.binstar.org/omnia mdtraj packmol
-  - conda install networkx matplotlib future coverage pytest cython
+  - conda install future coverage pytest
   - pip install coveralls
   - python setup.py install
 
