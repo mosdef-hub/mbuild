@@ -1,3 +1,2 @@
--e git://github.com/shirtsgroup/InterMol.git#egg=intermol
 future
 six
