@@ -1,5 +1,2 @@
 future
-matplotlib
-networkx
-simtk.unit
 six
