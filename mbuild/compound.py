@@ -9,7 +9,6 @@ import numpy as np
 import mdtraj as md
 from mdtraj.core.element import Element
 from mdtraj.core.element import get_by_symbol
-from mdtraj.html import TrajectoryView, enable_notebook
 
 from mbuild.formats.mol2 import write_mol2
 from mbuild.atom import Atom
@@ -212,6 +211,7 @@ class Compound(PartMixin):
             in_ipython = False
 
         if in_ipython:
+            from mdtraj.html import TrajectoryView, enable_notebook
             enable_notebook()
             traj = self.to_trajectory()
             return TrajectoryView(traj, colorBy='atom')
