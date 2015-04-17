@@ -39,8 +39,7 @@ brush_layer = BrushLayer(chain_lenth=20, mask=mask, tile_x=3, tile_y=2)
 ![Zwitterionic brushes on beta-cristobalite substrate](docs/images/pmpc.png)
 
 
-#### [![License](http://img.shields.io/badge/license-LGPLv2.1-blue.svg)](https://www.gnu.org/licenses/lgpl.html)
+#### [![License](https://img.shields.io/badge/license-MIT-blue.svg)](http://opensource.org/licenses/MIT)
 
-GNU LGPL version 2.1, or at your option a later version of the license.
 Various sub-portions of this library may be independently distributed under
 different licenses. See those files for their specific terms.
