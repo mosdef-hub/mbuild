@@ -8,7 +8,6 @@ from mbuild.tiled_compound import TiledCompound
 from mbuild.packing import *
 from mbuild.polymer import Polymer
 from mbuild.port import Port
-from mbuild.topology import Topology
 
 from mbuild.formats import *
 

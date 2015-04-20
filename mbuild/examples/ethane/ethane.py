@@ -21,5 +21,4 @@ def main():
 
 if __name__ == "__main__":
     ethane = main()
-    import ipdb; ipdb.set_trace()
     ethane.visualize(show_ports=True)

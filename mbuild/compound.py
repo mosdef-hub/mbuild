@@ -2,6 +2,7 @@ from __future__ import print_function
 
 from collections import OrderedDict
 from copy import deepcopy
+import itertools
 import os
 import sys
 
@@ -9,6 +10,7 @@ import numpy as np
 import mdtraj as md
 from mdtraj.core.element import Element
 from mdtraj.core.element import get_by_symbol
+from mdtraj.core.topology import Topology
 
 from mbuild.formats.mol2 import write_mol2
 from mbuild.atom import Atom
@@ -16,7 +18,6 @@ from mbuild.box import Box
 from mbuild.bond import Bond
 from mbuild.orderedset import OrderedSet
 from mbuild.part_mixin import PartMixin
-from mbuild.topology import Topology
 
 
 __all__ = ['load', 'Compound']
@@ -195,36 +196,33 @@ class Compound(PartMixin):
         """
         try:
             __IPYTHON__
-            in_ipython = True
         except NameError:
-            in_ipython = False
-
-        if in_ipython:
-            from mdtraj.html import TrajectoryView, enable_notebook
-            enable_notebook()
-            traj = self.to_trajectory()
-            return TrajectoryView(traj, colorBy='atom')
-        else:
             filename = 'visualize_{}.mol2'.format(self.__class__.__name__)
             self.save(filename, show_ports=show_ports)
-            import os
             try:
                 os.system('vmd {}'.format(filename))
             except OSError:
                 print("Visualization with VMD failed. Make sure it is installed"
                       "correctly and launchable from the command line via 'vmd'.")
+        else:
+            from mdtraj.html import TrajectoryView, enable_notebook
+            enable_notebook()
+            traj = self.to_trajectory(show_ports=show_ports)
+            return TrajectoryView(traj, colorBy='atom')
 
     @property
     def xyz(self):
         """Return all atom coordinates in this compound. """
-        atoms = self.atom_list_by_name()
-        return np.array([atom.pos for atom in atoms])
+        arr = np.fromiter(itertools.chain.from_iterable(
+            atom.pos for atom in self.yield_atoms() if atom.name != 'G'), dtype=float)
+        return arr.reshape((-1, 3))
 
     @property
     def xyz_with_ports(self):
         """Return all atom coordinates in this compound including ports. """
-        atoms = self.atom_list_by_name(exclude_ports=False)
-        return np.array([atom.pos for atom in atoms])
+        arr = np.fromiter(itertools.chain.from_iterable(
+            atom.pos for atom in self.yield_atoms()), dtype=float)
+        return arr.reshape((-1, 3))
 
     @property
     def center(self):
@@ -438,9 +436,6 @@ class Compound(PartMixin):
     def to_trajectory(self, show_ports=False, chain_types=None, residue_types=None):
         """Convert to an md.Trajectory and flatten the compound.
 
-        This also produces an object subclassed from MDTraj's Topology which
-        can be used in place of an actual MDTraj.Topology.
-
         Parameters
         ----------
         show_ports : bool, optional, default=False
@@ -458,7 +453,6 @@ class Compound(PartMixin):
         """
         exclude = not show_ports
         atom_list = self.atom_list_by_name('*', exclude_ports=exclude)
-
         top = self._to_topology(atom_list, chain_types, residue_types)
 
         # Coordinates.
@@ -479,7 +473,7 @@ class Compound(PartMixin):
                              unitcell_angles=np.array([90, 90, 90]))
 
     def _to_topology(self, atom_list, chain_types=None, residue_types=None):
-        """Create a Topology from a Compound.
+        """Create a mdtraj.Topology from a Compound.
 
         Parameters
         ----------
@@ -489,7 +483,7 @@ class Compound(PartMixin):
 
         Returns
         -------
-        top : mbuild.Topology
+        top : mtraj.Topology
 
         """
 
@@ -544,12 +538,6 @@ class Compound(PartMixin):
                 ele = Element(1000, atom.name, atom.name, 1.0)
             at = top.add_atom(atom.name, ele, last_residue)
             at.charge = atom.charge
-
-            at.bondtype = atom.name
-            try:
-                at.atomtype = atom.atomtype
-            except AttributeError:
-                at.atomtype = atom.name
             atom_mapping[atom] = at
 
         for bond in self.bonds:
@@ -597,8 +585,8 @@ class Compound(PartMixin):
                              'information are: {0}'.format(ff_formats))
 
         if saver:  # mBuild supported saver.
-            traj = self.to_trajectory(**kwargs)
-            return saver(filename, traj, show_ports=show_ports)
+            traj = self.to_trajectory(show_ports=show_ports, **kwargs)
+            return saver(filename, traj)
         else:  # MDTraj supported saver.
             traj = self.to_trajectory(show_ports=show_ports, **kwargs)
             return traj.save(filename, **kwargs)

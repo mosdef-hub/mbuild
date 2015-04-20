@@ -1,7 +1,5 @@
 __author__ = 'sallai'
 
-from itertools import chain
-
 from numpy import *
 from numpy.linalg import norm, svd, inv
 
@@ -230,14 +228,6 @@ def vec_angle(v1, v2):
     return angle
 
 
-def _extract_atom_positions(compound):
-    """Extracts all atom positions from `compound` into an ndarray. """
-    arr = fromiter(
-        chain.from_iterable(atom.pos for atom in compound.yield_atoms()),
-        dtype=float64)
-    return arr.reshape((-1, 3))
-
-
 def _write_back_atom_positions(compound, arrnx3):
     arr = arrnx3.reshape((-1))
     for i, atom in enumerate(compound.yield_atoms()):
@@ -313,7 +303,7 @@ def equivalence_transform(compound, from_positions, to_positions, add_bond=True)
         equivalence_pairs = [(from_positions, to_positions)]
 
     T = _create_equivalence_transform(equivalence_pairs)
-    atom_positions = _extract_atom_positions(compound)
+    atom_positions = compound.xyz_with_ports
     atom_positions = T.apply_to(atom_positions)
     _write_back_atom_positions(compound, atom_positions)
 
@@ -369,32 +359,32 @@ def _choose_correct_port(from_port, to_port):
 
 
 def translate(compound, v):
-    atom_positions = _extract_atom_positions(compound)
+    atom_positions = compound.xyz_with_ports
     atom_positions = Translation(v).apply_to(atom_positions)
     _write_back_atom_positions(compound, atom_positions)
 
 
 def translate_to(compound, v):
-    atom_positions = _extract_atom_positions(compound)
+    atom_positions = compound.xyz_with_ports
     atom_positions -= atom_positions.min(axis=0)
     atom_positions = Translation(v).apply_to(atom_positions)
     _write_back_atom_positions(compound, atom_positions)
 
 
 def rotate_around_z(compound, theta):
-    atom_positions = _extract_atom_positions(compound)
+    atom_positions = compound.xyz_with_ports
     atom_positions = RotationAroundZ(theta).apply_to(atom_positions)
     _write_back_atom_positions(compound, atom_positions)
 
 
 def rotate_around_y(compound, theta):
-    atom_positions = _extract_atom_positions(compound)
+    atom_positions = compound.xyz_with_ports
     atom_positions = RotationAroundY(theta).apply_to(atom_positions)
     _write_back_atom_positions(compound, atom_positions)
 
 
 def rotate_around_x(compound, theta):
-    atom_positions = _extract_atom_positions(compound)
+    atom_positions = compound.xyz_with_ports
     atom_positions = RotationAroundX(theta).apply_to(atom_positions)
     _write_back_atom_positions(compound, atom_positions)
 
@@ -421,7 +411,7 @@ def x_axis_transform(compound, new_origin=array([0.0, 0.0, 0.0]),
     if isinstance(point_on_xy_plane, Atom):
         point_on_xy_plane = point_on_xy_plane.pos
 
-    atom_positions = _extract_atom_positions(compound)
+    atom_positions = compound.xyz_with_ports
     atom_positions = AxisTransform(new_origin=new_origin,
                                    point_on_x_axis=point_on_x_axis,
                                    point_on_xy_plane=point_on_xy_plane).apply_to(
