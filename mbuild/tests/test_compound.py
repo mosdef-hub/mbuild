@@ -61,3 +61,9 @@ class TestCompound(BaseTest):
         assert np.array_equal(methane.center, np.array([0, 0, 0]))
         port = mb.Port()
         assert np.allclose(port.center, np.array([0.0, 0.0, 2.5e-3]))
+
+    def test_visualize(self, ethane):
+        ethane.visualize()
+
+    def test_visualize_ports(self, ethane):
+        ethane.visualize(show_ports=True)

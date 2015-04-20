@@ -58,14 +58,14 @@ setup(
     package_dir={'mbuild': 'mbuild'},
     include_package_data=True,
     install_requires=requirements,
-    license="LGPLv2.1+",
+    license="MIT",
     zip_safe=False,
     keywords='mbuild',
     classifiers=[
         'Development Status :: 4 - Beta',
         'Intended Audience :: Science/Research',
         'Intended Audience :: Developers',
-        'License :: OSI Approved :: GNU Lesser General Public License v2 or later (LGPLv2+)',
+        'License :: OSI Approved :: MIT License,'
         'Natural Language :: English',
         'Programming Language :: Python',
         'Programming Language :: Python :: 3',
