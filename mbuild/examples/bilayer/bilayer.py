@@ -225,9 +225,10 @@ def main():
                       solvent_per_lipid=20, mirror=False)
 
     bilayer.save(filename='bilayer.pdb')
-
-    #import os
-    #os.system('vmd -e vis.vmd')
+    return bilayer
 
 if __name__ == "__main__":
     main()
+    import os
+    os.system('vmd -e vis.vmd')
+

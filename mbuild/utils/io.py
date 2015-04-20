@@ -1,9 +1,5 @@
-from __future__ import print_function
-
 import os
 from pkg_resources import resource_filename
-
-from mbuild.compound import load
 
 
 def get_fn(name):

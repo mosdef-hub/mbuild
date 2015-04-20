@@ -33,15 +33,15 @@ class TiledCompound(Compound):
         if not n_tiles:
             n_tiles = (1, 1, 1)
         n_x, n_y, n_z = n_tiles
-        assert n_x > 0 and n_y > 0 and n_z > 0, "Number of tiles must be positive."
+        if not n_x > 0 and n_y > 0 and n_z > 0:
+            raise ValueError("Number of tiles must be positive.")
 
         # Check that the tile is periodic in the requested dimensions.
-        if n_x != 1:
-            assert tile.periodicity[0] != 0, "Tile not periodic in x dimension."
-        if n_y != 1:
-            assert tile.periodicity[1] != 0, "Tile not periodic in y dimension."
-        if n_z != 1:
-            assert tile.periodicity[2] != 0, "Tile not periodic in z dimension."
+        if ((n_x != 1 and tile.periodicity[0] == 0) or
+                (n_y != 1 and tile.periodicity[1] == 0) or
+                (n_z != 1 and tile.periodicity[2] == 0)):
+            raise ValueError("Tile not periodic in at least one of the "
+                             "specified dimensions.")
 
         self.tile = tile
         self.n_x = n_x

@@ -55,7 +55,8 @@ def fill_box(compound, n_compounds, box, overlap=0.2):
 
     compound_pdb = tempfile.mkstemp(suffix='.pdb')[1]
     compound.save(compound_pdb)
-    filled_pdb = tempfile.mkstemp(suffix='.pdb')[1]
+    #filled_pdb = tempfile.mkstemp(suffix='.pdb')[1]
+    filled_pdb = 'filled.pdb'
 
     # In angstroms for packmol.
     box_lengths = box.lengths * 10
@@ -67,6 +68,8 @@ def fill_box(compound, n_compounds, box, overlap=0.2):
 
     proc = Popen(PACKMOL, stdin=PIPE, stdout=PIPE, stderr=PIPE, universal_newlines=True)
     out, err = proc.communicate(input=input_text)
+    if err:
+        _packmol_error(out, err)
 
     # Create the topology and update the coordinates.
     filled = Compound()
@@ -95,11 +98,15 @@ def solvate(solute, solvent, n_solvent, box, overlap=0.2):
     if not PACKMOL:
         raise IOError("Packmol not found")
 
+    if isinstance(box, (list, tuple)):
+        box = Box(lengths=box)
+
     solute_pdb = tempfile.mkstemp(suffix='.pdb')[1]
     solute.save(solute_pdb)
     solvent_pdb = tempfile.mkstemp(suffix='.pdb')[1]
     solvent.save(solvent_pdb)
-    solvated_pdb = tempfile.mkstemp(suffix='.pdb')[1]
+    #solvated_pdb = tempfile.mkstemp(suffix='.pdb')[1]
+    solvated_pdb = 'solvated.pdb'
 
     # In angstroms for packmol.
     box_lengths = box.lengths * 10
@@ -113,6 +120,8 @@ def solvate(solute, solvent, n_solvent, box, overlap=0.2):
 
     proc = Popen(PACKMOL, stdin=PIPE, stdout=PIPE, stderr=PIPE, universal_newlines=True)
     out, err = proc.communicate(input=input_text)
+    if err:
+        _packmol_error(out, err)
 
     # Create the topology and update the coordinates.
     solvated = Compound()
@@ -121,3 +130,9 @@ def solvate(solute, solvent, n_solvent, box, overlap=0.2):
         solvated.add(deepcopy(solvent))
     solvated.update_coordinates(solvated_pdb)
     return solvated
+
+def _packmol_error(out, err):
+    with open('log.txt', 'w') as log_file, open('err.txt', 'w') as err_file:
+        log_file.write(out)
+        err_file.write(err)
+    raise RuntimeError("PACKMOL failed. See 'err.txt' and 'log.txt'")

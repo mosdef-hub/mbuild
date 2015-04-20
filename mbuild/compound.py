@@ -23,32 +23,21 @@ __all__ = ['load', 'Compound']
 
 
 def load(filename, relative_to_module=None, frame=-1, compound=None,
-         coords_only=False, **kwargs):
+         coords_only=False,**kwargs):
     """ """
-
     # Handle mbuild *.py files containing a class that wraps a structure file
     # in its own folder. E.g., you build a system from ~/foo.py and it imports
     # from ~/bar/baz.py where baz.py loads ~/bar/baz.pdb.
     if relative_to_module:
-        current_dir = os.path.dirname(os.path.realpath(
-            sys.modules[relative_to_module].__file__))
-        filename = os.path.join(current_dir, filename)
+        script_path = os.path.realpath(sys.modules[relative_to_module].__file__)
+        file_dir = os.path.dirname(script_path)
+        filename = os.path.join(file_dir, filename)
 
-    # This can return a md.Trajectory or a mb.Compound.
-    loaded = md.load(filename, **kwargs)
+    if compound is None:
+        compound = Compound()
 
-    if not compound:
-        if isinstance(loaded, Compound):
-            return loaded
-        else:
-            compound = Compound()
-
-    if isinstance(loaded, md.Trajectory):
-        compound.from_trajectory(loaded, frame=frame, coords_only=coords_only)
-    elif isinstance(loaded, Compound):  # Only updating coordinates.
-        assert compound.n_atoms == loaded.n_atoms
-        for atom, loaded_atom in zip(compound.atoms, loaded.atoms):
-            atom.pos = loaded_atom.pos
+    traj = md.load(filename, **kwargs)
+    compound.from_trajectory(traj, frame=frame, coords_only=coords_only)
     return compound
 
 
@@ -446,8 +435,7 @@ class Compound(PartMixin):
         else:
             self.periodicity = np.array([0., 0., 0.])
 
-    def to_trajectory(self, show_ports=False, chain_types=None,
-                      residue_types=None, forcefield=None):
+    def to_trajectory(self, show_ports=False, chain_types=None, residue_types=None):
         """Convert to an md.Trajectory and flatten the compound.
 
         This also produces an object subclassed from MDTraj's Topology which
@@ -471,8 +459,7 @@ class Compound(PartMixin):
         exclude = not show_ports
         atom_list = self.atom_list_by_name('*', exclude_ports=exclude)
 
-        top = self._to_topology(atom_list, chain_types=chain_types,
-                                residue_types=residue_types, forcefield=forcefield)
+        top = self._to_topology(atom_list, chain_types, residue_types)
 
         # Coordinates.
         xyz = np.ndarray(shape=(1, top.n_atoms, 3), dtype='float')
@@ -491,8 +478,7 @@ class Compound(PartMixin):
         return md.Trajectory(xyz, top, unitcell_lengths=unitcell_lengths,
                              unitcell_angles=np.array([90, 90, 90]))
 
-    def _to_topology(self, atom_list, chain_types=None, residue_types=None,
-                     forcefield=None):
+    def _to_topology(self, atom_list, chain_types=None, residue_types=None):
         """Create a Topology from a Compound.
 
         Parameters
@@ -611,7 +597,7 @@ class Compound(PartMixin):
                              'information are: {0}'.format(ff_formats))
 
         if saver:  # mBuild supported saver.
-            traj = self.to_trajectory(forcefield=forcefield, **kwargs)
+            traj = self.to_trajectory(**kwargs)
             return saver(filename, traj, show_ports=show_ports)
         else:  # MDTraj supported saver.
             traj = self.to_trajectory(show_ports=show_ports, **kwargs)

@@ -4,6 +4,7 @@ import numpy as np
 
 from mbuild.atom import Atom
 from mbuild.compound import Compound
+from mbuild.coordinate_transform import rotate_around_z
 
 
 class Port(Compound):
@@ -38,7 +39,6 @@ class Port(Compound):
 
         down = deepcopy(up)
 
-        from mbuild.coordinate_transform import rotate_around_z
         rotate_around_z(down, np.pi)
 
         self.add(up, 'up')
