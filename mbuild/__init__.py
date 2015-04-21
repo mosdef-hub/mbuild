@@ -17,9 +17,6 @@ try:
 except NameError:
     in_ipython = False
 else:
-    in_ipython = True
-
-if in_ipython:
     from mdtraj.html import enable_notebook
     enable_notebook()
 

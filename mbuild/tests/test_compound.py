@@ -19,6 +19,12 @@ class TestCompound(BaseTest):
         methyl = mb.load(get_fn('methyl.pdb'))
         methyl.save(filename='methyl_out.pdb')
 
+    def test_batch_add(self, ethane, h2o):
+        compound = mb.Compound()
+        compound.add([ethane, h2o])
+        assert compound.n_atoms == 8 + 3
+        assert compound.n_bonds == 7 + 2
+
     def test_atom_list_by_kind(self, ethane):
         non_ports = ethane.atom_list_by_name()
         assert sum([1 for x in non_ports if x.name != 'G']) == 8

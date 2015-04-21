@@ -17,7 +17,7 @@ import os
 import pip
 import sys
 
-MOCK_MODULES = ['pandas', 'mdtraj']
+MOCK_MODULES = ['mdtraj']
 for mod_name in MOCK_MODULES:
     sys.modules[mod_name] = mock.Mock()
 

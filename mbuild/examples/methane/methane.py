@@ -7,23 +7,25 @@ class Methane(mb.Compound):
         carbon = mb.Atom(name='C')
         self.add(carbon)
 
-        hydrogen = mb.Atom(name='H', pos=[0.15, 0, 0])
-        self.add(hydrogen, label='hc[$]')
+        hydrogen = mb.Atom(name='H', pos=[0.1, 0, -0.07])
+        self.add(hydrogen, label='HC[$]')
 
-        ch_bond = mb.Bond(self.atoms[0], self.hc[0])
+        ch_bond = mb.Bond(self.atoms[0], self.HC[0])
         self.add(ch_bond)
 
-        self.add(mb.Atom(name='H', pos=[0, 0.15, 0]), 'hc[$]')
-        self.add(mb.Bond(self.atoms[0], self.hc[1]))
-        self.add(mb.Atom(name='H', pos=[-0.15, 0, 0]), 'hc[$]')
-        self.add(mb.Bond(self.atoms[0], self.hc[2]))
-        self.add(mb.Atom(name='H', pos=[0, -0.15, 0]), 'hc[$]')
-        self.add(mb.Bond(self.atoms[0], self.hc[3]))
+        self.add(mb.Atom(name='H', pos=[-0.1, 0, -0.07]), label='HC[$]')
+        self.add(mb.Atom(name='H', pos=[0, 0.1, 0.07]), label='HC[$]')
+        self.add(mb.Atom(name='H', pos=[0, -0.1, 0.07]), label='HC[$]')
+
+        self.add(mb.Bond(self.atoms[0], self.HC[1]))
+        self.add(mb.Bond(self.atoms[0], self.HC[2]))
+        self.add(mb.Bond(self.atoms[0], self.HC[3]))
+
 
 def main():
     methane = Methane()
     return methane
 
 if __name__ == "__main__":
-    main()
+    methane = main()
     methane.visualize()
