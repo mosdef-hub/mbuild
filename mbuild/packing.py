@@ -55,8 +55,7 @@ def fill_box(compound, n_compounds, box, overlap=0.2):
 
     compound_pdb = tempfile.mkstemp(suffix='.pdb')[1]
     compound.save(compound_pdb)
-    #filled_pdb = tempfile.mkstemp(suffix='.pdb')[1]
-    filled_pdb = 'filled.pdb'
+    filled_pdb = tempfile.mkstemp(suffix='.pdb')[1]
 
     # In angstroms for packmol.
     box_lengths = box.lengths * 10
@@ -105,8 +104,7 @@ def solvate(solute, solvent, n_solvent, box, overlap=0.2):
     solute.save(solute_pdb)
     solvent_pdb = tempfile.mkstemp(suffix='.pdb')[1]
     solvent.save(solvent_pdb)
-    #solvated_pdb = tempfile.mkstemp(suffix='.pdb')[1]
-    solvated_pdb = 'solvated.pdb'
+    solvated_pdb = tempfile.mkstemp(suffix='.pdb')[1]
 
     # In angstroms for packmol.
     box_lengths = box.lengths * 10
@@ -130,6 +128,7 @@ def solvate(solute, solvent, n_solvent, box, overlap=0.2):
         solvated.add(deepcopy(solvent))
     solvated.update_coordinates(solvated_pdb)
     return solvated
+
 
 def _packmol_error(out, err):
     with open('log.txt', 'w') as log_file, open('err.txt', 'w') as err_file:
