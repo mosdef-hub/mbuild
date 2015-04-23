@@ -84,7 +84,7 @@ class TiledCompound(Compound):
                 if child.__class__ != self.tile.__class__:
                     continue
                 for idx, atom in enumerate(child.yield_atoms()):
-                    atom.uid = idx
+                    atom.index = idx
 
             # Build a kdtree of all atoms.
             atom_list = np.array([atom for atom in self.yield_atoms()])
@@ -104,7 +104,7 @@ class TiledCompound(Compound):
 
                     atom2_image = None
                     for atom in neighbors:
-                        if atom.uid == bond.atom2.uid:
+                        if atom.index == bond.atom2.index:
                             atom2_image = atom
                             break
                     assert atom2_image is not None
@@ -115,7 +115,7 @@ class TiledCompound(Compound):
 
                     atom1_image = None
                     for a in neighbors:
-                        if a.uid == bond.atom1.uid:
+                        if a.index == bond.atom1.index:
                             atom1_image = a
                             break
                     assert atom2_image is not None
@@ -128,9 +128,9 @@ class TiledCompound(Compound):
             # Remove all marked bonds.
             self.remove(bonds_to_remove)
 
-            # Remove the temporary uid field from all atoms.
+            # Remove the temporary index field from all atoms.
             for child in self.parts:
                 if child.__class__ != self.tile.__class__:
                     continue
                 for atom in child.yield_atoms():
-                    del atom.uid
+                    del atom.index

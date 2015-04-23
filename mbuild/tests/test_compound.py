@@ -25,6 +25,38 @@ class TestCompound(BaseTest):
         assert compound.n_atoms == 8 + 3
         assert compound.n_bonds == 7 + 2
 
+    def test_intermol_conversion1(self, ethane, h2o):
+        compound = mb.Compound()
+        compound.add([ethane, h2o])
+        intermol_system = compound._to_intermol()
+        assert len(intermol_system.molecule_types) == 1
+        assert 'Compound' in intermol_system.molecule_types
+        assert len(intermol_system.molecule_types['Compound'].bond_forces) == 9
+
+        assert len(intermol_system.molecule_types['Compound'].molecules) == 1
+        molecules = list(intermol_system.molecule_types['Compound'].molecules)
+        assert len(molecules[0].atoms) == 11
+
+    def test_intermol_conversion2(self, ethane, h2o):
+        from mbuild.examples.ethane.ethane import Ethane
+        compound = mb.Compound()
+        compound.add([ethane, Ethane(), h2o])  # 2 distinct Ethane objects
+        molecule_types = [type(ethane), type(h2o)]
+        intermol_system = compound._to_intermol(molecule_types=molecule_types)
+        assert len(intermol_system.molecule_types) == 2
+        assert 'Ethane' in intermol_system.molecule_types
+        assert 'H2O' in intermol_system.molecule_types
+        assert len(intermol_system.molecule_types['Ethane'].bond_forces) == 7
+        assert len(intermol_system.molecule_types['H2O'].bond_forces) == 2
+
+        assert len(intermol_system.molecule_types['Ethane'].molecules) == 2
+        ethanes = list(intermol_system.molecule_types['Ethane'].molecules)
+        assert len(ethanes[0].atoms) == len(ethanes[1].atoms) == 8
+
+        assert len(intermol_system.molecule_types['H2O'].molecules) == 1
+        h2os = list(intermol_system.molecule_types['H2O'].molecules)
+        assert len(h2os[0].atoms) == 3
+
     def test_atom_list_by_kind(self, ethane):
         non_ports = ethane.atom_list_by_name()
         assert sum([1 for x in non_ports if x.name != 'G']) == 8

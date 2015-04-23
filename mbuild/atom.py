@@ -32,8 +32,7 @@ class Atom(PartMixin):
         Every Bond that the Atom is a part of.
 
     """
-    __slots__ = ['name', 'pos', 'charge', 'parent', 'referrers', 'bonds', 'uid',
-                 '_extras']
+    __slots__ = ['index', 'name', 'pos', 'charge', 'parent', 'referrers', 'bonds']
 
     def __init__(self, name, pos=None, charge=0.0):
         super(Atom, self).__init__()
@@ -41,11 +40,11 @@ class Atom(PartMixin):
         if pos is None:
             pos = np.array([0, 0, 0], dtype=float)
 
+        self.index = None  # Only used for specific purposes, e.g. TiledCompound
         self.name = name
         self.pos = np.asarray(pos, dtype=float)
         self.charge = charge
         self.bonds = set()
-        self._extras = None
 
     def bonded_atoms(self, memo=None):
         """Return a list of Atoms bonded to self. """
@@ -66,19 +65,6 @@ class Atom(PartMixin):
     @property
     def n_bonds(self):
         return len(self.bonds)
-
-    @property
-    def extras(self):
-        """Return the Atom's optional, extra attributes. """
-        if self._extras is None:
-            self._extras = dict()
-        return self._extras
-
-    def __getattr__(self, item):
-        if self._extras and item in self._extras:
-            return self._extras[item]
-        else:
-            raise AttributeError
 
     def __add__(self, other):
         if isinstance(other, Atom):
@@ -123,7 +109,6 @@ class Atom(PartMixin):
         newone.name = deepcopy(self.name, memo)
         newone.pos = deepcopy(self.pos, memo)
         newone.charge = deepcopy(self.charge, memo)
-        newone._extras = deepcopy(self._extras, memo)
 
         # Copy parents, except the topmost compound being deepcopied.
         if memo[0] == self or isinstance(memo[0], Bond):

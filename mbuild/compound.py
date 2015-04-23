@@ -11,6 +11,11 @@ import mdtraj as md
 from mdtraj.core.element import Element
 from mdtraj.core.element import get_by_symbol
 from mdtraj.core.topology import Topology
+from intermol.atom import Atom as InterMolAtom
+from intermol.molecule import Molecule
+from intermol.system import System
+from intermol.moleculetype import MoleculeType
+from intermol.forces.harmonic_bond_type import HarmonicBond
 
 from mbuild.formats.mol2 import write_mol2
 from mbuild.atom import Atom
@@ -105,7 +110,6 @@ class Compound(PartMixin):
 
         self.parts = OrderedSet()
         self.labels = OrderedDict()
-        self._extras = dict()
 
     @property
     def atoms(self):
@@ -181,11 +185,6 @@ class Compound(PartMixin):
                 for subpart in part._yield_parts(part_type):
                     yield subpart
 
-    @property
-    def extras(self):
-        """Return the optional, extra attributes. """
-        return self._extras
-
     def visualize(self, show_ports=False):
         """Visualize the Compound using VMD.
 
@@ -198,6 +197,7 @@ class Compound(PartMixin):
             __IPYTHON__
         except NameError:
             filename = 'visualize_{}.mol2'.format(self.__class__.__name__)
+            print('vis: ', show_ports)
             self.save(filename, show_ports=show_ports)
             try:
                 os.system('vmd {}'.format(filename))
@@ -323,10 +323,6 @@ class Compound(PartMixin):
                 new_part.periodicity.any()):
             self.periodicity = new_part.periodicity
 
-        from mbuild.port import Port
-        if isinstance(new_part, Compound) and not isinstance(new_part, Port):
-            self.extras.update(new_part.extras)
-
     def remove(self, objs_to_remove):
         """Remove parts (Atom, Bond or Compound) from the Compound. """
         if not isinstance(objs_to_remove, (list, tuple, set)):
@@ -388,8 +384,74 @@ class Compound(PartMixin):
         from mbuild.port import Port
         return [port for port in self.labels.values() if isinstance(port, Port)]
 
-    # Interface to Trajectory for reading/writing.
-    # --------------------------------------------
+    def update_coordinates(self, filename):
+        """ """
+        load(filename, compound=self, coords_only=True)
+
+    def save(self, filename, show_ports=False, forcefield=None, **kwargs):
+        """Save the Compound to a file.
+
+        Parameters
+        ----------
+        filename : str
+            Filesystem path in which to save the trajectory. The extension or
+            prefix will be parsed and will control the format.
+
+        Other Parameters
+        ----------------
+        force_overwrite : bool
+
+        """
+        extension = os.path.splitext(filename)[-1]
+
+        savers = {'.hoomdxml': self.save_hoomdxml,
+                  '.gro': self.save_gromacs,
+                  '.top': self.save_gromacs,
+                  '.mol2': self.save_mol2,
+                  '.lammps': self.save_lammpsdata,
+                  '.lmp': self.save_lammpsdata,
+                  }
+
+        try:
+            saver = savers[extension]
+        except KeyError:  # TODO: better reporting
+            saver = None
+
+        if (not saver or extension == '.mol2') and forcefield:
+            ff_formats = ', '.join(set(savers.keys()) - set(['.mol2']))
+            raise ValueError('The only supported formats with forcefield'
+                             'information are: {0}'.format(ff_formats))
+
+        if saver:  # mBuild/InterMol supported saver.
+            traj = self.to_trajectory(show_ports=show_ports, **kwargs)
+            return saver(filename, traj)
+        else:  # MDTraj supported saver.
+            traj = self.to_trajectory(show_ports=show_ports, **kwargs)
+            return traj.save(filename, **kwargs)
+
+    def save_mol2(self, filename, traj, **kwargs):
+        """ """
+        write_mol2(filename, traj)
+
+    def save_hoomdxml(self, filename, traj, force_overwrite=True, **kwargs):
+        """ """
+        raise NotImplementedError('Interface to InterMol missing')
+
+    def save_gromacs(self, filename, traj, force_overwrite=True, **kwargs):
+        """ """
+        raise NotImplementedError('Interface to InterMol missing')
+        # Create separate file paths for .gro and .top
+        # filepath, filename = os.path.split(filename)
+        # basename = os.path.splitext(filename)[0]
+        # top_filename = os.path.join(filepath, basename + '.top')
+        # gro_filename = os.path.join(filepath, basename + '.gro')
+
+    def save_lammpsdata(self, filename, traj, force_overwrite=True, **kwargs):
+        """ """
+        raise NotImplementedError('Interface to InterMol missing')
+
+    # Interface to Trajectory for reading/writing .pdb and .mol2 files.
+    # -----------------------------------------------------------------
     def from_trajectory(self, traj, frame=-1, coords_only=False):
         """Extract atoms and bonds from a md.Trajectory.
 
@@ -405,7 +467,8 @@ class Compound(PartMixin):
 
         """
         if coords_only:
-            assert traj.n_atoms == self.n_atoms
+            if traj.n_atoms != self.n_atoms:
+                raise ValueError('Number of atoms in {traj} does not match {self}'.format(**locals()))
             for mdtraj_atom, mbuild_atom in zip(traj.topology.atoms, self.atoms):
                 mbuild_atom.pos = traj.xyz[frame, mdtraj_atom.index]
             return
@@ -546,71 +609,66 @@ class Compound(PartMixin):
             top.add_bond(atom_mapping[a1], atom_mapping[a2])
         return top
 
-    def update_coordinates(self, filename):
-        """ """
-        load(filename, compound=self, coords_only=True)
-
-    def save(self, filename, show_ports=False, forcefield=None, **kwargs):
-        """Save the Compound to a file.
+    # Interface to InterMol for writing fully parameterized systems.
+    # --------------------------------------------------------------
+    def _to_intermol(self, molecule_types=None):
+        """Create an InterMol system from a Compound.
 
         Parameters
         ----------
-        filename : str
-            Filesystem path in which to save the trajectory. The extension or
-            prefix will be parsed and will control the format.
+        molecule_types : list or tuple of subclasses of Compound
 
-        Other Parameters
-        ----------------
-        force_overwrite : bool
+        Returns
+        -------
+        intermol_system : intermol.system.System
 
         """
-        extension = os.path.splitext(filename)[-1]
+        if isinstance(molecule_types, list):
+            molecule_types = tuple(molecule_types)
+        if not molecule_types:
+            molecule_types = (type(self),)
+        intermol_system = System()
 
-        savers = {'.hoomdxml': self.save_hoomdxml,
-                  '.gro': self.save_gromacs,
-                  '.top': self.save_gromacs,
-                  '.mol2': self.save_mol2,
-                  '.lammps': self.save_lammpsdata,
-                  '.lmp': self.save_lammpsdata,
-                  }
+        last_molecule_compound = None
+        for atom_index, atom in enumerate(self.atoms):
+            for parent in atom.ancestors():
+                # Don't want inheritance via isinstance
+                if type(parent) in molecule_types:
+                    # Check if we have encountered this molecule type before.
+                    if parent.kind not in intermol_system.molecule_types:
+                        self._add_intermol_molecule_type(intermol_system, parent)
+                    if parent != last_molecule_compound:
+                        last_molecule_compound = parent
+                        last_molecule = Molecule(name=parent.kind)
+                        intermol_system.add_molecule(last_molecule)
+                    break
+            else:
+                # Should never happen if molecule_types only contains type(self)
+                raise ValueError('Found an atom {} that is not part of any of '
+                                 'the specified molecule types {}'.format(atom, molecule_types))
 
-        try:
-            saver = savers[extension]
-        except KeyError:  # TODO: better reporting
-            saver = None
+            # Add the actual intermol atoms.
+            intermol_atom = InterMolAtom(atom_index, name=atom.name,
+                                         residue_index=1, residue_name='RES')
+            intermol_atom.position = atom.pos
+            last_molecule.add_atom(intermol_atom)
+        return intermol_system
 
-        if (not saver or extension == '.mol2') and forcefield:
-            ff_formats = ', '.join(set(savers.keys()) - set(['.mol2']))
-            raise ValueError('The only supported formats with forcefield'
-                             'information are: {0}'.format(ff_formats))
+    @staticmethod
+    def _add_intermol_molecule_type(intermol_system, parent):
+        """Create a molecule type for the parent and add bonds. """
+        molecule_type = MoleculeType(name=parent.kind)
+        intermol_system.add_molecule_type(molecule_type)
 
-        if saver:  # mBuild supported saver.
-            traj = self.to_trajectory(show_ports=show_ports, **kwargs)
-            return saver(filename, traj)
-        else:  # MDTraj supported saver.
-            traj = self.to_trajectory(show_ports=show_ports, **kwargs)
-            return traj.save(filename, **kwargs)
+        for index, parent_atom in enumerate(parent.atoms):
+            parent_atom.index = index
 
-    def save_mol2(self, filename, traj, **kwargs):
-        """ """
-        write_mol2(filename, traj)
-
-    def save_hoomdxml(self, filename, traj, force_overwrite=True, **kwargs):
-        """ """
-        raise NotImplementedError('Interface to InterMol missing')
-
-    def save_gromacs(self, filename, traj, force_overwrite=True, **kwargs):
-        """ """
-        raise NotImplementedError('Interface to InterMol missing')
-        # Create separate file paths for .gro and .top
-        # filepath, filename = os.path.split(filename)
-        # basename = os.path.splitext(filename)[0]
-        # top_filename = os.path.join(filepath, basename + '.top')
-        # gro_filename = os.path.join(filepath, basename + '.gro')
-
-    def save_lammpsdata(self, filename, traj, force_overwrite=True, **kwargs):
-        """ """
-        raise NotImplementedError('Interface to InterMol missing')
+        for bond in parent.bonds:
+            bforce = HarmonicBond(bond.atom1.index,
+                                  bond.atom2.index,
+                                  bondingtype1=bond.atom1.name,
+                                  bondingtype2=bond.atom2.name)
+            molecule_type.bond_forces.add(bforce)
 
     # Magic
     # -----
@@ -620,8 +678,6 @@ class Compound(PartMixin):
                                   "__init__ method of your class.")
         if attr in self.labels:
             return self.labels[attr]
-        elif attr in self._extras:
-            return self._extras[attr]
         else:
             raise AttributeError("'{}' object has no attribute '{}'".format(
                 self.__class__.__name__, attr))
@@ -636,7 +692,6 @@ class Compound(PartMixin):
         # First copy those attributes that don't need deepcopying.
         newone.kind = deepcopy(self.kind, memo)
         newone.periodicity = deepcopy(self.periodicity, memo)
-        newone._extras = deepcopy(self._extras, memo)
 
         # Create empty containers.
         newone.parts = OrderedSet()
