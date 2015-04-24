@@ -6,21 +6,21 @@ import itertools
 import os
 import sys
 
+from intermol.atom import Atom as InterMolAtom
+from intermol.forces.harmonic_bond_type import HarmonicBond
+from intermol.molecule import Molecule
+from intermol.moleculetype import MoleculeType
+from intermol.system import System
 import numpy as np
 import mdtraj as md
 from mdtraj.core.element import Element
 from mdtraj.core.element import get_by_symbol
 from mdtraj.core.topology import Topology
-from intermol.atom import Atom as InterMolAtom
-from intermol.molecule import Molecule
-from intermol.system import System
-from intermol.moleculetype import MoleculeType
-from intermol.forces.harmonic_bond_type import HarmonicBond
 
-from mbuild.formats.mol2 import write_mol2
 from mbuild.atom import Atom
 from mbuild.box import Box
 from mbuild.bond import Bond
+from mbuild.formats.mol2 import write_mol2
 from mbuild.orderedset import OrderedSet
 from mbuild.part_mixin import PartMixin
 
@@ -29,7 +29,7 @@ __all__ = ['load', 'Compound']
 
 
 def load(filename, relative_to_module=None, frame=-1, compound=None,
-         coords_only=False,**kwargs):
+         coords_only=False, **kwargs):
     """ """
     # Handle mbuild *.py files containing a class that wraps a structure file
     # in its own folder. E.g., you build a system from ~/foo.py and it imports

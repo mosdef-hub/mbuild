@@ -16,10 +16,20 @@ import mock
 import os
 import pip
 import sys
+from unittest.mock import MagicMock
+
+
+class Mock(MagicMock):
+    @classmethod
+    def __getattr__(cls, name):
+            return Mock()
 
 MOCK_MODULES = ['mdtraj']
-for mod_name in MOCK_MODULES:
-    sys.modules[mod_name] = mock.Mock()
+sys.modules.update((mod_name, Mock()) for mod_name in MOCK_MODULES)
+
+# MOCK_MODULES = ['mdtraj']
+# for mod_name in MOCK_MODULES:
+#     sys.modules[mod_name] = mock.Mock()
 
 #pip.main(['install', 'sphinxcontrib-napoleon'])
 pip.main(['install', 'numpydoc'])
