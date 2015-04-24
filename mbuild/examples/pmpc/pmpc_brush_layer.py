@@ -28,13 +28,13 @@ class PMPCLayer(mb.Compound):
 
 def main():
     mask = mb.grid_mask_2d(5, 5)
-    pmpc_layer =  PMPCLayer(mask=mask, chain_length=5, alpha=pi/4, tile_x=2, tile_y=2)
+    pmpc_layer = PMPCLayer(mask=mask, chain_length=5, alpha=pi/4, tile_x=2, tile_y=2)
     return pmpc_layer
 
 
 if __name__ == "__main__":
 
     pmpc_layer = main()
-    pmpc_layer.save(filename='brush_layer.pdb')
+    pmpc_layer.save(filename='brush_layer.mol2')
     #                             chain_types=[Betacristobalite, Brush],
     #                             residue_types=[MPC])

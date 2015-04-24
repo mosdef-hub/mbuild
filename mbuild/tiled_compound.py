@@ -27,11 +27,9 @@ class TiledCompound(Compound):
         Descriptive string for the compound.
 
     """
-    def __init__(self, tile, n_tiles=None, kind=None):
+    def __init__(self, tile, n_tiles, kind=None):
         super(TiledCompound, self).__init__()
 
-        if not n_tiles:
-            n_tiles = (1, 1, 1)
         n_x, n_y, n_z = n_tiles
         if not n_x > 0 and n_y > 0 and n_z > 0:
             raise ValueError("Number of tiles must be positive.")
@@ -56,7 +54,7 @@ class TiledCompound(Compound):
         self.periodicity = np.array([tile.periodicity[0] * n_x,
                                      tile.periodicity[1] * n_y,
                                      tile.periodicity[2] * n_z])
-        # TODO: Look into returning a new compound instead of adding the current one.
+        # TODO: Return a new compound instead of adding to the current one.
 
     def replicate_tiles(self):
         """Replicate and place periodic tiles. """

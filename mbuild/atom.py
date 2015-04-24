@@ -46,17 +46,6 @@ class Atom(PartMixin):
         self.charge = charge
         self.bonds = set()
 
-    def bonded_atoms(self, memo=None):
-        """Return a list of Atoms bonded to self. """
-        if memo is None:
-            memo = dict()
-        for bond in self.bonds:
-            bonded_atom = bond.other_atom(self)
-            if id(bonded_atom) not in memo:
-                memo[id(bonded_atom)] = bonded_atom
-                bonded_atom.bonded_atoms(memo)
-        return memo.values()
-
     @property
     def neighbors(self):
         """Return a list of all neighboring Atoms. """
