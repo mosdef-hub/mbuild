@@ -49,14 +49,13 @@ class TiledCompound(Compound):
             kind = tile.kind
         self.kind = kind
 
-        self.replicate_tiles()
-        self.stitch_bonds()
+        self._replicate_tiles()
+        self._stitch_bonds()
         self.periodicity = np.array([tile.periodicity[0] * n_x,
                                      tile.periodicity[1] * n_y,
                                      tile.periodicity[2] * n_z])
-        # TODO: Return a new compound instead of adding to the current one.
 
-    def replicate_tiles(self):
+    def _replicate_tiles(self):
         """Replicate and place periodic tiles. """
         for i in range(self.n_x):
             for j in range(self.n_y):
@@ -74,57 +73,62 @@ class TiledCompound(Compound):
                         if isinstance(port, Port):
                             self.add(port, containment=False)
 
-    def stitch_bonds(self):
+    def _stitch_bonds(self):
         """Stitch bonds across periodic boundaries. """
         if not np.all(self.periodicity == 0):
             # For every tile, we assign temporary ID's to atoms.
             for child in self.parts:
-                if child.__class__ != self.tile.__class__:
-                    continue
-                for idx, atom in enumerate(child.yield_atoms()):
-                    atom.index = idx
+                # Not using isinstance because we want to ignore inheritance.
+                if type(child) == type(self.tile):
+                    for idx, atom in enumerate(child.yield_atoms()):
+                        atom.index = idx
 
             # Build a kdtree of all atoms.
-            atom_list = np.array([atom for atom in self.yield_atoms()])
-            atom_kdtree = PeriodicCKDTree([atom.pos for atom in atom_list],
-                                          bounds=self.periodicity)
+            atom_kdtree = PeriodicCKDTree(self.xyz, bounds=self.periodicity)
 
             # Cutoff for long bonds is half the shortest periodic distance.
             bond_dist_thres = min(self.tile.periodicity[self.tile.periodicity > 0]) / 2
 
             # Update connectivity.
             bonds_to_remove = set()
+            bonds_to_add = set()
+            all_atoms = np.asarray(self.atoms)
             for bond in self.yield_bonds():
-                if bond.distance(self.periodicity) > bond_dist_thres:
+                if bond.distance() > bond_dist_thres:
                     # Find new pair for atom1.
                     _, idxs = atom_kdtree.query(bond.atom1.pos, k=10)
-                    neighbors = atom_list[idxs]
+                    neighbors = all_atoms[idxs]
 
-                    atom2_image = None
                     for atom in neighbors:
                         if atom.index == bond.atom2.index:
                             atom2_image = atom
                             break
-                    assert atom2_image is not None
+                    else:
+                        raise RuntimeError('Unable to find matching atom image'
+                                           'while stitching bonds.')
 
                     # Find new pair for atom2.
                     _, idxs = atom_kdtree.query(bond.atom2.pos, k=10)
-                    neighbors = atom_list[idxs]
+                    neighbors = all_atoms[idxs]
 
-                    atom1_image = None
-                    for a in neighbors:
-                        if a.index == bond.atom1.index:
-                            atom1_image = a
+                    for atom in neighbors:
+                        if atom.index == bond.atom1.index:
+                            atom1_image = atom
                             break
-                    assert atom2_image is not None
+                    else:
+                        raise RuntimeError('Unable to find matching atom image'
+                                           'while stitching bonds.')
 
                     # Mark old bond for removal and add new ones.
                     bonds_to_remove.add(bond)
-                    self.add(Bond(bond.atom1, atom2_image))
-                    self.add(Bond(atom1_image, bond.atom2))
+                    bond1 = Bond(bond.atom1, atom2_image)
+                    bonds_to_add.add(bond1)
+                    bond2 = Bond(atom1_image, bond.atom2)
+                    bonds_to_add.add(bond2)
 
             # Remove all marked bonds.
             self.remove(bonds_to_remove)
+            self.add(bonds_to_add)
 
             # Remove the temporary index field from all atoms.
             for child in self.parts:
