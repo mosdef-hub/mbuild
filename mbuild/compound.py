@@ -107,7 +107,7 @@ class Compound(PartMixin):
         # A periodocity of zero in any direction is treated as non-periodic.
         if not periodicity:
             periodicity = np.array([0.0, 0.0, 0.0])
-        self.periodicity = periodicity
+        self._periodicity = periodicity
 
         self.parts = OrderedSet()
         self.labels = OrderedDict()
@@ -160,6 +160,7 @@ class Compound(PartMixin):
         """ """
         return self._yield_parts(Bond)
 
+
     @property
     def n_bonds(self):
         """Return the number of Bonds in the Compound. """
@@ -185,6 +186,14 @@ class Compound(PartMixin):
             if isinstance(part, Compound):
                 for subpart in part._yield_parts(part_type):
                     yield subpart
+
+    @property
+    def periodicity(self):
+        return self._periodicity
+
+    @periodicity.setter
+    def periodicity(self, periods):
+        self._periodicity = np.array(periods)
 
     def visualize(self, show_ports=False):
         """Visualize the Compound using VMD.
@@ -286,7 +295,7 @@ class Compound(PartMixin):
             # Support batch add via lists, tuples and sets.
             if isinstance(new_part, (list, tuple, set)):
                 for elem in new_part:
-                    assert (elem.parent is None)
+                    assert elem.parent is None
                     self.add(elem)
                     elem.parent = self
                 return
@@ -633,7 +642,7 @@ class Compound(PartMixin):
         last_molecule_compound = None
         for atom_index, atom in enumerate(self.atoms):
             for parent in atom.ancestors():
-                # Don't want inheritance via isinstance
+                # Don't want inheritance via isinstance().
                 if type(parent) in molecule_types:
                     # Check if we have encountered this molecule type before.
                     if parent.kind not in intermol_system.molecule_types:

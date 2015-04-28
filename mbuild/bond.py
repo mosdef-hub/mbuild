@@ -57,13 +57,12 @@ class Bond(PartMixin):
         elif self._atom2 is atom:
             return self._atom1
 
-    def distance(self, periodicity=None):
-        """Calculate the bond distance considering minimum image. """
+    def length(self, periodicity=None):
+        """Calculate the bond length considering minimum image. """
+        d = np.abs(self.atom1 - self.atom2)
         if periodicity is None:
-            d = np.abs(self.atom1-self.atom2)
             return np.sqrt((d ** 2).sum(axis=-1))
         else:
-            d = np.abs(self.atom1 - self.atom2)
             d = np.where(d > 0.5 * periodicity, periodicity - d, d)
             return np.sqrt((d ** 2).sum(axis=-1))
 
