@@ -8,7 +8,7 @@ class TestTiledCompound(BaseTest):
 
     def test_2d_replication(self, betacristobalite):
         nx = 2
-        ny = 3
+        ny = 1
         nz = 1
         tiled = mb.TiledCompound(betacristobalite, [nx, ny, nz])
         assert tiled.n_atoms == 1800 * nx * ny * nz

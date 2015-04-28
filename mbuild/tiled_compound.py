@@ -1,4 +1,5 @@
 from copy import deepcopy
+import itertools as it
 
 import numpy as np
 
@@ -30,109 +31,88 @@ class TiledCompound(Compound):
     def __init__(self, tile, n_tiles, kind=None):
         super(TiledCompound, self).__init__()
 
-        n_x, n_y, n_z = n_tiles
-        if not n_x > 0 and n_y > 0 and n_z > 0:
-            raise ValueError("Number of tiles must be positive.")
+        n_tiles = np.asarray(n_tiles)
+        if not np.all(n_tiles > 0):
+            raise ValueError('Number of tiles must be positive.')
 
         # Check that the tile is periodic in the requested dimensions.
-        if ((n_x != 1 and tile.periodicity[0] == 0) or
-                (n_y != 1 and tile.periodicity[1] == 0) or
-                (n_z != 1 and tile.periodicity[2] == 0)):
-            raise ValueError("Tile not periodic in at least one of the "
-                             "specified dimensions.")
+        if np.any(np.logical_and(n_tiles != 1, tile.periodicity == 0)):
+            raise ValueError('Tile not periodic in at least one of the '
+                             'specified dimensions.')
 
-        self.tile = tile
-        self.n_x = n_x
-        self.n_y = n_y
-        self.n_z = n_z
         if kind is None:
             kind = tile.kind
         self.kind = kind
+        self.periodicity = np.array(tile.periodicity * n_tiles)
 
-        self._replicate_tiles()
-        self._stitch_bonds()
-        self.periodicity = np.array([tile.periodicity[0] * n_x,
-                                     tile.periodicity[1] * n_y,
-                                     tile.periodicity[2] * n_z])
 
-    def _replicate_tiles(self):
-        """Replicate and place periodic tiles. """
-        for i in range(self.n_x):
-            for j in range(self.n_y):
-                for k in range(self.n_z):
-                    new_tile = deepcopy(self.tile)
-                    translate(new_tile,
-                              np.array([i * self.tile.periodicity[0],
-                                        j * self.tile.periodicity[1],
-                                        k * self.tile.periodicity[2]]))
-                    tile_label = "{0}_{1}_{2}_{3}".format(self.kind, i, j, k)
-                    self.add(new_tile, label=tile_label)
+        # For every tile, assign temporary ID's to atoms which are internal to
+        # that tile. E.g., when replicating a tile with 1800 atoms, every tile
+        # will contain atoms with ID's from 0-1799. These ID's are used below
+        # to fix bonds crossing periodic boundary conditions where a new tile
+        # has been placed.
+        for idx, atom in enumerate(tile.yield_atoms()):
+            atom.index = idx
 
-                    # Hoist ports.
-                    for port in new_tile.parts:
-                        if isinstance(port, Port):
-                            self.add(port, containment=False)
+        # Replicate and place periodic tiles.
+        # -----------------------------------
+        for ijk in it.product(range(n_tiles[0]),
+                              range(n_tiles[1]),
+                              range(n_tiles[2])):
+            new_tile = deepcopy(tile)
+            translate(new_tile, np.array(ijk * tile.periodicity))
+            tile_label = "{0}_{1}".format(self.kind, ijk)
+            self.add(new_tile, label=tile_label, inherit_periodicity=False)
 
-    def _stitch_bonds(self):
-        """Stitch bonds across periodic boundaries. """
-        if not np.all(self.periodicity == 0):
-            # For every tile, we assign temporary ID's to atoms.
-            for child in self.parts:
-                # Not using isinstance because we want to ignore inheritance.
-                if type(child) == type(self.tile):
-                    for idx, atom in enumerate(child.yield_atoms()):
-                        atom.index = idx
+            # Hoist ports.
+            for port in new_tile.parts:
+                if isinstance(port, Port):
+                    self.add(port, containment=False)
 
-            # Build a kdtree of all atoms.
-            atom_kdtree = PeriodicCKDTree(self.xyz, bounds=self.periodicity)
+        # Fix bonds across periodic boundaries.
+        # -------------------------------------
+        # Cutoff for long bonds is half the shortest periodic distance.
+        bond_dist_thres = min(tile.periodicity[tile.periodicity > 0]) / 2
 
-            # Cutoff for long bonds is half the shortest periodic distance.
-            bond_dist_thres = min(self.tile.periodicity[self.tile.periodicity > 0]) / 2
+        # Bonds that were periodic in the original tile.
+        atom_indices_of_periodic_bonds = set()
+        for bond in tile.yield_bonds():
+            if bond.length() > bond_dist_thres:
+                atom_indices_of_periodic_bonds.add((bond.atom1.index, bond.atom2.index))
 
-            # Update connectivity.
-            bonds_to_remove = set()
-            bonds_to_add = set()
-            all_atoms = np.asarray(self.atoms)
-            for bond in self.yield_bonds():
-                if bond.distance() > bond_dist_thres:
-                    # Find new pair for atom1.
-                    _, idxs = atom_kdtree.query(bond.atom1.pos, k=10)
-                    neighbors = all_atoms[idxs]
+        # Build a periodic kdtree of all atom positions.
+        self.atom_kdtree = PeriodicCKDTree(data=self.xyz, bounds=self.periodicity)
+        all_atoms = np.asarray(self.atoms)
 
-                    for atom in neighbors:
-                        if atom.index == bond.atom2.index:
-                            atom2_image = atom
-                            break
-                    else:
-                        raise RuntimeError('Unable to find matching atom image'
-                                           'while stitching bonds.')
-
-                    # Find new pair for atom2.
-                    _, idxs = atom_kdtree.query(bond.atom2.pos, k=10)
-                    neighbors = all_atoms[idxs]
-
-                    for atom in neighbors:
-                        if atom.index == bond.atom1.index:
-                            atom1_image = atom
-                            break
-                    else:
-                        raise RuntimeError('Unable to find matching atom image'
-                                           'while stitching bonds.')
-
-                    # Mark old bond for removal and add new ones.
+        # Store bonds to remove/add since we'll be iterating over all bonds.
+        bonds_to_remove = set()
+        bonds_to_add = set()
+        for bond in self.yield_bonds():
+            atom_indices = (bond.atom1.index, bond.atom2.index)
+            if atom_indices in atom_indices_of_periodic_bonds:
+                if bond.length(self.periodicity) > bond_dist_thres:
                     bonds_to_remove.add(bond)
-                    bond1 = Bond(bond.atom1, atom2_image)
-                    bonds_to_add.add(bond1)
-                    bond2 = Bond(atom1_image, bond.atom2)
-                    bonds_to_add.add(bond2)
 
-            # Remove all marked bonds.
-            self.remove(bonds_to_remove)
-            self.add(bonds_to_add)
+                    atom2_image = self._find_atom_image(bond.atom1, bond.atom2, all_atoms)
+                    new_bond = Bond(bond.atom1, atom2_image)
+                    bonds_to_add.add(new_bond)
 
-            # Remove the temporary index field from all atoms.
-            for child in self.parts:
-                if child.__class__ != self.tile.__class__:
-                    continue
-                for atom in child.yield_atoms():
-                    del atom.index
+        self.remove(bonds_to_remove)
+        self.add(bonds_to_add)
+
+        # Clean up temporary data.
+        for atom in self.yield_atoms():
+            atom.index = None
+        del self.atom_kdtree
+
+    def _find_atom_image(self, query, match, all_atoms):
+        """Find atom with the same index as match in a neighboring tile. """
+        _, idxs = self.atom_kdtree.query(query.pos, k=10)
+        neighbors = all_atoms[idxs]
+
+        for atom in neighbors:
+            if atom.index == match.index:
+                return atom
+        else:
+            raise RuntimeError('Unable to find matching atom image while '
+                               'stitching bonds.')

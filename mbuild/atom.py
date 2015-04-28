@@ -95,6 +95,7 @@ class Atom(PartMixin):
         newone.bonds = set()
 
         # Do the rest recursively.
+        newone.index = deepcopy(self.index, memo)
         newone.name = deepcopy(self.name, memo)
         newone.pos = deepcopy(self.pos, memo)
         newone.charge = deepcopy(self.charge, memo)
