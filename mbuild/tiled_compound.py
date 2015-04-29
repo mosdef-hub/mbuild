@@ -45,7 +45,6 @@ class TiledCompound(Compound):
         self.kind = kind
         self.periodicity = np.array(tile.periodicity * n_tiles)
 
-
         # For every tile, assign temporary ID's to atoms which are internal to
         # that tile. E.g., when replicating a tile with 1800 atoms, every tile
         # will contain atoms with ID's from 0-1799. These ID's are used below

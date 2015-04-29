@@ -144,7 +144,7 @@ class Compound(PartMixin):
         """
         atom_list = []
         for atom in self.yield_atoms():
-            if not (exclude_ports and atom.name == "G"):
+            if not (exclude_ports and atom.name == 'G'):
                 if name == '*':
                     atom_list.append(atom)
                 elif atom.name == name:
@@ -300,7 +300,7 @@ class Compound(PartMixin):
                     elem.parent = self
                 return
 
-            assert new_part.parent is None, "Part {} already has a parent: {}".format(
+            assert new_part.parent is None, 'Part {} already has a parent: {}'.format(
                 new_part, new_part.parent)
             self.parts.add(new_part)
             new_part.parent = self
@@ -312,19 +312,18 @@ class Compound(PartMixin):
             label = '_{0}[$]'.format(new_part.__class__.__name__)
 
         if label is not None:
-            if label.endswith("[$]"):
+            if label.endswith('[$]'):
                 label = label[:-3]
                 if label not in self.labels:
                     self.labels[label] = []
-                label_pattern = label + "[{}]"
+                label_pattern = label + '[{}]'
 
                 count = len(self.labels[label])
                 self.labels[label].append(new_part)
                 label = label_pattern.format(count)
 
             if not replace and label in self.labels:
-                raise Exception(
-                    "Label {0} already exists in {1}".format(label, self))
+                raise Exception('Label {0} already exists in {1}'.format(label, self))
             else:
                 self.labels[label] = new_part
         new_part.referrers.add(self)
@@ -487,13 +486,13 @@ class Compound(PartMixin):
         for chain in traj.topology.chains:
             if traj.topology.n_chains > 1:
                 chain_compound = Compound()
-                self.add(chain_compound, "chain[$]")
+                self.add(chain_compound, 'chain[$]')
             else:
                 chain_compound = self
             for res in chain.residues:
                 for atom in res.atoms:
                     new_atom = Atom(str(atom.name), traj.xyz[frame, atom.index])
-                    chain_compound.add(new_atom, label="{0}[$]".format(atom.name))
+                    chain_compound.add(new_atom, label='{0}[$]'.format(atom.name))
                     atom_mapping[atom] = new_atom
 
         for a1, a2 in traj.topology.bonds:
@@ -568,7 +567,7 @@ class Compound(PartMixin):
         atom_mapping = {}
 
         default_chain = top.add_chain()
-        default_residue = top.add_residue("RES", default_chain)
+        default_residue = top.add_residue('RES', default_chain)
 
         last_residue_compound = None
         last_chain_compound = None
@@ -582,7 +581,7 @@ class Compound(PartMixin):
                     if parent != last_chain_compound:
                         last_chain_compound = parent
                         last_chain = top.add_chain()
-                        last_chain_default_residue = top.add_residue("RES", last_chain)
+                        last_chain_default_residue = top.add_residue('RES', last_chain)
                         last_chain.compound = last_chain_compound
                     break
             else:
@@ -683,9 +682,9 @@ class Compound(PartMixin):
     # Magic
     # -----
     def __getattr__(self, attr):
-        assert "labels" != attr, ("Compound __init__ never called. Make "
-                                  "sure to call super().__init__() in the "
-                                  "__init__ method of your class.")
+        assert 'labels' != attr, ('Compound __init__ never called. Make '
+                                  'sure to call super().__init__() in the '
+                                  '__init__ method of your class.')
         if attr in self.labels:
             return self.labels[attr]
         else:

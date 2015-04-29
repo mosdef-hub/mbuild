@@ -25,6 +25,14 @@ except ImportError:
           'http://mdtraj.org/latest/installation.html for help!', file=sys.stderr)
     sys.exit(1)
 
+try:
+    import scipy
+except ImportError:
+    print('Building and running mbuild requires scipy. We '
+          'recommend using conda to install this: '
+          'https://store.continuum.io/cshop/anaconda/', file=sys.stderr)
+    sys.exit(1)
+
 requirements = [line.strip() for line in open('requirements.txt').readlines()]
 
 if sys.argv[-1] == 'publish':
@@ -68,7 +76,9 @@ setup(
         'License :: OSI Approved :: MIT License,'
         'Natural Language :: English',
         'Programming Language :: Python',
-        'Programming Language :: Python :: 3',
+        'Programming Language :: Python :: 2.7',
+        'Programming Language :: Python :: 3.3',
+        'Programming Language :: Python :: 3.4',
         'Topic :: Scientific/Engineering :: Chemistry',
         'Operating System :: Microsoft :: Windows',
         'Operating System :: POSIX',
