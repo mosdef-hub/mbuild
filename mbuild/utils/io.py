@@ -9,15 +9,14 @@ def get_fn(name):
     but on installation, they're moved to somewhere in the user's python
     site-packages directory.
 
-    Args:
-        name (str): Name of the file to load (with respect to the reference/ folder).
+    Parameters
+    ----------
+    name : str
+        Name of the file to load (with respect to the reference/ folder).
 
     """
     fn = resource_filename('mbuild', os.path.join('utils', 'reference', name))
-
     if not os.path.exists(fn):
-        raise ValueError('Sorry! %s does not exists. If you just '
-                         'added it, you\'ll have to re install' % fn)
-
+        raise ValueError('Sorry! {} does not exists.'.format(fn))
     return fn
 

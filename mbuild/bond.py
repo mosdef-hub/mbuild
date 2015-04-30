@@ -2,10 +2,10 @@ from copy import deepcopy
 
 import numpy as np
 
-from mbuild.part_mixin import PartMixin
+from mbuild.part import Part
 
 
-class Bond(PartMixin):
+class Bond(Part):
     """Connection between two Atoms.
 
     Attributes

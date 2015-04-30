@@ -3,10 +3,10 @@ from copy import deepcopy
 import numpy as np
 
 from mbuild.bond import Bond
-from mbuild.part_mixin import PartMixin
+from mbuild.part import Part
 
 
-class Atom(PartMixin):
+class Atom(Part):
     """Elementary container class - typically a leaf in the hierarchy.
 
     Notes

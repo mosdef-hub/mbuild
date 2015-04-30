@@ -23,7 +23,7 @@ from mbuild.box import Box
 from mbuild.bond import Bond
 from mbuild.formats.mol2 import write_mol2
 from mbuild.orderedset import OrderedSet
-from mbuild.part_mixin import PartMixin
+from mbuild.part import Part
 
 
 __all__ = ['load', 'Compound']
@@ -48,7 +48,7 @@ def load(filename, relative_to_module=None, frame=-1, compound=None,
     return compound
 
 
-class Compound(PartMixin):
+class Compound(Part):
     """A building block in the mBuild hierarchy.
 
     Compound is the superclass of all composite building blocks in the mBuild
@@ -60,7 +60,7 @@ class Compound(PartMixin):
     the composite, and Atom playing the role of the primitive (leaf) part.
 
     Compound maintains a list of parts (contained Compounds, Atoms, Bonds,
-    etc., that inherit from PartMixin), and provides a means to tag the parts
+    etc., that inherit from Part), and provides a means to tag the parts
     with labels, so that the parts can be easily looked up later. Labels may
     also point to objects outside the Compound's containment hierarchy.
     Compound has built-in support for copying and deepcopying Compound
@@ -85,7 +85,7 @@ class Compound(PartMixin):
         Defaults to zeros which is treated as non-periodic.
     parts : OrderedSet
         Contains all child parts. Parts can be Atom, Bond or Compound - anything
-        that inherits from PartMixin.
+        that inherits from Part.
     labels : OrderedDict
         Labels to Compound/Atom mappings. These do not necessarily need not be
         in parts.
@@ -290,7 +290,7 @@ class Compound(PartMixin):
             Replace the label if it already exists.
 
         """
-        assert isinstance(new_part, (PartMixin, list, tuple, set))
+        assert isinstance(new_part, (Part, list, tuple, set))
         if containment:
             # Support batch add via lists, tuples and sets.
             if isinstance(new_part, (list, tuple, set)):
@@ -306,7 +306,7 @@ class Compound(PartMixin):
             new_part.parent = self
 
         # Add new_part to labels. Does not currently support batch add.
-        assert isinstance(new_part, PartMixin)
+        assert isinstance(new_part, Part)
 
         if not containment and label is None:
             label = '_{0}[$]'.format(new_part.__class__.__name__)

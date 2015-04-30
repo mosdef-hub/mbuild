@@ -97,7 +97,7 @@ class Bilayer(mb.Compound):
         self.lipid_components.add(bottom_layer)
 
         # solvate the lipids
-        #self.solvate_bilayer()
+        #self.solvate_bilayer()  # TODO: needs fixing
 
         # add everything to the big list
         self.add(self.lipid_components)
