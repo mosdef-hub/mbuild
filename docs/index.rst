@@ -64,8 +64,6 @@ API Reference
    :maxdepth: 1
 
    apidoc/mbuild
-   apidoc/mbuild.tools
-   apidoc/mbuild.formats
 
 Indices and tables
 ------------------
