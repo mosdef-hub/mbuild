@@ -1,7 +1,7 @@
 __author__ = 'sallai'
 
 
-class PartMixin(object):
+class Part(object):
     """A base class that designates a part in a hierarchy. ""'
 
     Attributes
@@ -14,7 +14,7 @@ class PartMixin(object):
 
     """
     def __init__(self):
-        super(PartMixin, self).__init__()
+        super(Part, self).__init__()
         self.parent = None
         # The set of other compounds that reference this compound with labels.
         self.referrers = set()

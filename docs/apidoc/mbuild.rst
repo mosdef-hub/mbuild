@@ -1,18 +1,16 @@
 mbuild package
 ==============
 
-Subpackages
------------
-
-.. toctree::
-
-    mbuild.examples
-    mbuild.formats
-    mbuild.testing
-    mbuild.tools
-
 Submodules
 ----------
+
+mbuild.atb_client module
+------------------------
+
+.. automodule:: mbuild.atb_client
+    :members:
+    :undoc-members:
+    :show-inheritance:
 
 mbuild.atom module
 ------------------
@@ -54,18 +52,10 @@ mbuild.coordinate_transform module
     :undoc-members:
     :show-inheritance:
 
-mbuild.has_parts_mixin module
------------------------------
+mbuild.mask module
+------------------
 
-.. automodule:: mbuild.has_parts_mixin
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-mbuild.mbase module
--------------------
-
-.. automodule:: mbuild.mbase
+.. automodule:: mbuild.mask
     :members:
     :undoc-members:
     :show-inheritance:
@@ -78,10 +68,18 @@ mbuild.orderedset module
     :undoc-members:
     :show-inheritance:
 
-mbuild.part_mixin module
-------------------------
+mbuild.packing module
+---------------------
 
-.. automodule:: mbuild.part_mixin
+.. automodule:: mbuild.packing
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+mbuild.part module
+------------------
+
+.. automodule:: mbuild.part
     :members:
     :undoc-members:
     :show-inheritance:
@@ -94,6 +92,14 @@ mbuild.periodic_kdtree module
     :undoc-members:
     :show-inheritance:
 
+mbuild.polymer module
+---------------------
+
+.. automodule:: mbuild.polymer
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 mbuild.port module
 ------------------
 
@@ -102,26 +108,18 @@ mbuild.port module
     :undoc-members:
     :show-inheritance:
 
-mbuild.topology module
-----------------------
+mbuild.tiled_compound module
+----------------------------
 
-.. automodule:: mbuild.topology
+.. automodule:: mbuild.tiled_compound
     :members:
     :undoc-members:
     :show-inheritance:
 
-mbuild.trajectory module
-------------------------
+mbuild.version module
+---------------------
 
-.. automodule:: mbuild.trajectory
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-mbuild.treeview module
-----------------------
-
-.. automodule:: mbuild.treeview
+.. automodule:: mbuild.version
     :members:
     :undoc-members:
     :show-inheritance:

@@ -1,4 +1,4 @@
-mol new bilayer.hoomdxml type hoomd autobonds off waitfor all
+mol new bilayer.pdb autobonds off waitfor all
 
 # CPK for all atoms
 mol modstyle 0 0 CPK 0.300000 0.200000 10.000000 10.000000

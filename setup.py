@@ -28,9 +28,7 @@ except ImportError:
 try:
     import scipy
 except ImportError:
-    print('Building and running mbuild requires scipy. We '
-          'recommend using conda to install this: '
-          'https://store.continuum.io/cshop/anaconda/', file=sys.stderr)
+    print('Running mbuild requires scipy.', file=sys.stderr)
     sys.exit(1)
 
 requirements = [line.strip() for line in open('requirements.txt').readlines()]

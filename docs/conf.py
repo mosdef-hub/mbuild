@@ -12,16 +12,16 @@
 # All configuration values have a default; values that are commented out
 # serve to show the default.
 
-import mock
+#import mock
 import os
 import pip
 import sys
 
-MOCK_MODULES = ['mdtraj', 'numpy', 'mdtraj.core.element', 'mdtraj.core.topology',
-                'intermol.atom', 'intermol.forces.harmonic_bond_type',
-                'intermol.molecule', 'intermol.moleculetype', 'intermol.system']
-for mod_name in MOCK_MODULES:
-    sys.modules[mod_name] = mock.Mock()
+# MOCK_MODULES = ['mdtraj', 'numpy', 'mdtraj.core.element', 'mdtraj.core.topology',
+#                 'intermol.atom', 'intermol.forces.harmonic_bond_type',
+#                 'intermol.molecule', 'intermol.moleculetype', 'intermol.system']
+# for mod_name in MOCK_MODULES:
+#     sys.modules[mod_name] = mock.Mock()
 
 #pip.main(['install', 'sphinxcontrib-napoleon'])
 pip.main(['install', 'numpydoc'])

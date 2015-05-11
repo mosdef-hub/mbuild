@@ -6,12 +6,7 @@ import itertools
 import os
 import sys
 
-if sys.version_info < (3, 0):  # Waiting on python3 support for InterMol
-    from intermol.atom import Atom as InterMolAtom
-    from intermol.forces.harmonic_bond_type import HarmonicBond
-    from intermol.molecule import Molecule
-    from intermol.moleculetype import MoleculeType
-    from intermol.system import System
+
 import numpy as np
 import mdtraj as md
 from mdtraj.core.element import Element
@@ -23,7 +18,7 @@ from mbuild.box import Box
 from mbuild.bond import Bond
 from mbuild.formats.mol2 import write_mol2
 from mbuild.orderedset import OrderedSet
-from mbuild.part_mixin import PartMixin
+from mbuild.part import Part
 
 
 __all__ = ['load', 'Compound']
@@ -48,7 +43,7 @@ def load(filename, relative_to_module=None, frame=-1, compound=None,
     return compound
 
 
-class Compound(PartMixin):
+class Compound(Part):
     """A building block in the mBuild hierarchy.
 
     Compound is the superclass of all composite building blocks in the mBuild
@@ -60,7 +55,7 @@ class Compound(PartMixin):
     the composite, and Atom playing the role of the primitive (leaf) part.
 
     Compound maintains a list of parts (contained Compounds, Atoms, Bonds,
-    etc., that inherit from PartMixin), and provides a means to tag the parts
+    etc., that inherit from Part), and provides a means to tag the parts
     with labels, so that the parts can be easily looked up later. Labels may
     also point to objects outside the Compound's containment hierarchy.
     Compound has built-in support for copying and deepcopying Compound
@@ -85,7 +80,7 @@ class Compound(PartMixin):
         Defaults to zeros which is treated as non-periodic.
     parts : OrderedSet
         Contains all child parts. Parts can be Atom, Bond or Compound - anything
-        that inherits from PartMixin.
+        that inherits from Part.
     labels : OrderedDict
         Labels to Compound/Atom mappings. These do not necessarily need not be
         in parts.
@@ -292,7 +287,7 @@ class Compound(PartMixin):
             Replace the label if it already exists.
 
         """
-        assert isinstance(new_part, (PartMixin, list, tuple, set))
+        assert isinstance(new_part, (Part, list, tuple, set))
         if containment:
             # Support batch add via lists, tuples and sets.
             if isinstance(new_part, (list, tuple, set)):
@@ -308,7 +303,7 @@ class Compound(PartMixin):
             new_part.parent = self
 
         # Add new_part to labels. Does not currently support batch add.
-        assert isinstance(new_part, PartMixin)
+        assert isinstance(new_part, Part)
 
         if not containment and label is None:
             label = '_{0}[$]'.format(new_part.__class__.__name__)
@@ -609,7 +604,7 @@ class Compound(PartMixin):
             try:
                 ele = get_by_symbol(atom.name)
             except KeyError:
-                ele = Element(1000, atom.name, atom.name, 1.0)
+                ele = Element(1000, atom.name, atom.name, mass=1.0, radius=0.1)
             at = top.add_atom(atom.name, ele, last_residue)
             at.charge = atom.charge
             atom_mapping[atom] = at
@@ -634,6 +629,10 @@ class Compound(PartMixin):
         intermol_system : intermol.system.System
 
         """
+        from intermol.atom import Atom as InterMolAtom
+        from intermol.molecule import Molecule
+        from intermol.system import System
+
         if isinstance(molecule_types, list):
             molecule_types = tuple(molecule_types)
         if not molecule_types:
@@ -668,6 +667,9 @@ class Compound(PartMixin):
     @staticmethod
     def _add_intermol_molecule_type(intermol_system, parent):
         """Create a molecule type for the parent and add bonds. """
+        from intermol.moleculetype import MoleculeType
+        from intermol.forces.harmonic_bond_type import HarmonicBond
+
         molecule_type = MoleculeType(name=parent.kind)
         intermol_system.add_molecule_type(molecule_type)
 
