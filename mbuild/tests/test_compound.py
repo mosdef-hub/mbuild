@@ -1,7 +1,4 @@
-import sys
-
 import numpy as np
-import pytest
 
 import mbuild as mb
 from mbuild.components.small_groups.ch3 import CH3
@@ -29,7 +26,6 @@ class TestCompound(BaseTest):
         assert compound.n_atoms == 8 + 3
         assert compound.n_bonds == 7 + 2
 
-    @pytest.mark.skipif(sys.version_info > (3, 0), reason='InterMol requires 2.7')
     def test_intermol_conversion1(self, ethane, h2o):
         compound = mb.Compound()
         compound.add([ethane, h2o])
@@ -42,7 +38,6 @@ class TestCompound(BaseTest):
         molecules = list(intermol_system.molecule_types['Compound'].molecules)
         assert len(molecules[0].atoms) == 11
 
-    @pytest.mark.skipif(sys.version_info > (3, 0), reason='InterMol requires 2.7')
     def test_intermol_conversion2(self, ethane, h2o):
         compound = mb.Compound()
         compound.add([ethane, Ethane(), h2o])  # 2 distinct Ethane objects

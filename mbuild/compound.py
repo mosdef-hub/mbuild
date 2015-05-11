@@ -667,7 +667,7 @@ class Compound(Part):
         """Create a molecule type for the parent and add bonds. """
         from intermol.moleculetype import MoleculeType
         from intermol.forces.harmonic_bond_type import HarmonicBond
-        
+
         molecule_type = MoleculeType(name=parent.kind)
         intermol_system.add_molecule_type(molecule_type)
 
