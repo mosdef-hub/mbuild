@@ -628,9 +628,7 @@ class Compound(Part):
 
         """
         from intermol.atom import Atom as InterMolAtom
-        from intermol.forces.harmonic_bond_type import HarmonicBond
         from intermol.molecule import Molecule
-        from intermol.moleculetype import MoleculeType
         from intermol.system import System
 
         if isinstance(molecule_types, list):
@@ -667,6 +665,9 @@ class Compound(Part):
     @staticmethod
     def _add_intermol_molecule_type(intermol_system, parent):
         """Create a molecule type for the parent and add bonds. """
+        from intermol.moleculetype import MoleculeType
+        from intermol.forces.harmonic_bond_type import HarmonicBond
+        
         molecule_type = MoleculeType(name=parent.kind)
         intermol_system.add_molecule_type(molecule_type)
 
