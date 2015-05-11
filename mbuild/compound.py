@@ -6,12 +6,7 @@ import itertools
 import os
 import sys
 
-if sys.version_info < (3, 0):  # Waiting on python3 support for InterMol
-    from intermol.atom import Atom as InterMolAtom
-    from intermol.forces.harmonic_bond_type import HarmonicBond
-    from intermol.molecule import Molecule
-    from intermol.moleculetype import MoleculeType
-    from intermol.system import System
+
 import numpy as np
 import mdtraj as md
 from mdtraj.core.element import Element
@@ -632,6 +627,12 @@ class Compound(Part):
         intermol_system : intermol.system.System
 
         """
+        from intermol.atom import Atom as InterMolAtom
+        from intermol.forces.harmonic_bond_type import HarmonicBond
+        from intermol.molecule import Molecule
+        from intermol.moleculetype import MoleculeType
+        from intermol.system import System
+
         if isinstance(molecule_types, list):
             molecule_types = tuple(molecule_types)
         if not molecule_types:
