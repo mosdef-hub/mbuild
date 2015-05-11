@@ -2,7 +2,7 @@
 
 [![Linux Build Status](https://travis-ci.org/sallai/mbuild.png?branch=master)](https://travis-ci.org/sallai/mbuild)
 [![Coverage Status](https://coveralls.io/repos/sallai/mbuild/badge.svg?branch=master)](https://coveralls.io/r/sallai/mbuild?branch=master)
-[![PyPI Version](https://badge.fury.io/py/mbuild.png)](https://pypi.python.org/pypi/mbuild)
+[![PyPI Version](https://badge.fury.io/py/mbuild.svg)](https://pypi.python.org/pypi/mbuild)
 [![Documentation Status](https://readthedocs.org/projects/mbuild/badge/?version=latest)](http://mbuild.readthedocs.org/en/latest)
 
 With just a few lines of mBuild code, you can assemble reusable components into
