@@ -4,6 +4,9 @@
 os: Windows Server 2012
 
 environment:
+  binstar_token:
+    secure: rzcqsANZFVuyKA0wHl7Qtt9Dt/DVzqErU98YyVqU02aX/+vhTinOC9aMAdftjIpM
+    
   global:
     # SDK v7.0 MSVC Express 2008's SetEnv.cmd script will fail if the
     # /E:ON and /V:ON options are not enabled in the batch script intepreter
