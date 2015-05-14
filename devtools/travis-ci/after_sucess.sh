@@ -14,7 +14,7 @@ fi
 
 
 if [[ "2.7 3.3 3.4" =~ "$python" ]]; then
-    binstar upload --force -u iModels -p mbuild -t $BINSTAR_TOKEN  $HOME/miniconda/conda-bld/linux-64/mbuild-*
+    binstar -t $BINSTAR_TOKEN  upload --force --user iModels --package mbuild $HOME/miniconda/conda-bld/linux-64/mbuild-*
 fi
 
 if [[ "$python" != "2.7" ]]; then
