@@ -18,26 +18,13 @@ from setuptools.command.test import test as TestCommand
 
 
 #####################################
-VERSION = "0.5"
+VERSION = "0.5.0"
 ISRELEASED = False
 if ISRELEASED:
     __version__ = VERSION
 else:
-    __version__ = VERSION + '.dev'
+    __version__ = VERSION + '.dev0'
 #####################################
-
-try:
-    import mdtraj
-except ImportError:
-    print('Running mbuild requires mdtraj. See '
-          'http://mdtraj.org/latest/installation.html for help!', file=sys.stderr)
-    sys.exit(1)
-
-try:
-    import scipy
-except ImportError:
-    print('Running mbuild requires scipy.', file=sys.stderr)
-    sys.exit(1)
 
 
 if sys.argv[-1] == 'publish':
@@ -59,8 +46,8 @@ class PyTest(TestCommand):
 with open('mbuild/version.py', 'w') as version_file:
     version_file.write('version="{0}"\n'.format(__version__))
 
-with open('__conda_version__.txt', 'w') as f:
-    f.write(__version__)
+with open('__conda_version__.txt', 'w') as conda_version:
+    conda_version.write(__version__)
 
 setup(
     name='mbuild',

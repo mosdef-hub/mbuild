@@ -1,54 +1,20 @@
-language: python
+language: c
+
+install:
+  - source devtools/ci-travis/install.sh
+
+script:
+  - conda config --add channels https://conda.binstar.org/omnia
+  - conda build devtools/conda-recipe
 
 env:
+  matrix:
+    - python=2.7  CONDA_PY=27
+    - python=3.3  CONDA_PY=33
+    - python=3.4  CONDA_PY=34
+
   global:
     secure: "cN/7i4irp9fXVeBrNi4WNs0ghYjyWfFiqsNjfw5S3OdeHRMqQoH7oXf3FqWgIwxfKIx/P032wV52QLD8497XoOmekyLmErBWNOCfj4NvMbetg1HrYUaH2+NiZF4qomYMraniMBl3jIvbogC4hTXxSikO2EOgsovi6uTV6b7i8Ls="
 
-python:
-  # We don't actually use the Travis Python, but this keeps it organized.
-  - "2.7"
-  - "3.3"
-  - "3.4"
-
-install:
-  - sudo apt-get update
-  # You may want to periodically update this, although the conda update
-  # conda line below will keep everything up-to-date.  We do this
-  # conditionally because it saves us some downloading if the version is
-  # the same.
-  - if [[ "$TRAVIS_PYTHON_VERSION" == "2.7" ]]; then
-      wget http://repo.continuum.io/miniconda/Miniconda-3.4.2-Linux-x86_64.sh -O miniconda.sh;
-    else
-      wget http://repo.continuum.io/miniconda/Miniconda3-3.4.2-Linux-x86_64.sh -O miniconda.sh;
-    fi
-  - bash miniconda.sh -b -p $HOME/miniconda
-  - export PATH="$HOME/miniconda/bin:$PATH"
-  - hash -r
-  - conda config --set always_yes yes --set changeps1 no
-  - conda update -q conda
-  # Useful for debugging any issues with conda
-  - conda info -a
-  - conda install conda-build
-
-  # Replace dep1 dep2 ... with your dependencies
-  - conda create -q -n test-environment python=$TRAVIS_PYTHON_VERSION
-  - source activate test-environment
-  #- conda install -c https://conda.binstar.org/omnia mdtraj-dev=1.4.0 packmol
-  - conda install -c https://conda.binstar.org/omnia mdtraj packmol
-  - conda install future coverage pytest jinja2
-  - pip install coveralls
-  #- pip install -e git://github.com/shirtsgroup/InterMol.git@forcetype#egg=intermol
-  - python setup.py install
-
-script:
-  - conda build .
-  - coverage run --rcfile=.coveragerc --source=mbuild setup.py test
-
 after_success:
-  - coveralls
-
-  - binstar -t $BINSTAR_TOKEN  upload --force -u iModels -p mbuild $HOME/miniconda/conda-bld/linux-64/mbuild-*
-
-  - conda install sphinx
-  - cd docs
-  - make html
+  - source devtools/ci-travis/after_sucess.sh
