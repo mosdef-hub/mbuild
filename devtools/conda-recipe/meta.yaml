@@ -1,0 +1,23 @@
+package:
+  name: mbuild
+  version: !!str 0.5.0.dev0
+
+requirements:
+  build:
+    - python
+
+  run:
+    - python
+    - numpy
+    - scipy
+    - mdtraj
+
+test:
+  requires:
+    - pytest
+  commands:
+    - py.test --pyargs mbuild
+
+about:
+  home: http://iModels.github.io/mbuild
+  license: MIT

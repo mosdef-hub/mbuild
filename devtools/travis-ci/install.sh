@@ -10,12 +10,10 @@ fi
 bash $MINICONDA -b
 
 
-export PATH=$HOME/miniconda/bin:$PAT
-conda config --set always_yes yes --set changeps1 no
-conda install conda-build jinja2 binstar pip
+export PATH=$HOME/miniconda/bin:$PATH
+conda install --yes conda-build jinja2 binstar pip
 conda config --add channels http://conda.binstar.org/omnia
+conda install --yes mdtraj
 
-conda install future coverage pytest jinja2
-pip install coveralls
- pip install -e git://github.com/shirtsgroup/InterMol.git@forcetype#egg=intermol
-python setup.py install
+
+
