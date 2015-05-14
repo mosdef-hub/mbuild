@@ -5,7 +5,7 @@ install:
 
 script:
   - conda config --add channels https://conda.binstar.org/omnia
-  - conda build devtools/conda-recipe
+  - conda build dev/conda-recipe
 
 env:
   matrix:
