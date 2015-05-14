@@ -13,7 +13,7 @@ fi
 
 
 if [[ "2.7 3.3 3.4" =~ "$python" ]]; then
-    binstar -t $BINSTAR_TOKEN  upload --force -u omnia -p mdtraj-dev $HOME/miniconda/conda-bld/linux-64/mdtraj-dev-*
+    binstar -t $BINSTAR_TOKEN  upload --force -u iModels -p mdtraj-dev $HOME/miniconda/conda-bld/linux-64/mbuild-*
 fi
 
 if [[ "$python" != "2.7" ]]; then
