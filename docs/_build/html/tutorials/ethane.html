@@ -1,0 +1,314 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Ethane: Reading from files, Ports and coordinate transforms &mdash; mbuild 0.4.3beta documentation</title>
+  
+
+  
+  
+
+  
+  <link href='https://fonts.googleapis.com/css?family=Lato:400,700,400italic,700italic|Roboto+Slab:400,700|Inconsolata:400,700&subset=latin,cyrillic' rel='stylesheet' type='text/css'>
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+    <link rel="top" title="mbuild 0.4.3beta documentation" href="../index.html"/> 
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/modernizr/2.6.2/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-nav-search">
+        
+          <a href="../index.html" class="fa fa-home"> mbuild</a>
+        
+        
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+        
+          
+          
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../installation.html#install-with-pip">Install with pip</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../installation.html#install-from-source">Install from source</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../installation.html#dependencies">Dependencies</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../installation.html#testing-your-installation">Testing your installation</a></li>
+</ul>
+</li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="tutorials.html">Tutorials</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="tutorials.html#methane-atoms-bonds-and-compounds">Methane: Atoms, Bonds and Compounds</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorials.html#ethane-reading-from-files-ports-and-coordinate-transforms">Ethane: Reading from files, Ports and coordinate transforms</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorials.html#monolayer-complex-hierarchies-masks-tiling-and-writing-to-files">Monolayer: Complex hierarchies, masks, tiling and writing to files</a></li>
+</ul>
+</li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../apidoc/mbuild.html">mbuild package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../apidoc/mbuild.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../apidoc/mbuild.html#mbuild-atb-client-module">mbuild.atb_client module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../apidoc/mbuild.html#module-mbuild.atom">mbuild.atom module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../apidoc/mbuild.html#module-mbuild.bond">mbuild.bond module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../apidoc/mbuild.html#module-mbuild.box">mbuild.box module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../apidoc/mbuild.html#module-mbuild.compound">mbuild.compound module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../apidoc/mbuild.html#module-mbuild.coordinate_transform">mbuild.coordinate_transform module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../apidoc/mbuild.html#module-mbuild.mask">mbuild.mask module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../apidoc/mbuild.html#module-mbuild.orderedset">mbuild.orderedset module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../apidoc/mbuild.html#module-mbuild.packing">mbuild.packing module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../apidoc/mbuild.html#module-mbuild.part">mbuild.part module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../apidoc/mbuild.html#module-mbuild.periodic_kdtree">mbuild.periodic_kdtree module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../apidoc/mbuild.html#module-mbuild.polymer">mbuild.polymer module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../apidoc/mbuild.html#module-mbuild.port">mbuild.port module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../apidoc/mbuild.html#module-mbuild.tiled_compound">mbuild.tiled_compound module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../apidoc/mbuild.html#module-mbuild.version">mbuild.version module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../apidoc/mbuild.html#module-mbuild">Module contents</a></li>
+</ul>
+</li>
+</ul>
+
+          
+        
+      </div>
+      &nbsp;
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="../index.html">mbuild</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../index.html">Docs</a> &raquo;</li>
+      
+    <li>Ethane: Reading from files, Ports and coordinate transforms</li>
+      <li class="wy-breadcrumbs-aside">
+        
+          <a href="../_sources/tutorials/ethane.txt" rel="nofollow"> View page source</a>
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document">
+            
+  <div class="section" id="ethane-reading-from-files-ports-and-coordinate-transforms">
+<h1>Ethane: Reading from files, Ports and coordinate transforms<a class="headerlink" href="#ethane-reading-from-files-ports-and-coordinate-transforms" title="Permalink to this headline">¶</a></h1>
+<p>In this example, we&#8217;ll cover reading molecular components from files,
+introduce the concept of <tt class="docutils literal"><span class="pre">Ports</span></tt> and start using some coordinate
+transforms.</p>
+<p>As you probably noticed while creating your methane mocule in the last
+tutorial, manually adding <tt class="docutils literal"><span class="pre">Atoms</span></tt> and <tt class="docutils literal"><span class="pre">Bonds</span></tt> to a <tt class="docutils literal"><span class="pre">Compound</span></tt> is a
+bit cumbersome. The easiest way to create small, reusable components,
+such as methyls, amines or monomers, is to hand draw them using software
+like <a class="reference external" href="http://avogadro.cc/wiki/Main_Page">Avogadro</a> and export them as
+either a .pdb or .mol2 file (the file should contain connectivity
+information).</p>
+<p>Let&#8217;s start by reading a methyl group from a <tt class="docutils literal"><span class="pre">.pdb</span></tt> file:</p>
+<div class="code python highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">mbuild</span> <span class="kn">as</span> <span class="nn">mb</span>
+
+<span class="k">class</span> <span class="nc">CH3</span><span class="p">(</span><span class="n">mb</span><span class="o">.</span><span class="n">Compound</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">CH3</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+
+        <span class="n">mb</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s">&#39;ch3.pdb&#39;</span><span class="p">,</span> <span class="n">compound</span><span class="o">=</span><span class="bp">self</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Now let&#8217;s use our first coordinate transform to center the methyl at its
+carbon atom:</p>
+<div class="code python highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">mbuild</span> <span class="kn">as</span> <span class="nn">mb</span>
+
+<span class="k">class</span> <span class="nc">CH3</span><span class="p">(</span><span class="n">mb</span><span class="o">.</span><span class="n">Compound</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">CH3</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">()</span>
+
+        <span class="n">mb</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s">&#39;ch3.pdb&#39;</span><span class="p">,</span> <span class="n">compound</span><span class="o">=</span><span class="bp">self</span><span class="p">)</span>
+        <span class="n">mb</span><span class="o">.</span><span class="n">translate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">C</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>  <span class="c"># Move carbon to origin.</span>
+</pre></div>
+</div>
+<p>Here, when referring to the <tt class="docutils literal"><span class="pre">Atom</span></tt> object in a mathematical
+expression, we operate directly on its coordinates. This functionality
+is currently implemented for addition and subtraction only.</p>
+<p>So now we have a methyl group loaded up and centered. In order to
+connect <tt class="docutils literal"><span class="pre">Compounds</span></tt> in mBuild, we make use of a special type of
+<tt class="docutils literal"><span class="pre">Compound</span></tt>: the <tt class="docutils literal"><span class="pre">Port</span></tt>. A <tt class="docutils literal"><span class="pre">Port</span></tt> is a <tt class="docutils literal"><span class="pre">Compound</span></tt> with two sets
+of four &#8220;ghost&#8221; <tt class="docutils literal"><span class="pre">Atoms</span></tt> (of kind <tt class="docutils literal"><span class="pre">'G'</span></tt> by convention). In addition
+<tt class="docutils literal"><span class="pre">Ports</span></tt> have an <tt class="docutils literal"><span class="pre">anchor</span></tt> attribute which typically points to an
+<tt class="docutils literal"><span class="pre">Atom</span></tt> that the <tt class="docutils literal"><span class="pre">Port</span></tt> should be associated with. In our methyl
+group, the <tt class="docutils literal"><span class="pre">Port</span></tt> should be anchored to the carbon atom so that we can
+now form <tt class="docutils literal"><span class="pre">Bonds</span></tt> to this carbon:</p>
+<div class="code python highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">mbuild</span> <span class="kn">as</span> <span class="nn">mb</span>
+
+<span class="k">class</span> <span class="nc">CH3</span><span class="p">(</span><span class="n">mb</span><span class="o">.</span><span class="n">Compound</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">CH3</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">()</span>
+
+        <span class="n">mb</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s">&#39;ch3.pdb&#39;</span><span class="p">,</span> <span class="n">compound</span><span class="o">=</span><span class="bp">self</span><span class="p">)</span>
+        <span class="n">mb</span><span class="o">.</span><span class="n">translate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">C</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>  <span class="c"># Move carbon to origin.</span>
+
+        <span class="n">port</span> <span class="o">=</span> <span class="n">mb</span><span class="o">.</span><span class="n">Port</span><span class="p">(</span><span class="n">anchor</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">C</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">port</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s">&#39;up&#39;</span><span class="p">)</span>
+        <span class="n">mb</span><span class="o">.</span><span class="n">translate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">up</span><span class="p">,</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.07</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span>
+</pre></div>
+</div>
+<p>By default, <tt class="docutils literal"><span class="pre">Ports</span></tt> are never output from the mBuild structure.
+However, it can be useful to look at a molecule with the <tt class="docutils literal"><span class="pre">Ports</span></tt> to
+check your work as you go:</p>
+<div class="code python highlight-python"><div class="highlight"><pre><span class="n">CH3</span><span class="p">()</span><span class="o">.</span><span class="n">visualize</span><span class="p">(</span><span class="n">show_ports</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre>&lt;IPython.core.display.Javascript object&gt;
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre>&lt;IPython.core.display.Javascript object&gt;
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre>&lt;IPython.core.display.Javascript object&gt;
+</pre></div>
+</div>
+<p>When two <tt class="docutils literal"><span class="pre">Ports</span></tt> are connected, they are forced to overlap in space
+and their parent <tt class="docutils literal"><span class="pre">Compounds</span></tt> are rotated and translated by the same
+amount.</p>
+<p><strong>Note:</strong> If we tried to connect two of our methyls right now using only
+one set of four ghost atoms, not only would the <tt class="docutils literal"><span class="pre">Ports</span></tt> overlap
+perfectly, but the carbons and hydrogens would also perfectly overlap.
+This is why every port contains a second set of 4 ghost atoms pointing
+in the opposite direction. When two <tt class="docutils literal"><span class="pre">Compounds</span></tt> are connected, the
+port that places the anchor atoms the farthest away from each other is
+chosen automatically to prevent this overlap scenario. By convention, we
+try to label <tt class="docutils literal"><span class="pre">Ports</span></tt> successively as &#8216;up&#8217;, &#8216;down&#8217;, &#8216;left&#8217;, &#8216;right&#8217;,
+&#8216;front&#8217;, &#8216;back&#8217; which should roughly correspond to the relative. This is
+a bit tricky to enforce because the system is so flexible so use your
+best judgement and try to be consistent! The more components we collect
+in our library with the same labeling conventions, the easier it becomes
+to build ever more complex structures.</p>
+<p>Now the fun part: stick &#8216;em together to create an ethane:</p>
+<div class="code python highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">mbuild</span> <span class="kn">as</span> <span class="nn">mb</span>
+
+<span class="k">class</span> <span class="nc">Ethane</span><span class="p">(</span><span class="n">mb</span><span class="o">.</span><span class="n">Compound</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">Ethane</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">CH3</span><span class="p">(),</span> <span class="s">&quot;methyl1&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">CH3</span><span class="p">(),</span> <span class="s">&quot;methyl2&quot;</span><span class="p">)</span>
+        <span class="n">mb</span><span class="o">.</span><span class="n">equivalence_transform</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">methyl1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">methyl1</span><span class="o">.</span><span class="n">up</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">methyl2</span><span class="o">.</span><span class="n">up</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="code python highlight-python"><div class="highlight"><pre><span class="n">Ethane</span><span class="p">()</span><span class="o">.</span><span class="n">visualize</span><span class="p">(</span><span class="n">show_ports</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre>&lt;IPython.core.display.Javascript object&gt;
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre>&lt;IPython.core.display.Javascript object&gt;
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre>&lt;IPython.core.display.Javascript object&gt;
+</pre></div>
+</div>
+<p>Above, the <tt class="docutils literal"><span class="pre">equivalence_transform()</span></tt> function takes a <tt class="docutils literal"><span class="pre">Compound</span></tt> and
+then rotates and translates it such that two other <tt class="docutils literal"><span class="pre">Compounds</span></tt>
+overlap. Typically, as in this case, those two other <tt class="docutils literal"><span class="pre">Compounds</span></tt> are
+<tt class="docutils literal"><span class="pre">Ports</span></tt> - in our case, <tt class="docutils literal"><span class="pre">methyl1.up</span></tt> and <tt class="docutils literal"><span class="pre">methyl2.up</span></tt>.</p>
+</div>
+
+
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2014, Vanderbilt University.
+    </p>
+  </div>
+
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+  
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../',
+            VERSION:'0.4.3beta',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="../_static/jquery.js"></script>
+      <script type="text/javascript" src="../_static/underscore.js"></script>
+      <script type="text/javascript" src="../_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>
