@@ -11,7 +11,7 @@ bash $MINICONDA -b
 
 
 export PATH=$HOME/miniconda/bin:$PAT
-conda config --set always_yes yes --set changeps1 noH
+conda config --set always_yes yes --set changeps1 no
 conda install conda-build jinja2 binstar pip
 conda config --add channels http://conda.binstar.org/omnia
 
