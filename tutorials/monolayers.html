@@ -1,0 +1,293 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Monolayer: Complex hierarchies, masks, tiling and writing to files &mdash; mbuild 0.5.0.dev0 documentation</title>
+  
+
+  
+  
+
+  
+  <link href='https://fonts.googleapis.com/css?family=Lato:400,700,400italic,700italic|Roboto+Slab:400,700|Inconsolata:400,700&subset=latin,cyrillic' rel='stylesheet' type='text/css'>
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+    <link rel="top" title="mbuild 0.5.0.dev0 documentation" href="../index.html"/> 
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/modernizr/2.6.2/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-nav-search">
+        
+          <a href="../index.html" class="fa fa-home"> mbuild</a>
+        
+        
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+        
+          
+          
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../installation.html#install-with-pip">Install with pip</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../installation.html#install-from-source">Install from source</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../installation.html#dependencies">Dependencies</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../installation.html#testing-your-installation">Testing your installation</a></li>
+</ul>
+</li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="tutorials.html">Tutorials</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="tutorials.html#methane-atoms-bonds-and-compounds">Methane: Atoms, Bonds and Compounds</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorials.html#ethane-reading-from-files-ports-and-coordinate-transforms">Ethane: Reading from files, Ports and coordinate transforms</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorials.html#monolayer-complex-hierarchies-masks-tiling-and-writing-to-files">Monolayer: Complex hierarchies, masks, tiling and writing to files</a></li>
+</ul>
+</li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../apidoc/mbuild.html">mbuild package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../apidoc/mbuild.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../apidoc/mbuild.html#mbuild-atb-client-module">mbuild.atb_client module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../apidoc/mbuild.html#module-mbuild.atom">mbuild.atom module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../apidoc/mbuild.html#module-mbuild.bond">mbuild.bond module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../apidoc/mbuild.html#module-mbuild.box">mbuild.box module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../apidoc/mbuild.html#module-mbuild.compound">mbuild.compound module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../apidoc/mbuild.html#module-mbuild.coordinate_transform">mbuild.coordinate_transform module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../apidoc/mbuild.html#module-mbuild.mask">mbuild.mask module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../apidoc/mbuild.html#module-mbuild.orderedset">mbuild.orderedset module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../apidoc/mbuild.html#module-mbuild.packing">mbuild.packing module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../apidoc/mbuild.html#module-mbuild.part">mbuild.part module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../apidoc/mbuild.html#module-mbuild.periodic_kdtree">mbuild.periodic_kdtree module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../apidoc/mbuild.html#module-mbuild.polymer">mbuild.polymer module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../apidoc/mbuild.html#module-mbuild.port">mbuild.port module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../apidoc/mbuild.html#module-mbuild.tiled_compound">mbuild.tiled_compound module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../apidoc/mbuild.html#module-mbuild.version">mbuild.version module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../apidoc/mbuild.html#module-mbuild">Module contents</a></li>
+</ul>
+</li>
+</ul>
+
+          
+        
+      </div>
+      &nbsp;
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="../index.html">mbuild</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../index.html">Docs</a> &raquo;</li>
+      
+    <li>Monolayer: Complex hierarchies, masks, tiling and writing to files</li>
+      <li class="wy-breadcrumbs-aside">
+        
+          <a href="../_sources/tutorials/monolayers.txt" rel="nofollow"> View page source</a>
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document">
+            
+  <div class="section" id="monolayer-complex-hierarchies-masks-tiling-and-writing-to-files">
+<h1>Monolayer: Complex hierarchies, masks, tiling and writing to files<a class="headerlink" href="#monolayer-complex-hierarchies-masks-tiling-and-writing-to-files" title="Permalink to this headline">¶</a></h1>
+<p>In this example, we&#8217;ll cover assembling more complex hierarchies of
+components using masks, tiling and how to output systems to files. To
+illustrate these concepts, let&#8217;s build an alkane monolayer on a
+crystalline substrate.</p>
+<p>First, let&#8217;s build our monomers and functionalized them with a silane
+group which we can then attach to the substrate:</p>
+<div class="code python highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">mbuild</span> <span class="kn">as</span> <span class="nn">mb</span>
+
+<span class="kn">from</span> <span class="nn">mbuild.examples</span> <span class="kn">import</span> <span class="n">Alkane</span>
+<span class="kn">from</span> <span class="nn">mbuild.components.small_groups.silane</span> <span class="kn">import</span> <span class="n">Silane</span>
+
+
+<span class="k">class</span> <span class="nc">AlkylSilane</span><span class="p">(</span><span class="n">mb</span><span class="o">.</span><span class="n">Compound</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;A silane functionalized alkane chain with one Port. &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">chain_length</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">AlkylSilane</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">()</span>
+
+        <span class="n">alkane</span> <span class="o">=</span> <span class="n">Alkane</span><span class="p">(</span><span class="n">chain_length</span><span class="p">,</span> <span class="n">cap_end</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">alkane</span><span class="p">,</span> <span class="s">&#39;alkane&#39;</span><span class="p">)</span>
+        <span class="n">silane</span> <span class="o">=</span> <span class="n">Silane</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">silane</span><span class="p">,</span> <span class="s">&#39;silane&#39;</span><span class="p">)</span>
+        <span class="n">mb</span><span class="o">.</span><span class="n">equivalence_transform</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">alkane</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">alkane</span><span class="o">.</span><span class="n">down</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">silane</span><span class="o">.</span><span class="n">up</span><span class="p">)</span>
+
+        <span class="c"># Hoist silane port to AlkylSilane level.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">silane</span><span class="o">.</span><span class="n">down</span><span class="p">,</span> <span class="s">&#39;down&#39;</span><span class="p">,</span> <span class="n">containment</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="code python highlight-python"><div class="highlight"><pre><span class="n">AlkylSilane</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span><span class="o">.</span><span class="n">visualize</span><span class="p">()</span>
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre>&lt;IPython.core.display.Javascript object&gt;
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre>&lt;IPython.core.display.Javascript object&gt;
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre>&lt;IPython.core.display.Javascript object&gt;
+</pre></div>
+</div>
+<p>The <tt class="docutils literal"><span class="pre">Alkane</span></tt> example uses the <tt class="docutils literal"><span class="pre">polymer</span></tt> tool to combine <tt class="docutils literal"><span class="pre">CH2</span></tt> and
+<tt class="docutils literal"><span class="pre">CH3</span></tt> repeat units. You also have the option to cap the front and back
+of the chain or to leave a <tt class="docutils literal"><span class="pre">CH2</span></tt> group with a dangling port. The
+<tt class="docutils literal"><span class="pre">Silane</span></tt> compound is a Si(OH)2 group with two ports facing out from
+the central Si. Lastly, we combine <tt class="docutils literal"><span class="pre">alkane</span></tt> with <tt class="docutils literal"><span class="pre">silane</span></tt> and adding
+a label to <tt class="docutils literal"><span class="pre">AlkylSilane</span></tt> which points to <tt class="docutils literal"><span class="pre">silane.down</span></tt> so that we
+can reference it later.</p>
+<p>Now let&#8217;s create a substrate to which we can later attach our monomers:</p>
+<div class="code python highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">mbuild</span> <span class="kn">as</span> <span class="nn">mb</span>
+<span class="kn">from</span> <span class="nn">mbuild.components.surfaces.betacristobalite</span> <span class="kn">import</span> <span class="n">Betacristobalite</span>
+
+<span class="n">surface</span> <span class="o">=</span> <span class="n">Betacristobalite</span><span class="p">()</span>
+<span class="n">tiled_surface</span> <span class="o">=</span> <span class="n">mb</span><span class="o">.</span><span class="n">TiledCompound</span><span class="p">(</span><span class="n">surface</span><span class="p">,</span> <span class="n">n_tiles</span><span class="o">=</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="n">kind</span><span class="o">=</span><span class="s">&quot;tiled_surface&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre>&lt;IPython.core.display.Javascript object&gt;
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre>&lt;IPython.core.display.Javascript object&gt;
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre>&lt;IPython.core.display.Javascript object&gt;
+</pre></div>
+</div>
+<p>Here we&#8217;ve imported a beta-cristobalite surface from our component
+library. The <tt class="docutils literal"><span class="pre">TiledCompound</span></tt> tool allows you replicate any
+<tt class="docutils literal"><span class="pre">Compound</span></tt> in the x-, y- and z-directions by any number of times - 2,
+3 and 1 for our case.</p>
+<p>Next, let&#8217;s create our monomer and a hydrogen atom that we&#8217;ll place on
+unoccupied surface sites:</p>
+<div class="code python highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">mbuild.components.atoms.H</span> <span class="kn">import</span> <span class="n">H</span>
+<span class="n">alkylsilane</span> <span class="o">=</span> <span class="n">AlkylSilane</span><span class="p">(</span><span class="n">chain_length</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+<span class="n">hydrogen</span> <span class="o">=</span> <span class="n">H</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>Then we need to tell mBuild how to arrange the chains on the surface.
+This is accomplished with the &#8220;mask&#8221; tools. Every mask is just a
+collection of points. There are all kinds of masks like spherical, 2D,
+regular, irregular etc. When you use the <tt class="docutils literal"><span class="pre">apply_mask</span></tt> command, you
+effectively superimpose the mask onto the host compound, mBuild figures
+out what the closest ports are to the mask points and then attach copies
+of the guest onto the binding sites identified by the mask:</p>
+<div class="code python highlight-python"><div class="highlight"><pre><span class="n">mask</span> <span class="o">=</span> <span class="n">mb</span><span class="o">.</span><span class="n">grid_mask_2d</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="mi">8</span><span class="p">)</span>  <span class="c"># Evenly spaced, 2D grid of points.</span>
+
+<span class="c"># Attach chains to specified binding sites. Other sites get a hydrogen.</span>
+<span class="n">mb</span><span class="o">.</span><span class="n">apply_mask</span><span class="p">(</span><span class="n">host</span><span class="o">=</span><span class="n">tiled_surface</span><span class="p">,</span> <span class="n">guest</span><span class="o">=</span><span class="n">alkylsilane</span><span class="p">,</span> <span class="n">mask</span><span class="o">=</span><span class="n">mask</span><span class="p">,</span> <span class="n">backfill</span><span class="o">=</span><span class="n">hydrogen</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Also note the <tt class="docutils literal"><span class="pre">backfill</span></tt> optional argument which allows you to place a
+different compound on any unused ports. In this case we want to backfill
+with hydrogen atoms on every port without a chain.</p>
+<p>And that&#8217;s it! Check out <tt class="docutils literal"><span class="pre">examples.alkane_monolayer</span></tt> for the fully
+wrapped class.</p>
+<div class="code python highlight-python"><div class="highlight"><pre><span class="n">tiled_surface</span><span class="o">.</span><span class="n">visualize</span><span class="p">()</span>  <span class="c"># Warning: may be slow in IPython notebooks</span>
+</pre></div>
+</div>
+</div>
+
+
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2014, Vanderbilt University.
+    </p>
+  </div>
+
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+  
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../',
+            VERSION:'0.5.0.dev0',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="../_static/jquery.js"></script>
+      <script type="text/javascript" src="../_static/underscore.js"></script>
+      <script type="text/javascript" src="../_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>
