@@ -201,7 +201,9 @@ class Compound(Part):
         try:
             __IPYTHON__
         except NameError:
-            filename = 'visualize_{}.mol2'.format(self.__class__.__name__)
+            import tempfile
+            f = tempfile.NamedTemporaryFile(prefix='visualize_{}'.format(self.__class__.__name__), suffix='.mol2')
+            filename = f.name
             print('vis: ', show_ports)
             self.save(filename, show_ports=show_ports)
             try:
