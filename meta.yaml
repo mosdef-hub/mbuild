@@ -10,7 +10,6 @@ build:
 requirements:
   build:
     - python
-    - mdtraj
 
   run:
     - python
