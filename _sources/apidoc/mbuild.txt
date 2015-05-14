@@ -4,14 +4,6 @@ mbuild package
 Submodules
 ----------
 
-mbuild.atb_client module
-------------------------
-
-.. automodule:: mbuild.atb_client
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
 mbuild.atom module
 ------------------
 
