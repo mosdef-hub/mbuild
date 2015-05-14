@@ -1,3 +1,4 @@
+pip install coveralls
 coveralls
 
 echo $TRAVIS_PULL_REQUEST $TRAVIS_BRANCH
@@ -13,7 +14,7 @@ fi
 
 
 if [[ "2.7 3.3 3.4" =~ "$python" ]]; then
-    binstar -t $BINSTAR_TOKEN  upload --force -u iModels -p mdtraj-dev $HOME/miniconda/conda-bld/linux-64/mbuild-*
+    binstar -t $BINSTAR_TOKEN  upload --force -u iModels -p mbuild $HOME/miniconda/conda-bld/linux-64/mbuild-*
 fi
 
 if [[ "$python" != "2.7" ]]; then
@@ -23,7 +24,7 @@ fi
 
 # Create the docs and push them to github pages
 # ---------------------------------------------
-conda install sphinx numpydoc
+conda install --yes sphinx numpydoc
 
 cd docs
 make html
