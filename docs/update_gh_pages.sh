@@ -8,6 +8,9 @@ echo "Temp dir is: " $TEMP_DIR
 
 pushd $TEMP_DIR
 
+git config --global user.email "janos.sallai@gmail.com"
+git config --global user.name "sallai"
+
 echo "Cloning github repo"
 git clone https://$GITHUB_TOKEN@github.com/iModels/mbuild.git
 

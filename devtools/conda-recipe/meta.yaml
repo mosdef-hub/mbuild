@@ -13,11 +13,11 @@ requirements:
     - mdtraj
     - packmol
 
-test:
-  requires:
-    - pytest
-  commands:
-    - py.test --pyargs mbuild
+#test:
+#  requires:
+#    - pytest
+#  commands:
+#    - py.test --pyargs mbuild
 
 about:
   home: http://iModels.github.io/mbuild
