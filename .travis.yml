@@ -3,6 +3,7 @@ language: python
 env:
   global:
     secure: "cN/7i4irp9fXVeBrNi4WNs0ghYjyWfFiqsNjfw5S3OdeHRMqQoH7oXf3FqWgIwxfKIx/P032wV52QLD8497XoOmekyLmErBWNOCfj4NvMbetg1HrYUaH2+NiZF4qomYMraniMBl3jIvbogC4hTXxSikO2EOgsovi6uTV6b7i8Ls="
+    secure: "T4sKcyZlmeGD1qkG4rj8RqUHOfAiUT5sGfpn1gCQnIGTTJYzSt7L7k+UzEEb7blmojqeL9Obh/N5MJAqORdc8J1BuhwK7BccJrYgRGN63StjeuA8EhAmAwZLMOdYb2HPmO1pglbDEmjgemZw0QvbCibMAtq0T/hYRbPkj9RzFp4="
 
 python:
   # We don't actually use the Travis Python, but this keeps it organized.
@@ -52,3 +53,4 @@ after_success:
   - conda install sphinx
   - cd docs
   - make html
+  - ./update_gh_pages.sh
