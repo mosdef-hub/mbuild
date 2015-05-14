@@ -14,7 +14,7 @@ fi
 
 
 if [[ "2.7 3.3 3.4" =~ "$python" ]]; then
-    binstar -t $BINSTAR_TOKEN  upload --force -u iModels -p mbuild $HOME/miniconda/conda-bld/linux-64/mbuild-*
+    binstar upload --force -u iModels -p mbuild -t $BINSTAR_TOKEN  $HOME/miniconda/conda-bld/linux-64/mbuild-*
 fi
 
 if [[ "$python" != "2.7" ]]; then
@@ -26,6 +26,9 @@ fi
 # ---------------------------------------------
 conda install --yes sphinx numpydoc
 
+python setup.py develop
+
 cd docs
 make html
-./update_gh_pages.sh
+
+source update_gh_pages.sh

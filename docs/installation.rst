@@ -2,6 +2,13 @@
 Installation
 ============
 
+Install with conda (preferred)
+------------------------------
+::
+
+    $ conda install -c https://conda.binstar.org/imodels mbuild
+
+
 Install with pip
 ----------------
 ::
@@ -13,7 +20,7 @@ Install from source
 -------------------
 ::
 
-    $ git clone https://github.com/sallai/mbuild
+    $ git clone https://github.com/iModels/mbuild
     $ cd mbuild
     $ python setup.py install
 
