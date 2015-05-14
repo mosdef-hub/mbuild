@@ -14,6 +14,9 @@ fi
 
 
 if [[ "2.7 3.3 3.4" =~ "$python" ]]; then
+    echo $BINSTAR_TOKEN
+    echo $BINSTAR_TOKEN > token.txt
+    cat token.txt
     binstar -t "$BINSTAR_TOKEN"  upload --force --user iModels --package mbuild $HOME/miniconda/conda-bld/linux-64/mbuild-*
 fi
 
