@@ -633,7 +633,7 @@ class Compound(Part):
 
         if isinstance(molecule_types, list):
             molecule_types = tuple(molecule_types)
-        if not molecule_types:
+        elif molecule_types is None:
             molecule_types = (type(self),)
         intermol_system = System()
 
@@ -656,7 +656,7 @@ class Compound(Part):
                                  'the specified molecule types {}'.format(atom, molecule_types))
 
             # Add the actual intermol atoms.
-            intermol_atom = InterMolAtom(atom_index, name=atom.name,
+            intermol_atom = InterMolAtom(atom_index + 1, name=atom.name,
                                          residue_index=1, residue_name='RES')
             intermol_atom.position = atom.pos
             last_molecule.add_atom(intermol_atom)
@@ -666,20 +666,17 @@ class Compound(Part):
     def _add_intermol_molecule_type(intermol_system, parent):
         """Create a molecule type for the parent and add bonds. """
         from intermol.moleculetype import MoleculeType
-        from intermol.forces.harmonic_bond_type import HarmonicBond
+        from intermol.forces.bond import Bond as InterMolBond
 
         molecule_type = MoleculeType(name=parent.kind)
         intermol_system.add_molecule_type(molecule_type)
 
         for index, parent_atom in enumerate(parent.atoms):
-            parent_atom.index = index
+            parent_atom.index = index + 1
 
         for bond in parent.bonds:
-            bforce = HarmonicBond(bond.atom1.index,
-                                  bond.atom2.index,
-                                  bondingtype1=bond.atom1.name,
-                                  bondingtype2=bond.atom2.name)
-            molecule_type.bond_forces.add(bforce)
+            intermol_bond = InterMolBond(bond.atom1.index, bond.atom2.index)
+            molecule_type.bonds.add(intermol_bond)
 
     # Magic
     # -----
