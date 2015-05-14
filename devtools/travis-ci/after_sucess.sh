@@ -23,8 +23,8 @@ fi
 
 # Create the docs and push them to github pages
 # ---------------------------------------------
-
-conda install --yes `conda build devtools/conda-recipe --output`
 conda install sphinx numpydoc
 
-(cd docs && make html)
+cd docs
+make html
+./update_gh_pages.sh
