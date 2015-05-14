@@ -14,8 +14,8 @@ env:
     - python=3.4  CONDA_PY=34
 
   global:
-    secure: "cN/7i4irp9fXVeBrNi4WNs0ghYjyWfFiqsNjfw5S3OdeHRMqQoH7oXf3FqWgIwxfKIx/P032wV52QLD8497XoOmekyLmErBWNOCfj4NvMbetg1HrYUaH2+NiZF4qomYMraniMBl3jIvbogC4hTXxSikO2EOgsovi6uTV6b7i8Ls="
-    secure: "XQ1fc/HXaQanzWq8Tn94RUPjqwjdImvq+Awfk3S0GqLGZnIpa/8rnXAr3HE/SmS8W+V1XBVM3LDXzwijP4tpPNMv7OU7DadKRx9pjaN4uj2d9r3DGp+thEalhnyrRMhA49aEi9BOgKwkd2Fiu8kwJGQiLeyFkfveXgEuJBASzp4="
+    - secure: "cN/7i4irp9fXVeBrNi4WNs0ghYjyWfFiqsNjfw5S3OdeHRMqQoH7oXf3FqWgIwxfKIx/P032wV52QLD8497XoOmekyLmErBWNOCfj4NvMbetg1HrYUaH2+NiZF4qomYMraniMBl3jIvbogC4hTXxSikO2EOgsovi6uTV6b7i8Ls="
+    - secure: "XQ1fc/HXaQanzWq8Tn94RUPjqwjdImvq+Awfk3S0GqLGZnIpa/8rnXAr3HE/SmS8W+V1XBVM3LDXzwijP4tpPNMv7OU7DadKRx9pjaN4uj2d9r3DGp+thEalhnyrRMhA49aEi9BOgKwkd2Fiu8kwJGQiLeyFkfveXgEuJBASzp4="
 
 after_success:
   - source devtools/travis-ci/after_sucess.sh
