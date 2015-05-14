@@ -9,7 +9,7 @@ echo "Temp dir is: " $TEMP_DIR
 pushd $TEMP_DIR
 
 echo "Cloning github repo"
-git clone https://sallai:$GITHUB_TOKEN@github.com/iModels/mbuild.git
+git clone https://$GITHUB_TOKEN@github.com/iModels/mbuild.git
 
 cd mbuild/
 echo "Switching to gh-pages branch"
