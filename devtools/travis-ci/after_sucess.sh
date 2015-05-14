@@ -15,12 +15,12 @@ fi
 
 if [[ "2.7 3.3 3.4" =~ "$python" ]]; then
     binstar -t "$BINSTAR_TOKEN"  upload --force --user iModels --package mbuild $HOME/miniconda/conda-bld/linux-64/mbuild-*
-    conda convert $HOME/miniconda/conda-bld/linux-64/mbuild-* -p all -o $HOME/miniconda/conda-bld
-    ls $HOME/miniconda/conda-bld
-    binstar -t "$BINSTAR_TOKEN"  upload --force --user iModels --package mbuild $HOME/miniconda/conda-bld/linux-32/mbuild-*
-    binstar -t "$BINSTAR_TOKEN"  upload --force --user iModels --package mbuild $HOME/miniconda/conda-bld/win-32/mbuild-*
-    binstar -t "$BINSTAR_TOKEN"  upload --force --user iModels --package mbuild $HOME/miniconda/conda-bld/win-64/mbuild-*
-    binstar -t "$BINSTAR_TOKEN"  upload --force --user iModels --package mbuild $HOME/miniconda/conda-bld/osx-64/mbuild-*
+    conda convert $HOME/miniconda/conda-bld/linux-64/mbuild-* -p all
+    ls
+    binstar -t "$BINSTAR_TOKEN"  upload --force --user iModels --package mbuild linux-32/mbuild-*
+    binstar -t "$BINSTAR_TOKEN"  upload --force --user iModels --package mbuild win-32/mbuild-*
+    binstar -t "$BINSTAR_TOKEN"  upload --force --user iModels --package mbuild win-64/mbuild-*
+    binstar -t "$BINSTAR_TOKEN"  upload --force --user iModels --package mbuild osx-64/mbuild-*
 fi
 
 if [[ "$python" != "2.7" ]]; then
