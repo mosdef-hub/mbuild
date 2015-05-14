@@ -1,6 +1,7 @@
 ## mBuild: a hierarchical, component based molecule builder
 
 [![Linux Build Status](https://travis-ci.org/iModels/mbuild.svg?branch=master)](https://travis-ci.org/iModels/mbuild)
+[![Windows Build status](https://ci.appveyor.com/api/projects/status/1r24ohn5d64ke1if?svg=true)](https://ci.appveyor.com/project/ctk3b/mbuild)
 [![Coverage Status](https://coveralls.io/repos/iModels/mbuild/badge.svg?branch=master)](https://coveralls.io/r/iModels/mbuild?branch=master)
 [![PyPI Version](https://badge.fury.io/py/mbuild.svg)](https://pypi.python.org/pypi/mbuild)
 
@@ -14,7 +15,7 @@ complex molecular systems for molecular dynamics simulations.
   worry about manually defining bonds when constructing chemically bonded
   structures from smaller components.
 
-To learn more, get started or contribute, check out our [website](http://mbuild.rtfd.org/en/latest/).
+To learn more, get started or contribute, check out our [website](http://imodels.github.io/mbuild/).
 
 #### Example system
 
