@@ -1,7 +1,7 @@
 language: c
 
 install:
-  - source devtools/ci-travis/install.sh
+  - source dev/ci-travis/install.sh
 
 script:
   - conda config --add channels https://conda.binstar.org/omnia
@@ -18,7 +18,7 @@ env:
     secure: "T4sKcyZlmeGD1qkG4rj8RqUHOfAiUT5sGfpn1gCQnIGTTJYzSt7L7k+UzEEb7blmojqeL9Obh/N5MJAqORdc8J1BuhwK7BccJrYgRGN63StjeuA8EhAmAwZLMOdYb2HPmO1pglbDEmjgemZw0QvbCibMAtq0T/hYRbPkj9RzFp4="
 
 after_success:
-  - source devtools/ci-travis/after_sucess.sh
+  - source dev/ci-travis/after_sucess.sh
   - conda install sphinx
   - cd docs
   - make html
