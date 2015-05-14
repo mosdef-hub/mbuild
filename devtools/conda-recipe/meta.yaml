@@ -11,6 +11,7 @@ requirements:
     - numpy
     - scipy
     - mdtraj
+    - packmol
 
 test:
   requires:
