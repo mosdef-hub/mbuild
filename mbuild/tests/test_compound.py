@@ -32,7 +32,7 @@ class TestCompound(BaseTest):
         intermol_system = compound._to_intermol()
         assert len(intermol_system.molecule_types) == 1
         assert 'Compound' in intermol_system.molecule_types
-        assert len(intermol_system.molecule_types['Compound'].bond_forces) == 9
+        assert len(intermol_system.molecule_types['Compound'].bonds) == 9
 
         assert len(intermol_system.molecule_types['Compound'].molecules) == 1
         molecules = list(intermol_system.molecule_types['Compound'].molecules)
@@ -46,8 +46,8 @@ class TestCompound(BaseTest):
         assert len(intermol_system.molecule_types) == 2
         assert 'Ethane' in intermol_system.molecule_types
         assert 'H2O' in intermol_system.molecule_types
-        assert len(intermol_system.molecule_types['Ethane'].bond_forces) == 7
-        assert len(intermol_system.molecule_types['H2O'].bond_forces) == 2
+        assert len(intermol_system.molecule_types['Ethane'].bonds) == 7
+        assert len(intermol_system.molecule_types['H2O'].bonds) == 2
 
         assert len(intermol_system.molecule_types['Ethane'].molecules) == 2
         ethanes = list(intermol_system.molecule_types['Ethane'].molecules)
