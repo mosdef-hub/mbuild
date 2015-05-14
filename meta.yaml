@@ -1,0 +1,31 @@
+package:
+  name: mbuild
+  # version: "1.0"
+  # the version is actually being set by the __conda_version__.txt file
+  # http://conda.pydata.org/docs/build.html#post-build-version
+
+build:
+  noarch_python: True
+
+requirements:
+  build:
+    - python
+    - mdtraj
+
+  run:
+    - python
+    - mdtraj
+    - scipy
+    - numpy
+    - future
+    - six
+
+test:
+    requires:
+        - pytest
+    commands:
+        - py.test --pyargs mbuild
+
+about:
+  home: https://github.com/iModels/mbuild
+  license: MIT

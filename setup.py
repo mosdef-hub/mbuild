@@ -16,12 +16,20 @@ import sys
 from setuptools import setup, find_packages
 from setuptools.command.test import test as TestCommand
 
-import mbuild.version
+
+#####################################
+VERSION = "0.5"
+ISRELEASED = False
+if ISRELEASED:
+    __version__ = VERSION
+else:
+    __version__ = VERSION + '.dev'
+#####################################
 
 try:
     import mdtraj
 except ImportError:
-    print('Building and running mbuild requires mdtraj. See '
+    print('Running mbuild requires mdtraj. See '
           'http://mdtraj.org/latest/installation.html for help!', file=sys.stderr)
     sys.exit(1)
 
@@ -31,7 +39,6 @@ except ImportError:
     print('Running mbuild requires scipy.', file=sys.stderr)
     sys.exit(1)
 
-requirements = [line.strip() for line in open('requirements.txt').readlines()]
 
 if sys.argv[-1] == 'publish':
     os.system('python setup.py sdist upload')
@@ -49,21 +56,25 @@ class PyTest(TestCommand):
         errcode = pytest.main(['mbuild'])
         sys.exit(errcode)
 
+with open('mbuild/version.py', 'w') as version_file:
+    version_file.write('version="{0}"\n'.format(__version__))
+
+with open('__conda_version__.txt', 'w') as f:
+    f.write(__version__)
+
 setup(
     name='mbuild',
-    version=mbuild.version.short_version,
+    version=__version__,
     description=__doc__.split('\n'),
     long_description=__doc__,
     author='Janos Sallai, Christoph Klein',
     author_email='janos.sallai@vanderbilt.edu, christoph.klein@vanderbilt.edu',
-    url='https://github.com/sallai/mbuild',
-    download_url='https://github.com/sallai/mbuild/tarball/{}'.format(
-        mbuild.version.short_version),
+    url='https://github.com/iModels/mbuild',
+    download_url='https://github.com/iModels/mbuild/tarball/{}'.format(__version__),
     packages=find_packages(),
-    package_data={'mbuild': ['utils/reference/*']},
+    package_data={'mbuild': ['utils/reference/*.{pdb,mol2}', 'components/*.{pdb,mol2}']},
     package_dir={'mbuild': 'mbuild'},
     include_package_data=True,
-    install_requires=requirements,
     license="MIT",
     zip_safe=False,
     keywords='mbuild',

@@ -1,5 +1,9 @@
 language: python
 
+env:
+  global:
+    secure: "cN/7i4irp9fXVeBrNi4WNs0ghYjyWfFiqsNjfw5S3OdeHRMqQoH7oXf3FqWgIwxfKIx/P032wV52QLD8497XoOmekyLmErBWNOCfj4NvMbetg1HrYUaH2+NiZF4qomYMraniMBl3jIvbogC4hTXxSikO2EOgsovi6uTV6b7i8Ls="
+
 python:
   # We don't actually use the Travis Python, but this keeps it organized.
   - "2.7"
@@ -35,7 +39,9 @@ install:
   - python setup.py install
 
 script:
+  - conda build .
   - coverage run --rcfile=.coveragerc --source=mbuild setup.py test
 
 after_success:
   - coveralls
+  - binstar -t $BINSTAR_TOKEN  upload --force -u iModels -p mbuild $HOME/miniconda/conda-bld/linux-64/mbuild-*

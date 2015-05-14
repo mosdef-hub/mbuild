@@ -20,3 +20,4 @@ else:
     from mdtraj.html import enable_notebook
     enable_notebook()
 
+from mbuild.version import version
