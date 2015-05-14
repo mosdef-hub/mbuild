@@ -31,7 +31,7 @@ install:
   - conda install -c https://conda.binstar.org/omnia mdtraj-dev=1.4.0 packmol
   - conda install future coverage pytest
   - pip install coveralls
-  - pip install -e git://github.com/shirtsgroup/InterMol.git@develop#egg=intermol
+  - pip install -e git://github.com/shirtsgroup/InterMol.git@forcetype#egg=intermol
   - python setup.py install
 
 script:
