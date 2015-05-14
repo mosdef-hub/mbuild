@@ -35,9 +35,9 @@ install:
   - source activate test-environment
   #- conda install -c https://conda.binstar.org/omnia mdtraj-dev=1.4.0 packmol
   - conda install -c https://conda.binstar.org/omnia mdtraj packmol
-  - conda install future coverage pytest
+  - conda install future coverage pytest jinja2
   - pip install coveralls
-  - pip install -e git://github.com/shirtsgroup/InterMol.git@forcetype#egg=intermol
+  #- pip install -e git://github.com/shirtsgroup/InterMol.git@forcetype#egg=intermol
   - python setup.py install
 
 script:
@@ -49,6 +49,6 @@ after_success:
 
   - binstar -t $BINSTAR_TOKEN  upload --force -u iModels -p mbuild $HOME/miniconda/conda-bld/linux-64/mbuild-*
 
-  - cd docs
   - conda install sphinx
+  - cd docs
   - make html
