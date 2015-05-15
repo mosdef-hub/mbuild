@@ -16,9 +16,10 @@ requirements:
 test:
   requires:
     - pytest
+    - pytest-cov
     - coverage
   commands:
-    - coverage run --rcfile=.coveragerc --source=mbuild setup.py test
+    - py.test --pyargs mbuild --cov mbuild
 
 about:
   home: http://iModels.github.io/mbuild
