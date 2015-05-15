@@ -16,10 +16,8 @@ requirements:
 test:
   requires:
     - pytest
-    - pytest-cov
-    - coverage
   commands:
-    - py.test --pyargs mbuild --cov mbuild
+    - py.test --pyargs mbuild
 
 about:
   home: http://iModels.github.io/mbuild

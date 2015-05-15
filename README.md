@@ -2,7 +2,6 @@
 
 [![Linux Build Status](https://travis-ci.org/iModels/mbuild.svg?branch=master)](https://travis-ci.org/iModels/mbuild)
 [![Windows Build status](https://ci.appveyor.com/api/projects/status/x4aiyeio2c1xf3vx/branch/master?svg=true)](https://ci.appveyor.com/project/ctk3b/mbuild-o0viu/branch/master)
-[![Coverage Status](https://coveralls.io/repos/iModels/mbuild/badge.svg?branch=master)](https://coveralls.io/r/iModels/mbuild?branch=master)
 [![PyPI Version](https://badge.fury.io/py/mbuild.svg)](https://pypi.python.org/pypi/mbuild)
 [![Binstar Badge](https://binstar.org/imodels/mbuild/badges/version.svg)](https://binstar.org/imodels/mbuild)
 
