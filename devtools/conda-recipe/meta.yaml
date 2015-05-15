@@ -13,12 +13,14 @@ requirements:
     - mdtraj
     - packmol
 
-#test:
-#  requires:
-#    - pytest
-#  commands:
-#    - py.test --pyargs mbuild
+test:
+  requires:
+    - pytest
+    - coverage
+  commands:
+    - coverage run --rcfile=.coveragerc --source=mbuild setup.py test
 
 about:
   home: http://iModels.github.io/mbuild
   license: MIT
+  summary: A hierarchical, component based molecule builder.

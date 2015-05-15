@@ -26,6 +26,11 @@ else:
     __version__ = VERSION + '.dev0'
 #####################################
 
+with open('mbuild/version.py', 'w') as version_file:
+    version_file.write('version="{0}"\n'.format(__version__))
+
+with open('__conda_version__.txt', 'w') as conda_version:
+    conda_version.write(__version__)
 
 if sys.argv[-1] == 'publish':
     os.system('python setup.py sdist upload')
@@ -40,14 +45,8 @@ class PyTest(TestCommand):
 
     def run_tests(self):
         import pytest
-        errcode = pytest.main(['mbuild'])
+        errcode = pytest.main(['--pyargs', 'mbuild'])
         sys.exit(errcode)
-
-with open('mbuild/version.py', 'w') as version_file:
-    version_file.write('version="{0}"\n'.format(__version__))
-
-with open('__conda_version__.txt', 'w') as conda_version:
-    conda_version.write(__version__)
 
 setup(
     name='mbuild',
@@ -82,8 +81,6 @@ setup(
         'Operating System :: MacOS',
     ],
     test_suite='tests',
-    cmdclass={'test': PyTest,
-    },
-    extras_require={'utils': ['pytest'],
-    },
+    cmdclass={'test': PyTest},
+    extras_require={'utils': ['pytest']},
 )
