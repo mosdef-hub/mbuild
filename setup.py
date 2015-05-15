@@ -45,7 +45,7 @@ class PyTest(TestCommand):
 
     def run_tests(self):
         import pytest
-        errcode = pytest.main(['--pyargs', 'mbuild'])
+        errcode = pytest.main(['mbuild'])
         sys.exit(errcode)
 
 setup(
