@@ -40,3 +40,7 @@ docs/_build
 # PyCharm
 .idea
 .idea/*
+
+# Vagrant
+.vagrant
+Vagrantfile
