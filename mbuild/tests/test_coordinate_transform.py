@@ -1,7 +1,11 @@
 import numpy as np
 
 import mbuild as mb
-from mbuild.coordinate_transform import Translation, CoordinateTransform, RotationAroundZ, RotationAroundY, RotationAroundX, Rotation, ChangeOfBasis, AxisTransform, RigidTransform
+from mbuild.coordinate_transform import (Translation, CoordinateTransform,
+                                         RotationAroundZ, RotationAroundY,
+                                         RotationAroundX, Rotation,
+                                         ChangeOfBasis, AxisTransform,
+                                         RigidTransform)
 from mbuild.tests.base_test import BaseTest
 
 
@@ -68,3 +72,4 @@ if __name__=='__main__':
     TestCoordinateTransform().test_change_of_basis()
     TestCoordinateTransform().test_axis_transform()
     TestCoordinateTransform().test_rigid_transform()
+    print("foo")

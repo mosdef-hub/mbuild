@@ -20,8 +20,9 @@ class CoordinateTransform(object):
 
     def apply_to(self, A):
         """Apply the coordinate transformation to points in A. """
+        if A.ndim == 1:
+            A = np.expand_dims(A, axis=0)
         rows, cols = A.shape
-        A_new = zeros((rows, 4))
         A_new = hstack([A, ones((rows, 1))])
 
         A_new = transpose(self.T.dot(transpose(A_new)))
@@ -295,6 +296,7 @@ def equivalence_transform(compound, from_positions, to_positions, add_bond=True)
     """
     from mbuild.port import Port
     from mbuild.bond import Bond
+    from mbuild.atom import Atom
     if isinstance(from_positions, (list, tuple)) and isinstance(to_positions, (list, tuple)):
         equivalence_pairs = zip(from_positions, to_positions)
     elif isinstance(from_positions, Port) and isinstance(to_positions, Port):
@@ -303,9 +305,13 @@ def equivalence_transform(compound, from_positions, to_positions, add_bond=True)
         equivalence_pairs = [(from_positions, to_positions)]
 
     T = _create_equivalence_transform(equivalence_pairs)
-    atom_positions = compound.xyz_with_ports
-    atom_positions = T.apply_to(atom_positions)
-    _write_back_atom_positions(compound, atom_positions)
+    if isinstance(compound, Atom):
+        atom_position = compound.pos
+        compound.pos = T.apply_to(atom_position)
+    else:
+        atom_positions = compound.xyz_with_ports
+        atom_positions = T.apply_to(atom_positions)
+        _write_back_atom_positions(compound, atom_positions)
 
     if add_bond:
         if isinstance(from_positions, Port) and isinstance(to_positions, Port):
@@ -389,9 +395,9 @@ def rotate_around_x(compound, theta):
     _write_back_atom_positions(compound, atom_positions)
 
 
-def x_axis_transform(compound, new_origin=array([0.0, 0.0, 0.0]),
-                     point_on_x_axis=array([1.0, 0.0, 0.0]),
-                     point_on_xy_plane=array([1.0, 1.0, 0.0])):
+def x_axis_transform(compound, new_origin=None,
+                     point_on_x_axis=None,
+                     point_on_xy_plane=None):
     """
 
     Parameters
@@ -406,201 +412,38 @@ def x_axis_transform(compound, new_origin=array([0.0, 0.0, 0.0]),
 
     if isinstance(new_origin, Atom):
         new_origin = new_origin.pos
+    elif new_origin is None:
+        new_origin = array([0, 0, 0])
     if isinstance(point_on_x_axis, Atom):
         point_on_x_axis = point_on_x_axis.pos
+    elif point_on_x_axis is None:
+        point_on_x_axis = array([1.0, 0.0, 0.0])
     if isinstance(point_on_xy_plane, Atom):
         point_on_xy_plane = point_on_xy_plane.pos
+    elif point_on_xy_plane is None:
+        point_on_xy_plane = array([1.0, 1.0, 0.0])
 
     atom_positions = compound.xyz_with_ports
-    atom_positions = AxisTransform(new_origin=new_origin,
-                                   point_on_x_axis=point_on_x_axis,
-                                   point_on_xy_plane=point_on_xy_plane).apply_to(
-        atom_positions)
+    transform = AxisTransform(new_origin=new_origin,
+                              point_on_x_axis=point_on_x_axis,
+                              point_on_xy_plane=point_on_xy_plane)
+    atom_positions = transform.apply_to(atom_positions)
     _write_back_atom_positions(compound, atom_positions)
 
 
-def y_axis_transform(compound, new_origin=array([0.0, 0.0, 0.0]),
-                     point_on_y_axis=array([1.0, 0.0, 0.0]),
-                     point_on_xy_plane=array([1.0, 1.0, 0.0])):
+def y_axis_transform(compound, new_origin=None,
+                     point_on_y_axis=None,
+                     point_on_xy_plane=None):
     x_axis_transform(compound, new_origin=new_origin,
                      point_on_x_axis=point_on_y_axis,
                      point_on_xy_plane=point_on_xy_plane)
     rotate_around_z(compound, pi / 2)
 
 
-if __name__ == "__main__":
-    # # matrix with n rows containing x, y, z coordinates(N >= 3) of points in coordinate system 1
-    #
-    # # Test 1
-    # A1 = array([
-    # [0.1239, 0.2085, 0.9479],
-    #     [0.4904, 0.5650, 0.0821],
-    #     [0.8530, 0.6403, 0.1057],
-    #     [0.8739, 0.4170, 0.1420],
-    #     [0.2703, 0.2060, 0.1665]])
-    #
-    # # matrix with n rows containing x, y, z coordinates(N >= 3) of the same points in coordinate system 2
-    # B1 = array([
-    #     [-0.4477, 0.4830, 0.6862],
-    #     [0.2384, -0.1611, 0.3321],
-    #     [0.0970, -0.3850, 0.0721],
-    #     [0.0666, -0.1926, -0.0449],
-    #     [0.2457, 0.2672, 0.3625]])
-    #
-    #
-    # # Test 2
-    # A2 = array([
-    #     [0.0, -0.2, 0.0],
-    #     [-1.0, -0.5, 0.0],
-    #     [1.0, -0.5, 0.0]])
-    #
-    # # matrix with n rows containing x, y, z coordinates(N >= 3) of the same points in coordinate system 2
-    # B2 = array([
-    #     [0.0, 0.8, 0.0],
-    #     [-1.0, 0.5, 0.0],
-    #     [1.0, 0.5, 0.0]])
-    #
-    #
-    # # find out the coordinate transform
-    #
-    #
-    # A = A1
-    # B = B1
-    #
-    # tAB = RigidTransform(A,B)
-    #
-    # print "T:" + str(tAB.T)
-    #
-    # # test if it works:
-    # A2 = tAB.apply(A)
-    #
-    # print "B:" + str(B)
-    # print "A in B:" + str(A2)
-    # print "Diff:" + str(A2-B)
-    #
-    #
-    # translation = Translation((10,10,10))
-    # print translation.apply(array([[1,1,1]]))
-    #
-    # rotation_around_z = RotationAroundZ(pi/4)
-    # print rotation_around_z.apply(array([[1,1,1]]))
-    #
-
-    # print "Change of basis"
-    # CT = ChangeOfBasis(array([[sqrt(3)/2,0.5,0.0],
-    #                           [-0.5,sqrt(3)/2,0.0],
-    #                           [0.0,0.0,1.0]
-    #                         ]))
-    #
-    # A = array([
-    #     [1.0, 0.0, 0.0],
-    #     [0.5, sqrt(3)/2, 0.0]
-    # ])
-    # # A = array([
-    # #     [1.0, 0.0, 0.0],
-    # #     [0.0, 1.0, 0.0],
-    # #     [0.0, 0.0, 1.0]])
-    #
-    # A_prime = CT.apply(A)
-    #
-    # print "A_prime=" + str(A_prime)
-
-
-    #
-    #
-    # print "Axis Transform"
-    # new_origin=array([1,0,0])
-    # point_on_x_axis=new_origin + array([.5, 0.0+sqrt(3)/2, 0.0])
-    # CT = AxisTransform(new_origin=new_origin, point_on_x_axis=point_on_x_axis, point_on_xy_plane=new_origin+array([1.0,1.0,0.0]))
-    #
-    # A = array([
-    #     new_origin,
-    #     point_on_x_axis,
-    #     [1.0, 0.0, 0.0],
-    #     [0.5, sqrt(3)/2, 0.0]
-    # ])
-    # # A = array([
-    # #     [1.0, 0.0, 0.0],
-    # #     [0.0, 1.0, 0.0],
-    # #     [0.0, 0.0, 1.0]])
-    #
-    # A_prime = CT.apply(A)
-    #
-    # print "A=" + str(A)
-    # print "A_prime=" + str(A_prime)
-
-
-    # print "Axis Transform"
-    # CT = AxisTransform(array([0.0,0.0,0.0]), array([1.0, 0.0, 0.0]), array([0.0,1.0,0.0]))
-    #
-    # A = array([
-    #     [2.0, 0.0, 0.0],
-    #     [0.5, sqrt(3)/2, 1.0]
-    # ])
-    # # A = array([
-    # #     [1.0, 0.0, 0.0],
-    # #     [0.0, 1.0, 0.0],
-    # #     [0.0, 0.0, 1.0]])
-    #
-    # A_prime = CT.apply(A)
-    #
-    # print "A=" + str(A)
-    # print "A_prime=" + str(A_prime)
-
-
-    # B = array([
-    #     [0.5, sqrt(3)/2, 0.0, 0.0],
-    #     [-sqrt(3)/2, 0.5, 0.0, 0.0],
-    #     [0.0, 0.0, 1.0, 0.0],
-    #     [0.0, 0.0, 0.0, 1.0]])
-    #
-    # Binv = inv(B)
-    #
-    # v1 = array([[1.0, 0.0, 0.0, 1.0], [0.0, 1.0, 0.0, 1.0]])
-    #
-    # v1_prime = dot(Binv,v1.transpose()).transpose()
-    # print "the image of v1="+str(v1)+" is v1_prime=" + str(v1_prime)
-    #
-    #
-    # v_tr = array([2.0, 3.0, 4.0])
-    # # v_tr = array([0.0, 0.0, 0.0])
-    # Binv_tr = Binv
-    # Binv_tr[0:3, 3:4] = array([v_tr]).transpose()
-    # print "Binv_tr="+str(Binv_tr)
-    #
-    # v1_prime_tr = dot(Binv_tr, v1.transpose()).transpose()
-    # print "the translated image of v1="+str(v1)+" is v1_prime_tr=" + str(v1_prime_tr)
-    #
-    # Basis = B[0:3,0:3]
-    # T = ChangeOfBasis(Basis, -v_tr)
-    # v1_prime_tr_T = T.apply(array([[1.0, 0.0, 0.0],[0.0, 1.0, 0.0]]))
-    # print "the translated image of v1="+str(v1)+" is v1_prime_tr_T=" + str(v1_prime_tr_T)
-    #
-    # AT = AxisTransform(new_origin=-v_tr, point_on_x_axis=B[0,0:3]-v_tr, point_on_xy_plane=B[1,0:3]-v_tr)
-    # v1_prime_tr_AT = AT.apply(array([[1.0, 0.0, 0.0],[0.0, 1.0, 0.0]]))
-    # print "the translated image of v1="+str(v1)+" is v1_prime_tr_AT=" + str(v1_prime_tr_AT)
-
-    v_tr = array([2.0, 3.0, 4.0])
-
-    # translate by -v_tr
-    T_tr = eye(4)
-    T_tr[0:3, 3:4] = -array([v_tr]).transpose()
-
-    # rotate 60 degrees
-    B = array([
-        [0.5, sqrt(3) / 2, 0.0, 0.0],
-        [-sqrt(3) / 2, 0.5, 0.0, 0.0],
-        [0.0, 0.0, 1.0, 0.0],
-        [0.0, 0.0, 0.0, 1.0]])
-
-    B_tr = dot(B, T_tr)
-
-    v1 = array([[2.0, 3.0, 4.0, 1.0], [2.0 + 0.5, 3.0 + sqrt(3) / 2, 4.0, 1.0],
-                [1.0, 0.0, 0.0, 1.0], [0.0, 1.0, 0.0, 1.0]])
-
-    v1_prime = dot(B_tr, v1.transpose()).transpose()
-
-    AT = AxisTransform(new_origin=v_tr,
-                       point_on_x_axis=[2.0 + 0.5, 3.0 + sqrt(3) / 2, 4.0],
-                       point_on_xy_plane=[2.0, 4.0, 4.0])
-    v1_prime_tr_AT = AT.apply(v1[:, 0:3])
+def z_axis_transform(compound, new_origin=None,
+                     point_on_z_axis=None,
+                     point_on_zx_plane=None):
+    x_axis_transform(compound, new_origin=new_origin,
+                     point_on_x_axis=point_on_z_axis,
+                     point_on_xy_plane=point_on_zx_plane)
+    rotate_around_y(compound, pi * 3 / 2)
