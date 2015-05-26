@@ -99,8 +99,8 @@ class ChangeOfBasis(CoordinateTransform):
     """ """
     def __init__(self, basis, origin=None):
         assert shape(basis) == (3, 3)
-        if not origin:
-            array([0.0, 0.0, 0.0])
+        if origin is None:
+            origin = array([0.0, 0.0, 0.0])
 
         T = eye(4)
 
@@ -116,11 +116,11 @@ class AxisTransform(CoordinateTransform):
     def __init__(self, new_origin=None, point_on_x_axis=None,
                  point_on_xy_plane=None):
         if new_origin is None:
-            array([0.0, 0.0, 0.0])
+            new_origin = array([0.0, 0.0, 0.0])
         if point_on_x_axis is None:
-            array([1.0, 0.0, 0.0])
+            point_on_x_axis = array([1.0, 0.0, 0.0])
         if point_on_xy_plane is None:
-            array([1.0, 1.0, 0.0])
+            point_on_xy_plane = array([1.0, 1.0, 0.0])
         # Change the basis such that p1 is the origin, p2 is on the x axis and
         # p3 is in the xy plane.
         p1 = new_origin
