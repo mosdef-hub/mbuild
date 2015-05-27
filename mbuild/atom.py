@@ -47,6 +47,11 @@ class Atom(Part):
         self.bonds = set()
 
     @property
+    def xyz_with_ports(self):
+        """Work around to make coordinate transforms work on Atoms. """
+        return self.pos
+
+    @property
     def neighbors(self):
         """Return a list of all neighboring Atoms. """
         return [bond.other_atom(self) for bond in self.bonds]
