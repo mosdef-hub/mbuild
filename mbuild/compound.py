@@ -190,6 +190,24 @@ class Compound(Part):
     def periodicity(self, periods):
         self._periodicity = np.array(periods)
 
+    def view_hierarchy(self, show_ports=False):
+        """View a Compounds hierarchy of compounds as a chart. """
+        import networkx as nx
+        import matplotlib.pyplot as plt
+        compound_tree = nx.DiGraph()
+        compound_tree.add_node(self.kind)
+        for sub_compound in self._yield_parts(Compound):
+            if not show_ports and sub_compound.kind in ["Port", "subport"]:
+                continue
+            compound_tree.add_node(sub_compound.kind)
+            if sub_compound.parent:
+                compound_tree.add_edge(sub_compound.parent.kind, sub_compound.kind)
+        plt.title("compound_hierarchy")
+        pos = nx.circular_layout(compound_tree)
+        nx.draw(compound_tree, pos, with_labels=True, arrows=True,
+                node_size=3000, font_size=8)
+        plt.savefig('compound_hierarchy.png')
+
     def visualize(self, show_ports=False):
         """Visualize the Compound using VMD.
 
