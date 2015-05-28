@@ -230,6 +230,12 @@ the addition or subtraction of the Atoms&#8217; cartesian coordinates.</p>
 <tt class="descname">referrers</tt><a class="headerlink" href="#mbuild.atom.Atom.referrers" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
+<dl class="attribute">
+<dt id="mbuild.atom.Atom.xyz_with_ports">
+<tt class="descname">xyz_with_ports</tt><a class="reference internal" href="../_modules/mbuild/atom.html#Atom.xyz_with_ports"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.atom.Atom.xyz_with_ports" title="Permalink to this definition">¶</a></dt>
+<dd><p>Work around to make coordinate transforms work on Atoms.</p>
+</dd></dl>
+
 </dd></dl>
 
 </div>
@@ -746,7 +752,7 @@ respective to_positions, and applies this transformation to the compound.</p>
 
 <dl class="function">
 <dt id="mbuild.coordinate_transform.x_axis_transform">
-<tt class="descclassname">mbuild.coordinate_transform.</tt><tt class="descname">x_axis_transform</tt><big>(</big><em>compound</em>, <em>new_origin=array([ 0.</em>, <em>0.</em>, <em>0.])</em>, <em>point_on_x_axis=array([ 1.</em>, <em>0.</em>, <em>0.])</em>, <em>point_on_xy_plane=array([ 1.</em>, <em>1.</em>, <em>0.])</em><big>)</big><a class="reference internal" href="../_modules/mbuild/coordinate_transform.html#x_axis_transform"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.coordinate_transform.x_axis_transform" title="Permalink to this definition">¶</a></dt>
+<tt class="descclassname">mbuild.coordinate_transform.</tt><tt class="descname">x_axis_transform</tt><big>(</big><em>compound</em>, <em>new_origin=None</em>, <em>point_on_x_axis=None</em>, <em>point_on_xy_plane=None</em><big>)</big><a class="reference internal" href="../_modules/mbuild/coordinate_transform.html#x_axis_transform"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.coordinate_transform.x_axis_transform" title="Permalink to this definition">¶</a></dt>
 <dd><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -763,7 +769,12 @@ respective to_positions, and applies this transformation to the compound.</p>
 
 <dl class="function">
 <dt id="mbuild.coordinate_transform.y_axis_transform">
-<tt class="descclassname">mbuild.coordinate_transform.</tt><tt class="descname">y_axis_transform</tt><big>(</big><em>compound</em>, <em>new_origin=array([ 0.</em>, <em>0.</em>, <em>0.])</em>, <em>point_on_y_axis=array([ 1.</em>, <em>0.</em>, <em>0.])</em>, <em>point_on_xy_plane=array([ 1.</em>, <em>1.</em>, <em>0.])</em><big>)</big><a class="reference internal" href="../_modules/mbuild/coordinate_transform.html#y_axis_transform"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.coordinate_transform.y_axis_transform" title="Permalink to this definition">¶</a></dt>
+<tt class="descclassname">mbuild.coordinate_transform.</tt><tt class="descname">y_axis_transform</tt><big>(</big><em>compound</em>, <em>new_origin=None</em>, <em>point_on_y_axis=None</em>, <em>point_on_xy_plane=None</em><big>)</big><a class="reference internal" href="../_modules/mbuild/coordinate_transform.html#y_axis_transform"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.coordinate_transform.y_axis_transform" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="mbuild.coordinate_transform.z_axis_transform">
+<tt class="descclassname">mbuild.coordinate_transform.</tt><tt class="descname">z_axis_transform</tt><big>(</big><em>compound</em>, <em>new_origin=None</em>, <em>point_on_z_axis=None</em>, <em>point_on_zx_plane=None</em><big>)</big><a class="reference internal" href="../_modules/mbuild/coordinate_transform.html#z_axis_transform"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mbuild.coordinate_transform.z_axis_transform" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </div>

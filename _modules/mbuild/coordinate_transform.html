@@ -144,7 +144,7 @@
 
 <span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;rotate_around_x&#39;</span><span class="p">,</span> <span class="s">&#39;rotate_around_y&#39;</span><span class="p">,</span> <span class="s">&#39;rotate_around_z&#39;</span><span class="p">,</span>
            <span class="s">&#39;equivalence_transform&#39;</span><span class="p">,</span> <span class="s">&#39;translate&#39;</span><span class="p">,</span> <span class="s">&#39;translate_to&#39;</span><span class="p">,</span>
-           <span class="s">&#39;x_axis_transform&#39;</span><span class="p">,</span> <span class="s">&#39;y_axis_transform&#39;</span><span class="p">]</span>
+           <span class="s">&#39;x_axis_transform&#39;</span><span class="p">,</span> <span class="s">&#39;y_axis_transform&#39;</span><span class="p">,</span> <span class="s">&#39;z_axis_transform&#39;</span><span class="p">]</span>
 
 
 <span class="k">class</span> <span class="nc">CoordinateTransform</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
@@ -158,8 +158,9 @@
 
     <span class="k">def</span> <span class="nf">apply_to</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">A</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Apply the coordinate transformation to points in A. &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">A</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">A</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">expand_dims</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
         <span class="n">rows</span><span class="p">,</span> <span class="n">cols</span> <span class="o">=</span> <span class="n">A</span><span class="o">.</span><span class="n">shape</span>
-        <span class="n">A_new</span> <span class="o">=</span> <span class="n">zeros</span><span class="p">((</span><span class="n">rows</span><span class="p">,</span> <span class="mi">4</span><span class="p">))</span>
         <span class="n">A_new</span> <span class="o">=</span> <span class="n">hstack</span><span class="p">([</span><span class="n">A</span><span class="p">,</span> <span class="n">ones</span><span class="p">((</span><span class="n">rows</span><span class="p">,</span> <span class="mi">1</span><span class="p">))])</span>
 
         <span class="n">A_new</span> <span class="o">=</span> <span class="n">transpose</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">T</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">transpose</span><span class="p">(</span><span class="n">A_new</span><span class="p">)))</span>
@@ -367,6 +368,10 @@
 
 
 <span class="k">def</span> <span class="nf">_write_back_atom_positions</span><span class="p">(</span><span class="n">compound</span><span class="p">,</span> <span class="n">arrnx3</span><span class="p">):</span>
+    <span class="kn">from</span> <span class="nn">mbuild.atom</span> <span class="kn">import</span> <span class="n">Atom</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">compound</span><span class="p">,</span> <span class="n">Atom</span><span class="p">):</span>
+        <span class="n">compound</span><span class="o">.</span><span class="n">pos</span> <span class="o">=</span> <span class="n">squeeze</span><span class="p">(</span><span class="n">arrnx3</span><span class="p">)</span>
+        <span class="k">return</span>
     <span class="n">arr</span> <span class="o">=</span> <span class="n">arrnx3</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="o">-</span><span class="mi">1</span><span class="p">))</span>
     <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">atom</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">compound</span><span class="o">.</span><span class="n">yield_atoms</span><span class="p">()):</span>
         <span class="n">atom</span><span class="o">.</span><span class="n">pos</span> <span class="o">=</span> <span class="n">array</span><span class="p">([</span><span class="n">arr</span><span class="p">[</span><span class="mi">3</span> <span class="o">*</span> <span class="n">i</span><span class="p">],</span> <span class="n">arr</span><span class="p">[</span><span class="mi">3</span> <span class="o">*</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">],</span> <span class="n">arr</span><span class="p">[</span><span class="mi">3</span> <span class="o">*</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">2</span><span class="p">]])</span>
@@ -504,7 +509,7 @@
 </div>
 <div class="viewcode-block" id="translate_to"><a class="viewcode-back" href="../../apidoc/mbuild.html#mbuild.coordinate_transform.translate_to">[docs]</a><span class="k">def</span> <span class="nf">translate_to</span><span class="p">(</span><span class="n">compound</span><span class="p">,</span> <span class="n">v</span><span class="p">):</span>
     <span class="n">atom_positions</span> <span class="o">=</span> <span class="n">compound</span><span class="o">.</span><span class="n">xyz_with_ports</span>
-    <span class="n">atom_positions</span> <span class="o">-=</span> <span class="n">atom_positions</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="n">atom_positions</span> <span class="o">-=</span> <span class="n">compound</span><span class="o">.</span><span class="n">center</span>
     <span class="n">atom_positions</span> <span class="o">=</span> <span class="n">Translation</span><span class="p">(</span><span class="n">v</span><span class="p">)</span><span class="o">.</span><span class="n">apply_to</span><span class="p">(</span><span class="n">atom_positions</span><span class="p">)</span>
     <span class="n">_write_back_atom_positions</span><span class="p">(</span><span class="n">compound</span><span class="p">,</span> <span class="n">atom_positions</span><span class="p">)</span>
 
@@ -527,9 +532,9 @@
     <span class="n">_write_back_atom_positions</span><span class="p">(</span><span class="n">compound</span><span class="p">,</span> <span class="n">atom_positions</span><span class="p">)</span>
 
 </div>
-<div class="viewcode-block" id="x_axis_transform"><a class="viewcode-back" href="../../apidoc/mbuild.html#mbuild.coordinate_transform.x_axis_transform">[docs]</a><span class="k">def</span> <span class="nf">x_axis_transform</span><span class="p">(</span><span class="n">compound</span><span class="p">,</span> <span class="n">new_origin</span><span class="o">=</span><span class="n">array</span><span class="p">([</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">]),</span>
-                     <span class="n">point_on_x_axis</span><span class="o">=</span><span class="n">array</span><span class="p">([</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">]),</span>
-                     <span class="n">point_on_xy_plane</span><span class="o">=</span><span class="n">array</span><span class="p">([</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">])):</span>
+<div class="viewcode-block" id="x_axis_transform"><a class="viewcode-back" href="../../apidoc/mbuild.html#mbuild.coordinate_transform.x_axis_transform">[docs]</a><span class="k">def</span> <span class="nf">x_axis_transform</span><span class="p">(</span><span class="n">compound</span><span class="p">,</span> <span class="n">new_origin</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                     <span class="n">point_on_x_axis</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                     <span class="n">point_on_xy_plane</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 
 <span class="sd">    Parameters</span>
@@ -544,204 +549,41 @@
 
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">new_origin</span><span class="p">,</span> <span class="n">Atom</span><span class="p">):</span>
         <span class="n">new_origin</span> <span class="o">=</span> <span class="n">new_origin</span><span class="o">.</span><span class="n">pos</span>
+    <span class="k">elif</span> <span class="n">new_origin</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="n">new_origin</span> <span class="o">=</span> <span class="n">array</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span>
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">point_on_x_axis</span><span class="p">,</span> <span class="n">Atom</span><span class="p">):</span>
         <span class="n">point_on_x_axis</span> <span class="o">=</span> <span class="n">point_on_x_axis</span><span class="o">.</span><span class="n">pos</span>
+    <span class="k">elif</span> <span class="n">point_on_x_axis</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="n">point_on_x_axis</span> <span class="o">=</span> <span class="n">array</span><span class="p">([</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">])</span>
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">point_on_xy_plane</span><span class="p">,</span> <span class="n">Atom</span><span class="p">):</span>
         <span class="n">point_on_xy_plane</span> <span class="o">=</span> <span class="n">point_on_xy_plane</span><span class="o">.</span><span class="n">pos</span>
+    <span class="k">elif</span> <span class="n">point_on_xy_plane</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="n">point_on_xy_plane</span> <span class="o">=</span> <span class="n">array</span><span class="p">([</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">])</span>
 
     <span class="n">atom_positions</span> <span class="o">=</span> <span class="n">compound</span><span class="o">.</span><span class="n">xyz_with_ports</span>
-    <span class="n">atom_positions</span> <span class="o">=</span> <span class="n">AxisTransform</span><span class="p">(</span><span class="n">new_origin</span><span class="o">=</span><span class="n">new_origin</span><span class="p">,</span>
-                                   <span class="n">point_on_x_axis</span><span class="o">=</span><span class="n">point_on_x_axis</span><span class="p">,</span>
-                                   <span class="n">point_on_xy_plane</span><span class="o">=</span><span class="n">point_on_xy_plane</span><span class="p">)</span><span class="o">.</span><span class="n">apply_to</span><span class="p">(</span>
-        <span class="n">atom_positions</span><span class="p">)</span>
+    <span class="n">transform</span> <span class="o">=</span> <span class="n">AxisTransform</span><span class="p">(</span><span class="n">new_origin</span><span class="o">=</span><span class="n">new_origin</span><span class="p">,</span>
+                              <span class="n">point_on_x_axis</span><span class="o">=</span><span class="n">point_on_x_axis</span><span class="p">,</span>
+                              <span class="n">point_on_xy_plane</span><span class="o">=</span><span class="n">point_on_xy_plane</span><span class="p">)</span>
+    <span class="n">atom_positions</span> <span class="o">=</span> <span class="n">transform</span><span class="o">.</span><span class="n">apply_to</span><span class="p">(</span><span class="n">atom_positions</span><span class="p">)</span>
     <span class="n">_write_back_atom_positions</span><span class="p">(</span><span class="n">compound</span><span class="p">,</span> <span class="n">atom_positions</span><span class="p">)</span>
 
 </div>
-<div class="viewcode-block" id="y_axis_transform"><a class="viewcode-back" href="../../apidoc/mbuild.html#mbuild.coordinate_transform.y_axis_transform">[docs]</a><span class="k">def</span> <span class="nf">y_axis_transform</span><span class="p">(</span><span class="n">compound</span><span class="p">,</span> <span class="n">new_origin</span><span class="o">=</span><span class="n">array</span><span class="p">([</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">]),</span>
-                     <span class="n">point_on_y_axis</span><span class="o">=</span><span class="n">array</span><span class="p">([</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">]),</span>
-                     <span class="n">point_on_xy_plane</span><span class="o">=</span><span class="n">array</span><span class="p">([</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">])):</span>
+<div class="viewcode-block" id="y_axis_transform"><a class="viewcode-back" href="../../apidoc/mbuild.html#mbuild.coordinate_transform.y_axis_transform">[docs]</a><span class="k">def</span> <span class="nf">y_axis_transform</span><span class="p">(</span><span class="n">compound</span><span class="p">,</span> <span class="n">new_origin</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                     <span class="n">point_on_y_axis</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                     <span class="n">point_on_xy_plane</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
     <span class="n">x_axis_transform</span><span class="p">(</span><span class="n">compound</span><span class="p">,</span> <span class="n">new_origin</span><span class="o">=</span><span class="n">new_origin</span><span class="p">,</span>
                      <span class="n">point_on_x_axis</span><span class="o">=</span><span class="n">point_on_y_axis</span><span class="p">,</span>
                      <span class="n">point_on_xy_plane</span><span class="o">=</span><span class="n">point_on_xy_plane</span><span class="p">)</span>
     <span class="n">rotate_around_z</span><span class="p">(</span><span class="n">compound</span><span class="p">,</span> <span class="n">pi</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span>
 
 </div>
-<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&quot;__main__&quot;</span><span class="p">:</span>
-    <span class="c"># # matrix with n rows containing x, y, z coordinates(N &gt;= 3) of points in coordinate system 1</span>
-    <span class="c">#</span>
-    <span class="c"># # Test 1</span>
-    <span class="c"># A1 = array([</span>
-    <span class="c"># [0.1239, 0.2085, 0.9479],</span>
-    <span class="c">#     [0.4904, 0.5650, 0.0821],</span>
-    <span class="c">#     [0.8530, 0.6403, 0.1057],</span>
-    <span class="c">#     [0.8739, 0.4170, 0.1420],</span>
-    <span class="c">#     [0.2703, 0.2060, 0.1665]])</span>
-    <span class="c">#</span>
-    <span class="c"># # matrix with n rows containing x, y, z coordinates(N &gt;= 3) of the same points in coordinate system 2</span>
-    <span class="c"># B1 = array([</span>
-    <span class="c">#     [-0.4477, 0.4830, 0.6862],</span>
-    <span class="c">#     [0.2384, -0.1611, 0.3321],</span>
-    <span class="c">#     [0.0970, -0.3850, 0.0721],</span>
-    <span class="c">#     [0.0666, -0.1926, -0.0449],</span>
-    <span class="c">#     [0.2457, 0.2672, 0.3625]])</span>
-    <span class="c">#</span>
-    <span class="c">#</span>
-    <span class="c"># # Test 2</span>
-    <span class="c"># A2 = array([</span>
-    <span class="c">#     [0.0, -0.2, 0.0],</span>
-    <span class="c">#     [-1.0, -0.5, 0.0],</span>
-    <span class="c">#     [1.0, -0.5, 0.0]])</span>
-    <span class="c">#</span>
-    <span class="c"># # matrix with n rows containing x, y, z coordinates(N &gt;= 3) of the same points in coordinate system 2</span>
-    <span class="c"># B2 = array([</span>
-    <span class="c">#     [0.0, 0.8, 0.0],</span>
-    <span class="c">#     [-1.0, 0.5, 0.0],</span>
-    <span class="c">#     [1.0, 0.5, 0.0]])</span>
-    <span class="c">#</span>
-    <span class="c">#</span>
-    <span class="c"># # find out the coordinate transform</span>
-    <span class="c">#</span>
-    <span class="c">#</span>
-    <span class="c"># A = A1</span>
-    <span class="c"># B = B1</span>
-    <span class="c">#</span>
-    <span class="c"># tAB = RigidTransform(A,B)</span>
-    <span class="c">#</span>
-    <span class="c"># print &quot;T:&quot; + str(tAB.T)</span>
-    <span class="c">#</span>
-    <span class="c"># # test if it works:</span>
-    <span class="c"># A2 = tAB.apply(A)</span>
-    <span class="c">#</span>
-    <span class="c"># print &quot;B:&quot; + str(B)</span>
-    <span class="c"># print &quot;A in B:&quot; + str(A2)</span>
-    <span class="c"># print &quot;Diff:&quot; + str(A2-B)</span>
-    <span class="c">#</span>
-    <span class="c">#</span>
-    <span class="c"># translation = Translation((10,10,10))</span>
-    <span class="c"># print translation.apply(array([[1,1,1]]))</span>
-    <span class="c">#</span>
-    <span class="c"># rotation_around_z = RotationAroundZ(pi/4)</span>
-    <span class="c"># print rotation_around_z.apply(array([[1,1,1]]))</span>
-    <span class="c">#</span>
-
-    <span class="c"># print &quot;Change of basis&quot;</span>
-    <span class="c"># CT = ChangeOfBasis(array([[sqrt(3)/2,0.5,0.0],</span>
-    <span class="c">#                           [-0.5,sqrt(3)/2,0.0],</span>
-    <span class="c">#                           [0.0,0.0,1.0]</span>
-    <span class="c">#                         ]))</span>
-    <span class="c">#</span>
-    <span class="c"># A = array([</span>
-    <span class="c">#     [1.0, 0.0, 0.0],</span>
-    <span class="c">#     [0.5, sqrt(3)/2, 0.0]</span>
-    <span class="c"># ])</span>
-    <span class="c"># # A = array([</span>
-    <span class="c"># #     [1.0, 0.0, 0.0],</span>
-    <span class="c"># #     [0.0, 1.0, 0.0],</span>
-    <span class="c"># #     [0.0, 0.0, 1.0]])</span>
-    <span class="c">#</span>
-    <span class="c"># A_prime = CT.apply(A)</span>
-    <span class="c">#</span>
-    <span class="c"># print &quot;A_prime=&quot; + str(A_prime)</span>
-
-
-    <span class="c">#</span>
-    <span class="c">#</span>
-    <span class="c"># print &quot;Axis Transform&quot;</span>
-    <span class="c"># new_origin=array([1,0,0])</span>
-    <span class="c"># point_on_x_axis=new_origin + array([.5, 0.0+sqrt(3)/2, 0.0])</span>
-    <span class="c"># CT = AxisTransform(new_origin=new_origin, point_on_x_axis=point_on_x_axis, point_on_xy_plane=new_origin+array([1.0,1.0,0.0]))</span>
-    <span class="c">#</span>
-    <span class="c"># A = array([</span>
-    <span class="c">#     new_origin,</span>
-    <span class="c">#     point_on_x_axis,</span>
-    <span class="c">#     [1.0, 0.0, 0.0],</span>
-    <span class="c">#     [0.5, sqrt(3)/2, 0.0]</span>
-    <span class="c"># ])</span>
-    <span class="c"># # A = array([</span>
-    <span class="c"># #     [1.0, 0.0, 0.0],</span>
-    <span class="c"># #     [0.0, 1.0, 0.0],</span>
-    <span class="c"># #     [0.0, 0.0, 1.0]])</span>
-    <span class="c">#</span>
-    <span class="c"># A_prime = CT.apply(A)</span>
-    <span class="c">#</span>
-    <span class="c"># print &quot;A=&quot; + str(A)</span>
-    <span class="c"># print &quot;A_prime=&quot; + str(A_prime)</span>
-
-
-    <span class="c"># print &quot;Axis Transform&quot;</span>
-    <span class="c"># CT = AxisTransform(array([0.0,0.0,0.0]), array([1.0, 0.0, 0.0]), array([0.0,1.0,0.0]))</span>
-    <span class="c">#</span>
-    <span class="c"># A = array([</span>
-    <span class="c">#     [2.0, 0.0, 0.0],</span>
-    <span class="c">#     [0.5, sqrt(3)/2, 1.0]</span>
-    <span class="c"># ])</span>
-    <span class="c"># # A = array([</span>
-    <span class="c"># #     [1.0, 0.0, 0.0],</span>
-    <span class="c"># #     [0.0, 1.0, 0.0],</span>
-    <span class="c"># #     [0.0, 0.0, 1.0]])</span>
-    <span class="c">#</span>
-    <span class="c"># A_prime = CT.apply(A)</span>
-    <span class="c">#</span>
-    <span class="c"># print &quot;A=&quot; + str(A)</span>
-    <span class="c"># print &quot;A_prime=&quot; + str(A_prime)</span>
-
-
-    <span class="c"># B = array([</span>
-    <span class="c">#     [0.5, sqrt(3)/2, 0.0, 0.0],</span>
-    <span class="c">#     [-sqrt(3)/2, 0.5, 0.0, 0.0],</span>
-    <span class="c">#     [0.0, 0.0, 1.0, 0.0],</span>
-    <span class="c">#     [0.0, 0.0, 0.0, 1.0]])</span>
-    <span class="c">#</span>
-    <span class="c"># Binv = inv(B)</span>
-    <span class="c">#</span>
-    <span class="c"># v1 = array([[1.0, 0.0, 0.0, 1.0], [0.0, 1.0, 0.0, 1.0]])</span>
-    <span class="c">#</span>
-    <span class="c"># v1_prime = dot(Binv,v1.transpose()).transpose()</span>
-    <span class="c"># print &quot;the image of v1=&quot;+str(v1)+&quot; is v1_prime=&quot; + str(v1_prime)</span>
-    <span class="c">#</span>
-    <span class="c">#</span>
-    <span class="c"># v_tr = array([2.0, 3.0, 4.0])</span>
-    <span class="c"># # v_tr = array([0.0, 0.0, 0.0])</span>
-    <span class="c"># Binv_tr = Binv</span>
-    <span class="c"># Binv_tr[0:3, 3:4] = array([v_tr]).transpose()</span>
-    <span class="c"># print &quot;Binv_tr=&quot;+str(Binv_tr)</span>
-    <span class="c">#</span>
-    <span class="c"># v1_prime_tr = dot(Binv_tr, v1.transpose()).transpose()</span>
-    <span class="c"># print &quot;the translated image of v1=&quot;+str(v1)+&quot; is v1_prime_tr=&quot; + str(v1_prime_tr)</span>
-    <span class="c">#</span>
-    <span class="c"># Basis = B[0:3,0:3]</span>
-    <span class="c"># T = ChangeOfBasis(Basis, -v_tr)</span>
-    <span class="c"># v1_prime_tr_T = T.apply(array([[1.0, 0.0, 0.0],[0.0, 1.0, 0.0]]))</span>
-    <span class="c"># print &quot;the translated image of v1=&quot;+str(v1)+&quot; is v1_prime_tr_T=&quot; + str(v1_prime_tr_T)</span>
-    <span class="c">#</span>
-    <span class="c"># AT = AxisTransform(new_origin=-v_tr, point_on_x_axis=B[0,0:3]-v_tr, point_on_xy_plane=B[1,0:3]-v_tr)</span>
-    <span class="c"># v1_prime_tr_AT = AT.apply(array([[1.0, 0.0, 0.0],[0.0, 1.0, 0.0]]))</span>
-    <span class="c"># print &quot;the translated image of v1=&quot;+str(v1)+&quot; is v1_prime_tr_AT=&quot; + str(v1_prime_tr_AT)</span>
-
-    <span class="n">v_tr</span> <span class="o">=</span> <span class="n">array</span><span class="p">([</span><span class="mf">2.0</span><span class="p">,</span> <span class="mf">3.0</span><span class="p">,</span> <span class="mf">4.0</span><span class="p">])</span>
-
-    <span class="c"># translate by -v_tr</span>
-    <span class="n">T_tr</span> <span class="o">=</span> <span class="n">eye</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span>
-    <span class="n">T_tr</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">:</span><span class="mi">4</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="n">array</span><span class="p">([</span><span class="n">v_tr</span><span class="p">])</span><span class="o">.</span><span class="n">transpose</span><span class="p">()</span>
-
-    <span class="c"># rotate 60 degrees</span>
-    <span class="n">B</span> <span class="o">=</span> <span class="n">array</span><span class="p">([</span>
-        <span class="p">[</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">sqrt</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">],</span>
-        <span class="p">[</span><span class="o">-</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">],</span>
-        <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">],</span>
-        <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">]])</span>
-
-    <span class="n">B_tr</span> <span class="o">=</span> <span class="n">dot</span><span class="p">(</span><span class="n">B</span><span class="p">,</span> <span class="n">T_tr</span><span class="p">)</span>
-
-    <span class="n">v1</span> <span class="o">=</span> <span class="n">array</span><span class="p">([[</span><span class="mf">2.0</span><span class="p">,</span> <span class="mf">3.0</span><span class="p">,</span> <span class="mf">4.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">],</span> <span class="p">[</span><span class="mf">2.0</span> <span class="o">+</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">3.0</span> <span class="o">+</span> <span class="n">sqrt</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span> <span class="mf">4.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">],</span>
-                <span class="p">[</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">],</span> <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">]])</span>
-
-    <span class="n">v1_prime</span> <span class="o">=</span> <span class="n">dot</span><span class="p">(</span><span class="n">B_tr</span><span class="p">,</span> <span class="n">v1</span><span class="o">.</span><span class="n">transpose</span><span class="p">())</span><span class="o">.</span><span class="n">transpose</span><span class="p">()</span>
-
-    <span class="n">AT</span> <span class="o">=</span> <span class="n">AxisTransform</span><span class="p">(</span><span class="n">new_origin</span><span class="o">=</span><span class="n">v_tr</span><span class="p">,</span>
-                       <span class="n">point_on_x_axis</span><span class="o">=</span><span class="p">[</span><span class="mf">2.0</span> <span class="o">+</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">3.0</span> <span class="o">+</span> <span class="n">sqrt</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span> <span class="mf">4.0</span><span class="p">],</span>
-                       <span class="n">point_on_xy_plane</span><span class="o">=</span><span class="p">[</span><span class="mf">2.0</span><span class="p">,</span> <span class="mf">4.0</span><span class="p">,</span> <span class="mf">4.0</span><span class="p">])</span>
-    <span class="n">v1_prime_tr_AT</span> <span class="o">=</span> <span class="n">AT</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">v1</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">:</span><span class="mi">3</span><span class="p">])</span>
+<div class="viewcode-block" id="z_axis_transform"><a class="viewcode-back" href="../../apidoc/mbuild.html#mbuild.coordinate_transform.z_axis_transform">[docs]</a><span class="k">def</span> <span class="nf">z_axis_transform</span><span class="p">(</span><span class="n">compound</span><span class="p">,</span> <span class="n">new_origin</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                     <span class="n">point_on_z_axis</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                     <span class="n">point_on_zx_plane</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="n">x_axis_transform</span><span class="p">(</span><span class="n">compound</span><span class="p">,</span> <span class="n">new_origin</span><span class="o">=</span><span class="n">new_origin</span><span class="p">,</span>
+                     <span class="n">point_on_x_axis</span><span class="o">=</span><span class="n">point_on_z_axis</span><span class="p">,</span>
+                     <span class="n">point_on_xy_plane</span><span class="o">=</span><span class="n">point_on_zx_plane</span><span class="p">)</span>
+    <span class="n">rotate_around_y</span><span class="p">(</span><span class="n">compound</span><span class="p">,</span> <span class="n">pi</span> <span class="o">*</span> <span class="mi">3</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span></div>
 </pre></div>
 
           </div>
