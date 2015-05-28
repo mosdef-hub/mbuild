@@ -4,7 +4,7 @@ import mbuild as mb
 class MPC(mb.Compound):
     """A 2-(methacryloloxy) ethyl phosophorylcholine monomer."""
     def __init__(self, alpha=0):
-        super(MPC, self).__init__(self)
+        super(MPC, self).__init__()
 
         # Look for data file in same directory as this python module.
         mb.load('mpc.pdb', compound=self, relative_to_module=self.__module__)

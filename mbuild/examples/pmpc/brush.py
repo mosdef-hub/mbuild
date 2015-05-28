@@ -11,7 +11,7 @@ from mbuild.examples.pmpc.initiator import Initiator
 class Brush(mb.Compound):
     """ """
     def __init__(self, chain_length=4, alpha=pi/4):
-        super(Brush, self).__init__(self)
+        super(Brush, self).__init__()
 
         # Add parts
         self.add(Silane(), 'silane')
