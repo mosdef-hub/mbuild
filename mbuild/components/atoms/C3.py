@@ -8,7 +8,7 @@ import mbuild as mb
 class C3(mb.Compound):
     """A tri-valent, planar carbon."""
     def __init__(self):
-        super(C3, self).__init__(self)
+        super(C3, self).__init__()
         self.add(mb.Atom('C'), 'C')
 
         self.add(mb.Port(anchor=self.C), 'up')

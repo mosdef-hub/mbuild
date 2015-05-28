@@ -31,7 +31,7 @@ class Port(Compound):
         super(Port, self).__init__(kind='Port')
         self.anchor = anchor
 
-        up = Compound()
+        up = Compound(kind='subport')
         up.add(Atom(name='G', pos=[0, 0, 0]), 'middle')
         up.add(Atom(name='G', pos=[0, 0.02, 0]), 'top')
         up.add(Atom(name='G', pos=[-0.02, -0.01, 0]), 'left')

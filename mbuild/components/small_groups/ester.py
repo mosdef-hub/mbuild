@@ -6,7 +6,7 @@ import mbuild as mb
 class Ester(mb.Compound):
     """A ester group -C(=O)O-. """
     def __init__(self):
-        super(Ester, self).__init__(self)
+        super(Ester, self).__init__()
 
         mb.load('ester.pdb', compound=self, relative_to_module=self.__module__)
         mb.translate(self, -self.C[0])
