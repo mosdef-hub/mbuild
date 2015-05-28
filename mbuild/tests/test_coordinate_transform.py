@@ -1,7 +1,15 @@
 import numpy as np
+import pytest
 
-import mbuild as mb
-from mbuild.coordinate_transform import Translation, CoordinateTransform, RotationAroundZ, RotationAroundY, RotationAroundX, Rotation, ChangeOfBasis, AxisTransform, RigidTransform
+from mbuild.coordinate_transform import (Translation, CoordinateTransform,
+                                         RotationAroundZ, RotationAroundY,
+                                         RotationAroundX, Rotation,
+                                         ChangeOfBasis, AxisTransform,
+                                         RigidTransform, rotate_around_x,
+                                         rotate_around_y, rotate_around_z,
+                                         equivalence_transform, translate,
+                                         translate_to, x_axis_transform,
+                                         y_axis_transform, z_axis_transform)
 from mbuild.tests.base_test import BaseTest
 
 
@@ -58,13 +66,38 @@ class TestCoordinateTransform(BaseTest):
         rigid_transform = RigidTransform(A, B)
         assert (rigid_transform.apply_to(np.array([[2,3,4]])) == B).all()
 
-if __name__=='__main__':
-    TestCoordinateTransform().test_apply_to()
-    TestCoordinateTransform().test_translation()
-    TestCoordinateTransform().test_rotation_around_z()
-    TestCoordinateTransform().test_rotation_around_y()
-    TestCoordinateTransform().test_rotation_around_x()
-    TestCoordinateTransform().test_rotation()
-    TestCoordinateTransform().test_change_of_basis()
-    TestCoordinateTransform().test_axis_transform()
-    TestCoordinateTransform().test_rigid_transform()
+    @pytest.mark.skipif(True, reason="needs to be implemented")
+    def test_rotate_around_x(self, methane):
+        before = methane.xyz_with_ports
+        methane.atoms[0]
+        rotate_around_x(methane, np.pi)
+        after = methane.xyz_with_ports
+
+    @pytest.mark.skipif(True, reason="needs to be implemented")
+    def test_rotate_around_y(self, ch2):
+        before = ch2.xyz_with_ports
+        rotate_around_y(ch2, np.pi)
+        after = ch2.xyz_with_ports
+
+    @pytest.mark.skipif(True, reason="needs to be implemented")
+    def test_rotate_around_z(self, ch2):
+        before = ch2.xyz_with_ports
+        rotate_around_z(ch2, np.pi)
+        after = ch2.xyz_with_ports
+
+    def test_equivalence_transform(self, ch2, ch3, methane):
+        equivalence_transform(ch2, ch2.atoms[0], methane.atoms[0], add_bond=False)
+        assert (ch2.atoms[0].pos == methane.atoms[0].pos).all()
+        equivalence_transform(ch2, ch2.up, ch3.up)
+        assert (ch2.n_bonds == 3)
+
+    def test_translate(self, methane):
+        translate(methane, -methane.atoms[0].pos)
+        assert (methane.atoms[0].pos == np.array([0, 0, 0])).all()
+
+    def test_translate_to(self, methane):
+        before = methane.xyz_with_ports
+        original_center = methane.center
+        translate_value = np.array([2, 3, 4])
+        translate_to(methane, translate_value)
+        assert (methane.xyz_with_ports == before-original_center+translate_value).all()

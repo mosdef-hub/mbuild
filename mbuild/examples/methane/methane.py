@@ -5,7 +5,7 @@ class Methane(mb.Compound):
     def __init__(self):
         super(Methane, self).__init__()
         carbon = mb.Atom(name='C')
-        self.add(carbon)
+        self.add(carbon, label='C')
 
         hydrogen = mb.Atom(name='H', pos=[0.1, 0, -0.07])
         self.add(hydrogen, label='HC[$]')
