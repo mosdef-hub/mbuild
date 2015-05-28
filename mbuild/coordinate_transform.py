@@ -6,7 +6,7 @@ from numpy.linalg import norm, svd, inv
 
 __all__ = ['rotate_around_x', 'rotate_around_y', 'rotate_around_z',
            'equivalence_transform', 'translate', 'translate_to',
-           'x_axis_transform', 'y_axis_transform']
+           'x_axis_transform', 'y_axis_transform', 'z_axis_transform']
 
 
 class CoordinateTransform(object):
@@ -230,6 +230,10 @@ def vec_angle(v1, v2):
 
 
 def _write_back_atom_positions(compound, arrnx3):
+    from mbuild.atom import Atom
+    if isinstance(compound, Atom):
+        compound.pos = squeeze(arrnx3)
+        return
     arr = arrnx3.reshape((-1))
     for i, atom in enumerate(compound.yield_atoms()):
         atom.pos = array([arr[3 * i], arr[3 * i + 1], arr[3 * i + 2]])
@@ -296,7 +300,6 @@ def equivalence_transform(compound, from_positions, to_positions, add_bond=True)
     """
     from mbuild.port import Port
     from mbuild.bond import Bond
-    from mbuild.atom import Atom
     if isinstance(from_positions, (list, tuple)) and isinstance(to_positions, (list, tuple)):
         equivalence_pairs = zip(from_positions, to_positions)
     elif isinstance(from_positions, Port) and isinstance(to_positions, Port):
@@ -305,13 +308,9 @@ def equivalence_transform(compound, from_positions, to_positions, add_bond=True)
         equivalence_pairs = [(from_positions, to_positions)]
 
     T = _create_equivalence_transform(equivalence_pairs)
-    if isinstance(compound, Atom):
-        atom_position = compound.pos
-        compound.pos = T.apply_to(atom_position)
-    else:
-        atom_positions = compound.xyz_with_ports
-        atom_positions = T.apply_to(atom_positions)
-        _write_back_atom_positions(compound, atom_positions)
+    atom_positions = compound.xyz_with_ports
+    atom_positions = T.apply_to(atom_positions)
+    _write_back_atom_positions(compound, atom_positions)
 
     if add_bond:
         if isinstance(from_positions, Port) and isinstance(to_positions, Port):
@@ -372,7 +371,7 @@ def translate(compound, v):
 
 def translate_to(compound, v):
     atom_positions = compound.xyz_with_ports
-    atom_positions -= atom_positions.min(axis=0)
+    atom_positions -= compound.center
     atom_positions = Translation(v).apply_to(atom_positions)
     _write_back_atom_positions(compound, atom_positions)
 

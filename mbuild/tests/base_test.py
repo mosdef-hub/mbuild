@@ -28,6 +28,11 @@ class BaseTest:
         return CH2()
 
     @pytest.fixture
+    def ch3(self):
+        from mbuild.components.small_groups.ch3 import CH3
+        return CH3()
+
+    @pytest.fixture
     def betacristobalite(self):
         from mbuild.components.surfaces.betacristobalite import Betacristobalite
         return Betacristobalite()
