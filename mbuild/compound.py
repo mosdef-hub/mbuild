@@ -192,21 +192,39 @@ class Compound(Part):
 
     def view_hierarchy(self, show_ports=False):
         """View a Compounds hierarchy of compounds as a chart. """
-        import networkx as nx
-        import matplotlib.pyplot as plt
+        try:
+            import networkx as nx
+        except ImportError:
+            raise ImportError('Ensure Networkx is installed correctly')
+        try:
+            import matplotlib.pyplot as plt
+        except ImportError:
+            raise ImportError('Ensure matplotlib is installed correctly')
+
+        from collections import Counter
+
         compound_tree = nx.DiGraph()
         compound_tree.add_node(self.kind)
+        compound_frequency = Counter([self.kind])
         for sub_compound in self._yield_parts(Compound):
             if not show_ports and sub_compound.kind in ["Port", "subport"]:
                 continue
+            compound_frequency[sub_compound.kind] += 1
             compound_tree.add_node(sub_compound.kind)
             if sub_compound.parent:
                 compound_tree.add_edge(sub_compound.parent.kind, sub_compound.kind)
-        plt.title("compound_hierarchy")
+        labels = {}
+        for compound in compound_tree:
+            node_key = compound
+            labels[node_key] = "{}\n{:d}".format(compound, compound_frequency[compound])
+
+        plt.title("{}_compound_hierarchy".format(self.kind))
         pos = nx.circular_layout(compound_tree)
-        nx.draw(compound_tree, pos, with_labels=True, arrows=True,
-                node_size=3000, font_size=8)
-        plt.savefig('compound_hierarchy.png')
+        nx.draw(compound_tree, pos, with_labels=False, arrows=True,
+                node_size=3000)
+        nx.draw_networkx_labels(compound_tree, pos, labels=labels, font_size=8)
+        plt.savefig('{}_compound_hierarchy.png'.format(self.kind))
+        plt.clf()
 
     def visualize(self, show_ports=False):
         """Visualize the Compound using VMD.
