@@ -446,3 +446,24 @@ def z_axis_transform(compound, new_origin=None,
                      point_on_x_axis=point_on_z_axis,
                      point_on_xy_plane=point_on_zx_plane)
     rotate_around_y(compound, pi * 3 / 2)
+
+
+def revolve_around_x(compound, theta):
+    center_pos = compound.center
+    translate(compound, -center_pos)
+    rotate_around_x(compound, theta)
+    translate(compound, center_pos)
+
+
+def revolve_around_y(compound, theta):
+    center_pos = compound.center
+    translate(compound, -center_pos)
+    rotate_around_y(compound, theta)
+    translate(compound, center_pos)
+
+
+def revolve_around_z(compound, theta):
+    center_pos = compound.center
+    translate(compound, -center_pos)
+    rotate_around_z(compound, theta)
+    translate(compound, center_pos)
