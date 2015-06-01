@@ -190,6 +190,38 @@ class Compound(Part):
     def periodicity(self, periods):
         self._periodicity = np.array(periods)
 
+    def _hierarchy_pos(self, G, root, width=1., vert_gap = 0.2, vert_loc = 0, xcenter = 0,
+                      pos = None):
+        '''
+        http://stackoverflow.com/questions/29586520/can-one-get-hierarchical-graphs-from-networkx-with-python-3
+        If there is a cycle that is reachable from root, then this will see infinite recursion.
+        G: the graph
+        root: the root node of current branch
+        width: horizontal space allocated for this branch - avoids overlap with other branches
+        vert_gap: gap between levels of hierarchy
+        vert_loc: vertical location of root
+        xcenter: horizontal location of root
+        pos: a dict saying where all nodes go if they have been assigned
+        parent: parent of this branch.
+        '''
+        print(xcenter)
+        if pos == None:
+            pos = {root:(xcenter,vert_loc)}
+        else:
+            pos[root] = (xcenter, vert_loc)
+        neighbors = G.neighbors(root)
+        if len(neighbors)!=0:
+            dx = width/len(neighbors)
+            print(len(neighbors))
+            nextx = xcenter - width/2 - dx/2
+            print(nextx)
+            for neighbor in neighbors:
+                nextx += dx
+                pos = self._hierarchy_pos(G,neighbor, width = dx*1.5, vert_gap = vert_gap,
+                                    vert_loc = vert_loc-vert_gap, xcenter=nextx*1.5,
+                                    pos=pos)
+        return pos
+
     def view_hierarchy(self, show_ports=False):
         """View a Compounds hierarchy of compounds as a chart. """
         try:
@@ -219,7 +251,7 @@ class Compound(Part):
             labels[node_key] = "{}\n{:d}".format(compound, compound_frequency[compound])
 
         plt.title("{}_compound_hierarchy".format(self.kind))
-        pos = nx.circular_layout(compound_tree)
+        pos = self._hierarchy_pos(compound_tree, self.kind)
         nx.draw(compound_tree, pos, with_labels=False, arrows=True,
                 node_size=3000)
         nx.draw_networkx_labels(compound_tree, pos, labels=labels, font_size=8)
