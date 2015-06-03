@@ -192,7 +192,15 @@ class Compound(Part):
         self._periodicity = np.array(periods)
 
     def view_hierarchy(self, show_ports=False):
-        """View a Compounds hierarchy of compounds as a chart. """
+        """Visualize a compound hierarchy as a tree.
+
+        A tree is constructed from the compound hierarchy with self as the root.
+        The tree is then rendered in a web browser window using D3.js.
+
+        Note
+        ------
+        Portions of this code are adapted from https://gist.github.com/mbostock/4339083.
+        """
         try:
             import networkx as nx
         except ImportError:
@@ -219,10 +227,7 @@ class Compound(Part):
         for compound in compound_tree:
             node_key = "'{}'".format(compound)
             labels[node_key] = '"{} {:d}"'.format(compound, compound_frequency[compound])
-        # This code is taken from: https://gist.github.com/mbostock/4339083
-        # The directed graph is converted to a json format and manipulated to be
-        # correctly displayed
-        # The graph is visualized in html by d3.json visualization
+
         json_template = json_graph.tree_data(compound_tree, self.kind,
                                              dict(id="name", children="children"))
         json_template = str(json_template)
