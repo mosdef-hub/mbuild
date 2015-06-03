@@ -5,7 +5,7 @@ import mbuild as mb
 
 class Initiator(mb.Compound):
     def __init__(self):
-        super(Initiator, self).__init__(self)
+        super(Initiator, self).__init__()
 
         # Look for data file in same directory as this python module.
         mb.load('initiator.pdb', compound=self, relative_to_module=self.__module__)

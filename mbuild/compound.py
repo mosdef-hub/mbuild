@@ -1,11 +1,12 @@
 from __future__ import print_function
 
-from collections import OrderedDict
+from collections import OrderedDict, Counter
 from copy import deepcopy
 import itertools
 import os
 import sys
-
+import tempfile
+import webbrowser
 
 import numpy as np
 import mdtraj as md
@@ -189,6 +190,57 @@ class Compound(Part):
     @periodicity.setter
     def periodicity(self, periods):
         self._periodicity = np.array(periods)
+
+    def view_hierarchy(self, show_ports=False):
+        """Visualize a compound hierarchy as a tree.
+
+        A tree is constructed from the compound hierarchy with self as the root.
+        The tree is then rendered in a web browser window using D3.js.
+
+        Note
+        ------
+        Portions of this code are adapted from https://gist.github.com/mbostock/4339083.
+        """
+        try:
+            import networkx as nx
+        except ImportError:
+            raise ImportError('Ensure Networkx is installed correctly')
+        try:
+            import matplotlib.pyplot as plt
+        except ImportError:
+            raise ImportError('Ensure matplotlib is installed correctly')
+
+        from networkx.readwrite import json_graph
+        from mbuild.utils.visualization import d3_tree_template
+
+        compound_tree = nx.DiGraph()
+        compound_tree.add_node(self.kind)
+        compound_frequency = Counter([self.kind])
+        for sub_compound in self._yield_parts(Compound):
+            if not show_ports and sub_compound.kind in ["Port", "subport"]:
+                continue
+            compound_frequency[sub_compound.kind] += 1
+            compound_tree.add_node(sub_compound.kind)
+            if sub_compound.parent:
+                compound_tree.add_edge(sub_compound.parent.kind, sub_compound.kind)
+        labels = {"'children'": '"children"', "'name'": '"name"'}
+        for compound in compound_tree:
+            node_key = "'{}'".format(compound)
+            labels[node_key] = '"{} {:d}"'.format(compound, compound_frequency[compound])
+
+        json_template = json_graph.tree_data(compound_tree, self.kind,
+                                             dict(id="name", children="children"))
+        json_template = str(json_template)
+        for label in labels:
+            json_template = json_template.replace(label, labels[label])
+        json_path = tempfile.mkstemp(suffix='.json')
+        with open(json_path[1], 'w') as the_json_file:
+            the_json_file.write(json_template)
+        html = d3_tree_template % str(json_path[1])
+        html_file = tempfile.mkstemp(suffix='.html')
+        with open (html_file[1], 'w') as the_file:
+            the_file.write(html)
+        webbrowser.open('file:' + html_file[1])
 
     def visualize(self, show_ports=False):
         """Visualize the Compound using VMD.

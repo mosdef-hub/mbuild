@@ -41,7 +41,7 @@ class TiledCompound(Compound):
                              'specified dimensions.')
 
         if kind is None:
-            kind = tile.kind
+            kind = tile.kind + '-'.join(str(d) for d in n_tiles)
         self.kind = kind
         self.periodicity = np.array(tile.periodicity * n_tiles)
 
