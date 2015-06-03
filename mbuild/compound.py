@@ -1,11 +1,12 @@
 from __future__ import print_function
 
-from collections import OrderedDict
+from collections import OrderedDict, Counter
 from copy import deepcopy
 import itertools
 import os
 import sys
-
+import tempfile
+import webbrowser
 
 import numpy as np
 import mdtraj as md
@@ -190,54 +191,6 @@ class Compound(Part):
     def periodicity(self, periods):
         self._periodicity = np.array(periods)
 
-    def _tree_layout(self, G, root, width=1., vert_gap=0.2, vert_loc=0., xcenter=0.,
-                      pos = None):
-        """Returns the node positions for a Tree layout visualization recursively.
-
-        http://stackoverflow.com/questions/29586520/can-one-get-hierarchical-graphs-from-networkx-with-python-3
-        If there is a cycle that is reachable from root, then this will see infinite recursion.
-
-        ...
-
-        Parameters
-        ----------
-        G : DiGraph
-            networkx directed graph
-        root : Node
-            The root node of the directed graph G
-        width : float, default=1.0
-            The width distance for a tree level
-        vert_gap : float, default=0.2
-            The vertical distance between nodes
-        vert_loc : float, default=0.0
-            The vertical location of a root
-        xcenter : float, default=0.0
-            The horizontal location of root
-        pos : Dictionary
-            A dictionary with a nodes position in space {node:(x, y)}
-
-        Returns
-        -------
-        pos : Dictionary
-            A dictionary with a nodes position in space {node:(x, y)}
-
-        """
-
-        if pos is None:
-            pos = {root:(xcenter,vert_loc)}
-        else:
-            pos[root] = (xcenter, vert_loc)
-        neighbors = G.neighbors(root)
-        if len(neighbors)!=0:
-            dx = width/len(neighbors)
-            nextx = xcenter - width/2 - dx/2
-            for neighbor in neighbors:
-                nextx += dx
-                pos = self._tree_layout(G,neighbor, width = dx*1.5, vert_gap = vert_gap,
-                                    vert_loc = vert_loc-vert_gap, xcenter=nextx*1.5,
-                                    pos=pos)
-        return pos
-
     def view_hierarchy(self, show_ports=False):
         """View a Compounds hierarchy of compounds as a chart. """
         try:
@@ -249,7 +202,8 @@ class Compound(Part):
         except ImportError:
             raise ImportError('Ensure matplotlib is installed correctly')
 
-        from collections import Counter
+        from networkx.readwrite import json_graph
+        from mbuild.utils.visualization import d3_tree_template
 
         compound_tree = nx.DiGraph()
         compound_tree.add_node(self.kind)
@@ -261,18 +215,27 @@ class Compound(Part):
             compound_tree.add_node(sub_compound.kind)
             if sub_compound.parent:
                 compound_tree.add_edge(sub_compound.parent.kind, sub_compound.kind)
-        labels = {}
+        labels = {"'children'": '"children"', "'name'": '"name"'}
         for compound in compound_tree:
-            node_key = compound
-            labels[node_key] = "{}\n{:d}".format(compound, compound_frequency[compound])
-
-        plt.title("{}_compound_hierarchy".format(self.kind))
-        pos = self._tree_layout(compound_tree, self.kind)
-        nx.draw(compound_tree, pos, with_labels=False, arrows=True,
-                node_size=3000)
-        nx.draw_networkx_labels(compound_tree, pos, labels=labels, font_size=8)
-        plt.savefig('{}_compound_hierarchy.png'.format(self.kind))
-        plt.clf()
+            node_key = "'{}'".format(compound)
+            labels[node_key] = '"{} {:d}"'.format(compound, compound_frequency[compound])
+        # This code is taken from: https://gist.github.com/mbostock/4339083
+        # The directed graph is converted to a json format and manipulated to be
+        # correctly displayed
+        # The graph is visualized in html by d3.json visualization
+        json_template = json_graph.tree_data(compound_tree, self.kind,
+                                             dict(id="name", children="children"))
+        json_template = str(json_template)
+        for label in labels:
+            json_template = json_template.replace(label, labels[label])
+        json_path = tempfile.mkstemp(suffix='.json')
+        with open(json_path[1], 'w') as the_json_file:
+            the_json_file.write(json_template)
+        html = d3_tree_template % str(json_path[1])
+        html_file = tempfile.mkstemp(suffix='.html')
+        with open (html_file[1], 'w') as the_file:
+            the_file.write(html)
+        webbrowser.open('file:' + html_file[1])
 
     def visualize(self, show_ports=False):
         """Visualize the Compound using VMD.
