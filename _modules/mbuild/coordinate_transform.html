@@ -583,7 +583,28 @@
     <span class="n">x_axis_transform</span><span class="p">(</span><span class="n">compound</span><span class="p">,</span> <span class="n">new_origin</span><span class="o">=</span><span class="n">new_origin</span><span class="p">,</span>
                      <span class="n">point_on_x_axis</span><span class="o">=</span><span class="n">point_on_z_axis</span><span class="p">,</span>
                      <span class="n">point_on_xy_plane</span><span class="o">=</span><span class="n">point_on_zx_plane</span><span class="p">)</span>
-    <span class="n">rotate_around_y</span><span class="p">(</span><span class="n">compound</span><span class="p">,</span> <span class="n">pi</span> <span class="o">*</span> <span class="mi">3</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span></div>
+    <span class="n">rotate_around_y</span><span class="p">(</span><span class="n">compound</span><span class="p">,</span> <span class="n">pi</span> <span class="o">*</span> <span class="mi">3</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span>
+
+</div>
+<span class="k">def</span> <span class="nf">revolve_around_x</span><span class="p">(</span><span class="n">compound</span><span class="p">,</span> <span class="n">theta</span><span class="p">):</span>
+    <span class="n">center_pos</span> <span class="o">=</span> <span class="n">compound</span><span class="o">.</span><span class="n">center</span>
+    <span class="n">translate</span><span class="p">(</span><span class="n">compound</span><span class="p">,</span> <span class="o">-</span><span class="n">center_pos</span><span class="p">)</span>
+    <span class="n">rotate_around_x</span><span class="p">(</span><span class="n">compound</span><span class="p">,</span> <span class="n">theta</span><span class="p">)</span>
+    <span class="n">translate</span><span class="p">(</span><span class="n">compound</span><span class="p">,</span> <span class="n">center_pos</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">revolve_around_y</span><span class="p">(</span><span class="n">compound</span><span class="p">,</span> <span class="n">theta</span><span class="p">):</span>
+    <span class="n">center_pos</span> <span class="o">=</span> <span class="n">compound</span><span class="o">.</span><span class="n">center</span>
+    <span class="n">translate</span><span class="p">(</span><span class="n">compound</span><span class="p">,</span> <span class="o">-</span><span class="n">center_pos</span><span class="p">)</span>
+    <span class="n">rotate_around_y</span><span class="p">(</span><span class="n">compound</span><span class="p">,</span> <span class="n">theta</span><span class="p">)</span>
+    <span class="n">translate</span><span class="p">(</span><span class="n">compound</span><span class="p">,</span> <span class="n">center_pos</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">revolve_around_z</span><span class="p">(</span><span class="n">compound</span><span class="p">,</span> <span class="n">theta</span><span class="p">):</span>
+    <span class="n">center_pos</span> <span class="o">=</span> <span class="n">compound</span><span class="o">.</span><span class="n">center</span>
+    <span class="n">translate</span><span class="p">(</span><span class="n">compound</span><span class="p">,</span> <span class="o">-</span><span class="n">center_pos</span><span class="p">)</span>
+    <span class="n">rotate_around_z</span><span class="p">(</span><span class="n">compound</span><span class="p">,</span> <span class="n">theta</span><span class="p">)</span>
+    <span class="n">translate</span><span class="p">(</span><span class="n">compound</span><span class="p">,</span> <span class="n">center_pos</span><span class="p">)</span>
 </pre></div>
 
           </div>

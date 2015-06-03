@@ -138,12 +138,13 @@
   <h1>Source code for mbuild.compound</h1><div class="highlight"><pre>
 <span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">print_function</span>
 
-<span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">OrderedDict</span>
+<span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">OrderedDict</span><span class="p">,</span> <span class="n">Counter</span>
 <span class="kn">from</span> <span class="nn">copy</span> <span class="kn">import</span> <span class="n">deepcopy</span>
 <span class="kn">import</span> <span class="nn">itertools</span>
 <span class="kn">import</span> <span class="nn">os</span>
 <span class="kn">import</span> <span class="nn">sys</span>
-
+<span class="kn">import</span> <span class="nn">tempfile</span>
+<span class="kn">import</span> <span class="nn">webbrowser</span>
 
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">mdtraj</span> <span class="kn">as</span> <span class="nn">md</span>
@@ -327,6 +328,57 @@
     <span class="nd">@periodicity.setter</span>
 <div class="viewcode-block" id="Compound.periodicity"><a class="viewcode-back" href="../../apidoc/mbuild.html#mbuild.compound.Compound.periodicity">[docs]</a>    <span class="k">def</span> <span class="nf">periodicity</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">periods</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_periodicity</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">periods</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="Compound.view_hierarchy"><a class="viewcode-back" href="../../apidoc/mbuild.html#mbuild.compound.Compound.view_hierarchy">[docs]</a>    <span class="k">def</span> <span class="nf">view_hierarchy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">show_ports</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Visualize a compound hierarchy as a tree.</span>
+
+<span class="sd">        A tree is constructed from the compound hierarchy with self as the root.</span>
+<span class="sd">        The tree is then rendered in a web browser window using D3.js.</span>
+
+<span class="sd">        Note</span>
+<span class="sd">        ------</span>
+<span class="sd">        Portions of this code are adapted from https://gist.github.com/mbostock/4339083.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="kn">import</span> <span class="nn">networkx</span> <span class="kn">as</span> <span class="nn">nx</span>
+        <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ImportError</span><span class="p">(</span><span class="s">&#39;Ensure Networkx is installed correctly&#39;</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="kn">as</span> <span class="nn">plt</span>
+        <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ImportError</span><span class="p">(</span><span class="s">&#39;Ensure matplotlib is installed correctly&#39;</span><span class="p">)</span>
+
+        <span class="kn">from</span> <span class="nn">networkx.readwrite</span> <span class="kn">import</span> <span class="n">json_graph</span>
+        <span class="kn">from</span> <span class="nn">mbuild.utils.visualization</span> <span class="kn">import</span> <span class="n">d3_tree_template</span>
+
+        <span class="n">compound_tree</span> <span class="o">=</span> <span class="n">nx</span><span class="o">.</span><span class="n">DiGraph</span><span class="p">()</span>
+        <span class="n">compound_tree</span><span class="o">.</span><span class="n">add_node</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">kind</span><span class="p">)</span>
+        <span class="n">compound_frequency</span> <span class="o">=</span> <span class="n">Counter</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">kind</span><span class="p">])</span>
+        <span class="k">for</span> <span class="n">sub_compound</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_yield_parts</span><span class="p">(</span><span class="n">Compound</span><span class="p">):</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">show_ports</span> <span class="ow">and</span> <span class="n">sub_compound</span><span class="o">.</span><span class="n">kind</span> <span class="ow">in</span> <span class="p">[</span><span class="s">&quot;Port&quot;</span><span class="p">,</span> <span class="s">&quot;subport&quot;</span><span class="p">]:</span>
+                <span class="k">continue</span>
+            <span class="n">compound_frequency</span><span class="p">[</span><span class="n">sub_compound</span><span class="o">.</span><span class="n">kind</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="n">compound_tree</span><span class="o">.</span><span class="n">add_node</span><span class="p">(</span><span class="n">sub_compound</span><span class="o">.</span><span class="n">kind</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">sub_compound</span><span class="o">.</span><span class="n">parent</span><span class="p">:</span>
+                <span class="n">compound_tree</span><span class="o">.</span><span class="n">add_edge</span><span class="p">(</span><span class="n">sub_compound</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">kind</span><span class="p">,</span> <span class="n">sub_compound</span><span class="o">.</span><span class="n">kind</span><span class="p">)</span>
+        <span class="n">labels</span> <span class="o">=</span> <span class="p">{</span><span class="s">&quot;&#39;children&#39;&quot;</span><span class="p">:</span> <span class="s">&#39;&quot;children&quot;&#39;</span><span class="p">,</span> <span class="s">&quot;&#39;name&#39;&quot;</span><span class="p">:</span> <span class="s">&#39;&quot;name&quot;&#39;</span><span class="p">}</span>
+        <span class="k">for</span> <span class="n">compound</span> <span class="ow">in</span> <span class="n">compound_tree</span><span class="p">:</span>
+            <span class="n">node_key</span> <span class="o">=</span> <span class="s">&quot;&#39;{}&#39;&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">compound</span><span class="p">)</span>
+            <span class="n">labels</span><span class="p">[</span><span class="n">node_key</span><span class="p">]</span> <span class="o">=</span> <span class="s">&#39;&quot;{} {:d}&quot;&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">compound</span><span class="p">,</span> <span class="n">compound_frequency</span><span class="p">[</span><span class="n">compound</span><span class="p">])</span>
+
+        <span class="n">json_template</span> <span class="o">=</span> <span class="n">json_graph</span><span class="o">.</span><span class="n">tree_data</span><span class="p">(</span><span class="n">compound_tree</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">kind</span><span class="p">,</span>
+                                             <span class="nb">dict</span><span class="p">(</span><span class="nb">id</span><span class="o">=</span><span class="s">&quot;name&quot;</span><span class="p">,</span> <span class="n">children</span><span class="o">=</span><span class="s">&quot;children&quot;</span><span class="p">))</span>
+        <span class="n">json_template</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">json_template</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">label</span> <span class="ow">in</span> <span class="n">labels</span><span class="p">:</span>
+            <span class="n">json_template</span> <span class="o">=</span> <span class="n">json_template</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">label</span><span class="p">,</span> <span class="n">labels</span><span class="p">[</span><span class="n">label</span><span class="p">])</span>
+        <span class="n">json_path</span> <span class="o">=</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">mkstemp</span><span class="p">(</span><span class="n">suffix</span><span class="o">=</span><span class="s">&#39;.json&#39;</span><span class="p">)</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">json_path</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="s">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">the_json_file</span><span class="p">:</span>
+            <span class="n">the_json_file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">json_template</span><span class="p">)</span>
+        <span class="n">html</span> <span class="o">=</span> <span class="n">d3_tree_template</span> <span class="o">%</span> <span class="nb">str</span><span class="p">(</span><span class="n">json_path</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+        <span class="n">html_file</span> <span class="o">=</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">mkstemp</span><span class="p">(</span><span class="n">suffix</span><span class="o">=</span><span class="s">&#39;.html&#39;</span><span class="p">)</span>
+        <span class="k">with</span> <span class="nb">open</span> <span class="p">(</span><span class="n">html_file</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="s">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">the_file</span><span class="p">:</span>
+            <span class="n">the_file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">html</span><span class="p">)</span>
+        <span class="n">webbrowser</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s">&#39;file:&#39;</span> <span class="o">+</span> <span class="n">html_file</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
 </div>
 <div class="viewcode-block" id="Compound.visualize"><a class="viewcode-back" href="../../apidoc/mbuild.html#mbuild.compound.Compound.visualize">[docs]</a>    <span class="k">def</span> <span class="nf">visualize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">show_ports</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Visualize the Compound using VMD.</span>
