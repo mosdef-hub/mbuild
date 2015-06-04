@@ -262,8 +262,8 @@ class Compound(Part):
                 try:
                     os.system('start "" "vmd.exe" "{}"'.format(filename))
                 except OSError:
-                    print('Visualization with VMD failed. Make sure it is installed'
-                          'correctly and launchable from the command line via "start "" "vmd.exe"".')
+                    raise OSError('Visualization with VMD failed. Make sure it is installed'
+                                  'correctly and launchable from the command line via "start "" "vmd.exe"".')
             else:
                 f = tempfile.NamedTemporaryFile(prefix='visualize_{}'.format(self.__class__.__name__), suffix='.mol2')
                 filename = f.name
@@ -272,8 +272,8 @@ class Compound(Part):
                 try:
                     os.system('vmd {}'.format(filename))
                 except OSError:
-                    print("Visualization with VMD failed. Make sure it is installed"
-                          "correctly and launchable from the command line via 'vmd'.")
+                    raise OSError("Visualization with VMD failed. Make sure it is installed"
+                                  "correctly and launchable from the command line via 'vmd'.")
         else:
             from mdtraj.html import TrajectoryView, enable_notebook
             enable_notebook()
