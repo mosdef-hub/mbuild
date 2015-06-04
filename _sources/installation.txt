@@ -50,7 +50,7 @@ in order to get all of the dependencies.
 Testing your installation
 -------------------------
 
-mBuild uses `py.test` for unit testing. To run them simply type run the
+mBuild uses ``py.test`` for unit testing. To run them simply type run the
 following while in the base directory::
 
     $ pip install pytest
