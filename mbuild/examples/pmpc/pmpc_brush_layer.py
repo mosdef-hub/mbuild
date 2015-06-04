@@ -29,6 +29,7 @@ class PMPCLayer(mb.Compound):
 def main():
     mask = mb.grid_mask_2d(5, 5)
     pmpc_layer = PMPCLayer(mask=mask, chain_length=5, alpha=pi/4, tile_x=2, tile_y=2)
+    pmpc_layer.view_hierarchy()
     return pmpc_layer
 
 

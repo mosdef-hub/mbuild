@@ -204,12 +204,7 @@ class Compound(Part):
         try:
             import networkx as nx
         except ImportError:
-            raise ImportError('Ensure Networkx is installed correctly')
-        try:
-            import matplotlib.pyplot as plt
-        except ImportError:
-            raise ImportError('Ensure matplotlib is installed correctly')
-
+            raise ImportError('Networkx is required to visualize the compound hierarchy.')
         from networkx.readwrite import json_graph
         from mbuild.utils.visualization import d3_tree_template
 
