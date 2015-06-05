@@ -255,9 +255,7 @@ class Compound(Part):
         except NameError:
             import tempfile
             if sys.platform.startswith('win'):
-                f = tempfile.mkstemp(suffix='.mol2')
-                filename = f[1]
-                print('vis: ', show_ports)
+                filename = tempfile.mkstemp(suffix='.mol2')[1]
                 self.save(filename, show_ports=show_ports)
                 try:
                     os.system('start "" "vmd.exe" "{}"'.format(filename))
@@ -265,9 +263,7 @@ class Compound(Part):
                     raise OSError('Visualization with VMD failed. Make sure it is installed'
                                   'correctly and launchable from the command line via "start "" "vmd.exe"".')
             else:
-                f = tempfile.NamedTemporaryFile(prefix='visualize_{}'.format(self.__class__.__name__), suffix='.mol2')
-                filename = f.name
-                print('vis: ', show_ports)
+                filename = tempfile.NamedTemporaryFile(prefix='visualize_{}'.format(self.__class__.__name__), suffix='.mol2').name
                 self.save(filename, show_ports=show_ports)
                 try:
                     os.system('vmd {}'.format(filename))
