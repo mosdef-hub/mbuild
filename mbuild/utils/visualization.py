@@ -50,8 +50,9 @@ var svg = d3.select("body").append("svg")
   .append("g")
     .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
-d3.json("%s", function(error, flare) {
-  root = flare;
+var myjson = '%s'
+
+  root = JSON.parse( myjson );
   root.x0 = height / 2;
   root.y0 = 0;
 
@@ -65,7 +66,6 @@ d3.json("%s", function(error, flare) {
 
   root.children.forEach(collapse);
   update(root);
-});
 
 d3.select(self.frameElement).style("height", "800px");
 

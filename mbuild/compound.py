@@ -233,10 +233,7 @@ class Compound(Part):
         json_template = str(json_template)
         for label in labels:
             json_template = json_template.replace(label, labels[label])
-        json_path = tempfile.mkstemp(suffix='.json')
-        with open(json_path[1], 'w') as the_json_file:
-            the_json_file.write(json_template)
-        html = d3_tree_template % str(json_path[1])
+        html = d3_tree_template % str(json_template)
         html_file = tempfile.mkstemp(suffix='.html')
         with open (html_file[1], 'w') as the_file:
             the_file.write(html)
