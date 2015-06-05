@@ -34,7 +34,9 @@ class Tnp(mb.Compound):
         chain_proto = mb.Polymer(monomer, n=chain_length)
 
         # apply chains to mask
-        mb.apply_mask(self.np, chain_proto , mask, guest_port_name="down")
+        chain_protos, empty_backfill = mb.apply_mask(self.np, chain_proto , mask,
+                                                     guest_port_name="down")
+        self.add(chain_protos)
 
         # self.add_bonds('np', 'np', sqrt(4 * ball_radius**2 * pi / n) - 0.5,
         #                            sqrt(4 * ball_radius**2 * pi / n) + 0.5)

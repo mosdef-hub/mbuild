@@ -28,16 +28,21 @@ class AlkaneMonolayer(mb.Compound):
         hydrogen = H()
 
         # Attach chains to specified binding sites. Other sites get a hydrogen.
-        mb.apply_mask(host=self.tiled_surface, guest=alkylsilane, mask=mask,
-                      backfill=hydrogen)
+        alkylsilanes, hydrogens = mb.apply_mask(host=self.tiled_surface,
+                                                guest=alkylsilane, mask=mask,
+                                                backfill=hydrogen)
+        self.add(alkylsilanes)
+        self.add(hydrogens)
 
 
 def main():
     from mbuild.mask import grid_mask_2d
     mask = grid_mask_2d(8, 8)  # Evenly spaced, 2D grid of points.
     monolayer = AlkaneMonolayer(chain_length=10, mask=mask)
+    monolayer.visualize()
+    monolayer.view_hierarchy()
 
-    monolayer.save(filename='c10-n64.pdb', show_ports=True)
+    # monolayer.save(filename='c10-n64.pdb', show_ports=True)
 
 if __name__ == "__main__":
     main()

@@ -37,6 +37,7 @@ def apply_mask(host, guest, mask, guest_port_name='down', backfill=None,
         port_list.append(port)
 
     used_ports = set()  # Keep track of used ports for backfilling.
+    guests = []
     for point in mask:
         closest_point_idx = np.argmin(host.min_periodic_distance(point, port_positions))
         closest_port = port_list[closest_point_idx]
@@ -45,12 +46,13 @@ def apply_mask(host, guest, mask, guest_port_name='down', backfill=None,
         # Attach the guest to the closest port.
         new_guest = deepcopy(guest)
         equivalence_transform(new_guest, new_guest.labels[guest_port_name], closest_port)
-        host.add(new_guest)
+        guests.append(new_guest)
 
         # Move the port as far away as possible (simpler than removing it).
         # There may well be a more elegant/efficient way of doing this.
         port_positions[closest_point_idx, :] = np.array([np.inf, np.inf, np.inf])
 
+    backfills = []
     if backfill:
         assert_port_exists(backfill_port_name, backfill)
         # Attach the backfilling Compound to unused ports.
@@ -60,7 +62,8 @@ def apply_mask(host, guest, mask, guest_port_name='down', backfill=None,
                 # Might make sense to have a backfill_port_name option...
                 equivalence_transform(
                     new_backfill, new_backfill.labels[backfill_port_name], port)
-                host.add(new_backfill)
+                backfills.append(new_backfill)
+    return guests, backfills
 
 
 def random_mask_3d(num_sites):

@@ -23,7 +23,11 @@ class PMPCLayer(mb.Compound):
         brush = Brush(chain_length=chain_length, alpha=alpha)
         hydrogen = H()
 
-        mb.apply_mask(self.tiled_surface, brush, mask, backfill=hydrogen)
+        # mb.apply_mask(self.tiled_surface, brush, mask, backfill=hydrogen)
+        brushes, hydrogens = mb.apply_mask(self.tiled_surface, brush, mask,
+                                           backfill=hydrogen)
+        self.add(brushes)
+        self.add(hydrogens)
 
 
 def main():
