@@ -175,6 +175,7 @@
         <span class="n">port_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">port</span><span class="p">)</span>
 
     <span class="n">used_ports</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>  <span class="c"># Keep track of used ports for backfilling.</span>
+    <span class="n">guests</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="k">for</span> <span class="n">point</span> <span class="ow">in</span> <span class="n">mask</span><span class="p">:</span>
         <span class="n">closest_point_idx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argmin</span><span class="p">(</span><span class="n">host</span><span class="o">.</span><span class="n">min_periodic_distance</span><span class="p">(</span><span class="n">point</span><span class="p">,</span> <span class="n">port_positions</span><span class="p">))</span>
         <span class="n">closest_port</span> <span class="o">=</span> <span class="n">port_list</span><span class="p">[</span><span class="n">closest_point_idx</span><span class="p">]</span>
@@ -183,12 +184,13 @@
         <span class="c"># Attach the guest to the closest port.</span>
         <span class="n">new_guest</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="n">guest</span><span class="p">)</span>
         <span class="n">equivalence_transform</span><span class="p">(</span><span class="n">new_guest</span><span class="p">,</span> <span class="n">new_guest</span><span class="o">.</span><span class="n">labels</span><span class="p">[</span><span class="n">guest_port_name</span><span class="p">],</span> <span class="n">closest_port</span><span class="p">)</span>
-        <span class="n">host</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">new_guest</span><span class="p">)</span>
+        <span class="n">guests</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">new_guest</span><span class="p">)</span>
 
         <span class="c"># Move the port as far away as possible (simpler than removing it).</span>
         <span class="c"># There may well be a more elegant/efficient way of doing this.</span>
         <span class="n">port_positions</span><span class="p">[</span><span class="n">closest_point_idx</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">])</span>
 
+    <span class="n">backfills</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="k">if</span> <span class="n">backfill</span><span class="p">:</span>
         <span class="n">assert_port_exists</span><span class="p">(</span><span class="n">backfill_port_name</span><span class="p">,</span> <span class="n">backfill</span><span class="p">)</span>
         <span class="c"># Attach the backfilling Compound to unused ports.</span>
@@ -198,7 +200,8 @@
                 <span class="c"># Might make sense to have a backfill_port_name option...</span>
                 <span class="n">equivalence_transform</span><span class="p">(</span>
                     <span class="n">new_backfill</span><span class="p">,</span> <span class="n">new_backfill</span><span class="o">.</span><span class="n">labels</span><span class="p">[</span><span class="n">backfill_port_name</span><span class="p">],</span> <span class="n">port</span><span class="p">)</span>
-                <span class="n">host</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">new_backfill</span><span class="p">)</span>
+                <span class="n">backfills</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">new_backfill</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">guests</span><span class="p">,</span> <span class="n">backfills</span>
 
 </div>
 <div class="viewcode-block" id="random_mask_3d"><a class="viewcode-back" href="../../apidoc/mbuild.html#mbuild.mask.random_mask_3d">[docs]</a><span class="k">def</span> <span class="nf">random_mask_3d</span><span class="p">(</span><span class="n">num_sites</span><span class="p">):</span>
