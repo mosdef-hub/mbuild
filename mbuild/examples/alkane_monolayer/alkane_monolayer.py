@@ -28,8 +28,11 @@ class AlkaneMonolayer(mb.Compound):
         hydrogen = H()
 
         # Attach chains to specified binding sites. Other sites get a hydrogen.
-        mb.apply_mask(host=self.tiled_surface, guest=alkylsilane, mask=mask,
-                      backfill=hydrogen)
+        alkylsilanes, hydrogens = mb.apply_mask(host=self.tiled_surface,
+                                                guest=alkylsilane, mask=mask,
+                                                backfill=hydrogen)
+        self.add(alkylsilanes)
+        self.add(hydrogens)
 
 
 def main():

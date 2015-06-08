@@ -228,10 +228,7 @@ class Compound(Part):
         json_template = str(json_template)
         for label in labels:
             json_template = json_template.replace(label, labels[label])
-        json_path = tempfile.mkstemp(suffix='.json')
-        with open(json_path[1], 'w') as the_json_file:
-            the_json_file.write(json_template)
-        html = d3_tree_template % str(json_path[1])
+        html = d3_tree_template % str(json_template)
         html_file = tempfile.mkstemp(suffix='.html')
         with open (html_file[1], 'w') as the_file:
             the_file.write(html)
@@ -249,15 +246,22 @@ class Compound(Part):
             __IPYTHON__
         except NameError:
             import tempfile
-            f = tempfile.NamedTemporaryFile(prefix='visualize_{}'.format(self.__class__.__name__), suffix='.mol2')
-            filename = f.name
-            print('vis: ', show_ports)
-            self.save(filename, show_ports=show_ports)
-            try:
-                os.system('vmd {}'.format(filename))
-            except OSError:
-                print("Visualization with VMD failed. Make sure it is installed"
-                      "correctly and launchable from the command line via 'vmd'.")
+            if sys.platform.startswith('win'):
+                filename = tempfile.mkstemp(suffix='.mol2')[1]
+                self.save(filename, show_ports=show_ports)
+                try:
+                    os.system('start "" "vmd.exe" "{}"'.format(filename))
+                except OSError:
+                    raise OSError('Visualization with VMD failed. Make sure it is installed'
+                                  'correctly and launchable from the command line via "start "" "vmd.exe"".')
+            else:
+                filename = tempfile.NamedTemporaryFile(prefix='visualize_{}'.format(self.__class__.__name__), suffix='.mol2').name
+                self.save(filename, show_ports=show_ports)
+                try:
+                    os.system('vmd {}'.format(filename))
+                except OSError:
+                    raise OSError("Visualization with VMD failed. Make sure it is installed"
+                                  "correctly and launchable from the command line via 'vmd'.")
         else:
             from mdtraj.html import TrajectoryView, enable_notebook
             enable_notebook()
