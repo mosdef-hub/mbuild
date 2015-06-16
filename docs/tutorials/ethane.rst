@@ -78,12 +78,10 @@ check your work as you go:
     CH3().visualize(show_ports=True)
 
 
+.. raw:: html
 
-.. parsed-literal::
-
-    <IPython.core.display.Javascript object>
-
-
+   <div id="widgetview"></div>
+   <script>loadWidget('/assets/json/example-trajectoryview-data.json', '#widgetview', 400, 400);</script>
 
 .. parsed-literal::
 
