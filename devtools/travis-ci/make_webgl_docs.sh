@@ -9,17 +9,21 @@
 
 # example: make_webgl_docs.sh file.rst file.html
 
+INPUTFILE=$(basename $1)
+#EXT="${INPUTFILE##*.}"
+FILE="${INPUTFILE%.*}"
+
 # convert RST to temp MD
 pandoc -i $1 -o tmp.md
 
 # convert temp MD to IPYNB
-notedown tmp.md -o $1.ipynb
+notedown tmp.md > $FILE.ipynb
 
 # delete temp MD
 rm tmp.md
 
 # convert ipynb to html with custom template
-ipython nbconvert --to html --template ./tpl/mbuild_ipynb_template.tpl $1.ipynb --output $2
+ipython nbconvert --to html --template ./tpl/mbuild_ipynb_template.tpl $FILE.ipynb --output $2
 
 # delete temp ipynb
-rm $1.ipynb
+rm $FILE.ipynb
