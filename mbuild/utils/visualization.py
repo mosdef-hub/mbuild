@@ -16,13 +16,14 @@ d3_tree_template = """
 }
 
 .node text {
-  font: 10px sans-serif;
+  font: 14px sans-serif;
+  stroke red:
 }
 
 .link {
   fill: none;
   stroke: #ccc;
-  stroke-width: 1.5px;
+  stroke-width: 3px;
 }
 
 </style>
@@ -92,9 +93,16 @@ function update(source) {
       .attr("r", 1e-6)
       .style("fill", function(d) { return d._children ? "lightsteelblue" : "#fff"; });
 
+  nodeEnter.append("image")
+      .attr("xlink:href", function(d) { return d.icon; })
+      .attr("x", "-12px")
+      .attr("y", "-12px")
+      .attr("width", "80px")
+      .attr("height", "80px");
+
   nodeEnter.append("text")
       .attr("x", function(d) { return d.children || d._children ? -10 : 10; })
-      .attr("dy", ".35em")
+      .attr("dy", ".05em")
       .attr("text-anchor", function(d) { return d.children || d._children ? "end" : "start"; })
       .text(function(d) { return d.name; })
       .style("fill-opacity", 1e-6);

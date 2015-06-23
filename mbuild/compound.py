@@ -233,11 +233,62 @@ class Compound(Part):
         json_template = str(json_template)
         for label in labels:
             json_template = json_template.replace(label, labels[label])
+
+
+        filename = 'visualize_{}.mol2'.format(self.kind)
+        self.save(filename, show_ports=show_ports)
+        sub_compounds_dict = {labels["'{}'".format(self.kind)]:filename[:-5]}
+        try:
+            os.system('printf "rotate x by -80\ndisplay depthcue off\n'
+                      'color Display Background 8\nmol modstyle 0 0 cpk 2.75 0.3 12 12\n'
+                      'axes location off\nrender snapshot {0}.png " | vmd {1}'.format(filename[:-5], filename))
+        except OSError:
+            raise OSError("Visualization with VMD failed. Make sure it is installed"
+                          "correctly and launchable from the command line via 'vmd'.")
+        for sub_compound in self._yield_parts(Compound):
+            if not show_ports and sub_compound.kind in ["Port", "subport"]:
+                continue
+            if labels["'{}'".format(sub_compound.kind)] not in sub_compounds_dict.keys():
+                if not show_ports and sub_compound.kind in ["Port", "subport"]:
+                    continue
+                filename = 'visualize_{}.mol2'.format(sub_compound.kind)
+                # try:
+                sub_compound.save(filename, show_ports=show_ports)
+                # except KeyError:
+                #     print('keyerror for ', sub_compound.kind)
+                try:
+                    os.system('printf "rotate x by -45\ndisplay depthcue off\n'
+                              'color Display Background 8\nmol modstyle 0 0 cpk 2.5 0.3 12 12\n'
+                              'axes location off\nrender snapshot {0}.png " | '
+                              'vmd {1}'.format(filename[:-5], filename))
+                except OSError:
+                    raise OSError("Visualization with VMD failed. Make sure it is installed"
+                                  "correctly and launchable from the command line via 'vmd'.")
+                label = labels["'{}'".format(sub_compound.kind)]
+                sub_compounds_dict[label] = filename[:-5]
+
+        for key in sub_compounds_dict:
+            filename = sub_compounds_dict[key]
+            path = os.path.dirname(os.path.realpath('{}.png'.format(filename)))
+            json_template = json_template.replace('"name": {}'.format(key),
+                                                  '"name": {0}, "icon": "{1}/{2}.png"'.format(key, path, filename))
+            # json_template = '{"name": "PMPCLayer 1", "icon": "%s/example.png", "children": [{"name": "H 375", "icon": "%s/foo.png"}, {"name": "Brush 25", "icon": "foo.png", "children": [{"name": "Polymer 25", "icon": "foo.png", "children": [{"name": "MPC 125", "icon": "foo.png"}]}, {"name": "Silane 25", "icon": "foo.png"}, {"name": "CH3 25", "icon": "foo.png"}, {"name": "Initiator 25", "icon": "foo.png"}]}, {"name": "Betacristobalite2-2-1 1", "icon": "foo.png", "children": [{"name": "Betacristobalite 4", "icon": "foo.png"}]}]}' %(gah, gah)
+
         html = d3_tree_template % str(json_template)
         html_file = tempfile.mkstemp(suffix='.html')
         with open (html_file[1], 'w') as the_file:
             the_file.write(html)
         webbrowser.open('file:' + html_file[1])
+
+
+
+    # def clear_files_made(self, sub_compounds_dict, path):
+
+        for key in sub_compounds_dict:
+            filename = sub_compounds_dict[key]
+            os.remove('{0}/{1}.mol2'.format(path, filename))
+        #     os.remove('{0}/{1}.png'.format(path, filename))
+
 
     def visualize(self, show_ports=False):
         """Visualize the Compound using VMD.
@@ -501,12 +552,29 @@ class Compound(Part):
 
     def save_gromacs(self, filename, traj, force_overwrite=True, **kwargs):
         """ """
-        raise NotImplementedError('Interface to InterMol missing')
+        import foyer.forcefield as foyer
+        import intermol.gromacs.gromacs_parser as gd
+
+        # raise NotImplementedError('Interface to InterMol missing')
+
         # Create separate file paths for .gro and .top
-        # filepath, filename = os.path.split(filename)
-        # basename = os.path.splitext(filename)[0]
-        # top_filename = os.path.join(filepath, basename + '.top')
-        # gro_filename = os.path.join(filepath, basename + '.gro')
+        filepath, filename = os.path.split(filename)
+        basename = os.path.splitext(filename)[0]
+        top_filename = os.path.join(filepath, basename + '.top')
+        gro_filename = os.path.join(filepath, basename + '.gro')
+
+        # test = mb.load('ethylbenzene.mol2')
+        # test.save('ethylbenzene.top', forcefield='opls-aa')
+        # print(traj)
+        print(top_filename, gro_filename)
+
+
+        intermol_system = self._to_intermol()   #convert to intermol
+        foyer.apply_forcefield(intermol_system, forcefield='opls', nrexcl=3)  #run foyer's "apply_forcefield" function
+        gd.write_gromacs(top_filename, gro_filename, intermol_system)
+
+
+        # dispatch to intermol's gromacs writer to output the system
 
     def save_lammpsdata(self, filename, traj, force_overwrite=True, **kwargs):
         """ """
@@ -668,7 +736,8 @@ class Compound(Part):
         for bond in self.bonds:
             a1 = bond.atom1
             a2 = bond.atom2
-            top.add_bond(atom_mapping[a1], atom_mapping[a2])
+            if a1 and a2 in atom_mapping.keys():
+                top.add_bond(atom_mapping[a1], atom_mapping[a2]) #was adding bonds between atom and none
         return top
 
     # Interface to InterMol for writing fully parameterized systems.
@@ -693,7 +762,7 @@ class Compound(Part):
             molecule_types = tuple(molecule_types)
         elif molecule_types is None:
             molecule_types = (type(self),)
-        intermol_system = System()
+        intermol_system = System('{}'.format(self.kind)) #change name from Untitled
 
         last_molecule_compound = None
         for atom_index, atom in enumerate(self.atoms):
