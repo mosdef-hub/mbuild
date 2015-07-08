@@ -223,7 +223,7 @@ class Compound(Part):
             compound_tree.add_node(sub_compound.kind)
             if sub_compound.parent:
                 compound_tree.add_edge(sub_compound.parent.kind, sub_compound.kind)
-        labels = {"'children'": '"children"', "'name'": '"name"'}
+        labels = {"'children'": '"children"'}
         for compound in compound_tree:
             node_key = "'{}'".format(compound)
             labels[node_key] = '"{} {:d}"'.format(compound, compound_frequency[compound])
@@ -239,9 +239,10 @@ class Compound(Part):
         self.save(filename, show_ports=show_ports)
         sub_compounds_dict = {labels["'{}'".format(self.kind)]:filename[:-5]}
         try:
-            os.system('printf "rotate x by -80\ndisplay depthcue off\n'
+            os.system('printf "display resetview\npbc unwrap\nrotate x by -45\ndisplay depthcue off\n'
                       'color Display Background 8\nmol modstyle 0 0 cpk 2.75 0.3 12 12\n'
-                      'axes location off\nrender snapshot {0}.png " | vmd {1}'.format(filename[:-5], filename))
+                      'axes location off\ndisplay projection orthographic\n'
+                      'render snapshot {0}.png " | vmd {1}'.format(filename[:-5], filename))
         except OSError:
             raise OSError("Visualization with VMD failed. Make sure it is installed"
                           "correctly and launchable from the command line via 'vmd'.")
@@ -257,9 +258,10 @@ class Compound(Part):
                 # except KeyError:
                 #     print('keyerror for ', sub_compound.kind)
                 try:
-                    os.system('printf "rotate x by -45\ndisplay depthcue off\n'
+                    os.system('printf "display resetview\npbc unwrap\n'
+                              'rotate x by -45\ndisplay depthcue off\n'
                               'color Display Background 8\nmol modstyle 0 0 cpk 2.5 0.3 12 12\n'
-                              'axes location off\nrender snapshot {0}.png " | '
+                              'axes location off\ndisplay projection orthographic\nrender snapshot {0}.png " | '
                               'vmd {1}'.format(filename[:-5], filename))
                 except OSError:
                     raise OSError("Visualization with VMD failed. Make sure it is installed"
@@ -270,9 +272,9 @@ class Compound(Part):
         for key in sub_compounds_dict:
             filename = sub_compounds_dict[key]
             path = os.path.dirname(os.path.realpath('{}.png'.format(filename)))
-            json_template = json_template.replace('"name": {}'.format(key),
-                                                  '"name": {0}, "icon": "{1}/{2}.png"'.format(key, path, filename))
-            # json_template = '{"name": "PMPCLayer 1", "icon": "%s/example.png", "children": [{"name": "H 375", "icon": "%s/foo.png"}, {"name": "Brush 25", "icon": "foo.png", "children": [{"name": "Polymer 25", "icon": "foo.png", "children": [{"name": "MPC 125", "icon": "foo.png"}]}, {"name": "Silane 25", "icon": "foo.png"}, {"name": "CH3 25", "icon": "foo.png"}, {"name": "Initiator 25", "icon": "foo.png"}]}, {"name": "Betacristobalite2-2-1 1", "icon": "foo.png", "children": [{"name": "Betacristobalite 4", "icon": "foo.png"}]}]}' %(gah, gah)
+            json_template = json_template.replace("'name': {}".format(key),
+                                                  '"name": {0}, "icon": "{1}/{2}.png"'
+                                                  .format(key, path, filename))
 
         html = d3_tree_template % str(json_template)
         html_file = tempfile.mkstemp(suffix='.html')
@@ -280,14 +282,23 @@ class Compound(Part):
             the_file.write(html)
         webbrowser.open('file:' + html_file[1])
 
+        self._clear_files_made(sub_compounds_dict, path)
 
 
-    # def clear_files_made(self, sub_compounds_dict, path):
+    def _clear_files_made(self, sub_compounds_dict, path):
+        """Prompts the user to delete or keep
+        the created files used in view_hierarchy."""
+        prompt = input('Would you like to delete created files?(y/n):')
 
-        for key in sub_compounds_dict:
-            filename = sub_compounds_dict[key]
-            os.remove('{0}/{1}.mol2'.format(path, filename))
-        #     os.remove('{0}/{1}.png'.format(path, filename))
+        if prompt.lower() == 'n':
+            return
+        elif prompt.lower() == 'y':
+            for key in sub_compounds_dict:
+                filename = sub_compounds_dict[key]
+                os.remove('{0}/{1}.mol2'.format(path, filename))
+                os.remove('{0}/{1}.png'.format(path, filename))
+        else:
+            self._clear_files_made(sub_compounds_dict, path)
 
 
     def visualize(self, show_ports=False):
@@ -563,11 +574,6 @@ class Compound(Part):
         top_filename = os.path.join(filepath, basename + '.top')
         gro_filename = os.path.join(filepath, basename + '.gro')
 
-        # test = mb.load('ethylbenzene.mol2')
-        # test.save('ethylbenzene.top', forcefield='opls-aa')
-        # print(traj)
-        print(top_filename, gro_filename)
-
 
         intermol_system = self._to_intermol()   #convert to intermol
         foyer.apply_forcefield(intermol_system, forcefield='opls', nrexcl=3)  #run foyer's "apply_forcefield" function
@@ -736,8 +742,10 @@ class Compound(Part):
         for bond in self.bonds:
             a1 = bond.atom1
             a2 = bond.atom2
+            # Checks the atom exists in a compound
+            # when checking a sub-compound
             if a1 and a2 in atom_mapping.keys():
-                top.add_bond(atom_mapping[a1], atom_mapping[a2]) #was adding bonds between atom and none
+                top.add_bond(atom_mapping[a1], atom_mapping[a2])
         return top
 
     # Interface to InterMol for writing fully parameterized systems.
@@ -757,12 +765,20 @@ class Compound(Part):
         from intermol.atom import Atom as InterMolAtom
         from intermol.molecule import Molecule
         from intermol.system import System
+        from simtk.unit import nanometers
 
         if isinstance(molecule_types, list):
             molecule_types = tuple(molecule_types)
         elif molecule_types is None:
             molecule_types = (type(self),)
         intermol_system = System('{}'.format(self.kind)) #change name from Untitled
+        # Set periodic box conditions
+
+        for num, value in enumerate(self.periodicity):
+            if value:
+                intermol_system.box_vector[num][num] = self.periodicity[num] * nanometers
+            else:
+                intermol_system.box_vector[num][num] = self.boundingbox.maxs[num] * nanometers
 
         last_molecule_compound = None
         for atom_index, atom in enumerate(self.atoms):
@@ -785,7 +801,8 @@ class Compound(Part):
             # Add the actual intermol atoms.
             intermol_atom = InterMolAtom(atom_index + 1, name=atom.name,
                                          residue_index=1, residue_name='RES')
-            intermol_atom.position = atom.pos
+            intermol_atom.cgnr = atom_index + 1
+            intermol_atom.position = atom.pos * nanometers
             last_molecule.add_atom(intermol_atom)
         return intermol_system
 
