@@ -6,7 +6,7 @@ Install with conda (preferred)
 ------------------------------
 ::
 
-    $ conda install -c https://conda.binstar.org/imodels mbuild
+    $ conda install --channel imodels mbuild
 
 
 Install with pip
@@ -56,4 +56,3 @@ following while in the base directory::
     $ pip install pytest
     $ py.test
 
-We need a LOT more tests so any help here is especially welcome!
