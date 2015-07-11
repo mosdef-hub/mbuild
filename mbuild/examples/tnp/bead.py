@@ -11,7 +11,7 @@ class Bead(mb.Compound):
         Args:
             particle_kind (str): Descriptive name for the Bead.
         """
-        super(Bead, self).__init__(self)
+        super(Bead, self).__init__()
 
         self.add(mb.Atom(name=particle_kind), particle_kind)
 

@@ -13,7 +13,7 @@ class Sphere(mb.Compound):
             radius (float): Radius of the Sphere.
             port_distance_from_surface (float): Distance of Ports from Sphere.
         """
-        super(Sphere, self).__init__(self)
+        super(Sphere, self).__init__()
 
         # Generate 65 points on the surface of a unit sphere.
         mask = mb.sphere_mask(n)

@@ -17,7 +17,7 @@ class Tnp(mb.Compound):
             chain_length (int): Length of the chains being attached.
             monomer (Compound, optional): Type of chain being attached.
         """
-        super(Tnp, self).__init__(self)
+        super(Tnp, self).__init__()
 
         if not monomer:
             monomer = Bead(particle_kind='t')

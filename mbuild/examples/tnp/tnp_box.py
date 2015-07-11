@@ -11,7 +11,7 @@ from mbuild.examples.tnp.tnp import Tnp
 class TnpBox(mb.Compound):
     """Several tethered nanoparticles randomly dispersed in a Box. """
     def __init__(self):
-        super(TnpBox, self).__init__(self)
+        super(TnpBox, self).__init__()
 
         tnp_proto = Tnp(ball_radius=5, n_chains=5, chain_length=8)
 
