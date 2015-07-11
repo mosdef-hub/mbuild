@@ -13,7 +13,7 @@ class TestPacking(BaseTest):
         filled = mb.fill_box(ethane, n_compounds=20, box=[2, 2, 2])
         assert filled.n_atoms == 20 * 8
         assert filled.n_bonds == 20 * 7
-        
+
     @pytest.mark.skipif(sys.platform.startswith('win'),
                         reason='Need to figure out how to set packmol path in Windows.')
     def test_solvate(self, ethane, h2o):
