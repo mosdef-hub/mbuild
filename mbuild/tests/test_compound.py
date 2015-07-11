@@ -1,9 +1,9 @@
+from copy import deepcopy
+
 import numpy as np
 import pytest
 
 import mbuild as mb
-from mbuild.components.small_groups.ch3 import CH3
-from mbuild.examples.ethane.ethane import Ethane
 from mbuild.utils.io import get_fn
 from mbuild.tests.base_test import BaseTest
 
@@ -13,9 +13,8 @@ class TestCompound(BaseTest):
     def test_load_and_create(self):
         mb.load(get_fn('methyl.pdb'))
 
-    def test_update_from_file(self):
-        methyl = CH3()
-        methyl.update_coordinates(get_fn("methyl.pdb"))
+    def test_update_from_file(self, ch3):
+        ch3.update_coordinates(get_fn("methyl.pdb"))
 
     def test_save(self):
         methyl = mb.load(get_fn('methyl.pdb'))
@@ -26,6 +25,21 @@ class TestCompound(BaseTest):
         compound.add([ethane, h2o])
         assert compound.n_atoms == 8 + 3
         assert compound.n_bonds == 7 + 2
+
+    def test_init_with_subcompounds1(self, ethane):
+        compound = mb.Compound(ethane)
+        assert compound.n_atoms == 8
+        assert compound.n_bonds == 7
+
+    def test_init_with_subcompounds2(self, ethane, h2o):
+        compound = mb.Compound([ethane, h2o])
+        assert compound.n_atoms == 8 + 3
+        assert compound.n_bonds == 7 + 2
+
+    def test_init_with_subcompounds3(self, ethane, h2o):
+        compound = mb.Compound([ethane, [h2o, deepcopy(h2o)]])
+        assert compound.n_atoms == 8 + 2*3
+        assert compound.n_bonds == 7 + 2*2
 
     @pytest.mark.skipif(True, reason='Waiting for InterMol to stabilize')
     def test_intermol_conversion1(self, ethane, h2o):
@@ -43,7 +57,7 @@ class TestCompound(BaseTest):
     @pytest.mark.skipif(True, reason='Waiting for InterMol to stabilize')
     def test_intermol_conversion2(self, ethane, h2o):
         compound = mb.Compound()
-        compound.add([ethane, Ethane(), h2o])  # 2 distinct Ethane objects
+        compound.add([ethane, deepcopy(ethane), h2o])  # 2 distinct Ethane objects
         molecule_types = [type(ethane), type(h2o)]
         intermol_system = compound._to_intermol(molecule_types=molecule_types)
         assert len(intermol_system.molecule_types) == 2

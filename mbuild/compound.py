@@ -92,7 +92,7 @@ class Compound(Part):
         Other compounds that reference this part with labels.
 
     """
-    def __init__(self, kind=None, periodicity=None):
+    def __init__(self, subcompounds=None, kind=None, periodicity=None):
         super(Compound, self).__init__()
 
         if kind:
@@ -107,6 +107,10 @@ class Compound(Part):
 
         self.parts = OrderedSet()
         self.labels = OrderedDict()
+
+        # self.add() must be called after labels and parts are initialized.
+        if subcompounds:
+            self.add(subcompounds)
 
     @property
     def atoms(self):
@@ -338,24 +342,25 @@ class Compound(Part):
             Replace the label if it already exists.
 
         """
-        assert isinstance(new_part, (Part, list, tuple, set))
-        if containment:
-            # Support batch add via lists, tuples and sets.
-            if isinstance(new_part, (list, tuple, set)):
-                for elem in new_part:
-                    assert elem.parent is None
-                    self.add(elem)
-                    elem.parent = self
-                return
+        # Support batch add via lists, tuples and sets.
+        if isinstance(new_part, (list, tuple, set)):
+            for part in new_part:
+                self.add(part)
+            return
 
-            assert new_part.parent is None, 'Part {} already has a parent: {}'.format(
-                new_part, new_part.parent)
+        if not isinstance(new_part, Part):
+            raise ValueError('Only objects that inherit from mbuild.Part '
+                             'can be added to Compounds. You tried to add '
+                             '{}'.format(new_part))
+
+        if containment:
+            if new_part.parent is not None:
+                raise ValueError('Part {} already has a parent: {}'.format(
+                    new_part, new_part.parent))
             self.parts.add(new_part)
             new_part.parent = self
 
         # Add new_part to labels. Does not currently support batch add.
-        assert isinstance(new_part, Part)
-
         if not containment and label is None:
             label = '_{0}[$]'.format(new_part.__class__.__name__)
 
