@@ -4,7 +4,7 @@ install:
   - source devtools/travis-ci/install.sh
 
 script:
-  - conda config --add channels https://conda.binstar.org/omnia
+  - conda config --add channels https://conda.anaconda.org/omnia
   - conda build devtools/conda-recipe
 
 env:

@@ -41,7 +41,7 @@ install:
   - powershell .\\devtools\\appveyor-ci\\install.ps1
   - "SET PATH=%PYTHON%;%PYTHON%\\Scripts;%PATH%"
   - echo %PATH%
-  - conda config --add channels http://conda.binstar.org/omnia
+  - conda config --add channels http://conda.anaconda.org/omnia
 
 build: false
 
