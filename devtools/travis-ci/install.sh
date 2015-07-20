@@ -13,7 +13,7 @@ bash $MINICONDA -b
 
 export PATH=$HOME/miniconda/bin:$PATH
 conda install --yes conda-build jinja2 binstar pip
-conda config --add channels http://conda.binstar.org/omnia
+conda config --add channels http://conda.anaconda.org/omnia
 conda install --yes mdtraj
 
 # rst -> ipynb -> html conversion

@@ -16,7 +16,6 @@ import sys
 from setuptools import setup, find_packages
 from setuptools.command.test import test as TestCommand
 
-
 #####################################
 VERSION = "0.5.0"
 ISRELEASED = False
