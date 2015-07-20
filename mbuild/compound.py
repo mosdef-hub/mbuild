@@ -668,7 +668,11 @@ class Compound(Part):
         for bond in self.bonds:
             a1 = bond.atom1
             a2 = bond.atom2
-            top.add_bond(atom_mapping[a1], atom_mapping[a2])
+            # Ensure that both atoms are part of the compound. This becomes an
+            # issue if you try to convert a sub-compound to a topology which is
+            # bonded to a different subcompound.
+            if all(a in atom_mapping.keys() for a in [a1, a2]):
+                top.add_bond(atom_mapping[a1], atom_mapping[a2])
         return top
 
     # Interface to InterMol for writing fully parameterized systems.
