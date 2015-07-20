@@ -612,9 +612,14 @@ class Compound(Part):
 
         """
 
-        if isinstance(chain_types, list):
+        if isinstance(chain_types, Compound):
+            chain_types = [Compound]
+        if isinstance(chain_types, (list, set)):
             chain_types = tuple(chain_types)
-        if isinstance(residue_types, list):
+
+        if isinstance(residue_types, Compound):
+            residue_types = [Compound]
+        if isinstance(residue_types, (list, set)):
             residue_types = tuple(residue_types)
         top = Topology()
         atom_mapping = {}
@@ -664,6 +669,18 @@ class Compound(Part):
             at = top.add_atom(atom.name, ele, last_residue)
             at.charge = atom.charge
             atom_mapping[atom] = at
+
+        # Remove empty default residues.
+        chains_to_remove = [chain for chain in top.chains if chain.n_atoms == 0]
+        residues_to_remove = [res for res in top.residues if res.n_atoms == 0]
+        for chain in chains_to_remove:
+            top._chains.remove(chain)
+        for res in residues_to_remove:
+            for chain in top.chains:
+                try:
+                    chain._residues.remove(res)
+                except ValueError:  # Already gone.
+                    pass
 
         for bond in self.bonds:
             a1 = bond.atom1
