@@ -7,7 +7,7 @@ addons:
       - ubuntu-toolchain-r-test
     packages:
       - libgmp-dev
-      
+
 install:
   - source devtools/travis-ci/install.sh
 
@@ -29,5 +29,5 @@ env:
 
 after_success:
   - source devtools/travis-ci/post_binstar.sh
-  - source devtools/travis-ci/create_docs.sh
+#  - source devtools/travis-ci/create_docs.sh
 
