@@ -1,5 +1,11 @@
 language: c
 
+sudo: false
+addons:
+  apt:
+    sources:
+    - ubuntu-toolchain-r-test
+
 install:
   - source devtools/travis-ci/install.sh
 

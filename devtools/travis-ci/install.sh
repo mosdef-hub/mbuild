@@ -1,4 +1,3 @@
-# needed for fresh ubuntu
 sudo apt-get update
 sudo apt-get install curl git libgmp-dev
 
