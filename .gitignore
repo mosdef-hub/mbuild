@@ -44,3 +44,7 @@ docs/_build
 # Vagrant
 .vagrant
 Vagrantfile
+
+#conda version
+__conda_version__.txt
+mbuild/version.py
