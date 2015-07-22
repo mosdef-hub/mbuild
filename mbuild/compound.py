@@ -14,6 +14,7 @@ from mdtraj.core.element import Element
 from mdtraj.core.element import get_by_symbol
 from mdtraj.core.topology import Topology
 
+import mbuild
 from mbuild.atom import Atom
 from mbuild.box import Box
 from mbuild.bond import Bond
@@ -21,6 +22,7 @@ from mbuild.formats.mol2 import write_mol2
 from mbuild.orderedset import OrderedSet
 from mbuild.part import Part
 
+import json
 
 __all__ = ['load', 'Compound']
 
@@ -238,7 +240,7 @@ class Compound(Part):
             the_file.write(html)
         webbrowser.open('file:' + html_file[1])
 
-    def visualize(self, show_ports=False):
+    def visualize(self, show_ports=False, export_topology=True):
         """Visualize the Compound using VMD.
 
         Assumes you have VMD installed and can call it from the command line via
@@ -270,7 +272,21 @@ class Compound(Part):
             from mdtraj.html import TrajectoryView, enable_notebook
             enable_notebook()
             traj = self.to_trajectory(show_ports=show_ports)
-            return TrajectoryView(traj, colorBy='atom')
+            traj_view = TrajectoryView(traj, colorBy='atom')
+
+            if export_topology:
+                # get topology
+                topology = traj_view._computeTopology()
+                # export json
+                with open('topology_{}.json'.format(self.kind.lower()), 'w') as json_file:
+                    json.dump(topology, json_file)
+
+            # import pdb
+            # pdb.set_trace()
+
+            return traj_view
+            # return TrajectoryView(traj, colorBy='atom')
+
 
     @property
     def xyz(self):
