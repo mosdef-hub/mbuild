@@ -240,7 +240,7 @@ class Compound(Part):
             the_file.write(html)
         webbrowser.open('file:' + html_file[1])
 
-    def visualize(self, show_ports=False, export_topology=True):
+    def visualize(self, show_ports=False, export_topology=False):
         """Visualize the Compound using VMD.
 
         Assumes you have VMD installed and can call it from the command line via
