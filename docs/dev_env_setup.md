@@ -23,12 +23,19 @@ Date: Jul 23, 2015
   		$ cd /path/to/anaconda/envs/imodels/lib/python3.4/site-packages/mdtraj/html
   		$ subl trajectory_widget.py
   		
-  6. Clone [Intermol](https://github.com/shirtsgroup/InterMol), [foyer](https://github.com/iModels/foyer) and [mbuild](https://github.com/iModels/mbuild) projects and setup them:
+  6. Clone [mbuild](https://github.com/iModels/mbuild) and set it up:
   
+  		$ cd /path/to/your/projects/
+  		$ git clone https://github.com/iModels/mbuild.git
+  		$ cd mbuild
+  		$ python setup.py develop
+
+
+  7. __[Optional]__ Clone [Intermol](https://github.com/shirtsgroup/InterMol) and [foyer](https://github.com/iModels/foyer) and set them up:
+
   		$ cd /path/to/your/projects/
   		$ git clone https://github.com/shirtsgroup/InterMol.git
   		$ git clone https://github.com/iModels/foyer.git
-  		$ git clone https://github.com/iModels/mbuild.git
 
 	##### Intermol
   		$ cd Intermol
@@ -37,10 +44,5 @@ Date: Jul 23, 2015
   		
   	##### foyer
   		$ cd foyer
-  		$ python setup.py develop
-  		
-  	##### mbuild
-  		$ cd mbuild
-  		$ python setup.py develop
-  	
+  		$ python setup.py develop  	
   	
