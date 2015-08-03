@@ -17,5 +17,3 @@ class TestMol2(BaseTest):
         methyl = mb.load(get_fn('methyl.mol2'))
         methyl.save(filename='methyl_out.mol2')
 
-    def test_read_write_compare(self):
-        pass

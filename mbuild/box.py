@@ -16,16 +16,19 @@ class Box(object):
     """
     def __init__(self, lengths=None, mins=None, maxs=None):
         if lengths is not None:
-            assert(mins is None and maxs is None)
+            assert mins is None and maxs is None
             self._mins = np.array([0.0, 0.0, 0.0])
             self._maxs = np.array(lengths)
             self._lengths = np.array(lengths)
-
         elif maxs is not None:
-            assert(mins is not None and lengths is None)
+            assert mins is not None and lengths is None
             self._mins = np.array(mins)
             self._maxs = np.array(maxs)
             self._lengths = self.maxs - self.mins
+        else:
+            raise ValueError('Either provide (`lengths`) or (`mins` and `maxs`). '
+                             'You provided: lengths={} mins={} maxs={}'.format(
+                lengths, mins, maxs))
 
     @property
     def mins(self):
