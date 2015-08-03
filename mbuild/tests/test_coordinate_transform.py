@@ -89,7 +89,7 @@ class TestCoordinateTransform(BaseTest):
         equivalence_transform(ch2, ch2.atoms[0], methane.atoms[0], add_bond=False)
         assert (ch2.atoms[0].pos == methane.atoms[0].pos).all()
         equivalence_transform(ch2, ch2.up, ch3.up)
-        assert (ch2.n_bonds == 3)
+        assert ch2.n_bonds == 3
 
     def test_translate(self, methane):
         translate(methane, -methane.atoms[0].pos)
