@@ -4,6 +4,7 @@ from copy import deepcopy
 from distutils.spawn import find_executable
 from subprocess import Popen, PIPE
 import tempfile
+import sys
 
 from mbuild.compound import Compound
 from mbuild.box import Box
@@ -48,7 +49,10 @@ def fill_box(compound, n_compounds, box, overlap=0.2):
 
     """
     if not PACKMOL:
-        raise IOError("Packmol not found")
+        msg = "Packmol not found"
+        if sys.platform.startswith("win"):
+            msg = msg + ". If packmol is already installed, make sure that the packmol.exe is on the path."
+        raise IOError(msg)
 
     if isinstance(box, (list, tuple)):
         box = Box(lengths=box)
