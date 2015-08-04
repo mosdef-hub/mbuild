@@ -4,6 +4,7 @@ from collections import OrderedDict, Counter
 from copy import deepcopy
 import itertools
 import os
+import subprocess
 import sys
 import tempfile
 import webbrowser
@@ -253,18 +254,21 @@ class Compound(Part):
         except NameError:
             import tempfile
             if sys.platform.startswith('win'):
-                filename = tempfile.mkstemp(suffix='.mol2')[1]
+                filedescriptor, filename = tempfile.mkstemp(suffix='.mol2')
+                os.close(filedescriptor)
                 self.save(filename, show_ports=show_ports)
                 try:
-                    os.system('start "" "vmd.exe" "{}"'.format(filename))
+                    # subprocess.call(["vmd.exe", filename], shell=True)
+                    DETACHED_PROCESS = 0x00000008
+                    subprocess.Popen(["vmd.exe", filename], close_fds=True)
                 except OSError:
                     raise OSError('Visualization with VMD failed. Make sure it is installed'
-                                  'correctly and launchable from the command line via "start "" "vmd.exe"".')
+                                  'correctly and launchable from the command line via "vmd.exe".')
             else:
                 filename = tempfile.NamedTemporaryFile(prefix='visualize_{}'.format(self.__class__.__name__), suffix='.mol2').name
                 self.save(filename, show_ports=show_ports)
                 try:
-                    os.system('vmd {}'.format(filename))
+                    subprocess.call(["vmd", filename])
                 except OSError:
                     raise OSError("Visualization with VMD failed. Make sure it is installed"
                                   "correctly and launchable from the command line via 'vmd'.")
