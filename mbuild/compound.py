@@ -7,6 +7,7 @@ import os
 import subprocess
 import sys
 import tempfile
+from tempfile import mkstemp
 import webbrowser
 
 import numpy as np
@@ -14,6 +15,7 @@ import mdtraj as md
 from mdtraj.core.element import Element
 from mdtraj.core.element import get_by_symbol
 from mdtraj.core.topology import Topology
+from os import close, fdopen
 
 import mbuild
 from mbuild.atom import Atom
@@ -212,8 +214,11 @@ class Compound(Part):
             import networkx as nx
         except ImportError:
             raise ImportError('Networkx is required to visualize the compound hierarchy.')
+        import urlparse, urllib
         from networkx.readwrite import json_graph
         from mbuild.utils.visualization import d3_tree_template
+
+        tempdir = tempfile.mkdtemp(prefix='mbuild_view_hierarchy_')
 
         compound_tree = nx.DiGraph()
         compound_tree.add_node(self.kind)
@@ -225,7 +230,8 @@ class Compound(Part):
             compound_tree.add_node(sub_compound.kind)
             if sub_compound.parent:
                 compound_tree.add_edge(sub_compound.parent.kind, sub_compound.kind)
-        labels = {"'children'": '"children"', "'name'": '"name"'}
+
+        labels = {"'children'": '"children"'}
         for compound in compound_tree:
             node_key = "'{}'".format(compound)
             labels[node_key] = '"{} {:d}"'.format(compound, compound_frequency[compound])
@@ -235,11 +241,36 @@ class Compound(Part):
         json_template = str(json_template)
         for label in labels:
             json_template = json_template.replace(label, labels[label])
+
+        # generate png image from the compound
+        self.save_png(os.path.join(tempdir, 'visualize_{}.png'.format(self.kind)), show_ports=show_ports)
+        sub_compounds_dict = {labels["'{}'".format(self.kind)]:"visualize_{}".format(self.kind)}
+
+        # generate png image from all subcompounds
+        for sub_compound in self._yield_parts(Compound):
+            if not show_ports and sub_compound.kind in ["Port", "subport"]:
+                continue
+            if labels["'{}'".format(sub_compound.kind)] not in sub_compounds_dict.keys():
+                if not show_ports and sub_compound.kind in ["Port", "subport"]:
+                    continue
+                sub_compound.save_png(os.path.join(tempdir, 'visualize_{}.png'.format(sub_compound.kind)), show_ports=show_ports)
+
+                label = labels["'{}'".format(sub_compound.kind)]
+                sub_compounds_dict[label] = "visualize_{}".format(sub_compound.kind)
+
+        for key in sub_compounds_dict:
+            filename = sub_compounds_dict[key]
+            json_template = json_template.replace("'name': {}".format(key),
+                                                  '"name": {0}, "icon": "{1}"'
+                                                  .format(key, filename+'.png'))
+
         html = d3_tree_template % str(json_template)
-        html_file = tempfile.mkstemp(suffix='.html')
-        with open (html_file[1], 'w') as the_file:
+        html_file = os.path.join(tempdir,'view_hierarchy.html')
+        with open (html_file, 'w') as the_file:
             the_file.write(html)
-        webbrowser.open('file:' + html_file[1])
+
+        webbrowser.open(urlparse.urljoin('file:', urllib.pathname2url(os.path.join(tempdir, html_file))))
+        # and leave all temp files in place...
 
     def visualize(self, show_ports=False, export_topology=False):
         """Visualize the Compound using VMD.
@@ -285,11 +316,44 @@ class Compound(Part):
                 with open('topology_{}.json'.format(self.kind.lower()), 'w') as json_file:
                     json.dump(topology, json_file)
 
-            # import pdb
-            # pdb.set_trace()
 
             return traj_view
-            # return TrajectoryView(traj, colorBy='atom')
+
+    def save_png(self, image_filename, show_ports=False):
+
+        # create a mol2 temp file
+        mol2_fd, mol2_filename = mkstemp(suffix='visualize_{}.mol2'.format(self.kind))
+        close(mol2_fd)
+        self.save(mol2_filename, show_ports=show_ports)
+
+        # use vmd to convert the mol2 to a png
+        vmd_command = """
+        display resetview
+        pbc unwrap
+        rotate x by -45
+        display depthcue off
+        color Display Background 8
+        mol modstyle 0 0 cpk 2.75 0.3 12 12
+        axes location off
+        display projection orthographic
+        render snapshot {0}
+        exit
+        """.format(image_filename.replace('\\', '/'))
+
+        try:
+            vmd_command_fd, vmd_command_filename= mkstemp(suffix='.vmd')
+            f = fdopen(vmd_command_fd,'w')
+            f.write(vmd_command)
+            f.close()
+
+            subprocess.call(['vmd', '-e', vmd_command_filename, mol2_filename])
+
+        except OSError:
+            raise OSError("Visualization with VMD failed. Make sure it is installed"
+                          "correctly and launchable from the command line via 'vmd'.")
+
+        # delete mol2 file
+        os.remove(mol2_filename)
 
 
     @property
@@ -522,11 +586,6 @@ class Compound(Part):
     def save_gromacs(self, filename, traj, force_overwrite=True, **kwargs):
         """ """
         raise NotImplementedError('Interface to InterMol missing')
-        # Create separate file paths for .gro and .top
-        # filepath, filename = os.path.split(filename)
-        # basename = os.path.splitext(filename)[0]
-        # top_filename = os.path.join(filepath, basename + '.top')
-        # gro_filename = os.path.join(filepath, basename + '.gro')
 
     def save_lammpsdata(self, filename, traj, force_overwrite=True, **kwargs):
         """ """

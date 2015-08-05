@@ -33,7 +33,7 @@ class Betacristobalite(mb.Compound):
         elif area_per_port == 0.25:
 
             mb.load('beta-cristobalite-expanded.mol2', compound=self,
-                    relative_to_module=True)
+                    relative_to_module=self.__module__)
             self.periodicity = np.array([5.3888, 4.6669, 0.0])
 
         count = 0

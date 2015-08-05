@@ -16,13 +16,13 @@ d3_tree_template = """
 }
 
 .node text {
-  font: 10px sans-serif;
+  font: 14px sans-serif;
 }
 
 .link {
   fill: none;
   stroke: #ccc;
-  stroke-width: 1.5px;
+  stroke-width: 3px;
 }
 
 </style>
@@ -88,15 +88,23 @@ function update(source) {
       .attr("transform", function(d) { return "translate(" + source.y0 + "," + source.x0 + ")"; })
       .on("click", click);
 
+  nodeEnter.append("image")
+      .attr("xlink:href", function(d) { return d.icon; })
+      .attr("x", "-40px")
+      .attr("y", "-40px")
+      .attr("width", "80px")
+      .attr("height", "80px");
+
   nodeEnter.append("circle")
       .attr("r", 1e-6)
+      .attr("cx", "-2.2em")
+      .attr("cy", "-2em")
       .style("fill", function(d) { return d._children ? "lightsteelblue" : "#fff"; });
 
   nodeEnter.append("text")
-      .attr("x", function(d) { return d.children || d._children ? -10 : 10; })
-      .attr("dy", ".35em")
-      .attr("text-anchor", function(d) { return d.children || d._children ? "end" : "start"; })
-      .text(function(d) { return d.name; })
+      .attr("x", -28)
+      .attr("dy", "-2em")
+      .attr("text-anchor", "start")      .text(function(d) { return d.name; })
       .style("fill-opacity", 1e-6);
 
   // Transition nodes to their new position.
