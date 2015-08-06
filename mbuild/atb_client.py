@@ -1,13 +1,13 @@
 from __future__ import print_function
 
 import httplib2
+try:
+    from HTMLParser import HTMLParser
+except ImportError:
+    from html.parser import HTMLParser
+import urllib
 import warnings
 
-__author__ = 'sallai'
-
-
-import urllib
-from HTMLParser import HTMLParser
 
 class SearchResultHTMLParser(HTMLParser):
 
@@ -22,6 +22,7 @@ class SearchResultHTMLParser(HTMLParser):
                     if v.startswith('./molecule.py?molid='):
                         molid = v[v.find('=')+1:]
                         self.molids[int(molid)]="http://compbio.biosci.uq.edu.au/atb"+v[1:]
+
 
 class AtbClient(object):
 
