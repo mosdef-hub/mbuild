@@ -38,10 +38,10 @@ class Tnp(mb.Compound):
                                                      guest_port_name="down")
         self.add(chain_protos)
 
-        # self.add_bonds('np', 'np', sqrt(4 * ball_radius**2 * pi / n) - 0.5,
-        #                            sqrt(4 * ball_radius**2 * pi / n) + 0.5)
-        # self.add_bonds('np', 't', 0.1, 0.3)
-        # self.add_bonds('t', 'np', 0.1, 0.3)
+        self.add_bonds('np', 'np', sqrt(4 * ball_radius**2 * pi / n) - 0.5,
+                                   sqrt(4 * ball_radius**2 * pi / n) + 0.5)
+        self.add_bonds('np', 't', 0.1, 0.3)
+        self.add_bonds('t', 'np', 0.1, 0.3)
 
 
 def main():

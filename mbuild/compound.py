@@ -17,13 +17,13 @@ from mdtraj.core.element import get_by_symbol
 from mdtraj.core.topology import Topology
 from os import close, fdopen
 
-import mbuild
 from mbuild.atom import Atom
 from mbuild.box import Box
 from mbuild.bond import Bond
 from mbuild.formats.mol2 import write_mol2
 from mbuild.orderedset import OrderedSet
 from mbuild.part import Part
+from mbuild.periodic_kdtree import PeriodicCKDTree
 
 import json
 
@@ -411,11 +411,21 @@ class Compound(Part):
         d = np.where(d > 0.5 * self.periodicity, self.periodicity - d, d)
         return np.sqrt((d ** 2).sum(axis=-1))
 
+    def atoms_in_range(self, atom, dmax, atom_kdtree=None, atom_array=None):
+        """"""
+        if atom_kdtree is None:
+            atom_kdtree = PeriodicCKDTree(data=self.xyz, bounds=self.periodicity)
+        _, idxs = atom_kdtree.query(atom.pos, k=20, distance_upper_bound=dmax)
+        idxs = idxs[idxs != self.n_atoms]
+        if atom_array is None:
+            atom_array = np.array(self.atoms)
+        return atom_array[idxs]
+
     def add_bonds(self, type_a, type_b, dmin, dmax, kind=None):
         """Add Bonds between all pairs of types a/b within [dmin, dmax]. """
-        # TODO: utils for periodic boundaries.
+        atom_kdtree = PeriodicCKDTree(data=self.xyz, bounds=self.periodicity)
         for a1 in self.atom_list_by_name(type_a):
-            nearest = self.atoms_in_range(a1.pos, dmax)
+            nearest = self.atoms_in_range(a1, dmax, atom_kdtree)
             for a2 in nearest:
                 if (a2.name == type_b) and (dmin <= self.min_periodic_distance(a2.pos, a1.pos) <= dmax):
                     self.add(Bond(a1, a2, kind=kind))
