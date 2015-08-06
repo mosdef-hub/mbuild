@@ -599,6 +599,19 @@ class Compound(Part):
         """ """
         raise NotImplementedError('Interface to InterMol missing')
 
+    def _to_json(self, show_ports=False):
+        atoms = list()
+        for idx, atom in enumerate(self.atom_list_by_name(exclude_ports=not show_ports)):
+            atom.index = idx
+            atoms.append({'element': atom.name,
+                          'location': list(atom.pos)})
+
+        bonds = [{'atoms': [bond.atom1.index, bond.atom2.index],
+                  'order': 1}
+                 for bond in self.yield_bonds()]
+        output = {'name': self.kind, 'atoms': atoms, 'bonds': bonds}
+        return output
+
     # Interface to Trajectory for reading/writing .pdb and .mol2 files.
     # -----------------------------------------------------------------
     def from_trajectory(self, traj, frame=-1, coords_only=False):
