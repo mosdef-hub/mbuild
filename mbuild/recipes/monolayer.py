@@ -41,16 +41,12 @@ class Monolayer(mb.Compound):
         self.add(backfills)
 
 
-def main():
-    from mbuild.mask import grid_mask_2d
+if __name__ == "__main__":
     from mbuild.components.surfaces.betacristobalite import Betacristobalite
     from mbuild.examples.alkane_monolayer.alkylsilane import AlkylSilane
     from mbuild.components.atoms.H import H
 
-    mask = grid_mask_2d(8, 8)  # Evenly spaced, 2D grid of points.
+    mask = mb.grid_mask_2d(8, 8)  # Evenly spaced, 2D grid of points.
     monolayer = Monolayer(surface=Betacristobalite(), chain=AlkylSilane(10),
                           backfill=H(), mask=mask)
     monolayer.visualize()
-
-if __name__ == "__main__":
-    main()
