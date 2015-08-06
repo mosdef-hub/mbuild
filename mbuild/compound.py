@@ -4,11 +4,7 @@ from collections import OrderedDict, Counter
 from copy import deepcopy
 import itertools
 import os
-import subprocess
 import sys
-import tempfile
-from tempfile import mkstemp
-import webbrowser
 
 import imolecule
 import numpy as np
@@ -24,7 +20,6 @@ from mbuild.formats.mol2 import write_mol2
 from mbuild.orderedset import OrderedSet
 from mbuild.part import Part
 
-import json
 
 __all__ = ['load', 'Compound']
 
@@ -518,19 +513,14 @@ class Compound(Part):
         # webbrowser.open(urlparse.urljoin('file:', pathname2url(os.path.join(tempdir, html_file))))
         # # and leave all temp files in place...
 
+
     def visualize(self, show_ports=False, shader='toon',
                   drawing_type='ball and stick', camera_type='perspective'):
-        """Visualize the Compound using VMD.
-
-        Assumes you have VMD installed and can call it from the command line via
-        'vmd'.
-
-        TODO: Look into pizza.py's vmd.py. See issue #32.
-        """
+        """Visualize the Compound using imolecule. """
         try:
             __IPYTHON__
         except NameError:
-            raise NotImplementedError('To be replaced by imolecule')
+            imolecule.viewer.visualize(self._to_json(show_ports=show_ports), title=self.kind)
         else:
             json_mol = self._to_json(show_ports)
             imolecule.draw(json_mol, shader=shader, drawing_type=drawing_type,
@@ -856,3 +846,4 @@ class Compound(Part):
                 newone.referrers.add(deepcopy(r, memo))
 
         return newone
+
