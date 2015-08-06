@@ -12,6 +12,8 @@ requirements:
     - scipy
     - mdtraj
     - packmol
+    - pip:
+      - imolecule
 
 test:
   requires:
