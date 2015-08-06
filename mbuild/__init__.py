@@ -4,10 +4,9 @@ from mbuild.box import Box
 from mbuild.coordinate_transform import *
 from mbuild.compound import *
 from mbuild.mask import *
-from mbuild.tiled_compound import TiledCompound
 from mbuild.packing import *
-from mbuild.polymer import Polymer
 from mbuild.port import Port
+from mbuild.recipes import *
 
 from mbuild.formats import *
 
