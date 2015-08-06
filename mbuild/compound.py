@@ -211,10 +211,18 @@ class Compound(Part):
         Portions of this code are adapted from https://gist.github.com/mbostock/4339083.
         """
         try:
+            import urlparse
+        except ImportError:
+            import urllib.parse as urlparse
+        try:
+            from urllib import pathname2url
+        except ImportError:
+            from urllib.request import pathname2url
+
+        try:
             import networkx as nx
         except ImportError:
             raise ImportError('Networkx is required to visualize the compound hierarchy.')
-        import urlparse, urllib
         from networkx.readwrite import json_graph
         from mbuild.utils.visualization import d3_tree_template
 
@@ -269,7 +277,7 @@ class Compound(Part):
         with open (html_file, 'w') as the_file:
             the_file.write(html)
 
-        webbrowser.open(urlparse.urljoin('file:', urllib.pathname2url(os.path.join(tempdir, html_file))))
+        webbrowser.open(urlparse.urljoin('file:', pathname2url(os.path.join(tempdir, html_file))))
         # and leave all temp files in place...
 
     def visualize(self, show_ports=False, export_topology=False):
