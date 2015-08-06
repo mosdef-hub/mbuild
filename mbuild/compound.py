@@ -10,14 +10,13 @@ import tempfile
 from tempfile import mkstemp
 import webbrowser
 
+import imolecule
 import numpy as np
 import mdtraj as md
 from mdtraj.core.element import Element
 from mdtraj.core.element import get_by_symbol
 from mdtraj.core.topology import Topology
-from os import close, fdopen
 
-import mbuild
 from mbuild.atom import Atom
 from mbuild.box import Box
 from mbuild.bond import Bond
@@ -199,170 +198,6 @@ class Compound(Part):
     @periodicity.setter
     def periodicity(self, periods):
         self._periodicity = np.array(periods)
-
-    def view_hierarchy(self, show_ports=False):
-        """Visualize a compound hierarchy as a tree.
-
-        A tree is constructed from the compound hierarchy with self as the root.
-        The tree is then rendered in a web browser window using D3.js.
-
-        Note
-        ------
-        Portions of this code are adapted from https://gist.github.com/mbostock/4339083.
-        """
-        try:
-            import urlparse
-        except ImportError:
-            import urllib.parse as urlparse
-        try:
-            from urllib import pathname2url
-        except ImportError:
-            from urllib.request import pathname2url
-
-        try:
-            import networkx as nx
-        except ImportError:
-            raise ImportError('Networkx is required to visualize the compound hierarchy.')
-        from networkx.readwrite import json_graph
-        from mbuild.utils.visualization import d3_tree_template
-
-        tempdir = tempfile.mkdtemp(prefix='mbuild_view_hierarchy_')
-
-        compound_tree = nx.DiGraph()
-        compound_tree.add_node(self.kind)
-        compound_frequency = Counter([self.kind])
-        for sub_compound in self._yield_parts(Compound):
-            if not show_ports and sub_compound.kind in ["Port", "subport"]:
-                continue
-            compound_frequency[sub_compound.kind] += 1
-            compound_tree.add_node(sub_compound.kind)
-            if sub_compound.parent:
-                compound_tree.add_edge(sub_compound.parent.kind, sub_compound.kind)
-
-        labels = {"'children'": '"children"'}
-        for compound in compound_tree:
-            node_key = "'{}'".format(compound)
-            labels[node_key] = '"{} {:d}"'.format(compound, compound_frequency[compound])
-
-        json_template = json_graph.tree_data(compound_tree, self.kind,
-                                             dict(id="name", children="children"))
-        json_template = str(json_template)
-        for label in labels:
-            json_template = json_template.replace(label, labels[label])
-
-        # generate png image from the compound
-        self.save_png(os.path.join(tempdir, 'visualize_{}.png'.format(self.kind)), show_ports=show_ports)
-        sub_compounds_dict = {labels["'{}'".format(self.kind)]:"visualize_{}".format(self.kind)}
-
-        # generate png image from all subcompounds
-        for sub_compound in self._yield_parts(Compound):
-            if not show_ports and sub_compound.kind in ["Port", "subport"]:
-                continue
-            if labels["'{}'".format(sub_compound.kind)] not in sub_compounds_dict.keys():
-                if not show_ports and sub_compound.kind in ["Port", "subport"]:
-                    continue
-                sub_compound.save_png(os.path.join(tempdir, 'visualize_{}.png'.format(sub_compound.kind)), show_ports=show_ports)
-
-                label = labels["'{}'".format(sub_compound.kind)]
-                sub_compounds_dict[label] = "visualize_{}".format(sub_compound.kind)
-
-        for key in sub_compounds_dict:
-            filename = sub_compounds_dict[key]
-            json_template = json_template.replace("'name': {}".format(key),
-                                                  '"name": {0}, "icon": "{1}"'
-                                                  .format(key, filename+'.png'))
-
-        html = d3_tree_template % str(json_template)
-        html_file = os.path.join(tempdir,'view_hierarchy.html')
-        with open (html_file, 'w') as the_file:
-            the_file.write(html)
-
-        webbrowser.open(urlparse.urljoin('file:', pathname2url(os.path.join(tempdir, html_file))))
-        # and leave all temp files in place...
-
-    def visualize(self, show_ports=False, export_topology=False):
-        """Visualize the Compound using VMD.
-
-        Assumes you have VMD installed and can call it from the command line via
-        'vmd'.
-
-        TODO: Look into pizza.py's vmd.py. See issue #32.
-        """
-        try:
-            __IPYTHON__
-        except NameError:
-            import tempfile
-            if sys.platform.startswith('win'):
-                filedescriptor, filename = tempfile.mkstemp(suffix='.mol2')
-                os.close(filedescriptor)
-                self.save(filename, show_ports=show_ports)
-                try:
-                    # subprocess.call(["vmd.exe", filename], shell=True)
-                    DETACHED_PROCESS = 0x00000008
-                    subprocess.Popen(["vmd.exe", filename], close_fds=True)
-                except OSError:
-                    raise OSError('Visualization with VMD failed. Make sure it is installed'
-                                  'correctly and launchable from the command line via "vmd.exe".')
-            else:
-                filename = tempfile.NamedTemporaryFile(prefix='visualize_{}'.format(self.__class__.__name__), suffix='.mol2').name
-                self.save(filename, show_ports=show_ports)
-                try:
-                    subprocess.call(["vmd", filename])
-                except OSError:
-                    raise OSError("Visualization with VMD failed. Make sure it is installed"
-                                  "correctly and launchable from the command line via 'vmd'.")
-        else:
-            from mdtraj.html import TrajectoryView, enable_notebook
-            enable_notebook()
-            traj = self.to_trajectory(show_ports=show_ports)
-            traj_view = TrajectoryView(traj, colorBy='atom')
-
-            if export_topology:
-                # get topology
-                topology = traj_view._computeTopology()
-                # export json
-                with open('topology_{}.json'.format(self.kind.lower()), 'w') as json_file:
-                    json.dump(topology, json_file)
-
-
-            return traj_view
-
-    def save_png(self, image_filename, show_ports=False):
-
-        # create a mol2 temp file
-        mol2_fd, mol2_filename = mkstemp(suffix='visualize_{}.mol2'.format(self.kind))
-        close(mol2_fd)
-        self.save(mol2_filename, show_ports=show_ports)
-
-        # use vmd to convert the mol2 to a png
-        vmd_command = """
-        display resetview
-        pbc unwrap
-        rotate x by -45
-        display depthcue off
-        color Display Background 8
-        mol modstyle 0 0 cpk 2.75 0.3 12 12
-        axes location off
-        display projection orthographic
-        render snapshot {0}
-        exit
-        """.format(image_filename.replace('\\', '/'))
-
-        try:
-            vmd_command_fd, vmd_command_filename= mkstemp(suffix='.vmd')
-            f = fdopen(vmd_command_fd,'w')
-            f.write(vmd_command)
-            f.close()
-
-            subprocess.call(['vmd', '-e', vmd_command_filename, mol2_filename])
-
-        except OSError:
-            raise OSError("Visualization with VMD failed. Make sure it is installed"
-                          "correctly and launchable from the command line via 'vmd'.")
-
-        # delete mol2 file
-        os.remove(mol2_filename)
-
 
     @property
     def xyz(self):
@@ -599,18 +434,123 @@ class Compound(Part):
         """ """
         raise NotImplementedError('Interface to InterMol missing')
 
+    # Visualization
+    # -------------
+    def view_hierarchy(self, show_ports=False):
+        """Visualize a compound hierarchy as a tree.
+
+        A tree is constructed from the compound hierarchy with self as the root.
+        The tree is then rendered in a web browser window using D3.js.
+
+        Note
+        ------
+        Portions of this code are adapted from https://gist.github.com/mbostock/4339083.
+        """
+        raise NotImplementedError('To be replaced with igraph')
+
+        # try:
+        #     import urlparse
+        # except ImportError:
+        #     import urllib.parse as urlparse
+        # try:
+        #     from urllib import pathname2url
+        # except ImportError:
+        #     from urllib.request import pathname2url
+        #
+        # try:
+        #     import networkx as nx
+        # except ImportError:
+        #     raise ImportError('Networkx is required to visualize the compound hierarchy.')
+        # from networkx.readwrite import json_graph
+        # from mbuild.utils.visualization import d3_tree_template
+        #
+        # tempdir = tempfile.mkdtemp(prefix='mbuild_view_hierarchy_')
+        #
+        # compound_tree = nx.DiGraph()
+        # compound_tree.add_node(self.kind)
+        # compound_frequency = Counter([self.kind])
+        # for sub_compound in self._yield_parts(Compound):
+        #     if not show_ports and sub_compound.kind in ["Port", "subport"]:
+        #         continue
+        #     compound_frequency[sub_compound.kind] += 1
+        #     compound_tree.add_node(sub_compound.kind)
+        #     if sub_compound.parent:
+        #         compound_tree.add_edge(sub_compound.parent.kind, sub_compound.kind)
+        #
+        # labels = {"'children'": '"children"'}
+        # for compound in compound_tree:
+        #     node_key = "'{}'".format(compound)
+        #     labels[node_key] = '"{} {:d}"'.format(compound, compound_frequency[compound])
+        #
+        # json_template = json_graph.tree_data(compound_tree, self.kind,
+        #                                      dict(id="name", children="children"))
+        # json_template = str(json_template)
+        # for label in labels:
+        #     json_template = json_template.replace(label, labels[label])
+        #
+        # # generate png image from the compound
+        # self.save_png(os.path.join(tempdir, 'visualize_{}.png'.format(self.kind)), show_ports=show_ports)
+        # sub_compounds_dict = {labels["'{}'".format(self.kind)]:"visualize_{}".format(self.kind)}
+        #
+        # # generate png image from all subcompounds
+        # for sub_compound in self._yield_parts(Compound):
+        #     if not show_ports and sub_compound.kind in ["Port", "subport"]:
+        #         continue
+        #     if labels["'{}'".format(sub_compound.kind)] not in sub_compounds_dict.keys():
+        #         if not show_ports and sub_compound.kind in ["Port", "subport"]:
+        #             continue
+        #         sub_compound.save_png(os.path.join(tempdir, 'visualize_{}.png'.format(sub_compound.kind)), show_ports=show_ports)
+        #
+        #         label = labels["'{}'".format(sub_compound.kind)]
+        #         sub_compounds_dict[label] = "visualize_{}".format(sub_compound.kind)
+        #
+        # for key in sub_compounds_dict:
+        #     filename = sub_compounds_dict[key]
+        #     json_template = json_template.replace("'name': {}".format(key),
+        #                                           '"name": {0}, "icon": "{1}"'
+        #                                           .format(key, filename+'.png'))
+        #
+        # html = d3_tree_template % str(json_template)
+        # html_file = os.path.join(tempdir, 'view_hierarchy.html')
+        # with open(html_file, 'w') as the_file:
+        #     the_file.write(html)
+        #
+        # webbrowser.open(urlparse.urljoin('file:', pathname2url(os.path.join(tempdir, html_file))))
+        # # and leave all temp files in place...
+
+    def visualize(self, show_ports=False, shader='toon',
+                  drawing_type='ball and stick', camera_type='perspective'):
+        """Visualize the Compound using VMD.
+
+        Assumes you have VMD installed and can call it from the command line via
+        'vmd'.
+
+        TODO: Look into pizza.py's vmd.py. See issue #32.
+        """
+        try:
+            __IPYTHON__
+        except NameError:
+            raise NotImplementedError('To be replaced by imolecule')
+        else:
+            json_mol = self._to_json(show_ports)
+            imolecule.draw(json_mol, shader=shader, drawing_type=drawing_type,
+                           camera_typre=camera_type)
+
+    def save_png(self, image_filename, show_ports=False):
+        raise NotImplementedError('To be replaced by imolecule')
+
     def _to_json(self, show_ports=False):
         atoms = list()
         for idx, atom in enumerate(self.atom_list_by_name(exclude_ports=not show_ports)):
             atom.index = idx
             atoms.append({'element': atom.name,
-                          'location': list(atom.pos)})
+                          'location': list(atom.pos * 10)})
 
         bonds = [{'atoms': [bond.atom1.index, bond.atom2.index],
                   'order': 1}
                  for bond in self.yield_bonds()]
         output = {'name': self.kind, 'atoms': atoms, 'bonds': bonds}
-        return output
+        return imolecule.json_formatter.compress(output)
 
     # Interface to Trajectory for reading/writing .pdb and .mol2 files.
     # -----------------------------------------------------------------
