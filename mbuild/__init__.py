@@ -10,13 +10,4 @@ from mbuild.recipes import *
 
 from mbuild.formats import *
 
-# For using MDTraj's interactive IPython WebGL widget
-try:
-    __IPYTHON__
-except NameError:
-    in_ipython = False
-else:
-    from mdtraj.html import enable_notebook
-    enable_notebook()
-
 from mbuild.version import version
