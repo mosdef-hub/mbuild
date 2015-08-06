@@ -29,6 +29,7 @@ import json
 
 __all__ = ['load', 'Compound']
 
+VIEWER = 'imolecule'
 
 def load(filename, relative_to_module=None, frame=-1, compound=None,
          coords_only=False, **kwargs):
@@ -291,26 +292,32 @@ class Compound(Part):
         try:
             __IPYTHON__
         except NameError:
-            import tempfile
-            if sys.platform.startswith('win'):
-                filedescriptor, filename = tempfile.mkstemp(suffix='.mol2')
-                os.close(filedescriptor)
-                self.save(filename, show_ports=show_ports)
-                try:
-                    # subprocess.call(["vmd.exe", filename], shell=True)
-                    DETACHED_PROCESS = 0x00000008
-                    subprocess.Popen(["vmd.exe", filename], close_fds=True)
-                except OSError:
-                    raise OSError('Visualization with VMD failed. Make sure it is installed'
-                                  'correctly and launchable from the command line via "vmd.exe".')
+            if VIEWER=='imolecule':
+                # imolecule viewer
+                from imolecule import viewer
+                viewer.visualize(self._to_json(show_ports=show_ports), title=self.kind)
             else:
-                filename = tempfile.NamedTemporaryFile(prefix='visualize_{}'.format(self.__class__.__name__), suffix='.mol2').name
-                self.save(filename, show_ports=show_ports)
-                try:
-                    subprocess.call(["vmd", filename])
-                except OSError:
-                    raise OSError("Visualization with VMD failed. Make sure it is installed"
-                                  "correctly and launchable from the command line via 'vmd'.")
+                # VMD viewer
+                import tempfile
+                if sys.platform.startswith('win'):
+                    filedescriptor, filename = tempfile.mkstemp(suffix='.mol2')
+                    os.close(filedescriptor)
+                    self.save(filename, show_ports=show_ports)
+                    try:
+                        # subprocess.call(["vmd.exe", filename], shell=True)
+                        DETACHED_PROCESS = 0x00000008
+                        subprocess.Popen(["vmd.exe", filename], close_fds=True)
+                    except OSError:
+                        raise OSError('Visualization with VMD failed. Make sure it is installed'
+                                      'correctly and launchable from the command line via "vmd.exe".')
+                else:
+                    filename = tempfile.NamedTemporaryFile(prefix='visualize_{}'.format(self.__class__.__name__), suffix='.mol2').name
+                    self.save(filename, show_ports=show_ports)
+                    try:
+                        subprocess.call(["vmd", filename])
+                    except OSError:
+                        raise OSError("Visualization with VMD failed. Make sure it is installed"
+                                      "correctly and launchable from the command line via 'vmd'.")
         else:
             from mdtraj.html import TrajectoryView, enable_notebook
             enable_notebook()
@@ -916,3 +923,4 @@ class Compound(Part):
                 newone.referrers.add(deepcopy(r, memo))
 
         return newone
+
