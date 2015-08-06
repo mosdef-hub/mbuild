@@ -9,25 +9,14 @@ from mbuild.components.surfaces.betacristobalite import Betacristobalite
 from mbuild.examples.pmpc.brush import Brush
 
 
-class PMPCLayer(mb.Compound):
+class PMPCLayer(mb.Monolayer):
     """Create a layer of grafted pMPC brushes on a beta-cristobalite surface."""
     def __init__(self, mask, tile_x=1, tile_y=1, chain_length=4, alpha=pi/4):
-        super(PMPCLayer, self).__init__()
-
         surface = Betacristobalite()
-        tc = mb.TiledCompound(surface, (tile_x, tile_y, 1))
-        box = tc.boundingbox
-        mb.translate(tc, -box.mins)
-        self.add(tc, 'tiled_surface')
-
         brush = Brush(chain_length=chain_length, alpha=alpha)
         hydrogen = H()
-
-        # mb.apply_mask(self.tiled_surface, brush, mask, backfill=hydrogen)
-        brushes, hydrogens = mb.apply_mask(self.tiled_surface, brush, mask,
-                                           backfill=hydrogen)
-        self.add(brushes)
-        self.add(hydrogens)
+        super(PMPCLayer, self).__init__(surface, brush, hydrogen,
+                                        mask, tile_x, tile_y)
 
 
 def main():
