@@ -16,6 +16,12 @@ import sys
 from setuptools import setup, find_packages
 from setuptools.command.test import test as TestCommand
 
+try:
+    import mdtraj
+except ImportError:
+    print('Building and running mbuild requires mdtraj.', file=sys.stderr)
+    sys.exit(1)
+
 #####################################
 VERSION = "0.5.0"
 ISRELEASED = False
@@ -47,6 +53,8 @@ class PyTest(TestCommand):
         errcode = pytest.main(['mbuild'])
         sys.exit(errcode)
 
+requirements = [line.strip() for line in open('requirements.txt').readlines()]
+
 setup(
     name='mbuild',
     version=__version__,
@@ -60,6 +68,7 @@ setup(
     package_data={'mbuild': ['utils/reference/*.{pdb,mol2}', 'components/*.{pdb,mol2}']},
     package_dir={'mbuild': 'mbuild'},
     include_package_data=True,
+    install_requires=requirements,
     license="MIT",
     zip_safe=False,
     keywords='mbuild',
