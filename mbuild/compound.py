@@ -513,7 +513,7 @@ class Compound(Part):
         # webbrowser.open(urlparse.urljoin('file:', pathname2url(os.path.join(tempdir, html_file))))
         # # and leave all temp files in place...
 
-    def visualize(self, show_ports=False, shader='toon',
+    def visualize(self, show_ports=False, shader='lambert',
                   drawing_type='ball and stick', camera_type='perspective'):
         """Visualize the Compound using imolecule. """
         try:

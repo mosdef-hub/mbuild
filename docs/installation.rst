@@ -54,5 +54,5 @@ mBuild uses ``py.test`` for unit testing. To run them simply type run the
 following while in the base directory::
 
     $ pip install pytest
-    $ py.test
+    $ py.test -v
 
