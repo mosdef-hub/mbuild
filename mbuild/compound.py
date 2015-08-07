@@ -513,7 +513,6 @@ class Compound(Part):
         # webbrowser.open(urlparse.urljoin('file:', pathname2url(os.path.join(tempdir, html_file))))
         # # and leave all temp files in place...
 
-
     def visualize(self, show_ports=False, shader='toon',
                   drawing_type='ball and stick', camera_type='perspective'):
         """Visualize the Compound using imolecule. """
@@ -523,8 +522,8 @@ class Compound(Part):
             imolecule.viewer.visualize(self._to_json(show_ports=show_ports), title=self.kind)
         else:
             json_mol = self._to_json(show_ports)
-            imolecule.draw(json_mol, shader=shader, drawing_type=drawing_type,
-                           camera_typre=camera_type)
+            imolecule.draw(json_mol, format='json', shader=shader,
+                           drawing_type=drawing_type, camera_type=camera_type)
 
     def save_png(self, image_filename, show_ports=False):
         raise NotImplementedError('To be replaced by imolecule')
