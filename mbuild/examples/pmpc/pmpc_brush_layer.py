@@ -31,5 +31,3 @@ if __name__ == "__main__":
     pmpc_layer.save(filename='brush_layer.mol2')
     pmpc_layer.visualize()
     # pmpc_layer.view_hierarchy()
-    #                             chain_types=[Betacristobalite, Brush],
-    #                             residue_types=[MPC])

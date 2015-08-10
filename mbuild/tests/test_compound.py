@@ -1,4 +1,5 @@
 from copy import deepcopy
+import json
 import os
 
 import numpy as np
@@ -157,10 +158,10 @@ class TestCompound(BaseTest):
         assert traj.n_residues == 1
 
     def test_to_json(self, ethane):
-        output = ethane._to_json()
+        output = json.loads(ethane._to_json())
         assert len(output['atoms']) == 8
         assert len(output['bonds']) == 7
 
-        output = ethane._to_json(show_ports=True)
+        output = json.loads(ethane._to_json(show_ports=True))
         assert len(output['atoms']) == 8+16
         assert len(output['bonds']) == 7
