@@ -516,14 +516,15 @@ class Compound(Part):
     def visualize(self, show_ports=False, shader='lambert',
                   drawing_type='ball and stick', camera_type='perspective'):
         """Visualize the Compound using imolecule. """
-        try:
-            __IPYTHON__
-        except NameError:
-            imolecule.viewer.visualize(self._to_json(show_ports=show_ports), title=self.kind)
-        else:
-            json_mol = self._to_json(show_ports)
-            imolecule.draw(json_mol, format='json', shader=shader,
-                           drawing_type=drawing_type, camera_type=camera_type)
+        # try:
+        #     __IPYTHON__
+        # except NameError:
+        #     from imolecule import viewer
+        #     viewer.visualize(self._to_json(show_ports=show_ports), title=self.kind)
+        # else:
+        json_mol = self._to_json(show_ports)
+        imolecule.draw(json_mol, format='json', shader=shader,
+                       drawing_type=drawing_type, camera_type=camera_type)
 
     def save_png(self, image_filename, show_ports=False):
         raise NotImplementedError('To be replaced by imolecule')
