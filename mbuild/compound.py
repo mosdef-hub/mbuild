@@ -411,11 +411,11 @@ class Compound(Part):
         d = np.where(d > 0.5 * self.periodicity, self.periodicity - d, d)
         return np.sqrt((d ** 2).sum(axis=-1))
 
-    def atoms_in_range(self, atom, dmax, atom_kdtree=None, atom_array=None):
+    def atoms_in_range(self, atom, dmax, max_atoms=20, atom_kdtree=None, atom_array=None):
         """"""
         if atom_kdtree is None:
             atom_kdtree = PeriodicCKDTree(data=self.xyz, bounds=self.periodicity)
-        _, idxs = atom_kdtree.query(atom.pos, k=20, distance_upper_bound=dmax)
+        _, idxs = atom_kdtree.query(atom.pos, k=max_atoms, distance_upper_bound=dmax)
         idxs = idxs[idxs != self.n_atoms]
         if atom_array is None:
             atom_array = np.array(self.atoms)
@@ -424,11 +424,19 @@ class Compound(Part):
     def add_bonds(self, type_a, type_b, dmin, dmax, kind=None):
         """Add Bonds between all pairs of types a/b within [dmin, dmax]. """
         atom_kdtree = PeriodicCKDTree(data=self.xyz, bounds=self.periodicity)
+        atom_array = np.array(self.atoms)
+        added_bonds = list()
         for a1 in self.atom_list_by_name(type_a):
-            nearest = self.atoms_in_range(a1, dmax, atom_kdtree)
+            nearest = self.atoms_in_range(a1, dmax, max_atoms=20,
+                                          atom_kdtree=atom_kdtree,
+                                          atom_array=atom_array)
             for a2 in nearest:
+                bond_tuple = (a1, a2) if id(a1) < id(a2) else (a2, a1)
+                if bond_tuple in added_bonds:
+                    continue
                 if (a2.name == type_b) and (dmin <= self.min_periodic_distance(a2.pos, a1.pos) <= dmax):
                     self.add(Bond(a1, a2, kind=kind))
+                    added_bonds.append(bond_tuple)
 
     def add(self, new_part, label=None, containment=True, replace=False,
             inherit_periodicity=True):

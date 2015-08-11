@@ -95,14 +95,18 @@ class TestCompound(BaseTest):
         all_bonds = ethane.bond_list_by_kind()
         assert len(all_bonds) == 7
 
-    # def test_atoms_in_range(self, ethane):
-    #     group = ethane.atoms_in_range(ethane.atoms[0].pos, 0.141)
-    #     assert sum([1 for x in group if x.name == 'H']) == 3
-    #     assert sum([1 for x in group if x.name == 'C']) == 2
-    #
-    #     group = ethane.atoms_in_range(ethane.atoms[0].pos, 0.141, max_items=4)
-    #     assert sum([1 for x in group if x.name == 'H']) == 3
-    #     assert sum([1 for x in group if x.name == 'C']) == 1
+    def test_atoms_in_range(self, ethane):
+        group = ethane.atoms_in_range(ethane.atoms[0], 0.141)
+        assert sum([1 for x in group if x.name == 'H']) == 3
+        assert sum([1 for x in group if x.name == 'C']) == 2
+
+        group = ethane.atoms_in_range(ethane.atoms[0], 0.141, max_atoms=4)
+        assert sum([1 for x in group if x.name == 'H']) == 3
+        assert sum([1 for x in group if x.name == 'C']) == 1
+
+    def test_add_bonds(self, ch3):
+        ch3.add_bonds('H', 'H', dmin=0.01, dmax=2.0)
+        assert ch3.n_bonds == 3 + 3
 
     def test_remove(self, ethane):
         hydrogens = ethane.atom_list_by_name('H')
