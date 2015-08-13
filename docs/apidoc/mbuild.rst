@@ -1,8 +1,23 @@
 mbuild package
 ==============
 
+Subpackages
+-----------
+
+.. toctree::
+
+    mbuild.recipes
+
 Submodules
 ----------
+
+mbuild.atb_client module
+------------------------
+
+.. automodule:: mbuild.atb_client
+    :members:
+    :undoc-members:
+    :show-inheritance:
 
 mbuild.atom module
 ------------------
@@ -84,26 +99,10 @@ mbuild.periodic_kdtree module
     :undoc-members:
     :show-inheritance:
 
-mbuild.polymer module
----------------------
-
-.. automodule:: mbuild.polymer
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
 mbuild.port module
 ------------------
 
 .. automodule:: mbuild.port
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-mbuild.tiled_compound module
-----------------------------
-
-.. automodule:: mbuild.tiled_compound
     :members:
     :undoc-members:
     :show-inheritance:
