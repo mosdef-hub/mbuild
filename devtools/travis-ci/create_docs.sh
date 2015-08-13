@@ -1,6 +1,6 @@
 # Create the docs and push them to github pages
 # ---------------------------------------------
-conda install --yes sphinx numpydoc
+conda install --yes sphinx numpydoc mdtraj imolecule
 
 python setup.py develop
 
