@@ -716,7 +716,7 @@ class Compound(Part):
             try:
                 ele = get_by_symbol(atom.name)
             except KeyError:
-                ele = Element(1000, atom.name, atom.name, mass=1.0, radius=1.0)
+                ele = get_by_symbol("VS")
             at = top.add_atom(atom.name, ele, last_residue)
             at.charge = atom.charge
             atom_mapping[atom] = at
