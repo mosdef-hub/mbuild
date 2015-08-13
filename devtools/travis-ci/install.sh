@@ -10,5 +10,5 @@ bash $MINICONDA -b
 export PATH=$HOME/miniconda/bin:$PATH
 conda install --yes conda-build jinja2 binstar pip
 conda config --add channels http://conda.anaconda.org/omnia
-conda install --yes mdtraj
+conda config --add channels http://conda.anaconda.org/patrickfuller
 

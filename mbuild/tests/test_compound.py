@@ -127,7 +127,7 @@ class TestCompound(BaseTest):
     def test_visualize(self, ethane):
         ethane.visualize()
 
-    @pytest.mark.skipif(bool(os.getenv("CI")) , reason="Running on CI")
+    @pytest.mark.skipif(bool(os.getenv("CI")), reason="Running on CI")
     def test_visualize_ports(self, ethane):
         ethane.visualize(show_ports=True)
 

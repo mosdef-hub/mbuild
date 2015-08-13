@@ -10,7 +10,7 @@ if [[ "$TRAVIS_BRANCH" != "master" ]]; then
 fi
 
 
-if [[ "2.7 3.3 3.4" =~ "$python" ]]; then
+if [[ "2.7 3.4" =~ "$python" ]]; then
     binstar -t "$BINSTAR_TOKEN"  upload --force --user iModels --package mbuild $HOME/miniconda/conda-bld/linux-64/mbuild-*
     conda convert $HOME/miniconda/conda-bld/linux-64/mbuild-* -p all
     ls
