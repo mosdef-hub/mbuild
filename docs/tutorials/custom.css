@@ -1,1 +1,13 @@
-/Users/sallai/.ipython/profile_default/static/custom/custom.css
+/*
+Placeholder for custom user CSS
+
+mainly to be overridden in profile/static/custom/custom.css
+
+This will always be an empty file in IPython
+*/
+
+#notebook #notebook-container {
+  width: 100% !important;
+  padding: 0 !important;
+}
+
