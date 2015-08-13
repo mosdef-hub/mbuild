@@ -66,6 +66,8 @@ class Compound(Part):
 
     Parameters
     ----------
+    subcompounds : Parts, optional, default=None
+        One or more parts to be added to self.
     kind : str, optional, default=self.__class__.__name__
         The type of Compound.
     periodicity : np.ndarray, shape=(3,), dtype=float, optional

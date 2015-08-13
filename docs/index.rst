@@ -58,11 +58,13 @@ Tutorials
 
    tutorials/tutorials
 
+Data structures
+---------------
+.. toctree::
+    data_structures
+
 API Reference
 -------------
-.. toctree::
-   :maxdepth: 1
-
    apidoc/mbuild
 
 Indices and tables
