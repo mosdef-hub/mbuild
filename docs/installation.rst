@@ -9,7 +9,7 @@ Install with conda (preferred)
     $ conda install -c omnia -c patrickfuller -c imodels mbuild
 
 or alternatively you can add all the required channels to your ``.condarc``
-after which you can always ``conda install mbuild``::
+after which you can simply ``conda install mbuild``::
 
     $ conda config --add channels omnia
     $ conda config --add channels patrickfuller
