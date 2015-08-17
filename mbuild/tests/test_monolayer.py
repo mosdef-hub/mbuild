@@ -28,3 +28,8 @@ class TestMonolayer(BaseTest):
         monolayer = mb.Monolayer(surface=Betacristobalite(), chain=H(),
                                  guest_port_name='up', backfill=chain,
                                  backfill_port_name='down', mask=mask)
+
+        chains = 100 - (n*m)
+
+        assert monolayer.n_atoms == 1800 + chains * (10*3) + (100 - chains)
+        assert monolayer.n_bonds == 2300 + chains * (10*2 + 9 + 1) + (100 - chains)
