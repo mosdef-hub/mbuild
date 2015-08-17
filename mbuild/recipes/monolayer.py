@@ -4,7 +4,7 @@ import mbuild as mb
 class Monolayer(mb.Compound):
     """A general monolayer recipe. """
 
-    def __init__(self, surface, chain, backfill=None, mask=None, tile_x=1, tile_y=1):
+    def __init__(self, surface, chain, backfill=None, mask=None, tile_x=1, tile_y=1, **kwargs):
         """Create an alkylsilane monolayer on beta-cristobalite.
 
         Parameters
@@ -36,7 +36,7 @@ class Monolayer(mb.Compound):
 
         # Attach chains to specified binding sites. Remaining sites get a backfill.
         chains, backfills = mb.apply_mask(host=self.tiled_surface, guest=chain,
-                                          mask=mask, backfill=backfill)
+                                          mask=mask, backfill=backfill, **kwargs)
         self.add(chains)
         self.add(backfills)
 
