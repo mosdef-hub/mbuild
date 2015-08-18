@@ -23,5 +23,3 @@ fi
 if [[ "$python" != "2.7" ]]; then
     echo "No deploy on PYTHON_VERSION=${python}"; exit 0
 fi
-
-
