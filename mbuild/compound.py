@@ -9,15 +9,14 @@ import sys
 import imolecule
 import numpy as np
 import mdtraj as md
-from mdtraj.core.element import Element
 from mdtraj.core.element import get_by_symbol
 from mdtraj.core.topology import Topology
+from oset import oset as OrderedSet
 
 from mbuild.atom import Atom
 from mbuild.box import Box
 from mbuild.bond import Bond
 from mbuild.formats.mol2 import write_mol2
-from mbuild.orderedset import OrderedSet
 from mbuild.part import Part
 from mbuild.periodic_kdtree import PeriodicCKDTree
 
@@ -337,8 +336,8 @@ class Compound(Part):
             return
 
         intersection = objs_to_remove.intersection(self.parts)
-        self.parts.difference_update(intersection)
-        objs_to_remove.difference_update(intersection)
+        self.parts -= intersection
+        objs_to_remove -= intersection
 
         for removed_part in intersection:
             self._remove_bonds(removed_part)
@@ -371,7 +370,7 @@ class Compound(Part):
                     if referred_part is removed_part:
                         del referrer.labels[label]
                         referrers_to_remove.add(referrer)
-        removed_part.referrers.difference_update(referrers_to_remove)
+        removed_part.referrers -= referrers_to_remove
 
         # Remove labels in this part pointing into the hierarchy.
         labels_to_delete = []
@@ -713,10 +712,10 @@ class Compound(Part):
 
             # Add the actual atoms
             try:
-                ele = get_by_symbol(atom.name)
+                elem = get_by_symbol(atom.name)
             except KeyError:
-                ele = get_by_symbol("VS")
-            at = top.add_atom(atom.name, ele, last_residue)
+                elem = get_by_symbol("VS")
+            at = top.add_atom(atom.name, elem, last_residue)
             at.charge = atom.charge
             atom_mapping[atom] = at
 
