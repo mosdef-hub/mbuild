@@ -162,7 +162,6 @@ class Compound(Part):
         """ """
         return self._yield_parts(Bond)
 
-
     @property
     def n_bonds(self):
         """Return the number of Bonds in the Compound. """
