@@ -2,29 +2,33 @@ import mbuild as mb
 
 
 class Monolayer(mb.Compound):
-    """A general monolayer recipe. """
+    """A general monolayer recipe.
 
-    def __init__(self, surface, chain, backfill=None, mask=None, tile_x=1, tile_y=1, **kwargs):
-        """Create an alkylsilane monolayer on beta-cristobalite.
+    Parameters
+    ----------
+    surface : mb.Compound
+        Surface on which the monolayer will be built.
+    chain : list of mb.Compound
+        The chain to be replicated and attached to the surface.
+    backfill : list of mb.Compound, optional, default=None
+        If there are fewer chains than there are ports on the surface,
+        copies of `backfill` will be used to fill the remaining ports.
+    mask : np.ndarray, shape=(n, 3), optional, default=None
+        An array of planar binding locations. If not provided, the entire
+        surface will be filled with `chain`.
+    tile_x : int, optional, default=1
+        Number of times to replicate substrate in x-direction.
+    tile_y : int, optional, default=1
+        Number of times to replicate substrate in y-direction.
 
-        Parameters
-        ----------
-        surface : mb.Compound
-            Surface on which the monolayer will be built.
-        chain : list of mb.Compound
-            The chain to be replicated and attached to the surface.
-        backfill : list of mb.Compound, optional, default=None
-            If there are fewer chains than there are ports on the surface,
-            copies of `backfill` will be used to fill the remaining ports.
-        mask : np.ndarray, shape=(n, 3), optional, default=None
-            An array of planar binding locations. If not provided, the entire
-            surface will be filled with `chain`.
-        tile_x : int, optional, default=1
-            Number of times to replicate substrate in x-direction.
-        tile_y : int, optional, default=1
-            Number of times to replicate substrate in y-direction.
+    TODO
+    ----
+    * Support for arbitrary number of chain types and relative proportions
 
-        """
+    """
+
+    def __init__(self, surface, chain, backfill=None, mask=None, tile_x=1,
+                 tile_y=1, **kwargs):
         super(Monolayer, self).__init__()
 
         # Replicate the surface.

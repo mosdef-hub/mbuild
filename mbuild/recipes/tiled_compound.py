@@ -45,6 +45,10 @@ class TiledCompound(Compound):
         self.kind = kind
         self.periodicity = np.array(tile.periodicity * n_tiles)
 
+        if all(n_tiles == 1):
+            self._add_tile_and_hoist_ports(tile, [(0, 0, 0)])
+            return  # Don't waste time copying and checking bonds.
+
         # For every tile, assign temporary ID's to atoms which are internal to
         # that tile. E.g., when replicating a tile with 1800 atoms, every tile
         # will contain atoms with ID's from 0-1799. These ID's are used below
@@ -60,13 +64,9 @@ class TiledCompound(Compound):
                               range(n_tiles[2])):
             new_tile = deepcopy(tile)
             translate(new_tile, np.array(ijk * tile.periodicity))
-            tile_label = "{0}_{1}".format(self.kind, ijk)
-            self.add(new_tile, label=tile_label, inherit_periodicity=False)
+            self._add_tile_and_hoist_ports(new_tile, ijk)
 
-            # Hoist ports.
-            for port in new_tile.parts:
-                if isinstance(port, Port):
-                    self.add(port, containment=False)
+
 
         # Fix bonds across periodic boundaries.
         # -------------------------------------
@@ -103,6 +103,15 @@ class TiledCompound(Compound):
         for atom in self.yield_atoms():
             atom.index = None
         del self.atom_kdtree
+
+    def _add_tile_and_hoist_ports(self, new_tile, ijk):
+        tile_label = "{0}_{1}".format(self.kind, '-'.join(str(d) for d in ijk))
+        self.add(new_tile, label=tile_label, inherit_periodicity=False)
+
+        # Hoist ports.
+        for port in new_tile.parts:
+            if isinstance(port, Port):
+                self.add(port, containment=False)
 
     def _find_atom_image(self, query, match, all_atoms):
         """Find atom with the same index as match in a neighboring tile. """
