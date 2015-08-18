@@ -39,8 +39,7 @@ from scipy.spatial import cKDTree
 
 
 def _gen_relevant_images(x, bounds, distance_upper_bound):
-    # Map x onto the canonical unit cell, then produce the relevant
-    # mirror images
+    """Map x onto canonical unit cell and produce mirror images. """
 
     real_x = np.copy(x)
 
@@ -82,8 +81,7 @@ def _gen_relevant_images(x, bounds, distance_upper_bound):
 
 
 class PeriodicCKDTree(cKDTree):
-    """
-    Cython kd-tree for quick nearest-neighbor lookup with periodic boundaries
+    """Cython kd-tree for nearest-neighbor lookup with periodic boundaries.
 
     See scipy.spatial.ckdtree for details on kd-trees.
 
@@ -93,32 +91,30 @@ class PeriodicCKDTree(cKDTree):
     times, if necessary, with all the relevant periodic images of the
     query point.
 
-    Note that to ensure that no two distinct images of the same point
-    appear in the results, it is essential to restrict the maximum
-    distance between a query point and a data point to half the smallest
-    box dimension.
+    Parameters
+    ----------
+    bounds : array_like, shape (k,)
+        Size of the periodic box along each spatial dimension.  A
+        negative or zero size for dimension k means that space is not
+        periodic along k.
+    data : array-like, shape (n,m)
+        The n data points of dimension mto be indexed. This array is
+        not copied unless this is necessary to produce a contiguous
+        array of doubles, and so modifying this data will result in
+        bogus results.
+    leafsize : positive integer
+        The number of points at which the algorithm switches over to
+        brute-force.
+
+    Note
+    ----
+    To ensure that no two distinct images of the same point appear in the
+    results, it is essential to restrict the maximum distance between a
+    query point and a data point to half the smallest box dimension.
     """
 
     def __init__(self, data, leafsize=10, bounds=None):
-        """Construct a kd-tree.
-
-        Parameters
-        ----------
-        bounds : array_like, shape (k,)
-            Size of the periodic box along each spatial dimension.  A
-            negative or zero size for dimension k means that space is not
-            periodic along k.
-        data : array-like, shape (n,m)
-            The n data points of dimension mto be indexed. This array is
-            not copied unless this is necessary to produce a contiguous
-            array of doubles, and so modifying this data will result in
-            bogus results.
-        leafsize : positive integer
-            The number of points at which the algorithm switches over to
-            brute-force.
-        """
-
-        # Map all points to canonical periodic image
+        # Map all points to canonical periodic image.
         if bounds is None:
             bounds = np.array([0.0, 0.0, 0.0])
         self.bounds = np.array(bounds)
@@ -129,7 +125,7 @@ class PeriodicCKDTree(cKDTree):
         for i, row in enumerate(self.real_data):
             for j, coord in enumerate(row):
                 if bounds[j] > 0.0:
-                    wrapped_data[i,j] = self.real_data[i,j] - np.floor(self.real_data[i,j] / bounds[j]) * bounds[j]
+                    wrapped_data[i, j] = self.real_data[i, j] - np.floor(self.real_data[i, j] / bounds[j]) * bounds[j]
 
         # if all(v == 0 for v in bounds):
         #     wrapped_data = self.real_data
@@ -178,8 +174,7 @@ class PeriodicCKDTree(cKDTree):
             raise ValueError("Invalid k in periodic_kdtree._KDTree__query")
 
     def query(self, x, k=1, eps=0, p=2, distance_upper_bound=np.inf):
-        """
-        Query the kd-tree for nearest neighbors
+        """Query the kd-tree for nearest neighbors.
 
         Parameters
         ----------
@@ -216,43 +211,48 @@ class PeriodicCKDTree(cKDTree):
         """
         x = np.asarray(x)
         if np.shape(x)[-1] != self.m:
-            raise ValueError("x must consist of vectors of length %d but has shape %s" % (self.m, np.shape(x)))
-        if p<1:
+            raise ValueError("x must consist of vectors of length %d but has "
+                             "shape %s" % (self.m, np.shape(x)))
+        if p < 1:
             raise ValueError("Only p-norms with 1<=p<=infinity permitted")
         retshape = np.shape(x)[:-1]
-        if retshape!=():
-            if k>1:
-                dd = np.empty(retshape+(k,),dtype=np.float)
+        if not isinstance(retshape, tuple):
+            if k > 1:
+                dd = np.empty(retshape + (k,), dtype=np.float)
                 dd.fill(np.inf)
-                ii = np.empty(retshape+(k,),dtype=np.int)
+                ii = np.empty(retshape + (k,), dtype=np.int)
                 ii.fill(self.n)
-            elif k==1:
-                dd = np.empty(retshape,dtype=np.float)
+            elif k == 1:
+                dd = np.empty(retshape, dtype=np.float)
                 dd.fill(np.inf)
-                ii = np.empty(retshape,dtype=np.int)
+                ii = np.empty(retshape, dtype=np.int)
                 ii.fill(self.n)
             else:
-                raise ValueError("Requested %s nearest neighbors; acceptable numbers are integers greater than or equal to one, or None")
+                raise ValueError("Requested %s nearest neighbors; acceptable "
+                                 "numbers are integers greater than or equal to"
+                                 " one, or None")
             for c in np.ndindex(retshape):
-                hits = self.__query(x[c], k=k, eps=eps, p=p, distance_upper_bound=distance_upper_bound)
-                if k>1:
-                    for j in range(len(hits)):
-                        dd[c+(j,)], ii[c+(j,)] = hits[j]
-                elif k==1:
-                    if len(hits)>0:
+                hits = self.__query(x[c], k=k, eps=eps, p=p,
+                                    distance_upper_bound=distance_upper_bound)
+                if k > 1:
+                    for j, _ in enumerate(hits):
+                        dd[c + (j,)], ii[c + (j,)] = hits[j]
+                elif k == 1:
+                    if len(hits) > 0:
                         dd[c], ii[c] = hits[0]
                     else:
                         dd[c] = np.inf
                         ii[c] = self.n
             return dd, ii
         else:
-            hits = self.__query(x, k=k, eps=eps, p=p, distance_upper_bound=distance_upper_bound)
-            if k==1:
-                if len(hits)>0:
+            hits = self.__query(x, k=k, eps=eps, p=p,
+                                distance_upper_bound=distance_upper_bound)
+            if k == 1:
+                if len(hits) > 0:
                     return hits[0]
                 else:
                     return np.inf, self.n
-            elif k>1:
+            elif k > 1:
                 dd = np.empty(k,dtype=np.float)
                 dd.fill(np.inf)
                 ii = np.empty(k,dtype=np.int)
@@ -261,7 +261,9 @@ class PeriodicCKDTree(cKDTree):
                     dd[j], ii[j] = hits[j]
                 return dd, ii
             else:
-                raise ValueError("Requested %s nearest neighbors; acceptable numbers are integers greater than or equal to one, or None")
+                raise ValueError("Requested %s nearest neighbors; acceptable "
+                                 "numbers are integers greater than or equal to"
+                                 " one, or None")
 
     # Ideally, KDTree and cKDTree would expose identical __query_ball_point
     # interfaces.  But they don't, and cKDTree.__query_ball_point is also
@@ -281,8 +283,7 @@ class PeriodicCKDTree(cKDTree):
         return results
 
     def query_ball_point(self, x, r, p=2., eps=0):
-        """
-        Find all points within distance r of point(s) x.
+        """Find all points within distance r of point(s) x.
 
         Parameters
         ----------
