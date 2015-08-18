@@ -817,7 +817,18 @@ class Compound(Part):
             return self.labels[attr]
         else:
             raise AttributeError("'{}' object has no attribute '{}'".format(
-                self.__class__.__name__, attr))
+                self, attr))
+
+    def __repr__(self):
+        descr = ['<{:s}, {:d} atoms, {:d} bonds, '.format(
+            self.kind, self.n_atoms, self.n_bonds
+        )]
+        if any(self.periodicity):
+            descr.append('periodicity: {}'.format(self.periodicity))
+        else:
+            descr.append('non-periodic')
+        descr.append('; ID: {}>'.format(id(self)))
+        return ''.join(descr)
 
     def __deepcopy__(self, memo):
         cls = self.__class__
