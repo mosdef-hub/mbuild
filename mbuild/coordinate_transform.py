@@ -1,5 +1,3 @@
-__author__ = 'sallai'
-
 from numpy import *
 from numpy.linalg import norm, svd, inv
 

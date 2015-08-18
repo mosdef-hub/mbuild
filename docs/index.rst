@@ -1,8 +1,3 @@
-.. mbuild documentation master file, created by
-   sphinx-quickstart on Wed Oct  1 09:05:14 2014.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
-
 mBuild
 ======
 *A hierarchical, component based molecule builder*
@@ -47,29 +42,23 @@ by adjusting a variable::
 Various sub-portions of this library may be independently distributed under
 different licenses. See those files for their specific terms.
 
-Installation
-------------
+
 .. toctree::
+   :hidden:
+
    installation
 
-Tutorials
----------
 .. toctree::
+   :hidden:
 
    tutorials/tutorials
 
-Data structures
----------------
 .. toctree::
-    data_structures
+   :hidden:
 
-API Reference
--------------
-   apidoc/mbuild
+   data_structures
 
-Indices and tables
-------------------
+.. toctree::
+   :hidden:
 
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
+   recipes

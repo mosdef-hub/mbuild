@@ -1,4 +1,3 @@
-__author__ = 'jonestj1'
 # this code is taken from: https://gist.github.com/mbostock/4339083
 d3_tree_template = """
 <!DOCTYPE html>

@@ -1,7 +1,7 @@
 from mbuild.tests.base_test import BaseTest
 
 
-class TestExample(BaseTest):
+class TestExamples(BaseTest):
 
     def test_alkane(self):
         import mbuild.examples.alkane.alkane as example

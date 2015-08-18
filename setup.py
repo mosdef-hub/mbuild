@@ -47,6 +47,9 @@ class PyTest(TestCommand):
         errcode = pytest.main(['mbuild'])
         sys.exit(errcode)
 
+with open('requirements.txt') as reqs_file:
+    reqs = [line.strip() for line in reqs_file]
+
 setup(
     name='mbuild',
     version=__version__,
@@ -54,12 +57,13 @@ setup(
     long_description=__doc__,
     author='Janos Sallai, Christoph Klein',
     author_email='janos.sallai@vanderbilt.edu, christoph.klein@vanderbilt.edu',
-    url='https://github.com/iModels/mbuild',
-    download_url='https://github.com/iModels/mbuild/tarball/{}'.format(__version__),
+    url='https://github.com/imodels/mbuild',
+    download_url='https://github.com/imodels/mbuild/tarball/{}'.format(__version__),
     packages=find_packages(),
     package_data={'mbuild': ['utils/reference/*.{pdb,mol2}', 'components/*.{pdb,mol2}']},
     package_dir={'mbuild': 'mbuild'},
     include_package_data=True,
+    install_requires=reqs,
     license="MIT",
     zip_safe=False,
     keywords='mbuild',
@@ -71,8 +75,7 @@ setup(
         'Natural Language :: English',
         'Programming Language :: Python',
         'Programming Language :: Python :: 2.7',
-        'Programming Language :: Python :: 3.3',
-        'Programming Language :: Python :: 3.4',
+        'Programming Language :: Python :: 3',
         'Topic :: Scientific/Engineering :: Chemistry',
         'Operating System :: Microsoft :: Windows',
         'Operating System :: POSIX',
