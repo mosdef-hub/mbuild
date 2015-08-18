@@ -2,13 +2,18 @@
 Installation
 ============
 
-Install with conda (preferred)
-------------------------------
+Install with `conda <http://continuum.io/downloads>`_ (preferred)
+-----------------------------------------------------------------
 ::
 
     $ conda install -c omnia -c patrickfuller -c imodels mbuild
 
-or alternatively you can add all the required channels to your ``.condarc``
+.. note::
+    The ``omnia`` channel provides `MDTraj <http://mdtraj.org/>`_,
+    ``patrickfuller`` provides `imolecule <http://patrick-fuller.com/imolecule/>`_,
+    and ``imodels`` is our channel where mBuild is hosted.
+
+Alternatively you can add all the required channels to your ``.condarc``
 after which you can simply ``conda install mbuild``::
 
     $ conda config --add channels omnia
@@ -17,9 +22,10 @@ after which you can simply ``conda install mbuild``::
     $ conda install mbuild
 
 .. note::
-    The ``omnia`` channel provides `MDTraj <http://mdtraj.org/>`_,
-    ``patrickfuller`` provides `imolecule <http://patrick-fuller.com/imolecule/>`_,
-    and ``imodels`` is our channel where mBuild is hosted.
+    The `MDTraj website <http://mdtraj.org/latest/new_to_python.html>`_ makes a
+    nice case for using Python and in particular the
+    `Anaconda scientific python distribution <http://continuum.io/downloads>`_
+    to manage your numerical and scientific Python packages.
 
 Install from source
 -------------------

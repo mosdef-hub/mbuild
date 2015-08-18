@@ -16,10 +16,7 @@ import os
 import pip
 import sys
 
-
 pip.main(['install', 'numpydoc'])
-
-on_rtd = os.environ.get('READTHEDOCS', None) == 'True'
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
@@ -43,12 +40,10 @@ extensions = [
     'sphinx.ext.intersphinx',
     'sphinx.ext.viewcode',
     'sphinx.ext.autosummary',
-    #'sphinxcontrib.napoleon',
     'numpydoc'
 ]
 
 autosummary_generate = True
-autodoc_default_flags = ['members', 'inherited-members']
 
 _python_doc_base = 'http://docs.python.org/3.4'
 
@@ -130,10 +125,9 @@ pygments_style = 'sphinx'
 # a list of builtin themes.
 #html_theme = 'default'
 
-if not on_rtd:  # only import and set the theme if we're building docs locally
-    import sphinx_rtd_theme
-    html_theme = 'sphinx_rtd_theme'
-    html_theme_path = [sphinx_rtd_theme.get_html_theme_path()]
+import sphinx_rtd_theme
+html_theme = 'sphinx_rtd_theme'
+html_theme_path = [sphinx_rtd_theme.get_html_theme_path()]
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
@@ -367,3 +361,5 @@ epub_exclude_files = ['search.html']
 
 # stackoverflow.com/questions/12206334
 numpydoc_show_class_members = False
+numpydoc_show_inherited_class_members = False
+

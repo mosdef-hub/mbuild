@@ -1,6 +1,3 @@
-__author__ = 'sallai'
-
-
 class Part(object):
     """A base class that designates a part in a hierarchy. ""'
 

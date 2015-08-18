@@ -2,19 +2,31 @@ from copy import deepcopy
 
 from mbuild.compound import Compound
 from mbuild.coordinate_transform import equivalence_transform
+from mbuild.utils.validation import assert_port_exists
 
 __all__ = ['Polymer']
 
 
 class Polymer(Compound):
-    """ """
+    """Connect a component to successive copies of itself.
+
+    Parameters
+    ----------
+    proto : mb.Compound
+        The compound to replicate.
+    port_labels : 2-tuple of strs
+        The names of the two ports to use to connect copies of proto.
+    n : int, optional, default=2
+        The number of times to replicate proto.
+
+    """
     def __init__(self, proto, port_labels=("up", "down"), n=2):
         if n < 1:
             raise Exception('n must be 1 or more')
         super(Polymer, self).__init__()
 
-        assert(port_labels[0] in proto.labels)
-        assert(port_labels[1] in proto.labels)
+        for label in port_labels:
+            assert_port_exists(label, proto)
 
         last_part = None
         for body_count in range(0, n):
