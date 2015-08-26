@@ -1,5 +1,5 @@
 import random
-from copy import deepcopy
+# from copy import deepcopy
 
 from numpy import pi
 
@@ -21,7 +21,8 @@ class TnpBox(mb.Compound):
         rnd.seed(1928)
 
         for pos in mask:
-            tnp = deepcopy(tnp_proto)
+            # tnp = deepcopy(tnp_proto)
+            tnp = tnp_proto.clone()
             mb.rotate_around_x(tnp, rnd.uniform(0, 2 * pi))
             mb.rotate_around_y(tnp, rnd.uniform(0, 2 * pi))
             mb.rotate_around_z(tnp, rnd.uniform(0, 2 * pi))

@@ -1,6 +1,6 @@
 from __future__ import division
 
-from copy import deepcopy
+# from copy import deepcopy
 from distutils.spawn import find_executable
 from subprocess import Popen, PIPE
 import tempfile
@@ -77,7 +77,8 @@ def fill_box(compound, n_compounds, box, overlap=0.2):
     # Create the topology and update the coordinates.
     filled = Compound()
     for _ in range(n_compounds):
-        filled.add(deepcopy(compound))
+        # filled.add(deepcopy(compound))
+        filled.add(compound.clone())
     filled.update_coordinates(filled_pdb)
     return filled
 
@@ -129,7 +130,8 @@ def solvate(solute, solvent, n_solvent, box, overlap=0.2):
     solvated = Compound()
     solvated.add(solute)
     for _ in range(n_solvent):
-        solvated.add(deepcopy(solvent))
+        # solvated.add(deepcopy(solvent))
+        solvated.add(solvent.clone())
     solvated.update_coordinates(solvated_pdb)
     return solvated
 

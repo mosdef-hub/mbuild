@@ -1,4 +1,4 @@
-from copy import deepcopy
+# from copy import deepcopy
 
 from mbuild.compound import Compound
 from mbuild.coordinate_transform import equivalence_transform
