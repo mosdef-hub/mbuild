@@ -91,6 +91,41 @@ class Atom(Part):
     def __repr__(self):
         return "Atom{0}({1}, {2})".format(id(self), self.name, self.pos)
 
+    def clone(self, root_container=None, clone_of=None, use_deepcopy=Part.USE_DEEPCOPY):
+        if use_deepcopy:
+            return deepcopy(self)
+        else:
+            if not clone_of:
+                clone_of=dict()
+
+            # if this atom has been cloned, return it
+            if self in clone_of:
+                return clone_of[self]
+
+            # else we make a new clone
+
+            cls = self.__class__
+            newone = cls.__new__(cls)
+
+            # remember that we're cloning the new one of of self
+            clone_of[self] = newone
+
+            # Copy fields that don't need recursion.
+            newone.referrers = set()
+            # we fill up the referrers set in compound
+            newone.bonds = set()
+            # we fill up the bonds set in bonds
+
+            # Do the rest recursively.
+            newone.index = self.index
+            newone.name = self.name
+            newone.pos = self.pos
+            newone.charge = self.charge
+
+            # we set newone.parent in compound
+
+            return newone
+
     def __deepcopy__(self, memo):
         cls = self.__class__
         newone = cls.__new__(cls)

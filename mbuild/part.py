@@ -10,6 +10,8 @@ class Part(object):
         Other compounds that reference this part with labels.
 
     """
+    USE_DEEPCOPY=False
+
     def __init__(self):
         super(Part, self).__init__()
         self.parent = None

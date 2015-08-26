@@ -829,7 +829,70 @@ class Compound(Part):
         descr.append('; ID: {}>'.format(id(self)))
         return ''.join(descr)
 
+
+    def clone(self, root_container=None, clone_of=None, use_deepcopy=Part.USE_DEEPCOPY):
+        if use_deepcopy:
+            return deepcopy(self)
+        else:
+            if not clone_of:
+                clone_of=dict()
+            if not root_container:
+                root_container=self
+
+            # if this compound has been cloned, return it
+            if self in clone_of:
+                return clone_of[self]
+
+            # else we make a new clone
+
+            cls = self.__class__
+            newone = cls.__new__(cls)
+
+            # remember that we're cloning the new one of of self
+            clone_of[self] = newone
+
+            # First copy those attributes that don't need deepcopying.
+
+            newone.kind = self.kind
+
+            newone.periodicity = deepcopy(self.periodicity)
+
+            # Create empty containers.
+            newone.parts = OrderedSet()
+            newone.labels = OrderedDict()
+            newone.referrers = set()
+
+            # parent should be None initially
+            newone.parent = None
+
+            # Add parts to clone, except bonds with atoms outside the hierarchy.
+            for part in self.parts:
+                if isinstance(part, Bond) and (root_container not in part.atom1.ancestors() or root_container not in part.atom2.ancestors()):
+                    continue
+                else:
+                    newpart = part.clone(root_container=root_container, clone_of=clone_of, use_deepcopy=use_deepcopy)
+                    newone.parts.add(newpart)
+                    newpart.parent = newone
+
+            # Copy labels, except bonds with atoms outside the hierarchy
+            for label, part in self.labels.items():
+                if isinstance(part, Bond) and (root_container not in part.atom1.ancestors() or root_container not in part.atom2.ancestors()):
+                    continue
+                else:
+                    if not isinstance(part, list):
+                        newone.labels[label] = part.clone(root_container=root_container, clone_of=clone_of, use_deepcopy=use_deepcopy)
+                        part.referrers.add(clone_of[part])
+                    else:
+                        # part is a list of parts, so we create an empty list, and add the clones of the original list elements
+                        newone.labels[label] = []
+                        for p in part:
+                            newone.labels[label].append(p.clone(root_container=root_container, clone_of=clone_of, use_deepcopy=use_deepcopy))
+                            # referrers must have been handled already, or the will be handled
+            return newone
+
+
     def __deepcopy__(self, memo):
+
         cls = self.__class__
         newone = cls.__new__(cls)
         if len(memo) == 0:

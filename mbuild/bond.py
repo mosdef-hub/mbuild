@@ -69,6 +69,40 @@ class Bond(Part):
     def __repr__(self):
         return "Bond{0}({1}, {2})".format(id(self), self.atom1, self.atom2)
 
+    def clone(self, root_container=None, clone_of=None, use_deepcopy=Part.USE_DEEPCOPY):
+        if use_deepcopy:
+            return deepcopy(self)
+        else:
+            if not clone_of:
+                clone_of=dict()
+
+            # if this bond has been cloned, return it
+            if self in clone_of:
+                return clone_of[self]
+
+            # else we make a new clone
+
+            cls = self.__class__
+            newone = cls.__new__(cls)
+
+            # remember that we're cloning the new one of of self
+            clone_of[self] = newone
+
+            # Copy fields that don't need recursion.
+            newone.kind = self.kind
+            newone.referrers = set()
+
+            # Do the rest recursively.
+            newone._atom1 = self.atom1.clone(root_container=root_container, clone_of=clone_of, use_deepcopy=use_deepcopy)
+            newone._atom2 = self.atom2.clone(root_container=root_container, clone_of=clone_of, use_deepcopy=use_deepcopy)
+            newone._atom1.bonds.add(newone)
+            newone._atom2.bonds.add(newone)
+
+            # we set newone.parent in compound
+
+            return newone
+
+
     def __deepcopy__(self, memo):
         cls = self.__class__
         newone = cls.__new__(cls)

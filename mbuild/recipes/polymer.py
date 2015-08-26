@@ -30,7 +30,8 @@ class Polymer(Compound):
 
         last_part = None
         for body_count in range(0, n):
-            this_part = deepcopy(proto)
+            # this_part = deepcopy(proto)
+            this_part = proto.clone()
             self.add(this_part, 'monomer[$]')
             if last_part is None:
                 first_part = this_part

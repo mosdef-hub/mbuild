@@ -1,6 +1,6 @@
 from __future__ import division
 
-from copy import deepcopy
+# from copy import deepcopy
 
 import numpy as np
 
@@ -44,7 +44,8 @@ def apply_mask(host, guest, mask, guest_port_name='down', backfill=None,
         used_ports.add(closest_port)
 
         # Attach the guest to the closest port.
-        new_guest = deepcopy(guest)
+        # new_guest = deepcopy(guest)
+        new_guest = guest.clone()
         equivalence_transform(new_guest, new_guest.labels[guest_port_name], closest_port)
         guests.append(new_guest)
 
@@ -58,7 +59,8 @@ def apply_mask(host, guest, mask, guest_port_name='down', backfill=None,
         # Attach the backfilling Compound to unused ports.
         for port in port_list:
             if port not in used_ports:
-                new_backfill = deepcopy(backfill)
+                # new_backfill = deepcopy(backfill)
+                new_backfill = backfill.clone()
                 # Might make sense to have a backfill_port_name option...
                 equivalence_transform(
                     new_backfill, new_backfill.labels[backfill_port_name], port)
