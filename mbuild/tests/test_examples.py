@@ -49,3 +49,7 @@ class TestExamples(BaseTest):
     def test_tnp(self):
         import mbuild.examples.tnp.tnp as example
         example.main()
+
+    def test_tnp_box(self):
+        import mbuild.examples.tnp.tnp_box as example
+        example.main()

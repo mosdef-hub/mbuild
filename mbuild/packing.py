@@ -2,9 +2,9 @@ from __future__ import division
 
 import sys
 import tempfile
-
 from distutils.spawn import find_executable
 from subprocess import Popen, PIPE
+
 from mbuild.compound import Compound
 from mbuild.box import Box
 from mbuild import clone
