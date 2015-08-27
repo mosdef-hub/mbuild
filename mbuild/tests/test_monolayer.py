@@ -1,8 +1,8 @@
 import mbuild as mb
 from mbuild.tests.base_test import BaseTest
 
-from mbuild.components.surfaces.betacristobalite import Betacristobalite
-from mbuild.components.atoms.H import H
+from mbuild.lib.surfaces import Betacristobalite
+from mbuild.lib.atoms import H
 
 
 class TestMonolayer(BaseTest):

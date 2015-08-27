@@ -231,10 +231,9 @@ def _write_back_atom_positions(compound, arrnx3):
     from mbuild.atom import Atom
     if isinstance(compound, Atom):
         compound.pos = squeeze(arrnx3)
-        return
-    arr = arrnx3.reshape((-1))
-    for i, atom in enumerate(compound.yield_atoms()):
-        atom.pos = array([arr[3 * i], arr[3 * i + 1], arr[3 * i + 2]])
+    else:
+        for atom, coords in zip(compound.yield_atoms(), arrnx3):
+            atom.pos = coords
 
 
 def _create_equivalence_transform(equiv):
@@ -343,14 +342,13 @@ def _choose_correct_port(from_port, to_port):
     T = _create_equivalence_transform([(from_port.up, to_port.up)])
     new_position = T.apply_to(array(from_port.anchor.pos, ndmin=2))
 
-    #dist_between_anchors_up_up = norm(from_port.anchor - to_port.anchor)
     dist_between_anchors_up_up = norm(new_position[0] - to_port.anchor.pos)
 
     # Then matching a 'down' with an 'up' port.
     T = _create_equivalence_transform([(from_port.down, to_port.up)])
     new_position = T.apply_to(array(from_port.anchor.pos, ndmin=2))
 
-    # Determine which transform places the anchors further away from each other
+    # Determine which transform places the anchors further away from each other.
     dist_between_anchors_down_up = norm(new_position[0] - to_port.anchor.pos)
     difference_between_distances = dist_between_anchors_down_up - dist_between_anchors_up_up
 

@@ -2,8 +2,8 @@ from numpy import pi
 
 import mbuild as mb
 
-from mbuild.components.small_groups.silane import Silane
-from mbuild.components.small_groups.ch3 import CH3
+from mbuild.lib.moieties import Silane
+from mbuild.lib.moieties import CH3
 from mbuild.examples.pmpc.mpc import MPC
 from mbuild.examples.pmpc.initiator import Initiator
 
