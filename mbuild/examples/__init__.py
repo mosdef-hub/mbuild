@@ -1,5 +1,4 @@
-__all__ = ['Methane', 'Ethane', 'Alkane',
-
+__all__ = ['Methane', 'Ethane', 'Alkane', 'AlkylSilane',
            'AlkaneMonolayer', 'PMPCLayer']
 
 from mbuild.examples.methane.methane import Methane

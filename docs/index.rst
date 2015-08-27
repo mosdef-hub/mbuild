@@ -3,7 +3,7 @@ mBuild
 *A hierarchical, component based molecule builder*
 
 With just a few lines of mBuild code, you can assemble reusable components into
-complex molecular systems for molecular dynamics simulations.
+complex molecular systems for molecular simulations.
 
 
 * mBuild is designed to minimize or even eliminate the need to explicitly translate and

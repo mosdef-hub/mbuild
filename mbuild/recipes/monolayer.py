@@ -46,9 +46,9 @@ class Monolayer(mb.Compound):
 
 
 if __name__ == "__main__":
-    from mbuild.components.surfaces.betacristobalite import Betacristobalite
-    from mbuild.examples.alkane_monolayer.alkylsilane import AlkylSilane
-    from mbuild.components.atoms.H import H
+    from mbuild.lib.surfaces import Betacristobalite
+    from mbuild.examples import AlkylSilane
+    from mbuild.lib.atoms import H
 
     mask = mb.grid_mask_2d(8, 8)  # Evenly spaced, 2D grid of points.
     monolayer = Monolayer(surface=Betacristobalite(), chain=AlkylSilane(10),

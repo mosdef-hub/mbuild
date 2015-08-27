@@ -48,7 +48,7 @@ class Polymer(Compound):
         self.add(first_part.labels[port_labels[1]], port_labels[1], containment=False)
 
 if __name__ == "__main__":
-    from mbuild.components.small_groups.ch2 import CH2
+    from mbuild.lib.moieties import CH2
     ch2 = CH2()
     poly = Polymer(ch2, n=13, port_labels=("up", "down"))
     poly.visualize(show_ports=True)

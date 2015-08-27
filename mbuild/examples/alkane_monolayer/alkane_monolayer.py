@@ -1,7 +1,7 @@
 import mbuild as mb
 
-from mbuild.components.surfaces.betacristobalite import Betacristobalite
-from mbuild.components.atoms.H import H
+from mbuild.lib.surfaces import Betacristobalite
+from mbuild.lib.atoms import H
 from mbuild.examples.alkane_monolayer.alkylsilane import AlkylSilane
 
 
@@ -31,8 +31,7 @@ class AlkaneMonolayer(mb.Monolayer):
 
 
 def main():
-    from mbuild.mask import grid_mask_2d
-    mask = grid_mask_2d(8, 8)  # Evenly spaced, 2D grid of points.
+    mask = mb.grid_mask_2d(8, 8)  # Evenly spaced, 2D grid of points.
     monolayer = AlkaneMonolayer(chain_length=10, mask=mask)
     monolayer.save(filename='c10-n64.pdb', show_ports=True)
 

@@ -302,7 +302,7 @@ class Compound(Part):
             new_part.parent = self
 
         # Add new_part to labels. Does not currently support batch add.
-        if not containment and label is None:
+        if label is None:
             label = '_{0}[$]'.format(new_part.__class__.__name__)
 
         if label is not None:
@@ -343,7 +343,7 @@ class Compound(Part):
             self._remove_bonds(removed_part)
             self._remove_references(removed_part)
 
-        # Remove the part recursively from sub-components.
+        # Remove the part recursively from sub-compounds.
         for part in self.parts:
             if isinstance(part, Compound) and len(objs_to_remove) > 0:
                 part.remove(objs_to_remove)

@@ -1,6 +1,7 @@
 from __future__ import division
 
 from copy import deepcopy
+from itertools import product
 
 import numpy as np
 
@@ -59,7 +60,6 @@ def apply_mask(host, guest, mask, guest_port_name='down', backfill=None,
         for port in port_list:
             if port not in used_ports:
                 new_backfill = deepcopy(backfill)
-                # Might make sense to have a backfill_port_name option...
                 equivalence_transform(
                     new_backfill, new_backfill.labels[backfill_port_name], port)
                 backfills.append(new_backfill)
@@ -82,22 +82,19 @@ def random_mask_2d(num_sites):
 def grid_mask_2d(n, m):
     """ """
     mask = np.zeros(shape=(n*m, 3), dtype=float)
-    for i in range(n):
-        for j in range(m):
-            mask[i*m + j, 0] = i / n
-            mask[i*m + j, 1] = j / m
+    for i, j in product(range(n), range(m)):
+        mask[i*m + j, 0] = i / n
+        mask[i*m + j, 1] = j / m
     return mask
 
 
 def grid_mask_3d(n, m, l):
     """ """
     mask = np.zeros(shape=(n*m*l, 3), dtype=float)
-    for i in range(n):
-        for j in range(m):
-            for k in range(l):
-                mask[i*m*l + j*l + k, 0] = i / n
-                mask[i*m*l + j*l + k, 1] = j / m
-                mask[i*m*l + j*l + k, 2] = k / l
+    for i, j, k in product(range(n), range(m), range(l)):
+        mask[i*m*l + j*l + k, 0] = i / n
+        mask[i*m*l + j*l + k, 1] = j / m
+        mask[i*m*l + j*l + k, 2] = k / l
     return mask
 
 
