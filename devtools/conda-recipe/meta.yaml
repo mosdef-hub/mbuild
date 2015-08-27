@@ -1,5 +1,5 @@
 package:
-  name: mbuild-dev
+  name: mbuild
   version: !!str 0.5.0
 
 requirements:
