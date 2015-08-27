@@ -1,9 +1,7 @@
-from copy import deepcopy
-
 from mbuild.compound import Compound
 from mbuild.coordinate_transform import equivalence_transform
 from mbuild.utils.validation import assert_port_exists
-
+from mbuild import clone
 __all__ = ['Polymer']
 
 
@@ -30,7 +28,7 @@ class Polymer(Compound):
 
         last_part = None
         for body_count in range(0, n):
-            this_part = deepcopy(proto)
+            this_part = clone(proto)
             self.add(this_part, 'monomer[$]')
             if last_part is None:
                 first_part = this_part

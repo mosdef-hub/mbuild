@@ -21,7 +21,7 @@ from mbuild.part import Part
 from mbuild.periodic_kdtree import PeriodicCKDTree
 
 
-__all__ = ['load', 'Compound']
+__all__ = ['load', 'clone', 'Compound']
 
 
 def load(filename, relative_to_module=None, frame=-1, compound=None,
@@ -42,6 +42,11 @@ def load(filename, relative_to_module=None, frame=-1, compound=None,
     compound.from_trajectory(traj, frame=frame, coords_only=coords_only)
     return compound
 
+
+def clone(what, clone_of=None, root_container=None):
+    # we can use the good old deepcopy if we wanted to
+    # return deepcopy(what)
+    return what._clone(clone_of=clone_of, root_container=root_container)
 
 class Compound(Part):
     """A building block in the mBuild hierarchy.
@@ -829,7 +834,73 @@ class Compound(Part):
         descr.append('; ID: {}>'.format(id(self)))
         return ''.join(descr)
 
+
+    def _clone(self, clone_of=None, root_container=None):
+        from copy import deepcopy
+        # make the current container the root container if it's not yet specified
+        if not root_container:
+            root_container=self
+
+        # create the clone_of dict if it's None
+        if not clone_of:
+            clone_of=dict()
+
+        # if this compound has been cloned, return it
+        if self in clone_of:
+            return clone_of[self]
+
+        # else we make a new clone
+
+        cls = self.__class__
+        newone = cls.__new__(cls)
+
+        # remember that we're cloning the new one of of self
+        clone_of[self] = newone
+
+        # First copy those attributes that don't need deepcopying.
+
+        newone.kind = self.kind
+
+        newone.periodicity = deepcopy(self.periodicity)
+
+        # Create empty containers.
+        newone.parts = OrderedSet()
+        newone.labels = OrderedDict()
+        newone.referrers = set()
+
+        # parent should be None initially
+        newone.parent = None
+
+        # Add parts to clone
+        for part in self.parts:
+            if isinstance(part, Bond) and part.has_atoms_outside_of(root_container):
+                # ignore bonds with atoms outside the hierarchy.
+                continue
+            else:
+                newpart = clone(part, clone_of, root_container)
+                newone.parts.add(newpart)
+                newpart.parent = newone
+
+        # Copy labels, except bonds with atoms outside the hierarchy
+        for label, part in self.labels.items():
+            if isinstance(part, Bond) and part.has_atoms_outside_of(root_container):
+                # it's a bond that has atoms outside the current containment hierarchy, so we skip it
+                continue
+            else:
+                if not isinstance(part, list):
+                    newone.labels[label] = clone(part, clone_of, root_container)
+                    part.referrers.add(clone_of[part])
+                else:
+                    # part is a list of parts, so we create an empty list, and add the clones of the original list elements
+                    newone.labels[label] = []
+                    for p in part:
+                        newone.labels[label].append(clone(p, clone_of, root_container))
+                        # referrers must have been handled already, or the will be handled
+        return newone
+
+
     def __deepcopy__(self, memo):
+
         cls = self.__class__
         newone = cls.__new__(cls)
         if len(memo) == 0:

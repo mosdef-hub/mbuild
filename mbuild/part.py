@@ -10,6 +10,7 @@ class Part(object):
         Other compounds that reference this part with labels.
 
     """
+
     def __init__(self):
         super(Part, self).__init__()
         self.parent = None
@@ -22,3 +23,6 @@ class Part(object):
         if self.parent is not None:
             for ancestor in self.parent.ancestors():
                 yield ancestor
+
+    def _clone(self, clone_of=None, root_container=None):
+        raise NotImplementedError

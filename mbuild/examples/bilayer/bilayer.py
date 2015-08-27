@@ -1,10 +1,9 @@
-from copy import deepcopy
 from random import seed, shuffle
 
 import numpy as np
 
 import mbuild as mb
-
+from mbuild import clone
 
 class Bilayer(mb.Compound):
     """Create a lipid bilayer and add solvent above and below.
@@ -125,7 +124,7 @@ class Bilayer(mb.Compound):
             current_type = self.lipids[n_type][0]
             for n_this_type, n_this_lipid_type in enumerate(range(n_of_lipid_type)):
                 lipids_placed = n_type + n_this_type
-                new_lipid = deepcopy(current_type)
+                new_lipid = clone(current_type)
                 random_index = lipid_indices[lipids_placed]
                 position = self.mask[random_index]
 
