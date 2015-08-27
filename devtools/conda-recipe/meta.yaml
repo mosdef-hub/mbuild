@@ -1,5 +1,5 @@
 package:
-  name: mbuild
+  name: mbuild-dev
   version: !!str 0.5.0.dev0
 
 requirements:
@@ -22,6 +22,6 @@ test:
     - py.test --pyargs mbuild
 
 about:
-  home: http://iModels.github.io/mbuild
+  home: http://imodels.github.io/mbuild
   license: MIT
   summary: A hierarchical, component based molecule builder.
