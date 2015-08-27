@@ -302,7 +302,7 @@ class Compound(Part):
             new_part.parent = self
 
         # Add new_part to labels. Does not currently support batch add.
-        if not containment and label is None:
+        if label is None:
             label = '_{0}[$]'.format(new_part.__class__.__name__)
 
         if label is not None:
