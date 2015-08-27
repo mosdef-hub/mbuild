@@ -1,7 +1,5 @@
 from __future__ import division
 
-# from copy import deepcopy
-
 import numpy as np
 
 from mbuild.coordinate_transform import equivalence_transform
@@ -10,7 +8,6 @@ from mbuild import clone
 
 __all__ = ['apply_mask', 'random_mask_2d', 'random_mask_3d', 'sphere_mask',
            'grid_mask_2d', 'grid_mask_3d', 'disk_mask']
-
 
 def apply_mask(host, guest, mask, guest_port_name='down', backfill=None,
                backfill_port_name='up'):
@@ -44,7 +41,6 @@ def apply_mask(host, guest, mask, guest_port_name='down', backfill=None,
         used_ports.add(closest_port)
 
         # Attach the guest to the closest port.
-        # new_guest = deepcopy(guest)
         new_guest = clone(guest)
         equivalence_transform(new_guest, new_guest.labels[guest_port_name], closest_port)
         guests.append(new_guest)
@@ -59,7 +55,6 @@ def apply_mask(host, guest, mask, guest_port_name='down', backfill=None,
         # Attach the backfilling Compound to unused ports.
         for port in port_list:
             if port not in used_ports:
-                # new_backfill = deepcopy(backfill)
                 new_backfill = clone(backfill)
                 # Might make sense to have a backfill_port_name option...
                 equivalence_transform(

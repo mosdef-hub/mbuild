@@ -1,14 +1,10 @@
-# from copy import deepcopy
 import json
 import os
-
 import numpy as np
 import pytest
-
 import mbuild as mb
 from mbuild.utils.io import get_fn
 from mbuild.tests.base_test import BaseTest
-
 
 class TestCompound(BaseTest):
 
@@ -39,7 +35,6 @@ class TestCompound(BaseTest):
         assert compound.n_bonds == 7 + 2
 
     def test_init_with_subcompounds3(self, ethane, h2o):
-        # compound = mb.Compound([ethane, [h2o, deepcopy(h2o)]])
         compound = mb.Compound([ethane, [h2o, mb.clone(h2o)]])
         assert compound.n_atoms == 8 + 2*3
         assert compound.n_bonds == 7 + 2*2
@@ -60,7 +55,6 @@ class TestCompound(BaseTest):
     @pytest.mark.skipif(True, reason='Waiting for InterMol to stabilize')
     def test_intermol_conversion2(self, ethane, h2o):
         compound = mb.Compound()
-        # compound.add([ethane, deepcopy(ethane), h2o])  # 2 distinct Ethane objects
         compound.add([ethane, mb.clone(ethane), h2o])  # 2 distinct Ethane objects
         molecule_types = [type(ethane), type(h2o)]
         intermol_system = compound._to_intermol(molecule_types=molecule_types)
