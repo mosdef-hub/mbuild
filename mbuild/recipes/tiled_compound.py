@@ -120,6 +120,6 @@ class TiledCompound(Compound):
         for atom in neighbors:
             if atom.index == match.index:
                 return atom
-        else:
-            raise RuntimeError('Unable to find matching atom image while '
-                               'stitching bonds.')
+        
+        raise RuntimeError('Unable to find matching atom image while stitching'
+                           ' bonds.')

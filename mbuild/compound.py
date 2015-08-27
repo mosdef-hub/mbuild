@@ -1,6 +1,6 @@
 from __future__ import print_function
 
-from collections import OrderedDict, Counter
+from collections import OrderedDict
 from copy import deepcopy
 import itertools
 import os
@@ -26,7 +26,7 @@ __all__ = ['load', 'clone', 'Compound']
 
 def load(filename, relative_to_module=None, frame=-1, compound=None,
          coords_only=False, **kwargs):
-    """ """
+    """Load a file from disk into a Compound. """
     # Handle mbuild *.py files containing a class that wraps a structure file
     # in its own folder. E.g., you build a system from ~/foo.py and it imports
     # from ~/bar/baz.py where baz.py loads ~/bar/baz.pdb.
@@ -44,9 +44,14 @@ def load(filename, relative_to_module=None, frame=-1, compound=None,
 
 
 def clone(what, clone_of=None, root_container=None):
-    # we can use the good old deepcopy if we wanted to
-    # return deepcopy(what)
+    """A faster alternative to deepcopying.
+
+    Does not resolve circular dependencies. This should be safe provided
+    you never try to add the top of a Compound hierarchy to a
+    sub-Compound.
+    """
     return what._clone(clone_of=clone_of, root_container=root_container)
+
 
 class Compound(Part):
     """A building block in the mBuild hierarchy.
@@ -241,7 +246,7 @@ class Compound(Part):
         return np.sqrt((d ** 2).sum(axis=-1))
 
     def atoms_in_range(self, atom, dmax, max_atoms=20, atom_kdtree=None, atom_array=None):
-        """"""
+        """Find atoms within a specified range of another atom. """
         if atom_kdtree is None:
             atom_kdtree = PeriodicCKDTree(data=self.xyz, bounds=self.periodicity)
         _, idxs = atom_kdtree.query(atom.pos, k=max_atoms, distance_upper_bound=dmax)
@@ -393,7 +398,7 @@ class Compound(Part):
         return [port for port in self.labels.values() if isinstance(port, Port)]
 
     def update_coordinates(self, filename):
-        """ """
+        """Update the coordinates of this Compound from a file. """
         load(filename, compound=self, coords_only=True)
 
     def save(self, filename, show_ports=False, forcefield=None, **kwargs):
@@ -417,8 +422,7 @@ class Compound(Part):
                   '.top': self.save_gromacs,
                   '.mol2': self.save_mol2,
                   '.lammps': self.save_lammpsdata,
-                  '.lmp': self.save_lammpsdata,
-                  }
+                  '.lmp': self.save_lammpsdata}
 
         try:
             saver = savers[extension]
@@ -540,18 +544,9 @@ class Compound(Part):
     def visualize(self, show_ports=False, shader='lambert',
                   drawing_type='ball and stick', camera_type='perspective'):
         """Visualize the Compound using imolecule. """
-        # try:
-        #     __IPYTHON__
-        # except NameError:
-        #     from imolecule import viewer
-        #     viewer.visualize(self._to_json(show_ports=show_ports), title=self.kind)
-        # else:
         json_mol = self._to_json(show_ports)
         imolecule.draw(json_mol, format='json', shader=shader,
                        drawing_type=drawing_type, camera_type=camera_type)
-
-    def save_png(self, image_filename, show_ports=False):
-        raise NotImplementedError('To be replaced by imolecule')
 
     def _to_json(self, show_ports=False):
         atoms = list()
@@ -602,9 +597,9 @@ class Compound(Part):
                     chain_compound.add(new_atom, label='{0}[$]'.format(atom.name))
                     atom_mapping[atom] = new_atom
 
-        for a1, a2 in traj.topology.bonds:
-            atom1 = atom_mapping[a1]
-            atom2 = atom_mapping[a2]
+        for mdtraj_atom1, mdtraj_atom2 in traj.topology.bonds:
+            atom1 = atom_mapping[mdtraj_atom1]
+            atom2 = atom_mapping[mdtraj_atom2]
             self.add(Bond(atom1, atom2))
 
         if np.any(traj.unitcell_lengths) and np.any(traj.unitcell_lengths[0]):
@@ -737,13 +732,13 @@ class Compound(Part):
                     pass
 
         for bond in self.bonds:
-            a1 = bond.atom1
-            a2 = bond.atom2
+            atom1 = bond.atom1
+            atom2 = bond.atom2
             # Ensure that both atoms are part of the compound. This becomes an
             # issue if you try to convert a sub-compound to a topology which is
             # bonded to a different subcompound.
-            if all(a in atom_mapping.keys() for a in [a1, a2]):
-                top.add_bond(atom_mapping[a1], atom_mapping[a2])
+            if all(a in atom_mapping.keys() for a in [atom1, atom2]):
+                top.add_bond(atom_mapping[atom1], atom_mapping[atom2])
         return top
 
     # Interface to InterMol for writing fully parameterized systems.
@@ -834,33 +829,31 @@ class Compound(Part):
         descr.append('; ID: {}>'.format(id(self)))
         return ''.join(descr)
 
-
     def _clone(self, clone_of=None, root_container=None):
-        from copy import deepcopy
-        # make the current container the root container if it's not yet specified
-        if not root_container:
-            root_container=self
+        """A faster alternative to deepcopying.
 
-        # create the clone_of dict if it's None
-        if not clone_of:
-            clone_of=dict()
+        Does not resolve circular dependencies. This should be safe provided
+        you never try to add the top of a Compound hierarchy to a
+        sub-Compound.
+        """
+        if root_container is None:
+            root_container = self
 
-        # if this compound has been cloned, return it
+        if clone_of is None:
+            clone_of = dict()
+
+        # If this compound has already been cloned, return that.
         if self in clone_of:
             return clone_of[self]
 
-        # else we make a new clone
-
+        # Otherwise we make a new clone.
         cls = self.__class__
         newone = cls.__new__(cls)
 
-        # remember that we're cloning the new one of of self
+        # Remember that we're cloning the new one of self.
         clone_of[self] = newone
 
-        # First copy those attributes that don't need deepcopying.
-
         newone.kind = self.kind
-
         newone.periodicity = deepcopy(self.periodicity)
 
         # Create empty containers.
@@ -868,39 +861,38 @@ class Compound(Part):
         newone.labels = OrderedDict()
         newone.referrers = set()
 
-        # parent should be None initially
+        # Parent should be None initially.
         newone.parent = None
 
-        # Add parts to clone
+        # Add parts to clone.
         for part in self.parts:
             if isinstance(part, Bond) and part.has_atoms_outside_of(root_container):
-                # ignore bonds with atoms outside the hierarchy.
+                # Ignore bonds with atoms outside the hierarchy.
                 continue
             else:
                 newpart = clone(part, clone_of, root_container)
                 newone.parts.add(newpart)
                 newpart.parent = newone
 
-        # Copy labels, except bonds with atoms outside the hierarchy
+        # Copy labels, except bonds with atoms outside the hierarchy.
         for label, part in self.labels.items():
             if isinstance(part, Bond) and part.has_atoms_outside_of(root_container):
-                # it's a bond that has atoms outside the current containment hierarchy, so we skip it
+                # Ignore bonds with atoms outside the hierarchy.
                 continue
             else:
                 if not isinstance(part, list):
                     newone.labels[label] = clone(part, clone_of, root_container)
                     part.referrers.add(clone_of[part])
                 else:
-                    # part is a list of parts, so we create an empty list, and add the clones of the original list elements
+                    # Part is a list of parts, so we create an empty list, and
+                    # add the clones of the original list elements.
                     newone.labels[label] = []
-                    for p in part:
-                        newone.labels[label].append(clone(p, clone_of, root_container))
-                        # referrers must have been handled already, or the will be handled
+                    for subpart in part:
+                        newone.labels[label].append(clone(subpart, clone_of, root_container))
+                        # Referrers must have been handled already, or the will be handled
         return newone
 
-
     def __deepcopy__(self, memo):
-
         cls = self.__class__
         newone = cls.__new__(cls)
         if len(memo) == 0:
@@ -931,20 +923,20 @@ class Compound(Part):
                 newone.parts.add(deepcopy(part, memo))
 
         # Copy labels, except bonds with atoms outside the hierarchy
-        for k, v in self.labels.items():
-            if isinstance(v, Bond):
-                if memo[0] in v.atom1.ancestors() and memo[0] in v.atom2.ancestors():
-                    newone.labels[k] = deepcopy(v, memo)
-                    newone.labels[k].referrers.add(newone)
+        for label, part in self.labels.items():
+            if isinstance(part, Bond):
+                if memo[0] in part.atom1.ancestors() and memo[0] in part.atom2.ancestors():
+                    newone.labels[label] = deepcopy(part, memo)
+                    newone.labels[label].referrers.add(newone)
             else:
-                newone.labels[k] = deepcopy(v, memo)
-                if not isinstance(newone.labels[k], list):
-                    newone.labels[k].referrers.add(newone)
+                newone.labels[label] = deepcopy(part, memo)
+                if not isinstance(newone.labels[label], list):
+                    newone.labels[label].referrers.add(newone)
 
         # Copy referrers that do not point out of the hierarchy.
-        for r in self.referrers:
-            if memo[0] in r.ancestors():
-                newone.referrers.add(deepcopy(r, memo))
+        for referrer in self.referrers:
+            if memo[0] in referrer.ancestors():
+                newone.referrers.add(deepcopy(referrer, memo))
 
         return newone
 

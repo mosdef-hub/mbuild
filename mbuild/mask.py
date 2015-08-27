@@ -11,6 +11,7 @@ from mbuild import clone
 __all__ = ['apply_mask', 'random_mask_2d', 'random_mask_3d', 'sphere_mask',
            'grid_mask_2d', 'grid_mask_3d', 'disk_mask']
 
+
 def apply_mask(host, guest, mask, guest_port_name='down', backfill=None,
                backfill_port_name='up'):
     """Attach guest Compounds to a host Compound in the pattern of a mask.
