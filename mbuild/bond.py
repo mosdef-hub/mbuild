@@ -1,4 +1,3 @@
-from copy import deepcopy
 
 import numpy as np
 
@@ -66,44 +65,53 @@ class Bond(Part):
             d = np.where(d > 0.5 * periodicity, periodicity - d, d)
             return np.sqrt((d ** 2).sum(axis=-1))
 
+    def has_both_atoms_within(self, root_compound):
+        """Check both atoms are within the containment hierarchy of a root_compound."""
+        return root_compound in self.atom1.ancestors() or root_compound in self.atom2.ancestors()
+
+    def has_atoms_outside_of(self, root_compound):
+        """Check either (or both) atoms are outside of the containment hierarchy of a root_compound."""
+        return root_compound not in self.atom1.ancestors() or root_compound not in self.atom2.ancestors()
+
     def __repr__(self):
         return "Bond{0}({1}, {2})".format(id(self), self.atom1, self.atom2)
 
-    def clone(self, root_container=None, clone_of=None, use_deepcopy=Part.USE_DEEPCOPY):
-        if use_deepcopy:
-            return deepcopy(self)
-        else:
-            if not clone_of:
-                clone_of=dict()
+    def _clone(self, clone_of=None, root_container=None):
+        from mbuild import clone
+        # create the clone_of dict if it's None
+        if not clone_of:
+            clone_of=dict()
 
-            # if this bond has been cloned, return it
-            if self in clone_of:
-                return clone_of[self]
+        # if this bond has been cloned, return it
+        if self in clone_of:
+            return clone_of[self]
 
-            # else we make a new clone
+        # else we make a new clone
 
-            cls = self.__class__
-            newone = cls.__new__(cls)
+        cls = self.__class__
+        newone = cls.__new__(cls)
 
-            # remember that we're cloning the new one of of self
-            clone_of[self] = newone
+        # remember that we're cloning the new one of of self
+        clone_of[self] = newone
 
-            # Copy fields that don't need recursion.
-            newone.kind = self.kind
-            newone.referrers = set()
+        # Copy fields that don't need recursion.
+        newone.kind = self.kind
+        newone.referrers = set()
 
-            # Do the rest recursively.
-            newone._atom1 = self.atom1.clone(root_container=root_container, clone_of=clone_of, use_deepcopy=use_deepcopy)
-            newone._atom2 = self.atom2.clone(root_container=root_container, clone_of=clone_of, use_deepcopy=use_deepcopy)
-            newone._atom1.bonds.add(newone)
-            newone._atom2.bonds.add(newone)
+        # Do the rest recursively.
+        newone._atom1 = clone(self.atom1, clone_of, root_container)
+        newone._atom2 = clone(self.atom2, clone_of, root_container)
+        newone._atom1.bonds.add(newone)
+        newone._atom2.bonds.add(newone)
 
-            # we set newone.parent in compound
+        # we set newone.parent in compound
 
-            return newone
+        return newone
 
 
     def __deepcopy__(self, memo):
+        from copy import deepcopy
+
         cls = self.__class__
         newone = cls.__new__(cls)
 

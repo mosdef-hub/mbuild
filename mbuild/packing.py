@@ -8,6 +8,7 @@ import sys
 
 from mbuild.compound import Compound
 from mbuild.box import Box
+from mbuild import clone
 
 __all__ = ['fill_box', 'solvate']
 
@@ -78,7 +79,7 @@ def fill_box(compound, n_compounds, box, overlap=0.2):
     filled = Compound()
     for _ in range(n_compounds):
         # filled.add(deepcopy(compound))
-        filled.add(compound.clone())
+        filled.add(clone(compound))
     filled.update_coordinates(filled_pdb)
     return filled
 
@@ -131,7 +132,7 @@ def solvate(solute, solvent, n_solvent, box, overlap=0.2):
     solvated.add(solute)
     for _ in range(n_solvent):
         # solvated.add(deepcopy(solvent))
-        solvated.add(solvent.clone())
+        solvated.add(clone(solvent))
     solvated.update_coordinates(solvated_pdb)
     return solvated
 

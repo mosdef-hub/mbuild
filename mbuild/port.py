@@ -1,12 +1,9 @@
-from copy import deepcopy
-
 import numpy as np
 
 from mbuild.atom import Atom
-from mbuild.atom import Part
 from mbuild.compound import Compound
 from mbuild.coordinate_transform import rotate_around_z
-
+from mbuild import clone
 
 class Port(Compound):
     """A set of four ghost Atoms used to connect parts.
@@ -38,29 +35,25 @@ class Port(Compound):
         up.add(Atom(name='G', pos=[-0.02, -0.01, 0]), 'left')
         up.add(Atom(name='G', pos=[0.0, -0.02, 0.01]), 'right')
 
-        # down = deepcopy(up)
-        down = up.clone()
+        down = clone(up)
 
         rotate_around_z(down, np.pi)
 
         self.add(up, 'up')
         self.add(down, 'down')
 
-    def clone(self, clone_of=None, root_container=None, use_deepcopy=Part.USE_DEEPCOPY):
-        if use_deepcopy:
-            newone = super(Port, self).__deepcopy__(memo)
-            newone.anchor = deepcopy(self.anchor, memo)
-        else:
-            if not clone_of:
-                clone_of = dict()
-            if not root_container:
-                root_container = self
-            newone = super(Port, self).clone(root_container=root_container, clone_of=clone_of, use_deepcopy=use_deepcopy)
-            newone.anchor = self.anchor.clone(root_container=root_container, clone_of=clone_of, use_deepcopy=use_deepcopy)
+    def _clone(self, clone_of=None, root_container=None):
+        if not clone_of:
+            clone_of = dict()
+        if not root_container:
+            root_container = self
+        newone = super(Port, self)._clone(clone_of, root_container)
+        newone.anchor = clone(self.anchor, clone_of, root_container)
 
         return newone
 
     def __deepcopy__(self, memo):
+        from copy import deepcopy
         newone = super(Port, self).__deepcopy__(memo)
         newone.anchor = deepcopy(self.anchor, memo)
         return newone

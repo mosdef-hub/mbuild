@@ -40,7 +40,7 @@ class TestCompound(BaseTest):
 
     def test_init_with_subcompounds3(self, ethane, h2o):
         # compound = mb.Compound([ethane, [h2o, deepcopy(h2o)]])
-        compound = mb.Compound([ethane, [h2o, h2o.clone()]])
+        compound = mb.Compound([ethane, [h2o, mb.clone(h2o)]])
         assert compound.n_atoms == 8 + 2*3
         assert compound.n_bonds == 7 + 2*2
 
@@ -61,7 +61,7 @@ class TestCompound(BaseTest):
     def test_intermol_conversion2(self, ethane, h2o):
         compound = mb.Compound()
         # compound.add([ethane, deepcopy(ethane), h2o])  # 2 distinct Ethane objects
-        compound.add([ethane, ethane.clone(), h2o])  # 2 distinct Ethane objects
+        compound.add([ethane, mb.clone(ethane), h2o])  # 2 distinct Ethane objects
         molecule_types = [type(ethane), type(h2o)]
         intermol_system = compound._to_intermol(molecule_types=molecule_types)
         assert len(intermol_system.molecule_types) == 2

@@ -1,4 +1,3 @@
-# from copy import deepcopy
 import itertools as it
 
 import numpy as np
@@ -8,7 +7,7 @@ from mbuild.compound import Compound
 from mbuild.port import Port
 from mbuild.coordinate_transform import translate
 from mbuild.periodic_kdtree import PeriodicCKDTree
-
+from mbuild import clone
 __all__ = ['TiledCompound']
 
 
@@ -62,8 +61,7 @@ class TiledCompound(Compound):
         for ijk in it.product(range(n_tiles[0]),
                               range(n_tiles[1]),
                               range(n_tiles[2])):
-            # new_tile = deepcopy(tile)
-            new_tile = tile.clone()
+            new_tile = clone(tile)
             translate(new_tile, np.array(ijk * tile.periodicity))
             self._add_tile_and_hoist_ports(new_tile, ijk)
 
