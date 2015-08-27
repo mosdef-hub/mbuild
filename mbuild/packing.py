@@ -49,9 +49,10 @@ def fill_box(compound, n_compounds, box, overlap=0.2):
 
     """
     if not PACKMOL:
-        msg = "Packmol not found"
+        msg = "Packmol not found."
         if sys.platform.startswith("win"):
-            msg = msg + ". If packmol is already installed, make sure that the packmol.exe is on the path."
+            msg = (msg + " If packmol is already installed, make sure that the "
+                         "packmol.exe is on the path.")
         raise IOError(msg)
 
     if isinstance(box, (list, tuple)):
@@ -135,6 +136,7 @@ def solvate(solute, solvent, n_solvent, box, overlap=0.2):
 
 
 def _packmol_error(out, err):
+    """Log packmol output to files. """
     with open('log.txt', 'w') as log_file, open('err.txt', 'w') as err_file:
         log_file.write(out)
         err_file.write(err)

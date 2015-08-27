@@ -32,11 +32,11 @@ class Monolayer(mb.Compound):
         super(Monolayer, self).__init__()
 
         # Replicate the surface.
-        tc = mb.TiledCompound(surface, n_tiles=(tile_x, tile_y, 1))
-        self.add(tc, 'tiled_surface')
+        tiled_compound = mb.TiledCompound(surface, n_tiles=(tile_x, tile_y, 1))
+        self.add(tiled_compound, 'tiled_surface')
 
         if mask is None:  # Fill the surface.
-            mask = mb.random_mask_2d(len(tc.referenced_ports()))
+            mask = mb.random_mask_2d(len(tiled_compound.referenced_ports()))
 
         # Attach chains to specified binding sites. Remaining sites get a backfill.
         chains, backfills = mb.apply_mask(host=self.tiled_surface, guest=chain,

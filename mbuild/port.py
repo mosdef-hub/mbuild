@@ -1,9 +1,12 @@
+from copy import deepcopy
+
 import numpy as np
 
 from mbuild.atom import Atom
 from mbuild.compound import Compound
 from mbuild.coordinate_transform import rotate_around_z
 from mbuild import clone
+
 
 class Port(Compound):
     """A set of four ghost Atoms used to connect parts.
@@ -53,7 +56,6 @@ class Port(Compound):
         return newone
 
     def __deepcopy__(self, memo):
-        from copy import deepcopy
         newone = super(Port, self).__deepcopy__(memo)
         newone.anchor = deepcopy(self.anchor, memo)
         return newone

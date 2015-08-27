@@ -26,7 +26,7 @@ class Box(object):
             self._maxs = np.array(maxs)
             self._lengths = self.maxs - self.mins
         else:
-            raise ValueError('Either provide (`lengths`) or (`mins` and `maxs`). '
+            raise ValueError('Either provide `lengths` or `mins` and `maxs`. '
                              'You provided: lengths={} mins={} maxs={}'.format(
                 lengths, mins, maxs))
 
