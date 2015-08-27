@@ -1,7 +1,7 @@
 import mbuild as mb
 
 from mbuild.examples.alkane.alkane import Alkane
-from mbuild.components.small_groups.silane import Silane
+from mbuild.lib.moieties import Silane
 
 
 class AlkylSilane(mb.Compound):

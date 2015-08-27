@@ -343,7 +343,7 @@ class Compound(Part):
             self._remove_bonds(removed_part)
             self._remove_references(removed_part)
 
-        # Remove the part recursively from sub-components.
+        # Remove the part recursively from sub-compounds.
         for part in self.parts:
             if isinstance(part, Compound) and len(objs_to_remove) > 0:
                 part.remove(objs_to_remove)

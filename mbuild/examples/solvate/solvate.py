@@ -1,8 +1,8 @@
 from __future__ import print_function
 
 import mbuild as mb
-from mbuild.components.small_groups.h2o import H2O
-from mbuild.examples.ethane.ethane import Ethane
+from mbuild.lib.moieties import H2O
+from mbuild.examples import Ethane
 
 
 def main():

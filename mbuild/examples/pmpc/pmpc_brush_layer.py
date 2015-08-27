@@ -4,8 +4,8 @@ from numpy import pi
 
 import mbuild as mb
 
-from mbuild.components.atoms.H import H
-from mbuild.components.surfaces.betacristobalite import Betacristobalite
+from mbuild.lib.atoms import H
+from mbuild.lib.surfaces import Betacristobalite
 from mbuild.examples.pmpc.brush import Brush
 
 
@@ -21,13 +21,12 @@ class PMPCLayer(mb.Monolayer):
 
 def main():
     mask = mb.grid_mask_2d(5, 5)
-    pmpc_layer = PMPCLayer(mask=mask, chain_length=5, alpha=pi/4, tile_x=2, tile_y=2)
-    return pmpc_layer
+    pmpc_system = PMPCLayer(mask=mask, chain_length=5, alpha=pi/4, tile_x=2, tile_y=2)
+    return pmpc_system
 
 
 if __name__ == "__main__":
-
     pmpc_layer = main()
-    pmpc_layer.save(filename='brush_layer.mol2')
-    pmpc_layer.visualize()
+    #pmpc_layer.save(filename='brush_layer.mol2')
+    #pmpc_layer.visualize()
     # pmpc_layer.view_hierarchy()

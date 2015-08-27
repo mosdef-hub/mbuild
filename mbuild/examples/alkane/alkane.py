@@ -1,7 +1,7 @@
 import mbuild as mb
 
-from mbuild.components.small_groups.ch2 import CH2
-from mbuild.components.small_groups.ch3 import CH3
+from mbuild.lib.moieties import CH2
+from mbuild.lib.moieties import CH3
 
 
 class Alkane(mb.Compound):

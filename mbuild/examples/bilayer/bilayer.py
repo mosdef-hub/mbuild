@@ -208,7 +208,7 @@ class Bilayer(mb.Compound):
 
 def main():
     from mbuild.utils.io import get_fn
-    from mbuild.components.small_groups.h2o import H2O
+    from mbuild.lib.moieties import H2O
 
     water = H2O()
     ecerns = mb.load(get_fn('ecer2.pdb'))

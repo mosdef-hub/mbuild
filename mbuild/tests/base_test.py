@@ -9,30 +9,30 @@ class BaseTest:
 
     @pytest.fixture
     def ethane(self):
-        from mbuild.examples.ethane.ethane import Ethane
+        from mbuild.examples import Ethane
         return Ethane()
 
     @pytest.fixture
     def methane(self):
-        from mbuild.examples.methane.methane import Methane
+        from mbuild.examples import Methane
         return Methane()
 
     @pytest.fixture
     def h2o(self):
-        from mbuild.components.small_groups.h2o import H2O
+        from mbuild.lib.moieties import H2O
         return H2O()
 
     @pytest.fixture
     def ch2(self):
-        from mbuild.components.small_groups.ch2 import CH2
+        from mbuild.lib.moieties import CH2
         return CH2()
 
     @pytest.fixture
     def ch3(self):
-        from mbuild.components.small_groups.ch3 import CH3
+        from mbuild.lib.moieties import CH3
         return CH3()
 
     @pytest.fixture
     def betacristobalite(self):
-        from mbuild.components.surfaces.betacristobalite import Betacristobalite
+        from mbuild.lib.surfaces import Betacristobalite
         return Betacristobalite()
