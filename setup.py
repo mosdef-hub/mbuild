@@ -17,8 +17,8 @@ from setuptools import setup, find_packages
 from setuptools.command.test import test as TestCommand
 
 #####################################
-VERSION = "0.6.0"
-ISRELEASED = False
+VERSION = "0.5.1"
+ISRELEASED = True
 if ISRELEASED:
     __version__ = VERSION
 else:
