@@ -1,6 +1,6 @@
 package:
-  name: mbuild
-  version: !!str 0.5.2
+  name: mbuild-dev
+  version: !!str 0.6.0.dev0
 
 requirements:
   build:
