@@ -18,7 +18,7 @@ from setuptools.command.test import test as TestCommand
 
 #####################################
 VERSION = "0.5.0"
-ISRELEASED = False
+ISRELEASED = True
 if ISRELEASED:
     __version__ = VERSION
 else:
