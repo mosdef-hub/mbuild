@@ -3,6 +3,7 @@ import mbuild as mb
 
 from numpy import pi
 from mbuild.examples.tnp.tnp import Tnp
+from mbuild import clone
 
 class TnpBox(mb.Compound):
     """Several tethered nanoparticles randomly dispersed in a Box. """
@@ -17,13 +18,17 @@ class TnpBox(mb.Compound):
         rnd.seed(1928)
 
         for pos in mask:
-            tnp = tnp_proto.clone()
+            tnp = clone(tnp_proto)
             mb.rotate_around_x(tnp, rnd.uniform(0, 2 * pi))
             mb.rotate_around_y(tnp, rnd.uniform(0, 2 * pi))
             mb.rotate_around_z(tnp, rnd.uniform(0, 2 * pi))
             mb.translate(tnp, pos)
             self.add(tnp)
 
-if __name__ == "__main__":
-    m = TnpBox()
+def main():
+    box = TnpBox()
+    return box
 
+if __name__ == "__main__":
+    box = main()
+    box.visualize()
