@@ -8,6 +8,8 @@ from mbuild.port import Port
 from mbuild.coordinate_transform import translate
 from mbuild.periodic_kdtree import PeriodicCKDTree
 from mbuild import clone
+
+
 __all__ = ['TiledCompound']
 
 
@@ -45,7 +47,8 @@ class TiledCompound(Compound):
         self.periodicity = np.array(tile.periodicity * n_tiles)
 
         if all(n_tiles == 1):
-            self._add_tile_and_hoist_ports(tile, [(0, 0, 0)])
+            self._add_tile(tile, [(0, 0, 0)])
+            self._hoist_ports(tile)
             return  # Don't waste time copying and checking bonds.
 
         # For every tile, assign temporary ID's to atoms which are internal to
@@ -63,9 +66,8 @@ class TiledCompound(Compound):
                               range(n_tiles[2])):
             new_tile = clone(tile)
             translate(new_tile, np.array(ijk * tile.periodicity))
-            self._add_tile_and_hoist_ports(new_tile, ijk)
-
-
+            self._add_tile(new_tile, ijk)
+            self._hoist_ports(new_tile)
 
         # Fix bonds across periodic boundaries.
         # -------------------------------------
@@ -76,7 +78,8 @@ class TiledCompound(Compound):
         atom_indices_of_periodic_bonds = set()
         for bond in tile.yield_bonds():
             if bond.length() > bond_dist_thres:
-                atom_indices_of_periodic_bonds.add((bond.atom1.index, bond.atom2.index))
+                atom_indices_of_periodic_bonds.add((bond.atom1.index,
+                                                    bond.atom2.index))
 
         # Build a periodic kdtree of all atom positions.
         self.atom_kdtree = PeriodicCKDTree(data=self.xyz, bounds=self.periodicity)
@@ -103,11 +106,13 @@ class TiledCompound(Compound):
             atom.index = None
         del self.atom_kdtree
 
-    def _add_tile_and_hoist_ports(self, new_tile, ijk):
+    def _add_tile(self, new_tile, ijk):
+        """Add a tile with a label indicating its tiling position. """
         tile_label = "{0}_{1}".format(self.kind, '-'.join(str(d) for d in ijk))
         self.add(new_tile, label=tile_label, inherit_periodicity=False)
 
-        # Hoist ports.
+    def _hoist_ports(self, new_tile):
+        """Add labels for all the ports to the parent (TiledCompound). """
         for port in new_tile.parts:
             if isinstance(port, Port):
                 self.add(port, containment=False)
