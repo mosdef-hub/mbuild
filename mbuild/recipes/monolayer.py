@@ -1,6 +1,9 @@
 import mbuild as mb
 
 
+__all__ = ['Monolayer']
+
+
 class Monolayer(mb.Compound):
     """A general monolayer recipe.
 
@@ -43,14 +46,3 @@ class Monolayer(mb.Compound):
                                           mask=mask, backfill=backfill, **kwargs)
         self.add(chains)
         self.add(backfills)
-
-
-if __name__ == "__main__":
-    from mbuild.lib.surfaces import Betacristobalite
-    from mbuild.examples import AlkylSilane
-    from mbuild.lib.atoms import H
-
-    mask = mb.grid_mask_2d(8, 8)  # Evenly spaced, 2D grid of points.
-    monolayer = Monolayer(surface=Betacristobalite(), chain=AlkylSilane(10),
-                          backfill=H(), mask=mask)
-    monolayer.visualize()
