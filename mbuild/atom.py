@@ -87,7 +87,8 @@ class Atom(Part):
         return -self.pos
 
     def __repr__(self):
-        return "Atom{0}({1}, {2})".format(id(self), self.name, self.pos)
+        return '<{:s}, pos=[{:.3f}, {:.3f}, {:.3f}]; ID: {}>'.format(
+            self.name, self.pos[0], self.pos[1], self.pos[2], id(self))
 
     def _clone(self, clone_of=None, root_container=None):
         if clone_of is None:

@@ -29,9 +29,8 @@ class Polymer(Compound):
             assert_port_exists(label, proto)
 
         last_part = None
-        for _ in range(0, n):
+        for _ in range(n):
             this_part = clone(proto)
-            self.add(this_part, 'monomer[$]')
             if last_part is None:
                 first_part = this_part
             else:
@@ -40,6 +39,7 @@ class Polymer(Compound):
                 equivalence_transform(this_part, this_part.labels[port_labels[1]],
                                       last_part.labels[port_labels[0]])
             last_part = this_part
+            self.add(this_part, 'monomer[$]')
 
         # Hoist the last part's top port to be the top port of the polymer.
         self.add(last_part.labels[port_labels[0]], port_labels[0], containment=False)

@@ -1,10 +1,15 @@
 import json
 import os
+
 import numpy as np
 import pytest
+
 import mbuild as mb
 from mbuild.utils.io import get_fn
 from mbuild.tests.base_test import BaseTest
+from mbuild.lib.moieties import CH3
+from mbuild.examples import Ethane
+
 
 class TestCompound(BaseTest):
 
@@ -165,3 +170,16 @@ class TestCompound(BaseTest):
         output = json.loads(ethane._to_json(show_ports=True))
         assert len(output['atoms']) == 8+16
         assert len(output['bonds']) == 7
+
+    def test_tag_tiers(self, ethane):
+        ethane.tag_tier('3-to-1', [Ethane])
+        assert len(ethane.tiers['3-to-1']) == 1
+        assert ethane == ethane.tiers['3-to-1'][0]
+
+        ethane.tag_tier('ua', [CH3])
+        assert len(ethane.tiers['ua']) == 2
+        assert all(isinstance(part, CH3) for part in ethane.tiers['ua'])
+
+        ethane.tag_tier('aa')
+        assert len(ethane.tiers['aa']) == 8
+        assert all(isinstance(part, mb.Atom) for part in ethane.tiers['aa'])

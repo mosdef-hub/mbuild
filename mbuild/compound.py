@@ -123,6 +123,8 @@ class Compound(Part):
         if subcompounds:
             self.add(subcompounds)
 
+        self.tiers = dict()
+
     @property
     def atoms(self):
         """A list of all Atoms in the Compound and sub-Compounds.  """
@@ -186,11 +188,13 @@ class Compound(Part):
                 bond_list.append(bond)
         return bond_list
 
-    def _yield_parts(self, part_type):
+    def _yield_parts(self, part_type=None):
         """Yield parts of a specified type in the Compound recursively. """
         for part in self.parts:
             # Parts local to the current Compound.
-            if isinstance(part, part_type):
+            if part_type is None:
+                yield part
+            elif isinstance(part, part_type):
                 yield part
             # Parts further down the hierarchy.
             if isinstance(part, Compound):
@@ -400,6 +404,24 @@ class Compound(Part):
     def update_coordinates(self, filename):
         """Update the coordinates of this Compound from a file. """
         load(filename, compound=self, coords_only=True)
+
+    def tag_tier(self, tier_name, compounds=None):
+        """Tag all instances of parts in `compounds` with a tier. """
+        n_parts_in_tier = 0
+        parts_in_tier = list()
+        if compounds is None:  # all-atom
+            for atom in self.atoms:
+                atom.tier = tier_name
+                n_parts_in_tier += 1
+                parts_in_tier.append(atom)
+        else:
+            # Also loop over self since we might want to be tagging that.
+            for part in itertools.chain([self], self._yield_parts()):
+                if isinstance(part, tuple(compounds)):
+                    part.tier = tier_name
+                    n_parts_in_tier += 1
+                    parts_in_tier.append(part)
+        self.tiers[tier_name] = parts_in_tier
 
     def save(self, filename, show_ports=False, forcefield=None, **kwargs):
         """Save the Compound to a file.
