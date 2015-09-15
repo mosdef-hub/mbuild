@@ -39,7 +39,7 @@ def load(filename, relative_to_module=None, frame=-1, compound=None,
         compound = Compound()
 
     traj = md.load(filename, **kwargs)
-    compound.from_trajectory(traj, frame=frame, coords_only=coords_only)
+    compound._from_trajectory(traj, frame=frame, coords_only=coords_only)
     return compound
 
 
@@ -407,19 +407,16 @@ class Compound(Part):
 
     def tag_tier(self, tier_name, compounds=None):
         """Tag all instances of parts in `compounds` with a tier. """
-        n_parts_in_tier = 0
         parts_in_tier = list()
         if compounds is None:  # all-atom
             for atom in self.atoms:
                 atom.tier = tier_name
-                n_parts_in_tier += 1
                 parts_in_tier.append(atom)
         else:
             # Also loop over self since we might want to be tagging that.
             for part in itertools.chain([self], self._yield_parts()):
                 if isinstance(part, tuple(compounds)):
                     part.tier = tier_name
-                    n_parts_in_tier += 1
                     parts_in_tier.append(part)
         self.tiers[tier_name] = parts_in_tier
 
@@ -451,31 +448,30 @@ class Compound(Part):
         except KeyError:  # TODO: better reporting
             saver = None
 
-        if (not saver or extension == '.mol2') and forcefield:
+        if forcefield and (not saver or extension == '.mol2'):
             ff_formats = ', '.join(set(savers.keys()) - set(['.mol2']))
             raise ValueError('The only supported formats with forcefield'
                              'information are: {0}'.format(ff_formats))
 
+        traj = self._to_trajectory(show_ports=show_ports, **kwargs)
         if saver:  # mBuild/InterMol supported saver.
-            traj = self.to_trajectory(show_ports=show_ports, **kwargs)
             return saver(filename, traj)
         else:  # MDTraj supported saver.
-            traj = self.to_trajectory(show_ports=show_ports, **kwargs)
             return traj.save(filename, **kwargs)
 
     def save_mol2(self, filename, traj, **kwargs):
         """ """
         write_mol2(filename, traj)
 
-    def save_hoomdxml(self, filename, traj, force_overwrite=True, **kwargs):
+    def save_hoomdxml(self, filename, traj, force_overwrite=False, **kwargs):
         """ """
         raise NotImplementedError('Interface to InterMol missing')
 
-    def save_gromacs(self, filename, traj, force_overwrite=True, **kwargs):
+    def save_gromacs(self, filename, traj, force_overwrite=False, **kwargs):
         """ """
         raise NotImplementedError('Interface to InterMol missing')
 
-    def save_lammpsdata(self, filename, traj, force_overwrite=True, **kwargs):
+    def save_lammpsdata(self, filename, traj, force_overwrite=False, **kwargs):
         """ """
         raise NotImplementedError('Interface to InterMol missing')
 
@@ -585,7 +581,7 @@ class Compound(Part):
 
     # Interface to Trajectory for reading/writing .pdb and .mol2 files.
     # -----------------------------------------------------------------
-    def from_trajectory(self, traj, frame=-1, coords_only=False):
+    def _from_trajectory(self, traj, frame=-1, coords_only=False):
         """Extract atoms and bonds from a md.Trajectory.
 
         Will create sub-compounds for every chain if there is more than one
@@ -629,7 +625,7 @@ class Compound(Part):
         else:
             self.periodicity = np.array([0., 0., 0.])
 
-    def to_trajectory(self, show_ports=False, chain_types=None, residue_types=None):
+    def _to_trajectory(self, show_ports=False, chain_types=None, residue_types=None):
         """Convert to an md.Trajectory and flatten the compound.
 
         Parameters

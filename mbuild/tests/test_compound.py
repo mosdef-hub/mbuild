@@ -133,13 +133,13 @@ class TestCompound(BaseTest):
         ethane.visualize(show_ports=True)
 
     def test_to_trajectory(self, ethane, ch3):
-        traj = ethane.to_trajectory()
+        traj = ethane._to_trajectory()
         assert traj.n_atoms == 8
         assert traj.top.n_bonds == 7
         assert traj.n_chains == 1
         assert traj.n_residues == 1
 
-        traj = ethane.to_trajectory(residue_types=ch3)
+        traj = ethane._to_trajectory(residue_types=ch3)
         assert traj.n_atoms == 8
         assert traj.top.n_bonds == 7
         assert traj.n_chains == 1
@@ -147,7 +147,7 @@ class TestCompound(BaseTest):
         assert 'CH3' in [res.name for res in traj.top.residues]
         assert all(res.n_atoms == 4 for res in traj.top.residues)
 
-        traj = ethane.to_trajectory(chain_types=ch3)
+        traj = ethane._to_trajectory(chain_types=ch3)
         assert traj.n_atoms == 8
         assert traj.top.n_bonds == 7
         assert traj.n_chains == 2
@@ -156,7 +156,7 @@ class TestCompound(BaseTest):
         assert all(chain.n_residues == 1 for chain in traj.top.chains)
 
         methyl = next(iter(ethane.parts))
-        traj = methyl.to_trajectory()
+        traj = methyl._to_trajectory()
         assert traj.n_atoms == 4
         assert traj.top.n_bonds == 3
         assert traj.n_chains == 1

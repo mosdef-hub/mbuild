@@ -19,16 +19,7 @@ class Part(object):
         # The set of other compounds that reference this compound with labels.
         self.referrers = set()
 
-        self._tier = None
         self._com = None
-
-    @property
-    def tier(self):
-        return self._tier
-
-    @tier.setter
-    def tier(self, tier_name):
-        self._tier = tier_name
 
     @property
     def com(self):
@@ -44,6 +35,27 @@ class Part(object):
         if self.parent is not None:
             for ancestor in self.parent.ancestors():
                 yield ancestor
+
+    @property
+    def root_compound(self):
+        """Return the root of the compound hierarchy. """
+        for root_of_hierarchy in self.ancestors():
+            pass
+        return root_of_hierarchy
+
+    @property
+    def tier_names(self):
+        """Return the names of the tiers that this compound is tagged with. """
+        root = self.root_compound
+        if root.tiers is None:
+            raise ValueError('No tiers have been tagged in the root of this'
+                             ' hierarchy, {}.'.format(root))
+
+        all_names = list()
+        for tier_name, parts in root.tiers.items():
+            if self in parts:
+                all_names.append(tier_name)
+        return all_names
 
     def _clone(self, clone_of=None, root_container=None):
         raise NotImplementedError
