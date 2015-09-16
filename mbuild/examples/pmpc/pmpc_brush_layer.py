@@ -20,13 +20,13 @@ class PMPCLayer(mb.Monolayer):
 
 
 def main():
-    mask = mb.grid_mask_2d(5, 5)
-    pmpc_system = PMPCLayer(mask=mask, chain_length=5, alpha=pi/4, tile_x=2, tile_y=2)
+    mask = mb.grid_mask_2d(2, 1)
+    pmpc_system = PMPCLayer(mask=mask, chain_length=5, alpha=pi/4, tile_x=1, tile_y=2)
     return pmpc_system
 
 
 if __name__ == "__main__":
     pmpc_layer = main()
     #pmpc_layer.save(filename='brush_layer.mol2')
-    #pmpc_layer.visualize()
+    pmpc_layer.visualize()
     # pmpc_layer.view_hierarchy()

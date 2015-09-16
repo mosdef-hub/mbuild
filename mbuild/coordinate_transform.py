@@ -19,7 +19,7 @@ class CoordinateTransform(object):
     def apply_to(self, A):
         """Apply the coordinate transformation to points in A. """
         if A.ndim == 1:
-            A = np.expand_dims(A, axis=0)
+            A = expand_dims(A, axis=0)
         rows, cols = A.shape
         A_new = hstack([A, ones((rows, 1))])
 
@@ -228,11 +228,10 @@ def vec_angle(v1, v2):
 
 
 def _write_back_atom_positions(compound, arrnx3):
-    from mbuild.atom import Atom
-    if isinstance(compound, Atom):
+    if not compound.parts:
         compound.pos = squeeze(arrnx3)
     else:
-        for atom, coords in zip(compound.yield_atoms(), arrnx3):
+        for atom, coords in zip(compound._particles(include_ports=True), arrnx3):
             atom.pos = coords
 
 
@@ -252,7 +251,6 @@ def _create_equivalence_transform(equiv):
         coordinates system.
 
     """
-    from mbuild.atom import Atom
     from mbuild.compound import Compound
     self_points = array([])
     self_points.shape = (0, 3)
@@ -262,19 +260,19 @@ def _create_equivalence_transform(equiv):
     for pair in equiv:
         if not isinstance(pair, tuple) or len(pair) != 2:
             raise Exception('Equivalence pair not a 2-tuple')
-        if not ((isinstance(pair[0], Compound) and isinstance(pair[1], Compound)) or
-                (isinstance(pair[0], Atom) and isinstance(pair[1], Atom))):
+        if not (isinstance(pair[0], Compound) and isinstance(pair[1], Compound)):
             # TODO: is the Atom and Atom comparison necessary?
             raise Exception('Equivalence pair type mismatch: pair[0] is a {0} '
                             'and pair[1] is a {1}'.format(type(pair[0]), type(pair[1])))
 
-        if isinstance(pair[0], Atom):
+        # TODO: vstack is slow, replace with list concatenation
+        if not pair[0].parts:
             self_points = vstack([self_points, pair[0].pos])
             other_points = vstack([other_points, pair[1].pos])
-        if isinstance(pair[0], Compound):
-            for atom0 in pair[0].yield_atoms():
+        else:
+            for atom0 in pair[0]._particles(include_ports=True):
                 self_points = vstack([self_points, atom0.pos])
-            for atom1 in pair[1].yield_atoms():
+            for atom1 in pair[1]._particles(include_ports=True):
                 other_points = vstack([other_points, atom1.pos])
 
     T = RigidTransform(self_points, other_points)
@@ -296,22 +294,27 @@ def equivalence_transform(compound, from_positions, to_positions, add_bond=True)
 
     """
     from mbuild.port import Port
-    from mbuild.bond import Bond
+    T = None
     if isinstance(from_positions, (list, tuple)) and isinstance(to_positions, (list, tuple)):
         equivalence_pairs = zip(from_positions, to_positions)
     elif isinstance(from_positions, Port) and isinstance(to_positions, Port):
-        equivalence_pairs = _choose_correct_port(from_positions, to_positions)
+        equivalence_pairs, T = _choose_correct_port(from_positions, to_positions)
     else:
         equivalence_pairs = [(from_positions, to_positions)]
 
-    T = _create_equivalence_transform(equivalence_pairs)
+    if not T:
+        T = _create_equivalence_transform(equivalence_pairs)
     atom_positions = compound.xyz_with_ports
     atom_positions = T.apply_to(atom_positions)
     _write_back_atom_positions(compound, atom_positions)
 
     if add_bond:
         if isinstance(from_positions, Port) and isinstance(to_positions, Port):
-            compound.add(Bond(from_positions, to_positions))
+            if not from_positions.anchor or not to_positions.anchor:
+                warnings.warn("Attempting to form bond from port that has no anchor")
+            else:
+                from_positions.anchor.parent.add_bond((from_positions.anchor, to_positions.anchor))
+                to_positions.anchor.parent.add_bond((from_positions.anchor, to_positions.anchor))
 
 
 def _choose_correct_port(from_port, to_port):
@@ -339,14 +342,14 @@ def _choose_correct_port(from_port, to_port):
 
     """
     # First we try matching the two 'up' ports.
-    T = _create_equivalence_transform([(from_port.up, to_port.up)])
-    new_position = T.apply_to(array(from_port.anchor.pos, ndmin=2))
+    T1 = _create_equivalence_transform([(from_port.up, to_port.up)])
+    new_position = T1.apply_to(array(from_port.anchor.pos, ndmin=2))
 
     dist_between_anchors_up_up = norm(new_position[0] - to_port.anchor.pos)
 
     # Then matching a 'down' with an 'up' port.
-    T = _create_equivalence_transform([(from_port.down, to_port.up)])
-    new_position = T.apply_to(array(from_port.anchor.pos, ndmin=2))
+    T2 = _create_equivalence_transform([(from_port.down, to_port.up)])
+    new_position = T2.apply_to(array(from_port.anchor.pos, ndmin=2))
 
     # Determine which transform places the anchors further away from each other.
     dist_between_anchors_down_up = norm(new_position[0] - to_port.anchor.pos)
@@ -354,9 +357,11 @@ def _choose_correct_port(from_port, to_port):
 
     if difference_between_distances > 0:
         correct_port = from_port.down
+        T = T2
     else:
         correct_port = from_port.up
-    return [(correct_port, to_port.up)]
+        T = T1
+    return [(correct_port, to_port.up)], T
 
 
 def translate(compound, v):
@@ -403,17 +408,15 @@ def x_axis_transform(compound, new_origin=None,
     point_on_xy_plane:
 
     """
-    from mbuild.compound import Atom
-
-    if isinstance(new_origin, Atom):
+    if hasattr(new_origin, 'pos'):
         new_origin = new_origin.pos
     elif new_origin is None:
         new_origin = array([0, 0, 0])
-    if isinstance(point_on_x_axis, Atom):
+    if hasattr(point_on_x_axis, 'pos'):
         point_on_x_axis = point_on_x_axis.pos
     elif point_on_x_axis is None:
         point_on_x_axis = array([1.0, 0.0, 0.0])
-    if isinstance(point_on_xy_plane, Atom):
+    if hasattr(point_on_xy_plane, 'pos'):
         point_on_xy_plane = point_on_xy_plane.pos
     elif point_on_xy_plane is None:
         point_on_xy_plane = array([1.0, 1.0, 0.0])

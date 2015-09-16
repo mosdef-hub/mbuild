@@ -28,16 +28,14 @@ class Alkane(mb.Compound):
 
         if cap_front:
             self.add(CH3(), "methyl_front")
-            mb.equivalence_transform(
-                self.chain, self.chain.up, self.methyl_front.up)
+            mb.equivalence_transform(self.chain, self.chain.up, self.methyl_front.up)
         else:
             # Hoist port label to Alkane level.
             self.add(chain.up, 'up', containment=False)
 
         if cap_end:
             self.add(CH3(), 'methyl_end')
-            mb.equivalence_transform(
-                self.methyl_end, self.methyl_end.up, self.chain.down)
+            mb.equivalence_transform(self.methyl_end, self.methyl_end.up, self.chain.down)
         else:
             # Hoist port label to Alkane level.
             self.add(chain.down, 'down', containment=False)
@@ -49,4 +47,5 @@ def main():
 
 if __name__ == "__main__":
     alkane = main()
-    alkane.visualize(show_ports=True)
+    # alkane.visualize(show_ports=True)
+    alkane.visualize(show_ports=False)

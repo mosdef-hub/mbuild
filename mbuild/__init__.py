@@ -1,6 +1,6 @@
 from mbuild.atom import Atom
-from mbuild.bond import Bond
 from mbuild.box import Box
+from mbuild.coarse_graining import coarse_grain
 from mbuild.coordinate_transform import *
 from mbuild.compound import *
 from mbuild.mask import *

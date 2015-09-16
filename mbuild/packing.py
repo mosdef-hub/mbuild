@@ -114,7 +114,8 @@ def solvate(solute, solvent, n_solvent, box, overlap=0.2):
     # In angstroms for packmol.
     box_lengths = box.lengths * 10
     overlap *= 10
-    center_solute = (-solute.center) * 10
+    # center_solute = (-solute.center) * 10
+    center_solute = box_lengths/2
 
     # Build the input file and call packmol.
     input_text = (PACKMOL_HEADER.format(overlap, solvated_pdb) +
