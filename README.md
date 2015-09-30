@@ -43,3 +43,5 @@ brush_layer = BrushLayer(chain_lenth=20, mask=mask, tile_x=3, tile_y=2)
 
 Various sub-portions of this library may be independently distributed under
 different licenses. See those files for their specific terms.
+
+This material is based upon work supported by the National Science Foundation under grants NSF CBET-1028374 and NSF OCI-1047828. Any opinions, findings, and conclusions or recommendations expressed in this material are those of the author(s) and do not necessarily reflect the views of the National Science Foundation.
