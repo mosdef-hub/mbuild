@@ -776,6 +776,7 @@ class Compound(Part):
         from intermol.atom import Atom as InterMolAtom
         from intermol.molecule import Molecule
         from intermol.system import System
+        import simtk.unit as u
 
         if isinstance(molecule_types, list):
             molecule_types = tuple(molecule_types)
@@ -804,7 +805,7 @@ class Compound(Part):
             # Add the actual intermol atoms.
             intermol_atom = InterMolAtom(atom_index + 1, name=atom.name,
                                          residue_index=1, residue_name='RES')
-            intermol_atom.position = atom.pos
+            intermol_atom.position = atom.pos * u.nanometer
             last_molecule.add_atom(intermol_atom)
         return intermol_system
 
