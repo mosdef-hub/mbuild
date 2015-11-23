@@ -30,7 +30,7 @@ if __name__ == '__main__':
 
     tier = [Propane]
 
-    proxy = create_proxy(p, leaf_classes=tier)
+    proxy = create_proxy(p, particle_classes=tier)
 
     print("Proxy: {}".format(proxy))
 

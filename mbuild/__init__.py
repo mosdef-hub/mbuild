@@ -1,4 +1,3 @@
-from mbuild.atom import Atom
 from mbuild.box import Box
 from mbuild.coarse_graining import coarse_grain
 from mbuild.coordinate_transform import *

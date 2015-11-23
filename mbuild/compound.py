@@ -15,13 +15,12 @@ from mdtraj.core.element import get_by_symbol
 from mdtraj.core.topology import Topology
 from oset import oset as OrderedSet
 
-#from mbuild.atom import Atom
 from mbuild.box import Box
 from mbuild.formats.mol2 import write_mol2
 from mbuild.periodic_kdtree import PeriodicCKDTree
 
 
-__all__ = ['load', 'clone', 'Compound']
+__all__ = ['load', 'clone', 'Compound', 'Particle']
 
 
 def load(filename, relative_to_module=None, frame=-1, compound=None,
@@ -128,7 +127,7 @@ class Compound(object):
 
         self.charge = charge
 
-        self.parts = OrderedSet()
+        self.parts = None
         self.labels = OrderedDict()
         self.referrers = set()
 
@@ -266,7 +265,6 @@ class Compound(object):
         if self.parent is not None:
             for ancestor in self.parent.ancestors():
                 yield ancestor
-
 
     def add(self, new_part, label=None, containment=True, replace=False,
             inherit_periodicity=True):
@@ -458,6 +456,10 @@ class Compound(object):
         filename : str
             Filesystem path in which to save the trajectory. The extension or
             prefix will be parsed and will control the format.
+        show_ports : bool, default=False
+            Save ports contained within the compound.
+        forcefield : str, default=None
+            Apply a forcefield to the output file using the `foyer` package.
 
         Other Parameters
         ----------------
@@ -494,15 +496,15 @@ class Compound(object):
         """ """
         write_mol2(filename, traj)
 
-    def save_hoomdxml(self, filename, traj, force_overwrite=True, **kwargs):
+    def save_hoomdxml(self, filename, traj, force_overwrite=False, **kwargs):
         """ """
         raise NotImplementedError('Interface to InterMol missing')
 
-    def save_gromacs(self, filename, traj, force_overwrite=True, **kwargs):
+    def save_gromacs(self, filename, traj, force_overwrite=False, **kwargs):
         """ """
         raise NotImplementedError('Interface to InterMol missing')
 
-    def save_lammpsdata(self, filename, traj, force_overwrite=True, **kwargs):
+    def save_lammpsdata(self, filename, traj, force_overwrite=False, **kwargs):
         """ """
         raise NotImplementedError('Interface to InterMol missing')
 
@@ -649,7 +651,7 @@ class Compound(object):
                 chain_compound = self
             for res in chain.residues:
                 for atom in res.atoms:
-                    new_atom = Atom(name=str(atom.name), pos=traj.xyz[frame, atom.index])
+                    new_atom = Particle(name=str(atom.name), pos=traj.xyz[frame, atom.index])
                     chain_compound.add(new_atom, label='{0}[$]'.format(atom.name))
                     atom_mapping[atom] = new_atom
 
@@ -874,13 +876,8 @@ class Compound(object):
                 self), attr))
 
     def __repr__(self):
-        from mbuild.proxy import Proxy
         descr = list('<')
-        descr.append(self.name)
-        if isinstance(self, Proxy):
-            descr.append('(proxy) ')
-        else:
-            descr.append(' ')
+        descr.append(self.name + ' ')
 
         if self.parts:
             descr.append('{:d} particles, '.format(self.n_particles))
@@ -925,7 +922,10 @@ class Compound(object):
         newone._pos = self._pos
         newone.charge = self.charge
 
-        newone.parts = OrderedSet()
+        if self.parts is None:
+            newone.parts = None
+        else:
+            newone.parts = OrderedSet()
         newone.labels = OrderedDict()
         newone.referrers = set()
 
@@ -975,4 +975,4 @@ class Compound(object):
                 newone.add_bond((clone_of[c1], clone_of[c2]))
 
 
-Atom = Compound
+Particle = Compound

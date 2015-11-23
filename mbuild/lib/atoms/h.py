@@ -7,7 +7,7 @@ class H(mb.Compound):
     """A hydrogen atom with two overlayed ports."""
     def __init__(self):
         super(H, self).__init__()
-        self.add(mb.Atom(name='H'), label='H')
+        self.add(mb.Particle(name='H'), label='H')
 
         self.add(mb.Port(anchor=self.H), 'up')
         mb.rotate_around_z(self.up, np.pi)

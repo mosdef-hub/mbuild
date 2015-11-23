@@ -29,7 +29,7 @@ class Polymer(Compound):
             assert_port_exists(label, proto)
 
         last_part = None
-        for _ in range(0, n):
+        for _ in range(n):
             this_part = clone(proto)
             self.add(this_part, 'monomer[$]')
             if last_part is None:

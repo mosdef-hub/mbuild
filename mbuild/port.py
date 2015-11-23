@@ -1,9 +1,6 @@
-from copy import deepcopy
-
 import numpy as np
 
-from mbuild.atom import Atom
-from mbuild.compound import Compound
+from mbuild.compound import Compound, Particle
 from mbuild.coordinate_transform import rotate_around_z
 from mbuild import clone
 
@@ -33,10 +30,10 @@ class Port(Compound):
         self.anchor = anchor
 
         up = Compound(name='subport')
-        up.add(Atom(name='G', pos=[0, 0, 0]), 'middle')
-        up.add(Atom(name='G', pos=[0, 0.02, 0]), 'top')
-        up.add(Atom(name='G', pos=[-0.02, -0.01, 0]), 'left')
-        up.add(Atom(name='G', pos=[0.0, -0.02, 0.01]), 'right')
+        up.add(Particle(name='G', pos=[0, 0, 0]), 'middle')
+        up.add(Particle(name='G', pos=[0, 0.02, 0]), 'top')
+        up.add(Particle(name='G', pos=[-0.02, -0.01, 0]), 'left')
+        up.add(Particle(name='G', pos=[0.0, -0.02, 0.01]), 'right')
 
         down = clone(up)
 
@@ -46,13 +43,8 @@ class Port(Compound):
         self.add(down, 'down')
 
     def _clone(self, clone_of=None, root_container=None):
-        # if root_container is None:
-        #     root_container = self
-        # if clone_of is None:
-        #     clone_of = dict()
         newone = super(Port, self)._clone(clone_of, root_container)
         newone.anchor = clone(self.anchor, clone_of, root_container)
-
         return newone
 
     @property
