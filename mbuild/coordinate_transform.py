@@ -261,7 +261,6 @@ def _create_equivalence_transform(equiv):
         if not isinstance(pair, tuple) or len(pair) != 2:
             raise Exception('Equivalence pair not a 2-tuple')
         if not (isinstance(pair[0], Compound) and isinstance(pair[1], Compound)):
-            # TODO: is the Atom and Atom comparison necessary?
             raise Exception('Equivalence pair type mismatch: pair[0] is a {0} '
                             'and pair[1] is a {1}'.format(type(pair[0]), type(pair[1])))
 

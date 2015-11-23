@@ -169,11 +169,11 @@ class Compound(object):
         return self._n_particles(include_ports=False)
 
     def _n_particles(self, include_ports=False):
-        """Return the number of Atoms in the Compound. """
+        """Return the number of Particles in the Compound. """
         return sum(1 for _ in self._particles(include_ports))
 
     def _particles(self, include_ports=False):
-        """Return all leaf nodes of the Compound. """
+        """Return all Particles of the Compound. """
 
         if not hasattr(self, 'parts') or not self.parts:
             yield self
@@ -277,7 +277,7 @@ class Compound(object):
 
         Parameters
         ----------
-        new_part : mb.Atom, mb.Bond or mb.Compound
+        new_part : mb.Compound
             The object to be added to this Compound.
         label : str, optional
             A descriptive string for the part.
@@ -383,7 +383,7 @@ class Compound(object):
                 self.remove_bond((c1, c2))
 
     def remove(self, objs_to_remove):
-        """Remove parts (Atom, Bond or Compound) from the Compound. """
+        """Remove parts from the Compound. """
 
         if not self.parts:
             return

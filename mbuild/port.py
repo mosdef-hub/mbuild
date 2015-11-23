@@ -6,17 +6,17 @@ from mbuild import clone
 
 
 class Port(Compound):
-    """A set of four ghost Atoms used to connect parts.
+    """A set of four ghost Particles used to connect parts.
 
     Parameters
     ----------
-    anchor : mb.Atom, optional, default=None
-        An atom associated with the port. Used to form bonds.
+    anchor : mb.Particle, optional, default=None
+        A Particle associated with the port. Used to form bonds.
 
     Attributes
     ----------
-    anchor : mb.Atom, optional, default=None
-        An atom associated with the port. Used to form bonds.
+    anchor : mb.Particle, optional, default=None
+        A Particle associated with the port. Used to form bonds.
     up : mb.Compound
         Collection of 4 ghost particles used to perform equivalence transforms.
         Faces the opposite direction as self.down.
