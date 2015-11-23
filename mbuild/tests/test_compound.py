@@ -1,10 +1,15 @@
 import json
 import os
+
 import numpy as np
 import pytest
+
 import mbuild as mb
 from mbuild.utils.io import get_fn
 from mbuild.tests.base_test import BaseTest
+from mbuild.lib.moieties import CH3
+from mbuild.examples import Ethane
+
 
 class TestCompound(BaseTest):
 
@@ -128,13 +133,13 @@ class TestCompound(BaseTest):
         ethane.visualize(show_ports=True)
 
     def test_to_trajectory(self, ethane, ch3):
-        traj = ethane.to_trajectory()
+        traj = ethane._to_trajectory()
         assert traj.n_atoms == 8
         assert traj.top.n_bonds == 7
         assert traj.n_chains == 1
         assert traj.n_residues == 1
 
-        traj = ethane.to_trajectory(residue_types=ch3)
+        traj = ethane._to_trajectory(residue_types=ch3)
         assert traj.n_atoms == 8
         assert traj.top.n_bonds == 7
         assert traj.n_chains == 1
@@ -142,7 +147,7 @@ class TestCompound(BaseTest):
         assert 'CH3' in [res.name for res in traj.top.residues]
         assert all(res.n_atoms == 4 for res in traj.top.residues)
 
-        traj = ethane.to_trajectory(chain_types=ch3)
+        traj = ethane._to_trajectory(chain_types=ch3)
         assert traj.n_atoms == 8
         assert traj.top.n_bonds == 7
         assert traj.n_chains == 2
@@ -151,7 +156,7 @@ class TestCompound(BaseTest):
         assert all(chain.n_residues == 1 for chain in traj.top.chains)
 
         methyl = next(iter(ethane.parts))
-        traj = methyl.to_trajectory()
+        traj = methyl._to_trajectory()
         assert traj.n_atoms == 4
         assert traj.top.n_bonds == 3
         assert traj.n_chains == 1
@@ -165,3 +170,16 @@ class TestCompound(BaseTest):
         output = json.loads(ethane._to_json(show_ports=True))
         assert len(output['atoms']) == 8+16
         assert len(output['bonds']) == 7
+
+    def test_tag_tiers(self, ethane):
+        ethane.tag_tier('3-to-1', [Ethane])
+        assert len(ethane.tiers['3-to-1']) == 1
+        assert ethane == ethane.tiers['3-to-1'][0]
+
+        ethane.tag_tier('ua', [CH3])
+        assert len(ethane.tiers['ua']) == 2
+        assert all(isinstance(part, CH3) for part in ethane.tiers['ua'])
+
+        ethane.tag_tier('aa')
+        assert len(ethane.tiers['aa']) == 8
+        assert all(isinstance(part, mb.Atom) for part in ethane.tiers['aa'])
