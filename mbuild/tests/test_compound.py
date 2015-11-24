@@ -89,7 +89,7 @@ class TestCompound(BaseTest):
         assert sum([1 for x in group if x.name == 'C']) == 1
 
     def test_add_bonds(self, ch3):
-        ch3.add_bonds('H', 'H', dmin=0.01, dmax=2.0)
+        ch3.generate_bonds('H', 'H', dmin=0.01, dmax=2.0)
         assert ch3.n_bonds == 3 + 3
 
     def test_remove(self, ethane):
@@ -99,7 +99,7 @@ class TestCompound(BaseTest):
         assert ethane.n_particles == 2
         assert ethane.n_bonds == 1
         for part in ethane.parts:
-            assert part.n_bonds == 1
+            assert part.n_bonds == 0
 
     def test_center(self, methane):
         assert np.array_equal(methane.center, np.array([0, 0, 0]))

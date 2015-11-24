@@ -11,7 +11,8 @@ from mbuild.coordinate_transform import (Translation, CoordinateTransform,
                                          translate_to, x_axis_transform,
                                          y_axis_transform, z_axis_transform)
 from mbuild.tests.base_test import BaseTest
-
+import mbuild as mb
+import networkx as nx
 
 class TestCoordinateTransform(BaseTest):
 
@@ -90,7 +91,13 @@ class TestCoordinateTransform(BaseTest):
         equivalence_transform(ch2, ch2_atoms[0], methane_atoms[0], add_bond=False)
         assert (ch2_atoms[0].pos == methane_atoms[0].pos).all()
         equivalence_transform(ch2, ch2.up, ch3.up)
-        assert ch2.n_bonds == 3
+        assert ch2.n_bonds == 2
+
+        assert nx.number_of_edges(ch2.root.graph) == 3
+        assert nx.number_of_edges(ch3.root.graph) == 4
+
+        ethyl = mb.Compound([ch2, ch3])
+        assert ethyl.n_bonds == 6
 
     def test_translate(self, methane):
         methane_atoms = list(methane.particles)

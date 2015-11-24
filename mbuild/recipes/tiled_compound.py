@@ -97,8 +97,11 @@ class TiledCompound(Compound):
                     atom2_image = self._find_atom_image(atom1, atom2, all_atoms)
                     bonds_to_add.add((atom1, atom2_image))
 
-        self.remove_bond(bonds_to_remove)
-        self.add_bond(bonds_to_add)
+        for bond in bonds_to_remove:
+            self.remove_bond(bond)
+
+        for bond in bonds_to_add:
+            self.add_bond(bond)
 
         # Clean up temporary data.
         for atom in self._particles(include_ports=True):
