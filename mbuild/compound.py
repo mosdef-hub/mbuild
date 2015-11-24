@@ -128,6 +128,7 @@ class Compound(object):
         self.charge = charge
 
         self.parts = None
+        # TODO: set labels to None initially, and then create the OrderedDict when add is called for the first time
         self.labels = OrderedDict()
         self.referrers = set()
 
@@ -184,9 +185,10 @@ class Compound(object):
     @property
     def bonds(self):
         """A list of all Bonds in the Compound and sub-Compounds. """
-        if self.graph is None:
+        if self.root.graph:
+            return self.root.graph.subgraph(self.particles).edges_iter()
+        else:
             return iter(())
-        return self.graph.edges_iter()
 
     @property
     def n_bonds(self):
@@ -259,10 +261,19 @@ class Compound(object):
 
     def ancestors(self):
         """Generate all ancestors of the Compound recursively. """
-        yield self.parent
         if self.parent is not None:
+            yield self.parent
             for ancestor in self.parent.ancestors():
                 yield ancestor
+
+    @property
+    def root(self):
+        parent = None
+        for parent in self.ancestors():
+            pass
+        if parent is None:
+            return self
+        return parent
 
     def add(self, new_part, label=None, containment=True, replace=False,
             inherit_periodicity=True):
@@ -291,13 +302,11 @@ class Compound(object):
                 self.add(part)
             return
 
-        # Create parts and labels and graph on the first add operation
+        # Create parts and labels on the first add operation
         if self.parts is None:
             self.parts = OrderedSet()
         if self.labels is None:
             self.labels = OrderedDict()
-        if self.graph is None:
-            self.graph = nx.Graph()
 
         if not isinstance(new_part, Compound):
             raise ValueError('Only objects that inherit from mbuild.Compound '
@@ -311,9 +320,13 @@ class Compound(object):
             self.parts.add(new_part)
             new_part.parent = self
 
-            if new_part.graph:
-                self.graph = nx.compose(self.graph, new_part.graph)
+            if new_part.graph is not None:
+                if self.root.graph is None:
+                    self.root.graph = new_part.graph
+                else:
+                    self.root.graph = nx.compose(self.root.graph, new_part.graph)
 
+                new_part.graph = None
 
         # Add new_part to labels. Does not currently support batch add.
         if label is None:
@@ -342,18 +355,12 @@ class Compound(object):
 
     def add_bond(self, atom_pair):
         """"""
-        if self.graph is None:
-            self.graph = nx.Graph()
+        if self.root.graph is None:
+            self.root.graph = nx.Graph()
 
-        try:
-            self.graph.add_edge(atom_pair[0], atom_pair[1])
-            if self.parent:
-                self.parent.add_bond(atom_pair)
-        except TypeError:
-            for c1, c2 in atom_pair:
-                self.add_bond((c1, c2))
+        self.root.graph.add_edge(atom_pair[0], atom_pair[1])
 
-    def add_bonds(self, name_a, name_b, dmin, dmax):
+    def generate_bonds(self, name_a, name_b, dmin, dmax):
         """Add Bonds between all pairs of types a/b within [dmin, dmax]. """
         particle_kdtree = PeriodicCKDTree(data=self.xyz, bounds=self.periodicity)
         particle_array = np.array(list(self.particles))
@@ -371,14 +378,10 @@ class Compound(object):
                     added_bonds.append(bond_tuple)
 
     def remove_bond(self, atom_pair):
-        if self.graph is None:
+        if self.root.graph is None:
             return
 
-        try:
-            self.graph.remove_edge(atom_pair[0], atom_pair[1])
-        except (TypeError, NetworkXError):
-            for c1, c2 in atom_pair:
-                self.remove_bond((c1, c2))
+        self.root.graph.remove_edge(atom_pair[0], atom_pair[1])
 
     def remove(self, objs_to_remove):
         """Remove parts from the Compound. """
@@ -398,19 +401,13 @@ class Compound(object):
         objs_to_remove -= intersection
 
         for removed_part in intersection:
-            self._remove_bonds(removed_part)
+            self.root.graph.remove_node(removed_part)
             self._remove_references(removed_part)
 
         # Remove the part recursively from sub-compounds.
         if self.parts:
             for part in self.parts:
                 part.remove(objs_to_remove)
-
-    def _remove_bonds(self, removed_part):
-        """If removing an atom, make sure to remove the bonds it's part of. """
-        self.graph.remove_node(removed_part)
-        if self.parent:
-            self.parent._remove_bonds(removed_part)
 
     @staticmethod
     def _remove_references(removed_part):
@@ -787,7 +784,7 @@ class Compound(object):
                 except ValueError:  # Already gone.
                     pass
 
-        for atom1, atom2 in self.graph.edges_iter():
+        for atom1, atom2 in self.bonds:
             # Ensure that both atoms are part of the compound. This becomes an
             # issue if you try to convert a sub-compound to a topology which is
             # bonded to a different subcompound.
@@ -886,8 +883,7 @@ class Compound(object):
         else:
             descr.append('pos=({: .4f},{: .4f},{: .4f}), '.format(self.pos[0], self.pos[1], self.pos[2]))
 
-        if self.graph:
-            descr.append('{:d} contained bonds, '.format(self.n_bonds))
+        descr.append('{:d} bonds, '.format(self.n_bonds))
 
         descr.append('id: {}>'.format(id(self)))
         return ''.join(descr)
@@ -961,15 +957,9 @@ class Compound(object):
     def _clone_bonds(self, clone_of=None, root_container=None):
         newone = clone_of[self]
 
-        # clone graphs of parts recursively
-        if self.parts:
-            for part in self.parts:
-                part._clone_bonds(clone_of, root_container)
-
         # clone graph
-        if self.graph:
-            for c1, c2 in self.graph.edges_iter():
-                newone.add_bond((clone_of[c1], clone_of[c2]))
+        for c1, c2 in self.bonds:
+            newone.add_bond((clone_of[c1], clone_of[c2]))
 
 
 Particle = Compound

@@ -37,6 +37,8 @@ class Polymer(Compound):
             else:
                 # Transform this part, such that it's bottom port is rotated
                 # and translated to the last part's top port.
+
+
                 equivalence_transform(this_part, this_part.labels[port_labels[1]],
                                       last_part.labels[port_labels[0]])
             last_part = this_part
