@@ -9,7 +9,7 @@ class Ester(mb.Compound):
         super(Ester, self).__init__()
 
         mb.load('ester.pdb', compound=self, relative_to_module=self.__module__)
-        mb.translate(self, -self.C[0])
+        mb.translate(self, -self.C[0].pos)
 
         self.add(mb.Port(anchor=self.O[1]), 'up')
         mb.rotate_around_z(self.up, np.pi / 2)

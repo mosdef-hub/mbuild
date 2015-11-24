@@ -1,3 +1,4 @@
 mdtraj
 imolecule
 oset
+networkx

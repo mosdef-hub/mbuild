@@ -37,15 +37,15 @@ class Betacristobalite(mb.Compound):
             self.periodicity = np.array([5.3888, 4.6669, 0.0])
 
         count = 0
-        for atom in self.atoms:
+        for atom in self.particles:
             if atom.name == 'O' and atom.pos[2] > 1.0:
                 count += 1
                 port = mb.Port(anchor=atom)
                 mb.rotate_around_x(port, np.pi/2)
-                mb.translate(port, atom + np.array([0, 0, .1]))
+                mb.translate(port, atom.pos + np.array([0, 0, .1]))
                 self.add(port, 'port_{}'.format(count))
 
 if __name__ == "__main__":
     single = Betacristobalite()
-    multiple = mb.TiledCompound(single, n_tiles=(2, 1, 1), kind="tiled")
+    multiple = mb.TiledCompound(single, n_tiles=(2, 1, 1), name="tiled")
     multiple.visualize(show_ports=True)

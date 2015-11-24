@@ -69,7 +69,6 @@ class TestCoordinateTransform(BaseTest):
     @pytest.mark.skipif(True, reason="needs to be implemented")
     def test_rotate_around_x(self, methane):
         before = methane.xyz_with_ports
-        methane.atoms[0]
         rotate_around_x(methane, np.pi)
         after = methane.xyz_with_ports
 
@@ -86,14 +85,17 @@ class TestCoordinateTransform(BaseTest):
         after = ch2.xyz_with_ports
 
     def test_equivalence_transform(self, ch2, ch3, methane):
-        equivalence_transform(ch2, ch2.atoms[0], methane.atoms[0], add_bond=False)
-        assert (ch2.atoms[0].pos == methane.atoms[0].pos).all()
+        ch2_atoms = list(ch2.particles)
+        methane_atoms = list(methane.particles)
+        equivalence_transform(ch2, ch2_atoms[0], methane_atoms[0], add_bond=False)
+        assert (ch2_atoms[0].pos == methane_atoms[0].pos).all()
         equivalence_transform(ch2, ch2.up, ch3.up)
-        assert ch2.n_bonds == 3
+        assert ch2.n_contained_bonds == 3
 
     def test_translate(self, methane):
-        translate(methane, -methane.atoms[0].pos)
-        assert (methane.atoms[0].pos == np.array([0, 0, 0])).all()
+        methane_atoms = list(methane.particles)
+        translate(methane, -methane_atoms[0].pos)
+        assert (methane_atoms[0].pos == np.array([0, 0, 0])).all()
 
     def test_translate_to(self, methane):
         before = methane.xyz_with_ports

@@ -1,25 +1,22 @@
-from copy import deepcopy
-
 import numpy as np
 
-from mbuild.atom import Atom
-from mbuild.compound import Compound
+from mbuild.compound import Compound, Particle
 from mbuild.coordinate_transform import rotate_around_z
 from mbuild import clone
 
 
 class Port(Compound):
-    """A set of four ghost Atoms used to connect parts.
+    """A set of four ghost Particles used to connect parts.
 
     Parameters
     ----------
-    anchor : mb.Atom, optional, default=None
-        An atom associated with the port. Used to form bonds.
+    anchor : mb.Particle, optional, default=None
+        A Particle associated with the port. Used to form bonds.
 
     Attributes
     ----------
-    anchor : mb.Atom, optional, default=None
-        An atom associated with the port. Used to form bonds.
+    anchor : mb.Particle, optional, default=None
+        A Particle associated with the port. Used to form bonds.
     up : mb.Compound
         Collection of 4 ghost particles used to perform equivalence transforms.
         Faces the opposite direction as self.down.
@@ -29,14 +26,14 @@ class Port(Compound):
 
     """
     def __init__(self, anchor=None):
-        super(Port, self).__init__(kind='Port')
+        super(Port, self).__init__(name='Port')
         self.anchor = anchor
 
-        up = Compound(kind='subport')
-        up.add(Atom(name='G', pos=[0, 0, 0]), 'middle')
-        up.add(Atom(name='G', pos=[0, 0.02, 0]), 'top')
-        up.add(Atom(name='G', pos=[-0.02, -0.01, 0]), 'left')
-        up.add(Atom(name='G', pos=[0.0, -0.02, 0.01]), 'right')
+        up = Compound(name='subport')
+        up.add(Particle(name='G', pos=[0, 0, 0]), 'middle')
+        up.add(Particle(name='G', pos=[0, 0.02, 0]), 'top')
+        up.add(Particle(name='G', pos=[-0.02, -0.01, 0]), 'left')
+        up.add(Particle(name='G', pos=[0.0, -0.02, 0.01]), 'right')
 
         down = clone(up)
 
@@ -46,16 +43,11 @@ class Port(Compound):
         self.add(down, 'down')
 
     def _clone(self, clone_of=None, root_container=None):
-        if not clone_of:
-            clone_of = dict()
-        if not root_container:
-            root_container = self
         newone = super(Port, self)._clone(clone_of, root_container)
         newone.anchor = clone(self.anchor, clone_of, root_container)
-
         return newone
 
-    def __deepcopy__(self, memo):
-        newone = super(Port, self).__deepcopy__(memo)
-        newone.anchor = deepcopy(self.anchor, memo)
-        return newone
+    @property
+    def center(self):
+        """The cartesian center of the Port"""
+        return np.mean(self.xyz_with_ports, axis=0)

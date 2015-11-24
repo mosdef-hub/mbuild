@@ -2,7 +2,6 @@ import itertools as it
 
 import numpy as np
 
-from mbuild.bond import Bond
 from mbuild.compound import Compound
 from mbuild.port import Port
 from mbuild.coordinate_transform import translate
@@ -25,11 +24,11 @@ class TiledCompound(Compound):
         The Compound to be replicated.
     n_tiles : array-like, shape=(3,), dtype=int, optional, default=(1, 1, 1)
         Number of times to replicate tile in the x, y and z-directions.
-    kind : str, optional, default=tile.kind
+    name : str, optional, default=tile.name
         Descriptive string for the compound.
 
     """
-    def __init__(self, tile, n_tiles, kind=None):
+    def __init__(self, tile, n_tiles, name=None):
         super(TiledCompound, self).__init__()
 
         n_tiles = np.asarray(n_tiles)
@@ -41,9 +40,9 @@ class TiledCompound(Compound):
             raise ValueError('Tile not periodic in at least one of the '
                              'specified dimensions.')
 
-        if kind is None:
-            kind = tile.kind + '-'.join(str(d) for d in n_tiles)
-        self.kind = kind
+        if name is None:
+            name = tile.name + '-'.join(str(d) for d in n_tiles)
+        self.name = name
         self.periodicity = np.array(tile.periodicity * n_tiles)
 
         if all(n_tiles == 1):
@@ -56,7 +55,7 @@ class TiledCompound(Compound):
         # will contain atoms with ID's from 0-1799. These ID's are used below
         # to fix bonds crossing periodic boundary conditions where a new tile
         # has been placed.
-        for idx, atom in enumerate(tile.yield_atoms()):
+        for idx, atom in enumerate(tile._particles(include_ports=True)):
             atom.index = idx
 
         # Replicate and place periodic tiles.
@@ -76,39 +75,39 @@ class TiledCompound(Compound):
 
         # Bonds that were periodic in the original tile.
         atom_indices_of_periodic_bonds = set()
-        for bond in tile.yield_bonds():
-            if bond.length() > bond_dist_thres:
-                atom_indices_of_periodic_bonds.add((bond.atom1.index,
-                                                    bond.atom2.index))
+        for atom1, atom2 in tile.contained_bonds:
+            if np.linalg.norm(atom1.pos-atom2.pos) > bond_dist_thres:
+                atom_indices_of_periodic_bonds.add((atom1.index,
+                                                    atom2.index))
 
         # Build a periodic kdtree of all atom positions.
         self.atom_kdtree = PeriodicCKDTree(data=self.xyz, bounds=self.periodicity)
-        all_atoms = np.asarray(self.atoms)
+        all_atoms = np.asarray(list(self._particles(include_ports=False)))
 
         # Store bonds to remove/add since we'll be iterating over all bonds.
         bonds_to_remove = set()
         bonds_to_add = set()
-        for bond in self.yield_bonds():
-            atom_indices = (bond.atom1.index, bond.atom2.index)
+        for atom1, atom2 in self.contained_bonds:
+            atom_indices = (atom1.index, atom2.index)
             if atom_indices in atom_indices_of_periodic_bonds:
-                if bond.length(self.periodicity) > bond_dist_thres:
-                    bonds_to_remove.add(bond)
+                if self.min_periodic_distance(atom1.pos, atom2.pos) > bond_dist_thres:
 
-                    atom2_image = self._find_atom_image(bond.atom1, bond.atom2, all_atoms)
-                    new_bond = Bond(bond.atom1, atom2_image)
-                    bonds_to_add.add(new_bond)
+                    bonds_to_remove.add((atom1, atom2))
 
-        self.remove(bonds_to_remove)
-        self.add(bonds_to_add)
+                    atom2_image = self._find_atom_image(atom1, atom2, all_atoms)
+                    bonds_to_add.add((atom1, atom2_image))
+
+        self.remove_bond(bonds_to_remove)
+        self.add_bond(bonds_to_add)
 
         # Clean up temporary data.
-        for atom in self.yield_atoms():
+        for atom in self._particles(include_ports=True):
             atom.index = None
         del self.atom_kdtree
 
     def _add_tile(self, new_tile, ijk):
         """Add a tile with a label indicating its tiling position. """
-        tile_label = "{0}_{1}".format(self.kind, '-'.join(str(d) for d in ijk))
+        tile_label = "{0}_{1}".format(self.name, '-'.join(str(d) for d in ijk))
         self.add(new_tile, label=tile_label, inherit_periodicity=False)
 
     def _hoist_ports(self, new_tile):
@@ -120,6 +119,7 @@ class TiledCompound(Compound):
     def _find_atom_image(self, query, match, all_atoms):
         """Find atom with the same index as match in a neighboring tile. """
         _, idxs = self.atom_kdtree.query(query.pos, k=10)
+
         neighbors = all_atoms[idxs]
 
         for atom in neighbors:

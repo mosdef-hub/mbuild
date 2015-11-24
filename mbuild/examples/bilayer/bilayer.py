@@ -87,12 +87,9 @@ class Bilayer(mb.Compound):
         top_layer, top_lipid_labels = self.create_layer()
         self.lipid_components.add(top_layer)
         if self.mirror == True:
-            bottom_layer, bottom_lipid_labels = self.create_layer(
-                    lipid_indices=top_lipid_labels,
-                    flip_orientation=True)
+            bottom_layer, bottom_lipid_labels = self.create_layer(lipid_indices=top_lipid_labels, flip_orientation=True)
         else:
-            bottom_layer, bottom_lipid_labels = self.create_layer(
-                    flip_orientation=True)
+            bottom_layer, bottom_lipid_labels = self.create_layer(flip_orientation=True)
         self.lipid_components.add(bottom_layer)
 
         # solvate the lipids
@@ -129,7 +126,9 @@ class Bilayer(mb.Compound):
                 position = self.mask[random_index]
 
                 # Zero and space in z-direction
-                mb.translate(new_lipid, -new_lipid.atoms[self.ref_atoms[n_type]] + self.spacing)
+                particles = list(new_lipid.particles)
+                ref_atom = self.ref_atoms[n_type]
+                mb.translate(new_lipid, -particles[ref_atom].pos + self.spacing)
 
                 # Move to point on mask
                 if flip_orientation == True:
@@ -146,7 +145,7 @@ class Bilayer(mb.Compound):
 
     def solvate_bilayer(self):
         """Solvate the constructed bilayer. """
-        solvent_number_density = self.solvent.n_atoms / np.prod(self.solvent.periodicity)
+        solvent_number_density = self.solvent.n_particles / np.prod(self.solvent.periodicity)
 
         lengths = self.lipid_box.lengths
         water_box_z = self.solvent_per_layer / (lengths[0] * lengths[1] * solvent_number_density)

@@ -14,6 +14,7 @@ requirements:
     - packmol
     - imolecule
     - oset
+    - networkx
 
 test:
   requires:

@@ -18,17 +18,17 @@ class TestExamples(BaseTest):
     def test_ethane(self):
         import mbuild.examples.ethane.ethane as example
         ethane = example.main()
-        assert ethane.n_atoms == 8
-        assert ethane.n_bonds == 7
+        assert ethane.n_particles == 8
+        assert ethane.n_contained_bonds == 7
 
     def test_methane(self):
         import mbuild.examples.methane.methane as example
         methane = example.main()
 
-        assert methane.n_atoms == 5
-        assert methane.n_bonds == 4
+        assert methane.n_particles == 5
+        assert methane.n_contained_bonds == 4
 
-        assert methane.atoms[0].name == "C"
+        assert next(methane.particles).name == "C"
         assert methane.HC[0].name == "H"
         assert methane.HC[1].name == "H"
         assert methane.HC[2].name == "H"

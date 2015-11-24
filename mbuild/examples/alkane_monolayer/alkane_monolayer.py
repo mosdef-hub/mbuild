@@ -34,6 +34,7 @@ def main():
     mask = mb.grid_mask_2d(8, 8)  # Evenly spaced, 2D grid of points.
     monolayer = AlkaneMonolayer(chain_length=10, mask=mask)
     monolayer.save(filename='c10-n64.pdb', show_ports=True)
+    monolayer.visualize()
 
 if __name__ == "__main__":
     main()
