@@ -39,6 +39,7 @@ class TestCompound(BaseTest):
         assert compound.n_particles == 8 + 2*3
         assert compound.n_bonds == 7 + 2 * 2
 
+    @pytest.mark.skipif(True, reason='Waiting for InterMol to stabilize')
     def test_intermol_conversion1(self, ethane, h2o):
         compound = mb.Compound([ethane, h2o])
 
@@ -51,6 +52,7 @@ class TestCompound(BaseTest):
         molecules = list(intermol_system.molecule_types['Compound'].molecules)
         assert len(molecules[0].atoms) == 11
 
+    @pytest.mark.skipif(True, reason='Waiting for InterMol to stabilize')
     def test_intermol_conversion2(self, ethane, h2o):
         compound = mb.Compound([ethane, mb.clone(ethane), h2o]) # 2 distinct Ethane objects
 
