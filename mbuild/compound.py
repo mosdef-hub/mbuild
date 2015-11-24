@@ -132,7 +132,6 @@ class Compound(object):
         self.referrers = set()
 
         self.graph = None
-        self.attached_bonds = set()
 
         self.parent = None
 
@@ -174,7 +173,6 @@ class Compound(object):
 
     def _particles(self, include_ports=False):
         """Return all Particles of the Compound. """
-
         if not hasattr(self, 'parts') or not self.parts:
             yield self
         else:
@@ -184,16 +182,16 @@ class Compound(object):
                         yield part
 
     @property
-    def contained_bonds(self):
+    def bonds(self):
         """A list of all Bonds in the Compound and sub-Compounds. """
         if self.graph is None:
             return iter(())
         return self.graph.edges_iter()
 
     @property
-    def n_contained_bonds(self):
+    def n_bonds(self):
         """Return the number of Bonds in the Compound. """
-        return sum(1 for _ in self.contained_bonds)
+        return sum(1 for _ in self.bonds)
 
     def _yield_parts(self, part_type):
         """Yield parts of a specified type in the Compound recursively. """
@@ -609,7 +607,7 @@ class Compound(object):
 
         bonds = [{'atoms': [atom1.index, atom2.index],
                   'order': 1}
-                 for atom1, atom2 in self.contained_bonds]
+                 for atom1, atom2 in self.bonds]
         output = {'name': self.name, 'atoms': atoms, 'bonds': bonds}
 
         # remove the index member variable
@@ -828,11 +826,11 @@ class Compound(object):
                 # Don't want inheritance via isinstance().
                 if type(parent) in molecule_types:
                     # Check if we have encountered this molecule type before.
-                    if parent.kind not in intermol_system.molecule_types:
+                    if parent.name not in intermol_system.molecule_types:
                         self._add_intermol_molecule_type(intermol_system, parent)
                     if parent != last_molecule_compound:
                         last_molecule_compound = parent
-                        last_molecule = Molecule(name=parent.kind)
+                        last_molecule = Molecule(name=parent.name)
                         intermol_system.add_molecule(last_molecule)
                     break
             else:
@@ -853,14 +851,14 @@ class Compound(object):
         from intermol.moleculetype import MoleculeType
         from intermol.forces.bond import Bond as InterMolBond
 
-        molecule_type = MoleculeType(name=parent.kind)
+        molecule_type = MoleculeType(name=parent.name)
         intermol_system.add_molecule_type(molecule_type)
 
-        for index, parent_atom in enumerate(parent.atoms):
+        for index, parent_atom in enumerate(parent.particles):
             parent_atom.index = index + 1
 
-        for bond in parent.contained_bonds:
-            intermol_bond = InterMolBond(bond.atom1.index, bond.atom2.index)
+        for atom1, atom2 in parent.bonds:
+            intermol_bond = InterMolBond(atom1.index, atom2.index)
             molecule_type.bonds.add(intermol_bond)
 
     # Magic
@@ -889,7 +887,7 @@ class Compound(object):
             descr.append('pos=({: .4f},{: .4f},{: .4f}), '.format(self.pos[0], self.pos[1], self.pos[2]))
 
         if self.graph:
-            descr.append('{:d} contained bonds, '.format(self.n_contained_bonds))
+            descr.append('{:d} contained bonds, '.format(self.n_bonds))
 
         descr.append('id: {}>'.format(id(self)))
         return ''.join(descr)
@@ -930,7 +928,6 @@ class Compound(object):
         newone.referrers = set()
 
         newone.graph = None
-        newone.attached_bonds = set()
 
         if hasattr(self, 'index'):
             newone.index = self.index

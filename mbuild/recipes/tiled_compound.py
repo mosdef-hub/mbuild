@@ -75,7 +75,7 @@ class TiledCompound(Compound):
 
         # Bonds that were periodic in the original tile.
         atom_indices_of_periodic_bonds = set()
-        for atom1, atom2 in tile.contained_bonds:
+        for atom1, atom2 in tile.bonds:
             if np.linalg.norm(atom1.pos-atom2.pos) > bond_dist_thres:
                 atom_indices_of_periodic_bonds.add((atom1.index,
                                                     atom2.index))
@@ -87,7 +87,7 @@ class TiledCompound(Compound):
         # Store bonds to remove/add since we'll be iterating over all bonds.
         bonds_to_remove = set()
         bonds_to_add = set()
-        for atom1, atom2 in self.contained_bonds:
+        for atom1, atom2 in self.bonds:
             atom_indices = (atom1.index, atom2.index)
             if atom_indices in atom_indices_of_periodic_bonds:
                 if self.min_periodic_distance(atom1.pos, atom2.pos) > bond_dist_thres:

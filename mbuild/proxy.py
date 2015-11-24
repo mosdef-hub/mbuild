@@ -18,7 +18,6 @@ class Proxy(Compound):
         self.parent = None
         self.referrers = set()
         self.index = None
-        self.attached_bonds = set()
         self.graph = None
 
     def proxy_for(self):
@@ -91,7 +90,7 @@ def _create_proxy_bonds(real_thing, memo, leaf_classes):
 
     # check if there's a contained bond that needs to be added to the proxy
     if hasattr(real_thing, 'contained_bonds'):
-        for a1, a2 in real_thing.contained_bonds:
+        for a1, a2 in real_thing.bonds:
             pa1 = _proxy_of(a1, memo)
             pa2 = _proxy_of(a2, memo)
             if pa1 != pa2:  # do not add internal bonds

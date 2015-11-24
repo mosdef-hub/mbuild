@@ -22,22 +22,22 @@ class TestCompound(BaseTest):
         compound = mb.Compound()
         compound.add([ethane, h2o])
         assert compound.n_particles == 8 + 3
-        assert compound.n_contained_bonds == 7 + 2
+        assert compound.n_bonds == 7 + 2
 
     def test_init_with_subcompounds1(self, ethane):
         compound = mb.Compound(ethane)
         assert compound.n_particles == 8
-        assert compound.n_contained_bonds == 7
+        assert compound.n_bonds == 7
 
     def test_init_with_subcompounds2(self, ethane, h2o):
         compound = mb.Compound([ethane, h2o])
         assert compound.n_particles == 8 + 3
-        assert compound.n_contained_bonds == 7 + 2
+        assert compound.n_bonds == 7 + 2
 
     def test_init_with_subcompounds3(self, ethane, h2o):
         compound = mb.Compound([ethane, [h2o, mb.clone(h2o)]])
         assert compound.n_particles == 8 + 2*3
-        assert compound.n_contained_bonds == 7 + 2*2
+        assert compound.n_bonds == 7 + 2 * 2
 
     @pytest.mark.skipif(True, reason='Waiting for InterMol to stabilize')
     def test_intermol_conversion1(self, ethane, h2o):
@@ -46,7 +46,7 @@ class TestCompound(BaseTest):
         intermol_system = compound._to_intermol()
         assert len(intermol_system.molecule_types) == 1
         assert 'Compound' in intermol_system.molecule_types
-        assert len(intermol_system.molecule_types['Compound'].contained_bonds) == 9
+        assert len(intermol_system.molecule_types['Compound'].bonds) == 9
 
         assert len(intermol_system.molecule_types['Compound'].molecules) == 1
         molecules = list(intermol_system.molecule_types['Compound'].molecules)
@@ -61,8 +61,8 @@ class TestCompound(BaseTest):
         assert len(intermol_system.molecule_types) == 2
         assert 'Ethane' in intermol_system.molecule_types
         assert 'H2O' in intermol_system.molecule_types
-        assert len(intermol_system.molecule_types['Ethane'].contained_bonds) == 7
-        assert len(intermol_system.molecule_types['H2O'].contained_bonds) == 2
+        assert len(intermol_system.molecule_types['Ethane'].bonds) == 7
+        assert len(intermol_system.molecule_types['H2O'].bonds) == 2
 
         assert len(intermol_system.molecule_types['Ethane'].molecules) == 2
         ethanes = list(intermol_system.molecule_types['Ethane'].molecules)
@@ -90,16 +90,16 @@ class TestCompound(BaseTest):
 
     def test_add_bonds(self, ch3):
         ch3.add_bonds('H', 'H', dmin=0.01, dmax=2.0)
-        assert ch3.n_contained_bonds == 3 + 3
+        assert ch3.n_bonds == 3 + 3
 
     def test_remove(self, ethane):
         hydrogens = ethane.particles_by_name('H')
         ethane.remove(hydrogens)
 
         assert ethane.n_particles == 2
-        assert ethane.n_contained_bonds == 1
+        assert ethane.n_bonds == 1
         for part in ethane.parts:
-            assert part.n_contained_bonds == 1
+            assert part.n_bonds == 1
 
     def test_center(self, methane):
         assert np.array_equal(methane.center, np.array([0, 0, 0]))

@@ -12,7 +12,7 @@ class TestTiledCompound(BaseTest):
         nz = 1
         tiled = mb.TiledCompound(betacristobalite, [nx, ny, nz])
         assert tiled.n_particles == 1800 * nx * ny
-        assert tiled.n_contained_bonds == 2300 * nx * ny
+        assert tiled.n_bonds == 2300 * nx * ny
 
     def test_no_replication(self, betacristobalite):
         nx = 1
@@ -20,7 +20,7 @@ class TestTiledCompound(BaseTest):
         nz = 1
         tiled = mb.TiledCompound(betacristobalite, [nx, ny, nz])
         assert tiled.n_particles == 1800 * nx * ny
-        assert tiled.n_contained_bonds == 2300 * nx * ny
+        assert tiled.n_bonds == 2300 * nx * ny
 
     def test_incorrect_periodicity(self, betacristobalite):
         nx = 2

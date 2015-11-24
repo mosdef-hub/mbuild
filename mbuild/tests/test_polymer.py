@@ -8,4 +8,4 @@ class TestPolymer(BaseTest):
         n = 6
         c6 = mb.Polymer(ch2, n=n)
         assert c6.n_particles == n * 3
-        assert c6.n_contained_bonds == n * 2 + (n - 1)
+        assert c6.n_bonds == n * 2 + (n - 1)
