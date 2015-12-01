@@ -107,7 +107,8 @@ class Compound(object):
         Other compounds that reference this part with labels.
 
     """
-    def __init__(self, subcompounds=None, name=None, pos=None, charge=0.0, periodicity=None):
+    def __init__(self, subcompounds=None, name=None, pos=None, charge=0.0,
+                 periodicity=None, port_particle=False):
         super(Compound, self).__init__()
 
         if name:
@@ -136,20 +137,22 @@ class Compound(object):
 
         self.parent = None
 
+        self.port_particle = port_particle
+
         # self.add() must be called after labels and parts are initialized.
         if subcompounds:
             self.add(subcompounds)
 
     @property
     def pos(self):
-        if self.parts is None or not self.parts:
+        if not self.parts or self._contains_only_ports():
             return self._pos
         else:
             return self.center
 
     @pos.setter
     def pos(self, value):
-        if self.parts is None or not self.parts:
+        if not self.parts:
             self._pos = value
         else:
             raise Exception("Cannot set position on a Compound that has parts")
@@ -174,13 +177,30 @@ class Compound(object):
 
     def _particles(self, include_ports=False):
         """Return all Particles of the Compound. """
-        if not hasattr(self, 'parts') or not self.parts:
+        if not self.parts or self._contains_only_ports():
             yield self
         else:
-            for part in self._yield_parts(Compound):
+            for part in self._yield_parts():
                 if not part.parts:
-                    if include_ports or part.name != 'G':
+                    if include_ports or not part.port_particle:
                         yield part
+
+    def _yield_parts(self):
+        """Yield parts of a specified type in the Compound recursively. """
+        if not self.parts:
+            return
+        for part in self.parts:
+            # Parts local to the current Compound.
+            yield part
+            # Parts further down the hierarchy.
+            for subpart in part._yield_parts():
+                yield subpart
+
+    def _contains_only_ports(self):
+        for part in self.parts:
+            if not part.port_particle:
+                return False
+        return True
 
     @property
     def bonds(self):
@@ -194,19 +214,6 @@ class Compound(object):
     def n_bonds(self):
         """Return the number of Bonds in the Compound. """
         return sum(1 for _ in self.bonds)
-
-    def _yield_parts(self, part_type):
-        """Yield parts of a specified type in the Compound recursively. """
-        if not self.parts:
-            return
-        for part in self.parts:
-            # Parts local to the current Compound.
-            if isinstance(part, part_type):
-                yield part
-            # Parts further down the hierarchy.
-            if isinstance(part, Compound):
-                for subpart in part._yield_parts(part_type):
-                    yield subpart
 
     @property
     def periodicity(self):
@@ -297,8 +304,8 @@ class Compound(object):
 
         """
         # Support batch add via lists, tuples and sets.
-        if hasattr(new_part, '__iter__'):
-            for part in new_part:
+        if not isinstance(new_part, Compound):
+            for part in new_parts:
                 self.add(part)
             return
 
@@ -915,6 +922,7 @@ class Compound(object):
         newone.periodicity = deepcopy(self.periodicity)
         newone._pos = self._pos
         newone.charge = self.charge
+        newone.virtual_particle = self.port_particle
 
         if self.parts is None:
             newone.parts = None

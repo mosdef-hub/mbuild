@@ -20,10 +20,12 @@ class Methane(mb.Compound):
         self.add_bond((self.C, self.HC[2]))
         self.add_bond((self.C, self.HC[3]))
 
+
 def main():
     methane = Methane()
     return methane
 
 if __name__ == "__main__":
     methane = main()
+    import ipdb; ipdb.set_trace()
     methane.visualize()

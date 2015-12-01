@@ -26,14 +26,14 @@ class Port(Compound):
 
     """
     def __init__(self, anchor=None):
-        super(Port, self).__init__(name='Port')
+        super(Port, self).__init__(name='Port', port_particle=True)
         self.anchor = anchor
 
-        up = Compound(name='subport')
-        up.add(Particle(name='G', pos=[0, 0, 0]), 'middle')
-        up.add(Particle(name='G', pos=[0, 0.02, 0]), 'top')
-        up.add(Particle(name='G', pos=[-0.02, -0.01, 0]), 'left')
-        up.add(Particle(name='G', pos=[0.0, -0.02, 0.01]), 'right')
+        up = Compound(name='subport', port_particle=True)
+        up.add(Particle(name='G', pos=[0, 0, 0], port_particle=True), 'middle')
+        up.add(Particle(name='G', pos=[0, 0.02, 0], port_particle=True), 'top')
+        up.add(Particle(name='G', pos=[-0.02, -0.01, 0], port_particle=True), 'left')
+        up.add(Particle(name='G', pos=[0.0, -0.02, 0.01], port_particle=True), 'right')
 
         down = clone(up)
 
