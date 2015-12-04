@@ -50,13 +50,13 @@ class TiledCompound(Compound):
             self._hoist_ports(tile)
             return  # Don't waste time copying and checking bonds.
 
-        # For every tile, assign temporary ID's to atoms which are internal to
-        # that tile. E.g., when replicating a tile with 1800 atoms, every tile
-        # will contain atoms with ID's from 0-1799. These ID's are used below
-        # to fix bonds crossing periodic boundary conditions where a new tile
-        # has been placed.
-        for idx, atom in enumerate(tile._particles(include_ports=True)):
-            atom.index = idx
+        # For every tile, assign temporary ID's to particles which are internal
+        # to that tile. E.g., when replicating a tile with 1800 particles, every
+        # tile will contain particles with ID's from 0-1799. These ID's are used
+        # below to fix bonds crossing periodic boundary conditions where a new
+        # tile has been placed.
+        for idx, particle in enumerate(tile.particles(include_ports=True)):
+            particle.index = idx
 
         # Replicate and place periodic tiles.
         # -----------------------------------
@@ -74,28 +74,28 @@ class TiledCompound(Compound):
         bond_dist_thres = min(tile.periodicity[tile.periodicity > 0]) / 2
 
         # Bonds that were periodic in the original tile.
-        atom_indices_of_periodic_bonds = set()
-        for atom1, atom2 in tile.bonds:
-            if np.linalg.norm(atom1.pos-atom2.pos) > bond_dist_thres:
-                atom_indices_of_periodic_bonds.add((atom1.index,
-                                                    atom2.index))
+        particle_indices_of_periodic_bonds = set()
+        for particle1, particle2 in tile.bonds():
+            if np.linalg.norm(particle1.pos - particle2.pos) > bond_dist_thres:
+                particle_indices_of_periodic_bonds.add((particle1.index,
+                                                        particle2.index))
 
-        # Build a periodic kdtree of all atom positions.
-        self.atom_kdtree = PeriodicCKDTree(data=self.xyz, bounds=self.periodicity)
-        all_atoms = np.asarray(list(self._particles(include_ports=False)))
+        # Build a periodic kdtree of all particle positions.
+        self.particle_kdtree = PeriodicCKDTree(data=self.xyz, bounds=self.periodicity)
+        all_particles = np.asarray(list(self.particles(include_ports=False)))
 
         # Store bonds to remove/add since we'll be iterating over all bonds.
         bonds_to_remove = set()
         bonds_to_add = set()
-        for atom1, atom2 in self.bonds:
-            atom_indices = (atom1.index, atom2.index)
-            if atom_indices in atom_indices_of_periodic_bonds:
-                if self.min_periodic_distance(atom1.pos, atom2.pos) > bond_dist_thres:
-
-                    bonds_to_remove.add((atom1, atom2))
-
-                    atom2_image = self._find_atom_image(atom1, atom2, all_atoms)
-                    bonds_to_add.add((atom1, atom2_image))
+        for particle1, particle2 in self.bonds():
+            particle_indices = (particle1.index, particle2.index)
+            if particle_indices in particle_indices_of_periodic_bonds:
+                if self.min_periodic_distance(particle1.pos, particle2.pos) > bond_dist_thres:
+                    bonds_to_remove.add((particle1, particle2))
+                    particle2_image = self._find_particle_image(particle1,
+                                                                particle2,
+                                                                all_particles)
+                    bonds_to_add.add((particle1, particle2_image))
 
         for bond in bonds_to_remove:
             self.remove_bond(bond)
@@ -104,9 +104,9 @@ class TiledCompound(Compound):
             self.add_bond(bond)
 
         # Clean up temporary data.
-        for atom in self._particles(include_ports=True):
-            atom.index = None
-        del self.atom_kdtree
+        for particle in self._particles(include_ports=True):
+            particle.index = None
+        del self.particle_kdtree
 
     def _add_tile(self, new_tile, ijk):
         """Add a tile with a label indicating its tiling position. """
@@ -115,19 +115,20 @@ class TiledCompound(Compound):
 
     def _hoist_ports(self, new_tile):
         """Add labels for all the ports to the parent (TiledCompound). """
-        for port in new_tile.parts:
+        for port in new_tile.children:
             if isinstance(port, Port):
                 self.add(port, containment=False)
 
-    def _find_atom_image(self, query, match, all_atoms):
-        """Find atom with the same index as match in a neighboring tile. """
-        _, idxs = self.atom_kdtree.query(query.pos, k=10)
+    def _find_particle_image(self, query, match, all_particles):
+        """Find particle with the same index as match in a neighboring tile. """
+        _, idxs = self.particle_kdtree.query(query.pos, k=10)
 
-        neighbors = all_atoms[idxs]
+        neighbors = all_particles[idxs]
 
-        for atom in neighbors:
-            if atom.index == match.index:
-                return atom
-        
-        raise RuntimeError('Unable to find matching atom image while stitching'
-                           ' bonds.')
+        for particle in neighbors:
+            if particle.index == match.index:
+                return particle
+        print(particle, particle.index)
+        print(neighbors)
+        raise RuntimeError('Unable to find matching particle image while'
+                           ' stitching bonds.')

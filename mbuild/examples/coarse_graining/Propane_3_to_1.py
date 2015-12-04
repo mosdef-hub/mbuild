@@ -1,4 +1,4 @@
-from examples.alkane.alkane import Alkane
+from mbuild.examples import Alkane
 import mbuild as mb
 
 from mbuild.proxy import create_proxy
@@ -21,8 +21,8 @@ if __name__ == '__main__':
     proxy = create_proxy(p, particle_classes=tier)
 
     print("Leaves of the proxy:")
-    for leaf in proxy.particles:
-        print(" {}".format(leaf))
+    for particle in proxy.particles():
+        print(" {}".format(particle))
 
-
+    proxy.visualize()
 

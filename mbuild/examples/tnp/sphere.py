@@ -14,15 +14,19 @@ class Sphere(mb.Compound):
             port_distance_from_surface (float): Distance of Ports from Sphere.
         """
         super(Sphere, self).__init__()
+        particle = mb.Particle(name='np')
+        particle.add(mb.Port(anchor=particle), label='out')
 
         # Generate 65 points on the surface of a unit sphere.
-        mask = mb.sphere_mask(n)
-
+        pattern = mb.SpherePattern(n)
         # Magnify the unit sphere by the provided radius.
-        mask *= radius
+        pattern.scale(radius)
 
-        # Create particles and Ports at mask positions.
-        for i, pos in enumerate(mask):
+        particles = pattern.apply(particle, orientation='normal', compound_port='out')
+        self.add(particles, label='np_[$]')
+
+        # Create particles and Ports at pattern positions.
+        for i, pos in enumerate(pattern.points):
             particle = mb.Particle(name="np", pos=pos)
             self.add(particle, "np_{}".format(i))
             port = mb.Port(anchor=particle)
@@ -38,5 +42,6 @@ class Sphere(mb.Compound):
             mb.translate(port, pos + (pos/radius * port_distance_from_surface))
 
 if __name__ == "__main__":
-    m = Sphere(n=65, radius=2)
-    m.visualize()
+    m = Sphere(n=4, radius=2)
+    m.visualize(show_ports=False)
+    import ipdb; ipdb.set_trace()

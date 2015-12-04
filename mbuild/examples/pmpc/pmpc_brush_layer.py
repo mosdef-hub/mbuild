@@ -11,17 +11,17 @@ from mbuild.examples.pmpc.brush import Brush
 
 class PMPCLayer(mb.Monolayer):
     """Create a layer of grafted pMPC brushes on a beta-cristobalite surface."""
-    def __init__(self, mask, tile_x=1, tile_y=1, chain_length=4, alpha=pi/4):
+    def __init__(self, pattern, tile_x=1, tile_y=1, chain_length=4, alpha=pi / 4):
         surface = Betacristobalite()
         brush = Brush(chain_length=chain_length, alpha=alpha)
         hydrogen = H()
         super(PMPCLayer, self).__init__(surface, brush, hydrogen,
-                                        mask, tile_x, tile_y)
+                                        pattern, tile_x, tile_y)
 
 
 def main():
-    mask = mb.grid_mask_2d(2, 1)
-    pmpc_system = PMPCLayer(mask=mask, chain_length=5, alpha=pi/4, tile_x=1, tile_y=2)
+    pattern = mb.Grid2DPattern(2, 1)
+    pmpc_system = PMPCLayer(pattern=pattern, chain_length=5, alpha=pi / 4, tile_x=1, tile_y=2)
     return pmpc_system
 
 

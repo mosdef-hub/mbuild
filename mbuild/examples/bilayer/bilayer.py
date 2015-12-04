@@ -62,8 +62,8 @@ class Bilayer(mb.Compound):
         self.n_lipids_y = n_lipids_y
         self.apl = area_per_lipid
         self.n_lipids_per_layer = self.n_lipids_x * self.n_lipids_y
-        self.mask = mb.grid_mask_2d(n_lipids_x, n_lipids_y)
-        self.mask *= np.sqrt(self.apl * self.n_lipids_per_layer)
+        self.pattern = mb.Grid2DPattern(n_lipids_x, n_lipids_y)
+        self.pattern.scale(np.sqrt(self.apl * self.n_lipids_per_layer))
 
         # Solvent info.
         self.solvent = solvent
@@ -123,14 +123,14 @@ class Bilayer(mb.Compound):
                 lipids_placed = n_type + n_this_type
                 new_lipid = clone(current_type)
                 random_index = lipid_indices[lipids_placed]
-                position = self.mask[random_index]
+                position = self.pattern[random_index]
 
                 # Zero and space in z-direction
-                particles = list(new_lipid.particles)
+                particles = list(new_lipid.particles())
                 ref_atom = self.ref_atoms[n_type]
                 mb.translate(new_lipid, -particles[ref_atom].pos + self.spacing)
 
-                # Move to point on mask
+                # Move to point on pattern
                 if flip_orientation == True:
                     # TODO: Function for this?
                     # E.g., rotate_around_x_keep_com(compound, bool(3))

@@ -12,18 +12,17 @@ class Initiator(mb.Compound):
 
         # Transform the coordinate system such that the two carbon atoms
         # that are part of the backbone are on the y axis, C_1 at the origin.
-        atoms = list(self.particles)
-        mb.y_axis_transform(self, new_origin=atoms[0], point_on_y_axis=atoms[21])
+        mb.y_axis_transform(self, new_origin=self[0], point_on_y_axis=self[21])
 
         # Add bottom port
-        self.add(mb.Port(anchor=atoms[0]), 'down')
+        self.add(mb.Port(anchor=self[0]), 'down')
         # Place the port.
-        mb.translate(self.down, atoms[0].pos + np.array([0.0, -0.07, 0.0]))
+        mb.translate(self['down'], self[0].pos + np.array([0.0, -0.07, 0.0]))
 
         # Add top port.
-        self.add(mb.Port(anchor=atoms[21]), 'up')
+        self.add(mb.Port(anchor=self[21]), 'up')
         # Place the port.
-        mb.translate(self.up, atoms[21].pos + np.array([0.0, 0.07, 0.0]))
+        mb.translate(self['up'], self[21].pos + np.array([0.0, 0.07, 0.0]))
 
 if __name__ == "__main__":
     ini = Initiator()

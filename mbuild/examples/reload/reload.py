@@ -23,9 +23,9 @@ def main():
     brush1.save("modified_brush1.pdb")
 
     # Access the internals of the updated brush1.
-    print(brush1.pmpc)
+    print(brush1['pmpc'])
 
-    for mpc in brush1.pmpc.monomer:
+    for mpc in brush1['pmpc']['monomer']:
         print(mpc)
 
 if __name__ == "__main__":

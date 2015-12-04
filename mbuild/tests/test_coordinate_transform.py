@@ -86,21 +86,21 @@ class TestCoordinateTransform(BaseTest):
         after = ch2.xyz_with_ports
 
     def test_equivalence_transform(self, ch2, ch3, methane):
-        ch2_atoms = list(ch2.particles)
-        methane_atoms = list(methane.particles)
+        ch2_atoms = list(ch2.particles())
+        methane_atoms = list(methane.particles())
         equivalence_transform(ch2, ch2_atoms[0], methane_atoms[0], add_bond=False)
         assert (ch2_atoms[0].pos == methane_atoms[0].pos).all()
-        equivalence_transform(ch2, ch2.up, ch3.up)
+        equivalence_transform(ch2, ch2['up'], ch3['up'])
         assert ch2.n_bonds == 2
 
-        assert nx.number_of_edges(ch2.root.graph) == 3
-        assert nx.number_of_edges(ch3.root.graph) == 4
+        assert nx.number_of_edges(ch2.root.bond_graph) == 3
+        assert nx.number_of_edges(ch3.root.bond_graph) == 4
 
         ethyl = mb.Compound([ch2, ch3])
         assert ethyl.n_bonds == 6
 
     def test_translate(self, methane):
-        methane_atoms = list(methane.particles)
+        methane_atoms = list(methane.particles())
         translate(methane, -methane_atoms[0].pos)
         assert (methane_atoms[0].pos == np.array([0, 0, 0])).all()
 

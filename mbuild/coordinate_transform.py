@@ -228,7 +228,7 @@ def vec_angle(v1, v2):
 
 
 def _write_back_atom_positions(compound, arrnx3):
-    if not compound.parts:
+    if not compound.children:
         compound.pos = squeeze(arrnx3)
     else:
         for atom, coords in zip(compound._particles(include_ports=True), arrnx3):
@@ -265,7 +265,7 @@ def _create_equivalence_transform(equiv):
                             'and pair[1] is a {1}'.format(type(pair[0]), type(pair[1])))
 
         # TODO: vstack is slow, replace with list concatenation
-        if not pair[0].parts:
+        if not pair[0].children:
             self_points = vstack([self_points, pair[0].pos])
             other_points = vstack([other_points, pair[1].pos])
         else:
@@ -341,13 +341,13 @@ def _choose_correct_port(from_port, to_port):
 
     """
     # First we try matching the two 'up' ports.
-    T1 = _create_equivalence_transform([(from_port.up, to_port.up)])
+    T1 = _create_equivalence_transform([(from_port['up'], to_port['up'])])
     new_position = T1.apply_to(array(from_port.anchor.pos, ndmin=2))
 
     dist_between_anchors_up_up = norm(new_position[0] - to_port.anchor.pos)
 
     # Then matching a 'down' with an 'up' port.
-    T2 = _create_equivalence_transform([(from_port.down, to_port.up)])
+    T2 = _create_equivalence_transform([(from_port['down'], to_port['up'])])
     new_position = T2.apply_to(array(from_port.anchor.pos, ndmin=2))
 
     # Determine which transform places the anchors further away from each other.
@@ -355,12 +355,12 @@ def _choose_correct_port(from_port, to_port):
     difference_between_distances = dist_between_anchors_down_up - dist_between_anchors_up_up
 
     if difference_between_distances > 0:
-        correct_port = from_port.down
+        correct_port = from_port['down']
         T = T2
     else:
-        correct_port = from_port.up
+        correct_port = from_port['up']
         T = T1
-    return [(correct_port, to_port.up)], T
+    return [(correct_port, to_port['up'])], T
 
 
 def translate(compound, v):

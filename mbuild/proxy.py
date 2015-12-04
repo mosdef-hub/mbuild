@@ -13,12 +13,12 @@ class Proxy(Compound):
         super(Proxy, self).__init__(name=name)
 
         self.wrapped = compound
-        self.parts = None
+        self.children = None
         self.labels = None
         self.parent = None
         self.referrers = set()
         self.index = None
-        self.graph = None
+        self.bond_graph = None
 
     def proxy_for(self):
         if hasattr(self.wrapped, 'wrapped'):
@@ -39,7 +39,7 @@ class Proxy(Compound):
 
 
 def is_leaf(what):
-    return hasattr(what, 'parts') and not what.parts
+    return hasattr(what, 'parts') and not what.children
 
 
 def create_proxy(real_thing, memo=None, particle_classes=None):
@@ -63,7 +63,7 @@ def _create_proxy_compounds(real_thing, memo, particle_classes):
     if not type(real_thing) in particle_classes:
         if not is_leaf(real_thing): # recurse only if it has parts
             # recursively create proxies for parts (we'll do labels later)
-            for part in real_thing.parts:
+            for part in real_thing.children:
                 part_proxy = _create_proxy_compounds(part, memo, particle_classes)
                 proxy.add(part_proxy)
 
@@ -85,7 +85,7 @@ def _create_proxy_bonds(real_thing, memo, leaf_classes):
         pass
     else:
         # recurse
-        for part in real_thing.parts:
+        for part in real_thing.children:
             _create_proxy_bonds(part, memo, leaf_classes)
 
     # check if there's a contained bond that needs to be added to the proxy
@@ -108,7 +108,7 @@ def _create_proxy_labels(real_thing, memo):
                 memo[real_thing].labels[label] = memo[part]
 
         # recurse
-        for part in real_thing.parts:
+        for part in real_thing.children:
             _create_proxy_labels(part, memo)
 
 
@@ -122,9 +122,9 @@ if __name__ == '__main__':
     print("Top level proxy object: {}".format(p))
 
     print("Parts of top level proxy object:")
-    for part in p.parts:
+    for part in p.children:
         print(" {}".format(part))
 
     print("Leaves of top level proxy object:")
-    for leaf in p.particles:
-        print(" {}".format(leaf.name))
+    for particle in p.particles():
+        print(" {}".format(particle.name))

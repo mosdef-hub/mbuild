@@ -23,19 +23,19 @@ class Tnp(mb.Compound):
             monomer = Bead(particle_kind='t')
 
         n = 129  # TODO: make this tweakable
-        self.add(Sphere(n=n, radius=ball_radius, port_distance_from_surface=0.7), "np")
+        self.add(Sphere(n=n, radius=ball_radius, port_distance_from_surface=0.7), label="np")
 
-        # generate 65 points on the surface of a unit sphere
-        mask = mb.sphere_mask(n_chains)
+        # Generate 65 points on the surface of a unit sphere.
+        pattern = mb.SpherePattern(n_chains)
 
-        # magnify it a bit
-        mask *= ball_radius
+        # Magnify it a bit.
+        pattern.scale(ball_radius)
 
         chain_proto = mb.Polymer(monomer, n=chain_length)
 
-        # apply chains to mask
-        chain_protos, empty_backfill = mb.apply_mask(self.np, chain_proto , mask,
-                                                     guest_port_name="down")
+        # Apply chains to pattern.
+        chain_protos, empty_backfill = pattern.apply_to_compound(chain_proto,
+                guest_port_name="down", host=self['np'])
         self.add(chain_protos)
 
         self.generate_bonds('np', 'np', sqrt(4 * ball_radius ** 2 * pi / n) - 0.5,
