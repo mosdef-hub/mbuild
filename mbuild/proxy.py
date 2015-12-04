@@ -126,5 +126,5 @@ if __name__ == '__main__':
         print(" {}".format(part))
 
     print("Leaves of top level proxy object:")
-    for leaf in p.particles:
-        print(" {}".format(leaf.name))
+    for particle in p.particles():
+        print(" {}".format(particle.name))
