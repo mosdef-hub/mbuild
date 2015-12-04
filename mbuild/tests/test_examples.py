@@ -25,14 +25,17 @@ class TestExamples(BaseTest):
         import mbuild.examples.methane.methane as example
         methane = example.main()
 
+        assert len(methane.children) == 5
         assert methane.n_particles == 5
+
+        assert len(methane.bond_graph) == 5
         assert methane.n_bonds == 4
 
-        assert next(methane.particles).name == "C"
-        assert methane.HC[0].name == "H"
-        assert methane.HC[1].name == "H"
-        assert methane.HC[2].name == "H"
-        assert methane.HC[3].name == "H"
+        assert next(methane.particles()).name == 'C'
+        assert methane[0].name == 'C'
+        assert (methane[1].name == methane[2].name ==
+                methane[3].name == methane[4].name == "H")
+
 
     def test_pmpc(self):
         import mbuild.examples.pmpc.pmpc_brush_layer as example

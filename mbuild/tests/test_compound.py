@@ -72,19 +72,21 @@ class TestCompound(BaseTest):
         h2os = list(intermol_system.molecule_types['H2O'].molecules)
         assert len(h2os[0].atoms) == 3
 
-    def test_particles_by_kind(self, ethane):
-        non_ports = ethane.particles
-        assert sum(1 for _ in non_ports) == 8
+    def test_particles_by_name(self, ethane):
+        assert sum(1 for _ in ethane.particles()) == 8
 
         only_H = ethane.particles_by_name('H')
         assert sum(1 for _ in only_H) == 6
 
+        only_C = ethane.particles_by_name('C')
+        assert sum(1 for _ in only_C) == 2
+
     def test_particles_in_range(self, ethane):
-        group = ethane.particles_in_range(next(ethane.particles), 0.141)
+        group = ethane.particles_in_range(ethane[0], 0.141)
         assert sum([1 for x in group if x.name == 'H']) == 3
         assert sum([1 for x in group if x.name == 'C']) == 2
 
-        group = ethane.particles_in_range(next(ethane.particles), 0.141, max_particles=4)
+        group = ethane.particles_in_range(ethane[0], 0.141, max_particles=4)
         assert sum([1 for x in group if x.name == 'H']) == 3
         assert sum([1 for x in group if x.name == 'C']) == 1
 
@@ -98,7 +100,7 @@ class TestCompound(BaseTest):
 
         assert ethane.n_particles == 2
         assert ethane.n_bonds == 1
-        for part in ethane.parts:
+        for part in ethane.children:
             assert part.n_bonds == 0
 
     def test_center(self, methane):
@@ -137,7 +139,7 @@ class TestCompound(BaseTest):
         assert all(chain.n_atoms == 4 for chain in traj.top.chains)
         assert all(chain.n_residues == 1 for chain in traj.top.chains)
 
-        methyl = next(iter(ethane.parts))
+        methyl = next(iter(ethane.children))
         traj = methyl.to_trajectory()
         assert traj.n_atoms == 4
         assert traj.top.n_bonds == 3

@@ -11,7 +11,7 @@ class Propane(mb.Compound):
         c = Alkane(n=3, cap_front=True, cap_end=False)
         self.add(c, 'propane')
 
-        self.add(c.down, 'down', containment=False)
+        self.add(c['down'], 'down', containment=False)
 
 class Hexane(mb.Compound):
     def __init__(self):
@@ -21,7 +21,7 @@ class Hexane(mb.Compound):
         self.add(Propane(), 'propane2')
 
         mb.equivalence_transform(
-                self.propane1, self.propane1.down, self.propane2.down)
+                self.propane1, self.propane1['down'], self.propane2['down'])
 
 
 

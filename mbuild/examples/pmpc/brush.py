@@ -14,18 +14,18 @@ class Brush(mb.Compound):
         super(Brush, self).__init__()
 
         # Add parts
-        self.add(Silane(), 'silane')
-        self.add(Initiator(), 'initiator')
+        self.add(Silane(), label='silane')
+        self.add(Initiator(), label='initiator')
         self.add(mb.Polymer(MPC(alpha=alpha), n=chain_length,
-                         port_labels=('up', 'down')), 'pmpc')
-        self.add(CH3(), 'methyl')
+                            port_labels=('up', 'down')), label='pmpc')
+        self.add(CH3(), label='methyl')
 
-        mb.equivalence_transform(self.initiator, self.initiator.down, self.silane.up)
-        mb.equivalence_transform(self.pmpc, self.pmpc.down, self.initiator.up)
-        mb.equivalence_transform(self.methyl, self.methyl.up, self.pmpc.up)
+        mb.equivalence_transform(self['initiator'], self['initiator']['down'], self['silane']['up'])
+        mb.equivalence_transform(self['pmpc'], self['pmpc']['down'], self['initiator']['up'])
+        mb.equivalence_transform(self['methyl'], self['methyl']['up'], self['pmpc']['up'])
 
         # Make self.port point to silane.bottom_port
-        self.add(self.silane.down, label='down', containment=False)
+        self.add(self['silane']['down'], label='down', containment=False)
 
 if __name__ == "__main__":
     pmpc = Brush(chain_length=1, alpha=pi/4)

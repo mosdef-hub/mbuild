@@ -18,7 +18,15 @@ __all__ = ['Pattern', 'DiskPattern', 'SpherePattern', 'Random2DPattern',
 class Pattern(object):
     def __init__(self, points, orientations=None):
         self.points = points
+        if orientations is None:
+            orientations = dict()
         self.orientations = orientations  # TODO: implement
+
+    def __len__(self):
+        return len(self.points)
+
+    def __getitem__(self, item):
+        return self.points[item]
 
     def scale(self, scalar):
         self.points *= scalar
@@ -46,7 +54,7 @@ class Pattern(object):
             for port in self.orientations[orientation]:
                 new_compound = clone(compound)
                 new_port = new_compound.labels[compound_port]
-                equivalence_transform(new_compound, new_port.up, port.up)
+                equivalence_transform(new_compound, new_port['up'], port['up'])
 
                 compounds.append(new_compound)
         else:
@@ -74,21 +82,24 @@ class Pattern(object):
 
         """
         n_ports = len(host.referenced_ports())
-        assert n_ports >= self.points.shape[0], "Not enough ports for mask."
+        try:
+            assert n_ports >= self.points.shape[0], "Not enough ports for pattern."
+        except:
+            import pdb; pdb.set_trace()
 
         assert_port_exists(guest_port_name, guest)
         box = host.boundingbox
-        mask = self.points * box.lengths + box.mins
+        pattern = self.points * box.lengths + box.mins
 
         port_positions = np.empty(shape=(n_ports, 3))
         port_list = list()
         for port_idx, port in enumerate(host.referenced_ports()):
-            port_positions[port_idx, :] = port.up.middle.pos
+            port_positions[port_idx, :] = port['up']['middle'].pos
             port_list.append(port)
 
         used_ports = set()  # Keep track of used ports for backfilling.
         guests = []
-        for point in mask:
+        for point in pattern:
             closest_point_idx = np.argmin(host.min_periodic_distance(point, port_positions))
             closest_port = port_list[closest_point_idx]
             used_ports.add(closest_port)

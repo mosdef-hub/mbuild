@@ -19,12 +19,12 @@ class AmorphousSilica(mb.Compound):
                              'this structure, please submit a pull request to'
                              'add it! '.format(surface_roughness))
         count = 0
-        for atom in self.atoms:
-            if atom.name == 'OB':
+        for particle in self.particles():
+            if particle.name == 'OB':
                 count += 1
-                port = mb.Port(anchor=atom)
+                port = mb.Port(anchor=particle)
                 mb.rotate_around_x(port, np.pi/2)
-                mb.translate(port, atom + np.array([0, 0, .1]))
+                mb.translate(port, particle.pos + np.array([0, 0, .1]))
                 self.add(port, 'port_{}'.format(count))
 
 if __name__ == "__main__":

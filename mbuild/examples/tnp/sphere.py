@@ -25,21 +25,21 @@ class Sphere(mb.Compound):
         particles = pattern.apply(particle, orientation='normal', compound_port='out')
         self.add(particles, label='np_[$]')
 
-        # # Create particles and Ports at pattern positions.
-        # for i, pos in enumerate(pattern.points):
-        #     particle = mb.Particle(name="np", pos=pos)
-        #     self.add(particle, "np_{}".format(i))
-        #     port = mb.Port(anchor=particle)
-        #     self.add(port, "port_{}".format(i))
-        #
-        #     # Make the top of the port point toward the positive x axis.
-        #     mb.rotate_around_z(port, -pi/2)
-        #     # Raise up (or down) the top of the port in the z direction.
-        #     mb.rotate_around_y(port, -arcsin(pos[2]/radius))
-        #     # Rotate the Port along the z axis.
-        #     mb.rotate_around_z(port, arctan2(pos[1], pos[0]))
-        #     # Move the Port a bit away from the surface of the Sphere.
-        #     mb.translate(port, pos + (pos/radius * port_distance_from_surface))
+        # Create particles and Ports at pattern positions.
+        for i, pos in enumerate(pattern.points):
+            particle = mb.Particle(name="np", pos=pos)
+            self.add(particle, "np_{}".format(i))
+            port = mb.Port(anchor=particle)
+            self.add(port, "port_{}".format(i))
+
+            # Make the top of the port point toward the positive x axis.
+            mb.rotate_around_z(port, -pi/2)
+            # Raise up (or down) the top of the port in the z direction.
+            mb.rotate_around_y(port, -arcsin(pos[2]/radius))
+            # Rotate the Port along the z axis.
+            mb.rotate_around_z(port, arctan2(pos[1], pos[0]))
+            # Move the Port a bit away from the surface of the Sphere.
+            mb.translate(port, pos + (pos/radius * port_distance_from_surface))
 
 if __name__ == "__main__":
     m = Sphere(n=4, radius=2)

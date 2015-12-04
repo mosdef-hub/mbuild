@@ -7,13 +7,13 @@ import os
 import sys
 
 import imolecule
-from networkx.exception import NetworkXError
-import numpy as np
 import mdtraj as md
 import networkx as nx
+import numpy as np
 from mdtraj.core.element import get_by_symbol
 from mdtraj.core.topology import Topology
 from oset import oset as OrderedSet
+from six import integer_types, string_types
 
 from mbuild.box import Box
 from mbuild.formats.mol2 import write_mol2
@@ -70,9 +70,9 @@ class Compound(object):
     the composite, and Particle playing the role of the primitive (leaf) part,
     where Particle is in fact simply an alias to the Compound class.
 
-    Compound maintains a list of parts (other Compounds contained within), and
-    provides a means to tag the parts with labels, so that the parts can be
-    easily looked up later. Labels may also point to objects outside the
+    Compound maintains a list of children (other Compounds contained within), and
+    provides a means to tag the children with labels, so that the compounds can
+    be easily looked up later. Labels may also point to objects outside the
     Compound's containment hierarchy. Compound has built-in support for copying
     and deepcopying Compound hierarchies, enumerating atoms or bonds in the
     hierarchy, proximity based searches, visualization, I/O operations, and a
@@ -80,8 +80,8 @@ class Compound(object):
 
     Parameters
     ----------
-    subcompounds : Parts, optional, default=None
-        One or more parts to be added to self.
+    subcompounds : Compound, optional, default=None
+        One or more compounds to be added to self.
     name : str, optional, default=self.__class__.__name__
         The type of Compound.
     periodicity : np.ndarray, shape=(3,), dtype=float, optional
@@ -95,11 +95,11 @@ class Compound(object):
     periodicity : np.ndarray, shape=(3,), dtype=float, optional
         The periodic lengths of the Compound in the x, y and z directions.
         Defaults to zeros which is treated as non-periodic.
-    parts : OrderedSet
-        Contains all child parts (other Compounds).
+    children : OrderedSet
+        Contains all children (other Compounds).
     labels : OrderedDict
         Labels to Compound/Atom mappings. These do not necessarily need not be
-        in parts.
+        in self.children.
     parent : mb.Compound
         The parent Compound that contains this part. Can be None if this
         compound is the root of the containment hierarchy.
@@ -128,44 +128,40 @@ class Compound(object):
 
         self.charge = charge
 
-        self.parts = None
-        # TODO: set labels to None initially, and then create the OrderedDict when add is called for the first time
+        self.parent = None
+        self.children = OrderedSet()
         self.labels = OrderedDict()
         self.referrers = set()
 
-        self.graph = None
-
-        self.parent = None
-
+        self.bond_graph = None
         self.port_particle = port_particle
 
-        # self.add() must be called after labels and parts are initialized.
+        # self.add() must be called after labels and children are initialized.
         if subcompounds:
             self.add(subcompounds)
 
-    @property
-    def pos(self):
-        if not self.parts or self._contains_only_ports():
-            return self._pos
-        else:
-            return self.center
-
-    @pos.setter
-    def pos(self, value):
-        if not self.parts:
-            self._pos = value
-        else:
-            raise Exception("Cannot set position on a Compound that has parts")
-
-    @property
-    def particles(self):
+    # region Compound Hierarchy
+    def particles(self, include_ports=False):
         """ """
-        return self._particles(include_ports=False)
+        return self._particles(include_ports)
 
-    def particles_by_name(self, name):
-        for particle in self.particles:
-            if particle.name == name:
-                yield particle
+    def _particles(self, include_ports=False):
+        """Return all Particles of the Compound. """
+        for child in self.successors():
+            if not child.children:
+                if include_ports or not child.port_particle:
+                    yield child
+
+    def successors(self):
+        """Yield Compounds below self in the hierarchy. """
+        if not self.children:
+            return
+        for part in self.children:
+            # Parts local to the current Compound.
+            yield part
+            # Parts further down the hierarchy.
+            for subpart in part.successors():
+                yield subpart
 
     @property
     def n_particles(self):
@@ -175,96 +171,11 @@ class Compound(object):
         """Return the number of Particles in the Compound. """
         return sum(1 for _ in self._particles(include_ports))
 
-    def _particles(self, include_ports=False):
-        """Return all Particles of the Compound. """
-        if not self.parts or self._contains_only_ports():
-            yield self
-        else:
-            for part in self._yield_parts():
-                if not part.parts:
-                    if include_ports or not part.port_particle:
-                        yield part
-
-    def _yield_parts(self):
-        """Yield parts of a specified type in the Compound recursively. """
-        if not self.parts:
-            return
-        for part in self.parts:
-            # Parts local to the current Compound.
-            yield part
-            # Parts further down the hierarchy.
-            for subpart in part._yield_parts():
-                yield subpart
-
     def _contains_only_ports(self):
-        for part in self.parts:
+        for part in self.children:
             if not part.port_particle:
                 return False
         return True
-
-    @property
-    def bonds(self):
-        """A list of all Bonds in the Compound and sub-Compounds. """
-        if self.root.graph:
-            return self.root.graph.subgraph(self.particles).edges_iter()
-        else:
-            return iter(())
-
-    @property
-    def n_bonds(self):
-        """Return the number of Bonds in the Compound. """
-        return sum(1 for _ in self.bonds)
-
-    @property
-    def periodicity(self):
-        return self._periodicity
-
-    @periodicity.setter
-    def periodicity(self, periods):
-        self._periodicity = np.array(periods)
-
-    @property
-    def xyz(self):
-        """Return all atom coordinates in this compound. """
-        arr = np.fromiter(itertools.chain.from_iterable(
-            atom.pos for atom in self.particles if atom.name != 'G'), dtype=float)
-        return arr.reshape((-1, 3))
-
-    @property
-    def xyz_with_ports(self):
-        """Return all atom coordinates in this compound including ports. """
-        arr = np.fromiter(itertools.chain.from_iterable(
-            atom.pos for atom in self._particles(include_ports=True)), dtype=float)
-        return arr.reshape((-1, 3))
-
-    @property
-    def center(self):
-        """The cartesian center of the Compound based on its Atoms. """
-        if self.xyz.any():
-            return np.mean(self.xyz, axis=0)
-
-    @property
-    def boundingbox(self):
-        """Compute the bounding box of the compound. """
-        xyz = self.xyz
-        return Box(mins=xyz.min(axis=0), maxs=xyz.max(axis=0))
-
-    def min_periodic_distance(self, xyz0, xyz1):
-        """Vectorized distance calculation considering minimum image. """
-        d = np.abs(xyz0 - xyz1)
-        d = np.where(d > 0.5 * self.periodicity, self.periodicity - d, d)
-        return np.sqrt((d ** 2).sum(axis=-1))
-
-    def particles_in_range(self, compound, dmax, max_particles=20, particle_kdtree=None, particle_array=None):
-        """Find atoms within a specified range of another atom. """
-        if particle_kdtree is None:
-            particle_kdtree = PeriodicCKDTree(data=self.xyz, bounds=self.periodicity)
-        _, idxs = particle_kdtree.query(compound.pos, k=max_particles, distance_upper_bound=dmax)
-        # TODO: why we are doing this
-        idxs = idxs[idxs != self.n_particles]
-        if particle_array is None:
-            particle_array = np.array(list(self.particles))
-        return particle_array[idxs]
 
     def ancestors(self):
         """Generate all ancestors of the Compound recursively. """
@@ -282,62 +193,67 @@ class Compound(object):
             return self
         return parent
 
-    def add(self, new_part, label=None, containment=True, replace=False,
+    def particles_by_name(self, name):
+        for particle in self.particles():
+            if particle.name == name:
+                yield particle
+
+    def add(self, new_child, label=None, containment=True, replace=False,
             inherit_periodicity=True):
         """Add a part to the Compound.
 
         Note:
-            This does not necessarily add the part to self.parts but may
+            This does not necessarily add the part to self.children but may
             instead be used to add a reference to the part to self.labels. See
             'containment' argument.
 
         Parameters
         ----------
-        new_part : mb.Compound
+        new_child : mb.Compound
             The object to be added to this Compound.
         label : str, optional
             A descriptive string for the part.
         containment : bool, optional, default=True
-            Add the part to self.parts.
+            Add the part to self.children.
         replace : bool, optional, default=True
             Replace the label if it already exists.
 
         """
         # Support batch add via lists, tuples and sets.
-        if not isinstance(new_part, Compound):
-            for part in new_parts:
-                self.add(part)
+        if not isinstance(new_child, Compound):
+            for child in new_child:
+                self.add(child)
             return
 
-        # Create parts and labels on the first add operation
-        if self.parts is None:
-            self.parts = OrderedSet()
+        # Create children and labels on the first add operation
+        if self.children is None:
+            self.children = OrderedSet()
         if self.labels is None:
             self.labels = OrderedDict()
 
-        if not isinstance(new_part, Compound):
+        if not isinstance(new_child, Compound):
             raise ValueError('Only objects that inherit from mbuild.Compound '
                              'can be added to Compounds. You tried to add '
-                             '{}'.format(new_part))
+                             '{}'.format(new_child))
 
         if containment:
-            if new_part.parent is not None:
+            if new_child.parent is not None:
                 raise ValueError('Part {} already has a parent: {}'.format(
-                    new_part, new_part.parent))
-            self.parts.add(new_part)
-            new_part.parent = self
+                    new_child, new_child.parent))
+            self.children.add(new_child)
+            new_child.parent = self
 
-            if new_part.graph is not None:
-                if self.root.graph is None:
-                    self.root.graph = new_part.graph
+            if new_child.bond_graph is not None:
+                if self.root.bond_graph is None:
+                    self.root.bond_graph = new_child.bond_graph
                 else:
-                    self.root.graph = nx.compose(self.root.graph, new_part.graph)
+                    self.root.bond_graph = nx.compose(self.root.bond_graph, new_child.bond_graph)
 
-                new_part.graph = None
+                new_child.bond_graph = None
 
         # Add new_part to labels. Does not currently support batch add.
         if label is None:
-            label = '_{0}[$]'.format(new_part.__class__.__name__)
+            label = '{0}[$]'.format(new_child.__class__.__name__)
 
         if label is not None:
             if label.endswith('[$]'):
@@ -347,53 +263,22 @@ class Compound(object):
                 label_pattern = label + '[{}]'
 
                 count = len(self.labels[label])
-                self.labels[label].append(new_part)
+                self.labels[label].append(new_child)
                 label = label_pattern.format(count)
 
             if not replace and label in self.labels:
                 raise Exception('Label {0} already exists in {1}'.format(label, self))
             else:
-                self.labels[label] = new_part
-        new_part.referrers.add(self)
+                self.labels[label] = new_child
+        new_child.referrers.add(self)
 
-        if (inherit_periodicity and isinstance(new_part, Compound) and
-                new_part.periodicity.any()):
-            self.periodicity = new_part.periodicity
-
-    def add_bond(self, atom_pair):
-        """"""
-        if self.root.graph is None:
-            self.root.graph = nx.Graph()
-
-        self.root.graph.add_edge(atom_pair[0], atom_pair[1])
-
-    def generate_bonds(self, name_a, name_b, dmin, dmax):
-        """Add Bonds between all pairs of types a/b within [dmin, dmax]. """
-        particle_kdtree = PeriodicCKDTree(data=self.xyz, bounds=self.periodicity)
-        particle_array = np.array(list(self.particles))
-        added_bonds = list()
-        for a1 in self.particles_by_name(name_a):
-            nearest = self.particles_in_range(a1, dmax, max_particles=20,
-                                              particle_kdtree=particle_kdtree,
-                                              particle_array=particle_array)
-            for a2 in nearest:
-                bond_tuple = (a1, a2) if id(a1) < id(a2) else (a2, a1)
-                if bond_tuple in added_bonds:
-                    continue
-                if (a2.name == name_b) and (dmin <= self.min_periodic_distance(a2.pos, a1.pos) <= dmax):
-                    self.add_bond((a1, a2))
-                    added_bonds.append(bond_tuple)
-
-    def remove_bond(self, atom_pair):
-        if self.root.graph is None:
-            return
-
-        self.root.graph.remove_edge(atom_pair[0], atom_pair[1])
+        if (inherit_periodicity and isinstance(new_child, Compound) and
+                new_child.periodicity.any()):
+            self.periodicity = new_child.periodicity
 
     def remove(self, objs_to_remove):
-        """Remove parts from the Compound. """
-
-        if not self.parts:
+        """Remove children from the Compound. """
+        if not self.children:
             return
 
         if not hasattr(objs_to_remove, '__iter__'):
@@ -403,17 +288,17 @@ class Compound(object):
         if len(objs_to_remove) == 0:
             return
 
-        intersection = objs_to_remove.intersection(self.parts)
-        self.parts -= intersection
+        intersection = objs_to_remove.intersection(self.children)
+        self.children -= intersection
         objs_to_remove -= intersection
 
         for removed_part in intersection:
-            self.root.graph.remove_node(removed_part)
+            self.root.bond_graph.remove_node(removed_part)
             self._remove_references(removed_part)
 
         # Remove the part recursively from sub-compounds.
-        if self.parts:
-            for part in self.parts:
+        if self.children:
+            for part in self.children:
                 part.remove(objs_to_remove)
 
     @staticmethod
@@ -445,7 +330,161 @@ class Compound(object):
         """Return all Ports referenced by this Compound. """
         from mbuild.port import Port
         return [port for port in self.labels.values() if isinstance(port, Port)]
+    # endregion
 
+    # region Bonds
+    def bonds(self):
+        """A list of all Bonds in the Compound and sub-Compounds. """
+        if self.root.bond_graph:
+            return self.root.bond_graph.subgraph(self.particles()).edges_iter()
+        else:
+            return iter(())
+
+    @property
+    def n_bonds(self):
+        """Return the number of Bonds in the Compound. """
+        return sum(1 for _ in self.bonds())
+
+    def add_bond(self, atom_pair):
+        """"""
+        if self.root.bond_graph is None:
+            self.root.bond_graph = nx.Graph()
+
+        self.root.bond_graph.add_edge(atom_pair[0], atom_pair[1])
+
+    def generate_bonds(self, name_a, name_b, dmin, dmax):
+        """Add Bonds between all pairs of types a/b within [dmin, dmax]. """
+        particle_kdtree = PeriodicCKDTree(data=self.xyz, bounds=self.periodicity)
+        particle_array = np.array(list(self.particles()))
+        added_bonds = list()
+        for p1 in self.particles_by_name(name_a):
+            nearest = self.particles_in_range(p1, dmax, max_particles=20,
+                                              particle_kdtree=particle_kdtree,
+                                              particle_array=particle_array)
+            for p2 in nearest:
+                bond_tuple = (p1, p2) if id(p1) < id(p2) else (p2, p1)
+                if bond_tuple in added_bonds:
+                    continue
+                if (p2.name == name_b) and (dmin <= self.min_periodic_distance(p2.pos, p1.pos) <= dmax):
+                    self.add_bond((p1, p2))
+                    added_bonds.append(bond_tuple)
+
+    def remove_bond(self, atom_pair):
+        if self.root.bond_graph is None:
+            return
+        self.root.bond_graph.remove_edge(atom_pair[0], atom_pair[1])
+    # endregion
+
+    # region Coordinates
+    @property
+    def pos(self):
+        if not self.children:
+            return self._pos
+        else:
+            return self.center
+
+    @pos.setter
+    def pos(self, value):
+        if not self.children:
+            self._pos = value
+        else:
+            raise Exception("Cannot set position on a Compound that has"
+                            " children.")
+
+    @property
+    def periodicity(self):
+        return self._periodicity
+
+    @periodicity.setter
+    def periodicity(self, periods):
+        self._periodicity = np.array(periods)
+
+    @property
+    def xyz(self):
+        """Return all atom coordinates in this compound. """
+        arr = np.fromiter(itertools.chain.from_iterable(
+            atom.pos for atom in self.particles()), dtype=float)
+        return arr.reshape((-1, 3))
+
+    @property
+    def xyz_with_ports(self):
+        """Return all atom coordinates in this compound including ports. """
+        arr = np.fromiter(itertools.chain.from_iterable(
+            atom.pos for atom in self.particles(include_ports=True)), dtype=float)
+        return arr.reshape((-1, 3))
+
+    @property
+    def center(self):
+        """The cartesian center of the Compound based on its Atoms. """
+        if self.xyz.any():
+            return np.mean(self.xyz, axis=0)
+
+    @property
+    def boundingbox(self):
+        """Compute the bounding box of the compound. """
+        xyz = self.xyz
+        return Box(mins=xyz.min(axis=0), maxs=xyz.max(axis=0))
+
+    def min_periodic_distance(self, xyz0, xyz1):
+        """Vectorized distance calculation considering minimum image. """
+        d = np.abs(xyz0 - xyz1)
+        d = np.where(d > 0.5 * self.periodicity, self.periodicity - d, d)
+        return np.sqrt((d ** 2).sum(axis=-1))
+
+    def particles_in_range(self, compound, dmax, max_particles=20, particle_kdtree=None, particle_array=None):
+        """Find atoms within a specified range of another atom. """
+        if particle_kdtree is None:
+            particle_kdtree = PeriodicCKDTree(data=self.xyz, bounds=self.periodicity)
+        _, idxs = particle_kdtree.query(compound.pos, k=max_particles, distance_upper_bound=dmax)
+        # TODO: why we are doing this
+        idxs = idxs[idxs != self.n_particles]
+        if particle_array is None:
+            particle_array = np.array(list(self.particles()))
+        return particle_array[idxs]
+    # endregion
+
+    # region Visualization
+    def view_hierarchy(self, show_ports=False):
+        """Visualize a compound hierarchy as a tree.
+
+        A tree is constructed from the compound hierarchy with self as the root.
+        The tree is then rendered in a web browser window using D3.js.
+
+        Note
+        ------
+        Portions of this code are adapted from https://gist.github.com/mbostock/4339083.
+        """
+        raise NotImplementedError('To be replaced with igraph')
+
+    def visualize(self, show_ports=False, shader='lambert',
+                  drawing_type='ball and stick', camera_type='perspective'):
+        """Visualize the Compound using imolecule. """
+        json_mol = self._to_json(show_ports)
+        imolecule.draw(json_mol, format='json', shader=shader,
+                       drawing_type=drawing_type, camera_type=camera_type)
+
+    def _to_json(self, show_ports=False):
+        atoms = list()
+
+        for idx, particle in enumerate(self._particles(include_ports=show_ports)):
+            particle.index = idx
+            atoms.append({'element': particle.name,
+                          'location': list(np.asarray(particle.pos, dtype=float) * 10)})
+
+        bonds = [{'atoms': [atom1.index, atom2.index],
+                  'order': 1}
+                 for atom1, atom2 in self.bonds()]
+        output = {'name': self.name, 'atoms': atoms, 'bonds': bonds}
+
+        # remove the index member variable
+        for idx, particle in enumerate(self.particles()):
+            if not show_ports and particle.port_particle:
+                continue
+            del particle.index
+        return imolecule.json_formatter.compress(output)
+    # endregion
+
+    # region I/O
     def update_coordinates(self, filename):
         """Update the coordinates of this Compound from a file. """
         load(filename, compound=self, coords_only=True)
@@ -510,117 +549,6 @@ class Compound(object):
         """ """
         raise NotImplementedError('Interface to InterMol missing')
 
-    # Visualization
-    # -------------
-    def view_hierarchy(self, show_ports=False):
-        """Visualize a compound hierarchy as a tree.
-
-        A tree is constructed from the compound hierarchy with self as the root.
-        The tree is then rendered in a web browser window using D3.js.
-
-        Note
-        ------
-        Portions of this code are adapted from https://gist.github.com/mbostock/4339083.
-        """
-        raise NotImplementedError('To be replaced with igraph')
-
-        # try:
-        #     import urlparse
-        # except ImportError:
-        #     import urllib.parse as urlparse
-        # try:
-        #     from urllib import pathname2url
-        # except ImportError:
-        #     from urllib.request import pathname2url
-        #
-        # try:
-        #     import networkx as nx
-        # except ImportError:
-        #     raise ImportError('Networkx is required to visualize the compound hierarchy.')
-        # from networkx.readwrite import json_graph
-        # from mbuild.utils.visualization import d3_tree_template
-        #
-        # tempdir = tempfile.mkdtemp(prefix='mbuild_view_hierarchy_')
-        #
-        # compound_tree = nx.DiGraph()
-        # compound_tree.add_node(self.name)
-        # compound_frequency = Counter([self.name])
-        # for sub_compound in self._yield_parts(Compound):
-        #     if not show_ports and sub_compound.name in ["Port", "subport"]:
-        #         continue
-        #     compound_frequency[sub_compound.name] += 1
-        #     compound_tree.add_node(sub_compound.name)
-        #     if sub_compound.parent:
-        #         compound_tree.add_edge(sub_compound.parent.name, sub_compound.name)
-        #
-        # labels = {"'children'": '"children"'}
-        # for compound in compound_tree:
-        #     node_key = "'{}'".format(compound)
-        #     labels[node_key] = '"{} {:d}"'.format(compound, compound_frequency[compound])
-        #
-        # json_template = json_graph.tree_data(compound_tree, self.name,
-        #                                      dict(id="name", children="children"))
-        # json_template = str(json_template)
-        # for label in labels:
-        #     json_template = json_template.replace(label, labels[label])
-        #
-        # # generate png image from the compound
-        # self.save_png(os.path.join(tempdir, 'visualize_{}.png'.format(self.name)), show_ports=show_ports)
-        # sub_compounds_dict = {labels["'{}'".format(self.name)]:"visualize_{}".format(self.name)}
-        #
-        # # generate png image from all subcompounds
-        # for sub_compound in self._yield_parts(Compound):
-        #     if not show_ports and sub_compound.name in ["Port", "subport"]:
-        #         continue
-        #     if labels["'{}'".format(sub_compound.name)] not in sub_compounds_dict.keys():
-        #         if not show_ports and sub_compound.name in ["Port", "subport"]:
-        #             continue
-        #         sub_compound.save_png(os.path.join(tempdir, 'visualize_{}.png'.format(sub_compound.name)), show_ports=show_ports)
-        #
-        #         label = labels["'{}'".format(sub_compound.name)]
-        #         sub_compounds_dict[label] = "visualize_{}".format(sub_compound.name)
-        #
-        # for key in sub_compounds_dict:
-        #     filename = sub_compounds_dict[key]
-        #     json_template = json_template.replace("'name': {}".format(key),
-        #                                           '"name": {0}, "icon": "{1}"'
-        #                                           .format(key, filename+'.png'))
-        #
-        # html = d3_tree_template % str(json_template)
-        # html_file = os.path.join(tempdir, 'view_hierarchy.html')
-        # with open(html_file, 'w') as the_file:
-        #     the_file.write(html)
-        #
-        # webbrowser.open(urlparse.urljoin('file:', pathname2url(os.path.join(tempdir, html_file))))
-        # # and leave all temp files in place...
-
-    def visualize(self, show_ports=False, shader='lambert',
-                  drawing_type='ball and stick', camera_type='perspective'):
-        """Visualize the Compound using imolecule. """
-        json_mol = self._to_json(show_ports)
-        imolecule.draw(json_mol, format='json', shader=shader,
-                       drawing_type=drawing_type, camera_type=camera_type)
-
-    def _to_json(self, show_ports=False):
-        atoms = list()
-
-        for idx, particle in enumerate(self._particles(include_ports=show_ports)):
-            particle.index = idx
-            atoms.append({'element': particle.name,
-                          'location': list(np.asarray(particle.pos, dtype=float) * 10)})
-
-        bonds = [{'atoms': [atom1.index, atom2.index],
-                  'order': 1}
-                 for atom1, atom2 in self.bonds]
-        output = {'name': self.name, 'atoms': atoms, 'bonds': bonds}
-
-        # remove the index member variable
-        for idx, particle in enumerate(self.particles):
-            if not show_ports and particle.name == 'G':
-                continue
-            del particle.index
-        return imolecule.json_formatter.compress(output)
-
     # Interface to Trajectory for reading/writing .pdb and .mol2 files.
     # -----------------------------------------------------------------
     def from_trajectory(self, traj, frame=-1, coords_only=False):
@@ -682,10 +610,9 @@ class Compound(object):
         See also
         --------
         _to_topology
-        mbuild.topology
 
         """
-        atom_list = [particle for particle in self.particles if show_ports or particle.name != 'G']
+        atom_list = [particle for particle in self.particles(show_ports)]
 
         top = self._to_topology(atom_list, chain_types, residue_types)
 
@@ -791,7 +718,7 @@ class Compound(object):
                 except ValueError:  # Already gone.
                     pass
 
-        for atom1, atom2 in self.bonds:
+        for atom1, atom2 in self.bonds():
             # Ensure that both atoms are part of the compound. This becomes an
             # issue if you try to convert a sub-compound to a topology which is
             # bonded to a different subcompound.
@@ -825,7 +752,7 @@ class Compound(object):
         intermol_system = System()
 
         last_molecule_compound = None
-        for atom_index, atom in enumerate(self.particles):
+        for atom_index, atom in enumerate(self.particles()):
             for parent in atom.ancestors():
                 # Don't want inheritance via isinstance().
                 if type(parent) in molecule_types:
@@ -864,24 +791,20 @@ class Compound(object):
         for atom1, atom2 in parent.bonds:
             intermol_bond = InterMolBond(atom1.index, atom2.index)
             molecule_type.bonds.add(intermol_bond)
+    # endregion
 
-    # Magic
-    # -----
-    def __getattr__(self, attr):
-        assert 'labels' != attr, ('Compound __init__ never called. Make '
-                                  'sure to call super().__init__() in the '
-                                  '__init__ method of your class.')
-        if attr in self.labels:
-            return self.labels[attr]
-        else:
-            raise AttributeError("'{}' object has no attribute '{}'".format(type(
-                self), attr))
+    # region Magic
+    def __getitem__(self, selection):
+        if isinstance(selection, integer_types):
+            return list(self.particles())[selection]
+        if isinstance(selection, string_types):
+            return self.labels.get(selection)
 
     def __repr__(self):
         descr = list('<')
         descr.append(self.name + ' ')
 
-        if self.parts:
+        if self.children:
             descr.append('{:d} particles, '.format(self.n_particles))
             if any(self.periodicity):
                 descr.append('periodicity: {}, '.format(self.periodicity))
@@ -922,41 +845,38 @@ class Compound(object):
         newone.periodicity = deepcopy(self.periodicity)
         newone._pos = self._pos
         newone.charge = self.charge
-        newone.virtual_particle = self.port_particle
-
-        if self.parts is None:
-            newone.parts = None
-        else:
-            newone.parts = OrderedSet()
-        newone.labels = OrderedDict()
-        newone.referrers = set()
-
-        newone.graph = None
-
+        newone.port_particle = self.port_particle
         if hasattr(self, 'index'):
             newone.index = self.index
 
+        if self.children is None:
+            newone.children = None
+        else:
+            newone.children = OrderedSet()
         # Parent should be None initially.
         newone.parent = None
+        newone.labels = OrderedDict()
+        newone.referrers = set()
+        newone.bond_graph = None
 
-        # Add parts to clone.
-        if self.parts:
-            for part in self.parts:
-                newpart = part._clone(clone_of, root_container)
-                newone.parts.add(newpart)
-                newpart.parent = newone
+        # Add children to clone.
+        if self.children:
+            for child in self.children:
+                newchild = child._clone(clone_of, root_container)
+                newone.children.add(newchild)
+                newchild.parent = newone
 
         # Copy labels, except bonds with atoms outside the hierarchy.
         if self.labels:
-            for label, part in self.labels.items():
-                if not isinstance(part, list):
-                    newone.labels[label] = part._clone(clone_of, root_container)
-                    part.referrers.add(clone_of[part])
+            for label, compound in self.labels.items():
+                if not isinstance(compound, list):
+                    newone.labels[label] = compound._clone(clone_of, root_container)
+                    compound.referrers.add(clone_of[compound])
                 else:
-                    # Part is a list of parts, so we create an empty list, and
-                    # add the clones of the original list elements.
+                    # compound is a list of compounds, so we create an empty
+                    # list, and add the clones of the original list elements.
                     newone.labels[label] = []
-                    for subpart in part:
+                    for subpart in compound:
                         newone.labels[label].append(subpart._clone(clone_of, root_container))
                         # Referrers must have been handled already, or the will be handled
 
@@ -964,10 +884,8 @@ class Compound(object):
 
     def _clone_bonds(self, clone_of=None, root_container=None):
         newone = clone_of[self]
-
-        # clone graph
-        for c1, c2 in self.bonds:
+        for c1, c2 in self.bonds():
             newone.add_bond((clone_of[c1], clone_of[c2]))
-
+    # endregion
 
 Particle = Compound

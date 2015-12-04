@@ -19,10 +19,10 @@ class Port(Compound):
         A Particle associated with the port. Used to form bonds.
     up : mb.Compound
         Collection of 4 ghost particles used to perform equivalence transforms.
-        Faces the opposite direction as self.down.
+        Faces the opposite direction as self['down'].
     down : mb.Compound
         Collection of 4 ghost particles used to perform equivalence transforms.
-        Faces the opposite direction as self.up.
+        Faces the opposite direction as self['up'].
 
     """
     def __init__(self, anchor=None):

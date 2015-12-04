@@ -16,7 +16,7 @@ class Monolayer(mb.Compound):
     backfill : list of mb.Compound, optional, default=None
         If there are fewer chains than there are ports on the surface,
         copies of `backfill` will be used to fill the remaining ports.
-    mask : np.ndarray, shape=(n, 3), optional, default=None
+    pattern : mb.Pattern, optional, default=mb.Random2DPattern
         An array of planar binding locations. If not provided, the entire
         surface will be filled with `chain`.
     tile_x : int, optional, default=1
@@ -30,19 +30,19 @@ class Monolayer(mb.Compound):
 
     """
 
-    def __init__(self, surface, chain, backfill=None, mask=None, tile_x=1,
+    def __init__(self, surface, chain, backfill=None, pattern=None, tile_x=1,
                  tile_y=1, **kwargs):
         super(Monolayer, self).__init__()
 
         # Replicate the surface.
         tiled_compound = mb.TiledCompound(surface, n_tiles=(tile_x, tile_y, 1))
-        self.add(tiled_compound, 'tiled_surface')
+        self.add(tiled_compound, label='tiled_surface')
 
-        if mask is None:  # Fill the surface.
-            mask = mb.random_mask_2d(len(tiled_compound.referenced_ports()))
+        if pattern is None:  # Fill the surface.
+            pattern = mb.Random2DPattern(len(tiled_compound.referenced_ports()))
 
         # Attach chains to specified binding sites. Remaining sites get a backfill.
-        chains, backfills = mb.apply_mask(host=self.tiled_surface, guest=chain,
-                                          mask=mask, backfill=backfill, **kwargs)
+        chains, backfills = pattern.apply_to_compound(guest=chain,
+                host=self['tiled_surface'], backfill=backfill, **kwargs)
         self.add(chains)
         self.add(backfills)

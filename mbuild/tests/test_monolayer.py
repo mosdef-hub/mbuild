@@ -10,24 +10,24 @@ class TestMonolayer(BaseTest):
     def test_monolayer(self, ch2):
         n = 8
         m = 8
-        mask = mb.grid_mask_2d(n, m)
+        pattern = mb.Grid2DPattern(n, m)
 
         chain = mb.Polymer(ch2, n=10)
         monolayer = mb.Monolayer(surface=Betacristobalite(), chain=chain,
-                                 backfill=H(), mask=mask)
+                                 backfill=H(), pattern=pattern)
 
         assert monolayer.n_particles == 1800 + n * m * (10*3) + (100 - n*m)
         assert monolayer.n_bonds == 2300 + n * m * (10 * 2 + 9 + 1) + (100 - n * m)
 
-    def test_mask_kwargs(self, ch2):
+    def test_pattern_kwargs(self, ch2):
         n = 8
         m = 8
-        mask = mb.grid_mask_2d(n, m)
+        pattern = mb.Grid2DPattern(n, m)
 
         chain = mb.Polymer(ch2, n=10)
         monolayer = mb.Monolayer(surface=Betacristobalite(), chain=H(),
                                  guest_port_name='up', backfill=chain,
-                                 backfill_port_name='down', mask=mask)
+                                 backfill_port_name='down', pattern=pattern)
 
         chains = 100 - (n*m)
 

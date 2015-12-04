@@ -11,7 +11,7 @@ class Ethane(mb.Compound):
 
         self.add(CH3(), "methyl1")
         self.add(CH3(), "methyl2")
-        mb.equivalence_transform(self.methyl1, self.methyl1.up, self.methyl2.up)
+        mb.equivalence_transform(self['methyl1'], self['methyl1']['up'], self['methyl2']['up'])
 
 
 def main():
@@ -20,8 +20,8 @@ def main():
 
 if __name__ == "__main__":
     ethane = main()
-    atoms = list(ethane.particles)
+    atoms = list(ethane.particles())
     print(ethane)
-    for a in ethane.particles:
+    for a in ethane.particles():
         print(a)
     ethane.visualize(show_ports=True)

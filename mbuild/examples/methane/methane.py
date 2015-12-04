@@ -5,20 +5,20 @@ class Methane(mb.Compound):
     def __init__(self):
         super(Methane, self).__init__()
         carbon = mb.Particle(name='C')
-        self.add(carbon, label='C')
+        self.add(carbon)
 
         hydrogen = mb.Particle(name='H', pos=[0.1, 0, -0.07])
-        self.add(hydrogen, label='HC[$]')
+        self.add(hydrogen)
 
-        self.add_bond((self.C, self.HC[0]))
+        self.add_bond((self[0], self[1]))
 
-        self.add(mb.Particle(name='H', pos=[-0.1, 0, -0.07]), label='HC[$]')
-        self.add(mb.Particle(name='H', pos=[0, 0.1, 0.07]), label='HC[$]')
-        self.add(mb.Particle(name='H', pos=[0, -0.1, 0.07]), label='HC[$]')
+        self.add(mb.Particle(name='H', pos=[-0.1, 0, -0.07]))
+        self.add(mb.Particle(name='H', pos=[0, 0.1, 0.07]))
+        self.add(mb.Particle(name='H', pos=[0, -0.1, 0.07]))
 
-        self.add_bond((self.C, self.HC[1]))
-        self.add_bond((self.C, self.HC[2]))
-        self.add_bond((self.C, self.HC[3]))
+        self.add_bond((self[0], self[2]))
+        self.add_bond((self[0], self[3]))
+        self.add_bond((self[0], self[4]))
 
 
 def main():
@@ -27,5 +27,6 @@ def main():
 
 if __name__ == "__main__":
     methane = main()
+    print(methane)
     import ipdb; ipdb.set_trace()
     methane.visualize()

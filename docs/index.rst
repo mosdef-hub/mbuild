@@ -28,8 +28,8 @@ of code. Additionally, this approach seamlessly exposes tunable parameters withi
 the hierarchy so you can actually create whole families of structures simply
 by adjusting a variable::
 
-    mask = random_mask_2d(20)  # A random arrangement of 20 pieces on a 2D surface.
-    brush_layer = BrushLayer(chain_lenth=20, mask=mask, tile_x=3, tile_y=2)
+    pattern = Random2DPattern(20)  # A random arrangement of 20 pieces on a 2D surface.
+    brush_layer = BrushLayer(chain_lenth=20, pattern=pattern, tile_x=3, tile_y=2)
 
 .. image:: images/pmpc.png
     :align: center

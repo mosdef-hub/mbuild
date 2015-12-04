@@ -13,10 +13,10 @@ class AlkylSilane(mb.Compound):
         self.add(alkane, 'alkane')
         silane = Silane()
         self.add(silane, 'silane')
-        mb.equivalence_transform(self.alkane, self.alkane.down, self.silane.up)
+        mb.equivalence_transform(self['alkane'], self['alkane']['down'], self['silane']['up'])
 
         # Hoist silane port to AlkylSilane level.
-        self.add(silane.down, 'down', containment=False)
+        self.add(silane['down'], 'down', containment=False)
 
 if __name__ == "__main__":
     alkyl_silane = AlkylSilane(10)
