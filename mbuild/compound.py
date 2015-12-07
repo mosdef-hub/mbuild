@@ -466,11 +466,13 @@ class Compound(object):
         raise NotImplementedError('To be replaced with igraph')
 
     def visualize(self, show_ports=False, shader='lambert',
-                  drawing_type='ball and stick', camera_type='perspective'):
+                  drawing_type='ball and stick', camera_type='perspective',
+                  element_properties=None):
         """Visualize the Compound using imolecule. """
         json_mol = self._to_json(show_ports)
         imolecule.draw(json_mol, format='json', shader=shader,
-                       drawing_type=drawing_type, camera_type=camera_type)
+                       drawing_type=drawing_type, camera_type=camera_type,
+                       element_properties=element_properties)
 
     def _to_json(self, show_ports=False):
         atoms = list()
