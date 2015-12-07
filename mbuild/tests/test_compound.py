@@ -39,6 +39,13 @@ class TestCompound(BaseTest):
         assert compound.n_particles == 8 + 2*3
         assert compound.n_bonds == 7 + 2 * 2
 
+    def test_xyz(self, ethane):
+        xyz = ethane.xyz
+        assert xyz.shape == (8, 3)
+
+        xyz = ethane.xyz_with_ports
+        assert xyz.shape == (24, 3)
+
     @pytest.mark.skipif(True, reason='Waiting for InterMol to stabilize')
     def test_intermol_conversion1(self, ethane, h2o):
         compound = mb.Compound([ethane, h2o])
