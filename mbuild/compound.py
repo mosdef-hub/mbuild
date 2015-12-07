@@ -112,6 +112,7 @@ class Compound(object):
         super(Compound, self).__init__()
 
         if name:
+            assert isinstance(name, string_types)
             self.name = name
         else:
             self.name = self.__class__.__name__
@@ -402,16 +403,24 @@ class Compound(object):
     @property
     def xyz(self):
         """Return all atom coordinates in this compound. """
-        arr = np.fromiter(itertools.chain.from_iterable(
-            atom.pos for atom in self.particles()), dtype=float)
-        return arr.reshape((-1, 3))
+        if not self.children:
+            pos = self._pos
+        else:
+            arr = np.fromiter(itertools.chain.from_iterable(
+                atom.pos for atom in self.particles()), dtype=float)
+            pos = arr.reshape((-1, 3))
+        return pos
 
     @property
     def xyz_with_ports(self):
         """Return all atom coordinates in this compound including ports. """
-        arr = np.fromiter(itertools.chain.from_iterable(
-            atom.pos for atom in self.particles(include_ports=True)), dtype=float)
-        return arr.reshape((-1, 3))
+        if not self.children:
+            pos = self._pos
+        else:
+            arr = np.fromiter(itertools.chain.from_iterable(
+                atom.pos for atom in self.particles(include_ports=True)), dtype=float)
+            pos = arr.reshape((-1, 3))
+        return pos
 
     @property
     def center(self):
@@ -841,13 +850,13 @@ class Compound(object):
         # Remember that we're cloning the new one of self.
         clone_of[self] = newone
 
-        newone.name = self.name
+        newone.name = deepcopy(self.name)
         newone.periodicity = deepcopy(self.periodicity)
-        newone._pos = self._pos
-        newone.charge = self.charge
-        newone.port_particle = self.port_particle
+        newone._pos = deepcopy(self._pos)
+        newone.charge = deepcopy(self.charge)
+        newone.port_particle = deepcopy(self.port_particle)
         if hasattr(self, 'index'):
-            newone.index = self.index
+            newone.index = deepcopy(self.index)
 
         if self.children is None:
             newone.children = None
