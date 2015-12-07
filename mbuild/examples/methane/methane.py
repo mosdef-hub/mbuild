@@ -28,5 +28,4 @@ def main():
 if __name__ == "__main__":
     methane = main()
     print(methane)
-    import ipdb; ipdb.set_trace()
     methane.visualize()
