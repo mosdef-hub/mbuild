@@ -10,13 +10,13 @@ if [[ "$TRAVIS_BRANCH" != "master" ]]; then
 fi
 
 
-anaconda -t $ANACONDA_TOKEN  upload --force --user iModels --package mbuild-dev $HOME/miniconda/conda-bld/linux-64/mbuild-*
+anaconda -t $ANACONDA_TOKEN  upload --force -u iModels -p mbuild-dev $HOME/miniconda/conda-bld/linux-64/mbuild-*
 conda convert $HOME/miniconda/conda-bld/linux-64/mbuild-* -p all
 ls
-anaconda -t $ANACONDA_TOKEN  upload --force --user iModels --package mbuild-dev linux-32/mbuild-*
-anaconda -t $ANACONDA_TOKEN  upload --force --user iModels --package mbuild-dev win-32/mbuild-*
-anaconda -t $ANACONDA_TOKEN  upload --force --user iModels --package mbuild-dev win-64/mbuild-*
-anaconda -t $ANACONDA_TOKEN  upload --force --user iModels --package mbuild-dev osx-64/mbuild-*
+anaconda -t $ANACONDA_TOKEN  upload --force -u iModels -p mbuild-dev linux-32/mbuild-*
+anaconda -t $ANACONDA_TOKEN  upload --force -u iModels -p mbuild-dev win-32/mbuild-*
+anaconda -t $ANACONDA_TOKEN  upload --force -u iModels -p mbuild-dev win-64/mbuild-*
+anaconda -t $ANACONDA_TOKEN  upload --force -u iModels -p mbuild-dev osx-64/mbuild-*
 
 if [[ "$python" != "2.7" ]]; then
     echo "No deploy on PYTHON_VERSION=${python}"; exit 0
