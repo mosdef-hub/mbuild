@@ -207,7 +207,7 @@ class DiskPattern(Pattern):
         golden_angle = np.pi * (3 - np.sqrt(5))
         theta = golden_angle * np.arange(n)
 
-        points = np.zeros((n, 2))
+        points = np.zeros((n, 3))
         points[:, 0] = np.cos(theta)
         points[:, 1] = np.sin(theta)
         points *= radius.reshape((n, 1))
