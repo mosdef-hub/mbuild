@@ -622,7 +622,6 @@ class Compound(object):
 
         """
         atom_list = [particle for particle in self.particles(show_ports)]
-        import pdb; pdb.set_trace()
 
         top = self._to_topology(atom_list, chain_types, residue_types)
 
