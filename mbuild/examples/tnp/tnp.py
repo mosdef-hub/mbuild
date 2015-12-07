@@ -46,6 +46,8 @@ class Tnp(mb.Compound):
 
 def main():
     nano_particle = Tnp(n_chains=5, chain_length=10)
+    return nano_particle
 
 if __name__ == "__main__":
-    main()
+    np = main()
+    np.visualize()
