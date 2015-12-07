@@ -21,8 +21,8 @@ env:
     - python=3.4  CONDA_PY=34
 
   global:
-    # BINSTAR
-    - secure: "Rbt/6qSNB/6hvDKboKqo7iS1I+Zhye5u9k/RxNZCpaUQUiledjuzsBo+vppYskb7vHS+QRT+leDm7gUo/ZOv0DahLi4ScCIhvPSYTtWu+hKlp7TcI0woi5H7gCmGvP8bEYVPlHm3AT54xh7dzpfOca5eHpo8dVtvJhNTqbY8jPw="
+    # ANACONDA_TOKEN
+    - secure: "F5Pjo87I5vWbSuyloRHfLgz9o7WUihVtTdX/bm5zehRtUMNycrJfs4g/raMxIivsazeLEaQmJLn9E0o03SVdutrsamEyNEj8M282hJu8w9bhI0KRb1Iew0PSGGbO5EzyeiL5MmKHsjB3xI8p3e4tmYV8Stjs3n0n+WKdQbw57Ds="
     # GITHUB
     - secure: "gtj9VfJQzQb4KL23+aRfimQgXBK88JHEqmN6zi+MCCLrjhnXs7+qWoAGi4kqwNeNd9fXSK5Wk+PfPHEPjP8MFyjEhWBL9LD9ct+59RVx8bf3pe2WOWktpf440XxwpLuDEWrV01Ly4FKRqYTOvtz7pYV5y/JgCyCP76MwkWhZvG4="
 
