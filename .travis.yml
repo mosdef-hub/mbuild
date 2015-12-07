@@ -13,6 +13,8 @@ script:
   - conda config --add channels omnia
   - conda config --add channels patrickfuller
   - conda update -y conda-build
+  - conda update conda
+  - conda update anaconda
   - conda build devtools/conda-recipe
 
 env:
