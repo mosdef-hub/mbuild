@@ -35,6 +35,13 @@ Install from source
     $ cd mbuild
     $ python setup.py install
 
+Get the latest development package
+----------------------------------
+::
+
+    $ conda install mbuild-dev
+
+
 Dependencies
 ------------
 To use mBuild, the following libraries and software will need to be installed.
