@@ -32,7 +32,6 @@ if __name__ == '__main__':
     three_to_one_particles = [Propane]
 
     united_atom = mb.coarse_grain(hexane_box, particle_classes=united_atom_particles)
-
     three_to_one = mb.coarse_grain(hexane_box, particle_classes=three_to_one_particles)
 
     # print("Proxy: {}".format(proxy))
