@@ -11,10 +11,12 @@ fi
 
 pwd
 ls
-ls $HOME/miniconda/conda-bld/linux-64
+ls $HOME/miniconda/conda-bld/
 
 anaconda -t $ANACONDA_TOKEN  upload --force -u iModels -p mbuild-dev $HOME/miniconda/conda-bld/linux-64/mbuild-*
 conda convert $HOME/miniconda/conda-bld/linux-64/mbuild-* -p all
+
+ls $HOME/miniconda/conda-bld/
 
 anaconda -t $ANACONDA_TOKEN  upload --force -u iModels -p mbuild-dev linux-32/mbuild-*
 anaconda -t $ANACONDA_TOKEN  upload --force -u iModels -p mbuild-dev win-32/mbuild-*
