@@ -5,13 +5,16 @@ from mbuild import clone
 class MonoLJ(mb.Compound):
     def __init__(self):
         super(MonoLJ, self).__init__()
-        lj_particle1 = mb.Particle(name='LJ')
-        self.add(lj_particle1)
-
-        lj_particle2 = clone(lj_particle1)
-        pos = [1, 0, 0]
-        mb.translate(lj_particle2, pos)
-        self.add(lj_particle2)
+        lj_proto = mb.Particle(name='LJ', pos=[0, 0, 0])
+        
+        pattern = mb.Grid3DPattern(5, 5, 5)
+        pattern.scale(5)
+        
+        for pos in pattern:
+            lj_particle = clone(lj_proto)
+            mb.translate(lj_particle, pos)
+            self.add(lj_particle)
+            print pos
 
 
 if __name__ == '__main__':
