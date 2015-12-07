@@ -44,4 +44,3 @@ class Sphere(mb.Compound):
 if __name__ == "__main__":
     m = Sphere(n=4, radius=2)
     m.visualize(show_ports=False)
-    import ipdb; ipdb.set_trace()
