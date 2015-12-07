@@ -29,6 +29,6 @@ env:
     - secure: "gtj9VfJQzQb4KL23+aRfimQgXBK88JHEqmN6zi+MCCLrjhnXs7+qWoAGi4kqwNeNd9fXSK5Wk+PfPHEPjP8MFyjEhWBL9LD9ct+59RVx8bf3pe2WOWktpf440XxwpLuDEWrV01Ly4FKRqYTOvtz7pYV5y/JgCyCP76MwkWhZvG4="
 
 after_success:
-  - source devtools/travis-ci/post_binstar.sh
+#  - source devtools/travis-ci/post_binstar.sh
   - source devtools/travis-ci/create_docs.sh
 
