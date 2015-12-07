@@ -363,16 +363,16 @@ def _choose_correct_port(from_port, to_port):
     return [(correct_port, to_port['up'])], T
 
 
-def translate(compound, v):
+def translate(compound, pos):
     atom_positions = compound.xyz_with_ports
-    atom_positions = Translation(v).apply_to(atom_positions)
+    atom_positions = Translation(pos).apply_to(atom_positions)
     _write_back_atom_positions(compound, atom_positions)
 
 
-def translate_to(compound, v):
+def translate_to(compound, pos):
     atom_positions = compound.xyz_with_ports
     atom_positions -= compound.center
-    atom_positions = Translation(v).apply_to(atom_positions)
+    atom_positions = Translation(pos).apply_to(atom_positions)
     _write_back_atom_positions(compound, atom_positions)
 
 
