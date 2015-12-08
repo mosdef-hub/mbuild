@@ -2,8 +2,8 @@
 Installation
 ============
 
-Install with `conda <http://continuum.io/downloads>`_ (preferred)
------------------------------------------------------------------
+Install with `conda <http://continuum.io/downloads>`_
+-----------------------------------------------------
 ::
 
     $ conda install -c omnia -c patrickfuller -c imodels mbuild
@@ -33,7 +33,7 @@ Install from source
 
     $ git clone https://github.com/imodels/mbuild
     $ cd mbuild
-    $ python setup.py install
+    $ pip install .
 
 Get the latest development package
 ----------------------------------

@@ -61,4 +61,9 @@ different licenses. See those files for their specific terms.
 .. toctree::
    :hidden:
 
+   coordinate_transforms
+
+.. toctree::
+   :hidden:
+
    recipes

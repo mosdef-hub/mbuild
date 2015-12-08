@@ -74,7 +74,7 @@ class Compound(object):
     provides a means to tag the children with labels, so that the compounds can
     be easily looked up later. Labels may also point to objects outside the
     Compound's containment hierarchy. Compound has built-in support for copying
-    and deepcopying Compound hierarchies, enumerating atoms or bonds in the
+    and deepcopying Compound hierarchies, enumerating particles or bonds in the
     hierarchy, proximity based searches, visualization, I/O operations, and a
     number of other convenience methods.
 
@@ -346,12 +346,12 @@ class Compound(object):
         """Return the number of Bonds in the Compound. """
         return sum(1 for _ in self.bonds())
 
-    def add_bond(self, atom_pair):
+    def add_bond(self, particle_pair):
         """"""
         if self.root.bond_graph is None:
             self.root.bond_graph = nx.Graph()
 
-        self.root.bond_graph.add_edge(atom_pair[0], atom_pair[1])
+        self.root.bond_graph.add_edge(particle_pair[0], particle_pair[1])
 
     def generate_bonds(self, name_a, name_b, dmin, dmax):
         """Add Bonds between all pairs of types a/b within [dmin, dmax]. """
@@ -370,10 +370,10 @@ class Compound(object):
                     self.add_bond((p1, p2))
                     added_bonds.append(bond_tuple)
 
-    def remove_bond(self, atom_pair):
+    def remove_bond(self, particle_pair):
         if self.root.bond_graph is None:
             return
-        self.root.bond_graph.remove_edge(atom_pair[0], atom_pair[1])
+        self.root.bond_graph.remove_edge(particle_pair[0], particle_pair[1])
     # endregion
 
     # region Coordinates
@@ -402,23 +402,23 @@ class Compound(object):
 
     @property
     def xyz(self):
-        """Return all atom coordinates in this compound. """
+        """Return all particle coordinates in this compound. """
         if not self.children:
             pos = self._pos
         else:
             arr = np.fromiter(itertools.chain.from_iterable(
-                atom.pos for atom in self.particles()), dtype=float)
+                particle.pos for particle in self.particles()), dtype=float)
             pos = arr.reshape((-1, 3))
         return pos
 
     @property
     def xyz_with_ports(self):
-        """Return all atom coordinates in this compound including ports. """
+        """Return all particle coordinates in this compound including ports. """
         if not self.children:
             pos = self._pos
         else:
             arr = np.fromiter(itertools.chain.from_iterable(
-                atom.pos for atom in self.particles(include_ports=True)), dtype=float)
+                particle.pos for particle in self.particles(include_ports=True)), dtype=float)
             pos = arr.reshape((-1, 3))
         return pos
 
@@ -441,7 +441,7 @@ class Compound(object):
         return np.sqrt((d ** 2).sum(axis=-1))
 
     def particles_in_range(self, compound, dmax, max_particles=20, particle_kdtree=None, particle_array=None):
-        """Find atoms within a specified range of another atom. """
+        """Find particles ithin a specified range of another particle. """
         if particle_kdtree is None:
             particle_kdtree = PeriodicCKDTree(data=self.xyz, bounds=self.periodicity)
         _, idxs = particle_kdtree.query(compound.pos, k=max_particles, distance_upper_bound=dmax)
