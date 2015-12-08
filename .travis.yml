@@ -23,7 +23,7 @@ env:
 
   global:
     # ANACONDA_TOKEN
-    - secure: "K5o1SdlNrrnbtAyMdIvJodUeVolEd8sMenBw3y33cyZEcAfH1NBpn4Yd2bKyPmOly8Nu9fxB4NLgpWfL4QNE+c7T1GindidTtzzDeIk0laAkRRMNaGrHOe0dfffVTZrRQPVHkdmeEmPQvasCgKYerxUuYWZca8sueVLEb6MbY7E="
+    - secure: "qOQl1XGZLtRuB6UBXZTBiNx1psnWPEdlcz286i1sxq+G3Il1d/rP9Efclc6HYmNHkw0tsoKJnBzkpAkWkTGl+pgQF4Zfvra4Ue+fTDPnEWKi71uRjuVYEgas4pmtD3debWCe2bJzORQDQH12gwR+SB0UrLK+xw/zRyh6ezl+fp4="
     # GITHUB
     - secure: "gtj9VfJQzQb4KL23+aRfimQgXBK88JHEqmN6zi+MCCLrjhnXs7+qWoAGi4kqwNeNd9fXSK5Wk+PfPHEPjP8MFyjEhWBL9LD9ct+59RVx8bf3pe2WOWktpf440XxwpLuDEWrV01Ly4FKRqYTOvtz7pYV5y/JgCyCP76MwkWhZvG4="
 
