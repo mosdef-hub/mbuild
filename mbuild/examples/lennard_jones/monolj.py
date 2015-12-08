@@ -14,7 +14,7 @@ class MonoLJ(mb.Compound):
             lj_particle = clone(lj_proto)
             mb.translate(lj_particle, pos)
             self.add(lj_particle)
-            print pos
+            print(pos)
 
 
 if __name__ == '__main__':
