@@ -364,61 +364,166 @@ def _choose_correct_port(from_port, to_port):
 
 
 def translate(compound, pos):
+    """Translate a compound by a vector.
+
+    Parameters
+    ----------
+    compound : mb.Compound
+        The compound being translated.
+    pos : np.ndarray, shape=(3,), dtype=float
+        The vector to translate the compound by.
+
+    """
     atom_positions = compound.xyz_with_ports
     atom_positions = Translation(pos).apply_to(atom_positions)
     _write_back_atom_positions(compound, atom_positions)
 
 
 def translate_to(compound, pos):
+    """Translate a compound to a coordinate.
+
+    Parameters
+    ----------
+    compound : mb.Compound
+        The compound being translated.
+    pos : np.ndarray, shape=(3,), dtype=float
+        The coordinate to translate the compound to.
+
+    """
     atom_positions = compound.xyz_with_ports
     atom_positions -= compound.center
     atom_positions = Translation(pos).apply_to(atom_positions)
     _write_back_atom_positions(compound, atom_positions)
 
 
-def rotate_around_z(compound, theta):
-    atom_positions = compound.xyz_with_ports
-    atom_positions = RotationAroundZ(theta).apply_to(atom_positions)
-    _write_back_atom_positions(compound, atom_positions)
-
-
-def rotate_around_y(compound, theta):
-    atom_positions = compound.xyz_with_ports
-    atom_positions = RotationAroundY(theta).apply_to(atom_positions)
-    _write_back_atom_positions(compound, atom_positions)
-
-
 def rotate_around_x(compound, theta):
+    """Rotate a compound around the x axis.
+
+    Parameters
+    ----------
+    compound : mb.Compound
+        The compound being rotated.
+    theta : float
+        The angle by which to rotate the compound.
+
+    """
     atom_positions = compound.xyz_with_ports
     atom_positions = RotationAroundX(theta).apply_to(atom_positions)
     _write_back_atom_positions(compound, atom_positions)
 
 
-def x_axis_transform(compound, new_origin=None,
-                     point_on_x_axis=None,
-                     point_on_xy_plane=None):
-    """
+def rotate_around_y(compound, theta):
+    """Rotate a compound around the y axis.
 
     Parameters
     ----------
-    compound:
-    new_origin:
-    point_on_x_axis:
-    point_on_xy_plane:
+    compound : mb.Compound
+        The compound being rotated.
+    theta : float
+        The angle by which to rotate the compound.
 
     """
-    if hasattr(new_origin, 'pos'):
-        new_origin = new_origin.pos
-    elif new_origin is None:
+    atom_positions = compound.xyz_with_ports
+    atom_positions = RotationAroundY(theta).apply_to(atom_positions)
+    _write_back_atom_positions(compound, atom_positions)
+
+
+def rotate_around_z(compound, theta):
+    """Rotate a compound around the z axis.
+
+    Parameters
+    ----------
+    compound : mb.Compound
+        The compound being rotated.
+    theta : float
+        The angle by which to rotate the compound.
+
+    """
+    atom_positions = compound.xyz_with_ports
+    atom_positions = RotationAroundZ(theta).apply_to(atom_positions)
+    _write_back_atom_positions(compound, atom_positions)
+
+
+def revolve_around_x(compound, theta):
+    """Rotate a compound in place around the x axis.
+
+    Parameters
+    ----------
+    compound : mb.Compound
+        The compound being rotated.
+    theta : float
+        The angle by which to rotate the compound.
+
+    """
+    center_pos = compound.center
+    translate(compound, -center_pos)
+    rotate_around_x(compound, theta)
+    translate(compound, center_pos)
+
+
+def revolve_around_y(compound, theta):
+    """Rotate a compound in place around the y axis.
+
+    Parameters
+    ----------
+    compound : mb.Compound
+        The compound being rotated.
+    theta : float
+        The angle by which to rotate the compound.
+
+    """
+    center_pos = compound.center
+    translate(compound, -center_pos)
+    rotate_around_y(compound, theta)
+    translate(compound, center_pos)
+
+
+def revolve_around_z(compound, theta):
+    """Rotate a compound in place around the z axis.
+
+    Parameters
+    ----------
+    compound : mb.Compound
+        The compound being rotated.
+    theta : float
+        The angle by which to rotate the compound.
+
+    """
+    center_pos = compound.center
+    translate(compound, -center_pos)
+    rotate_around_z(compound, theta)
+    translate(compound, center_pos)
+
+
+def x_axis_transform(compound, new_origin=None,
+                     point_on_x_axis=None,
+                     point_on_xy_plane=None):
+    """Move a compound such that the x-axis lies on specified points.
+
+    Parameters
+    ----------
+    compound : mb.Compound
+        The compound to move.
+    new_origin : mb.Compound or np.ndarray, optional, default=[0.0, 0.0, 0.0]
+        Where to place the new origin of the coordinate system.
+    point_on_x_axis : mb.Compound or np.ndarray, optional, default=[1.0, 0.0, 0.0]
+        A point on the new x-axis.
+    point_on_xy_plane : mb.Compound or np.ndarray, optional, default=[1.0, 0.0, 0.0]
+        A point on the new xy-plane.
+
+    """
+    if new_origin is None:
         new_origin = array([0, 0, 0])
-    if hasattr(point_on_x_axis, 'pos'):
-        point_on_x_axis = point_on_x_axis.pos
-    elif point_on_x_axis is None:
+    else:
+        new_origin = new_origin.pos
+    if point_on_x_axis is None:
         point_on_x_axis = array([1.0, 0.0, 0.0])
-    if hasattr(point_on_xy_plane, 'pos'):
-        point_on_xy_plane = point_on_xy_plane.pos
-    elif point_on_xy_plane is None:
+    else:
+        point_on_x_axis = point_on_x_axis.pos
+    if point_on_xy_plane is None:
         point_on_xy_plane = array([1.0, 1.0, 0.0])
+    else:
+        point_on_xy_plane = point_on_xy_plane.pos
 
     atom_positions = compound.xyz_with_ports
     transform = AxisTransform(new_origin=new_origin,
@@ -431,6 +536,20 @@ def x_axis_transform(compound, new_origin=None,
 def y_axis_transform(compound, new_origin=None,
                      point_on_y_axis=None,
                      point_on_xy_plane=None):
+    """Move a compound such that the y-axis lies on specified points.
+
+    Parameters
+    ----------
+    compound : mb.Compound
+        The compound to move.
+    new_origin : mb.Compound or np.ndarray, optional, default=[0.0, 0.0, 0.0]
+        Where to place the new origin of the coordinate system.
+    point_on_y_axis : mb.Compound or np.ndarray, optional, default=[0.0, 1.0, 0.0]
+        A point on the new x-axis.
+    point_on_xy_plane : mb.Compound or np.ndarray, optional, default=[0.0, 1.0, 0.0]
+        A point on the new xy-plane.
+
+    """
     x_axis_transform(compound, new_origin=new_origin,
                      point_on_x_axis=point_on_y_axis,
                      point_on_xy_plane=point_on_xy_plane)
@@ -440,28 +559,24 @@ def y_axis_transform(compound, new_origin=None,
 def z_axis_transform(compound, new_origin=None,
                      point_on_z_axis=None,
                      point_on_zx_plane=None):
+    """Move a compound such that the z-axis lies on specified points.
+
+    Parameters
+    ----------
+    compound : mb.Compound
+        The compound to move.
+    new_origin : mb.Compound or np.ndarray, optional, default=[0.0, 0.0, 0.0]
+        Where to place the new origin of the coordinate system.
+    point_on_y_axis : mb.Compound or np.ndarray, optional, default=[0.0, 0.0, 1.0]
+        A point on the new z-axis.
+    point_on_xy_plane : mb.Compound or np.ndarray, optional, default=[0.0, 0.0, 1.0]
+        A point on the new xz-plane.
+
+    """
     x_axis_transform(compound, new_origin=new_origin,
                      point_on_x_axis=point_on_z_axis,
                      point_on_xy_plane=point_on_zx_plane)
     rotate_around_y(compound, pi * 3 / 2)
 
 
-def revolve_around_x(compound, theta):
-    center_pos = compound.center
-    translate(compound, -center_pos)
-    rotate_around_x(compound, theta)
-    translate(compound, center_pos)
 
-
-def revolve_around_y(compound, theta):
-    center_pos = compound.center
-    translate(compound, -center_pos)
-    rotate_around_y(compound, theta)
-    translate(compound, center_pos)
-
-
-def revolve_around_z(compound, theta):
-    center_pos = compound.center
-    translate(compound, -center_pos)
-    rotate_around_z(compound, theta)
-    translate(compound, center_pos)
