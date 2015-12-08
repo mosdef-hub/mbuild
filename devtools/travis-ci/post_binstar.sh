@@ -13,6 +13,8 @@ pwd
 ls
 ls $HOME/miniconda3/conda-bld/
 
+echo "Executing anaconda upload"
+echo "anaconda -t $ANACONDA_TOKEN  upload --force -u imodels -p mbuild-dev $HOME/miniconda3/conda-bld/linux-64/mbuild-*" | perl -ne 'print uc'
 anaconda -t $ANACONDA_TOKEN  upload --force -u imodels -p mbuild-dev $HOME/miniconda3/conda-bld/linux-64/mbuild-*
 conda convert $HOME/miniconda3/conda-bld/linux-64/mbuild-* -p all
 
