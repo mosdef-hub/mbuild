@@ -13,7 +13,6 @@ script:
   - conda config --add channels omnia
   - conda config --add channels patrickfuller
   - conda update conda
-  - conda update anaconda
   - conda update -y conda-build
   - conda build devtools/conda-recipe
 
@@ -22,13 +21,13 @@ env:
     - python=2.7  CONDA_PY=27
     - python=3.4  CONDA_PY=34
 
-#  global:
-#    # ANACONDA_TOKEN
-#    - secure: "F5Pjo87I5vWbSuyloRHfLgz9o7WUihVtTdX/bm5zehRtUMNycrJfs4g/raMxIivsazeLEaQmJLn9E0o03SVdutrsamEyNEj8M282hJu8w9bhI0KRb1Iew0PSGGbO5EzyeiL5MmKHsjB3xI8p3e4tmYV8Stjs3n0n+WKdQbw57Ds="
-#    # GITHUB
-#    - secure: "gtj9VfJQzQb4KL23+aRfimQgXBK88JHEqmN6zi+MCCLrjhnXs7+qWoAGi4kqwNeNd9fXSK5Wk+PfPHEPjP8MFyjEhWBL9LD9ct+59RVx8bf3pe2WOWktpf440XxwpLuDEWrV01Ly4FKRqYTOvtz7pYV5y/JgCyCP76MwkWhZvG4="
+  global:
+    # ANACONDA_TOKEN
+    - secure: "F5Pjo87I5vWbSuyloRHfLgz9o7WUihVtTdX/bm5zehRtUMNycrJfs4g/raMxIivsazeLEaQmJLn9E0o03SVdutrsamEyNEj8M282hJu8w9bhI0KRb1Iew0PSGGbO5EzyeiL5MmKHsjB3xI8p3e4tmYV8Stjs3n0n+WKdQbw57Ds="
+    # GITHUB
+    - secure: "gtj9VfJQzQb4KL23+aRfimQgXBK88JHEqmN6zi+MCCLrjhnXs7+qWoAGi4kqwNeNd9fXSK5Wk+PfPHEPjP8MFyjEhWBL9LD9ct+59RVx8bf3pe2WOWktpf440XxwpLuDEWrV01Ly4FKRqYTOvtz7pYV5y/JgCyCP76MwkWhZvG4="
 
-#after_success:
-#  - source devtools/travis-ci/post_binstar.sh
-#  - source devtools/travis-ci/create_docs.sh
+after_success:
+  - source devtools/travis-ci/post_binstar.sh
+  - source devtools/travis-ci/create_docs.sh
 
