@@ -13,11 +13,11 @@ Coordinate transformations
 
 .. autofunction:: mbuild.coordinate_transform.rotate_around_z
 
-.. autofunction:: mbuild.coordinate_transform.revolve_around_x
+.. autofunction:: mbuild.coordinate_transform.spin_x
 
-.. autofunction:: mbuild.coordinate_transform.revolve_around_y
+.. autofunction:: mbuild.coordinate_transform.spin_y
 
-.. autofunction:: mbuild.coordinate_transform.revolve_around_z
+.. autofunction:: mbuild.coordinate_transform.spin_z
 
 .. autofunction:: mbuild.coordinate_transform.x_axis_transform
 
