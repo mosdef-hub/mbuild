@@ -196,39 +196,23 @@ class RigidTransform(CoordinateTransform):
         super(RigidTransform, self).__init__(T)
 
 
-def unit_vector(vector):
+def unit_vector(v):
     """Returns the unit vector of the vector. """
-    return vector / norm(vector)
+    return v / norm(v)
 
 
-def vec_angle(v1, v2):
-    """Returns the angle in radians between vectors 'v1' and 'v2'
-
-    >>> vec_angle((1, 0, 0), (0, 1, 0))
-    1.5707963267948966
-    >>> vec_angle((1, 0, 0), (1, 0, 0))
-    0.0
-    >>> vec_angle((1, 0, 0), (-1, 0, 0))
-    3.141592653589793
-    """
-    v1_u = unit_vector(v1)
-    v2_u = unit_vector(v2)
-
-    d = dot(v1_u, v2_u)
-    if abs(d - 1.0) < 0.000000001:
-        angle = 0.0
-    else:
-        angle = arccos(d)
-    if isnan(angle):
-        if (v1_u == v2_u).all():
-            return 0.0
-        else:
-            return pi
-    return angle
+def angle(u, v):
+    """Returns the angle in radians between two vectors. """
+    c = dot(u, v) / norm(u) / norm (v)
+    return arccos(clip(c, -1, 1))
 
 
-def _write_back_atom_positions(compound, arrnx3):
+def _set_particle_positions(compound, arrnx3):
+    """"""
     if not compound.children:
+        if not arrnx3.shape[0] == 1:
+            raise ValueError('Trying to set position of {} with more than one'
+                             'coordinate: {}'.format(compound, arrnx3))
         compound.pos = squeeze(arrnx3)
     else:
         for atom, coords in zip(compound._particles(include_ports=True), arrnx3):
@@ -305,7 +289,7 @@ def equivalence_transform(compound, from_positions, to_positions, add_bond=True)
         T = _create_equivalence_transform(equivalence_pairs)
     atom_positions = compound.xyz_with_ports
     atom_positions = T.apply_to(atom_positions)
-    _write_back_atom_positions(compound, atom_positions)
+    _set_particle_positions(compound, atom_positions)
 
     if add_bond:
         if isinstance(from_positions, Port) and isinstance(to_positions, Port):
@@ -376,7 +360,7 @@ def translate(compound, pos):
     """
     atom_positions = compound.xyz_with_ports
     atom_positions = Translation(pos).apply_to(atom_positions)
-    _write_back_atom_positions(compound, atom_positions)
+    _set_particle_positions(compound, atom_positions)
 
 
 def translate_to(compound, pos):
@@ -393,7 +377,7 @@ def translate_to(compound, pos):
     atom_positions = compound.xyz_with_ports
     atom_positions -= compound.center
     atom_positions = Translation(pos).apply_to(atom_positions)
-    _write_back_atom_positions(compound, atom_positions)
+    _set_particle_positions(compound, atom_positions)
 
 
 def rotate_around_x(compound, theta):
@@ -409,7 +393,7 @@ def rotate_around_x(compound, theta):
     """
     atom_positions = compound.xyz_with_ports
     atom_positions = RotationAroundX(theta).apply_to(atom_positions)
-    _write_back_atom_positions(compound, atom_positions)
+    _set_particle_positions(compound, atom_positions)
 
 
 def rotate_around_y(compound, theta):
@@ -425,7 +409,7 @@ def rotate_around_y(compound, theta):
     """
     atom_positions = compound.xyz_with_ports
     atom_positions = RotationAroundY(theta).apply_to(atom_positions)
-    _write_back_atom_positions(compound, atom_positions)
+    _set_particle_positions(compound, atom_positions)
 
 
 def rotate_around_z(compound, theta):
@@ -441,7 +425,7 @@ def rotate_around_z(compound, theta):
     """
     atom_positions = compound.xyz_with_ports
     atom_positions = RotationAroundZ(theta).apply_to(atom_positions)
-    _write_back_atom_positions(compound, atom_positions)
+    _set_particle_positions(compound, atom_positions)
 
 
 def revolve_around_x(compound, theta):
@@ -530,7 +514,7 @@ def x_axis_transform(compound, new_origin=None,
                               point_on_x_axis=point_on_x_axis,
                               point_on_xy_plane=point_on_xy_plane)
     atom_positions = transform.apply_to(atom_positions)
-    _write_back_atom_positions(compound, atom_positions)
+    _set_particle_positions(compound, atom_positions)
 
 
 def y_axis_transform(compound, new_origin=None,

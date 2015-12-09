@@ -1,4 +1,4 @@
-!#/bin/bash
+#!/bin/bash
 
 PROJECT_DIR=`pwd`
 echo "Project dir is: " $PROJECT_DIR
