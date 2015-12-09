@@ -428,7 +428,7 @@ def rotate_around_z(compound, theta):
     _set_particle_positions(compound, atom_positions)
 
 
-def revolve_around_x(compound, theta):
+def spin_x(compound, theta):
     """Rotate a compound in place around the x axis.
 
     Parameters
@@ -445,7 +445,7 @@ def revolve_around_x(compound, theta):
     translate(compound, center_pos)
 
 
-def revolve_around_y(compound, theta):
+def spin_y(compound, theta):
     """Rotate a compound in place around the y axis.
 
     Parameters
@@ -462,7 +462,7 @@ def revolve_around_y(compound, theta):
     translate(compound, center_pos)
 
 
-def revolve_around_z(compound, theta):
+def spin_z(compound, theta):
     """Rotate a compound in place around the z axis.
 
     Parameters
