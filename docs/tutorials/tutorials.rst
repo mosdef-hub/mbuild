@@ -7,3 +7,4 @@ You can find all of the files used in these tutorials in ``mbuild/examples``.
     tutorial_methane
     tutorial_ethane
     tutorial_monolayer
+    tutorial_simple_LJ
