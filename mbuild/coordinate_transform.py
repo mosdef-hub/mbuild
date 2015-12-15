@@ -3,6 +3,7 @@ from numpy.linalg import norm, svd, inv
 
 
 __all__ = ['rotate_around_x', 'rotate_around_y', 'rotate_around_z',
+           'spin_x', 'spin_y', 'spin_z',
            'equivalence_transform', 'translate', 'translate_to',
            'x_axis_transform', 'y_axis_transform', 'z_axis_transform']
 
