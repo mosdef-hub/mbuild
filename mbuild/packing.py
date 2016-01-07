@@ -58,6 +58,7 @@ def fill_box(compound, n_compounds, box, overlap=0.2):
     if isinstance(box, (list, tuple)):
         box = Box(lengths=box)
 
+    n_compounds = int(n_compounds)
     compound_pdb = tempfile.mkstemp(suffix='.pdb')[1]
     compound.save(compound_pdb)
     filled_pdb = tempfile.mkstemp(suffix='.pdb')[1]
@@ -69,6 +70,7 @@ def fill_box(compound, n_compounds, box, overlap=0.2):
     # Build the input file and call packmol.
     input_text = (PACKMOL_HEADER.format(overlap, filled_pdb) +
                   PACKMOL_BOX.format(compound_pdb, n_compounds, *box_lengths))
+
 
     proc = Popen(PACKMOL, stdin=PIPE, stdout=PIPE, stderr=PIPE, universal_newlines=True)
     out, err = proc.communicate(input=input_text)
@@ -104,6 +106,8 @@ def solvate(solute, solvent, n_solvent, box, overlap=0.2):
 
     if isinstance(box, (list, tuple)):
         box = Box(lengths=box)
+
+    n_solvent = int(n_solvent)
 
     solute_pdb = tempfile.mkstemp(suffix='.pdb')[1]
     solute.save(solute_pdb)
