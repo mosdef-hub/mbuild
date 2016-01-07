@@ -182,7 +182,7 @@ div#notebook {
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[1]:</div>
+<div class="prompt input_prompt">In&nbsp;[3]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython2"><pre><span class="kn">import</span> <span class="nn">mbuild</span> <span class="kn">as</span> <span class="nn">mb</span>
@@ -231,12 +231,12 @@ div#notebook {
 <div class="output_area"><div class="prompt"></div>
 
 <div class="output_html rendered_html output_subarea ">
-<div id="molecule_c1aef06e-dcd1-4e23-9f8f-e36654fe18ae"></div>
+<div id="molecule_80f6eb6e-973b-4f2f-aac1-dfee3a9683e5"></div>
            <script type="text/javascript">
            require.config({baseUrl: '/',
                            paths: {imolecule: ['nbextensions/imolecule.min', 'https://rawgit.com/patrickfuller/imolecule/master/imolecule/js/build/imolecule.min']}});
            require(['imolecule'], function () {
-               var $d = $('#molecule_c1aef06e-dcd1-4e23-9f8f-e36654fe18ae');
+               var $d = $('#molecule_80f6eb6e-973b-4f2f-aac1-dfee3a9683e5');
                $d.width(400); $d.height(300);
                $d.imolecule = jQuery.extend({}, imolecule);
                $d.imolecule.create($d, {drawingType: 'ball and stick',
@@ -281,12 +281,10 @@ div#notebook {
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[2]:</div>
+<div class="prompt input_prompt">In&nbsp;[4]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython2"><pre><span class="kn">import</span> <span class="nn">mbuild</span> <span class="kn">as</span> <span class="nn">mb</span>
-<span class="kn">from</span> <span class="nn">mbuild</span> <span class="kn">import</span> <span class="n">clone</span>
-
 
 <span class="k">class</span> <span class="nc">MonoLJ</span><span class="p">(</span><span class="n">mb</span><span class="o">.</span><span class="n">Compound</span><span class="p">):</span>
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -296,7 +294,7 @@ div#notebook {
         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">2</span><span class="p">):</span>
             <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">2</span><span class="p">):</span>
                 <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">2</span><span class="p">):</span>
-                    <span class="n">lj_particle</span> <span class="o">=</span> <span class="n">clone</span><span class="p">(</span><span class="n">lj_proto</span><span class="p">)</span>
+                    <span class="n">lj_particle</span> <span class="o">=</span> <span class="n">mb</span><span class="o">.</span><span class="n">clone</span><span class="p">(</span><span class="n">lj_proto</span><span class="p">)</span>
                     <span class="n">pos</span> <span class="o">=</span> <span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">,</span><span class="n">k</span><span class="p">]</span>
                     <span class="n">mb</span><span class="o">.</span><span class="n">translate</span><span class="p">(</span><span class="n">lj_particle</span><span class="p">,</span> <span class="n">pos</span><span class="p">)</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">lj_particle</span><span class="p">)</span>
@@ -317,12 +315,12 @@ div#notebook {
 <div class="output_area"><div class="prompt"></div>
 
 <div class="output_html rendered_html output_subarea ">
-<div id="molecule_1c830de8-f1ae-4649-ae71-24d88eb4c901"></div>
+<div id="molecule_ab27c86e-c3f5-4418-8a01-ac8a9c37be57"></div>
            <script type="text/javascript">
            require.config({baseUrl: '/',
                            paths: {imolecule: ['nbextensions/imolecule.min', 'https://rawgit.com/patrickfuller/imolecule/master/imolecule/js/build/imolecule.min']}});
            require(['imolecule'], function () {
-               var $d = $('#molecule_1c830de8-f1ae-4649-ae71-24d88eb4c901');
+               var $d = $('#molecule_ab27c86e-c3f5-4418-8a01-ac8a9c37be57');
                $d.width(400); $d.height(300);
                $d.imolecule = jQuery.extend({}, imolecule);
                $d.imolecule.create($d, {drawingType: 'ball and stick',
@@ -366,12 +364,10 @@ div#notebook {
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[3]:</div>
+<div class="prompt input_prompt">In&nbsp;[5]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython2"><pre><span class="kn">import</span> <span class="nn">mbuild</span> <span class="kn">as</span> <span class="nn">mb</span>
-<span class="kn">from</span> <span class="nn">mbuild</span> <span class="kn">import</span> <span class="n">clone</span>
-
 
 <span class="k">class</span> <span class="nc">MonoLJ</span><span class="p">(</span><span class="n">mb</span><span class="o">.</span><span class="n">Compound</span><span class="p">):</span>
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -382,7 +378,7 @@ div#notebook {
         <span class="n">pattern</span><span class="o">.</span><span class="n">scale</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
 
         <span class="k">for</span> <span class="n">pos</span> <span class="ow">in</span> <span class="n">pattern</span><span class="p">:</span>
-            <span class="n">lj_particle</span> <span class="o">=</span> <span class="n">clone</span><span class="p">(</span><span class="n">lj_proto</span><span class="p">)</span>
+            <span class="n">lj_particle</span> <span class="o">=</span> <span class="n">mb</span><span class="o">.</span><span class="n">clone</span><span class="p">(</span><span class="n">lj_proto</span><span class="p">)</span>
             <span class="n">mb</span><span class="o">.</span><span class="n">translate</span><span class="p">(</span><span class="n">lj_particle</span><span class="p">,</span> <span class="n">pos</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">lj_particle</span><span class="p">)</span>
 
@@ -402,12 +398,12 @@ div#notebook {
 <div class="output_area"><div class="prompt"></div>
 
 <div class="output_html rendered_html output_subarea ">
-<div id="molecule_8333c26b-23fc-44ad-a79f-d9f8a420c4d4"></div>
+<div id="molecule_8fb3654a-a033-4966-80ef-52866a268656"></div>
            <script type="text/javascript">
            require.config({baseUrl: '/',
                            paths: {imolecule: ['nbextensions/imolecule.min', 'https://rawgit.com/patrickfuller/imolecule/master/imolecule/js/build/imolecule.min']}});
            require(['imolecule'], function () {
-               var $d = $('#molecule_8333c26b-23fc-44ad-a79f-d9f8a420c4d4');
+               var $d = $('#molecule_8fb3654a-a033-4966-80ef-52866a268656');
                $d.width(400); $d.height(300);
                $d.imolecule = jQuery.extend({}, imolecule);
                $d.imolecule.create($d, {drawingType: 'ball and stick',
@@ -451,12 +447,10 @@ div#notebook {
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[4]:</div>
+<div class="prompt input_prompt">In&nbsp;[6]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython2"><pre><span class="kn">import</span> <span class="nn">mbuild</span> <span class="kn">as</span> <span class="nn">mb</span>
-<span class="kn">from</span> <span class="nn">mbuild</span> <span class="kn">import</span> <span class="n">clone</span>
-
 
 <span class="k">class</span> <span class="nc">MonoLJ</span><span class="p">(</span><span class="n">mb</span><span class="o">.</span><span class="n">Compound</span><span class="p">):</span>
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -467,7 +461,7 @@ div#notebook {
         <span class="n">pattern</span><span class="o">.</span><span class="n">scale</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>
 
         <span class="k">for</span> <span class="n">pos</span> <span class="ow">in</span> <span class="n">pattern</span><span class="p">:</span>
-            <span class="n">lj_particle</span> <span class="o">=</span> <span class="n">clone</span><span class="p">(</span><span class="n">lj_proto</span><span class="p">)</span>
+            <span class="n">lj_particle</span> <span class="o">=</span> <span class="n">mb</span><span class="o">.</span><span class="n">clone</span><span class="p">(</span><span class="n">lj_proto</span><span class="p">)</span>
             <span class="n">mb</span><span class="o">.</span><span class="n">translate</span><span class="p">(</span><span class="n">lj_particle</span><span class="p">,</span> <span class="n">pos</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">lj_particle</span><span class="p">)</span>
 
@@ -487,12 +481,12 @@ div#notebook {
 <div class="output_area"><div class="prompt"></div>
 
 <div class="output_html rendered_html output_subarea ">
-<div id="molecule_e0d59bb8-5190-4b72-b987-fd395e70d273"></div>
+<div id="molecule_f476321e-3454-4bef-8898-2caac6dad5b6"></div>
            <script type="text/javascript">
            require.config({baseUrl: '/',
                            paths: {imolecule: ['nbextensions/imolecule.min', 'https://rawgit.com/patrickfuller/imolecule/master/imolecule/js/build/imolecule.min']}});
            require(['imolecule'], function () {
-               var $d = $('#molecule_e0d59bb8-5190-4b72-b987-fd395e70d273');
+               var $d = $('#molecule_f476321e-3454-4bef-8898-2caac6dad5b6');
                $d.width(400); $d.height(300);
                $d.imolecule = jQuery.extend({}, imolecule);
                $d.imolecule.create($d, {drawingType: 'ball and stick',
@@ -537,12 +531,10 @@ div#notebook {
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[5]:</div>
+<div class="prompt input_prompt">In&nbsp;[7]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython2"><pre><span class="kn">import</span> <span class="nn">mbuild</span> <span class="kn">as</span> <span class="nn">mb</span>
-<span class="kn">from</span> <span class="nn">mbuild</span> <span class="kn">import</span> <span class="n">clone</span>
-
 
 <span class="k">class</span> <span class="nc">MonoLJ</span><span class="p">(</span><span class="n">mb</span><span class="o">.</span><span class="n">Compound</span><span class="p">):</span>
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -553,7 +545,7 @@ div#notebook {
         <span class="n">pattern_sphere</span><span class="o">.</span><span class="n">scale</span><span class="p">(</span><span class="mf">0.5</span><span class="p">)</span>
         
         <span class="k">for</span> <span class="n">pos</span> <span class="ow">in</span> <span class="n">pattern_sphere</span><span class="p">:</span>
-            <span class="n">lj_particle</span> <span class="o">=</span> <span class="n">clone</span><span class="p">(</span><span class="n">lj_proto</span><span class="p">)</span>
+            <span class="n">lj_particle</span> <span class="o">=</span> <span class="n">mb</span><span class="o">.</span><span class="n">clone</span><span class="p">(</span><span class="n">lj_proto</span><span class="p">)</span>
             <span class="n">pos</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">-=</span><span class="mf">1.0</span>
             <span class="n">mb</span><span class="o">.</span><span class="n">translate</span><span class="p">(</span><span class="n">lj_particle</span><span class="p">,</span> <span class="n">pos</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">lj_particle</span><span class="p">)</span>
@@ -561,7 +553,7 @@ div#notebook {
         <span class="n">pattern_disk</span> <span class="o">=</span> <span class="n">mb</span><span class="o">.</span><span class="n">DiskPattern</span><span class="p">(</span><span class="mi">200</span><span class="p">)</span>
         <span class="n">pattern_disk</span><span class="o">.</span><span class="n">scale</span><span class="p">(</span><span class="mf">0.5</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">pos</span> <span class="ow">in</span> <span class="n">pattern_disk</span><span class="p">:</span>
-            <span class="n">lj_particle</span> <span class="o">=</span> <span class="n">clone</span><span class="p">(</span><span class="n">lj_proto</span><span class="p">)</span>
+            <span class="n">lj_particle</span> <span class="o">=</span> <span class="n">mb</span><span class="o">.</span><span class="n">clone</span><span class="p">(</span><span class="n">lj_proto</span><span class="p">)</span>
             <span class="n">pos</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">+=</span><span class="mf">1.0</span>
             <span class="n">mb</span><span class="o">.</span><span class="n">translate</span><span class="p">(</span><span class="n">lj_particle</span><span class="p">,</span> <span class="n">pos</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">lj_particle</span><span class="p">)</span>
@@ -582,12 +574,12 @@ div#notebook {
 <div class="output_area"><div class="prompt"></div>
 
 <div class="output_html rendered_html output_subarea ">
-<div id="molecule_d2edb505-f510-4932-a382-dce97479994c"></div>
+<div id="molecule_ffc25cf4-c4aa-488f-8c70-417ee89da5a0"></div>
            <script type="text/javascript">
            require.config({baseUrl: '/',
                            paths: {imolecule: ['nbextensions/imolecule.min', 'https://rawgit.com/patrickfuller/imolecule/master/imolecule/js/build/imolecule.min']}});
            require(['imolecule'], function () {
-               var $d = $('#molecule_d2edb505-f510-4932-a382-dce97479994c');
+               var $d = $('#molecule_ffc25cf4-c4aa-488f-8c70-417ee89da5a0');
                $d.width(400); $d.height(300);
                $d.imolecule = jQuery.extend({}, imolecule);
                $d.imolecule.create($d, {drawingType: 'ball and stick',
@@ -631,11 +623,10 @@ div#notebook {
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[6]:</div>
+<div class="prompt input_prompt">In&nbsp;[8]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython2"><pre><span class="kn">import</span> <span class="nn">mbuild</span> <span class="kn">as</span> <span class="nn">mb</span>
-<span class="kn">from</span> <span class="nn">mbuild</span> <span class="kn">import</span> <span class="n">clone</span>
 
 <span class="k">class</span> <span class="nc">SphereLJ</span><span class="p">(</span><span class="n">mb</span><span class="o">.</span><span class="n">Compound</span><span class="p">):</span>
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -646,7 +637,7 @@ div#notebook {
         <span class="n">pattern_sphere</span><span class="o">.</span><span class="n">scale</span><span class="p">(</span><span class="mf">0.5</span><span class="p">)</span>
         
         <span class="k">for</span> <span class="n">pos</span> <span class="ow">in</span> <span class="n">pattern_sphere</span><span class="p">:</span>
-            <span class="n">lj_particle</span> <span class="o">=</span> <span class="n">clone</span><span class="p">(</span><span class="n">lj_proto</span><span class="p">)</span>
+            <span class="n">lj_particle</span> <span class="o">=</span> <span class="n">mb</span><span class="o">.</span><span class="n">clone</span><span class="p">(</span><span class="n">lj_proto</span><span class="p">)</span>
             <span class="n">mb</span><span class="o">.</span><span class="n">translate</span><span class="p">(</span><span class="n">lj_particle</span><span class="p">,</span> <span class="n">pos</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">lj_particle</span><span class="p">)</span>
 
@@ -658,7 +649,7 @@ div#notebook {
         <span class="n">pattern_disk</span> <span class="o">=</span> <span class="n">mb</span><span class="o">.</span><span class="n">DiskPattern</span><span class="p">(</span><span class="mi">200</span><span class="p">)</span>
         <span class="n">pattern_disk</span><span class="o">.</span><span class="n">scale</span><span class="p">(</span><span class="mf">0.5</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">pos</span> <span class="ow">in</span> <span class="n">pattern_disk</span><span class="p">:</span>
-            <span class="n">lj_particle</span> <span class="o">=</span> <span class="n">clone</span><span class="p">(</span><span class="n">lj_proto</span><span class="p">)</span>
+            <span class="n">lj_particle</span> <span class="o">=</span> <span class="n">mb</span><span class="o">.</span><span class="n">clone</span><span class="p">(</span><span class="n">lj_proto</span><span class="p">)</span>
             <span class="n">mb</span><span class="o">.</span><span class="n">translate</span><span class="p">(</span><span class="n">lj_particle</span><span class="p">,</span> <span class="n">pos</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">lj_particle</span><span class="p">)</span>
 
@@ -694,12 +685,12 @@ div#notebook {
 <div class="output_area"><div class="prompt"></div>
 
 <div class="output_html rendered_html output_subarea ">
-<div id="molecule_a4de02c6-e39b-4140-97fe-ba1990e3eb11"></div>
+<div id="molecule_3ede4e71-63bd-4f72-a33f-c982f50b969e"></div>
            <script type="text/javascript">
            require.config({baseUrl: '/',
                            paths: {imolecule: ['nbextensions/imolecule.min', 'https://rawgit.com/patrickfuller/imolecule/master/imolecule/js/build/imolecule.min']}});
            require(['imolecule'], function () {
-               var $d = $('#molecule_a4de02c6-e39b-4140-97fe-ba1990e3eb11');
+               var $d = $('#molecule_3ede4e71-63bd-4f72-a33f-c982f50b969e');
                $d.width(400); $d.height(300);
                $d.imolecule = jQuery.extend({}, imolecule);
                $d.imolecule.create($d, {drawingType: 'ball and stick',
@@ -743,11 +734,10 @@ div#notebook {
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[7]:</div>
+<div class="prompt input_prompt">In&nbsp;[9]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython2"><pre><span class="kn">import</span> <span class="nn">mbuild</span> <span class="kn">as</span> <span class="nn">mb</span>
-<span class="kn">from</span> <span class="nn">mbuild</span> <span class="kn">import</span> <span class="n">clone</span>
 
 <span class="k">class</span> <span class="nc">SphereLJ</span><span class="p">(</span><span class="n">mb</span><span class="o">.</span><span class="n">Compound</span><span class="p">):</span>
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -758,7 +748,7 @@ div#notebook {
         <span class="n">pattern_sphere</span><span class="o">.</span><span class="n">scale</span><span class="p">(</span><span class="mf">0.5</span><span class="p">)</span>
         
         <span class="k">for</span> <span class="n">pos</span> <span class="ow">in</span> <span class="n">pattern_sphere</span><span class="p">:</span>
-            <span class="n">lj_particle</span> <span class="o">=</span> <span class="n">clone</span><span class="p">(</span><span class="n">lj_proto</span><span class="p">)</span>
+            <span class="n">lj_particle</span> <span class="o">=</span> <span class="n">mb</span><span class="o">.</span><span class="n">clone</span><span class="p">(</span><span class="n">lj_proto</span><span class="p">)</span>
             <span class="n">mb</span><span class="o">.</span><span class="n">translate</span><span class="p">(</span><span class="n">lj_particle</span><span class="p">,</span> <span class="n">pos</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">lj_particle</span><span class="p">)</span>
 <span class="k">class</span> <span class="nc">MonoLJ</span><span class="p">(</span><span class="n">mb</span><span class="o">.</span><span class="n">Compound</span><span class="p">):</span>
@@ -770,7 +760,7 @@ div#notebook {
         <span class="n">pattern</span><span class="o">.</span><span class="n">scale</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
 
         <span class="k">for</span> <span class="n">pos</span> <span class="ow">in</span> <span class="n">pattern</span><span class="p">:</span>
-            <span class="n">lj_sphere</span> <span class="o">=</span> <span class="n">clone</span><span class="p">(</span><span class="n">sphere</span><span class="p">)</span>
+            <span class="n">lj_sphere</span> <span class="o">=</span> <span class="n">mb</span><span class="o">.</span><span class="n">clone</span><span class="p">(</span><span class="n">sphere</span><span class="p">)</span>
             <span class="n">mb</span><span class="o">.</span><span class="n">translate_to</span><span class="p">(</span><span class="n">lj_sphere</span><span class="p">,</span> <span class="n">pos</span><span class="p">)</span>
             <span class="c">#shift the particle so the center of mass</span>
             <span class="c">#of the system is at the origin</span>
@@ -794,12 +784,12 @@ div#notebook {
 <div class="output_area"><div class="prompt"></div>
 
 <div class="output_html rendered_html output_subarea ">
-<div id="molecule_ac4ab37b-b79e-46b3-8cb6-88bd3acf8e67"></div>
+<div id="molecule_8ae3e915-b0c1-42c9-871c-d82fd44ce1a2"></div>
            <script type="text/javascript">
            require.config({baseUrl: '/',
                            paths: {imolecule: ['nbextensions/imolecule.min', 'https://rawgit.com/patrickfuller/imolecule/master/imolecule/js/build/imolecule.min']}});
            require(['imolecule'], function () {
-               var $d = $('#molecule_ac4ab37b-b79e-46b3-8cb6-88bd3acf8e67');
+               var $d = $('#molecule_8ae3e915-b0c1-42c9-871c-d82fd44ce1a2');
                $d.width(400); $d.height(300);
                $d.imolecule = jQuery.extend({}, imolecule);
                $d.imolecule.create($d, {drawingType: 'ball and stick',
@@ -836,6 +826,114 @@ div#notebook {
 </div>
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
+<p>Several functions exist for rotating compounds. For example, the spin command allows a compound to be rotated, in place, about a specific axis (i.e., it considers the origin for the rotation to lie at the compound's center of mass).</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[10]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython2"><pre><span class="kn">import</span> <span class="nn">mbuild</span> <span class="kn">as</span> <span class="nn">mb</span>
+<span class="kn">import</span> <span class="nn">random</span>
+<span class="kn">from</span> <span class="nn">numpy</span> <span class="kn">import</span> <span class="n">pi</span>
+
+
+<span class="k">class</span> <span class="nc">CubeLJ</span><span class="p">(</span><span class="n">mb</span><span class="o">.</span><span class="n">Compound</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">CubeLJ</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">()</span>
+        <span class="n">lj_proto</span> <span class="o">=</span> <span class="n">mb</span><span class="o">.</span><span class="n">Particle</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s">&#39;LJ&#39;</span><span class="p">,</span> <span class="n">pos</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span>
+        
+        <span class="n">pattern</span> <span class="o">=</span> <span class="n">mb</span><span class="o">.</span><span class="n">Grid3DPattern</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+        <span class="n">pattern</span><span class="o">.</span><span class="n">scale</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">pos</span> <span class="ow">in</span> <span class="n">pattern</span><span class="p">:</span>
+            <span class="n">lj_particle</span> <span class="o">=</span> <span class="n">mb</span><span class="o">.</span><span class="n">clone</span><span class="p">(</span><span class="n">lj_proto</span><span class="p">)</span>
+            <span class="n">mb</span><span class="o">.</span><span class="n">translate</span><span class="p">(</span><span class="n">lj_particle</span><span class="p">,</span> <span class="n">pos</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">lj_particle</span><span class="p">)</span>
+            
+<span class="k">class</span> <span class="nc">MonoLJ</span><span class="p">(</span><span class="n">mb</span><span class="o">.</span><span class="n">Compound</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">MonoLJ</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">()</span>
+        <span class="n">cube_proto</span> <span class="o">=</span> <span class="n">CubeLJ</span><span class="p">();</span>
+
+        <span class="n">pattern</span> <span class="o">=</span> <span class="n">mb</span><span class="o">.</span><span class="n">Grid3DPattern</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+        <span class="n">pattern</span><span class="o">.</span><span class="n">scale</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
+        <span class="n">rnd</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">Random</span><span class="p">()</span>
+        <span class="n">rnd</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="mi">123</span><span class="p">)</span>
+        
+        <span class="k">for</span> <span class="n">pos</span> <span class="ow">in</span> <span class="n">pattern</span><span class="p">:</span>
+            <span class="n">lj_cube</span> <span class="o">=</span> <span class="n">mb</span><span class="o">.</span><span class="n">clone</span><span class="p">(</span><span class="n">cube_proto</span><span class="p">)</span>
+            <span class="n">mb</span><span class="o">.</span><span class="n">translate_to</span><span class="p">(</span><span class="n">lj_cube</span><span class="p">,</span> <span class="n">pos</span><span class="p">)</span>
+            <span class="c">#shift the particle so the center of mass</span>
+            <span class="c">#of the system is at the origin</span>
+            <span class="n">mb</span><span class="o">.</span><span class="n">translate</span><span class="p">(</span><span class="n">lj_cube</span><span class="p">,</span> <span class="p">[</span><span class="o">-</span><span class="mi">5</span><span class="p">,</span><span class="o">-</span><span class="mi">5</span><span class="p">,</span><span class="o">-</span><span class="mi">5</span><span class="p">])</span>
+            <span class="n">mb</span><span class="o">.</span><span class="n">spin_x</span><span class="p">(</span><span class="n">lj_cube</span><span class="p">,</span> <span class="n">rnd</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">pi</span><span class="p">))</span>
+            <span class="n">mb</span><span class="o">.</span><span class="n">spin_y</span><span class="p">(</span><span class="n">lj_cube</span><span class="p">,</span> <span class="n">rnd</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">pi</span><span class="p">))</span>
+            <span class="n">mb</span><span class="o">.</span><span class="n">spin_z</span><span class="p">(</span><span class="n">lj_cube</span><span class="p">,</span> <span class="n">rnd</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">pi</span><span class="p">))</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">lj_cube</span><span class="p">)</span>
+
+<span class="n">monoLJ</span> <span class="o">=</span> <span class="n">MonoLJ</span><span class="p">()</span>
+<span class="n">colors</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;LJ&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s">&#39;color&#39;</span><span class="p">:</span> <span class="mh">0xbfbfbb</span><span class="p">,</span> <span class="s">&#39;radius&#39;</span><span class="p">:</span> <span class="mi">5</span><span class="p">}}</span>
+<span class="n">monoLJ</span><span class="o">.</span><span class="n">visualize</span><span class="p">(</span><span class="n">element_properties</span><span class="o">=</span><span class="n">colors</span><span class="p">)</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area"><div class="prompt"></div>
+
+<div class="output_html rendered_html output_subarea ">
+<div id="molecule_48d29a2b-737a-44e7-9309-c8ac7974ad9b"></div>
+           <script type="text/javascript">
+           require.config({baseUrl: '/',
+                           paths: {imolecule: ['nbextensions/imolecule.min', 'https://rawgit.com/patrickfuller/imolecule/master/imolecule/js/build/imolecule.min']}});
+           require(['imolecule'], function () {
+               var $d = $('#molecule_48d29a2b-737a-44e7-9309-c8ac7974ad9b');
+               $d.width(400); $d.height(300);
+               $d.imolecule = jQuery.extend({}, imolecule);
+               $d.imolecule.create($d, {drawingType: 'ball and stick',
+                                        cameraType: 'perspective',
+                                        shader: 'lambert',
+                                        showSave: false});
+               $d.imolecule.addElements({
+    "LJ": {
+        "color": 12566459,
+        "radius": 5
+    }
+});
+               $d.imolecule.draw({"atoms":[{"element":"LJ","location":[-45.980544,-50.783409,-51.407213]},{"element":"LJ","location":[-47.148971,-48.078214,-47.367819]},{"element":"LJ","location":[-49.287329,-54.270985,-50.028086]},{"element":"LJ","location":[-50.455756,-51.565790,-45.988692]},{"element":"LJ","location":[-49.544244,-48.434210,-54.011308]},{"element":"LJ","location":[-50.712671,-45.729015,-49.971914]},{"element":"LJ","location":[-52.851029,-51.921786,-52.632181]},{"element":"LJ","location":[-54.019456,-49.216591,-48.592787]},{"element":"LJ","location":[-49.898403,-50.370006,-20.979760]},{"element":"LJ","location":[-51.357608,-53.949972,-17.808867]},{"element":"LJ","location":[-52.593193,-47.015710,-18.432839]},{"element":"LJ","location":[-54.052398,-50.595676,-15.261946]},{"element":"LJ","location":[-45.947602,-49.404324,-18.071387]},{"element":"LJ","location":[-47.406807,-52.984290,-14.900494]},{"element":"LJ","location":[-48.642392,-46.050028,-15.524467]},{"element":"LJ","location":[-50.101597,-49.629994,-12.353573]},{"element":"LJ","location":[-46.200971,-51.958925,17.359480]},{"element":"LJ","location":[-47.832030,-47.890325,19.764921]},{"element":"LJ","location":[-50.690642,-54.087971,17.916268]},{"element":"LJ","location":[-52.321701,-50.019372,20.321708]},{"element":"LJ","location":[-47.678299,-49.980628,13.011625]},{"element":"LJ","location":[-49.309358,-45.912029,15.417066]},{"element":"LJ","location":[-52.167970,-52.109675,13.568413]},{"element":"LJ","location":[-53.799029,-48.041075,15.973853]},{"element":"LJ","location":[-49.834290,-18.471976,-46.067647]},{"element":"LJ","location":[-47.342330,-14.369671,-47.468084]},{"element":"LJ","location":[-53.966678,-16.711553,-48.264071]},{"element":"LJ","location":[-51.474718,-12.609247,-49.664508]},{"element":"LJ","location":[-48.525282,-20.724086,-50.335492]},{"element":"LJ","location":[-46.033322,-16.621780,-51.735929]},{"element":"LJ","location":[-52.657670,-18.963663,-52.531916]},{"element":"LJ","location":[-50.165710,-14.861357,-53.932353]},{"element":"LJ","location":[-48.617355,-19.882848,-19.215092]},{"element":"LJ","location":[-46.670831,-15.279809,-19.063176]},{"element":"LJ","location":[-48.724879,-20.002309,-14.217676]},{"element":"LJ","location":[-46.778356,-15.399271,-14.065760]},{"element":"LJ","location":[-53.221644,-17.934063,-19.267573]},{"element":"LJ","location":[-51.275121,-13.331024,-19.115657]},{"element":"LJ","location":[-53.329169,-18.053525,-14.270157]},{"element":"LJ","location":[-51.382645,-13.450486,-14.118241]},{"element":"LJ","location":[-46.008441,-15.701277,18.039794]},{"element":"LJ","location":[-47.116498,-19.111236,14.554914]},{"element":"LJ","location":[-49.182363,-12.483967,15.900837]},{"element":"LJ","location":[-50.290421,-15.893927,12.415957]},{"element":"LJ","location":[-49.709579,-17.439407,20.917376]},{"element":"LJ","location":[-50.817637,-20.849366,17.432496]},{"element":"LJ","location":[-52.883502,-14.222097,18.778419]},{"element":"LJ","location":[-53.991559,-17.632057,15.293540]},{"element":"LJ","location":[-46.535524,18.297177,-47.977912]},{"element":"LJ","location":[-49.630412,14.857337,-46.083403]},{"element":"LJ","location":[-46.443621,15.822263,-52.321454]},{"element":"LJ","location":[-49.538509,12.382423,-50.426945]},{"element":"LJ","location":[-50.461491,20.950910,-49.573055]},{"element":"LJ","location":[-53.556379,17.511070,-47.678546]},{"element":"LJ","location":[-50.369588,18.475997,-53.916597]},{"element":"LJ","location":[-53.464476,15.036156,-52.022088]},{"element":"LJ","location":[-51.751432,20.620494,-16.889679]},{"element":"LJ","location":[-53.606422,16.784886,-14.272978]},{"element":"LJ","location":[-47.174386,19.583803,-15.164594]},{"element":"LJ","location":[-49.029375,15.748195,-12.547893]},{"element":"LJ","location":[-50.970625,17.585138,-20.785440]},{"element":"LJ","location":[-52.825614,13.749531,-18.168739]},{"element":"LJ","location":[-46.393578,16.548447,-19.060356]},{"element":"LJ","location":[-48.248568,12.712839,-16.443654]},{"element":"LJ","location":[-50.388976,18.868868,12.958701]},{"element":"LJ","location":[-48.334316,20.632803,17.161903]},{"element":"LJ","location":[-47.867949,14.587966,13.522885]},{"element":"LJ","location":[-45.813289,16.351901,17.726086]},{"element":"LJ","location":[-54.186711,16.981432,15.607247]},{"element":"LJ","location":[-52.132051,18.745367,19.810448]},{"element":"LJ","location":[-51.665684,12.700530,16.171430]},{"element":"LJ","location":[-49.611024,14.464465,20.374632]},{"element":"LJ","location":[-13.885834,-50.277885,-53.307529]},{"element":"LJ","location":[-18.779805,-51.270638,-53.559512]},{"element":"LJ","location":[-14.862388,-46.126089,-50.698137]},{"element":"LJ","location":[-19.756359,-47.118842,-50.950119]},{"element":"LJ","location":[-13.576974,-52.881158,-49.049881]},{"element":"LJ","location":[-18.470945,-53.873911,-49.301863]},{"element":"LJ","location":[-14.553529,-48.729362,-46.440488]},{"element":"LJ","location":[-19.447499,-49.722115,-46.692471]},{"element":"LJ","location":[-20.042601,-49.201976,-19.258235]},{"element":"LJ","location":[-15.328968,-47.785703,-20.139051]},{"element":"LJ","location":[-18.429992,-53.745992,-17.934826]},{"element":"LJ","location":[-13.716359,-52.329719,-18.815642]},{"element":"LJ","location":[-19.616975,-47.670281,-14.517691]},{"element":"LJ","location":[-14.903342,-46.254008,-15.398507]},{"element":"LJ","location":[-18.004365,-52.214297,-13.194283]},{"element":"LJ","location":[-13.290733,-50.798024,-14.075098]},{"element":"LJ","location":[-15.653623,-51.610016,12.776732]},{"element":"LJ","location":[-12.471345,-51.069661,16.595256]},{"element":"LJ","location":[-19.066993,-53.519614,15.891589]},{"element":"LJ","location":[-15.884716,-52.979259,19.710113]},{"element":"LJ","location":[-17.448618,-47.020741,13.623220]},{"element":"LJ","location":[-14.266340,-46.480386,17.441744]},{"element":"LJ","location":[-20.861989,-48.930339,16.738077]},{"element":"LJ","location":[-17.679711,-48.389984,20.556601]},{"element":"LJ","location":[-13.252401,-17.492923,-47.468185]},{"element":"LJ","location":[-17.948011,-16.866313,-45.868620]},{"element":"LJ","location":[-14.900483,-20.449923,-51.147855]},{"element":"LJ","location":[-19.596094,-19.823313,-49.548291]},{"element":"LJ","location":[-13.737240,-13.510020,-50.451709]},{"element":"LJ","location":[-18.432850,-12.883411,-48.852145]},{"element":"LJ","location":[-15.385322,-16.467020,-54.131380]},{"element":"LJ","location":[-20.080933,-15.840411,-52.531815]},{"element":"LJ","location":[-13.964458,-17.019537,-20.031715]},{"element":"LJ","location":[-16.609372,-20.770269,-18.047669]},{"element":"LJ","location":[-18.008511,-14.083509,-19.872404]},{"element":"LJ","location":[-20.653425,-17.834241,-17.888358]},{"element":"LJ","location":[-12.679909,-15.499092,-15.444975]},{"element":"LJ","location":[-15.324823,-19.249824,-13.460929]},{"element":"LJ","location":[-16.723962,-12.563065,-15.285664]},{"element":"LJ","location":[-19.368876,-16.313797,-13.301618]},{"element":"LJ","location":[-12.500114,-16.112172,17.707039]},{"element":"LJ","location":[-14.463295,-20.287196,15.779580]},{"element":"LJ","location":[-15.030113,-13.381471,14.369020]},{"element":"LJ","location":[-16.993294,-17.556494,12.441561]},{"element":"LJ","location":[-16.340039,-15.776839,20.891773]},{"element":"LJ","location":[-18.303220,-19.951862,18.964314]},{"element":"LJ","location":[-18.870038,-13.046137,17.553753]},{"element":"LJ","location":[-20.833219,-17.221161,15.626294]},{"element":"LJ","location":[-12.383452,16.562093,-50.627008]},{"element":"LJ","location":[-14.953054,20.487913,-48.899268]},{"element":"LJ","location":[-14.925697,13.545933,-47.554587]},{"element":"LJ","location":[-17.495298,17.471752,-45.826847]},{"element":"LJ","location":[-15.838035,15.861581,-54.173153]},{"element":"LJ","location":[-18.407636,19.787401,-52.445413]},{"element":"LJ","location":[-18.380280,12.845421,-51.100732]},{"element":"LJ","location":[-20.949881,16.771241,-49.372992]},{"element":"LJ","location":[-18.487450,14.515802,-13.379034]},{"element":"LJ","location":[-13.916568,16.541646,-13.324313]},{"element":"LJ","location":[-20.307693,18.679148,-15.465482]},{"element":"LJ","location":[-15.736811,20.704992,-15.410761]},{"element":"LJ","location":[-17.596522,12.628342,-17.922572]},{"element":"LJ","location":[-13.025640,14.654185,-17.867852]},{"element":"LJ","location":[-19.416765,16.791688,-20.009020]},{"element":"LJ","location":[-14.845883,18.817531,-19.954299]},{"element":"LJ","location":[-12.658781,16.836833,15.036360]},{"element":"LJ","location":[-16.647849,14.933835,12.698425]},{"element":"LJ","location":[-15.372195,20.792881,16.445995]},{"element":"LJ","location":[-19.361262,18.889883,14.108061]},{"element":"LJ","location":[-13.972071,14.443451,19.225273]},{"element":"LJ","location":[-17.961138,12.540452,16.887338]},{"element":"LJ","location":[-16.685485,18.399499,20.634908]},{"element":"LJ","location":[-20.674552,16.496500,18.296973]},{"element":"LJ","location":[16.402392,-46.296897,-47.771282]},{"element":"LJ","location":[16.831811,-50.853476,-45.758031]},{"element":"LJ","location":[19.974079,-47.423889,-51.083825]},{"element":"LJ","location":[20.403498,-51.980468,-49.070573]},{"element":"LJ","location":[12.929835,-48.019532,-50.929427]},{"element":"LJ","location":[13.359255,-52.576111,-48.916175]},{"element":"LJ","location":[16.501522,-49.146524,-54.241969]},{"element":"LJ","location":[16.930942,-53.703103,-52.228718]},{"element":"LJ","location":[13.270513,-50.326174,-19.333078]},{"element":"LJ","location":[13.319801,-47.803294,-15.016523]},{"element":"LJ","location":[17.705840,-48.355788,-20.535347]},{"element":"LJ","location":[17.755129,-45.832908,-16.218792]},{"element":"LJ","location":[15.578205,-54.167092,-17.114541]},{"element":"LJ","location":[15.627493,-51.644212,-12.797987]},{"element":"LJ","location":[20.013532,-52.196706,-18.316810]},{"element":"LJ","location":[20.062821,-49.673826,-14.000255]},{"element":"LJ","location":[20.322432,-48.189356,15.215133]},{"element":"LJ","location":[16.295095,-45.688025,16.803815]},{"element":"LJ","location":[19.981795,-51.243072,19.159596]},{"element":"LJ","location":[15.954459,-48.741741,20.748277]},{"element":"LJ","location":[17.378874,-51.258259,12.585056]},{"element":"LJ","location":[13.351538,-48.756928,14.173738]},{"element":"LJ","location":[17.038238,-54.311975,16.529519]},{"element":"LJ","location":[13.010902,-51.810644,18.118200]},{"element":"LJ","location":[18.850504,-17.626421,-46.386175]},{"element":"LJ","location":[19.772207,-13.716938,-49.363826]},{"element":"LJ","location":[13.951740,-16.654692,-46.626718]},{"element":"LJ","location":[14.873444,-12.745209,-49.604369]},{"element":"LJ","location":[18.459889,-20.588124,-50.395631]},{"element":"LJ","location":[19.381593,-16.678641,-53.373282]},{"element":"LJ","location":[13.561126,-19.616395,-50.636174]},{"element":"LJ","location":[14.482830,-15.706912,-53.613825]},{"element":"LJ","location":[15.619533,-13.676422,-19.618267]},{"element":"LJ","location":[20.225286,-15.447222,-18.811237]},{"element":"LJ","location":[13.801094,-18.331122,-19.453795]},{"element":"LJ","location":[18.406848,-20.101922,-18.646765]},{"element":"LJ","location":[14.926485,-13.231411,-14.686569]},{"element":"LJ","location":[19.532239,-15.002212,-13.879538]},{"element":"LJ","location":[13.108047,-17.886111,-14.522096]},{"element":"LJ","location":[17.713801,-19.656912,-13.715066]},{"element":"LJ","location":[13.987884,-16.365409,20.055378]},{"element":"LJ","location":[15.006660,-12.671285,16.843597]},{"element":"LJ","location":[13.460100,-19.543994,16.232024]},{"element":"LJ","location":[14.478876,-15.849870,13.020242]},{"element":"LJ","location":[18.854458,-17.483463,20.313092]},{"element":"LJ","location":[19.873234,-13.789339,17.101310]},{"element":"LJ","location":[18.326673,-20.662048,16.489737]},{"element":"LJ","location":[19.345449,-16.967924,13.277955]},{"element":"LJ","location":[13.440909,17.107336,-47.145128]},{"element":"LJ","location":[16.457522,13.135858,-47.502071]},{"element":"LJ","location":[17.394513,20.144532,-47.525189]},{"element":"LJ","location":[20.411127,16.173055,-47.882132]},{"element":"LJ","location":[12.922206,17.160279,-52.117868]},{"element":"LJ","location":[15.938820,13.188801,-52.474811]},{"element":"LJ","location":[16.875811,20.197475,-52.497929]},{"element":"LJ","location":[19.892425,16.225998,-52.854872]},{"element":"LJ","location":[18.462489,14.793179,-20.132942]},{"element":"LJ","location":[20.101457,18.976308,-17.938582]},{"element":"LJ","location":[17.924937,12.650743,-15.647297]},{"element":"LJ","location":[19.563905,16.833872,-13.452938]},{"element":"LJ","location":[13.769428,16.499461,-19.880395]},{"element":"LJ","location":[15.408396,20.682590,-17.686036]},{"element":"LJ","location":[13.231876,14.357025,-15.394751]},{"element":"LJ","location":[14.870844,18.540155,-13.200391]},{"element":"LJ","location":[17.413924,13.699383,19.730461]},{"element":"LJ","location":[13.678637,17.022807,19.780321]},{"element":"LJ","location":[16.468263,12.708673,14.921696]},{"element":"LJ","location":[12.732976,16.032097,14.971556]},{"element":"LJ","location":[20.600357,17.301236,18.361777]},{"element":"LJ","location":[16.865071,20.624660,18.411637]},{"element":"LJ","location":[19.654696,16.310526,13.553012]},{"element":"LJ","location":[15.919409,19.633950,13.602872]}],"bonds":[],"name":"MonoLJ"});
+
+               $d.resizable({
+                   aspectRatio: 400 / 300,
+                   resize: function (evt, ui) {
+                       $d.imolecule.renderer.setSize(ui.size.width,
+                                                     ui.size.height);
+                   }
+               });
+           });
+           </script>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
 <p>Configurations can be dumped to file using the save command; this takes advantage of MDTraj and supports a range of file formats (see <a href="http://MDTraj.org">http://MDTraj.org</a>).</p>
 
 </div>
@@ -843,7 +941,7 @@ div#notebook {
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[8]:</div>
+<div class="prompt input_prompt">In&nbsp;[11]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython2"><pre><span class="c">#save as xyz file</span>
