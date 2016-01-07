@@ -144,7 +144,11 @@ class Compound(object):
     # region Compound Hierarchy
     def particles(self, include_ports=False):
         """ """
-        return self._particles(include_ports)
+        if not self.children:
+            yield self
+        else:
+            for particle in self._particles(include_ports):
+                yield particle
 
     def _particles(self, include_ports=False):
         """Return all Particles of the Compound. """
@@ -402,9 +406,15 @@ class Compound(object):
 
     @property
     def xyz(self):
-        """Return all particle coordinates in this compound. """
+        """Return all particle coordinates in this compound.
+
+        Returns
+        -------
+        pos : np.ndarray, shape=(n, 3)
+            Array with the positions of all particles.
+        """
         if not self.children:
-            pos = self._pos
+            pos = np.expand_dims(self._pos, axis=0)
         else:
             arr = np.fromiter(itertools.chain.from_iterable(
                 particle.pos for particle in self.particles()), dtype=float)
