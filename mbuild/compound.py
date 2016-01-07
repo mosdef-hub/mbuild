@@ -578,9 +578,20 @@ class Compound(object):
             apply_forcefield(intermol_system, forcefield=forcefield)
         gmx.save(top_filename, gro_filename, intermol_system)
 
-    def save_lammpsdata(self, filename, traj, force_overwrite=False, **kwargs):
+    def save_lammpsdata(self, filename, traj, forcefield, force_overwrite=False, **kwargs):
         """ """
-        raise NotImplementedError('Interface to InterMol missing')
+        from foyer.forcefield import apply_forcefield
+        import intermol.lammps as lmp
+
+        # Create separate file paths for .gro and .top
+        filepath, filename = os.path.split(filename)
+        basename = os.path.splitext(filename)[0]
+        inp_filename = os.path.join(filepath, basename + '.input')
+
+        intermol_system = self._to_intermol()
+        if forcefield:
+            apply_forcefield(intermol_system, forcefield=forcefield)
+        lmp.save(inp_filename, intermol_system)
 
     # Interface to Trajectory for reading/writing .pdb and .mol2 files.
     # -----------------------------------------------------------------
