@@ -549,22 +549,34 @@ class Compound(object):
 
         if saver:  # mBuild/InterMol supported saver.
             traj = self.to_trajectory(show_ports=show_ports, **kwargs)
-            return saver(filename, traj)
+            return saver(filename, traj, forcefield)
         else:  # MDTraj supported saver.
             traj = self.to_trajectory(show_ports=show_ports, **kwargs)
             return traj.save(filename, **kwargs)
 
-    def save_mol2(self, filename, traj, **kwargs):
+    def save_mol2(self, filename, traj, forcefield, **kwargs):
         """ """
         write_mol2(filename, traj)
 
-    def save_hoomdxml(self, filename, traj, force_overwrite=False, **kwargs):
+    def save_hoomdxml(self, filename, traj, forcefield, force_overwrite=False, **kwargs):
         """ """
         raise NotImplementedError('Interface to InterMol missing')
 
-    def save_gromacs(self, filename, traj, force_overwrite=False, **kwargs):
+    def save_gromacs(self, filename, traj, forcefield, force_overwrite=False, **kwargs):
         """ """
-        raise NotImplementedError('Interface to InterMol missing')
+        from foyer.forcefield import apply_forcefield
+        import intermol.gromacs as gmx
+
+        # Create separate file paths for .gro and .top
+        filepath, filename = os.path.split(filename)
+        basename = os.path.splitext(filename)[0]
+        top_filename = os.path.join(filepath, basename + '.top')
+        gro_filename = os.path.join(filepath, basename + '.gro')
+
+        intermol_system = self._to_intermol()
+        if forcefield:
+            apply_forcefield(intermol_system, forcefield=forcefield)
+        gmx.save(top_filename, gro_filename, intermol_system)
 
     def save_lammpsdata(self, filename, traj, force_overwrite=False, **kwargs):
         """ """
@@ -806,10 +818,10 @@ class Compound(object):
         molecule_type = MoleculeType(name=parent.name)
         intermol_system.add_molecule_type(molecule_type)
 
-        for index, parent_atom in enumerate(parent.particles):
+        for index, parent_atom in enumerate(parent.particles()):
             parent_atom.index = index + 1
 
-        for atom1, atom2 in parent.bonds:
+        for atom1, atom2 in parent.bonds():
             intermol_bond = InterMolBond(atom1.index, atom2.index)
             molecule_type.bonds.add(intermol_bond)
     # endregion
