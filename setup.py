@@ -35,18 +35,6 @@ if sys.argv[-1] == 'publish':
     os.system('python setup.py sdist upload')
     sys.exit()
 
-
-class PyTest(TestCommand):
-    def finalize_options(self):
-        TestCommand.finalize_options(self)
-        self.test_args = []
-        self.test_suite = True
-
-    def run_tests(self):
-        import pytest
-        errcode = pytest.main(['mbuild'])
-        sys.exit(errcode)
-
 with open('requirements.txt') as reqs_file:
     reqs = [line.strip() for line in reqs_file]
 
@@ -83,6 +71,4 @@ setup(
         'Operating System :: MacOS',
     ],
     test_suite='tests',
-    cmdclass={'test': PyTest},
-    extras_require={'utils': ['pytest']},
 )

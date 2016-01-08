@@ -170,7 +170,10 @@ class Compound(object):
 
     @property
     def n_particles(self):
-        return self._n_particles(include_ports=False)
+        if not self.children:
+            return 1
+        else:
+            return self._n_particles(include_ports=False)
 
     def _n_particles(self, include_ports=False):
         """Return the number of Particles in the Compound. """
