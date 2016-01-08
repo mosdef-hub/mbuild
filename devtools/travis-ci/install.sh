@@ -9,5 +9,3 @@ bash $MINICONDA -b
 
 export PATH=$HOME/miniconda3/bin:$PATH
 conda install --yes conda-build jinja2 anaconda-client pip
-
-pip install git+git://github.com/shirtsgroup/intermol@develop

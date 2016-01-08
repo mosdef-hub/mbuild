@@ -157,6 +157,7 @@ class TestCompound(BaseTest):
         assert len(output['atoms']) == 8+16
         assert len(output['bonds']) == 7
 
+    @pytest.mark.skipif(bool(os.getenv("CI")), reason="Running on CI")
     def test_intermol_conversion1(self, ethane, h2o):
         compound = mb.Compound([ethane, h2o])
 
@@ -169,6 +170,7 @@ class TestCompound(BaseTest):
         molecules = list(intermol_system.molecule_types['Compound'].molecules)
         assert len(molecules[0].atoms) == 11
 
+    @pytest.mark.skipif(bool(os.getenv("CI")), reason="Running on CI")
     def test_intermol_conversion2(self, ethane, h2o):
         compound = mb.Compound([ethane, mb.clone(ethane), h2o]) # 2 distinct Ethane objects
 
