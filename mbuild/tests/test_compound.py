@@ -46,39 +46,6 @@ class TestCompound(BaseTest):
         xyz = ethane.xyz_with_ports
         assert xyz.shape == (24, 3)
 
-    @pytest.mark.skipif(True, reason='Waiting for InterMol to stabilize')
-    def test_intermol_conversion1(self, ethane, h2o):
-        compound = mb.Compound([ethane, h2o])
-
-        intermol_system = compound._to_intermol()
-        assert len(intermol_system.molecule_types) == 1
-        assert 'Compound' in intermol_system.molecule_types
-        assert len(intermol_system.molecule_types['Compound'].bonds) == 9
-
-        assert len(intermol_system.molecule_types['Compound'].molecules) == 1
-        molecules = list(intermol_system.molecule_types['Compound'].molecules)
-        assert len(molecules[0].atoms) == 11
-
-    @pytest.mark.skipif(True, reason='Waiting for InterMol to stabilize')
-    def test_intermol_conversion2(self, ethane, h2o):
-        compound = mb.Compound([ethane, mb.clone(ethane), h2o]) # 2 distinct Ethane objects
-
-        molecule_types = [type(ethane), type(h2o)]
-        intermol_system = compound._to_intermol(molecule_types=molecule_types)
-        assert len(intermol_system.molecule_types) == 2
-        assert 'Ethane' in intermol_system.molecule_types
-        assert 'H2O' in intermol_system.molecule_types
-        assert len(intermol_system.molecule_types['Ethane'].bonds) == 7
-        assert len(intermol_system.molecule_types['H2O'].bonds) == 2
-
-        assert len(intermol_system.molecule_types['Ethane'].molecules) == 2
-        ethanes = list(intermol_system.molecule_types['Ethane'].molecules)
-        assert len(ethanes[0].atoms) == len(ethanes[1].atoms) == 8
-
-        assert len(intermol_system.molecule_types['H2O'].molecules) == 1
-        h2os = list(intermol_system.molecule_types['H2O'].molecules)
-        assert len(h2os[0].atoms) == 3
-
     def test_particles_by_name(self, ethane):
         assert sum(1 for _ in ethane.particles()) == 8
 
@@ -115,6 +82,33 @@ class TestCompound(BaseTest):
         port = mb.Port()
         assert np.allclose(port.center, np.array([0.0, 0.0, 2.5e-3]))
 
+    def test_single_particle(self):
+        part = mb.Particle(name='A')
+        assert part.n_particles == 1
+        assert len(list(part.particles())) == 1
+        assert part.xyz.shape == (1, 3)
+        assert part.root == part
+        assert len(list(part.ancestors())) == 0
+        assert next(part.particles_by_name('A')) == part
+
+    def test_particle_in_particle(self):
+        part = mb.Particle(name='A')
+        parent = mb.Compound(part)
+
+        assert part.n_particles == 1
+        assert len(list(part.particles())) == 1
+        assert part.xyz.shape == (1, 3)
+        assert part.root == parent
+        assert len(list(part.ancestors())) == 1
+        assert next(part.particles_by_name('A')) == part
+
+        assert parent.n_particles == 1
+        assert len(list(parent.particles())) == 1
+        assert parent.xyz.shape == (1, 3)
+        assert parent.root == parent
+        assert len(list(parent.ancestors())) == 0
+        assert next(parent.particles_by_name('A')) == part
+
     @pytest.mark.skipif(bool(os.getenv("CI")), reason="Running on CI")
     def test_visualize(self, ethane):
         ethane.visualize()
@@ -123,6 +117,7 @@ class TestCompound(BaseTest):
     def test_visualize_ports(self, ethane):
         ethane.visualize(show_ports=True)
 
+    # Conversions
     def test_to_trajectory(self, ethane, ch3):
         traj = ethane.to_trajectory()
         assert traj.n_atoms == 8
@@ -161,3 +156,36 @@ class TestCompound(BaseTest):
         output = json.loads(ethane._to_json(show_ports=True))
         assert len(output['atoms']) == 8+16
         assert len(output['bonds']) == 7
+
+    @pytest.mark.skipif(bool(os.getenv("CI")), reason="Running on CI")
+    def test_intermol_conversion1(self, ethane, h2o):
+        compound = mb.Compound([ethane, h2o])
+
+        intermol_system = compound._to_intermol()
+        assert len(intermol_system.molecule_types) == 1
+        assert 'Compound' in intermol_system.molecule_types
+        assert len(intermol_system.molecule_types['Compound'].bonds) == 9
+
+        assert len(intermol_system.molecule_types['Compound'].molecules) == 1
+        molecules = list(intermol_system.molecule_types['Compound'].molecules)
+        assert len(molecules[0].atoms) == 11
+
+    @pytest.mark.skipif(bool(os.getenv("CI")), reason="Running on CI")
+    def test_intermol_conversion2(self, ethane, h2o):
+        compound = mb.Compound([ethane, mb.clone(ethane), h2o]) # 2 distinct Ethane objects
+
+        molecule_types = [type(ethane), type(h2o)]
+        intermol_system = compound._to_intermol(molecule_types=molecule_types)
+        assert len(intermol_system.molecule_types) == 2
+        assert 'Ethane' in intermol_system.molecule_types
+        assert 'H2O' in intermol_system.molecule_types
+        assert len(intermol_system.molecule_types['Ethane'].bonds) == 7
+        assert len(intermol_system.molecule_types['H2O'].bonds) == 2
+
+        assert len(intermol_system.molecule_types['Ethane'].molecules) == 2
+        ethanes = list(intermol_system.molecule_types['Ethane'].molecules)
+        assert len(ethanes[0].atoms) == len(ethanes[1].atoms) == 8
+
+        assert len(intermol_system.molecule_types['H2O'].molecules) == 1
+        h2os = list(intermol_system.molecule_types['H2O'].molecules)
+        assert len(h2os[0].atoms) == 3

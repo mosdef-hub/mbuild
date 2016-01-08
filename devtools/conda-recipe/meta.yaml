@@ -20,7 +20,7 @@ test:
   requires:
     - pytest
   commands:
-    - py.test --pyargs mbuild
+    - py.test -v --pyargs mbuild
 
 about:
   home: http://imodels.github.io/mbuild
