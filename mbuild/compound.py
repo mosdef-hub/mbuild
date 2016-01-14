@@ -14,7 +14,7 @@ from mdtraj.core.element import get_by_symbol
 from mdtraj.core.topology import Topology
 from oset import oset as OrderedSet
 import parmed as pmd
-from parmed.periodic_table import AtomicNum, element_by_name
+from parmed.periodic_table import AtomicNum, element_by_name, Mass
 from six import integer_types, string_types
 
 from mbuild.box import Box
@@ -782,8 +782,11 @@ class Compound(object):
         structure.title = title if title else self.name
         atom_mapping = {}  # For creating bonds below
         for atom in self.particles():
-            atomic_number = AtomicNum[element_by_name(atom.name)]
-            pmd_atom = pmd.Atom(atomic_number=atomic_number, name=atom.name)
+            element = element_by_name(atom.name)
+            atomic_number = AtomicNum[element]
+            mass = Mass[element]
+            pmd_atom = pmd.Atom(atomic_number=atomic_number, name=atom.name,
+                                mass=mass)
             pmd_atom.xx, pmd_atom.xy, pmd_atom.xz = atom.pos * 10  # Angstroms
             structure.add_atom(pmd_atom, resname='RES', resnum=1)
             atom_mapping[atom] = pmd_atom
@@ -799,7 +802,7 @@ class Compound(object):
             if val:
                 box_vector[dim] = val * 10
             else:
-                box_vector[dim] = box.lengths[dim] * 10
+                box_vector[dim] = box.lengths[dim] * 10 + 5
         structure.box = box_vector
 
         return structure
