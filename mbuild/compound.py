@@ -13,6 +13,8 @@ import numpy as np
 from mdtraj.core.element import get_by_symbol
 from mdtraj.core.topology import Topology
 from oset import oset as OrderedSet
+import parmed as pmd
+from parmed.periodic_table import AtomicNum, element_by_name
 from six import integer_types, string_types
 
 from mbuild.box import Box
@@ -552,7 +554,7 @@ class Compound(object):
 
         if saver:  # mBuild/InterMol supported saver.
             traj = self.to_trajectory(show_ports=show_ports, **kwargs)
-            return saver(filename, traj, forcefield)
+            return saver(filename, traj, forcefield, **kwargs)
         else:  # MDTraj supported saver.
             traj = self.to_trajectory(show_ports=show_ports, **kwargs)
             return traj.save(filename, **kwargs)
@@ -568,7 +570,6 @@ class Compound(object):
     def save_gromacs(self, filename, traj, forcefield, force_overwrite=False, **kwargs):
         """ """
         from foyer.forcefield import apply_forcefield
-        import intermol.gromacs as gmx
 
         # Create separate file paths for .gro and .top
         filepath, filename = os.path.split(filename)
@@ -576,10 +577,11 @@ class Compound(object):
         top_filename = os.path.join(filepath, basename + '.top')
         gro_filename = os.path.join(filepath, basename + '.gro')
 
-        intermol_system = self.to_intermol()
+        structure = self.to_parmed()
         if forcefield:
-            apply_forcefield(intermol_system, forcefield=forcefield)
-        gmx.save(top_filename, gro_filename, intermol_system)
+            structure = apply_forcefield(structure, forcefield=forcefield)
+        structure.save(top_filename, 'gromacs', **kwargs)
+        structure.save(gro_filename, 'gro', **kwargs)
 
     def save_lammpsdata(self, filename, traj, forcefield, force_overwrite=False, **kwargs):
         """ """
@@ -642,7 +644,8 @@ class Compound(object):
         else:
             self.periodicity = np.array([0., 0., 0.])
 
-    def to_trajectory(self, show_ports=False, chain_types=None, residue_types=None):
+    def to_trajectory(self, show_ports=False, chain_types=None,
+                      residue_types=None, **kwargs):
         """Convert to an md.Trajectory and flatten the compound.
 
         Parameters
@@ -773,19 +776,15 @@ class Compound(object):
                 top.add_bond(atom_mapping[atom1], atom_mapping[atom2])
         return top
 
-        # Interface to InterMol for writing fully parameterized systems.
-    # --------------------------------------------------------------
     def to_parmed(self, title=''):
         """Create a ParmEd Structure from a Compound. """
-        import parmed as pmd
-        from parmed.periodic_table import AtomicNum, element_by_name
-
         structure = pmd.Structure()
         structure.title = title if title else self.name
         atom_mapping = {}  # For creating bonds below
         for atom in self.particles():
             atomic_number = AtomicNum[element_by_name(atom.name)]
             pmd_atom = pmd.Atom(atomic_number=atomic_number, name=atom.name)
+            pmd_atom.xx, pmd_atom.xy, pmd_atom.xz = atom.pos * 10  # Angstroms
             structure.add_atom(pmd_atom, resname='RES', resnum=1)
             atom_mapping[atom] = pmd_atom
 
@@ -794,8 +793,6 @@ class Compound(object):
             structure.bonds.append(bond)
         return structure
 
-    # Interface to InterMol for writing fully parameterized systems.
-    # --------------------------------------------------------------
     def to_intermol(self, molecule_types=None):
         """Create an InterMol system from a Compound.
 
