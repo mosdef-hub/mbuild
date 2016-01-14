@@ -576,7 +576,7 @@ class Compound(object):
         top_filename = os.path.join(filepath, basename + '.top')
         gro_filename = os.path.join(filepath, basename + '.gro')
 
-        intermol_system = self._to_intermol()
+        intermol_system = self.to_intermol()
         if forcefield:
             apply_forcefield(intermol_system, forcefield=forcefield)
         gmx.save(top_filename, gro_filename, intermol_system)
@@ -591,7 +591,7 @@ class Compound(object):
         basename = os.path.splitext(filename)[0]
         inp_filename = os.path.join(filepath, basename + '.input')
 
-        intermol_system = self._to_intermol()
+        intermol_system = self.to_intermol()
         if forcefield:
             apply_forcefield(intermol_system, forcefield=forcefield)
         lmp.save(inp_filename, intermol_system)
@@ -773,9 +773,30 @@ class Compound(object):
                 top.add_bond(atom_mapping[atom1], atom_mapping[atom2])
         return top
 
+        # Interface to InterMol for writing fully parameterized systems.
+    # --------------------------------------------------------------
+    def to_parmed(self, title=''):
+        """Create a ParmEd Structure from a Compound. """
+        import parmed as pmd
+        from parmed.periodic_table import AtomicNum, element_by_name
+
+        structure = pmd.Structure()
+        structure.title = title if title else self.name
+        atom_mapping = {}  # For creating bonds below
+        for atom in self.particles():
+            atomic_number = AtomicNum[element_by_name(atom.name)]
+            pmd_atom = pmd.Atom(atomic_number=atomic_number, name=atom.name)
+            structure.add_atom(pmd_atom, resname='RES', resnum=1)
+            atom_mapping[atom] = pmd_atom
+
+        for atom1, atom2 in self.bonds():
+            bond = pmd.Bond(atom_mapping[atom1], atom_mapping[atom2])
+            structure.bonds.append(bond)
+        return structure
+
     # Interface to InterMol for writing fully parameterized systems.
     # --------------------------------------------------------------
-    def _to_intermol(self, molecule_types=None):
+    def to_intermol(self, molecule_types=None):
         """Create an InterMol system from a Compound.
 
         Parameters

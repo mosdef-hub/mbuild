@@ -15,6 +15,7 @@ requirements:
     - imolecule
     - oset
     - networkx
+    - parmed
 
 test:
   requires:

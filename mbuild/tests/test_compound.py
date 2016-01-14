@@ -161,7 +161,7 @@ class TestCompound(BaseTest):
     def test_intermol_conversion1(self, ethane, h2o):
         compound = mb.Compound([ethane, h2o])
 
-        intermol_system = compound._to_intermol()
+        intermol_system = compound.to_intermol()
         assert len(intermol_system.molecule_types) == 1
         assert 'Compound' in intermol_system.molecule_types
         assert len(intermol_system.molecule_types['Compound'].bonds) == 9
@@ -175,7 +175,7 @@ class TestCompound(BaseTest):
         compound = mb.Compound([ethane, mb.clone(ethane), h2o]) # 2 distinct Ethane objects
 
         molecule_types = [type(ethane), type(h2o)]
-        intermol_system = compound._to_intermol(molecule_types=molecule_types)
+        intermol_system = compound.to_intermol(molecule_types=molecule_types)
         assert len(intermol_system.molecule_types) == 2
         assert 'Ethane' in intermol_system.molecule_types
         assert 'H2O' in intermol_system.molecule_types
@@ -189,3 +189,19 @@ class TestCompound(BaseTest):
         assert len(intermol_system.molecule_types['H2O'].molecules) == 1
         h2os = list(intermol_system.molecule_types['H2O'].molecules)
         assert len(h2os[0].atoms) == 3
+
+    def test_parmed_conversion(self, ethane, h2o):
+        compound = mb.Compound([ethane, h2o])
+
+        structure = compound.to_parmed()
+        assert structure.title == 'Compound'
+
+        structure = compound.to_parmed(title='eth_h2o')
+        assert structure.title == 'eth_h2o'
+
+        assert len(structure.atoms) == 11
+        assert len([at for at in structure.atoms if at.element == 6]) == 2
+        assert len([at for at in structure.atoms if at.element == 1]) == 8
+        assert len([at for at in structure.atoms if at.element == 8]) == 1
+
+        assert len(structure.bonds) == 9
