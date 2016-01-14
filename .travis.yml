@@ -20,7 +20,6 @@ env:
   matrix:
     - python=2.7  CONDA_PY=27
     - python=3.4  CONDA_PY=34
-    - python=3.5  CONDA_PY=35
 
   global:
     # ANACONDA_TOKEN
