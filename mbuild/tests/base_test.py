@@ -36,3 +36,8 @@ class BaseTest:
     def betacristobalite(self):
         from mbuild.lib.surfaces import Betacristobalite
         return Betacristobalite()
+
+    @pytest.fixture
+    def alkyl(self):
+        from mbuild.examples import Alkane
+        return Alkane(2, cap_front=True, cap_end=False)

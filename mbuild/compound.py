@@ -804,7 +804,6 @@ class Compound(object):
             else:
                 box_vector[dim] = box.lengths[dim] * 10 + 5
         structure.box = box_vector
-
         return structure
 
     def to_intermol(self, molecule_types=None):

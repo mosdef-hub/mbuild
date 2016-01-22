@@ -82,10 +82,7 @@ class Pattern(object):
 
         """
         n_ports = len(host.referenced_ports())
-        try:
-            assert n_ports >= self.points.shape[0], "Not enough ports for pattern."
-        except:
-            import pdb; pdb.set_trace()
+        assert n_ports >= self.points.shape[0], "Not enough ports for pattern."
 
         assert_port_exists(guest_port_name, guest)
         box = host.boundingbox
