@@ -205,3 +205,12 @@ class TestCompound(BaseTest):
         assert len([at for at in structure.atoms if at.element == 8]) == 1
 
         assert len(structure.bonds) == 9
+
+    def test_parmed_element_guess(self):
+        compound = mb.Particle(name='foobar')
+        with pytest.warns(UserWarning):
+            structure = compound.to_parmed()
+
+        compound = mb.Particle(name='XXXXXX')
+        with pytest.warns(UserWarning):
+            structure = compound.to_parmed()
