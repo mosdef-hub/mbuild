@@ -5,6 +5,7 @@ from copy import deepcopy
 import itertools
 import os
 import sys
+from warnings import warn
 
 import imolecule
 import mdtraj as md
@@ -782,7 +783,14 @@ class Compound(object):
         structure.title = title if title else self.name
         atom_mapping = {}  # For creating bonds below
         for atom in self.particles():
-            element = element_by_name(atom.name)
+            try:
+                atomic_number = AtomicNum[atom.name]
+            except KeyError:
+                element = element_by_name(atom.name)
+                warn('Guessing that {} is element: {}'.format(atom, element))
+            else:
+                element = atom.name
+
             atomic_number = AtomicNum[element]
             mass = Mass[element]
             pmd_atom = pmd.Atom(atomic_number=atomic_number, name=atom.name,
