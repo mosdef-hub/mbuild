@@ -214,3 +214,10 @@ class TestCompound(BaseTest):
         compound = mb.Particle(name='XXXXXX')
         with pytest.warns(UserWarning):
             structure = compound.to_parmed()
+
+    def test_min_periodic_dist(self, ethane):
+        compound = mb.Compound(ethane)
+        C_pos = np.array([atom.pos for atom in list(compound.particles_by_name('C'))])
+        assert round(compound.min_periodic_distance(C_pos[0], C_pos[1]), 2) == 0.14
+        compound.periodicity = np.array([0.2, 0.2, 0.2])
+        assert round(compound.min_periodic_distance(C_pos[0], C_pos[1]), 2) == 0.06
