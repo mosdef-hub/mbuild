@@ -115,7 +115,9 @@ class Compound(object):
         super(Compound, self).__init__()
 
         if name:
-            assert isinstance(name, string_types)
+            if not isinstance(name, string_types):
+                raise ValueError('Compound.name should be a string. You passed'
+                                 '{}'.format(name))
             self.name = name
         else:
             self.name = self.__class__.__name__
