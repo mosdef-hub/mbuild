@@ -91,6 +91,10 @@ class TestCompound(BaseTest):
         assert len(list(part.ancestors())) == 0
         assert next(part.particles_by_name('A')) == part
 
+    def test_name(self):
+        with pytest.raises(ValueError):
+            mb.Compound(name=1)
+
     def test_particle_in_particle(self):
         part = mb.Particle(name='A')
         parent = mb.Compound(part)
