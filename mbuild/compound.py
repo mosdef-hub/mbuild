@@ -115,7 +115,9 @@ class Compound(object):
         super(Compound, self).__init__()
 
         if name:
-            assert isinstance(name, string_types)
+            if not isinstance(name, string_types):
+                raise ValueError('Compound.name should be a string. You passed'
+                                 '{}'.format(name))
             self.name = name
         else:
             self.name = self.__class__.__name__
@@ -256,13 +258,10 @@ class Compound(object):
             new_child.parent = self
 
             if new_child.bond_graph is not None:
-                if self.root.bond_graph is None:
-                    self.root.bond_graph = new_child.bond_graph
+                if len(new_child.bond_graph) == 1:
+                    self.root.bond_graph.add_node(new_child)
                 else:
                     self.root.bond_graph = nx.compose(self.root.bond_graph, new_child.bond_graph)
-
-                self.root.bond_graph.add_node(new_child)
-                new_child.bond_graph = None
 
         # Add new_part to labels. Does not currently support batch add.
         if label is None:
