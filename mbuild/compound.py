@@ -115,17 +115,16 @@ class Compound(object):
         super(Compound, self).__init__()
 
         if name:
-            if not isinstance(name, string_types):
-                raise ValueError('Compound.name should be a string. You passed'
-                                 '{}'.format(name))
+            assert isinstance(name, string_types)
             self.name = name
         else:
             self.name = self.__class__.__name__
 
         # A periodocity of zero in any direction is treated as non-periodic.
-        if not periodicity:
-            periodicity = np.array([0.0, 0.0, 0.0])
-        self._periodicity = periodicity
+        if periodicity is None:
+            self._periodicity = np.array([0.0, 0.0, 0.0])
+        else:
+            self._periodicity = np.asarray(periodicity)
 
         if pos is not None:
             self._pos = np.asarray(pos, dtype=float)
@@ -139,7 +138,7 @@ class Compound(object):
         self.labels = OrderedDict()
         self.referrers = set()
 
-        self.bond_graph = None
+        self.bond_graph = nx.Graph()
         self.port_particle = port_particle
 
         # self.add() must be called after labels and children are initialized.
@@ -262,6 +261,7 @@ class Compound(object):
                 else:
                     self.root.bond_graph = nx.compose(self.root.bond_graph, new_child.bond_graph)
 
+                self.root.bond_graph.add_node(new_child)
                 new_child.bond_graph = None
 
         # Add new_part to labels. Does not currently support batch add.
