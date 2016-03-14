@@ -11,7 +11,7 @@ requirements:
     - numpy
     - scipy
     - mdtraj
-    - packmol
+    - packmol=1.0.0-2
     - imolecule
     - oset
     - networkx
