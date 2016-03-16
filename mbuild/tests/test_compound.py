@@ -1,11 +1,13 @@
 import json
 import os
+
 import numpy as np
 import pytest
+
 import mbuild as mb
-from warnings import catch_warnings
 from mbuild.utils.io import get_fn
 from mbuild.tests.base_test import BaseTest
+
 
 class TestCompound(BaseTest):
 
@@ -83,9 +85,8 @@ class TestCompound(BaseTest):
         ch3.remove_bond(ch_bond)
         assert ch3.n_bonds == 2
 
-        with catch_warnings(record=True) as w:
+        with pytest.warns(UserWarning):
             ch3.remove_bond(ch_bond)
-            assert "doesn't exist" in str(w[-1].message)
 
     def test_center(self, methane):
         assert np.array_equal(methane.center, np.array([0, 0, 0]))
@@ -186,7 +187,8 @@ class TestCompound(BaseTest):
 
     @pytest.mark.skipif(bool(os.getenv("CI")), reason="Running on CI")
     def test_intermol_conversion2(self, ethane, h2o):
-        compound = mb.Compound([ethane, mb.clone(ethane), h2o]) # 2 distinct Ethane objects
+        # 2 distinct Ethane objects.
+        compound = mb.Compound([ethane, mb.clone(ethane), h2o])
 
         molecule_types = [type(ethane), type(h2o)]
         intermol_system = compound.to_intermol(molecule_types=molecule_types)
@@ -252,13 +254,13 @@ class TestCompound(BaseTest):
                        for particle in ch3_nobonds.particles())
 
         carbons = list(compound.particles_by_name('C'))
-        compound.add_bond((carbons[0],carbons[1]))
+        compound.add_bond((carbons[0], carbons[1]))
         assert compound.n_bonds == 4
         assert all(compound.bond_graph.has_node(particle)
                    for particle in carbons)
         assert any(compound.bond_graph.has_node(particle)
                    for particle in ch3_nobonds.particles())
 
-        compound.remove_bond((carbons[0],carbons[1]))
+        compound.remove_bond((carbons[0], carbons[1]))
         assert not any(compound.bond_graph.has_node(particle)
                        for particle in ch3_nobonds.particles())

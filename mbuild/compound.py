@@ -56,7 +56,7 @@ def clone(existing_compound, clone_of=None, root_container=None):
         clone_of = dict()
 
     newone = existing_compound._clone(clone_of=clone_of, root_container=root_container)
-    existing_compound._clone_bonds(clone_of=clone_of, root_container=root_container)
+    existing_compound._clone_bonds(clone_of=clone_of)
 
     return newone
 
@@ -147,7 +147,6 @@ class Compound(object):
         if subcompounds:
             self.add(subcompounds)
 
-    # region Compound Hierarchy
     def particles(self, include_ports=False):
         """ """
         if not self.children:
@@ -345,9 +344,7 @@ class Compound(object):
         """Return all Ports referenced by this Compound. """
         from mbuild.port import Port
         return [port for port in self.labels.values() if isinstance(port, Port)]
-    # endregion
 
-    # region Bonds
     def bonds(self):
         """A list of all Bonds in the Compound and sub-Compounds. """
         if self.root.bond_graph:
@@ -394,9 +391,7 @@ class Compound(object):
         for particle in particle_pair:
             if not self.root.bond_graph.neighbors(particle):
                 self.root.bond_graph.remove_node(particle)
-    # endregion
 
-    # region Coordinates
     @property
     def pos(self):
         if not self.children:
@@ -476,9 +471,7 @@ class Compound(object):
         if particle_array is None:
             particle_array = np.array(list(self.particles()))
         return particle_array[idxs]
-    # endregion
 
-    # region Visualization
     def view_hierarchy(self, show_ports=False):
         """Visualize a compound hierarchy as a tree.
 
@@ -513,15 +506,13 @@ class Compound(object):
                  for atom1, atom2 in self.bonds()]
         output = {'name': self.name, 'atoms': atoms, 'bonds': bonds}
 
-        # remove the index member variable
+        # Remove the index attribute on particles.
         for idx, particle in enumerate(self.particles()):
             if not show_ports and particle.port_particle:
                 continue
             del particle.index
         return imolecule.json_formatter.compress(output)
-    # endregion
 
-    # region I/O
     def update_coordinates(self, filename):
         """Update the coordinates of this Compound from a file. """
         load(filename, compound=self, coords_only=True)
@@ -887,9 +878,7 @@ class Compound(object):
         for atom1, atom2 in parent.bonds():
             intermol_bond = InterMolBond(atom1.index, atom2.index)
             molecule_type.bonds.add(intermol_bond)
-    # endregion
 
-    # region Magic
     def __getitem__(self, selection):
         if isinstance(selection, integer_types):
             return list(self.particles())[selection]
@@ -978,10 +967,9 @@ class Compound(object):
 
         return newone
 
-    def _clone_bonds(self, clone_of=None, root_container=None):
+    def _clone_bonds(self, clone_of=None):
         newone = clone_of[self]
         for c1, c2 in self.bonds():
             newone.add_bond((clone_of[c1], clone_of[c2]))
-    # endregion
 
 Particle = Compound
