@@ -248,7 +248,6 @@ class TestCompound(BaseTest):
             ch3_nobonds.remove_bond(bond)
         compound.add(ch3_nobonds)
         assert compound.n_bonds == 3
-        print list(ch3_nobonds.particles())
         assert not any(compound.bond_graph.has_node(particle)
                        for particle in ch3_nobonds.particles())
 

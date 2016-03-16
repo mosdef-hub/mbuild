@@ -11,9 +11,10 @@ from math import ceil
 class SilicaInterface(mb.Compound):
     """ A recipe for creating an interface from bulk silica.
 
-    Carves silica interface from bulk, adjusts to desired surface
-    hydoxyl density by creating Si-O-Si bridges, and yields a 2:1
-    Si:O ratio (excluding surface binding sites)
+    Carves silica interface from bulk, adjusts to a reactive
+    surface site density of 5.0 sites/nm^2 (agreeing with experimental
+    results, see Zhuravlev 2000) by creating Si-O-Si bridges, and
+    yields a 2:1 Si:O ratio (excluding the reactive surface sites)
 
     Parameters
     ----------
@@ -24,21 +25,30 @@ class SilicaInterface(mb.Compound):
     tile_y : int, optional, default=1
         Number of times to replicate bulk silica in y-direction
     thickness : float, optional, default=1.0
-        Thickness of the interface (in nm)
-    oh_density : float, optional, default=5.0
-        Desired density of reactive surface sites (sites/nm^2)
+        Desired thickness of the interface (in nm; not including
+        reactive surface sites)
+
+    References
+    ----------
+    .. [1] Hartkamp, R., Siboulet, B., Dufreche, J.-F., Boasne, B.
+           "Ion-specific adsorption and electroosmosis in charged
+           amorphous porous silica." (2015) Phys. Chem. Chem. Phys.
+           17, 24683-24695
+    .. [2] L.T. Zhuravlev, "The surface chemistry of amorphous silica.
+           Zhuravlev model." (2000) Colloids Surf., A. 10, 1-38
 
     """
 
-    def __init__(self, bulk_silica, tile_x=1, tile_y=1, thickness=1.0, oh_density=5.0):
+    def __init__(self, bulk_silica, tile_x=1, tile_y=1, thickness=1.0):
         super(SilicaInterface, self).__init__()
 
+        _oh_density = 5.0
         _O_buffer = 0.275
 
         self._cleave_interface(bulk_silica, tile_x, tile_y, thickness, _O_buffer)
         self.generate_bonds(name_a='Si', name_b='O', dmin=0.0, dmax=0.20419)
         self._strip_stray_atoms()
-        self._bridge_dangling_Os(oh_density, thickness)
+        self._bridge_dangling_Os(_oh_density, thickness)
         self._identify_surface_sites(thickness)
         self._adjust_stoichiometry(_O_buffer)
 
@@ -71,6 +81,13 @@ class SilicaInterface(mb.Compound):
     def _bridge_dangling_Os(self, oh_density, thickness):
         """ Create Si-O-Si bridges on the surface to yield the desired
             density of reactive surface sites
+
+        References
+        ----------
+        .. [1] Hartkamp, R., Siboulet, B., Dufreche, J.-F., Boasne, B.
+               "Ion-specific adsorption and electroosmosis in charged
+               amorphous porous silica." (2015) Phys. Chem. Chem. Phys.
+               17, 24683-24695
         """
 
         area = self.periodicity[0] * self.periodicity[1]
