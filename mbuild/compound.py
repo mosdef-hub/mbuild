@@ -140,7 +140,7 @@ class Compound(object):
         self.labels = OrderedDict()
         self.referrers = set()
 
-        self.bond_graph = nx.Graph()
+        self.bond_graph = None
         self.port_particle = port_particle
 
         # self.add() must be called after labels and children are initialized.
@@ -258,10 +258,14 @@ class Compound(object):
             new_child.parent = self
 
             if new_child.bond_graph is not None:
+                if self.root.bond_graph is None:
+                    self.root.bond_graph = new_child.bond_graph
                 if len(new_child.bond_graph) == 1:
                     self.root.bond_graph.add_node(new_child)
                 else:
                     self.root.bond_graph = nx.compose(self.root.bond_graph, new_child.bond_graph)
+
+                new_child.bond_graph = None
 
         # Add new_part to labels. Does not currently support batch add.
         if label is None:
@@ -305,7 +309,8 @@ class Compound(object):
         objs_to_remove -= intersection
 
         for removed_part in intersection:
-            self.root.bond_graph.remove_node(removed_part)
+            if self.root.bond_graph.has_node(removed_part):
+                self.root.bond_graph.remove_node(removed_part)
             self._remove_references(removed_part)
 
         # Remove the part recursively from sub-compounds.
@@ -374,6 +379,8 @@ class Compound(object):
                                               particle_kdtree=particle_kdtree,
                                               particle_array=particle_array)
             for p2 in nearest:
+                if p2 == p1:
+                    continue
                 bond_tuple = (p1, p2) if id(p1) < id(p2) else (p2, p1)
                 if bond_tuple in added_bonds:
                     continue
