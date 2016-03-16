@@ -387,9 +387,13 @@ class Compound(object):
                     added_bonds.append(bond_tuple)
 
     def remove_bond(self, particle_pair):
-        if self.root.bond_graph is None:
+        if self.root.bond_graph is None or not self.root.bond_graph.has_edge(*particle_pair):
+            warn("Bond between {} and {} doesn't exist!".format(*particle_pair))
             return
-        self.root.bond_graph.remove_edge(particle_pair[0], particle_pair[1])
+        self.root.bond_graph.remove_edge(*particle_pair)
+        for particle in particle_pair:
+            if not self.root.bond_graph.neighbors(particle):
+                self.root.bond_graph.remove_node(particle)
     # endregion
 
     # region Coordinates
