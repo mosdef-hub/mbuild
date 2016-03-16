@@ -65,9 +65,7 @@ class SilicaInterface(mb.Compound):
 
         major_component = max(nx.connected_components(self.bond_graph), key=len)
         for atom in list(self.particles()):
-            if not self.bond_graph.has_node(atom):
-                self.remove(atom)
-            elif atom not in major_component:
+            if atom not in major_component:
                 self.remove(atom)
 
     def _bridge_dangling_Os(self, oh_density, thickness):
@@ -78,10 +76,10 @@ class SilicaInterface(mb.Compound):
         area = self.periodicity[0] * self.periodicity[1]
         target = int(oh_density * area)
 
-        dangling_Os = []
-        for atom in list(self.particles()):
-            if atom.name == 'O' and atom.pos[2] > thickness and len(self.bond_graph.neighbors(atom)) == 1:
-                dangling_Os.append(atom)
+        dangling_Os = [atom for atom in self.particles()
+                       if atom.name == 'O' and
+                          atom.pos[2] > thickness and
+                          len(self.bond_graph.neighbors(atom)) == 1]
 
         n_bridges = int((len(dangling_Os) - target) / 2)
 
@@ -110,7 +108,7 @@ class SilicaInterface(mb.Compound):
     def _identify_surface_sites(self, thickness):
         """ Label surface sites and add ports above them """
 
-        for atom in list(self.particles()):
+        for atom in self.particles():
             if len(self.bond_graph.neighbors(atom)) == 1:
                 if atom.name == 'O' and atom.pos[2] > thickness:
                     atom.name = 'OS'
@@ -127,10 +125,10 @@ class SilicaInterface(mb.Compound):
         num_Si = len(list(self.particles_by_name('Si')))
         n_deletions = num_O - 2*num_Si
 
-        bottom_Os = []
-        for atom in list(self.particles()):
-            if atom.name == 'O' and atom.pos[2] < O_buffer and len(self.bond_graph.neighbors(atom)) == 1:
-                bottom_Os.append(atom)
+        bottom_Os = [atom for atom in self.particles()
+                     if atom.name == 'O' and
+                        atom.pos[2] < O_buffer and
+                        len(self.bond_graph.neighbors(atom)) == 1]
 
         for _ in range(n_deletions):
             O1 = choice(bottom_Os)
