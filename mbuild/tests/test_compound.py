@@ -3,6 +3,7 @@ import os
 import numpy as np
 import pytest
 import mbuild as mb
+from warnings import catch_warnings
 from mbuild.utils.io import get_fn
 from mbuild.tests.base_test import BaseTest
 
@@ -76,6 +77,15 @@ class TestCompound(BaseTest):
         assert ethane.n_bonds == 1
         for part in ethane.children:
             assert part.n_bonds == 0
+
+    def test_remove_bond(self, ch3):
+        ch_bond = list(ch3.bonds())[0]
+        ch3.remove_bond(ch_bond)
+        assert ch3.n_bonds == 2
+
+        with catch_warnings(record=True) as w:
+            ch3.remove_bond(ch_bond)
+            assert "doesn't exist" in str(w[-1].message)
 
     def test_center(self, methane):
         assert np.array_equal(methane.center, np.array([0, 0, 0]))
@@ -225,3 +235,31 @@ class TestCompound(BaseTest):
         assert round(compound.min_periodic_distance(C_pos[0], C_pos[1]), 2) == 0.14
         compound.periodicity = np.array([0.2, 0.2, 0.2])
         assert round(compound.min_periodic_distance(C_pos[0], C_pos[1]), 2) == 0.06
+
+    def test_bond_graph(self, ch3):
+        compound = mb.Compound()
+        compound.add(ch3)
+        assert compound.n_bonds == 3
+        assert all(compound.bond_graph.has_node(particle)
+                   for particle in ch3.particles())
+
+        ch3_nobonds = mb.clone(ch3)
+        for bond in ch3_nobonds.bonds():
+            ch3_nobonds.remove_bond(bond)
+        compound.add(ch3_nobonds)
+        assert compound.n_bonds == 3
+        print list(ch3_nobonds.particles())
+        assert not any(compound.bond_graph.has_node(particle)
+                       for particle in ch3_nobonds.particles())
+
+        carbons = list(compound.particles_by_name('C'))
+        compound.add_bond((carbons[0],carbons[1]))
+        assert compound.n_bonds == 4
+        assert all(compound.bond_graph.has_node(particle)
+                   for particle in carbons)
+        assert any(compound.bond_graph.has_node(particle)
+                   for particle in ch3_nobonds.particles())
+
+        compound.remove_bond((carbons[0],carbons[1]))
+        assert not any(compound.bond_graph.has_node(particle)
+                       for particle in ch3_nobonds.particles())
