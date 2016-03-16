@@ -128,7 +128,5 @@ class TiledCompound(Compound):
         for particle in neighbors:
             if particle.index == match.index:
                 return particle
-        print(particle, particle.index)
-        print(neighbors)
         raise RuntimeError('Unable to find matching particle image while'
                            ' stitching bonds.')

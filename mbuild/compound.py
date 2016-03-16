@@ -123,9 +123,10 @@ class Compound(object):
             self.name = self.__class__.__name__
 
         # A periodocity of zero in any direction is treated as non-periodic.
-        if not periodicity:
-            periodicity = np.array([0.0, 0.0, 0.0])
-        self._periodicity = periodicity
+        if periodicity is None:
+            self._periodicity = np.array([0.0, 0.0, 0.0])
+        else:
+            self._periodicity = np.asarray(periodicity)
 
         if pos is not None:
             self._pos = np.asarray(pos, dtype=float)
@@ -306,7 +307,8 @@ class Compound(object):
         objs_to_remove -= intersection
 
         for removed_part in intersection:
-            self.root.bond_graph.remove_node(removed_part)
+            if self.root.bond_graph.has_node(removed_part):
+                self.root.bond_graph.remove_node(removed_part)
             self._remove_references(removed_part)
 
         # Remove the part recursively from sub-compounds.
@@ -375,6 +377,8 @@ class Compound(object):
                                               particle_kdtree=particle_kdtree,
                                               particle_array=particle_array)
             for p2 in nearest:
+                if p2 == p1:
+                    continue
                 bond_tuple = (p1, p2) if id(p1) < id(p2) else (p2, p1)
                 if bond_tuple in added_bonds:
                     continue
@@ -383,9 +387,13 @@ class Compound(object):
                     added_bonds.append(bond_tuple)
 
     def remove_bond(self, particle_pair):
-        if self.root.bond_graph is None:
+        if self.root.bond_graph is None or not self.root.bond_graph.has_edge(*particle_pair):
+            warn("Bond between {} and {} doesn't exist!".format(*particle_pair))
             return
-        self.root.bond_graph.remove_edge(particle_pair[0], particle_pair[1])
+        self.root.bond_graph.remove_edge(*particle_pair)
+        for particle in particle_pair:
+            if not self.root.bond_graph.neighbors(particle):
+                self.root.bond_graph.remove_node(particle)
     # endregion
 
     # region Coordinates
