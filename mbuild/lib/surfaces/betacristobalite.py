@@ -23,11 +23,7 @@ class Betacristobalite(mb.Compound):
     def __init__(self):
         super(Betacristobalite, self).__init__()
 
-        '''
         mb.load('beta-cristobalite-expanded.mol2', compound=self,
-                relative_to_module=self.__module__)
-        '''
-        mb.load('temp.mol2', compound=self,
                 relative_to_module=self.__module__)
         self.periodicity = np.array([5.3888, 4.6669, 0.0])
 
