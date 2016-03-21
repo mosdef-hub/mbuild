@@ -16,8 +16,8 @@ class TestMonolayer(BaseTest):
         monolayer = mb.Monolayer(surface=Betacristobalite(), chain=chain,
                                  backfill=H(), pattern=pattern)
 
-        assert monolayer.n_particles == 1800 + n * m * (10*3) + (100 - n*m)
-        assert monolayer.n_bonds == 2300 + n * m * (10 * 2 + 9 + 1) + (100 - n * m)
+        assert monolayer.n_particles == 1900 + n * m * (10*3) + (100 - n*m)
+        assert monolayer.n_bonds == 2400 + n * m * (10 * 2 + 9 + 1) + (100 - n * m)
 
     def test_pattern_kwargs(self, ch2):
         n = 8
@@ -31,5 +31,5 @@ class TestMonolayer(BaseTest):
 
         chains = 100 - (n*m)
 
-        assert monolayer.n_particles == 1800 + chains * (10*3) + (100 - chains)
-        assert monolayer.n_bonds == 2300 + chains * (10 * 2 + 9 + 1) + (100 - chains)
+        assert monolayer.n_particles == 1900 + chains * (10*3) + (100 - chains)
+        assert monolayer.n_bonds == 2400 + chains * (10 * 2 + 9 + 1) + (100 - chains)

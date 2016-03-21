@@ -7,34 +7,25 @@ class Betacristobalite(mb.Compound):
     """The beta-cristobalite form of SiO2.
 
     Area per port specifies the density of attachment sites in nm^2.
-    * 0.2 nm^2 / port is the most physically accurate.
-    * 0.25 nm^2 / port is the typical density of alkane monolayers on SiO2
-      although these are actually grown on amorphous SiO2 in experiment.
-      This particular file is the same as the 0.2 file with its dimensions
-      stretched in the x- and y-dimensions.
+    The crystal is expanded to yield an area per port of 0.25 nm^2, the
+    typical density of alkane monolayers on SiO2 although these are actually
+    grown on amorphous SiO2 in experiment.
 
     See http://www.wikiwand.com/en/Silicon_dioxide for more info on the various
     crystal forms.
 
     Note: Port sites are currently naively determined by placing them on all
     oxygens which are above 1.0 nm in the z-direction. This only holds true for
-    the beta-cristobalite.pdb and beta-cristobalite-expanded.mol2 files. If you
-    add a new one, please modify the file or the method of determining port
-    locations.
+    the beta-cristobalite-expanded.mol2 file. If you add a new one, please modify
+    the file or the method of determining port locations.
 
     """
-    def __init__(self, area_per_port=0.2):
+    def __init__(self):
         super(Betacristobalite, self).__init__()
 
-        if area_per_port == 0.2:
-            mb.load('beta-cristobalite.pdb', compound=self,
-                    relative_to_module=self.__module__)
-            self.periodicity = np.array([4.7689, 4.13, 0.0])
-        elif area_per_port == 0.25:
-
-            mb.load('beta-cristobalite-expanded.mol2', compound=self,
-                    relative_to_module=self.__module__)
-            self.periodicity = np.array([5.3888, 4.6669, 0.0])
+        mb.load('beta-cristobalite-expanded.mol2', compound=self,
+                relative_to_module=self.__module__)
+        self.periodicity = np.array([5.3888, 4.6669, 0.0])
 
         count = 0
         for particle in self.particles():
