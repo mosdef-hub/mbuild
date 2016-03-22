@@ -78,6 +78,13 @@ class TestCompound(BaseTest):
         for part in ethane.children:
             assert part.n_bonds == 0
 
+    def test_remove_no_bond_graph(self):
+        compound = mb.Compound()
+        particle = mb.Compound(name='C', pos=[0,0,0])
+        compound.add(particle, 'test-particle')
+        compound.remove(particle)
+        assert particle not in compound.particles()
+
     def test_remove_bond(self, ch3):
         ch_bond = list(ch3.bonds())[0]
         ch3.remove_bond(ch_bond)
