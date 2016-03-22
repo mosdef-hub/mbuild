@@ -307,8 +307,9 @@ class Compound(object):
         objs_to_remove -= intersection
 
         for removed_part in intersection:
-            if self.root.bond_graph.has_node(removed_part):
-                self.root.bond_graph.remove_node(removed_part)
+            if self.root.bond_graph:
+                if self.root.bond_graph.has_node(removed_part):
+                    self.root.bond_graph.remove_node(removed_part)
             self._remove_references(removed_part)
 
         # Remove the part recursively from sub-compounds.
