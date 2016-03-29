@@ -1,4 +1,7 @@
 import mbuild as mb
+import numpy as np
+
+from copy import deepcopy
 
 
 __all__ = ['Monolayer']
@@ -11,8 +14,10 @@ class Monolayer(mb.Compound):
     ----------
     surface : mb.Compound
         Surface on which the monolayer will be built.
-    chain : list of mb.Compound
-        The chain to be replicated and attached to the surface.
+    chains : list of mb.Compounds
+        The chains to be replicated and attached to the surface.
+    fractions : list
+        The fractions of the pattern to be allocated to each chain.
     backfill : list of mb.Compound, optional, default=None
         If there are fewer chains than there are ports on the surface,
         copies of `backfill` will be used to fill the remaining ports.
@@ -24,14 +29,10 @@ class Monolayer(mb.Compound):
     tile_y : int, optional, default=1
         Number of times to replicate substrate in y-direction.
 
-    TODO
-    ----
-    * Support for arbitrary number of chain types and relative proportions
-
     """
 
-    def __init__(self, surface, chain, backfill=None, pattern=None, tile_x=1,
-                 tile_y=1, **kwargs):
+    def __init__(self, surface, chains, fractions, backfill=None, pattern=None,
+                 tile_x=1, tile_y=1, **kwargs):
         super(Monolayer, self).__init__()
 
         # Replicate the surface.
@@ -41,8 +42,30 @@ class Monolayer(mb.Compound):
         if pattern is None:  # Fill the surface.
             pattern = mb.Random2DPattern(len(tiled_compound.referenced_ports()))
 
-        # Attach chains to specified binding sites. Remaining sites get a backfill.
-        chains, backfills = pattern.apply_to_compound(guest=chain,
-                host=self['tiled_surface'], backfill=backfill, **kwargs)
-        self.add(chains)
+        if isinstance(chains, str):
+            chains = [chains]
+
+        n_chains = len(pattern.points)
+
+        # Attach chains of each type to binding sites based on specified fractions
+        for i,chain in enumerate(chains[:-1]):
+
+            # Create sub-pattern for this chain type
+            subpattern = deepcopy(pattern)
+            n_points = round(fractions[i]*n_chains)
+            points = subpattern.points[np.random.choice(subpattern.points.shape[0],n_points)]
+            subpattern.points = points
+
+            # Remove now-occupied points from overall pattern
+            pattern.points = np.array([point for point in pattern.points.tolist() if point not in subpattern.points.tolist()])
+
+            # Attach chains to the surface
+            attached_chains = subpattern.apply_to_compound(guest=chain,
+                              host=self['tiled_surface'],backfill=None, **kwargs)
+            self.add(attached_chains)
+
+        # Attach final chain type. Remaining sites get a backfill.
+        attached_chains, backfills = pattern.apply_to_compound(guest=chains[-1],
+                         host=self['tiled_surface'], backfill=backfill, **kwargs)
+        self.add(attached_chains)
         self.add(backfills)
