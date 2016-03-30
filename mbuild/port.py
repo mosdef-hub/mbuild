@@ -49,6 +49,7 @@ class Port(Compound):
     def _clone(self, clone_of=None, root_container=None):
         newone = super(Port, self)._clone(clone_of, root_container)
         newone.anchor = clone(self.anchor, clone_of, root_container)
+        newone.used = self.used
         return newone
 
     @property
