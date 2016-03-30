@@ -23,6 +23,9 @@ class Port(Compound):
     down : mb.Compound
         Collection of 4 ghost particles used to perform equivalence transforms.
         Faces the opposite direction as self['up'].
+    used : bool
+        Status of whether a port has been occupied following an equivalence
+        transform.
 
     """
     def __init__(self, anchor=None):
@@ -41,6 +44,7 @@ class Port(Compound):
 
         self.add(up, 'up')
         self.add(down, 'down')
+        self.used = False
 
     def _clone(self, clone_of=None, root_container=None):
         newone = super(Port, self)._clone(clone_of, root_container)
