@@ -31,7 +31,7 @@ class Monolayer(mb.Compound):
 
     """
 
-    def __init__(self, surface, chains, fractions, backfill=None, pattern=None,
+    def __init__(self, surface, chains, fractions=None, backfill=None, pattern=None,
                  tile_x=1, tile_y=1, **kwargs):
         super(Monolayer, self).__init__()
 
@@ -42,7 +42,7 @@ class Monolayer(mb.Compound):
         if pattern is None:  # Fill the surface.
             pattern = mb.Random2DPattern(len(tiled_compound.referenced_ports()))
 
-        if isinstance(chains, str):
+        if isinstance(chains, mb.Compound):
             chains = [chains]
 
         n_chains = len(pattern.points)
@@ -53,7 +53,7 @@ class Monolayer(mb.Compound):
             # Create sub-pattern for this chain type
             subpattern = deepcopy(pattern)
             n_points = round(fractions[i]*n_chains)
-            points = subpattern.points[np.random.choice(subpattern.points.shape[0],n_points)]
+            points = subpattern.points[np.random.choice(subpattern.points.shape[0],n_points,replace=False)]
             subpattern.points = points
 
             # Remove now-occupied points from overall pattern

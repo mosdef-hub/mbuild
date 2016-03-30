@@ -26,8 +26,9 @@ class AlkaneMonolayer(mb.Monolayer):
         surface = Betacristobalite()
         alkylsilane = AlkylSilane(chain_length)
         hydrogen = H()
-        super(AlkaneMonolayer, self).__init__(surface, alkylsilane, hydrogen,
-                                              pattern, tile_x, tile_y)
+        super(AlkaneMonolayer, self).__init__(surface, alkylsilane, backfill=hydrogen,
+                                              pattern=pattern, tile_x=tile_x,
+                                              tile_y=tile_y)
 
 
 def main():
