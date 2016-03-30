@@ -52,8 +52,8 @@ class Monolayer(mb.Compound):
 
             # Create sub-pattern for this chain type
             subpattern = deepcopy(pattern)
-            n_points = round(fractions[i]*n_chains)
-            points = subpattern.points[np.random.choice(subpattern.points.shape[0],n_points,replace=False)]
+            n_points = round(fractions[i] * n_chains)
+            points = subpattern.points[np.random.choice(subpattern.points.shape[0], n_points, replace=False)]
             subpattern.points = points
 
             # Remove now-occupied points from overall pattern
@@ -61,7 +61,7 @@ class Monolayer(mb.Compound):
 
             # Attach chains to the surface
             attached_chains = subpattern.apply_to_compound(guest=chain,
-                              host=self['tiled_surface'],backfill=None, **kwargs)
+                              host=self['tiled_surface'], backfill=None, **kwargs)
             self.add(attached_chains)
 
         # Attach final chain type. Remaining sites get a backfill.
