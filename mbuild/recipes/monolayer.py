@@ -17,7 +17,7 @@ class Monolayer(mb.Compound):
         Surface on which the monolayer will be built.
     chains : list of mb.Compounds
         The chains to be replicated and attached to the surface.
-    fractions : list
+    fractions : list of floats
         The fractions of the pattern to be allocated to each chain.
     backfill : list of mb.Compound, optional, default=None
         If there are fewer chains than there are ports on the surface,
@@ -43,19 +43,20 @@ class Monolayer(mb.Compound):
         if pattern is None:  # Fill the surface.
             pattern = mb.Random2DPattern(len(tiled_compound.referenced_ports()))
 
-        if isinstance(chains, mb.Compound):
-            chains = [chains]
-        else:
-            assert len(chains) == len(fractions)
+        chains = list(chains)
+        fractions = list(fractions)
+
+        if len(chains) != len(fractions):
+            raise ValueError("Number of fractions does not match the number of chain types provided")
 
         n_chains = len(pattern.points)
 
         # Attach chains of each type to binding sites based on specified fractions
-        for i,chain in enumerate(chains[:-1]):
+        for chain,fraction in zip(chains,fractions)[:-1]:
 
             # Create sub-pattern for this chain type
             subpattern = deepcopy(pattern)
-            n_points = round(fractions[i] * n_chains)
+            n_points = round(fraction * n_chains)
             warnings.warn("\n Adding {} of chain {}".format(int(n_points), chain))
             points = subpattern.points[np.random.choice(subpattern.points.shape[0],
                                                         n_points,
