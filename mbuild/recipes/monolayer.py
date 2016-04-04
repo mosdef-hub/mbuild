@@ -43,34 +43,39 @@ class Monolayer(mb.Compound):
         if pattern is None:  # Fill the surface.
             pattern = mb.Random2DPattern(len(tiled_compound.referenced_ports()))
 
-        chains = list(chains)
-        fractions = list(fractions)
+        if isinstance(chains, mb.Compound):
+            chains = [chains]
+        
+        if fractions:
+            fractions = list(fractions)
+            if len(chains) != len(fractions):
+                raise ValueError("Number of fractions does not match the number of chain types provided")
 
-        if len(chains) != len(fractions):
-            raise ValueError("Number of fractions does not match the number of chain types provided")
+            n_chains = len(pattern.points)
 
-        n_chains = len(pattern.points)
+            # Attach chains of each type to binding sites based on specified fractions
+            for chain,fraction in zip(chains,fractions)[:-1]:
 
-        # Attach chains of each type to binding sites based on specified fractions
-        for chain,fraction in zip(chains,fractions)[:-1]:
+                # Create sub-pattern for this chain type
+                subpattern = deepcopy(pattern)
+                n_points = round(fraction * n_chains)
+                warnings.warn("\n Adding {} of chain {}".format(int(n_points), chain))
+                points = subpattern.points[np.random.choice(subpattern.points.shape[0],
+                                                            n_points,
+                                                            replace=False)]
+                subpattern.points = points
 
-            # Create sub-pattern for this chain type
-            subpattern = deepcopy(pattern)
-            n_points = round(fraction * n_chains)
-            warnings.warn("\n Adding {} of chain {}".format(int(n_points), chain))
-            points = subpattern.points[np.random.choice(subpattern.points.shape[0],
-                                                        n_points,
-                                                        replace=False)]
-            subpattern.points = points
+                # Remove now-occupied points from overall pattern
+                pattern.points = np.array([point for point in pattern.points.tolist()
+                                           if point not in subpattern.points.tolist()])
 
-            # Remove now-occupied points from overall pattern
-            pattern.points = np.array([point for point in pattern.points.tolist()
-                                       if point not in subpattern.points.tolist()])
+                # Attach chains to the surface
+                attached_chains, _ = subpattern.apply_to_compound(guest=chain,
+                                     host=self['tiled_surface'], backfill=None, **kwargs)
+                self.add(attached_chains)
 
-            # Attach chains to the surface
-            attached_chains, _ = subpattern.apply_to_compound(guest=chain,
-                                 host=self['tiled_surface'], backfill=None, **kwargs)
-            self.add(attached_chains)
+        else:
+            warnings.warn("\n No fractions provided.  Assuming a single chain type.")
 
         # Attach final chain type. Remaining sites get a backfill.
         warnings.warn("\n Adding {} of chain {}".format(len(pattern), chains[-1]))
