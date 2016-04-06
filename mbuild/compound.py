@@ -345,6 +345,11 @@ class Compound(object):
         from mbuild.port import Port
         return [port for port in self.labels.values() if isinstance(port, Port)]
 
+    def available_ports(self):
+        """Return all unoccupied Ports referenced by this Compound. """
+        from mbuild.port import Port
+        return [port for port in self.labels.values() if isinstance(port, Port) and not port.used]
+
     def bonds(self):
         """A list of all Bonds in the Compound and sub-Compounds. """
         if self.root.bond_graph:
