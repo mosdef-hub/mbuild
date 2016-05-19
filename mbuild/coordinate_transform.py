@@ -283,6 +283,8 @@ def equivalence_transform(compound, from_positions, to_positions, add_bond=True)
         equivalence_pairs = zip(from_positions, to_positions)
     elif isinstance(from_positions, Port) and isinstance(to_positions, Port):
         equivalence_pairs, T = _choose_correct_port(from_positions, to_positions)
+        from_positions.used = True
+        to_positions.used = True
     else:
         equivalence_pairs = [(from_positions, to_positions)]
 

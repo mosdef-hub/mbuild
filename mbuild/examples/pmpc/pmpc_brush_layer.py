@@ -15,8 +15,9 @@ class PMPCLayer(mb.Monolayer):
         surface = Betacristobalite()
         brush = Brush(chain_length=chain_length, alpha=alpha)
         hydrogen = H()
-        super(PMPCLayer, self).__init__(surface, brush, hydrogen,
-                                        pattern, tile_x, tile_y)
+        super(PMPCLayer, self).__init__(surface, brush, backfill=hydrogen,
+                                        pattern=pattern, tile_x=tile_x,
+                                        tile_y=tile_y)
 
 
 def main():

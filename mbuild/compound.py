@@ -306,7 +306,7 @@ class Compound(object):
         objs_to_remove -= intersection
 
         for removed_part in intersection:
-            if self.root.bond_graph.has_node(removed_part):
+            if self.root.bond_graph and self.root.bond_graph.has_node(removed_part):
                 self.root.bond_graph.remove_node(removed_part)
             self._remove_references(removed_part)
 
@@ -344,6 +344,11 @@ class Compound(object):
         """Return all Ports referenced by this Compound. """
         from mbuild.port import Port
         return [port for port in self.labels.values() if isinstance(port, Port)]
+
+    def available_ports(self):
+        """Return all unoccupied Ports referenced by this Compound. """
+        from mbuild.port import Port
+        return [port for port in self.labels.values() if isinstance(port, Port) and not port.used]
 
     def bonds(self):
         """A list of all Bonds in the Compound and sub-Compounds. """
