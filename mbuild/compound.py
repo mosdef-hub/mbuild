@@ -324,7 +324,7 @@ class Compound(object):
         referrers_to_remove = set()
         for referrer in removed_part.referrers:
             if removed_part not in referrer.ancestors():
-                for label, referred_part in referrer.labels.items():
+                for label, referred_part in list(referrer.labels.items()):
                     if referred_part is removed_part:
                         del referrer.labels[label]
                         referrers_to_remove.add(referrer)
