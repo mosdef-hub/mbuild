@@ -39,7 +39,3 @@ if __name__ == '__main__':
     # print("Leaves of the proxy:")
     # for i, leaf in enumerate(proxy.particles()):
     #     print("{}: {}".format(i, leaf))
-
-    # hexane_box.visualize()
-    united_atom.visualize()
-    #three_to_one.visualize()

@@ -48,5 +48,3 @@ def main():
 if __name__ == "__main__":
     alkane = main()
     print(alkane)
-    # alkane.visualize(show_ports=True)
-    alkane.visualize(show_ports=False)

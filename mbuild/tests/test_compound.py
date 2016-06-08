@@ -170,15 +170,6 @@ class TestCompound(BaseTest):
         assert traj.n_chains == 1
         assert traj.n_residues == 1
 
-    def test_to_json(self, ethane):
-        output = json.loads(ethane._to_json())
-        assert len(output['atoms']) == 8
-        assert len(output['bonds']) == 7
-
-        output = json.loads(ethane._to_json(show_ports=True))
-        assert len(output['atoms']) == 8+16
-        assert len(output['bonds']) == 7
-
     @pytest.mark.skipif(bool(os.getenv("CI")), reason="Running on CI")
     def test_intermol_conversion1(self, ethane, h2o):
         compound = mb.Compound([ethane, h2o])

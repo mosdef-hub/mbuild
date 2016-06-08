@@ -30,4 +30,4 @@ class MPC(mb.Compound):
 
 if __name__ == "__main__":
     monomer = MPC()
-    monomer.visualize(show_ports=True)
+    print(monomer)

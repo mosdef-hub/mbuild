@@ -9,10 +9,6 @@ if [[ "$TRAVIS_BRANCH" != "master" ]]; then
     echo "No deployment on BRANCH='$TRAVIS_BRANCH'"; exit 0
 fi
 
-pwd
-ls
-ls $HOME/miniconda3/conda-bld/
-
 echo "Executing anaconda upload"
 #Debug binstar token
 #echo "anaconda -t $ANACONDA_TOKEN  upload --force -u imodels -p mbuild-dev $HOME/miniconda3/conda-bld/linux-64/mbuild-*" | perl -ne 'print uc'

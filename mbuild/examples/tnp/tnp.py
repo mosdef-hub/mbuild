@@ -50,4 +50,4 @@ def main():
 
 if __name__ == "__main__":
     np = main()
-    np.visualize()
+    print(np)

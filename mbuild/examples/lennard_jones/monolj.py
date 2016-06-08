@@ -19,6 +19,4 @@ class MonoLJ(mb.Compound):
 
 if __name__ == '__main__':
     monolj = MonoLJ()
-
-    colors = {'LJ': {'color': 0xbfbfbf, 'radius': 1.6}}
-    monolj.visualize(element_properties=colors)
+    print(monolj)

@@ -14,5 +14,4 @@ def main():
 
 if __name__ == "__main__":
     solvated_ethane = main()
-    solvated_ethane.save('foo.mol2')
-    solvated_ethane.visualize()
+    print(solvated_ethane)

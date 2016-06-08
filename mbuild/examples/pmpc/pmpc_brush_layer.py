@@ -21,13 +21,11 @@ class PMPCLayer(mb.Monolayer):
 
 
 def main():
-    pattern = mb.Grid2DPattern(2, 1)
-    pmpc_system = PMPCLayer(pattern=pattern, chain_length=5, alpha=pi / 4, tile_x=1, tile_y=2)
+    pattern = mb.Random2DPattern(2)
+    pmpc_system = PMPCLayer(pattern=pattern, chain_length=3, alpha=pi / 4, tile_x=1, tile_y=1)
     return pmpc_system
 
 
 if __name__ == "__main__":
     pmpc_layer = main()
-    #pmpc_layer.save(filename='brush_layer.mol2')
-    pmpc_layer.visualize()
-    # pmpc_layer.view_hierarchy()
+    print(pmpc_layer)

@@ -26,6 +26,4 @@ class Initiator(mb.Compound):
 
 if __name__ == "__main__":
     ini = Initiator()
-    ini.visualize(show_ports=True)
-
-
+    print(ini)

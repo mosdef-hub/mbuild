@@ -48,7 +48,9 @@ setup(
     url='https://github.com/imodels/mbuild',
     download_url='https://github.com/imodels/mbuild/tarball/{}'.format(__version__),
     packages=find_packages(),
-    package_data={'mbuild': ['utils/reference/*.{pdb,mol2}', 'lib/*.{pdb,mol2}']},
+    package_data={'mbuild': ['utils/reference/*.{pdb,mol2}',
+                             'lib/*.{pdb,mol2}',
+                             ]},
     package_dir={'mbuild': 'mbuild'},
     include_package_data=True,
     install_requires=reqs,
@@ -70,5 +72,4 @@ setup(
         'Operating System :: Unix',
         'Operating System :: MacOS',
     ],
-    test_suite='tests',
 )

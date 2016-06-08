@@ -23,6 +23,3 @@ if __name__ == '__main__':
     print("Leaves of the proxy:")
     for particle in proxy.particles():
         print(" {}".format(particle))
-
-    proxy.visualize()
-

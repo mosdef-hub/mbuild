@@ -28,4 +28,3 @@ def main():
 if __name__ == "__main__":
     methane = main()
     print(methane)
-    methane.visualize()

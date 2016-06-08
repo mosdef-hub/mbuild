@@ -23,6 +23,4 @@ class Bead(mb.Compound):
 
 if __name__ == '__main__':
     bead = Bead(particle_kind="bead")
-
-    bead.visualize()
-
+    print(bead)
