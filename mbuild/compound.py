@@ -260,7 +260,8 @@ class Compound(object):
                 if self.root.bond_graph is None:
                     self.root.bond_graph = new_child.bond_graph
                 else:
-                    self.root.bond_graph = nx.compose(self.root.bond_graph, new_child.bond_graph)
+                    self.root.bond_graph = nx.compose(self.root.bond_graph,
+                                                      new_child.bond_graph)
 
                 new_child.bond_graph = None
 
