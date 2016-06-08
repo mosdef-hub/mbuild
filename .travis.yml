@@ -2,6 +2,7 @@ language: c
 sudo: false
 
 install:
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew install md5sha1sum; fi
   - source devtools/travis-ci/install.sh
   - conda config --add channels omnia
 
