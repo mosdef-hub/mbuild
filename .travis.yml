@@ -1,18 +1,16 @@
 language: c
-
 sudo: false
-addons:
-  apt:
-    sources:
-      - ubuntu-toolchain-r-test
 
 install:
   - source devtools/travis-ci/install.sh
   - conda config --add channels omnia
-  - conda config --add channels patrickfuller
 
 script:
   - conda build devtools/conda-recipe
+
+os:
+  - osx
+  - linux
 
 env:
   matrix:
