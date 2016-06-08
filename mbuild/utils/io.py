@@ -19,3 +19,11 @@ def get_fn(name):
     if not os.path.exists(fn):
         raise ValueError('Sorry! {} does not exists.'.format(fn))
     return fn
+
+
+def run_from_ipython():
+    try:
+        __IPYTHON__
+        return True
+    except NameError:
+        return False

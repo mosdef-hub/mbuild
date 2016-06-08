@@ -7,9 +7,9 @@ import os
 import sys
 from warnings import warn
 
-import imolecule
 import mdtraj as md
 import networkx as nx
+import nglview
 import numpy as np
 from mdtraj.core.element import get_by_symbol
 from mdtraj.core.topology import Topology
@@ -21,6 +21,7 @@ from six import integer_types, string_types
 from mbuild.box import Box
 from mbuild.formats.mol2 import write_mol2
 from mbuild.periodic_kdtree import PeriodicCKDTree
+from mbuild.utils.io import run_from_ipython
 
 
 __all__ = ['load', 'clone', 'Compound', 'Particle']
@@ -344,12 +345,14 @@ class Compound(object):
     def referenced_ports(self):
         """Return all Ports referenced by this Compound. """
         from mbuild.port import Port
-        return [port for port in self.labels.values() if isinstance(port, Port)]
+        return [port for port in self.labels.values()
+                if isinstance(port, Port)]
 
     def available_ports(self):
         """Return all unoccupied Ports referenced by this Compound. """
         from mbuild.port import Port
-        return [port for port in self.labels.values() if isinstance(port, Port) and not port.used]
+        return [port for port in self.labels.values()
+                if isinstance(port, Port) and not port.used]
 
     def bonds(self):
         """A list of all Bonds in the Compound and sub-Compounds. """
@@ -490,34 +493,14 @@ class Compound(object):
         """
         raise NotImplementedError('To be replaced with igraph')
 
-    def visualize(self, show_ports=False, shader='lambert',
-                  drawing_type='ball and stick', camera_type='perspective',
-                  element_properties=None):
-        """Visualize the Compound using imolecule. """
-        json_mol = self._to_json(show_ports)
-        imolecule.draw(json_mol, format='json', shader=shader,
-                       drawing_type=drawing_type, camera_type=camera_type,
-                       element_properties=element_properties)
-
-    def _to_json(self, show_ports=False):
-        atoms = list()
-
-        for idx, particle in enumerate(self._particles(include_ports=show_ports)):
-            particle.index = idx
-            atoms.append({'element': particle.name,
-                          'location': list(np.asarray(particle.pos, dtype=float) * 10)})
-
-        bonds = [{'atoms': [atom1.index, atom2.index],
-                  'order': 1}
-                 for atom1, atom2 in self.bonds()]
-        output = {'name': self.name, 'atoms': atoms, 'bonds': bonds}
-
-        # Remove the index attribute on particles.
-        for idx, particle in enumerate(self.particles()):
-            if not show_ports and particle.port_particle:
-                continue
-            del particle.index
-        return imolecule.json_formatter.compress(output)
+    def visualize(self, show_ports=False):
+        """Visualize the Compound using nglview. """
+        if run_from_ipython():
+            traj = self.to_trajectory(show_ports)
+            return nglview.show_mdtraj(traj)
+        else:
+            raise RuntimeError('Visualization is only supported in Jupyter '
+                               'Notebooks.')
 
     def update_coordinates(self, filename):
         """Update the coordinates of this Compound from a file. """
