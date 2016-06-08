@@ -42,5 +42,5 @@ class Sphere(mb.Compound):
             mb.translate(port, pos + (pos/radius * port_distance_from_surface))
 
 if __name__ == "__main__":
-    m = Sphere(n=4, radius=2)
-    m.visualize(show_ports=False)
+    sphere = Sphere(n=4, radius=2)
+    print(sphere)

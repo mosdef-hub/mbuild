@@ -39,4 +39,4 @@ def main():
 
 if __name__ == "__main__":
     monolayer = main()
-    monolayer.visualize()
+    print(monolayer)

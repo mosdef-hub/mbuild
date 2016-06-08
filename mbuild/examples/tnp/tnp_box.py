@@ -35,4 +35,3 @@ def main():
 if __name__ == "__main__":
     box = main()
     print(box)
-    box.visualize()

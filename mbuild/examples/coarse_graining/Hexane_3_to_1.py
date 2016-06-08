@@ -38,6 +38,3 @@ if __name__ == '__main__':
     for i, leaf in enumerate(proxy.particles()):
         print("{}: {}".format(i, leaf))
 
-
-
-    proxy.visualize()

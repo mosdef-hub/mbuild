@@ -20,3 +20,4 @@ class AlkylSilane(mb.Compound):
 
 if __name__ == "__main__":
     alkyl_silane = AlkylSilane(10)
+    print(alkyl_silane)

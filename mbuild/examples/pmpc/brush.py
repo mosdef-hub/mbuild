@@ -29,4 +29,4 @@ class Brush(mb.Compound):
 
 if __name__ == "__main__":
     pmpc = Brush(chain_length=1, alpha=pi/4)
-    pmpc.visualize(show_ports=True)
+    print(pmpc)

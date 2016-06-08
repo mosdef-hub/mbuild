@@ -20,8 +20,4 @@ def main():
 
 if __name__ == "__main__":
     ethane = main()
-    atoms = list(ethane.particles())
     print(ethane)
-    for a in ethane.particles():
-        print(a)
-    ethane.visualize(show_ports=True)
