@@ -10,52 +10,72 @@ structures from smaller components.
 """
 
 from __future__ import print_function
+doc_lines = __doc__.split('\n')
 
 import os
 import sys
-from setuptools import setup, find_packages
-from setuptools.command.test import test as TestCommand
+from setuptools import setup, Extension, find_packages
+sys.path.insert(0, '.')
+from basesetup import (write_version_py, build_ext,
+                       StaticLibrary, CompilerDetection)
+
+try:
+    import Cython
+    if Cython.__version__ < '0.19':
+        raise ImportError
+    from Cython.Build import cythonize
+except ImportError:
+    print('-'*80, file=sys.stderr)
+    print('''Error: building mbuild requires cython>=0.19
+Try running the command ``pip install cython`` or
+``conda install cython`` or see http://cython.org/ for more information.
+If you're feeling lost, we recommend downloading the (free) Anaconda python
+distribution https://www.continuum.io/downloads, because it comes with
+these components included.''', file=sys.stderr)
+    print('-'*80, file=sys.stderr)
+    sys.exit(1)
+
+
+try:
+    # add an optional --disable-openmp to disable OpenMP support
+    sys.argv.remove('--disable-openmp')
+    disable_openmp = True
+except ValueError:
+    disable_openmp = False
+
 
 #####################################
-VERSION = "0.6.0"
+VERSION = "0.6.0.dev0"
 ISRELEASED = False
-if ISRELEASED:
-    __version__ = VERSION
-else:
-    __version__ = VERSION + '.dev0'
+__version__ = VERSION
 #####################################
 
-with open('mbuild/version.py', 'w') as version_file:
-    version_file.write('version="{0}"\n'.format(__version__))
 
-with open('__conda_version__.txt', 'w') as conda_version:
-    conda_version.write(__version__)
+# Global info about compiler
+compiler = CompilerDetection(disable_openmp)
+compiler.initialize()
 
-if sys.argv[-1] == 'publish':
-    os.system('python setup.py sdist upload')
-    sys.exit()
-
-with open('requirements.txt') as reqs_file:
-    reqs = [line.strip() for line in reqs_file]
+extra_cpp_libraries = []
+if sys.platform == 'darwin':
+    extra_cpp_libraries.append('stdc++')
+    os.environ['CXX'] = 'clang++'
+    os.environ['CC'] = 'clang'
+if sys.platform == 'win32':
+    extra_cpp_libraries.append('Ws2_32')
+    # For determining if a path is relative (for dtr)
+    extra_cpp_libraries.append('Shlwapi')
 
 setup(
     name='mbuild',
-    version=__version__,
-    description=__doc__.split('\n'),
-    long_description=__doc__,
     author='Janos Sallai, Christoph Klein',
     author_email='janos.sallai@vanderbilt.edu, christoph.klein@vanderbilt.edu',
+    description=doc_lines[0],
+    long_description='\n'.join(doc_lines[2:]),
+    version=__version__,
+    license="MIT",
     url='https://github.com/imodels/mbuild',
     download_url='https://github.com/imodels/mbuild/tarball/{}'.format(__version__),
-    packages=find_packages(),
-    package_data={'mbuild': ['utils/reference/*.{pdb,mol2}',
-                             'lib/*.{pdb,mol2}',
-                             ]},
-    package_dir={'mbuild': 'mbuild'},
-    include_package_data=True,
-    install_requires=reqs,
-    license="MIT",
-    zip_safe=False,
+    platforms=['Linux', 'Mac OS-X', 'Unix', 'Windows'],
     keywords='mbuild',
     classifiers=[
         'Development Status :: 4 - Beta',
@@ -72,4 +92,13 @@ setup(
         'Operating System :: Unix',
         'Operating System :: MacOS',
     ],
+    packages=find_packages(),
+    cmdclass={'build_ext': build_ext},
+    ext_modules=cythonize('mbuild/bond_graph.pyx'),
+    package_data={'mbuild': ['utils/reference/*.{pdb,mol2}',
+                             'lib/*.{pdb,mol2}',
+                             ]},
+    package_dir={'mbuild': 'mbuild'},
+    include_package_data=True,
+    zip_safe=False,
 )

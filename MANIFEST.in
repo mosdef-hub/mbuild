@@ -1,2 +1,2 @@
-global-include *.pdb *.mol2
-include requirements.txt
+graft mbuild
+include basesetup.py
