@@ -17,6 +17,19 @@ complex molecular systems for molecular dynamics simulations.
 
 To learn more, get started or contribute, check out our [website](http://imodels.github.io/mbuild/).
 
+If you use this package, please cite [our paper](http://dx.doi.org/10.1007/978-981-10-1128-3_5
+). The BibTeX reference is
+```
+@article{Klein2016mBuild,
+      author = "Klein, Christoph and Sallai, János and Jones, Trevor J. and Iacovella, Christopher R. and McCabe, Clare and Cummings, Peter T.",
+      title = "A Hierarchical, Component Based Approach to Screening Properties of Soft Matter",
+      booktitle = "Foundations of Molecular Modeling and Simulation",
+      series = "Molecular Modeling and Simulation: Applications and Perspectives",
+      year = "2016",
+      doi = "http://dx.doi.org/10.1007/978-981-10-1128-3_5" 
+}
+```
+
 #### Example system
 
 Components in dashed boxes are drawn by hand using, e.g.,
