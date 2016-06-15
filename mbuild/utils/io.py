@@ -1,6 +1,12 @@
 import os
 from pkg_resources import resource_filename
 
+try:
+    import intermol
+    has_intermol = True
+except ImportError:
+    has_intermol = False
+
 
 def get_fn(name):
     """Get the full path to one of the reference files shipped for utils
@@ -27,3 +33,7 @@ def run_from_ipython():
         return True
     except NameError:
         return False
+
+
+
+
