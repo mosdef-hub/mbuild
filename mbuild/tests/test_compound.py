@@ -5,7 +5,7 @@ import numpy as np
 import pytest
 
 import mbuild as mb
-from mbuild.utils.io import get_fn
+from mbuild.utils.io import get_fn, has_intermol
 from mbuild.tests.base_test import BaseTest
 
 
@@ -131,13 +131,27 @@ class TestCompound(BaseTest):
         assert len(list(parent.ancestors())) == 0
         assert next(parent.particles_by_name('A')) == part
 
-    @pytest.mark.skipif(bool(os.getenv("CI")), reason="Running on CI")
-    def test_visualize(self, ethane):
-        ethane.visualize()
+    def test_reload(self):
+        from mbuild.examples.pmpc.brush import Brush
+        from numpy import pi
+        # Create a compound and write it to file.
+        brush1 = Brush()
+        brush1.save("brush1.pdb")
 
-    @pytest.mark.skipif(bool(os.getenv("CI")), reason="Running on CI")
-    def test_visualize_ports(self, ethane):
-        ethane.visualize(show_ports=True)
+        # Create another compound, rotate it and write it to file.
+        brush2 = Brush()
+        mb.rotate_around_z(brush2, pi/2)
+        brush2.save("brush2.pdb")
+
+        # Load brush2.pdb into brush1, modifying the atom positions of brush1.
+        brush1.update_coordinates("brush2.pdb")
+        brush1.save("modified_brush1.pdb")
+
+        assert brush1['pmpc'].n_particles == 164
+        assert brush1['pmpc'].n_bonds == 163
+        assert len(brush1['pmpc']['monomer']) == 4
+        assert brush1['pmpc']['monomer'][0].n_particles == 41
+        assert brush1['pmpc']['monomer'][0].n_bonds == 40
 
     # Conversions
     def test_to_trajectory(self, ethane, ch3):
@@ -170,7 +184,7 @@ class TestCompound(BaseTest):
         assert traj.n_chains == 1
         assert traj.n_residues == 1
 
-    @pytest.mark.skipif(bool(os.getenv("CI")), reason="Running on CI")
+    @pytest.mark.skipif(not has_intermol, reason="InterMol is not installed")
     def test_intermol_conversion1(self, ethane, h2o):
         compound = mb.Compound([ethane, h2o])
 
@@ -183,7 +197,7 @@ class TestCompound(BaseTest):
         molecules = list(intermol_system.molecule_types['Compound'].molecules)
         assert len(molecules[0].atoms) == 11
 
-    @pytest.mark.skipif(bool(os.getenv("CI")), reason="Running on CI")
+    @pytest.mark.skipif(not has_intermol, reason="InterMol is not installed")
     def test_intermol_conversion2(self, ethane, h2o):
         # 2 distinct Ethane objects.
         compound = mb.Compound([ethane, mb.clone(ethane), h2o])

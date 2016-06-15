@@ -28,5 +28,6 @@ class Brush(mb.Compound):
         self.add(self['silane']['down'], label='down', containment=False)
 
 if __name__ == "__main__":
-    pmpc = Brush(chain_length=1, alpha=pi/4)
+    #pmpc = Brush(chain_length=1, alpha=pi/4)
+    pmpc = Brush()
     print(pmpc)

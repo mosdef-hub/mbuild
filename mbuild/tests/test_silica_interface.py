@@ -1,11 +1,11 @@
+from __future__ import division
+
 import mbuild as mb
-import numpy as np
+from mbuild.lib.bulk_materials import AmorphousSilica
 from mbuild.tests.base_test import BaseTest
 
-from mbuild.lib.bulk_materials import AmorphousSilica
 
 class TestSilicaInterface(BaseTest):
-
     def test_silica_interface(self):
         tile_x = 1
         tile_y = 1
@@ -16,8 +16,9 @@ class TestSilicaInterface(BaseTest):
                                        tile_y=tile_y,
                                        thickness=thickness)
 
-        thickness_tolerance = 0.3
-        z = [atom.pos[2] for atom in interface.particles() if atom.name in ['Si','O']]
+        thickness_tolerance = 0.31
+        z = [atom.pos[2] for atom in interface.particles()
+             if atom.name in ['Si', 'O']]
         assert abs(max(z) - min(z) - thickness) < thickness_tolerance
 
         density_tolerance = 0.1

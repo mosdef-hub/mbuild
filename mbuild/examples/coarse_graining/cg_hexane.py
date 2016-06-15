@@ -1,5 +1,8 @@
+# -*- coding: utf-8 -*-
+
+
+# -- ==cg_hexane== --
 import mbuild as mb
-from mbuild.proxy import create_proxy
 
 from mbuild.examples.alkane.alkane import Alkane
 
@@ -20,21 +23,8 @@ class Hexane(mb.Compound):
         self.add(Propane(), 'propane1')
         self.add(Propane(), 'propane2')
 
-        mb.equivalence_transform(
-                self['propane1'], self['propane1']['down'], self['propane2']['down'])
+        mb.equivalence_transform(self['propane1'], 
+                                 self['propane1']['down'], 
+                                 self['propane2']['down'])
 
-
-if __name__ == '__main__':
-
-    p = Hexane()
-
-    tier = [Propane]
-
-    proxy = create_proxy(p, particle_classes=tier)
-
-    print("Proxy: {}".format(proxy))
-
-    print("Leaves of the proxy:")
-    for i, leaf in enumerate(proxy.particles()):
-        print("{}: {}".format(i, leaf))
-
+# -- ==cg_hexane== --
