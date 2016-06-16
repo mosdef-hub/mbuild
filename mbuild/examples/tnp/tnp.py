@@ -1,3 +1,7 @@
+# -*- coding: utf-8 -*-
+
+
+# -- ==tnp== --
 from numpy import sqrt, pi
 
 import mbuild as mb
@@ -43,11 +47,4 @@ class Tnp(mb.Compound):
         self.generate_bonds('np', 't', 0.1, 0.3)
         self.generate_bonds('t', 'np', 0.1, 0.3)
 
-
-def main():
-    nano_particle = Tnp(n_chains=5, chain_length=10)
-    return nano_particle
-
-if __name__ == "__main__":
-    np = main()
-    print(np)
+# -- ==tnp== --

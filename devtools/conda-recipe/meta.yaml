@@ -16,12 +16,19 @@ requirements:
     - oset
     - networkx
     - parmed
+    - jupyter
+    - nbformat
+    - ipykernel
+    - ipyext
 
 test:
   requires:
     - pytest
   commands:
     - py.test -v --pyargs mbuild
+    - cd {{SRC_DIR}}
+    - cd mbuild/examples
+    - py.test test_examples.py -v
 
 about:
   home: http://imodels.github.io/mbuild

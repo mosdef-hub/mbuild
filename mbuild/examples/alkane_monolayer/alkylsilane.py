@@ -1,3 +1,4 @@
+# -- ==alkylsilane== --
 import mbuild as mb
 
 from mbuild.examples.alkane.alkane import Alkane
@@ -18,6 +19,4 @@ class AlkylSilane(mb.Compound):
         # Hoist silane port to AlkylSilane level.
         self.add(silane['down'], 'down', containment=False)
 
-if __name__ == "__main__":
-    alkyl_silane = AlkylSilane(10)
-    print(alkyl_silane)
+# -- ==alkylsilane== --

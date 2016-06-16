@@ -1,3 +1,7 @@
+# -*- coding: utf-8 -*-
+
+
+# -- ==bilayer== --
 from random import seed, shuffle
 
 import numpy as np
@@ -203,30 +207,4 @@ class Bilayer(mb.Compound):
                                               0.5*np.sqrt(self.apl)])
             return self._lipid_box
 
-
-def main():
-    from mbuild.utils.io import get_fn
-    from mbuild.lib.moieties import H2O
-
-    water = H2O()
-    ecerns = mb.load(get_fn('ecer2.pdb'))
-
-    chol = mb.load(get_fn('cg-chol.pdb'))
-    # Orient along the z-direction.
-    mb.rotate_around_x(chol, -135.0*np.pi/180)
-    mb.rotate_around_y(chol, -45.0*np.pi/180)
-
-    lipids = [(ecerns, 0.5), (chol, 0.5)]
-
-    bilayer = Bilayer(lipids, n_lipids_x=15, n_lipids_y=15, area_per_lipid=1.4,
-                      solvent=water, ref_atoms=[1, 6],  spacing_z=0.7,
-                      solvent_per_lipid=20, mirror=False)
-
-    bilayer.save(filename='bilayer.pdb')
-    return bilayer
-
-if __name__ == "__main__":
-    main()
-    import os
-    os.system('vmd -e vis.vmd')
-
+# -- ==bilayer== --
