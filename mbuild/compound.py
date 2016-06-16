@@ -8,7 +8,7 @@ import sys
 from warnings import warn
 
 import mdtraj as md
-import networkx as nx
+#import networkx as nx
 import nglview
 import numpy as np
 from mdtraj.core.element import get_by_symbol
@@ -22,7 +22,7 @@ from mbuild.box import Box
 from mbuild.formats.mol2 import write_mol2
 from mbuild.periodic_kdtree import PeriodicCKDTree
 from mbuild.utils.io import run_from_ipython
-
+from mbuild.bond_graph import BondGraph
 
 __all__ = ['load', 'clone', 'Compound', 'Particle']
 
@@ -261,8 +261,8 @@ class Compound(object):
                 if self.root.bond_graph is None:
                     self.root.bond_graph = new_child.bond_graph
                 else:
-                    self.root.bond_graph = nx.compose(self.root.bond_graph,
-                                                      new_child.bond_graph)
+                    self.root.bond_graph.compose(new_child.bond_graph)# = nx.compose(self.root.bond_graph,
+                                                      #new_child.bond_graph)
 
                 new_child.bond_graph = None
 
@@ -308,6 +308,7 @@ class Compound(object):
         objs_to_remove -= intersection
 
         for removed_part in intersection:
+            #import pdb; pdb.set_trace() #DEBUG
             if self.root.bond_graph and self.root.bond_graph.has_node(removed_part):
                 self.root.bond_graph.remove_node(removed_part)
             self._remove_references(removed_part)
@@ -357,7 +358,7 @@ class Compound(object):
     def bonds(self):
         """A list of all Bonds in the Compound and sub-Compounds. """
         if self.root.bond_graph:
-            return self.root.bond_graph.subgraph(self.particles()).edges_iter()
+            return self.root.bond_graph.edges_iter(self.particles())#subgraph(self.particles()).edges_iter()
         else:
             return iter(())
 
@@ -369,7 +370,7 @@ class Compound(object):
     def add_bond(self, particle_pair):
         """"""
         if self.root.bond_graph is None:
-            self.root.bond_graph = nx.Graph()
+            self.root.bond_graph = BondGraph()
 
         self.root.bond_graph.add_edge(particle_pair[0], particle_pair[1])
 

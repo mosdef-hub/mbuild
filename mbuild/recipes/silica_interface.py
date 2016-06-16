@@ -4,7 +4,6 @@ import math
 import random
 
 import mbuild as mb
-import networkx as nx
 import numpy as np
 
 
@@ -66,7 +65,7 @@ class SilicaInterface(mb.Compound):
                                              bulk.periodicity[1],
                                              0.0))
         for i, particle in enumerate(bulk.particles()):
-            if ((particle.name == 'Si' and O_buffer < particle.pos[2] < (thickness + O_buffer)) or 
+            if ((particle.name == 'Si' and O_buffer < particle.pos[2] < (thickness + O_buffer)) or
                     (particle.name == 'O' and particle.pos[2] < (thickness + 2*O_buffer))):
                 interface_particle = mb.Compound(name=particle.name, pos=particle.pos)
                 interface.add(interface_particle, particle.name + "_{}".format(i))
@@ -74,7 +73,7 @@ class SilicaInterface(mb.Compound):
 
     def _strip_stray_atoms(self):
         """Remove stray atoms and surface pieces. """
-        major_component = max(nx.connected_components(self.bond_graph), key=len)
+        major_component = max(self.bond_graph.connected_components(), key=len)
         for atom in list(self.particles()):
             if atom not in major_component:
                 self.remove(atom)
