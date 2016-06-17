@@ -57,19 +57,33 @@ class BondGraph():
         """Check if checkNode is in BondGraph.
         Return true if checkNode is in BondGraph; false otherwise.
         """
-        for i in range(self.numberOfNodes):
-            if checkNode == self.nodes[i][0]:
-                return True
+        # for i in range(self.numberOfNodes):
+        #     if checkNode == self.nodes[i,0]:
+        #         return True
+        # return False
+        if checkNode in self.nodes[0:self.numberOfNodes,0]:
+            return True
         return False
 
     def _find_node(self, checkNode):
         """Finds a node in BondGraph, and returns its row's index.
         If node doesn't exist, returns -1.
+
+        Note: assuming adding nodes is working correctly, np.where should never
+        return more than one index; but it is in many cases.  Look into this.
         """
-        for i in range(self.numberOfNodes):
-            if checkNode == self.nodes[i][0]:
-                return i
-        return -1
+        # for i in range(self.numberOfNodes):
+        #    if checkNode == self.nodes[i,0]:
+        #        return i
+        # return -1
+        index, = np.where(self.nodes[0:self.numberOfNodes,0]==checkNode)
+        if len(index) == 0:
+            return -1
+        # #DEBUG
+        # if len(index) > 1:
+        #     import pdb; pdb.set_trace()
+        # #END DEBUG
+        return index[0]
 
     def add_node(self, newNode):
         """Add newNode to BondGraph.
@@ -85,10 +99,8 @@ class BondGraph():
         """
         if self.numberOfNodes == self.maxNumberOfNodes:
             self._growNodes()
-        try:
-            self.nodes[self.numberOfNodes][0] = newNode
-        except IndexError:
-            print("size: ", self.nodes.shape)
+
+        self.nodes[self.numberOfNodes,0] = newNode
         self.numberOfNodes += 1
 
     def has_edge(self, node1, node2):
@@ -96,9 +108,9 @@ class BondGraph():
         Return true if edge exists; false otherwise.
         """
         for i in range(0, self.numberOfNodes):
-            if node1 == self.nodes[i][0]:
+            if node1 == self.nodes[i,0]:
                 for j in range(1,self.maxAdjListLen):
-                    if node2 == self.nodes[i][j]:
+                    if node2 == self.nodes[i,j]:
                         return True
                 return False
         return False
@@ -121,20 +133,20 @@ class BondGraph():
             index2 = self.numberOfNodes-1
 
         for i in range(1, self.maxAdjListLen):
-            if self.nodes[index1][i] is None or self.nodes[index1][i] is 0:
-                self.nodes[index1][i] = node2
+            if self.nodes[index1,i] is None or self.nodes[index1,i] is 0:
+                self.nodes[index1,i] = node2
                 break
             elif i == self.maxAdjListLen-1:
                 self._growAdjList()
-                self.nodes[index1][i+1] = node2
+                self.nodes[index1,i+1] = node2
 
         for i in range(1, self.maxAdjListLen):
-            if self.nodes[index2][i] is None or self.nodes[index2][i] is 0:
-                self.nodes[index2][i] = node1
+            if self.nodes[index2,i] is None or self.nodes[index2,i] is 0:
+                self.nodes[index2,i] = node1
                 break
             elif i == self.maxAdjListLen-1:
                 self._growAdjList()
-                self.nodes[index2][i+1] = node1
+                self.nodes[index2,i+1] = node1
 
     def remove_edge(self, node1, node2):
         """Remove edge between node1 and node2 from BondGraph.
@@ -148,22 +160,22 @@ class BondGraph():
         replace = False
         for i in range(1, self.maxAdjListLen):
             if replace:
-                self.nodes[index1][i-1] = self.nodes[index1][i]
-            if self.nodes[index1][i] == None or self.nodes[index1][i] == 0:
+                self.nodes[index1,i-1] = self.nodes[index1,i]
+            if self.nodes[index1,i] == None or self.nodes[index1,i] == 0:
                 break
-            if node2 == self.nodes[index1][i]:
+            if not replace and node2 == self.nodes[index1,i]:
                 replace = True
-                self.nodes[index1][i] = None
+                self.nodes[index1,i] = None
 
         replace = False
         for i in range(1, self.maxAdjListLen):
             if replace:
-                self.nodes[index2][i-1] = self.nodes[index2][i]
-            if self.nodes[index2][i] == None or self.nodes[index2][i] == 0:
+                self.nodes[index2,i-1] = self.nodes[index2,i]
+            if self.nodes[index2,i] == None or self.nodes[index2,i] == 0:
                 break
-            if node1 == self.nodes[index2][i]:
+            if not replace and node1 == self.nodes[index2,i]:
                 replace = True
-                self.nodes[index2][i] = None
+                self.nodes[index2,i] = None
 
     def remove_node(self, delNode):
         """Remove delNode from BondGraph.
@@ -175,13 +187,12 @@ class BondGraph():
             return
 
         for i in range(self.maxAdjListLen-1, 0, -1): # Iterating backwards to avoid cost of back-shifting every time
-            if self.nodes[index][i] is not None and self.nodes[index][i] is not 0:
-                self.remove_edge(delNode, self.nodes[index][i]) #Make a _remove_edge() method akin to _add_node()
+            if self.nodes[index,i] is not None and self.nodes[index,i] is not 0:
+                self.remove_edge(delNode, self.nodes[index,i]) #Make a _remove_edge() method akin to _add_node()
 
         for i in range(index+1, self.numberOfNodes):
             self.nodes[i-1] = self.nodes[i]
         self.numberOfNodes -= 1
-        #self._growNodes(self.maxAdjListLen-1) #I'm not sure what this is for
 
     def compose(self, graph2):
         """Append a bond graph to the end of this one.
@@ -198,9 +209,35 @@ class BondGraph():
         elif self.maxAdjListLen > graph2.maxAdjListLen:
             graph2._growAdjList(self.maxAdjListLen)
 
+        # If the graphs have nodes in common, handle this differently
+        # for i in range(self.numberOfNodes):
+        #     for j in range(graph2.numberOfNodes):
+        #         if self.nodes[i,0] == graph2.numberOfNodes[j,0]:
+        #
+        #             break
+
+        # intersect = np.intersect1d(self.nodes[:,0], graph2.nodes[:,0])
+        # if len(intersect) > 0:
+        #     for i in range(graph2.numberOfNodes):
+        #         for j in range(1, graph2.maxAdjListLen):
+        #             if graph2.nodes[i,j] is None or graph2.nodes[i,j] is 0:
+        #                 break
+        #             self.add_edge(graph2.nodes[i,0], graph2.nodes[i,j])
+        #     return
+
+        #Brute force
+        # for i in range(graph2.numberOfNodes):
+        #     for j in range(1,graph2.maxAdjListLen):
+        #         if graph2.nodes[i,j] is None or graph2.nodes[i,j] is 0:
+        #             break
+        #         self.add_edge(graph2.nodes[i,0], graph2.nodes[i,j])
+
+        #What I had before
         self.nodes = np.concatenate((self.nodes, graph2.nodes))
         self.numberOfNodes += graph2.numberOfNodes
         self.maxNumberOfNodes += graph2.maxNumberOfNodes
+
+
 
     def edges_iter(self, yieldNodes):
         """Return an iterator over the edges between nodes in yieldNodes, a generator.
@@ -215,10 +252,10 @@ class BondGraph():
             nodeList.append(node)
 
             for i in range(1, self.maxAdjListLen):
-                if self.nodes[index][i] == None or self.nodes[index][i] == 0:
+                if self.nodes[index,i] == None or self.nodes[index,i] == 0:
                     break
-                if self.nodes[index][i] in nodeList:
-                    edgeList.append((self.nodes[index][0], self.nodes[index][i]))
+                if self.nodes[index,i] in nodeList:
+                    edgeList.append((self.nodes[index,i], self.nodes[index,0]))
 
         return iter(edgeList)
 
@@ -233,9 +270,9 @@ class BondGraph():
             return neighborList
 
         for i in range(1, self.maxAdjListLen):
-            if self.nodes[index][i] == None or self.nodes[index][i] == 0:
+            if self.nodes[index,i] == None or self.nodes[index,i] == 0:
                 break
-            neighborList.append(self.nodes[index][i])
+            neighborList.append(self.nodes[index,i])
         return neighborList
 
 # The remaining methods serve mainly for testing, debugging, and other diagnostic
@@ -249,7 +286,7 @@ class BondGraph():
         edges = 0
         for i in range(self.numberOfNodes):
             for j in range(1, self.maxAdjListLen):
-                if self.nodes[i][j] is None or self.nodes[i][j] is 0:
+                if self.nodes[i,j] is None or self.nodes[i,j] is 0:
                     break
                 edges += 1
 
@@ -277,7 +314,7 @@ class BondGraph():
         """
         alreadyUsed = []
         for i in range(self.numberOfNodes):
-            if self.nodes[i][0] not in alreadyUsed:
+            if self.nodes[i,0] not in alreadyUsed:
                 componentList = []
                 self._component(i, componentList)
                 alreadyUsed.extend(componentList)
@@ -289,9 +326,9 @@ class BondGraph():
         on an existing list componentList
         """
         for i in range(1, self.maxAdjListLen):
-            if self.nodes[index][i] is None or self.nodes[index][i] is 0:
+            if self.nodes[index,i] is None or self.nodes[index,i] is 0:
                 break
-            if self.nodes[index][i] not in componentList:
-                componentList.append(self.nodes[index][i])
-                newIndex = self._find_node(self.nodes[index][i])
+            if self.nodes[index,i] not in componentList:
+                componentList.append(self.nodes[index,i])
+                newIndex = self._find_node(self.nodes[index,i])
                 self._component(newIndex, componentList)
