@@ -261,8 +261,7 @@ class Compound(object):
                 if self.root.bond_graph is None:
                     self.root.bond_graph = new_child.bond_graph
                 else:
-                    self.root.bond_graph.compose(new_child.bond_graph)# = nx.compose(self.root.bond_graph,
-                                                      #new_child.bond_graph)
+                    self.root.bond_graph.compose(new_child.bond_graph)
 
                 new_child.bond_graph = None
 
@@ -308,7 +307,6 @@ class Compound(object):
         objs_to_remove -= intersection
 
         for removed_part in intersection:
-            #import pdb; pdb.set_trace() #DEBUG
             if self.root.bond_graph and self.root.bond_graph.has_node(removed_part):
                 self.root.bond_graph.remove_node(removed_part)
             self._remove_references(removed_part)
