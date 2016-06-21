@@ -16,7 +16,7 @@ cdef class BondGraph:
         self.number_of_nodes = 0
         self.max_number_of_nodes = 20
         self.max_adjacency_list_length = 10
-        
+
         nodes = np.zeros(
                 shape=(self.max_number_of_nodes, self.max_adjacency_list_length),
                 dtype=very_long)
