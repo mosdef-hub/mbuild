@@ -1,14 +1,16 @@
 import numpy as np
 cimport numpy as np
+import ctypes
 
 very_long = np.int64 # runtime type
 ctypedef np.int64_t very_long_ct # compile-time type
 ctypedef Py_ssize_t index_size
 
 cdef class BondGraph:
-    cdef index_size number_of_nodes
-    cdef index_size max_number_of_nodes
-    cdef index_size max_adjacency_list_length
+    cdef public index_size number_of_nodes
+    cdef public index_size max_number_of_nodes
+    cdef public index_size max_adjacency_list_length
+    cdef public object nodes
 
     def __init__(self):
         """An alternative to networkx graphs.
@@ -17,15 +19,11 @@ cdef class BondGraph:
         self.max_number_of_nodes = 20
         self.max_adjacency_list_length = 10
 
-        nodes = np.zeros(
+        self.nodes = np.zeros(
                 shape=(self.max_number_of_nodes, self.max_adjacency_list_length),
                 dtype=very_long)
-        node_id_list = np.zeros(shape=(self.max_number_of_nodes), dtype=very_long)
-        node_list = np.zeros(shape=(self.max_number_of_nodes), dtype=object)
 
-        cdef very_long_ct [:,:] nodes_view = self.nodes
-        cdef very_long_ct [:] node_id_list_view = self.node_id_list
-        cdef very_long_ct [:] node_list_view = self.node_list
+        # cdef very_long_ct [:,:] nodes_view = self.nodes # I don't know how to use this
 
     cdef _grow_nodes(self, index_size new_size):
         """Grow the nodes array and the maximum number of nodes to new_size, or
@@ -35,9 +33,7 @@ cdef class BondGraph:
         be lost.
         """
         cdef index_size old_max_size = self.max_number_of_nodes
-        cdef np.ndarray[very_long_ct, ndim=2] empty_id_array
-        cdef np.ndarray[very_long_ct, ndim=1] empty_id_list
-        cdef np.ndarray empty_node_list
+        cdef np.ndarray[very_long_ct, ndim=2] empty_array
 
         if new_size != 0:
             self.max_number_of_nodes = new_size
@@ -45,32 +41,16 @@ cdef class BondGraph:
             self.max_number_of_nodes *= 2
             self.max_number_of_nodes += 1
 
-        # growing
+        # growing array
         if old_max_size < self.max_number_of_nodes:
-            # growing nodes
-            empty_id_array = np.zeros(
+            empty_array = np.zeros(
                     shape=(self.max_number_of_nodes-old_max_size, self.max_adjacency_list_length),
                     dtype=very_long)
-            self.nodes = np.concatenate((self.nodes, empty_id_array), axis=0)
-            # growing node_id_list
-            empty_id_list = np.zeros(
-                    shape=(self.max_number_of_nodes-old_max_size),
-                    dtype=very_long)
-            self.node_id_list = np.concatenate(
-                    (self.node_id_list, empty_id_list),
-                    axis=0)
-            # growing node_list
-            empty_node_list = np.zeros(
-                    shape=(self.max_number_of_nodes-old_max_size),
-                    dtype=very_long)
-            self.node_list = np.concatenate(
-                    (self.node_list, empty_node_list),
-                    axis=0)
+            self.nodes = np.concatenate((self.nodes, empty_array), axis=0)
+
         # shrinking array
         elif old_max_size > self.max_number_of_nodes:
             self.nodes = self.nodes[0:self.max_number_of_nodes, :]
-            self.node_id_list = self.node_id_list[0:self.max_number_of_nodes]
-            self.node_list = self.node_list[0:self.max_number_of_nodes]
 
     cdef _grow_adjacency_list(self, index_size new_size):
         """Grow the nodes array and the maximum adjacency list length to
@@ -100,8 +80,7 @@ cdef class BondGraph:
         """Given a node's id (as is stored in self.nodes), finds and returns the
         object that id points to, the object BondGraph was asked to store.
         """
-        cdef index_size index = self.node_id_list.index(node_id)
-        return self.node_list[index]
+        return ctypes.cast(node_id, ctypes.py_object).value
 
     def has_node(self, check_node):
         """Check if check_node is in BondGraph.
@@ -110,8 +89,6 @@ cdef class BondGraph:
         if id(check_node) in self.nodes[0:self.number_of_nodes,0]:
             return True
         return False
-
-        # also can check if check_node is in self.node_list TODO: check which is faster
 
     def _find_node(self, check_node):
         """Finds a node in BondGraph, and returns its row's index.
@@ -142,9 +119,6 @@ cdef class BondGraph:
 
         self.nodes[self.number_of_nodes,0] = id(new_node)
         self.number_of_nodes += 1
-
-        self.node_list[self.number_of_nodes] = new_node
-        self.node_id_list[self.number_of_nodes] = id(new_node)
 
     def has_edge(self, node1, node2):
         """Check if edge between node1 and node2 is in BondGraph.
@@ -236,10 +210,6 @@ cdef class BondGraph:
             self.nodes[i-1] = self.nodes[i]
         self.number_of_nodes -= 1
 
-        index = self.node_id_list.index(id(del_node))
-        self.node_id_list = np.delete(self.node_id_list, index)
-        self.node_list = np.delete(self.node_list, index)
-
     def compose(self, graph2):
         """Append a bond graph to the end of this one.
         """
@@ -258,15 +228,9 @@ cdef class BondGraph:
             duplicates = len(index_list)
 
             self.nodes = np.concatenate((self.nodes, graph2.nodes[0:index_list[0],:]))
-            self.node_list = np.concatenate((self.node_list, graph2.node_list[0:index_list[0]]))
-            self.node_id_list = np.concatenate((self.node_id_list, graph2.node_id_list[0:index_list[0]]))
             for i in range(duplicates-1):
                 self.nodes = np.concatenate((self.nodes, graph2.nodes[index_list[i]+1:index_list[i+1],:]))
-                self.node_list = np.concatenate((self.node_list, graph2.node_list[index_list[i]+1:index_list[i+1]]))
-                self.node_id_list = np.concatenate((self.node_id_list, graph2.node_id_list[index_list[i]+1:index_list[i+1]]))
             self.nodes = np.concatenate((self.nodes, graph2.nodes[index_list[-1]+1:,:]))
-            self.node_list = np.concatenate((self.node_list, graph2.node_list[index_list[-1]+1:]))
-            self.node_id_list = np.concatenate((self.node_id_list, graph2.node_id_list[index_list[-1]+1:]))
 
             self.number_of_nodes += graph2.number_of_nodes - duplicates
             self.max_number_of_nodes += graph2.max_number_of_nodes - duplicates
@@ -304,8 +268,6 @@ cdef class BondGraph:
 
         else: # no intersection
             self.nodes = np.concatenate((self.nodes, graph2.nodes))
-            self.node_list = np.concatenate((self.node_list, graph2.node_list))
-            self.node_id_list = np.concatenate((self.node_id_list, graph2.node_id_list))
 
             self.number_of_nodes += graph2.number_of_nodes
             self.max_number_of_nodes += graph2.max_number_of_nodes
