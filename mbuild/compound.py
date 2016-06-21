@@ -22,8 +22,6 @@ from mbuild.box import Box
 from mbuild.formats.mol2 import write_mol2
 from mbuild.periodic_kdtree import PeriodicCKDTree
 from mbuild.utils.io import run_from_ipython
-
-# import pyximport; pyximport.install()
 from mbuild.bond_graph import BondGraph
 
 __all__ = ['load', 'clone', 'Compound', 'Particle']
