@@ -25,7 +25,7 @@ cdef class BondGraph:
 
         # cdef very_long_ct [:,:] nodes_view = self.nodes # I don't know how to use this
 
-    cdef _grow_nodes(self, index_size new_size):
+    cdef void _grow_nodes(self, index_size new_size):
         """Grow the nodes array and the maximum number of nodes to new_size, or
         by a factor of two, if new_size is 0. If new_size is less than
         max_number_of_nodes, the nodes array will be shrunk rather than grown.
@@ -52,7 +52,7 @@ cdef class BondGraph:
         elif old_max_size > self.max_number_of_nodes:
             self.nodes = self.nodes[0:self.max_number_of_nodes, :]
 
-    cdef _grow_adjacency_list(self, index_size new_size):
+    cdef void _grow_adjacency_list(self, index_size new_size):
         """Grow the nodes array and the maximum adjacency list length to
         new_size, or by a factor of two, if new_size is 0. new_size must be
         greater than max_adjacency_list_length - attempts to shrink the array
@@ -76,21 +76,27 @@ cdef class BondGraph:
         else:
             self.max_adjacency_list_length = old_max_size
 
-    cdef _get_node(self, very_long_ct node_id):
+    cdef object _get_node(self, very_long_ct node_id):
         """Given a node's id (as is stored in self.nodes), finds and returns the
         object that id points to, the object BondGraph was asked to store.
         """
         return ctypes.cast(node_id, ctypes.py_object).value
 
+    cdef bint _has_node(self, very_long_ct check_node):
+        """Check if object ID check_node is in BondGraph.
+        Return true if check_node is in BondGraph; false otherwise.
+        """
+        if check_node in self.nodes[0:self.number_of_nodes,0]:
+            return True
+        return False
+
     def has_node(self, check_node):
         """Check if check_node is in BondGraph.
         Return true if check_node is in BondGraph; false otherwise.
         """
-        if id(check_node) in self.nodes[0:self.number_of_nodes,0]:
-            return True
-        return False
+        return self._has_node(id(check_node))
 
-    cdef _find_node(self, very_long_ct node_id):
+    cdef index_size _find_node(self, very_long_ct node_id):
         """Finds a node ID in BondGraph, and returns its row's index.
         If node doesn't exist, returns -1.
         """
@@ -103,18 +109,19 @@ cdef class BondGraph:
         """Add new_node to BondGraph.
         If new_node is already in BondGraph, does nothing.
         """
-        if self.has_node(new_node):
+        new_node_id = id(new_node)
+        if self._has_node(new_node_id):
             return
-        self._add_node(new_node)
+        self._add_node(new_node_id)
 
-    def _add_node(self, new_node):
-        """Add new_node to BondGraph.
+    cdef void _add_node(self, very_long_ct new_node):
+        """Add object ID new_node to BondGraph.
         Assumes new_node is not already in BondGraph.
         """
         if self.number_of_nodes == self.max_number_of_nodes:
             self._grow_nodes(0)
 
-        self.nodes[self.number_of_nodes,0] = id(new_node)
+        self.nodes[self.number_of_nodes,0] = new_node
         self.number_of_nodes += 1
 
     def has_edge(self, node1, node2):
@@ -138,11 +145,11 @@ cdef class BondGraph:
 
         index1 = self._find_node(id(node1))
         if index1 == -1:
-            self._add_node(node1)
+            self._add_node(id(node1))
             index1 = self.number_of_nodes-1
         index2 = self._find_node(id(node2))
         if index2 == -1:
-            self._add_node(node2)
+            self._add_node(id(node2))
             index2 = self.number_of_nodes-1
 
         for i in range(1, self.max_adjacency_list_length):
