@@ -90,14 +90,11 @@ cdef class BondGraph:
             return True
         return False
 
-    def _find_node(self, check_node):
-        """Finds a node in BondGraph, and returns its row's index.
+    cdef _find_node(self, very_long_ct node_id):
+        """Finds a node ID in BondGraph, and returns its row's index.
         If node doesn't exist, returns -1.
         """
-        if not (isinstance(check_node, np.int64) or isinstance(check_node, int)):
-            check_node = id(check_node)
-
-        index, = np.where(self.nodes[0:self.number_of_nodes,0]==check_node)
+        index, = np.where(self.nodes[0:self.number_of_nodes,0]==node_id)
         if len(index) == 0:
             return -1
         return index[0]
@@ -124,7 +121,7 @@ cdef class BondGraph:
         """Check if edge between node1 and node2 is in BondGraph.
         Return true if edge exists; false otherwise.
         """
-        index = self._find_node(node1)
+        index = self._find_node(id(node1))
         if index == -1:
             return False
         if id(node2) in self.nodes[index,:]:
@@ -139,11 +136,11 @@ cdef class BondGraph:
         if self.has_edge(node1, node2):
             return
 
-        index1 = self._find_node(node1)
+        index1 = self._find_node(id(node1))
         if index1 == -1:
             self._add_node(node1)
             index1 = self.number_of_nodes-1
-        index2 = self._find_node(node2)
+        index2 = self._find_node(id(node2))
         if index2 == -1:
             self._add_node(node2)
             index2 = self.number_of_nodes-1
@@ -170,8 +167,8 @@ cdef class BondGraph:
         """
         if not self.has_edge(node1, node2):
             return
-        index1 = self._find_node(node1)
-        index2 = self._find_node(node2)
+        index1 = self._find_node(id(node1))
+        index2 = self._find_node(id(node2))
 
         replace = False
         for i in range(1, self.max_adjacency_list_length):
@@ -198,7 +195,7 @@ cdef class BondGraph:
         If del_node is not in BondGraph, does nothing.
         If del_node is a part of any edges, those edges will be removed.
         """
-        index = self._find_node(del_node)
+        index = self._find_node(id(del_node))
         if index == -1:
             return
 
@@ -279,7 +276,7 @@ cdef class BondGraph:
         node_list = []
         edge_list = []
         for node in yield_nodes:
-            index = self._find_node(node)
+            index = self._find_node(id(node))
             if index == -1:
                 continue
             node_list.append(id(node))
@@ -300,7 +297,7 @@ cdef class BondGraph:
         """
         neighbor_list = []
 
-        index = self._find_node(check_node)
+        index = self._find_node(id(check_node))
         if index == -1:
             return neighbor_list
 
@@ -310,7 +307,6 @@ cdef class BondGraph:
             neighbor_list.append(self._get_node(self.nodes[index,i]))
         return neighbor_list
 
-#
 # The remaining methods serve mainly for testing, debuging, and other diagnostic
 # purposes; and at the time of this writing are not used in any mbuild.Compound
 # functionality. This author recommends against accessing the bond graph except
@@ -371,5 +367,5 @@ cdef class BondGraph:
             current_node = self._get_node(self.nodes[index,i])
             if current_node not in component_list:
                 component_list.append(current_node)
-                new_index = self._find_node(current_node)
+                new_index = self._find_node(id(current_node))
                 self._component(new_index, component_list)
