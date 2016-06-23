@@ -2,9 +2,9 @@ import numpy as np
 cimport numpy as np
 import ctypes
 
-very_long = np.int64 # runtime type
-ctypedef np.int64_t very_long_ct # compile-time type
-ctypedef Py_ssize_t index_size
+very_long = np.int64 # runtime type, to hold obect IDs
+ctypedef np.int64_t very_long_t # compile-time type
+ctypedef Py_ssize_t index_size # type for array indices
 
 cdef class BondGraph:
     cdef public index_size number_of_nodes
@@ -18,7 +18,7 @@ cdef class BondGraph:
         """
         self.number_of_nodes = 0
         self.max_number_of_nodes = 10
-        self.max_adjacency_list_length = 5
+        self.max_adjacency_list_length = 6
 
         # self.nodes is the primary container of this class. It is an array of
         # very long integers, (primarily) holding object IDs, keeping track of
@@ -33,8 +33,6 @@ cdef class BondGraph:
                 shape=(self.max_number_of_nodes, self.max_adjacency_list_length),
                 dtype=very_long)
 
-        # cdef very_long_ct [:,:] nodes_view = self.nodes # I don't know how to use this
-
     cdef void _grow_nodes(self, index_size new_size):
         """Grow the nodes array and the maximum number of nodes to new_size, or
         by a factor of two, if new_size is 0. If new_size is less than
@@ -43,7 +41,7 @@ cdef class BondGraph:
         be lost.
         """
         cdef index_size old_max_size = self.max_number_of_nodes
-        cdef np.ndarray[very_long_ct, ndim=2] empty_array
+        cdef np.ndarray[very_long_t, ndim=2] empty_array
 
         if new_size != 0:
             self.max_number_of_nodes = new_size
@@ -73,7 +71,7 @@ cdef class BondGraph:
         overhead.
         """
         cdef index_size old_max_size = self.max_adjacency_list_length
-        cdef np.ndarray[very_long_ct, ndim=2] empty_array
+        cdef np.ndarray[very_long_t, ndim=2] empty_array
 
         if new_size != 0:
             self.max_adjacency_list_length = new_size
@@ -90,27 +88,7 @@ cdef class BondGraph:
         else:
             self.max_adjacency_list_length = old_max_size
 
-    cdef object _get_node(self, very_long_ct node_id):
-        """Given a node's id (as is stored in self.nodes), finds and returns the
-        object that id points to, the object BondGraph was asked to store.
-        """
-        return ctypes.cast(node_id, ctypes.py_object).value
-
-    cdef bint _has_node(self, very_long_ct check_node):
-        """Check if object ID check_node is in BondGraph.
-        Return true if check_node is in BondGraph; false otherwise.
-        """
-        if check_node in self.nodes[0:self.number_of_nodes,0]:
-            return True
-        return False
-
-    def has_node(self, check_node):
-        """Check if check_node is in BondGraph.
-        Return true if check_node is in BondGraph; false otherwise.
-        """
-        return self._has_node(id(check_node))
-
-    cdef index_size _find_node(self, very_long_ct node_id):
+    cdef index_size _find_node(self, very_long_t node_id):
         """Finds a node ID in BondGraph, and returns its row's index.
         If node doesn't exist, returns -1.
         """
@@ -119,16 +97,36 @@ cdef class BondGraph:
             return -1
         return index[0]
 
+    cdef object _get_node(self, very_long_t node_id):
+        """Given a node's id (as is stored in self.nodes), finds and returns the
+        object that id points to, the object BondGraph was asked to store.
+        """
+        return ctypes.cast(node_id, ctypes.py_object).value
+
+    def has_node(self, check_node):
+        """Check if check_node is in BondGraph.
+        Return true if check_node is in BondGraph; false otherwise.
+        """
+        return self._has_node(id(check_node))
+
+    cdef bint _has_node(self, very_long_t check_node):
+        """Check if object ID check_node is in BondGraph.
+        Return true if check_node is in BondGraph; false otherwise.
+        """
+        if check_node in self.nodes[0:self.number_of_nodes,0]:
+            return True
+        return False
+
     def add_node(self, new_node):
         """Add new_node to BondGraph.
         If new_node is already in BondGraph, does nothing.
         """
-        cdef very_long_ct new_node_id = id(new_node)
+        cdef very_long_t new_node_id = id(new_node)
         if self._has_node(new_node_id):
             return
         self._add_node(new_node_id)
 
-    cdef void _add_node(self, very_long_ct new_node):
+    cdef void _add_node(self, very_long_t new_node):
         """Add object ID new_node to BondGraph.
         Assumes new_node is not already in BondGraph.
         """
@@ -145,7 +143,7 @@ cdef class BondGraph:
         """
         return self._has_edge(id(node1), id(node2))
 
-    cdef bint _has_edge(self, very_long_ct node1, very_long_ct node2):
+    cdef bint _has_edge(self, very_long_t node1, very_long_t node2):
         """Check if edge between object IDs node1 and node2 is in BondGraph.
         Return true if edge exists; false otherwise.
         """
@@ -164,10 +162,10 @@ cdef class BondGraph:
         If node1 or node2 aren't in BondGraph, they are created.
         If an edge between node1 and node2 already exists, does nothing.
         """
-        cdef very_long_ct node1_id = id(node1)
-        cdef very_long_ct node2_id = id(node2)
+        cdef very_long_t node1_id = id(node1)
+        cdef very_long_t node2_id = id(node2)
         cdef index_size index1, index2
-        cdef very_long_ct node1_num_edges, node2_num_edges
+        cdef very_long_t node1_num_edges, node2_num_edges
 
         if self._has_edge(node1_id, node2_id):
             return
@@ -199,7 +197,7 @@ cdef class BondGraph:
         """
         self._remove_edge(id(node1), id(node2))
 
-    cdef _remove_edge(self, very_long_ct node1, very_long_ct node2):
+    cdef _remove_edge(self, very_long_t node1, very_long_t node2):
         """Remove edge between object IDs node1 and node2 from BondGraph.
         If edge does not exist, does nothing.
         """
@@ -233,7 +231,7 @@ cdef class BondGraph:
         If del_node is not in BondGraph, does nothing.
         If del_node is a part of any edges, those edges will be removed.
         """
-        cdef very_long_ct del_node_id = id(del_node)
+        cdef very_long_t del_node_id = id(del_node)
         cdef index_size index = self._find_node(del_node_id)
         cdef index_size i
 
@@ -259,12 +257,11 @@ cdef class BondGraph:
             graph2._grow_adjacency_list(self.max_adjacency_list_length)
 
         # If there's an intersection between the graphs
-        #cdef np.ndarray[np.uint8_t, ndim=1] intersect # I can't seem to get this to work
         cdef np.ndarray[index_size, ndim=1] index_list
         cdef index_size duplicates
-        cdef very_long_ct node1, node2
+        cdef very_long_t node1, node2
         cdef index_size index1, index2
-        cdef very_long_ct node1_num_edges, node2_num_edges
+        cdef very_long_t node1_num_edges, node2_num_edges
         cdef index_size i, j, k
         cdef bint already_has_edge
         intersect = np.in1d(graph2.nodes[0:graph2.number_of_nodes,0], self.nodes[:,0])
@@ -314,7 +311,8 @@ cdef class BondGraph:
                         self.nodes[index2, node2_num_edges] = self.nodes[index1,0]
                         self.nodes[index2,1] += 1
 
-        else: # no intersection
+        # no intersection
+        else:
             self.nodes = np.concatenate((self.nodes, graph2.nodes))
 
             self.number_of_nodes += graph2.number_of_nodes
@@ -327,7 +325,7 @@ cdef class BondGraph:
         node_set = set()
         edge_list = []
         cdef object node
-        cdef very_long_ct node_id
+        cdef very_long_t node_id
         cdef index_size index
 
         for node in yield_nodes:
