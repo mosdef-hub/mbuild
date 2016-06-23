@@ -18,7 +18,7 @@ cdef class BondGraph:
         """
         self.number_of_nodes = 0
         self.max_number_of_nodes = 10
-        self.max_adjacency_list_length = 10
+        self.max_adjacency_list_length = 5
 
         # self.nodes is the primary container of this class. It is an array of
         # very long integers, (primarily) holding object IDs, keeping track of
@@ -68,7 +68,7 @@ cdef class BondGraph:
         greater than max_adjacency_list_length - attempts to shrink the array
         will do nothing.
         This method can be called from cython or python, so when a BondGraph
-        object is passed to a BondGraph method, as with compose(), this
+        object is passed to another BondGraph method, as with compose(), this
         method can be called on that object. This comes with the price of slight
         overhead.
         """
