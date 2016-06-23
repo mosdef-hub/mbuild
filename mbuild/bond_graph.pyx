@@ -13,7 +13,8 @@ cdef class BondGraph:
     cdef public object nodes
 
     def __init__(self):
-        """An alternative to networkx graphs.
+        """An efficiency-oriented alternative to networkx graphs for keeping
+        track of bonds between atoms.
         """
         self.number_of_nodes = 0
         self.max_number_of_nodes = 20
@@ -128,11 +129,21 @@ cdef class BondGraph:
         """Check if edge between node1 and node2 is in BondGraph.
         Return true if edge exists; false otherwise.
         """
-        cdef index_size index = self._find_node(id(node1))
+        return self._has_edge(id(node1), id(node2))
+
+    cdef bint _has_edge(self, very_long_ct node1, very_long_ct node2):
+        """Check if edge between object IDs node1 and node2 is in BondGraph.
+        Return true if edge exists; false otherwise.
+        """
+        cdef index_size index = self._find_node(node1)
         if index == -1:
             return False
-        if id(node2) in self.nodes[index,:]:
-            return True
+        cdef index_size i
+        for i in range(self.max_adjacency_list_length):
+            if self.nodes[index,i] == 0:
+                break
+            if self.nodes[index,i] == node2:
+                return True
         return False
 
     def add_edge(self, node1, node2):
@@ -143,8 +154,9 @@ cdef class BondGraph:
         cdef index_size index1, index2
         cdef very_long_ct node1_id = id(node1)
         cdef very_long_ct node2_id = id(node2)
+        cdef index_size i
 
-        if self.has_edge(node1, node2): # TODO: make a private version
+        if self._has_edge(node1_id, node2_id):
             return
 
         index1 = self._find_node(node1_id)
@@ -179,8 +191,9 @@ cdef class BondGraph:
         cdef bint replace
         cdef very_long_ct node1_id = id(node1)
         cdef very_long_ct node2_id = id(node2)
+        cdef index_size i
 
-        if not self.has_edge(node1, node2):
+        if not self._has_edge(node1_id, node2_id):
             return
         index1 = self._find_node(node1_id)
         index2 = self._find_node(node2_id)
@@ -211,6 +224,8 @@ cdef class BondGraph:
         If del_node is a part of any edges, those edges will be removed.
         """
         cdef index_size index = self._find_node(id(del_node))
+        cdef index_size i
+
         if index == -1:
             return
 
@@ -239,6 +254,7 @@ cdef class BondGraph:
         cdef index_size duplicates
         cdef very_long_ct node1, node2
         cdef index_size index1, index2
+        cdef index_size i
         intersect = np.in1d(graph2.nodes[0:graph2.number_of_nodes,0], self.nodes[:,0])
         if intersect.any():
             index_list, = np.where(intersect)
@@ -319,12 +335,14 @@ cdef class BondGraph:
         """Return a list of neighbors connected to check_node.
         Returns an empty list if check_node is not in BondGraph
         """
+        cdef index_size index = self._find_node(id(check_node))
         neighbor_list = []
 
-        cdef index_size index = self._find_node(id(check_node))
         if index == -1:
             return neighbor_list
 
+
+        cdef index_size i
         for i in range(1, self.max_adjacency_list_length):
             if self.nodes[index,i] == 0:
                 break
@@ -341,6 +359,7 @@ cdef class BondGraph:
         """Returns the number of edges in BondGraph. Does not count edges twice.
         """
         cdef index_size edges = 0
+        cdef index_size i, j
         for i in range(self.number_of_nodes):
             for j in range(1, self.max_adjacency_list_length):
                 if self.nodes[i,j] == 0:
@@ -369,6 +388,8 @@ cdef class BondGraph:
     def connected_components(self):
         """Returns a generator of lists of nodes for each component of BondGraph
         """
+        cdef index_size i
+
         already_used = []
         for i in range(self.number_of_nodes):
             if self._get_node(self.nodes[i,0]) not in already_used:
@@ -387,6 +408,7 @@ cdef class BondGraph:
         """
         cdef object current_node
         cdef index_size new_index
+        cdef index_size i
 
         for i in range(1, self.max_adjacency_list_length):
             if self.nodes[index,i] == 0:
