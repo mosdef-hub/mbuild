@@ -166,6 +166,8 @@ cdef class BondGraph:
         """
         cdef very_long_ct node1_id = id(node1)
         cdef very_long_ct node2_id = id(node2)
+        cdef index_size index1, index2
+        cdef very_long_ct node1_num_edges, node2_num_edges
 
         if self._has_edge(node1_id, node2_id):
             return
@@ -179,26 +181,17 @@ cdef class BondGraph:
             self._add_node(node2_id)
             index2 = self.number_of_nodes-1
 
-        self._add_edge(index1, index2)
-        self._add_edge(index2, index1)
-
-    cdef void _add_edge(self, index_size index1, index_size index2):
-        """Adds edge from index1 to index2. Must be called twice with reversed
-        parameters to maintain an undirected graph.
-        node1 and node2 (nodes located at the respective indices) must be in
-        BondGraph, and there must not already be an edge from index1 to index2.
-        """
-        cdef very_long_ct node1_num_edges, node2_num_edges
-
         node1_num_edges = self.nodes[index1,1]
         node2_num_edges = self.nodes[index2,1]
 
-        if node1_num_edges == self.max_adjacency_list_length:
+        if(node1_num_edges == self.max_adjacency_list_length or
+           node2_num_edges == self.max_adjacency_list_length):
             self._grow_adjacency_list(0)
 
         self.nodes[index1, node1_num_edges] = self.nodes[index2,0]
-
+        self.nodes[index2, node2_num_edges] = self.nodes[index1,0]
         self.nodes[index1,1] += 1
+        self.nodes[index2,1] += 1
 
     def remove_edge(self, node1, node2):
         """Remove edge between node1 and node2 from BondGraph.
@@ -271,6 +264,7 @@ cdef class BondGraph:
         cdef index_size duplicates
         cdef very_long_ct node1, node2
         cdef index_size index1, index2
+        cdef very_long_ct node1_num_edges, node2_num_edges
         cdef index_size i, j, k
         cdef bint already_has_edge
         intersect = np.in1d(graph2.nodes[0:graph2.number_of_nodes,0], self.nodes[:,0])
@@ -293,22 +287,32 @@ cdef class BondGraph:
                     node2 = graph2.nodes[i,j]
                     index1 = self._find_node(node1)
                     index2 = self._find_node(node2)
+                    node1_num_edges = self.nodes[index1,1]
+                    node2_num_edges = self.nodes[index2,1]
 
                     already_has_edge = False
-                    for k in range(2, self.nodes[index1,1]):
+                    for k in range(2, node1_num_edges):
                         if self.nodes[index1,k]==node2:
                             already_has_edge = True
                             break
                     if not already_has_edge:
-                        self._add_edge(index1, index2)
+                        if node1_num_edges == self.max_adjacency_list_length:
+                            self._grow_adjacency_list(0)
+
+                        self.nodes[index1, node1_num_edges] = self.nodes[index2,0]
+                        self.nodes[index1,1] += 1
 
                     already_has_edge = False
-                    for k in range(2, self.nodes[index2,1]):
+                    for k in range(2, node2_num_edges):
                         if self.nodes[index2,k]==node1:
                             already_has_edge = True
                             break
                     if not already_has_edge:
-                        self._add_edge(index2, index1)
+                        if node2_num_edges == self.max_adjacency_list_length:
+                            self._grow_adjacency_list(0)
+
+                        self.nodes[index2, node2_num_edges] = self.nodes[index1,0]
+                        self.nodes[index2,1] += 1
 
         else: # no intersection
             self.nodes = np.concatenate((self.nodes, graph2.nodes))
