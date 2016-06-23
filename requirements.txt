@@ -3,4 +3,3 @@ scipy
 mdtraj
 imolecule
 oset
-networkx
