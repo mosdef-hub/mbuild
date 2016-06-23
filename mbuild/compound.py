@@ -17,7 +17,6 @@ import parmed as pmd
 from parmed.periodic_table import AtomicNum, element_by_name, Mass
 from six import integer_types, string_types
 
-from mbuild.bond_graph import BondGraph
 from mbuild.box import Box
 from mbuild.formats.mol2 import write_mol2
 from mbuild.periodic_kdtree import PeriodicCKDTree
@@ -355,7 +354,7 @@ class Compound(object):
     def bonds(self):
         """A list of all Bonds in the Compound and sub-Compounds. """
         if self.root.bond_graph:
-            return self.root.bond_graph.edges_iter(self.particles())#subgraph(self.particles()).edges_iter()
+            return self.root.bond_graph.edges_iter(self.particles())
         else:
             return iter(())
 
