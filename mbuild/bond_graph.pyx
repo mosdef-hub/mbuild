@@ -188,15 +188,20 @@ cdef class BondGraph:
         """Remove edge between node1 and node2 from BondGraph.
         If edge does not exist, does nothing.
         """
+        self._remove_edge(id(node1), id(node2))
+
+    cdef _remove_edge(self, very_long_ct node1, very_long_ct node2):
+        """Remove edge between object IDs node1 and node2 from BondGraph.
+        If edge does not exist, does nothing.
+        """
         cdef bint replace
-        cdef very_long_ct node1_id = id(node1)
-        cdef very_long_ct node2_id = id(node2)
+        cdef index_size index1, index2
         cdef index_size i
 
-        if not self._has_edge(node1_id, node2_id):
+        if not self._has_edge(node1, node2):
             return
-        index1 = self._find_node(node1_id)
-        index2 = self._find_node(node2_id)
+        index1 = self._find_node(node1)
+        index2 = self._find_node(node2)
 
         replace = False
         for i in range(1, self.max_adjacency_list_length):
@@ -204,7 +209,7 @@ cdef class BondGraph:
                 self.nodes[index1,i-1] = self.nodes[index1,i]
             if self.nodes[index1,i] == 0:
                 break
-            if not replace and node2_id == self.nodes[index1,i]:
+            if not replace and node2 == self.nodes[index1,i]:
                 replace = True
                 self.nodes[index1,i] = 0
 
@@ -214,7 +219,7 @@ cdef class BondGraph:
                 self.nodes[index2,i-1] = self.nodes[index2,i]
             if self.nodes[index2,i] == 0:
                 break
-            if not replace and node1_id == self.nodes[index2,i]:
+            if not replace and node1 == self.nodes[index2,i]:
                 replace = True
                 self.nodes[index2,i] = 0
 
@@ -223,7 +228,8 @@ cdef class BondGraph:
         If del_node is not in BondGraph, does nothing.
         If del_node is a part of any edges, those edges will be removed.
         """
-        cdef index_size index = self._find_node(id(del_node))
+        cdef very_long_ct del_node_id = id(del_node)
+        cdef index_size index = self._find_node(del_node_id)
         cdef index_size i
 
         if index == -1:
@@ -231,7 +237,7 @@ cdef class BondGraph:
 
         for i in range(self.max_adjacency_list_length-1, 0, -1): # Iterating backwards to avoid cost of back-shifting every time
             if self.nodes[index,i] != 0:
-                self.remove_edge(del_node, self._get_node(self.nodes[index,i])) #Make a _remove_edge() method akin to _add_node()
+                self._remove_edge(del_node_id, self.nodes[index,i])
 
         for i in range(index+1, self.number_of_nodes):
             self.nodes[i-1] = self.nodes[i]
@@ -309,8 +315,9 @@ cdef class BondGraph:
         """Return an iterator over the edges between nodes in yield_nodes, a generator.
         Edges are returned as tuples.
         """
-        node_list = []
+        node_set = set()
         edge_list = []
+        cdef object node
         cdef very_long_ct node_id
         cdef index_size index
 
@@ -319,12 +326,12 @@ cdef class BondGraph:
             index = self._find_node(node_id)
             if index == -1:
                 continue
-            node_list.append(node_id)
+            node_set.add(node_id)
 
             for i in range(1, self.max_adjacency_list_length):
                 if self.nodes[index,i] == 0:
                     break
-                if self.nodes[index,i] in node_list:
+                if self.nodes[index,i] in node_set:
                     node1 = self._get_node(self.nodes[index,i])
                     node2 = self._get_node(self.nodes[index,0])
                     edge_list.append((node1, node2))
