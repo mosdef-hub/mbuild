@@ -48,6 +48,7 @@ except ValueError:
 VERSION = "0.6.0.dev0"
 ISRELEASED = False
 __version__ = VERSION
+write_version_py(VERSION, ISRELEASED, 'mbuild/version.py')
 #####################################
 
 
