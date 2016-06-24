@@ -5,6 +5,9 @@ package:
 requirements:
   build:
     - python
+    - cython
+    - numpy x.x
+    - setuptools
 
   run:
     - python
