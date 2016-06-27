@@ -5,6 +5,9 @@ package:
 requirements:
   build:
     - python
+    - cython
+    - numpy
+    - setuptools
 
   run:
     - python
@@ -14,7 +17,6 @@ requirements:
     - packmol
     - nglview
     - oset
-    - networkx
     - parmed
     - jupyter
     - nbformat

@@ -12,7 +12,6 @@ from mbuild.coordinate_transform import (Translation, CoordinateTransform,
                                          y_axis_transform, z_axis_transform)
 from mbuild.tests.base_test import BaseTest
 import mbuild as mb
-import networkx as nx
 
 
 class TestCoordinateTransform(BaseTest):
@@ -94,8 +93,8 @@ class TestCoordinateTransform(BaseTest):
         equivalence_transform(ch2, ch2['up'], ch3['up'])
         assert ch2.n_bonds == 2
 
-        assert nx.number_of_edges(ch2.root.bond_graph) == 3
-        assert nx.number_of_edges(ch3.root.bond_graph) == 4
+        assert ch2.root.bond_graph.number_of_edges() == 3
+        assert ch3.root.bond_graph.number_of_edges() == 4
 
         ethyl = mb.Compound([ch2, ch3])
         assert ethyl.n_bonds == 6

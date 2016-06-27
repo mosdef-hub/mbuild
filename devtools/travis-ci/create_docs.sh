@@ -1,6 +1,6 @@
 # Create the docs and push them to github pages
 # ---------------------------------------------
-conda install --yes sphinx numpydoc mdtraj jupyter-notebook oset networkx packmol nglview
+conda install --yes sphinx numpydoc mdtraj jupyter-notebook oset packmol nglview
 
 python setup.py develop
 

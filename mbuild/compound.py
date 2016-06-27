@@ -8,7 +8,6 @@ import sys
 from warnings import warn
 
 import mdtraj as md
-import networkx as nx
 import nglview
 import numpy as np
 from mdtraj.core.element import get_by_symbol
@@ -22,7 +21,7 @@ from mbuild.box import Box
 from mbuild.formats.mol2 import write_mol2
 from mbuild.periodic_kdtree import PeriodicCKDTree
 from mbuild.utils.io import run_from_ipython
-
+from mbuild.bond_graph import BondGraph
 
 __all__ = ['load', 'clone', 'Compound', 'Particle']
 
@@ -55,10 +54,9 @@ def clone(existing_compound, clone_of=None, root_container=None):
     """
     if clone_of is None:
         clone_of = dict()
-
-    newone = existing_compound._clone(clone_of=clone_of, root_container=root_container)
+    newone = existing_compound._clone(clone_of=clone_of,
+                                      root_container=root_container)
     existing_compound._clone_bonds(clone_of=clone_of)
-
     return newone
 
 
@@ -261,8 +259,7 @@ class Compound(object):
                 if self.root.bond_graph is None:
                     self.root.bond_graph = new_child.bond_graph
                 else:
-                    self.root.bond_graph = nx.compose(self.root.bond_graph,
-                                                      new_child.bond_graph)
+                    self.root.bond_graph.compose(new_child.bond_graph)
 
                 new_child.bond_graph = None
 
@@ -357,7 +354,7 @@ class Compound(object):
     def bonds(self):
         """A list of all Bonds in the Compound and sub-Compounds. """
         if self.root.bond_graph:
-            return self.root.bond_graph.subgraph(self.particles()).edges_iter()
+            return self.root.bond_graph.edges_iter(self.particles())
         else:
             return iter(())
 
@@ -369,7 +366,7 @@ class Compound(object):
     def add_bond(self, particle_pair):
         """"""
         if self.root.bond_graph is None:
-            self.root.bond_graph = nx.Graph()
+            self.root.bond_graph = BondGraph()
 
         self.root.bond_graph.add_edge(particle_pair[0], particle_pair[1])
 
