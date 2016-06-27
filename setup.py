@@ -66,6 +66,13 @@ if sys.platform == 'win32':
     # For determining if a path is relative (for dtr)
     extra_cpp_libraries.append('Shlwapi')
 
+extensions = [
+    Extension('mbuild',
+              sources=['mbuild/bond_graph.pyx'],
+              include_dirs=[],
+              extra_compile_args=compiler.compiler_args_warn)
+]
+
 setup(
     name='mbuild',
     author='Janos Sallai, Christoph Klein',
@@ -95,7 +102,7 @@ setup(
     ],
     packages=find_packages(),
     cmdclass={'build_ext': build_ext},
-    ext_modules=cythonize('mbuild/bond_graph.pyx'),
+    ext_modules=cythonize(extensions),
     package_data={'mbuild': ['utils/reference/*.{pdb,mol2}',
                              'lib/*.{pdb,mol2}',
                              ]},
