@@ -16,6 +16,7 @@ PACKMOL_HEADER = """
 tolerance {0:.1f}
 filetype pdb
 output {1}
+seed {2}
 
 """
 PACKMOL_SOLUTE = """
@@ -33,7 +34,7 @@ end structure
 """
 
 
-def fill_box(compound, n_compounds, box, overlap=0.2):
+def fill_box(compound, n_compounds, box, overlap=0.2, seed=12345):
     """Fill a box with a compound using packmol.
 
     Parameters
@@ -68,7 +69,7 @@ def fill_box(compound, n_compounds, box, overlap=0.2):
     overlap *= 10
 
     # Build the input file and call packmol.
-    input_text = (PACKMOL_HEADER.format(overlap, filled_pdb) +
+    input_text = (PACKMOL_HEADER.format(overlap, filled_pdb, seed) +
                   PACKMOL_BOX.format(compound_pdb, n_compounds, *box_lengths))
 
 
@@ -85,7 +86,7 @@ def fill_box(compound, n_compounds, box, overlap=0.2):
     return filled
 
 
-def solvate(solute, solvent, n_solvent, box, overlap=0.2):
+def solvate(solute, solvent, n_solvent, box, overlap=0.2, seed=12345):
     """Solvate a compound in a box of solvent using packmol.
 
     Parameters
@@ -122,7 +123,7 @@ def solvate(solute, solvent, n_solvent, box, overlap=0.2):
     center_solute = box_lengths/2
 
     # Build the input file and call packmol.
-    input_text = (PACKMOL_HEADER.format(overlap, solvated_pdb) +
+    input_text = (PACKMOL_HEADER.format(overlap, solvated_pdb, seed) +
                   PACKMOL_SOLUTE.format(solute_pdb, *center_solute) +
                   PACKMOL_BOX.format(solvent_pdb, n_solvent, *box_lengths))
 

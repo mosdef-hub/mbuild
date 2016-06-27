@@ -1,3 +1,7 @@
+# -*- coding: utf-8 -*-
+
+
+# -- ==monolj== --
 import mbuild as mb
 from mbuild import clone
 
@@ -14,9 +18,5 @@ class MonoLJ(mb.Compound):
             lj_particle = clone(lj_proto)
             mb.translate(lj_particle, pos)
             self.add(lj_particle)
-            print(pos)
 
-
-if __name__ == '__main__':
-    monolj = MonoLJ()
-    print(monolj)
+# -- ==monolj== --

@@ -1,3 +1,7 @@
+# -*- coding: utf-8 -*-
+
+
+# -- ==pmpc_brush_layer== --
 from __future__ import division
 
 from numpy import pi
@@ -19,13 +23,4 @@ class PMPCLayer(mb.Monolayer):
                                         pattern=pattern, tile_x=tile_x,
                                         tile_y=tile_y)
 
-
-def main():
-    pattern = mb.Random2DPattern(2)
-    pmpc_system = PMPCLayer(pattern=pattern, chain_length=3, alpha=pi / 4, tile_x=1, tile_y=1)
-    return pmpc_system
-
-
-if __name__ == "__main__":
-    pmpc_layer = main()
-    print(pmpc_layer)
+# -- ==pmpc_brush_layer== --

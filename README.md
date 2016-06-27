@@ -1,7 +1,6 @@
 ## mBuild: a hierarchical, component based molecule builder
 
 [![Linux Build Status](https://travis-ci.org/iModels/mbuild.svg?branch=master)](https://travis-ci.org/iModels/mbuild)
-[![Windows Build status](https://ci.appveyor.com/api/projects/status/x4aiyeio2c1xf3vx/branch/master?svg=true)](https://ci.appveyor.com/project/ctk3b/mbuild-o0viu/branch/master)
 [![PyPI Version](https://badge.fury.io/py/mbuild.svg)](https://pypi.python.org/pypi/mbuild)
 [![Binstar Badge](https://anaconda.org/imodels/mbuild/badges/version.svg)](https://anaconda.org/imodels/mbuild)
 
@@ -16,6 +15,19 @@ complex molecular systems for molecular dynamics simulations.
   structures from smaller components.
 
 To learn more, get started or contribute, check out our [website](http://imodels.github.io/mbuild/).
+
+If you use this package, please cite [our paper](http://dx.doi.org/10.1007/978-981-10-1128-3_5
+). The BibTeX reference is
+```
+@article{Klein2016mBuild,
+      author = "Klein, Christoph and Sallai, János and Jones, Trevor J. and Iacovella, Christopher R. and McCabe, Clare and Cummings, Peter T.",
+      title = "A Hierarchical, Component Based Approach to Screening Properties of Soft Matter",
+      booktitle = "Foundations of Molecular Modeling and Simulation",
+      series = "Molecular Modeling and Simulation: Applications and Perspectives",
+      year = "2016",
+      doi = "http://dx.doi.org/10.1007/978-981-10-1128-3_5" 
+}
+```
 
 #### Example system
 

@@ -9,7 +9,7 @@ except ImportError:
 
 
 def get_fn(name):
-    """Get the full path to one of the reference files shipped for utils
+    """Get the full path to one of the reference files shipped for utils.
 
     In the source distribution, these files are in ``mbuild/utils/reference``,
     but on installation, they're moved to somewhere in the user's python

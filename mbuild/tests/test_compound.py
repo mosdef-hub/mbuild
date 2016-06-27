@@ -131,6 +131,28 @@ class TestCompound(BaseTest):
         assert len(list(parent.ancestors())) == 0
         assert next(parent.particles_by_name('A')) == part
 
+    def test_reload(self):
+        from mbuild.examples.pmpc.brush import Brush
+        from numpy import pi
+        # Create a compound and write it to file.
+        brush1 = Brush()
+        brush1.save("brush1.pdb")
+
+        # Create another compound, rotate it and write it to file.
+        brush2 = Brush()
+        mb.rotate_around_z(brush2, pi/2)
+        brush2.save("brush2.pdb")
+
+        # Load brush2.pdb into brush1, modifying the atom positions of brush1.
+        brush1.update_coordinates("brush2.pdb")
+        brush1.save("modified_brush1.pdb")
+
+        assert brush1['pmpc'].n_particles == 164
+        assert brush1['pmpc'].n_bonds == 163
+        assert len(brush1['pmpc']['monomer']) == 4
+        assert brush1['pmpc']['monomer'][0].n_particles == 41
+        assert brush1['pmpc']['monomer'][0].n_bonds == 40
+
     # Conversions
     def test_to_trajectory(self, ethane, ch3):
         traj = ethane.to_trajectory()
