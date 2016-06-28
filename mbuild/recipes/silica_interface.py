@@ -74,7 +74,7 @@ class SilicaInterface(mb.Compound):
 
     def _strip_stray_atoms(self):
         """Remove stray atoms and surface pieces. """
-        major_component = max(nx.connected_components(self.bond_graph), key=len)
+        major_component = max(self.bond_graph.connected_components(), key=len)
         for atom in list(self.particles()):
             if atom not in major_component:
                 self.remove(atom)
