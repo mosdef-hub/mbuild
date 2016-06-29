@@ -2,6 +2,12 @@ from collections import defaultdict
 
 
 class BondGraph(object):
+    """A graph-like object used to store and manipulate bonding information.
+
+    `BondGraph` is designed to mimic the API and partial functionality of
+     NetworkX's `Graph` data structure.
+
+    """
     def __init__(self):
         self._data = defaultdict(set)
 
@@ -49,10 +55,8 @@ class BondGraph(object):
         edges = set()
         for node, neighbors in self._data.items():
             for neighbor in neighbors:
-                if id(node) < id(neighbor):
-                    edges.add((node, neighbor))
-                else:
-                    edges.add((neighbor, node))
+                bond = (node, neighbor) if id(node) < id(neighbor) else (neighbor, node)
+                edges.add(bond)
         return list(edges)
 
     def edges_iter(self):
@@ -93,18 +97,27 @@ class BondGraph(object):
         return new_graph
 
     def connected_components(self):
+        """ """
+        def go_deeper(current_component, n):
+            """ """
+            current_component.add(n)
+            neighbors = self._data[n]
+            for neighbor in neighbors:
+                if neighbor not in current_component:
+                    go_deeper(current_component, neighbor)
+
         components = []
-        for node, neighbors in self._data.items():
+        for node in self._data:
+            # Is the node in another component?
             for component in components:
-                if node in component:  # Is the node already present?
+                if node in component:
                     current_component = component
                     break
-            else:
+            else:  # We're in a new component.
                 current_component = set()
                 components.append(current_component)
 
-            current_component.add(node)
-            current_component.union(neighbors)
+            go_deeper(current_component, node)
 
         return [list(component) for component in components]
 
