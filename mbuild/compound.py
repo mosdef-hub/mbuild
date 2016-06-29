@@ -8,7 +8,7 @@ import sys
 from warnings import warn
 
 import mdtraj as md
-import networkx as nx
+from mbuild.bond_graph import BondGraph
 import nglview
 import numpy as np
 from mdtraj.core.element import get_by_symbol
@@ -261,8 +261,7 @@ class Compound(object):
                 if self.root.bond_graph is None:
                     self.root.bond_graph = new_child.bond_graph
                 else:
-                    self.root.bond_graph = nx.compose(self.root.bond_graph,
-                                                      new_child.bond_graph)
+                    self.root.bond_graph.compose(new_child.bond_graph)
 
                 new_child.bond_graph = None
 
@@ -369,7 +368,7 @@ class Compound(object):
     def add_bond(self, particle_pair):
         """"""
         if self.root.bond_graph is None:
-            self.root.bond_graph = nx.Graph()
+            self.root.bond_graph = BondGraph()
 
         self.root.bond_graph.add_edge(particle_pair[0], particle_pair[1])
 
@@ -397,9 +396,6 @@ class Compound(object):
             warn("Bond between {} and {} doesn't exist!".format(*particle_pair))
             return
         self.root.bond_graph.remove_edge(*particle_pair)
-        for particle in particle_pair:
-            if not self.root.bond_graph.neighbors(particle):
-                self.root.bond_graph.remove_node(particle)
 
     @property
     def pos(self):

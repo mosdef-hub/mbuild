@@ -276,3 +276,4 @@ class TestCompound(BaseTest):
         compound.remove_bond((carbons[0], carbons[1]))
         assert not any(compound.bond_graph.has_node(particle)
                        for particle in ch3_nobonds.particles())
+

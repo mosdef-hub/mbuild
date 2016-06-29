@@ -49,12 +49,14 @@ class Monolayer(mb.Compound):
         if fractions:
             fractions = list(fractions)
             if len(chains) != len(fractions):
-                raise ValueError("Number of fractions does not match the number of chain types provided")
+                raise ValueError("Number of fractions does not match the number"
+                                 " of chain types provided")
 
             n_chains = len(pattern.points)
 
-            # Attach chains of each type to binding sites based on specified fractions
-            for chain,fraction in zip(chains[:-1],fractions[:-1]):
+            # Attach chains of each type to binding sites based on
+            # respective fractions.
+            for chain, fraction in zip(chains[:-1], fractions[:-1]):
 
                 # Create sub-pattern for this chain type
                 subpattern = deepcopy(pattern)
