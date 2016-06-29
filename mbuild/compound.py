@@ -8,7 +8,6 @@ import sys
 from warnings import warn
 
 import mdtraj as md
-# import networkx as nx
 from mbuild.bond_graph import BondGraph
 import nglview
 import numpy as np
