@@ -1,6 +1,5 @@
 numpy
 scipy
 mdtraj
-imolecule
 oset
-networkx
+nglview
