@@ -763,6 +763,55 @@ class Compound(object):
                 top.add_bond(atom_mapping[atom1], atom_mapping[atom2])
         return top
 
+    def from_parmed	(self, structure, coords_only=False):
+        """Extract atoms and bonds from a pmd.Structure.
+
+        Will create sub-compounds for every chain if there is more than one
+        and sub-sub-compounds for every residue.
+
+        Parameters
+        ----------
+        structure : pmd.Structure
+            The structure to load.
+        coords_only : bool
+            Set preexisting atoms in compound to coordinates given by structure.
+
+        """
+        if coords_only:
+            if len(structure.atoms) != self.n_particles:
+                raise ValueError('Number of atoms in {structure} does not match {self}'.format(**locals()))
+            for parmed_atom, particle in zip(structure.atoms, self._particles(include_ports=False)):
+                particle.pos = structure.coordinates[parmed_atom.idx]
+            return
+
+        self.name = structure.title
+
+        atom_mapping = dict()
+        chain_id = None
+        for residue in structure.residues:
+            if residue.chain != chain_id:
+                chain_id = residue.chain
+                chain_compound = Compound()
+                self.add(chain_compound, chain_id)
+            residue_compound = Compound()
+            chain_compound.add(residue_compound, residue.name)
+
+            for atom in residue.atoms:
+                new_atom = Particle(name=str(atom.name), pos=structure.coordinates[atom.idx])
+                residue_compound.add(new_atom, label='{0}[$]'.format(atom.name))
+                atom_mapping[atom] = new_atom
+
+        for bond in structure.bonds:
+
+            atom1 = atom_mapping[bond.atom1]
+            atom2 = atom_mapping[bond.atom2]
+            self.add_bond((atom1, atom2))
+
+        if structure.box is not None:
+            self.periodicity = structure.box[0:3]
+        else:
+            self.periodicity = np.array([0., 0., 0.])
+
     def to_parmed(self, title=''):
         """Create a ParmEd Structure from a Compound. """
         structure = pmd.Structure()
