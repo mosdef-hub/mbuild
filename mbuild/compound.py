@@ -818,6 +818,7 @@ class Compound(object):
         structure.title = title if title else self.name
         atom_mapping = {}  # For creating bonds below
         for atom in self.particles():
+            atomic_number = None
             try:
                 atomic_number = AtomicNum[atom.name]
             except KeyError:
@@ -826,7 +827,7 @@ class Compound(object):
             else:
                 element = atom.name
 
-            atomic_number = AtomicNum[element]
+            atomic_number = atomic_number or AtomicNum[element]
             mass = Mass[element]
             pmd_atom = pmd.Atom(atomic_number=atomic_number, name=atom.name,
                                 mass=mass)
