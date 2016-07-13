@@ -1,4 +1,4 @@
-from __future__ import print_function
+from __future__ import print_function, division
 
 from collections import OrderedDict
 from copy import deepcopy
@@ -41,8 +41,15 @@ def load(filename, relative_to_module=None, frame=-1, compound=None,
     if compound is None:
         compound = Compound()
 
-    traj = md.load(filename, **kwargs)
-    compound.from_trajectory(traj, frame=frame, coords_only=coords_only)
+    structure = pmd.load_file(filename, **kwargs)
+    if not isinstance(structure, pmd.Structure):
+        structure = structure.to_structure()
+
+    # Because ParmEd doesn't convert units
+    if filename.endswith(('.pdb', '.mol2')):
+        structure.coordinates = structure.coordinates/10
+
+    compound.from_parmed(structure, coords_only=coords_only)
     return compound
 
 
@@ -492,8 +499,8 @@ class Compound(object):
     def visualize(self, show_ports=False):
         """Visualize the Compound using nglview. """
         if run_from_ipython():
-            traj = self.to_trajectory(show_ports)
-            return nglview.show_mdtraj(traj)
+            structure = self.to_parmed(show_ports)
+            return nglview.show_parmed(structure)
         else:
             raise RuntimeError('Visualization is only supported in Jupyter '
                                'Notebooks.')
@@ -525,7 +532,6 @@ class Compound(object):
         savers = {'.hoomdxml': self.save_hoomdxml,
                   '.gro': self.save_gromacs,
                   '.top': self.save_gromacs,
-                  '.mol2': self.save_mol2,
                   '.lammps': self.save_lammpsdata,
                   '.lmp': self.save_lammpsdata}
 
@@ -534,27 +540,22 @@ class Compound(object):
         except KeyError:  # TODO: better reporting
             saver = None
 
-        if (not saver or extension == '.mol2') and forcefield:
-            ff_formats = ', '.join(set(savers.keys()) - set(['.mol2']))
-            raise ValueError('The only supported formats with forcefield'
-                             'information are: {0}'.format(ff_formats))
+        # if not saver and forcefield:
+        #     ff_formats = ', '.join(set(savers.keys()) - set(['.mol2']))
+        #     raise ValueError('The only supported formats with forcefield'
+        #                      'information are: {0}'.format(ff_formats))
 
+        structure = self.to_parmed(show_ports, **kwargs)
         if saver:  # mBuild/InterMol supported saver.
-            traj = self.to_trajectory(show_ports=show_ports, **kwargs)
-            return saver(filename, traj, forcefield, **kwargs)
-        else:  # MDTraj supported saver.
-            traj = self.to_trajectory(show_ports=show_ports, **kwargs)
-            return traj.save(filename, **kwargs)
+            return saver(filename, structure, forcefield, **kwargs)
+        else:  # ParmEd supported saver.
+            return structure.save(filename, **kwargs)
 
-    def save_mol2(self, filename, traj, forcefield, **kwargs):
-        """ """
-        write_mol2(filename, traj)
-
-    def save_hoomdxml(self, filename, traj, forcefield, force_overwrite=False, **kwargs):
+    def save_hoomdxml(self, filename, structure, forcefield, force_overwrite=False, **kwargs):
         """ """
         raise NotImplementedError('Interface to InterMol missing')
 
-    def save_gromacs(self, filename, traj, forcefield, force_overwrite=False, **kwargs):
+    def save_gromacs(self, filename, structure, forcefield, force_overwrite=False, **kwargs):
         """ """
         from foyer.forcefield import apply_forcefield
 
@@ -564,13 +565,12 @@ class Compound(object):
         top_filename = os.path.join(filepath, basename + '.top')
         gro_filename = os.path.join(filepath, basename + '.gro')
 
-        structure = self.to_parmed()
         if forcefield:
             structure = apply_forcefield(structure, forcefield=forcefield)
         structure.save(top_filename, 'gromacs', **kwargs)
         structure.save(gro_filename, 'gro', **kwargs)
 
-    def save_lammpsdata(self, filename, traj, forcefield, force_overwrite=False, **kwargs):
+    def save_lammpsdata(self, filename, structure, forcefield, force_overwrite=False, **kwargs):
         """ """
         from foyer.forcefield import apply_forcefield
         import intermol.lammps as lmp
@@ -599,7 +599,7 @@ class Compound(object):
             The trajectory to load.
         frame : int
             The frame to take coordinates from.
-
+;
         """
         if coords_only:
             if traj.n_atoms != self.n_particles:
@@ -784,7 +784,7 @@ class Compound(object):
                 particle.pos = structure.coordinates[parmed_atom.idx]
             return
 
-        self.name = structure.title
+        #self.name = structure.title
 
         atom_mapping = dict()
         chain_id = None
@@ -812,7 +812,7 @@ class Compound(object):
         else:
             self.periodicity = np.array([0., 0., 0.])
 
-    def to_parmed(self, title=''):
+    def to_parmed(self, title='', **kwargs):
         """Create a ParmEd Structure from a Compound. """
         structure = pmd.Structure()
         structure.title = title if title else self.name

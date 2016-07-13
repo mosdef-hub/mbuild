@@ -161,7 +161,7 @@ class TestCompound(BaseTest):
         assert traj.n_chains == 1
         assert traj.n_residues == 1
 
-        traj = ethane.to_trajectory(residue_types=ch3)
+        traj = ethane.to_trajectory(residue_types=ch3.__class__)
         assert traj.n_atoms == 8
         assert traj.top.n_bonds == 7
         assert traj.n_chains == 1
@@ -237,8 +237,6 @@ class TestCompound(BaseTest):
         # from_parmed tests
         compound2 = mb.Compound()
         compound2.from_parmed(structure)
-
-        assert compound2.name == 'eth_h2o'
 
         assert compound2.n_particles == 11
         assert len([at for at in compound2.particles() if at.name == 'C']) == 2
