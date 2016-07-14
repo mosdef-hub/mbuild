@@ -540,11 +540,6 @@ class Compound(object):
         except KeyError:  # TODO: better reporting
             saver = None
 
-        # if not saver and forcefield:
-        #     ff_formats = ', '.join(set(savers.keys()) - set(['.mol2']))
-        #     raise ValueError('The only supported formats with forcefield'
-        #                      'information are: {0}'.format(ff_formats))
-
         structure = self.to_parmed(show_ports, **kwargs)
         if saver:  # mBuild/InterMol supported saver.
             return saver(filename, structure, forcefield, **kwargs)
@@ -763,7 +758,7 @@ class Compound(object):
                 top.add_bond(atom_mapping[atom1], atom_mapping[atom2])
         return top
 
-    def from_parmed	(self, structure, coords_only=False):
+    def from_parmed(self, structure, coords_only=False):
         """Extract atoms and bonds from a pmd.Structure.
 
         Will create sub-compounds for every chain if there is more than one
@@ -783,8 +778,6 @@ class Compound(object):
             for parmed_atom, particle in zip(structure.atoms, self._particles(include_ports=False)):
                 particle.pos = structure.coordinates[parmed_atom.idx]
             return
-
-        #self.name = structure.title
 
         atom_mapping = dict()
         chain_id = None
