@@ -91,7 +91,7 @@ class TestCoordinateTransform(BaseTest):
         equivalence_transform(ch2, ch2_atoms[0], methane_atoms[0], add_bond=False)
         assert (ch2_atoms[0].pos == methane_atoms[0].pos).all()
         equivalence_transform(ch2, ch2['up'], ch3['up'])
-        assert ch2.n_bonds == 2
+        assert ch2.n_bonds == 3
 
         assert ch2.root.bond_graph.number_of_edges() == 3
         assert ch3.root.bond_graph.number_of_edges() == 4

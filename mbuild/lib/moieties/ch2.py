@@ -18,4 +18,4 @@ class CH2(mb.Compound):
 if __name__ == '__main__':
     ch2 = CH2()
     ch2.visualize(show_ports=True)
-    ch2.save('ch2.hoomdxml')
+    ch2.save('ch2.mol2')

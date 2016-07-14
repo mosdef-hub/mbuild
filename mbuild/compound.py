@@ -356,7 +356,10 @@ class Compound(object):
     def bonds(self):
         """A list of all Bonds in the Compound and sub-Compounds. """
         if self.root.bond_graph:
-            return self.root.bond_graph.subgraph(self.particles()).edges_iter()
+            if self.root == self:
+                return self.root.bond_graph.edges_iter()
+            else:
+                return self.root.bond_graph.subgraph(self.particles()).edges_iter()
         else:
             return iter(())
 
@@ -467,11 +470,10 @@ class Compound(object):
         return np.sqrt((d ** 2).sum(axis=-1))
 
     def particles_in_range(self, compound, dmax, max_particles=20, particle_kdtree=None, particle_array=None):
-        """Find particles ithin a specified range of another particle. """
+        """Find particles within a specified range of another particle. """
         if particle_kdtree is None:
             particle_kdtree = PeriodicCKDTree(data=self.xyz, bounds=self.periodicity)
         _, idxs = particle_kdtree.query(compound.pos, k=max_particles, distance_upper_bound=dmax)
-        # TODO: why we are doing this
         idxs = idxs[idxs != self.n_particles]
         if particle_array is None:
             particle_array = np.array(list(self.particles()))
