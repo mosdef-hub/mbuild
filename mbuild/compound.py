@@ -1,6 +1,6 @@
 from __future__ import print_function, division
 
-from collections import OrderedDict
+from collections import OrderedDict, defaultdict
 from copy import deepcopy
 import itertools
 import os
@@ -19,7 +19,6 @@ from parmed.periodic_table import AtomicNum, element_by_name, Mass
 from six import integer_types, string_types
 
 from mbuild.box import Box
-from mbuild.formats.mol2 import write_mol2
 from mbuild.periodic_kdtree import PeriodicCKDTree
 from mbuild.utils.io import run_from_ipython
 
@@ -27,7 +26,7 @@ from mbuild.utils.io import run_from_ipython
 __all__ = ['load', 'clone', 'Compound', 'Particle']
 
 
-def load(filename, relative_to_module=None, frame=-1, compound=None,
+def load(filename, relative_to_module=None, compound=None,
          coords_only=False, **kwargs):
     """Load a file from disk into a Compound. """
     # Handle mbuild *.py files containing a class that wraps a structure file
@@ -783,21 +782,23 @@ class Compound(object):
 
         atom_mapping = dict()
         chain_id = None
+        chains = defaultdict(list)
         for residue in structure.residues:
-            if residue.chain != chain_id:
-                chain_id = residue.chain
+            chains[residue.chain].append(residue)
+
+        for chain, residues in chains.items():
+            if len(chains) > 1:
                 chain_compound = Compound()
                 self.add(chain_compound, chain_id)
-            residue_compound = Compound()
-            chain_compound.add(residue_compound, residue.name)
-
-            for atom in residue.atoms:
-                new_atom = Particle(name=str(atom.name), pos=structure.coordinates[atom.idx])
-                residue_compound.add(new_atom, label='{0}[$]'.format(atom.name))
-                atom_mapping[atom] = new_atom
+            else:
+                chain_compound = self
+            for residue in residues:
+                for atom in residue.atoms:
+                    new_atom = Particle(name=str(atom.name), pos=structure.coordinates[atom.idx])
+                    chain_compound.add(new_atom, label='{0}[$]'.format(atom.name))
+                    atom_mapping[atom] = new_atom
 
         for bond in structure.bonds:
-
             atom1 = atom_mapping[bond.atom1]
             atom2 = atom_mapping[bond.atom2]
             self.add_bond((atom1, atom2))
