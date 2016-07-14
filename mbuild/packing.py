@@ -61,7 +61,7 @@ def fill_box(compound, n_compounds, box, overlap=0.2, seed=12345):
 
     n_compounds = int(n_compounds)
     compound_pdb = tempfile.mkstemp(suffix='.pdb')[1]
-    compound.save(compound_pdb)
+    compound.save(compound_pdb, overwrite=True)
     filled_pdb = tempfile.mkstemp(suffix='.pdb')[1]
 
     # In angstroms for packmol.
@@ -111,9 +111,9 @@ def solvate(solute, solvent, n_solvent, box, overlap=0.2, seed=12345):
     n_solvent = int(n_solvent)
 
     solute_pdb = tempfile.mkstemp(suffix='.pdb')[1]
-    solute.save(solute_pdb)
+    solute.save(solute_pdb, overwrite=True)
     solvent_pdb = tempfile.mkstemp(suffix='.pdb')[1]
-    solvent.save(solvent_pdb)
+    solvent.save(solvent_pdb, overwrite=True)
     solvated_pdb = tempfile.mkstemp(suffix='.pdb')[1]
 
     # In angstroms for packmol.

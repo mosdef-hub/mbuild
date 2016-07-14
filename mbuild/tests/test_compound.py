@@ -161,7 +161,7 @@ class TestCompound(BaseTest):
         assert traj.n_chains == 1
         assert traj.n_residues == 1
 
-        traj = ethane.to_trajectory(residue_types=ch3)
+        traj = ethane.to_trajectory(residue_types=ch3.__class__)
         assert traj.n_atoms == 8
         assert traj.top.n_bonds == 7
         assert traj.n_chains == 1
@@ -234,6 +234,17 @@ class TestCompound(BaseTest):
 
         assert len(structure.bonds) == 9
 
+        # from_parmed tests
+        compound2 = mb.Compound()
+        compound2.from_parmed(structure)
+
+        assert compound2.n_particles == 11
+        assert len([at for at in compound2.particles() if at.name == 'C']) == 2
+        assert len([at for at in compound2.particles() if at.name == 'H']) == 8
+        assert len([at for at in compound2.particles() if at.name == 'O']) == 1
+
+        assert compound2.n_bonds == 9
+
     def test_parmed_element_guess(self):
         compound = mb.Particle(name='foobar')
         with pytest.warns(UserWarning):
@@ -276,4 +287,3 @@ class TestCompound(BaseTest):
         compound.remove_bond((carbons[0], carbons[1]))
         assert not any(compound.bond_graph.has_node(particle)
                        for particle in ch3_nobonds.particles())
-

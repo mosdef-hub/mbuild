@@ -29,7 +29,7 @@ class Betacristobalite(mb.Compound):
 
         count = 0
         for particle in self.particles():
-            if particle.name == 'O' and particle.pos[2] > 1.0:
+            if particle.name.startswith('O') and particle.pos[2] > 1.0:
                 count += 1
                 port = mb.Port(anchor=particle)
                 mb.rotate_around_x(port, np.pi/2)
