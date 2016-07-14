@@ -7,17 +7,14 @@ import os
 import sys
 from warnings import warn
 
-import mdtraj as md
-from mbuild.bond_graph import BondGraph
 import nglview
 import numpy as np
-from mdtraj.core.element import get_by_symbol
-from mdtraj.core.topology import Topology
 from oset import oset as OrderedSet
 import parmed as pmd
 from parmed.periodic_table import AtomicNum, element_by_name, Mass
 from six import integer_types, string_types
 
+from mbuild.bond_graph import BondGraph
 from mbuild.box import Box
 from mbuild.periodic_kdtree import PeriodicCKDTree
 from mbuild.utils.io import run_from_ipython
@@ -645,6 +642,8 @@ class Compound(object):
         _to_topology
 
         """
+        import mdtraj as md
+
         atom_list = [particle for particle in self.particles(show_ports)]
 
         top = self._to_topology(atom_list, chain_types, residue_types)
@@ -680,6 +679,8 @@ class Compound(object):
         top : mtraj.Topology
 
         """
+        from mdtraj.core.element import get_by_symbol
+        from mdtraj.core.topology import Topology
 
         if isinstance(chain_types, Compound):
             chain_types = [Compound]
