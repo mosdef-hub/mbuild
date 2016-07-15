@@ -483,16 +483,8 @@ class Compound(object):
         return particle_array[idxs]
 
     def view_hierarchy(self, show_ports=False):
-        """Visualize a compound hierarchy as a tree.
-
-        A tree is constructed from the compound hierarchy with self as the root.
-        The tree is then rendered in a web browser window using D3.js.
-
-        Note
-        ------
-        Portions of this code are adapted from https://gist.github.com/mbostock/4339083.
-        """
-        raise NotImplementedError('To be replaced with igraph')
+        """Visualize a compound hierarchy as a tree. """
+        raise NotImplementedError('Coming soon!')
 
     def visualize(self, show_ports=False):
         """Visualize the Compound using nglview. """
