@@ -10,20 +10,19 @@ requirements:
     - python
     - numpy
     - scipy
-    - mdtraj
     - packmol
     - nglview
     - oset
-    - networkx
     - parmed
-    - jupyter
-    - nbformat
-    - ipykernel
-    - ipyext
 
 test:
   requires:
     - pytest
+    - mdtraj
+    - jupyter
+    - nbformat
+    - ipykernel
+    - ipyext
   commands:
     - py.test -v --pyargs mbuild
     - cd {{SRC_DIR}}

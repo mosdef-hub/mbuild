@@ -1,25 +1,21 @@
-from __future__ import print_function
+from __future__ import print_function, division
 
-from collections import OrderedDict
+from collections import OrderedDict, defaultdict
 from copy import deepcopy
 import itertools
 import os
 import sys
 from warnings import warn
 
-import mdtraj as md
-from mbuild.bond_graph import BondGraph
 import nglview
 import numpy as np
-from mdtraj.core.element import get_by_symbol
-from mdtraj.core.topology import Topology
 from oset import oset as OrderedSet
 import parmed as pmd
 from parmed.periodic_table import AtomicNum, element_by_name, Mass
 from six import integer_types, string_types
 
+from mbuild.bond_graph import BondGraph
 from mbuild.box import Box
-from mbuild.formats.mol2 import write_mol2
 from mbuild.periodic_kdtree import PeriodicCKDTree
 from mbuild.utils.io import run_from_ipython
 
@@ -27,7 +23,7 @@ from mbuild.utils.io import run_from_ipython
 __all__ = ['load', 'clone', 'Compound', 'Particle']
 
 
-def load(filename, relative_to_module=None, frame=-1, compound=None,
+def load(filename, relative_to_module=None, compound=None,
          coords_only=False, **kwargs):
     """Load a file from disk into a Compound. """
     # Handle mbuild *.py files containing a class that wraps a structure file
@@ -41,8 +37,15 @@ def load(filename, relative_to_module=None, frame=-1, compound=None,
     if compound is None:
         compound = Compound()
 
-    traj = md.load(filename, **kwargs)
-    compound.from_trajectory(traj, frame=frame, coords_only=coords_only)
+    structure = pmd.load_file(filename, **kwargs)
+    if not isinstance(structure, pmd.Structure):
+        structure = structure.to_structure()
+
+    # Because ParmEd doesn't convert units
+    if filename.endswith(('.pdb', '.mol2')):
+        structure.coordinates = structure.coordinates/10
+
+    compound.from_parmed(structure, coords_only=coords_only)
     return compound
 
 
@@ -356,7 +359,10 @@ class Compound(object):
     def bonds(self):
         """A list of all Bonds in the Compound and sub-Compounds. """
         if self.root.bond_graph:
-            return self.root.bond_graph.subgraph(self.particles()).edges_iter()
+            if self.root == self:
+                return self.root.bond_graph.edges_iter()
+            else:
+                return self.root.bond_graph.subgraph(self.particles()).edges_iter()
         else:
             return iter(())
 
@@ -467,33 +473,25 @@ class Compound(object):
         return np.sqrt((d ** 2).sum(axis=-1))
 
     def particles_in_range(self, compound, dmax, max_particles=20, particle_kdtree=None, particle_array=None):
-        """Find particles ithin a specified range of another particle. """
+        """Find particles within a specified range of another particle. """
         if particle_kdtree is None:
             particle_kdtree = PeriodicCKDTree(data=self.xyz, bounds=self.periodicity)
         _, idxs = particle_kdtree.query(compound.pos, k=max_particles, distance_upper_bound=dmax)
-        # TODO: why we are doing this
         idxs = idxs[idxs != self.n_particles]
         if particle_array is None:
             particle_array = np.array(list(self.particles()))
         return particle_array[idxs]
 
     def view_hierarchy(self, show_ports=False):
-        """Visualize a compound hierarchy as a tree.
-
-        A tree is constructed from the compound hierarchy with self as the root.
-        The tree is then rendered in a web browser window using D3.js.
-
-        Note
-        ------
-        Portions of this code are adapted from https://gist.github.com/mbostock/4339083.
-        """
-        raise NotImplementedError('To be replaced with igraph')
+        """Visualize a compound hierarchy as a tree. """
+        raise NotImplementedError('Coming soon!')
 
     def visualize(self, show_ports=False):
         """Visualize the Compound using nglview. """
         if run_from_ipython():
-            traj = self.to_trajectory(show_ports)
-            return nglview.show_mdtraj(traj)
+            # TODO: Replace with show_parmed once nglview package is updated.
+            structure = self.to_trajectory(show_ports)
+            return nglview.show_mdtraj(structure)
         else:
             raise RuntimeError('Visualization is only supported in Jupyter '
                                'Notebooks.')
@@ -525,7 +523,6 @@ class Compound(object):
         savers = {'.hoomdxml': self.save_hoomdxml,
                   '.gro': self.save_gromacs,
                   '.top': self.save_gromacs,
-                  '.mol2': self.save_mol2,
                   '.lammps': self.save_lammpsdata,
                   '.lmp': self.save_lammpsdata}
 
@@ -534,27 +531,17 @@ class Compound(object):
         except KeyError:  # TODO: better reporting
             saver = None
 
-        if (not saver or extension == '.mol2') and forcefield:
-            ff_formats = ', '.join(set(savers.keys()) - set(['.mol2']))
-            raise ValueError('The only supported formats with forcefield'
-                             'information are: {0}'.format(ff_formats))
-
+        structure = self.to_parmed(show_ports, **kwargs)
         if saver:  # mBuild/InterMol supported saver.
-            traj = self.to_trajectory(show_ports=show_ports, **kwargs)
-            return saver(filename, traj, forcefield, **kwargs)
-        else:  # MDTraj supported saver.
-            traj = self.to_trajectory(show_ports=show_ports, **kwargs)
-            return traj.save(filename, **kwargs)
+            return saver(filename, structure, forcefield, **kwargs)
+        else:  # ParmEd supported saver.
+            return structure.save(filename, **kwargs)
 
-    def save_mol2(self, filename, traj, forcefield, **kwargs):
-        """ """
-        write_mol2(filename, traj)
-
-    def save_hoomdxml(self, filename, traj, forcefield, force_overwrite=False, **kwargs):
+    def save_hoomdxml(self, filename, structure, forcefield, force_overwrite=False, **kwargs):
         """ """
         raise NotImplementedError('Interface to InterMol missing')
 
-    def save_gromacs(self, filename, traj, forcefield, force_overwrite=False, **kwargs):
+    def save_gromacs(self, filename, structure, forcefield, force_overwrite=False, **kwargs):
         """ """
         from foyer.forcefield import apply_forcefield
 
@@ -564,13 +551,12 @@ class Compound(object):
         top_filename = os.path.join(filepath, basename + '.top')
         gro_filename = os.path.join(filepath, basename + '.gro')
 
-        structure = self.to_parmed()
         if forcefield:
             structure = apply_forcefield(structure, forcefield=forcefield)
         structure.save(top_filename, 'gromacs', **kwargs)
         structure.save(gro_filename, 'gro', **kwargs)
 
-    def save_lammpsdata(self, filename, traj, forcefield, force_overwrite=False, **kwargs):
+    def save_lammpsdata(self, filename, structure, forcefield, force_overwrite=False, **kwargs):
         """ """
         from foyer.forcefield import apply_forcefield
         import intermol.lammps as lmp
@@ -599,7 +585,7 @@ class Compound(object):
             The trajectory to load.
         frame : int
             The frame to take coordinates from.
-
+;
         """
         if coords_only:
             if traj.n_atoms != self.n_particles:
@@ -649,6 +635,8 @@ class Compound(object):
         _to_topology
 
         """
+        import mdtraj as md
+
         atom_list = [particle for particle in self.particles(show_ports)]
 
         top = self._to_topology(atom_list, chain_types, residue_types)
@@ -684,6 +672,8 @@ class Compound(object):
         top : mtraj.Topology
 
         """
+        from mdtraj.core.element import get_by_symbol
+        from mdtraj.core.topology import Topology
 
         if isinstance(chain_types, Compound):
             chain_types = [Compound]
@@ -763,7 +753,56 @@ class Compound(object):
                 top.add_bond(atom_mapping[atom1], atom_mapping[atom2])
         return top
 
-    def to_parmed(self, title=''):
+    def from_parmed(self, structure, coords_only=False):
+        """Extract atoms and bonds from a pmd.Structure.
+
+        Will create sub-compounds for every chain if there is more than one
+        and sub-sub-compounds for every residue.
+
+        Parameters
+        ----------
+        structure : pmd.Structure
+            The structure to load.
+        coords_only : bool
+            Set preexisting atoms in compound to coordinates given by structure.
+
+        """
+        if coords_only:
+            if len(structure.atoms) != self.n_particles:
+                raise ValueError('Number of atoms in {structure} does not match {self}'.format(**locals()))
+            for parmed_atom, particle in zip(structure.atoms, self._particles(include_ports=False)):
+                particle.pos = structure.coordinates[parmed_atom.idx]
+            return
+
+        atom_mapping = dict()
+        chain_id = None
+        chains = defaultdict(list)
+        for residue in structure.residues:
+            chains[residue.chain].append(residue)
+
+        for chain, residues in chains.items():
+            if len(chains) > 1:
+                chain_compound = Compound()
+                self.add(chain_compound, chain_id)
+            else:
+                chain_compound = self
+            for residue in residues:
+                for atom in residue.atoms:
+                    new_atom = Particle(name=str(atom.name), pos=structure.coordinates[atom.idx])
+                    chain_compound.add(new_atom, label='{0}[$]'.format(atom.name))
+                    atom_mapping[atom] = new_atom
+
+        for bond in structure.bonds:
+            atom1 = atom_mapping[bond.atom1]
+            atom2 = atom_mapping[bond.atom2]
+            self.add_bond((atom1, atom2))
+
+        if structure.box is not None:
+            self.periodicity = structure.box[0:3]
+        else:
+            self.periodicity = np.array([0., 0., 0.])
+
+    def to_parmed(self, title='', **kwargs):
         """Create a ParmEd Structure from a Compound. """
         structure = pmd.Structure()
         structure.title = title if title else self.name

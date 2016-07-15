@@ -16,7 +16,9 @@ class BondGraph(object):
             self._data[node] = set()
 
     def remove_node(self, node):
-        del self._data[node]
+        for other_node in self.nodes():
+            if node in self._data[other_node]:
+                self.remove_edge(node, other_node)
 
     def has_node(self, node):
         return node in self._data
