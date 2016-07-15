@@ -11,8 +11,6 @@ requirements:
     - numpy
     - scipy
     - packmol
-    - pip:
-      - "--editable=git+https://github.com/arose/nglview.git@master"
     - nglview
     - oset
     - parmed

@@ -497,8 +497,9 @@ class Compound(object):
     def visualize(self, show_ports=False):
         """Visualize the Compound using nglview. """
         if run_from_ipython():
-            structure = self.to_parmed(show_ports)
-            return nglview.show_parmed(structure)
+            # TODO: Replace with show_parmed once nglview package is updated.
+            structure = self.to_trajectory(show_ports)
+            return nglview.show_mdtraj(structure)
         else:
             raise RuntimeError('Visualization is only supported in Jupyter '
                                'Notebooks.')
