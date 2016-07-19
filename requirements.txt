@@ -1,5 +1,6 @@
+mdtraj
+nglview
 numpy
-scipy
 parmed
 oset
-nglview
+scipy
