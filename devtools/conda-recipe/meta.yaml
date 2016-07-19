@@ -10,11 +10,11 @@ requirements:
     - python
     - numpy
     - scipy
-    - mdtraj
     - packmol
     - nglview
     - oset
     - parmed
+    - mdtraj
 
 test:
   requires:
