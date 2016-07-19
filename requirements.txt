@@ -4,3 +4,5 @@ numpy
 parmed
 oset
 scipy
+jupyter
+ipyext
