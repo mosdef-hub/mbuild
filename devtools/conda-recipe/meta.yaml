@@ -14,11 +14,11 @@ requirements:
     - nglview
     - oset
     - parmed
+    - mdtraj
 
 test:
   requires:
     - pytest
-    - mdtraj
     - jupyter
     - nbformat
     - ipykernel
