@@ -7,6 +7,7 @@ import os
 import sys
 from warnings import warn
 
+import mdtraj as md
 import nglview
 import numpy as np
 from oset import oset as OrderedSet
@@ -37,15 +38,8 @@ def load(filename, relative_to_module=None, compound=None,
     if compound is None:
         compound = Compound()
 
-    structure = pmd.load_file(filename, **kwargs)
-    if not isinstance(structure, pmd.Structure):
-        structure = structure.to_structure()
-
-    # Because ParmEd doesn't convert units
-    if filename.endswith(('.pdb', '.mol2')):
-        structure.coordinates = structure.coordinates/10
-
-    compound.from_parmed(structure, coords_only=coords_only)
+    traj = md.load(filename, **kwargs)
+    compound.from_trajectory(traj, frame=-1, coords_only=coords_only)
     return compound
 
 
@@ -61,7 +55,6 @@ def clone(existing_compound, clone_of=None, root_container=None):
 
     newone = existing_compound._clone(clone_of=clone_of, root_container=root_container)
     existing_compound._clone_bonds(clone_of=clone_of)
-
     return newone
 
 
