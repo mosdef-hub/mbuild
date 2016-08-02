@@ -19,6 +19,7 @@ from mbuild.bond_graph import BondGraph
 from mbuild.box import Box
 from mbuild.periodic_kdtree import PeriodicCKDTree
 from mbuild.utils.io import run_from_ipython
+from mbuild.formats.hoomdxml import write_hoomdxml
 
 
 __all__ = ['load', 'clone', 'Compound', 'Particle']
@@ -530,9 +531,9 @@ class Compound(object):
         else:  # ParmEd supported saver.
             return structure.save(filename, **kwargs)
 
-    def save_hoomdxml(self, filename, structure, forcefield, force_overwrite=False, **kwargs):
+    def save_hoomdxml(self, filename, **kwargs):
         """ """
-        raise NotImplementedError('Interface to InterMol missing')
+        write_hoomdxml(self, filename, **kwargs)
 
     def save_gromacs(self, filename, structure, forcefield, force_overwrite=False, **kwargs):
         """ """
