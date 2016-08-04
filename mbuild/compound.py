@@ -531,9 +531,23 @@ class Compound(object):
         else:  # ParmEd supported saver.
             return structure.save(filename, **kwargs)
 
-    def save_hoomdxml(self, filename, **kwargs):
+    def save_hoomdxml(self, filename, structure, forcefield, box=None, **kwargs):
         """ """
-        write_hoomdxml(self, filename, **kwargs)
+        from foyer.forcefield import apply_forcefield
+        if forcefield:
+            structure = apply_forcefield(structure, forcefield=forcefield)
+        if not box:
+            box = self.boundingbox
+            for dim, val in enumerate(self.periodicity):
+                if val:
+                    box.lengths[dim] = val
+                    box.maxs[dim] = val
+                    box.mins[dim] = 0.0
+                if not val:
+                    box.maxs[dim] += 0.25
+                    box.mins[dim] -= 0.25
+                    box.lengths[dim] += 0.5
+        write_hoomdxml(structure, filename, forcefield, box, **kwargs)
 
     def save_gromacs(self, filename, structure, forcefield, force_overwrite=False, **kwargs):
         """ """
