@@ -21,10 +21,6 @@ class TestCompound(BaseTest):
         methyl = mb.load(get_fn('methyl.pdb'))
         methyl.save(filename='methyl_out.pdb')
 
-    def test_save_hoomdxml(self, ethane):
-        ethane.save_hoomdxml(filename='ethane.hoomdxml')
-        ethane.save_hoomdxml(filename='ethane-opls.hoomdxml',forcefield='opls')
-
     def test_batch_add(self, ethane, h2o):
         compound = mb.Compound()
         compound.add([ethane, h2o])
