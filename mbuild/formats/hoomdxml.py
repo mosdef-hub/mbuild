@@ -72,6 +72,8 @@ def write_hoomdxml(structure, filename, forcefield, box, ref_distance=1.0, ref_m
         masses = [atom.mass for atom in structure.atoms]
         xml_file.write('<mass>\n')
         for mass in masses:
+            if mass == 0:
+                mass = 1.0
             xml_file.write('{}\n'.format(mass/ref_mass)) 
         xml_file.write('</mass>\n')
         
