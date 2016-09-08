@@ -52,6 +52,41 @@ def write_hoomdxml(structure, filename, forcefield, box, ref_distance=1.0, ref_m
         An integer value is required for each atom corresponding to the
         number of the rigid body with which the atom should be included.
         A value of -1 indicates the atom is not part of a rigid body.
+
+    Elements
+    --------
+    The following elements are always written:
+
+    Position : atomic positions
+    Type : atom types
+    Mass : atom masses (default 1.0)
+
+    The following elements may be written if applicable:
+    Charge : atom charges
+    Bond_Coeffs : Coefficients for each bond type, assumes a harmonic
+                  bond style. The following information is written:
+                  type : bond type
+                  k : force constant (units of energy/distance^2)
+                  r0 : bond rest length (units of distance)
+    Bond : system bonds
+    Angle_Coeffs : Coefficients for each angle type, assumes a harmonic
+                   angle style. The following information is written:
+                   type : angle type
+                   k : force constant (units of energy/radians^2)
+                   theta : rest angle (units of radians)
+    Angle : system angles
+    Dihedral_Coeffs : Coefficients for each dihedral type, assumes an OPLS
+                      dihedral style. The following information is written:
+                      type : dihedral type
+                      k1, k2, k3, k4 : force coefficients (units of energy)
+    Dihedral : system dihedrals
+    Improper_Coeffs : Coefficients for each improper type, assumes a harmonic
+                      improper style. The following information is written:
+                      type : improper type
+                      k : force constant (units of energy/radians^2)
+                      chi : equilibrium angle (units of radians)
+    Impropers : system impropers
+    Body : rigid body to which each atom belongs
     """
 
     xyz = np.array([[atom.xx,atom.xy,atom.xz] for atom in structure.atoms])
@@ -118,7 +153,7 @@ def write_hoomdxml(structure, filename, forcefield, box, ref_distance=1.0, ref_m
                                               round(bond.type.req,3))] for bond in structure.bonds]
                 xml_file.write('<bond_coeffs>\n')
                 for params,id in all_bond_types.iteritems():
-                    xml_file.write('{}\t{}\t{}\n'.format(id,params[0]/ref_energy,params[1]/ref_distance))
+                    xml_file.write('{}\t{}\t{}\n'.format(id,((params[0]*2.)/ref_energy)*(ref_distance**2.),params[1]/ref_distance))
                 xml_file.write('</bond_coeffs>\n')
             xml_file.write('<bond>\n')
             for idx,bond in enumerate(bonds):
@@ -134,14 +169,14 @@ def write_hoomdxml(structure, filename, forcefield, box, ref_distance=1.0, ref_m
             all_angle_types = {y:x for x,y in all_angle_types.iteritems()}
             angle_types = [all_angle_types[(round(angle.type.k,3), 
                                             round(angle.type.theteq,3))] for angle in structure.angles]
+            xml_file.write('<angle_coeffs>\n')
+            for params,id in all_angle_types.iteritems():
+                xml_file.write('{}\t{}\t{:.5f}\n'.format(id,(params[0]*2.)/ref_energy,radians(params[1])))
+            xml_file.write('</angle_coeffs>\n')
             xml_file.write('<angle>\n')
             for idx,angle in enumerate(angles):
                 xml_file.write('{}\t{}\t{}\t{}\n'.format(angle_types[idx],*angle))
             xml_file.write('</angle>\n')
-            xml_file.write('<angle_coeffs>\n')
-            for params,id in all_angle_types.iteritems():
-                xml_file.write('{}\t{}\t{:.5f}\n'.format(id,params[0]/ref_energy,radians(params[1])))
-            xml_file.write('</angle_coeffs>\n')
 
         dihedrals = [[dihedral.atom1.idx,
                       dihedral.atom2.idx,
@@ -165,11 +200,6 @@ def write_hoomdxml(structure, filename, forcefield, box, ref_distance=1.0, ref_m
                                                   round(dihedral.type.c5,3),
                                                   round(dihedral.type.scee,1),
                                                   round(dihedral.type.scnb,1))] for dihedral in structure.rb_torsions]
-            xml_file.write('<dihedral>\n')
-            for idx,dihedral in enumerate(dihedrals):
-                xml_file.write('{}\t{}\t{}\t{}\t{}\n'.format(dihedral_types[idx],
-                                                             *dihedral))
-            xml_file.write('</dihedral>\n')
             xml_file.write('<dihedral_coeffs>\n')
             for params,id in all_dihedral_types.iteritems():
                 opls_coeffs = RB_to_OPLS(params[0],
@@ -178,8 +208,14 @@ def write_hoomdxml(structure, filename, forcefield, box, ref_distance=1.0, ref_m
                                          params[3],
                                          params[4],
                                          params[5])
+                opls_coeffs /= ref_energy
                 xml_file.write('{}\t{:.5f}\t{:.5f}\t{:.5f}\t{:.5f}\n'.format(id,*opls_coeffs))
             xml_file.write('</dihedral_coeffs>\n')
+            xml_file.write('<dihedral>\n')
+            for idx,dihedral in enumerate(dihedrals):
+                xml_file.write('{}\t{}\t{}\t{}\t{}\n'.format(dihedral_types[idx],
+                                                             *dihedral))
+            xml_file.write('</dihedral>\n')
 
         impropers = [[improper.atom1.idx,
                       improper.atom2.idx,
@@ -191,15 +227,15 @@ def write_hoomdxml(structure, filename, forcefield, box, ref_distance=1.0, ref_m
             all_improper_types = {y:x for x,y in all_improper_types.iteritems()}
             improper_types = [all_improper_types[(round(improper.type.psi_k,3),
                                                   round(improper.type.psi_eq,3))] for improper in structure.impropers]
+            xml_file.write('<improper_coeffs>\n')
+            for params,id in all_improper_types.iteritems():
+                xml_file.write('{}\t{}\t{}\n'.format(id,(params[0]*2.)/ref_energy,radians(params[1])))
+            xml_file.write('</improper_coeffs>\n')
             xml_file.write('<improper>\n')
             for idx,improper in enumerate(impropers):
                 xml_file.write('{}\t{}\t{}\t{}\t{}\n'.format(improper_types[idx],
                                                              *improper))
             xml_file.write('</improper>\n')
-            xml_file.write('<improper_coeffs>\n')
-            for params,id in all_improper_types.iteritems():
-                xml_file.write('{}\t{}\t{}\n'.format(id,*params))
-            xml_file.write('</improper_coeffs>\n')
             
         if rigid_bodies:
             xml_file.write('<body>\n')
