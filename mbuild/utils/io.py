@@ -7,6 +7,12 @@ try:
 except ImportError:
     has_intermol = False
 
+try:
+    import foyer
+    has_foyer = True
+except ImportError:
+    has_foyer = False
+
 
 def get_fn(name):
     """Get the full path to one of the reference files shipped for utils.
