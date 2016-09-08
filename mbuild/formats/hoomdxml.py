@@ -4,10 +4,33 @@ __all__ = ['write_hoomdxml']
 
 
 from copy import deepcopy
-from math import floor
+from math import floor,radians
 import numpy as np
 
-def write_hoomdxml(structure, filename, forcefield, box, ref_distance=1.0, ref_mass=1.0, rigid_bodies=None):
+def RB_to_OPLS(c0,c1,c2,c3,c4,c5):
+    """ Converts Ryckaert-Bellemans type dihedrals to OPLS type.
+
+    Parameters
+    ----------
+    c0,c1,c2,c3,c4,c5 : Ryckaert-Belleman coefficients (in kcal/mol)
+
+    Returns
+    -------
+    opls_coeffs : np.array, shape=(4,)
+        Array containing the OPLS dihedrals coeffs f1, f2, f3, and f4
+        (in kcal/mol)
+    """
+
+    f1 = (-1.5 * c3) - (2 * c1)
+    f2 = c0 + c1 + c3
+    f3 = -0.5 * c3
+    f4 = -0.25 * c4
+
+    opls_coeffs = np.array([f1,f2,f3,f4])
+
+    return opls_coeffs
+
+def write_hoomdxml(structure, filename, forcefield, box, ref_distance=1.0, ref_mass=1.0, ref_energy=1.0, rigid_bodies=None):
     """Output a HOOMD XML file.
     
     Parameters
@@ -93,6 +116,10 @@ def write_hoomdxml(structure, filename, forcefield, box, ref_distance=1.0, ref_m
                 all_bond_types = {y:x for x,y in all_bond_types.iteritems()}
                 bond_types = [all_bond_types[(round(bond.type.k,3),
                                               round(bond.type.req,3))] for bond in structure.bonds]
+                xml_file.write('<bond_coeffs>\n')
+                for params,id in all_bond_types.iteritems():
+                    xml_file.write('{}\t{}\t{}\n'.format(id,params[0]/ref_energy,params[1]/ref_distance))
+                xml_file.write('</bond_coeffs>\n')
             xml_file.write('<bond>\n')
             for idx,bond in enumerate(bonds):
                 xml_file.write('{}\t{}\t{}\n'.format(bond_types[idx],*bond))
@@ -111,6 +138,10 @@ def write_hoomdxml(structure, filename, forcefield, box, ref_distance=1.0, ref_m
             for idx,angle in enumerate(angles):
                 xml_file.write('{}\t{}\t{}\t{}\n'.format(angle_types[idx],*angle))
             xml_file.write('</angle>\n')
+            xml_file.write('<angle_coeffs>\n')
+            for params,id in all_angle_types.iteritems():
+                xml_file.write('{}\t{}\t{:.5f}\n'.format(id,params[0]/ref_energy,radians(params[1])))
+            xml_file.write('</angle_coeffs>\n')
 
         dihedrals = [[dihedral.atom1.idx,
                       dihedral.atom2.idx,
@@ -139,6 +170,16 @@ def write_hoomdxml(structure, filename, forcefield, box, ref_distance=1.0, ref_m
                 xml_file.write('{}\t{}\t{}\t{}\t{}\n'.format(dihedral_types[idx],
                                                              *dihedral))
             xml_file.write('</dihedral>\n')
+            xml_file.write('<dihedral_coeffs>\n')
+            for params,id in all_dihedral_types.iteritems():
+                opls_coeffs = RB_to_OPLS(params[0],
+                                         params[1],
+                                         params[2],
+                                         params[3],
+                                         params[4],
+                                         params[5])
+                xml_file.write('{}\t{:.5f}\t{:.5f}\t{:.5f}\t{:.5f}\n'.format(id,*opls_coeffs))
+            xml_file.write('</dihedral_coeffs>\n')
 
         impropers = [[improper.atom1.idx,
                       improper.atom2.idx,
@@ -155,6 +196,10 @@ def write_hoomdxml(structure, filename, forcefield, box, ref_distance=1.0, ref_m
                 xml_file.write('{}\t{}\t{}\t{}\t{}\n'.format(improper_types[idx],
                                                              *improper))
             xml_file.write('</improper>\n')
+            xml_file.write('<improper_coeffs>\n')
+            for params,id in all_improper_types.iteritems():
+                xml_file.write('{}\t{}\t{}\n'.format(id,*params))
+            xml_file.write('</improper_coeffs>\n')
             
         if rigid_bodies:
             xml_file.write('<body>\n')
