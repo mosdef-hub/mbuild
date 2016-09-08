@@ -7,7 +7,6 @@ from mbuild.utils.io import has_foyer
 
 class TestLammpsData(BaseTest):
 
-    @pytest.mark.skipif(not has_foyer, reason="Foyer is not installed")
     def test_save(self, ethane):
         ethane.save(filename='ethane.lammps')
 
