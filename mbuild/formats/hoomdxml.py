@@ -60,9 +60,14 @@ def write_hoomdxml(structure, filename, forcefield, box, ref_distance=1.0, ref_m
     Position : atomic positions
     Type : atom types
     Mass : atom masses (default 1.0)
+    Charge : atom charges
 
     The following elements may be written if applicable:
-    Charge : atom charges
+    Pair_Coeffs : Pair coefficients for each atom type, assumes a 12-6
+                  LJ pair style. The following information is written:
+                  type : atom type
+                  epsilon : LJ epsilon
+                  sigma : LJ sigma
     Bond_Coeffs : Coefficients for each bond type, assumes a harmonic
                   bond style. The following information is written:
                   type : bond type
@@ -134,6 +139,13 @@ def write_hoomdxml(structure, filename, forcefield, box, ref_distance=1.0, ref_m
         for charge in charges:
             xml_file.write('{}\n'.format(charge))
         xml_file.write('</charge>\n')
+
+        if forcefield:
+            pair_coeffs = set([(atom.type,atom.epsilon,atom.sigma) for atom in structure.atoms])
+            xml_file.write('<pair_coeffs>\n')
+            for param_set in pair_coeffs:
+                xml_file.write('{}\t{:.4f}\t{:.4f}\n'.format(param_set[0],param_set[1]/ref_energy,param_set[2]/ref_distance))
+            xml_file.write('</pair_coeffs>\n')
 
         bonds = [[bond.atom1.idx, bond.atom2.idx] for bond in structure.bonds] 
         if bonds:
