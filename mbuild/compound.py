@@ -20,6 +20,7 @@ from mbuild.box import Box
 from mbuild.periodic_kdtree import PeriodicCKDTree
 from mbuild.utils.io import run_from_ipython
 from mbuild.formats.hoomdxml import write_hoomdxml
+from mbuild.formats.lammpsdata import write_lammpsdata
 
 
 __all__ = ['load', 'clone', 'Compound', 'Particle']
@@ -564,20 +565,24 @@ class Compound(object):
         structure.save(top_filename, 'gromacs', **kwargs)
         structure.save(gro_filename, 'gro', **kwargs)
 
-    def save_lammpsdata(self, filename, structure, forcefield, force_overwrite=False, **kwargs):
+    def save_lammpsdata(self, filename, structure, forcefield, box=None, **kwargs):
         """ """
         from foyer.forcefield import apply_forcefield
-        import intermol.lammps as lmp
-
-        # Create separate file paths for .gro and .top
-        filepath, filename = os.path.split(filename)
-        basename = os.path.splitext(filename)[0]
-        inp_filename = os.path.join(filepath, basename + '.input')
-
-        intermol_system = self.to_intermol()
         if forcefield:
-            apply_forcefield(intermol_system, forcefield=forcefield)
-        lmp.save(inp_filename, intermol_system)
+            structure = apply_forcefield(structure, forcefield=forcefield)
+        if not box:
+            box = self.boundingbox
+            for dim, val in enumerate(self.periodicity):
+                if val:
+                    box.lengths[dim] = val
+                    box.maxs[dim] = val
+                    box.mins[dim] = 0.0
+                if not val:
+                    box.maxs[dim] += 0.25
+                    box.mins[dim] -= 0.25
+                    box.lengths[dim] += 0.5
+
+        write_lammpsdata(structure, filename, forcefield, box, **kwargs)
 
     # Interface to Trajectory for reading/writing .pdb and .mol2 files.
     # -----------------------------------------------------------------
