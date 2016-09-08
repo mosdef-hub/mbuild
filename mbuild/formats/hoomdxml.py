@@ -80,12 +80,6 @@ def write_hoomdxml(structure, filename, forcefield, box, ref_distance=1.0, ref_m
                       type : dihedral type
                       k1, k2, k3, k4 : force coefficients (units of energy)
     Dihedral : system dihedrals
-    Improper_Coeffs : Coefficients for each improper type, assumes a harmonic
-                      improper style. The following information is written:
-                      type : improper type
-                      k : force constant (units of energy/radians^2)
-                      chi : equilibrium angle (units of radians)
-    Impropers : system impropers
     Body : rigid body to which each atom belongs
     """
 
@@ -217,26 +211,6 @@ def write_hoomdxml(structure, filename, forcefield, box, ref_distance=1.0, ref_m
                                                              *dihedral))
             xml_file.write('</dihedral>\n')
 
-        impropers = [[improper.atom1.idx,
-                      improper.atom2.idx,
-                      improper.atom3.idx,
-                      impropers.atom4.idx] for improper in structure.impropers]
-        if impropers:
-            all_improper_types = dict(enumerate(set([(round(improper.type.psi_k,3),
-                                                      round(improper.type.psi_eq,3)) for improper in structure.impropers])))
-            all_improper_types = {y:x for x,y in all_improper_types.iteritems()}
-            improper_types = [all_improper_types[(round(improper.type.psi_k,3),
-                                                  round(improper.type.psi_eq,3))] for improper in structure.impropers]
-            xml_file.write('<improper_coeffs>\n')
-            for params,id in all_improper_types.iteritems():
-                xml_file.write('{}\t{}\t{}\n'.format(id,(params[0]*2.)/ref_energy,radians(params[1])))
-            xml_file.write('</improper_coeffs>\n')
-            xml_file.write('<improper>\n')
-            for idx,improper in enumerate(impropers):
-                xml_file.write('{}\t{}\t{}\t{}\t{}\n'.format(improper_types[idx],
-                                                             *improper))
-            xml_file.write('</improper>\n')
-            
         if rigid_bodies:
             xml_file.write('<body>\n')
             for body in rigid_bodies:
