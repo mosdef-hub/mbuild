@@ -4,7 +4,7 @@ __all__ = ['write_lammpsdata']
 
 
 import numpy as np
-from hoomdxml import RB_to_OPLS
+from .hoomdxml import RB_to_OPLS
 
 def write_lammpsdata(structure, filename, forcefield, box):
     """Output a LAMMPS data file.
@@ -58,19 +58,19 @@ def write_lammpsdata(structure, filename, forcefield, box):
                   dihedral.atom4.idx+1] for dihedral in structure.rb_torsions]
 
     if bonds:
-        if len(set([bond.type for bond in structure.bonds])) == 1:
+        if len(structure.bond_types) == 0:
             bond_types = np.ones(len(bonds),dtype=int)
         else:
             all_bond_types = dict(enumerate(set([(round(bond.type.k,3),
                                                   round(bond.type.req,3)) for bond in structure.bonds])))
-            all_bond_types = {y:x+1 for x,y in all_bond_types.iteritems()}
+            all_bond_types = {y:x+1 for x,y in all_bond_types.items()}
             bond_types = [all_bond_types[(round(bond.type.k,3),
                                           round(bond.type.req,3))] for bond in structure.bonds]
 
     if angles:
         all_angle_types = dict(enumerate(set([(round(angle.type.k,3),
                                                round(angle.type.theteq,3)) for angle in structure.angles])))
-        all_angle_types = {y:x+1 for x,y in all_angle_types.iteritems()}
+        all_angle_types = {y:x+1 for x,y in all_angle_types.items()}
         angle_types = [all_angle_types[(round(angle.type.k,3),
                                         round(angle.type.theteq,3))] for angle in structure.angles]
 
@@ -83,7 +83,7 @@ def write_lammpsdata(structure, filename, forcefield, box):
                                                   round(dihedral.type.c5,3),
                                                   round(dihedral.type.scee,1),
                                                   round(dihedral.type.scnb,1)) for dihedral in structure.rb_torsions])))
-        all_dihedral_types = {y:x+1 for x,y in all_dihedral_types.iteritems()}
+        all_dihedral_types = {y:x+1 for x,y in all_dihedral_types.items()}
         dihedral_types = [all_dihedral_types[(round(dihedral.type.c0,3),
                                               round(dihedral.type.c1,3),
                                               round(dihedral.type.c2,3),
@@ -116,7 +116,7 @@ def write_lammpsdata(structure, filename, forcefield, box):
         # Mass data
         type_dict_r = {int(pair[0]):pair[1] for pair in all_types}
         data.write('\nMasses\n\n')
-        for type,mass in mass_dict.iteritems():
+        for type,mass in mass_dict.items():
             data.write('{:d}\t{:.6f}\t# {}\n'.format(type,mass,type_dict_r[type]))
 
         if forcefield:
@@ -126,22 +126,22 @@ def write_lammpsdata(structure, filename, forcefield, box):
             epsilon_dict = dict([(type_dict_num[type],epsilon) for type,epsilon in zip(types_str_num,epsilons)])
             sigma_dict = dict([(type_dict_num[type],sigma) for type,sigma in zip(types_str_num,sigmas)])
             data.write('\nPair Coeffs # lj\n\n')
-            for id,epsilon in epsilon_dict.iteritems():
+            for id,epsilon in epsilon_dict.items():
                 data.write('{}\t{:.5f}\t{:.5f}\n'.format(id,epsilon,sigma_dict[id]))
 
             # Bond coefficients
             data.write('\nBond Coeffs # harmonic\n\n')
-            for params,id in all_bond_types.iteritems():
+            for params,id in all_bond_types.items():
                 data.write('{}\t{}\t{}\n'.format(id,*params))
 
             # Angle coefficients
             data.write('\nAngle Coeffs # harmonic\n\n')
-            for params,id in all_angle_types.iteritems():
+            for params,id in all_angle_types.items():
                 data.write('{}\t{}\t{:.5f}\n'.format(id,*params))
 
             # Dihedral coefficients
             data.write('\nDihedral Coeffs # opls\n\n')
-            for params,id in all_dihedral_types.iteritems():
+            for params,id in all_dihedral_types.items():
                 opls_coeffs = RB_to_OPLS(params[0],
                                          params[1],
                                          params[2],
