@@ -158,8 +158,8 @@ def write_hoomdxml(structure, filename, forcefield, box, ref_distance=1.0, ref_m
                 bond_types = [all_bond_types[(round(bond.type.k,3),
                                               round(bond.type.req,3))] for bond in structure.bonds]
                 xml_file.write('<bond_coeffs>\n')
-                for params,id in all_bond_types.items():
-                    xml_file.write('{}\t{}\t{}\n'.format(id,((params[0]*2.)/ref_energy)*(ref_distance**2.),params[1]/ref_distance))
+                for params,idx in all_bond_types.items():
+                    xml_file.write('{}\t{}\t{}\n'.format(idx,((params[0]*2.)/ref_energy)*(ref_distance**2.),params[1]/ref_distance))
                 xml_file.write('</bond_coeffs>\n')
             xml_file.write('<bond>\n')
             for idx,bond in enumerate(bonds):
@@ -176,8 +176,8 @@ def write_hoomdxml(structure, filename, forcefield, box, ref_distance=1.0, ref_m
             angle_types = [all_angle_types[(round(angle.type.k,3), 
                                             round(angle.type.theteq,3))] for angle in structure.angles]
             xml_file.write('<angle_coeffs>\n')
-            for params,id in all_angle_types.items():
-                xml_file.write('{}\t{}\t{:.5f}\n'.format(id,(params[0]*2.)/ref_energy,radians(params[1])))
+            for params,idx in all_angle_types.items():
+                xml_file.write('{}\t{}\t{:.5f}\n'.format(idx,(params[0]*2.)/ref_energy,radians(params[1])))
             xml_file.write('</angle_coeffs>\n')
             xml_file.write('<angle>\n')
             for idx,angle in enumerate(angles):
@@ -207,7 +207,7 @@ def write_hoomdxml(structure, filename, forcefield, box, ref_distance=1.0, ref_m
                                                   round(dihedral.type.scee,1),
                                                   round(dihedral.type.scnb,1))] for dihedral in structure.rb_torsions]
             xml_file.write('<dihedral_coeffs>\n')
-            for params,id in all_dihedral_types.items():
+            for params,idx in all_dihedral_types.items():
                 opls_coeffs = RB_to_OPLS(params[0],
                                          params[1],
                                          params[2],
@@ -215,7 +215,7 @@ def write_hoomdxml(structure, filename, forcefield, box, ref_distance=1.0, ref_m
                                          params[4],
                                          params[5])
                 opls_coeffs /= ref_energy
-                xml_file.write('{}\t{:.5f}\t{:.5f}\t{:.5f}\t{:.5f}\n'.format(id,*opls_coeffs))
+                xml_file.write('{}\t{:.5f}\t{:.5f}\t{:.5f}\t{:.5f}\n'.format(idx,*opls_coeffs))
             xml_file.write('</dihedral_coeffs>\n')
             xml_file.write('<dihedral>\n')
             for idx,dihedral in enumerate(dihedrals):

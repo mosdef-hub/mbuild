@@ -31,19 +31,19 @@ def write_lammpsdata(structure, filename, forcefield, box):
         header = types_str[0].split('_')[0]
         all_types_num = list(set(types_str_num))
         all_types_num.sort()
-        all_types_num = np.array([[num+1,type] for num,type in enumerate(all_types_num)])
-        all_types = np.array([[num,header+'_'+str(type)] for num,type in all_types_num])
+        all_types_num = np.array([[num+1,atom_type] for num,atom_type in enumerate(all_types_num)])
+        all_types = np.array([[num,header+'_'+str(atom_type)] for num,atom_type in all_types_num])
         type_dict_num = {pair[1]:pair[0] for pair in all_types_num}
 
-        mass_dict = dict([(type_dict_num[type],mass) for type,mass in zip(types_str_num,masses)])
-        types = [type_dict_num[type] for type in types_str_num]
+        mass_dict = dict([(type_dict_num[atom_type],mass) for atom_type,mass in zip(types_str_num,masses)])
+        types = [type_dict_num[atom_type] for atom_type in types_str_num]
     else:   
         types_str = [atom.name for atom in structure.atoms]
         all_types = list(set(types_str))
-        all_types = np.array([[num+1,type] for num,type in enumerate(all_types)])
+        all_types = np.array([[num+1,atom_type] for num,atom_type in enumerate(all_types)])
         type_dict = {pair[1]:int(pair[0]) for pair in all_types}
-        mass_dict = dict([(type_dict[type],mass) for type,mass in zip(types_str,masses)])
-        types = [type_dict[type] for type in types_str]
+        mass_dict = dict([(type_dict[atom_type],mass) for atom_type,mass in zip(types_str,masses)])
+        types = [type_dict[atom_type] for atom_type in types_str]
 
     xyz = np.array([[atom.xx,atom.xy,atom.xz] for atom in structure.atoms])
     charges = [atom.charge for atom in structure.atoms]
@@ -116,39 +116,39 @@ def write_lammpsdata(structure, filename, forcefield, box):
         # Mass data
         type_dict_r = {int(pair[0]):pair[1] for pair in all_types}
         data.write('\nMasses\n\n')
-        for type,mass in mass_dict.items():
-            data.write('{:d}\t{:.6f}\t# {}\n'.format(type,mass,type_dict_r[type]))
+        for atom_type,mass in mass_dict.items():
+            data.write('{:d}\t{:.6f}\t# {}\n'.format(atom_type,mass,type_dict_r[atom_type]))
 
         if forcefield:
             # Pair coefficients
             epsilons = [atom.epsilon for atom in structure.atoms]
             sigmas = [atom.sigma for atom in structure.atoms]
-            epsilon_dict = dict([(type_dict_num[type],epsilon) for type,epsilon in zip(types_str_num,epsilons)])
-            sigma_dict = dict([(type_dict_num[type],sigma) for type,sigma in zip(types_str_num,sigmas)])
+            epsilon_dict = dict([(type_dict_num[atom_type],epsilon) for atom_type,epsilon in zip(types_str_num,epsilons)])
+            sigma_dict = dict([(type_dict_num[atom_type],sigma) for atom_type,sigma in zip(types_str_num,sigmas)])
             data.write('\nPair Coeffs # lj\n\n')
-            for id,epsilon in epsilon_dict.items():
-                data.write('{}\t{:.5f}\t{:.5f}\n'.format(id,epsilon,sigma_dict[id]))
+            for idx,epsilon in epsilon_dict.items():
+                data.write('{}\t{:.5f}\t{:.5f}\n'.format(idx,epsilon,sigma_dict[idx]))
 
             # Bond coefficients
             data.write('\nBond Coeffs # harmonic\n\n')
-            for params,id in all_bond_types.items():
-                data.write('{}\t{}\t{}\n'.format(id,*params))
+            for params,idx in all_bond_types.items():
+                data.write('{}\t{}\t{}\n'.format(idx,*params))
 
             # Angle coefficients
             data.write('\nAngle Coeffs # harmonic\n\n')
-            for params,id in all_angle_types.items():
-                data.write('{}\t{}\t{:.5f}\n'.format(id,*params))
+            for params,idx in all_angle_types.items():
+                data.write('{}\t{}\t{:.5f}\n'.format(idx,*params))
 
             # Dihedral coefficients
             data.write('\nDihedral Coeffs # opls\n\n')
-            for params,id in all_dihedral_types.items():
+            for params,idx in all_dihedral_types.items():
                 opls_coeffs = RB_to_OPLS(params[0],
                                          params[1],
                                          params[2],
                                          params[3],
                                          params[4],
                                          params[5])
-                data.write('{}\t{:.5f}\t{:.5f}\t{:.5f}\t{:.5f}\n'.format(id,*opls_coeffs))
+                data.write('{}\t{:.5f}\t{:.5f}\t{:.5f}\t{:.5f}\n'.format(idx,*opls_coeffs))
 
         # Atom data
         data.write('\nAtoms\n\n')
