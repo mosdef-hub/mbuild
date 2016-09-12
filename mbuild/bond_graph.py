@@ -1,5 +1,11 @@
-from collections import defaultdict
+from collections import OrderedDict, defaultdict
+from oset import oset
 
+class OrderedDefaultDict(OrderedDict, defaultdict):
+    def __init__(self, default_factory=None, *args, **kwargs):
+        #in python3 you can omit the args to super
+        super(OrderedDefaultDict, self).__init__(*args, **kwargs)
+        self.default_factory = default_factory
 
 class BondGraph(object):
     """A graph-like object used to store and manipulate bonding information.
@@ -9,11 +15,11 @@ class BondGraph(object):
 
     """
     def __init__(self):
-        self._data = defaultdict(set)
+        self._data = OrderedDefaultDict(oset)
 
     def add_node(self, node):
         if not self.has_node(node):
-            self._data[node] = set()
+            self._data[node] = oset()
 
     def remove_node(self, node):
         for other_node in self.nodes():
@@ -54,7 +60,7 @@ class BondGraph(object):
             return node2 in self._data[node1]
 
     def edges(self):
-        edges = set()
+        edges = oset()
         for node, neighbors in self._data.items():
             for neighbor in neighbors:
                 bond = (node, neighbor) if id(node) < id(neighbor) else (neighbor, node)
@@ -116,7 +122,7 @@ class BondGraph(object):
                     current_component = component
                     break
             else:  # We're in a new component.
-                current_component = set()
+                current_component = oset()
                 components.append(current_component)
 
             go_deeper(current_component, node)
