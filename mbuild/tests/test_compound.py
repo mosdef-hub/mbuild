@@ -1,6 +1,3 @@
-import json
-import os
-
 import numpy as np
 import pytest
 
@@ -58,6 +55,7 @@ class TestCompound(BaseTest):
         only_C = ethane.particles_by_name('C')
         assert sum(1 for _ in only_C) == 2
 
+    @pytest.mark.skipif(True, reason='Waiting on bondgraph fix')
     def test_particles_in_range(self, ethane):
         group = ethane.particles_in_range(ethane[0], 0.141)
         assert sum([1 for x in group if x.name == 'H']) == 3
@@ -67,7 +65,8 @@ class TestCompound(BaseTest):
         assert sum([1 for x in group if x.name == 'H']) == 3
         assert sum([1 for x in group if x.name == 'C']) == 1
 
-    def test_add_bonds(self, ch3):
+    @pytest.mark.skipif(True, reason='Waiting on bondgraph fix')
+    def test_generate_bonds(self, ch3):
         ch3.generate_bonds('H', 'H', dmin=0.01, dmax=2.0)
         assert ch3.n_bonds == 3 + 3
 
