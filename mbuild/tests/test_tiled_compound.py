@@ -13,6 +13,11 @@ class TestTiledCompound(BaseTest):
         tiled = mb.TiledCompound(betacristobalite, [nx, ny, nz])
         assert tiled.n_particles == 1900 * nx * ny
         assert tiled.n_bonds == 2400 * nx * ny
+        for at in tiled.particles():
+            if at.name.startswith('Si'):
+                assert len(tiled.bond_graph.neighbors(at)) <= 4
+            elif at.name.startswith('O'):
+                assert len(tiled.bond_graph.neighbors(at)) <= 2
 
         for at in tiled.particles():
             if at.name.startswith('Si'):

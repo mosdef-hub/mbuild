@@ -5,16 +5,16 @@ from mbuild.tests.base_test import BaseTest
 from mbuild.utils.io import has_foyer
 
 
-class TestHoomdXML(BaseTest):
+class TestLammpsData(BaseTest):
 
     def test_save(self, ethane):
-        ethane.save(filename='ethane.hoomdxml')
+        ethane.save(filename='ethane.lammps')
 
     @pytest.mark.skipif(not has_foyer, reason="Foyer is not installed")
     def test_save_forcefield(self, ethane):
-        ethane.save(filename='ethane-opls.hoomdxml',forcefield='opls')
+        ethane.save(filename='ethane-opls.lammps',forcefield='opls')
 
     @pytest.mark.skipif(not has_foyer, reason="Foyer is not installed")
     def test_save_box(self, ethane):
         box = mb.Box(lengths=np.array([2.0,2.0,2.0]))
-        ethane.save(filename='ethane-box.hoomdxml',forcefield='opls',box=box)
+        ethane.save(filename='ethane-box.lammps',forcefield='opls',box=box)
