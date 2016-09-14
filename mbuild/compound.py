@@ -534,8 +534,8 @@ class Compound(object):
 
     def save_hoomdxml(self, filename, structure, forcefield, box=None, **kwargs):
         """ """
-        from foyer.forcefield import apply_forcefield
         if forcefield:
+            from foyer.forcefield import apply_forcefield
             structure = apply_forcefield(structure, forcefield=forcefield)
         if not box:
             box = self.boundingbox
@@ -552,7 +552,6 @@ class Compound(object):
 
     def save_gromacs(self, filename, structure, forcefield, force_overwrite=False, **kwargs):
         """ """
-        from foyer.forcefield import apply_forcefield
 
         # Create separate file paths for .gro and .top
         filepath, filename = os.path.split(filename)
@@ -561,14 +560,15 @@ class Compound(object):
         gro_filename = os.path.join(filepath, basename + '.gro')
 
         if forcefield:
+            from foyer.forcefield import apply_forcefield
             structure = apply_forcefield(structure, forcefield=forcefield)
         structure.save(top_filename, 'gromacs', **kwargs)
         structure.save(gro_filename, 'gro', **kwargs)
 
     def save_lammpsdata(self, filename, structure, forcefield, box=None, **kwargs):
         """ """
-        from foyer.forcefield import apply_forcefield
         if forcefield:
+            from foyer.forcefield import apply_forcefield
             structure = apply_forcefield(structure, forcefield=forcefield)
         if not box:
             box = self.boundingbox

@@ -88,14 +88,22 @@ class TiledCompound(Compound):
         bonds_to_remove = set()
         bonds_to_add = set()
         for particle1, particle2 in self.bonds():
-            particle_indices = (particle1.index, particle2.index)
-            if particle_indices in particle_indices_of_periodic_bonds:
+            if (particle1.index, particle2.index) in particle_indices_of_periodic_bonds \
+                    or (particle2.index, particle1.index) in particle_indices_of_periodic_bonds:
                 if self.min_periodic_distance(particle1.pos, particle2.pos) > bond_dist_thres:
                     bonds_to_remove.add((particle1, particle2))
                     particle2_image = self._find_particle_image(particle1,
                                                                 particle2,
                                                                 all_particles)
-                    bonds_to_add.add((particle1, particle2_image))
+                    particle1_image = self._find_particle_image(particle2,
+                                                                particle1,
+                                                                all_particles)
+
+                    if (particle2_image, particle1) not in bonds_to_add:
+                        bonds_to_add.add((particle1, particle2_image))
+                    if (particle1_image, particle2) not in bonds_to_add:
+                        bonds_to_add.add((particle2, particle1_image))
+
 
         for bond in bonds_to_remove:
             self.remove_bond(bond)
