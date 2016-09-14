@@ -32,6 +32,10 @@ If you use this package, please cite [our paper](http://dx.doi.org/10.1007/978-9
 
 #### Example system
 
+*Additional interactive examples can be found here:* 
+
+[![Binder](http://mybinder.org/badge.svg)](http://mybinder.org/repo/imodels/mbuild_binder)
+
 Components in dashed boxes are drawn by hand using, e.g.,
 [Avogadro](http://avogadro.cc/wiki/Main_Page) or generated elsewhere. Each
 component is wrapped as a simple python class with user defined attachment
