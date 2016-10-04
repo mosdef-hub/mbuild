@@ -1,5 +1,7 @@
 from __future__ import print_function, division
 
+__all__ = ['load', 'clone', 'Compound', 'Particle']
+
 from collections import OrderedDict, defaultdict
 from copy import deepcopy
 import itertools
@@ -23,12 +25,23 @@ from mbuild.formats.hoomdxml import write_hoomdxml
 from mbuild.formats.lammpsdata import write_lammpsdata
 
 
-__all__ = ['load', 'clone', 'Compound', 'Particle']
+def load(filename, relative_to_module=None, compound=None, coords_only=False,
+         **kwargs):
+    """Load a file into an mbuild compound.
 
+    Parameters
+    ----------
+    filename : str
+    relative_to_module :
+    compound : mb.Compound, optional
+    coords_only : bool, optional
+        Only load the coordinates into an existing compoint.
 
-def load(filename, relative_to_module=None, compound=None,
-         coords_only=False, **kwargs):
-    """Load a file from disk into a Compound. """
+    Returns
+    -------
+    compound : mb.Compound
+
+    """
     # Handle mbuild *.py files containing a class that wraps a structure file
     # in its own folder. E.g., you build a system from ~/foo.py and it imports
     # from ~/bar/baz.py where baz.py loads ~/bar/baz.pdb.
@@ -484,7 +497,6 @@ class Compound(object):
     def visualize(self, show_ports=False):
         """Visualize the Compound using nglview. """
         if run_from_ipython():
-            # TODO: Replace with show_parmed once nglview package is updated.
             structure = self.to_trajectory(show_ports)
             return nglview.show_mdtraj(structure)
         else:
