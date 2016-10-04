@@ -99,28 +99,24 @@ class BondGraph(object):
         return new_graph
 
     def connected_components(self):
-        """ """
-        def go_deeper(current_component, n):
-            """ """
-            current_component.add(n)
-            neighbors = self._data[n]
-            for neighbor in neighbors:
-                if neighbor not in current_component:
-                    go_deeper(current_component, neighbor)
-
+        seen = set()
         components = []
-        for node in self._data:
-            # Is the node in another component?
-            for component in components:
-                if node in component:
-                    current_component = component
-                    break
-            else:  # We're in a new component.
-                current_component = set()
-                components.append(current_component)
+        for v in self.nodes():
+            if v not in seen:
+                c = set(self._bfs(v))
+                components.append(list(c))
+                seen.update(c)
 
-            go_deeper(current_component, node)
+        return components
 
-        return [list(component) for component in components]
-
-
+    def _bfs(self, source):
+        seen = set()
+        nextlevel = {source}
+        while nextlevel:
+            thislevel = nextlevel
+            nextlevel = set()
+            for v in thislevel:
+                if v not in seen:
+                    yield v
+                    seen.add(v)
+                    nextlevel.update(self.neighbors(v))
