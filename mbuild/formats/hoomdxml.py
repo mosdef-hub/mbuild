@@ -4,15 +4,17 @@ __all__ = ['write_hoomdxml']
 
 
 from copy import deepcopy
-from math import floor,radians
+from math import floor, radians
+
 import numpy as np
 
-def RB_to_OPLS(c0,c1,c2,c3,c4,c5):
-    """ Converts Ryckaert-Bellemans type dihedrals to OPLS type.
+
+def RB_to_OPLS(c0, c1, c2, c3, c4, c5):
+    """Converts Ryckaert-Bellemans type dihedrals to OPLS type.
 
     Parameters
     ----------
-    c0,c1,c2,c3,c4,c5 : Ryckaert-Belleman coefficients (in kcal/mol)
+    c0, c1, c2, c3, c4, c5 : Ryckaert-Belleman coefficients (in kcal/mol)
 
     Returns
     -------
@@ -30,7 +32,9 @@ def RB_to_OPLS(c0,c1,c2,c3,c4,c5):
 
     return opls_coeffs
 
-def write_hoomdxml(structure, filename, forcefield, box, ref_distance=1.0, ref_mass=1.0, ref_energy=1.0, rigid_bodies=None):
+
+def write_hoomdxml(structure, filename, forcefield, box, ref_distance=1.0,
+                   ref_mass=1.0, ref_energy=1.0, rigid_bodies=None):
     """Output a HOOMD XML file.
     
     Parameters
@@ -88,7 +92,7 @@ def write_hoomdxml(structure, filename, forcefield, box, ref_distance=1.0, ref_m
     Body : rigid body to which each atom belongs
     """
 
-    xyz = np.array([[atom.xx,atom.xy,atom.xz] for atom in structure.atoms])
+    xyz = np.array([[atom.xx, atom.xy, atom.xz] for atom in structure.atoms])
 
     # Center box at origin and remap coordinates into box
     box.lengths *= 10.0
@@ -98,12 +102,12 @@ def write_hoomdxml(structure, filename, forcefield, box, ref_distance=1.0, ref_m
     box.mins = np.array([-d/2 for d in box_init.lengths])
     box.maxs = np.array([d/2 for d in box_init.lengths])
     
-    shift = [box_init.maxs[i] - max for i,max in enumerate(box.maxs)]
-    for i,pos in enumerate(xyz):
-        for j,coord in enumerate(pos):
-            xyz[i,j] -= shift[j]
-            rep = floor((xyz[i,j]-box.mins[j])/box.lengths[j])
-            xyz[i,j] -= (rep * box.lengths[j])
+    shift = [box_init.maxs[i] - max for i, max in enumerate(box.maxs)]
+    for i, pos in enumerate(xyz):
+        for j, coord in enumerate(pos):
+            xyz[i, j] -= shift[j]
+            rep = floor((xyz[i, j] - box.mins[j]) / box.lengths[j])
+            xyz[i, j] -= (rep * box.lengths[j])
 
     with open(filename, 'w') as xml_file:
         xml_file.write('<?xml version="1.2" encoding="UTF-8"?>\n')

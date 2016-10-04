@@ -74,10 +74,10 @@ class TiledCompound(Compound):
         bond_dist_thres = min(tile.periodicity[tile.periodicity > 0]) / 2
 
         # Bonds that were periodic in the original tile.
-        particle_indices_of_periodic_bonds = set()
+        indices_of_periodic_bonds = set()
         for particle1, particle2 in tile.bonds():
             if np.linalg.norm(particle1.pos - particle2.pos) > bond_dist_thres:
-                particle_indices_of_periodic_bonds.add((particle1.index,
+                indices_of_periodic_bonds.add((particle1.index,
                                                         particle2.index))
 
         # Build a periodic kdtree of all particle positions.
@@ -88,14 +88,21 @@ class TiledCompound(Compound):
         bonds_to_remove = set()
         bonds_to_add = set()
         for particle1, particle2 in self.bonds():
-            particle_indices = (particle1.index, particle2.index)
-            if particle_indices in particle_indices_of_periodic_bonds:
-                if self.min_periodic_distance(particle1.pos, particle2.pos) > bond_dist_thres:
-                    bonds_to_remove.add((particle1, particle2))
-                    particle2_image = self._find_particle_image(particle1,
-                                                                particle2,
-                                                                all_particles)
-                    bonds_to_add.add((particle1, particle2_image))
+            if (particle1.index, particle2.index) not in indices_of_periodic_bonds \
+                    and (particle2.index, particle1.index) not in indices_of_periodic_bonds:
+                continue
+
+            if self.min_periodic_distance(particle1.pos, particle2.pos) > bond_dist_thres:
+                bonds_to_remove.add((particle1, particle2))
+                image2 = self._find_particle_image(particle1, particle2,
+                                                   all_particles)
+                image1 = self._find_particle_image(particle2, particle1,
+                                                   all_particles)
+
+                if (image2, particle1) not in bonds_to_add:
+                    bonds_to_add.add((particle1, image2))
+                if (image1, particle2) not in bonds_to_add:
+                    bonds_to_add.add((particle2, image1))
 
         for bond in bonds_to_remove:
             self.remove_bond(bond)
