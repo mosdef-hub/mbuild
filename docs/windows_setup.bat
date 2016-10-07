@@ -9,10 +9,9 @@ activate mbuild
 
 # add conda channels
 conda config --add channels omnia
-conda config --add channels patrickfuller
 
 # install dependencies
-conda install packmol nglview oset parmed mdtraj pytest jupyter nbformat ipykernel imolecule
+conda install packmol nglview oset parmed mdtraj pytest jupyter nbformat ipykernel
 
 # clone mbuild
 git clone git@github.com:iModels/mbuild.git
