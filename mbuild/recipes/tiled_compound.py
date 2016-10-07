@@ -1,15 +1,15 @@
+__all__ = ['TiledCompound']
+
 import itertools as it
 
 import numpy as np
 
 from mbuild.compound import Compound
+from mbuild.exceptions import MBuildError
 from mbuild.port import Port
 from mbuild.coordinate_transform import translate
 from mbuild.periodic_kdtree import PeriodicCKDTree
 from mbuild import clone
-
-
-__all__ = ['TiledCompound']
 
 
 class TiledCompound(Compound):
@@ -135,5 +135,5 @@ class TiledCompound(Compound):
         for particle in neighbors:
             if particle.index == match.index:
                 return particle
-        raise RuntimeError('Unable to find matching particle image while'
-                           ' stitching bonds.')
+        raise MBuildError('Unable to find matching particle image while'
+                          ' stitching bonds.')

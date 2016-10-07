@@ -29,7 +29,7 @@ def get_fn(name):
     """
     fn = resource_filename('mbuild', os.path.join('utils', 'reference', name))
     if not os.path.exists(fn):
-        raise ValueError('Sorry! {} does not exists.'.format(fn))
+        raise IOError('Sorry! {} does not exists.'.format(fn))
     return fn
 
 
