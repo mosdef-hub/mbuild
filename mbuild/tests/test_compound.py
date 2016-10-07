@@ -2,6 +2,7 @@ import numpy as np
 import pytest
 
 import mbuild as mb
+from mbuild.exceptions import MBuildError
 from mbuild.utils.io import get_fn, has_intermol
 from mbuild.tests.base_test import BaseTest
 
@@ -39,6 +40,29 @@ class TestCompound(BaseTest):
         assert compound.n_particles == 8 + 2*3
         assert compound.n_bonds == 7 + 2 * 2
 
+    def test_init_with_bad_name(self):
+        with pytest.raises(ValueError):
+            mb.Compound(name=1)
+
+    def test_add_wrong_input(self, ethane):
+        with pytest.raises(ValueError):
+            ethane.add('water')
+
+    def test_add_existing_parent(self, ethane, h2o):
+        water_in_water = mb.clone(h2o)
+        h2o.add(water_in_water)
+        with pytest.raises(MBuildError):
+            ethane.add(water_in_water)
+
+    def test_add_label_exists(self, ethane, h2o):
+        ethane.add(h2o, label='water')
+        with pytest.raises(MBuildError):
+            ethane.add(mb.clone(h2o), label='water')
+
+    def test_set_pos(self, ethane):
+        with pytest.raises(MBuildError):
+            ethane.pos = [0, 0, 0]
+
     def test_xyz(self, ethane):
         xyz = ethane.xyz
         assert xyz.shape == (8, 3)
@@ -55,7 +79,6 @@ class TestCompound(BaseTest):
         only_C = ethane.particles_by_name('C')
         assert sum(1 for _ in only_C) == 2
 
-    @pytest.mark.skipif(True, reason='Waiting on bondgraph fix')
     def test_particles_in_range(self, ethane):
         group = ethane.particles_in_range(ethane[0], 0.141)
         assert sum([1 for x in group if x.name == 'H']) == 3
@@ -65,7 +88,6 @@ class TestCompound(BaseTest):
         assert sum([1 for x in group if x.name == 'H']) == 3
         assert sum([1 for x in group if x.name == 'C']) == 1
 
-    @pytest.mark.skipif(True, reason='Waiting on bondgraph fix')
     def test_generate_bonds(self, ch3):
         ch3.generate_bonds('H', 'H', dmin=0.01, dmax=2.0)
         assert ch3.n_bonds == 3 + 3
@@ -152,7 +174,6 @@ class TestCompound(BaseTest):
         assert brush1['pmpc']['monomer'][0].n_particles == 41
         assert brush1['pmpc']['monomer'][0].n_bonds == 40
 
-    # Conversions
     def test_to_trajectory(self, ethane, ch3):
         traj = ethane.to_trajectory()
         assert traj.n_atoms == 8

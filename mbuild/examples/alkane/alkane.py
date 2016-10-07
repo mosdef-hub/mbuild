@@ -16,7 +16,7 @@ class Alkane(mb.Compound):
             cap_end: Add methyl group to end of chain ('up' port).
         """
         if n < 2:
-            raise Exception('n must be 1 or more')
+            raise ValueError('n must be 1 or more')
         super(Alkane, self).__init__()
 
         # Adjust length of Polmyer for absence of methyl terminations.

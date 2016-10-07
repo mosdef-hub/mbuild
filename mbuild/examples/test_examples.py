@@ -1,4 +1,4 @@
-"""Execute each notebook as a test, reporting an error if cell throws an exception.
+"""Execute notebooks as tests, reporting an error if cell throws an exception.
 
 Adapted from MDTraj https://github.com/mdtraj/mdtraj/pull/1130 which adapted
 from https://gist.github.com/minrk/2620876.

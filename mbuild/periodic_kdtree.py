@@ -35,7 +35,7 @@ import itertools
 import heapq
 
 import numpy as np
-from scipy.spatial import cKDTree
+from scipy.spatial import KDTree
 
 
 def _gen_relevant_images(x, bounds, distance_upper_bound):
@@ -80,7 +80,7 @@ def _gen_relevant_images(x, bounds, distance_upper_bound):
     return xs_to_try
 
 
-class PeriodicCKDTree(cKDTree):
+class PeriodicCKDTree(KDTree):
     """Cython kd-tree for nearest-neighbor lookup with periodic boundaries.
 
     See scipy.spatial.ckdtree for details on kd-trees.
