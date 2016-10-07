@@ -28,6 +28,11 @@ class BaseTest:
         return CH2()
 
     @pytest.fixture
+    def ester(self):
+        from mbuild.lib.moieties import Ester
+        return Ester()
+
+    @pytest.fixture
     def ch3(self):
         from mbuild.lib.moieties import CH3
         return CH3()
