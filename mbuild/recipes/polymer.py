@@ -1,3 +1,5 @@
+import itertools as it
+
 from mbuild.compound import Compound
 from mbuild.coordinate_transform import equivalence_transform
 from mbuild.utils.validation import assert_port_exists
@@ -8,40 +10,57 @@ __all__ = ['Polymer']
 
 
 class Polymer(Compound):
-    """Connect a component to successive copies of itself.
+    """Connect one or more components in a specified sequence.
 
     Parameters
     ----------
-    proto : mb.Compound
-        The compound to replicate.
-    port_labels : 2-tuple of strs
-        The names of the two ports to use to connect copies of proto.
+    monomers : mb.Compound or list of mb.Compound
+        The compound(s) to replicate.
+    sequence : str, optional, default='A'
+        A string of characters where each unique character represents one
+        repetition of a monomer. Characters in `sequence` are assigned to
+        monomers in alphabetic order.
     n : int, optional, default=2
-        The number of times to replicate proto.
+        The number of times to replicate the sequence.
+    port_labels : 2-tuple of strs, optional, default=('up', 'down')
+        The names of the two ports to use to connect copies of proto.
 
     """
-    def __init__(self, proto, port_labels=("up", "down"), n=2):
+    def __init__(self, monomers, sequence='A', n=2, port_labels=('up', 'down')):
         if n < 1:
-            raise Exception('n must be 1 or more')
+            raise ValueError('n must be 1 or more')
         super(Polymer, self).__init__()
+        if isinstance(monomers, Compound):
+            monomers = (monomers,)
+        for monomer in monomers:
+            for label in port_labels:
+                assert_port_exists(label, monomer)
 
-        for label in port_labels:
-            assert_port_exists(label, proto)
+        unique_seq_ids = sorted(set(sequence))
+
+        if len(monomers) != len(unique_seq_ids):
+            raise ValueError('Number of monomers passed to `Polymer` class must'
+                             ' match number of unique entries in the specified'
+                             ' sequence.')
+
+        # 'A': monomer_1, 'B': monomer_2....
+        seq_map = dict(zip(unique_seq_ids, monomers))
 
         last_part = None
-        for _ in range(n):
-            this_part = clone(proto)
+        for n_added, seq_item in enumerate(it.cycle(sequence)):
+            this_part = clone(seq_map[seq_item])
             self.add(this_part, 'monomer[$]')
             if last_part is None:
                 first_part = this_part
             else:
                 # Transform this part, such that it's bottom port is rotated
                 # and translated to the last part's top port.
-
-
-                equivalence_transform(this_part, this_part.labels[port_labels[1]],
+                equivalence_transform(this_part,
+                                      this_part.labels[port_labels[1]],
                                       last_part.labels[port_labels[0]])
             last_part = this_part
+            if n_added == n * len(sequence) - 1:
+                break
 
         # Hoist the last part's top port to be the top port of the polymer.
         self.add(last_part.labels[port_labels[0]], port_labels[0], containment=False)
