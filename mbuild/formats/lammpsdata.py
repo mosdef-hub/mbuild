@@ -4,7 +4,8 @@ __all__ = ['write_lammpsdata']
 
 
 import numpy as np
-from .hoomdxml import RB_to_OPLS
+from mbuild.formats.hoomdxml import RB_to_OPLS
+
 
 def write_lammpsdata(structure, filename, forcefield, box):
     """Output a LAMMPS data file.
