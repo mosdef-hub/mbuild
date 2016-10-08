@@ -244,10 +244,11 @@ def _create_equivalence_transform(equiv):
 
     for pair in equiv:
         if not isinstance(pair, tuple) or len(pair) != 2:
-            raise Exception('Equivalence pair not a 2-tuple')
+            raise ValueError('Equivalence pair not a 2-tuple')
         if not (isinstance(pair[0], Compound) and isinstance(pair[1], Compound)):
-            raise Exception('Equivalence pair type mismatch: pair[0] is a {0} '
-                            'and pair[1] is a {1}'.format(type(pair[0]), type(pair[1])))
+            raise ValueError('Equivalence pair type mismatch: pair[0] is a {0} '
+                             'and pair[1] is a {1}'.format(type(pair[0]),
+                                                           type(pair[1])))
 
         # TODO: vstack is slow, replace with list concatenation
         if not pair[0].children:
