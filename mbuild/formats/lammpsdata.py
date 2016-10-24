@@ -35,7 +35,7 @@ def write_lammpsdata(structure, filename, forcefield, box):
         types = [atom.name for atom in structure.atoms]
 
     unique_types = list(set(types))
-    unique_types.sort(key=_natural_keys)
+    unique_types.sort(key=_natural_sort)
 
     xyz = np.array([[atom.xx,atom.xy,atom.xz] for atom in structure.atoms])
     charges = [atom.charge for atom in structure.atoms]
