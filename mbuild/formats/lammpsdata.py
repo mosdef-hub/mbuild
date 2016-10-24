@@ -3,8 +3,10 @@ from __future__ import division
 __all__ = ['write_lammpsdata']
 
 
+import re
 import numpy as np
 from .hoomdxml import RB_to_OPLS
+from collections import OrderedDict
 
 def write_lammpsdata(structure, filename, forcefield, box):
     """Output a LAMMPS data file.
@@ -33,7 +35,7 @@ def write_lammpsdata(structure, filename, forcefield, box):
         types = [atom.name for atom in structure.atoms]
 
     unique_types = list(set(types))
-    unique_types.sort()
+    unique_types.sort(key=_natural_keys)
 
     xyz = np.array([[atom.xx,atom.xy,atom.xz] for atom in structure.atoms])
     charges = [atom.charge for atom in structure.atoms]
@@ -53,14 +55,14 @@ def write_lammpsdata(structure, filename, forcefield, box):
         else:
             unique_bond_types = dict(enumerate(set([(round(bond.type.k,3),
                                                      round(bond.type.req,3)) for bond in structure.bonds])))
-            unique_bond_types = {y:x+1 for x,y in unique_bond_types.items()}
+            unique_bond_types = OrderedDict([(y,x+1) for x,y in unique_bond_types.items()])
             bond_types = [unique_bond_types[(round(bond.type.k,3),
                                              round(bond.type.req,3))] for bond in structure.bonds]
 
     if angles:
         unique_angle_types = dict(enumerate(set([(round(angle.type.k,3),
                                                   round(angle.type.theteq,3)) for angle in structure.angles])))
-        unique_angle_types = {y:x+1 for x,y in unique_angle_types.items()}
+        unique_angle_types = OrderedDict([(y,x+1) for x,y in unique_angle_types.items()])
         angle_types = [unique_angle_types[(round(angle.type.k,3),
                                            round(angle.type.theteq,3))] for angle in structure.angles]
 
@@ -73,7 +75,7 @@ def write_lammpsdata(structure, filename, forcefield, box):
                                                      round(dihedral.type.c5,3),
                                                      round(dihedral.type.scee,1),
                                                      round(dihedral.type.scnb,1)) for dihedral in structure.rb_torsions])))
-        unique_dihedral_types = {y:x+1 for x,y in unique_dihedral_types.items()}
+        unique_dihedral_types = OrderedDict([(y,x+1) for x,y in unique_dihedral_types.items()])
         dihedral_types = [unique_dihedral_types[(round(dihedral.type.c0,3),
                                                  round(dihedral.type.c1,3),
                                                  round(dihedral.type.c2,3),
@@ -164,3 +166,9 @@ def write_lammpsdata(structure, filename, forcefield, box):
             data.write('\nDihedrals\n\n')
             for i,dihedral in enumerate(dihedrals):
                 data.write('{:d}\t{:d}\t{:d}\t{:d}\t{:d}\t{:d}\n'.format(i+1,dihedral_types[i],dihedral[0],dihedral[1],dihedral[2],dihedral[3]))
+
+def _atoi(text):
+    return int(text) if text.isdigit() else text
+
+def _natural_sort(text):
+    return [_atoi(a) for a in re.split('(\d+)',text)]
