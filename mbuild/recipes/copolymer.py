@@ -18,38 +18,39 @@ class Copolymer(Compound):
     def __init__(self, pattern=None, random=False):
         """
         :param pattern: General format for all kinds of copolymers.
-            [cap_front, [A, A_num, A_port_labels], [B, B_num, B_port_labels], cap_end, repeat_num]
-            Alternating copolymers: A_num = 1, B_num = 1, repeat_num = any_value
-            Periodic copolymers: A_num = any_value, B_num = any_value, repeat_num = any_value
-            Block copolymers: A_num = any_value, B_num = any_value, repeat_num = 1
-            Statistical copolymers: repeat A block and B block randomly with repeat_num times, if random is True
-        :param random: option for Statistical copolymers, which are actually random copolymers.
+           [cap_front, [monomer_A, monomer_B, ...]*10, cap_end]
+        :param random: option for random copolymers.
         """
 
         # default value for pattern
         super().__init__()
         if pattern is None:
-            ch2 = CH2()
-            silane = Silane()
-            pattern = [None, [ch2, 2, ("up", "down")], [silane, 2, ("up", "down")], 2, None]
+            cap_front = CH3()
+            cap_end = CH3()
+            monomer_A = [CH2(), ("up", "down")] * 2
+            monomer_B = [Silane(), "up", "down"] * 2
+            pattern = [cap_front, [monomer_A, monomer_B] * 2, cap_end]
 
         # get main_chain
         main_chain = MainChain(pattern, random)
         self.add(main_chain, 'main_chain')
+        # get caps
+        cap_front = pattern[0]
+        cap_end = pattern[-1]
 
         # add caps
-        if pattern[0]:
-            self.add(pattern[0], "cap_front")
+        if cap_front:
+            self.add(cap_front, "cap_front")
             equivalence_transform(self['main_chain'], self['main_chain']['up'], self['cap_front']['up'])
         else:
-            # Hoist port label to Alkane level.
+            # Hoist port label.
             self.add(main_chain['up'], 'up', containment=False)
 
-        if pattern[-1]:
-            self.add(pattern[-1], 'cap_end')
+        if cap_end:
+            self.add(cap_end, 'cap_end')
             equivalence_transform(self['cap_end'], self['cap_end']['up'], self['main_chain']['down'])
         else:
-            # Hoist port label to Alkane level.
+            # Hoist port label.
             self.add(main_chain['down'], 'down', containment=False)
 
 
@@ -59,81 +60,58 @@ class MainChain(Compound):
     def __init__(self, pattern=None, random=False):
         """
         :param pattern: General format for all kinds of copolymers.
-            [cap_front, [A, A_num, A_port_labels], [B, B_num, B_port_labels], cap_end, repeat_num]
-            Alternating copolymers: A_num = 1, B_num = 1, repeat_num = any_value
-            Periodic copolymers: A_num = any_value, B_num = any_value, repeat_num = any_value
-            Block copolymers: A_num = any_value, B_num = any_value, repeat_num = 1
-            Statistical copolymers: repeat A block and B block randomly with repeat_num times, if random is True
-        :param random: option for Statistical copolymers, which are actually random copolymers.
+            [cap_front, [monomer_A, monomer_B, ...]*10, cap_end]
+        :param random: option for random copolymers.
         """
 
         # default value for pattern
         super().__init__()
         if pattern is None:
-            ch2 = CH2()
-            silane = Silane()
-            pattern = [None, [ch2, 2, ("up", "down")], [silane, 2, ("up", "down")], 2, None]
+            cap_front = CH3()
+            cap_end = CH3()
+            monomer_A = [CH2(), ("up", "down")] * 2
+            monomer_B = [Silane(), "up", "down"] * 2
+            pattern = [cap_front, [monomer_A, monomer_B] * 2, cap_end]
 
-        # parse pattern into real chain of copolymer
-        copolymer = []
-        type_A = type(pattern[1][0])
-        type_B = type(pattern[2][0])
-        port_labels_A = pattern[1][2]
-        port_labels_B = pattern[2][2]
-
-        for proto in pattern[1:-2]:
-            if proto[1] < 1:  # Exception of parse pattern here
-                raise Exception('n must be 1 or more')
-            copolymer.append([proto[0]] * proto[1])  # append multiple times
-            for label in proto[2]:
-                assert_port_exists(label, proto[0])  # assert labels in the proto
-
-        copolymer = list(itertools.chain.from_iterable(copolymer * pattern[-2]))  # a complete chain for copolymer
+        # delete cap_front and cap_end, so we only get the main_chain
         if random:
-            copolymer = list(permutation(copolymer))
+            main_chain_pattern = list(permutation([monomer for monomers in pattern[1:-1] for monomer in monomers]))
+        else:
+            main_chain_pattern = [monomer for monomers in pattern[1:-1] for monomer in monomers]
+        main_chain_pattern = [monomer_ for monomer in main_chain_pattern for monomer_ in monomer]
 
         first_part = None
+        first_part_label = None
         last_part = None
-        for molecule in copolymer:
-            this_part = clone(molecule)
-            # print(isinstance(this_part, type(pattern[2][0])))
+        last_part_label = None
+
+        for i in range(0, len(main_chain_pattern), 2):
+            this_part = clone(main_chain_pattern[i])
+            this_part_label = main_chain_pattern[i+1]
+            for label in this_part_label:
+                assert_port_exists(label, this_part)  # assert labels for the monomer
             self.add(this_part, 'monomer[$]')
             if last_part is None:
                 first_part = this_part
+                first_part_label = this_part_label
             else:
-                # Transform this part, such that it's bottom port is rotated
-                # and translated to the last part's top port.
-                if isinstance(this_part, type_A):
-                    equivalence_transform(this_part,
-                                          this_part.labels[port_labels_A[1]],
-                                          last_part.labels[port_labels_A[0]])
-                elif isinstance(this_part, type_B):
-                    equivalence_transform(this_part,
-                                          this_part.labels[port_labels_B[1]],
-                                          last_part.labels[port_labels_B[0]])
+                equivalence_transform(this_part,
+                                      this_part.labels[this_part_label[1]],
+                                      last_part.labels[this_part_label[0]])
             last_part = this_part
+            last_part_label = this_part_label
 
-        # Hoist the first part's bottom port to be the bottom port of the polymer.
-        if isinstance(first_part, type_A):
-            self.add(first_part.labels[port_labels_A[1]], port_labels_A[1], containment=False)
-        elif isinstance(first_part, type_B):
-            self.add(first_part.labels[port_labels_B[1]], port_labels_B[1], containment=False)
-
-        # Hoist the last part's top port to be the top port of the polymer.
-        if isinstance(last_part, type_A):
-            self.add(last_part.labels[port_labels_A[0]], port_labels_A[0], containment=False)
-        elif isinstance(last_part, type_B):
-            self.add(last_part.labels[port_labels_B[0]], port_labels_B[0], containment=False)
+        self.add(first_part.labels[first_part_label[1]], first_part_label[1], containment=False)
+        self.add(last_part.labels[last_part_label[0]], last_part_label[0], containment=False)
 
 
 if __name__ == "__main__":
-
     cap_front = CH3()
     cap_end = CH3()
 
-    chain_A = CH2()
-    chain_B = Silane()
+    monomer_A = [CH2(), ("up", "down")]*2
+    monomer_B = [Silane(), ("up", "down")]*2
 
-    pattern = [cap_front, [chain_A, 2, ("up", "down")], [chain_B, 2, ("up", "down")], 1, cap_end]
-    poly = Copolymer(pattern=pattern, random=False)
+    pattern = [cap_front, [monomer_A, monomer_B]*2, cap_end]
+    poly = Copolymer(pattern=pattern, random=True)
     poly.visualize(show_ports=False)
