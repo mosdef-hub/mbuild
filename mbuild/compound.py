@@ -841,13 +841,16 @@ class Compound(object):
         structure = pmd.Structure()
         structure.title = title if title else self.name
         atom_mapping = {}  # For creating bonds below
+        guessed_elements = set()
         for atom in self.particles():
             atomic_number = None
             try:
                 atomic_number = AtomicNum[atom.name]
             except KeyError:
                 element = element_by_name(atom.name)
-                warn('Guessing that {} is element: {}'.format(atom, element))
+                if atom.name not in guessed_elements:
+                    warn('Guessing that "{}" is element: "{}"'.format(atom, element))
+                    guessed_elements.add(atom.name)
             else:
                 element = atom.name
 
