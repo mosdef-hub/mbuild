@@ -1,4 +1,5 @@
 import pytest
+import numpy as np
 import mbuild as mb
 from mbuild.tests.base_test import BaseTest
 
@@ -21,9 +22,19 @@ class TestPattern(BaseTest):
         pattern = mb.Random2DPattern(100)
         assert len(pattern) == 100
 
+    def test_random_2d_seed(self):
+        pattern_a = mb.Random2DPattern(100, seed=12345)
+        pattern_b = mb.Random2DPattern(100, seed=12345)
+        assert np.array_equal(pattern_a, pattern_b)
+
     def test_random_3d(self):
         pattern = mb.Random3DPattern(100)
         assert len(pattern) == 100
+
+    def test_random_3d_seed(self):
+        pattern_a = mb.Random3DPattern(100, seed=12345)
+        pattern_b = mb.Random3DPattern(100, seed=12345)
+        assert np.array_equal(pattern_a, pattern_b)
 
     def test_grid_2d(self):
         pattern = mb.Grid2DPattern(10, 5)
