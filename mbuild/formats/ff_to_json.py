@@ -5,11 +5,12 @@ __all__ = ['write_forcefield']
 
 import json
 import parmed as pmd
+import numpy as np
 from parmed.periodic_table import AtomicNum
 from .hoomdxml import RB_to_OPLS
 from collections import OrderedDict
 
-def write_forcefield(structure, filename):
+def write_forcefield(structure, filename, ref_distance=1.0, ref_energy=1.0):
 
     params = pmd.ParameterSet.from_structure(structure)
 
@@ -26,8 +27,8 @@ def write_forcefield(structure, filename):
         for key in params.atom_types.items():
             temp_dict = OrderedDict()
             temp_dict['element'] = {enum:ename for ename,enum in AtomicNum.items()}[key[1].atomic_number]
-            temp_dict['epsilon'] = round(key[1].epsilon,3)
-            temp_dict['sigma'] = round(key[1].sigma,3)
+            temp_dict['epsilon'] = round(key[1].epsilon,3) / ref_energy
+            temp_dict['sigma'] = round(key[1].sigma,3) / ref_distance
             pair_data[key[0]] = temp_dict
 
         ff_data['pair_coeffs'] = pair_data
@@ -36,8 +37,8 @@ def write_forcefield(structure, filename):
         bond_data = OrderedDict()
         for key in structure.bond_types:
             temp_dict = OrderedDict()
-            temp_dict['k'] = round(key.k,3)
-            temp_dict['req'] = round(key.req,3)
+            temp_dict['k'] = round(key.k,3) * ((ref_distance**2)/ref_energy)
+            temp_dict['req'] = round(key.req,3) / ref_distance
             bond_data[str(key.idx)] = temp_dict
 
         ff_data['bond_coeffs'] = bond_data
@@ -46,8 +47,8 @@ def write_forcefield(structure, filename):
         angle_data = OrderedDict()
         for key in structure.angle_types:
             temp_dict = OrderedDict()
-            temp_dict['k'] = round(key.k,3)
-            temp_dict['theteq'] = round(key.theteq,3)
+            temp_dict['k'] = round(key.k,3) / ref_energy
+            temp_dict['theteq'] = round(key.theteq,3) * (np.pi/180)
             angle_data[str(key.idx)] = temp_dict
 
         ff_data['angle_coeffs'] = angle_data
@@ -70,10 +71,10 @@ def write_forcefield(structure, filename):
         dihedral_data = OrderedDict()
         for idx,key in enumerate(dihedrals_opls):
             temp_dict = OrderedDict()
-            temp_dict['k0'] = round(key[0],3)
-            temp_dict['k1'] = round(key[1],3)
-            temp_dict['k2'] = round(key[2],3)
-            temp_dict['k3'] = round(key[3],3)
+            temp_dict['k0'] = round(key[0],3) / ref_energy
+            temp_dict['k1'] = round(key[1],3) / ref_energy
+            temp_dict['k2'] = round(key[2],3) / ref_energy
+            temp_dict['k3'] = round(key[3],3) / ref_energy
             dihedral_data[str(idx)] = temp_dict
             
         ff_data['dihedral_coeffs'] = dihedral_data
