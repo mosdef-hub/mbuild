@@ -15,7 +15,7 @@ from collections import OrderedDict
 
 
 def write_gsd(structure, filename, forcefield, box, ref_distance=1.0, ref_mass=1.0,
-              write_ff=True):
+              ref_energy=1.0, write_ff=True):
     """Output a GSD file (HOOMD default data format).
     
     Parameters
@@ -32,12 +32,11 @@ def write_gsd(structure, filename, forcefield, box, ref_distance=1.0, ref_mass=1
         Reference distance for conversion to reduced units
     ref_mass : float, default=1.0
         Reference mass for conversion to reduced units
+    ref_energy : float, default=1.0
+        Reference energy for conversion to reduced units
+    write_ff : boolean, default=True
+        Write forcefield parameters to a JSON file, 'parameters.json'
     """
-
-    if write_ff:
-        write_forcefield(structure, 'parameters.json')
-        #out_file_json = open('parameters.json','w')
-    #params = Parameters()
 
     xyz = np.array([[atom.xx,atom.xy,atom.xz] for atom in structure.atoms])
 
@@ -53,17 +52,17 @@ def write_gsd(structure, filename, forcefield, box, ref_distance=1.0, ref_mass=1
     for i,pos in enumerate(xyz):
         for j,coord in enumerate(pos):
             xyz[i,j] -= shift[j]
-            rep = floor((xyz[i,j]-box.mins[j])/box.lengths[j])
+            rep = floor((xyz[i,j]-box.mins[j]) / box.lengths[j])
             xyz[i,j] -= (rep * box.lengths[j])
 
     gsd_file = gsd.hoomd.Snapshot()
 
     gsd_file.configuration.step = 0
     gsd_file.configuration.dimensions = 3
-    gsd_file.configuration.box = np.hstack((box.lengths/ref_distance,np.zeros(3)))
+    gsd_file.configuration.box = np.hstack((box.lengths / ref_distance,np.zeros(3)))
 
     gsd_file.particles.N = len(structure.atoms)
-    gsd_file.particles.position = xyz/ref_distance
+    gsd_file.particles.position = xyz / ref_distance
 
     if forcefield:
         types = [atom.type for atom in structure.atoms]
@@ -80,25 +79,17 @@ def write_gsd(structure, filename, forcefield, box, ref_distance=1.0, ref_mass=1
     unique_types = OrderedSet(types)
     for unique_type in unique_types:
         ref_atom = structure.atoms[types.index(unique_type)]
-        '''
-        params.add_atom(name=ref_atom.type,
-                        bond_type=ref_atom.name,
-                        atomic_number=ref_atom.atomic_number,
-                        mass=ref_atom.mass,
-                        charge=ref_atom.charge,
-                        ptype='A',
-                        sigma=ref_atom.sigma,
-                        epsilon=ref_atom.epsilon)
-        '''
 
     gsd_file.particles.types = types
     gsd_file.particles.typeids = typeids
     
     masses = np.array([atom.mass for atom in structure.atoms])
     masses[masses==0] = 1.0
-    gsd_file.particles.mass = masses/ref_mass
+    gsd_file.particles.mass = masses / ref_mass
 
-    gsd_file.particles.charge = np.array([atom.charge for atom in structure.atoms])
+    charges = np.arrage([atom.charge for atom in structure.atoms])
+    charge_factor = (4.0*np.pi*e0*ref_distance*ref_energy)**0.5
+    gsd_file.particles.charge = charges / charge_factor
 
     bonds = [[bond.atom1.idx, bond.atom2.idx] for bond in structure.bonds]
     if bonds:
@@ -159,4 +150,6 @@ def write_gsd(structure, filename, forcefield, box, ref_distance=1.0, ref_mass=1
         gsd_file.dihedrals.group = dihedrals
 
     gsd.hoomd.create(filename, gsd_file)
-    #params.print_json(out_file_json)
+
+    if write_ff:
+        write_forcefield(structure, 'parameters.json', ref_distance=ref_distance, ref_energy=ref_energy)
