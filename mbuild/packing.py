@@ -6,6 +6,7 @@ from distutils.spawn import find_executable
 from subprocess import Popen, PIPE
 
 from mbuild.compound import Compound
+from mbuild.exceptions import MBuildError
 from mbuild.box import Box
 from mbuild import clone
 
@@ -29,7 +30,7 @@ end structure
 PACKMOL_BOX = """
 structure {0}
     number {1:d}
-    inside box 0. 0. 0. {2:.3f} {3:.3f} {4:.3f}
+    inside box {2:.3f} {3:.3f} {4:.3f} {5:.3f} {6:.3f} {7:.3f}
 end structure
 """
 
@@ -56,8 +57,7 @@ def fill_box(compound, n_compounds, box, overlap=0.2, seed=12345):
                          "packmol.exe is on the path.")
         raise IOError(msg)
 
-    if isinstance(box, (list, tuple)):
-        box = Box(lengths=box)
+    box = _validate_box(box)
 
     n_compounds = int(n_compounds)
     compound_pdb = tempfile.mkstemp(suffix='.pdb')[1]
@@ -65,13 +65,15 @@ def fill_box(compound, n_compounds, box, overlap=0.2, seed=12345):
     filled_pdb = tempfile.mkstemp(suffix='.pdb')[1]
 
     # In angstroms for packmol.
-    box_lengths = box.lengths * 10
+    box_mins = box.mins * 10
+    box_maxs = box.maxs * 10
     overlap *= 10
 
     # Build the input file and call packmol.
     input_text = (PACKMOL_HEADER.format(overlap, filled_pdb, seed) +
-                  PACKMOL_BOX.format(compound_pdb, n_compounds, *box_lengths))
-
+                  PACKMOL_BOX.format(compound_pdb, n_compounds,
+                                     box_mins[0], box_mins[1], box_mins[2],
+                                     box_maxs[0], box_maxs[1], box_maxs[2]))
 
     proc = Popen(PACKMOL, stdin=PIPE, stdout=PIPE, stderr=PIPE, universal_newlines=True)
     out, err = proc.communicate(input=input_text)
@@ -105,8 +107,7 @@ def solvate(solute, solvent, n_solvent, box, overlap=0.2, seed=12345):
     if not PACKMOL:
         raise IOError("Packmol not found")
 
-    if isinstance(box, (list, tuple)):
-        box = Box(lengths=box)
+    box = _validate_box(box)
 
     n_solvent = int(n_solvent)
 
@@ -117,15 +118,17 @@ def solvate(solute, solvent, n_solvent, box, overlap=0.2, seed=12345):
     solvated_pdb = tempfile.mkstemp(suffix='.pdb')[1]
 
     # In angstroms for packmol.
-    box_lengths = box.lengths * 10
+    box_mins = box.mins * 10
+    box_maxs = box.maxs * 10
     overlap *= 10
-    # center_solute = (-solute.center) * 10
-    center_solute = box_lengths/2
+    center_solute = (box_maxs + box_mins) / 2
 
     # Build the input file and call packmol.
     input_text = (PACKMOL_HEADER.format(overlap, solvated_pdb, seed) +
                   PACKMOL_SOLUTE.format(solute_pdb, *center_solute) +
-                  PACKMOL_BOX.format(solvent_pdb, n_solvent, *box_lengths))
+                  PACKMOL_BOX.format(solvent_pdb, n_solvent,
+                                     box_mins[0], box_mins[1], box_mins[2],
+                                     box_maxs[0], box_maxs[1], box_maxs[2]))
 
     proc = Popen(PACKMOL, stdin=PIPE, stdout=PIPE, stderr=PIPE, universal_newlines=True)
     out, err = proc.communicate(input=input_text)
@@ -140,6 +143,19 @@ def solvate(solute, solvent, n_solvent, box, overlap=0.2, seed=12345):
     solvated.update_coordinates(solvated_pdb)
     return solvated
 
+
+def _validate_box(box):
+    if isinstance(box, (list, tuple)):
+        if len(box) == 3:
+            box = Box(lengths=box)
+        elif len(box) == 6:
+            box = Box(mins=box[:3], maxs=box[3:])
+
+    if not isinstance(box, Box):
+        raise MBuildError('Unknown format for `box` parameter. Must pass a'
+                          ' list/tuple of length 3 (box lengths) or length'
+                          ' 6 (box mins and maxes) or an mbuild.Box object.')
+    return box
 
 def _packmol_error(out, err):
     """Log packmol output to files. """
