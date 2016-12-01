@@ -613,7 +613,7 @@ class Compound(object):
             The trajectory to load.
         frame : int
             The frame to take coordinates from.
-;
+
         """
         if coords_only:
             if traj.n_atoms != self.n_particles:
