@@ -1,3 +1,5 @@
+import os
+
 import numpy as np
 import pytest
 
@@ -17,7 +19,9 @@ class TestCompound(BaseTest):
 
     def test_save(self):
         methyl = mb.load(get_fn('methyl.pdb'))
-        methyl.save(filename='methyl_out.pdb')
+        outfile = 'methyl_out.pdb'
+        methyl.save(filename=outfile)
+        assert os.path.exists(outfile)
 
     def test_batch_add(self, ethane, h2o):
         compound = mb.Compound()
