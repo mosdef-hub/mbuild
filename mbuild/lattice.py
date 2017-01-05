@@ -32,10 +32,11 @@ class Lattice(object):
         nanometers.
         Defined by the variables a,b,c; where a corresponds to the a1
         direction, b the a2 direction, and c the a3 direction
-    basis_vectors : float, optional, default=[ID,0.0,0.0,0.0]
+    basis_vectors : float, optional, default=[ID,x,y,z] (x,y,z=0)
         Vectors that define location of basis atoms within the unit cell.
         Given as a multiple of the 3 directions 0 >= basis <= 1
         Can define multiple Compounds based on its ID.
+        Input as an array either in list form or numpy array
     """
     def __init__(self, dimension=None, lattice_vectors=None,
                  lattice_spacings=None, basis_vectors=None):
@@ -124,12 +125,28 @@ class Lattice(object):
 
             # lattice_spacings cleaning
             if lattice_spacings is None:
-                lattice_spacings = np.asarray(([1.0, 1.0, 1.0]))
+                raise ValueError('No lattice spacings provided.')
 
-            test_spacings = np.asarray(lattice_spacings)
-            if np.count_nonzero(test_spacings) != dimension:
-                ValueError('Lattice spacings {} does not match dimensionality '
-                           '{}.' .format(np.array_str(test_spacings),
-                                         dimension))
+            lattice_spacings = np.asarray(lattice_spacings, dtype=float)
+            if np.shape(lattice_spacings) != (dimension, ):
+                ValueError('Lattice spacings should be a vector of size: '
+                           '{}x0. Please include lattice spacings for each'
+                           ' available dimension.'.format(dimension))
+            if (lattice_spacings <= 0.0).all():
+                ValueError('Negative or zero lattice spacing value. One of the'
+                           ' spacings {} is negative or 0, please correct.'
+                           .format(lattice_spacings))
+
+            # basis_vectors clean up
+            if basis_vectors is None:
+                basis_vectors = {'one': ([0, 0, 0])}
+            elif isinstance(basis_vectors, dict):
+                # TODO make sure to check if the items in dict are list
+                # TODO check if the bais vec overlap raise error
+
+            else:
+                # TODO not a dict, raise TypeError
+
+            # TODO add in populate function, and replicate include
 
             return dimension, lattice_vectors, lattice_spacings, basis_vectors
