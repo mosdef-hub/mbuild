@@ -41,7 +41,8 @@ class Lattice(object):
     def __init__(self, dimension=None, lattice_vectors=None,
                  lattice_spacings=None, basis_vectors=None):
         super(Lattice, self).__init__()
-
+        
+        # TODO move validate input to class method
         self.dimension = None
         self.lattice_vectors = None
         self.lattice_spacings = None
@@ -139,7 +140,12 @@ class Lattice(object):
 
             # basis_vectors clean up
             if basis_vectors is None:
-                basis_vectors = {'one': ([0, 0, 0])}
+                if dimension == 3:
+                    basis_vectors = {'one': ([0, 0, 0])}
+                elif dimension == 2:
+                    basis_vectors = {'one': ([0, 0])}
+                else:
+                    basis_vectors = {'one': ([0])}
             elif isinstance(basis_vectors, dict):
                 temp = basis_vectors.values()
                 for val in temp:
@@ -173,18 +179,59 @@ class Lattice(object):
                         if val == val_test:
                             ValueError('Duplicate Basis Vectors: Cannot have '
                                        ' 2 equivalent basis vectors.')
-                        else:
-                            continue
-            if dimension == 3:
-                for key, val in basis_items:
-                    for key_test, val_test in basis_items:
-                        for x in range(2):
-                            for y in range(2):
-                                for z in range(2):
-                                    moved_val_x = val[0] + x
-                                    moved_val_y = val[1] + y
-                                    moved_val_z = val[2] + z
 
+                        moved_val_x = 0
+                        moved_val_y = 0
+                        moved_val_z = 0
+                        if dimension == 3:
+                            for x in range(2):
+                                for y in range(2):
+                                    for z in range(2):
+                                        moved_val_x = val[0] + x
+                                        moved_val_y = val[1] + y
+                                        moved_val_z = val[2] + z
+                                        if moved_val_x == val_test[0] and 
+                                           moved_val_y == val_test[1] and 
+                                           moved_val_z == val_test[2]:
+                                            ValueError('Duplicate Basis '
+                                                       'Vectors: Unit cell '
+                                                       'generation impossible'
+                                                       '. Key {} and {} will'
+                                                       ' generate two '
+                                                       'equivalent lattice' 
+                                                       'points, causing' 
+                                                       ' overlap.' 
+                                                       .format(key, key_test))
+                        if dimension == 2:
+                            for x in range(2):
+                                for y in range(2):
+                                        moved_val_x = val[0] + x
+                                        moved_val_y = val[1] + y
+                                        if moved_val_x == val_test[0] and 
+                                           moved_val_y == val_test[1]: 
+                                            ValueError('Duplicate Basis '
+                                                       'Vectors: Unit cell '
+                                                       'generation impossible'
+                                                       '. Key {} and {} will'
+                                                       ' generate two '
+                                                       'equivalent lattice' 
+                                                       'points, causing' 
+                                                       ' overlap.' 
+                                                       .format(key, key_test))
+                        if dimension == 1:
+                            for x in range(2):
+                                        moved_val_x = val[0] + x
+                                        if moved_val_x == val_test[0]: 
+                                            ValueError('Duplicate Basis '
+                                                       'Vectors: Unit cell '
+                                                       'generation impossible'
+                                                       '. Key {} and {} will'
+                                                       ' generate two '
+                                                       'equivalent lattice' 
+                                                       'points, causing' 
+                                                       ' overlap.' 
+                                                       .format(key, key_test))
             # TODO add in populate function, and replicate include
-
-            return dimension, lattice_vectors, lattice_spacings, basis_vectors
+                
+            return {'dim': dimension, 'lat_vec': lattice_vectors,
+                    'lat_space': lattice_spacings, 'basis_vec': basis_vectors}
