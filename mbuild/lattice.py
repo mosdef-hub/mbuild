@@ -141,11 +141,49 @@ class Lattice(object):
             if basis_vectors is None:
                 basis_vectors = {'one': ([0, 0, 0])}
             elif isinstance(basis_vectors, dict):
-                # TODO make sure to check if the items in dict are list
-                # TODO check if the bais vec overlap raise error
-
+                temp = basis_vectors.values()
+                for val in temp:
+                    if not isinstance(val, list):
+                        TypeError('Values for basis vector dict not lists.'
+                                  ' {} is not a list, please correct.'
+                                  .format(val))
+                    if len(val) != dimension:
+                        ValueError('Dimension and basis vector mismatch. '
+                                   ' Basis vector {} does not agree with '
+                                   'dimension {}.'.format(val, dimension))
+                    for i in range(dimension):
+                        if val[i] < 0 and val[i] >= 1:
+                            ValueError('Incorrect Basis Vectors. {} should be '
+                                       'multiples 0 >= xy(z) < 1.'.format(val))
             else:
-                # TODO not a dict, raise TypeError
+                TypeError('Incorrect Type: "basis_vectors" is of type {}, '
+                          'not type dict. Please review the documentation for '
+                          'proper ' .format(type(basis_vectors)))
+
+            # basis overlap check
+            """
+            check for two same basis values in dict already
+            then check if 2 vectors then overlap
+            error if that occurs
+            """
+            basis_items = basis_vectors.items()
+            for key, val in basis_items:
+                for key_test, val_test in basis_items:
+                    if key != key_test:
+                        if val == val_test:
+                            ValueError('Duplicate Basis Vectors: Cannot have '
+                                       ' 2 equivalent basis vectors.')
+                        else:
+                            continue
+            if dimension == 3:
+                for key, val in basis_items:
+                    for key_test, val_test in basis_items:
+                        for x in range(2):
+                            for y in range(2):
+                                for z in range(2):
+                                    moved_val_x = val[0] + x
+                                    moved_val_y = val[1] + y
+                                    moved_val_z = val[2] + z
 
             # TODO add in populate function, and replicate include
 
