@@ -21,7 +21,7 @@ class Polymer(Compound):
     sequence : str, optional, default='A'
         A string of characters where each unique character represents one
         repetition of a monomer. Characters in `sequence` are assigned to
-        monomers in alphabetic order.
+        monomers in the order assigned by the built-in `sorted()`.
     port_labels : 2-tuple of strs, optional, default=('up', 'down')
         The names of the two ports to use to connect copies of proto.
 
