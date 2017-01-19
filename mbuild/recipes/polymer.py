@@ -26,7 +26,7 @@ class Polymer(Compound):
         The names of the two ports to use to connect copies of proto.
 
     """
-    def __init__(self, monomers, sequence='A', n=2, port_labels=('up', 'down')):
+    def __init__(self, monomers, n, sequence='A', port_labels=('up', 'down')):
         if n < 1:
             raise ValueError('n must be 1 or more')
         super(Polymer, self).__init__()
