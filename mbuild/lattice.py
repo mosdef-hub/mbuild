@@ -48,8 +48,10 @@ class Lattice(object):
         Location of all basis Compounds in unit cell.
 
     TODO(Justin Gilmer) : populate method with compound input
-    TODO(Justin Gilmer) : populate_xyz generate .xyz file
+    TODO(Justin Gilmer) : write_xyz generate .xyz file
+    TODO(Justin Gilmer) : write_xyz, more robust xyz file gen
     TODO(Justin Gilmer) : inheritance(Cubic, orthorhombic, hexangonal)
+    TODO(Justin Gilmer) : nested for loop cleaning up
     TODO(Justin Gilmer) : orientation functionality
     """
     def __init__(self, dimension=None, lattice_vectors=None,
@@ -61,6 +63,7 @@ class Lattice(object):
                              lattice_spacings=lattice_spacings,
                              basis_vectors=basis_vectors)
         self.populate_xyz()
+        self.write_xyz()
 
     def validate_inputs(self, dimension, lattice_vectors,
                         lattice_spacings, basis_vectors):
@@ -367,7 +370,61 @@ class Lattice(object):
                         tmpx = (val[val_item][0] + i) * a
                         tmp_tuple = tuple((tmpx))
                         cell[key].append(((tmp_tuple)))
+        self.cell = cell
         pp.pprint(cell)
+
+    def write_xyz(self, moleculeName=None, fileName=None):
+        """
+        Write formatted file in XYZ format of Lattice.
+
+        Parameters
+        ----------
+        moleculeName : str, optional, default=None
+            Name of the molecule created from the Lattice instance.
+        fileName : str, optional, default=latticeOutput.xyz
+            Filename for the XYZ file generated.
+
+        """
+
+        if moleculeName is None:
+            moleculeName = ''
+        else:
+            try:
+                moleculeName = str(moleculeName)
+            except Exception as e:
+                print('String Conversion Error: moleculeName {} '
+                      'can not be converted to type string: {}'
+                      .format(moleculeName, e))
+                raise
+
+        if fileName is None:
+            fileName = 'latticeOutput.xyz'
+        else:
+            try:
+                fileName = str(fileName)
+            except Exception as e:
+                print('String Conversion Error: fileName {} '
+                      'can not be converted to type string: {}'
+                      .format(fileName, e))
+                raise
+        num_atoms = 0
+        outstr = ""
+        for val in self.cell.values():
+            num_atoms = num_atoms + len(val)
+        with open(fileName, 'w') as fout:
+            fout.write(str(num_atoms) + '\n')
+            fout.write(moleculeName + '\n')
+            for key, val in self.cell.items():
+                for pos in range(len(val)):
+                    outstr = ""
+                    outstr = str(key) + str(' ')
+                    for i in range(self.dimension):
+                        outstr = outstr + str(val[pos][i] * 10) + str(' ')
+
+                    fout.write(outstr + '\n')
+        if not fout.closed:
+            fout.close()
+
 
 
 def main():
@@ -375,8 +432,9 @@ def main():
     # the_lattice = Lattice(lattice_spacings=[1, 1, 1], basis_vectors=basis_vec)
     the_lattice = Lattice(lattice_spacings=[1, 1, 1])
     the_lattice = Lattice()
+    lat_space = [.4123, .4123, .4123]
     basis_vec = [('Cl', [0, 0, 0]), ('Cs', [.5, .5, .5])]
-    the_lattice = Lattice(lattice_spacings=[1, 1, 1], basis_vectors=basis_vec)
+    the_lattice = Lattice(lattice_spacings=lat_space, basis_vectors=basis_vec)
 
 if __name__ == "__main__":
     main()
