@@ -8,7 +8,7 @@ from mbuild.utils.io import has_foyer
 class TestGSD(BaseTest):
 
     def test_save(self, ethane):
-        ethane.save(filename='ethane.gsd')
+        ethane.save(filename='ethane.gsd',write_ff=False)
 
     @pytest.mark.skipif(not has_foyer, reason="Foyer is not installed")
     def test_save_forcefield(self, ethane):
