@@ -13,6 +13,12 @@ try:
 except ImportError:
     has_foyer = False
 
+try:
+    import gsd
+    has_gsd = True
+except ImportError:
+    has_gsd = False
+
 
 def get_fn(name):
     """Get the full path to one of the reference files shipped for utils.
