@@ -10,6 +10,7 @@ import numpy as np
 from parmed.periodic_table import AtomicNum
 from .hoomdxml import RB_to_OPLS
 from collections import OrderedDict
+from oset import oset as OrderedSet
 
 def write_forcefield(structure, filename, ref_distance=1.0, ref_energy=1.0):
     """Output force field information in JSON format.
@@ -53,41 +54,42 @@ def write_forcefield(structure, filename, ref_distance=1.0, ref_energy=1.0):
         bonds = [bond for bond in structure.bonds]
         if bonds:
             styles['bond'] = 'harmonic'
+            unique_bond_types = dict(enumerate(OrderedSet([(round(bond.type.k,3),
+                                                            round(bond.type.req,3)) for bond in structure.bonds])))
             bond_data = OrderedDict()
-            for key in structure.bond_types:
+            for idx,key in unique_bond_types.items():
                 temp_dict = OrderedDict()
-                temp_dict['k'] = round(key.k*2,3) * ((ref_distance**2)/ref_energy)
-                temp_dict['r0'] = round(key.req,3) / ref_distance
-                bond_data[str(key.idx)] = temp_dict
+                temp_dict['k'] = round(key[0]*2,3) * ((ref_distance**2)/ref_energy)
+                temp_dict['r0'] = round(key[1],3) / ref_distance
+                bond_data[str(idx)] = temp_dict
 
         # Angles
         angles = [angle for angle in structure.angles]
         if angles:
             styles['angle'] = 'harmonic'
+            unique_angle_types = dict(enumerate(OrderedSet([(round(angle.type.k,3),
+                                                    round(angle.type.theteq,3)) for angle in structure.angles])))
             angle_data = OrderedDict()
-            for key in structure.angle_types:
+            for idx,key in unique_angle_types.items():
                 temp_dict = OrderedDict()
-                temp_dict['k'] = round(key.k*2,3) / ref_energy
-                temp_dict['t0'] = round(key.theteq,3) * (np.pi/180)
-                angle_data[str(key.idx)] = temp_dict
+                temp_dict['k'] = round(key[0]*2,3) / ref_energy
+                temp_dict['t0'] = round(key[1],3) * (np.pi/180)
+                angle_data[str(idx)] = temp_dict
 
         # Dihedrals
         dihedrals = [dihedral for dihedral in structure.rb_torsions]
         if dihedrals:
             styles['dihedral'] = 'opls'
-            dihedrals = structure.rb_torsion_types
-            for i,dihedral in enumerate(dihedrals):
-                for j in range(i+1, len(dihedrals)):
-                    dihedral2 = dihedrals[j]
-                    if dihedral == dihedral2:
-                        dihedrals[j] = dihedral
-            dihedrals = list(set(dihedrals))
-            dihedrals_opls = [RB_to_OPLS(dihedral.c0,
-                                         dihedral.c1,
-                                         dihedral.c2,
-                                         dihedral.c3,
-                                         dihedral.c4,
-                                         dihedral.c5) for dihedral in dihedrals]
+
+            unique_dihedral_types = dict(enumerate(OrderedSet([(round(dihedral.type.c0,3),
+                                                    round(dihedral.type.c1,3),
+                                                    round(dihedral.type.c2,3),
+                                                    round(dihedral.type.c3,3),
+                                                    round(dihedral.type.c4,3),
+                                                    round(dihedral.type.c5,3),
+                                                    round(dihedral.type.scee,1),
+                                                    round(dihedral.type.scnb,1)) for dihedral in structure.rb_torsions])))
+            dihedrals_opls = [RB_to_OPLS(y[0],y[1],y[2],y[3],y[4],y[5]) for x,y in unique_dihedral_types.items()]
             dihedral_data = OrderedDict()
             for idx,key in enumerate(dihedrals_opls):
                 temp_dict = OrderedDict()

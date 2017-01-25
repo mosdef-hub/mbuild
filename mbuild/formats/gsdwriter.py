@@ -9,6 +9,7 @@ import gsd.hoomd
 from copy import deepcopy
 from math import floor
 from collections import OrderedDict
+from oset import oset as OrderedSet
 from .ff_to_json import write_forcefield
 
 
@@ -92,14 +93,16 @@ def write_gsd(structure, filename, forcefield, box, ref_distance=1.0, ref_mass=1
     if bonds:
         bonds = np.asarray(bonds)
         gsd_file.bonds.N = len(bonds)
-
         if len(structure.bond_types) == 0:
             bond_types = np.zeros(len(bonds),dtype=int)
             gsd_file.bonds.types = ['0']
         else:
-            unique_bond_types = OrderedDict([(btype,btype.idx) for btype in structure.bond_types])
-            bond_types = [unique_bond_types[bond.type] for bond in structure.bonds]
-            gsd_file.bonds.types = [str(btype) for btype in range(len(unique_bond_types))]
+            unique_bond_types = dict(enumerate(OrderedSet([(round(bond.type.k,3),
+                                                            round(bond.type.req,3)) for bond in structure.bonds])))
+            unique_bond_types = OrderedDict([(y,x) for x,y in unique_bond_types.items()])
+            bond_types = [unique_bond_types[(round(bond.type.k,3),
+                                             round(bond.type.req,3))] for bond in structure.bonds]
+            gsd_file.bonds.types = [str(y) for x,y in unique_bond_types.items()]
         gsd_file.bonds.typeid = bond_types
         gsd_file.bonds.group = bonds
 
@@ -109,9 +112,12 @@ def write_gsd(structure, filename, forcefield, box, ref_distance=1.0, ref_mass=1
     if angles:
         angles = np.asarray(angles)
         gsd_file.angles.N = len(angles)
-        unique_angle_types = OrderedDict([(atype,atype.idx) for atype in structure.angle_types])
-        angle_types = [unique_angle_types[angle.type] for angle in structure.angles]
-        gsd_file.angles.types = [str(atype) for atype in range(len(unique_angle_types))]
+        unique_angle_types = dict(enumerate(OrderedSet([(round(angle.type.k,3),
+                                                         round(angle.type.theteq,3)) for angle in structure.angles])))
+        unique_angle_types = OrderedDict([(y,x) for x,y in unique_angle_types.items()])
+        angle_types = [unique_angle_types[(round(angle.type.k,3),
+                                           round(angle.type.theteq,3))] for angle in structure.angles]
+        gsd_file.angles.types = [str(y) for x,y in unique_angle_types.items()]
         gsd_file.angles.typeid = angle_types
         gsd_file.angles.group = angles
 
@@ -122,9 +128,25 @@ def write_gsd(structure, filename, forcefield, box, ref_distance=1.0, ref_mass=1
     if dihedrals:
         dihedrals = np.asarray(dihedrals)
         gsd_file.dihedrals.N = len(dihedrals)
-        unique_dihedral_types = OrderedDict([(dtype,dtype.idx) for dtype in structure.rb_torsion_types])
-        dihedral_types = [unique_dihedral_types[dihedral.type] for dihedral in structure.rb_torsions]
-        gsd_file.dihedrals.types = [str(dtype) for dtype in range(len(unique_dihedral_types))]
+
+        unique_dihedral_types = dict(enumerate(OrderedSet([(round(dihedral.type.c0,3),
+                                                    round(dihedral.type.c1,3),
+                                                    round(dihedral.type.c2,3),
+                                                    round(dihedral.type.c3,3),
+                                                    round(dihedral.type.c4,3),
+                                                    round(dihedral.type.c5,3),
+                                                    round(dihedral.type.scee,1),
+                                                    round(dihedral.type.scnb,1)) for dihedral in structure.rb_torsions])))
+        unique_dihedral_types = OrderedDict([(y,x) for x,y in unique_dihedral_types.items()])
+        dihedral_types = [unique_dihedral_types[(round(dihedral.type.c0,3),
+                                                 round(dihedral.type.c1,3),
+                                                 round(dihedral.type.c2,3),
+                                                 round(dihedral.type.c3,3),
+                                                 round(dihedral.type.c4,3),
+                                                 round(dihedral.type.c5,3),
+                                                 round(dihedral.type.scee,1),
+                                                 round(dihedral.type.scnb,1))] for dihedral in structure.rb_torsions]
+        gsd_file.dihedrals.types = [str(y) for x,y in unique_dihedral_types.items()]
         gsd_file.dihedrals.typeid = dihedral_types
         gsd_file.dihedrals.group = dihedrals
 
