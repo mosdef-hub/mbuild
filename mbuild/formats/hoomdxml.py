@@ -227,10 +227,10 @@ def write_hoomdxml(structure, filename, forcefield, box, ref_distance=1.0,
                                                              *dihedral))
             xml_file.write('</dihedral>\n')
 
-        if rigid_bodies:
+        if rigid_bodies is not None:
             xml_file.write('<body>\n')
             for body in rigid_bodies:
-                xml_file.write('{}\n'.format(body))
+                xml_file.write('{}\n'.format(int(body)))
             xml_file.write('</body>\n')
         
         xml_file.write('</configuration>\n')
