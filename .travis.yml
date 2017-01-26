@@ -1,10 +1,13 @@
-language: c
+language: generic
 sudo: false
+addons:
+    apt:
+        sources:
+            - ubuntu-toolchain-r-test
 
 install:
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew install md5sha1sum; fi
   - source devtools/travis-ci/install.sh
-  - ls
   - pip install .
 
 test:
