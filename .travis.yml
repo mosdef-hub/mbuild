@@ -10,7 +10,7 @@ install:
   - source devtools/travis-ci/install.sh
   - pip install .
 
-test:
+script:
   - py.test -v
   - cd mbuild/examples
   - py.test test_examples.py -v
