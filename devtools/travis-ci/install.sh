@@ -22,16 +22,15 @@ conda config --add channels janschulz
 conda create -y -n myenv python=$PYTHON_VERSION
 source activate myenv
 
-conda install -y numpy
-conda install -y scipy
-conda install -y packmol 1.0.0 4
-conda install -y nglview
-conda install -y oset
-conda install -y parmed
-conda install -y mdtraj
-
-conda install -y pytest
-conda install -y jupyter
-conda install -y nbformat
-conda install -y ipykernel
-conda install -y ipyext
+conda install -y numpy \
+                 scipy \
+                 packmol 1.0.0 \
+                 nglview \
+                 oset \
+                 parmed \
+                 mdtraj \
+                 pytest \
+                 jupyter \
+                 nbformat \
+                 ipykernel \
+                 ipyext \
