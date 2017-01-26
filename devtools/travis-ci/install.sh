@@ -13,6 +13,8 @@ bash $MINICONDA -b
 rm -f $MINICONDA
 
 export PATH=$HOME/miniconda3/bin:$PATH
+conda config --add channels omnia
+conda config --add channels janschulz
 
 conda update -yq conda
 
