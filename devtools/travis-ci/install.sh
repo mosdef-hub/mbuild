@@ -16,7 +16,7 @@ export PATH=$HOME/miniconda3/bin:$PATH
 
 conda update -yq conda
 
-conda create -n myenv python=$PYTHON_VERSION
+conda create -y -n myenv python=$PYTHON_VERSION
 source activate myenv
 
 conda install -y numpy
