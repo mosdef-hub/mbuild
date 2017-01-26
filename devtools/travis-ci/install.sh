@@ -24,7 +24,7 @@ source activate myenv
 
 conda install -y numpy \
                  scipy \
-                 packmol 1.0.0 \
+                 packmol=1.0.0 \
                  nglview \
                  oset \
                  parmed \
