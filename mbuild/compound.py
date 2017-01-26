@@ -21,7 +21,6 @@ from mbuild.periodic_kdtree import PeriodicCKDTree
 from mbuild.utils.io import run_from_ipython
 from mbuild.formats.hoomdxml import write_hoomdxml
 from mbuild.formats.lammpsdata import write_lammpsdata
-from mbuild.formats.gsdwriter import write_gsd
 
 
 __all__ = ['load', 'clone', 'Compound', 'Particle']
@@ -554,6 +553,7 @@ class Compound(object):
 
     def save_gsd(self, filename, structure, forcefield, box=None, **kwargs):
         """ """
+        from mbuild.formats.gsdwriter import write_gsd
         if forcefield:
             from foyer.forcefield import apply_forcefield
             structure = apply_forcefield(structure, forcefield=forcefield)
