@@ -5,7 +5,7 @@ install:
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew install md5sha1sum; fi
   - source devtools/travis-ci/install.sh
 
-  - python setup.py install
+  - pip install -e .
 
 test:
   - py.test -v
