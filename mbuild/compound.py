@@ -1,5 +1,8 @@
 from __future__ import print_function, division
 
+__all__ = ['load', 'clone', 'Compound', 'Particle']
+
+import collections
 from collections import OrderedDict, defaultdict
 from copy import deepcopy
 import itertools
@@ -17,18 +20,30 @@ from six import integer_types, string_types
 
 from mbuild.bond_graph import BondGraph
 from mbuild.box import Box
+from mbuild.exceptions import MBuildError
 from mbuild.periodic_kdtree import PeriodicCKDTree
 from mbuild.utils.io import run_from_ipython
 from mbuild.formats.hoomdxml import write_hoomdxml
 from mbuild.formats.lammpsdata import write_lammpsdata
 
 
-__all__ = ['load', 'clone', 'Compound', 'Particle']
+def load(filename, relative_to_module=None, compound=None, coords_only=False,
+         **kwargs):
+    """Load a file into an mbuild compound.
 
+    Parameters
+    ----------
+    filename : str
+    relative_to_module :
+    compound : mb.Compound, optional
+    coords_only : bool, optional
+        Only load the coordinates into an existing compoint.
 
-def load(filename, relative_to_module=None, compound=None,
-         coords_only=False, **kwargs):
-    """Load a file from disk into a Compound. """
+    Returns
+    -------
+    compound : mb.Compound
+
+    """
     # Handle mbuild *.py files containing a class that wraps a structure file
     # in its own folder. E.g., you build a system from ~/foo.py and it imports
     # from ~/bar/baz.py where baz.py loads ~/bar/baz.pdb.
@@ -115,7 +130,7 @@ class Compound(object):
 
         if name:
             if not isinstance(name, string_types):
-                raise ValueError('Compound.name should be a string. You passed'
+                raise ValueError('Compound.name should be a string. You passed '
                                  '{}'.format(name))
             self.name = name
         else:
@@ -221,8 +236,8 @@ class Compound(object):
 
         Parameters
         ----------
-        new_child : mb.Compound
-            The object to be added to this Compound.
+        new_child : mb.Compound or list-like of mb.Compound
+            The object(s) to be added to this Compound.
         label : str, optional
             A descriptive string for the part.
         containment : bool, optional, default=True
@@ -232,10 +247,16 @@ class Compound(object):
 
         """
         # Support batch add via lists, tuples and sets.
-        if not isinstance(new_child, Compound):
+        if (isinstance(new_child, collections.Iterable) and
+                not isinstance(new_child, string_types)):
             for child in new_child:
                 self.add(child)
             return
+
+        if not isinstance(new_child, Compound):
+            raise ValueError('Only objects that inherit from mbuild.Compound '
+                             'can be added to Compounds. You tried to add '
+                             '"{}".'.format(new_child))
 
         # Create children and labels on the first add operation
         if self.children is None:
@@ -243,14 +264,9 @@ class Compound(object):
         if self.labels is None:
             self.labels = OrderedDict()
 
-        if not isinstance(new_child, Compound):
-            raise ValueError('Only objects that inherit from mbuild.Compound '
-                             'can be added to Compounds. You tried to add '
-                             '{}'.format(new_child))
-
         if containment:
             if new_child.parent is not None:
-                raise ValueError('Part {} already has a parent: {}'.format(
+                raise MBuildError('Part {} already has a parent: {}'.format(
                     new_child, new_child.parent))
             self.children.add(new_child)
             new_child.parent = self
@@ -267,21 +283,21 @@ class Compound(object):
         if label is None:
             label = '{0}[$]'.format(new_child.__class__.__name__)
 
-        if label is not None:
-            if label.endswith('[$]'):
-                label = label[:-3]
-                if label not in self.labels:
-                    self.labels[label] = []
-                label_pattern = label + '[{}]'
+        if label.endswith('[$]'):
+            label = label[:-3]
+            if label not in self.labels:
+                self.labels[label] = []
+            label_pattern = label + '[{}]'
 
-                count = len(self.labels[label])
-                self.labels[label].append(new_child)
-                label = label_pattern.format(count)
+            count = len(self.labels[label])
+            self.labels[label].append(new_child)
+            label = label_pattern.format(count)
 
-            if not replace and label in self.labels:
-                raise Exception('Label {0} already exists in {1}'.format(label, self))
-            else:
-                self.labels[label] = new_child
+        if not replace and label in self.labels:
+            raise MBuildError('Label "{0}" already exists in {1}.'.format(
+                label, self))
+        else:
+            self.labels[label] = new_child
         new_child.referrers.add(self)
 
         if (inherit_periodicity and isinstance(new_child, Compound) and
@@ -410,8 +426,8 @@ class Compound(object):
         if not self.children:
             self._pos = value
         else:
-            raise Exception("Cannot set position on a Compound that has"
-                            " children.")
+            raise MBuildError('Cannot set position on a Compound that has'
+                              ' children.')
 
     @property
     def periodicity(self):
@@ -484,7 +500,6 @@ class Compound(object):
     def visualize(self, show_ports=False):
         """Visualize the Compound using nglview. """
         if run_from_ipython():
-            # TODO: Replace with show_parmed once nglview package is updated.
             structure = self.to_trajectory(show_ports)
             return nglview.show_mdtraj(structure)
         else:
@@ -618,12 +633,15 @@ class Compound(object):
             The trajectory to load.
         frame : int
             The frame to take coordinates from.
-;
+
         """
         if coords_only:
             if traj.n_atoms != self.n_particles:
-                raise ValueError('Number of atoms in {traj} does not match {self}'.format(**locals()))
-            for mdtraj_atom, particle in zip(traj.topology.atoms, self._particles(include_ports=False)):
+                raise ValueError('Number of atoms in {traj} does not match'
+                                 ' {self}'.format(**locals()))
+            atoms_particles = zip(traj.topology.atoms,
+                                  self._particles(include_ports=False))
+            for mdtraj_atom, particle in atoms_particles:
                 particle.pos = traj.xyz[frame, mdtraj_atom.index]
             return
 
@@ -802,8 +820,11 @@ class Compound(object):
         """
         if coords_only:
             if len(structure.atoms) != self.n_particles:
-                raise ValueError('Number of atoms in {structure} does not match {self}'.format(**locals()))
-            for parmed_atom, particle in zip(structure.atoms, self._particles(include_ports=False)):
+                raise ValueError('Number of atoms in {structure} does not match'
+                                 ' {self}'.format(**locals()))
+            atoms_particles = zip(structure.atoms,
+                                  self._particles(include_ports=False))
+            for parmed_atom, particle in atoms_particles:
                 particle.pos = structure.coordinates[parmed_atom.idx]
             return
 
@@ -840,13 +861,16 @@ class Compound(object):
         structure = pmd.Structure()
         structure.title = title if title else self.name
         atom_mapping = {}  # For creating bonds below
+        guessed_elements = set()
         for atom in self.particles():
             atomic_number = None
             try:
                 atomic_number = AtomicNum[atom.name]
             except KeyError:
                 element = element_by_name(atom.name)
-                warn('Guessing that {} is element: {}'.format(atom, element))
+                if atom.name not in guessed_elements:
+                    warn('Guessing that "{}" is element: "{}"'.format(atom, element))
+                    guessed_elements.add(atom.name)
             else:
                 element = atom.name
 
@@ -912,7 +936,8 @@ class Compound(object):
             else:
                 # Should never happen if molecule_types only contains type(self)
                 raise ValueError('Found an atom {} that is not part of any of '
-                                 'the specified molecule types {}'.format(atom, molecule_types))
+                                 'the specified molecule types {}'.format(
+                    atom, molecule_types))
 
             # Add the actual intermol atoms.
             intermol_atom = InterMolAtom(atom_index + 1, name=atom.name,

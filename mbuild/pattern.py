@@ -125,14 +125,18 @@ class Pattern(object):
 
 
 class Random2DPattern(Pattern):
-    def __init__(self, n, orientations=None):
+    def __init__(self, n, orientations=None, seed=None):
+        if seed:
+            np.random.seed(seed)
         points = np.random.random((n, 3))
         points[:, 2] = 0
         super(Random2DPattern, self).__init__(points=points, orientations=orientations)
 
 
 class Random3DPattern(Pattern):
-    def __init__(self, n, orientations=None):
+    def __init__(self, n, orientations=None, seed=None):
+        if seed:
+            np.random.seed(seed)
         points = np.random.random((n, 3))
         super(Random3DPattern, self).__init__(points=points, orientations=orientations)
 
