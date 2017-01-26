@@ -1,3 +1,2 @@
 global-include *.pdb *.mol2
-graft mbuild/examples
 include requirements.txt
