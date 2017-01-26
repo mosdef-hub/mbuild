@@ -15,4 +15,14 @@ rm -f $MINICONDA
 export PATH=$HOME/miniconda3/bin:$PATH
 
 conda update -yq conda
-conda install -yq conda-build jinja2
+
+conda create -n myenv python=$PYTHON_VERSION
+source activate myenv
+
+conda install -y numpy
+conda install -y scipy
+conda install -y packmol 1.0.0 4
+conda install -y nglview
+conda install -y oset
+conda install -y parmed
+conda install -y mdtraj
