@@ -3,6 +3,7 @@ from collections import defaultdict
 from copy import deepcopy
 import mbuild as mb
 import pprint
+import mdtraj as md
 
 pp = pprint.PrettyPrinter(indent=4)
 __all__ = ['Lattice']
@@ -57,13 +58,13 @@ class Lattice(object):
     def __init__(self, dimension=None, lattice_vectors=None,
                  lattice_spacings=None, basis_vectors=None):
         super(Lattice, self).__init__()
-
         self.validate_inputs(dimension=dimension,
                              lattice_vectors=lattice_vectors,
                              lattice_spacings=lattice_spacings,
                              basis_vectors=basis_vectors)
-        self.populate_xyz()
-        self.write_xyz()
+        # self.populate_xyz()
+        # self.write_xyz()
+        self.populate()
 
     def validate_inputs(self, dimension, lattice_vectors,
                         lattice_spacings, basis_vectors):
@@ -268,14 +269,16 @@ class Lattice(object):
         self.lattice_spacings = lattice_spacings
         self.basis_vectors = basis_dict
 
-    def populate_xyz(self, x=None, y=None, z=None):
+    def populate(self, x=None, y=None, z=None, compound_dict=None):
         """
-        Expand lattice in each respective dimension.
+        Expand lattice and create compound from lattice.
 
-        populate_xyz will expand the lattice based on user input.
-        If the values are not provided, populate_xyz will generate a unit
-        cell. This is used to generate an xyz file for viewing with commonly
-        used chemical viewing software.
+        populate will expand lattice based on user input. The user must also
+        pass in a dictionary that contains the keys that exist in the
+        basis_dict. The corresponding Compound will be the full lattice
+        returned to the user.
+
+        If no dictionary is passed to the user, Dummy Compounds will be used.
 
         Parameters
         ----------
@@ -285,6 +288,8 @@ class Lattice(object):
             How many iterations in the y direction.
         z : int, optional, default=None
             How many iterations in the z direction.
+        compound_dict : dictionary, optional, default=None
+            Link between basis_dict and Compounds.
 
         Exceptions Raised
         -----------------
@@ -294,7 +299,6 @@ class Lattice(object):
         Call Restrictions
         -----------------
         Called after constructor by user.
-
         """
         if self.dimension == 3:
             a = self.lattice_spacings[0]
@@ -341,100 +345,76 @@ class Lattice(object):
         else:
             raise ValueError('Dimension not defined.')
 
-        if isinstance(self.basis_vectors, defaultdict):
-            pass
-        else:
-            raise TypeError('Basis vector is not of type defaultdict')
-
         cell = defaultdict(list)
         for key, val in self.basis_vectors.items():
             for val_item in range(len(val)):
                 if self.dimension == 3:
-                    for i in range(x+1):
-                        for j in range(y+1):
-                            for k in range(z+1):
+                    for i in range(x):
+                        for j in range(y):
+                            for k in range(z):
                                 tmpx = (val[val_item][0] + i) * a
                                 tmpy = (val[val_item][1] + j) * b
                                 tmpz = (val[val_item][2] + k) * c
                                 tmp_tuple = tuple((tmpx, tmpy, tmpz))
                                 cell[key].append(((tmp_tuple)))
                 elif self.dimension == 2:
-                    for i in range(x+1):
-                        for j in range(y+1):
+                    for i in range(x):
+                        for j in range(y):
                             tmpx = (val[val_item][0] + i) * a
                             tmpy = (val[val_item][1] + j) * b
                             tmp_tuple = tuple((tmpx, tmpy))
                             cell[key].append(((tmp_tuple)))
                 else:
-                    for i in range(x+1):
+                    for i in range(x):
                         tmpx = (val[val_item][0] + i) * a
                         tmp_tuple = tuple((tmpx))
                         cell[key].append(((tmp_tuple)))
-        self.cell = cell
+
+        ret_lattice = mb.Compound()
         pp.pprint(cell)
-
-    def write_xyz(self, moleculeName=None, fileName=None):
-        """
-        Write formatted file in XYZ format of Lattice.
-
-        Parameters
-        ----------
-        moleculeName : str, optional, default=None
-            Name of the molecule created from the Lattice instance.
-        fileName : str, optional, default=latticeOutput.xyz
-            Filename for the XYZ file generated.
-
-        """
-
-        if moleculeName is None:
-            moleculeName = ''
+        if compound_dict is None:
+            for key, val in cell.items():
+                tmp_part = mb.Particle(name=key, pos=[0, 0, 0])
+                for i in range(len(val)):
+                    particle_to_add = mb.clone(tmp_part)
+                    print(val[i])
+                    mb.translate(particle_to_add, list(val[i]))
+                    ret_lattice.add(particle_to_add)
         else:
-            try:
-                moleculeName = str(moleculeName)
-            except Exception as e:
-                print('String Conversion Error: moleculeName {} '
-                      'can not be converted to type string: {}'
-                      .format(moleculeName, e))
-                raise
-
-        if fileName is None:
-            fileName = 'latticeOutput.xyz'
-        else:
-            try:
-                fileName = str(fileName)
-            except Exception as e:
-                print('String Conversion Error: fileName {} '
-                      'can not be converted to type string: {}'
-                      .format(fileName, e))
-                raise
-        num_atoms = 0
-        outstr = ""
-        for val in self.cell.values():
-            num_atoms = num_atoms + len(val)
-        with open(fileName, 'w') as fout:
-            fout.write(str(num_atoms) + '\n')
-            fout.write(moleculeName + '\n')
-            for key, val in self.cell.items():
-                for pos in range(len(val)):
-                    outstr = ""
-                    outstr = str(key) + str(' ')
-                    for i in range(self.dimension):
-                        outstr = outstr + str(val[pos][i] * 10) + str(' ')
-
-                    fout.write(outstr + '\n')
-        if not fout.closed:
-            fout.close()
-
+            for key, val in cell.items():
+                if isinstance(compound_dict.get(key), mb.Compound):
+                    compound_to_move = compound_dict.get(key)
+                    for i in range(len(val)):
+                        tmp_comp = mb.clone(compound_to_move)
+                        mb.translate(tmp_comp, val[i])
+                        ret_lattice.add(tmp_comp)
+                else:
+                    err_type = str(type(compound_dict.get(key)))
+                    TypeError('Invalid type in provided Compound Dictionary. '
+                              'For key {}, type: {} was provided, '
+                              'not Compound.'.format(key, err_type))
+        pp.pprint(ret_lattice)
+        traj = ret_lattice.to_trajectory()
+        traj.save('diamond.xyz')
+        return ret_lattice
 
 
 def main():
     # basis_vec = (['Cl', (0, 0, 0)], ['Cs', (.5, .5, .5)], ['He', (0, 0, 0)])
     # the_lattice = Lattice(lattice_spacings=[1, 1, 1], basis_vectors=basis_vec)
-    the_lattice = Lattice(lattice_spacings=[1, 1, 1])
-    the_lattice = Lattice()
+    #the_lattice = Lattice(lattice_spacings=[1, 1, 1])
+    #the_lattice = Lattice()
     lat_space = [.4123, .4123, .4123]
     basis_vec = [('Cl', [0, 0, 0]), ('Cs', [.5, .5, .5])]
-    the_lattice = Lattice(lattice_spacings=lat_space, basis_vectors=basis_vec)
+    iron_space = [.3571, .3571, .3571]
+    fcc = [('Fe', [0,0,0]), ('Fe',[.5,.5,0]), ('Fe', [.5, 0,.5]), ('Fe', [0,.5,.5])]
+    diamond = [('C', [0,0,0]), ('C',[.5,.5,0]), ('C', [.5, 0,.5]),
+           ('C', [0,.5,.5]), ('C', [.25,.25,.25]), ('C', [.25,.75,.75]),
+           ('C', [.75,.25,.75]), ('C', [.75,.75,.25])]
+    #the_lattice = Lattice(lattice_spacings=lat_space, basis_vectors=basis_vec)
+    #the_lattice = Lattice(lattice_spacings=iron_space, basis_vectors=fcc)
+    diamond_space=[.357,.357,.357]
+    the_lattice = Lattice(lattice_spacings=diamond_space, basis_vectors=diamond)
 
 if __name__ == "__main__":
     main()
