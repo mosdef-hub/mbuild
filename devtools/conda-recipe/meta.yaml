@@ -10,7 +10,7 @@ requirements:
     - python
     - numpy
     - scipy
-    - packmol
+    - packmol 1.0.0 4
     - nglview
     - oset
     - parmed
@@ -25,6 +25,9 @@ test:
     - ipyext
   commands:
     - py.test -v --pyargs mbuild
+    - echo {{SRC_DIR}}
+    - echo {{SRC_DIR/*}}
+    - echo {{SRC_DIR/*/*}}
     - cd {{SRC_DIR}}
     - cd mbuild/examples
     - py.test test_examples.py -v
