@@ -25,11 +25,8 @@ test:
     - ipyext
   commands:
     - py.test -v --pyargs mbuild
-    - ls ${SRC_DIR}
-    - ls ${SRC_DIR}/*
-    - ls ${SRC_DIR}/*/*
     - cd {{SRC_DIR}}
-    - cd mbuild/examples
+    - cd ../mbuild/examples
     - py.test test_examples.py -v
 
 about:
