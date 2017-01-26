@@ -4,8 +4,8 @@ sudo: false
 install:
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew install md5sha1sum; fi
   - source devtools/travis-ci/install.sh
-
-  - pip install -e .
+  - ls
+  - pip install .
 
 test:
   - py.test -v

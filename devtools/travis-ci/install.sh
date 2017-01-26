@@ -28,3 +28,9 @@ conda install -y nglview
 conda install -y oset
 conda install -y parmed
 conda install -y mdtraj
+
+conda install -y pytest
+conda install -y jupyter
+conda install -y nbformat
+conda install -y ipykernel
+conda install -y ipyext
