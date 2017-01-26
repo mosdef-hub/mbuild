@@ -8,11 +8,12 @@ addons:
 install:
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew install md5sha1sum; fi
   - source devtools/travis-ci/install.sh
-  - pip install .
+  - pip install -e .
 
 script:
+  - cd mbuild/tests
   - py.test -v
-  - cd mbuild/examples
+  - cd ../examples
   - py.test test_examples.py -v
 
 os:
