@@ -1,14 +1,20 @@
-language: c
+language: generic
 sudo: false
+addons:
+    apt:
+        sources:
+            - ubuntu-toolchain-r-test
 
 install:
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew install md5sha1sum; fi
   - source devtools/travis-ci/install.sh
-  - conda config --add channels omnia
-  - conda config --add channels janschulz
+  - pip install -e .
 
 script:
-  - conda build devtools/conda-recipe
+  - cd mbuild/tests
+  - py.test -v
+  - cd ../examples
+  - py.test test_examples.py -v
 
 os:
   - osx
@@ -16,17 +22,9 @@ os:
 
 env:
   matrix:
-    - python=2.7  CONDA_PY=27
-    - python=3.4  CONDA_PY=34
-    - python=3.5  CONDA_PY=35
+    - PYTHON_VERSION=2.7
+    - PYTHON_VERSION=3.4
+    - PYTHON_VERSION=3.5
 
-  global:
-    # ANACONDA_TOKEN
-    - secure: "qOQl1XGZLtRuB6UBXZTBiNx1psnWPEdlcz286i1sxq+G3Il1d/rP9Efclc6HYmNHkw0tsoKJnBzkpAkWkTGl+pgQF4Zfvra4Ue+fTDPnEWKi71uRjuVYEgas4pmtD3debWCe2bJzORQDQH12gwR+SB0UrLK+xw/zRyh6ezl+fp4="
-    # GITHUB
-    - secure: "gtj9VfJQzQb4KL23+aRfimQgXBK88JHEqmN6zi+MCCLrjhnXs7+qWoAGi4kqwNeNd9fXSK5Wk+PfPHEPjP8MFyjEhWBL9LD9ct+59RVx8bf3pe2WOWktpf440XxwpLuDEWrV01Ly4FKRqYTOvtz7pYV5y/JgCyCP76MwkWhZvG4="
 
-after_success:
-  - source devtools/travis-ci/post_binstar.sh
-  - source devtools/travis-ci/create_docs.sh
 

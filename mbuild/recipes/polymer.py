@@ -16,12 +16,12 @@ class Polymer(Compound):
     ----------
     monomers : mb.Compound or list of mb.Compound
         The compound(s) to replicate.
+    n : int
+        The number of times to replicate the sequence.
     sequence : str, optional, default='A'
         A string of characters where each unique character represents one
         repetition of a monomer. Characters in `sequence` are assigned to
-        monomers in alphabetic order.
-    n : int, optional, default=2
-        The number of times to replicate the sequence.
+        monomers in the order assigned by the built-in `sorted()`.
     port_labels : 2-tuple of strs, optional, default=('up', 'down')
         The names of the two ports to use to connect copies of proto.
 
