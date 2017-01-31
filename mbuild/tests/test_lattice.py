@@ -1,9 +1,10 @@
 import numpy as np
 import pytest
 from mbuild.tests.base_test import BaseTest
-from lattice import Lattice
 import mbuild as mb
+from lattice import Lattice
 from collections import defaultdict
+
 
 class TestLattice(BaseTest):
     """
@@ -66,10 +67,10 @@ class TestLattice(BaseTest):
             a_test_3d = Lattice(dimension=3, lattice_vectors=invalid_3d)
 
     def test_lattice_spacings_default(self):
-        with pytest.raises(ValueError):
-            spacing_test = Lattice(dimension=2, lattice_vectors=None,
-                                   lattice_spacings=None)
-
+        spacing_test = Lattice(dimension=2, lattice_vectors=None,
+                               lattice_spacings=None)
+        np.testing.assert_array_equal(spacing_test.lattice_spacings,
+                                      np.asarray([1, 1], dtype=float))
     def test_lattice_spacings_dimension(self):
         with pytest.raises(ValueError):
             spacing_test = Lattice(dimension=3, lattice_vectors=None,
@@ -87,12 +88,6 @@ class TestLattice(BaseTest):
                                   lattice_spacings=neg_test)
 
     def test_basis_default(self):
-        test_vec_3D = defaultdict(list)
-        test_vec_2D = defaultdict(list)
-        test_vec_1D = defaultdict(list)
-        if dimension == 3:
-            basis_vectors['default'].append(([0, 0, 0]))
-        elif dimension == 2:
-            basis_vectors['default'].append(([0, 0]))
-        else:
-            basis_vectors['default'].append(([0]))
+        vec_3D = defaultdict(list)
+        vec_2D = defaultdict(list)
+        vec_1D = defaultdict(list)

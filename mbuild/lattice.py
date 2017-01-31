@@ -2,10 +2,7 @@ import numpy as np
 from collections import defaultdict
 from copy import deepcopy
 import mbuild as mb
-import pprint
-import mdtraj as md
 
-pp = pprint.PrettyPrinter(indent=4)
 __all__ = ['Lattice']
 
 
@@ -64,7 +61,7 @@ class Lattice(object):
                              basis_vectors=basis_vectors)
         # self.populate_xyz()
         # self.write_xyz()
-        self.populate()
+        #self.populate(x=2,y=2,z=2)
 
     def validate_inputs(self, dimension, lattice_vectors,
                         lattice_spacings, basis_vectors):
@@ -159,14 +156,19 @@ class Lattice(object):
                                  'handed system.' .format(det))
 
         if lattice_spacings is None:
-            lattice_spacings = np.asarray([1, 1, 1], dtype=float)
-
-        lattice_spacings = np.asarray(lattice_spacings, dtype=float)
-        if np.shape(lattice_spacings) != (dimension, ):
-            raise ValueError('Lattice spacings should be a vector of size: '
-                             '({},). Please include lattice spacings for each'
-                             ' available dimension.'.format(dimension))
-        if (lattice_spacings <= 0.0).all():
+            lattice_spacings = list()
+            for i in range(dimension):
+                lattice_spacings.append(1.0)
+            lattice_spacings = np.asarray(lattice_spacings, dtype=float)
+        else:
+            lattice_spacings = np.asarray(lattice_spacings, dtype=float)
+            if np.shape(lattice_spacings) != (dimension, ):
+                raise ValueError('Lattice spacings should be a vector of '
+                                 'size:({},). Please include lattice spacings '
+                                 'for each available dimension.'
+                                 .format(dimension))
+        print(lattice_spacings)
+        if np.any(lattice_spacings <= 0.0):
             raise ValueError('Negative or zero lattice spacing value. One of '
                              'the spacings {} is negative or 0.'
                              .format(lattice_spacings))
@@ -180,7 +182,7 @@ class Lattice(object):
             else:
                 basis_vectors['default'].append((0))
         elif (isinstance(basis_vectors, list) or
-                isinstance(basis_vectors, tuple)):
+              isinstance(basis_vectors, tuple)):
             for lst in basis_vectors:
                 if len(lst) != 2:
                     raise ValueError('Too many arguments per basis vector. '
@@ -371,7 +373,6 @@ class Lattice(object):
                         cell[key].append(((tmp_tuple)))
 
         ret_lattice = mb.Compound()
-        pp.pprint(cell)
         if compound_dict is None:
             for key, val in cell.items():
                 tmp_part = mb.Particle(name=key, pos=[0, 0, 0])
@@ -393,28 +394,4 @@ class Lattice(object):
                     TypeError('Invalid type in provided Compound Dictionary. '
                               'For key {}, type: {} was provided, '
                               'not Compound.'.format(key, err_type))
-        pp.pprint(ret_lattice)
-        traj = ret_lattice.to_trajectory()
-        traj.save('diamond.xyz')
         return ret_lattice
-
-
-def main():
-    # basis_vec = (['Cl', (0, 0, 0)], ['Cs', (.5, .5, .5)], ['He', (0, 0, 0)])
-    # the_lattice = Lattice(lattice_spacings=[1, 1, 1], basis_vectors=basis_vec)
-    #the_lattice = Lattice(lattice_spacings=[1, 1, 1])
-    #the_lattice = Lattice()
-    lat_space = [.4123, .4123, .4123]
-    basis_vec = [('Cl', [0, 0, 0]), ('Cs', [.5, .5, .5])]
-    iron_space = [.3571, .3571, .3571]
-    fcc = [('Fe', [0,0,0]), ('Fe',[.5,.5,0]), ('Fe', [.5, 0,.5]), ('Fe', [0,.5,.5])]
-    diamond = [('C', [0,0,0]), ('C',[.5,.5,0]), ('C', [.5, 0,.5]),
-           ('C', [0,.5,.5]), ('C', [.25,.25,.25]), ('C', [.25,.75,.75]),
-           ('C', [.75,.25,.75]), ('C', [.75,.75,.25])]
-    #the_lattice = Lattice(lattice_spacings=lat_space, basis_vectors=basis_vec)
-    #the_lattice = Lattice(lattice_spacings=iron_space, basis_vectors=fcc)
-    diamond_space=[.357,.357,.357]
-    the_lattice = Lattice(lattice_spacings=diamond_space, basis_vectors=diamond)
-
-if __name__ == "__main__":
-    main()
