@@ -46,7 +46,7 @@ class Port(Compound):
         self.used = False
 
         if anchor:
-            translate_to(self, anchor.xyz[0])
+            translate_to(self, anchor.pos)
 
     def _clone(self, clone_of=None, root_container=None):
         newone = super(Port, self)._clone(clone_of, root_container)
