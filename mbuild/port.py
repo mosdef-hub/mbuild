@@ -1,7 +1,7 @@
 import numpy as np
 
 from mbuild.compound import Compound, Particle
-from mbuild.coordinate_transform import rotate_around_z
+from mbuild.coordinate_transform import spin_z
 from mbuild import clone
 
 
