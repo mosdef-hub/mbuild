@@ -7,7 +7,7 @@ import numpy as np
 
 from mbuild.coordinate_transform import (equivalence_transform, translate,
                                          rotate_around_x, rotate_around_y,
-                                         rotate_around_z)
+                                         rotate_around_z, spin_y, spin_z)
 from mbuild.utils.validation import assert_port_exists
 from mbuild import clone
 
@@ -188,11 +188,11 @@ class SpherePattern(Pattern):
             port = Port()
             ports.append(port)
             # Make the top of the port point toward the positive x axis.
-            rotate_around_z(port, -np.pi/2)
+            spin_z(port, -np.pi/2)
             # Raise up (or down) the top of the port in the z direction.
-            rotate_around_y(port, -np.arcsin(point[2]))
+            spin_y(port, -np.arcsin(point[2]))
             # Rotate the Port along the z axis.
-            rotate_around_z(port, np.arctan2(point[1], point[0]))
+            spin_z(port, np.arctan2(point[1], point[0]))
             # Move the Port a bit away from the surface of the Sphere.
             #translate(port, point + 0.07)
 
