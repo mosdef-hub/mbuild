@@ -7,7 +7,7 @@ import numpy as np
 
 from mbuild.coordinate_transform import (equivalence_transform, translate,
                                          rotate_around_x, rotate_around_y,
-                                         rotate_around_z)
+                                         rotate_around_z, spin_y, spin_z)
 from mbuild.utils.validation import assert_port_exists
 from mbuild import clone
 
