@@ -1,7 +1,7 @@
 import numpy as np
 
 from mbuild.compound import Compound, Particle
-from mbuild.coordinate_transform import rotate_around_z
+from mbuild.coordinate_transform import rotate_around_z, translate_to
 from mbuild import clone
 
 
@@ -39,12 +39,14 @@ class Port(Compound):
         up.add(Particle(name='G', pos=[0.0, -0.02, 0.01], port_particle=True), 'right')
 
         down = clone(up)
-
         rotate_around_z(down, np.pi)
 
         self.add(up, 'up')
         self.add(down, 'down')
         self.used = False
+
+        if anchor:
+            translate_to(self, anchor.pos)
 
     def _clone(self, clone_of=None, root_container=None):
         newone = super(Port, self)._clone(clone_of, root_container)

@@ -130,8 +130,8 @@ class SilicaInterface(mb.Compound):
                 if atom.name == 'O' and atom.pos[2] > thickness:
                     atom.name = 'OS'
                     port = mb.Port(anchor=atom)
-                    mb.rotate_around_x(port, np.pi/2)
-                    mb.translate(port, atom.pos + np.array([0.0, 0.0, 0.1]))
+                    mb.spin_x(port, np.pi/2)
+                    mb.translate(port, np.array([0.0, 0.0, 0.1]))
                     self.add(port, "port_{}".format(len(self.referenced_ports())))
 
     def _adjust_stoichiometry(self):
