@@ -31,6 +31,8 @@ class Lattice(object):
     basis_vectors : dictionary-like, shape=(['id',[dimension,]], ...) optional
                     default={('default', ([0,0,0]))}
         Location of all basis Compounds in unit cell.
+    angles : list-like,  shape=(dimension,), optional, default=None
+        Interplanar angles describing unit cell.
 
     Attributes
     ----------
@@ -44,10 +46,14 @@ class Lattice(object):
     basis_vectors : dictionary-like, shape=(['id',[dimension,]], ...) optional
                     default={('default',([0,0,0]))}
         Location of all basis Compounds in unit cell.
+    angles : list-like, shape=(dimension,), optional, default=None
+        Interplanar angles describing the unit cell.
 
-    TODO(Justin Gilmer) : populate method with compound input
-    TODO(Justin Gilmer) : write_xyz generate .xyz file
-    TODO(Justin Gilmer) : write_xyz, more robust xyz file gen
+    TODO(Justin Gilmer) : include angle support
+    TODO(Justin Gilmer) : Support conversion from abc, abg, to cartesian
+    TODO(Justin Gilmer) : migrate data cleaning to separate functions
+    TODO(Justin Gilmer) : Print function to display info about Lattice
+    TODO(Justin Gilmer) : ask about optional arguments
     TODO(Justin Gilmer) : inheritance(Cubic, orthorhombic, hexangonal)
     TODO(Justin Gilmer) : nested for loop cleaning up
     TODO(Justin Gilmer) : orientation functionality
@@ -59,9 +65,6 @@ class Lattice(object):
                              lattice_vectors=lattice_vectors,
                              lattice_spacings=lattice_spacings,
                              basis_vectors=basis_vectors)
-        # self.populate_xyz()
-        # self.write_xyz()
-        #self.populate(x=2,y=2,z=2)
 
     def validate_inputs(self, dimension, lattice_vectors,
                         lattice_spacings, basis_vectors):
@@ -90,6 +93,7 @@ class Lattice(object):
         basis_vectors : dictionary-like, shape=(['id',[dimension,]], ...)
                         optional default={('default',([0,0,0]))}
             Location of all basis Compounds in unit cell.
+        angles : list-like, shape=(dimension,), optional, default=None
 
         Exceptions Raised
         -----------------
@@ -155,18 +159,18 @@ class Lattice(object):
                                  '{} is negative, indicating a left-'
                                  'handed system.' .format(det))
 
-        if lattice_spacings is None:
-            lattice_spacings = list()
-            for i in range(dimension):
-                lattice_spacings.append(1.0)
-            lattice_spacings = np.asarray(lattice_spacings, dtype=float)
-        else:
+        if lattice_spacings is not None:
             lattice_spacings = np.asarray(lattice_spacings, dtype=float)
             if np.shape(lattice_spacings) != (dimension, ):
                 raise ValueError('Lattice spacings should be a vector of '
                                  'size:({},). Please include lattice spacings '
                                  'for each available dimension.'
                                  .format(dimension))
+        else:
+            raise ValueError('Lattice Spacing Issue: None provided, '
+                             'must provide lattice spacings matching '
+                             'the dimension ({}) of the system.'
+                             .format(dimension))
         print(lattice_spacings)
         if np.any(lattice_spacings <= 0.0):
             raise ValueError('Negative or zero lattice spacing value. One of '
