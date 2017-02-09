@@ -552,7 +552,10 @@ class Compound(object):
         """ """
         if forcefield:
             from foyer.forcefield import Forcefield
-            ff = Forcefield.by_name(forcefield)
+            if isinstance(forcefield, basestring):
+                ff = Forcefield.by_name(forcefield)
+            else:
+                ff = Forcefield(*forcefield) 
             structure = ff.apply(structure)
         if not box:
             box = self.boundingbox
@@ -572,7 +575,10 @@ class Compound(object):
         from mbuild.formats.gsdwriter import write_gsd
         if forcefield:
             from foyer.forcefield import Forcefield
-            ff = Forcefield.by_name(forcefield)
+            if isinstance(forcefield, basestring):
+                ff = Forcefield.by_name(forcefield)
+            else:
+                ff = Forcefield(*forcefield) 
             structure = ff.apply(structure)
         if not box:
             box = self.boundingbox
@@ -599,7 +605,7 @@ class Compound(object):
         if forcefield:
             from foyer.forcefield import Forcefield
             if isinstance(forcefield, basestring):
-                ff = Forcefield(forcefield)
+                ff = Forcefield.by_name(forcefield)
             else:
                 ff = Forcefield(*forcefield) 
             structure = ff.apply(structure)
@@ -611,7 +617,7 @@ class Compound(object):
         if forcefield:
             from foyer.forcefield import Forcefield
             if isinstance(forcefield, basestring):
-                ff = Forcefield(forcefield)
+                ff = Forcefield.by_name(forcefield)
             else:
                 ff = Forcefield(*forcefield) 
             structure = ff.apply(structure)
