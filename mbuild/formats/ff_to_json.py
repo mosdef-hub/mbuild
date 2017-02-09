@@ -101,8 +101,11 @@ def write_forcefield(structure, filename, ref_distance=1.0, ref_energy=1.0):
             
         ff_data['styles'] = styles
         ff_data['pair_coeffs'] = pair_data
-        ff_data['bond_coeffs'] = bond_data
-        ff_data['angle_coeffs'] = angle_data
-        ff_data['dihedral_coeffs'] = dihedral_data
+        if bonds:
+            ff_data['bond_coeffs'] = bond_data
+        if angles:
+            ff_data['angle_coeffs'] = angle_data
+        if dihedrals:
+            ff_data['dihedral_coeffs'] = dihedral_data
 
         json.dump(ff_data,f,indent=4)
