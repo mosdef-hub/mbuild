@@ -13,18 +13,18 @@ class TestHoomdXML(BaseTest):
 
     @pytest.mark.skipif(not has_foyer, reason="Foyer is not installed")
     def test_save_forcefield(self, ethane):
-        ethane.save(filename='ethane-opls.hoomdxml', forcefield='opls')
+        ethane.save(filename='ethane-opls.hoomdxml', forcefield='oplsaa')
 
     @pytest.mark.skipif(not has_foyer, reason="Foyer is not installed")
     def test_save_box(self, ethane):
         box = mb.Box(lengths=np.array([2.0, 2.0, 2.0]))
-        ethane.save(filename='ethane-box.hoomdxml', forcefield='opls', box=box)
+        ethane.save(filename='ethane-box.hoomdxml', forcefield='oplsaa', box=box)
 
     @pytest.mark.skipif(not has_foyer, reason="Foyer is not installed")
     def test_rigid(self, ethane):
         box = mb.Box(lengths=np.array([2.0, 2.0, 2.0]))
         rigid = np.zeros(ethane.n_particles)
         ethane.save(filename='ethane-box.hoomdxml',
-                    forcefield='opls',
+                    forcefield='oplsaa',
                     box=box,
                     rigid_bodies=rigid)

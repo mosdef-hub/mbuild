@@ -551,8 +551,12 @@ class Compound(object):
     def save_hoomdxml(self, filename, structure, forcefield, box=None, **kwargs):
         """ """
         if forcefield:
-            from foyer.forcefield import apply_forcefield
-            structure = apply_forcefield(structure, forcefield=forcefield)
+            from foyer.forcefield import Forcefield
+            if isinstance(forcefield, basestring):
+                ff = Forcefield.by_name(forcefield)
+            else:
+                ff = Forcefield(*forcefield) 
+            structure = ff.apply(structure)
         if not box:
             box = self.boundingbox
             for dim, val in enumerate(self.periodicity):
@@ -570,8 +574,12 @@ class Compound(object):
         """ """
         from mbuild.formats.gsdwriter import write_gsd
         if forcefield:
-            from foyer.forcefield import apply_forcefield
-            structure = apply_forcefield(structure, forcefield=forcefield)
+            from foyer.forcefield import Forcefield
+            if isinstance(forcefield, basestring):
+                ff = Forcefield.by_name(forcefield)
+            else:
+                ff = Forcefield(*forcefield) 
+            structure = ff.apply(structure)
         if not box:
             box = self.boundingbox
             for dim, val in enumerate(self.periodicity):
@@ -595,16 +603,24 @@ class Compound(object):
         gro_filename = os.path.join(filepath, basename + '.gro')
 
         if forcefield:
-            from foyer.forcefield import apply_forcefield
-            structure = apply_forcefield(structure, forcefield=forcefield)
+            from foyer.forcefield import Forcefield
+            if isinstance(forcefield, basestring):
+                ff = Forcefield.by_name(forcefield)
+            else:
+                ff = Forcefield(*forcefield) 
+            structure = ff.apply(structure)
         structure.save(top_filename, 'gromacs', **kwargs)
         structure.save(gro_filename, 'gro', **kwargs)
 
     def save_lammpsdata(self, filename, structure, forcefield, box=None, **kwargs):
         """ """
         if forcefield:
-            from foyer.forcefield import apply_forcefield
-            structure = apply_forcefield(structure, forcefield=forcefield)
+            from foyer.forcefield import Forcefield
+            if isinstance(forcefield, basestring):
+                ff = Forcefield.by_name(forcefield)
+            else:
+                ff = Forcefield(*forcefield) 
+            structure = ff.apply(structure)
         if not box:
             box = self.boundingbox
             for dim, val in enumerate(self.periodicity):

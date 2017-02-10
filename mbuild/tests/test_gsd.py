@@ -14,10 +14,10 @@ class TestGSD(BaseTest):
     @pytest.mark.skipif(not has_gsd, reason="GSD package not installed")
     @pytest.mark.skipif(not has_foyer, reason="Foyer is not installed")
     def test_save_forcefield(self, ethane):
-        ethane.save(filename='ethane-opls.gsd',forcefield='opls')
+        ethane.save(filename='ethane-opls.gsd',forcefield='oplsaa')
 
     @pytest.mark.skipif(not has_gsd, reason="GSD package not installed")
     @pytest.mark.skipif(not has_foyer, reason="Foyer is not installed")
     def test_save_box(self, ethane):
         box = mb.Box(lengths=np.array([2.0,2.0,2.0]))
-        ethane.save(filename='ethane-box.gsd',forcefield='opls',box=box)
+        ethane.save(filename='ethane-box.gsd',forcefield='oplsaa',box=box)

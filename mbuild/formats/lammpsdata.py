@@ -124,25 +124,28 @@ def write_lammpsdata(structure, filename, forcefield, box):
                 data.write('{}\t{:.5f}\t{:.5f}\n'.format(idx,epsilon,sigma_dict[idx]))
 
             # Bond coefficients
-            data.write('\nBond Coeffs # harmonic\n\n')
-            for params,idx in unique_bond_types.items():
-                data.write('{}\t{}\t{}\n'.format(idx,*params))
+            if bonds:
+                data.write('\nBond Coeffs # harmonic\n\n')
+                for params,idx in unique_bond_types.items():
+                    data.write('{}\t{}\t{}\n'.format(idx,*params))
 
             # Angle coefficients
-            data.write('\nAngle Coeffs # harmonic\n\n')
-            for params,idx in unique_angle_types.items():
-                data.write('{}\t{}\t{:.5f}\n'.format(idx,*params))
+            if angles:
+                data.write('\nAngle Coeffs # harmonic\n\n')
+                for params,idx in unique_angle_types.items():
+                    data.write('{}\t{}\t{:.5f}\n'.format(idx,*params))
 
             # Dihedral coefficients
-            data.write('\nDihedral Coeffs # opls\n\n')
-            for params,idx in unique_dihedral_types.items():
-                opls_coeffs = RB_to_OPLS(params[0],
-                                         params[1],
-                                         params[2],
-                                         params[3],
-                                         params[4],
-                                         params[5])
-                data.write('{}\t{:.5f}\t{:.5f}\t{:.5f}\t{:.5f}\n'.format(idx,*opls_coeffs))
+            if dihedrals:
+                data.write('\nDihedral Coeffs # opls\n\n')
+                for params,idx in unique_dihedral_types.items():
+                    opls_coeffs = RB_to_OPLS(params[0],
+                                             params[1],
+                                             params[2],
+                                             params[3],
+                                             params[4],
+                                             params[5])
+                    data.write('{}\t{:.5f}\t{:.5f}\t{:.5f}\t{:.5f}\n'.format(idx,*opls_coeffs))
 
         # Atom data
         data.write('\nAtoms\n\n')
