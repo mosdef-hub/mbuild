@@ -38,9 +38,10 @@ class SilicaInterface(mb.Compound):
 
     """
 
-    def __init__(self, bulk_silica, tile_x=1, tile_y=1, thickness=1.0):
+    def __init__(self, bulk_silica, tile_x=1, tile_y=1, thickness=1.0, seed=12345):
         super(SilicaInterface, self).__init__()
 
+        random.seed(seed)
         self._oh_density = 5.0
         self._O_buffer = 0.275
 
