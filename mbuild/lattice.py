@@ -1,23 +1,29 @@
 import numpy as np
 from collections import defaultdict
 from copy import deepcopy
+from six import string_types
+from itertools import permutations
 import mbuild as mb
 
 __all__ = ['Lattice']
 
 
 class Lattice(object):
-    """
-    Develop crystal structure from user defined inputs.
+    """Develop crystal structure from user defined inputs.
 
-    Lattice is the abstract building block a crystal structure composed
-    of Compounds. Once defined by the user, the crystal is returned as
-    a single compound that can be either replicated through its class
+    Lattice, the abstract building block of a crystal cell.
+    Once defined by the user, the crystal is returned as
+    a single Compound that can be either replicated through its class
     methods or through a similar replicate Compound method.
 
-    Lattice is defined through normal crystallographic means. Lattice expects
-    a right handed lattice and cell edges defined by vectors all originating
-    from the origin.
+    Lattice is defined through the standard bravais lattices, which have been
+    accepted by the International Union of Crystallography.
+    A Lattice can be fully described with its lattice vectors and lattice
+    spacings. Also, the Lattice can be fully defined by its lattice parameters:
+    the lattice spacings and its set of coordinate angles will then
+    generate the lattice vectors. Lattice expects a right handed lattice and
+    cell edges defined by vectors all originating from the origin in
+    Cartesian space.
 
     Parameters
     ----------
@@ -41,35 +47,34 @@ class Lattice(object):
     lattice_vectors : numpy array, shape=(dimension, dimension), optional
                       default=([1,0,0], [0,1,0], [0,0,1])
         Vectors that define edges of unit cell corresponding to dimension.
-    lattice_spacings : list-like, shape=(dimension,), optional, default=None
+    lattice_spacings : list-like, shape=(dimension,), required, default=None
         Length of unit cell edges.
     basis_vectors : dictionary-like, shape=(['id',[dimension,]], ...) optional
                     default={('default',([0,0,0]))}
         Location of all basis Compounds in unit cell.
-    angles : list-like, shape=(dimension,), optional, default=None
-        Interplanar angles describing the unit cell.
+    angles : list-like, optional, default=None
+        Lattice angles to define Bravais Lattice.
 
-    TODO(Justin Gilmer) : include angle support
-    TODO(Justin Gilmer) : Support conversion from abc, abg, to cartesian
     TODO(Justin Gilmer) : migrate data cleaning to separate functions
-    TODO(Justin Gilmer) : Print function to display info about Lattice
-    TODO(Justin Gilmer) : ask about optional arguments
+    TODO(Justin Gilmer) : Print function to display info about Lattice (repr)
     TODO(Justin Gilmer) : inheritance(Cubic, orthorhombic, hexangonal)
     TODO(Justin Gilmer) : nested for loop cleaning up
     TODO(Justin Gilmer) : orientation functionality
+    TODO(Justin Gilmer) : conversion to idiomatic python
     """
-    def __init__(self, dimension=None, lattice_vectors=None,
-                 lattice_spacings=None, basis_vectors=None):
+    def __init__(self, lattice_spacings, dimension=None,
+                 lattice_vectors=None, basis_vectors=None,
+                 angles=None):
         super(Lattice, self).__init__()
-        self.validate_inputs(dimension=dimension,
-                             lattice_vectors=lattice_vectors,
-                             lattice_spacings=lattice_spacings,
-                             basis_vectors=basis_vectors)
+        self._validate_inputs(lattice_vectors=lattice_vectors,
+                              dimension=dimension,
+                              lattice_spacings=lattice_spacings,
+                              basis_vectors=basis_vectors,
+                              angles=angles)
 
-    def validate_inputs(self, dimension, lattice_vectors,
-                        lattice_spacings, basis_vectors):
-        """
-        Check for proper inputs and set instance attributes.
+    def _validate_inputs(self, lattice_vectors, dimension,
+                         lattice_spacings, basis_vectors, angles):
+        """Check for proper inputs and set instance attributes.
 
         validate_inputs takes the data passed to the constructor by the user
         and will ensure that the data is correctly formatted and will then
@@ -81,42 +86,95 @@ class Lattice(object):
         are provided, basis vectors do not overlap when the unit cell is
         expanded.
 
-        Parameters
-        ----------
-        dimension : int, optional, default=3
-            Dimension of system of interest
-        lattice_vectors : numpy array, shape=(dimension, dimension), optional
-                          default=([1,0,0], [0,1,0], [0,0,1])
-            Vectors that define edges of unit cell corresponding to dimension.
-        lattice_spacings : list-like, shape=(dimension,), default=None
-            Length of unit cell edges.
-        basis_vectors : dictionary-like, shape=(['id',[dimension,]], ...)
-                        optional default={('default',([0,0,0]))}
-            Location of all basis Compounds in unit cell.
-        angles : list-like, shape=(dimension,), optional, default=None
-
         Exceptions Raised
         -----------------
         TypeError : incorrect typing of the input parameters.
 
         ValueError : values are not within restrictions.
-
-        Call Restrictions
-        -----------------
-        Called by constructor, should not be callable by user.
-
         """
         if dimension is None:
             dimension = 3
         else:
-            try:
-                dimension = int(dimension)
-            except ValueError:
-                raise
+            dimension = int(dimension)
         if dimension < 1 or dimension > 3:
             raise ValueError('Incorrect dimensions: {} is not a proper '
                              'dimension. 1, 2, or 3 are acceptable.'
                              .format(dimension))
+
+        if lattice_spacings is not None:
+            lattice_spacings = np.asarray(lattice_spacings, dtype=float)
+            if np.shape(lattice_spacings) != (dimension, ):
+                raise ValueError('Lattice spacings should be a vector of '
+                                 'size:({},). Please include lattice spacings '
+                                 'for each available dimension.'
+                                 .format(dimension))
+        else:
+            raise ValueError('Lattice Spacing Issue: None provided, '
+                             'must provide lattice spacings matching '
+                             'the dimension ({}) of the system.'
+                             .format(dimension))
+        if np.any(lattice_spacings <= 0.0):
+            raise ValueError('Negative or zero lattice spacing value. One of '
+                             'the spacings {} is negative or 0.'
+                             .format(lattice_spacings))
+
+        if angles is not None:
+            if (len(angles), dimension) == (3, 3):
+                if all(isinstance(theAngle, float) for theAngle in angles):
+                    if sum(angles) < 360.0 or sum(angles) > -360.0:
+                        for theAngle in angles:
+                            if(theAngle != 180.0 and theAngle != 0.0):
+                                pass
+                            else:
+                                raise ValueError('Angles cannot be 180.0 or '
+                                                 '0.0.')
+                    else:
+                        raise ValueError('Angles sum to a value greater than '
+                                         '360.0 or less than -360.0.')
+                else:
+                    raise TypeError('Angles are not type float.')
+
+                for subset in permutations(angles, 3):
+                    if not subset[0] < sum(angles) - subset[0]:
+                        raise ValueError('Each angle provided must be less '
+                                         'than the sum of the other two '
+                                         'angles. {} is greater.'
+                                         .format(subset[0]))
+            else:
+                raise TypeError('Size of angles incorrect. Expected 3 '
+                                'angles, recieved {}'.format(len(angles)))
+
+            if len(angles) == 1 and dimension == 2:
+                if all(isinstance(theAngle, float) for theAngle in angles):
+                    for theAngle in angles:
+                        if (theAngle != 180.0 and theAngle != 0.0 and
+                                theAngle < 180.0 and theAngle > -180.0):
+                            pass
+                        else:
+                            raise ValueError('Angle incorrectly defined. {} '
+                                             'does not follow the proper '
+                                             'guidelines for a bravais angle. '
+                                             'Refer to documentation.'
+                                             .format(theAngle))
+                else:
+                    raise TypeError('Angle provided is not of type float. '
+                                    'One or more values within {} is not '
+                                    'type float.'.format(angles))
+            else:
+                raise ValueError('Incorrect angles supplied. {} angles '
+                                 'were provided, but expected {}.'
+                                 .format(len(angles), 1))
+
+        if angles is not None and lattice_vectors is not None:
+            return ValueError('Over defined system. Lattice vectors and '
+                              'angles passed to constructor. Only one of '
+                              'these sets are required.')
+        if angles is not None and dimension != 1:
+            lattice_vectors = self._from_lattice_parameters(angles, dimension)
+        else:
+            raise ValueError('Dimension and provided angle mismatch. {} was '
+                             'provided while dimension was {}.'
+                             .format(angles, dimension))
 
         if lattice_vectors is None:
             if dimension is 3:
@@ -131,60 +189,31 @@ class Lattice(object):
             lattice_vectors = np.asarray(lattice_vectors, dtype=float)
             shape = np.shape(lattice_vectors)
 
-            if dimension != 1:
-                det = np.linalg.det(lattice_vectors)
-
-            if dimension is 3:
-                if (3, 3) != shape:
-                    raise ValueError('Dimensionality of'
-                                     'lattice_vectors is of {},'
-                                     ' not (3,3).' .format(shape))
-            elif dimension is 2:
-                if (2, 2) != shape:
-                    raise ValueError('Dimensionality of lattice_vectors is'
-                                     ' of {}, not (2,2).' .format(shape))
+            if dimension in (3, 2):
+                if (dimension, dimension) != shape:
+                    raise ValueError('Dimensionality of lattice_vectors is '
+                                     ' of shape {} not {}.'
+                                     .format(shape, (dimension, dimension)))
             else:
                 if (1, ) != shape:
                     raise ValueError('Dimensionality of lattice_vectors is'
                                      ' of {}, not (1, ).' .format(shape))
+            if dimension != 1:
+                det = np.linalg.det(lattice_vectors)
+                if abs(det) == 0.0:
+                    raise ValueError('Co-linear vectors: {}'
+                                     'have a determinant of 0.0. Does not '
+                                     'define a unit cell.'
+                                     .format(lattice_vectors))
 
-            if abs(det) == 0.0:
-                raise ValueError('Co-linear vectors: {}'
-                                 'have a determinant of 0.0. Does not '
-                                 'define a unit cell.'
-                                 .format(lattice_vectors))
-
-            if det < 0.0:
-                raise ValueError('Negative Determinant: the determinant of '
-                                 '{} is negative, indicating a left-'
-                                 'handed system.' .format(det))
-
-        if lattice_spacings is not None:
-            lattice_spacings = np.asarray(lattice_spacings, dtype=float)
-            if np.shape(lattice_spacings) != (dimension, ):
-                raise ValueError('Lattice spacings should be a vector of '
-                                 'size:({},). Please include lattice spacings '
-                                 'for each available dimension.'
-                                 .format(dimension))
-        else:
-            raise ValueError('Lattice Spacing Issue: None provided, '
-                             'must provide lattice spacings matching '
-                             'the dimension ({}) of the system.'
-                             .format(dimension))
-        print(lattice_spacings)
-        if np.any(lattice_spacings <= 0.0):
-            raise ValueError('Negative or zero lattice spacing value. One of '
-                             'the spacings {} is negative or 0.'
-                             .format(lattice_spacings))
+                if det <= 0.0:
+                    raise ValueError('Negative Determinant: the determinant '
+                                     'of {} is negative, indicating a left-'
+                                     'handed system.' .format(det))
 
         if basis_vectors is None:
             basis_vectors = defaultdict(list)
-            if dimension == 3:
-                basis_vectors['default'].append((0, 0, 0))
-            elif dimension == 2:
-                basis_vectors['default'].append((0, 0))
-            else:
-                basis_vectors['default'].append((0))
+            basis_vectors['default'].append((0,) * dimension)
         elif (isinstance(basis_vectors, list) or
               isinstance(basis_vectors, tuple)):
             for lst in basis_vectors:
@@ -193,9 +222,9 @@ class Lattice(object):
                                      '{} was provided, but the format should '
                                      'be: vector = ( (\'ID1\' , [x1,y1,z1]), '
                                      '( \'ID2\' , [x2,y2,z2]) )'.format(lst))
-                elif not isinstance(lst[0], str):
+                elif not isinstance(lst[0], string_types):
                     raise TypeError('ID Error, not a string. {} is not of '
-                                    'type str. Please correct in the '
+                                    'type string_types. Please correct in the '
                                     'basis_vectors input {}.'
                                     .format(lst[0], basis_vectors))
 
@@ -275,9 +304,47 @@ class Lattice(object):
         self.lattice_spacings = lattice_spacings
         self.basis_vectors = basis_dict
 
-    def populate(self, x=None, y=None, z=None, compound_dict=None):
+    def _from_lattice_parameters(self, angles, dimension):
+        """Convert Bravais lattice parameters to lattice vectors.
+
+        _from_lattice_parameters will generate the lattice vectors based on
+        the parameters necessary to build a Bravais Lattice.
+
+        This was adapted from the ASE triclinic.py lattice parameter code.
+
+        S. R. Bahn and K. W. Jacobsen
+        An object-oriented scripting interface to a
+        legacy electronic structure code Comput. Sci. Eng., Vol. 4, 56-66, 2002
+
+        Parameters
+        ----------
+        angles : list-like, required
+            Angles of bravais lattice.
         """
-        Expand lattice and create compound from lattice.
+        if dimension is 3:
+            (alpha, beta, gamma) = angles
+
+            degree = np.pi / 180.0
+            cosa = np.cos(alpha*degree)
+            cosb = np.cos(beta*degree)
+            sinb = np.sin(beta*degree)
+            cosg = np.cos(gamma*degree)
+            sing = np.sin(gamma*degree)
+            lattice_vec = ([1, 0, 0],
+                           [cosg, sing, 0],
+                           [cosb, (cosa-cosb*cosg)/sing,
+                            np.sqrt(sinb**2 - ((cosa - cosb*cosg)/sing)**2)])
+        else:
+            alpha = angles
+            degree = np.pi / 180.0
+            cosa = np.cos(alpha*degree)
+            sina = np.sin(alpha*degree)
+            lattice_vec = ([1, 0], [cosa, sina])
+
+        return lattice_vec
+
+    def populate(self, x=None, y=None, z=None, compound_dict=None):
+        """Expand lattice and create compound from lattice.
 
         populate will expand lattice based on user input. The user must also
         pass in a dictionary that contains the keys that exist in the
@@ -382,13 +449,12 @@ class Lattice(object):
                 tmp_part = mb.Particle(name=key, pos=[0, 0, 0])
                 for i in range(len(val)):
                     particle_to_add = mb.clone(tmp_part)
-                    print(val[i])
                     mb.translate(particle_to_add, list(val[i]))
                     ret_lattice.add(particle_to_add)
         else:
             for key, val in cell.items():
-                if isinstance(compound_dict.get(key), mb.Compound):
-                    compound_to_move = compound_dict.get(key)
+                if isinstance(compound_dict[key][0], mb.Compound):
+                    compound_to_move = compound_dict[key][0]
                     for i in range(len(val)):
                         tmp_comp = mb.clone(compound_to_move)
                         mb.translate(tmp_comp, val[i])
