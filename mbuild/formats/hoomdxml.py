@@ -120,10 +120,7 @@ def write_hoomdxml(structure, filename, forcefield, box, ref_distance=1.0,
             xml_file.write('{}\t{}\t{}\n'.format(*pos/ref_distance))
         xml_file.write('</position>\n')
         
-        if forcefield:
-            types = [atom.type for atom in structure.atoms]
-        else:
-            types = [atom.name for atom in structure.atoms]
+        types = [atom.name for atom in structure.atoms]
         xml_file.write('<type>\n')
         for atom_type in types:
             xml_file.write('{}\n'.format(atom_type))

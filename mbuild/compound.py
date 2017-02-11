@@ -510,7 +510,8 @@ class Compound(object):
         """Update the coordinates of this Compound from a file. """
         load(filename, compound=self, coords_only=True)
 
-    def save(self, filename, show_ports=False, forcefield=None, **kwargs):
+    def save(self, filename, show_ports=False, forcefield_name=None,
+             forcefield_files=None, box=None, **kwargs):
         """Save the Compound to a file.
 
         Parameters
@@ -520,8 +521,12 @@ class Compound(object):
             prefix will be parsed and will control the format.
         show_ports : bool, default=False
             Save ports contained within the compound.
-        forcefield : str, default=None
-            Apply a forcefield to the output file using the `foyer` package.
+        forcefield_name : str, default=None
+            Apply a forcefield to the output file using a forcefield provided
+            by the `foyer` package.
+        forcefield_name : str, default=None
+            Apply a forcefield to the output file using the `foyer` package and
+            a specific forcefield.xml file.
 
         Other Parameters
         ----------------
@@ -544,95 +549,87 @@ class Compound(object):
 
         structure = self.to_parmed(show_ports, **kwargs)
         if saver:  # mBuild/InterMol supported saver.
-            return saver(filename, structure, forcefield, **kwargs)
+            return saver(filename, structure, forcefield_name,
+                         forcefield_files, box, **kwargs)
         else:  # ParmEd supported saver.
             return structure.save(filename, **kwargs)
 
-    def save_hoomdxml(self, filename, structure, forcefield, box=None, **kwargs):
+    def _apply_forcefield(self, structure, forcefield_files, forcefield_name):
+        from foyer import Forcefield
+        ff = Forcefield(forcefield_files=forcefield_files, name=forcefield_name)
+        structure = ff.apply(structure)
+        return structure
+
+    def _gen_box(self):
+        box = self.boundingbox
+        for dim, val in enumerate(self.periodicity):
+            if val:
+                box.lengths[dim] = val
+                box.maxs[dim] = val
+                box.mins[dim] = 0.0
+            if not val:
+                box.maxs[dim] += 0.25
+                box.mins[dim] -= 0.25
+                box.lengths[dim] += 0.5
+        return box
+
+    def save_hoomdxml(self, filename, structure, forcefield_name,
+                      forcefield_files, box, **kwargs):
         """ """
-        if forcefield:
-            from foyer.forcefield import Forcefield
-            if isinstance(forcefield, basestring):
-                ff = Forcefield.by_name(forcefield)
-            else:
-                ff = Forcefield(*forcefield) 
-            structure = ff.apply(structure)
-        if not box:
-            box = self.boundingbox
-            for dim, val in enumerate(self.periodicity):
-                if val:
-                    box.lengths[dim] = val
-                    box.maxs[dim] = val
-                    box.mins[dim] = 0.0
-                if not val:
-                    box.maxs[dim] += 0.25
-                    box.mins[dim] -= 0.25
-                    box.lengths[dim] += 0.5
+        forcefield = False
+        if forcefield_name or forcefield_files:
+            forcefield = True
+            structure = self._apply_forcefield(structure, forcefield_files,
+                                               forcefield_name)
+
+        if box is None:
+            box = self._gen_box()
         write_hoomdxml(structure, filename, forcefield, box, **kwargs)
 
-    def save_gsd(self, filename, structure, forcefield, box=None, **kwargs):
+    def save_gsd(self, filename, structure, forcefield_name,
+                      forcefield_files, box=None, **kwargs):
         """ """
         from mbuild.formats.gsdwriter import write_gsd
-        if forcefield:
-            from foyer.forcefield import Forcefield
-            if isinstance(forcefield, basestring):
-                ff = Forcefield.by_name(forcefield)
-            else:
-                ff = Forcefield(*forcefield) 
-            structure = ff.apply(structure)
-        if not box:
-            box = self.boundingbox
-            for dim, val in enumerate(self.periodicity):
-                if val:
-                    box.lengths[dim] = val
-                    box.maxs[dim] = val
-                    box.mins[dim] = 0.0
-                if not val:
-                    box.maxs[dim] += 0.25
-                    box.mins[dim] -= 0.25
-                    box.lengths[dim] += 0.5
+        forcefield = False
+        if forcefield_name or forcefield_files:
+            forcefield = True
+            structure = self._apply_forcefield(structure, forcefield_files,
+                                               forcefield_name)
+
+        if box is None:
+            box = self._gen_box()
         write_gsd(structure, filename, forcefield, box, **kwargs)
 
-    def save_gromacs(self, filename, structure, forcefield, force_overwrite=False, **kwargs):
+    def save_gromacs(self, filename, structure, forcefield_name,
+                      forcefield_files, box, **kwargs):
         """ """
-
         # Create separate file paths for .gro and .top
         filepath, filename = os.path.split(filename)
         basename = os.path.splitext(filename)[0]
         top_filename = os.path.join(filepath, basename + '.top')
         gro_filename = os.path.join(filepath, basename + '.gro')
 
-        if forcefield:
-            from foyer.forcefield import Forcefield
-            if isinstance(forcefield, basestring):
-                ff = Forcefield.by_name(forcefield)
-            else:
-                ff = Forcefield(*forcefield) 
-            structure = ff.apply(structure)
+        forcefield = False
+        if forcefield_name or forcefield_files:
+            forcefield = True
+            structure = self._apply_forcefield(structure, forcefield_files,
+                                               forcefield_name)
+        if box is None:
+            box = self._gen_box()
         structure.save(top_filename, 'gromacs', **kwargs)
         structure.save(gro_filename, 'gro', **kwargs)
 
-    def save_lammpsdata(self, filename, structure, forcefield, box=None, **kwargs):
+    def save_lammpsdata(self, filename, structure, forcefield_name,
+                      forcefield_files, box, **kwargs):
         """ """
-        if forcefield:
-            from foyer.forcefield import Forcefield
-            if isinstance(forcefield, basestring):
-                ff = Forcefield.by_name(forcefield)
-            else:
-                ff = Forcefield(*forcefield) 
-            structure = ff.apply(structure)
-        if not box:
-            box = self.boundingbox
-            for dim, val in enumerate(self.periodicity):
-                if val:
-                    box.lengths[dim] = val
-                    box.maxs[dim] = val
-                    box.mins[dim] = 0.0
-                if not val:
-                    box.maxs[dim] += 0.25
-                    box.mins[dim] -= 0.25
-                    box.lengths[dim] += 0.5
+        forcefield = False
+        if forcefield_name or forcefield_files:
+            forcefield = True
+            structure = self._apply_forcefield(structure, forcefield_files,
+                                               forcefield_name)
 
+        if box is None:
+            box = self._gen_box()
         write_lammpsdata(structure, filename, forcefield, box, **kwargs)
 
     # Interface to Trajectory for reading/writing .pdb and .mol2 files.

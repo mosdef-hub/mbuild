@@ -1,9 +1,13 @@
 language: generic
+
 sudo: false
-addons:
-    apt:
-        sources:
-            - ubuntu-toolchain-r-test
+
+matrix:
+  include:
+    - { os: linux, env: PYTHON_VERSION=2.7 }
+    - { os: linux, env: PYTHON_VERSION=3.4 }
+    - { os: linux, env: PYTHON_VERSION=3.5 }
+    - { os: osx, env: PYTHON_VERSION=3.5 }
 
 install:
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew install md5sha1sum; fi
@@ -15,16 +19,5 @@ script:
   - py.test -v
   - cd ../examples
   - py.test test_examples.py -v
-
-os:
-  - osx
-  - linux
-
-env:
-  matrix:
-    - PYTHON_VERSION=2.7
-    - PYTHON_VERSION=3.4
-    - PYTHON_VERSION=3.5
-
 
 
