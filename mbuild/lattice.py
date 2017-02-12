@@ -169,12 +169,8 @@ class Lattice(object):
             return ValueError('Over defined system. Lattice vectors and '
                               'angles passed to constructor. Only one of '
                               'these sets are required.')
-        if angles is not None and dimension != 1:
+        if angles is not None and dimension != 1 and lattice_vectors is None:
             lattice_vectors = self._from_lattice_parameters(angles, dimension)
-        else:
-            raise ValueError('Dimension and provided angle mismatch. {} was '
-                             'provided while dimension was {}.'
-                             .format(angles, dimension))
 
         if lattice_vectors is None:
             if dimension is 3:
@@ -279,7 +275,7 @@ class Lattice(object):
                 else:
                     for x in range(num_iterations):
                         tmpx = vector[0] + x
-                        tmp_tuple = tuple((tmpx))
+                        tmp_tuple = tuple((tmpx, ))
                         value = tuple((the_id, vector))
                         overlap_dict[tmp_tuple].append(value)
 
