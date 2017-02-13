@@ -283,8 +283,7 @@ class Lattice(object):
         if basis_vectors is None:
             basis_vectors = defaultdict(list)
             basis_vectors['default'].append((0,) * dimension)
-        elif (isinstance(basis_vectors, list) or
-              isinstance(basis_vectors, tuple)):
+        elif isinstance(basis_vectors, tuple):
             for lst in basis_vectors:
                 if len(lst) != 2:
                     raise ValueError('Too many arguments per basis vector. '
@@ -317,8 +316,8 @@ class Lattice(object):
                                      .format(lst[1], dimension))
         else:
             raise TypeError('Incorrect Type: "basis_vectors" is of type {}, '
-                            'not type <list> or <tuple>. Please review '
-                            'the documentation for proper format.'
+                            'not <tuple>. Please review '
+                            'the documentation and examples for proper format.'
                             .format(type(basis_vectors)))
 
         if not isinstance(basis_vectors, defaultdict):
