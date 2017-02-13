@@ -19,9 +19,11 @@ class TestCompound(BaseTest):
 
     def test_save(self):
         methyl = mb.load(get_fn('methyl.pdb'))
-        outfile = 'methyl_out.pdb'
-        methyl.save(filename=outfile)
-        assert os.path.exists(outfile)
+        extensions = ['.xyz', '.pdb', '.mol2']
+        for ext in extensions:
+            outfile = 'methyl_out' + ext
+            methyl.save(filename=outfile)
+            assert os.path.exists(outfile)
 
     def test_batch_add(self, ethane, h2o):
         compound = mb.Compound()
