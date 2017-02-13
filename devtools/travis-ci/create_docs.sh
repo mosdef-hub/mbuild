@@ -22,7 +22,7 @@ conda install --yes sphinx numpydoc sphinx sphinx_rtd_theme widgetsnbextension i
 pushd $DIR/../../docs
 
 # clean leftovers from previous run
-rm -rf _build
+rm -rf _build/*
 rm -f *.mol2
 rm -f *.xyz
 rm -f *.pdb

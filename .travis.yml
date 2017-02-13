@@ -9,6 +9,11 @@ matrix:
     - { os: linux, env: PYTHON_VERSION=3.5 }
     - { os: osx, env: PYTHON_VERSION=3.5 }
 
+env:
+  global:
+  - ENCRYPTION_LABEL: "898e0934cf65"
+  - COMMIT_AUTHOR_EMAIL: "janos.sallai@vanderbilt.edu"
+
 install:
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew install md5sha1sum; fi
   - source devtools/travis-ci/install.sh
@@ -20,4 +25,5 @@ script:
   - cd ../examples
   - py.test test_examples.py -v
 
-
+after_success:
+  - source devtools/travis-ci/update_gh_pages.sh
