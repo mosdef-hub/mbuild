@@ -82,8 +82,7 @@ class Lattice(object):
     >>> basis_dictionary = {'cholesterol' : cholesterol_unit}
     >>> expanded_cell = cholesterol_lattice.populate(x=3, y=3, z=3,
                                      compound_dict=basis_dictionary)
-    >>> traj = expanded_cell.to_trajectory()
-    >>> traj.save('cholesterol_expanded.xyz')
+    >>> expanded_cell.save('cholesterol_expanded.pdb')
 
     The unit cell of cholesterol was associated with a Compound that contains
     the connectivity data and spatial arrangements of a cholesterol molecule.
@@ -107,8 +106,7 @@ class Lattice(object):
                                               compound_dict=cscl_dict)
 
     Write out this compound to XYZ file
-    >>> traj = cscl_compound.to_trajectory()
-    >>> traj.save('cscl.xyz')
+    >>> cscl_compound.save('cscl.xyz')
 
     A multi-Compound basis was created and replicated. For each unique basis
     atom position, a separate entry must be completed for the basis_vector
@@ -127,6 +125,7 @@ class Lattice(object):
     >>> copper_dict = {'cu' : copper}
     >>> copper_cell = copper_lattice.populate(x=3, y=3, z=20,
                                           compound_dict=copper_dict)
+    >>> copper_cell.save('copper.xyz')
 
     TODO(Justin Gilmer) : migrate data cleaning to separate functions
     TODO(Justin Gilmer) : Print function to display info about Lattice (repr)
