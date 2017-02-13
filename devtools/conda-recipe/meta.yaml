@@ -11,10 +11,10 @@ build:
 
 requirements:
   build:
-    - python {{ PYTHON_VERSION }}
+    - python
 
   run:
-    - python {{ PYTHON_VERSION }}
+    - python
     - numpy
     - scipy
     - packmol 1.0.0
