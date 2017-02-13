@@ -106,9 +106,9 @@ class Lattice(object):
     >>> cscl_compound = cscl_lattice.populate(x=3, y=3, z=3,
                                               compound_dict=cscl_dict)
 
-    Write out this compound to PDB file
+    Write out this compound to XYZ file
     >>> traj = cscl_compound.to_trajectory()
-    >>> traj.save('cscl.pdb')
+    >>> traj.save('cscl.xyz')
 
     A multi-Compound basis was created and replicated. For each unique basis
     atom position, a separate entry must be completed for the basis_vector
@@ -213,11 +213,8 @@ class Lattice(object):
                                          'than the sum of the other two '
                                          'angles. {} is greater.'
                                          .format(subset[0]))
-            else:
-                raise TypeError('Size of angles incorrect. Expected 3 '
-                                'angles, recieved {}'.format(len(angles)))
 
-            if len(angles) == 1 and dimension == 2:
+            elif len(angles) == 1 and dimension == 2:
                 if all(isinstance(theAngle, float) for theAngle in angles):
                     for theAngle in angles:
                         if (theAngle != 180.0 and theAngle != 0.0 and
@@ -229,14 +226,10 @@ class Lattice(object):
                                              'guidelines for a bravais angle. '
                                              'Refer to documentation.'
                                              .format(theAngle))
-                else:
-                    raise TypeError('Angle provided is not of type float. '
-                                    'One or more values within {} is not '
-                                    'type float.'.format(angles))
             else:
-                raise ValueError('Incorrect angles supplied. {} angles '
-                                 'were provided, but expected {}.'
-                                 .format(len(angles), 1))
+                raise ValueError('Incorrect amount of angles provided for '
+                                 'dimension {}. Recieved {} angles.'
+                                 .format(dimension, len(angles)))
 
         if angles is not None and lattice_vectors is not None:
             return ValueError('Over defined system. Lattice vectors and '
@@ -498,8 +491,8 @@ class Lattice(object):
                     ret_lattice.add(particle_to_add)
         else:
             for key_id, all_pos in cell.items():
-                if isinstance(compound_dict[key_id][0], mb.Compound):
-                    compound_to_move = compound_dict[key_id][0]
+                if isinstance(compound_dict[key_id], mb.Compound):
+                    compound_to_move = compound_dict[key_id]
                     for pos in all_pos:
                         tmp_comp = mb.clone(compound_to_move)
                         mb.translate(tmp_comp, list(pos))
