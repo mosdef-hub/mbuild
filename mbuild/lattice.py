@@ -123,7 +123,7 @@ class Lattice(object):
     >>> import mbuild as mb
     >>> from collections import defaultdict
     >>> copper = mb.Compound(name='Cu')
-    >>> lattice_vector = ( [1, 0, 0], [0, 1, 0], [0, 0, 0])
+    >>> lattice_vector = ( [1, 0, 0], [0, 1, 0], [0, 0, 1])
     >>> spacings = [.36149, .36149, .36149]
     >>> basis_vector = ( ('Cu', [0, 0, 0]), ('Cu', [.5, .5, 0]),
                         ('Cu', [.5, 0, .5] ), ('Cu', [0, .5, .5]), )
@@ -131,7 +131,7 @@ class Lattice(object):
                                   lattice_vectors=lattice_vector,
                                   basis_vectors=basis_vector)
     >>> copper_dict = defaultdict(list)
-    >>> copper_dict['Cu'].append(iron)
+    >>> copper_dict['Cu'].append(copper)
     >>> copper_cell = copper_lattice.populate(x=3, y=3, z=20,
                                           compound_dict=copper_dict)
 
@@ -498,23 +498,23 @@ class Lattice(object):
 
         ret_lattice = mb.Compound()
         if compound_dict is None:
-            for key, val in cell.items():
-                particle = mb.Particle(name=key, pos=[0, 0, 0])
-                for i in range(len(val)):
+            for key_id, all_pos in cell.items():
+                particle = mb.Particle(name=key_id, pos=[0, 0, 0])
+                for pos in all_pos:
                     particle_to_add = mb.clone(particle)
-                    mb.translate(particle_to_add, list(val[i]))
+                    mb.translate(particle_to_add, list(pos))
                     ret_lattice.add(particle_to_add)
         else:
-            for key, val in cell.items():
-                if isinstance(compound_dict[key][0], mb.Compound):
-                    compound_to_move = compound_dict[key][0]
-                    for item in val:
+            for key_id, all_pos in cell.items():
+                if isinstance(compound_dict[key_id][0], mb.Compound):
+                    compound_to_move = compound_dict[key_id][0]
+                    for pos in all_pos:
                         tmp_comp = mb.clone(compound_to_move)
-                        mb.translate(tmp_comp, list(item))
+                        mb.translate(tmp_comp, list(pos))
                         ret_lattice.add(tmp_comp)
                 else:
-                    err_type = str(type(compound_dict.get(key)))
+                    err_type = type(compound_dict.get(key_id))
                     TypeError('Invalid type in provided Compound Dictionary. '
                               'For key {}, type: {} was provided, '
-                              'not Compound.'.format(key, err_type))
+                              'not Compound.'.format(key_id, err_type))
         return ret_lattice
