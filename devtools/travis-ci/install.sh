@@ -13,24 +13,6 @@ bash $MINICONDA -b
 rm -f $MINICONDA
 
 export PATH=$HOME/miniconda3/bin:$PATH
+
 conda update -yq conda
-conda install --y conda-build jinja2 binstar pip
-
-conda config --add channels omnia
-conda config --add channels janschulz
-
-conda create -y -n myenv python=$PYTHON_VERSION
-source activate myenv
-
-conda install -y numpy \
-                 scipy \
-                 packmol=1.0.0 \
-                 nglview \
-                 oset \
-                 parmed \
-                 mdtraj \
-                 pytest \
-                 jupyter \
-                 nbformat \
-                 ipykernel \
-                 ipyext \
+conda install -yq conda-build jinja2
