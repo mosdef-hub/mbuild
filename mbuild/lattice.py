@@ -79,9 +79,8 @@ class Lattice(object):
     Then write out expanded crystal to XYZ file.
     >>> cholesterol_unit = mb.Compound()
     >>> cholesterol_unit = mb.load('cholesterol.pdb')
-    >>> basis_dictionary = defaultdict(list)
     >>> # associate basis vector with id 'cholesterol' to cholesterol Compound
-    >>> basis_dictionary['cholesterol'].append(cholesterol_unit)
+    >>> basis_dictionary = {'cholesterol' : cholesterol_unit}
     >>> expanded_cell = cholesterol_lattice.populate(x=3, y=3, z=3,
                                      compound_dict=basis_dictionary)
     >>> traj = expanded_cell.to_trajectory()
@@ -105,9 +104,7 @@ class Lattice(object):
                                   dimension=3)
 
     Now associate id with Compounds for basis atoms and replicate 3x3x3
-    >>> cscl_dict = defaultdict(list)
-    >>> cscl_dict['cl'].append(chlorine)
-    >>> cscl_dict['cs'].append(cesium)
+    >>> cscl_dict = {'cl' : chlorine, 'cs' : cesium}
     >>> cscl_compound = cscl_lattice.populate(x=3, y=3, z=3,
                                               compound_dict=cscl_dict)
 
@@ -130,8 +127,7 @@ class Lattice(object):
     >>> copper_lattice = mb.Lattice(spacings, dimension=3,
                                   lattice_vectors=lattice_vector,
                                   basis_vectors=basis_vector)
-    >>> copper_dict = defaultdict(list)
-    >>> copper_dict['Cu'].append(copper)
+    >>> copper_dict = {'cu' : copper}
     >>> copper_cell = copper_lattice.populate(x=3, y=3, z=20,
                                           compound_dict=copper_dict)
 
