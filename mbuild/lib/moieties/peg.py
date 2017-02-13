@@ -2,11 +2,6 @@ __author__ = 'jonestj1'
 
 import mbuild as mb
 
-from mbuild.lib.atoms import H
-from mbuild.lib.moieties import CH3
-from mbuild.lib.moieties import CH2
-from mbuild.lib.moieties import Silane
-
 class PegMonomer(mb.Compound):
     def __init__(self):
         super(PegMonomer, self).__init__()
