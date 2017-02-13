@@ -1,11 +1,13 @@
+__all__ = ['Lattice']
+
+
 import numpy as np
 from collections import defaultdict
 from copy import deepcopy
 from six import string_types
-from itertools import permutations
+import itertools as it
 import mbuild as mb
 
-__all__ = ['Lattice']
 
 
 class Lattice(object):
@@ -49,11 +51,89 @@ class Lattice(object):
         Vectors that define edges of unit cell corresponding to dimension.
     lattice_spacings : list-like, shape=(dimension,), required, default=None
         Length of unit cell edges.
-    basis_vectors : dictionary-like, shape=(['id',[dimension,]], ...) optional
+    basis_vectors : list-like, shape=(['id',[dimension,]], ... ,) optional
                     default={('default',([0,0,0]))}
         Location of all basis Compounds in unit cell.
     angles : list-like, optional, default=None
         Lattice angles to define Bravais Lattice.
+
+    Examples
+    --------
+    Generating a triclinc lattice for cholesterol.
+
+    >>> import mbuild as mb
+    >>> from collections import defaultdict
+    >>> # reading in the lattice parameters for crystalline cholesterol
+    >>> angle_values = [94.64, 90.67, 96.32]
+    >>> spacings = [1.4172, 3.4209, 1.0481]
+    >>> basis_vector = ( ('cholesterol', [0,0,0]), )
+    >>> cholesterol_lattice = mb.Lattice(spacings,
+                                         angles=angle_values,
+                                         basis_vectors=basis_vector,
+                                         dimension=3)
+
+    The lattice based on the bravais lattice parameters of crystalline
+    cholesterol was generated.
+
+    Replicating the triclinic unit cell out 3 in x,y,z directions.
+    Then write out expanded crystal to XYZ file.
+    >>> cholesterol_unit = mb.Compound()
+    >>> cholesterol_unit = mb.load('cholesterol.pdb')
+    >>> basis_dictionary = defaultdict(list)
+    >>> # associate basis vector with id 'cholesterol' to cholesterol Compound
+    >>> basis_dictionary['cholesterol'].append(cholesterol_unit)
+    >>> expanded_cell = cholesterol_lattice.populate(x=3, y=3, z=3,
+                                     compound_dict=basis_dictionary)
+    >>> traj = expanded_cell.to_trajectory()
+    >>> traj.save('cholesterol_expanded.xyz')
+
+    The unit cell of cholesterol was associated with a Compound that contains
+    the connectivity data and spatial arrangements of a cholesterol molecule.
+    The unit cell was then expanded out in x,y,z directions and the Compound
+    as well. The location data was then written to an XYZ file.
+
+
+    Generating BCC CsCl crystal structure
+    >>> import mbuild as mb
+    >>> from collections import defaultdict
+    >>> chlorine = mb.Compound(name='Cl')
+    >>> # angles not needed, when not provided, defaults to 90,90,90
+    >>> cesium = mb.Compound(name='Cs')
+    >>> spacings = [.4123, .4123, .4123]
+    >>> basis_vector = ( ('cl', [0,0,0]), ('cs', [.5, .5, .5]), )
+    >>> cscl_lattice = mb.Lattice(spacings, basis_vectors=basis_vector,
+                                  dimension=3)
+
+    Now associate id with Compounds for basis atoms and replicate 3x3x3
+    >>> cscl_dict = defaultdict(list)
+    >>> cscl_dict['cl'].append(chlorine)
+    >>> cscl_dict['cs'].append(cesium)
+    >>> cscl_compound = cscl_lattice.populate(x=3, y=3, z=3,
+                                              compound_dict=cscl_dict)
+
+    Write out this compound to PDB file
+    >>> traj = cscl_compound.to_trajectory()
+    >>> traj.save('cscl.pdb')
+
+    A multi-Compound basis was created and replicated. For each unique basis
+    atom position, a separate entry must be completed for the basis_vector
+    input.
+
+    Generating FCC Iron cell with lattice_vectors instead of angles
+    >>> import mbuild as mb
+    >>> from collections import defaultdict
+    >>> iron = mb.Compound(name='Fe')
+    >>> lattice_vector = ( [1, 0, 0], [0, 1, 0], [0, 0, 0])
+    >>> spacings = [.36149, .36149, .36149]
+    >>> basis_vector = ( ('Fe', [0, 0, 0]), ('Fe', [.5, .5, 0]),
+                        ('Fe', [.5, 0, .5] ), ('Fe', [0, .5, .5]), )
+    >>> iron_lattice = mb.Lattice(spacings, dimension=3,
+                                  lattice_vectors=lattice_vector,
+                                  basis_vectors=basis_vector)
+    >>> iron_dict = defaultdict(list)
+    >>> iron_dict['Fe'].append(iron)
+    >>> iron_cell = iron_lattice.populate(x=3, y=3, z=20,
+                                          compound_dict=iron_dict)
 
     TODO(Justin Gilmer) : migrate data cleaning to separate functions
     TODO(Justin Gilmer) : Print function to display info about Lattice (repr)
@@ -134,7 +214,7 @@ class Lattice(object):
                 else:
                     raise TypeError('Angles are not type float.')
 
-                for subset in permutations(angles, 3):
+                for subset in it.permutations(angles, 3):
                     if not subset[0] < sum(angles) - subset[0]:
                         raise ValueError('Each angle provided must be less '
                                          'than the sum of the other two '
@@ -251,33 +331,10 @@ class Lattice(object):
         if not isinstance(basis_vectors, defaultdict):
             overlap_dict = defaultdict(list)
             for the_id, vector in basis_vectors:
-                num_iterations = 3
-                if dimension == 3:
-                    for x in range(num_iterations):
-                        for y in range(num_iterations):
-                            for z in range(num_iterations):
-                                tmpx = vector[0] + x
-                                tmpy = vector[1] + y
-                                tmpz = vector[2] + z
-                                tmp_tuple = tuple((tmpx, tmpy, tmpz))
-                                value = tuple((the_id, vector))
-                                overlap_dict[tmp_tuple].append(value)
-
-                elif dimension == 2:
-                    for x in range(num_iterations):
-                        for y in range(num_iterations):
-                            tmpx = vector[0] + x
-                            tmpy = vector[1] + y
-                            tmp_tuple = tuple((tmpx, tmpy))
-                            value = tuple((the_id, vector))
-                            overlap_dict[tmp_tuple].append(value)
-
-                else:
-                    for x in range(num_iterations):
-                        tmpx = vector[0] + x
-                        tmp_tuple = tuple((tmpx, ))
-                        value = tuple((the_id, vector))
-                        overlap_dict[tmp_tuple].append(value)
+                num_iter = 3
+                for offsets in it.product(range(num_iter), repeat=dimension):
+                    offset_vector = tuple((v + offset for v, offset in zip(vector, offsets)))
+                    overlap_dict[offset_vector].append((the_id, vector))
 
             # now review for overlap
             for key, val in overlap_dict.items():
@@ -339,7 +396,7 @@ class Lattice(object):
 
         return lattice_vec
 
-    def populate(self, x=None, y=None, z=None, compound_dict=None):
+    def populate(self, compound_dict=None, x=None, y=None, z=None):
         """Expand lattice and create compound from lattice.
 
         populate will expand lattice based on user input. The user must also
@@ -442,18 +499,18 @@ class Lattice(object):
         ret_lattice = mb.Compound()
         if compound_dict is None:
             for key, val in cell.items():
-                tmp_part = mb.Particle(name=key, pos=[0, 0, 0])
+                particle = mb.Particle(name=key, pos=[0, 0, 0])
                 for i in range(len(val)):
-                    particle_to_add = mb.clone(tmp_part)
+                    particle_to_add = mb.clone(particle)
                     mb.translate(particle_to_add, list(val[i]))
                     ret_lattice.add(particle_to_add)
         else:
             for key, val in cell.items():
                 if isinstance(compound_dict[key][0], mb.Compound):
                     compound_to_move = compound_dict[key][0]
-                    for i in range(len(val)):
+                    for item in val:
                         tmp_comp = mb.clone(compound_to_move)
-                        mb.translate(tmp_comp, val[i])
+                        mb.translate(tmp_comp, list(item))
                         ret_lattice.add(tmp_comp)
                 else:
                     err_type = str(type(compound_dict.get(key)))
