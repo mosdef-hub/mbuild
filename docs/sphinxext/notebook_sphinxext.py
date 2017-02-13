@@ -24,7 +24,8 @@ def export_html(wd, name):
     config = {
         'Exporter': {'template_file': 'embed',
                      'template_path': ['./sphinxext/']},
-        'ExecutePreprocessor': {'enabled': True},
+#        'ExecutePreprocessor': {'enabled': True},
+        'ExecutePreprocessor': {'enabled': False},
         'ExtractOutputPreprocessor': {'enabled': True},
         'CSSHTMLHeaderPreprocessor': {'enabled': True}
     }

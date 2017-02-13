@@ -39,15 +39,18 @@ import mbuild
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
+    # 'nbsphinx',
+    'sphinx.ext.mathjax',
     'sphinx.ext.autodoc',
     'sphinx.ext.viewcode',
     'sphinx.ext.intersphinx',
     'sphinx.ext.viewcode',
     'sphinx.ext.autosummary',
-    'sphinx.ext.mathjax',    
-    'notebook_sphinxext',
+   'notebook_sphinxext',
     'numpydoc'
 ]
+
+nbsphinx_execute = 'always'
 
 autosummary_generate = True
 autodoc_default_flags = ['members', 'inherited-members']
@@ -105,7 +108,7 @@ release = mbuild.version
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
-exclude_patterns = ['_build']
+exclude_patterns = ['_build', '**.ipynb_checkpoints']
 
 # The reST default role (used for this markup: `text`) to use for all
 # documents.

@@ -1,4 +1,15 @@
+#!/bin/bash
+
 # Create the docs
+# get the directory in which this script is located
+SOURCE="${BASH_SOURCE[0]}"
+while [ -h "$SOURCE" ]; do # resolve $SOURCE until the file is no longer a symlink
+  DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
+  SOURCE="$(readlink "$SOURCE")"
+  [[ $SOURCE != /* ]] && SOURCE="$DIR/$SOURCE" # if $SOURCE was a relative symlink, we need to resolve it relative to the path where the symlink file was located
+done
+DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
+
 
 # Print each line, exit on error
 set -ev
@@ -8,7 +19,7 @@ set -ev
 # install additional packages required for doc generation
 conda install --yes sphinx numpydoc sphinx sphinx_rtd_theme widgetsnbextension ipywidgets
 
-pushd docs
+pushd $DIR/../../docs
 
 # clean leftovers from previous run
 rm -rf _build
@@ -22,5 +33,3 @@ rm -f *.pdb
 ln -s tutorials/ch3.pdb .
 
 make html
-
-popd
