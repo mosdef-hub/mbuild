@@ -15,6 +15,6 @@ class Ethane(mb.Compound):
 
         self.add(CH3(), "methyl1")
         self.add(CH3(), "methyl2")
-        mb.equivalence_transform(self['methyl1'], self['methyl1']['up'], self['methyl2']['up'])
+        mb.force_overlap(self['methyl1'], self['methyl1']['up'], self['methyl2']['up'])
 
 # -- ==ethane== --
