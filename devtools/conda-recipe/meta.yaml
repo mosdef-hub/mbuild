@@ -1,0 +1,50 @@
+package:
+  name: mbuild
+  version: {{ GIT_DESCRIBE_TAG }}
+
+source:
+  path: ../../
+
+build:
+  number: {{ GIT_DESCRIBE_NUMBER }}
+  script: python setup.py install --single-version-externally-managed --record record.txt
+
+requirements:
+  build:
+    - python
+
+  run:
+    - python
+    - numpy
+    - scipy
+    - packmol 1.0.0
+    - nglview
+    - oset
+    - parmed
+    - mdtraj
+    - gsd
+    - pip
+
+test:
+  requires:
+    - pytest
+    - pytest-cov
+    - pytest-flake8
+    - coveralls
+    - jupyter
+    - nbformat
+    - ipykernel
+    - ipyext
+
+  source_files:
+    - mbuild/examples/*
+
+  commands:
+    - py.test
+    - cd mbuild/examples
+    - py.test test_examples.py -v
+
+about:
+  home: http://mosdef-hub.github.io/mbuild
+  license: MIT
+  summary: A hierarchical, component based molecule builder.
