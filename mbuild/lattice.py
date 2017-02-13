@@ -62,7 +62,6 @@ class Lattice(object):
     Generating a triclinc lattice for cholesterol.
 
     >>> import mbuild as mb
-    >>> from collections import defaultdict
     >>> # reading in the lattice parameters for crystalline cholesterol
     >>> angle_values = [94.64, 90.67, 96.32]
     >>> spacings = [1.4172, 3.4209, 1.0481]
@@ -94,7 +93,6 @@ class Lattice(object):
 
     Generating BCC CsCl crystal structure
     >>> import mbuild as mb
-    >>> from collections import defaultdict
     >>> chlorine = mb.Compound(name='Cl')
     >>> # angles not needed, when not provided, defaults to 90,90,90
     >>> cesium = mb.Compound(name='Cs')
@@ -118,7 +116,6 @@ class Lattice(object):
 
     Generating FCC Copper cell with lattice_vectors instead of angles
     >>> import mbuild as mb
-    >>> from collections import defaultdict
     >>> copper = mb.Compound(name='Cu')
     >>> lattice_vector = ( [1, 0, 0], [0, 1, 0], [0, 0, 1])
     >>> spacings = [.36149, .36149, .36149]
