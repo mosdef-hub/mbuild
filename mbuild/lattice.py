@@ -9,7 +9,6 @@ import itertools as it
 import mbuild as mb
 
 
-
 class Lattice(object):
     """Develop crystal structure from user defined inputs.
 
@@ -85,7 +84,7 @@ class Lattice(object):
 
     The unit cell of cholesterol was associated with a Compound that contains
     the connectivity data and spatial arrangements of a cholesterol molecule.
-    The unit cell was then expanded out in x,y,z directions and cholesterol 
+    The unit cell was then expanded out in x,y,z directions and cholesterol
     Compounds were populated.
 
 
@@ -103,7 +102,7 @@ class Lattice(object):
     >>> cscl_dict = {'Cl' : chlorine, 'Cs' : cesium}
     >>> cscl_compound = cscl_lattice.populate(x=3, y=3, z=3,
     ...                                       compound_dict=cscl_dict)
-    
+
     A multi-Compound basis was created and replicated. For each unique basis
     atom position, a separate entry must be completed for the basis_vector
     input.
