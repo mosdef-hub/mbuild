@@ -27,4 +27,4 @@ script:
   - cd ..
   
 after_success:
-  - if [[ $TRAVIS_PYTHON_VERSION == 3.5 ]]; then source devtools/travis-ci/update_gh_pages.sh; fi
+  - if [[ $PYTHON_VERSION == 3.5 ]]; then source devtools/travis-ci/update_gh_pages.sh; fi
