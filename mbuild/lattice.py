@@ -119,21 +119,21 @@ class Lattice(object):
     atom position, a separate entry must be completed for the basis_vector
     input.
 
-    Generating FCC Iron cell with lattice_vectors instead of angles
+    Generating FCC Copper cell with lattice_vectors instead of angles
     >>> import mbuild as mb
     >>> from collections import defaultdict
-    >>> iron = mb.Compound(name='Fe')
+    >>> copper = mb.Compound(name='Cu')
     >>> lattice_vector = ( [1, 0, 0], [0, 1, 0], [0, 0, 0])
     >>> spacings = [.36149, .36149, .36149]
-    >>> basis_vector = ( ('Fe', [0, 0, 0]), ('Fe', [.5, .5, 0]),
-                        ('Fe', [.5, 0, .5] ), ('Fe', [0, .5, .5]), )
-    >>> iron_lattice = mb.Lattice(spacings, dimension=3,
+    >>> basis_vector = ( ('Cu', [0, 0, 0]), ('Cu', [.5, .5, 0]),
+                        ('Cu', [.5, 0, .5] ), ('Cu', [0, .5, .5]), )
+    >>> copper_lattice = mb.Lattice(spacings, dimension=3,
                                   lattice_vectors=lattice_vector,
                                   basis_vectors=basis_vector)
-    >>> iron_dict = defaultdict(list)
-    >>> iron_dict['Fe'].append(iron)
-    >>> iron_cell = iron_lattice.populate(x=3, y=3, z=20,
-                                          compound_dict=iron_dict)
+    >>> copper_dict = defaultdict(list)
+    >>> copper_dict['Cu'].append(iron)
+    >>> copper_cell = copper_lattice.populate(x=3, y=3, z=20,
+                                          compound_dict=copper_dict)
 
     TODO(Justin Gilmer) : migrate data cleaning to separate functions
     TODO(Justin Gilmer) : Print function to display info about Lattice (repr)
