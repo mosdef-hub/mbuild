@@ -16,6 +16,7 @@ env:
 
 install:
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew install md5sha1sum; fi
+  - git fetch -t
   - source devtools/travis-ci/install.sh
   - conda config --add channels omnia
   - conda config --add channels janschulz
