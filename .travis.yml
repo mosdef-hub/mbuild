@@ -12,12 +12,13 @@ matrix:
 install:
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew install md5sha1sum; fi
   - source devtools/travis-ci/install.sh
-  - pip install -e .
+  - conda config --add channels omnia
+  - conda config --add channels janschulz
+  - conda config --add channels bioconda
+  - conda config --add channels glotzer
 
 script:
-  - cd mbuild/tests
-  - py.test -v
-  - cd ../examples
-  - py.test test_examples.py -v
+  - conda build devtools/conda-recipe
+
 
 
