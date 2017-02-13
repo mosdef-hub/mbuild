@@ -20,9 +20,9 @@ class Brush(mb.Compound):
                             port_labels=('up', 'down')), label='pmpc')
         self.add(CH3(), label='methyl')
 
-        mb.equivalence_transform(self['initiator'], self['initiator']['down'], self['silane']['up'])
-        mb.equivalence_transform(self['pmpc'], self['pmpc']['down'], self['initiator']['up'])
-        mb.equivalence_transform(self['methyl'], self['methyl']['up'], self['pmpc']['up'])
+        mb.force_overlap(self['initiator'], self['initiator']['down'], self['silane']['up'])
+        mb.force_overlap(self['pmpc'], self['pmpc']['down'], self['initiator']['up'])
+        mb.force_overlap(self['methyl'], self['methyl']['up'], self['pmpc']['up'])
 
         # Make self.port point to silane.bottom_port
         self.add(self['silane']['down'], label='down', containment=False)

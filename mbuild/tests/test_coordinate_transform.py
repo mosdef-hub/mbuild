@@ -7,7 +7,7 @@ from mbuild.coordinate_transform import (Translation, CoordinateTransform,
                                          ChangeOfBasis, AxisTransform,
                                          RigidTransform, rotate_around_x,
                                          rotate_around_y, rotate_around_z,
-                                         equivalence_transform, translate,
+                                         force_overlap, translate,
                                          translate_to, x_axis_transform,
                                          y_axis_transform, z_axis_transform)
 from mbuild.tests.base_test import BaseTest
@@ -88,9 +88,9 @@ class TestCoordinateTransform(BaseTest):
     def test_equivalence_transform(self, ch2, ch3, methane):
         ch2_atoms = list(ch2.particles())
         methane_atoms = list(methane.particles())
-        equivalence_transform(ch2, ch2_atoms[0], methane_atoms[0], add_bond=False)
+        force_overlap(ch2, ch2_atoms[0], methane_atoms[0], add_bond=False)
         assert (ch2_atoms[0].pos == methane_atoms[0].pos).all()
-        equivalence_transform(ch2, ch2['up'], ch3['up'])
+        force_overlap(ch2, ch2['up'], ch3['up'])
         assert ch2.n_bonds == 3
 
         assert ch2.root.bond_graph.number_of_edges() == 3

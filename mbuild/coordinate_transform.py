@@ -1,11 +1,33 @@
+from warnings import warn
+
 from numpy import *
 from numpy.linalg import norm, svd, inv
 
 
 __all__ = ['rotate_around_x', 'rotate_around_y', 'rotate_around_z',
            'spin_x', 'spin_y', 'spin_z',
-           'equivalence_transform', 'translate', 'translate_to',
-           'x_axis_transform', 'y_axis_transform', 'z_axis_transform']
+           'force_overlap', 'translate', 'translate_to',
+           'x_axis_transform', 'y_axis_transform', 'z_axis_transform',
+
+           # Deprecated
+           'equivalence_transform']
+
+def force_overlap(move_this, from_positions, to_positions, add_bond=True):
+    """Computes an affine transformation that maps the from_positions to the
+    respective to_positions, and applies this transformation to the compound.
+
+    Parameters
+    ----------
+    compound : mb.Compound
+        The Compound to be transformed.
+    from_positions : np.ndarray, shape=(n, 3), dtype=float
+        Original positions.
+    to_positions : np.ndarray, shape=(n, 3), dtype=float
+        New positions.
+
+    """
+    equivalence_transform(compound=move_this, from_positions=from_positions,
+                          to_positions=to_positions, add_bond=True)
 
 
 class CoordinateTransform(object):
@@ -278,6 +300,8 @@ def equivalence_transform(compound, from_positions, to_positions, add_bond=True)
         New positions.
 
     """
+    warn('The `equivalence_transform` function is being phased out in favor of'
+         ' `force_overlap`.', DeprecationWarning)
     from mbuild.port import Port
     T = None
     if isinstance(from_positions, (list, tuple)) and isinstance(to_positions, (list, tuple)):
@@ -314,7 +338,7 @@ def _choose_correct_port(from_port, to_port):
 
     TODO: -Increase robustness for cases where the anchors are a different
            distance from their respective ports.
-          -Provide options in `equivalence_transform` to override this behavior.
+          -Provide options in `force_overlap` to override this behavior.
 
     Parameters
     ----------
@@ -567,4 +591,22 @@ def z_axis_transform(compound, new_origin=None,
     rotate_around_y(compound, pi * 3 / 2)
 
 
+def force_overlap(move_this, from_positions, to_positions, add_bond=True):
+    """Computes an affine transformation that maps the from_positions to the
+    respective to_positions, and applies this transformation to the compound.
 
+    Parameters
+    ----------
+    move_this : mb.Compound
+        The Compound to be moved.
+    from_positions : mb.Compound or np.ndarray, shape=(n, 3), dtype=float
+        Original positions.
+    to_positions : mb.Compound or np.ndarray, shape=(n, 3), dtype=float
+        New positions.
+    add_bond : bool, optional, default=True
+        If `from_positions` and `to_positions` are `Ports`, create a bond
+        between the two anchor atoms.
+
+    """
+    equivalence_transform(compound=move_this, from_positions=from_positions,
+                          to_positions=to_positions, add_bond=True)
