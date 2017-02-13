@@ -62,32 +62,31 @@ class Lattice(object):
     Generating a triclinc lattice for cholesterol.
 
     >>> import mbuild as mb
+    >>> from mbuild.utils.io import get_fn
     >>> # reading in the lattice parameters for crystalline cholesterol
     >>> angle_values = [94.64, 90.67, 96.32]
     >>> spacings = [1.4172, 3.4209, 1.0481]
     >>> basis_vector = ( ('cholesterol', [0,0,0]), )
     >>> cholesterol_lattice = mb.Lattice(spacings,
-                                         angles=angle_values,
-                                         basis_vectors=basis_vector,
-                                         dimension=3)
+    ...                                  angles=angle_values,
+    ...                                  basis_vectors=basis_vector,
+    ...                                  dimension=3)
 
     The lattice based on the bravais lattice parameters of crystalline
     cholesterol was generated.
 
     Replicating the triclinic unit cell out 3 in x,y,z directions.
-    Then write out expanded crystal to XYZ file.
     >>> cholesterol_unit = mb.Compound()
-    >>> cholesterol_unit = mb.load('cholesterol.pdb')
+    >>> cholesterol_unit = mb.load(get_fn('cholesterol.pdb'))
     >>> # associate basis vector with id 'cholesterol' to cholesterol Compound
     >>> basis_dictionary = {'cholesterol' : cholesterol_unit}
     >>> expanded_cell = cholesterol_lattice.populate(x=3, y=3, z=3,
-                                     compound_dict=basis_dictionary)
-    >>> expanded_cell.save('cholesterol_expanded.pdb')
+    ...                              compound_dict=basis_dictionary)
 
     The unit cell of cholesterol was associated with a Compound that contains
     the connectivity data and spatial arrangements of a cholesterol molecule.
-    The unit cell was then expanded out in x,y,z directions and the Compound
-    as well. The location data was then written to an XYZ file.
+    The unit cell was then expanded out in x,y,z directions and cholesterol 
+    Compounds were populated.
 
 
     Generating BCC CsCl crystal structure
@@ -96,18 +95,15 @@ class Lattice(object):
     >>> # angles not needed, when not provided, defaults to 90,90,90
     >>> cesium = mb.Compound(name='Cs')
     >>> spacings = [.4123, .4123, .4123]
-    >>> basis_vector = ( ('cl', [0,0,0]), ('cs', [.5, .5, .5]), )
+    >>> basis_vector = ( ('Cl', [0,0,0]), ('Cs', [.5, .5, .5]), )
     >>> cscl_lattice = mb.Lattice(spacings, basis_vectors=basis_vector,
-                                  dimension=3)
+    ...                           dimension=3)
 
     Now associate id with Compounds for basis atoms and replicate 3x3x3
-    >>> cscl_dict = {'cl' : chlorine, 'cs' : cesium}
+    >>> cscl_dict = {'Cl' : chlorine, 'Cs' : cesium}
     >>> cscl_compound = cscl_lattice.populate(x=3, y=3, z=3,
-                                              compound_dict=cscl_dict)
-
-    Write out this compound to XYZ file
-    >>> cscl_compound.save('cscl.xyz')
-
+    ...                                       compound_dict=cscl_dict)
+    
     A multi-Compound basis was created and replicated. For each unique basis
     atom position, a separate entry must be completed for the basis_vector
     input.
@@ -118,14 +114,13 @@ class Lattice(object):
     >>> lattice_vector = ( [1, 0, 0], [0, 1, 0], [0, 0, 1])
     >>> spacings = [.36149, .36149, .36149]
     >>> basis_vector = ( ('Cu', [0, 0, 0]), ('Cu', [.5, .5, 0]),
-                        ('Cu', [.5, 0, .5] ), ('Cu', [0, .5, .5]), )
+    ...                 ('Cu', [.5, 0, .5] ), ('Cu', [0, .5, .5]), )
     >>> copper_lattice = mb.Lattice(spacings, dimension=3,
-                                  lattice_vectors=lattice_vector,
-                                  basis_vectors=basis_vector)
-    >>> copper_dict = {'cu' : copper}
+    ...                           lattice_vectors=lattice_vector,
+    ...                           basis_vectors=basis_vector)
+    >>> copper_dict = {'Cu' : copper}
     >>> copper_cell = copper_lattice.populate(x=3, y=3, z=20,
-                                          compound_dict=copper_dict)
-    >>> copper_cell.save('copper.xyz')
+    ...                                       compound_dict=copper_dict)
 
     TODO(Justin Gilmer) : migrate data cleaning to separate functions
     TODO(Justin Gilmer) : Print function to display info about Lattice (repr)
