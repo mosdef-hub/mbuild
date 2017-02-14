@@ -6,11 +6,15 @@ Install with `conda <http://continuum.io/downloads>`_
 -----------------------------------------------------
 ::
 
-    $ conda install -c mosdef mbuild
+    $ conda install -c omnia -c janschulz -c bioconda -c glotzer -c mosdef mbuild
 
 Alternatively you can add all the required channels to your ``.condarc``
-after which you no longer need to specify the channel::
+after which you can simply install without specifying the channels::
 
+    $ conda config --add channels omnia
+    $ conda config --add channels janschulz
+    $ conda config --add channels bioconda
+    $ conda config --add channels glotzer
     $ conda config --add channels mosdef
     $ conda install mbuild
 

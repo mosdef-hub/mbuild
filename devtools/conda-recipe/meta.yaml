@@ -27,7 +27,7 @@ requirements:
 
 test:
   requires:
-    - pytest
+    - pytest >=3.0
     - jupyter
     - nbformat
     - ipykernel
