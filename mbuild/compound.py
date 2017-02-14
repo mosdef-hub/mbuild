@@ -498,8 +498,7 @@ class Compound(object):
 
     def visualize(self, show_ports=False):
         """Visualize the Compound using nglview. """
-        import_('nglview')
-        import nglview
+        nglview = import_('nglview')
         if run_from_ipython():
             structure = self.to_trajectory(show_ports)
             return nglview.show_mdtraj(structure)

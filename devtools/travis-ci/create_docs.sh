@@ -18,7 +18,6 @@ set -ev
 
 # install additional packages required for doc generation
 conda install --yes sphinx numpydoc sphinx sphinx_rtd_theme widgetsnbextension ipywidgets
-conda install --yes -c omnia mdtraj
 pip install mock
 
 pushd $DIR/../..
