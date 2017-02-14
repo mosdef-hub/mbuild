@@ -1,6 +1,29 @@
 import os
 from pkg_resources import resource_filename
 
+from mdtraj.utils.delay_import import import_, MESSAGES
+
+MESSAGES['gsd'] = '''
+The code at {filename}:{line_number} requires the "gsd" package
+
+gsd can be installed with conda using:
+
+# conda install -c glotzer gsd
+'''
+
+MESSAGES['nglview'] = '''
+The code at {filename}:{line_number} requires the "nglview" package
+
+nglview can be installed using:
+
+# conda install -c bioconda nglview
+
+or
+
+# pip install nglview
+'''
+
+
 try:
     import intermol
     has_intermol = True
@@ -45,7 +68,4 @@ def run_from_ipython():
         return True
     except NameError:
         return False
-
-
-
 

@@ -11,7 +11,6 @@ import sys
 from warnings import warn
 
 import mdtraj as md
-import nglview
 import numpy as np
 from oset import oset as OrderedSet
 import parmed as pmd
@@ -22,7 +21,7 @@ from mbuild.bond_graph import BondGraph
 from mbuild.box import Box
 from mbuild.exceptions import MBuildError
 from mbuild.periodic_kdtree import PeriodicCKDTree
-from mbuild.utils.io import run_from_ipython
+from mbuild.utils.io import run_from_ipython, import_
 from mbuild.formats.hoomdxml import write_hoomdxml
 from mbuild.formats.lammpsdata import write_lammpsdata
 
@@ -499,6 +498,8 @@ class Compound(object):
 
     def visualize(self, show_ports=False):
         """Visualize the Compound using nglview. """
+        import_('nglview')
+        import nglview
         if run_from_ipython():
             structure = self.to_trajectory(show_ports)
             return nglview.show_mdtraj(structure)

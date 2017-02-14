@@ -5,12 +5,13 @@ __all__ = ['write_gsd']
 
 import re
 import numpy as np
-import gsd.hoomd
 from copy import deepcopy
 from math import floor
 from collections import OrderedDict
 from oset import oset as OrderedSet
 from .ff_to_json import write_forcefield
+
+from mbuild.utils.io import import_
 
 
 def write_gsd(structure, filename, forcefield, box, ref_distance=1.0, ref_mass=1.0,
@@ -36,6 +37,9 @@ def write_gsd(structure, filename, forcefield, box, ref_distance=1.0, ref_mass=1
     write_ff : boolean, default=True
         Write forcefield parameters to a JSON file, 'parameters.json'
     """
+
+    import_('gsd')
+    import gsd.hoomd
 
     xyz = np.array([[atom.xx,atom.xy,atom.xz] for atom in structure.atoms])
 
