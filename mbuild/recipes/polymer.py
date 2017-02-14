@@ -1,7 +1,7 @@
 import itertools as it
 
 from mbuild.compound import Compound
-from mbuild.coordinate_transform import equivalence_transform
+from mbuild.coordinate_transform import force_overlap
 from mbuild.utils.validation import assert_port_exists
 from mbuild import clone
 
@@ -55,9 +55,9 @@ class Polymer(Compound):
             else:
                 # Transform this part, such that it's bottom port is rotated
                 # and translated to the last part's top port.
-                equivalence_transform(this_part,
-                                      this_part.labels[port_labels[1]],
-                                      last_part.labels[port_labels[0]])
+                force_overlap(this_part,
+                              this_part.labels[port_labels[1]],
+                              last_part.labels[port_labels[0]])
             last_part = this_part
             if n_added == n * len(sequence) - 1:
                 break

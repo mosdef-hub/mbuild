@@ -880,13 +880,14 @@ class Compound(object):
         guessed_elements = set()
         for atom in self.particles():
             atomic_number = None
+            name = ''.join(char for char in atom.name if not char.isdigit())
             try:
                 atomic_number = AtomicNum[atom.name]
             except KeyError:
                 element = element_by_name(atom.name)
-                if atom.name not in guessed_elements:
+                if name not in guessed_elements:
                     warn('Guessing that "{}" is element: "{}"'.format(atom, element))
-                    guessed_elements.add(atom.name)
+                    guessed_elements.add(name)
             else:
                 element = atom.name
 

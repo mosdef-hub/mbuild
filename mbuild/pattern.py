@@ -5,7 +5,7 @@ from itertools import product
 
 import numpy as np
 
-from mbuild.coordinate_transform import (equivalence_transform, translate,
+from mbuild.coordinate_transform import (force_overlap, translate,
                                          rotate_around_x, rotate_around_y,
                                          rotate_around_z, spin_y, spin_z)
 from mbuild.utils.validation import assert_port_exists
@@ -54,7 +54,7 @@ class Pattern(object):
             for port in self.orientations[orientation]:
                 new_compound = clone(compound)
                 new_port = new_compound.labels[compound_port]
-                equivalence_transform(new_compound, new_port['up'], port['up'])
+                (new_compound, new_port['up'], port['up'])
 
                 compounds.append(new_compound)
         else:
@@ -103,7 +103,7 @@ class Pattern(object):
 
             # Attach the guest to the closest port.
             new_guest = clone(guest)
-            equivalence_transform(new_guest, new_guest.labels[guest_port_name], closest_port)
+            force_overlap(new_guest, new_guest.labels[guest_port_name], closest_port)
             guests.append(new_guest)
 
             # Move the port as far away as possible (simpler than removing it).
@@ -118,8 +118,9 @@ class Pattern(object):
                 if port not in used_ports:
                     new_backfill = clone(backfill)
                     # Might make sense to have a backfill_port_name option...
-                    equivalence_transform(
-                        new_backfill, new_backfill.labels[backfill_port_name], port)
+                    force_overlap(new_backfill,
+                                  new_backfill.labels[backfill_port_name],
+                                  port)
                     backfills.append(new_backfill)
         return guests, backfills
 

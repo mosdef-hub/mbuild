@@ -23,8 +23,8 @@ class Hexane(mb.Compound):
         self.add(Propane(), 'propane1')
         self.add(Propane(), 'propane2')
 
-        mb.equivalence_transform(self['propane1'], 
-                                 self['propane1']['down'], 
-                                 self['propane2']['down'])
+        mb.force_overlap(self['propane1'], 
+                         self['propane1']['down'], 
+                         self['propane2']['down'])
 
 # -- ==cg_hexane== --
