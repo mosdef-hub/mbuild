@@ -18,7 +18,7 @@ requirements:
     - numpy
     - scipy
     - packmol 1.0.0
-    - nglview >=0.6.2 [not win]
+    - nglview >=0.6.2 # [not win]
     - oset
     - parmed
     - mdtraj
