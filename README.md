@@ -2,7 +2,7 @@
 
 [![Linux Build Status](https://travis-ci.org/mosdef-hub/mbuild.svg?branch=master)](https://travis-ci.org/mosdef-hub/mbuild)
 [![PyPI Version](https://badge.fury.io/py/mbuild.svg)](https://pypi.python.org/pypi/mbuild)
-[![Binstar Badge](https://anaconda.org/mosdef-hub/mbuild/badges/version.svg)](https://anaconda.org/mosdef-hub/mbuild)
+[![Binstar Badge](https://anaconda.org/mosdef/mbuild/badges/version.svg)](https://anaconda.org/mosdef/mbuild)
 [![Binder](http://mybinder.org/badge.svg)](http://mybinder.org/repo/imodels/mbuild_binder)
 
 With just a few lines of mBuild code, you can assemble reusable components into
@@ -49,8 +49,11 @@ the hierarchy so you can actually create whole families of structures simply
 by adjusting a variable:
 
 ```python
-pattern = Random2DPattern(20)  # A random arrangement of 20 pieces on a 2D surface.
-brush_layer = BrushLayer(chain_lenth=20, pattern=pattern, tile_x=3, tile_y=2)
+import mbuild as mb
+from mbuild.examples import PMPCLayer
+
+pattern = mb.Random2DPattern(20)  # A random arrangement of 20 pieces on a 2D surface.
+pmpc_layer = PMPCLayer(chain_length=20, pattern=pattern, tile_x=3, tile_y=2)
 ```
 
 ![Zwitterionic brushes on beta-cristobalite substrate](docs/images/pmpc.png)
