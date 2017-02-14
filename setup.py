@@ -17,7 +17,7 @@ from setuptools import setup, find_packages
 
 #####################################
 VERSION = "0.6.0"
-ISRELEASED = True
+ISRELEASED = False
 if ISRELEASED:
     __version__ = VERSION
 else:

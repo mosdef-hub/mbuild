@@ -26,8 +26,30 @@ def force_overlap(move_this, from_positions, to_positions, add_bond=True):
         New positions.
 
     """
-    equivalence_transform(compound=move_this, from_positions=from_positions,
-                          to_positions=to_positions, add_bond=True)
+    from mbuild.port import Port
+    T = None
+    if isinstance(from_positions, (list, tuple)) and isinstance(to_positions, (list, tuple)):
+        equivalence_pairs = zip(from_positions, to_positions)
+    elif isinstance(from_positions, Port) and isinstance(to_positions, Port):
+        equivalence_pairs, T = _choose_correct_port(from_positions, to_positions)
+        from_positions.used = True
+        to_positions.used = True
+    else:
+        equivalence_pairs = [(from_positions, to_positions)]
+
+    if not T:
+        T = _create_equivalence_transform(equivalence_pairs)
+    atom_positions = compound.xyz_with_ports
+    atom_positions = T.apply_to(atom_positions)
+    _set_particle_positions(compound, atom_positions)
+
+    if add_bond:
+        if isinstance(from_positions, Port) and isinstance(to_positions, Port):
+            if not from_positions.anchor or not to_positions.anchor:
+                warnings.warn("Attempting to form bond from port that has no anchor")
+            else:
+                from_positions.anchor.parent.add_bond((from_positions.anchor, to_positions.anchor))
+                to_positions.anchor.parent.add_bond((from_positions.anchor, to_positions.anchor))
 
 
 class CoordinateTransform(object):
