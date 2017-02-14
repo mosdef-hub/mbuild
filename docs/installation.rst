@@ -6,21 +6,15 @@ Install with `conda <http://continuum.io/downloads>`_
 -----------------------------------------------------
 ::
 
-    $ conda install -c omnia -c janschulz -c imodels mbuild
-
-.. note::
-    The ``omnia`` channel provides `MDTraj <http://mdtraj.org/>`_,
-    `ParmEd <http://parmed.github.io/ParmEd/>`_ and
-    `packmol <http://www.ime.unicamp.br/~martinez/packmol/home.shtml/>`_,
-    ``janschulz`` provides `ipyext <https://pypi.python.org/pypi/ipyext/0.1.0/>`_,
-    and ``imodels`` is our channel where mBuild is hosted.
+    $ conda install -c omnia -c janschulz -c bioconda -c glotzer -c mosdef mbuild
 
 Alternatively you can add all the required channels to your ``.condarc``
 after which you can simply ``conda install mbuild``::
 
     $ conda config --add channels omnia
     $ conda config --add channels janschulz
-    $ conda config --add channels imodels
+    $ conda config --add channels bioconda
+    $ conda config --add channels mosdef
     $ conda install mbuild
 
 .. note::
@@ -33,7 +27,7 @@ Install from source
 -------------------
 ::
 
-    $ git clone https://github.com/imodels/mbuild
+    $ git clone https://github.com/mosdef-hub/mbuild
     $ cd mbuild
     $ pip install -e .
 
