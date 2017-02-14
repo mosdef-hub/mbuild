@@ -16,6 +16,7 @@ var
 sdist
 develop-eggs
 .installed.cfg
+.pypirc
 
 # Installer logs
 pip-log.txt
