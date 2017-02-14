@@ -28,7 +28,6 @@ python setup.py --name
 cd docs
 
 # clean leftovers from previous run
-rm -rf _build/*
 rm -f *.mol2
 rm -f *.xyz
 rm -f *.pdb
