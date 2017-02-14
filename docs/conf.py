@@ -22,8 +22,6 @@ import mock
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 
 MOCK_MODULES = ['numpy',
-                'mdtraj',
-                'mdtraj.utils.delay_import',
                 'nglview',
                 'oset',
                 'parmed',
