@@ -23,7 +23,7 @@ import mock
 
 MOCK_MODULES = ['numpy',
                 'mdtraj',
-                'mdtraj.utils.io',
+                'mdtraj.utils',
                 'nglview',
                 'oset',
                 'parmed',
