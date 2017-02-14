@@ -14,6 +14,7 @@ after which you can simply ``conda install mbuild``::
     $ conda config --add channels omnia
     $ conda config --add channels janschulz
     $ conda config --add channels bioconda
+    $ conda config --add channels glotzer
     $ conda config --add channels mosdef
     $ conda install mbuild
 
