@@ -20,7 +20,12 @@ set -ev
 conda install --yes sphinx numpydoc sphinx sphinx_rtd_theme widgetsnbextension ipywidgets
 pip install mock
 
-pushd $DIR/../../docs
+pushd $DIR/../..
+
+# this will generate mbuild/versions.py
+python setup.py --name
+
+cd docs
 
 # clean leftovers from previous run
 rm -rf _build/*
