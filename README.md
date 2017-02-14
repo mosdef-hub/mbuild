@@ -1,8 +1,8 @@
 ## mBuild: a hierarchical, component based molecule builder
 
-[![Linux Build Status](https://travis-ci.org/iModels/mbuild.svg?branch=master)](https://travis-ci.org/iModels/mbuild)
+[![Linux Build Status](https://travis-ci.org/mosdef-hub/mbuild.svg?branch=master)](https://travis-ci.org/mosdef-hub/mbuild)
 [![PyPI Version](https://badge.fury.io/py/mbuild.svg)](https://pypi.python.org/pypi/mbuild)
-[![Binstar Badge](https://anaconda.org/imodels/mbuild/badges/version.svg)](https://anaconda.org/imodels/mbuild)
+[![Binstar Badge](https://anaconda.org/mosdef-hub/mbuild/badges/version.svg)](https://anaconda.org/mosdef-hub/mbuild)
 [![Binder](http://mybinder.org/badge.svg)](http://mybinder.org/repo/imodels/mbuild_binder)
 
 With just a few lines of mBuild code, you can assemble reusable components into
@@ -15,7 +15,7 @@ complex molecular systems for molecular dynamics simulations.
   worry about manually defining bonds when constructing chemically bonded
   structures from smaller components.
 
-To learn more, get started or contribute, check out our [website](http://imodels.github.io/mbuild/).
+To learn more, get started or contribute, check out our [website](http://mosdef-hub.github.io/mbuild/).
 
 If you use this package, please cite [our paper](http://dx.doi.org/10.1007/978-981-10-1128-3_5
 ). The BibTeX reference is
