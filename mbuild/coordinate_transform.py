@@ -18,12 +18,15 @@ def force_overlap(move_this, from_positions, to_positions, add_bond=True):
 
     Parameters
     ----------
-    compound : mb.Compound
-        The Compound to be transformed.
+    move_this : mb.Compound
+        The Compound to be moved.
     from_positions : np.ndarray, shape=(n, 3), dtype=float
         Original positions.
     to_positions : np.ndarray, shape=(n, 3), dtype=float
         New positions.
+    add_bond : bool, optional, default=True
+        If `from_positions` and `to_positions` are `Ports`, create a bond
+        between the two anchor atoms.
 
     """
     from mbuild.port import Port
@@ -39,9 +42,9 @@ def force_overlap(move_this, from_positions, to_positions, add_bond=True):
 
     if not T:
         T = _create_equivalence_transform(equivalence_pairs)
-    atom_positions = compound.xyz_with_ports
+    atom_positions = move_this.xyz_with_ports
     atom_positions = T.apply_to(atom_positions)
-    _set_particle_positions(compound, atom_positions)
+    _set_particle_positions(move_this, atom_positions)
 
     if add_bond:
         if isinstance(from_positions, Port) and isinstance(to_positions, Port):
@@ -611,24 +614,3 @@ def z_axis_transform(compound, new_origin=None,
                      point_on_x_axis=point_on_z_axis,
                      point_on_xy_plane=point_on_zx_plane)
     rotate_around_y(compound, pi * 3 / 2)
-
-
-def force_overlap(move_this, from_positions, to_positions, add_bond=True):
-    """Computes an affine transformation that maps the from_positions to the
-    respective to_positions, and applies this transformation to the compound.
-
-    Parameters
-    ----------
-    move_this : mb.Compound
-        The Compound to be moved.
-    from_positions : mb.Compound or np.ndarray, shape=(n, 3), dtype=float
-        Original positions.
-    to_positions : mb.Compound or np.ndarray, shape=(n, 3), dtype=float
-        New positions.
-    add_bond : bool, optional, default=True
-        If `from_positions` and `to_positions` are `Ports`, create a bond
-        between the two anchor atoms.
-
-    """
-    equivalence_transform(compound=move_this, from_positions=from_positions,
-                          to_positions=to_positions, add_bond=True)
