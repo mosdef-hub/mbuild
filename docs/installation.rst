@@ -6,13 +6,12 @@ Install with `conda <http://continuum.io/downloads>`_
 -----------------------------------------------------
 ::
 
-    $ conda install -c omnia -c bioconda -c mosdef mbuild
+    $ conda install -c omnia -c mosdef mbuild
 
 Alternatively you can add all the required channels to your ``.condarc``
 after which you can simply install without specifying the channels::
 
     $ conda config --add channels omnia
-    $ conda config --add channels bioconda
     $ conda config --add channels mosdef
     $ conda install mbuild
 
@@ -22,7 +21,7 @@ after which you can simply install without specifying the channels::
     `Anaconda scientific python distribution <http://continuum.io/downloads>`_
     to manage your numerical and scientific Python packages.
 
-Install from source
+Install an editable version from source
 -------------------
 ::
 
