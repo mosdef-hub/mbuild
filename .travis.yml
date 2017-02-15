@@ -24,7 +24,7 @@ install:
   - conda config --add channels glotzer
 
 script:
-  - conda build devtools/conda-recipe
+  - conda build --python $PYTHON_VERSION devtools/conda-recipe
 
 after_success:
   - if [[ $PYTHON_VERSION == 3.5 ]] && [[ "$TRAVIS_OS_NAME" == "linux" ]]; then source devtools/travis-ci/update_gh_pages.sh; fi
