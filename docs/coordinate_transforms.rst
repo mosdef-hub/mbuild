@@ -2,6 +2,7 @@
 Coordinate transformations
 ==========================
 
+.. autofunction:: mbuild.coordinate_transform.force_overlap
 
 .. autofunction:: mbuild.coordinate_transform.translate
 
