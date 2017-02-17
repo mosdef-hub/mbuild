@@ -2,7 +2,7 @@ import mbuild as mb
 
 
 class Ammonium(mb.Compound):
-    """An ammounium group. """
+    """An tetravalent nitrogen atom."""
     def __init__(self):
         super(Ammonium, self).__init__()
 
