@@ -1,10 +1,10 @@
 import mbuild as mb
 
 
-class Ammonium(mb.Compound):
+class N4(mb.Compound):
     """An tetravalent nitrogen atom."""
     def __init__(self):
-        super(Ammonium, self).__init__()
+        super(N4, self).__init__()
 
         self.add(mb.Particle(name='N', pos=[0, 0, 0]), label='N[$]')
         self.add(mb.Port(anchor=self[0]), label='port_0')
@@ -24,6 +24,6 @@ class Ammonium(mb.Compound):
         mb.translate(self['port_3'], [-0.042, -0.0243, -0.042])
         
 if __name__ == '__main__':
-    m = Ammonium()
+    m = N4()
     m.visualize(show_ports=True)
 
