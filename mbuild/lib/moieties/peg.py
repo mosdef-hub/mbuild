@@ -13,4 +13,4 @@ class PegMonomer(mb.Compound):
         mb.translate(self['down'], [0, -0.07, 0])
 
         self.add(mb.Port(anchor=self[6]), 'up')
-        mb.translate(self['up'], [0, 0.364, 0])
+        mb.translate(self['up'], [0, 0.073, 0])
