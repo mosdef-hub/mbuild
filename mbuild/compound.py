@@ -547,9 +547,8 @@ class Compound(object):
         except KeyError:  # TODO: better reporting
             saver = None
 
-        if not hasattr(fname, 'write'):
-            if os.path.exists(filename) and not overwrite:
-                raise IOError('{0} exists; not overwriting' % fname)
+        if os.path.exists(filename) and not overwrite:
+            raise IOError('{0} exists; not overwriting' % filename)
 
         structure = self.to_parmed(**kwargs)
         if saver:  # mBuild/InterMol supported saver.
