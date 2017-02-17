@@ -511,7 +511,7 @@ class Compound(object):
         load(filename, compound=self, coords_only=True)
 
     def save(self, filename, show_ports=False, forcefield_name=None,
-             forcefield_files=None, box=None, **kwargs):
+             forcefield_files=None, box=None, overwrite=False, **kwargs):
         """Save the Compound to a file.
 
         Parameters
@@ -558,7 +558,7 @@ class Compound(object):
             traj = self.to_trajectory(show_ports=show_ports)
             traj.save(filename)
         else:  # ParmEd supported saver.
-            return structure.save(filename, **kwargs)
+            return structure.save(filename, overwrite=overwrite, **kwargs)
 
     def _apply_forcefield(self, structure, forcefield_files, forcefield_name):
         from foyer import Forcefield
