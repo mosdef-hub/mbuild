@@ -7,7 +7,7 @@ environment:
     PYTHONUNBUFFERED: 1
 
   matrix:
-    - PYTHON: "C:\\Miniconda-x64"
+    - PYTHON: "C:\\Miniconda3-x64"
       CONDA_PY: "27"
       ARCH: "64"
     - PYTHON: "C:\\Miniconda3-x64"
@@ -30,5 +30,5 @@ install:
 build: false
 
 test_script:
-  - "%CMD_IN_ENV% conda build --python %CONDA_PY% --quiet devtools\\conda-recipe"
+  - "%CMD_IN_ENV% conda build --quiet devtools\\conda-recipe"
 
