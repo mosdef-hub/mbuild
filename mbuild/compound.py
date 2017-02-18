@@ -69,7 +69,8 @@ def clone(existing_compound, clone_of=None, root_container=None):
     if clone_of is None:
         clone_of = dict()
 
-    newone = existing_compound._clone(clone_of=clone_of, root_container=root_container)
+    newone = existing_compound._clone(clone_of=clone_of,
+                                      root_container=root_container)
     existing_compound._clone_bonds(clone_of=clone_of)
     return newone
 
@@ -86,9 +87,9 @@ class Compound(object):
     the composite, and Particle playing the role of the primitive (leaf) part,
     where Particle is in fact simply an alias to the Compound class.
 
-    Compound maintains a list of children (other Compounds contained within), and
-    provides a means to tag the children with labels, so that the compounds can
-    be easily looked up later. Labels may also point to objects outside the
+    Compound maintains a list of children (other Compounds contained within),
+    and provides a means to tag the children with labels, so that the compounds
+    can be easily looked up later. Labels may also point to objects outside the
     Compound's containment hierarchy. Compound has built-in support for copying
     and deepcopying Compound hierarchies, enumerating particles or bonds in the
     hierarchy, proximity based searches, visualization, I/O operations, and a
@@ -553,7 +554,7 @@ class Compound(object):
         structure = self.to_parmed(**kwargs)
         if saver:  # mBuild/InterMol supported saver.
             saver(filename, structure, forcefield_name,
-                         forcefield_files, box, **kwargs)
+                  forcefield_files, box, **kwargs)
         elif extension == '.xyz':
             traj = self.to_trajectory(show_ports=show_ports)
             traj.save(filename)
@@ -593,7 +594,7 @@ class Compound(object):
         write_hoomdxml(structure, filename, forcefield, box, **kwargs)
 
     def save_gsd(self, filename, structure, forcefield_name,
-                      forcefield_files, box=None, **kwargs):
+                 forcefield_files, box=None, **kwargs):
         """ """
         from mbuild.formats.gsdwriter import write_gsd
         forcefield = False
@@ -607,13 +608,14 @@ class Compound(object):
         write_gsd(structure, filename, forcefield, box, **kwargs)
 
     def save_gromacs(self, filename, structure, forcefield_name,
-                      forcefield_files, box, **kwargs):
+                     forcefield_files, box, **kwargs):
         """ """
         # Create separate file paths for .gro and .top
         filepath, filename = os.path.split(filename)
         basename = os.path.splitext(filename)[0]
         top_filename = os.path.join(filepath, basename + '.top')
         gro_filename = os.path.join(filepath, basename + '.gro')
+        #  TODO: I think  the forcefield varable can be deleted here
 
         forcefield = False
         if forcefield_name or forcefield_files:
@@ -626,7 +628,7 @@ class Compound(object):
         structure.save(gro_filename, 'gro', **kwargs)
 
     def save_lammpsdata(self, filename, structure, forcefield_name,
-                      forcefield_files, box, **kwargs):
+                        forcefield_files, box, **kwargs):
         """ """
         forcefield = False
         if forcefield_name or forcefield_files:
@@ -1074,5 +1076,6 @@ class Compound(object):
         newone = clone_of[self]
         for c1, c2 in self.bonds():
             newone.add_bond((clone_of[c1], clone_of[c2]))
+
 
 Particle = Compound
