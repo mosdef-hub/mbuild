@@ -16,6 +16,10 @@ env:
   - ENCRYPTION_LABEL: "898e0934cf65"
   - COMMIT_AUTHOR_EMAIL: "janos.sallai@vanderbilt.edu"
 
+before_install:
+    - pip install pytest pytest-cov
+    - pip install coveralls
+
 install:
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew install md5sha1sum; fi
   - git fetch -t
@@ -27,6 +31,8 @@ install:
 
 script:
   - conda build --python $PYTHON_VERSION devtools/conda-recipe
+  - py.test
 
 after_success:
+  - coveralls
   - if [[ $PYTHON_VERSION == 3.5 ]] && [[ "$TRAVIS_OS_NAME" == "linux" ]]; then source devtools/travis-ci/update_gh_pages.sh; fi
