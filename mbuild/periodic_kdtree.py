@@ -253,9 +253,9 @@ class PeriodicCKDTree(KDTree):
                 else:
                     return np.inf, self.n
             elif k > 1:
-                dd = np.empty(k,dtype=np.float)
+                dd = np.empty(k, dtype=np.float)
                 dd.fill(np.inf)
-                ii = np.empty(k,dtype=np.int)
+                ii = np.empty(k, dtype=np.int)
                 ii.fill(self.n)
                 for j in range(len(hits)):
                     dd[j], ii[j] = hits[j]
@@ -314,7 +314,7 @@ class PeriodicCKDTree(KDTree):
         """
         x = np.asarray(x).astype(np.float)
         if x.shape[-1] != self.m:
-            raise ValueError("Searching for a %d-dimensional point in a " \
+            raise ValueError("Searching for a %d-dimensional point in a "
                              "%d-dimensional KDTree" % (x.shape[-1], self.m))
         if len(x.shape) == 1:
             return self.__query_ball_point(x, r, p, eps)
