@@ -17,8 +17,8 @@ env:
   - COMMIT_AUTHOR_EMAIL: "janos.sallai@vanderbilt.edu"
 
 before_install:
-    - pip install --user $USER pytest pytest-cov
-    - pip install --user $USER coveralls
+    - pip install --user pytest pytest-cov
+    - pip install --user coveralls
 
 install:
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew install md5sha1sum; fi
