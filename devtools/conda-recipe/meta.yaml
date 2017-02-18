@@ -22,6 +22,7 @@ requirements:
     - oset
     - parmed
     - mdtraj
+    - foyer
 
 test:
   requires:
