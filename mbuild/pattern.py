@@ -1,13 +1,11 @@
 from __future__ import division
-import operator
 
 from itertools import product
 
 import numpy as np
 
 from mbuild.coordinate_transform import (force_overlap, translate,
-                                         rotate_around_x, rotate_around_y,
-                                         rotate_around_z, spin_y, spin_z)
+                                         spin_y, spin_z)
 from mbuild.utils.validation import assert_port_exists
 from mbuild import clone
 
