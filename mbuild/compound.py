@@ -404,7 +404,8 @@ class Compound(object):
                 bond_tuple = (p1, p2) if id(p1) < id(p2) else (p2, p1)
                 if bond_tuple in added_bonds:
                     continue
-                if (p2.name == name_b) and (dmin <= self.min_periodic_distance(p2.pos, p1.pos) <= dmax):
+                if (p2.name == name_b) and (dmin <= self.min_periodic_distance(p2.pos,
+                                                                               p1.pos) <= dmax):
                     self.add_bond((p1, p2))
                     added_bonds.append(bond_tuple)
 
@@ -483,7 +484,8 @@ class Compound(object):
         d = np.where(d > 0.5 * self.periodicity, self.periodicity - d, d)
         return np.sqrt((d ** 2).sum(axis=-1))
 
-    def particles_in_range(self, compound, dmax, max_particles=20, particle_kdtree=None, particle_array=None):
+    def particles_in_range(self, compound, dmax, max_particles=20, particle_kdtree=None,
+                           particle_array=None):
         """Find particles within a specified range of another particle. """
         if particle_kdtree is None:
             particle_kdtree = PeriodicCKDTree(data=self.xyz, bounds=self.periodicity)
@@ -617,9 +619,7 @@ class Compound(object):
         gro_filename = os.path.join(filepath, basename + '.gro')
         #  TODO: I think  the forcefield varable can be deleted here
 
-        forcefield = False
         if forcefield_name or forcefield_files:
-            forcefield = True
             structure = self._apply_forcefield(structure, forcefield_files,
                                                forcefield_name)
         if box is None:
@@ -958,8 +958,7 @@ class Compound(object):
             else:
                 # Should never happen if molecule_types only contains type(self)
                 raise ValueError('Found an atom {} that is not part of any of '
-                                 'the specified molecule types {}'.format(
-                    atom, molecule_types))
+                                 'the specified molecule types {}'.format(atom, molecule_types))
 
             # Add the actual intermol atoms.
             intermol_atom = InterMolAtom(atom_index + 1, name=atom.name,
@@ -1001,7 +1000,8 @@ class Compound(object):
             else:
                 descr.append('non-periodic, ')
         else:
-            descr.append('pos=({: .4f},{: .4f},{: .4f}), '.format(self.pos[0], self.pos[1], self.pos[2]))
+            descr.append('pos=({: .4f},{: .4f},{: .4f}), '.format(self.pos[0], self.pos[1],
+                                                                  self.pos[2]))
 
         descr.append('{:d} bonds, '.format(self.n_bonds))
 
