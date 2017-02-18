@@ -48,3 +48,6 @@ Vagrantfile
 #conda version
 __conda_version__.txt
 mbuild/version.py
+
+#virtual env
+.env/

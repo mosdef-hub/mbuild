@@ -25,6 +25,16 @@ class TestCompound(BaseTest):
             methyl.save(filename=outfile)
             assert os.path.exists(outfile)
 
+    def test_save_overwrite(self):
+        methyl = mb.load(get_fn('methyl.pdb'))
+        extensions = ['.gsd', 'hoomdxml', 'lammps' 'lmp']
+        for ext in extensions:
+            outfile = 'lyhtem' + ext
+            methyl.save(filename=outfile)
+            methyl.save(filename=outfile, overwrite=True)
+            with pytest.raises(IOError):
+                methyl.save(filename=outfile, overwrite=False)
+
     def test_batch_add(self, ethane, h2o):
         compound = mb.Compound()
         compound.add([ethane, h2o])
