@@ -1,6 +1,6 @@
 from warnings import warn
 
-from numpy import *
+import numpy as np
 from numpy.linalg import norm, svd, inv
 
 
@@ -11,6 +11,7 @@ __all__ = ['rotate_around_x', 'rotate_around_y', 'rotate_around_z',
 
            # Deprecated
            'equivalence_transform']
+
 
 def force_overlap(move_this, from_positions, to_positions, add_bond=True):
     """Computes an affine transformation that maps the from_positions to the
@@ -49,6 +50,7 @@ def force_overlap(move_this, from_positions, to_positions, add_bond=True):
     if add_bond:
         if isinstance(from_positions, Port) and isinstance(to_positions, Port):
             if not from_positions.anchor or not to_positions.anchor:
+                # TODO: I think warnings is undefined here
                 warnings.warn("Attempting to form bond from port that has no anchor")
             else:
                 from_positions.anchor.parent.add_bond((from_positions.anchor, to_positions.anchor))
@@ -59,7 +61,7 @@ class CoordinateTransform(object):
     """  """
     def __init__(self, T=None):
         if T is None:
-            T = eye(4)
+            T = np.eye(4)
 
         self.T = T
         self.Tinv = inv(T)
@@ -67,18 +69,18 @@ class CoordinateTransform(object):
     def apply_to(self, A):
         """Apply the coordinate transformation to points in A. """
         if A.ndim == 1:
-            A = expand_dims(A, axis=0)
+            A = np.expand_dims(A, axis=0)
         rows, cols = A.shape
-        A_new = hstack([A, ones((rows, 1))])
+        A_new = np.hstack([A, np.ones((rows, 1))])
 
-        A_new = transpose(self.T.dot(transpose(A_new)))
+        A_new = np.transpose(self.T.dot(np.transpose(A_new)))
         return A_new[:, 0:cols]
 
 
 class Translation(CoordinateTransform):
     """Cartesian translation. """
     def __init__(self, P):
-        T = eye(4)
+        T = np.eye(4)
         T[0, 3] = P[0]
         T[1, 3] = P[1]
         T[2, 3] = P[2]
@@ -88,33 +90,33 @@ class Translation(CoordinateTransform):
 class RotationAroundZ(CoordinateTransform):
     """Rotation around the z-axis. """
     def __init__(self, theta):
-        T = eye(4)
-        T[0, 0] = cos(theta)
-        T[0, 1] = -sin(theta)
-        T[1, 0] = sin(theta)
-        T[1, 1] = cos(theta)
+        T = np.eye(4)
+        T[0, 0] = np.cos(theta)
+        T[0, 1] = -np.sin(theta)
+        T[1, 0] = np.sin(theta)
+        T[1, 1] = np.cos(theta)
         super(RotationAroundZ, self).__init__(T)
 
 
 class RotationAroundY(CoordinateTransform):
     """Rotation around the y-axis. """
     def __init__(self, theta):
-        T = eye(4)
-        T[0, 0] = cos(theta)
-        T[0, 2] = sin(theta)
-        T[2, 0] = -sin(theta)
-        T[2, 2] = cos(theta)
+        T = np.eye(4)
+        T[0, 0] = np.cos(theta)
+        T[0, 2] = np.sin(theta)
+        T[2, 0] = -np.sin(theta)
+        T[2, 2] = np.cos(theta)
         super(RotationAroundY, self).__init__(T)
 
 
 class RotationAroundX(CoordinateTransform):
     """Rotation around the x-axis. """
     def __init__(self, theta):
-        T = eye(4)
-        T[1, 1] = cos(theta)
-        T[1, 2] = -sin(theta)
-        T[2, 1] = sin(theta)
-        T[2, 2] = cos(theta)
+        T = np.eye(4)
+        T[1, 1] = np.cos(theta)
+        T[1, 2] = -np.sin(theta)
+        T[2, 1] = np.sin(theta)
+        T[2, 2] = np.cos(theta)
         super(RotationAroundX, self).__init__(T)
 
 
@@ -123,10 +125,10 @@ class Rotation(CoordinateTransform):
     def __init__(self, theta, around):
         assert around.size == 3
 
-        T = eye(4)
+        T = np.eye(4)
 
-        s = sin(theta)
-        c = cos(theta)
+        s = np.sin(theta)
+        c = np.cos(theta)
         t = 1 - c
 
         n = around / norm(around)
@@ -134,7 +136,7 @@ class Rotation(CoordinateTransform):
         x = n[0]
         y = n[1]
         z = n[2]
-        m = array([
+        m = np.array([
             [t * x * x + c, t * x * y - s * z, t * x * z + s * y],
             [t * x * y + s * z, t * y * y + c, t * y * z - s * x],
             [t * x * z - s * y, t * y * z + s * x, t * z * z + c]])
@@ -145,16 +147,16 @@ class Rotation(CoordinateTransform):
 class ChangeOfBasis(CoordinateTransform):
     """ """
     def __init__(self, basis, origin=None):
-        assert shape(basis) == (3, 3)
+        assert np.shape(basis) == (3, 3)
         if origin is None:
-            origin = array([0.0, 0.0, 0.0])
+            origin = np.array([0.0, 0.0, 0.0])
 
-        T = eye(4)
+        T = np.eye(4)
 
         T[0:3, 0:3] = basis
         T = inv(T)
 
-        T[0:3, 3:4] = -array([origin]).transpose()
+        T[0:3, 3:4] = -np.array([origin]).transpose()
         super(ChangeOfBasis, self).__init__(T)
 
 
@@ -163,11 +165,11 @@ class AxisTransform(CoordinateTransform):
     def __init__(self, new_origin=None, point_on_x_axis=None,
                  point_on_xy_plane=None):
         if new_origin is None:
-            new_origin = array([0.0, 0.0, 0.0])
+            new_origin = np.array([0.0, 0.0, 0.0])
         if point_on_x_axis is None:
-            point_on_x_axis = array([1.0, 0.0, 0.0])
+            point_on_x_axis = np.array([1.0, 0.0, 0.0])
         if point_on_xy_plane is None:
-            point_on_xy_plane = array([1.0, 1.0, 0.0])
+            point_on_xy_plane = np.array([1.0, 1.0, 0.0])
         # Change the basis such that p1 is the origin, p2 is on the x axis and
         # p3 is in the xy plane.
         p1 = new_origin
@@ -177,20 +179,20 @@ class AxisTransform(CoordinateTransform):
         # The direction vector of our new x axis.
         newx = unit_vector(p2 - p1)
         p3_u = unit_vector(p3 - p1)
-        newz = unit_vector(cross(newx, p3_u))
-        newy = cross(newz, newx)
+        newz = unit_vector(np.cross(newx, p3_u))
+        newy = np.cross(newz, newx)
 
         # Translation that moves new_origin to the origin.
-        T_tr = eye(4)
-        T_tr[0:3, 3:4] = -array([p1]).transpose()
+        T_tr = np.eye(4)
+        T_tr[0:3, 3:4] = -np.array([p1]).transpose()
 
         # Rotation that moves newx to the x axis, newy to the y axis, newz to
         # the z axis.
-        B = eye(4)
-        B[0:3, 0:3] = vstack((newx, newy, newz))
+        B = np.eye(4)
+        B[0:3, 0:3] = np.vstack((newx, newy, newz))
 
         # The concatentaion of translation and rotation.
-        B_tr = dot(B, T_tr)
+        B_tr = np.dot(B, T_tr)
 
         super(AxisTransform, self).__init__(B_tr)
 
@@ -212,32 +214,32 @@ class RigidTransform(CoordinateTransform):
             Points in destination coordinate system.
 
         """
-        rows, cols = shape(A)
-        centroid_A = mean(A, axis=0)
-        centroid_B = mean(B, axis=0)
+        rows, cols = np.shape(A)
+        centroid_A = np.mean(A, axis=0)
+        centroid_B = np.mean(B, axis=0)
         centroid_A.shape = (1, 3)
         centroid_B.shape = (1, 3)
 
-        H = zeros((3, 3), dtype=float)
+        H = np.zeros((3, 3), dtype=float)
 
         for i in range(rows):
-            H = H + transpose(A[i, :] - centroid_A).dot((B[i, :] - centroid_B))
+            H = H + np.transpose(A[i, :] - centroid_A).dot((B[i, :] - centroid_B))
 
         U, s, V = svd(H)
-        V = transpose(V)
-        R = V.dot(transpose(U))
+        V = np.transpose(V)
+        R = V.dot(np.transpose(U))
 
-        C_A = eye(3)
-        C_A = vstack([hstack([C_A, transpose(centroid_A) * -1.0]),
-                      array([0, 0, 0, 1])])
+        C_A = np.eye(3)
+        C_A = np.vstack([np.hstack([C_A, np.transpose(centroid_A) * -1.0]),
+                         np.array([0, 0, 0, 1])])
 
-        R_new = eye(3)
-        R_new = vstack([hstack([R, array([[0], [0], [0]])]),
-                        array([0, 0, 0, 1])])
+        R_new = np.eye(3)
+        R_new = np.vstack([np.hstack([R, np.array([[0], [0], [0]])]),
+                           np.array([0, 0, 0, 1])])
 
-        C_B = eye(3)
-        C_B = vstack([hstack([C_B, transpose(centroid_B)]),
-                      array([0, 0, 0, 1])])
+        C_B = np.eye(3)
+        C_B = np.vstack([np.hstack([C_B, np.transpose(centroid_B)]),
+                        np.array([0, 0, 0, 1])])
 
         T = C_B.dot(R_new).dot(C_A)
 
@@ -251,8 +253,8 @@ def unit_vector(v):
 
 def angle(u, v):
     """Returns the angle in radians between two vectors. """
-    c = dot(u, v) / norm(u) / norm (v)
-    return arccos(clip(c, -1, 1))
+    c = np.dot(u, v) / norm(u) / norm(v)
+    return np.arccos(np.clip(c, -1, 1))
 
 
 def _set_particle_positions(compound, arrnx3):
@@ -261,7 +263,7 @@ def _set_particle_positions(compound, arrnx3):
         if not arrnx3.shape[0] == 1:
             raise ValueError('Trying to set position of {} with more than one'
                              'coordinate: {}'.format(compound, arrnx3))
-        compound.pos = squeeze(arrnx3)
+        compound.pos = np.squeeze(arrnx3)
     else:
         for atom, coords in zip(compound._particles(include_ports=True), arrnx3):
             atom.pos = coords
@@ -284,9 +286,9 @@ def _create_equivalence_transform(equiv):
 
     """
     from mbuild.compound import Compound
-    self_points = array([])
+    self_points = np.array([])
     self_points.shape = (0, 3)
-    other_points = array([])
+    other_points = np.array([])
     other_points.shape = (0, 3)
 
     for pair in equiv:
@@ -299,14 +301,13 @@ def _create_equivalence_transform(equiv):
 
         # TODO: vstack is slow, replace with list concatenation
         if not pair[0].children:
-            self_points = vstack([self_points, pair[0].pos])
-            other_points = vstack([other_points, pair[1].pos])
+            self_points = np.vstack([self_points, pair[0].pos])
+            other_points = np.vstack([other_points, pair[1].pos])
         else:
             for atom0 in pair[0]._particles(include_ports=True):
-                self_points = vstack([self_points, atom0.pos])
+                self_points = np.vstack([self_points, atom0.pos])
             for atom1 in pair[1]._particles(include_ports=True):
-                other_points = vstack([other_points, atom1.pos])
-
+                other_points = np.vstack([other_points, atom1.pos])
     T = RigidTransform(self_points, other_points)
     return T
 
@@ -347,6 +348,7 @@ def equivalence_transform(compound, from_positions, to_positions, add_bond=True)
     if add_bond:
         if isinstance(from_positions, Port) and isinstance(to_positions, Port):
             if not from_positions.anchor or not to_positions.anchor:
+                # TODO: I think warnings is undefined here
                 warnings.warn("Attempting to form bond from port that has no anchor")
             else:
                 from_positions.anchor.parent.add_bond((from_positions.anchor, to_positions.anchor))
@@ -379,13 +381,13 @@ def _choose_correct_port(from_port, to_port):
     """
     # First we try matching the two 'up' ports.
     T1 = _create_equivalence_transform([(from_port['up'], to_port['up'])])
-    new_position = T1.apply_to(array(from_port.anchor.pos, ndmin=2))
+    new_position = T1.apply_to(np.array(from_port.anchor.pos, ndmin=2))
 
     dist_between_anchors_up_up = norm(new_position[0] - to_port.anchor.pos)
 
     # Then matching a 'down' with an 'up' port.
     T2 = _create_equivalence_transform([(from_port['down'], to_port['up'])])
-    new_position = T2.apply_to(array(from_port.anchor.pos, ndmin=2))
+    new_position = T2.apply_to(np.array(from_port.anchor.pos, ndmin=2))
 
     # Determine which transform places the anchors further away from each other.
     dist_between_anchors_down_up = norm(new_position[0] - to_port.anchor.pos)
@@ -550,15 +552,15 @@ def x_axis_transform(compound, new_origin=None,
 
     """
     if new_origin is None:
-        new_origin = array([0, 0, 0])
+        new_origin = np.array([0, 0, 0])
     else:
         new_origin = new_origin.pos
     if point_on_x_axis is None:
-        point_on_x_axis = array([1.0, 0.0, 0.0])
+        point_on_x_axis = np.array([1.0, 0.0, 0.0])
     else:
         point_on_x_axis = point_on_x_axis.pos
     if point_on_xy_plane is None:
-        point_on_xy_plane = array([1.0, 1.0, 0.0])
+        point_on_xy_plane = np.array([1.0, 1.0, 0.0])
     else:
         point_on_xy_plane = point_on_xy_plane.pos
 
@@ -590,7 +592,7 @@ def y_axis_transform(compound, new_origin=None,
     x_axis_transform(compound, new_origin=new_origin,
                      point_on_x_axis=point_on_y_axis,
                      point_on_xy_plane=point_on_xy_plane)
-    rotate_around_z(compound, pi / 2)
+    rotate_around_z(compound, np.pi / 2)
 
 
 def z_axis_transform(compound, new_origin=None,
@@ -613,4 +615,4 @@ def z_axis_transform(compound, new_origin=None,
     x_axis_transform(compound, new_origin=new_origin,
                      point_on_x_axis=point_on_z_axis,
                      point_on_xy_plane=point_on_zx_plane)
-    rotate_around_y(compound, pi * 3 / 2)
+    rotate_around_y(compound, np.pi * 3 / 2)
