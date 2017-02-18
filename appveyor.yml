@@ -32,5 +32,5 @@ install:
 build: false
 
 test_script:
-  - "%CMD_IN_ENV% conda build --python %PY_VER% --quiet devtools\\conda-recipe"
+  - "%CMD_IN_ENV% conda build --python %CONDA_PY% --quiet devtools\\conda-recipe"
 
