@@ -40,7 +40,7 @@ test:
     - py.test -v --pyargs mbuild
     - cd mbuild/examples
     - py.test test_examples.py -v
-    - coveralls
+   #- coveralls
 
 about:
   home: http://mosdef-hub.github.io/mbuild
