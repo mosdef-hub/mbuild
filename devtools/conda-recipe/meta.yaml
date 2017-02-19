@@ -26,6 +26,8 @@ requirements:
 test:
   requires:
     - pytest >=3.0
+    - pytest-cov
+    - coveralls
     - jupyter
     - nbformat
     - ipykernel
@@ -33,11 +35,12 @@ test:
 
   source_files:
     - mbuild/examples/*
-
+  
   commands:
     - py.test -v --pyargs mbuild
     - cd mbuild/examples
     - py.test test_examples.py -v
+    - coveralls
 
 about:
   home: http://mosdef-hub.github.io/mbuild
