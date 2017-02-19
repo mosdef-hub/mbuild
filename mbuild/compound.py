@@ -27,7 +27,7 @@ from mbuild.formats.lammpsdata import write_lammpsdata
 
 
 def load(filename, relative_to_module=None, compound=None, coords_only=False,
-         **kwargs):
+         rigid=False, **kwargs):
     """Load a file into an mbuild compound.
 
     Parameters
@@ -56,6 +56,9 @@ def load(filename, relative_to_module=None, compound=None, coords_only=False,
 
     traj = md.load(filename, **kwargs)
     compound.from_trajectory(traj, frame=-1, coords_only=coords_only)
+    if rigid:
+        compound.rigid = 0
+        compound.inherit_rigid()
     return compound
 
 
@@ -124,7 +127,7 @@ class Compound(object):
 
     """
     def __init__(self, subcompounds=None, name=None, pos=None, charge=0.0,
-                 periodicity=None, port_particle=False):
+                 periodicity=None, port_particle=False, rigid=False):
         super(Compound, self).__init__()
 
         if name:
@@ -159,6 +162,11 @@ class Compound(object):
         # self.add() must be called after labels and children are initialized.
         if subcompounds:
             self.add(subcompounds)
+
+        if rigid:
+            self.rigid = 0
+        else:
+            self.rigid = False
 
     def particles(self, include_ports=False):
         """ """
@@ -224,8 +232,24 @@ class Compound(object):
             if particle.name == name:
                 yield particle
 
+    def rigid_ids(self):
+        for particle in self.particles():
+            yield particle.rigid
+
+    def rigid_particles(self):
+        for particle in self.particles():
+            if particle.rigid is not False:
+                yield particle
+
+    def inherit_rigid(self, name=False):
+        for particle in self.particles():
+            if name and particle.name != name:
+                pass
+            else:
+                particle.rigid = self.rigid
+
     def add(self, new_child, label=None, containment=True, replace=False,
-            inherit_periodicity=True):
+            inherit_periodicity=True, increment_rigid=True):
         """Add a part to the Compound.
 
         Note:
@@ -302,6 +326,11 @@ class Compound(object):
         if (inherit_periodicity and isinstance(new_child, Compound) and
                 new_child.periodicity.any()):
             self.periodicity = new_child.periodicity
+
+        if increment_rigid and new_child.rigid is not False:
+            max_rigid = max([p for p in self.rigid_ids()])
+            new_child.rigid = max_rigid + 1
+            new_child.inherit_rigid()
 
     def remove(self, objs_to_remove):
         """Remove children from the Compound. """
@@ -1034,6 +1063,7 @@ class Compound(object):
         newone._pos = deepcopy(self._pos)
         newone.charge = deepcopy(self.charge)
         newone.port_particle = deepcopy(self.port_particle)
+        newone.rigid = deepcopy(self.rigid)
         if hasattr(self, 'index'):
             newone.index = deepcopy(self.index)
 
