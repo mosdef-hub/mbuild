@@ -27,7 +27,7 @@ test:
   requires:
     - pytest >=3.0
     - pytest-cov
-    - coveralls
+    - python-coveralls
     - jupyter
     - nbformat
     - ipykernel
