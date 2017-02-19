@@ -39,7 +39,10 @@ test:
     - cd mbuild/examples
     - py.test test_examples.py -v
     - pip install coveralls
-    - pip install pytest-cov    
+    - pip install pytest-cov
+    - git status
+    - pwd
+    - cd ../../    
     - coveralls
 
 about:
