@@ -26,12 +26,13 @@ requirements:
 test:
   requires:
     - pytest >=3.0
-    - pytest-cov
-    - python-coveralls
     - jupyter
     - nbformat
     - ipykernel
     - ipyext
+  comands:
+    - pip install coveralls
+    - pip install pytest-cov
 
   source_files:
     - mbuild/examples/*
@@ -40,7 +41,7 @@ test:
     - py.test -v --pyargs mbuild
     - cd mbuild/examples
     - py.test test_examples.py -v
-   #- coveralls
+    - coveralls
 
 about:
   home: http://mosdef-hub.github.io/mbuild
