@@ -30,9 +30,6 @@ test:
     - nbformat
     - ipykernel
     - ipyext
-  comands:
-    - pip install coveralls
-    - pip install pytest-cov
 
   source_files:
     - mbuild/examples/*
@@ -41,6 +38,8 @@ test:
     - py.test -v --pyargs mbuild
     - cd mbuild/examples
     - py.test test_examples.py -v
+    - pip install coveralls
+    - pip install pytest-cov    
     - coveralls
 
 about:
