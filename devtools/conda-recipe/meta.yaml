@@ -40,9 +40,7 @@ test:
     - py.test test_examples.py -v
     - pip install coveralls
     - pip install pytest-cov
-    - pwd
-    - cd ../../    
-    - coveralls
+    - coveralls debug
 
 about:
   home: http://mosdef-hub.github.io/mbuild
