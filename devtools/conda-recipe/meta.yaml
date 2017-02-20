@@ -31,13 +31,13 @@ test:
     - nbformat
     - ipykernel
     - ipyext
+    - python-coveralls
+    - pytest-cov
 
   source_files:
     - .coveragerc
   
   commands:
-    - conda install -yc conda-forge python-coveralls 
-    - conda install -yc conda-forge pytest-cov
     - py.test -v --cov-append --cov=mbuild --cov-report= --pyargs mbuild
     - coveralls 
 
