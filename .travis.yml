@@ -31,5 +31,9 @@ script:
   - conda build --python $PYTHON_VERSION devtools/conda-recipe
 
 after_success:
+  - which python
+  - echo $PATH
+  - ls -la
+  - pwd
   - py.test -v
   - if [[ $PYTHON_VERSION == 3.5 ]] && [[ "$TRAVIS_OS_NAME" == "linux" ]]; then source devtools/travis-ci/update_gh_pages.sh; fi
