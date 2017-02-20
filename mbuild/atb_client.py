@@ -17,11 +17,11 @@ class SearchResultHTMLParser(HTMLParser):
 
     def handle_starttag(self, tag, attrs):
         if tag == 'a':
-            for attr,v in attrs:
+            for attr, v in attrs:
                 if attr == 'href':
                     if v.startswith('./molecule.py?molid='):
                         molid = v[v.find('=')+1:]
-                        self.molids[int(molid)]="http://compbio.biosci.uq.edu.au/atb"+v[1:]
+                        self.molids[int(molid)] = "http://compbio.biosci.uq.edu.au/atb"+v[1:]
 
 
 class AtbClient(object):
@@ -30,7 +30,8 @@ class AtbClient(object):
         self.h = httplib2.Http(".cache")
 
     def search(self, query):
-        url = "http://compbio.biosci.uq.edu.au/atb/index.py?molsPerPage=1000&search={}".format(query)
+        url = "http://compbio.biosci.uq.edu.au/atb/index.py?molsPerPage=1000&search={}".format(
+            query)
         resp, content = self.h.request(url, "GET")
         if resp['status'] != '200':
             warnings.warn('HTTP response status is {} for URL "{}"'.format(resp['status'], url))
@@ -41,7 +42,9 @@ class AtbClient(object):
         return parser.molids
 
     def generate_topology(self, molid, ff_version="53A6",):
-        query_pairs = {"molid": str(molid), "ffVersion": ff_version, "outputType": "top", "atbVersion": "v2Top", "format": "GROMACS"}
+        query_pairs = {"molid": str(molid), "ffVersion": ff_version,
+                       "outputType": "top", "atbVersion": "v2Top",
+                       "format": "GROMACS"}
 
         query_string = urllib.urlencode(query_pairs)
 
@@ -61,7 +64,8 @@ class AtbClient(object):
 
         self.generate_topology(molid, ff_version)
 
-        query_pairs = {"molid": str(molid), "ffVersion": ff_version, "outputType": "top", "atbVersion": "v2Top"}
+        query_pairs = {"molid": str(molid), "ffVersion": ff_version,
+                       "outputType": "top", "atbVersion": "v2Top"}
         if all_atom:
             query_pairs["file"] = "rtp_allatom"
         else:
@@ -80,14 +84,15 @@ class AtbClient(object):
             return None
 
         if not resp['content-type'].startswith('text/plain'):
-            warnings.warn('Expecting text/plain response, got "{}" for URL "{}"'.format(resp['content-type'], url))
+            warnings.warn('Expecting text/plain response, got "{}" for URL "{}"'.format(
+                resp['content-type'], url))
             return None
 
         return content
+
 
 if __name__ == "__main__":
     atb = AtbClient()
     results = atb.search("C6H12O6")
     for molecule_id, uri in results.iteritems():
         print(atb.retrieve_itp(molecule_id))
-
