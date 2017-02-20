@@ -83,14 +83,10 @@ class TestCoordinateTransform(BaseTest):
     def test_rotate_zero_vector(self, methane):
         with pytest.raises(ValueError):
             rotate(methane, np.pi/2, np.asarray([0.0, 0.0, 0.0]))
-            rotate(methane, 0.0, np.asarray([0.0, 0.0, 0.0]))
-            rotate(methane, 2*np.pi, np.asarray([0.0, 0.0, 0.0]))
 
     def test_spin_zero_vector(self, methane):
         with pytest.raises(ValueError):
             spin(methane, np.pi/2, np.asarray([0.0, 0.0, 0.0]))
-            spin(methane, 0.0, np.asarray([0.0, 0.0, 0.0]))
-            spin(methane, 2*np.pi, np.asarray([0.0, 0.0, 0.0]))
 
     def test_spin_360x(self, methane):
         before = methane.xyz_with_ports
@@ -145,6 +141,25 @@ class TestCoordinateTransform(BaseTest):
         spin(sixpoints, np.pi, np.asarray([1, 1, 0]))
         assert(np.allclose(sixpoints['up'].xyz, before['right'].xyz, atol=1e-16)
                 and np.allclose(sixpoints['down'].xyz, before['left'].xyz, atol=1e-16))
+
+    def test_warn_rotate_x(self, methane):
+        with pytest.warns(DeprecationWarning):
+            rotate_around_x(methane, np.pi)
+
+    def test_warn_rotate_y(self, methane):
+        with pytest.warns(DeprecationWarning):
+            rotate_around_y(methane, np.pi)
+
+    def test_warn_rotate_z(self, methane):
+        with pytest.warns(DeprecationWarning):
+            rotate_around_z(methane, np.pi)
+
+    def test_equivalence_transform_deprectation_warning(self, ch2):
+        ch22 = mb.clone(ch2)
+        with pytest.warns(DeprecationWarning):
+            mb.equivalence_transform(ch22,
+                    from_positions=ch22['up'],
+                    to_positions=ch2['down'])
 
     def test_rotate_around_x(self, methane):
         before = methane.xyz_with_ports

@@ -10,4 +10,3 @@ def assert_port_exists(port_name, compound):
         raise ValueError("No port named '{port_name}' in {compound_name}'s"
                          " labels. Labeled Ports in {compound_name} are:"
                          " {available_ports}".format(**locals()))
-
