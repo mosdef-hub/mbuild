@@ -9,7 +9,8 @@ from mbuild.coordinate_transform import (Translation, CoordinateTransform,
                                          rotate_around_y, rotate_around_z,
                                          force_overlap, translate,
                                          translate_to, x_axis_transform,
-                                         y_axis_transform, z_axis_transform)
+                                         y_axis_transform, z_axis_transform,
+                                         rotate, spin)
 from mbuild.tests.base_test import BaseTest
 import mbuild as mb
 
@@ -67,11 +68,36 @@ class TestCoordinateTransform(BaseTest):
         rigid_transform = RigidTransform(A, B)
         assert (rigid_transform.apply_to(np.array([[2,3,4]])) == B).all()
 
-    @pytest.mark.skipif(True, reason="needs to be implemented")
+    def test_rotate_0(self, methane):
+        before = methane.xyz_with_ports
+        rotate(methane, 0.0, np.asarray([1.0, 0.0, 0.0]))
+        after = methane.xyz_with_ports
+        assert (np.array_equal(before, after))
+
+    def test_rotate_2pi(self, methane):
+        before = methane.xyz_with_ports
+        rotate(methane, 2*np.pi, np.asarray([1.0, 0.0, 0.0]))
+        after = methane.xyz_with_ports
+        assert (np.allclose(before, after))
+
+    def test_rotate_zero(self, methane):
+        with pytest.raises(ValueError):
+            rotate(methane, np.pi/2, np.asarray([0.0, 0.0, 0.0]))
+            rotate(methane, 0.0, np.asarray([0.0, 0.0, 0.0]))
+            rotate(methane, 2*np.pi, np.asarray([0.0, 0.0, 0.0]))
+
+    def test_spin_zero(self, methane):
+        with pytest.raises(ValueError):
+            spin(methane, np.pi/2, np.asarray([0.0, 0.0, 0.0]))
+            spin(methane, 0.0, np.asarray([0.0, 0.0, 0.0]))
+            spin(methane, 2*np.pi, np.asarray([0.0, 0.0, 0.0]))
+
+    @pytest.mark.skipif(False, reason="needs to be implemented")
     def test_rotate_around_x(self, methane):
         before = methane.xyz_with_ports
         rotate_around_x(methane, np.pi)
         after = methane.xyz_with_ports
+        assert(before[:, 1] == -1*after[:, 1]).all()
 
     @pytest.mark.skipif(True, reason="needs to be implemented")
     def test_rotate_around_y(self, ch2):
