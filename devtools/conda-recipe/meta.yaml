@@ -38,11 +38,10 @@ test:
     - mbuild/examples/*
   
   commands:
-    - py.test -v --cov-append --cov=mbuild --cov-report=xml --pyargs mbuild
-    - ls -ltra
+    - py.test -v --cov-append --cov=mbuild --cov-report= --pyargs mbuild
     - cd mbuild/examples
-    - py.test -v --cov-append --cov=mbuild test_examples.py
-    - coveralls
+    - py.test -v --cov-append --cov=mbuild --cov-report= --test_examples.py
+    - coveralls --merge=../.coverage
 
 about:
   home: http://mosdef-hub.github.io/mbuild
