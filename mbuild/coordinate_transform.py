@@ -50,8 +50,7 @@ def force_overlap(move_this, from_positions, to_positions, add_bond=True):
     if add_bond:
         if isinstance(from_positions, Port) and isinstance(to_positions, Port):
             if not from_positions.anchor or not to_positions.anchor:
-                # TODO: I think warnings is undefined here
-                warnings.warn("Attempting to form bond from port that has no anchor")
+                warn("Attempting to form bond from port that has no anchor")
             else:
                 from_positions.anchor.parent.add_bond((from_positions.anchor, to_positions.anchor))
                 to_positions.anchor.parent.add_bond((from_positions.anchor, to_positions.anchor))
@@ -349,7 +348,7 @@ def equivalence_transform(compound, from_positions, to_positions, add_bond=True)
         if isinstance(from_positions, Port) and isinstance(to_positions, Port):
             if not from_positions.anchor or not to_positions.anchor:
                 # TODO: I think warnings is undefined here
-                warnings.warn("Attempting to form bond from port that has no anchor")
+                warn("Attempting to form bond from port that has no anchor")
             else:
                 from_positions.anchor.parent.add_bond((from_positions.anchor, to_positions.anchor))
                 to_positions.anchor.parent.add_bond((from_positions.anchor, to_positions.anchor))
