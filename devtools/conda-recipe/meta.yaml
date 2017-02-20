@@ -38,6 +38,8 @@ test:
     - .coveragerc
   
   commands:
+    - which python
+    - echo $PATH
     - py.test -v --cov-append --cov=mbuild --cov-report= --pyargs mbuild
     - coveralls 
 
