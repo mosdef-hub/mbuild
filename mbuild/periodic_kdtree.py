@@ -315,8 +315,9 @@ class PeriodicCKDTree(KDTree):
         """
         x = np.asarray(x).astype(np.float)
         if x.shape[-1] != self.m:
-            raise ValueError("Searching for a %d-dimensional point in a "
-                             "%d-dimensional KDTree" % (x.shape[-1], self.m))
+            raise ValueError(
+                "Searching for a {}d-dimensional point in a {}d-dimensional KDTree".format(
+                    x.shape[-1], self.m))
         if len(x.shape) == 1:
             return self.__query_ball_point(x, r, p, eps)
         else:
