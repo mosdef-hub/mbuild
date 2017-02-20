@@ -36,8 +36,8 @@ test:
     - mbuild/examples/*
   
   commands:
-    - conda install -c conda-forge python-coveralls 
-    - conda install -c conda-forge pytest-cov
+    - conda install -yc conda-forge python-coveralls 
+    - conda install -yc conda-forge pytest-cov
     - py.test -v --cov-append --cov=mbuild --cov-report= --pyargs mbuild
     - coveralls
 
