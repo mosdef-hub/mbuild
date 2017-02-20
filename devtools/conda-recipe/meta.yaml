@@ -18,10 +18,11 @@ requirements:
     - numpy
     - scipy
     - packmol 1.0.0
-    - nglview >=0.6 # [not win]
+    - nglview >=0.6
     - oset
     - parmed
     - mdtraj
+    - foyer
 
 test:
   requires:

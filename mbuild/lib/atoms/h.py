@@ -13,6 +13,7 @@ class H(mb.Compound):
         mb.spin_z(self['up'], np.pi)
         mb.translate(self['up'], np.array([0, 0.07, 0]))
 
+
 if __name__ == '__main__':
     m = H()
     m.visualize(show_ports=True)
