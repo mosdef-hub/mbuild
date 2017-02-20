@@ -169,14 +169,14 @@ class SpherePattern(Pattern):
 
     """
     def __init__(self, n):
-        phi = (1 + np.sqrt(5)) / 2  # the golden ratio
-        long_incr = 2*np.pi / phi   # how much to increment the longitude
+        phi = (1 + np.sqrt(5)) / 2   # the golden ratio
+        long_incr = 2*np.pi / phi    # how much to increment the longitude
 
-        dz = 2.0 / float(n)         # a unit sphere has diameter 2
-        bands = np.arange(n)        # each band will have one point placed on it
-        z = bands * dz - 1 + (dz/2) # the height z of each band/point
-        r = np.sqrt(1 - z*z)        # project onto xy-plane
-        az = bands * long_incr      # azimuthal angle of point modulo 2 pi
+        dz = 2.0 / float(n)          # a unit sphere has diameter 2
+        bands = np.arange(n)         # each band will have one point placed on it
+        z = bands * dz - 1 + (dz/2)  # the height z of each band/point
+        r = np.sqrt(1 - z*z)         # project onto xy-plane
+        az = bands * long_incr       # azimuthal angle of point modulo 2 pi
         x = r * np.cos(az)
         y = r * np.sin(az)
         points = np.column_stack((x, y, z))
@@ -193,7 +193,7 @@ class SpherePattern(Pattern):
             # Rotate the Port along the z axis.
             spin_z(port, np.arctan2(point[1], point[0]))
             # Move the Port a bit away from the surface of the Sphere.
-            #translate(port, point + 0.07)
+            # translate(port, point + 0.07)
 
         super(SpherePattern, self).__init__(points=points,
                                             orientations={'normal': ports})
