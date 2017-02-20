@@ -27,7 +27,7 @@ class TestCompound(BaseTest):
 
     def test_save_overwrite(self):
         methyl = mb.load(get_fn('methyl.pdb'))
-        extensions = ['.gsd', 'hoomdxml', 'lammps' 'lmp']
+        extensions = ['.gsd', '.hoomdxml', '.lammps', '.lmp']
         for ext in extensions:
             outfile = 'lyhtem' + ext
             methyl.save(filename=outfile)
