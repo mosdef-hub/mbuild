@@ -125,7 +125,8 @@ class PeriodicCKDTree(KDTree):
         for i, row in enumerate(self.real_data):
             for j, coord in enumerate(row):
                 if bounds[j] > 0.0:
-                    wrapped_data[i, j] = self.real_data[i, j] - np.floor(self.real_data[i, j] / bounds[j]) * bounds[j]
+                    wrap = np.floor(self.real_data[i, j] / bounds[j])
+                    wrapped_data[i, j] = self.real_data[i, j] - wrap * bounds[j]
 
         # if all(v == 0 for v in bounds):
         #     wrapped_data = self.real_data
