@@ -2,3 +2,10 @@
 omit = 
     */examples/*
     */tests/*
+
+source = 
+    /home/travis/build/mikemhenry/mbuild/*
+[report]
+# Regexes for lines to exclude from consideration
+exclude_lines =
+    if __name__ == .__main__.:
