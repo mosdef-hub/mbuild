@@ -39,6 +39,8 @@ test:
     - conda install -yc conda-forge python-coveralls 
     - conda install -yc conda-forge pytest-cov
     - py.test -v --cov-append --cov=mbuild --cov-report= --pyargs mbuild
+    - pwd
+    - ls -la
     - coveralls -v
 
 about:
