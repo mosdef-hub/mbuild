@@ -31,22 +31,15 @@ test:
     - nbformat
     - ipykernel
     - ipyext
-    - python-coveralls
-    - pytest-cov
 
   source_files:
     - mbuild/examples/*
   
   commands:
-    - cd mbuild/examples
-    - py.test -v --cov-append --cov=mbuild --cov-report= test_examples.py
-    - ls -ltra
-    - pwd
-    - cd ../../
+    - conda install -c conda-forge python-coveralls 
+    - conda install -c conda-forge pytest-cov
     - py.test -v --cov-append --cov=mbuild --cov-report= --pyargs mbuild
-    - ls -ltra
-    - pwd
-    - coveralls --merge=mbuild/examples/.coverage
+    - coveralls
 
 about:
   home: http://mosdef-hub.github.io/mbuild
