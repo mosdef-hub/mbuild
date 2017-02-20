@@ -1,4 +1,5 @@
 import mbuild as mb
+import numpy as np
 
 
 class N4(mb.Compound):
@@ -17,13 +18,13 @@ class N4(mb.Compound):
         mb.spin_z(self['port_1'], 1/3*np.pi)
         mb.spin_z(self['port_2'], -1/3*np.pi)
         mb.spin_z(self['port_3'], -1/3*np.pi)
-       
+
         mb.translate(self['port_0'], [0, 0.073, 0])
         mb.translate(self['port_1'], [0.0594, -0.0243, 0])
         mb.translate(self['port_2'], [-0.042, -0.0243, 0.042])
         mb.translate(self['port_3'], [-0.042, -0.0243, -0.042])
-        
+
+
 if __name__ == '__main__':
     m = N4()
     m.visualize(show_ports=True)
-

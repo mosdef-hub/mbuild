@@ -61,7 +61,7 @@ def _create_proxy_compounds(real_thing, memo, particle_classes):
     memo[real_thing] = proxy
 
     if not type(real_thing) in particle_classes:
-        if not is_leaf(real_thing): # recurse only if it has parts
+        if not is_leaf(real_thing):  # recurse only if it has parts
             # recursively create proxies for parts (we'll do labels later)
             for part in real_thing.children:
                 part_proxy = _create_proxy_compounds(part, memo, particle_classes)

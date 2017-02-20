@@ -69,7 +69,8 @@ def clone(existing_compound, clone_of=None, root_container=None):
     if clone_of is None:
         clone_of = dict()
 
-    newone = existing_compound._clone(clone_of=clone_of, root_container=root_container)
+    newone = existing_compound._clone(clone_of=clone_of,
+                                      root_container=root_container)
     existing_compound._clone_bonds(clone_of=clone_of)
     return newone
 
@@ -86,9 +87,9 @@ class Compound(object):
     the composite, and Particle playing the role of the primitive (leaf) part,
     where Particle is in fact simply an alias to the Compound class.
 
-    Compound maintains a list of children (other Compounds contained within), and
-    provides a means to tag the children with labels, so that the compounds can
-    be easily looked up later. Labels may also point to objects outside the
+    Compound maintains a list of children (other Compounds contained within),
+    and provides a means to tag the children with labels, so that the compounds
+    can be easily looked up later. Labels may also point to objects outside the
     Compound's containment hierarchy. Compound has built-in support for copying
     and deepcopying Compound hierarchies, enumerating particles or bonds in the
     hierarchy, proximity based searches, visualization, I/O operations, and a
@@ -403,7 +404,8 @@ class Compound(object):
                 bond_tuple = (p1, p2) if id(p1) < id(p2) else (p2, p1)
                 if bond_tuple in added_bonds:
                     continue
-                if (p2.name == name_b) and (dmin <= self.min_periodic_distance(p2.pos, p1.pos) <= dmax):
+                min_dist = self.min_periodic_distance(p2.pos, p1.pos)
+                if (p2.name == name_b) and (dmin <= min_dist <= dmax):
                     self.add_bond((p1, p2))
                     added_bonds.append(bond_tuple)
 
@@ -482,7 +484,8 @@ class Compound(object):
         d = np.where(d > 0.5 * self.periodicity, self.periodicity - d, d)
         return np.sqrt((d ** 2).sum(axis=-1))
 
-    def particles_in_range(self, compound, dmax, max_particles=20, particle_kdtree=None, particle_array=None):
+    def particles_in_range(self, compound, dmax, max_particles=20, particle_kdtree=None,
+                           particle_array=None):
         """Find particles within a specified range of another particle. """
         if particle_kdtree is None:
             particle_kdtree = PeriodicCKDTree(data=self.xyz, bounds=self.periodicity)
@@ -553,7 +556,7 @@ class Compound(object):
         structure = self.to_parmed(**kwargs)
         if saver:  # mBuild/InterMol supported saver.
             saver(filename, structure, forcefield_name,
-                         forcefield_files, box, **kwargs)
+                  forcefield_files, box, **kwargs)
         elif extension == '.xyz':
             traj = self.to_trajectory(show_ports=show_ports)
             traj.save(filename)
@@ -593,7 +596,7 @@ class Compound(object):
         write_hoomdxml(structure, filename, forcefield, box, **kwargs)
 
     def save_gsd(self, filename, structure, forcefield_name,
-                      forcefield_files, box=None, **kwargs):
+                 forcefield_files, box=None, **kwargs):
         """ """
         from mbuild.formats.gsdwriter import write_gsd
         forcefield = False
@@ -607,17 +610,16 @@ class Compound(object):
         write_gsd(structure, filename, forcefield, box, **kwargs)
 
     def save_gromacs(self, filename, structure, forcefield_name,
-                      forcefield_files, box, **kwargs):
+                     forcefield_files, box, **kwargs):
         """ """
         # Create separate file paths for .gro and .top
         filepath, filename = os.path.split(filename)
         basename = os.path.splitext(filename)[0]
         top_filename = os.path.join(filepath, basename + '.top')
         gro_filename = os.path.join(filepath, basename + '.gro')
+        #  TODO: I think  the forcefield varable can be deleted here
 
-        forcefield = False
         if forcefield_name or forcefield_files:
-            forcefield = True
             structure = self._apply_forcefield(structure, forcefield_files,
                                                forcefield_name)
         if box is None:
@@ -626,7 +628,7 @@ class Compound(object):
         structure.save(gro_filename, 'gro', **kwargs)
 
     def save_lammpsdata(self, filename, structure, forcefield_name,
-                      forcefield_files, box, **kwargs):
+                        forcefield_files, box, **kwargs):
         """ """
         forcefield = False
         if forcefield_name or forcefield_files:
@@ -956,8 +958,7 @@ class Compound(object):
             else:
                 # Should never happen if molecule_types only contains type(self)
                 raise ValueError('Found an atom {} that is not part of any of '
-                                 'the specified molecule types {}'.format(
-                    atom, molecule_types))
+                                 'the specified molecule types {}'.format(atom, molecule_types))
 
             # Add the actual intermol atoms.
             intermol_atom = InterMolAtom(atom_index + 1, name=atom.name,
@@ -999,7 +1000,7 @@ class Compound(object):
             else:
                 descr.append('non-periodic, ')
         else:
-            descr.append('pos=({: .4f},{: .4f},{: .4f}), '.format(self.pos[0], self.pos[1], self.pos[2]))
+            descr.append('pos=({: .4f},{: .4f},{: .4f}), '.format(*self.pos))
 
         descr.append('{:d} bonds, '.format(self.n_bonds))
 
@@ -1074,5 +1075,6 @@ class Compound(object):
         newone = clone_of[self]
         for c1, c2 in self.bonds():
             newone.add_bond((clone_of[c1], clone_of[c2]))
+
 
 Particle = Compound

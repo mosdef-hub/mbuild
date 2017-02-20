@@ -24,6 +24,7 @@ else:
     __version__ = VERSION + '.dev0'
 #####################################
 
+
 def git_version():
     # Return the git revision as a string
     # copied from numpy setup.py
@@ -81,6 +82,7 @@ release = {release}
                            full_version=full_version,
                            git_revision=git_revision,
                            release=isreleased))
+
 
 write_version_py(VERSION, ISRELEASED, 'mbuild/version.py')
 
