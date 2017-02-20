@@ -157,6 +157,7 @@ def _validate_box(box):
                           ' 6 (box mins and maxes) or an mbuild.Box object.')
     return box
 
+
 def _packmol_error(out, err):
     """Log packmol output to files. """
     with open('log.txt', 'w') as log_file, open('err.txt', 'w') as err_file:
