@@ -80,36 +80,92 @@ class TestCoordinateTransform(BaseTest):
         after = methane.xyz_with_ports
         assert (np.allclose(before, after))
 
-    def test_rotate_zero(self, methane):
+    def test_rotate_zero_vector(self, methane):
         with pytest.raises(ValueError):
             rotate(methane, np.pi/2, np.asarray([0.0, 0.0, 0.0]))
             rotate(methane, 0.0, np.asarray([0.0, 0.0, 0.0]))
             rotate(methane, 2*np.pi, np.asarray([0.0, 0.0, 0.0]))
 
-    def test_spin_zero(self, methane):
+    def test_spin_zero_vector(self, methane):
         with pytest.raises(ValueError):
             spin(methane, np.pi/2, np.asarray([0.0, 0.0, 0.0]))
             spin(methane, 0.0, np.asarray([0.0, 0.0, 0.0]))
             spin(methane, 2*np.pi, np.asarray([0.0, 0.0, 0.0]))
 
-    @pytest.mark.skipif(False, reason="needs to be implemented")
+    def test_spin_360x(self, methane):
+        before = methane.xyz_with_ports
+        spin(methane, 2*np.pi, np.asarray([1, 0, 0]))
+        assert(np.allclose(before, methane.xyz_with_ports, atol=1e-16))
+
+    def test_spin_360y(self, methane):
+        before = methane.xyz_with_ports
+        spin(methane, 2*np.pi, np.asarray([0, 1, 0]))
+        assert(np.allclose(before, methane.xyz_with_ports, atol=1e-16))
+
+    def test_spin_360z(self, methane):
+        before = methane.xyz_with_ports
+        spin(methane, 2*np.pi, np.asarray([0, 0, 1]))
+        assert(np.allclose(before, methane.xyz_with_ports, atol=1e-16))
+
+    def test_spin_0x(self, methane):
+        before = methane.xyz_with_ports
+        spin(methane, 0, np.asarray([1, 0, 0]))
+        assert(np.allclose(before, methane.xyz_with_ports, atol=1e-16))
+
+    def test_spin_0y(self, methane):
+        before = methane.xyz_with_ports
+        spin(methane, 0, np.asarray([0, 1, 0]))
+        assert(np.allclose(before, methane.xyz_with_ports, atol=1e-16))
+
+    def test_spin_0z(self, methane):
+        before = methane.xyz_with_ports
+        spin(methane, 0, np.asarray([0, 0, 1]))
+        assert(np.allclose(before, methane.xyz_with_ports, atol=1e-16))
+
+    def test_spin_x(self, sixpoints):
+        before = mb.clone(sixpoints)
+        spin(sixpoints, np.pi, np.asarray([1, 0, 0]))
+        assert(np.allclose(sixpoints['up'].xyz, before['down'].xyz, atol=1e-16)
+                and np.allclose(sixpoints['front'].xyz, before['back'].xyz, atol=1e-16))
+
+    def test_spin_y(self, sixpoints):
+        before = mb.clone(sixpoints)
+        spin(sixpoints, np.pi, np.asarray([0, 1, 0]))
+        assert(np.allclose(sixpoints['left'].xyz, before['right'].xyz, atol=1e-16)
+                and np.allclose(sixpoints['front'].xyz, before['back'].xyz, atol=1e-16))
+
+    def test_spin_z(self, sixpoints):
+        before = mb.clone(sixpoints)
+        spin(sixpoints, np.pi, np.asarray([0, 0, 1]))
+        assert(np.allclose(sixpoints['left'].xyz, before['right'].xyz, atol=1e-16)
+                and np.allclose(sixpoints['up'].xyz, before['down'].xyz, atol=1e-16))
+
+    def test_spin_arbitraty(self, sixpoints):
+        before = mb.clone(sixpoints)
+        spin(sixpoints, np.pi, np.asarray([1, 1, 0]))
+        assert(np.allclose(sixpoints['up'].xyz, before['right'].xyz, atol=1e-16)
+                and np.allclose(sixpoints['down'].xyz, before['left'].xyz, atol=1e-16))
+
     def test_rotate_around_x(self, methane):
         before = methane.xyz_with_ports
         rotate_around_x(methane, np.pi)
         after = methane.xyz_with_ports
-        assert(before[:, 1] == -1*after[:, 1]).all()
+        assert(np.allclose(before[:, 1], -1*after[:, 1], atol=1e-16)
+                and np.allclose(before[:, 2], -1*after[:, 2], atol=1e-16))
 
-    @pytest.mark.skipif(True, reason="needs to be implemented")
     def test_rotate_around_y(self, ch2):
         before = ch2.xyz_with_ports
         rotate_around_y(ch2, np.pi)
         after = ch2.xyz_with_ports
+        assert(np.allclose(before[:, 0], -1*after[:, 0], atol=1e-16)
+                and np.allclose(before[:, 2], -1*after[:, 2], atol=1e-16))
 
-    @pytest.mark.skipif(True, reason="needs to be implemented")
     def test_rotate_around_z(self, ch2):
         before = ch2.xyz_with_ports
         rotate_around_z(ch2, np.pi)
         after = ch2.xyz_with_ports
+        assert(np.allclose(before[:, 0], -1*after[:, 0], atol=1e-16)
+                and np.allclose(before[:, 1], -1*after[:, 1], atol=1e-16))
 
     def test_equivalence_transform(self, ch2, ch3, methane):
         ch2_atoms = list(ch2.particles())

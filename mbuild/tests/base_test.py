@@ -46,3 +46,16 @@ class BaseTest:
     def alkyl(self):
         from mbuild.examples import Alkane
         return Alkane(2, cap_front=True, cap_end=False)
+
+    @pytest.fixture
+    def sixpoints(self):
+        import mbuild as mb
+        molecule = mb.Compound()
+        molecule.add(mb.Particle(name='C', pos=[5, 5, 5]), label='middle')
+        molecule.add(mb.Particle(name='C', pos=[6, 5, 5]), label='right')
+        molecule.add(mb.Particle(name='C', pos=[4, 5, 5]), label='left')
+        molecule.add(mb.Particle(name='C', pos=[5, 6, 5]), label='up')
+        molecule.add(mb.Particle(name='C', pos=[5, 4, 5]), label='down')
+        molecule.add(mb.Particle(name='C', pos=[5, 5, 6]), label='front')
+        molecule.add(mb.Particle(name='C', pos=[5, 5, 4]), label='back')
+        return molecule
