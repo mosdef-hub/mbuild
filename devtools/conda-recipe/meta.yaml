@@ -37,9 +37,9 @@ test:
     - mbuild/examples/*
   
   commands:
-    - py.test -v --pyargs mbuild
+    - py.test -v --cov-append --cov=mbuild --pyargs mbuild
     - cd mbuild/examples
-    - py.test test_examples.py -v
+    - py.test -v --cov-append --cov=mbuild test_examples.py
     - coveralls
 
 about:
