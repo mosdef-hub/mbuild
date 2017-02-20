@@ -167,6 +167,27 @@ class TestCoordinateTransform(BaseTest):
         assert(np.allclose(before[:, 0], -1*after[:, 0], atol=1e-16)
                 and np.allclose(before[:, 1], -1*after[:, 1], atol=1e-16))
 
+    def test_rotate_around_x_away_from_origin(self, sixpoints):
+        before = sixpoints.xyz_with_ports
+        rotate_around_x(sixpoints, np.pi)
+        after = sixpoints.xyz_with_ports
+        assert(np.allclose(before[:, 1], -1*after[:, 1], atol=1e-16)
+                and np.allclose(before[:, 2], -1*after[:, 2], atol=1e-16))
+
+    def test_rotate_around_y_away_from_origin(self, sixpoints):
+        before = sixpoints.xyz_with_ports
+        rotate_around_y(sixpoints, np.pi)
+        after = sixpoints.xyz_with_ports
+        assert(np.allclose(before[:, 0], -1*after[:, 0], atol=1e-16)
+                and np.allclose(before[:, 2], -1*after[:, 2], atol=1e-16))
+
+    def test_rotate_around_z_away_from_origin(self, sixpoints):
+        before = sixpoints.xyz_with_ports
+        rotate_around_z(sixpoints, np.pi)
+        after = sixpoints.xyz_with_ports
+        assert(np.allclose(before[:, 1], -1*after[:, 1], atol=1e-16)
+                and np.allclose(before[:, 0], -1*after[:, 0], atol=1e-16))
+
     def test_equivalence_transform(self, ch2, ch3, methane):
         ch2_atoms = list(ch2.particles())
         methane_atoms = list(methane.particles())
