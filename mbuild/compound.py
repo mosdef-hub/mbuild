@@ -57,8 +57,7 @@ def load(filename, relative_to_module=None, compound=None, coords_only=False,
     traj = md.load(filename, **kwargs)
     compound.from_trajectory(traj, frame=-1, coords_only=coords_only)
     if rigid:
-        compound.rigid = 0
-        compound.inherit_rigid()
+        compound.set_rigid()
     return compound
 
 
@@ -163,10 +162,7 @@ class Compound(object):
         if subcompounds:
             self.add(subcompounds)
 
-        if rigid:
-            self.rigid = 0
-        else:
-            self.rigid = False
+        self.rigid = rigid
 
     def particles(self, include_ports=False):
         """ """
@@ -241,12 +237,13 @@ class Compound(object):
             if particle.rigid is not False:
                 yield particle
 
-    def inherit_rigid(self, name=False):
+    def set_rigid(self, name=False, body_number=0):
+        self.rigid = body_number
         for particle in self.particles():
             if name and particle.name != name:
                 pass
             else:
-                particle.rigid = self.rigid
+                particle.rigid = body_number
 
     def add(self, new_child, label=None, containment=True, replace=False,
             inherit_periodicity=True, increment_rigid=True):
@@ -329,8 +326,7 @@ class Compound(object):
 
         if increment_rigid and new_child.rigid is not False:
             max_rigid = max([p for p in self.rigid_ids()])
-            new_child.rigid = max_rigid + 1
-            new_child.inherit_rigid()
+            new_child.set_rigid(body_number=max_rigid + 1)
 
     def remove(self, objs_to_remove):
         """Remove children from the Compound. """
@@ -1034,6 +1030,12 @@ class Compound(object):
 
         descr.append('id: {}>'.format(id(self)))
         return ''.join(descr)
+
+    def __setattr__(self, attr, value):
+        if attr == 'rigid' and value:
+            super(Compound, self).__setattr__(attr, 0)
+        else:
+            super(Compound, self).__setattr__(attr, value)
 
     def _clone(self, clone_of=None, root_container=None):
         """A faster alternative to deepcopying.
