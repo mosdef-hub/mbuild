@@ -28,7 +28,7 @@ class Box(object):
         else:
             raise ValueError('Either provide `lengths` or `mins` and `maxs`. '
                              'You provided: lengths={} mins={} maxs={}'.format(
-                lengths, mins, maxs))
+                                lengths, mins, maxs))
 
     @property
     def mins(self):
