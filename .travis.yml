@@ -26,6 +26,7 @@ install:
   - conda config --add channels bioconda
   - conda config --add channels glotzer
   - conda config --add channels mosdef
+  - conda config --add channesl conda-forge
 
 script:
   - conda build --python $PYTHON_VERSION devtools/conda-recipe
