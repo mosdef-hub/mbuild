@@ -32,14 +32,14 @@ test:
     - ipykernel
     - ipyext
 
-  source_files:
-    - mbuild/examples/*
+      #  source_files:
+      #    - mbuild/examples/*
   
   commands:
     - conda install -yc conda-forge python-coveralls 
     - conda install -yc conda-forge pytest-cov
     - py.test -v --cov-append --cov=mbuild --cov-report= --pyargs mbuild
-    - coveralls
+    - coveralls -v
 
 about:
   home: http://mosdef-hub.github.io/mbuild
