@@ -34,13 +34,10 @@ test:
     - python-coveralls
     - pytest-cov
 
-  source_files:
-    - .coveragerc
-  
   commands:
     - which python
     - echo $PATH
-    - py.test -v --cov-append --cov=mbuild --cov-report= --pyargs mbuild
+    - py.test -v --cov-append --cov=mbuild --cov-config /home/travis/build/mikemhenry/mbuild/.coveragerc --cov-report= --pyargs mbuild
     - coveralls 
 
 about:

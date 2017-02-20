@@ -1,2 +1,4 @@
 [run]
-omit = examples/*
+omit = 
+    */examples/*
+    */tests/*
