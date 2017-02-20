@@ -404,8 +404,8 @@ class Compound(object):
                 bond_tuple = (p1, p2) if id(p1) < id(p2) else (p2, p1)
                 if bond_tuple in added_bonds:
                     continue
-                if (p2.name == name_b) and (dmin <= self.min_periodic_distance(p2.pos,
-                                                                               p1.pos) <= dmax):
+                min_dist = self.min_periodic_distance(p2.pos, p1.pos)
+                if (p2.name == name_b) and (dmin <= min_dist <= dmax):
                     self.add_bond((p1, p2))
                     added_bonds.append(bond_tuple)
 
@@ -1000,8 +1000,7 @@ class Compound(object):
             else:
                 descr.append('non-periodic, ')
         else:
-            descr.append('pos=({: .4f},{: .4f},{: .4f}), '.format(self.pos[0], self.pos[1],
-                                                                  self.pos[2]))
+            descr.append('pos=({: .4f},{: .4f},{: .4f}), '.format(*self.pos))
 
         descr.append('{:d} bonds, '.format(self.n_bonds))
 
