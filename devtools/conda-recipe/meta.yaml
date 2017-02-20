@@ -38,7 +38,8 @@ test:
     - mbuild/examples/*
   
   commands:
-    - py.test -v --cov-append --cov=mbuild --pyargs mbuild
+    - py.test -v --cov-append --cov=mbuild --cov-report=xml --pyargs mbuild
+    - ls -ltra
     - cd mbuild/examples
     - py.test -v --cov-append --cov=mbuild test_examples.py
     - coveralls
