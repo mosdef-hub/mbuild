@@ -1,11 +1,13 @@
-from warnings import warn
+from warnings import warn, simplefilter
+simplefilter('always', DeprecationWarning)
 
 import numpy as np
 from numpy.linalg import norm, svd, inv
+from mbuild.utils.decorators import deprecated
 
 
-__all__ = ['rotate_around_x', 'rotate_around_y', 'rotate_around_z',
-           'spin_x', 'spin_y', 'spin_z',
+__all__ = ['rotate', 'rotate_around_x', 'rotate_around_y', 'rotate_around_z',
+           'spin', 'spin_x', 'spin_y', 'spin_z',
            'force_overlap', 'translate', 'translate_to',
            'x_axis_transform', 'y_axis_transform', 'z_axis_transform',
 
@@ -250,8 +252,11 @@ def unit_vector(v):
     return v / norm(v)
 
 
-def angle(u, v):
+def angle(u, v, w=None):
     """Returns the angle in radians between two vectors. """
+    if w != None:
+        u = u - v
+        v = w - v
     c = np.dot(u, v) / norm(u) / norm(v)
     return np.arccos(np.clip(c, -1, 1))
 
@@ -434,6 +439,28 @@ def translate_to(compound, pos):
     _set_particle_positions(compound, atom_positions)
 
 
+def rotate(compound, theta, around):
+    """Rotate a compound around an arbitrary vector.
+
+    Parameters
+    ----------
+    compound : mb.Compound
+        The compound being rotated.
+    theta : float
+        The angle by which to rotate the compound, in radians.
+    around : np.ndarray, shape=(3,), dtype=float
+        The vector about which to rotate the compound.
+
+    """
+    if(np.allclose(around, 0, atol=1e-16)):
+        raise ValueError('Cannot rotate around a zero vector')
+    atom_positions = compound.xyz_with_ports
+    atom_positions = Rotation(theta, around).apply_to(atom_positions)
+    _set_particle_positions(compound, atom_positions)
+
+
+warning_message = 'Please use rotate(compound, theta, around=np.asarray([1, 0, 0]))'
+@deprecated(warning_message)
 def rotate_around_x(compound, theta):
     """Rotate a compound around the x axis.
 
@@ -445,11 +472,11 @@ def rotate_around_x(compound, theta):
         The angle by which to rotate the compound.
 
     """
-    atom_positions = compound.xyz_with_ports
-    atom_positions = RotationAroundX(theta).apply_to(atom_positions)
-    _set_particle_positions(compound, atom_positions)
+    rotate(compound, theta, np.asarray([1, 0, 0]))
 
 
+warning_message = 'Please use rotate(compound, theta, around=np.asarray([0, 1, 0]))'
+@deprecated(warning_message)
 def rotate_around_y(compound, theta):
     """Rotate a compound around the y axis.
 
@@ -461,11 +488,11 @@ def rotate_around_y(compound, theta):
         The angle by which to rotate the compound.
 
     """
-    atom_positions = compound.xyz_with_ports
-    atom_positions = RotationAroundY(theta).apply_to(atom_positions)
-    _set_particle_positions(compound, atom_positions)
+    rotate(compound, theta, np.asarray([0, 1, 0]))
 
 
+warning_message = 'Please use rotate(compound, theta, around=np.asarray([0, 0, 1]))'
+@deprecated(warning_message)
 def rotate_around_z(compound, theta):
     """Rotate a compound around the z axis.
 
@@ -477,11 +504,32 @@ def rotate_around_z(compound, theta):
         The angle by which to rotate the compound.
 
     """
-    atom_positions = compound.xyz_with_ports
-    atom_positions = RotationAroundZ(theta).apply_to(atom_positions)
-    _set_particle_positions(compound, atom_positions)
+    rotate(compound, theta, np.asarray([0, 0, 1]))
 
 
+def spin(compound, theta, around):
+    """Rotate a compound in place around an arbitrary vector.
+
+    Parameters
+    ----------
+    compound : mb.Compound
+        The compound being rotated.
+    theta : float
+        The angle by which to rotate the compound, in radians.
+    around : np.ndarray, shape=(3,), dtype=float
+        The axis about which to spin the compound.
+
+    """
+    if(np.allclose(around, 0.0, atol=1e-16)):
+        raise ValueError('Cannot spin around a zero vector')
+    center_pos = compound.center
+    translate(compound, -center_pos)
+    rotate(compound, theta, around)
+    translate(compound, center_pos)
+
+
+warning_message = 'Please use spin(compound, theta, around=np.asarray([1, 0, 0]))'
+@deprecated(warning_message)
 def spin_x(compound, theta):
     """Rotate a compound in place around the x axis.
 
@@ -493,12 +541,11 @@ def spin_x(compound, theta):
         The angle by which to rotate the compound.
 
     """
-    center_pos = compound.center
-    translate(compound, -center_pos)
-    rotate_around_x(compound, theta)
-    translate(compound, center_pos)
+    spin(compound, theta, np.asarray([1.0, 0.0, 0.0]))
 
 
+warning_message = 'Please use spin(compound, theta, around=np.asarray([0, 1, 0]))'
+@deprecated(warning_message)
 def spin_y(compound, theta):
     """Rotate a compound in place around the y axis.
 
@@ -510,12 +557,11 @@ def spin_y(compound, theta):
         The angle by which to rotate the compound.
 
     """
-    center_pos = compound.center
-    translate(compound, -center_pos)
-    rotate_around_y(compound, theta)
-    translate(compound, center_pos)
+    spin(compound, theta, np.asarray([0.0, 1.0, 0.0]))
 
 
+warning_message = 'Please use spin(compound, theta, around=np.asarray([0, 0, 1]))'
+@deprecated(warning_message)
 def spin_z(compound, theta):
     """Rotate a compound in place around the z axis.
 
@@ -527,10 +573,7 @@ def spin_z(compound, theta):
         The angle by which to rotate the compound.
 
     """
-    center_pos = compound.center
-    translate(compound, -center_pos)
-    rotate_around_z(compound, theta)
-    translate(compound, center_pos)
+    spin(compound, theta, np.asarray([0.0, 0.0, 1.0]))
 
 
 def x_axis_transform(compound, new_origin=None,
