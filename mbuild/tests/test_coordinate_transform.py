@@ -10,7 +10,7 @@ from mbuild.coordinate_transform import (Translation, CoordinateTransform,
                                          force_overlap, translate,
                                          translate_to, x_axis_transform,
                                          y_axis_transform, z_axis_transform,
-                                         rotate, spin)
+                                         rotate, spin, spin_x, spin_y, spin_z)
 from mbuild.tests.base_test import BaseTest
 import mbuild as mb
 
@@ -135,6 +135,36 @@ class TestCoordinateTransform(BaseTest):
         spin(sixpoints, np.pi, np.asarray([0, 0, 1]))
         assert(np.allclose(sixpoints['left'].xyz, before['right'].xyz, atol=1e-16)
                 and np.allclose(sixpoints['up'].xyz, before['down'].xyz, atol=1e-16))
+
+    def test_spin_x_eq(self, sixpoints):
+        compound2 = mb.clone(sixpoints)
+        spin(sixpoints, np.pi*1.23456789, np.asarray([1.0, 0.0, 0.0]))
+        spin_x(compound2, np.pi*1.23456789)
+        assert(np.allclose(compound2.xyz, sixpoints.xyz, atol=1e-16))
+
+    def test_spin_y_eq(self, sixpoints):
+        compound2 = mb.clone(sixpoints)
+        spin(sixpoints, np.pi*1.23456789, np.asarray([0.0, 1.0, 0.0]))
+        spin_y(compound2, np.pi*1.23456789)
+        assert(np.allclose(compound2.xyz, sixpoints.xyz, atol=1e-16))
+
+    def test_spin_z_eq(self, sixpoints):
+        compound2 = mb.clone(sixpoints)
+        spin(sixpoints, np.pi*1.23456789, np.asarray([0.0, 0.0, 1.0]))
+        spin_z(compound2, np.pi*1.23456789)
+        assert(np.allclose(compound2.xyz, sixpoints.xyz, atol=1e-16))
+
+    def test_spin_deprecated_x(self, sixpoints):
+        with pytest.warns(DeprecationWarning):
+            spin_x(sixpoints, np.pi*3/2)
+
+    def test_spin_deprecated_y(self, sixpoints):
+        with pytest.warns(DeprecationWarning):
+            spin_y(sixpoints, np.pi*3/2)
+
+    def test_spin_deprecated_z(self, sixpoints):
+        with pytest.warns(DeprecationWarning):
+            spin_z(sixpoints, 69)
 
     def test_spin_arbitraty(self, sixpoints):
         before = mb.clone(sixpoints)

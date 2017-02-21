@@ -504,7 +504,7 @@ def rotate_around_z(compound, theta):
     rotate(compound, theta, np.asarray([0, 0, 1]))
 
 
-def spin(compound, theta, spin_around):
+def spin(compound, theta, around):
     """Rotate a compound in place around an arbitrary vector.
 
     Parameters
@@ -513,15 +513,15 @@ def spin(compound, theta, spin_around):
         The compound being rotated.
     theta : float
         The angle by which to rotate the compound, in radians.
-    spin_around : np.ndarray, shape=(3,), dtype=float
+    around : np.ndarray, shape=(3,), dtype=float
         The axis about which to spin the compound.
 
     """
-    if(np.allclose(spin_around, 0.0, atol=1e-16)):
+    if(np.allclose(around, 0.0, atol=1e-16)):
         raise ValueError('Cannot spin around a zero vector')
     center_pos = compound.center
     translate(compound, -center_pos)
-    rotate(compound, theta, spin_around)
+    rotate(compound, theta, around)
     translate(compound, center_pos)
 
 
@@ -538,7 +538,7 @@ def spin_x(compound, theta):
         The angle by which to rotate the compound.
 
     """
-    spin(compund, theta, np.asarray([1, 0, 0]))
+    spin(compound, theta, np.asarray([1.0, 0.0, 0.0]))
 
 
 warning_message = 'Please use spin(compound, theta, around=np.asarray([0, 1, 0]))'
@@ -554,7 +554,7 @@ def spin_y(compound, theta):
         The angle by which to rotate the compound.
 
     """
-    spin(compund, theta, np.asarray([0, 1, 0]))
+    spin(compound, theta, np.asarray([0.0, 1.0, 0.0]))
 
 
 warning_message = 'Please use spin(compound, theta, around=np.asarray([0, 0, 1]))'
@@ -570,7 +570,7 @@ def spin_z(compound, theta):
         The angle by which to rotate the compound.
 
     """
-    spin(compund, theta, np.asarray([0, 1, 0]))
+    spin(compound, theta, np.asarray([0.0, 0.0, 1.0]))
 
 
 def x_axis_transform(compound, new_origin=None,
