@@ -156,9 +156,6 @@ def write_gsd(structure, filename, forcefield, box, ref_distance=1.0, ref_mass=1
 
     gsd.hoomd.create(filename, gsd_file)
 
-    if write_ff:
-        write_forcefield(structure, 'ff.json', ref_distance=ref_distance, ref_energy=ref_energy)
-
 def _atoi(text):
     return int(text) if text.isdigit() else text
 

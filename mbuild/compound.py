@@ -707,8 +707,6 @@ class Compound(object):
         _to_topology
 
         """
-        import mdtraj as md
-
         atom_list = [particle for particle in self.particles(show_ports)]
 
         top = self._to_topology(atom_list, chain_types, residue_types)
