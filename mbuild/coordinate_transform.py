@@ -252,8 +252,11 @@ def unit_vector(v):
     return v / norm(v)
 
 
-def angle(u, v):
+def angle(u, v, w=None):
     """Returns the angle in radians between two vectors. """
+    if w != None:
+        u = u - v
+        v = w - v
     c = np.dot(u, v) / norm(u) / norm(v)
     return np.arccos(np.clip(c, -1, 1))
 
