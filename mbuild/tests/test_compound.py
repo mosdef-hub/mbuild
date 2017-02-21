@@ -117,6 +117,15 @@ class TestCompound(BaseTest):
         for part in ethane.children:
             assert part.n_bonds == 0
 
+    def test_remove_subcompound(self, ethane):
+        methyl = ethane.children[0]
+        ethane.remove(methyl)
+
+        assert ethane.n_particles == 4
+        assert ethane.n_bonds == 3
+        assert len(ethane.children) == 1
+        assert len(ethane.children[0].children) == 5
+
     def test_remove_no_bond_graph(self):
         compound = mb.Compound()
         particle = mb.Compound(name='C', pos=[0, 0, 0])
