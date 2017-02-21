@@ -215,7 +215,7 @@ class RigidTransform(CoordinateTransform):
             Points in destination coordinate system.
 
         """
-        rows, cols = np.shape(A)
+        rows, _ = np.shape(A)
         centroid_A = np.mean(A, axis=0)
         centroid_B = np.mean(B, axis=0)
         centroid_A.shape = (1, 3)
@@ -226,7 +226,7 @@ class RigidTransform(CoordinateTransform):
         for i in range(rows):
             H = H + np.transpose(A[i, :] - centroid_A).dot((B[i, :] - centroid_B))
 
-        U, s, V = svd(H)
+        U, _, V = svd(H)
         V = np.transpose(V)
         R = V.dot(np.transpose(U))
 
@@ -234,7 +234,6 @@ class RigidTransform(CoordinateTransform):
         C_A = np.vstack([np.hstack([C_A, np.transpose(centroid_A) * -1.0]),
                          np.array([0, 0, 0, 1])])
 
-        R_new = np.eye(3)
         R_new = np.vstack([np.hstack([R, np.array([[0], [0], [0]])]),
                            np.array([0, 0, 0, 1])])
 

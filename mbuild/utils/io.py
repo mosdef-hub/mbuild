@@ -101,18 +101,21 @@ def import_(module):
 try:
     import intermol
     has_intermol = True
+    del intermol
 except ImportError:
     has_intermol = False
 
 try:
     import foyer
     has_foyer = True
+    del foyer
 except ImportError:
     has_foyer = False
 
 try:
     import gsd
     has_gsd = True
+    del gsd
 except ImportError:
     has_gsd = False
 
