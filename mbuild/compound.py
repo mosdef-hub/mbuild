@@ -316,6 +316,11 @@ class Compound(object):
         if len(objs_to_remove) == 0:
             return
 
+        # Remove the part recursively from sub-compounds.
+        for remove_this in objs_to_remove:
+            for part in remove_this.children:
+                remove_this.remove(part)
+
         intersection = objs_to_remove.intersection(self.children)
         self.children -= intersection
         objs_to_remove -= intersection
@@ -325,13 +330,9 @@ class Compound(object):
                 self.root.bond_graph.remove_node(removed_part)
             self._remove_references(removed_part)
 
-        # Remove the part recursively from sub-compounds.
-        if self.children:
-            for part in self.children:
-                part.remove(objs_to_remove)
 
-    @staticmethod
-    def _remove_references(removed_part):
+
+    def _remove_references(self, removed_part):
         """Remove labels pointing to this part and vice versa. """
         removed_part.parent = None
 
@@ -349,9 +350,16 @@ class Compound(object):
         labels_to_delete = []
         if isinstance(removed_part, Compound):
             for label, part in removed_part.labels.items():
-                if removed_part not in part.ancestors():
-                    part.referrers.remove(removed_part)
-                    labels_to_delete.append(label)
+                if not isinstance(part, Compound):
+                    for p in part:
+                        self._remove_references(p)
+                elif removed_part not in part.ancestors():
+                    try:
+                        part.referrers.discard(removed_part)
+                    except KeyError:
+                        pass
+                    else:
+                        labels_to_delete.append(label)
         for label in labels_to_delete:
             del removed_part.labels[label]
 
