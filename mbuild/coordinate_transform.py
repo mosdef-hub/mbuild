@@ -6,8 +6,7 @@ from numpy.linalg import norm, svd, inv
 from mbuild.utils.decorators import deprecated
 
 
-__all__ = ['rotate', 'rotate_around_x', 'rotate_around_y', 'rotate_around_z',
-           'spin', 'spin_x', 'spin_y', 'spin_z',
+__all__ = ['rotate', 'spin',
            'force_overlap', 'translate', 'translate_to',
            'x_axis_transform', 'y_axis_transform', 'z_axis_transform',
 
@@ -451,6 +450,7 @@ def rotate(compound, theta, around):
         The vector about which to rotate the compound.
 
     """
+    around = np.asarray(around).reshape(3)
     if(np.allclose(around, 0, atol=1e-16)):
         raise ValueError('Cannot rotate around a zero vector')
     atom_positions = compound.xyz_with_ports
@@ -519,6 +519,7 @@ def spin(compound, theta, around):
         The axis about which to spin the compound.
 
     """
+    around = np.asarray(around).reshape(3)
     if(np.allclose(around, 0.0, atol=1e-16)):
         raise ValueError('Cannot spin around a zero vector')
     center_pos = compound.center
