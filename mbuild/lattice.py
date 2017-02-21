@@ -158,6 +158,7 @@ class Lattice(object):
 
         ValueError : values are not within restrictions.
         """
+        # TODO (Justin Gilmer) Split cleaning into separate functions
         if dimension is None:
             dimension = 3
         else:
@@ -265,7 +266,7 @@ class Lattice(object):
                     raise ValueError('Negative Determinant: the determinant '
                                      'of {} is negative, indicating a left-'
                                      'handed system.' .format(det))
-
+        # TODO(Justin Gilmer) Require dict only, simpify args
         if basis_vectors is None:
             basis_vectors = defaultdict(list)
             basis_vectors['default'].append((0,) * dimension)
@@ -404,6 +405,7 @@ class Lattice(object):
         -----------------
         Called after constructor by user.
         """
+        # TODO(Justin Gilmer) Clean these conditionals up, too complicated
         if self.dimension == 3:
             a = self.lattice_spacings[0]
             b = self.lattice_spacings[1]
