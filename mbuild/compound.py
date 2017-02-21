@@ -316,22 +316,25 @@ class Compound(object):
         if len(objs_to_remove) == 0:
             return
 
-        intersection = objs_to_remove.intersection(self.children)
-        self.children -= intersection
-        objs_to_remove -= intersection
+        remove_from_here = objs_to_remove.intersection(self.children)
+        self.children -= remove_from_here
+        yet_to_remove = objs_to_remove - remove_from_here
 
-        for removed_part in intersection:
+        for removed in remove_from_here:
+            for child in removed.children:
+                removed.remove(child)
+
+        for removed_part in remove_from_here:
             if self.root.bond_graph and self.root.bond_graph.has_node(removed_part):
                 self.root.bond_graph.remove_node(removed_part)
             self._remove_references(removed_part)
 
         # Remove the part recursively from sub-compounds.
-        if self.children:
-            for part in self.children:
-                part.remove(objs_to_remove)
+        for child in self.children:
+            child.remove(yet_to_remove)
 
-    @staticmethod
-    def _remove_references(removed_part):
+
+    def _remove_references(self, removed_part):
         """Remove labels pointing to this part and vice versa. """
         removed_part.parent = None
 
@@ -348,12 +351,19 @@ class Compound(object):
         # Remove labels in this part pointing into the hierarchy.
         labels_to_delete = []
         if isinstance(removed_part, Compound):
-            for label, part in removed_part.labels.items():
-                if removed_part not in part.ancestors():
-                    part.referrers.remove(removed_part)
-                    labels_to_delete.append(label)
+            for label, part in list(removed_part.labels.items()):
+                if not isinstance(part, Compound):
+                    for p in part:
+                        self._remove_references(p)
+                elif removed_part not in part.ancestors():
+                    try:
+                        part.referrers.discard(removed_part)
+                    except KeyError:
+                        pass
+                    else:
+                        labels_to_delete.append(label)
         for label in labels_to_delete:
-            del removed_part.labels[label]
+            removed_part.labels.pop(label, None)
 
     def referenced_ports(self):
         """Return all Ports referenced by this Compound. """
@@ -551,7 +561,7 @@ class Compound(object):
             saver = None
 
         if os.path.exists(filename) and not overwrite:
-            raise IOError('{0} exists; not overwriting' % filename)
+            raise IOError('{0} exists; not overwriting'.format(filename))
 
         structure = self.to_parmed(**kwargs)
         if saver:  # mBuild/InterMol supported saver.
