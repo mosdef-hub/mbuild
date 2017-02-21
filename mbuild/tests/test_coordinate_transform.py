@@ -10,7 +10,8 @@ from mbuild.coordinate_transform import (Translation, CoordinateTransform,
                                          force_overlap, translate,
                                          translate_to, x_axis_transform,
                                          y_axis_transform, z_axis_transform,
-                                         rotate, spin, spin_x, spin_y, spin_z)
+                                         rotate, spin, spin_x, spin_y, spin_z,
+                                         angle)
 from mbuild.tests.base_test import BaseTest
 import mbuild as mb
 
@@ -183,6 +184,33 @@ class TestCoordinateTransform(BaseTest):
     def test_warn_rotate_z(self, methane):
         with pytest.warns(DeprecationWarning):
             rotate_around_z(methane, np.pi)
+
+    def test_spin_relative_compound_coordinates(self, sixpoints):
+        """Ensure that a compounds's relative coordinates to not change upong spinning"""
+        import itertools as itt
+        mol1 = mb.clone(sixpoints)
+        mol2 = mb.clone(sixpoints)
+        force_overlap(move_this=mol2,
+                from_positions=mol2['up'],
+                to_positions=mol1['down'],
+                add_bond=False)
+        mol1_angles_before = np.asarray(
+                [angle(a, b, c)
+                for (a, b, c) in itt.combinations(mol1.xyz, 3)])
+        mol2_angles_before = np.asarray(
+                [angle(a, b, c)
+                for (a, b, c) in itt.combinations(mol2.xyz, 3)])
+        spin_axis = (mol2['middle'].xyz - mol1['middle'].xyz).reshape(3)
+        spin(mol2, np.pi*0.123456789, spin_axis)
+        spin(mol1, -np.pi*0.123456789, spin_axis)
+        mol1_angles_after = np.asarray(
+                [angle(a, b, c)
+                for (a, b, c) in itt.combinations(mol1.xyz, 3)])
+        mol2_angles_after = np.asarray(
+                [angle(a, b, c)
+                for (a, b, c) in itt.combinations(mol2.xyz, 3)])
+        assert(np.allclose(mol1_angles_before, mol1_angles_after, atol=1e-16)
+                and np.allclose(mol2_angles_before, mol2_angles_after, atol=1e-16))
 
     def test_equivalence_transform_deprectation_warning(self, ch2):
         ch22 = mb.clone(ch2)

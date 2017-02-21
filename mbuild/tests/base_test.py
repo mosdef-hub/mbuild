@@ -54,8 +54,11 @@ class BaseTest:
         molecule.add(mb.Particle(name='C', pos=[5, 5, 5]), label='middle')
         molecule.add(mb.Particle(name='C', pos=[6, 5, 5]), label='right')
         molecule.add(mb.Particle(name='C', pos=[4, 5, 5]), label='left')
-        molecule.add(mb.Particle(name='C', pos=[5, 6, 5]), label='up')
-        molecule.add(mb.Particle(name='C', pos=[5, 4, 5]), label='down')
+        molecule.add(mb.Port(anchor=molecule[0]), label='up')
+        mb.translate(molecule['up'], [0, 1, 0])
+        molecule.add(mb.Port(anchor=molecule[0]), label='down')
+        mb.translate(molecule['down'], [0, -1, 0])
         molecule.add(mb.Particle(name='C', pos=[5, 5, 6]), label='front')
         molecule.add(mb.Particle(name='C', pos=[5, 5, 4]), label='back')
+        molecule.generate_bonds('C', 'C', 0.9, 1.1)
         return molecule
