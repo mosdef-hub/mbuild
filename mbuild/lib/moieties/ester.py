@@ -12,11 +12,11 @@ class Ester(mb.Compound):
         mb.translate(self, -self[0].pos)
 
         self.add(mb.Port(anchor=self[2]), 'up')
-        mb.spin_z(self['up'], np.pi / 2)
+        mb.spin(self['up'], np.pi / 2, [0, 0, 1])
         mb.translate_to(self['up'], np.array([0.07, 0, 0]))
 
         self.add(mb.Port(anchor=self[0]), 'down')
-        mb.spin_z(self['down'], np.pi / 2)
+        mb.spin(self['down'], np.pi / 2, [0, 0, 1])
         mb.translate(self['down'], np.array([-0.07, 0, 0]))
 
 if __name__ == '__main__':

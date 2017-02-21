@@ -223,7 +223,7 @@ class TestCompound(BaseTest):
 
         # Create another compound, rotate it and write it to file.
         brush2 = Brush()
-        mb.rotate_around_z(brush2, pi/2)
+        mb.rotate(brush2, pi/2, [0, 0, 1])
         brush2.save("brush2.pdb")
 
         # Load brush2.pdb into brush1, modifying the atom positions of brush1.
