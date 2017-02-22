@@ -23,7 +23,12 @@ install:
   - conda config --add channels mosdef
   - conda update -yq --all
   - conda install -yq conda-build jinja2
-
+  - conda config --set always_yes yes --set changeps1 no
+  - conda env create -q -n test-environment python=$PYTHON_VERSION -f environment.yml
+  - source activate test-environment
+  - pip install -e .
+  - py.test -v --cov=mbuild  --cov-report= --pyargs mbuild
+  - coveralls
 build: false
 
 test_script:
