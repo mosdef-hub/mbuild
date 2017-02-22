@@ -157,12 +157,17 @@ class Compound(object):
 
         self.bond_graph = None
         self.port_particle = port_particle
+        self.rigid_id = None
+
+        if rigid:
+            if self.root.rigid_id:
+                self.rigid_id = self.root.max_rigid() + 1
+            else:
+                self.rigid_id = 0
 
         # self.add() must be called after labels and children are initialized.
         if subcompounds:
-            self.add(subcompounds)
-
-        self.rigid = rigid
+            self.add(subcompounds, increment_rigid=False)
 
     def particles(self, include_ports=False):
         """ """
@@ -214,6 +219,19 @@ class Compound(object):
             for ancestor in self.parent.ancestors():
                 yield ancestor
 
+    def max_rigid(self):
+        if self.children:
+            return max(successor.rigid_id for successor in self.successors())
+        else:
+            return self.rigid_id
+
+    @property
+    def rigid(self):
+        if any(successor.rigid_id is not None for successor in self.successors()):
+            return True
+        else:
+            return False
+
     @property
     def root(self):
         parent = None
@@ -230,20 +248,42 @@ class Compound(object):
 
     def rigid_ids(self):
         for particle in self.particles():
-            yield particle.rigid
+            yield particle.rigid_id
 
     def rigid_particles(self):
         for particle in self.particles():
-            if particle.rigid is not False:
+            if particle.rigid_id is not None:
                 yield particle
 
-    def set_rigid(self, name=False, body_number=0):
-        self.rigid = body_number
-        for particle in self.particles():
-            if name and particle.name != name:
+    def set_rigid(self, name=False, rigid_id=None):
+        if self.root.max_rigid() is not None:
+            rigid_id = self.root.max_rigid() + 1
+        else:
+            rigid_id = 0
+        self.rigid_id = rigid_id
+        for successor in self.successors():
+            if name and successor.name != name:
                 pass
             else:
-                particle.rigid = body_number
+                successor.rigid_id = rigid_id
+                for successor2 in successor.successors():
+                    successor2.rigid_id = rigid_id
+        # Issue warning if rigid_id > self.root.max_rigid()
+
+    def create_rigid_bodies(self, name, particle_name=None):
+        if self.root.max_rigid() is not None:
+            rigid_id = self.root.max_rigid() + 1
+        else:
+            rigid_id = 0
+        for successor in self.successors():
+            if successor.name == name:
+                successor.rigid_id = rigid_id
+                for successor2 in successor.successors():
+                    if particle_name and successor2.name != particle_name:
+                        pass
+                    else:
+                        successor2.rigid_id = rigid_id
+                rigid_id += 1
 
     def add(self, new_child, label=None, containment=True, replace=False,
             inherit_periodicity=True, increment_rigid=True):
@@ -324,9 +364,30 @@ class Compound(object):
                 new_child.periodicity.any()):
             self.periodicity = new_child.periodicity
 
-        if increment_rigid and new_child.rigid is not False:
-            max_rigid = max([p for p in self.rigid_ids()])
-            new_child.set_rigid(body_number=max_rigid + 1)
+        if new_child.rigid is not False:
+            if increment_rigid:
+                if self.root.max_rigid() is not None:
+                    max_rigid = self.root.max_rigid()
+                    new_child.rigid_id = max_rigid + 1
+                    for successor in new_child.successors():
+                        if successor.rigid is not False:
+                            successor.rigid_id = max_rigid + 1
+                else:
+                    new_child.rigid_id = 0
+                    for successor in new_child.successors():
+                        if successor.rigid is not False:
+                            successor.rigid_id = 0
+            else:
+                if self.rigid_id is not None:
+                    new_child.rigid_id = self.rigid_id
+                    for successor in new_child.successors():
+                        if successor.rigid is not False:
+                            successor.rigid_id = self.rigid_id
+                else:
+                    new_child.rigid_id = 0
+                    for successor in new_child.successors():
+                        if successor.rigid is not False:
+                            successor.rigid_id = 0
 
     def remove(self, objs_to_remove):
         """Remove children from the Compound. """
@@ -1031,12 +1092,6 @@ class Compound(object):
         descr.append('id: {}>'.format(id(self)))
         return ''.join(descr)
 
-    def __setattr__(self, attr, value):
-        if attr == 'rigid' and value:
-            super(Compound, self).__setattr__(attr, 0)
-        else:
-            super(Compound, self).__setattr__(attr, value)
-
     def _clone(self, clone_of=None, root_container=None):
         """A faster alternative to deepcopying.
 
@@ -1065,7 +1120,7 @@ class Compound(object):
         newone._pos = deepcopy(self._pos)
         newone.charge = deepcopy(self.charge)
         newone.port_particle = deepcopy(self.port_particle)
-        newone.rigid = deepcopy(self.rigid)
+        newone.rigid_id = deepcopy(self.rigid_id)
         if hasattr(self, 'index'):
             newone.index = deepcopy(self.index)
 
