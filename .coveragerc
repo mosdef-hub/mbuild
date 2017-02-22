@@ -1,8 +1,8 @@
 [run]
 omit = 
-    examples/*
-    tests/*
-[report]
+    mbuild/examples/*
+    mbuild/tests/*
+#[report]
 # Regexes for lines to exclude from consideration
-exclude_lines =
-    if __name__ == .__main__.:
+#exclude_lines =
+#    if __name__ == .__main__.:
