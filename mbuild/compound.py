@@ -300,10 +300,11 @@ class Compound(object):
             unwanted behavior.
 
         """
-        if self.root.max_rigid() is not None:
-            rigid_id = self.root.max_rigid() + 1
-        else:
-            rigid_id = 0
+        if rigid_id is None:
+            if self.root.max_rigid() is not None:
+                rigid_id = self.root.max_rigid() + 1
+            else:
+                rigid_id = 0
         self.rigid_id = rigid_id
         for successor in self.successors():
             if name and successor.name != name:
@@ -320,7 +321,10 @@ class Compound(object):
         self.rigid_id = rigid_id
         for successor in self.successors():
             if successor.rigid is not False:
-                successor.rigid_id = rigid_id
+                if successor.rigid_id is not None:
+                    successor.rigid_id += rigid_id
+                else:
+                    successor.rigid_id = rigid_id
 
     def create_rigid_bodies(self, name, particle_name=None):
         """Create unique rigid body IDs for all successors in a Compound
@@ -357,7 +361,7 @@ class Compound(object):
         unique_rigid_ids = sorted(set(self.rigid_ids()))
         unique_rigid_ids = [id for id in unique_rigid_ids if id is not None]
         unique_rigid = len(unique_rigid_ids)
-        if unique_rigid != max_rigid + 1:
+        if max_rigid and unique_rigid != max_rigid + 1:
             missing_rigid_id = (unique_rigid_ids[-1] * (unique_rigid_ids[-1] + 1))/2 - sum(unique_rigid_ids)
             for successor in self.successors():
                 if successor.rigid_id is not None:
@@ -398,6 +402,11 @@ class Compound(object):
                 self.add(child)
             return
 
+        if not isinstance(new_child, Compound):
+            raise ValueError('Only objects that inherit from mbuild.Compound '
+                             'can be added to Compounds. You tried to add '
+                             '"{}".'.format(new_child))
+
         if not new_child.port_particle:
             if new_child.rigid is not False:
                 if increment_rigid:
@@ -411,11 +420,6 @@ class Compound(object):
                         new_child._set_rigid_only(self.rigid_id)
                     else:
                         new_child._set_rigid_only(0)
-
-        if not isinstance(new_child, Compound):
-            raise ValueError('Only objects that inherit from mbuild.Compound '
-                             'can be added to Compounds. You tried to add '
-                             '"{}".'.format(new_child))
 
         # Create children and labels on the first add operation
         if self.children is None:
@@ -463,7 +467,6 @@ class Compound(object):
                 new_child.periodicity.any()):
             self.periodicity = new_child.periodicity
 
-
     def remove(self, objs_to_remove):
         """Remove children from the Compound. """
         if not self.children:
@@ -475,6 +478,10 @@ class Compound(object):
 
         if len(objs_to_remove) == 0:
             return
+
+        any_rigid = False
+        if any(obj.max_rigid() is not None for obj in objs_to_remove):
+            any_rigid = True
 
         remove_from_here = objs_to_remove.intersection(self.children)
         self.children -= remove_from_here
@@ -493,8 +500,9 @@ class Compound(object):
         for child in self.children:
             child.remove(yet_to_remove)
 
-        # Reset rigid_id's to ensure consecutiveness
-        self.root.reset_rigid()
+        if any_rigid:
+            # Reset rigid_id's to ensure consecutiveness
+            self.root.reset_rigid()
 
 
     def _remove_references(self, removed_part):
