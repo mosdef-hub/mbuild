@@ -15,8 +15,11 @@ dependencies:
 - parmed
 - mdtraj
 - foyer
+# Testing Deps
 - pytest >=3.0
 - jupyter
 - nbformat
 - ipykernel
 - ipyext
+- python-coveralls
+- pytest-cov
