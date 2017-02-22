@@ -16,16 +16,10 @@ environment:
 
 install:
   - set PATH=%PYTHON%;%PYTHON%\\Scripts;%PATH%
-  - conda config --add channels omnia
-  - conda config --add channels janschulz
-  - conda config --add channels bioconda
-  - conda config --add channels glotzer
-  - conda config --add channels mosdef
-  - conda update -yq --all
-  - conda install -yq conda-build jinja2
   - conda config --set always_yes yes --set changeps1 no
+  - conda update -yq --all
   - conda env create -q -n test-environment python=$PYTHON_VERSION -f environment.yml
-  - source activate test-environment
+  - activate test-environment
   - pip install -e .
   - py.test -v --cov=mbuild  --cov-report= --pyargs mbuild
   - coveralls
