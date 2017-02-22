@@ -35,11 +35,7 @@ class Pattern(object):
             The factor to scale by. If a scalar, scale all directions isotropically.
             If np.ndarray, scale each direction independently.
         """
-        try:
-            for i, dirscale in enumerate(by):
-                self.points[:, i] *= dirscale
-        except TypeError:  # by not iterable
-            self.points *= by
+        self.points *= np.asarray([by])
         self._adjust_ports()
 
     def _adjust_ports(self):

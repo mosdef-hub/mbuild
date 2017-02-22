@@ -74,8 +74,32 @@ class TestPattern(BaseTest):
         for old, new, s in zip(oldrange, newrange, scale):
             assert(np.allclose(new, s*old, atol=1e-16))
 
-    def test_scale_vector_too_many_dimensions(self): 
+    def test_scale_vector_too_many_dimensions(self):
         pattern = mb.Random3DPattern(100, seed=1)
         scale = [3.14159, 2.71828, 0.110001, 5]
         with pytest.raises(ValueError): 
+            pattern.scale(scale)
+
+    def test_scale_vector_too_many_dimensions_4points(self):
+        pattern = mb.Random3DPattern(4, seed=1)
+        scale = [3.14159, 2.71828, 0.110001, 5]
+        with pytest.raises(ValueError):
+            pattern.scale(scale)
+
+    def test_scale_vector_too_few_dimensions(self):
+        pattern = mb.Random3DPattern(100, seed=1)
+        scale = [3.14159, 2.71828]
+        with pytest.raises(ValueError):
+            pattern.scale(scale)
+
+    def test_scale_vector_too_few_dimensions_2points(self):
+        pattern = mb.Random3DPattern(2, seed=1)
+        scale = [3.14159, 2.71828]
+        with pytest.raises(ValueError):
+            pattern.scale(scale)
+
+    def test_scale_vector_too_same_N_and_d(self):
+        pattern = mb.Random3DPattern(100, seed=1)
+        scale = np.arange(100)
+        with pytest.raises(ValueError):
             pattern.scale(scale)
