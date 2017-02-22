@@ -37,6 +37,8 @@ def load(filename, relative_to_module=None, compound=None, coords_only=False,
     compound : mb.Compound, optional
     coords_only : bool, optional
         Only load the coordinates into an existing compoint.
+    rigid : bool, optional
+        Treat Compound and all successors as a single rigid body
 
     Returns
     -------
@@ -101,11 +103,17 @@ class Compound(object):
     ----------
     subcompounds : Compound, optional, default=None
         One or more compounds to be added to self.
+        If subcompound(s) are rigid bodies (i.e. subcompound.rigid == True),
+        the rigid body ID (rigid_id) will be incremented for each subcompound.
     name : str, optional, default=self.__class__.__name__
         The type of Compound.
     periodicity : np.ndarray, shape=(3,), dtype=float, optional
         The periodic lengths of the Compound in the x, y and z directions.
         Defaults to zeros which is treated as non-periodic.
+    rigid : bool, optional, default=False
+        Designates if the Compound should be treated as a rigid body.
+        If True, the Compound and all subcompounds are treated as a single
+        rigid body.
 
     Attributes
     ----------
@@ -124,6 +132,8 @@ class Compound(object):
         compound is the root of the containment hierarchy.
     referrers : set
         Other compounds that reference this part with labels.
+    rigid_id : int, default=None
+        Integer ID of the rigid body the Compound is associated with.
 
     """
     def __init__(self, subcompounds=None, name=None, pos=None, charge=0.0,
@@ -167,11 +177,9 @@ class Compound(object):
             else:
                 increment_rigid = False
             self.add(subcompounds, increment_rigid=increment_rigid)
+
         if rigid:
-            if self.root.rigid_id:
-                self.rigid_id = self.root.max_rigid() + 1
-            else:
-                self.rigid_id = 0
+            self.rigid_id = 0
             for successor in self.successors():
                 successor.rigid_id = self.rigid_id
 
@@ -225,34 +233,6 @@ class Compound(object):
             for ancestor in self.parent.ancestors():
                 yield ancestor
 
-    def max_rigid(self):
-        if self.children:
-            return max(successor.rigid_id for successor in self.successors())
-        else:
-            return self.rigid_id
-
-    def reset_rigid(self):
-        max_rigid = self.max_rigid()
-        unique_rigid_ids = sorted(set(self.rigid_ids()))
-        unique_rigid_ids = [id for id in unique_rigid_ids if id is not None]
-        unique_rigid = len(unique_rigid_ids)
-        if unique_rigid != max_rigid + 1:
-            missing_rigid_id = (unique_rigid_ids[-1] * (unique_rigid_ids[-1] + 1))/2 - sum(unique_rigid_ids)
-            for successor in self.successors():
-                if successor.rigid_id is not None:
-                    if successor.rigid_id > missing_rigid_id:
-                        successor.rigid_id -= 1
-            if self.rigid_id:
-                if self.rigid_id > missing_rigid_id:
-                    self.rigid_id -= 1
-
-    @property
-    def rigid(self):
-        if (any(successor.rigid_id is not None for successor in self.successors()) or            self.rigid_id is not None):
-            return True
-        else:
-            return False
-
     @property
     def root(self):
         parent = None
@@ -267,16 +247,59 @@ class Compound(object):
             if particle.name == name:
                 yield particle
 
+    @property
+    def rigid(self):
+        """Return whether or not the Compound is part of a rigid body. """
+        if (any(successor.rigid_id is not None for successor in self.successors()) or            self.rigid_id is not None):
+            return True
+        else:
+            return False
+
+    def max_rigid(self):
+        """Return the maximum rigid body ID contained in the Compound. """
+        if self.children:
+            return max(successor.rigid_id for successor in self.successors())
+        else:
+            return self.rigid_id
+
     def rigid_ids(self):
+        """Generate rigid_ids for all particles in the Compound. """
         for particle in self.particles():
             yield particle.rigid_id
 
-    def rigid_particles(self):
+    def rigid_particles(self, rigid_id=None):
+        """Generate all particles in rigid bodies.
+
+        Parameters
+        ----------
+        rigid_id : int, optional
+            Include only particles with this rigid body ID
+
+        """
         for particle in self.particles():
             if particle.rigid_id is not None:
                 yield particle
 
     def set_rigid(self, name=False, rigid_id=None):
+        """Treat the Compound and all successors as a single rigid body.
+
+        Provides a unique rigid body ID to a Compound and its successors.
+        If 'name' is specified, only sucessors with this name are provided
+        with a rigid_id.  This is useful for Compounds where only some of
+        the particles should be rigid (such as a tethered nanoparticle with
+        a rigid core).
+
+        Parameters
+        ----------
+        name : str, optional
+            Include only particles with this name in the rigid body.
+        rigid_id : int, optional
+            Manually set the rigid body ID for this body.
+            Note: This is not recommended, as mBuild keeps track of all
+            rigid body ID's and manually overriding this can lead to 
+            unwanted behavior.
+
+        """
         if self.root.max_rigid() is not None:
             rigid_id = self.root.max_rigid() + 1
         else:
@@ -287,12 +310,37 @@ class Compound(object):
                 pass
             else:
                 successor.rigid_id = rigid_id
-                for successor2 in successor.successors():
-                    successor2.rigid_id = rigid_id
-        if rigid_id and rigid_id > self.root.max_rigid():
-            warn("Specified 'rigid_id' > current max rigid_id. This may lead to inconsistent rigid body numbering. Consider running reset_rigid().")
+        if rigid_id and rigid_id > self.root.max_rigid() + 1:
+            warn("Specified 'rigid_id' > max rigid_id + 1. This will lead to inconsistent rigid body numbering. Consider running reset_rigid().")
+
+    def _set_rigid_only(self, rigid_id):
+        """Treat the Compound and all successors that already have a rigid_id
+           as a single rigid body.
+        """
+        self.rigid_id = rigid_id
+        for successor in self.successors():
+            if successor.rigid is not False:
+                successor.rigid_id = rigid_id
 
     def create_rigid_bodies(self, name, particle_name=None):
+        """Create unique rigid body IDs for all successors in a Compound
+           with a specified name.
+
+        Provides a unique rigid body ID to each Compound within a Compound
+        that matches a specified name.  This is useful for creating many
+        rigid bodies at once.  For example, all nanoparticles in a box filled
+        with nanoparticles could be set as unique rigid bodies by specifying
+        create_rigid_bodies(name='Nanoparticle'). A particle_name can
+        optionally be provided for Compounds where only some particles should
+        be rigid.
+
+        Parameters
+        ----------
+        name : str
+            Each Compound with this name is provided a unique rigid body ID.
+        particle_name : str, optional
+            Include only particles with this name in rigid bodies.
+        """
         if self.root.max_rigid() is not None:
             rigid_id = self.root.max_rigid() + 1
             warn("Rigid bodies already exist. Incrementing 'rigid_id' from {}".format(self.root.max_rigid()))
@@ -300,13 +348,24 @@ class Compound(object):
             rigid_id = 0
         for successor in self.successors():
             if successor.name == name:
-                successor.rigid_id = rigid_id
-                for successor2 in successor.successors():
-                    if particle_name and successor2.name != particle_name:
-                        pass
-                    else:
-                        successor2.rigid_id = rigid_id
+                successor.set_rigid(name=particle_name, rigid_id=rigid_id)
                 rigid_id += 1
+
+    def reset_rigid(self):
+        """Reorder rigid body IDs ensuring consecutiveness. """
+        max_rigid = self.max_rigid()
+        unique_rigid_ids = sorted(set(self.rigid_ids()))
+        unique_rigid_ids = [id for id in unique_rigid_ids if id is not None]
+        unique_rigid = len(unique_rigid_ids)
+        if unique_rigid != max_rigid + 1:
+            missing_rigid_id = (unique_rigid_ids[-1] * (unique_rigid_ids[-1] + 1))/2 - sum(unique_rigid_ids)
+            for successor in self.successors():
+                if successor.rigid_id is not None:
+                    if successor.rigid_id > missing_rigid_id:
+                        successor.rigid_id -= 1
+            if self.rigid_id:
+                if self.rigid_id > missing_rigid_id:
+                    self.rigid_id -= 1
 
     def add(self, new_child, label=None, containment=True, replace=False,
             inherit_periodicity=True, increment_rigid=True):
@@ -327,6 +386,9 @@ class Compound(object):
             Add the part to self.children.
         replace : bool, optional, default=True
             Replace the label if it already exists.
+        increment_rigid : bool, optional, default=True
+            If the Compound to be added is rigid, increment the rigid_id,
+            otherwise, use the same rigid_id as the parent Compound.
 
         """
         # Support batch add via lists, tuples and sets.
@@ -337,42 +399,18 @@ class Compound(object):
             return
 
         if not new_child.port_particle:
-            '''
-            print('I AM {}'.format(self))
-            print('Setting rigid for {}'.format(new_child))
-            print('Root ID {}'.format(self.root.max_rigid()))
-            '''
             if new_child.rigid is not False:
                 if increment_rigid:
                     if self.root.max_rigid() is not None:
-                        #print('Incrementing.  Rigid ID will be {}'.format(self.root.max_rigid()+1))
-                        #print('I have this many rigid particles: {}'.format(len([p for p in new_child.rigid_particles()])))
                         max_rigid = self.root.max_rigid()
-                        new_child.rigid_id = max_rigid + 1
-                        for successor in new_child.successors():
-                            #print('Successor: {}'.format(successor))
-                            #print('Rigid: {}'.format(successor.rigid))
-                            if successor.rigid is not False:
-                                successor.rigid_id = max_rigid + 1
+                        new_child._set_rigid_only(max_rigid + 1)
                     else:
-                        #print('Incrementing.  Rigid ID will be {}'.format(0))
-                        #print('I have this many rigid particles: {}'.format(len([p for p in new_child.rigid_particles()])))
-                        new_child.rigid_id = 0
-                        for successor in new_child.successors():
-                            if successor.rigid is not False:
-                                successor.rigid_id = 0
+                        new_child._set_rigid_only(0)
                 else:
-                    #print('Not incrementing.  Rigid ID will be {}'.format(self.root.max_rigid()))
                     if self.rigid_id is not None:
-                        new_child.rigid_id = self.rigid_id
-                        for successor in new_child.successors():
-                            if successor.rigid is not False:
-                                successor.rigid_id = self.rigid_id
+                        new_child._set_rigid_only(self.rigid_id)
                     else:
-                        new_child.rigid_id = 0
-                        for successor in new_child.successors():
-                            if successor.rigid is not False:
-                                successor.rigid_id = 0
+                        new_child._set_rigid_only(0)
 
         if not isinstance(new_child, Compound):
             raise ValueError('Only objects that inherit from mbuild.Compound '
@@ -455,6 +493,7 @@ class Compound(object):
         for child in self.children:
             child.remove(yet_to_remove)
 
+        # Reset rigid_id's to ensure consecutiveness
         self.root.reset_rigid()
 
 
