@@ -34,11 +34,9 @@ test:
     - python-coveralls
     - pytest-cov
 
-  commands:
-    - which python
-    - echo $PATH
-    - py.test -v --cov=mbuild --cov-config /home/travis/build/mikemhenry/mbuild/.coveragerc --cov-report= --pyargs mbuild
-    - coveralls 
+#  commands:
+#    - py.test -v --cov=mbuild --cov-report= --pyargs mbuild
+#    - coveralls 
 
 about:
   home: http://mosdef-hub.github.io/mbuild
