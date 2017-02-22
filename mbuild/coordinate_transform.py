@@ -6,7 +6,8 @@ from numpy.linalg import norm, svd, inv
 from mbuild.utils.decorators import deprecated
 
 
-__all__ = ['rotate', 'spin',
+__all__ = ['rotate', 'rotate_around_x', 'rotate_around_y', 'rotate_around_z',
+           'spin', 'spin_x', 'spin_y', 'spin_z',
            'force_overlap', 'translate', 'translate_to',
            'x_axis_transform', 'y_axis_transform', 'z_axis_transform',
 
