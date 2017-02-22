@@ -26,14 +26,12 @@ install:
   - conda config --add channels bioconda
   - conda config --add channels glotzer
   - conda config --add channels mosdef
-
-script:
-  - conda build --python $PYTHON_VERSION devtools/conda-recipe
+  - conda config --set always_yes yes --set changeps1 no
+  - conda create -q -n test-environment python=$TRAVIS_PYTHON_VERSION python numpy scipy packmol=1.0.0 nglview>=0.6 oset parmed mdtraj foyer pytest>=3.0 jupyter nbformat ipykernel ipyext python-coveralls pytest-cov
+  - source activate test-environmen
+  - py.test -v --cov=mbuild --cov-report= --pyargs mbuild
+  - coveralls
 
 after_success:
-  - which python
-  - echo $PATH
-  - ls -la
-  - pwd
-  - py.test -v
+  - conda build --python $PYTHON_VERSION devtools/conda-recipe
   - if [[ $PYTHON_VERSION == 3.5 ]] && [[ "$TRAVIS_OS_NAME" == "linux" ]]; then source devtools/travis-ci/update_gh_pages.sh; fi
