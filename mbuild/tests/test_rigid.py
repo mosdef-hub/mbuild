@@ -69,7 +69,7 @@ class TestRigid(BaseTest):
         mb.translate(ch['b'], [0, 0.07, 0]) 
         mb.rotate_around_z(ch['b'], -120.0 * (np.pi/180.0))
 
-        benzene.add(ch)
+        benzene.add(ch, increment_rigid=False)
         current = ch
 
         for _ in range(5):
@@ -281,11 +281,19 @@ class TestRigid(BaseTest):
         assert filled.max_rigid() == n_benzenes - 1
         assert len([p for p in filled.rigid_particles()]) == n_benzenes * benzene.n_particles
 
+    def test_set_create_rigid_bodies_duplicate_warn(self):
+        with pytest.warns(UserWarning):
+            benzene = mb.load(get_fn('benzene.mol2'), rigid=True)
+            n_benzenes = 10
+            benzene.name= 'Benzene'
+            filled = mb.fill_box(benzene, n_compounds=n_benzenes, box=[0, 0, 0, 4, 4, 4])
+            filled.create_rigid_bodies(name='Benzene')
+
     def test_create_semi_rigid_bodies_after_fill(self):
         benzene = mb.load(get_fn('benzene.mol2'))
         n_benzenes = 10
         benzene.name = 'Benzene'
-        filled = mb.fill_box(benzene, n_compounds=10, box=[0, 0, 0, 4, 4, 4])
+        filled = mb.fill_box(benzene, n_compounds=n_benzenes, box=[0, 0, 0, 4, 4, 4])
         filled.create_rigid_bodies(name='Benzene', particle_name='C')
 
         assert filled.max_rigid() == n_benzenes - 1
@@ -301,10 +309,10 @@ class TestRigid(BaseTest):
         assert len([p for p in filled.rigid_particles()]) == (n_benzenes - 1) * benzene.n_particles
 
     def test_delete_body_semi_rigid(self):
-        benzene = mb.load(get_fn('benzene.mol2'), rigid=True)
+        benzene = mb.load(get_fn('benzene.mol2'))
         n_benzenes = 10
         benzene.name = 'Benzene'
-        filled = mb.fill_box(benzene, n_compounds=10, box=[0, 0, 0, 4, 4, 4])
+        filled = mb.fill_box(benzene, n_compounds=n_benzenes, box=[0, 0, 0, 4, 4, 4])
         filled.create_rigid_bodies(name='Benzene', particle_name='C')
         filled.remove(filled.children[0])
 
@@ -323,58 +331,37 @@ class TestRigid(BaseTest):
     def test_rigid_with_subcompounds2(self):
         benzene = mb.load(get_fn('benzene.mol2'))
         benzene2 = mb.clone(benzene)
-        compound = mb.Compound(subcompounds=[benzene, benzene2])
+        compound = mb.Compound(subcompounds=[benzene, benzene2], rigid=True)
         assert compound.rigid is True
         assert benzene.rigid_id is 0
-        assert benzene2.rigid_id is 1
+        assert benzene2.rigid_id is 0
         assert len([p for p in compound.rigid_particles()]) == 24
-        assert [p for p in compound.rigid_ids()].count(0) == 12
-        assert [p for p in compound.rigid_ids()].count(1) == 12
+        assert [p for p in compound.rigid_ids()].count(0) == 24
         assert [p for p in benzene.rigid_ids()].count(0) == 12
-        assert [p for p in benzene2.rigid_ids()].count(1) == 12
+        assert [p for p in benzene2.rigid_ids()].count(0) == 12
 
     def test_rigid_with_subcompounds3(self):
-        benzene = mb.load(get_fn('benzene.mol2'))
-        benzene2 = mb.clone(benzene)
-        benzene3 = mb.clone(benzene)
-        compound = mb.Compound([benzene, [benzene2, benzene3]])
-        assert compound.rigid is True
-        assert benzene.rigid_id is 0
-        assert benzene2.rigid_id is 1
-        assert benzene3.rigid_id is 2
-        assert len([p for p in compound.rigid_particles()]) == 36
-        assert [p for p in compound.rigid_ids()].count(0) == 12
-        assert [p for p in compound.rigid_ids()].count(1) == 12
-        assert [p for p in compound.rigid_ids()].count(2) == 12
-        assert [p for p in benzene.rigid_ids()].count(0) == 12
-        assert [p for p in benzene2.rigid_ids()].count(1) == 12
-        assert [p for p in benzene3.rigid_ids()].count(2) == 12
+        benzene = mb.load(get_fn('benzene.mol2'), rigid=True)
+        compound = mb.Compound(subcompounds=benzene)
+        assert compound.max_rigid() is 0
+        assert len([p for p in compound.rigid_particles()]) == 12
+        assert all(v is 0 for v in [p for p in compound.rigid_ids()])
 
     def test_rigid_with_subcompounds4(self):
         benzene = mb.load(get_fn('benzene.mol2'))
         benzene.set_rigid(name='C')
-        compound = mb.Compound(benzene, rigid=True)
+        compound = mb.Compound(subcompounds=benzene)
+        assert compound.max_rigid() is 0
+        assert len([p for p in compound.rigid_particles()]) == 6
 
     def test_rigid_with_subcompounds5(self):
         benzene = mb.load(get_fn('benzene.mol2'))
         benzene.set_rigid(name='C')
         benzene2 = mb.clone(benzene)
-        compound = mb.Compound([benzene, benzene2])
-
-    def test_rigid_with_subcompounds6(self):
-        benzene = mb.load(get_fn('benzene.mol2'), rigid=True)
-        compound = mb.Compound(benzene, rigid=True)
-
-    def test_rigid_with_subcompounds7(self):
-        benzene = mb.load(get_fn('benzene.mol2'), rigid=True)
-        benzene2 = mb.clone(benzene)
-        compound = mb.Compound([benzene, benzene2], rigid=True)
-
-    def test_rigid_with_subcompounds8(self):
-        benzene = mb.load(get_fn('benzene.mol2'), rigid=True)
-        compound = mb.Compound(benzene)
-
-    def test_rigid_with_subcompounds9(self):
-        benzene = mb.load(get_fn('benzene.mol2'), rigid=True)
-        benzene2 = mb.clone(benzene)
-        compound = mb.Compound([benzene, benzene2])
+        compound = mb.Compound(subcompounds=[benzene, benzene2])
+        assert benzene.rigid_id is 0
+        assert benzene2.rigid_id is 1
+        assert compound.max_rigid() is 1
+        assert len([p for p in compound.rigid_particles()]) == 12
+        assert [p for p in compound.rigid_ids()].count(0) == 6
+        assert [p for p in compound.rigid_ids()].count(1) == 6
