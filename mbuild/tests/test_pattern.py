@@ -103,3 +103,15 @@ class TestPattern(BaseTest):
         scale = np.arange(100)
         with pytest.raises(ValueError):
             pattern.scale(scale)
+
+    def test_scale_vector_col_vector(self):
+        pattern = mb.Random3DPattern(100, seed=1)
+        scale = [[3.14159], [2.71828], [0.110001]]
+        with pytest.raises(ValueError):
+            pattern.scale(scale)
+
+    def test_scale_vector_col_vector_3points(self):
+        pattern = mb.Random3DPattern(3, seed=1)
+        scale = [[3.14159], [2.71828], [0.110001]]
+        with pytest.raises(ValueError):
+            pattern.scale(scale)
