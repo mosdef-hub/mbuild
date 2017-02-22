@@ -1,0 +1,11 @@
+doc-warnings: true
+test-warnings: false
+strictness: high
+max-line-length: 100
+autodetect: true
+ignore-paths:
+  - docs
+  - devtools
+python-targets:
+  - 2
+  - 3

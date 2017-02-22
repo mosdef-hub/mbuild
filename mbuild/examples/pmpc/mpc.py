@@ -25,7 +25,7 @@ class MPC(mb.Compound):
 
         # Add bottom port
         self.add(mb.Port(anchor=C_bottom), 'down')
-        mb.spin_y(self['down'], alpha)
+        mb.spin(self['down'], alpha, [0, 1, 0])
         mb.translate(self['down'], (C_top.pos - C_bottom.pos)*1.50)
 
 if __name__ == "__main__":
