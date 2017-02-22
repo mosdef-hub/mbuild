@@ -17,7 +17,7 @@ environment:
 install:
   - set PATH=%PYTHON%;%PYTHON%\\Scripts;%PATH%
   - conda config --set always_yes yes --set changeps1 no
-  - conda update -yq --all
+  - conda update -q conda
   - conda env create -q -n test-environment python=$PYTHON_VERSION -f environment.yml
   - activate test-environment
   - pip install -e .
