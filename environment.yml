@@ -1,0 +1,22 @@
+name: test-environment
+channels:
+- mosdef
+- glotzer
+- bioconda
+- janschulz
+- omnia
+- defaults
+dependencies:
+- numpy
+- scipy
+- packmol=1.0.0
+- nglview>=0.6
+- oset
+- parmed
+- mdtraj
+- foyer
+- pytest >=3.0
+- jupyter
+- nbformat
+- ipykernel
+- ipyext
