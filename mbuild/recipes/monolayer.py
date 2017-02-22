@@ -1,9 +1,9 @@
-import mbuild as mb
-import numpy as np
-import warnings
-
 from copy import deepcopy
+from warnings import warn
 
+import numpy as np
+
+import mbuild as mb
 
 __all__ = ['Monolayer']
 
@@ -60,11 +60,11 @@ class Monolayer(mb.Compound):
 
                 # Create sub-pattern for this chain type
                 subpattern = deepcopy(pattern)
-                n_points = round(fraction * n_chains)
-                warnings.warn("\n Adding {} of chain {}".format(int(n_points), chain))
-                points = subpattern.points[np.random.choice(subpattern.points.shape[0],
-                                                            n_points,
-                                                            replace=False)]
+                n_points = int(round(fraction * n_chains))
+                warn("\n Adding {} of chain {}".format(n_points, chain))
+                pick = np.random.choice(subpattern.points.shape[0], n_points,
+                                        replace=False)
+                points = subpattern.points[pick]
                 subpattern.points = points
 
                 # Remove now-occupied points from overall pattern
@@ -72,15 +72,15 @@ class Monolayer(mb.Compound):
                                            if point not in subpattern.points.tolist()])
 
                 # Attach chains to the surface
-                attached_chains, _ = subpattern.apply_to_compound(guest=chain,
-                                     host=self['tiled_surface'], backfill=None, **kwargs)
+                attached_chains, _ = subpattern.apply_to_compound(
+                    guest=chain, host=self['tiled_surface'], backfill=None, **kwargs)
                 self.add(attached_chains)
 
         else:
-            warnings.warn("\n No fractions provided.  Assuming a single chain type.")
+            warn("\n No fractions provided. Assuming a single chain type.")
 
         # Attach final chain type. Remaining sites get a backfill.
-        warnings.warn("\n Adding {} of chain {}".format(len(pattern), chains[-1]))
+        warn("\n Adding {} of chain {}".format(len(pattern), chains[-1]))
         attached_chains, backfills = pattern.apply_to_compound(guest=chains[-1],
                          host=self['tiled_surface'], backfill=backfill, **kwargs)
         self.add(attached_chains)

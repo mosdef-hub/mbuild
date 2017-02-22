@@ -25,8 +25,10 @@ import sys
 import textwrap
 from unittest import SkipTest
 
+
 class DelayImportError(ImportError, SkipTest):
     pass
+
 
 MESSAGES = dict()
 MESSAGES['gsd'] = '''
@@ -48,6 +50,7 @@ or
 
 # pip install nglview
 '''
+
 
 def import_(module):
     """Import a module, and issue a nice message to stderr if the module isn't installed.
@@ -80,7 +83,7 @@ def import_(module):
             message = 'The code at {filename}:{line_number} requires the ' + module + ' package'
             e = ImportError('No module named %s' % module)
 
-        frame,filename,line_number,function_name,lines,index = \
+        frame, filename, line_number, function_name, lines, index = \
             inspect.getouterframes(inspect.currentframe())[1]
 
         m = message.format(filename=os.path.basename(filename), line_number=line_number)
@@ -98,18 +101,21 @@ def import_(module):
 try:
     import intermol
     has_intermol = True
+    del intermol
 except ImportError:
     has_intermol = False
 
 try:
     import foyer
     has_foyer = True
+    del foyer
 except ImportError:
     has_foyer = False
 
 try:
     import gsd
     has_gsd = True
+    del gsd
 except ImportError:
     has_gsd = False
 
@@ -139,4 +145,3 @@ def run_from_ipython():
         return True
     except NameError:
         return False
-

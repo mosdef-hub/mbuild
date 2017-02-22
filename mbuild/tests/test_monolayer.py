@@ -6,7 +6,6 @@ from mbuild.lib.atoms import H
 
 
 class TestMonolayer(BaseTest):
-
     def test_monolayer(self, ch2):
         n = 8
         m = 8

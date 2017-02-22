@@ -9,7 +9,9 @@ from mbuild.coordinate_transform import (Translation, CoordinateTransform,
                                          rotate_around_y, rotate_around_z,
                                          force_overlap, translate,
                                          translate_to, x_axis_transform,
-                                         y_axis_transform, z_axis_transform)
+                                         y_axis_transform, z_axis_transform,
+                                         rotate, spin, spin_x, spin_y, spin_z,
+                                         angle)
 from mbuild.tests.base_test import BaseTest
 import mbuild as mb
 
@@ -67,23 +69,237 @@ class TestCoordinateTransform(BaseTest):
         rigid_transform = RigidTransform(A, B)
         assert (rigid_transform.apply_to(np.array([[2,3,4]])) == B).all()
 
-    @pytest.mark.skipif(True, reason="needs to be implemented")
+    def test_rotate_0(self, methane):
+        before = methane.xyz_with_ports
+        rotate(methane, 0.0, np.asarray([1.0, 0.0, 0.0]))
+        after = methane.xyz_with_ports
+        assert (np.array_equal(before, after))
+
+    def test_rotate_2pi(self, methane):
+        before = methane.xyz_with_ports
+        rotate(methane, 2*np.pi, np.asarray([1.0, 0.0, 0.0]))
+        after = methane.xyz_with_ports
+        assert (np.allclose(before, after))
+
+    def test_rotate_zero_vector(self, methane):
+        with pytest.raises(ValueError):
+            rotate(methane, np.pi/2, np.asarray([0.0, 0.0, 0.0]))
+
+    def test_spin_zero_vector(self, methane):
+        with pytest.raises(ValueError):
+            spin(methane, np.pi/2, np.asarray([0.0, 0.0, 0.0]))
+
+    def test_spin_inputs(self, methane):
+        spin(methane, 6.9, [1, 0, 0])
+        spin(methane, 6.9, (1, 0, 0))
+
+    def test_rotate_inputs(self, methane):
+        rotate(methane, 6.9, [1, 0, 0])
+        rotate(methane, 6.9, (1, 0, 0))
+
+    def test_spin_too_many_dimensions_list(self, methane):
+        with pytest.raises(ValueError):
+            spin(methane, 0.1, [1, 0, 0, 0])
+
+    def test_spin_too_many_dimensions_tuple(self, methane):
+        with pytest.raises(ValueError):
+            spin(methane, 0.1, (1, 0, 0, 0))
+
+    def test_rotate_too_many_dimensions_list(self, methane):
+        with pytest.raises(ValueError):
+            rotate(methane, 0.1, [1, 0, 0, 0])
+
+    def test_rotate_too_many_dimensions_tuple(self, methane):
+        with pytest.raises(ValueError):
+            rotate(methane, 0.1, (1, 0, 0, 0))
+
+    def test_spin_too_few_dimensions_list(self, methane):
+        with pytest.raises(ValueError):
+            spin(methane, 0.1, [1, 0])
+
+    def test_spin_too_few_dimensions_tuple(self, methane):
+        with pytest.raises(ValueError):
+            spin(methane, 0.1, (1, 0))
+
+    def test_rotate_too_few_dimensions_list(self, methane):
+        with pytest.raises(ValueError):
+            rotate(methane, 0.1, [1, 0])
+
+    def test_rotate_too_few_dimensions_tuple(self, methane):
+        with pytest.raises(ValueError):
+            rotate(methane, 0.1, (1, 0))
+
+    def test_spin_360x(self, methane):
+        before = methane.xyz_with_ports
+        spin(methane, 2*np.pi, np.asarray([1, 0, 0]))
+        assert(np.allclose(before, methane.xyz_with_ports, atol=1e-16))
+
+    def test_spin_360y(self, methane):
+        before = methane.xyz_with_ports
+        spin(methane, 2*np.pi, np.asarray([0, 1, 0]))
+        assert(np.allclose(before, methane.xyz_with_ports, atol=1e-16))
+
+    def test_spin_360z(self, methane):
+        before = methane.xyz_with_ports
+        spin(methane, 2*np.pi, np.asarray([0, 0, 1]))
+        assert(np.allclose(before, methane.xyz_with_ports, atol=1e-16))
+
+    def test_spin_0x(self, methane):
+        before = methane.xyz_with_ports
+        spin(methane, 0, np.asarray([1, 0, 0]))
+        assert(np.allclose(before, methane.xyz_with_ports, atol=1e-16))
+
+    def test_spin_0y(self, methane):
+        before = methane.xyz_with_ports
+        spin(methane, 0, np.asarray([0, 1, 0]))
+        assert(np.allclose(before, methane.xyz_with_ports, atol=1e-16))
+
+    def test_spin_0z(self, methane):
+        before = methane.xyz_with_ports
+        spin(methane, 0, np.asarray([0, 0, 1]))
+        assert(np.allclose(before, methane.xyz_with_ports, atol=1e-16))
+
+    def test_spin_x(self, sixpoints):
+        before = mb.clone(sixpoints)
+        spin(sixpoints, np.pi, np.asarray([1, 0, 0]))
+        assert(np.allclose(sixpoints['up'].xyz, before['down'].xyz, atol=1e-16)
+                and np.allclose(sixpoints['front'].xyz, before['back'].xyz, atol=1e-16))
+
+    def test_spin_y(self, sixpoints):
+        before = mb.clone(sixpoints)
+        spin(sixpoints, np.pi, np.asarray([0, 1, 0]))
+        assert(np.allclose(sixpoints['left'].xyz, before['right'].xyz, atol=1e-16)
+                and np.allclose(sixpoints['front'].xyz, before['back'].xyz, atol=1e-16))
+
+    def test_spin_z(self, sixpoints):
+        before = mb.clone(sixpoints)
+        spin(sixpoints, np.pi, np.asarray([0, 0, 1]))
+        assert(np.allclose(sixpoints['left'].xyz, before['right'].xyz, atol=1e-16)
+                and np.allclose(sixpoints['up'].xyz, before['down'].xyz, atol=1e-16))
+
+    def test_spin_x_eq(self, sixpoints):
+        compound2 = mb.clone(sixpoints)
+        spin(sixpoints, np.pi*1.23456789, np.asarray([1.0, 0.0, 0.0]))
+        spin_x(compound2, np.pi*1.23456789)
+        assert(np.allclose(compound2.xyz, sixpoints.xyz, atol=1e-16))
+
+    def test_spin_y_eq(self, sixpoints):
+        compound2 = mb.clone(sixpoints)
+        spin(sixpoints, np.pi*1.23456789, np.asarray([0.0, 1.0, 0.0]))
+        spin_y(compound2, np.pi*1.23456789)
+        assert(np.allclose(compound2.xyz, sixpoints.xyz, atol=1e-16))
+
+    def test_spin_z_eq(self, sixpoints):
+        compound2 = mb.clone(sixpoints)
+        spin(sixpoints, np.pi*1.23456789, np.asarray([0.0, 0.0, 1.0]))
+        spin_z(compound2, np.pi*1.23456789)
+        assert(np.allclose(compound2.xyz, sixpoints.xyz, atol=1e-16))
+
+    def test_spin_deprecated_x(self, sixpoints):
+        with pytest.warns(DeprecationWarning):
+            spin_x(sixpoints, np.pi*3/2)
+
+    def test_spin_deprecated_y(self, sixpoints):
+        with pytest.warns(DeprecationWarning):
+            spin_y(sixpoints, np.pi*3/2)
+
+    def test_spin_deprecated_z(self, sixpoints):
+        with pytest.warns(DeprecationWarning):
+            spin_z(sixpoints, 69)
+
+    def test_spin_arbitraty(self, sixpoints):
+        before = mb.clone(sixpoints)
+        spin(sixpoints, np.pi, np.asarray([1, 1, 0]))
+        assert(np.allclose(sixpoints['up'].xyz, before['right'].xyz, atol=1e-16)
+                and np.allclose(sixpoints['down'].xyz, before['left'].xyz, atol=1e-16))
+
+    def test_warn_rotate_x(self, methane):
+        with pytest.warns(DeprecationWarning):
+            rotate_around_x(methane, np.pi)
+
+    def test_warn_rotate_y(self, methane):
+        with pytest.warns(DeprecationWarning):
+            rotate_around_y(methane, np.pi)
+
+    def test_warn_rotate_z(self, methane):
+        with pytest.warns(DeprecationWarning):
+            rotate_around_z(methane, np.pi)
+
+    def test_spin_relative_compound_coordinates(self, sixpoints):
+        """Ensure that a compounds's relative coordinates to not change upong spinning"""
+        import itertools as itt
+        mol1 = mb.clone(sixpoints)
+        mol2 = mb.clone(sixpoints)
+        force_overlap(move_this=mol2,
+                from_positions=mol2['up'],
+                to_positions=mol1['down'],
+                add_bond=False)
+        mol1_angles_before = np.asarray(
+                [angle(a, b, c)
+                for (a, b, c) in itt.combinations(mol1.xyz, 3)])
+        mol2_angles_before = np.asarray(
+                [angle(a, b, c)
+                for (a, b, c) in itt.combinations(mol2.xyz, 3)])
+        spin_axis = (mol2['middle'].xyz - mol1['middle'].xyz).reshape(3)
+        spin(mol2, np.pi*0.123456789, spin_axis)
+        spin(mol1, -np.pi*0.123456789, spin_axis)
+        mol1_angles_after = np.asarray(
+                [angle(a, b, c)
+                for (a, b, c) in itt.combinations(mol1.xyz, 3)])
+        mol2_angles_after = np.asarray(
+                [angle(a, b, c)
+                for (a, b, c) in itt.combinations(mol2.xyz, 3)])
+        assert(np.allclose(mol1_angles_before, mol1_angles_after, atol=1e-16)
+                and np.allclose(mol2_angles_before, mol2_angles_after, atol=1e-16))
+
+    def test_equivalence_transform_deprectation_warning(self, ch2):
+        ch22 = mb.clone(ch2)
+        with pytest.warns(DeprecationWarning):
+            mb.equivalence_transform(ch22,
+                    from_positions=ch22['up'],
+                    to_positions=ch2['down'])
+
     def test_rotate_around_x(self, methane):
         before = methane.xyz_with_ports
         rotate_around_x(methane, np.pi)
         after = methane.xyz_with_ports
+        assert(np.allclose(before[:, 1], -1*after[:, 1], atol=1e-16)
+                and np.allclose(before[:, 2], -1*after[:, 2], atol=1e-16))
 
-    @pytest.mark.skipif(True, reason="needs to be implemented")
     def test_rotate_around_y(self, ch2):
         before = ch2.xyz_with_ports
         rotate_around_y(ch2, np.pi)
         after = ch2.xyz_with_ports
+        assert(np.allclose(before[:, 0], -1*after[:, 0], atol=1e-16)
+                and np.allclose(before[:, 2], -1*after[:, 2], atol=1e-16))
 
-    @pytest.mark.skipif(True, reason="needs to be implemented")
     def test_rotate_around_z(self, ch2):
         before = ch2.xyz_with_ports
         rotate_around_z(ch2, np.pi)
         after = ch2.xyz_with_ports
+        assert(np.allclose(before[:, 0], -1*after[:, 0], atol=1e-16)
+                and np.allclose(before[:, 1], -1*after[:, 1], atol=1e-16))
+
+    def test_rotate_around_x_away_from_origin(self, sixpoints):
+        before = sixpoints.xyz_with_ports
+        rotate_around_x(sixpoints, np.pi)
+        after = sixpoints.xyz_with_ports
+        assert(np.allclose(before[:, 1], -1*after[:, 1], atol=1e-16)
+                and np.allclose(before[:, 2], -1*after[:, 2], atol=1e-16))
+
+    def test_rotate_around_y_away_from_origin(self, sixpoints):
+        before = sixpoints.xyz_with_ports
+        rotate_around_y(sixpoints, np.pi)
+        after = sixpoints.xyz_with_ports
+        assert(np.allclose(before[:, 0], -1*after[:, 0], atol=1e-16)
+                and np.allclose(before[:, 2], -1*after[:, 2], atol=1e-16))
+
+    def test_rotate_around_z_away_from_origin(self, sixpoints):
+        before = sixpoints.xyz_with_ports
+        rotate_around_z(sixpoints, np.pi)
+        after = sixpoints.xyz_with_ports
+        assert(np.allclose(before[:, 1], -1*after[:, 1], atol=1e-16)
+                and np.allclose(before[:, 0], -1*after[:, 0], atol=1e-16))
 
     def test_equivalence_transform(self, ch2, ch3, methane):
         ch2_atoms = list(ch2.particles())

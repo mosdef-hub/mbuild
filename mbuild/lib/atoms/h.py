@@ -10,8 +10,9 @@ class H(mb.Compound):
         self.add(mb.Particle(name='H'))
 
         self.add(mb.Port(anchor=self[0]), 'up')
-        mb.spin_z(self['up'], np.pi)
+        mb.spin(self['up'], np.pi, [0, 0, 1])
         mb.translate(self['up'], np.array([0, 0.07, 0]))
+
 
 if __name__ == '__main__':
     m = H()

@@ -1,13 +1,10 @@
 from __future__ import division
-import operator
 
 from itertools import product
 
 import numpy as np
 
-from mbuild.coordinate_transform import (force_overlap, translate,
-                                         rotate_around_x, rotate_around_y,
-                                         rotate_around_z, spin_y, spin_z)
+from mbuild.coordinate_transform import (force_overlap, translate, spin)
 from mbuild.utils.validation import assert_port_exists
 from mbuild import clone
 
@@ -171,14 +168,14 @@ class SpherePattern(Pattern):
 
     """
     def __init__(self, n):
-        phi = (1 + np.sqrt(5)) / 2  # the golden ratio
-        long_incr = 2*np.pi / phi   # how much to increment the longitude
+        phi = (1 + np.sqrt(5)) / 2   # the golden ratio
+        long_incr = 2*np.pi / phi    # how much to increment the longitude
 
-        dz = 2.0 / float(n)         # a unit sphere has diameter 2
-        bands = np.arange(n)        # each band will have one point placed on it
-        z = bands * dz - 1 + (dz/2) # the height z of each band/point
-        r = np.sqrt(1 - z*z)        # project onto xy-plane
-        az = bands * long_incr      # azimuthal angle of point modulo 2 pi
+        dz = 2.0 / float(n)          # a unit sphere has diameter 2
+        bands = np.arange(n)         # each band will have one point placed on it
+        z = bands * dz - 1 + (dz/2)  # the height z of each band/point
+        r = np.sqrt(1 - z*z)         # project onto xy-plane
+        az = bands * long_incr       # azimuthal angle of point modulo 2 pi
         x = r * np.cos(az)
         y = r * np.sin(az)
         points = np.column_stack((x, y, z))
@@ -189,13 +186,13 @@ class SpherePattern(Pattern):
             port = Port()
             ports.append(port)
             # Make the top of the port point toward the positive x axis.
-            spin_z(port, -np.pi/2)
+            spin(port, -np.pi/2, [0, 0, 1])
             # Raise up (or down) the top of the port in the z direction.
-            spin_y(port, -np.arcsin(point[2]))
+            spin(port, -np.arcsin(point[2]), [0, 1, 0])
             # Rotate the Port along the z axis.
-            spin_z(port, np.arctan2(point[1], point[0]))
+            spin(port, np.arctan2(point[1], point[0]), [0, 0, 1])
             # Move the Port a bit away from the surface of the Sphere.
-            #translate(port, point + 0.07)
+            # translate(port, point + 0.07)
 
         super(SpherePattern, self).__init__(points=points,
                                             orientations={'normal': ports})

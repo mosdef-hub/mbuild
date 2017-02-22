@@ -1,17 +1,16 @@
 from __future__ import division
 
-__all__ = ['write_gsd']
-
-
-import re
-import numpy as np
+from collections import OrderedDict
 from copy import deepcopy
 from math import floor
-from collections import OrderedDict
+import re
+
+import numpy as np
 from oset import oset as OrderedSet
-from .ff_to_json import write_forcefield
 
 from mbuild.utils.io import import_
+
+__all__ = ['write_gsd']
 
 
 def write_gsd(structure, filename, forcefield, box, ref_distance=1.0, ref_mass=1.0,
@@ -41,7 +40,7 @@ def write_gsd(structure, filename, forcefield, box, ref_distance=1.0, ref_mass=1
     import_('gsd')
     import gsd.hoomd
 
-    xyz = np.array([[atom.xx,atom.xy,atom.xz] for atom in structure.atoms])
+    xyz = np.array([[atom.xx, atom.xy, atom.xz] for atom in structure.atoms])
 
     # Center box at origin and remap coordinates into box
     box.lengths *= 10.0
@@ -51,18 +50,19 @@ def write_gsd(structure, filename, forcefield, box, ref_distance=1.0, ref_mass=1
     box.mins = np.array([-d/2 for d in box_init.lengths])
     box.maxs = np.array([d/2 for d in box_init.lengths])
     
-    shift = [box_init.maxs[i] - max for i,max in enumerate(box.maxs)]
-    for i,pos in enumerate(xyz):
-        for j,coord in enumerate(pos):
-            xyz[i,j] -= shift[j]
-            rep = floor((xyz[i,j]-box.mins[j]) / box.lengths[j])
-            xyz[i,j] -= (rep * box.lengths[j])
+    shift = [box_init.maxs[i] - max for i, max in enumerate(box.maxs)]
+    for i, pos in enumerate(xyz):
+        for j, coord in enumerate(pos):
+            xyz[i, j] -= shift[j]
+            rep = floor((xyz[i, j]-box.mins[j]) / box.lengths[j])
+            xyz[i, j] -= (rep * box.lengths[j])
 
     gsd_file = gsd.hoomd.Snapshot()
 
     gsd_file.configuration.step = 0
     gsd_file.configuration.dimensions = 3
-    gsd_file.configuration.box = np.hstack((box.lengths / ref_distance,np.zeros(3)))
+    gsd_file.configuration.box = np.hstack((box.lengths / ref_distance,
+                                            np.zeros(3)))
 
     gsd_file.particles.N = len(structure.atoms)
     gsd_file.particles.position = xyz / ref_distance
@@ -155,9 +155,6 @@ def write_gsd(structure, filename, forcefield, box, ref_distance=1.0, ref_mass=1
         gsd_file.dihedrals.group = dihedrals
 
     gsd.hoomd.create(filename, gsd_file)
-
-    if write_ff:
-        write_forcefield(structure, 'ff.json', ref_distance=ref_distance, ref_energy=ref_energy)
 
 def _atoi(text):
     return int(text) if text.isdigit() else text
