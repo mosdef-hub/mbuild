@@ -27,7 +27,7 @@ install:
   - conda config --add channels glotzer
   - conda config --add channels mosdef
   - conda config --set always_yes yes --set changeps1 no
-  - conda create -q -n test-environment python=$TRAVIS_PYTHON_VERSION python numpy scipy packmol=1.0.0 nglview>=0.6 oset parmed mdtraj foyer pytest>=3.0 jupyter nbformat ipykernel ipyext python-coveralls pytest-cov
+  - conda create -q -n test-environment python=$PYTHON_VERSION python numpy scipy packmol=1.0.0 nglview>=0.6 oset parmed mdtraj foyer pytest>=3.0 jupyter nbformat ipykernel ipyext python-coveralls pytest-cov
   - source activate test-environmen
   - py.test -v --cov=mbuild --cov-report= --pyargs mbuild
   - coveralls
