@@ -25,7 +25,7 @@ install:
   - conda env create -q -n test-environment python=$PYTHON_VERSION -f environment.yml
   - source activate test-environment
   - pip install -e .
-  - py.test -v
+  - py.test -v --cov=mbuild  --cov-report= --pyargs mbuild
   - coveralls
 
 after_success:
