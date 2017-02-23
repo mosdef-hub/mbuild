@@ -89,6 +89,46 @@ class TestCoordinateTransform(BaseTest):
         with pytest.raises(ValueError):
             spin(methane, np.pi/2, np.asarray([0.0, 0.0, 0.0]))
 
+    def test_spin_inputs(self, methane):
+        spin(methane, 6.9, [1, 0, 0])
+        spin(methane, 6.9, (1, 0, 0))
+
+    def test_rotate_inputs(self, methane):
+        rotate(methane, 6.9, [1, 0, 0])
+        rotate(methane, 6.9, (1, 0, 0))
+
+    def test_spin_too_many_dimensions_list(self, methane):
+        with pytest.raises(ValueError):
+            spin(methane, 0.1, [1, 0, 0, 0])
+
+    def test_spin_too_many_dimensions_tuple(self, methane):
+        with pytest.raises(ValueError):
+            spin(methane, 0.1, (1, 0, 0, 0))
+
+    def test_rotate_too_many_dimensions_list(self, methane):
+        with pytest.raises(ValueError):
+            rotate(methane, 0.1, [1, 0, 0, 0])
+
+    def test_rotate_too_many_dimensions_tuple(self, methane):
+        with pytest.raises(ValueError):
+            rotate(methane, 0.1, (1, 0, 0, 0))
+
+    def test_spin_too_few_dimensions_list(self, methane):
+        with pytest.raises(ValueError):
+            spin(methane, 0.1, [1, 0])
+
+    def test_spin_too_few_dimensions_tuple(self, methane):
+        with pytest.raises(ValueError):
+            spin(methane, 0.1, (1, 0))
+
+    def test_rotate_too_few_dimensions_list(self, methane):
+        with pytest.raises(ValueError):
+            rotate(methane, 0.1, [1, 0])
+
+    def test_rotate_too_few_dimensions_tuple(self, methane):
+        with pytest.raises(ValueError):
+            rotate(methane, 0.1, (1, 0))
+
     def test_spin_360x(self, methane):
         before = methane.xyz_with_ports
         spin(methane, 2*np.pi, np.asarray([1, 0, 0]))

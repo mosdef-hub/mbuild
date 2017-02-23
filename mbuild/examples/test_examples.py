@@ -12,7 +12,7 @@ import nbformat
 import pytest
 
 
-EXAMPLE_NOTEBOOKS = [f for f in glob.glob('*/*.ipynb')]
+EXAMPLE_NOTEBOOKS = [f for f in glob.glob('mbuild/examples/*/*.ipynb')]
 
 
 @pytest.mark.parametrize("filepath", EXAMPLE_NOTEBOOKS)
@@ -26,7 +26,7 @@ def check_one_notebook(filepath):
     with open(filename) as f:
         nb = nbformat.reads(f.read(), nbformat.NO_CONVERT)
     run_notebook(nb)
-    os.chdir('..')
+    os.chdir('../../../')
 
 
 def run_notebook(nb):

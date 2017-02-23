@@ -4,8 +4,7 @@ from itertools import product
 
 import numpy as np
 
-from mbuild.coordinate_transform import (force_overlap, translate,
-                                         spin_y, spin_z)
+from mbuild.coordinate_transform import (force_overlap, translate, spin)
 from mbuild.utils.validation import assert_port_exists
 from mbuild import clone
 
@@ -26,8 +25,16 @@ class Pattern(object):
     def __getitem__(self, item):
         return self.points[item]
 
-    def scale(self, scalar):
-        self.points *= scalar
+    def scale(self, by):
+        """Scale the points in the Pattern.
+
+        Parameters
+        ----------
+        by : float or np.ndarray, shape=(3,)
+            The factor to scale by. If a scalar, scale all directions isotropically.
+            If np.ndarray, scale each direction independently.
+        """
+        self.points *= np.asarray([by])
         self._adjust_ports()
 
     def _adjust_ports(self):
@@ -187,11 +194,11 @@ class SpherePattern(Pattern):
             port = Port()
             ports.append(port)
             # Make the top of the port point toward the positive x axis.
-            spin_z(port, -np.pi/2)
+            spin(port, -np.pi/2, [0, 0, 1])
             # Raise up (or down) the top of the port in the z direction.
-            spin_y(port, -np.arcsin(point[2]))
+            spin(port, -np.arcsin(point[2]), [0, 1, 0])
             # Rotate the Port along the z axis.
-            spin_z(port, np.arctan2(point[1], point[0]))
+            spin(port, np.arctan2(point[1], point[0]), [0, 0, 1])
             # Move the Port a bit away from the surface of the Sphere.
             # translate(port, point + 0.07)
 

@@ -51,3 +51,67 @@ class TestPattern(BaseTest):
     def test_disk(self):
         pattern = mb.DiskPattern(100)
         assert len(pattern) == 100
+
+    def test_scale_scalar(self):
+        pattern = mb.Random3DPattern(100, seed=1)
+        scale = 9.87654321
+        oldrange = [np.max(pattern.points[:, d]) - np.min(pattern.points[:, d])
+                    for d in range(3)]
+        pattern.scale(scale)
+        newrange = [np.max(pattern.points[:, d]) - np.min(pattern.points[:, d])
+                    for d in range(3)]
+        for old, new in zip(oldrange, newrange):
+            assert(np.allclose(new, scale*old, atol=1e-16))
+
+    def test_scale_vector(self):
+        pattern = mb.Random3DPattern(100, seed=1)
+        scale = [3.14159, 2.71828, 0.110001]
+        oldrange = [np.max(pattern.points[:, d]) - np.min(pattern.points[:, d])
+                    for d in range(3)]
+        pattern.scale(scale)
+        newrange = [np.max(pattern.points[:, d]) - np.min(pattern.points[:, d])
+                    for d in range(3)]
+        for old, new, s in zip(oldrange, newrange, scale):
+            assert(np.allclose(new, s*old, atol=1e-16))
+
+    def test_scale_vector_too_many_dimensions(self):
+        pattern = mb.Random3DPattern(100, seed=1)
+        scale = [3.14159, 2.71828, 0.110001, 5]
+        with pytest.raises(ValueError): 
+            pattern.scale(scale)
+
+    def test_scale_vector_too_many_dimensions_4points(self):
+        pattern = mb.Random3DPattern(4, seed=1)
+        scale = [3.14159, 2.71828, 0.110001, 5]
+        with pytest.raises(ValueError):
+            pattern.scale(scale)
+
+    def test_scale_vector_too_few_dimensions(self):
+        pattern = mb.Random3DPattern(100, seed=1)
+        scale = [3.14159, 2.71828]
+        with pytest.raises(ValueError):
+            pattern.scale(scale)
+
+    def test_scale_vector_too_few_dimensions_2points(self):
+        pattern = mb.Random3DPattern(2, seed=1)
+        scale = [3.14159, 2.71828]
+        with pytest.raises(ValueError):
+            pattern.scale(scale)
+
+    def test_scale_vector_too_same_N_and_d(self):
+        pattern = mb.Random3DPattern(100, seed=1)
+        scale = np.arange(100)
+        with pytest.raises(ValueError):
+            pattern.scale(scale)
+
+    def test_scale_vector_col_vector(self):
+        pattern = mb.Random3DPattern(100, seed=1)
+        scale = [[3.14159], [2.71828], [0.110001]]
+        with pytest.raises(ValueError):
+            pattern.scale(scale)
+
+    def test_scale_vector_col_vector_3points(self):
+        pattern = mb.Random3DPattern(3, seed=1)
+        scale = [[3.14159], [2.71828], [0.110001]]
+        with pytest.raises(ValueError):
+            pattern.scale(scale)
