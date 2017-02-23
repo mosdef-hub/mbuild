@@ -495,10 +495,6 @@ class Compound(object):
             particle_array = np.array(list(self.particles()))
         return particle_array[idxs]
 
-    def view_hierarchy(self, show_ports=False):
-        """Visualize a compound hierarchy as a tree. """
-        raise NotImplementedError('Coming soon!')
-
     def visualize(self, show_ports=False):
         """Visualize the Compound using nglview. """
         nglview = import_('nglview')
