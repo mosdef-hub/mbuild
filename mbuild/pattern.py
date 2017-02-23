@@ -25,8 +25,16 @@ class Pattern(object):
     def __getitem__(self, item):
         return self.points[item]
 
-    def scale(self, scalar):
-        self.points *= scalar
+    def scale(self, by):
+        """Scale the points in the Pattern.
+
+        Parameters
+        ----------
+        by : float or np.ndarray, shape=(3,)
+            The factor to scale by. If a scalar, scale all directions isotropically.
+            If np.ndarray, scale each direction independently.
+        """
+        self.points *= np.asarray([by])
         self._adjust_ports()
 
     def _adjust_ports(self):
