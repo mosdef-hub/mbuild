@@ -23,7 +23,7 @@ install:
   - conda update -q --all
   - pip install -e .
   - py.test -v --cov=mbuild  --cov-report= --pyargs mbuild
-  - coveralls
+    #  - coveralls
 build: false
 
 test_script:
