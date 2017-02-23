@@ -112,8 +112,7 @@ def write_hoomdxml(structure, filename, forcefield, box, ref_distance=1.0,
         xml_file.write('<?xml version="1.2" encoding="UTF-8"?>\n')
         xml_file.write('<hoomd_xml version="1.2">\n')
         xml_file.write('<configuration time_step="0">\n')
-        xml_file.write('<box units="sigma"  Lx="{}" Ly="{}\
-                       Lz="{}"/>\n'.format(*box.lengths/ref_distance))
+        xml_file.write('<box units="sigma"  Lx="{}" Ly="{}" Lz="{}"/>\n'.format(*box.lengths/ref_distance))
 
         xml_file.write('<position units="sigma" num="{}">\n'.format(len(structure.atoms)))
 
