@@ -48,6 +48,11 @@ class BaseTest:
         return Alkane(2, cap_front=True, cap_end=False)
 
     @pytest.fixture
+    def octane(self):
+        from mbuild.examples import Alkane
+        return Alkane(8, cap_front=True, cap_end=True)
+
+    @pytest.fixture
     def sixpoints(self):
         import mbuild as mb
         molecule = mb.Compound()

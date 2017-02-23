@@ -5,7 +5,7 @@ import pytest
 
 import mbuild as mb
 from mbuild.exceptions import MBuildError
-from mbuild.utils.io import get_fn, has_intermol
+from mbuild.utils.io import get_fn, has_intermol, has_openbabel
 from mbuild.tests.base_test import BaseTest
 
 
@@ -369,3 +369,34 @@ class TestCompound(BaseTest):
         compound.remove_bond((carbons[0], carbons[1]))
         assert not any(compound.bond_graph.has_node(particle)
                        for particle in ch3_nobonds.particles())
+
+    @pytest.mark.skipif(not has_openbabel, reason="Open Babel package not installed")
+    def test_energy_minimization(self, octane):
+        octane.energy_minimization()
+
+    @pytest.mark.skipif(has_openbabel, reason="Open Babel package is installed")
+    def test_energy_minimization_openbabel_warn(self, octane):
+        assert False
+        with pytest.warns(ImportWarning):
+            octane.energy_minimization()
+
+    @pytest.mark.skipif(not has_openbabel, reason="Open Babel package not installed")
+    def test_energy_minimization_ff(self, octane):
+        for ff in ['UFF', 'GAFF', 'MMFF94']:
+            octane.energy_minimization(forcefield=ff)
+        with pytest.warns(RuntimeWarning):
+            octane.energy_minimization(forcefield='fakeFF')
+
+    @pytest.mark.skipif(not has_openbabel, reason="Open Babel package not installed")
+    def test_energy_minimization_algorithm(self, octane):
+        for algorithm in ['cg', 'steep']:
+            octane.energy_minimization(algorithm=algorithm)
+        with pytest.warns(RuntimeWarning):
+            octane.energy_minimization(algorithm='fakeAlg')
+
+    @pytest.mark.skipif(not has_openbabel, reason="Open Babel package not installed")
+    def test_energy_minimization_non_element(self, octane):
+        for particle in octane.particles():
+            particle.name = 'Q'
+        with pytest.warns(RuntimeWarning):
+            octane.energy_minimization()

@@ -119,6 +119,12 @@ try:
 except ImportError:
     has_gsd = False
 
+try:
+    import openbabel
+    has_openbabel = True
+except ImportError:
+    has_openbabel = False
+
 
 def get_fn(name):
     """Get the full path to one of the reference files shipped for utils.
