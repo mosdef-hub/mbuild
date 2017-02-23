@@ -31,8 +31,6 @@ test:
     - nbformat
     - ipykernel
     - ipyext
-    - python-coveralls
-    - pytest-cov
 
   source_files:
     - mbuild/examples/*
