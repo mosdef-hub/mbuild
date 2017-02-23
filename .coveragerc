@@ -1,0 +1,4 @@
+[run]
+omit = 
+    mbuild/examples/*
+    mbuild/tests/*
