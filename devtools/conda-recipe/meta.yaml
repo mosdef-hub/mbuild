@@ -34,9 +34,11 @@ test:
     - python-coveralls
     - pytest-cov
 
-#  commands:
-#    - py.test -v --cov=mbuild --cov-report= --pyargs mbuild
-#    - coveralls 
+  source_files:
+    - mbuild/examples/*
+
+  commands:
+    - py.test -v --pyargs mbuild
 
 about:
   home: http://mosdef-hub.github.io/mbuild
