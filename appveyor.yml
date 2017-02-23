@@ -23,6 +23,7 @@ install:
   - conda update -q --all
   - pip install -e .
   - py.test -v --cov=mbuild  --cov-report= --pyargs mbuild
+  - conda install -q conda-build jinja2
     #  - coveralls
 build: false
 
