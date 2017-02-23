@@ -33,8 +33,8 @@ def RB_to_OPLS(c0, c1, c2, c3, c4, c5):
     return opls_coeffs
 
 
-def write_hoomdxml(structure, filename, forcefield, box, ref_distance=1.0,
-                   ref_mass=1.0, ref_energy=1.0, rigid_bodies=None):
+def write_hoomdxml(structure, filename, forcefield, box, rigid_bodies,
+                   ref_distance=1.0, ref_mass=1.0, ref_energy=1.0):
     """Output a HOOMD XML file.
     
     Parameters
@@ -51,11 +51,11 @@ def write_hoomdxml(structure, filename, forcefield, box, ref_distance=1.0,
         Reference distance for conversion to reduced units
     ref_mass : float, default=1.0
         Reference mass for conversion to reduced units
-    rigid_bodies : list, default=None
-        List of rigid body information following the HOOMD XML format.
-        An integer value is required for each atom corresponding to the
-        number of the rigid body with which the atom should be included.
-        A value of -1 indicates the atom is not part of a rigid body.
+    rigid_bodies : list
+        List of rigid body information. An integer value is required
+        for each atom corresponding to the number of the rigid body with
+        which the atom should be included. A value of None indicates the
+        atom is not part of any rigid body.
 
     Elements
     --------
@@ -227,9 +227,11 @@ def write_hoomdxml(structure, filename, forcefield, box, ref_distance=1.0,
                                                              *dihedral))
             xml_file.write('</dihedral>\n')
 
-        if rigid_bodies is not None:
+        if not all(body is None for body in rigid_bodies):
             xml_file.write('<body>\n')
             for body in rigid_bodies:
+                if body is None:
+                    body = -1
                 xml_file.write('{}\n'.format(int(body)))
             xml_file.write('</body>\n')
         

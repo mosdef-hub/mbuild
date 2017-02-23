@@ -257,10 +257,13 @@ class Compound(object):
 
     def max_rigid(self):
         """Return the maximum rigid body ID contained in the Compound. """
-        if self.children:
-            return max(successor.rigid_id for successor in self.successors())
+        if self.rigid:
+            if self.children:
+                return max(successor.rigid_id for successor in self.successors() if successor.rigid_id is not None)
+            else:
+                return self.rigid_id
         else:
-            return self.rigid_id
+            return None
 
     def rigid_ids(self):
         """Generate rigid_ids for all particles in the Compound. """
@@ -774,7 +777,8 @@ class Compound(object):
 
         if box is None:
             box = self._gen_box()
-        write_hoomdxml(structure, filename, forcefield, box, **kwargs)
+        write_hoomdxml(structure, filename, forcefield, box,
+                       [id for id in self.rigid_ids()], **kwargs)
 
     def save_gsd(self, filename, structure, forcefield_name,
                  forcefield_files, box=None, **kwargs):
