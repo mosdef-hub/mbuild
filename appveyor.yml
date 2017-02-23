@@ -19,8 +19,8 @@ install:
   - conda config --set always_yes yes --set changeps1 no
   - conda update -q conda
   - conda env create -q -n test-environment python=$PYTHON_VERSION -f environment.yml
-  - conda update -q --all
   - activate test-environment
+  - conda update -q --all
   - pip install -e .
   - py.test -v --cov=mbuild  --cov-report= --pyargs mbuild
   - coveralls
