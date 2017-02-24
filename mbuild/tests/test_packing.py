@@ -16,8 +16,8 @@ class TestPacking(BaseTest):
         filled = mb.fill_region(h2o, n_compounds=50, region=[3, 2, 2, 4, 4, 3])
         assert filled.n_particles == 50 * 3
         assert filled.n_bonds == 50 * 2
-        assert np.min(filled.xyz[:,0]) > 3
-        assert np.max(filled.xyz[:,2]) < 3
+        assert np.min(filled.xyz[:,0]) >= 3
+        assert np.max(filled.xyz[:,2]) <= 3
 
     def test_solvate(self, ethane, h2o):
         n_solvent = 100
