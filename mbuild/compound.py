@@ -33,8 +33,14 @@ def load(filename, relative_to_module=None, compound=None, coords_only=False,
     Parameters
     ----------
     filename : str
-    relative_to_module :
+        Name of the file from which to load atom and bond information. Files
+        are read using the mdtraj package. Please refer to http://mdtraj.org/
+        1.8.0/load_functions.html for supported formats.
+    relative_to_module : str, optional
+        Path to the directory of the file. Default is the current working
+        directory.
     compound : mb.Compound, optional
+        Existing compound to load atom and bond information into.
     coords_only : bool, optional
         Only load the coordinates into an existing compoint.
 
@@ -65,6 +71,17 @@ def clone(existing_compound, clone_of=None, root_container=None):
     Does not resolve circular dependencies. This should be safe provided
     you never try to add the top of a Compound hierarchy to a
     sub-Compound.
+
+    Parameters
+    ----------
+    existing_compound : mb.Compound
+        Existing Compound that will be copied
+
+    Other Parameters
+    ----------------
+    clone_of : dict, optional
+    root_container : mb.Compound, optional
+
     """
     if clone_of is None:
         clone_of = dict()
@@ -97,21 +114,24 @@ class Compound(object):
 
     Parameters
     ----------
-    subcompounds : Compound, optional, default=None
+    subcompounds : mb.Compound or list of mb.Compound, optional, default=None
         One or more compounds to be added to self.
     name : str, optional, default=self.__class__.__name__
         The type of Compound.
+    pos : np.ndarray, shape=(3,), dtype=float, optional
+        The position of the Compound in Cartestian space. Defaults to zeros
+    charge : float, optional, default=0.0
+        Currently not used. Likely removed in next release.
     periodicity : np.ndarray, shape=(3,), dtype=float, optional
         The periodic lengths of the Compound in the x, y and z directions.
         Defaults to zeros which is treated as non-periodic.
+    port_particle : bool, optional, default=False
+        Whether or not this Compound is part of a Port
 
     Attributes
     ----------
-    name : str, optional, default=self.__class__.__name__
-        The type of Compound.
-    periodicity : np.ndarray, shape=(3,), dtype=float, optional
-        The periodic lengths of the Compound in the x, y and z directions.
-        Defaults to zeros which is treated as non-periodic.
+    bond_graph : mb.BondGraph
+        Graph-like object that stores bond information for this Compound
     children : OrderedSet
         Contains all children (other Compounds).
     labels : OrderedDict
@@ -122,6 +142,13 @@ class Compound(object):
         compound is the root of the containment hierarchy.
     referrers : set
         Other compounds that reference this part with labels.
+    bounding_box
+    center
+    n_particles
+    n_bonds
+    root
+    xyz
+    xyz_with_ports
 
     """
     def __init__(self, subcompounds=None, name=None, pos=None, charge=0.0,
@@ -136,7 +163,7 @@ class Compound(object):
         else:
             self.name = self.__class__.__name__
 
-        # A periodocity of zero in any direction is treated as non-periodic.
+        # A periodicity of zero in any direction is treated as non-periodic.
         if periodicity is None:
             self._periodicity = np.array([0.0, 0.0, 0.0])
         else:
@@ -162,7 +189,19 @@ class Compound(object):
             self.add(subcompounds)
 
     def particles(self, include_ports=False):
-        """ """
+        """Return all Particles of the Compound.
+        
+        Parameters
+        ----------
+        include_ports : bool, optional, default=False
+            Include port particles
+
+        Yields
+        -------
+        mb.Compound
+            The next Particle in the Compound
+
+        """
         if not self.children:
             yield self
         else:
@@ -177,7 +216,14 @@ class Compound(object):
                     yield child
 
     def successors(self):
-        """Yield Compounds below self in the hierarchy. """
+        """Yield Compounds below self in the hierarchy. 
+
+        Yields
+        -------
+        mb.Compound
+            The next Particle below self in the hierarchy
+
+        """
         if not self.children:
             return
         for part in self.children:
@@ -189,6 +235,14 @@ class Compound(object):
 
     @property
     def n_particles(self):
+        """Return the number of Particles in the Compound.
+
+        Returns
+        -------
+        int
+            The number of Particles in the Compound
+
+        """
         if not self.children:
             return 1
         else:
@@ -205,7 +259,14 @@ class Compound(object):
         return True
 
     def ancestors(self):
-        """Generate all ancestors of the Compound recursively. """
+        """Generate all ancestors of the Compound recursively.
+
+        Yields
+        ------
+        mb.Compound
+            The next Compound above self in the hierarchy
+
+        """
         if self.parent is not None:
             yield self.parent
             for ancestor in self.parent.ancestors():
@@ -213,6 +274,14 @@ class Compound(object):
 
     @property
     def root(self):
+        """The Compound at the top of self's hierarchy.
+
+        Returns
+        -------
+        mb.Compound
+            The Compound at the top of self's hierarchy
+
+        """
         parent = None
         for parent in self.ancestors():
             pass
@@ -221,6 +290,19 @@ class Compound(object):
         return parent
 
     def particles_by_name(self, name):
+        """Return all Particles of the Compound with a specific name
+        
+        Parameters
+        ----------
+        name : str
+            Only particles with this name are returned
+
+        Yields
+        ------
+        mb.Compound
+            The next Particle in the Compound with the user-specified name
+
+        """
         for particle in self.particles():
             if particle.name == name:
                 yield particle
@@ -244,6 +326,9 @@ class Compound(object):
             Add the part to self.children.
         replace : bool, optional, default=True
             Replace the label if it already exists.
+        inherit_periodicity : bool, optional, default=True
+            Replace the periodicity of self with the periodicity of the
+            Compound being added
 
         """
         # Support batch add via lists, tuples and sets.
@@ -305,7 +390,14 @@ class Compound(object):
             self.periodicity = new_child.periodicity
 
     def remove(self, objs_to_remove):
-        """Remove children from the Compound. """
+        """Remove children from the Compound.
+
+        Parameters
+        ----------
+        objs_to_remove : mb.Compound or list of mb.Compound
+            The Compound(s) to be removed from self
+
+        """
         if not self.children:
             return
 
@@ -366,19 +458,44 @@ class Compound(object):
             removed_part.labels.pop(label, None)
 
     def referenced_ports(self):
-        """Return all Ports referenced by this Compound. """
+        """Return all Ports referenced by this Compound.
+
+        Returns
+        -------
+        list of mb.Compound
+            A list of all ports referenced by the Compound
+
+        """
         from mbuild.port import Port
         return [port for port in self.labels.values()
                 if isinstance(port, Port)]
 
     def available_ports(self):
-        """Return all unoccupied Ports referenced by this Compound. """
+        """Return all unoccupied Ports referenced by this Compound.
+
+        Returns
+        -------
+        list of mb.Compound
+            A list of all unoccupied ports referenced by the Compound
+
+        """
         from mbuild.port import Port
         return [port for port in self.labels.values()
                 if isinstance(port, Port) and not port.used]
 
     def bonds(self):
-        """A list of all Bonds in the Compound and sub-Compounds. """
+        """Return all bonds in the Compound and sub-Compounds.
+
+        Yields
+        -------
+        tuple of mb.Compound
+            The next bond in the Compound
+
+        See Also
+        --------
+        bond_graph.edges_iter : Iterates over all edges in a BondGraph
+
+        """
         if self.root.bond_graph:
             if self.root == self:
                 return self.root.bond_graph.edges_iter()
@@ -389,18 +506,45 @@ class Compound(object):
 
     @property
     def n_bonds(self):
-        """Return the number of Bonds in the Compound. """
+        """Return the number of bonds in the Compound.
+
+        Returns
+        -------
+        int
+            The number of bonds in the Compound
+
+        """
         return sum(1 for _ in self.bonds())
 
     def add_bond(self, particle_pair):
-        """"""
+        """Add a bond between two Particles.
+
+        Parameters
+        ----------
+        particle_pair : indexable object, length=2, dtype=mb.Compound
+            The pair of Particles to add a bond between
+
+        """
         if self.root.bond_graph is None:
             self.root.bond_graph = BondGraph()
 
         self.root.bond_graph.add_edge(particle_pair[0], particle_pair[1])
 
     def generate_bonds(self, name_a, name_b, dmin, dmax):
-        """Add Bonds between all pairs of types a/b within [dmin, dmax]. """
+        """Add Bonds between all pairs of types a/b within [dmin, dmax].
+
+        Parameters
+        ----------
+        name_a : str
+            The name of one of the Particles to be in each bond
+        name_b : str
+            The name of the other Particle to be in each bond
+        dmin : float
+            The minimum distance between Particles for considering a bond
+        dmax : float
+            The maximum distance between Particles for considering a bond
+
+        """
         particle_kdtree = PeriodicCKDTree(data=self.xyz, bounds=self.periodicity)
         particle_array = np.array(list(self.particles()))
         added_bonds = list()
@@ -420,6 +564,14 @@ class Compound(object):
                     added_bonds.append(bond_tuple)
 
     def remove_bond(self, particle_pair):
+        """Deletes a bond between a pair of Particles
+
+        Parameters
+        ----------
+        particle_pair : indexable object, length=2, dtype=mb.Compound
+            The pair of Particles to remove the bond between
+
+        """
         if self.root.bond_graph is None or not self.root.bond_graph.has_edge(*particle_pair):
             warn("Bond between {} and {} doesn't exist!".format(*particle_pair))
             return
