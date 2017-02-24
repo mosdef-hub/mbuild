@@ -130,8 +130,7 @@ class Pattern(object):
 
 class Random2DPattern(Pattern):
     def __init__(self, n, seed=None, **kwargs):
-        """ Generate n random points on a 2D grid whose
-        z-coordinates set to zero 
+        """ Generate n random points on a 2D grid along z = 0
 
         Attributes
         ----------
