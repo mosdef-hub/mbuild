@@ -376,22 +376,21 @@ class TestCompound(BaseTest):
 
     @pytest.mark.skipif(has_openbabel, reason="Open Babel package is installed")
     def test_energy_minimization_openbabel_warn(self, octane):
-        assert False
-        with pytest.warns(ImportWarning):
+        with pytest.raises(MBuildError):
             octane.energy_minimization()
 
     @pytest.mark.skipif(not has_openbabel, reason="Open Babel package not installed")
     def test_energy_minimization_ff(self, octane):
-        for ff in ['UFF', 'GAFF', 'MMFF94']:
+        for ff in ['UFF', 'GAFF', 'MMFF94', 'MMFF94s', 'Ghemical']:
             octane.energy_minimization(forcefield=ff)
-        with pytest.warns(RuntimeWarning):
+        with pytest.raises(MBuildError):
             octane.energy_minimization(forcefield='fakeFF')
 
     @pytest.mark.skipif(not has_openbabel, reason="Open Babel package not installed")
     def test_energy_minimization_algorithm(self, octane):
-        for algorithm in ['cg', 'steep']:
+        for algorithm in ['cg', 'steep', 'md']:
             octane.energy_minimization(algorithm=algorithm)
-        with pytest.warns(RuntimeWarning):
+        with pytest.raises(MBuildError):
             octane.energy_minimization(algorithm='fakeAlg')
 
     @pytest.mark.skipif(not has_openbabel, reason="Open Babel package not installed")
