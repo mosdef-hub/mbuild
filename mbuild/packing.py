@@ -89,7 +89,7 @@ def fill_box(compound, n_compounds, box, overlap=0.2, seed=12345):
 
 
 def fill_region(compound, n_compounds, region, overlap=0.2, seed=12345):
-    """Fill a box with a compound using packmol.
+    """Fill a region of a box with a compound using packmol.
 
     Parameters
     ----------
