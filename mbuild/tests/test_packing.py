@@ -1,6 +1,5 @@
 import pytest
 import numpy as np
-import pdb
 
 import mbuild as mb
 from mbuild.exceptions import MBuildError
