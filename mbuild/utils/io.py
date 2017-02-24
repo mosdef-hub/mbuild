@@ -51,6 +51,18 @@ or
 # pip install nglview
 '''
 
+MESSAGES['openbabel'] = '''
+The code at {filename}:{line_number} requires the "openbabel" package
+
+openbabel can be installed with conda using:
+
+# conda install -c omnia openbabel
+
+or from source following instructions at:
+
+# http://openbabel.org/docs/current/UseTheLibrary/PythonInstall.html
+'''
+
 
 def import_(module):
     """Import a module, and issue a nice message to stderr if the module isn't installed.
