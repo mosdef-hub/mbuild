@@ -13,11 +13,13 @@ __all__ = ['Pattern', 'DiskPattern', 'SpherePattern', 'Random2DPattern',
 
 
 class Pattern(object):
-    def __init__(self, points, orientations=None):
+    def __init__(self, points, orientations=None, scale=None, **kwargs):
         self.points = points
         if orientations is None:
             orientations = dict()
-        self.orientations = orientations  # TODO: implement
+        self.orientations = orientations  # TODO: implement for more patterns
+        if scale is not None:
+            self.scale(scale)
 
     def __len__(self):
         return len(self.points)
@@ -88,17 +90,14 @@ class Pattern(object):
         """
         n_ports = len(host.available_ports())
         assert n_ports >= self.points.shape[0], "Not enough ports for pattern."
-
         assert_port_exists(guest_port_name, guest)
         box = host.boundingbox
         pattern = self.points * box.lengths + box.mins
-
         port_positions = np.empty(shape=(n_ports, 3))
         port_list = list()
         for port_idx, port in enumerate(host.available_ports()):
             port_positions[port_idx, :] = port['up']['middle'].pos
             port_list.append(port)
-
         used_ports = set()  # Keep track of used ports for backfilling.
         guests = []
         for point in pattern:
@@ -114,7 +113,6 @@ class Pattern(object):
             # Move the port as far away as possible (simpler than removing it).
             # There may well be a more elegant/efficient way of doing this.
             port_positions[closest_point_idx, :] = np.array([np.inf, np.inf, np.inf])
-
         backfills = []
         if backfill:
             assert_port_exists(backfill_port_name, backfill)
@@ -131,39 +129,39 @@ class Pattern(object):
 
 
 class Random2DPattern(Pattern):
-    def __init__(self, n, orientations=None, seed=None):
+    def __init__(self, n, seed=None, **kwargs):
         if seed:
             np.random.seed(seed)
         points = np.random.random((n, 3))
         points[:, 2] = 0
-        super(Random2DPattern, self).__init__(points=points, orientations=orientations)
+        super(Random2DPattern, self).__init__(points=points, **kwargs)
 
 
 class Random3DPattern(Pattern):
-    def __init__(self, n, orientations=None, seed=None):
+    def __init__(self, n, seed=None, **kwargs):
         if seed:
             np.random.seed(seed)
         points = np.random.random((n, 3))
-        super(Random3DPattern, self).__init__(points=points, orientations=orientations)
+        super(Random3DPattern, self).__init__(points=points, **kwargs)
 
 
 class Grid2DPattern(Pattern):
-    def __init__(self, n, m, orientations=None):
+    def __init__(self, n, m, **kwargs):
         points = np.zeros(shape=(n*m, 3), dtype=float)
         for i, j in product(range(n), range(m)):
             points[i*m + j, 0] = i / n
             points[i*m + j, 1] = j / m
-        super(Grid2DPattern, self).__init__(points=points, orientations=orientations)
+        super(Grid2DPattern, self).__init__(points=points, **kwargs)
 
 
 class Grid3DPattern(Pattern):
-    def __init__(self, n, m, l, orientations=None):
+    def __init__(self, n, m, l, **kwargs):
         points = np.zeros(shape=(n*m*l, 3), dtype=float)
         for i, j, k in product(range(n), range(m), range(l)):
             points[i*m*l + j*l + k, 0] = i / n
             points[i*m*l + j*l + k, 1] = j / m
             points[i*m*l + j*l + k, 2] = k / l
-        super(Grid3DPattern, self).__init__(points=points, orientations=orientations)
+        super(Grid3DPattern, self).__init__(points=points, **kwargs)
 
 
 class SpherePattern(Pattern):
@@ -175,47 +173,47 @@ class SpherePattern(Pattern):
     http://mail.scipy.org/pipermail/numpy-discussion/2009-July/043811.html
 
     """
-    def __init__(self, n):
+    def __init__(self, n, **kwargs):
         phi = (1 + np.sqrt(5)) / 2   # the golden ratio
         long_incr = 2*np.pi / phi    # how much to increment the longitude
-
         dz = 2.0 / float(n)          # a unit sphere has diameter 2
         bands = np.arange(n)         # each band will have one point placed on it
-        z = bands * dz - 1 + (dz/2)  # the height z of each band/point
-        r = np.sqrt(1 - z*z)         # project onto xy-plane
+        z = bands * dz - 1.0 + (dz/2.0)  # the height z of each band/point
+        r = np.sqrt(1.0 - z*z)         # project onto xy-plane
         az = bands * long_incr       # azimuthal angle of point modulo 2 pi
         x = r * np.cos(az)
         y = r * np.sin(az)
         points = np.column_stack((x, y, z))
 
         from mbuild.port import Port
-        ports = list()
-        for point in points:
-            port = Port()
-            ports.append(port)
-            # Make the top of the port point toward the positive x axis.
-            spin(port, -np.pi/2, [0, 0, 1])
-            # Raise up (or down) the top of the port in the z direction.
-            spin(port, -np.arcsin(point[2]), [0, 1, 0])
-            # Rotate the Port along the z axis.
-            spin(port, np.arctan2(point[1], point[0]), [0, 0, 1])
-            # Move the Port a bit away from the surface of the Sphere.
-            # translate(port, point + 0.07)
-
-        super(SpherePattern, self).__init__(points=points,
-                                            orientations={'normal': ports})
+        if kwargs.get('orientations') is None:
+            ports = list()
+            for point in points:
+                port = Port()
+                ports.append(port)
+                # Make the top of the port point toward the positive x axis.
+                spin(port, -np.pi/2, [0, 0, 1])
+                # Raise up (or down) the top of the port in the z direction.
+                spin(port, -np.arcsin(point[2]), [0, 1, 0])
+                # Rotate the Port along the z axis.
+                spin(port, np.arctan2(point[1], point[0]), [0, 0, 1])
+                # Move the Port a bit away from the surface of the Sphere.
+                # translate(port, point + 0.07)
+            kwargs['orientations'] = {'normal': ports}
+        else:
+            raise NotImplementedError('Custom orientation support is not yet '
+                                      'implemented.')
+        super(SpherePattern, self).__init__(points=points, **kwargs)
 
 
 class DiskPattern(Pattern):
     """ """
-    def __init__(self, n, orientations=None):
+    def __init__(self, n, **kwargs):
         radius = np.sqrt(np.arange(n) / float(n))
-
         golden_angle = np.pi * (3 - np.sqrt(5))
         theta = golden_angle * np.arange(n)
-
         points = np.zeros((n, 3))
         points[:, 0] = np.cos(theta)
         points[:, 1] = np.sin(theta)
         points *= radius.reshape((n, 1))
-        super(DiskPattern, self).__init__(points=points, orientations=orientations)
+        super(DiskPattern, self).__init__(points=points, **kwargs)

@@ -115,3 +115,28 @@ class TestPattern(BaseTest):
         scale = [[3.14159], [2.71828], [0.110001]]
         with pytest.raises(ValueError):
             pattern.scale(scale)
+
+    def test_scaling(self):
+        for pattern_name in mb.pattern.__all__:
+            if pattern_name not in ['Pattern']:
+                pattern = getattr(mb.pattern, pattern_name)
+                test = pattern(n=5, m=6, l=7, scale=3.0, seed=1)
+                control = pattern(n=5, m=6, l=7, seed=1)
+                control.scale(3.0)
+                assert(np.allclose(test.points, control.points, atol=1e-16))
+
+    def test_scaling_error_string(self):
+        with pytest.raises(TypeError):
+            pattern = mb.Random3DPattern(10, scale='tim')
+
+    def test_scaling_error_dict(self):
+        with pytest.raises(TypeError):
+            pattern = mb.Random3DPattern(10, scale={'name': 'tim'})
+
+    def test_scaling_error_dict(self):
+        with pytest.raises(TypeError):
+            pattern = mb.Random3DPattern(10, scale={'name': 'tim'})
+
+    def test_scaling_error_dict(self):
+        with pytest.raises(TypeError):
+            pattern = mb.Random3DPattern(10, scale={'name': 'tim'})
