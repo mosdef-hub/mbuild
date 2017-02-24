@@ -10,7 +10,7 @@ from mbuild.exceptions import MBuildError
 from mbuild.box import Box
 from mbuild import clone
 
-__all__ = ['fill_box', 'solvate']
+__all__ = ['fill_box', 'fill_region', 'solvate']
 
 PACKMOL = find_executable('packmol')
 PACKMOL_HEADER = """
@@ -74,6 +74,59 @@ def fill_box(compound, n_compounds, box, overlap=0.2, seed=12345):
                   PACKMOL_BOX.format(compound_pdb, n_compounds,
                                      box_mins[0], box_mins[1], box_mins[2],
                                      box_maxs[0], box_maxs[1], box_maxs[2]))
+
+    proc = Popen(PACKMOL, stdin=PIPE, stdout=PIPE, stderr=PIPE, universal_newlines=True)
+    out, err = proc.communicate(input=input_text)
+    if err:
+        _packmol_error(out, err)
+
+    # Create the topology and update the coordinates.
+    filled = Compound()
+    for _ in range(n_compounds):
+        filled.add(clone(compound))
+    filled.update_coordinates(filled_pdb)
+    return filled
+
+
+def fill_region(compound, n_compounds, region, overlap=0.2, seed=12345):
+    """Fill a box with a compound using packmol.
+
+    Parameters
+    ----------
+    compound : mb.Compound
+    n_compounds : int
+    region : mb.Box
+    overlap : float
+
+    Returns
+    -------
+    filled : mb.Compound
+
+    """
+    if not PACKMOL:
+        msg = "Packmol not found."
+        if sys.platform.startswith("win"):
+            msg = (msg + " If packmol is already installed, make sure that the "
+                         "packmol.exe is on the path.")
+        raise IOError(msg)
+
+    region = _validate_box(region)
+
+    n_compounds = int(n_compounds)
+    compound_pdb = tempfile.mkstemp(suffix='.pdb')[1]
+    compound.save(compound_pdb, overwrite=True)
+    filled_pdb = tempfile.mkstemp(suffix='.pdb')[1]
+
+    # In angstroms for packmol.
+    region_mins = region.mins * 10
+    region_maxs = region.maxs * 10
+    overlap *= 10
+
+    # Build the input file and call packmol.
+    input_text = (PACKMOL_HEADER.format(overlap, filled_pdb, seed) +
+                  PACKMOL_BOX.format(compound_pdb, n_compounds,
+                                     region_mins[0], region_mins[1], region_mins[2],
+                                     region_maxs[0], region_maxs[1], region_maxs[2]))
 
     proc = Popen(PACKMOL, stdin=PIPE, stdout=PIPE, stderr=PIPE, universal_newlines=True)
     out, err = proc.communicate(input=input_text)

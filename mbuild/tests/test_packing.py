@@ -1,5 +1,6 @@
 import pytest
 import numpy as np
+import pdb
 
 import mbuild as mb
 from mbuild.exceptions import MBuildError
@@ -11,6 +12,13 @@ class TestPacking(BaseTest):
         filled = mb.fill_box(ethane, n_compounds=20, box=[2, 2, 2, 4, 4, 4])
         assert filled.n_particles == 20 * 8
         assert filled.n_bonds == 20 * 7
+
+    def test_fill_region(self, ethane):
+        filled = mb.fill_region(ethane, n_compounds=20, region=[3, 2, 2, 4, 4, 3])
+        assert filled.n_particles == 20 * 8
+        assert filled.n_bonds == 20 * 7
+        assert np.min(filled.xyz[:,0]) > 3
+        assert np.max(filled.xyz[:,2]) < 3
 
     def test_solvate(self, ethane, h2o):
         n_solvent = 100
