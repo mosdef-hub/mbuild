@@ -130,6 +130,17 @@ class Pattern(object):
 
 class Random2DPattern(Pattern):
     def __init__(self, n, seed=None, **kwargs):
+        """ Generate n random points on a 2D grid along z = 0
+
+        Attributes
+        ----------
+        n : int
+            Number of points to generate
+        seed : int
+            Seed for random number generation
+
+        """
+
         if seed:
             np.random.seed(seed)
         points = np.random.random((n, 3))
@@ -139,6 +150,17 @@ class Random2DPattern(Pattern):
 
 class Random3DPattern(Pattern):
     def __init__(self, n, seed=None, **kwargs):
+        """ Generate n random points on a 3D grid 
+
+        Attributes
+        ----------
+        n : int
+            Number of points to generate
+        seed : int
+            Seed for random number generation
+
+        """
+
         if seed:
             np.random.seed(seed)
         points = np.random.random((n, 3))
@@ -147,6 +169,21 @@ class Random3DPattern(Pattern):
 
 class Grid2DPattern(Pattern):
     def __init__(self, n, m, **kwargs):
+        """ Generate a 2D grid (n x m) of points along z = 0
+
+        Notes
+        -----
+        Points span [0,1) along x and y axes
+
+        Attributes
+        ---------
+        n : int
+            Number of grid rows
+        m : int
+            Number of grid columns
+
+        """
+
         points = np.zeros(shape=(n*m, 3), dtype=float)
         for i, j in product(range(n), range(m)):
             points[i*m + j, 0] = i / n
@@ -156,6 +193,23 @@ class Grid2DPattern(Pattern):
 
 class Grid3DPattern(Pattern):
     def __init__(self, n, m, l, **kwargs):
+        """ Generate a 3D grid (n x m x l) of points
+
+        Notes
+        -----
+        Points span [0,1) along x, y, and z axes
+
+        Attributes
+        ---------
+        n : int
+            Number of grid rows
+        m : int
+            Number of grid columns
+        l : int
+            Number of grid aisles
+
+        """
+
         points = np.zeros(shape=(n*m*l, 3), dtype=float)
         for i, j, k in product(range(n), range(m), range(l)):
             points[i*m*l + j*l + k, 0] = i / n
@@ -207,7 +261,15 @@ class SpherePattern(Pattern):
 
 
 class DiskPattern(Pattern):
-    """ """
+    """Generate N evenly distributed points on the unit circle along z = 0.
+
+    Disk is centered at the origin. Algorithm based on Vogel's method.
+
+    Code by Alexandre Devert:
+    http://blog.marmakoide.org/?p=1
+
+    """
+
     def __init__(self, n, **kwargs):
         radius = np.sqrt(np.arange(n) / float(n))
         golden_angle = np.pi * (3 - np.sqrt(5))
