@@ -524,7 +524,7 @@ class Compound(object):
         """Update the coordinates of this Compound from a file. """
         load(filename, compound=self, coords_only=True)
 
-    def tweak(self):
+    def _kick(self):
         """Provides a slight adjustment to coordinates to kick them
            out of local energy minima.
         """
@@ -541,15 +541,15 @@ class Compound(object):
         steps : int, optionl, default=1000
             The number of optimization iterations
         algorithm : str, optional, default='cg'
-            The energy minimization algorithm.  Valid options are 'steep'
-            and 'cg', corresponding to the steepest descent and conjugate
-            gradient algorithms respectively.
+            The energy minimization algorithm.  Valid options are 'steep', 
+            'cg', and 'md', corresponding to steepest descent, conjugate
+            gradient, and equilibrium molecular dynamics respectively.
         forcefield : str, optional, default='UFF'
             The generic force field to apply to the Compound for minimization.
-            Valid options are 'MMFF94', 'UFF', and 'GAFF'. Please refer to the
-            Open Babel documentation (http://open-babel.readthedocs.io/en/
-            latest/Forcefields/Overview.html) when considering your choice of
-            force field.
+            Valid options are 'MMFF94', 'MMFF94s', ''UFF', 'GAFF', and 'Ghemical'.
+            Please refer to the Open Babel documentation (http://open-babel.
+            readthedocs.io/en/latest/Forcefields/Overview.html) when considering 
+            your choice of force field.
 
         References
         ----------
@@ -576,27 +576,31 @@ class Compound(object):
                MMFF94 using experimental data, additional computational data,
                and empirical rules." (1996) J. Comput. Chem. 17, 616-641
 
-        If using the 'UFF' force field please also cite the following:
+        If using the 'MMFF94s' force field please cite the above along with:
+        .. [8] T.A. Halgren, "MMFF VI. MMFF94s option for energy minimization
+               studies." (1999) J. Comput. Chem. 20, 720-729
+
+        If using the 'UFF' force field please cite the following:
         .. [3] Rappe, A.K., Casewit, C.J., Colwell, K.S., Goddard, W.A. III,
                Skiff, W.M. "UFF, a full periodic table force field for
                molecular mechanics and molecular dynamics simulations." (1992)
                J. Am. Chem. Soc. 114, 10024-10039
 
-        If using the 'GAFF' force field please also cite the following:
+        If using the 'GAFF' force field please cite the following:
         .. [3] Wang, J., Wolf, R.M., Caldwell, J.W., Kollman, P.A., Case, D.A.
                "Development and testing of a general AMBER force field" (2004)
-               J. Comput. Chem. 25 1157-1174
+               J. Comput. Chem. 25, 1157-1174
+
+        If using the 'Ghemical' force field please cite the following:
+        .. [3] T. Hassinen and M. Perakyla, "New energy terms for reduced 
+               protein models implemented in an off-lattice force field" (2001)
+               J. Comput. Chem. 22, 1229-1242
         """
-        try:
-            import openbabel
-        except ImportError:
-            warn("Open Babel package not detected. Energy minimization will not "
-                 "be performed.", ImportWarning)
-            return
+        openbabel = import_('openbabel')
 
         tmp_dir = tempfile.mkdtemp()
         original = clone(self)
-        self.tweak()
+        self._kick()
         self.save(os.path.join(tmp_dir,'un-minimized.pdb'))
         obConversion = openbabel.OBConversion()
         obConversion.SetInAndOutFormats("pdb", "mol2")
@@ -604,30 +608,26 @@ class Compound(object):
 
         obConversion.ReadFile(mol, os.path.join(tmp_dir, "un-minimized.pdb"))
 
-        if forcefield == 'MMFF94':
-            ff = openbabel.OBForceField.FindForceField("MMFF94")
-        elif forcefield == 'UFF':
-            ff = openbabel.OBForceField.FindForceField("UFF")
-        elif forcefield == 'GAFF':
-            ff = openbabel.OBForceField.FindForceField("GAFF")
-        else:
-            forcefield = 'UFF'
-            ff = openbabel.OBForceField.FindForceField("UFF")
-            warn("Invalid forcefield (valid options are 'MMFF94', 'UFF', and "
-                 "'GAFF'). Using UFF.", RuntimeWarning)
+        ff = openbabel.OBForceField.FindForceField(forcefield)
+        if ff is None:
+            raise MBuildError("Force field '{}' not supported for energy "
+                              "minimization. Valid force fields are 'MMFF94', "
+                              "'MMFF94s', 'UFF', 'GAFF', and 'Ghemical'."
+                              "".format(forcefield))
         warn("Performing energy minimization using the Open Babel package. Please "
              "refer to the documentation to find the appropriate citations for "
              "Open Babel and the {} force field".format(forcefield))
         ff.Setup(mol)
         if algorithm == 'steep':
             ff.SteepestDescent(steps)
+        elif algorithm == 'md':
+            ff.MolecularDynamicsTakeNSteps(steps, 300)
         elif algorithm == 'cg':
             ff.ConjugateGradients(steps)
         else:
-            ff.ConjugateGradients(steps)
-            warn("Invalid minimization algorithm (valid options are 'steep' "
-                 "and 'cg'). Using conjugate gradient algorithm.", RuntimeWarning)
-            ff.UpdateCoordinates(mol)
+            raise MBuildError("Invalid minimization algorithm. Valid options "
+                              "are 'steep', 'cg', and 'md'.")
+        ff.UpdateCoordinates(mol)
 
         obConversion.WriteFile(mol, os.path.join(tmp_dir, 'minimized.mol2'))
         try:
