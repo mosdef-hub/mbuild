@@ -1,8 +1,8 @@
 import numpy as np
 
 from mbuild.compound import Compound, Particle
-from mbuild.coordinate_transform import rotate, translate_to, 
-                                        unit_vector, angle
+from mbuild.coordinate_transform import (rotate, translate_to, translate,
+                                         unit_vector, angle)
 from mbuild import clone
 
 
@@ -70,3 +70,9 @@ class Port(Compound):
     def center(self):
         """The cartesian center of the Port"""
         return np.mean(self.xyz_with_ports, axis=0)
+
+    @property
+    def direction(self):
+        """The unit vector pointing in the 'direction' of the Port
+        """
+        return unit_vector(self.xyz_with_ports[1]-self.xyz_with_ports[0])
