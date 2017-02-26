@@ -47,11 +47,13 @@ class Port(Compound):
         self.used = False
 
         default_direction = [0, 1, 0]
-        if np.array_equal(np.asarray(default_direction), -np.asarray(orientation)):
+        if np.array_equal(
+                np.asarray(default_direction), unit_vector(-np.asarray(orientation))):
             rotate(self, np.pi, [1, 0, 0])
-        elif np.array_equal(np.asarray(default_direction), np.asarray(orientation)):
+        elif np.array_equal(
+                np.asarray(default_direction), unit_vector(np.asarray(orientation))):
             pass
-        elif not np.array_equal(default_direction, orientation):
+        else:
             normal = np.cross(default_direction, orientation)
             rotate(self, -angle(default_direction, orientation), normal)
 
