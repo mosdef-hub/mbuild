@@ -142,7 +142,7 @@ class Compound(object):
         compound is the root of the containment hierarchy.
     referrers : set
         Other compounds that reference this part with labels.
-    bounding_box
+    boundingbox
     center
     n_particles
     n_bonds
@@ -606,7 +606,7 @@ class Compound(object):
 
         Returns
         -------
-        pos : np.ndarray, shape=(n, 3)
+        pos : np.ndarray, shape=(n, 3), dtype=float
             Array with the positions of all particles.
         """
         if not self.children:
@@ -619,7 +619,14 @@ class Compound(object):
 
     @property
     def xyz_with_ports(self):
-        """Return all particle coordinates in this compound including ports. """
+        """Return all particle coordinates in this compound including ports.
+
+        Returns
+        -------
+        pos : np.ndarray, shape=(n, 3), dtype=float
+            Array with the positions of all particles and ports.
+
+        """
         if not self.children:
             pos = self._pos
         else:
@@ -630,25 +637,81 @@ class Compound(object):
 
     @property
     def center(self):
-        """The cartesian center of the Compound based on its Atoms. """
+        """The cartesian center of the Compound based on its Particles.
+
+        Returns
+        -------
+        np.ndarray, shape=(3,), dtype=float
+            The cartesian center of the Compound based on its Particles       
+
+        """
         if self.xyz.any():
             return np.mean(self.xyz, axis=0)
 
     @property
     def boundingbox(self):
-        """Compute the bounding box of the compound. """
+        """Compute the bounding box of the compound.
+
+        Returns
+        -------
+        mb.Box
+            The bounding box for this Compound
+
+        """
         xyz = self.xyz
         return Box(mins=xyz.min(axis=0), maxs=xyz.max(axis=0))
 
     def min_periodic_distance(self, xyz0, xyz1):
-        """Vectorized distance calculation considering minimum image. """
+        """Vectorized distance calculation considering minimum image.
+
+        Parameters
+        ----------
+        xyz0 : np.ndarray, shape=(3,), dtype=float
+            Coordinates of first point
+        xyz1 : np.ndarray, shape=(3,), dtype=float
+            Coordinates of second point
+
+        Returns
+        -------
+        float
+            Vectorized distance between the two points following minimum
+            image convention
+
+        """
         d = np.abs(xyz0 - xyz1)
         d = np.where(d > 0.5 * self.periodicity, self.periodicity - d, d)
         return np.sqrt((d ** 2).sum(axis=-1))
 
     def particles_in_range(self, compound, dmax, max_particles=20, particle_kdtree=None,
                            particle_array=None):
-        """Find particles within a specified range of another particle. """
+        """Find particles within a specified range of another particle.
+
+        Parameters
+        ----------
+        compound : mb.Compound
+            Reference particle to find other particles in range of
+        dmax : float
+            Maximum distance from 'compound' to look for Particles
+        max_particles : int, optional, default=20
+            Maximum number of Particles to return
+        particle_kdtree : mb.PeriodicCKDTree, optional
+            KD-tree for looking up nearest neighbors. If not provided, a KD-
+            tree will be generated from all Particles in self
+        particle_array : np.ndarray, shape=(n,), dtype=mb.Compound, optional
+            Array of possible particles to consider for return. If not
+            provided, this defaults to all Particles in self
+
+        Returns
+        -------
+        np.ndarray, shape=(n,), dtype=mb.Compound
+            Particles in range of compound according to user-defined limits
+
+        See Also
+        --------
+        periodic_kdtree.PerioidicCKDTree : mBuild implementation of kd-trees
+        scipy.spatial.ckdtree : Further details on kd-trees
+
+        """
         if particle_kdtree is None:
             particle_kdtree = PeriodicCKDTree(data=self.xyz, bounds=self.periodicity)
         _, idxs = particle_kdtree.query(compound.pos, k=max_particles, distance_upper_bound=dmax)
@@ -662,7 +725,16 @@ class Compound(object):
         raise NotImplementedError('Coming soon!')
 
     def visualize(self, show_ports=False):
-        """Visualize the Compound using nglview. """
+        """Visualize the Compound using nglview.
+
+        Allows for visualization of a Compound within a Jupyter Notebook.
+
+        Parameters
+        ----------
+        show_ports : bool, optional, default=False
+            Visualize Ports in addition to Particles
+
+        """
         nglview = import_('nglview')
         if run_from_ipython():
             structure = self.to_trajectory(show_ports)
@@ -672,7 +744,19 @@ class Compound(object):
                                'Notebooks.')
 
     def update_coordinates(self, filename):
-        """Update the coordinates of this Compound from a file. """
+        """Update the coordinates of this Compound from a file.
+
+        Parameters
+        ----------
+        filename : str
+            Name of file from which to load coordinates. Supported file types
+            are the same as those supported by load()
+
+        See Also
+        --------
+        load : Load coordinates from a file
+
+        """
         load(filename, compound=self, coords_only=True)
 
     def save(self, filename, show_ports=False, forcefield_name=None,
@@ -684,18 +768,38 @@ class Compound(object):
         filename : str
             Filesystem path in which to save the trajectory. The extension or
             prefix will be parsed and will control the format.
-        show_ports : bool, default=False
+        show_ports : bool, optional, default=False
             Save ports contained within the compound.
-        forcefield_name : str, default=None
+        forcefield_name : str, optional, default=None
             Apply a forcefield to the output file using a forcefield provided
             by the `foyer` package.
-        forcefield_name : str, default=None
+        forcefield_name : str, optional, default=None
             Apply a forcefield to the output file using the `foyer` package and
             a specific forcefield.xml file.
+        box : mb.Box, optional, default=self.boundingbox (with buffer)
+            Box information to be written to the output file. If 'None', a
+            bounding box is used with 0.25nm buffers at each face to avoid
+            overlapping atoms.
+        overwrite : bool, optional, default=False
+            Overwrite if the filename already exists
 
         Other Parameters
         ----------------
-        force_overwrite : bool
+        ref_distance : float, optional, default=1.0
+            Normalization factor used when saving to .gsd and .hoomdxml formats
+            for converting distance values to reduced units.
+        ref_energy : float, optional, default=1.0
+            Normalization factor used when saving to .gsd and .hoomdxml formats
+            for converting energy values to reduced units.
+        ref_mass : float, optional, default=1.0
+            Normalization factor used when saving to .gsd and .hoomdxml formats
+            for converting mass values to reduced units.
+
+        See Also
+        --------
+        formats.gsdwrite.write_gsd : Write to GSD format
+        formats.hoomdxml.write_hoomdxml : Write to Hoomd XML format
+        formats.lammpsdata.write_lammpsdata : Write to LAMMPS data format
 
         """
         extension = os.path.splitext(filename)[-1]
@@ -746,7 +850,39 @@ class Compound(object):
 
     def save_hoomdxml(self, filename, structure, forcefield_name,
                       forcefield_files, box, **kwargs):
-        """ """
+        """Save Compound to Hoomd XML format
+
+        Parameters
+        ----------
+        filename : str
+            Filesystem path in which to save the trajectory.
+        structure : parmed.Structure
+            Parmed structure containing 
+        forcefield_name : str, optional, default=None
+            Apply a forcefield to the output file using a forcefield provided
+            by the `foyer` package.
+        forcefield_name : str, optional, default=None
+            Apply a forcefield to the output file using the `foyer` package and
+            a specific forcefield.xml file.
+        box : mb.Box, optional, default=self.boundingbox (with buffer)
+            Box information to be written to the output file. If 'None', a
+            bounding box is used with 0.25nm buffers at each face to avoid
+            overlapping atoms.
+
+        Other Parameters
+        ----------------
+        ref_distance : float, optional, default=1.0
+
+        Other Parameters
+        ----------------
+        ref_distance : float, optional, default=1.0
+            Normalization factor for converting distance values to reduced units.
+        ref_energy : float, optional, default=1.0
+            Normalization factor for converting energy values to reduced units.
+        ref_mass : float, optional, default=1.0
+            Normalization factor for converting mass values to reduced units.
+
+        """
         forcefield = False
         if forcefield_name or forcefield_files:
             forcefield = True
@@ -812,10 +948,11 @@ class Compound(object):
 
         Parameters
         ----------
-        traj : md.Trajectory
+        traj : mdtraj.Trajectory
             The trajectory to load.
-        frame : int
+        frame : int, optional, default=-1 (last)
             The frame to take coordinates from.
+        coords_only : bool, optional, default=False
 
         """
         if coords_only:
