@@ -528,7 +528,7 @@ class Compound(object):
         ----------
         filename : str
             Filesystem path in which to save the trajectory. The extension or
-            prefix will be parsed and will control the format. Supported
+            prefix will be parsed and control the format. Supported
             extensions are: 'hoomdxml', 'gsd', 'gro', 'top', 'lammps', 'lmp'
         show_ports : bool, default=False
             Save ports contained within the compound.
@@ -538,10 +538,8 @@ class Compound(object):
         forcefield_name : str, default=None
             Apply a forcefield to the output file using the `foyer` package and
             a specific forcefield.xml file.
-
-        Other Parameters
-        ----------------
-        force_overwrite : bool
+        overwrite : bool
+            Overwrite the file if it already exists.
 
         """
         extension = os.path.splitext(filename)[-1]
