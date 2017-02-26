@@ -5,7 +5,7 @@ import pytest
 
 import mbuild as mb
 from mbuild.exceptions import MBuildError
-from mbuild.utils.io import get_fn, has_intermol
+from mbuild.utils.io import get_fn, has_intermol, has_foyer
 from mbuild.tests.base_test import BaseTest
 
 
@@ -17,23 +17,30 @@ class TestCompound(BaseTest):
     def test_update_from_file(self, ch3):
         ch3.update_coordinates(get_fn("methyl.pdb"))
 
-    def test_save(self):
-        methyl = mb.load(get_fn('methyl.pdb'))
+    def test_save_simple(self, ch3):
         extensions = ['.xyz', '.pdb', '.mol2']
         for ext in extensions:
             outfile = 'methyl_out' + ext
-            methyl.save(filename=outfile)
+            ch3.save(filename=outfile)
             assert os.path.exists(outfile)
 
-    def test_save_overwrite(self):
-        methyl = mb.load(get_fn('methyl.pdb'))
+    def test_save_overwrite(self, ch3):
         extensions = ['.gsd', '.hoomdxml', '.lammps', '.lmp']
         for ext in extensions:
             outfile = 'lyhtem' + ext
-            methyl.save(filename=outfile)
-            methyl.save(filename=outfile, overwrite=True)
+            ch3.save(filename=outfile)
+            ch3.save(filename=outfile, overwrite=True)
             with pytest.raises(IOError):
-                methyl.save(filename=outfile, overwrite=False)
+                ch3.save(filename=outfile, overwrite=False)
+
+    @pytest.mark.skipif(not has_foyer, reason="foyer is not installed")
+    def test_save_forcefield(self, methane):
+        exts = ['.gsd', '.hoomdxml', '.lammps', '.lmp', '.top', '.gro',
+                '.mol2', '.pdb', '.xyz']
+        for ext in exts:
+            methane.save('lythem' + ext,
+                         forcefield_name='oplsaa',
+                         overwrite=True)
 
     def test_batch_add(self, ethane, h2o):
         compound = mb.Compound()
