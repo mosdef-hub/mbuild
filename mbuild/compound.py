@@ -20,10 +20,12 @@ from six import integer_types, string_types
 from mbuild.bond_graph import BondGraph
 from mbuild.box import Box
 from mbuild.exceptions import MBuildError
-from mbuild.periodic_kdtree import PeriodicCKDTree
-from mbuild.utils.io import run_from_ipython, import_
 from mbuild.formats.hoomdxml import write_hoomdxml
 from mbuild.formats.lammpsdata import write_lammpsdata
+from mbuild.formats.gsdwriter import write_gsd
+from mbuild.periodic_kdtree import PeriodicCKDTree
+from mbuild.utils.io import run_from_ipython, import_
+
 
 
 def load(filename, relative_to_module=None, compound=None, coords_only=False,
@@ -425,7 +427,6 @@ class Compound(object):
         for child in self.children:
             child.remove(yet_to_remove)
 
-
     def _remove_references(self, removed_part):
         """Remove labels pointing to this part and vice versa. """
         removed_part.parent = None
@@ -720,10 +721,6 @@ class Compound(object):
             particle_array = np.array(list(self.particles()))
         return particle_array[idxs]
 
-    def view_hierarchy(self, show_ports=False):
-        """Visualize a compound hierarchy as a tree. """
-        raise NotImplementedError('Coming soon!')
-
     def visualize(self, show_ports=False):
         """Visualize the Compound using nglview.
 
@@ -767,7 +764,8 @@ class Compound(object):
         ----------
         filename : str
             Filesystem path in which to save the trajectory. The extension or
-            prefix will be parsed and will control the format.
+            prefix will be parsed and control the format. Supported
+            extensions are: 'hoomdxml', 'gsd', 'gro', 'top', 'lammps', 'lmp'
         show_ports : bool, optional, default=False
             Save ports contained within the compound.
         forcefield_name : str, optional, default=None
@@ -803,140 +801,54 @@ class Compound(object):
 
         """
         extension = os.path.splitext(filename)[-1]
+        if extension == '.xyz':
+            traj = self.to_trajectory(show_ports=show_ports)
+            traj.save(filename)
+            return
 
-        savers = {'.hoomdxml': self.save_hoomdxml,
-                  '.gsd': self.save_gsd,
-                  '.gro': self.save_gromacs,
-                  '.top': self.save_gromacs,
-                  '.lammps': self.save_lammpsdata,
-                  '.lmp': self.save_lammpsdata}
+        # Savers supported by mbuild.formats
+        savers = {'.hoomdxml': write_hoomdxml,
+                  '.gsd': write_gsd,
+                  '.lammps': write_lammpsdata,
+                  '.lmp': write_lammpsdata}
 
         try:
             saver = savers[extension]
-        except KeyError:  # TODO: better reporting
+        except KeyError:
             saver = None
 
         if os.path.exists(filename) and not overwrite:
             raise IOError('{0} exists; not overwriting'.format(filename))
 
         structure = self.to_parmed(**kwargs)
-        if saver:  # mBuild/InterMol supported saver.
-            saver(filename, structure, forcefield_name,
-                  forcefield_files, box, **kwargs)
-        elif extension == '.xyz':
-            traj = self.to_trajectory(show_ports=show_ports)
-            traj.save(filename)
+
+        # Apply a force field with foyer if specified
+        if forcefield_name or forcefield_files:
+            kwargs['forcefield'] = True
+            from foyer import Forcefield
+            ff = Forcefield(forcefield_files=forcefield_files,
+                            name=forcefield_name)
+            structure = ff.apply(structure)
+        else:
+            kwargs['forcefield'] = False
+
+        if box is None:
+            box = self.boundingbox
+            for dim, val in enumerate(self.periodicity):
+                if val:
+                    box.lengths[dim] = val
+                    box.maxs[dim] = val
+                    box.mins[dim] = 0.0
+                if not val:
+                    box.maxs[dim] += 0.25
+                    box.mins[dim] -= 0.25
+                    box.lengths[dim] += 0.5
+
+        if saver:  # mBuild supported saver.
+            saver(filename=filename, structure=structure, box=box, **kwargs)
         else:  # ParmEd supported saver.
-            return structure.save(filename, overwrite=overwrite, **kwargs)
-
-    def _apply_forcefield(self, structure, forcefield_files, forcefield_name):
-        from foyer import Forcefield
-        ff = Forcefield(forcefield_files=forcefield_files, name=forcefield_name)
-        structure = ff.apply(structure)
-        return structure
-
-    def _gen_box(self):
-        box = self.boundingbox
-        for dim, val in enumerate(self.periodicity):
-            if val:
-                box.lengths[dim] = val
-                box.maxs[dim] = val
-                box.mins[dim] = 0.0
-            if not val:
-                box.maxs[dim] += 0.25
-                box.mins[dim] -= 0.25
-                box.lengths[dim] += 0.5
-        return box
-
-    def save_hoomdxml(self, filename, structure, forcefield_name,
-                      forcefield_files, box, **kwargs):
-        """Save Compound to Hoomd XML format
-
-        Parameters
-        ----------
-        filename : str
-            Filesystem path in which to save the trajectory.
-        structure : parmed.Structure
-            Parmed structure containing 
-        forcefield_name : str, optional, default=None
-            Apply a forcefield to the output file using a forcefield provided
-            by the `foyer` package.
-        forcefield_name : str, optional, default=None
-            Apply a forcefield to the output file using the `foyer` package and
-            a specific forcefield.xml file.
-        box : mb.Box, optional, default=self.boundingbox (with buffer)
-            Box information to be written to the output file. If 'None', a
-            bounding box is used with 0.25nm buffers at each face to avoid
-            overlapping atoms.
-
-        Other Parameters
-        ----------------
-        ref_distance : float, optional, default=1.0
-
-        Other Parameters
-        ----------------
-        ref_distance : float, optional, default=1.0
-            Normalization factor for converting distance values to reduced units.
-        ref_energy : float, optional, default=1.0
-            Normalization factor for converting energy values to reduced units.
-        ref_mass : float, optional, default=1.0
-            Normalization factor for converting mass values to reduced units.
-
-        """
-        forcefield = False
-        if forcefield_name or forcefield_files:
-            forcefield = True
-            structure = self._apply_forcefield(structure, forcefield_files,
-                                               forcefield_name)
-
-        if box is None:
-            box = self._gen_box()
-        write_hoomdxml(structure, filename, forcefield, box, **kwargs)
-
-    def save_gsd(self, filename, structure, forcefield_name,
-                 forcefield_files, box=None, **kwargs):
-        """ """
-        from mbuild.formats.gsdwriter import write_gsd
-        forcefield = False
-        if forcefield_name or forcefield_files:
-            forcefield = True
-            structure = self._apply_forcefield(structure, forcefield_files,
-                                               forcefield_name)
-
-        if box is None:
-            box = self._gen_box()
-        write_gsd(structure, filename, forcefield, box, **kwargs)
-
-    def save_gromacs(self, filename, structure, forcefield_name,
-                     forcefield_files, box, **kwargs):
-        """ """
-        # Create separate file paths for .gro and .top
-        filepath, filename = os.path.split(filename)
-        basename = os.path.splitext(filename)[0]
-        top_filename = os.path.join(filepath, basename + '.top')
-        gro_filename = os.path.join(filepath, basename + '.gro')
-        #  TODO: I think  the forcefield varable can be deleted here
-
-        if forcefield_name or forcefield_files:
-            structure = self._apply_forcefield(structure, forcefield_files,
-                                               forcefield_name)
-        if box is None:
-            box = self._gen_box()
-        structure.save(top_filename, 'gromacs', **kwargs)
-        structure.save(gro_filename, 'gro', **kwargs)
-
-    def save_lammpsdata(self, filename, structure, forcefield_name,
-                        forcefield_files, box, **kwargs):
-        """ """
-        forcefield = False
-        if forcefield_name or forcefield_files:
-            forcefield = True
-            structure = self._apply_forcefield(structure, forcefield_files,
-                                               forcefield_name)
-
-        if box is None:
-            box = self._gen_box()
-        write_lammpsdata(structure, filename, forcefield, box, **kwargs)
+            kwargs.pop('forcefield')
+            structure.save(filename, overwrite=overwrite, **kwargs)
 
     # Interface to Trajectory for reading/writing .pdb and .mol2 files.
     # -----------------------------------------------------------------
