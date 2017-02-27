@@ -33,8 +33,8 @@ def RB_to_OPLS(c0, c1, c2, c3, c4, c5):
     return opls_coeffs
 
 
-def write_hoomdxml(structure, filename, forcefield, box, ref_distance=1.0,
-                   ref_mass=1.0, ref_energy=1.0, rigid_bodies=None):
+def write_hoomdxml(structure, filename, box, ref_distance=1.0, ref_mass=1.0,
+                   ref_energy=1.0, rigid_bodies=None):
     """Output a HOOMD XML file.
 
     Parameters
@@ -44,9 +44,7 @@ def write_hoomdxml(structure, filename, forcefield, box, ref_distance=1.0,
     filename : str
         Path of the output file.
     box : mb.Box
-        Box information to save to XML file
-    forcefield : str, default=None
-        Name of the force field to be applied to the compound
+        Box information
     ref_distance : float, default=1.0
         Reference distance for conversion to reduced units
     ref_mass : float, default=1.0
@@ -57,8 +55,8 @@ def write_hoomdxml(structure, filename, forcefield, box, ref_distance=1.0,
         number of the rigid body with which the atom should be included.
         A value of -1 indicates the atom is not part of a rigid body.
 
-    Elements
-    --------
+    Notes
+    -----
     The following elements are always written:
 
     Position : atomic positions
@@ -91,6 +89,10 @@ def write_hoomdxml(structure, filename, forcefield, box, ref_distance=1.0,
     Dihedral : system dihedrals
     Body : rigid body to which each atom belongs
     """
+
+    forcefield = True
+    if structure[0].type == '':
+        forcefield = False
 
     xyz = np.array([[atom.xx, atom.xy, atom.xz] for atom in structure.atoms])
 

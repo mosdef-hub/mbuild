@@ -824,13 +824,10 @@ class Compound(object):
 
         # Apply a force field with foyer if specified
         if forcefield_name or forcefield_files:
-            kwargs['forcefield'] = True
             from foyer import Forcefield
             ff = Forcefield(forcefield_files=forcefield_files,
                             name=forcefield_name)
             structure = ff.apply(structure)
-        else:
-            kwargs['forcefield'] = False
 
         if box is None:
             box = self.boundingbox
@@ -847,7 +844,6 @@ class Compound(object):
         if saver:  # mBuild supported saver.
             saver(filename=filename, structure=structure, box=box, **kwargs)
         else:  # ParmEd supported saver.
-            kwargs.pop('forcefield')
             structure.save(filename, overwrite=overwrite, **kwargs)
 
     # Interface to Trajectory for reading/writing .pdb and .mol2 files.
