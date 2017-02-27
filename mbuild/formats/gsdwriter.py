@@ -156,8 +156,10 @@ def write_gsd(structure, filename, forcefield, box, ref_distance=1.0, ref_mass=1
 
     gsd.hoomd.create(filename, gsd_file)
 
+
 def _atoi(text):
     return int(text) if text.isdigit() else text
 
+
 def _natural_sort(text):
-    return [_atoi(a) for a in re.split('(\d+)',text)]
+    return [_atoi(a) for a in re.split(r'(\d+)', text)]
