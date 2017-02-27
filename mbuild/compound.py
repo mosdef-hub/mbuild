@@ -32,18 +32,21 @@ def load(filename, relative_to_module=None, compound=None, coords_only=False,
          **kwargs):
     """Load a file into an mbuild compound.
 
+    Files are read using the mdtraj package. Please refer to http://mdtraj.org/
+    1.8.0/load_functions.html for supported formats.
+
     Parameters
     ----------
     filename : str
-        Name of the file from which to load atom and bond information. Files
-        are read using the mdtraj package. Please refer to http://mdtraj.org/
-        1.8.0/load_functions.html for supported formats.
-    relative_to_module : str, optional
-        Path to the directory of the file. Default is the current working
-        directory.
-    compound : mb.Compound, optional
+        Name of the file from which to load atom and bond information.
+    relative_to_module : str, optional, default=None
+        Path to the directory of the file. By default the path to the current 
+        module will be used as found in sys.modules. This is typically used in 
+        Compound classes that will be instantiated from a different 
+        directory (such as the Compounds located in mbuild.lib). 
+    compound : mb.Compound, optional, default=None
         Existing compound to load atom and bond information into.
-    coords_only : bool, optional
+    coords_only : bool, optional, default=False
         Only load the coordinates into an existing compoint.
 
     Returns
@@ -120,11 +123,11 @@ class Compound(object):
         One or more compounds to be added to self.
     name : str, optional, default=self.__class__.__name__
         The type of Compound.
-    pos : np.ndarray, shape=(3,), dtype=float, optional
-        The position of the Compound in Cartestian space. Defaults to zeros
+    pos : np.ndarray, shape=(3,), dtype=float, optional, default=[0, 0, 0]
+        The position of the Compound in Cartestian space
     charge : float, optional, default=0.0
         Currently not used. Likely removed in next release.
-    periodicity : np.ndarray, shape=(3,), dtype=float, optional
+    periodicity : np.ndarray, shape=(3,), dtype=float, optional, default=[0, 0, 0]
         The periodic lengths of the Compound in the x, y and z directions.
         Defaults to zeros which is treated as non-periodic.
     port_particle : bool, optional, default=False
