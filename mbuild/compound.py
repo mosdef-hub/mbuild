@@ -249,14 +249,35 @@ class Compound(object):
 
     @property
     def rigid(self):
-        """Return whether or not the Compound is part of a rigid body. """
+        """Return the 'rigid' status of a Compound.
+
+        rigid() will return True if the Compound contains any particle with
+        a rigid_id != None or the rigid_id of self is != None.
+
+        Returns
+        -------
+        bool
+            True if the Compound or any successor has a rigid_id != None
+
+        """
         if (any(successor.rigid_id is not None for successor in self.successors()) or            self.rigid_id is not None):
             return True
         else:
             return False
 
     def max_rigid(self):
-        """Return the maximum rigid body ID contained in the Compound. """
+        """Return the maximum rigid body ID contained in the Compound.
+
+        This is usually used by compound.root to determine the maximum
+        rigid_id in the system as a whole.
+
+        Returns
+        -------
+        int or None
+            The maximum rigid body ID contained in the Compound. If no
+            rigid body IDs are found, None is returned
+
+        """
         if self.rigid:
             if self.children:
                 return max(successor.rigid_id for successor in self.successors() if successor.rigid_id is not None)
@@ -266,7 +287,14 @@ class Compound(object):
             return None
 
     def rigid_ids(self):
-        """Generate rigid_ids for all particles in the Compound. """
+        """Generate rigid_ids for all Particles in the Compound.
+
+        Yields
+        ------
+        int
+            The rigid_id of the next Particle in the Compound
+
+        """
         for particle in self.particles():
             yield particle.rigid_id
 
@@ -318,8 +346,10 @@ class Compound(object):
             warn("Specified 'rigid_id' > max rigid_id + 1. This will lead to inconsistent rigid body numbering. Consider running reset_rigid().")
 
     def _set_rigid_only(self, rigid_id):
-        """Treat the Compound and all successors that already have a rigid_id
-           as a single rigid body.
+        """Resets the rigid_id of all rigid Particles in a Compound
+
+        Treats the Compound and all successors that already have a rigid_id as
+        a single rigid body.
         """
         self.rigid_id = rigid_id
         for successor in self.successors():
@@ -359,10 +389,16 @@ class Compound(object):
                 rigid_id += 1
 
     def reset_rigid(self):
-        """Reorder rigid body IDs ensuring consecutiveness. """
+        """Reorder rigid body IDs ensuring consecutiveness.
+
+        Primarily used internally to ensure consecutive rigid_ids following 
+        removal of a Compound.
+
+        """
         max_rigid = self.max_rigid()
-        unique_rigid_ids = sorted(set(self.rigid_ids()))
-        unique_rigid_ids = [id for id in unique_rigid_ids if id is not None]
+        unique_rigid_ids = set(self.rigid_ids())
+        unique_rigid_ids.discard(None)
+        unique_rigid_ids = sorted(unique_rigid_ids)
         unique_rigid = len(unique_rigid_ids)
         if max_rigid and unique_rigid != max_rigid + 1:
             missing_rigid_id = (unique_rigid_ids[-1] * (unique_rigid_ids[-1] + 1))/2 - sum(unique_rigid_ids)
