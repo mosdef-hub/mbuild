@@ -953,6 +953,7 @@ class Compound(object):
         frame : int, optional, default=-1 (last)
             The frame to take coordinates from.
         coords_only : bool, optional, default=False
+            Only read coordinate information
 
         """
         if coords_only:
@@ -996,8 +997,10 @@ class Compound(object):
         ----------
         show_ports : bool, optional, default=False
             Include all port atoms when converting to trajectory.
-        chain_types :
-        residue_types :
+        chain_types : mb.Compound or list of mb.Compound
+            Chain types to add to the topology
+        residue_types : mb.Compound or list of mb.Compound
+            Residue types to add to the topology
 
         Returns
         -------
@@ -1034,13 +1037,20 @@ class Compound(object):
 
         Parameters
         ----------
-        atom_list :
-        chain_types :
-        residue_types :
+        atom_list : list of mb.Compound
+            Atoms to include in the topology
+        chain_types : mb.Compound or list of mb.Compound
+            Chain types to add to the topology
+        residue_types : mb.Compound or list of mb.Compound
+            Residue types to add to the topology
 
         Returns
         -------
         top : mdtraj.Topology
+
+        See Also
+        --------
+        mdtraj.Topology : Details on the mdtraj Topology object
 
         """
         from mdtraj.core.element import get_by_symbol
