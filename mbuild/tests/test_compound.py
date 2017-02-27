@@ -5,7 +5,7 @@ import pytest
 
 import mbuild as mb
 from mbuild.exceptions import MBuildError
-from mbuild.utils.io import get_fn, has_intermol
+from mbuild.utils.io import get_fn, has_intermol, has_foyer
 from mbuild.tests.base_test import BaseTest
 
 
@@ -17,23 +17,30 @@ class TestCompound(BaseTest):
     def test_update_from_file(self, ch3):
         ch3.update_coordinates(get_fn("methyl.pdb"))
 
-    def test_save(self):
-        methyl = mb.load(get_fn('methyl.pdb'))
+    def test_save_simple(self, ch3):
         extensions = ['.xyz', '.pdb', '.mol2']
         for ext in extensions:
             outfile = 'methyl_out' + ext
-            methyl.save(filename=outfile)
+            ch3.save(filename=outfile)
             assert os.path.exists(outfile)
 
-    def test_save_overwrite(self):
-        methyl = mb.load(get_fn('methyl.pdb'))
+    def test_save_overwrite(self, ch3):
         extensions = ['.gsd', '.hoomdxml', '.lammps', '.lmp']
         for ext in extensions:
             outfile = 'lyhtem' + ext
-            methyl.save(filename=outfile)
-            methyl.save(filename=outfile, overwrite=True)
+            ch3.save(filename=outfile)
+            ch3.save(filename=outfile, overwrite=True)
             with pytest.raises(IOError):
-                methyl.save(filename=outfile, overwrite=False)
+                ch3.save(filename=outfile, overwrite=False)
+
+    @pytest.mark.skipif(not has_foyer, reason="foyer is not installed")
+    def test_save_forcefield(self, methane):
+        exts = ['.gsd', '.hoomdxml', '.lammps', '.lmp', '.top', '.gro',
+                '.mol2', '.pdb', '.xyz']
+        for ext in exts:
+            methane.save('lythem' + ext,
+                         forcefield_name='oplsaa',
+                         overwrite=True)
 
     def test_batch_add(self, ethane, h2o):
         compound = mb.Compound()
@@ -108,6 +115,19 @@ class TestCompound(BaseTest):
         ch3.generate_bonds('H', 'H', dmin=0.01, dmax=2.0)
         assert ch3.n_bonds == 3 + 3
 
+    def test_remove_from_box(self, ethane):
+        n_ethanes = 5
+        box = mb.fill_box(ethane, n_ethanes, [3, 3, 3])
+        box.remove(box.children[3])
+
+        n_ethanes -= 1
+        assert box.n_particles == n_ethanes * ethane.n_particles
+        assert len(box.children) == n_ethanes
+        assert box.n_bonds == n_ethanes * ethane.n_bonds
+        assert len([meth.referenced_ports()
+                    for eth in box.children
+                    for meth in eth.children]) == 2 * n_ethanes
+
     def test_remove(self, ethane):
         hydrogens = ethane.particles_by_name('H')
         ethane.remove(hydrogens)
@@ -116,6 +136,39 @@ class TestCompound(BaseTest):
         assert ethane.n_bonds == 1
         for part in ethane.children:
             assert part.n_bonds == 0
+
+        carbons = ethane.particles_by_name('C')
+        ethane.remove(carbons)
+        assert ethane.n_particles == 0
+        assert ethane.n_bonds == 0
+        assert len(ethane.children) == 2
+        assert len(ethane.children[0].children) == 1  # Still contains a port
+
+    def test_remove_many(self, ethane):
+        ethane.remove([ethane.children[0], ethane.children[1]])
+
+        assert ethane.n_particles == 1
+        assert ethane._n_particles() == 0
+        assert ethane.n_bonds == 0
+        for part in ethane.children:
+            assert isinstance(part, mb.Port)
+
+    def test_remove_subcompound(self, ethane):
+        methyl = ethane.children[0]
+        ethane.remove(methyl)
+
+        assert ethane.n_particles == 4
+        assert ethane.n_bonds == 3
+        assert len(ethane.children) == 1
+        assert len(ethane.children[0].children) == 5  # Still contains a port
+
+        methyl = ethane.children[0]
+        ethane.remove(methyl)
+
+        assert ethane.n_particles == 1
+        assert ethane._n_particles() == 0
+        assert ethane.n_bonds == 0
+        assert len(ethane.children) == 0
 
     def test_remove_no_bond_graph(self):
         compound = mb.Compound()
@@ -177,7 +230,7 @@ class TestCompound(BaseTest):
 
         # Create another compound, rotate it and write it to file.
         brush2 = Brush()
-        mb.rotate_around_z(brush2, pi/2)
+        mb.rotate(brush2, pi/2, [0, 0, 1])
         brush2.save("brush2.pdb")
 
         # Load brush2.pdb into brush1, modifying the atom positions of brush1.

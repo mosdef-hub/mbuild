@@ -74,8 +74,69 @@ class TestPattern(BaseTest):
         for old, new, s in zip(oldrange, newrange, scale):
             assert(np.allclose(new, s*old, atol=1e-16))
 
-    def test_scale_vector_too_many_dimensions(self): 
+    def test_scale_vector_too_many_dimensions(self):
         pattern = mb.Random3DPattern(100, seed=1)
         scale = [3.14159, 2.71828, 0.110001, 5]
         with pytest.raises(ValueError): 
             pattern.scale(scale)
+
+    def test_scale_vector_too_many_dimensions_4points(self):
+        pattern = mb.Random3DPattern(4, seed=1)
+        scale = [3.14159, 2.71828, 0.110001, 5]
+        with pytest.raises(ValueError):
+            pattern.scale(scale)
+
+    def test_scale_vector_too_few_dimensions(self):
+        pattern = mb.Random3DPattern(100, seed=1)
+        scale = [3.14159, 2.71828]
+        with pytest.raises(ValueError):
+            pattern.scale(scale)
+
+    def test_scale_vector_too_few_dimensions_2points(self):
+        pattern = mb.Random3DPattern(2, seed=1)
+        scale = [3.14159, 2.71828]
+        with pytest.raises(ValueError):
+            pattern.scale(scale)
+
+    def test_scale_vector_too_same_N_and_d(self):
+        pattern = mb.Random3DPattern(100, seed=1)
+        scale = np.arange(100)
+        with pytest.raises(ValueError):
+            pattern.scale(scale)
+
+    def test_scale_vector_col_vector(self):
+        pattern = mb.Random3DPattern(100, seed=1)
+        scale = [[3.14159], [2.71828], [0.110001]]
+        with pytest.raises(ValueError):
+            pattern.scale(scale)
+
+    def test_scale_vector_col_vector_3points(self):
+        pattern = mb.Random3DPattern(3, seed=1)
+        scale = [[3.14159], [2.71828], [0.110001]]
+        with pytest.raises(ValueError):
+            pattern.scale(scale)
+
+    def test_scaling(self):
+        for pattern_name in mb.pattern.__all__:
+            if pattern_name not in ['Pattern']:
+                pattern = getattr(mb.pattern, pattern_name)
+                test = pattern(n=5, m=6, l=7, scale=3.0, seed=1)
+                control = pattern(n=5, m=6, l=7, seed=1)
+                control.scale(3.0)
+                assert(np.allclose(test.points, control.points, atol=1e-16))
+
+    def test_scaling_error_string(self):
+        with pytest.raises(TypeError):
+            pattern = mb.Random3DPattern(10, scale='tim')
+
+    def test_scaling_error_dict(self):
+        with pytest.raises(TypeError):
+            pattern = mb.Random3DPattern(10, scale={'name': 'tim'})
+
+    def test_scaling_error_dict(self):
+        with pytest.raises(TypeError):
+            pattern = mb.Random3DPattern(10, scale={'name': 'tim'})
+
+    def test_scaling_error_dict(self):
+        with pytest.raises(TypeError):
+            pattern = mb.Random3DPattern(10, scale={'name': 'tim'})

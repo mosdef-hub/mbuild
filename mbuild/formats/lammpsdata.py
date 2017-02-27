@@ -170,8 +170,10 @@ def write_lammpsdata(structure, filename, forcefield, box):
             for i,dihedral in enumerate(dihedrals):
                 data.write('{:d}\t{:d}\t{:d}\t{:d}\t{:d}\t{:d}\n'.format(i+1,dihedral_types[i],dihedral[0],dihedral[1],dihedral[2],dihedral[3]))
 
+
 def _atoi(text):
     return int(text) if text.isdigit() else text
 
+
 def _natural_sort(text):
-    return [_atoi(a) for a in re.split('(\d+)',text)]
+    return [_atoi(a) for a in re.split(r'(\d+)', text)]
