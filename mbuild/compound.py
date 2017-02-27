@@ -996,6 +996,8 @@ class Compound(object):
         ----------
         show_ports : bool, optional, default=False
             Include all port atoms when converting to trajectory.
+        chain_types :
+        residue_types :
 
         Returns
         -------
@@ -1038,7 +1040,7 @@ class Compound(object):
 
         Returns
         -------
-        top : mtraj.Topology
+        top : mdtraj.Topology
 
         """
         from mdtraj.core.element import get_by_symbol
@@ -1175,7 +1177,23 @@ class Compound(object):
             self.periodicity = np.array([0., 0., 0.])
 
     def to_parmed(self, title='', **kwargs):
-        """Create a ParmEd Structure from a Compound. """
+        """Create a ParmEd Structure from a Compound.
+
+        Parameters
+        ----------
+        title : str, optional, default=self.name
+            Title/name of the ParmEd Structure
+
+        Returns
+        -------
+        parmed.structure.Structure
+            ParmEd Structure object converted from self
+
+        See Also
+        --------
+        parmed.structure.Structure : Details on the ParmEd Structure object
+
+        """
         structure = pmd.Structure()
         structure.title = title if title else self.name
         atom_mapping = {}  # For creating bonds below
