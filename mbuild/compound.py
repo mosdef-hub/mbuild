@@ -40,10 +40,10 @@ def load(filename, relative_to_module=None, compound=None, coords_only=False,
     filename : str
         Name of the file from which to load atom and bond information.
     relative_to_module : str, optional, default=None
-        Path to the directory of the file. By default the path to the current 
-        module will be used as found in sys.modules. This is typically used in 
-        Compound classes that will be instantiated from a different 
-        directory (such as the Compounds located in mbuild.lib). 
+        Instead of looking in the current working directory, look for the file
+        where this module is defined. This is typically used in Compound classes
+        that will be instantiated from a different directory (such as the
+        Compounds located in mbuild.lib). 
     compound : mb.Compound, optional, default=None
         Existing compound to load atom and bond information into.
     coords_only : bool, optional, default=False
