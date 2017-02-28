@@ -82,7 +82,7 @@ class TestRigid(BaseTest):
         assert [p for p in benzene.rigid_ids()].count(0) == 12
 
     def test_set_rigid_by_name(self, benzene):
-        benzene.set_rigid(name='C')
+        benzene.set_rigid(particle_name='C')
 
         assert benzene.rigid_id is 0
         assert benzene.max_rigid_id is 0
@@ -105,7 +105,7 @@ class TestRigid(BaseTest):
 
     def test_increment_rigid_id_partial(self, benzene):
         compound = mb.Compound()
-        benzene.set_rigid(name='C')
+        benzene.set_rigid(particle_name='C')
         benzene2 = mb.clone(benzene)
         compound.add(benzene)
         compound.add(benzene2, increment_rigid=True)
@@ -207,7 +207,7 @@ class TestRigid(BaseTest):
 
     def test_fill_box_semi_rigid(self, benzene):
         n_benzenes = 10
-        benzene.set_rigid(name='C')
+        benzene.set_rigid(particle_name='C')
         filled = mb.fill_box(benzene,
                              n_compounds=n_benzenes,
                              box=[0, 0, 0, 4, 4, 4])
@@ -347,13 +347,13 @@ class TestRigid(BaseTest):
         assert all(v is 0 for v in [p for p in compound.rigid_ids()])
 
     def test_rigid_with_subcompounds4(self, benzene):
-        benzene.set_rigid(name='C')
+        benzene.set_rigid(particle_name='C')
         compound = mb.Compound(subcompounds=benzene)
         assert compound.max_rigid_id is 0
         assert len(list(compound.rigid_particles())) == 6
 
     def test_rigid_with_subcompounds5(self, benzene):
-        benzene.set_rigid(name='C')
+        benzene.set_rigid(particle_name='C')
         benzene2 = mb.clone(benzene)
         compound = mb.Compound(subcompounds=[benzene, benzene2])
 

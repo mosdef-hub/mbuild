@@ -414,7 +414,7 @@ class Compound(object):
 
         Parameters
         ----------
-        name : str, optional
+        particle_name : str, optional
             Include only particles with this name in the rigid body.
         rigid_id : int, optional
             Manually set the rigid body ID for this body.
@@ -447,7 +447,7 @@ class Compound(object):
                 rigid_id = 0
         self.rigid_id = rigid_id
         for successor in self.successors():
-            if name and successor.name != name:
+            if particle_name and successor.name != particle_name:
                 pass
             else:
                 successor.rigid_id = rigid_id
@@ -520,7 +520,7 @@ class Compound(object):
             rigid_id = 0
         for successor in self.successors():
             if successor.name == name:
-                successor.set_rigid(name=particle_name, rigid_id=rigid_id)
+                successor.set_rigid(particle_name=particle_name, rigid_id=rigid_id)
                 rigid_id += 1
 
     def reset_rigid(self):
