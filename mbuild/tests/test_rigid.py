@@ -11,15 +11,15 @@ class TestRigid(BaseTest):
     def test_load_rigid(self, rigid_benzene):
         assert rigid_benzene.rigid is True
         assert rigid_benzene.rigid_id is 0
-        assert rigid_benzene.max_rigid() is 0
-        assert len([p for p in rigid_benzene.rigid_particles()]) == 12
+        assert rigid_benzene.max_rigid_id is 0
+        assert len(list(rigid_benzene.rigid_particles())) == 12
         assert [p for p in rigid_benzene.rigid_ids()].count(0) == 12
 
     def test_load_nonrigid(self, benzene):
         assert benzene.rigid is False
         assert benzene.rigid_id is None
-        assert benzene.max_rigid() is None
-        assert len([p for p in benzene.rigid_particles()]) == 0
+        assert benzene.max_rigid_id is None
+        assert len(list(benzene.rigid_particles())) == 0
         assert [p for p in benzene.rigid_ids()].count(None) == 12
 
     def test_rigid_from_parts(self, rigid_ch):
@@ -40,8 +40,8 @@ class TestRigid(BaseTest):
 
         assert benzene.rigid is True
         assert benzene.rigid_id is None
-        assert benzene.max_rigid() is 0
-        assert len([p for p in benzene.rigid_particles()]) == 12
+        assert benzene.max_rigid_id is 0
+        assert len(list(benzene.rigid_particles())) == 12
         assert [p for p in benzene.rigid_ids()].count(0) == 12
 
     def test_rigid_from_parts2(self, rigid_ch):
@@ -62,31 +62,31 @@ class TestRigid(BaseTest):
 
         assert benzene.rigid is True
         assert benzene.rigid_id is 0
-        assert benzene.max_rigid() is 0
-        assert len([p for p in benzene.rigid_particles()]) == 12
+        assert benzene.max_rigid_id is 0
+        assert len(list(benzene.rigid_particles())) == 12
         assert [p for p in benzene.rigid_ids()].count(0) == 12
 
     def test_nonrigid_from_parts(self, benzene_from_parts):
         assert benzene_from_parts.rigid is False
         assert benzene_from_parts.rigid_id is None
-        assert benzene_from_parts.max_rigid() is None
-        assert len([p for p in benzene_from_parts.rigid_particles()]) == 0
+        assert benzene_from_parts.max_rigid_id is None
+        assert len(list(benzene_from_parts.rigid_particles())) == 0
         assert [p for p in benzene_from_parts.rigid_ids()].count(None) == 12
 
     def test_set_rigid(self, benzene):
         benzene.set_rigid()
 
         assert benzene.rigid_id is 0
-        assert benzene.max_rigid() is 0
-        assert len([p for p in benzene.rigid_particles()]) == 12
+        assert benzene.max_rigid_id is 0
+        assert len(list(benzene.rigid_particles())) == 12
         assert [p for p in benzene.rigid_ids()].count(0) == 12
 
     def test_set_rigid_by_name(self, benzene):
         benzene.set_rigid(name='C')
 
         assert benzene.rigid_id is 0
-        assert benzene.max_rigid() is 0
-        assert len([p for p in benzene.rigid_particles()]) == 6
+        assert benzene.max_rigid_id is 0
+        assert len(list(benzene.rigid_particles())) == 6
         assert [p for p in benzene.rigid_ids()].count(0) == 6
         assert [p for p in benzene.rigid_ids()].count(False) == 6
 
@@ -98,8 +98,8 @@ class TestRigid(BaseTest):
 
         assert rigid_benzene.rigid_id is 0
         assert rigid_benzene2.rigid_id is 1
-        assert compound.max_rigid() is 1
-        assert len([p for p in compound.rigid_particles()]) == 24
+        assert compound.max_rigid_id is 1
+        assert len(list(compound.rigid_particles())) == 24
         assert [p for p in compound.rigid_ids()].count(0) == 12
         assert [p for p in compound.rigid_ids()].count(1) == 12
 
@@ -112,8 +112,8 @@ class TestRigid(BaseTest):
 
         assert benzene.rigid_id is 0
         assert benzene2.rigid_id is 1
-        assert compound.max_rigid() is 1
-        assert len([p for p in compound.rigid_particles()]) == 12
+        assert compound.max_rigid_id is 1
+        assert len(list(compound.rigid_particles())) == 12
         assert [p for p in compound.rigid_ids()].count(0) == 6
         assert [p for p in compound.rigid_ids()].count(1) == 6
         assert [p for p in compound.rigid_ids()].count(None) == 12
@@ -127,7 +127,7 @@ class TestRigid(BaseTest):
 
         assert benzene.rigid_id is 0
         assert benzene2.rigid_id is None
-        assert compound.max_rigid() is 0
+        assert compound.max_rigid_id is 0
         assert [p for p in compound.rigid_ids()].count(0) == 12
         assert [p for p in compound.rigid_ids()].count(None) == 12
         assert [p for p in benzene.rigid_ids()].count(0) == 12
@@ -143,7 +143,7 @@ class TestRigid(BaseTest):
 
         assert benzene.rigid_id is 0
         assert benzene2.rigid_id is 1
-        assert compound.max_rigid() is 1
+        assert compound.max_rigid_id is 1
         assert [p for p in compound.rigid_ids()].count(0) == 12
         assert [p for p in compound.rigid_ids()].count(1) == 12
         assert [p for p in benzene.rigid_ids()].count(0) == 12
@@ -158,7 +158,7 @@ class TestRigid(BaseTest):
 
         assert benzene.rigid_id is 0
         assert benzene2.rigid_id is 0
-        assert compound.max_rigid() is 0
+        assert compound.max_rigid_id is 0
         assert [p for p in compound.rigid_ids()].count(0) == 24
         assert [p for p in benzene.rigid_ids()].count(0) == 12
         assert [p for p in benzene2.rigid_ids()].count(0) == 12
@@ -173,7 +173,7 @@ class TestRigid(BaseTest):
 
         assert benzene.rigid_id is 0
         assert benzene2.rigid_id is 1
-        assert compound.max_rigid() is 1
+        assert compound.max_rigid_id is 1
         assert [p for p in compound.rigid_ids()].count(0) == 12
         assert [p for p in compound.rigid_ids()].count(1) == 12
         assert [p for p in benzene.rigid_ids()].count(0) == 12
@@ -189,7 +189,7 @@ class TestRigid(BaseTest):
 
         assert benzene.rigid_id is 0
         assert benzene2.rigid_id is 1
-        assert compound.max_rigid() is 1
+        assert compound.max_rigid_id is 1
         assert [p for p in compound.rigid_ids()].count(0) == 6
         assert [p for p in compound.rigid_ids()].count(1) == 6
         assert [p for p in compound.rigid_ids()].count(None) == 12
@@ -202,8 +202,8 @@ class TestRigid(BaseTest):
                              n_compounds=n_benzenes,
                              box=[0, 0, 0, 4, 4, 4])
 
-        assert filled.max_rigid() == n_benzenes - 1
-        assert len([p for p in filled.rigid_particles()]) == n_benzenes * rigid_benzene.n_particles
+        assert filled.max_rigid_id == n_benzenes - 1
+        assert len(list(filled.rigid_particles())) == n_benzenes * rigid_benzene.n_particles
 
     def test_fill_box_semi_rigid(self, benzene):
         n_benzenes = 10
@@ -212,19 +212,19 @@ class TestRigid(BaseTest):
                              n_compounds=n_benzenes,
                              box=[0, 0, 0, 4, 4, 4])
 
-        assert filled.max_rigid() == n_benzenes - 1
-        assert len([p for p in filled.rigid_particles()]) == n_benzenes * 6
+        assert filled.max_rigid_id == n_benzenes - 1
+        assert len(list(filled.rigid_particles())) == n_benzenes * 6
 
     def test_set_create_rigid_bodies_after_fill(self, benzene):
         n_benzenes = 10
-        benzene.name= 'Benzene'
+        benzene.name = 'Benzene'
         filled = mb.fill_box(benzene,
                              n_compounds=n_benzenes,
                              box=[0, 0, 0, 4, 4, 4])
         filled.create_rigid_bodies(name='Benzene')
 
-        assert filled.max_rigid() == n_benzenes - 1
-        assert len([p for p in filled.rigid_particles()]) == n_benzenes * benzene.n_particles
+        assert filled.max_rigid_id == n_benzenes - 1
+        assert len(list(filled.rigid_particles())) == n_benzenes * benzene.n_particles
 
     def test_set_create_rigid_bodies_duplicate_warn(self, rigid_benzene):
         with pytest.warns(UserWarning):
@@ -243,8 +243,8 @@ class TestRigid(BaseTest):
                              box=[0, 0, 0, 4, 4, 4])
         filled.create_rigid_bodies(name='Benzene', particle_name='C')
 
-        assert filled.max_rigid() == n_benzenes - 1
-        assert len([p for p in filled.rigid_particles()]) == n_benzenes * 6
+        assert filled.max_rigid_id == n_benzenes - 1
+        assert len(list(filled.rigid_particles())) == n_benzenes * 6
 
     def test_create_semi_rigid_bodies_hierarchy(self, benzene_from_parts):
         n_benzenes = 10
@@ -254,8 +254,8 @@ class TestRigid(BaseTest):
                              box=[0, 0, 0, 4, 4, 4])
         filled.create_rigid_bodies(name='Benzene', particle_name='C')
 
-        assert filled.max_rigid() == n_benzenes - 1
-        assert len([p for p in filled.rigid_particles()]) == n_benzenes * 6
+        assert filled.max_rigid_id == n_benzenes - 1
+        assert len(list(filled.rigid_particles())) == n_benzenes * 6
 
     def test_create_semi_rigid_bodies_hierarchy2(self, benzene_from_parts):
         n_benzenes = 10
@@ -267,8 +267,8 @@ class TestRigid(BaseTest):
         compound = mb.Compound(subcompounds=[filled, filled2])
         compound.create_rigid_bodies(name='Benzene', particle_name='C')
 
-        assert compound.max_rigid() == (n_benzenes*2) - 1
-        assert len([p for p in compound.rigid_particles()]) == n_benzenes * 2 * 6
+        assert compound.max_rigid_id == (n_benzenes*2) - 1
+        assert len(list(compound.rigid_particles())) == n_benzenes * 2 * 6
 
     def test_create_semi_rigid_bodies_hierarchy3(self, benzene_from_parts):
         n_benzenes = 10
@@ -280,8 +280,8 @@ class TestRigid(BaseTest):
         filled2 = mb.clone(filled)
         filled.add(filled2)
 
-        assert filled.max_rigid() == (n_benzenes*2) - 1
-        assert len([p for p in filled.rigid_particles()]) == n_benzenes * 2 * 6
+        assert filled.max_rigid_id == (n_benzenes*2) - 1
+        assert len(list(filled.rigid_particles())) == n_benzenes * 2 * 6
         assert [p for p in filled.rigid_ids()].count(1) == 6
 
     def test_create_semi_rigid_bodies_hierarchy4(self, benzene_from_parts):
@@ -294,8 +294,8 @@ class TestRigid(BaseTest):
         filled2 = mb.clone(filled)
         filled.add(filled2, increment_rigid=False)
 
-        assert filled.max_rigid() == n_benzenes - 1
-        assert len([p for p in filled.rigid_particles()]) == n_benzenes * 2 * 6
+        assert filled.max_rigid_id == n_benzenes - 1
+        assert len(list(filled.rigid_particles())) == n_benzenes * 2 * 6
         assert [p for p in filled.rigid_ids()].count(1) == 12
 
     def test_delete_body(self, rigid_benzene):
@@ -305,8 +305,8 @@ class TestRigid(BaseTest):
                              box=[0, 0, 0, 4, 4, 4])
         filled.remove(filled.children[0])
 
-        assert filled.max_rigid() == n_benzenes - 2
-        assert len([p for p in filled.rigid_particles()]) == (n_benzenes - 1) * rigid_benzene.n_particles
+        assert filled.max_rigid_id == n_benzenes - 2
+        assert len(list(filled.rigid_particles())) == (n_benzenes - 1) * rigid_benzene.n_particles
 
     def test_delete_body_semi_rigid(self, benzene):
         n_benzenes = 10
@@ -317,15 +317,15 @@ class TestRigid(BaseTest):
         filled.create_rigid_bodies(name='Benzene', particle_name='C')
         filled.remove(filled.children[0])
 
-        assert filled.max_rigid() == n_benzenes - 2
-        assert len([p for p in filled.rigid_particles()]) == (n_benzenes - 1) * 6
+        assert filled.max_rigid_id == n_benzenes - 2
+        assert len(list(filled.rigid_particles())) == (n_benzenes - 1) * 6
 
     def test_rigid_with_subcompounds1(self, benzene):
         compound = mb.Compound(subcompounds=benzene, rigid=True)
         assert compound.rigid is True
         assert benzene.rigid_id is 0
-        assert compound.max_rigid() is 0
-        assert len([p for p in compound.rigid_particles()]) == 12
+        assert compound.max_rigid_id is 0
+        assert len(list(compound.rigid_particles())) == 12
         assert all(v is 0 for v in [p for p in compound.rigid_ids()])
 
     def test_rigid_with_subcompounds2(self, benzene):
@@ -335,22 +335,22 @@ class TestRigid(BaseTest):
         assert compound.rigid is True
         assert benzene.rigid_id is 0
         assert benzene2.rigid_id is 0
-        assert len([p for p in compound.rigid_particles()]) == 24
+        assert len(list(compound.rigid_particles())) == 24
         assert [p for p in compound.rigid_ids()].count(0) == 24
         assert [p for p in benzene.rigid_ids()].count(0) == 12
         assert [p for p in benzene2.rigid_ids()].count(0) == 12
 
     def test_rigid_with_subcompounds3(self, rigid_benzene):
         compound = mb.Compound(subcompounds=rigid_benzene)
-        assert compound.max_rigid() is 0
-        assert len([p for p in compound.rigid_particles()]) == 12
+        assert compound.max_rigid_id is 0
+        assert len(list(compound.rigid_particles())) == 12
         assert all(v is 0 for v in [p for p in compound.rigid_ids()])
 
     def test_rigid_with_subcompounds4(self, benzene):
         benzene.set_rigid(name='C')
         compound = mb.Compound(subcompounds=benzene)
-        assert compound.max_rigid() is 0
-        assert len([p for p in compound.rigid_particles()]) == 6
+        assert compound.max_rigid_id is 0
+        assert len(list(compound.rigid_particles())) == 6
 
     def test_rigid_with_subcompounds5(self, benzene):
         benzene.set_rigid(name='C')
@@ -359,7 +359,7 @@ class TestRigid(BaseTest):
 
         assert benzene.rigid_id is 0
         assert benzene2.rigid_id is 1
-        assert compound.max_rigid() is 1
-        assert len([p for p in compound.rigid_particles()]) == 12
+        assert compound.max_rigid_id is 1
+        assert len(list(compound.rigid_particles())) == 12
         assert [p for p in compound.rigid_ids()].count(0) == 6
         assert [p for p in compound.rigid_ids()].count(1) == 6

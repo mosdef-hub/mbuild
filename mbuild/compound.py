@@ -125,8 +125,9 @@ class Compound(object):
     ----------
     subcompounds : mb.Compound or list of mb.Compound, optional, default=None
         One or more compounds to be added to self.
-        If subcompound(s) are rigid bodies (i.e. subcompound.rigid == True),
-        the rigid body ID (rigid_id) will be incremented for each subcompound.
+        The rigid body IDs (rigid_id) of each subcompound where subcompound.rigid
+        == True will be reset such that they are sequential starting from 0, with
+        a unique rigid_id provided to each subcompound.
     name : str, optional, default=self.__class__.__name__
         The type of Compound.
     pos : np.ndarray, shape=(3,), dtype=float, optional, default=[0, 0, 0]
@@ -161,6 +162,7 @@ class Compound(object):
         Integer ID of the rigid body the Compound is associated with.
     boundingbox
     center
+    max_rigid_id
     n_particles
     n_bonds
     root
@@ -347,13 +349,15 @@ class Compound(object):
             True if the Compound or any successor has a rigid_id != None
 
         """
-        if (any(successor.rigid_id is not None for successor in self.successors()) or            self.rigid_id is not None):
+        if (any(successor.rigid_id is not None for successor in self.successors()) or 
+            self.rigid_id is not None):
             return True
         else:
             return False
 
-    def max_rigid(self):
-        """Return the maximum rigid body ID contained in the Compound.
+    @property
+    def max_rigid_id(self):
+        """Returns the maximum rigid body ID contained in the Compound.
 
         This is usually used by compound.root to determine the maximum
         rigid_id in the system as a whole.
@@ -367,7 +371,8 @@ class Compound(object):
         """
         if self.rigid:
             if self.children:
-                return max(successor.rigid_id for successor in self.successors() if successor.rigid_id is not None)
+                return max(successor.rigid_id for successor in self.successors() 
+                           if successor.rigid_id is not None)
             else:
                 return self.rigid_id
         else:
@@ -398,14 +403,14 @@ class Compound(object):
             if particle.rigid_id is not None:
                 yield particle
 
-    def set_rigid(self, name=False, rigid_id=None):
+    def set_rigid(self, particle_name=False, rigid_id=None):
         """Treat the Compound and all successors as a single rigid body.
 
         Provides a unique rigid body ID to a Compound and its successors.
-        If 'name' is specified, only sucessors with this name are provided
-        with a rigid_id.  This is useful for Compounds where only some of
-        the particles should be rigid (such as a tethered nanoparticle with
-        a rigid core).
+        If 'particle_name' is specified, only sucessors with this name are
+        provided with a rigid_id.  This is useful for Compounds where only
+        some of the particles should be rigid (such as a tethered nanoparticle
+        with a rigid core).
 
         Parameters
         ----------
@@ -417,10 +422,27 @@ class Compound(object):
             rigid body ID's and manually overriding this can lead to 
             unwanted behavior.
 
+        Examples
+        --------
+        Creating a rigid benzene
+
+        >>>import mbuild as mb
+        >>>from mbuild.utils.io import get_fn
+        >>>benzene = mb.load(get_fn('benzene.mol2'))
+        >>>benzene.set_rigid()
+
+        Creating a semi-rigid benzene, where only the carbons are treated as
+        a rigid body
+
+        >>>import mbuild as mb
+        >>>from mbuild.utils.io import get_fn
+        >>>benzene = mb.load(get_fn('benzene.mol2'))
+        >>>benzene.set_rigid(particle_name='C')
+
         """
         if rigid_id is None:
-            if self.root.max_rigid() is not None:
-                rigid_id = self.root.max_rigid() + 1
+            if self.root.max_rigid_id is not None:
+                rigid_id = self.root.max_rigid_id + 1
             else:
                 rigid_id = 0
         self.rigid_id = rigid_id
@@ -429,10 +451,10 @@ class Compound(object):
                 pass
             else:
                 successor.rigid_id = rigid_id
-        if rigid_id and rigid_id > self.root.max_rigid() + 1:
+        if rigid_id and rigid_id > self.root.max_rigid_id + 1:
             warn("Specified 'rigid_id' > max rigid_id + 1. This will lead to inconsistent rigid body numbering. Consider running reset_rigid().")
 
-    def _set_rigid_only(self, rigid_id):
+    def _reset_rigid_ids(self, rigid_id):
         """Resets the rigid_id of all rigid Particles in a Compound
 
         Treats the Compound and all successors that already have a rigid_id as
@@ -464,10 +486,36 @@ class Compound(object):
             Each Compound with this name is provided a unique rigid body ID.
         particle_name : str, optional
             Include only particles with this name in rigid bodies.
+
+        Examples
+        --------
+        Creating a box of rigid benzenes
+        
+        >>>import mbuild as mb
+        >>>from mbuild.utils.io import get_fn
+        >>>benzene = mb.load(get_fn('benzene.mol2'))
+        >>>benzene.name = 'Benzene'
+        >>>filled = mb.fill_box(benzene,
+        ...                     n_compounds=10,
+        ...                     box=[0, 0, 0, 4, 4, 4])
+        >>>filled.create_rigid_bodies(name='Benzene')
+
+        Creating a box of semi-rigid benzenes, where only the carbon portion of
+        each benzene molecule is treated as a rigid body
+
+        >>>import mbuild as mb
+        >>>from mbuild.utils.io import get_fn
+        >>>benzene = mb.load(get_fn('benzene.mol2'))
+        >>>benzene.name = 'Benzene'
+        >>>filled = mb.fill_box(benzene,
+        ...                     n_compounds=10,
+        ...                     box=[0, 0, 0, 4, 4, 4])
+        >>>filled.create_rigid_bodies(name='Benzene', particle_name='C')
+
         """
-        if self.root.max_rigid() is not None:
-            rigid_id = self.root.max_rigid() + 1
-            warn("Rigid bodies already exist. Incrementing 'rigid_id' from {}".format(self.root.max_rigid()))
+        if self.root.max_rigid_id is not None:
+            rigid_id = self.root.max_rigid_id + 1
+            warn("Rigid bodies already exist. Incrementing 'rigid_id' from {}".format(self.root.max_rigid_id))
         else:
             rigid_id = 0
         for successor in self.successors():
@@ -482,7 +530,7 @@ class Compound(object):
         removal of a Compound.
 
         """
-        max_rigid = self.max_rigid()
+        max_rigid = self.max_rigid_id
         unique_rigid_ids = set(self.rigid_ids())
         unique_rigid_ids.discard(None)
         unique_rigid_ids = sorted(unique_rigid_ids)
@@ -539,16 +587,16 @@ class Compound(object):
         if not new_child.port_particle:
             if new_child.rigid is not False:
                 if increment_rigid:
-                    if self.root.max_rigid() is not None:
-                        max_rigid = self.root.max_rigid()
-                        new_child._set_rigid_only(max_rigid + 1)
+                    if self.root.max_rigid_id is not None:
+                        max_rigid = self.root.max_rigid_id
+                        new_child._reset_rigid_ids(max_rigid + 1)
                     else:
-                        new_child._set_rigid_only(0)
+                        new_child._reset_rigid_ids(0)
                 else:
                     if self.rigid_id is not None:
-                        new_child._set_rigid_only(self.rigid_id)
+                        new_child._reset_rigid_ids(self.rigid_id)
                     else:
-                        new_child._set_rigid_only(0)
+                        new_child._reset_rigid_ids(0)
 
         # Create children and labels on the first add operation
         if self.children is None:
@@ -616,7 +664,7 @@ class Compound(object):
             return
 
         any_rigid = False
-        if any(obj.max_rigid() is not None for obj in objs_to_remove):
+        if any(obj.max_rigid_id is not None for obj in objs_to_remove):
             any_rigid = True
 
         remove_from_here = objs_to_remove.intersection(self.children)
