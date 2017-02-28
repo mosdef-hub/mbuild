@@ -8,7 +8,7 @@ import numpy as np
 from .hoomdxml import RB_to_OPLS
 from collections import OrderedDict
 
-def write_lammpsdata(structure, filename, forcefield, box):
+def write_lammpsdata(structure, filename, box):
     """Output a LAMMPS data file.
     
     Note: Output supports 'real' units and 'full' atom style only.
@@ -19,11 +19,13 @@ def write_lammpsdata(structure, filename, forcefield, box):
         Parmed structure object
     filename : str
         Path of the output file
-    forcefield : str
-        Name of the force field to be applied to the compound
     box : mb.Box
         Box information to save to data file
     """
+
+    forcefield = True
+    if structure[0].type == '':
+        forcefield = False
 
     # Convert box units from nm to angstroms
     box.maxs *= 10.
