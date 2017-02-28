@@ -308,6 +308,16 @@ class TestRigid(BaseTest):
         assert filled.max_rigid_id == n_benzenes - 2
         assert len(list(filled.rigid_particles())) == (n_benzenes - 1) * rigid_benzene.n_particles
 
+    def test_delete_body_multiple(self, rigid_benzene):
+        n_benzenes = 10
+        filled = mb.fill_box(rigid_benzene,
+                             n_compounds=n_benzenes,
+                             box=[0, 0, 0, 4, 4, 4])
+        filled.remove([filled.children[0], filled.children[1]])
+
+        assert filled.max_rigid_id == n_benzenes - 3
+        assert len(list(filled.rigid_particles())) == (n_benzenes - 2) * rigid_benzene.n_particles
+
     def test_delete_body_semi_rigid(self, benzene):
         n_benzenes = 10
         benzene.name = 'Benzene'
@@ -371,3 +381,24 @@ class TestRigid(BaseTest):
         assert benzene_from_parts.max_rigid_id is 0
         assert len(list(benzene_from_parts.rigid_particles())) == 12
         assert [p for p in benzene_from_parts.rigid_ids()].count(0) == 12
+
+    def test_set_rigid_warn_large_id(self, benzene):
+        n_benzenes = 10
+        benzene.name = 'Benzene'
+        filled = mb.fill_box(benzene,
+                             n_compounds=n_benzenes,
+                             box=[0, 0, 0, 4, 4, 4])
+        filled.create_rigid_bodies(name='Benzene')
+        with pytest.warns(UserWarning):
+            filled.children[0].set_rigid(rigid_id=12)
+
+    def test_save_non_sequential_rigid_ids(self, benzene):
+        n_benzenes = 10
+        benzene.name = 'Benzene'
+        filled = mb.fill_box(benzene,
+                             n_compounds=n_benzenes,
+                             box=[0, 0, 0, 4, 4, 4])
+        filled.create_rigid_bodies(name='Benzene')
+        filled.children[0].set_rigid(rigid_id=3)
+        with pytest.warns(UserWarning):
+            filled.save('benzene-box.hoomdxml')

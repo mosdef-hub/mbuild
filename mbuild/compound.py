@@ -440,6 +440,11 @@ class Compound(object):
         >>> benzene.set_rigid(name='C')
 
         """
+        if rigid_id and rigid_id > self.root.max_rigid_id + 1:
+            warn("Specified 'rigid_id' > max rigid_id + 1. This will lead to "
+                 "inconsistent rigid body numbering. Consider running "
+                 "reset_rigid().")
+
         if rigid_id is None:
             if self.root.max_rigid_id is not None:
                 rigid_id = self.root.max_rigid_id + 1
@@ -454,8 +459,6 @@ class Compound(object):
                     successor.set_rigid(rigid_id=rigid_id)
                 else:
                     successor.rigid_id = rigid_id
-        if rigid_id and rigid_id > self.root.max_rigid_id + 1:
-            warn("Specified 'rigid_id' > max rigid_id + 1. This will lead to inconsistent rigid body numbering. Consider running reset_rigid().")
 
     def _reset_rigid_ids(self, rigid_id):
         """Resets the rigid_id of all rigid Particles in a Compound
@@ -518,7 +521,8 @@ class Compound(object):
         """
         if self.root.max_rigid_id is not None:
             rigid_id = self.root.max_rigid_id + 1
-            warn("Rigid bodies already exist. Incrementing 'rigid_id' from {}".format(self.root.max_rigid_id))
+            warn("Rigid bodies already exist. Incrementing 'rigid_id' "
+                 "from {}".format(self.root.max_rigid_id))
         else:
             rigid_id = 0
         for successor in self.successors():
@@ -1104,6 +1108,15 @@ class Compound(object):
                     box.maxs[dim] += 0.25
                     box.mins[dim] -= 0.25
                     box.lengths[dim] += 0.5
+
+        # Provide a warning if rigid_ids are not sequential from 0
+        if any(id is not None for id in self.rigid_ids()):
+            unique_rigid_ids = set(self.rigid_ids())
+            unique_rigid_ids.discard(None)
+            unique_rigid_ids = sorted(unique_rigid_ids)
+            if(min(unique_rigid_ids) != 0 or
+               max(unique_rigid_ids) != len(unique_rigid_ids) + 1):
+                warn("Unique rigid body IDs are not sequential starting from zero.")
 
         if saver:  # mBuild supported saver.
             if extension in ['.hoomdxml']:
