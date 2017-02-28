@@ -25,7 +25,7 @@ from mbuild.formats.lammpsdata import write_lammpsdata
 from mbuild.formats.gsdwriter import write_gsd
 from mbuild.periodic_kdtree import PeriodicCKDTree
 from mbuild.utils.io import run_from_ipython, import_
-from mbuild.coordinate_transform import (_translate, _rotate)
+from mbuild.coordinate_transform import _translate, _rotate
 
 
 def load(filename, relative_to_module=None, compound=None, coords_only=False,

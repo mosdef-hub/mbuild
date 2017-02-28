@@ -345,10 +345,10 @@ class TestCoordinateTransform(BaseTest):
         shifted.translate([5, 4, 3])
         shifted_methane_coords = mb.coordinate_transform._translate(
                 methane.xyz, [5, 4, 3])
-        assert(np.array_equal(shifted_methane_coords, shifted.xyz))
+        assert np.array_equal(shifted_methane_coords, shifted.xyz)
 
     def test_different_translate_tos(self, methane):
         shifted = mb.clone(methane)
         shifted.translate_to([0, 0, 0])
         x = mb.coordinate_transform._translate_to(methane.xyz, [0, 0, 0])
-        assert(np.array_equal(shifted.xyz, x))
+        assert np.array_equal(shifted.xyz, x)

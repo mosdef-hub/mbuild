@@ -472,7 +472,7 @@ def _rotate(coordinates, theta, around):
 
     """
     around = np.asarray(around).reshape(3)
-    if(np.array_equal(around, np.zeros(3))):
+    if np.array_equal(around, np.zeros(3)):
         raise ValueError('Cannot rotate around a zero vector')
     return Rotation(theta, around).apply_to(coordinates)
 
