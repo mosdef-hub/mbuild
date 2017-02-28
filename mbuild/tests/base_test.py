@@ -121,6 +121,7 @@ class BaseTest:
     @pytest.fixture
     def rigid_ch(self):
         ch = mb.load(get_fn('ch.mol2'), rigid=True)
+        ch.name = 'CH'
         mb.translate(ch, -ch[0].pos)    
         ch.add(mb.Port(anchor=ch[0]), 'a')
         mb.translate(ch['a'], [0, 0.07, 0]) 

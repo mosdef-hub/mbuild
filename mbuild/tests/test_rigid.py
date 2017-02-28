@@ -9,18 +9,16 @@ from mbuild.utils.io import get_fn
 class TestRigid(BaseTest):
 
     def test_load_rigid(self, rigid_benzene):
-        assert rigid_benzene.rigid is True
-        assert rigid_benzene.rigid_id is 0
+        assert rigid_benzene.contains_rigid is True
+        assert rigid_benzene.rigid_id is None
         assert rigid_benzene.max_rigid_id is 0
-        assert len(list(rigid_benzene.rigid_particles())) == 12
-        assert [p for p in rigid_benzene.rigid_ids()].count(0) == 12
+        assert len(list(rigid_benzene.rigid_particles(body=0))) == 12
 
     def test_load_nonrigid(self, benzene):
-        assert benzene.rigid is False
+        assert benzene.contains_rigid is False
         assert benzene.rigid_id is None
         assert benzene.max_rigid_id is None
         assert len(list(benzene.rigid_particles())) == 0
-        assert [p for p in benzene.rigid_ids()].count(None) == 12
 
     def test_rigid_from_parts(self, rigid_ch):
         benzene = mb.Compound()
@@ -38,13 +36,33 @@ class TestRigid(BaseTest):
         carbons = [p for p in benzene.particles_by_name('C')]
         benzene.add_bond((carbons[0],carbons[-1]))
 
-        assert benzene.rigid is True
+        assert benzene.contains_rigid is True
         assert benzene.rigid_id is None
         assert benzene.max_rigid_id is 0
-        assert len(list(benzene.rigid_particles())) == 12
-        assert [p for p in benzene.rigid_ids()].count(0) == 12
+        assert len(list(benzene.rigid_particles(body=0))) == 12
 
     def test_rigid_from_parts2(self, rigid_ch):
+        benzene = mb.Compound(rigid=True)
+        benzene.add(rigid_ch)
+        current = rigid_ch
+
+        for _ in range(5):
+            ch_new = mb.clone(rigid_ch)
+            mb.force_overlap(move_this=ch_new,
+                             from_positions=ch_new['a'],
+                             to_positions=current['b'])
+            current = ch_new
+            benzene.add(ch_new, increment_rigid=False)
+
+        carbons = [p for p in benzene.particles_by_name('C')]
+        benzene.add_bond((carbons[0],carbons[-1]))
+
+        assert benzene.contains_rigid is True
+        assert benzene.rigid_id is None
+        assert benzene.max_rigid_id is 0
+        assert len(list(benzene.rigid_particles(body=0))) == 12
+
+    def test_rigid_from_parts3(self, rigid_ch):
         benzene = mb.Compound(rigid=True)
         benzene.add(rigid_ch, increment_rigid=False)
         current = rigid_ch
@@ -60,21 +78,41 @@ class TestRigid(BaseTest):
         carbons = [p for p in benzene.particles_by_name('C')]
         benzene.add_bond((carbons[0],carbons[-1]))
 
-        assert benzene.rigid is True
-        assert benzene.rigid_id is 0
+        assert benzene.contains_rigid is True
+        assert benzene.rigid_id is None
         assert benzene.max_rigid_id is 0
-        assert len(list(benzene.rigid_particles())) == 12
-        assert [p for p in benzene.rigid_ids()].count(0) == 12
+        assert len(list(benzene.rigid_particles(body=0))) == 12
+
+    def test_rigid_from_parts4(self, rigid_ch):
+        benzene = mb.Compound(rigid=True)
+        benzene.add(rigid_ch)
+        current = rigid_ch
+
+        for _ in range(5):
+            ch_new = mb.clone(rigid_ch)
+            mb.force_overlap(move_this=ch_new,
+                             from_positions=ch_new['a'],
+                             to_positions=current['b'])
+            current = ch_new
+            benzene.add(ch_new)
+
+        carbons = [p for p in benzene.particles_by_name('C')]
+        benzene.add_bond((carbons[0],carbons[-1]))
+
+        assert benzene.contains_rigid is True
+        assert benzene.rigid_id is None
+        assert benzene.max_rigid_id is 5
+        for body in range(6):
+            assert len(list(benzene.rigid_particles(body=body))) == 2
 
     def test_nonrigid_from_parts(self, benzene_from_parts):
-        assert benzene_from_parts.rigid is False
+        assert benzene_from_parts.contains_rigid is False
         assert benzene_from_parts.rigid_id is None
         assert benzene_from_parts.max_rigid_id is None
         assert len(list(benzene_from_parts.rigid_particles())) == 0
-        assert [p for p in benzene_from_parts.rigid_ids()].count(None) == 12
 
-    def test_set_rigid(self, benzene):
-        benzene.set_rigid()
+    def test_label_rigid_bodies_single(self, benzene):
+        benzene.label_rigid_bodies(distinct_bodies='Benzene')
 
         assert benzene.rigid_id is 0
         assert benzene.max_rigid_id is 0

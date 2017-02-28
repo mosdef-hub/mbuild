@@ -27,7 +27,6 @@ from mbuild.periodic_kdtree import PeriodicCKDTree
 from mbuild.utils.io import run_from_ipython, import_
 
 
-
 def load(filename, relative_to_module=None, compound=None, coords_only=False,
          rigid=False, **kwargs):
     """Load a file into an mbuild compound.
