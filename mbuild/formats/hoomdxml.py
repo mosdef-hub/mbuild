@@ -28,15 +28,15 @@ def RB_to_OPLS(c0, c1, c2, c3, c4, c5):
     f3 = -0.5 * c3
     f4 = -0.25 * c4
 
-    opls_coeffs = np.array([f1,f2,f3,f4])
+    opls_coeffs = np.array([f1, f2, f3, f4])
 
     return opls_coeffs
 
 
-def write_hoomdxml(structure, filename, forcefield, box, rigid_bodies,
-                   ref_distance=1.0, ref_mass=1.0, ref_energy=1.0):
+def write_hoomdxml(structure, filename, box, rigid_bodies, ref_distance=1.0,
+                   ref_mass=1.0, ref_energy=1.0):
     """Output a HOOMD XML file.
-    
+
     Parameters
     ----------
     structure : parmed.Structure
@@ -44,9 +44,7 @@ def write_hoomdxml(structure, filename, forcefield, box, rigid_bodies,
     filename : str
         Path of the output file.
     box : mb.Box
-        Box information to save to XML file
-    forcefield : str, default=None
-        Name of the force field to be applied to the compound
+        Box information
     ref_distance : float, default=1.0
         Reference distance for conversion to reduced units
     ref_mass : float, default=1.0
@@ -57,8 +55,8 @@ def write_hoomdxml(structure, filename, forcefield, box, rigid_bodies,
         which the atom should be included. A value of None indicates the
         atom is not part of any rigid body.
 
-    Elements
-    --------
+    Notes
+    -----
     The following elements are always written:
 
     Position : atomic positions
@@ -92,6 +90,10 @@ def write_hoomdxml(structure, filename, forcefield, box, rigid_bodies,
     Body : rigid body to which each atom belongs
     """
 
+    forcefield = True
+    if structure[0].type == '':
+        forcefield = False
+
     xyz = np.array([[atom.xx, atom.xy, atom.xz] for atom in structure.atoms])
 
     # Center box at origin and remap coordinates into box
@@ -100,7 +102,7 @@ def write_hoomdxml(structure, filename, forcefield, box, rigid_bodies,
     box_init = deepcopy(box)
     box.mins = np.array([-d/2 for d in box_init.lengths])
     box.maxs = np.array([d/2 for d in box_init.lengths])
-    
+
     shift = [box_init.maxs[i] - max for i, max in enumerate(box.maxs)]
     for i, pos in enumerate(xyz):
         for j, coord in enumerate(pos):
@@ -113,13 +115,13 @@ def write_hoomdxml(structure, filename, forcefield, box, rigid_bodies,
         xml_file.write('<hoomd_xml version="1.2">\n')
         xml_file.write('<configuration time_step="0">\n')
         xml_file.write('<box units="sigma"  Lx="{}" Ly="{}" Lz="{}"/>\n'.format(*box.lengths/ref_distance))
-    
+
         xml_file.write('<position units="sigma" num="{}">\n'.format(len(structure.atoms)))
 
         for pos in xyz:
             xml_file.write('{}\t{}\t{}\n'.format(*pos/ref_distance))
         xml_file.write('</position>\n')
-        
+
         if forcefield:
             types = [atom.type for atom in structure.atoms]
         else:
@@ -134,9 +136,9 @@ def write_hoomdxml(structure, filename, forcefield, box, rigid_bodies,
         for mass in masses:
             if mass == 0:
                 mass = 1.0
-            xml_file.write('{}\n'.format(mass/ref_mass)) 
+            xml_file.write('{}\n'.format(mass/ref_mass))
         xml_file.write('</mass>\n')
-        
+
         charges = [atom.charge for atom in structure.atoms]
         xml_file.write('<charge>\n')
         for charge in charges:
@@ -144,48 +146,52 @@ def write_hoomdxml(structure, filename, forcefield, box, rigid_bodies,
         xml_file.write('</charge>\n')
 
         if forcefield:
-            pair_coeffs = list(set((atom.type,atom.epsilon,atom.sigma) for atom in structure.atoms))
+            pair_coeffs = list(set((atom.type,
+                                    atom.epsilon,
+                                    atom.sigma) for atom in structure.atoms))
             pair_coeffs.sort(key=lambda pair_type: pair_type[0])
             xml_file.write('<pair_coeffs>\n')
             for param_set in pair_coeffs:
-                xml_file.write('{}\t{:.4f}\t{:.4f}\n'.format(param_set[0],param_set[1]/ref_energy,param_set[2]/ref_distance))
+                xml_file.write('{}\t{:.4f}\t{:.4f}\n'.format(param_set[0], param_set[1]/ref_energy,
+                                                             param_set[2]/ref_distance))
             xml_file.write('</pair_coeffs>\n')
 
-        bonds = [[bond.atom1.idx, bond.atom2.idx] for bond in structure.bonds] 
+        bonds = [[bond.atom1.idx, bond.atom2.idx] for bond in structure.bonds]
         if bonds:
             if len(structure.bond_types) == 0:
-                bond_types = np.zeros(len(bonds),dtype=int)
+                bond_types = np.zeros(len(bonds), dtype=int)
             else:
-                unique_bond_types = dict(enumerate(set([(round(bond.type.k,3),
-                                                         round(bond.type.req,3)) for bond in structure.bonds])))
-                unique_bond_types = {y:x for x,y in unique_bond_types.items()}
-                bond_types = [unique_bond_types[(round(bond.type.k,3),
-                                                 round(bond.type.req,3))] for bond in structure.bonds]
+                unique_bond_types = dict(enumerate(set([(round(bond.type.k, 3),
+                                                         round(bond.type.req, 3)) for bond in structure.bonds])))
+                unique_bond_types = {y: x for x, y in unique_bond_types.items()}
+                bond_types = [unique_bond_types[(round(bond.type.k, 3),
+                                                 round(bond.type.req, 3))] for bond in structure.bonds]
                 xml_file.write('<bond_coeffs>\n')
-                for params,idx in unique_bond_types.items():
-                    xml_file.write('{}\t{}\t{}\n'.format(idx,((params[0]*2.)/ref_energy)*(ref_distance**2.),params[1]/ref_distance))
+                for params, idx in unique_bond_types.items():
+                    xml_file.write('{}\t{}\t{}\n'.format(idx, ((params[0]*2.) / ref_energy)*(ref_distance**2.), params[1]/ref_distance))
                 xml_file.write('</bond_coeffs>\n')
             xml_file.write('<bond>\n')
-            for idx,bond in enumerate(bonds):
-                xml_file.write('{}\t{}\t{}\n'.format(bond_types[idx],*bond))
+            for idx, bond in enumerate(bonds):
+                xml_file.write('{}\t{}\t{}\n'.format(bond_types[idx], *bond))
             xml_file.write('</bond>\n')
 
-        angles = [[angle.atom1.idx, 
-                   angle.atom2.idx, 
+        angles = [[angle.atom1.idx,
+                   angle.atom2.idx,
                    angle.atom3.idx] for angle in structure.angles]
         if angles:
-            unique_angle_types = dict(enumerate(set([(round(angle.type.k,3), 
-                                                      round(angle.type.theteq,3)) for angle in structure.angles])))
-            unique_angle_types = {y:x for x,y in unique_angle_types.items()}
-            angle_types = [unique_angle_types[(round(angle.type.k,3), 
-                                               round(angle.type.theteq,3))] for angle in structure.angles]
+            unique_angle_types = dict(enumerate(set([(round(angle.type.k, 3),
+                                                      round(angle.type.theteq, 3)) for angle in structure.angles])))
+            unique_angle_types = {y: x for x, y in unique_angle_types.items()}
+            angle_types = [unique_angle_types[(round(angle.type.k, 3),
+                                               round(angle.type.theteq, 3))] for angle in structure.angles]
             xml_file.write('<angle_coeffs>\n')
-            for params,idx in unique_angle_types.items():
-                xml_file.write('{}\t{}\t{:.5f}\n'.format(idx,(params[0]*2.)/ref_energy,radians(params[1])))
+            for params, idx in unique_angle_types.items():
+                xml_file.write('{}\t{}\t{:.5f}\n'.format(idx, (params[0]*2.)/ref_energy,
+                                                         radians(params[1])))
             xml_file.write('</angle_coeffs>\n')
             xml_file.write('<angle>\n')
-            for idx,angle in enumerate(angles):
-                xml_file.write('{}\t{}\t{}\t{}\n'.format(angle_types[idx],*angle))
+            for idx, angle in enumerate(angles):
+                xml_file.write('{}\t{}\t{}\t{}\n'.format(angle_types[idx], *angle))
             xml_file.write('</angle>\n')
 
         dihedrals = [[dihedral.atom1.idx,
@@ -193,25 +199,25 @@ def write_hoomdxml(structure, filename, forcefield, box, rigid_bodies,
                       dihedral.atom3.idx,
                       dihedral.atom4.idx] for dihedral in structure.rb_torsions]
         if dihedrals:
-            unique_dihedral_types = dict(enumerate(set([(round(dihedral.type.c0,3),
-                                                         round(dihedral.type.c1,3),
-                                                         round(dihedral.type.c2,3),
-                                                         round(dihedral.type.c3,3),
-                                                         round(dihedral.type.c4,3),
-                                                         round(dihedral.type.c5,3),
-                                                         round(dihedral.type.scee,1),
-                                                         round(dihedral.type.scnb,1)) for dihedral in structure.rb_torsions])))
-            unique_dihedral_types = {y:x for x,y in unique_dihedral_types.items()}
-            dihedral_types = [unique_dihedral_types[(round(dihedral.type.c0,3),
-                                                     round(dihedral.type.c1,3),
-                                                     round(dihedral.type.c2,3),
-                                                     round(dihedral.type.c3,3),
-                                                     round(dihedral.type.c4,3),
-                                                     round(dihedral.type.c5,3),
-                                                     round(dihedral.type.scee,1),
-                                                     round(dihedral.type.scnb,1))] for dihedral in structure.rb_torsions]
+            unique_dihedral_types = dict(enumerate(set([(round(dihedral.type.c0, 3),
+                                                         round(dihedral.type.c1, 3),
+                                                         round(dihedral.type.c2, 3),
+                                                         round(dihedral.type.c3, 3),
+                                                         round(dihedral.type.c4, 3),
+                                                         round(dihedral.type.c5, 3),
+                                                         round(dihedral.type.scee, 1),
+                                                         round(dihedral.type.scnb, 1)) for dihedral in structure.rb_torsions])))
+            unique_dihedral_types = {y: x for x, y in unique_dihedral_types.items()}
+            dihedral_types = [unique_dihedral_types[(round(dihedral.type.c0, 3),
+                                                     round(dihedral.type.c1, 3),
+                                                     round(dihedral.type.c2, 3),
+                                                     round(dihedral.type.c3, 3),
+                                                     round(dihedral.type.c4, 3),
+                                                     round(dihedral.type.c5, 3),
+                                                     round(dihedral.type.scee, 1),
+                                                     round(dihedral.type.scnb, 1))] for dihedral in structure.rb_torsions]
             xml_file.write('<dihedral_coeffs>\n')
-            for params,idx in unique_dihedral_types.items():
+            for params, idx in unique_dihedral_types.items():
                 opls_coeffs = RB_to_OPLS(params[0],
                                          params[1],
                                          params[2],
@@ -219,10 +225,10 @@ def write_hoomdxml(structure, filename, forcefield, box, rigid_bodies,
                                          params[4],
                                          params[5])
                 opls_coeffs /= ref_energy
-                xml_file.write('{}\t{:.5f}\t{:.5f}\t{:.5f}\t{:.5f}\n'.format(idx,*opls_coeffs))
+                xml_file.write('{}\t{:.5f}\t{:.5f}\t{:.5f}\t{:.5f}\n'.format(idx, *opls_coeffs))
             xml_file.write('</dihedral_coeffs>\n')
             xml_file.write('<dihedral>\n')
-            for idx,dihedral in enumerate(dihedrals):
+            for idx, dihedral in enumerate(dihedrals):
                 xml_file.write('{}\t{}\t{}\t{}\t{}\n'.format(dihedral_types[idx],
                                                              *dihedral))
             xml_file.write('</dihedral>\n')
@@ -234,6 +240,6 @@ def write_hoomdxml(structure, filename, forcefield, box, rigid_bodies,
                     body = -1
                 xml_file.write('{}\n'.format(int(body)))
             xml_file.write('</body>\n')
-        
+
         xml_file.write('</configuration>\n')
         xml_file.write('</hoomd_xml>')

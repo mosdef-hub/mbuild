@@ -8,7 +8,7 @@ import numpy as np
 from .hoomdxml import RB_to_OPLS
 from collections import OrderedDict
 
-def write_lammpsdata(structure, filename, forcefield, box):
+def write_lammpsdata(structure, filename, box):
     """Output a LAMMPS data file.
     
     Note: Output supports 'real' units and 'full' atom style only.
@@ -19,11 +19,13 @@ def write_lammpsdata(structure, filename, forcefield, box):
         Parmed structure object
     filename : str
         Path of the output file
-    forcefield : str
-        Name of the force field to be applied to the compound
     box : mb.Box
         Box information to save to data file
     """
+
+    forcefield = True
+    if structure[0].type == '':
+        forcefield = False
 
     # Convert box units from nm to angstroms
     box.maxs *= 10.
@@ -170,8 +172,10 @@ def write_lammpsdata(structure, filename, forcefield, box):
             for i,dihedral in enumerate(dihedrals):
                 data.write('{:d}\t{:d}\t{:d}\t{:d}\t{:d}\t{:d}\n'.format(i+1,dihedral_types[i],dihedral[0],dihedral[1],dihedral[2],dihedral[3]))
 
+
 def _atoi(text):
     return int(text) if text.isdigit() else text
 
+
 def _natural_sort(text):
-    return [_atoi(a) for a in re.split('(\d+)',text)]
+    return [_atoi(a) for a in re.split(r'(\d+)', text)]

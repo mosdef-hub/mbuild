@@ -47,13 +47,26 @@ class BaseTest:
         return Betacristobalite()
 
     @pytest.fixture
-    def alkyl(self):
+    def propyl(self):
         from mbuild.examples import Alkane
-        return Alkane(2, cap_front=True, cap_end=False)
+        return Alkane(3, cap_front=True, cap_end=False)
+
+    @pytest.fixture
+    def hexane(self, propyl):
+        class Hexane(mb.Compound):
+            def __init__(self):
+                super(Hexane, self).__init__()
+
+                self.add(propyl, 'propyl1')
+                self.add(mb.clone(propyl), 'propyl2')
+
+                mb.force_overlap(self['propyl1'],
+                                 self['propyl1']['down'],
+                                 self['propyl2']['down'])
+        return Hexane()
 
     @pytest.fixture
     def sixpoints(self):
-        import mbuild as mb
         molecule = mb.Compound()
         molecule.add(mb.Particle(name='C', pos=[5, 5, 5]), label='middle')
         molecule.add(mb.Particle(name='C', pos=[6, 5, 5]), label='right')

@@ -37,8 +37,6 @@ test:
 
   commands:
     - py.test -v --pyargs mbuild
-    - cd mbuild/examples
-    - py.test test_examples.py -v
 
 about:
   home: http://mosdef-hub.github.io/mbuild
