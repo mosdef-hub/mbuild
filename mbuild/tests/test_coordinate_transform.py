@@ -84,127 +84,127 @@ class TestCoordinateTransform(BaseTest):
 
     def test_rotate_0(self, methane):
         before = methane.xyz_with_ports
-        rotate(methane, 0.0, np.asarray([1.0, 0.0, 0.0]))
+        methane.rotate(0.0, np.asarray([1.0, 0.0, 0.0]))
         after = methane.xyz_with_ports
         assert (np.array_equal(before, after))
 
     def test_rotate_2pi(self, methane):
         before = methane.xyz_with_ports
-        rotate(methane, 2*np.pi, np.asarray([1.0, 0.0, 0.0]))
+        methane.rotate(2*np.pi, np.asarray([1.0, 0.0, 0.0]))
         after = methane.xyz_with_ports
         assert (np.allclose(before, after))
 
     def test_rotate_zero_vector(self, methane):
         with pytest.raises(ValueError):
-            rotate(methane, np.pi/2, np.asarray([0.0, 0.0, 0.0]))
+            methane.rotate(np.pi/2, np.asarray([0.0, 0.0, 0.0]))
 
     def test_spin_zero_vector(self, methane):
         with pytest.raises(ValueError):
-            spin(methane, np.pi/2, np.asarray([0.0, 0.0, 0.0]))
+            methane.spin(np.pi/2, np.asarray([0.0, 0.0, 0.0]))
 
     def test_spin_inputs(self, methane):
-        spin(methane, 6.9, [1, 0, 0])
-        spin(methane, 6.9, (1, 0, 0))
+        methane.spin(6.9, [1, 0, 0])
+        methane.spin(6.9, (1, 0, 0))
 
     def test_rotate_inputs(self, methane):
-        rotate(methane, 6.9, [1, 0, 0])
-        rotate(methane, 6.9, (1, 0, 0))
+        methane.rotate(6.9, [1, 0, 0])
+        methane.rotate(6.9, (1, 0, 0))
 
     def test_spin_too_many_dimensions_list(self, methane):
         with pytest.raises(ValueError):
-            spin(methane, 0.1, [1, 0, 0, 0])
+            methane.spin(0.1, [1, 0, 0, 0])
 
     def test_spin_too_many_dimensions_tuple(self, methane):
         with pytest.raises(ValueError):
-            spin(methane, 0.1, (1, 0, 0, 0))
+            methane.spin(0.1, (1, 0, 0, 0))
 
     def test_rotate_too_many_dimensions_list(self, methane):
         with pytest.raises(ValueError):
-            rotate(methane, 0.1, [1, 0, 0, 0])
+            methane.rotate(0.1, [1, 0, 0, 0])
 
     def test_rotate_too_many_dimensions_tuple(self, methane):
         with pytest.raises(ValueError):
-            rotate(methane, 0.1, (1, 0, 0, 0))
+            methane.rotate(0.1, (1, 0, 0, 0))
 
     def test_spin_too_few_dimensions_list(self, methane):
         with pytest.raises(ValueError):
-            spin(methane, 0.1, [1, 0])
+            methane.spin(0.1, [1, 0])
 
     def test_spin_too_few_dimensions_tuple(self, methane):
         with pytest.raises(ValueError):
-            spin(methane, 0.1, (1, 0))
+            methane.spin(0.1, (1, 0))
 
     def test_rotate_too_few_dimensions_list(self, methane):
         with pytest.raises(ValueError):
-            rotate(methane, 0.1, [1, 0])
+            methane.rotate(0.1, [1, 0])
 
     def test_rotate_too_few_dimensions_tuple(self, methane):
         with pytest.raises(ValueError):
-            rotate(methane, 0.1, (1, 0))
+            methane.rotate(0.1, (1, 0))
 
     def test_spin_360x(self, methane):
         before = methane.xyz_with_ports
-        spin(methane, 2*np.pi, np.asarray([1, 0, 0]))
+        methane.spin(2*np.pi, np.asarray([1, 0, 0]))
         assert(np.allclose(before, methane.xyz_with_ports, atol=1e-16))
 
     def test_spin_360y(self, methane):
         before = methane.xyz_with_ports
-        spin(methane, 2*np.pi, np.asarray([0, 1, 0]))
+        methane.spin(2*np.pi, np.asarray([0, 1, 0]))
         assert(np.allclose(before, methane.xyz_with_ports, atol=1e-16))
 
     def test_spin_360z(self, methane):
         before = methane.xyz_with_ports
-        spin(methane, 2*np.pi, np.asarray([0, 0, 1]))
+        methane.spin(2*np.pi, np.asarray([0, 0, 1]))
         assert(np.allclose(before, methane.xyz_with_ports, atol=1e-16))
 
     def test_spin_0x(self, methane):
         before = methane.xyz_with_ports
-        spin(methane, 0, np.asarray([1, 0, 0]))
+        methane.spin(0, np.asarray([1, 0, 0]))
         assert(np.allclose(before, methane.xyz_with_ports, atol=1e-16))
 
     def test_spin_0y(self, methane):
         before = methane.xyz_with_ports
-        spin(methane, 0, np.asarray([0, 1, 0]))
+        methane.spin(0, np.asarray([0, 1, 0]))
         assert(np.allclose(before, methane.xyz_with_ports, atol=1e-16))
 
     def test_spin_0z(self, methane):
         before = methane.xyz_with_ports
-        spin(methane, 0, np.asarray([0, 0, 1]))
+        methane.spin(0, np.asarray([0, 0, 1]))
         assert(np.allclose(before, methane.xyz_with_ports, atol=1e-16))
 
     def test_spin_x(self, sixpoints):
         before = mb.clone(sixpoints)
-        spin(sixpoints, np.pi, np.asarray([1, 0, 0]))
+        sixpoints.spin(np.pi, np.asarray([1, 0, 0]))
         assert(np.allclose(sixpoints['up'].xyz, before['down'].xyz, atol=1e-16)
                 and np.allclose(sixpoints['front'].xyz, before['back'].xyz, atol=1e-16))
 
     def test_spin_y(self, sixpoints):
         before = mb.clone(sixpoints)
-        spin(sixpoints, np.pi, np.asarray([0, 1, 0]))
+        sixpoints.spin(np.pi, np.asarray([0, 1, 0]))
         assert(np.allclose(sixpoints['left'].xyz, before['right'].xyz, atol=1e-16)
                 and np.allclose(sixpoints['front'].xyz, before['back'].xyz, atol=1e-16))
 
     def test_spin_z(self, sixpoints):
         before = mb.clone(sixpoints)
-        spin(sixpoints, np.pi, np.asarray([0, 0, 1]))
+        sixpoints.spin(np.pi, np.asarray([0, 0, 1]))
         assert(np.allclose(sixpoints['left'].xyz, before['right'].xyz, atol=1e-16)
                 and np.allclose(sixpoints['up'].xyz, before['down'].xyz, atol=1e-16))
 
     def test_spin_x_eq(self, sixpoints):
         compound2 = mb.clone(sixpoints)
-        spin(sixpoints, np.pi*1.23456789, np.asarray([1.0, 0.0, 0.0]))
+        sixpoints.spin(np.pi*1.23456789, np.asarray([1.0, 0.0, 0.0]))
         spin_x(compound2, np.pi*1.23456789)
         assert(np.allclose(compound2.xyz, sixpoints.xyz, atol=1e-16))
 
     def test_spin_y_eq(self, sixpoints):
         compound2 = mb.clone(sixpoints)
-        spin(sixpoints, np.pi*1.23456789, np.asarray([0.0, 1.0, 0.0]))
+        sixpoints.spin(np.pi*1.23456789, np.asarray([0.0, 1.0, 0.0]))
         spin_y(compound2, np.pi*1.23456789)
         assert(np.allclose(compound2.xyz, sixpoints.xyz, atol=1e-16))
 
     def test_spin_z_eq(self, sixpoints):
         compound2 = mb.clone(sixpoints)
-        spin(sixpoints, np.pi*1.23456789, np.asarray([0.0, 0.0, 1.0]))
+        sixpoints.spin(np.pi*1.23456789, np.asarray([0.0, 0.0, 1.0]))
         spin_z(compound2, np.pi*1.23456789)
         assert(np.allclose(compound2.xyz, sixpoints.xyz, atol=1e-16))
 
@@ -222,7 +222,7 @@ class TestCoordinateTransform(BaseTest):
 
     def test_spin_arbitraty(self, sixpoints):
         before = mb.clone(sixpoints)
-        spin(sixpoints, np.pi, np.asarray([1, 1, 0]))
+        sixpoints.spin(np.pi, np.asarray([1, 1, 0]))
         assert(np.allclose(sixpoints['up'].xyz, before['right'].xyz, atol=1e-16)
                 and np.allclose(sixpoints['down'].xyz, before['left'].xyz, atol=1e-16))
 
@@ -253,8 +253,8 @@ class TestCoordinateTransform(BaseTest):
             [angle(a, b, c)
              for (a, b, c) in itt.combinations(mol2.xyz, 3)])
         spin_axis = (mol2['middle'].xyz - mol1['middle'].xyz).reshape(3)
-        spin(mol2, np.pi*0.123456789, spin_axis)
-        spin(mol1, -np.pi*0.123456789, spin_axis)
+        mol2.spin(np.pi*0.123456789, spin_axis)
+        mol1.spin(-np.pi*0.123456789, spin_axis)
         mol1_angles_after = np.asarray(
             [angle(a, b, c)
              for (a, b, c) in itt.combinations(mol1.xyz, 3)])
@@ -329,13 +329,26 @@ class TestCoordinateTransform(BaseTest):
 
     def test_translate(self, methane):
         methane_atoms = list(methane.particles())
-        translate(methane, -methane_atoms[0].pos)
+        methane.translate(-methane_atoms[0].pos)
         assert (methane_atoms[0].pos == np.array([0, 0, 0])).all()
 
     def test_translate_to(self, methane):
         before = methane.xyz_with_ports
         original_center = methane.center
         translate_value = np.array([2, 3, 4])
-        translate_to(methane, translate_value)
+        methane.translate_to(translate_value)
         assert (methane.xyz_with_ports ==
                 before - original_center + translate_value).all()
+
+    def test_different_translates(self, methane):
+        shifted = mb.clone(methane)
+        shifted.translate([5, 4, 3])
+        shifted_methane_coords = mb.coordinate_transform._translate(
+                methane.xyz, [5, 4, 3])
+        assert(np.array_equal(shifted_methane_coords, shifted.xyz))
+
+    def test_different_translate_tos(self, methane):
+        shifted = mb.clone(methane)
+        shifted.translate_to([0, 0, 0])
+        x = mb.coordinate_transform._translate_to(methane.xyz, [0, 0, 0])
+        assert(np.array_equal(shifted.xyz, x))

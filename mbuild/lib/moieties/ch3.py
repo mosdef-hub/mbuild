@@ -7,10 +7,10 @@ class CH3(mb.Compound):
         super(CH3, self).__init__()
 
         mb.load('ch3.pdb', compound=self, relative_to_module=self.__module__)
-        mb.translate(self, -self[0].pos)  # Move carbon to origin.
+        self.translate(-self[0].pos)  # Move carbon to origin.
 
         self.add(mb.Port(anchor=self[0]), 'up')
-        mb.translate(self['up'], [0, -0.07, 0])
+        self['up'].translate([0, -0.07, 0])
 
 if __name__ == '__main__':
     m = CH3()
