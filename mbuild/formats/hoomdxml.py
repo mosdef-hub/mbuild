@@ -34,7 +34,7 @@ def RB_to_OPLS(c0, c1, c2, c3, c4, c5):
 
 
 def write_hoomdxml(structure, filename, box, ref_distance=1.0, ref_mass=1.0,
-                   ref_energy=1.0, rigid_bodies=None):
+                   ref_energy=1.0, rigid_bodies=None, wrap_coordinates=True):
     """Output a HOOMD XML file.
 
     Parameters
