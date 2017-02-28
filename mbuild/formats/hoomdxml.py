@@ -34,7 +34,7 @@ def RB_to_OPLS(c0, c1, c2, c3, c4, c5):
 
 
 def write_hoomdxml(structure, filename, box, ref_distance=1.0, ref_mass=1.0,
-                   ref_energy=1.0, rigid_bodies=None):
+                   ref_energy=1.0, rigid_bodies=None, wrap_coordinates=True):
     """Output a HOOMD XML file.
 
     Parameters
@@ -103,12 +103,13 @@ def write_hoomdxml(structure, filename, box, ref_distance=1.0, ref_mass=1.0,
     box.mins = np.array([-d/2 for d in box_init.lengths])
     box.maxs = np.array([d/2 for d in box_init.lengths])
 
-    shift = [box_init.maxs[i] - max for i, max in enumerate(box.maxs)]
-    for i, pos in enumerate(xyz):
-        for j, coord in enumerate(pos):
-            xyz[i, j] -= shift[j]
-            rep = floor((xyz[i, j] - box.mins[j]) / box.lengths[j])
-            xyz[i, j] -= (rep * box.lengths[j])
+    if wrap_coordinates:
+        shift = [box_init.maxs[i] - max for i, max in enumerate(box.maxs)]
+        for i, pos in enumerate(xyz):
+            for j, coord in enumerate(pos):
+                xyz[i, j] -= shift[j]
+                rep = floor((xyz[i, j] - box.mins[j]) / box.lengths[j])
+                xyz[i, j] -= (rep * box.lengths[j])
 
     with open(filename, 'w') as xml_file:
         xml_file.write('<?xml version="1.2" encoding="UTF-8"?>\n')
