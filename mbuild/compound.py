@@ -1106,6 +1106,8 @@ class Compound(object):
                     box.lengths[dim] += 0.5
 
         if saver:  # mBuild supported saver.
+            if extension in ['.hoomdxml']:
+                kwargs['rigid_bodies'] = list(self.rigid_ids())
             saver(filename=filename, structure=structure, box=box, **kwargs)
         else:  # ParmEd supported saver.
             structure.save(filename, overwrite=overwrite, **kwargs)

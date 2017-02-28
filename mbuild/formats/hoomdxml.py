@@ -33,30 +33,10 @@ def RB_to_OPLS(c0, c1, c2, c3, c4, c5):
     return opls_coeffs
 
 
-def write_hoomdxml(structure, filename, box, rigid_bodies, ref_distance=1.0,
-                   ref_mass=1.0, ref_energy=1.0):
+def write_hoomdxml(structure, filename, box, rigid_bodies, ref_distance=1.0, 
+                   ref_mass=1.0, ref_energy=1.0, wrap_coordinates=True):
     """Output a HOOMD XML file.
 
-    Parameters
-    ----------
-    structure : parmed.Structure
-        Parmed structure object
-    filename : str
-        Path of the output file.
-    box : mb.Box
-        Box information
-    ref_distance : float, default=1.0
-        Reference distance for conversion to reduced units
-    ref_mass : float, default=1.0
-        Reference mass for conversion to reduced units
-    rigid_bodies : list
-        List of rigid body information. An integer value is required
-        for each atom corresponding to the number of the rigid body with
-        which the atom should be included. A value of None indicates the
-        atom is not part of any rigid body.
-
-    Notes
-    -----
     The following elements are always written:
 
     Position : atomic positions
@@ -88,6 +68,29 @@ def write_hoomdxml(structure, filename, box, rigid_bodies, ref_distance=1.0,
                       k1, k2, k3, k4 : force coefficients (units of energy)
     Dihedral : system dihedrals
     Body : rigid body to which each atom belongs
+
+    Parameters
+    ----------
+    structure : parmed.Structure
+        Parmed structure object
+    filename : str
+        Path of the output file.
+    box : mb.Box
+        Box information
+    rigid_bodies : list
+        List of rigid body information. An integer value is required
+        for each atom corresponding to the number of the rigid body with
+        which the atom should be included. A value of None indicates the
+        atom is not part of any rigid body.
+    ref_distance : float, optional, default=1.0
+        Reference distance for conversion to reduced units
+    ref_mass : float, optional, default=1.0
+        Reference mass for conversion to reduced units
+    ref_energy : float, optional, default=1.0
+        Reference energy for conversion to reduced units
+    wrap_coordinates : bool, optional, default=True
+        Wrap coordinates of all atoms into the box
+
     """
 
     forcefield = True
@@ -103,12 +106,13 @@ def write_hoomdxml(structure, filename, box, rigid_bodies, ref_distance=1.0,
     box.mins = np.array([-d/2 for d in box_init.lengths])
     box.maxs = np.array([d/2 for d in box_init.lengths])
 
-    shift = [box_init.maxs[i] - max for i, max in enumerate(box.maxs)]
-    for i, pos in enumerate(xyz):
-        for j, coord in enumerate(pos):
-            xyz[i, j] -= shift[j]
-            rep = floor((xyz[i, j] - box.mins[j]) / box.lengths[j])
-            xyz[i, j] -= (rep * box.lengths[j])
+    if wrap_coordinates:
+        shift = [box_init.maxs[i] - max for i, max in enumerate(box.maxs)]
+        for i, pos in enumerate(xyz):
+            for j, coord in enumerate(pos):
+                xyz[i, j] -= shift[j]
+                rep = floor((xyz[i, j] - box.mins[j]) / box.lengths[j])
+                xyz[i, j] -= (rep * box.lengths[j])
 
     with open(filename, 'w') as xml_file:
         xml_file.write('<?xml version="1.2" encoding="UTF-8"?>\n')
