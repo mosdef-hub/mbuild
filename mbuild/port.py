@@ -34,10 +34,14 @@ class Port(Compound):
         self.anchor = anchor
 
         up = Compound(name='subport', port_particle=True)
-        up.add(Particle(name='G', pos=[0, 0, 0], port_particle=True), 'middle')
-        up.add(Particle(name='G', pos=[0, 0.02, 0], port_particle=True), 'top')
-        up.add(Particle(name='G', pos=[-0.02, -0.01, 0], port_particle=True), 'left')
-        up.add(Particle(name='G', pos=[0.0, -0.02, 0.01], port_particle=True), 'right')
+        up.add(Particle(name='G', pos=[0.005, 0.0025, -0.0025],
+                        port_particle=True), 'middle')
+        up.add(Particle(name='G', pos=[0.005, 0.0225, -0.0025],
+                        port_particle=True), 'top')
+        up.add(Particle(name='G', pos=[-0.015, -0.0075, -0.0025],
+                        port_particle=True), 'left')
+        up.add(Particle(name='G', pos=[0.005, -0.0175, 0.0075],
+                        port_particle=True), 'right')
 
         down = clone(up)
         rotate(down, np.pi, [0, 0, 1])

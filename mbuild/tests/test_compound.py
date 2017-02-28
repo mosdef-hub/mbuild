@@ -187,8 +187,19 @@ class TestCompound(BaseTest):
 
     def test_center(self, methane):
         assert np.array_equal(methane.center, np.array([0, 0, 0]))
-        port = mb.Port()
-        assert np.allclose(port.center, np.array([0.0, 0.0, 2.5e-3]))
+        for orientation in np.identity(3):
+            port = mb.Port(anchor=methane[0], orientation=orientation)
+            assert np.allclose(port.center, np.array([0.0, 0.0, 0.0]), atol=1e-15)
+            port = mb.Port(anchor=methane[0], orientation=orientation, separation=0.2)
+            assert np.allclose(port.center, 0.2*orientation, atol=1e-15)
+        np.random.seed(0)
+        for orientation in np.random.rand(5, 3):
+            port = mb.Port(anchor=methane[0], orientation=orientation)
+            assert np.allclose(port.center, np.array([0.0, 0.0, 0.0]), atol=1e-15)
+            port = mb.Port(anchor=methane[0], orientation=orientation, separation=0.2)
+            assert np.allclose(port.center,
+                               0.2*orientation/np.linalg.norm(orientation),
+                               atol=1e-15)
 
     def test_single_particle(self):
         part = mb.Particle(name='A')
