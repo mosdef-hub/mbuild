@@ -9,7 +9,7 @@ class TestGSD(BaseTest):
 
     @pytest.mark.skipif(not has_gsd, reason="GSD package not installed")
     def test_save(self, ethane):
-        ethane.save(filename='ethane.gsd', write_ff=False)
+        ethane.save(filename='ethane.gsd')
 
     @pytest.mark.skipif(not has_gsd, reason="GSD package not installed")
     @pytest.mark.skipif(not has_foyer, reason="Foyer is not installed")

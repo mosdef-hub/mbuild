@@ -13,32 +13,32 @@ from mbuild.utils.io import import_
 __all__ = ['write_gsd']
 
 
-def write_gsd(structure, filename, forcefield, box, ref_distance=1.0, ref_mass=1.0,
-              ref_energy=1.0, write_ff=True):
+def write_gsd(structure, filename, box, ref_distance=1.0, ref_mass=1.0,
+              ref_energy=1.0):
     """Output a GSD file (HOOMD default data format).
     
     Parameters
     ----------
-    structure : parmed.GromacsTopologyFile
-        Parmed structure object
+    structure : parmed.Structure
+        Parmed Structure object
     filename : str
         Path of the output file.
-    forcefield : str, default=None
-        Name of the force field to be applied to the compound
     box : mb.Box
-        Box information to save to XML file
+        Box information
     ref_distance : float, default=1.0
         Reference distance for conversion to reduced units
     ref_mass : float, default=1.0
         Reference mass for conversion to reduced units
     ref_energy : float, default=1.0
         Reference energy for conversion to reduced units
-    write_ff : boolean, default=True
-        Write forcefield parameters to a JSON file, 'parameters.json'
     """
 
     import_('gsd')
     import gsd.hoomd
+
+    forcefield = True
+    if structure[0].type == '':
+        forcefield = False
 
     xyz = np.array([[atom.xx, atom.xy, atom.xz] for atom in structure.atoms])
 
