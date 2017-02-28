@@ -452,7 +452,7 @@ def rotate(compound, theta, around):
 
     """
     around = np.asarray(around).reshape(3)
-    if(np.allclose(around, 0, atol=1e-16)):
+    if(np.array_equal(around, np.zeros_like(around))):
         raise ValueError('Cannot rotate around a zero vector')
     atom_positions = compound.xyz_with_ports
     atom_positions = Rotation(theta, around).apply_to(atom_positions)
