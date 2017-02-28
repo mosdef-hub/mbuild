@@ -403,18 +403,18 @@ class Compound(object):
             if particle.rigid_id is not None:
                 yield particle
 
-    def set_rigid(self, particle_name=False, rigid_id=None):
+    def set_rigid(self, name=False, rigid_id=None):
         """Treat the Compound and all successors as a single rigid body.
 
         Provides a unique rigid body ID to a Compound and its successors.
-        If 'particle_name' is specified, only sucessors with this name are
-        provided with a rigid_id.  This is useful for Compounds where only
-        some of the particles should be rigid (such as a tethered nanoparticle
-        with a rigid core).
+        If 'name' is specified, only sucessors with this name are provided 
+        with a rigid_id.  This is useful for Compounds where only some of 
+        the particles should be rigid (such as a tethered nanoparticle with 
+        a rigid core).
 
         Parameters
         ----------
-        particle_name : str, optional
+        name : str, optional
             Include only particles with this name in the rigid body.
         rigid_id : int, optional
             Manually set the rigid body ID for this body.
@@ -426,18 +426,18 @@ class Compound(object):
         --------
         Creating a rigid benzene
 
-        >>>import mbuild as mb
-        >>>from mbuild.utils.io import get_fn
-        >>>benzene = mb.load(get_fn('benzene.mol2'))
-        >>>benzene.set_rigid()
+        >>> import mbuild as mb
+        >>> from mbuild.utils.io import get_fn
+        >>> benzene = mb.load(get_fn('benzene.mol2'))
+        >>> benzene.set_rigid()
 
         Creating a semi-rigid benzene, where only the carbons are treated as
         a rigid body
 
-        >>>import mbuild as mb
-        >>>from mbuild.utils.io import get_fn
-        >>>benzene = mb.load(get_fn('benzene.mol2'))
-        >>>benzene.set_rigid(particle_name='C')
+        >>> import mbuild as mb
+        >>> from mbuild.utils.io import get_fn
+        >>> benzene = mb.load(get_fn('benzene.mol2'))
+        >>> benzene.set_rigid(name='C')
 
         """
         if rigid_id is None:
@@ -447,10 +447,13 @@ class Compound(object):
                 rigid_id = 0
         self.rigid_id = rigid_id
         for successor in self.successors():
-            if particle_name and successor.name != particle_name:
+            if name and successor.name != name:
                 pass
             else:
-                successor.rigid_id = rigid_id
+                if successor.children:
+                    successor.set_rigid(rigid_id=rigid_id)
+                else:
+                    successor.rigid_id = rigid_id
         if rigid_id and rigid_id > self.root.max_rigid_id + 1:
             warn("Specified 'rigid_id' > max rigid_id + 1. This will lead to inconsistent rigid body numbering. Consider running reset_rigid().")
 
@@ -491,26 +494,26 @@ class Compound(object):
         --------
         Creating a box of rigid benzenes
         
-        >>>import mbuild as mb
-        >>>from mbuild.utils.io import get_fn
-        >>>benzene = mb.load(get_fn('benzene.mol2'))
-        >>>benzene.name = 'Benzene'
-        >>>filled = mb.fill_box(benzene,
+        >>> import mbuild as mb
+        >>> from mbuild.utils.io import get_fn
+        >>> benzene = mb.load(get_fn('benzene.mol2'))
+        >>> benzene.name = 'Benzene'
+        >>> filled = mb.fill_box(benzene,
         ...                     n_compounds=10,
         ...                     box=[0, 0, 0, 4, 4, 4])
-        >>>filled.create_rigid_bodies(name='Benzene')
+        >>> filled.create_rigid_bodies(name='Benzene')
 
         Creating a box of semi-rigid benzenes, where only the carbon portion of
         each benzene molecule is treated as a rigid body
 
-        >>>import mbuild as mb
-        >>>from mbuild.utils.io import get_fn
-        >>>benzene = mb.load(get_fn('benzene.mol2'))
-        >>>benzene.name = 'Benzene'
-        >>>filled = mb.fill_box(benzene,
+        >>> import mbuild as mb
+        >>> from mbuild.utils.io import get_fn
+        >>> benzene = mb.load(get_fn('benzene.mol2'))
+        >>> benzene.name = 'Benzene'
+        >>> filled = mb.fill_box(benzene,
         ...                     n_compounds=10,
         ...                     box=[0, 0, 0, 4, 4, 4])
-        >>>filled.create_rigid_bodies(name='Benzene', particle_name='C')
+        >>> filled.create_rigid_bodies(name='Benzene', particle_name='C')
 
         """
         if self.root.max_rigid_id is not None:
@@ -520,7 +523,7 @@ class Compound(object):
             rigid_id = 0
         for successor in self.successors():
             if successor.name == name:
-                successor.set_rigid(particle_name=particle_name, rigid_id=rigid_id)
+                successor.set_rigid(name=particle_name, rigid_id=rigid_id)
                 rigid_id += 1
 
     def reset_rigid(self):
