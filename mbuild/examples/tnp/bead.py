@@ -16,7 +16,7 @@ class Bead(mb.Compound):
         self.add(mb.Particle(name=particle_kind), particle_kind)
 
         self.add(mb.Port(anchor=self.labels[particle_kind]), 'up')
-        self['up'].translate(self['up'], np.array([0, 0.7, 0]))
+        self['up'].translate(np.array([0, 0.7, 0]))
 
         self.add(mb.Port(anchor=self.labels[particle_kind]), 'down')
         self['down'].translate(np.array([0, -0.7, 0]))

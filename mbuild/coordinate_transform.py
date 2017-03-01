@@ -564,12 +564,35 @@ def spin(compound, theta, around):
 
     """
     around = np.asarray(around).reshape(3)
-    if(np.array_equal(around, np.zeros(3))):
+    if np.array_equal(around, np.zeros(3)):
         raise ValueError('Cannot spin around a zero vector')
     center_pos = compound.center
     translate(compound, -center_pos)
     rotate(compound, theta, around)
     translate(compound, center_pos)
+
+
+def _spin(coordinates, theta, around):
+    """Rotate a set of coordinates in place around an arbitrary vector.
+
+    Parameters
+    ----------
+    coordinates : np.ndarray, shape=(n,3), dtype=float
+        The coordinates being spun.
+    theta : float
+        The angle by which to spin the coordinates, in radians.
+    around : np.ndarray, shape=(3,), dtype=float
+        The axis about which to spin the coordinates.
+
+    """
+    around = np.asarray(around).reshape(3)
+    if np.array_equal(around, np.zeros(3)):
+        raise ValueError('Cannot spin around a zero vector')
+    center_pos = np.mean(coordinates, axis=0)
+    coordinates -= center_pos
+    coordinates = _rotate(coordinates, theta, around)
+    coordinates += center_pos
+    return coordinates
 
 
 warning_message = 'Please use spin(compound, theta, around=np.asarray([1, 0, 0]))'
