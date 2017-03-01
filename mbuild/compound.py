@@ -761,16 +761,25 @@ class Compound(object):
         load(filename, compound=self, coords_only=True)
 
     def _kick(self):
-        """Provides a slight adjustment to coordinates to kick them
-           out of local energy minima.
+        """Slightly adjust all coordinates in a Compound
+
+        Provides a slight adjustment to coordinates to kick them out of local 
+        energy minima.
         """
         for particle in self.particles():
             particle.pos += (np.random.rand(3,) - 0.5) / 100
 
     def energy_minimization(self, steps=2500, algorithm='cg',
                             forcefield='UFF'):
-        """Perform an energy minimization on a Compound using a generic
-           force field.
+        """Perform an energy minimization on a Compound
+
+        Utilizes Open Babel (http://openbabel.org/docs/dev/) to perform an
+        energy minimization/geometry optimization on a Compound by applying
+        a generic force field.
+
+        This function is primarily intended to be used on smaller components,
+        with sizes on the order of 10's to 100's of particles, as the energy
+        minimization scales poorly with the number of particles.
 
         Parameters
         ----------
