@@ -26,7 +26,7 @@ class TestHoomdXML(BaseTest):
         filled = mb.fill_box(benzene,
                              n_compounds=n_benzenes,
                              box=[0, 0, 0, 4, 4, 4]) 
-        filled.create_rigid_bodies(name='Benzene', particle_name='C')
+        filled.label_rigid_bodies(discrete_bodies='Benzene', rigid_particles='C')
         filled.save(filename='benzene.hoomdxml')
 
         file = xml.etree.ElementTree.parse('benzene.hoomdxml').getroot()
