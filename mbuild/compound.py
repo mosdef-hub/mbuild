@@ -998,12 +998,12 @@ class Compound(object):
                         last_chain_default_residue = top.add_residue('RES', last_chain)
                         last_chain.compound = last_chain_compound
                 elif chains and parent.name in chains:
-                     if parent != last_chain_compound:
+                    if parent != last_chain_compound:
                         last_chain_compound = parent
                         last_chain = top.add_chain()
                         last_chain_default_residue = top.add_residue('RES', last_chain)
                         last_chain.compound = last_chain_compound
-                     break
+                    break
             else:
                 last_chain = default_chain
                 last_chain.compound = last_chain_compound
