@@ -261,8 +261,8 @@ class TestCoordinateTransform(BaseTest):
         mol2_angles_after = np.asarray(
             [angle(a, b, c)
              for (a, b, c) in itt.combinations(mol2.xyz, 3)])
-        assert (    np.allclose(mol1_angles_before, mol1_angles_after, atol=1e-16)
-                and np.allclose(mol2_angles_before, mol2_angles_after, atol=1e-16))
+        assert (    np.allclose(mol1_angles_before, mol1_angles_after, atol=1e-15)
+                and np.allclose(mol2_angles_before, mol2_angles_after, atol=1e-15))
 
     def test_equivalence_transform_deprectation_warning(self, ch2):
         ch22 = mb.clone(ch2)
