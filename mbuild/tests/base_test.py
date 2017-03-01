@@ -40,6 +40,16 @@ class BaseTest:
         return CH3()
 
     @pytest.fixture
+    def c3(self):
+        from mbuild.lib.atoms import C3
+        return C3()
+
+    @pytest.fixture
+    def n4(self):
+        from mbuild.lib.atoms import N4
+        return N4()
+
+    @pytest.fixture
     def betacristobalite(self):
         from mbuild.lib.surfaces import Betacristobalite
         return Betacristobalite()

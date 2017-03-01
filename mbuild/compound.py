@@ -991,13 +991,19 @@ class Compound(object):
         for atom in atom_list:
             # Chains
             for parent in atom.ancestors():
-                if chains and parent.name in chains:
+                if chains and atom.name in chains:
                     if parent != last_chain_compound:
+                        last_chain_compound = atom
+                        last_chain = top.add_chain()
+                        last_chain_default_residue = top.add_residue('RES', last_chain)
+                        last_chain.compound = last_chain_compound
+                elif chains and parent.name in chains:
+                     if parent != last_chain_compound:
                         last_chain_compound = parent
                         last_chain = top.add_chain()
                         last_chain_default_residue = top.add_residue('RES', last_chain)
                         last_chain.compound = last_chain_compound
-                    break
+                     break
             else:
                 last_chain = default_chain
                 last_chain.compound = last_chain_compound
@@ -1134,7 +1140,11 @@ class Compound(object):
         for atom in self.particles():
             # Residues
             for parent in atom.ancestors():
-                if residues and parent.name in residues:
+                if residues and atom.name in residues:
+                    last_residue_compound = atom
+                    last_residue = pmd.Residue(atom.name)
+                    last_residue.compound = last_residue_compound
+                elif residues and parent.name in residues:
                     if parent != last_residue_compound:
                         last_residue_compound = parent
                         last_residue = pmd.Residue(parent.name)

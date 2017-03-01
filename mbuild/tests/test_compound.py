@@ -50,6 +50,14 @@ class TestCompound(BaseTest):
         assert struct.residues[0].name == 'CH3'
         assert struct.residues[1].name == 'H2O'
 
+    def test_save_resnames_single(self, c3, n4):
+        system = mb.Compound([c3, n4])
+        system.save('resnames_single.gro', residues=['C3', 'N4'])
+
+        struct = pmd.load_file('resnames_single.gro')
+        assert struct.residues[0].number ==  1
+        assert struct.residues[1].number ==  2
+
     def test_batch_add(self, ethane, h2o):
         compound = mb.Compound()
         compound.add([ethane, h2o])
