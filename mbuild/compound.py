@@ -902,7 +902,14 @@ class Compound(object):
         self.translate(center_pos)
 
     def _set_particle_positions(self, arrnx3):
-        """"""
+        """Set the positions of the particles in the Compound
+
+        Parameters
+        ----------
+        arrnx3 : np.ndarray, shape=(n,3), dtype=float
+            The new particle positions
+
+        """
         if not self.children:
             if not arrnx3.shape[0] == 1:
                 raise ValueError('Trying to set position of {} with more than one'
@@ -911,7 +918,6 @@ class Compound(object):
         else:
             for atom, coords in zip(self._particles(include_ports=True), arrnx3):
                 atom.pos = coords
-
 
     # Interface to Trajectory for reading/writing .pdb and .mol2 files.
     # -----------------------------------------------------------------
