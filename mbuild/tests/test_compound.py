@@ -1,6 +1,7 @@
 import os
 
 import numpy as np
+import parmed as pmd
 import pytest
 
 import mbuild as mb
@@ -17,23 +18,37 @@ class TestCompound(BaseTest):
     def test_update_from_file(self, ch3):
         ch3.update_coordinates(get_fn("methyl.pdb"))
 
-    def test_save(self):
-        methyl = mb.load(get_fn('methyl.pdb'))
+    def test_save_simple(self, ch3):
         extensions = ['.xyz', '.pdb', '.mol2']
         for ext in extensions:
             outfile = 'methyl_out' + ext
-            methyl.save(filename=outfile)
+            ch3.save(filename=outfile)
             assert os.path.exists(outfile)
 
-    def test_save_overwrite(self):
-        methyl = mb.load(get_fn('methyl.pdb'))
+    def test_save_overwrite(self, ch3):
         extensions = ['.gsd', '.hoomdxml', '.lammps', '.lmp']
         for ext in extensions:
             outfile = 'lyhtem' + ext
-            methyl.save(filename=outfile)
-            methyl.save(filename=outfile, overwrite=True)
+            ch3.save(filename=outfile)
+            ch3.save(filename=outfile, overwrite=True)
             with pytest.raises(IOError):
-                methyl.save(filename=outfile, overwrite=False)
+                ch3.save(filename=outfile, overwrite=False)
+
+    def test_save_forcefield(self, methane):
+        exts = ['.gsd', '.hoomdxml', '.lammps', '.lmp', '.top', '.gro',
+                '.mol2', '.pdb', '.xyz']
+        for ext in exts:
+            methane.save('lythem' + ext,
+                         forcefield_name='oplsaa',
+                         overwrite=True)
+
+    def test_save_resnames(self, ch3, h2o):
+        system = mb.Compound([ch3, h2o])
+        system.save('resnames.gro', residues=['CH3', 'H2O'])
+
+        struct = pmd.load_file('resnames.gro')
+        assert struct.residues[0].name == 'CH3'
+        assert struct.residues[1].name == 'H2O'
 
     def test_batch_add(self, ethane, h2o):
         compound = mb.Compound()
@@ -236,14 +251,14 @@ class TestCompound(BaseTest):
         assert brush1['pmpc']['monomer'][0].n_particles == 41
         assert brush1['pmpc']['monomer'][0].n_bonds == 40
 
-    def test_to_trajectory(self, ethane, ch3):
+    def test_to_trajectory(self, ethane):
         traj = ethane.to_trajectory()
         assert traj.n_atoms == 8
         assert traj.top.n_bonds == 7
         assert traj.n_chains == 1
         assert traj.n_residues == 1
 
-        traj = ethane.to_trajectory(residue_types=ch3.__class__)
+        traj = ethane.to_trajectory(residues='CH3')
         assert traj.n_atoms == 8
         assert traj.top.n_bonds == 7
         assert traj.n_chains == 1
@@ -251,7 +266,7 @@ class TestCompound(BaseTest):
         assert 'CH3' in [res.name for res in traj.top.residues]
         assert all(res.n_atoms == 4 for res in traj.top.residues)
 
-        traj = ethane.to_trajectory(chain_types=ch3)
+        traj = ethane.to_trajectory(chains='CH3')
         assert traj.n_atoms == 8
         assert traj.top.n_bonds == 7
         assert traj.n_chains == 2
@@ -265,6 +280,50 @@ class TestCompound(BaseTest):
         assert traj.top.n_bonds == 3
         assert traj.n_chains == 1
         assert traj.n_residues == 1
+
+    def test_resnames_mdtraj(self, h2o, ethane):
+        system = mb.Compound([h2o, mb.clone(h2o), ethane])
+        traj = system.to_trajectory(residues=['Ethane', 'H2O'])
+        residues = list(traj.top.residues)
+        assert traj.n_residues == 3
+        assert residues[0].name == 'H2O'
+        assert residues[1].name == 'H2O'
+        assert residues[2].name == 'Ethane'
+
+        traj = system.to_trajectory(residues='Ethane')
+        residues = list(traj.top.residues)
+        assert traj.n_residues == 2
+        assert residues[0].name == 'RES'
+        assert residues[1].name == 'Ethane'
+
+        traj = system.to_trajectory(residues=['Ethane'])
+        residues = list(traj.top.residues)
+        assert traj.n_residues == 2
+        assert residues[0].name == 'RES'
+        assert residues[1].name == 'Ethane'
+
+        traj = system.to_trajectory()
+        residues = list(traj.top.residues)
+        assert traj.n_residues == 1
+        assert residues[0].name == 'RES'
+
+    def test_chainnames_mdtraj(self, h2o, ethane):
+        system = mb.Compound([h2o, mb.clone(h2o), ethane])
+        traj = system.to_trajectory(chains=['Ethane', 'H2O'])
+        chains = list(traj.top.chains)
+        assert traj.n_chains == 3
+
+        traj = system.to_trajectory(chains='Ethane')
+        chains = list(traj.top.chains)
+        assert traj.n_chains == 2
+
+        traj = system.to_trajectory(chains=['Ethane'])
+        chains = list(traj.top.chains)
+        assert traj.n_chains == 2
+
+        traj = system.to_trajectory()
+        chains = list(traj.top.chains)
+        assert traj.n_chains == 1
 
     @pytest.mark.skipif(not has_intermol, reason="InterMol is not installed")
     def test_intermol_conversion1(self, ethane, h2o):
@@ -316,7 +375,9 @@ class TestCompound(BaseTest):
 
         assert len(structure.bonds) == 9
 
-        # from_parmed tests
+        assert (sum(len(res.atoms) for res in structure.residues) ==
+                len(structure.atoms))
+
         compound2 = mb.Compound()
         compound2.from_parmed(structure)
 
@@ -326,6 +387,33 @@ class TestCompound(BaseTest):
         assert len([at for at in compound2.particles() if at.name == 'O']) == 1
 
         assert compound2.n_bonds == 9
+
+    def test_resnames_parmed(self, h2o, ethane):
+        system = mb.Compound([h2o, mb.clone(h2o), ethane])
+        struct = system.to_parmed(residues=['Ethane', 'H2O'])
+        assert len(struct.residues) == 3
+        assert struct.residues[0].name == 'H2O'
+        assert struct.residues[1].name == 'H2O'
+        assert struct.residues[2].name == 'Ethane'
+        assert sum(len(res.atoms) for res in struct.residues) == len(struct.atoms)
+
+        struct = system.to_parmed(residues=['Ethane', 'H2O'])
+        assert len(struct.residues) == 3
+        assert struct.residues[0].name == 'H2O'
+        assert struct.residues[1].name == 'H2O'
+        assert struct.residues[2].name == 'Ethane'
+        assert sum(len(res.atoms) for res in struct.residues) == len(struct.atoms)
+
+        struct = system.to_parmed(residues='Ethane')
+        assert len(struct.residues) == 2
+        assert struct.residues[0].name == 'RES'
+        assert struct.residues[1].name == 'Ethane'
+        assert sum(len(res.atoms) for res in struct.residues) == len(struct.atoms)
+
+        struct = system.to_parmed()
+        assert len(struct.residues) == 1
+        assert struct.residues[0].name == 'RES'
+        assert sum(len(res.atoms) for res in struct.residues) == len(struct.atoms)
 
     def test_parmed_element_guess(self):
         compound = mb.Particle(name='foobar')

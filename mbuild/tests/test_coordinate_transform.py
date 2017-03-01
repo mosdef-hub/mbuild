@@ -1,3 +1,5 @@
+import itertools as itt
+
 import numpy as np
 import pytest
 
@@ -20,54 +22,65 @@ class TestCoordinateTransform(BaseTest):
 
     def test_apply_to(self):
         double = CoordinateTransform(T=np.eye(4)*2)
-        A = np.array([[1,2,3],[4,5,6],[7,8,9]])
-        assert (double.apply_to(A) == np.array([[2,4,6],[8,10,12],[14,16,18]])).all()
+        A = np.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
+        assert (double.apply_to(A) ==
+                np.array([[2, 4, 6], [8, 10, 12], [14, 16, 18]])).all()
 
     def test_translation(self):
-        translation = Translation((10,10,10))
-        assert (translation.apply_to(np.array([[1,1,1]])) == np.array([11,11,11])).all()
+        translation = Translation((10, 10, 10))
+        assert (translation.apply_to(np.array([[1, 1, 1]])) ==
+                np.array([11, 11, 11])).all()
 
     def test_rotation_around_z(self):
         Z_rotation = RotationAroundZ(np.pi)
-        a = Z_rotation.apply_to(np.array([[2,3,4]]))
-        b = np.array([[-2.,-3.,4.]])
-        assert np.allclose(a, b, atol=1.e-16)
+        a = Z_rotation.apply_to(np.array([[2, 3, 4]]))
+        b = np.array([[-2., -3., 4.]])
+        assert np.allclose(a,  b,  atol=1.e-16)
 
     def test_rotation_around_y(self):
         Y_rotation = RotationAroundY(np.pi)
-        a = Y_rotation.apply_to(np.array([[2,3,4]]))
-        b = np.array([-2,3,-4])
-        assert np.allclose(a, b, atol=1.e-16)
+        a = Y_rotation.apply_to(np.array([[2, 3, 4]]))
+        b = np.array([-2, 3, -4])
+        assert np.allclose(a,  b,  atol=1.e-16)
 
     def test_rotation_around_x(self):
         X_rotation = RotationAroundX(np.pi)
-        a = X_rotation.apply_to(np.array([[2,3,4]]))
-        b = np.array([2,-3,-4])
-        assert np.allclose(a, b, atol=1.e-16)
+        a = X_rotation.apply_to(np.array([[2, 3, 4]]))
+        b = np.array([2, -3, -4])
+        assert np.allclose(a,  b,  atol=1.e-16)
 
     def test_rotation(self):
-        rotation = Rotation(np.pi*2/3, np.array([1,1,1]))
-        a = rotation.apply_to(np.array([[2,3,4]]))
-        b = np.array([4,2,3])
-        assert np.allclose(a, b, atol=1.e-16)
+        rotation = Rotation(np.pi*2/3,  np.array([1, 1, 1]))
+        a = rotation.apply_to(np.array([[2, 3, 4]]))
+        b = np.array([4, 2, 3])
+        assert np.allclose(a,  b,  atol=1.e-16)
 
     def test_change_of_basis(self):
-        change_basis = ChangeOfBasis(np.array([[-2,0,0],[0,-2,0],[0,0,-2]]))
-        assert (change_basis.apply_to(np.array([[2,3,4]])) == np.array([[-1.,-1.5,-2.]])).all()
+        change_basis = ChangeOfBasis(np.array([[-2, 0, 0],
+                                               [0, -2, 0],
+                                               [0, 0, -2]]))
+        assert (change_basis.apply_to(np.array([[2, 3, 4]])) ==
+                np.array([[-1., -1.5, -2.]])).all()
 
     def test_axis_transform(self):
-        origin_transform = AxisTransform(new_origin=np.array([1,1,1]))
-        assert (origin_transform.apply_to(np.array([[1,1,1]])) == np.array([[0,0,0]])).all()
-        orientation_transform = AxisTransform(point_on_x_axis=np.array([0,0,1]),point_on_xy_plane=np.array([0,1,1]))
-        assert (orientation_transform.apply_to(np.array([[2,3,4]])) == np.array([[4,3,-2]])).all()
-        axis_transform = AxisTransform(np.array([1,1,1]),np.array([1,1,2]),np.array([1,2,1]))
-        assert (axis_transform.apply_to(np.array([[2,3,4]])) == np.array([3,2,-1])).all()
+        origin_transform = AxisTransform(new_origin=np.array([1, 1, 1]))
+        assert (origin_transform.apply_to(np.array([[1, 1, 1]])) ==
+                np.array([[0, 0, 0]])).all()
+        orientation_transform = AxisTransform(point_on_x_axis=np.array([0, 0, 1]),
+                                              point_on_xy_plane=np.array([0, 1, 1]))
+        assert (orientation_transform.apply_to(np.array([[2, 3, 4]])) ==
+                np.array([[4, 3, -2]])).all()
+        axis_transform = AxisTransform(np.array([1, 1, 1]),
+                                       np.array([1, 1, 2]),
+                                       np.array([1, 2, 1]))
+        assert (axis_transform.apply_to(np.array([[2, 3, 4]])) ==
+                np.array([3, 2, -1])).all()
 
     def test_rigid_transform(self):
-        A = np.array([[2,3,4]])
-        B = np.array([[3,-4,9]])
-        rigid_transform = RigidTransform(A, B)
-        assert (rigid_transform.apply_to(np.array([[2,3,4]])) == B).all()
+        A = np.array([[2, 3, 4]])
+        B = np.array([[3, -4, 9]])
+        rigid_transform = RigidTransform(A,  B)
+        assert (rigid_transform.apply_to(np.array([[2, 3, 4]])) == B).all()
 
     def test_rotate_0(self, methane):
         before = methane.xyz_with_ports
@@ -226,79 +239,78 @@ class TestCoordinateTransform(BaseTest):
             rotate_around_z(methane, np.pi)
 
     def test_spin_relative_compound_coordinates(self, sixpoints):
-        """Ensure that a compounds's relative coordinates to not change upong spinning"""
-        import itertools as itt
+        """Check compounds's relative coordinates don't change upon spinning"""
         mol1 = mb.clone(sixpoints)
         mol2 = mb.clone(sixpoints)
         force_overlap(move_this=mol2,
-                from_positions=mol2['up'],
-                to_positions=mol1['down'],
-                add_bond=False)
+                      from_positions=mol2['up'],
+                      to_positions=mol1['down'],
+                      add_bond=False)
         mol1_angles_before = np.asarray(
-                [angle(a, b, c)
-                for (a, b, c) in itt.combinations(mol1.xyz, 3)])
+            [angle(a, b, c)
+             for (a, b, c) in itt.combinations(mol1.xyz, 3)])
         mol2_angles_before = np.asarray(
-                [angle(a, b, c)
-                for (a, b, c) in itt.combinations(mol2.xyz, 3)])
+            [angle(a, b, c)
+             for (a, b, c) in itt.combinations(mol2.xyz, 3)])
         spin_axis = (mol2['middle'].xyz - mol1['middle'].xyz).reshape(3)
         spin(mol2, np.pi*0.123456789, spin_axis)
         spin(mol1, -np.pi*0.123456789, spin_axis)
         mol1_angles_after = np.asarray(
-                [angle(a, b, c)
-                for (a, b, c) in itt.combinations(mol1.xyz, 3)])
+            [angle(a, b, c)
+             for (a, b, c) in itt.combinations(mol1.xyz, 3)])
         mol2_angles_after = np.asarray(
-                [angle(a, b, c)
-                for (a, b, c) in itt.combinations(mol2.xyz, 3)])
-        assert(np.allclose(mol1_angles_before, mol1_angles_after, atol=1e-16)
+            [angle(a, b, c)
+             for (a, b, c) in itt.combinations(mol2.xyz, 3)])
+        assert (    np.allclose(mol1_angles_before, mol1_angles_after, atol=1e-16)
                 and np.allclose(mol2_angles_before, mol2_angles_after, atol=1e-16))
 
     def test_equivalence_transform_deprectation_warning(self, ch2):
         ch22 = mb.clone(ch2)
         with pytest.warns(DeprecationWarning):
             mb.equivalence_transform(ch22,
-                    from_positions=ch22['up'],
-                    to_positions=ch2['down'])
+                                     from_positions=ch22['up'],
+                                     to_positions=ch2['down'])
 
     def test_rotate_around_x(self, methane):
         before = methane.xyz_with_ports
         rotate_around_x(methane, np.pi)
         after = methane.xyz_with_ports
-        assert(np.allclose(before[:, 1], -1*after[:, 1], atol=1e-16)
+        assert (    np.allclose(before[:, 1], -1*after[:, 1], atol=1e-16)
                 and np.allclose(before[:, 2], -1*after[:, 2], atol=1e-16))
 
     def test_rotate_around_y(self, ch2):
         before = ch2.xyz_with_ports
         rotate_around_y(ch2, np.pi)
         after = ch2.xyz_with_ports
-        assert(np.allclose(before[:, 0], -1*after[:, 0], atol=1e-16)
+        assert (    np.allclose(before[:, 0], -1*after[:, 0], atol=1e-16)
                 and np.allclose(before[:, 2], -1*after[:, 2], atol=1e-16))
 
     def test_rotate_around_z(self, ch2):
         before = ch2.xyz_with_ports
         rotate_around_z(ch2, np.pi)
         after = ch2.xyz_with_ports
-        assert(np.allclose(before[:, 0], -1*after[:, 0], atol=1e-16)
+        assert (    np.allclose(before[:, 0], -1*after[:, 0], atol=1e-16)
                 and np.allclose(before[:, 1], -1*after[:, 1], atol=1e-16))
 
     def test_rotate_around_x_away_from_origin(self, sixpoints):
         before = sixpoints.xyz_with_ports
         rotate_around_x(sixpoints, np.pi)
         after = sixpoints.xyz_with_ports
-        assert(np.allclose(before[:, 1], -1*after[:, 1], atol=1e-16)
+        assert (    np.allclose(before[:, 1], -1*after[:, 1], atol=1e-16)
                 and np.allclose(before[:, 2], -1*after[:, 2], atol=1e-16))
 
     def test_rotate_around_y_away_from_origin(self, sixpoints):
         before = sixpoints.xyz_with_ports
         rotate_around_y(sixpoints, np.pi)
         after = sixpoints.xyz_with_ports
-        assert(np.allclose(before[:, 0], -1*after[:, 0], atol=1e-16)
+        assert (    np.allclose(before[:, 0], -1*after[:, 0], atol=1e-16)
                 and np.allclose(before[:, 2], -1*after[:, 2], atol=1e-16))
 
     def test_rotate_around_z_away_from_origin(self, sixpoints):
         before = sixpoints.xyz_with_ports
         rotate_around_z(sixpoints, np.pi)
         after = sixpoints.xyz_with_ports
-        assert(np.allclose(before[:, 1], -1*after[:, 1], atol=1e-16)
+        assert (    np.allclose(before[:, 1], -1*after[:, 1], atol=1e-16)
                 and np.allclose(before[:, 0], -1*after[:, 0], atol=1e-16))
 
     def test_equivalence_transform(self, ch2, ch3, methane):
@@ -325,4 +337,5 @@ class TestCoordinateTransform(BaseTest):
         original_center = methane.center
         translate_value = np.array([2, 3, 4])
         translate_to(methane, translate_value)
-        assert (methane.xyz_with_ports == before-original_center+translate_value).all()
+        assert (methane.xyz_with_ports ==
+                before - original_center + translate_value).all()
