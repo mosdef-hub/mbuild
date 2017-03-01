@@ -47,7 +47,7 @@ def force_overlap(move_this, from_positions, to_positions, add_bond=True):
         T = _create_equivalence_transform(equivalence_pairs)
     atom_positions = move_this.xyz_with_ports
     atom_positions = T.apply_to(atom_positions)
-    move_this._set_particle_positions(atom_positions)
+    move_this.xyz_with_ports = atom_positions
 
     if add_bond:
         if isinstance(from_positions, Port) and isinstance(to_positions, Port):
@@ -334,7 +334,7 @@ def equivalence_transform(compound, from_positions, to_positions, add_bond=True)
         T = _create_equivalence_transform(equivalence_pairs)
     atom_positions = compound.xyz_with_ports
     atom_positions = T.apply_to(atom_positions)
-    compound._set_particle_positions(atom_positions)
+    compound.xyz_with_ports = atom_positions
 
     if add_bond:
         if isinstance(from_positions, Port) and isinstance(to_positions, Port):
@@ -408,7 +408,7 @@ def translate(compound, pos):
     """
     atom_positions = compound.xyz_with_ports
     atom_positions = Translation(pos).apply_to(atom_positions)
-    compound._set_particle_positions(atom_positions)
+    compound.xyz_with_ports = atom_positions
 
 warning_message = 'Please use Compound.translate_to()'
 @deprecated(warning_message)
@@ -426,7 +426,7 @@ def translate_to(compound, pos):
     atom_positions = compound.xyz_with_ports
     atom_positions -= compound.center
     atom_positions = Translation(pos).apply_to(atom_positions)
-    compound._set_particle_positions(atom_positions)
+    compound.xyz_with_ports = atom_positions
 
 
 def _translate(coordinates, by):
@@ -497,7 +497,7 @@ def rotate(compound, theta, around):
         raise ValueError('Cannot rotate around a zero vector')
     atom_positions = compound.xyz_with_ports
     atom_positions = Rotation(theta, around).apply_to(atom_positions)
-    compound._set_particle_positions(atom_positions)
+    compound.xyz_with_ports = atom_positions
 
 
 warning_message = 'Please use rotate(compound, theta, around=np.asarray([1, 0, 0]))'
@@ -678,7 +678,7 @@ def x_axis_transform(compound, new_origin=None,
                               point_on_x_axis=point_on_x_axis,
                               point_on_xy_plane=point_on_xy_plane)
     atom_positions = transform.apply_to(atom_positions)
-    compound._set_particle_positions(atom_positions)
+    compound.xyz_with_ports = atom_positions
 
 
 def y_axis_transform(compound, new_origin=None,

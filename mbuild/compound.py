@@ -30,9 +30,9 @@ from mbuild.coordinate_transform import _translate, _rotate
 
 def load(filename, relative_to_module=None, compound=None, coords_only=False,
          **kwargs):
-    """Load a file into an mbuild compound.
+    """Load a file into an mBuild Compound.
 
-    Files are read using the mdtraj package. Please refer to http://mdtraj.org/
+    Files are read using the MDTraj package. Please refer to http://mdtraj.org/
     1.8.0/load_functions.html for supported formats.
 
     Parameters
@@ -639,6 +639,46 @@ class Compound(object):
             pos = arr.reshape((-1, 3))
         return pos
 
+    @xyz.setter
+    def xyz(self, arrnx3):
+        """Set the positions of the particles in the Compound, excluding the Ports.
+
+        This function does not set the position of the ports.
+
+        Parameters
+        ----------
+        arrnx3 : np.ndarray, shape=(n,3), dtype=float
+            The new particle positions
+
+        """
+        if not self.children:
+            if not arrnx3.shape[0] == 1:
+                raise ValueError('Trying to set position of {} with more than one'
+                                 'coordinate: {}'.format(self, arrnx3))
+            self.pos = np.squeeze(arrnx3)
+        else:
+            for atom, coords in zip(self._particles(include_ports=False), arrnx3):
+                atom.pos = coords
+
+    @xyz_with_ports.setter
+    def xyz_with_ports(self, arrnx3):
+        """Set the positions of the particles in the Compound, including the Ports.
+
+        Parameters
+        ----------
+        arrnx3 : np.ndarray, shape=(n,3), dtype=float
+            The new particle positions
+
+        """
+        if not self.children:
+            if not arrnx3.shape[0] == 1:
+                raise ValueError('Trying to set position of {} with more than one'
+                                 'coordinate: {}'.format(self, arrnx3))
+            self.pos = np.squeeze(arrnx3)
+        else:
+            for atom, coords in zip(self._particles(include_ports=True), arrnx3):
+                atom.pos = coords
+
     @property
     def center(self):
         """The cartesian center of the Compound based on its Particles.
@@ -858,7 +898,7 @@ class Compound(object):
 
         """
         new_positions = _translate(self.xyz_with_ports, by)
-        self._set_particle_positions(new_positions)
+        self.xyz_with_ports = new_positions
 
     def translate_to(self, pos):
         """Translate the Compound to a specific position
@@ -882,7 +922,7 @@ class Compound(object):
 
         """
         new_positions = _rotate(self.xyz_with_ports, theta, around)
-        self._set_particle_positions(new_positions)
+        self.xyz_with_ports = new_positions
 
     def spin(self, theta, around):
         """Rotate Compound in place around an arbitrary vector.
@@ -900,24 +940,6 @@ class Compound(object):
         self.translate(-center_pos)
         self.rotate(theta, around)
         self.translate(center_pos)
-
-    def _set_particle_positions(self, arrnx3):
-        """Set the positions of the particles in the Compound
-
-        Parameters
-        ----------
-        arrnx3 : np.ndarray, shape=(n,3), dtype=float
-            The new particle positions
-
-        """
-        if not self.children:
-            if not arrnx3.shape[0] == 1:
-                raise ValueError('Trying to set position of {} with more than one'
-                                 'coordinate: {}'.format(self, arrnx3))
-            self.pos = np.squeeze(arrnx3)
-        else:
-            for atom, coords in zip(self._particles(include_ports=True), arrnx3):
-                atom.pos = coords
 
     # Interface to Trajectory for reading/writing .pdb and .mol2 files.
     # -----------------------------------------------------------------
