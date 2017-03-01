@@ -454,8 +454,8 @@ def _translate_to(coordinates, to):
         The new average position of the coordinates.
 
     """
-    center = np.mean(coordinates, axis=0)
-    return Translation(-center).apply_to(coordinates)
+    coordinates -= np.mean(coordinates, axis=0)
+    return Translation(to).apply_to(coordinates)
 
 
 def _rotate(coordinates, theta, around):
