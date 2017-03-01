@@ -82,11 +82,16 @@ class BaseTest:
 
     @pytest.fixture
     def benzene(self):
-        return mb.load(get_fn('benzene.mol2'))
+        compound = mb.load(get_fn('benzene.mol2'))
+        compound.name = 'Benzene'
+        return compound
 
     @pytest.fixture
     def rigid_benzene(self):
-        return mb.load(get_fn('benzene.mol2'), rigid=True)
+        compound = mb.load(get_fn('benzene.mol2'))
+        compound.name = 'Benzene'
+        compound.label_rigid_bodies()
+        return compound
 
     @pytest.fixture
     def benzene_from_parts(self):
@@ -101,7 +106,7 @@ class BaseTest:
         mb.translate(ch['b'], [0, 0.07, 0]) 
         mb.rotate_around_z(ch['b'], -120.0 * (np.pi/180.0))
 
-        benzene = mb.Compound()
+        benzene = mb.Compound(name='Benzene')
         benzene.add(ch)
         current = ch
 
@@ -120,8 +125,9 @@ class BaseTest:
 
     @pytest.fixture
     def rigid_ch(self):
-        ch = mb.load(get_fn('ch.mol2'), rigid=True)
+        ch = mb.load(get_fn('ch.mol2'))
         ch.name = 'CH'
+        ch.label_rigid_bodies()
         mb.translate(ch, -ch[0].pos)    
         ch.add(mb.Port(anchor=ch[0]), 'a')
         mb.translate(ch['a'], [0, 0.07, 0]) 
