@@ -43,7 +43,7 @@ def load(filename, relative_to_module=None, compound=None, coords_only=False,
         Instead of looking in the current working directory, look for the file
         where this module is defined. This is typically used in Compound classes
         that will be instantiated from a different directory (such as the
-        Compounds located in mbuild.lib). 
+        Compounds located in mbuild.lib).
     compound : mb.Compound, optional, default=None
         Existing compound to load atom and bond information into.
     coords_only : bool, optional, default=False
@@ -221,7 +221,7 @@ class Compound(object):
                     yield child
 
     def successors(self):
-        """Yield Compounds below self in the hierarchy. 
+        """Yield Compounds below self in the hierarchy.
 
         Yields
         -------
@@ -296,7 +296,7 @@ class Compound(object):
 
     def particles_by_name(self, name):
         """Return all Particles of the Compound with a specific name
-        
+
         Parameters
         ----------
         name : str
@@ -686,7 +686,7 @@ class Compound(object):
         Returns
         -------
         np.ndarray, shape=(3,), dtype=float
-            The cartesian center of the Compound based on its Particles       
+            The cartesian center of the Compound based on its Particles
 
         """
         if self.xyz.any():
