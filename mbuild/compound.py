@@ -27,7 +27,6 @@ from mbuild.periodic_kdtree import PeriodicCKDTree
 from mbuild.utils.io import run_from_ipython, import_
 
 
-
 def load(filename, relative_to_module=None, compound=None, coords_only=False,
          **kwargs):
     """Load a file into an mbuild compound.
@@ -156,6 +155,7 @@ class Compound(object):
     xyz_with_ports
 
     """
+
     def __init__(self, subcompounds=None, name=None, pos=None, charge=0.0,
                  periodicity=None, port_particle=False):
         super(Compound, self).__init__()
@@ -760,7 +760,8 @@ class Compound(object):
         load(filename, compound=self, coords_only=True)
 
     def save(self, filename, show_ports=False, forcefield_name=None,
-             forcefield_files=None, box=None, overwrite=False, **kwargs):
+             forcefield_files=None, box=None, overwrite=False, residues=None,
+             **kwargs):
         """Save the Compound to a file.
 
         Parameters
@@ -823,7 +824,7 @@ class Compound(object):
         if os.path.exists(filename) and not overwrite:
             raise IOError('{0} exists; not overwriting'.format(filename))
 
-        structure = self.to_parmed(**kwargs)
+        structure = self.to_parmed(residues=residues)
 
         # Apply a force field with foyer if specified
         if forcefield_name or forcefield_files:
@@ -900,17 +901,17 @@ class Compound(object):
         else:
             self.periodicity = np.array([0., 0., 0.])
 
-    def to_trajectory(self, show_ports=False, chain_types=None,
-                      residue_types=None, **kwargs):
+    def to_trajectory(self, show_ports=False, chains=None,
+                      residues=None):
         """Convert to an md.Trajectory and flatten the compound.
 
         Parameters
         ----------
         show_ports : bool, optional, default=False
             Include all port atoms when converting to trajectory.
-        chain_types : mb.Compound or list of mb.Compound
+        chains : mb.Compound or list of mb.Compound
             Chain types to add to the topology
-        residue_types : mb.Compound or list of mb.Compound
+        residues : mb.Compound or list of mb.Compound
             Residue types to add to the topology
 
         Returns
@@ -924,7 +925,7 @@ class Compound(object):
         """
         atom_list = [particle for particle in self.particles(show_ports)]
 
-        top = self._to_topology(atom_list, chain_types, residue_types)
+        top = self._to_topology(atom_list, chains, residues)
 
         # Coordinates.
         xyz = np.ndarray(shape=(1, top.n_atoms, 3), dtype='float')
@@ -943,16 +944,16 @@ class Compound(object):
         return md.Trajectory(xyz, top, unitcell_lengths=unitcell_lengths,
                              unitcell_angles=np.array([90, 90, 90]))
 
-    def _to_topology(self, atom_list, chain_types=None, residue_types=None):
+    def _to_topology(self, atom_list, chains=None, residues=None):
         """Create a mdtraj.Topology from a Compound.
 
         Parameters
         ----------
         atom_list : list of mb.Compound
             Atoms to include in the topology
-        chain_types : mb.Compound or list of mb.Compound
+        chains : mb.Compound or list of mb.Compound
             Chain types to add to the topology
-        residue_types : mb.Compound or list of mb.Compound
+        residues : mb.Compound or list of mb.Compound
             Residue types to add to the topology
 
         Returns
@@ -967,15 +968,15 @@ class Compound(object):
         from mdtraj.core.element import get_by_symbol
         from mdtraj.core.topology import Topology
 
-        if isinstance(chain_types, Compound):
-            chain_types = [Compound]
-        if isinstance(chain_types, (list, set)):
-            chain_types = tuple(chain_types)
+        if isinstance(chains, string_types):
+            chains = [chains]
+        if isinstance(chains, (list, set)):
+            chains = tuple(chains)
 
-        if isinstance(residue_types, Compound):
-            residue_types = [Compound]
-        if isinstance(residue_types, (list, set)):
-            residue_types = tuple(residue_types)
+        if isinstance(residues, string_types):
+            residues = [residues]
+        if isinstance(residues, (list, set)):
+            residues = tuple(residues)
         top = Topology()
         atom_mapping = {}
 
@@ -990,7 +991,7 @@ class Compound(object):
         for atom in atom_list:
             # Chains
             for parent in atom.ancestors():
-                if chain_types and isinstance(parent, chain_types):
+                if chains and parent.name in chains:
                     if parent != last_chain_compound:
                         last_chain_compound = parent
                         last_chain = top.add_chain()
@@ -1003,10 +1004,10 @@ class Compound(object):
 
             # Residues
             for parent in atom.ancestors():
-                if residue_types and isinstance(parent, residue_types):
+                if residues and parent.name in residues:
                     if parent != last_residue_compound:
                         last_residue_compound = parent
-                        last_residue = top.add_residue(parent.__class__.__name__, last_chain)
+                        last_residue = top.add_residue(parent.name, last_chain)
                         last_residue.compound = last_residue_compound
                     break
             else:
@@ -1086,6 +1087,7 @@ class Compound(object):
                     new_atom = Particle(name=str(atom.name), pos=structure.coordinates[atom.idx])
                     chain_compound.add(new_atom, label='{0}[$]'.format(atom.name))
                     atom_mapping[atom] = new_atom
+                    print('Added', atom, residue)
 
         for bond in structure.bonds:
             atom1 = atom_mapping[bond.atom1]
@@ -1097,7 +1099,7 @@ class Compound(object):
         else:
             self.periodicity = np.array([0., 0., 0.])
 
-    def to_parmed(self, title='', **kwargs):
+    def to_parmed(self, title='', residues=None):
         """Create a ParmEd Structure from a Compound.
 
         Parameters
@@ -1119,7 +1121,34 @@ class Compound(object):
         structure.title = title if title else self.name
         atom_mapping = {}  # For creating bonds below
         guessed_elements = set()
+
+        if isinstance(residues, string_types):
+            residues = [residues]
+        if isinstance(residues, (list, set)):
+            residues = tuple(residues)
+
+        default_residue = pmd.Residue('RES')
+        default_residue.compound = None
+        last_residue_compound = None
+
         for atom in self.particles():
+            # Residues
+            for parent in atom.ancestors():
+                if residues and parent.name in residues:
+                    if parent != last_residue_compound:
+                        last_residue_compound = parent
+                        last_residue = pmd.Residue(parent.name)
+                        last_residue.compound = last_residue_compound
+                    break
+            else:
+                if default_residue.compound != last_residue_compound:
+                    default_residue = pmd.Residue('RES')
+                last_residue = default_residue
+                last_residue.compound = last_residue_compound
+
+            if last_residue not in structure.residues:
+                structure.residues.append(last_residue)
+
             atomic_number = None
             name = ''.join(char for char in atom.name if not char.isdigit())
             try:
@@ -1137,8 +1166,12 @@ class Compound(object):
             pmd_atom = pmd.Atom(atomic_number=atomic_number, name=atom.name,
                                 mass=mass)
             pmd_atom.xx, pmd_atom.xy, pmd_atom.xz = atom.pos * 10  # Angstroms
-            structure.add_atom(pmd_atom, resname='RES', resnum=1)
+            structure.add_atom(pmd_atom, resname=last_residue.name,
+                               resnum=last_residue.idx)
+
             atom_mapping[atom] = pmd_atom
+
+        structure.residues.claim()
 
         for atom1, atom2 in self.bonds():
             bond = pmd.Bond(atom_mapping[atom1], atom_mapping[atom2])
