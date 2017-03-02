@@ -657,7 +657,6 @@ class Compound(object):
         for child in self.children:
             child.remove(yet_to_remove)
             if child.contains_rigid:
-                # Reorder rigid_id's to ensure consecutiveness
                 self.root._reorder_rigid_ids()
 
     def _remove_references(self, removed_part):
