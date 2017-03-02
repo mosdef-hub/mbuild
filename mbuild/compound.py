@@ -983,52 +983,58 @@ class Compound(object):
         default_chain = top.add_chain()
         default_residue = top.add_residue('RES', default_chain)
 
-        last_residue_compound = None
-        last_chain_compound = None
-        last_residue = None
-        last_chain = None
+        compound_residue_map = dict()
+        atom_residue_map = dict()
+        compound_chain_map = dict()
+        atom_chain_map = dict()
 
         for atom in atom_list:
             # Chains
-            for parent in atom.ancestors():
-                if chains and atom.name in chains:
-                    if parent != last_chain_compound:
-                        last_chain_compound = atom
-                        last_chain = top.add_chain()
-                        last_chain_default_residue = top.add_residue('RES', last_chain)
-                        last_chain.compound = last_chain_compound
-                elif chains and parent.name in chains:
-                    if parent != last_chain_compound:
-                        last_chain_compound = parent
-                        last_chain = top.add_chain()
-                        last_chain_default_residue = top.add_residue('RES', last_chain)
-                        last_chain.compound = last_chain_compound
-                    break
+            if chains and atom.name in chains:
+                current_chain = top.add_chain()
+                atom_chain_map[atom] = current_chain
+                compound_chain_map[atom] = current_chain
+            elif chains:
+                for parent in atom.ancestors():
+                    if chains and parent.name in chains:
+                        if parent not in compound_chain_map:
+                            current_chain = top.add_chain()
+                            compound_chain_map[parent] = current_chain
+                        atom_chain_map[atom] = current_chain
+                        break
+                else:
+                    current_chain = default_chain
+                    atom_chain_map[atom] = current_chain
             else:
-                last_chain = default_chain
-                last_chain.compound = last_chain_compound
+                current_chain = default_chain
+                atom_chain_map[atom] = current_chain
 
             # Residues
-            for parent in atom.ancestors():
-                if residues and parent.name in residues:
-                    if parent != last_residue_compound:
-                        last_residue_compound = parent
-                        last_residue = top.add_residue(parent.name, last_chain)
-                        last_residue.compound = last_residue_compound
-                    break
-            else:
-                if last_chain != default_chain:
-                    last_residue = last_chain_default_residue
+            if residues and atom.name in residues:
+                current_residue = top.add_residue(atom.name, current_chain)
+                atom_residue_map[atom] = current_residue
+                compound_residue_map[atom] = current_residue
+            elif residues:
+                for parent in atom.ancestors():
+                    if residues and parent.name in residues:
+                        if parent not in compound_residue_map:
+                            current_residue = top.add_residue(parent.name, current_chain)
+                            compound_residue_map[parent] = current_residue
+                        atom_residue_map[atom] = current_residue
+                        break
                 else:
-                    last_residue = default_residue
-                last_residue.compound = last_residue_compound
+                    current_residue = default_residue
+                    atom_residue_map[atom] = current_residue
+            else:
+                current_residue = default_residue
+                atom_residue_map[atom] = current_residue
 
             # Add the actual atoms
             try:
                 elem = get_by_symbol(atom.name)
             except KeyError:
                 elem = get_by_symbol("VS")
-            at = top.add_atom(atom.name, elem, last_residue)
+            at = top.add_atom(atom.name, elem, atom_residue_map[atom])
             at.charge = atom.charge
             atom_mapping[atom] = at
 
@@ -1134,35 +1140,35 @@ class Compound(object):
             residues = tuple(residues)
 
         default_residue = pmd.Residue('RES')
-        default_residue.compound = None
-        last_residue_compound = None
+        compound_residue_map = dict()
+        atom_residue_map = dict()
 
         for atom in self.particles():
-            # Residues
-            for parent in atom.ancestors():
-                if residues and atom.name in residues:
-                    last_residue_compound = atom
-                    last_residue = pmd.Residue(atom.name)
-                    last_residue.compound = last_residue_compound
-                elif residues and parent.name in residues:
-                    if parent != last_residue_compound:
-                        last_residue_compound = parent
-                        last_residue = pmd.Residue(parent.name)
-                        last_residue.compound = last_residue_compound
-                    break
+            if residues and atom.name in residues:
+                current_residue = pmd.Residue(atom.name)
+                atom_residue_map[atom] = current_residue
+                compound_residue_map[atom] = current_residue
+            elif residues:
+                for parent in atom.ancestors():
+                    if residues and parent.name in residues:
+                        if parent not in compound_residue_map:
+                            current_residue = pmd.Residue(parent.name)
+                            compound_residue_map[parent] = current_residue
+                        atom_residue_map[atom] = current_residue
+                        break
+                else:  # Did not find specified residues in ancestors.
+                    current_residue = default_residue
+                    atom_residue_map[atom] = current_residue
             else:
-                if default_residue.compound != last_residue_compound:
-                    default_residue = pmd.Residue('RES')
-                last_residue = default_residue
-                last_residue.compound = last_residue_compound
+                current_residue = default_residue
+                atom_residue_map[atom] = current_residue
 
-            if last_residue not in structure.residues:
-                structure.residues.append(last_residue)
+            if current_residue not in structure.residues:
+                structure.residues.append(current_residue)
 
             atomic_number = None
             name = ''.join(char for char in atom.name if not char.isdigit())
-            try:
-                atomic_number = AtomicNum[atom.name]
+            try: atomic_number = AtomicNum[atom.name]
             except KeyError:
                 element = element_by_name(atom.name)
                 if name not in guessed_elements:
@@ -1176,8 +1182,10 @@ class Compound(object):
             pmd_atom = pmd.Atom(atomic_number=atomic_number, name=atom.name,
                                 mass=mass)
             pmd_atom.xx, pmd_atom.xy, pmd_atom.xz = atom.pos * 10  # Angstroms
-            structure.add_atom(pmd_atom, resname=last_residue.name,
-                               resnum=last_residue.idx)
+
+            residue = atom_residue_map[atom]
+            structure.add_atom(pmd_atom, resname=residue.name,
+                               resnum=residue.idx)
 
             atom_mapping[atom] = pmd_atom
 

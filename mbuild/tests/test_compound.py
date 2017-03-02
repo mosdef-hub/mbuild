@@ -1,4 +1,5 @@
 import os
+import pdb
 
 import numpy as np
 import parmed as pmd
@@ -45,8 +46,8 @@ class TestCompound(BaseTest):
     def test_save_resnames(self, ch3, h2o):
         system = mb.Compound([ch3, h2o])
         system.save('resnames.gro', residues=['CH3', 'H2O'])
-
         struct = pmd.load_file('resnames.gro')
+
         assert struct.residues[0].name == 'CH3'
         assert struct.residues[1].name == 'H2O'
 
@@ -318,19 +319,15 @@ class TestCompound(BaseTest):
     def test_chainnames_mdtraj(self, h2o, ethane):
         system = mb.Compound([h2o, mb.clone(h2o), ethane])
         traj = system.to_trajectory(chains=['Ethane', 'H2O'])
-        chains = list(traj.top.chains)
         assert traj.n_chains == 3
 
         traj = system.to_trajectory(chains='Ethane')
-        chains = list(traj.top.chains)
         assert traj.n_chains == 2
 
         traj = system.to_trajectory(chains=['Ethane'])
-        chains = list(traj.top.chains)
         assert traj.n_chains == 2
 
         traj = system.to_trajectory()
-        chains = list(traj.top.chains)
         assert traj.n_chains == 1
 
     @pytest.mark.skipif(not has_intermol, reason="InterMol is not installed")
