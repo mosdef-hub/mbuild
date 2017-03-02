@@ -199,7 +199,7 @@ class Compound(object):
 
         self.bond_graph = None
         self.port_particle = port_particle
-        self.rigid_id = None
+        self._rigid_id = None
 
         # self.add() must be called after labels and children are initialized.
         if subcompounds:
@@ -323,6 +323,18 @@ class Compound(object):
         for particle in self.particles():
             if particle.name == name:
                 yield particle
+
+    @property
+    def rigid_id(self):
+        return self._rigid_id
+
+    @rigid_id.setter
+    def rigid_id(self, value):
+        if self._contains_only_ports():
+            self._rigid_id = value
+        else:
+            raise AttributeError("rigid_id is immutable for Compounds that are "
+                                 "not at the bottom of the containment hierarchy.")
 
     @property
     def contains_rigid(self):
@@ -1595,14 +1607,6 @@ class Compound(object):
         descr.append('id: {}>'.format(id(self)))
         return ''.join(descr)
 
-    def __setattr__(self, attr, value):
-        if attr == 'rigid_id' and 'children' in self.__dict__ and self.children:
-            raise AttributeError("{} is immutable for Compounds that are not "
-                                     "at the bottom of the containment hierarchy."
-                                     "".format(attr))
-        else:
-            super(Compound, self).__setattr__(attr, value)
-
     def _clone(self, clone_of=None, root_container=None):
         """A faster alternative to deepcopying.
 
@@ -1631,7 +1635,7 @@ class Compound(object):
         newone._pos = deepcopy(self._pos)
         newone.charge = deepcopy(self.charge)
         newone.port_particle = deepcopy(self.port_particle)
-        newone.rigid_id = deepcopy(self.rigid_id)
+        newone._rigid_id = deepcopy(self._rigid_id)
         if hasattr(self, 'index'):
             newone.index = deepcopy(self.index)
 
