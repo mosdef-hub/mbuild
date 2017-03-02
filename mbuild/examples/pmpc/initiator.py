@@ -17,12 +17,12 @@ class Initiator(mb.Compound):
         # Add bottom port
         self.add(mb.Port(anchor=self[0]), 'down')
         # Place the port.
-        mb.translate(self['down'], np.array([0.0, -0.07, 0.0]))
+        self['down'].translate(np.array([0.0, -0.07, 0.0]))
 
         # Add top port.
         self.add(mb.Port(anchor=self[21]), 'up')
         # Place the port.
-        mb.translate(self['up'], np.array([0.0, 0.07, 0.0]))
+        self['up'].translate(np.array([0.0, 0.07, 0.0]))
 
 if __name__ == "__main__":
     ini = Initiator()

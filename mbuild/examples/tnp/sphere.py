@@ -33,13 +33,13 @@ class Sphere(mb.Compound):
             self.add(port, "port_{}".format(i))
 
             # Make the top of the port point toward the positive x axis.
-            mb.spin(port, -pi/2, [0, 0, 1])
+            port.spin(-pi/2, [0, 0, 1])
             # Raise up (or down) the top of the port in the z direction.
-            mb.spin(port, -arcsin(pos[2]/radius), [0, 1, 0])
+            port.spin(-arcsin(pos[2]/radius), [0, 1, 0])
             # Rotate the Port along the z axis.
-            mb.spin(port, arctan2(pos[1], pos[0]), [0, 0, 1])
+            port.spin(arctan2(pos[1], pos[0]), [0, 0, 1])
             # Move the Port a bit away from the surface of the Sphere.
-            mb.translate(port, pos/radius * port_distance_from_surface)
+            port.translate(pos/radius * port_distance_from_surface)
 
 if __name__ == "__main__":
     sphere = Sphere(n=4, radius=2)

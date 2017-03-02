@@ -1,5 +1,7 @@
 import pytest
 
+import mbuild as mb
+
 
 class BaseTest:
 
@@ -43,21 +45,34 @@ class BaseTest:
         return Betacristobalite()
 
     @pytest.fixture
-    def alkyl(self):
+    def propyl(self):
         from mbuild.examples import Alkane
-        return Alkane(2, cap_front=True, cap_end=False)
+        return Alkane(3, cap_front=True, cap_end=False)
+
+    @pytest.fixture
+    def hexane(self, propyl):
+        class Hexane(mb.Compound):
+            def __init__(self):
+                super(Hexane, self).__init__()
+
+                self.add(propyl, 'propyl1')
+                self.add(mb.clone(propyl), 'propyl2')
+
+                mb.force_overlap(self['propyl1'],
+                                 self['propyl1']['down'],
+                                 self['propyl2']['down'])
+        return Hexane()
 
     @pytest.fixture
     def sixpoints(self):
-        import mbuild as mb
         molecule = mb.Compound()
         molecule.add(mb.Particle(name='C', pos=[5, 5, 5]), label='middle')
         molecule.add(mb.Particle(name='C', pos=[6, 5, 5]), label='right')
         molecule.add(mb.Particle(name='C', pos=[4, 5, 5]), label='left')
         molecule.add(mb.Port(anchor=molecule[0]), label='up')
-        mb.translate(molecule['up'], [0, 1, 0])
+        molecule['up'].translate([0, 1, 0])
         molecule.add(mb.Port(anchor=molecule[0]), label='down')
-        mb.translate(molecule['down'], [0, -1, 0])
+        molecule['down'].translate([0, -1, 0])
         molecule.add(mb.Particle(name='C', pos=[5, 5, 6]), label='front')
         molecule.add(mb.Particle(name='C', pos=[5, 5, 4]), label='back')
         molecule.generate_bonds('C', 'C', 0.9, 1.1)
