@@ -240,29 +240,15 @@ class TestCoordinateTransform(BaseTest):
 
     def test_spin_relative_compound_coordinates(self, sixpoints):
         """Check compounds's relative coordinates don't change upon spinning"""
-        mol1 = mb.clone(sixpoints)
-        mol2 = mb.clone(sixpoints)
-        force_overlap(move_this=mol2,
-                      from_positions=mol2['up'],
-                      to_positions=mol1['down'],
-                      add_bond=False)
-        mol1_angles_before = np.asarray(
+        np.random.seed(0)
+        angles_before = np.asarray(
             [angle(a, b, c)
-             for (a, b, c) in itt.combinations(mol1.xyz, 3)])
-        mol2_angles_before = np.asarray(
+             for (a, b, c) in itt.combinations(sixpoints.xyz, 3)])
+        sixpoints.spin(np.pi*0.1234569789, np.random.rand(3))
+        angles_after = np.asarray(
             [angle(a, b, c)
-             for (a, b, c) in itt.combinations(mol2.xyz, 3)])
-        spin_axis = (mol2['middle'].xyz - mol1['middle'].xyz).reshape(3)
-        mol2.spin(np.pi*0.123456789, spin_axis)
-        mol1.spin(-np.pi*0.123456789, spin_axis)
-        mol1_angles_after = np.asarray(
-            [angle(a, b, c)
-             for (a, b, c) in itt.combinations(mol1.xyz, 3)])
-        mol2_angles_after = np.asarray(
-            [angle(a, b, c)
-             for (a, b, c) in itt.combinations(mol2.xyz, 3)])
-        assert (    np.allclose(mol1_angles_before, mol1_angles_after, atol=1e-15)
-                and np.allclose(mol2_angles_before, mol2_angles_after, atol=1e-15))
+             for (a, b, c) in itt.combinations(sixpoints.xyz, 3)])
+        assert np.allclose(angles_before, angles_after, atol=1e-15)
 
     def test_equivalence_transform_deprectation_warning(self, ch2):
         ch22 = mb.clone(ch2)
