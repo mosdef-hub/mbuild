@@ -548,7 +548,7 @@ class Compound(object):
         if (isinstance(new_child, collections.Iterable) and
                 not isinstance(new_child, string_types)):
             for child in new_child:
-                self.add(child)
+                self.add(child, reset_rigid_ids=reset_rigid_ids)
             return
 
         if not isinstance(new_child, Compound):
@@ -556,8 +556,12 @@ class Compound(object):
                              'can be added to Compounds. You tried to add '
                              '"{}".'.format(new_child))
 
-        if new_child.contains_rigid and self.contains_rigid and reset_rigid_ids:
-            new_child._increment_rigid_ids(increment=self.max_rigid_id + 1)
+        if reset_rigid_ids:
+            if self.contains_rigid:
+                if new_child.contains_rigid or new_child.rigid_id is not None:
+                    new_child._increment_rigid_ids(increment=self.max_rigid_id + 1)
+        if self.rigid_id is not None:
+            self.rigid_id = None
 
         # Create children and labels on the first add operation
         if self.children is None:

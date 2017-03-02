@@ -532,3 +532,30 @@ class TestRigid(BaseTest):
     def test_manual_set_rigid_id_error(self, benzene):
         with pytest.raises(AttributeError):
             benzene.rigid_id = 0
+
+    def test_build_from_single_particle(self):
+        compound = mb.Compound()
+        compound.rigid_id = 0
+        atom = mb.Compound(name='atom')
+        atom.rigid_id = 0
+        atom2 = mb.clone(atom)
+        compound.add([atom, atom2], reset_rigid_ids=False)
+
+        assert compound.contains_rigid == True
+        assert compound.rigid_id is None
+        assert compound.max_rigid_id is 0
+        assert len(list(compound.rigid_particles())) == 2
+
+    def test_build_from_single_particle2(self):
+        compound = mb.Compound()
+        compound.rigid_id = 0
+        atom = mb.Compound(name='atom')
+        atom.rigid_id = 0
+        atom2 = mb.clone(atom)
+        compound.add(atom)
+        compound.add(atom2, reset_rigid_ids=False)
+
+        assert compound.contains_rigid == True
+        assert compound.rigid_id is None
+        assert compound.max_rigid_id is 0
+        assert len(list(compound.rigid_particles())) == 2
