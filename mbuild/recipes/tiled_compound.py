@@ -7,7 +7,6 @@ import numpy as np
 from mbuild.compound import Compound
 from mbuild.exceptions import MBuildError
 from mbuild.port import Port
-from mbuild.coordinate_transform import translate
 from mbuild.periodic_kdtree import PeriodicCKDTree
 from mbuild import clone
 
@@ -64,7 +63,7 @@ class TiledCompound(Compound):
                               range(n_tiles[1]),
                               range(n_tiles[2])):
             new_tile = clone(tile)
-            translate(new_tile, np.array(ijk * tile.periodicity))
+            new_tile.translate(np.array(ijk * tile.periodicity))
             self._add_tile(new_tile, ijk)
             self._hoist_ports(new_tile)
 

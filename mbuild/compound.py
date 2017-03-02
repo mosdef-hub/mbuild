@@ -25,14 +25,13 @@ from mbuild.formats.lammpsdata import write_lammpsdata
 from mbuild.formats.gsdwriter import write_gsd
 from mbuild.periodic_kdtree import PeriodicCKDTree
 from mbuild.utils.io import run_from_ipython, import_
-
-
+from mbuild.coordinate_transform import _translate, _rotate
 
 def load(filename, relative_to_module=None, compound=None, coords_only=False,
          **kwargs):
-    """Load a file into an mbuild compound.
+    """Load a file into an mBuild Compound.
 
-    Files are read using the mdtraj package. Please refer to http://mdtraj.org/
+    Files are read using the MDTraj package. Please refer to http://mdtraj.org/
     1.8.0/load_functions.html for supported formats.
 
     Parameters
@@ -43,7 +42,7 @@ def load(filename, relative_to_module=None, compound=None, coords_only=False,
         Instead of looking in the current working directory, look for the file
         where this module is defined. This is typically used in Compound classes
         that will be instantiated from a different directory (such as the
-        Compounds located in mbuild.lib). 
+        Compounds located in mbuild.lib).
     compound : mb.Compound, optional, default=None
         Existing compound to load atom and bond information into.
     coords_only : bool, optional, default=False
@@ -156,6 +155,7 @@ class Compound(object):
     xyz_with_ports
 
     """
+
     def __init__(self, subcompounds=None, name=None, pos=None, charge=0.0,
                  periodicity=None, port_particle=False):
         super(Compound, self).__init__()
@@ -221,7 +221,7 @@ class Compound(object):
                     yield child
 
     def successors(self):
-        """Yield Compounds below self in the hierarchy. 
+        """Yield Compounds below self in the hierarchy.
 
         Yields
         -------
@@ -296,7 +296,7 @@ class Compound(object):
 
     def particles_by_name(self, name):
         """Return all Particles of the Compound with a specific name
-        
+
         Parameters
         ----------
         name : str
@@ -639,6 +639,46 @@ class Compound(object):
             pos = arr.reshape((-1, 3))
         return pos
 
+    @xyz.setter
+    def xyz(self, arrnx3):
+        """Set the positions of the particles in the Compound, excluding the Ports.
+
+        This function does not set the position of the ports.
+
+        Parameters
+        ----------
+        arrnx3 : np.ndarray, shape=(n,3), dtype=float
+            The new particle positions
+
+        """
+        if not self.children:
+            if not arrnx3.shape[0] == 1:
+                raise ValueError('Trying to set position of {} with more than one'
+                                 'coordinate: {}'.format(self, arrnx3))
+            self.pos = np.squeeze(arrnx3)
+        else:
+            for atom, coords in zip(self._particles(include_ports=False), arrnx3):
+                atom.pos = coords
+
+    @xyz_with_ports.setter
+    def xyz_with_ports(self, arrnx3):
+        """Set the positions of the particles in the Compound, including the Ports.
+
+        Parameters
+        ----------
+        arrnx3 : np.ndarray, shape=(n,3), dtype=float
+            The new particle positions
+
+        """
+        if not self.children:
+            if not arrnx3.shape[0] == 1:
+                raise ValueError('Trying to set position of {} with more than one'
+                                 'coordinate: {}'.format(self, arrnx3))
+            self.pos = np.squeeze(arrnx3)
+        else:
+            for atom, coords in zip(self._particles(include_ports=True), arrnx3):
+                atom.pos = coords
+
     @property
     def center(self):
         """The cartesian center of the Compound based on its Particles.
@@ -646,7 +686,7 @@ class Compound(object):
         Returns
         -------
         np.ndarray, shape=(3,), dtype=float
-            The cartesian center of the Compound based on its Particles       
+            The cartesian center of the Compound based on its Particles
 
         """
         if self.xyz.any():
@@ -760,7 +800,8 @@ class Compound(object):
         load(filename, compound=self, coords_only=True)
 
     def save(self, filename, show_ports=False, forcefield_name=None,
-             forcefield_files=None, box=None, overwrite=False, **kwargs):
+             forcefield_files=None, box=None, overwrite=False, residues=None,
+             **kwargs):
         """Save the Compound to a file.
 
         Parameters
@@ -823,7 +864,7 @@ class Compound(object):
         if os.path.exists(filename) and not overwrite:
             raise IOError('{0} exists; not overwriting'.format(filename))
 
-        structure = self.to_parmed(**kwargs)
+        structure = self.to_parmed(residues=residues)
 
         # Apply a force field with foyer if specified
         if forcefield_name or forcefield_files:
@@ -848,6 +889,58 @@ class Compound(object):
             saver(filename=filename, structure=structure, box=box, **kwargs)
         else:  # ParmEd supported saver.
             structure.save(filename, overwrite=overwrite, **kwargs)
+
+    def translate(self, by):
+        """Translate the Compound by a vector
+
+        Parameters
+        ----------
+        by : np.ndarray, shape=(3,), dtype=float
+
+        """
+        new_positions = _translate(self.xyz_with_ports, by)
+        self.xyz_with_ports = new_positions
+
+    def translate_to(self, pos):
+        """Translate the Compound to a specific position
+
+        Parameters
+        ----------
+        pos : np.ndarray, shape=3(,), dtype=float
+
+        """
+        self.translate(pos - self.center)
+
+    def rotate(self, theta, around):
+        """Rotate Compound around an arbitrary vector.
+
+        Parameters
+        ----------
+        theta : float
+            The angle by which to rotate the Compound, in radians.
+        around : np.ndarray, shape=(3,), dtype=float
+            The vector about which to rotate the Compound.
+
+        """
+        new_positions = _rotate(self.xyz_with_ports, theta, around)
+        self.xyz_with_ports = new_positions
+
+    def spin(self, theta, around):
+        """Rotate Compound in place around an arbitrary vector.
+
+        Parameters
+        ----------
+        theta : float
+            The angle by which to rotate the Compound, in radians.
+        around : np.ndarray, shape=(3,), dtype=float
+            The axis about which to spin the Compound.
+
+        """
+        around = np.asarray(around).reshape(3)
+        center_pos = self.center
+        self.translate(-center_pos)
+        self.rotate(theta, around)
+        self.translate(center_pos)
 
     # Interface to Trajectory for reading/writing .pdb and .mol2 files.
     # -----------------------------------------------------------------
@@ -900,17 +993,17 @@ class Compound(object):
         else:
             self.periodicity = np.array([0., 0., 0.])
 
-    def to_trajectory(self, show_ports=False, chain_types=None,
-                      residue_types=None, **kwargs):
+    def to_trajectory(self, show_ports=False, chains=None,
+                      residues=None):
         """Convert to an md.Trajectory and flatten the compound.
 
         Parameters
         ----------
         show_ports : bool, optional, default=False
             Include all port atoms when converting to trajectory.
-        chain_types : mb.Compound or list of mb.Compound
+        chains : mb.Compound or list of mb.Compound
             Chain types to add to the topology
-        residue_types : mb.Compound or list of mb.Compound
+        residues : mb.Compound or list of mb.Compound
             Residue types to add to the topology
 
         Returns
@@ -924,7 +1017,7 @@ class Compound(object):
         """
         atom_list = [particle for particle in self.particles(show_ports)]
 
-        top = self._to_topology(atom_list, chain_types, residue_types)
+        top = self._to_topology(atom_list, chains, residues)
 
         # Coordinates.
         xyz = np.ndarray(shape=(1, top.n_atoms, 3), dtype='float')
@@ -943,16 +1036,16 @@ class Compound(object):
         return md.Trajectory(xyz, top, unitcell_lengths=unitcell_lengths,
                              unitcell_angles=np.array([90, 90, 90]))
 
-    def _to_topology(self, atom_list, chain_types=None, residue_types=None):
+    def _to_topology(self, atom_list, chains=None, residues=None):
         """Create a mdtraj.Topology from a Compound.
 
         Parameters
         ----------
         atom_list : list of mb.Compound
             Atoms to include in the topology
-        chain_types : mb.Compound or list of mb.Compound
+        chains : mb.Compound or list of mb.Compound
             Chain types to add to the topology
-        residue_types : mb.Compound or list of mb.Compound
+        residues : mb.Compound or list of mb.Compound
             Residue types to add to the topology
 
         Returns
@@ -967,15 +1060,15 @@ class Compound(object):
         from mdtraj.core.element import get_by_symbol
         from mdtraj.core.topology import Topology
 
-        if isinstance(chain_types, Compound):
-            chain_types = [Compound]
-        if isinstance(chain_types, (list, set)):
-            chain_types = tuple(chain_types)
+        if isinstance(chains, string_types):
+            chains = [chains]
+        if isinstance(chains, (list, set)):
+            chains = tuple(chains)
 
-        if isinstance(residue_types, Compound):
-            residue_types = [Compound]
-        if isinstance(residue_types, (list, set)):
-            residue_types = tuple(residue_types)
+        if isinstance(residues, string_types):
+            residues = [residues]
+        if isinstance(residues, (list, set)):
+            residues = tuple(residues)
         top = Topology()
         atom_mapping = {}
 
@@ -990,7 +1083,7 @@ class Compound(object):
         for atom in atom_list:
             # Chains
             for parent in atom.ancestors():
-                if chain_types and isinstance(parent, chain_types):
+                if chains and parent.name in chains:
                     if parent != last_chain_compound:
                         last_chain_compound = parent
                         last_chain = top.add_chain()
@@ -1003,10 +1096,10 @@ class Compound(object):
 
             # Residues
             for parent in atom.ancestors():
-                if residue_types and isinstance(parent, residue_types):
+                if residues and parent.name in residues:
                     if parent != last_residue_compound:
                         last_residue_compound = parent
-                        last_residue = top.add_residue(parent.__class__.__name__, last_chain)
+                        last_residue = top.add_residue(parent.name, last_chain)
                         last_residue.compound = last_residue_compound
                     break
             else:
@@ -1086,6 +1179,7 @@ class Compound(object):
                     new_atom = Particle(name=str(atom.name), pos=structure.coordinates[atom.idx])
                     chain_compound.add(new_atom, label='{0}[$]'.format(atom.name))
                     atom_mapping[atom] = new_atom
+                    print('Added', atom, residue)
 
         for bond in structure.bonds:
             atom1 = atom_mapping[bond.atom1]
@@ -1097,7 +1191,7 @@ class Compound(object):
         else:
             self.periodicity = np.array([0., 0., 0.])
 
-    def to_parmed(self, title='', **kwargs):
+    def to_parmed(self, title='', residues=None):
         """Create a ParmEd Structure from a Compound.
 
         Parameters
@@ -1119,7 +1213,34 @@ class Compound(object):
         structure.title = title if title else self.name
         atom_mapping = {}  # For creating bonds below
         guessed_elements = set()
+
+        if isinstance(residues, string_types):
+            residues = [residues]
+        if isinstance(residues, (list, set)):
+            residues = tuple(residues)
+
+        default_residue = pmd.Residue('RES')
+        default_residue.compound = None
+        last_residue_compound = None
+
         for atom in self.particles():
+            # Residues
+            for parent in atom.ancestors():
+                if residues and parent.name in residues:
+                    if parent != last_residue_compound:
+                        last_residue_compound = parent
+                        last_residue = pmd.Residue(parent.name)
+                        last_residue.compound = last_residue_compound
+                    break
+            else:
+                if default_residue.compound != last_residue_compound:
+                    default_residue = pmd.Residue('RES')
+                last_residue = default_residue
+                last_residue.compound = last_residue_compound
+
+            if last_residue not in structure.residues:
+                structure.residues.append(last_residue)
+
             atomic_number = None
             name = ''.join(char for char in atom.name if not char.isdigit())
             try:
@@ -1137,8 +1258,12 @@ class Compound(object):
             pmd_atom = pmd.Atom(atomic_number=atomic_number, name=atom.name,
                                 mass=mass)
             pmd_atom.xx, pmd_atom.xy, pmd_atom.xz = atom.pos * 10  # Angstroms
-            structure.add_atom(pmd_atom, resname='RES', resnum=1)
+            structure.add_atom(pmd_atom, resname=last_residue.name,
+                               resnum=last_residue.idx)
+
             atom_mapping[atom] = pmd_atom
+
+        structure.residues.claim()
 
         for atom1, atom2 in self.bonds():
             bond = pmd.Bond(atom_mapping[atom1], atom_mapping[atom2])

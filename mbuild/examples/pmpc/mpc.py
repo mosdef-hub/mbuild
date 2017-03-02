@@ -21,12 +21,12 @@ class MPC(mb.Compound):
 
         # Add top port.
         self.add(mb.Port(anchor=C_top), label='up')
-        mb.translate(self['up'], (C_bottom.pos - C_top.pos)*1.50)
+        self['up'].translate((C_bottom.pos - C_top.pos)*1.50)
 
         # Add bottom port
         self.add(mb.Port(anchor=C_bottom), 'down')
-        mb.spin(self['down'], alpha, [0, 1, 0])
-        mb.translate(self['down'], (C_top.pos - C_bottom.pos)*1.50)
+        self['down'].spin(alpha, [0, 1, 0])
+        self['down'].translate((C_top.pos - C_bottom.pos)*1.50)
 
 if __name__ == "__main__":
     monomer = MPC()

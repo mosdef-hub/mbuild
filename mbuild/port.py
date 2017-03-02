@@ -1,8 +1,6 @@
 import numpy as np
 
 from mbuild.compound import Compound, Particle
-from mbuild.coordinate_transform import (rotate, translate_to, translate,
-                                         unit_vector, angle)
 from mbuild import clone
 
 
@@ -44,7 +42,7 @@ class Port(Compound):
                         port_particle=True), 'right')
 
         down = clone(up)
-        rotate(down, np.pi, [0, 0, 1])
+        down.rotate(np.pi, [0, 0, 1])
 
         self.add(up, 'up')
         self.add(down, 'down')
@@ -62,7 +60,7 @@ class Port(Compound):
             rotate(self, -angle(default_direction, orientation), normal)
 
         if anchor:
-            translate_to(self, anchor.pos)
+            self.translate_to(anchor.pos)
 
         translate(self, separation*unit_vector(orientation))
 

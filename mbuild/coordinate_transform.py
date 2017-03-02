@@ -47,7 +47,7 @@ def force_overlap(move_this, from_positions, to_positions, add_bond=True):
         T = _create_equivalence_transform(equivalence_pairs)
     atom_positions = move_this.xyz_with_ports
     atom_positions = T.apply_to(atom_positions)
-    _set_particle_positions(move_this, atom_positions)
+    move_this.xyz_with_ports = atom_positions
 
     if add_bond:
         if isinstance(from_positions, Port) and isinstance(to_positions, Port):
@@ -260,18 +260,6 @@ def angle(u, v, w=None):
     return np.arccos(np.clip(c, -1, 1))
 
 
-def _set_particle_positions(compound, arrnx3):
-    """"""
-    if not compound.children:
-        if not arrnx3.shape[0] == 1:
-            raise ValueError('Trying to set position of {} with more than one'
-                             'coordinate: {}'.format(compound, arrnx3))
-        compound.pos = np.squeeze(arrnx3)
-    else:
-        for atom, coords in zip(compound._particles(include_ports=True), arrnx3):
-            atom.pos = coords
-
-
 def _create_equivalence_transform(equiv):
     """Compute an equivalence transformation that transforms this compound
     to another compound's coordinate system.
@@ -346,7 +334,7 @@ def equivalence_transform(compound, from_positions, to_positions, add_bond=True)
         T = _create_equivalence_transform(equivalence_pairs)
     atom_positions = compound.xyz_with_ports
     atom_positions = T.apply_to(atom_positions)
-    _set_particle_positions(compound, atom_positions)
+    compound.xyz_with_ports = atom_positions
 
     if add_bond:
         if isinstance(from_positions, Port) and isinstance(to_positions, Port):
@@ -405,6 +393,8 @@ def _choose_correct_port(from_port, to_port):
     return [(correct_port, to_port['up'])], T
 
 
+warning_message = 'Please use Compound.translate()'
+@deprecated(warning_message)
 def translate(compound, pos):
     """Translate a compound by a vector.
 
@@ -418,9 +408,10 @@ def translate(compound, pos):
     """
     atom_positions = compound.xyz_with_ports
     atom_positions = Translation(pos).apply_to(atom_positions)
-    _set_particle_positions(compound, atom_positions)
+    compound.xyz_with_ports = atom_positions
 
-
+warning_message = 'Please use Compound.translate_to()'
+@deprecated(warning_message)
 def translate_to(compound, pos):
     """Translate a compound to a coordinate.
 
@@ -435,9 +426,59 @@ def translate_to(compound, pos):
     atom_positions = compound.xyz_with_ports
     atom_positions -= compound.center
     atom_positions = Translation(pos).apply_to(atom_positions)
-    _set_particle_positions(compound, atom_positions)
+    compound.xyz_with_ports = atom_positions
 
 
+def _translate(coordinates, by):
+    """Translate a set of coordinates by a vector.
+
+    Parameters
+    ----------
+    coordinates : np.ndarray, shape=(n,3), dtype=float
+        The coordinates being translated.
+    by : np.ndarray, shape=(3,), dtype=float
+        The vector to translate the coordinates by.
+
+    """
+    return Translation(by).apply_to(coordinates)
+
+
+def _translate_to(coordinates, to):
+    """Translate a set of coordinates to a location.
+
+    Parameters
+    ----------
+    coordinates : np.ndarray, shape=(n,3), dtype=float
+        The coordinates being translated.
+    to : np.ndarray, shape=(3,), dtype=float
+        The new average position of the coordinates.
+
+    """
+    coordinates -= np.mean(coordinates, axis=0)
+    return Translation(to).apply_to(coordinates)
+
+
+def _rotate(coordinates, theta, around):
+    """Rotate a set of coordinates around an arbitrary vector.
+
+    Parameters
+    ----------
+    coordinates : np.ndarray, shape=(n,3), dtype=float
+        The coordinates being rotated.
+    theta : float
+        The angle by which to rotate the coordinates, in radians.
+    around : np.ndarray, shape=(3,), dtype=float
+        The vector about which to rotate the coordinates.
+
+    """
+    around = np.asarray(around).reshape(3)
+    if np.array_equal(around, np.zeros(3)):
+        raise ValueError('Cannot rotate around a zero vector')
+    return Rotation(theta, around).apply_to(coordinates)
+
+
+warning_message = 'Please use Compound.rotate()'
+@deprecated(warning_message)
 def rotate(compound, theta, around):
     """Rotate a compound around an arbitrary vector.
 
@@ -452,11 +493,11 @@ def rotate(compound, theta, around):
 
     """
     around = np.asarray(around).reshape(3)
-    if(np.array_equal(around, np.zeros_like(around))):
+    if np.array_equal(around, np.zeros(3)):
         raise ValueError('Cannot rotate around a zero vector')
     atom_positions = compound.xyz_with_ports
     atom_positions = Rotation(theta, around).apply_to(atom_positions)
-    _set_particle_positions(compound, atom_positions)
+    compound.xyz_with_ports = atom_positions
 
 
 warning_message = 'Please use rotate(compound, theta, around=np.asarray([1, 0, 0]))'
@@ -507,6 +548,8 @@ def rotate_around_z(compound, theta):
     rotate(compound, theta, np.asarray([0, 0, 1]))
 
 
+warning_message = 'Please use Compound.spin()'
+@deprecated(warning_message)
 def spin(compound, theta, around):
     """Rotate a compound in place around an arbitrary vector.
 
@@ -521,12 +564,35 @@ def spin(compound, theta, around):
 
     """
     around = np.asarray(around).reshape(3)
-    if(np.allclose(around, 0.0, atol=1e-16)):
+    if np.array_equal(around, np.zeros(3)):
         raise ValueError('Cannot spin around a zero vector')
     center_pos = compound.center
     translate(compound, -center_pos)
     rotate(compound, theta, around)
     translate(compound, center_pos)
+
+
+def _spin(coordinates, theta, around):
+    """Rotate a set of coordinates in place around an arbitrary vector.
+
+    Parameters
+    ----------
+    coordinates : np.ndarray, shape=(n,3), dtype=float
+        The coordinates being spun.
+    theta : float
+        The angle by which to spin the coordinates, in radians.
+    around : np.ndarray, shape=(3,), dtype=float
+        The axis about which to spin the coordinates.
+
+    """
+    around = np.asarray(around).reshape(3)
+    if np.array_equal(around, np.zeros(3)):
+        raise ValueError('Cannot spin around a zero vector')
+    center_pos = np.mean(coordinates, axis=0)
+    coordinates -= center_pos
+    coordinates = _rotate(coordinates, theta, around)
+    coordinates += center_pos
+    return coordinates
 
 
 warning_message = 'Please use spin(compound, theta, around=np.asarray([1, 0, 0]))'
@@ -612,7 +678,7 @@ def x_axis_transform(compound, new_origin=None,
                               point_on_x_axis=point_on_x_axis,
                               point_on_xy_plane=point_on_xy_plane)
     atom_positions = transform.apply_to(atom_positions)
-    _set_particle_positions(compound, atom_positions)
+    compound.xyz_with_ports = atom_positions
 
 
 def y_axis_transform(compound, new_origin=None,
