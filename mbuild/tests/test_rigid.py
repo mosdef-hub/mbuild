@@ -112,7 +112,7 @@ class TestRigid(BaseTest):
                              n_compounds=n_benzenes,
                              box=[0, 0, 0, 4, 4, 4])
         filled.label_rigid_bodies(discrete_bodies='Benzene')
-        filled.children[0]._reset_rigid_ids(rigid_id=3)
+        filled.children[0]._increment_rigid_ids(increment=3)
         with pytest.warns(UserWarning):
             filled.save('benzene-box.hoomdxml')
 

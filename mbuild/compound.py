@@ -151,9 +151,10 @@ class Compound(object):
     referrers : set
         Other compounds that reference this part with labels.
     rigid_id : int, default=None
-        Only not None if the Compound resides at the bottom of the containment 
-        hierarchy. In this case, rigid_id will refer to the integer ID of the 
-        rigid body the Compound is associated with.
+        The ID of the rigid body that this Compound belongs to.  Only Particles
+        (the bottom of the containment hierarchy) can have integer values for
+        `rigid_id`. Compounds containing rigid particles will always have 
+        `rigid_id == None`. See also `contains_rigid`.
     boundingbox
     center
     contains_rigid
@@ -357,11 +358,11 @@ class Compound(object):
             rigid body IDs are found, None is returned
 
         """
-        if self.contains_rigid:
+        try:
             return max([particle.rigid_id for particle in self.particles()
                         if particle.rigid_id is not None])
-        else:
-            return None
+        except ValueError:
+            return
 
     def rigid_particles(self, rigid_id=None):
         """Generate all particles in rigid bodies.
@@ -396,9 +397,9 @@ class Compound(object):
         as a single rigid body by providing all particles in `self` with the
         same rigid_id. If `discrete_bodies` is not None, each instance of 
         a Compound with a name found in `discrete_bodies` will be treated as a 
-        unique rigid body. If `rigid_particles` is not None, only Compounds at
-        the bottom of the containment hierarchy matching this name will be 
-        considered part of the rigid body.
+        unique rigid body. If `rigid_particles` is not None, only Particles 
+        (Compounds at the bottom of the containment hierarchy) matching this name 
+        will be considered part of the rigid body.
 
         Parameters
         ----------
@@ -471,32 +472,28 @@ class Compound(object):
 
         for successor in self.successors():
             if discrete_bodies and successor.name not in discrete_bodies:
-                pass
-            else:
-                for particle in successor.particles():
-                    if rigid_particles and particle.name not in rigid_particles:
-                        pass
-                    else:
-                        particle.rigid_id = rigid_id
-                if discrete_bodies:
-                    rigid_id += 1
+                continue
+            for particle in successor.particles():
+                if rigid_particles and particle.name not in rigid_particles:
+                    continue
+                particle.rigid_id = rigid_id
+            if discrete_bodies:
+                rigid_id += 1
 
     def unlabel_rigid_bodies(self):
-        '''Remove all rigid body labels from the Compound '''
-        self._reset_rigid_ids(rigid_id=None)
+        """Remove all rigid body labels from the Compound """
+        for particle in self.particles():
+            particle.rigid_id = None
 
-    def _reset_rigid_ids(self, rigid_id):
-        """Resets the rigid_id of all rigid Particles in a Compound
+    def _increment_rigid_ids(self, increment):
+        """Increment the rigid_id of all rigid Particles in a Compound
 
-        Treats the Compound and all successors that already have a rigid_id as
-        a single rigid body.
+        Adds `increment` to the rigid_id of all Particles in `self` that
+        already have an integer rigid_id.
         """
         for particle in self.particles():
             if particle.rigid_id is not None:
-                if rigid_id is not None:
-                    particle.rigid_id += rigid_id
-                else:
-                    particle.rigid_id = rigid_id
+                particle.rigid_id += increment
 
     def _reorder_rigid_ids(self):
         """Reorder rigid body IDs ensuring consecutiveness.
@@ -506,11 +503,9 @@ class Compound(object):
 
         """
         max_rigid = self.max_rigid_id
-        unique_rigid_ids = set([p.rigid_id for p in self.rigid_particles()])
-        unique_rigid_ids.discard(None)
-        unique_rigid_ids = sorted(unique_rigid_ids)
-        unique_rigid = len(unique_rigid_ids)
-        if max_rigid and unique_rigid != max_rigid + 1:
+        unique_rigid_ids = sorted(set([p.rigid_id for p in self.rigid_particles()]))
+        n_unique_rigid = len(unique_rigid_ids)
+        if max_rigid and n_unique_rigid != max_rigid + 1:
             missing_rigid_id = (unique_rigid_ids[-1] * (unique_rigid_ids[-1] + 1))/2 - sum(unique_rigid_ids)
             for successor in self.successors():
                 if successor.rigid_id is not None:
@@ -561,14 +556,8 @@ class Compound(object):
                              'can be added to Compounds. You tried to add '
                              '"{}".'.format(new_child))
 
-        if not new_child.port_particle:
-            # If we are adding a Compound containing rigid particles
-            if new_child.contains_rigid:
-                # If we are adding to a Compound already containing rigid particles
-                if self.contains_rigid:
-                    # If we want to reset the rigid_ids
-                    if reset_rigid_ids:
-                        new_child._reset_rigid_ids(self.max_rigid_id + 1)
+        if new_child.contains_rigid and self.contains_rigid and reset_rigid_ids:
+            new_child._increment_rigid_ids(increment=self.max_rigid_id + 1)
 
         # Create children and labels on the first add operation
         if self.children is None:
@@ -1072,10 +1061,9 @@ class Compound(object):
 
         # Provide a warning if rigid_ids are not sequential from 0
         if self.contains_rigid:
-            unique_rigid_ids = set([p.rigid_id for p in self.rigid_particles()])
-            unique_rigid_ids.discard(None)
-            unique_rigid_ids = sorted(unique_rigid_ids)
-            if(max(unique_rigid_ids) != len(unique_rigid_ids) - 1):
+            unique_rigid_ids = sorted(set([p.rigid_id 
+                                           for p in self.rigid_particles()]))
+            if max(unique_rigid_ids) != len(unique_rigid_ids) - 1:
                 warn("Unique rigid body IDs are not sequential starting from zero.")
 
         if saver:  # mBuild supported saver.
