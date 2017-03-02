@@ -521,3 +521,14 @@ class TestRigid(BaseTest):
         assert benzene_from_parts.max_rigid_id is 0
         assert len(list(benzene_from_parts.rigid_particles())) == 12
         assert len(list(benzene_from_parts.rigid_particles(rigid_id=0))) == 12
+
+    def test_manual_set_rigid_id(self, benzene):
+        benzene[0].rigid_id = 0
+        assert benzene.contains_rigid is True
+        assert benzene[0].contains_rigid is False
+        assert benzene.max_rigid_id is 0
+        assert len(list(benzene.rigid_particles())) == 1
+
+    def test_manual_set_rigid_id_error(self, benzene):
+        with pytest.raises(AttributeError):
+            benzene.rigid_id = 0

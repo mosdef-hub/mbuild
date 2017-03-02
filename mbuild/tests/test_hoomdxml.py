@@ -29,8 +29,8 @@ class TestHoomdXML(BaseTest):
         filled.label_rigid_bodies(discrete_bodies='Benzene', rigid_particles='C')
         filled.save(filename='benzene.hoomdxml')
 
-        file = xml.etree.ElementTree.parse('benzene.hoomdxml').getroot()
-        body_text = file[0].find('body').text
+        xml_file = xml.etree.ElementTree.parse('benzene.hoomdxml').getroot()
+        body_text = xml_file[0].find('body').text
         rigid_bodies = [int(body) for body in body_text.split('\n') if body]
         for body_id in range(10):
             assert rigid_bodies.count(body_id) == 6

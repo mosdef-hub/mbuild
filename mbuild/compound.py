@@ -1075,7 +1075,7 @@ class Compound(object):
             unique_rigid_ids = set([p.rigid_id for p in self.rigid_particles()])
             unique_rigid_ids.discard(None)
             unique_rigid_ids = sorted(unique_rigid_ids)
-            if(max(unique_rigid_ids) != len(unique_rigid_ids) + 1):
+            if(max(unique_rigid_ids) != len(unique_rigid_ids) - 1):
                 warn("Unique rigid body IDs are not sequential starting from zero.")
 
         if saver:  # mBuild supported saver.
@@ -1510,6 +1510,14 @@ class Compound(object):
 
         descr.append('id: {}>'.format(id(self)))
         return ''.join(descr)
+
+    def __setattr__(self, attr, value):
+        if attr == 'rigid_id' and 'children' in self.__dict__ and self.children:
+            raise AttributeError("{} is immutable for Compounds that are not "
+                                     "at the bottom of the containment hierarchy."
+                                     "".format(attr))
+        else:
+            super(Compound, self).__setattr__(attr, value)
 
     def _clone(self, clone_of=None, root_container=None):
         """A faster alternative to deepcopying.
