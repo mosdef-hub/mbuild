@@ -25,13 +25,13 @@ from mbuild.formats.lammpsdata import write_lammpsdata
 from mbuild.formats.gsdwriter import write_gsd
 from mbuild.periodic_kdtree import PeriodicCKDTree
 from mbuild.utils.io import run_from_ipython, import_
-
+from mbuild.coordinate_transform import _translate, _rotate
 
 def load(filename, relative_to_module=None, compound=None, coords_only=False,
          **kwargs):
-    """Load a file into an mbuild compound.
+    """Load a file into an mBuild Compound.
 
-    Files are read using the mdtraj package. Please refer to http://mdtraj.org/
+    Files are read using the MDTraj package. Please refer to http://mdtraj.org/
     1.8.0/load_functions.html for supported formats.
 
     Parameters
@@ -42,7 +42,7 @@ def load(filename, relative_to_module=None, compound=None, coords_only=False,
         Instead of looking in the current working directory, look for the file
         where this module is defined. This is typically used in Compound classes
         that will be instantiated from a different directory (such as the
-        Compounds located in mbuild.lib). 
+        Compounds located in mbuild.lib).
     compound : mb.Compound, optional, default=None
         Existing compound to load atom and bond information into.
     coords_only : bool, optional, default=False
@@ -221,7 +221,7 @@ class Compound(object):
                     yield child
 
     def successors(self):
-        """Yield Compounds below self in the hierarchy. 
+        """Yield Compounds below self in the hierarchy.
 
         Yields
         -------
@@ -296,7 +296,7 @@ class Compound(object):
 
     def particles_by_name(self, name):
         """Return all Particles of the Compound with a specific name
-        
+
         Parameters
         ----------
         name : str
@@ -639,6 +639,46 @@ class Compound(object):
             pos = arr.reshape((-1, 3))
         return pos
 
+    @xyz.setter
+    def xyz(self, arrnx3):
+        """Set the positions of the particles in the Compound, excluding the Ports.
+
+        This function does not set the position of the ports.
+
+        Parameters
+        ----------
+        arrnx3 : np.ndarray, shape=(n,3), dtype=float
+            The new particle positions
+
+        """
+        if not self.children:
+            if not arrnx3.shape[0] == 1:
+                raise ValueError('Trying to set position of {} with more than one'
+                                 'coordinate: {}'.format(self, arrnx3))
+            self.pos = np.squeeze(arrnx3)
+        else:
+            for atom, coords in zip(self._particles(include_ports=False), arrnx3):
+                atom.pos = coords
+
+    @xyz_with_ports.setter
+    def xyz_with_ports(self, arrnx3):
+        """Set the positions of the particles in the Compound, including the Ports.
+
+        Parameters
+        ----------
+        arrnx3 : np.ndarray, shape=(n,3), dtype=float
+            The new particle positions
+
+        """
+        if not self.children:
+            if not arrnx3.shape[0] == 1:
+                raise ValueError('Trying to set position of {} with more than one'
+                                 'coordinate: {}'.format(self, arrnx3))
+            self.pos = np.squeeze(arrnx3)
+        else:
+            for atom, coords in zip(self._particles(include_ports=True), arrnx3):
+                atom.pos = coords
+
     @property
     def center(self):
         """The cartesian center of the Compound based on its Particles.
@@ -646,7 +686,7 @@ class Compound(object):
         Returns
         -------
         np.ndarray, shape=(3,), dtype=float
-            The cartesian center of the Compound based on its Particles       
+            The cartesian center of the Compound based on its Particles
 
         """
         if self.xyz.any():
@@ -849,6 +889,58 @@ class Compound(object):
             saver(filename=filename, structure=structure, box=box, **kwargs)
         else:  # ParmEd supported saver.
             structure.save(filename, overwrite=overwrite, **kwargs)
+
+    def translate(self, by):
+        """Translate the Compound by a vector
+
+        Parameters
+        ----------
+        by : np.ndarray, shape=(3,), dtype=float
+
+        """
+        new_positions = _translate(self.xyz_with_ports, by)
+        self.xyz_with_ports = new_positions
+
+    def translate_to(self, pos):
+        """Translate the Compound to a specific position
+
+        Parameters
+        ----------
+        pos : np.ndarray, shape=3(,), dtype=float
+
+        """
+        self.translate(pos - self.center)
+
+    def rotate(self, theta, around):
+        """Rotate Compound around an arbitrary vector.
+
+        Parameters
+        ----------
+        theta : float
+            The angle by which to rotate the Compound, in radians.
+        around : np.ndarray, shape=(3,), dtype=float
+            The vector about which to rotate the Compound.
+
+        """
+        new_positions = _rotate(self.xyz_with_ports, theta, around)
+        self.xyz_with_ports = new_positions
+
+    def spin(self, theta, around):
+        """Rotate Compound in place around an arbitrary vector.
+
+        Parameters
+        ----------
+        theta : float
+            The angle by which to rotate the Compound, in radians.
+        around : np.ndarray, shape=(3,), dtype=float
+            The axis about which to spin the Compound.
+
+        """
+        around = np.asarray(around).reshape(3)
+        center_pos = self.center
+        self.translate(-center_pos)
+        self.rotate(theta, around)
+        self.translate(center_pos)
 
     # Interface to Trajectory for reading/writing .pdb and .mol2 files.
     # -----------------------------------------------------------------
