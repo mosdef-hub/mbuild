@@ -1,12 +1,11 @@
-__all__ = ['Lattice']
-
-
-import numpy as np
 from collections import defaultdict
 from copy import deepcopy
-from six import string_types
 import itertools as it
+from six import string_types
+import numpy as np
 import mbuild as mb
+
+__all__ = ['Lattice']
 
 
 class Lattice(object):
@@ -128,37 +127,38 @@ class Lattice(object):
     TODO(Justin Gilmer) : orientation functionality
     TODO(Justin Gilmer) : conversion to idiomatic python
     """
+
     def __init__(self, lattice_spacings, dimension=None,
                  lattice_vectors=None, basis_vectors=None,
                  angles=None):
         super(Lattice, self).__init__()
+        self.lattice_spacings = None
+        self.dimension = None
+        self.lattice_vectors = None
+        self.basis_vectors = None
+        self.angles = None
         self._validate_inputs(lattice_vectors=lattice_vectors,
                               dimension=dimension,
                               lattice_spacings=lattice_spacings,
                               basis_vectors=basis_vectors,
                               angles=angles)
 
-    def _validate_inputs(self, lattice_vectors, dimension,
-                         lattice_spacings, basis_vectors, angles):
-        """Check for proper inputs and set instance attributes.
+    def _validate_dimension(self, dimension):
+        """Ensure that dimension input is correct.
 
-        validate_inputs takes the data passed to the constructor by the user
-        and will ensure that the data is correctly formatted and will then
-        set its instance attributes.
+        _validate_dimension will check for that the dimensionality
+        passed to the constructor is a proper input.
 
-        validate_inputs checks that dimensionality is maintained,
-        the unit cell is right handed, the area or volume of the unit cell
-        is positive and non-zero for 2D and 3D respectively, lattice spacings
-        are provided, basis vectors do not overlap when the unit cell is
-        expanded.
+        If the dimensionality is None, the default value is 3,
+        or the user can specify 1D or 2D.
+
+        If _validate_dimension cannot convert the passed in value to an int,
+        or if the dimension is <1 or >3, a ValueError will be raised.
 
         Exceptions Raised
         -----------------
-        TypeError : incorrect typing of the input parameters.
-
-        ValueError : values are not within restrictions.
+        ValueError : Incorrect typing of the input parameter.
         """
-        # TODO (Justin Gilmer) Split cleaning into separate functions
         if dimension is None:
             dimension = 3
         else:
@@ -167,7 +167,18 @@ class Lattice(object):
             raise ValueError('Incorrect dimensions: {} is not a proper '
                              'dimension. 1, 2, or 3 are acceptable.'
                              .format(dimension))
+        self.dimension = dimension
 
+    def _validate_lattice_spacing(self, lattice_spacings, dimension):
+        """Ensure that lattice spacing is provided and correct.
+
+        _validate_lattice_spacing will ensure that the lattice spacings
+        provided are acceptable values and dimensionally constant.
+
+        Exceptions Raised
+        -----------------
+        ValueError : Incorrect lattice_vectors input
+        """
         if lattice_spacings is not None:
             lattice_spacings = np.asarray(lattice_spacings, dtype=float)
             if np.shape(lattice_spacings) != (dimension, ):
@@ -184,7 +195,11 @@ class Lattice(object):
             raise ValueError('Negative or zero lattice spacing value. One of '
                              'the spacings {} is negative or 0.'
                              .format(lattice_spacings))
+        self.lattice_spacings = lattice_spacings
 
+    def _validate_angles(self, angles, dimension):
+        """Ensure that the
+        """
         if angles is not None:
             if (len(angles), dimension) == (3, 3):
                 if all(isinstance(theAngle, float) for theAngle in angles):
@@ -224,14 +239,10 @@ class Lattice(object):
                 raise ValueError('Incorrect amount of angles provided for '
                                  'dimension {}. Recieved {} angles.'
                                  .format(dimension, len(angles)))
+    def _validate_lattice_vectors(self, lattice_vectors, dimension):
+        """Ensure that the lattice_vectors are reasonable inputs.
 
-        if angles is not None and lattice_vectors is not None:
-            return ValueError('Over defined system. Lattice vectors and '
-                              'angles passed to constructor. Only one of '
-                              'these sets are required.')
-        if angles is not None and dimension != 1 and lattice_vectors is None:
-            lattice_vectors = self._from_lattice_parameters(angles, dimension)
-
+        """
         if lattice_vectors is None:
             if dimension is 3:
                 lattice_vectors = np.asarray(([1.0, 0.0, 0.0],
@@ -266,6 +277,36 @@ class Lattice(object):
                     raise ValueError('Negative Determinant: the determinant '
                                      'of {} is negative, indicating a left-'
                                      'handed system.' .format(det))
+        self.lattice_vectors = lattice_vectors
+    def _validate_inputs(self, lattice_vectors, dimension,
+                         lattice_spacings, basis_vectors, angles):
+        """Check for proper inputs and set instance attributes.
+
+        validate_inputs takes the data passed to the constructor by the user
+        and will ensure that the data is correctly formatted and will then
+        set its instance attributes.
+
+        validate_inputs checks that dimensionality is maintained,
+        the unit cell is right handed, the area or volume of the unit cell
+        is positive and non-zero for 2D and 3D respectively, lattice spacings
+        are provided, basis vectors do not overlap when the unit cell is
+        expanded.
+
+        Exceptions Raised
+        -----------------
+        TypeError : incorrect typing of the input parameters.
+
+        ValueError : values are not within restrictions.
+        """
+        # TODO (Justin Gilmer) Split cleaning into separate functions
+
+        if angles is not None and lattice_vectors is not None:
+            return ValueError('Over defined system. Lattice vectors and '
+                              'angles passed to constructor. Only one of '
+                              'these sets are required.')
+        if angles is not None and dimension != 1 and lattice_vectors is None:
+            lattice_vectors = self._from_lattice_parameters(angles, dimension)
+        # move lattice vector validatings into separate function
         # TODO(Justin Gilmer) Require dict only, simpify args
         if basis_vectors is None:
             basis_vectors = defaultdict(list)
