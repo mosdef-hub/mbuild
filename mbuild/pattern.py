@@ -4,7 +4,7 @@ from itertools import product
 
 import numpy as np
 
-from mbuild.coordinate_transform import (force_overlap, translate, spin)
+from mbuild.coordinate_transform import force_overlap
 from mbuild.utils.validation import assert_port_exists
 from mbuild import clone
 
@@ -42,7 +42,7 @@ class Pattern(object):
     def _adjust_ports(self):
         for orientation, ports in self.orientations.items():
             for port, point in zip(ports, self.points):
-                translate(port, point)
+                port.translate(point)
 
     def apply(self, compound, orientation='', compound_port=''):
         """Arrange copies of a Compound as specified by the Pattern.
@@ -67,7 +67,7 @@ class Pattern(object):
         else:
             for point in self.points:
                 new_compound = clone(compound)
-                translate(new_compound, point)
+                new_compound.translate(point)
 
                 compounds.append(new_compound)
         return compounds
@@ -246,11 +246,11 @@ class SpherePattern(Pattern):
                 port = Port()
                 ports.append(port)
                 # Make the top of the port point toward the positive x axis.
-                spin(port, -np.pi/2, [0, 0, 1])
+                port.spin(-np.pi/2, [0, 0, 1])
                 # Raise up (or down) the top of the port in the z direction.
-                spin(port, -np.arcsin(point[2]), [0, 1, 0])
+                port.spin(-np.arcsin(point[2]), [0, 1, 0])
                 # Rotate the Port along the z axis.
-                spin(port, np.arctan2(point[1], point[0]), [0, 0, 1])
+                port.spin(np.arctan2(point[1], point[0]), [0, 0, 1])
                 # Move the Port a bit away from the surface of the Sphere.
                 # translate(port, point + 0.07)
             kwargs['orientations'] = {'normal': ports}
