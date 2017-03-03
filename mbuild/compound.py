@@ -476,6 +476,19 @@ class Compound(object):
         return [port for port in self.labels.values()
                 if isinstance(port, Port)]
 
+    def all_ports(self):
+        """Return all Ports referenced by this Compound and its successors
+
+        Returns
+        -------
+        list of mb.Compound
+            A list of all Ports referenced by this Compound and its successors
+
+        """
+        from mbuild.port import Port
+        return [successor for successor in self.successors()
+                if isinstance(successor, Port)]
+
     def available_ports(self):
         """Return all unoccupied Ports referenced by this Compound.
 
@@ -753,6 +766,11 @@ class Compound(object):
         filename : str
             Name of file from which to load coordinates. Supported file types
             are the same as those supported by load()
+        update_port_locations : bool, optional, default=True
+            Update the locations of Ports so that they are shifted along with
+            their anchor particles.  Note: This conserves the location of
+            Ports with respect to the anchor Particle, but does not conserve
+            the orientation of Ports with respect to the molecule as a whole.
 
         See Also
         --------
@@ -762,13 +780,28 @@ class Compound(object):
         if update_port_locations:
             compound_init = clone(self)
             load(filename, compound=self, coords_only=True)
-            self.update_port_locations(compound_init)
+            self._update_port_locations(compound_init)
         else:
             load(filename, compound=self, coords_only=True)
 
-    def update_port_locations(self, initial_compound):
+    def _update_port_locations(self, initial_compound):
+        """Adjust port locations after particles have moved
+
+        Compares the locations of Particles between 'self' and a reference
+        Compound.  Shifts Ports in accordance with how far anchors have
+        been moved.  This conserves the location of Ports with respect to their
+        anchor Particles, but does not conserve the orientation of Ports with
+        respect to the molecule as a whole.
+
+        Parameters
+        ----------
+        initial_compound : mb.Compound
+            Reference Compound to use for comparing how far anchor Particles
+            have shifted.
+
+        """
         particles = list(self.particles())
-        for port in self.referenced_ports():
+        for port in self.all_ports():
             if port.anchor:
                 idx = particles.index(port.anchor)
                 shift = particles[idx].pos - initial_compound[idx].pos
@@ -780,8 +813,10 @@ class Compound(object):
         Provides a slight adjustment to coordinates to kick them out of local 
         energy minima.
         """
+        compound_init = clone(self)
         for particle in self.particles():
             particle.pos += (np.random.rand(3,) - 0.5) / 100
+        self._update_port_locations(compound_init)
 
     def energy_minimization(self, steps=2500, algorithm='cg',
                             forcefield='UFF'):

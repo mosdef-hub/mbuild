@@ -508,5 +508,19 @@ class TestCompound(BaseTest):
             octane.energy_minimization()
 
     @pytest.mark.skipif(not has_openbabel, reason="Open Babel package not installed")
-    def test_energy_minimization_ports(self, propyl):
-        assert False
+    def test_energy_minimization_ports(self, octane):
+        distances = np.round([octane.min_periodic_distance(port.pos, port.anchor.pos)
+                              for port in octane.all_ports()], 5)
+        orientations = np.round([port.pos - port.anchor.pos 
+                                 for port in octane.all_ports()], 5)
+
+        octane.energy_minimization()
+
+        updated_distances = np.round([octane.min_periodic_distance(port.pos, 
+                                                                   port.anchor.pos)
+                                      for port in octane.all_ports()], 5)
+        updated_orientations = np.round([port.pos - port.anchor.pos 
+                                         for port in octane.all_ports()], 5)
+
+        assert np.array_equal(distances, updated_distances)
+        assert np.array_equal(orientations, updated_orientations)
