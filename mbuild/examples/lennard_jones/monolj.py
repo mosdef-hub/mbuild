@@ -16,7 +16,7 @@ class MonoLJ(mb.Compound):
         
         for pos in pattern:
             lj_particle = clone(lj_proto)
-            mb.translate(lj_particle, pos)
+            lj_particle.translate(pos)
             self.add(lj_particle)
 
 # -- ==monolj== --

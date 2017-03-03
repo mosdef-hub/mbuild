@@ -12,15 +12,15 @@ class C3(mb.Compound):
         self.add(mb.Particle(name='C'))
 
         self.add(mb.Port(anchor=self[0]), 'up')
-        mb.translate(self['up'], np.array([0, 0.07, 0]))
+        self['up'].translate(self['up'], np.array([0, 0.07, 0]))
 
         self.add(mb.Port(anchor=self[0]), 'down')
-        mb.translate(self['down'], np.array([0, 0.07, 0]))
-        mb.spin(self['down'], np.pi * 2/3, [0, 0, 1])
+        self['down'].translate(np.array([0, 0.07, 0]))
+        self['down'].spin(np.pi * 2/3, [0, 0, 1])
 
         self.add(mb.Port(anchor=self[0]), 'left')
-        mb.translate(self['left'], np.array([0, 0.07, 0]))
-        mb.spin(self['left'], -np.pi * 2/3, [0, 0, 1])
+        self['left'].translate(np.array([0, 0.07, 0]))
+        self['left'].spin(-np.pi * 2/3, [0, 0, 1])
 
 
 if __name__ == '__main__':

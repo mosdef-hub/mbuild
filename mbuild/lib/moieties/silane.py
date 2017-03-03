@@ -15,11 +15,11 @@ class Silane(mb.Compound):
 
         # Add bottom port.
         self.add(mb.Port(anchor=self[0]), 'down')
-        mb.translate(self['down'], np.array([0, -.07, 0]))
+        self['down'].translate(np.array([0, -.07, 0]))
 
         # Add top port.
         self.add(mb.Port(anchor=self[0]), 'up')
-        mb.translate(self['up'], np.array([0, .07, 0]))
+        self['up'].translate(np.array([0, .07, 0]))
 
 if __name__ == "__main__":
     m = Silane()
