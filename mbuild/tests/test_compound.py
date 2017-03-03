@@ -458,6 +458,25 @@ class TestCompound(BaseTest):
         assert not any(compound.bond_graph.has_node(particle)
                        for particle in ch3_nobonds.particles())
 
+    def test_update_coords_update_ports(self, ch2):
+        distances = np.round([ch2.min_periodic_distance(port.pos, ch2[0].pos)
+                              for port in ch2.referenced_ports()], 5)
+        orientations = np.round([port.pos - port.anchor.pos 
+                                 for port in ch2.referenced_ports()], 5)
+
+        ch2_clone = mb.clone(ch2)
+        ch2_clone[0].pos += [1, 1, 1]
+        ch2_clone.save('ch2-shift.pdb')
+
+        ch2.update_coordinates('ch2-shift.pdb')
+        updated_distances = np.round([ch2.min_periodic_distance(port.pos, ch2[0].pos)
+                                      for port in ch2.referenced_ports()], 5)
+        updated_orientations = np.round([port.pos - port.anchor.pos 
+                                         for port in ch2.referenced_ports()], 5)
+
+        assert np.array_equal(distances, updated_distances)
+        assert np.array_equal(orientations, updated_orientations)
+
     @pytest.mark.skipif(not has_openbabel, reason="Open Babel package not installed")
     def test_energy_minimization(self, octane):
         octane.energy_minimization()
@@ -487,3 +506,7 @@ class TestCompound(BaseTest):
             particle.name = 'Q'
         with pytest.warns(RuntimeWarning):
             octane.energy_minimization()
+
+    @pytest.mark.skipif(not has_openbabel, reason="Open Babel package not installed")
+    def test_energy_minimization_ports(self, propyl):
+        assert False

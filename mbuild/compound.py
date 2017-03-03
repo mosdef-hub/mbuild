@@ -20,6 +20,7 @@ from six import integer_types, string_types
 
 from mbuild.bond_graph import BondGraph
 from mbuild.box import Box
+from mbuild.coordinate_transform import translate
 from mbuild.exceptions import MBuildError
 from mbuild.formats.hoomdxml import write_hoomdxml
 from mbuild.formats.lammpsdata import write_lammpsdata
@@ -744,7 +745,7 @@ class Compound(object):
             raise RuntimeError('Visualization is only supported in Jupyter '
                                'Notebooks.')
 
-    def update_coordinates(self, filename):
+    def update_coordinates(self, filename, update_port_locations=True):
         """Update the coordinates of this Compound from a file.
 
         Parameters
@@ -758,7 +759,20 @@ class Compound(object):
         load : Load coordinates from a file
 
         """
-        load(filename, compound=self, coords_only=True)
+        if update_port_locations:
+            compound_init = clone(self)
+            load(filename, compound=self, coords_only=True)
+            self.update_port_locations(compound_init)
+        else:
+            load(filename, compound=self, coords_only=True)
+
+    def update_port_locations(self, initial_compound):
+        particles = list(self.particles())
+        for port in self.referenced_ports():
+            if port.anchor:
+                idx = particles.index(port.anchor)
+                shift = particles[idx].pos - initial_compound[idx].pos
+                translate(port, shift)
 
     def _kick(self):
         """Slightly adjust all coordinates in a Compound
