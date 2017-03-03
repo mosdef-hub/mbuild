@@ -568,10 +568,9 @@ class Compound(object):
                              'can be added to Compounds. You tried to add '
                              '"{}".'.format(new_child))
 
-        if reset_rigid_ids:
-            if self.contains_rigid:
-                if new_child.contains_rigid or new_child.rigid_id is not None:
-                    new_child._increment_rigid_ids(increment=self.max_rigid_id + 1)
+        if new_child.contains_rigid or new_child.rigid_id is not None:
+            if self.contains_rigid and reset_rigid_ids:
+                new_child._increment_rigid_ids(increment=self.max_rigid_id + 1)
         if self.rigid_id is not None:
             self.rigid_id = None
 
