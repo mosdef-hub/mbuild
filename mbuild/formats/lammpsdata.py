@@ -1,12 +1,13 @@
 from __future__ import division
+import re
+from collections import OrderedDict
+
+import numpy as np
+
+from mbuild.utils.conversion import RB_to_OPLS
 
 __all__ = ['write_lammpsdata']
 
-
-import re
-import numpy as np
-from .hoomdxml import RB_to_OPLS
-from collections import OrderedDict
 
 def write_lammpsdata(structure, filename, box):
     """Output a LAMMPS data file.
