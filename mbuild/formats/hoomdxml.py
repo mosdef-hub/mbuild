@@ -69,13 +69,14 @@ def write_hoomdxml(structure, filename, box, ref_distance=1.0, ref_mass=1.0,
                       k1, k2, k3, k4 : force coefficients (units of energy)
     Dihedral : system dihedrals
     Body : rigid body to which each atom belongs
+
+    The 
     """
     forcefield = True
     if structure[0].type == '':
         forcefield = False
     xyz = np.array([[atom.xx, atom.xy, atom.xz] for atom in structure.atoms])
 
-    # Center box at origin
     box.maxs *= 10.
     box.mins *= 10.
     box_init = deepcopy(box)
@@ -188,45 +189,32 @@ def _write_angle_information(xml_file, structure, ref_energy):
     xml_file.write('</angle_coeffs>\n')
 
 def _write_dihedral_information(xml_file, structure, ref_energy):
-    dihedrals = [[dihedral.atom1.idx,
-                  dihedral.atom2.idx,
-                  dihedral.atom3.idx,
-                  dihedral.atom4.idx] for dihedral in structure.rb_torsions]
-    if not dihedrals:
-        return
-    unique_dihedral_types = dict(enumerate(set([(round(dihedral.type.c0, 3),
-                                                 round(dihedral.type.c1, 3),
-                                                 round(dihedral.type.c2, 3),
-                                                 round(dihedral.type.c3, 3),
-                                                 round(dihedral.type.c4, 3),
-                                                 round(dihedral.type.c5, 3),
-                                                 round(dihedral.type.scee, 1),
-                                                 round(dihedral.type.scnb, 1)) for dihedral in structure.rb_torsions])))
-    unique_dihedral_types = {y: x for x, y in unique_dihedral_types.items()}
-    dihedral_types = [unique_dihedral_types[(round(dihedral.type.c0, 3),
-                                             round(dihedral.type.c1, 3),
-                                             round(dihedral.type.c2, 3),
-                                             round(dihedral.type.c3, 3),
-                                             round(dihedral.type.c4, 3),
-                                             round(dihedral.type.c5, 3),
-                                             round(dihedral.type.scee, 1),
-                                             round(dihedral.type.scnb, 1))] for dihedral in structure.rb_torsions]
-    xml_file.write('<dihedral_coeffs>\n')
-    for params, idx in unique_dihedral_types.items():
-        opls_coeffs = RB_to_OPLS(params[0],
-                                 params[1],
-                                 params[2],
-                                 params[3],
-                                 params[4],
-                                 params[5])
-        opls_coeffs /= ref_energy
-        xml_file.write('{}\t{:.5f}\t{:.5f}\t{:.5f}\t{:.5f}\n'.format(idx, *opls_coeffs))
-    xml_file.write('</dihedral_coeffs>\n')
-    xml_file.write('<dihedral>\n')
-    for idx, dihedral in enumerate(dihedrals):
-        xml_file.write('{}\t{}\t{}\t{}\t{}\n'.format(dihedral_types[idx],
-                                                     *dihedral))
+    unique_dihedral_types = set()
+    xml_file.write('<dihderal>\n')
+    for dihedral in structure.rb_torsions:
+        t1, t2 = dihedral.atom1.type, dihedral.atom2.type, 
+        t3, t4 = dihedral.atom3.type, dihedral.atom4.type
+        st2, st3 = sorted([t2, t3])  # sort based on the middle 2
+        if [t2, t3] == sorted([t2, t3]):
+            types_in_dihedral = '-'.join((t1, t2, t3, t4))
+        else:
+            types_in_dihedral = '-'.join((t4, t3, t2, t1))
+        dihedral_type = (types_in_dihedral, dihedral.type.c0,
+        dihedral.type.c1, dihedral.type.c2, dihedral.type.c3, dihedral.type.c4,
+        dihedral.type.c5, dihedral.type.scee, dihedral.type.scnb)  # eww
+        unique_dihedral_types.add(dihedral_type)
+        xml_file.write('{} {} {} {} {}\n'.format(
+            dihedral_type[0], dihedral.atom1.idx, dihedral.atom2.idx, 
+            dihedral.atom3.idx, dihedral.atom4.idx))
     xml_file.write('</dihedral>\n')
+    xml_file.write('<dihedral_coeffs>\n')
+    xml_file.write('<!-- type k1 k2 k3 k4 -->\n')
+    for angle_type, c0, c1, c2, c3, c4, c5, scee, scnb in unique_angle_types:
+        opls_coeffs = RB_to_OPLS(c0, c1, c2, c3, c4, c5)
+        opls_coeffs /= ref_energy
+        xml_file.write('{} {:.5f} {:.5f} {:.5f} {:.5f}\n'.format(
+            angle_type[0], *opls_coeffs))
+    xml_file.write('</dihedral_coeffs>\n')
 
 def RB_to_OPLS(c0, c1, c2, c3, c4, c5):
     """Converts Ryckaert-Bellemans type dihedrals to OPLS type.
