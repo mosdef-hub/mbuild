@@ -101,11 +101,7 @@ def write_hoomdxml(structure, filename, box, ref_distance=1.0, ref_mass=1.0,
         _write_bond_information(xml_file, structure, ref_distance, ref_energy)
         _write_angle_information(xml_file, structure, ref_energy)
         _write_dihedral_information(xml_file, structure, ref_energy)
-        if rigid_bodies is not None:
-            xml_file.write('<body>\n')
-            for body in rigid_bodies:
-                xml_file.write('{}\n'.format(int(body)))
-            xml_file.write('</body>\n')
+        _write_rigid_information(xml_file, rigid_bodies):
         xml_file.write('</configuration>\n')
         xml_file.write('</hoomd_xml>')
 
@@ -153,6 +149,8 @@ def _write_particle_information(xml_file, structure, xyz, forcefield,
         xml_file.write('</pair_coeffs>\n')
 
 def _write_bond_information(xml_file, structure, ref_distance, ref_energy):
+    """Write the bonds in the system
+    """
     unique_bond_types = set()
     xml_file.write('<bond>\n')
     for bond in structure.bonds:
@@ -171,6 +169,8 @@ def _write_bond_information(xml_file, structure, ref_distance, ref_energy):
     xml_file.write('</bond_coeffs>\n')
 
 def _write_angle_information(xml_file, structure, ref_energy):
+    """Write the angles in the system
+    """
     unique_angle_types = set()
     xml_file.write('<angle>\n')
     for angle in structure.angles:
@@ -189,6 +189,8 @@ def _write_angle_information(xml_file, structure, ref_energy):
     xml_file.write('</angle_coeffs>\n')
 
 def _write_dihedral_information(xml_file, structure, ref_energy):
+    """Write dihedrals in the system
+    """
     unique_dihedral_types = set()
     xml_file.write('<dihderal>\n')
     for dihedral in structure.rb_torsions:
@@ -209,12 +211,21 @@ def _write_dihedral_information(xml_file, structure, ref_energy):
     xml_file.write('</dihedral>\n')
     xml_file.write('<dihedral_coeffs>\n')
     xml_file.write('<!-- type k1 k2 k3 k4 -->\n')
-    for angle_type, c0, c1, c2, c3, c4, c5, scee, scnb in unique_angle_types:
+    for dihedral_type, c0, c1, c2, c3, c4, c5, scee, scnb in unique_dihedral_types:
         opls_coeffs = RB_to_OPLS(c0, c1, c2, c3, c4, c5)
         opls_coeffs /= ref_energy
         xml_file.write('{} {:.5f} {:.5f} {:.5f} {:.5f}\n'.format(
-            angle_type[0], *opls_coeffs))
+            dihedral_type[0], *opls_coeffs))
     xml_file.write('</dihedral_coeffs>\n')
+
+def _write_rigid_information(xml_file, rigid_bodies):
+    """Write rigid body information
+    """
+    if rigid_bodies is not None:
+        xml_file.write('<body>\n')
+        for body in rigid_bodies:
+            xml_file.write('{}\n'.format(int(body)))
+        xml_file.write('</body>\n')
 
 def RB_to_OPLS(c0, c1, c2, c3, c4, c5):
     """Converts Ryckaert-Bellemans type dihedrals to OPLS type.
