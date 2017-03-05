@@ -1,6 +1,7 @@
 import numpy as np
 
 from mbuild.compound import Compound, Particle
+from mbuild.coordinate_transform import unit_vector, angle
 from mbuild import clone
 
 
@@ -51,18 +52,18 @@ class Port(Compound):
         default_direction = [0, 1, 0]
         if np.array_equal(
                 np.asarray(default_direction), unit_vector(-np.asarray(orientation))):
-            rotate(self, np.pi, [1, 0, 0])
+            self.rotate(np.pi, [1, 0, 0])
         elif np.array_equal(
                 np.asarray(default_direction), unit_vector(np.asarray(orientation))):
             pass
         else:
             normal = np.cross(default_direction, orientation)
-            rotate(self, -angle(default_direction, orientation), normal)
+            self.rotate(-angle(default_direction, orientation), normal)
 
         if anchor:
             self.translate_to(anchor.pos)
 
-        translate(self, separation*unit_vector(orientation))
+        self.translate(separation*unit_vector(orientation))
 
     def _clone(self, clone_of=None, root_container=None):
         newone = super(Port, self)._clone(clone_of, root_container)
