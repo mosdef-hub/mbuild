@@ -101,7 +101,7 @@ def write_hoomdxml(structure, filename, box, ref_distance=1.0, ref_mass=1.0,
         _write_bond_information(xml_file, structure, ref_distance, ref_energy)
         _write_angle_information(xml_file, structure, ref_energy)
         _write_dihedral_information(xml_file, structure, ref_energy)
-        _write_rigid_information(xml_file, rigid_bodies):
+        _write_rigid_information(xml_file, rigid_bodies)
         xml_file.write('</configuration>\n')
         xml_file.write('</hoomd_xml>')
 
