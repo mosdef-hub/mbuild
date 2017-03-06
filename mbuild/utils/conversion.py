@@ -1,4 +1,4 @@
-import numpy
+import numpy as np
 
 
 def RB_to_OPLS(c0, c1, c2, c3, c4, c5):
