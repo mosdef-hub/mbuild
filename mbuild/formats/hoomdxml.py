@@ -286,7 +286,7 @@ def _write_dihedral_information(xml_file, structure, ref_energy):
         opls_coeffs = RB_to_OPLS(c0, c1, c2, c3, c4, c5)
         opls_coeffs /= ref_energy
         xml_file.write('{} {:.5f} {:.5f} {:.5f} {:.5f}\n'.format(
-            dihedral_type[0], *opls_coeffs))
+            dihedral_type, *opls_coeffs))
     xml_file.write('</dihedral_coeffs>\n')
 
 
