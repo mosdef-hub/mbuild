@@ -56,7 +56,7 @@ The code at {filename}:{line_number} requires the "openbabel" package
 
 openbabel can be installed with conda using:
 
-# conda install -c omnia openbabel
+# conda install -c bioconda openbabel
 
 or from source following instructions at:
 
