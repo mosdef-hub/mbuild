@@ -1,12 +1,10 @@
 from __future__ import division
-
-__all__ = ['write_hoomdxml']
-
-
 from copy import deepcopy
 from math import floor, radians
 
 import numpy as np
+
+__all__ = ['write_hoomdxml']
 
 
 def write_hoomdxml(structure, filename, box, ref_distance=1.0, ref_mass=1.0,
@@ -26,6 +24,8 @@ def write_hoomdxml(structure, filename, box, ref_distance=1.0, ref_mass=1.0,
         Reference distance for conversion to reduced units
     ref_mass : float, default=1.0
         Reference mass for conversion to reduced units
+    ref_energy : float, default=1.0
+        Reference energy for conversion to reduced units
     rigid_bodies : list, default=None
         List of rigid body information following the HOOMD XML format.
         An integer value is required for each atom corresponding to the
@@ -70,8 +70,8 @@ def write_hoomdxml(structure, filename, box, ref_distance=1.0, ref_mass=1.0,
     Dihedral : system dihedrals
     Body : rigid body to which each atom belongs
 
-    The 
     """
+
     forcefield = True
     if structure[0].type == '':
         forcefield = False
@@ -105,8 +105,34 @@ def write_hoomdxml(structure, filename, box, ref_distance=1.0, ref_mass=1.0,
         xml_file.write('</configuration>\n')
         xml_file.write('</hoomd_xml>')
 
-def _write_particle_information(xml_file, structure, xyz, forcefield, 
+
+def _write_particle_information(xml_file, structure, xyz, forcefield,
         ref_distance, ref_mass, ref_energy, popleft_underscore):
+    """Write out the particle information.
+
+    Parameters
+    ----------
+    xml_file : file object
+        The file object of the hoomdxml file being written
+    structure : parmed.Structure
+        Parmed structure object
+    xyz : np.ndarray, shape=(n,3), dtype=float
+        The particle positions to be written.
+    forcefield : bool
+        If True, write the particle "type". Write the particle "name" otherwise.
+    ref_distance : float, default=1.0
+        Reference distance for conversion to reduced units
+    ref_mass : float, default=1.0
+        Reference mass for conversion to reduced units
+    ref_energy : float, default=1.0
+        Reference energy for conversion to reduced units
+    popleft_underscore : bool, default=True
+        If True, remove a leading underscore from the particle names.
+        This is useful for non-atomistic (e.g., coarse-grained) systems, where
+        `Foyer` may need prepending underscores for non-atomistic particles.
+
+    """
+
     xml_file.write('<position units="sigma" num="{}">\n'.format(xyz.shape[0]))
     for pos in xyz:
         xml_file.write('{}\t{}\t{}\n'.format(*pos/ref_distance))
@@ -148,9 +174,23 @@ def _write_particle_information(xml_file, structure, xyz, forcefield,
                 param_set[2]/ref_distance))
         xml_file.write('</pair_coeffs>\n')
 
+
 def _write_bond_information(xml_file, structure, ref_distance, ref_energy):
-    """Write the bonds in the system
+    """Write the bonds in the system.
+
+    Parameters
+    ----------
+    xml_file : file object
+        The file object of the hoomdxml file being written
+    structure : parmed.Structure
+        Parmed structure object
+    ref_distance : float, default=1.0
+        Reference distance for conversion to reduced units
+    ref_energy : float, default=1.0
+        Reference energy for conversion to reduced units
+
     """
+
     unique_bond_types = set()
     xml_file.write('<bond>\n')
     for bond in structure.bonds:
@@ -168,9 +208,21 @@ def _write_bond_information(xml_file, structure, ref_distance, ref_energy):
             k * 2.0 / ref_energy * ref_distance**2.0, req/ref_distance))
     xml_file.write('</bond_coeffs>\n')
 
+
 def _write_angle_information(xml_file, structure, ref_energy):
-    """Write the angles in the system
+    """Write the angles in the system.
+
+    Parameters
+    ----------
+    xml_file : file object
+        The file object of the hoomdxml file being written
+    structure : parmed.Structure
+        Parmed structure object
+    ref_energy : float, default=1.0
+        Reference energy for conversion to reduced units
+
     """
+
     unique_angle_types = set()
     xml_file.write('<angle>\n')
     for angle in structure.angles:
@@ -188,13 +240,25 @@ def _write_angle_information(xml_file, structure, ref_energy):
             k * 2.0 / ref_energy, radians(teq)))
     xml_file.write('</angle_coeffs>\n')
 
+
 def _write_dihedral_information(xml_file, structure, ref_energy):
-    """Write dihedrals in the system
+    """Write dihedrals in the system.
+
+    Parameters
+    ----------
+    xml_file : file object
+        The file object of the hoomdxml file being written
+    structure : parmed.Structure
+        Parmed structure object
+    ref_energy : float, default=1.0
+        Reference energy for conversion to reduced units
+
     """
+
     unique_dihedral_types = set()
     xml_file.write('<dihderal>\n')
     for dihedral in structure.rb_torsions:
-        t1, t2 = dihedral.atom1.type, dihedral.atom2.type, 
+        t1, t2 = dihedral.atom1.type, dihedral.atom2.type,
         t3, t4 = dihedral.atom3.type, dihedral.atom4.type
         st2, st3 = sorted([t2, t3])  # sort based on the middle 2
         if [t2, t3] == sorted([t2, t3]):
@@ -203,10 +267,10 @@ def _write_dihedral_information(xml_file, structure, ref_energy):
             types_in_dihedral = '-'.join((t4, t3, t2, t1))
         dihedral_type = (types_in_dihedral, dihedral.type.c0,
         dihedral.type.c1, dihedral.type.c2, dihedral.type.c3, dihedral.type.c4,
-        dihedral.type.c5, dihedral.type.scee, dihedral.type.scnb)  # eww
+        dihedral.type.c5, dihedral.type.scee, dihedral.type.scnb)
         unique_dihedral_types.add(dihedral_type)
         xml_file.write('{} {} {} {} {}\n'.format(
-            dihedral_type[0], dihedral.atom1.idx, dihedral.atom2.idx, 
+            dihedral_type[0], dihedral.atom1.idx, dihedral.atom2.idx,
             dihedral.atom3.idx, dihedral.atom4.idx))
     xml_file.write('</dihedral>\n')
     xml_file.write('<dihedral_coeffs>\n')
@@ -218,14 +282,25 @@ def _write_dihedral_information(xml_file, structure, ref_energy):
             dihedral_type[0], *opls_coeffs))
     xml_file.write('</dihedral_coeffs>\n')
 
+
 def _write_rigid_information(xml_file, rigid_bodies):
-    """Write rigid body information
+    """Write rigid body information.
+
+    Parameters
+    ----------
+    xml_file : file object
+        The file object of the hoomdxml file being written
+    rigid_bodies : list, len=n_particles
+        The rigid body that each particle belongs to (-1 for none)
+
     """
+
     if rigid_bodies is not None:
         xml_file.write('<body>\n')
         for body in rigid_bodies:
             xml_file.write('{}\n'.format(int(body)))
         xml_file.write('</body>\n')
+
 
 def RB_to_OPLS(c0, c1, c2, c3, c4, c5):
     """Converts Ryckaert-Bellemans type dihedrals to OPLS type.
@@ -239,7 +314,9 @@ def RB_to_OPLS(c0, c1, c2, c3, c4, c5):
     opls_coeffs : np.array, shape=(4,)
         Array containing the OPLS dihedrals coeffs f1, f2, f3, and f4
         (in kcal/mol)
+
     """
+
     f1 = (-1.5 * c3) - (2 * c1)
     f2 = c0 + c1 + c3
     f3 = -0.5 * c3
