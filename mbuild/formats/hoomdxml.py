@@ -195,8 +195,13 @@ def _write_bond_information(xml_file, structure, ref_distance, ref_energy):
     xml_file.write('<bond>\n')
     for bond in structure.bonds:
         t1, t2 = bond.atom1.type, bond.atom2.type
+        if t1 == '' or t2 == '':
+            t1, t2 = bond.atom1.name, bond.atom2.name
         t1, t2 = sorted([t1, t2])
-        bond_type = ('-'.join((t1, t2)), bond.type.k, bond.type.req)
+        try:
+            bond_type = ('-'.join((t1, t2)), bond.type.k, bond.type.req)
+        except AttributeError:  # no forcefield applied, bond.type is None
+            bond_type = ('-'.join((t1, t2)), 0.0, 0.0)
         unique_bond_types.add(bond_type)
         xml_file.write('{} {} {}\n'.format(
             bond_type[0], bond.atom1.idx, bond.atom2.idx))
