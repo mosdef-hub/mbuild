@@ -437,6 +437,21 @@ class TestRigid(BaseTest):
         assert filled.max_rigid_id == n_benzenes - 3
         assert len(list(filled.rigid_particles())) == (n_benzenes - 2) * rigid_benzene.n_particles
 
+    def test_delete_body_all(self, rigid_benzene):
+        n_benzenes = 10
+        filled = mb.fill_box(rigid_benzene,
+                             n_compounds=n_benzenes,
+                             box=[0, 0, 0, 4, 4, 4])
+        for i, child in enumerate(filled.children[:-1]):
+            filled.remove(child)
+            assert filled.max_rigid_id == n_benzenes - 1 - (i + 1)
+            assert len(list(filled.rigid_particles())) == (n_benzenes - (i + 1)) * rigid_benzene.n_particles
+            assert filled.contains_rigid is True
+
+        filled.remove(filled.children[0])
+        assert filled.contains_rigid is False
+        assert filled.max_rigid_id is None
+
     def test_delete_body_semi_rigid(self, benzene):
         n_benzenes = 10
         filled = mb.fill_box(benzene,

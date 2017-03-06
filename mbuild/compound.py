@@ -202,7 +202,7 @@ class Compound(object):
 
         self._rigid_id = None
         self._contains_rigid = False
-        self.check_rigid_status = False
+        self._check_if_contains_rigid_bodies = False
 
         # self.add() must be called after labels and children are initialized.
         if subcompounds:
@@ -336,7 +336,7 @@ class Compound(object):
         if self._contains_only_ports():
             self._rigid_id = value
             for ancestor in self.ancestors():
-                ancestor.check_rigid_status = True
+                ancestor._check_if_contains_rigid_bodies = True
         else:
             raise AttributeError("rigid_id is immutable for Compounds that are "
                                  "not at the bottom of the containment hierarchy.")
@@ -355,9 +355,16 @@ class Compound(object):
         bool
             True if the Compound contains any particle with a rigid_id != None
 
+        Notes
+        -----
+        The private variable '_check_if_contains_rigid_bodies' is used to help
+        cache the status of 'contains_rigid'. If '_check_if_contains_rigid_bodies'
+        is False, then the rigid body containment of the Compound has not changed,
+        and the particle tree is not traversed, boosting performance.
+
         """
-        if self.check_rigid_status:
-            self.check_rigid_status = False
+        if self._check_if_contains_rigid_bodies:
+            self._check_if_contains_rigid_bodies = False
             if any(particle.rigid_id is not None for particle in self._particles()):
                 self._contains_rigid = True
             else:
@@ -502,9 +509,9 @@ class Compound(object):
 
     def unlabel_rigid_bodies(self):
         """Remove all rigid body labels from the Compound """
-        self.check_rigid_status = True
+        self._check_if_contains_rigid_bodies = True
         for child in self.children:
-            child.check_rigid_status = True
+            child._check_if_contains_rigid_bodies = True
         for particle in self.particles():
             particle.rigid_id = None
 
@@ -582,7 +589,7 @@ class Compound(object):
         if new_child.contains_rigid or new_child.rigid_id is not None:
             if self.contains_rigid and reset_rigid_ids:
                 new_child._increment_rigid_ids(increment=self.max_rigid_id + 1)
-            self.check_rigid_status = True
+            self._check_if_contains_rigid_bodies = True
         if self.rigid_id is not None:
             self.rigid_id = None
 
@@ -660,6 +667,9 @@ class Compound(object):
                 removed.remove(child)
 
         for removed_part in remove_from_here:
+            if removed_part.rigid_id is not None:
+                for ancestor in removed_part.ancestors():
+                    ancestor._check_if_contains_rigid_bodies = True
             if self.root.bond_graph and self.root.bond_graph.has_node(removed_part):
                 self.root.bond_graph.remove_node(removed_part)
             self._remove_references(removed_part)
@@ -1645,7 +1655,7 @@ class Compound(object):
         newone._pos = deepcopy(self._pos)
         newone.charge = deepcopy(self.charge)
         newone.port_particle = deepcopy(self.port_particle)
-        newone.check_rigid_status = deepcopy(self.check_rigid_status)
+        newone._check_if_contains_rigid_bodies = deepcopy(self._check_if_contains_rigid_bodies)
         newone._contains_rigid = deepcopy(self._contains_rigid)
         newone._rigid_id = deepcopy(self._rigid_id)
         if hasattr(self, 'index'):
