@@ -22,9 +22,8 @@ class AmorphousSilica(mb.Compound):
         for particle in self.particles():
             if particle.name == 'OB':
                 count += 1
-                port = mb.Port(anchor=particle)
-                port.spin(np.pi/2, [1, 0, 0])
-                port.translate(np.array([0, 0, .1]))
+                port = mb.Port(anchor=particle, orientation=[0, 0, 1],
+                               separation=0.1)
                 self.add(port, 'port_{}'.format(count))
 
 if __name__ == "__main__":
