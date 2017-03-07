@@ -60,5 +60,26 @@ class Box(object):
         self._mins -= 0.5*lengths - 0.5*self.lengths
         self._lengths = lengths
 
+    def scale(self, scale_factors):
+        """Scale one or more dimensions of the box
+
+        Takes an array of length three as input and scales the box
+        lengths in x, y , and z by these values.
+
+        Parameters
+        ----------
+        scale_factors : list of floats, length=3
+            Factors to scale the x, y, and z dimensions of the box by
+
+        """
+        
+        self.lengths *= scale_factor
+
+    def center(self):
+        """Center the box about the origin. """
+
+        self._mins = [-d/2 for d in self.lengths]
+        self._maxs = [d/2 for d in self.lengths]
+
     def __repr__(self):
         return "Box(mins={}, maxs={})".format(self.mins, self.maxs)
