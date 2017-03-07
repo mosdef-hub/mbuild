@@ -73,7 +73,7 @@ class Box(object):
 
         """
         
-        self.lengths *= scale_factor
+        self.lengths *= scale_factors
 
     def center(self):
         """Center the box about the origin. """
