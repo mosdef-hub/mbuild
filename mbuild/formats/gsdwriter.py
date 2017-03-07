@@ -14,7 +14,7 @@ __all__ = ['write_gsd']
 
 
 def write_gsd(structure, filename, box, ref_distance=1.0, ref_mass=1.0,
-              ref_energy=1.0, rigid_bodies=None, popleft_underscore=True):
+              ref_energy=1.0, rigid_bodies=None):
     """Output a GSD file (HOOMD v2 default data format).
     
     Parameters
@@ -36,11 +36,6 @@ def write_gsd(structure, filename, box, ref_distance=1.0, ref_mass=1.0,
         each atom corresponding to the index of the rigid body the particle
         is to be associated with. A value of -1 indicates the atom is not
         part of a rigid body.
-    popleft_underscore : bool, optional, default=True
-        If True (default), remove a leading underscore from the particle
-        names. This is useful for non-atomistic (e.g. coarse-grained) systems,
-        where `Foyer` may need prepending underscores for non-atomistic
-        particles.
 
     Notes
     -----
@@ -66,51 +61,14 @@ def write_gsd(structure, filename, box, ref_distance=1.0, ref_mass=1.0,
     gsd_file.configuration.box = np.hstack((box.lengths / ref_distance,
                                             np.zeros(3)))
 
-    _write_particle_information(gsd_file, structure, xyz, forcefield, ref_distance,
-            ref_mass, ref_energy, popleft_underscore, rigid_bodies)
+    _write_particle_information(gsd_file, structure, xyz, ref_distance,
+            ref_mass, ref_energy, rigid_bodies)
     if structure.bonds:
         _write_bond_information(gsd_file, structure)
     if structure.angles:
         _write_angle_information(gsd_file, structure)
     if structure.dihedrals:
         _write_dihedral_information(gsd_file, structure)
-
-        angles = np.asarray(angles)
-        gsd_file.angles.N = len(angles)
-        unique_angle_types = dict(enumerate(OrderedSet([(round(angle.type.k,3),
-                                                         round(angle.type.theteq,3)) for angle in structure.angles])))
-        unique_angle_types = OrderedDict([(y,x) for x,y in unique_angle_types.items()])
-        angle_types = [unique_angle_types[(round(angle.type.k,3),
-                                           round(angle.type.theteq,3))] for angle in structure.angles]
-
-    dihedrals = [[dihedral.atom1.idx,
-                  dihedral.atom2.idx,
-                  dihedral.atom3.idx,
-                  dihedral.atom4.idx] for dihedral in structure.rb_torsions]
-    if dihedrals:
-        dihedrals = np.asarray(dihedrals)
-        gsd_file.dihedrals.N = len(dihedrals)
-
-        unique_dihedral_types = dict(enumerate(OrderedSet([(round(dihedral.type.c0,3),
-                                                    round(dihedral.type.c1,3),
-                                                    round(dihedral.type.c2,3),
-                                                    round(dihedral.type.c3,3),
-                                                    round(dihedral.type.c4,3),
-                                                    round(dihedral.type.c5,3),
-                                                    round(dihedral.type.scee,1),
-                                                    round(dihedral.type.scnb,1)) for dihedral in structure.rb_torsions])))
-        unique_dihedral_types = OrderedDict([(y,x) for x,y in unique_dihedral_types.items()])
-        dihedral_types = [unique_dihedral_types[(round(dihedral.type.c0,3),
-                                                 round(dihedral.type.c1,3),
-                                                 round(dihedral.type.c2,3),
-                                                 round(dihedral.type.c3,3),
-                                                 round(dihedral.type.c4,3),
-                                                 round(dihedral.type.c5,3),
-                                                 round(dihedral.type.scee,1),
-                                                 round(dihedral.type.scnb,1))] for dihedral in structure.rb_torsions]
-        gsd_file.dihedrals.types = [str(y) for x,y in unique_dihedral_types.items()]
-        gsd_file.dihedrals.typeid = dihedral_types
-        gsd_file.dihedrals.group = dihedrals
 
     gsd.hoomd.create(filename, gsd_file)
 
@@ -127,9 +85,6 @@ def _write_particle_information(gsd_file, structure, xyz, ref_distance,
         types = [atom.type for atom in structure.atoms]
     else:
         types = [atom.name for atom in structure.atoms]
-    if popleft_underscore:
-        for atom_type in types:
-            atom_type = atom_type[1:]
 
     unique_types = list(set(types))
     unique_types.sort(key=_natural_sort)
@@ -172,9 +127,9 @@ def _write_bond_information(gsd_file, structure):
         t1, t2 = bond.atom1.type, bond.atom2.type
         if t1 == '' or t2 == '':
             t1, t2 = bond.atom1.name, bond.atom2.name
-        t1, t2 = sorted([t1, t2])
+        t1, t2 = sorted([t1, t2], key=_natural_sort)
         try:
-            bond_type = ('-'.join((t1, t2)), bond.type.k, bond.type.req)
+            bond_type = ('-'.join((t1, t2)))
         except AttributeError: # no forcefield applied, bond.type is None
             bond_type = ('-'.join((t1, t2)), 0.0, 0.0)
         unique_bond_types.add(bond_type)
@@ -187,9 +142,9 @@ def _write_bond_information(gsd_file, structure):
         t1, t2 = bond.atom1.type, bond.atom2.type
         if t1 == '' or t2 == '':
             t1, t2 = bond.atom1.name, bond.atom2.name
-        t1, t2 = sorted([t1, t2])
+        t1, t2 = sorted([t1, t2], key=_natural_sort)
         try:
-            bond_type = ('-'.join((t1, t2)), bond.type.k, bond.type.req)
+            bond_type = ('-'.join((t1, t2)))
         except AttributeError: # no forcefield applied, bond.type is None
             bond_type = ('-'.join((t1, t2)), 0.0, 0.0)
         bond_typeids.append(unique_bond_types.index(bond_type))
@@ -215,18 +170,66 @@ def _write_angle_information(gsd_file, structure):
     unique_angle_types = set()
     for angle in structure.angle:
         t1, t2, t3 = angle.atom1.type, angle.atom2.type, angle.atom3.type
-        t1, t3 = sorted([t1, t3])
-        angle_type = ('-'.join((t1, t2)), angle.type.k, angle.type.req)
+        t1, t3 = sorted([t1, t3], key=_natural_sort)
+        angle_type = ('-'.join((t1, t2, t3)))
+        unique_angle_types.add(angle_type)
+    unique_angle_types = sorted(list(unique_angle_types), key=_natural_sort)
+    gsd_file.angles.types = unique_angle_types
 
-        unique_bond_types.add(bond_type)
-    unique_bond_types = sorted(list(unique_bond_types), key=_natural_sort)
-    gsd_file.bonds.types = unique_bond_types
+    angle_typeids = []
+    angle_groups = []
+    for angle in structure.angles:
+        t1, t2, t3 = angle.atom1.type, angle.atom2.type, angle.atom3.type
+        t1, t3 = sorted([t1, t3], key=_natural_sort)
+        angle_type = ('-'.join((t1, t2, t3)))
+        angle_typeids.append(unique_angle_types.index(angle_type))
+        angle_groups.append((angle.atom1.index, angle.atom2.index, 
+                             angle.atom3.index))
 
-    gsd_file.angles.types = [str(y) for x,y in unique_angle_types.items()]
-    gsd_file.angles.typeid = angle_types
-    gsd_file.angles.group = angles
+    gsd_file.angles.typeid = angle_typeids
+    gsd_file.angles.group = angle_groups
 
 def _write_dihedral_information(gsd_file, structure):
+    """Write the dihedrals in the system.
+
+    Parameters
+    ----------
+    gsd_file : 
+        The file object of the GSD file being written
+    structure : parmed.Structure
+        Parmed structure object holding system information
+
+    """
+
+    gsd_file.dihedrals.N = len(dihedrals)
+
+    unique_dihedral_types = set()
+    for dihedral in structure.dihedral:
+        t1, t2 = dihedral.atom1.type, dihedral.atom2.type
+        t3, t4 = dihedral.atom3.type, dihedral.atom4.type
+        if [t2, t3] == sorted([t2, t3], key=_natural_sort):
+            dihedral_type = ('-'.join((t1, t2, t3, t4)))
+        else:
+            dihedral_type = ('-'.join((t4, t3, t2, t1)))
+        unique_dihedral_types.add(dihedral_type)
+    unique_dihedral_types = sorted(list(unique_dihedral_types), key=_natural_sort)
+    gsd_file.dihedrals.types = unique_dihedral_types
+
+    dihedral_typeids = []
+    dihedral_groups = []
+    for dihedral in structure.dihedrals:
+        t1, t2 = dihedral.atom1.type, dihedral.atom2.type
+        t3, t4 = dihedral.atom3.type, dihedral.atom4.type
+        if [t2, t3] == sorted([t2, t3], key=_natural_sort):
+            dihedral_type = ('-'.join((t1, t2, t3, t4)))
+        else:
+            dihedral_type = ('-'.join((t4, t3, t2, t1)))
+        dihedral_typeids.append(unique_dihedral_types.index(dihedral_type))
+        dihedral_groups.append((dihedral.atom1.index, dihedral.atom2.index,
+                                dihedral.atom3.index, dihedral.atom4.index))
+
+    gsd_file.dihedrals.typeid = dihedral_typeids
+    gsd_file.dihedrals.group = dihedral_groups
 
 def _atoi(text):
     return int(text) if text.isdigit() else text
