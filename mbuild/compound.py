@@ -1095,7 +1095,7 @@ class Compound(object):
             if port.anchor:
                 idx = particles.index(port.anchor)
                 shift = particles[idx].pos - initial_compound[idx].pos
-                translate(port, shift)
+                port.translate(shift)
 
     def _kick(self):
         """Slightly adjust all coordinates in a Compound
