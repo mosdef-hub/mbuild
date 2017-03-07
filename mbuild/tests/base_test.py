@@ -1,6 +1,8 @@
+import numpy as np
 import pytest
 
 import mbuild as mb
+from mbuild.utils.io import get_fn
 
 
 class BaseTest:
@@ -77,3 +79,61 @@ class BaseTest:
         molecule.add(mb.Particle(name='C', pos=[5, 5, 4]), label='back')
         molecule.generate_bonds('C', 'C', 0.9, 1.1)
         return molecule
+
+    @pytest.fixture
+    def benzene(self):
+        compound = mb.load(get_fn('benzene.mol2'))
+        compound.name = 'Benzene'
+        return compound
+
+    @pytest.fixture
+    def rigid_benzene(self):
+        compound = mb.load(get_fn('benzene.mol2'))
+        compound.name = 'Benzene'
+        compound.label_rigid_bodies()
+        return compound
+
+    @pytest.fixture
+    def benzene_from_parts(self):
+        ch = mb.load(get_fn('ch.mol2'))
+        ch.name = 'CH'
+        mb.translate(ch, -ch[0].pos)       
+        ch.add(mb.Port(anchor=ch[0]), 'a')
+        mb.translate(ch['a'], [0, 0.07, 0]) 
+        mb.rotate_around_z(ch['a'], 120.0 * (np.pi/180.0))
+
+        ch.add(mb.Port(anchor=ch[0]), 'b')
+        mb.translate(ch['b'], [0, 0.07, 0]) 
+        mb.rotate_around_z(ch['b'], -120.0 * (np.pi/180.0))
+
+        benzene = mb.Compound(name='Benzene')
+        benzene.add(ch)
+        current = ch
+
+        for _ in range(5):
+            ch_new = mb.clone(ch)
+            mb.force_overlap(move_this=ch_new,
+                             from_positions=ch_new['a'],
+                             to_positions=current['b'])
+            current = ch_new
+            benzene.add(ch_new)
+
+        carbons = [p for p in benzene.particles_by_name('C')]
+        benzene.add_bond((carbons[0],carbons[-1]))
+
+        return benzene
+
+    @pytest.fixture
+    def rigid_ch(self):
+        ch = mb.load(get_fn('ch.mol2'))
+        ch.name = 'CH'
+        ch.label_rigid_bodies()
+        mb.translate(ch, -ch[0].pos)    
+        ch.add(mb.Port(anchor=ch[0]), 'a')
+        mb.translate(ch['a'], [0, 0.07, 0]) 
+        mb.rotate_around_z(ch['a'], 120.0 * (np.pi/180.0))
+
+        ch.add(mb.Port(anchor=ch[0]), 'b')
+        mb.translate(ch['b'], [0, 0.07, 0]) 
+        mb.rotate_around_z(ch['b'], -120.0 * (np.pi/180.0))
+        return ch
