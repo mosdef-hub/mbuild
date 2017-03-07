@@ -992,7 +992,6 @@ class Compound(object):
             # Chains
             if chains and atom.name in chains:
                 current_chain = top.add_chain()
-                print([res for res in current_chain.residues])
                 compound_chain_map[atom] = current_chain
             elif chains:
                 for parent in atom.ancestors():
