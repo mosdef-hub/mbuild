@@ -50,11 +50,15 @@ def write_gsd(structure, filename, box, ref_distance=1.0, ref_mass=1.0,
 
     xyz = np.array([[atom.xx, atom.xy, atom.xz] for atom in structure.atoms])
 
+    new_box = deepcopy(box)
+    new_box.scale(np.ones(3)*10)
+    new_box.center()
+
     gsd_file = gsd.hoomd.Snapshot()
 
     gsd_file.configuration.step = 0
     gsd_file.configuration.dimensions = 3
-    gsd_file.configuration.box = np.hstack((box.lengths / ref_distance,
+    gsd_file.configuration.box = np.hstack((new_box.lengths / ref_distance,
                                             np.zeros(3)))
 
     _write_particle_information(gsd_file, structure, xyz, ref_distance,
@@ -63,7 +67,7 @@ def write_gsd(structure, filename, box, ref_distance=1.0, ref_mass=1.0,
         _write_bond_information(gsd_file, structure)
     if structure.angles:
         _write_angle_information(gsd_file, structure)
-    if structure.dihedrals:
+    if structure.rb_torsions:
         _write_dihedral_information(gsd_file, structure)
 
     gsd.hoomd.create(filename, gsd_file)
@@ -197,10 +201,10 @@ def _write_dihedral_information(gsd_file, structure):
 
     """
 
-    gsd_file.dihedrals.N = len(dihedrals)
+    gsd_file.dihedrals.N = len(structure.rb_torsions)
 
     unique_dihedral_types = set()
-    for dihedral in structure.dihedrals:
+    for dihedral in structure.rb_torsions:
         t1, t2 = dihedral.atom1.type, dihedral.atom2.type
         t3, t4 = dihedral.atom3.type, dihedral.atom4.type
         if [t2, t3] == sorted([t2, t3], key=_natural_sort):
@@ -213,7 +217,7 @@ def _write_dihedral_information(gsd_file, structure):
 
     dihedral_typeids = []
     dihedral_groups = []
-    for dihedral in structure.dihedrals:
+    for dihedral in structure.rb_torsions:
         t1, t2 = dihedral.atom1.type, dihedral.atom2.type
         t3, t4 = dihedral.atom3.type, dihedral.atom4.type
         if [t2, t3] == sorted([t2, t3], key=_natural_sort):
