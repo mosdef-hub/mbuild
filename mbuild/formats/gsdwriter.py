@@ -13,7 +13,7 @@ from mbuild.utils.io import import_
 __all__ = ['write_gsd']
 
 
-def write_gsd(structure, filename, box, ref_distance=1.0, ref_mass=1.0,
+def write_gsd(structure, filename, box, ref_distance=1.0, ref_mass=1.0, 
               ref_energy=1.0, rigid_bodies=None):
     """Output a GSD file (HOOMD v2 default data format).
     
@@ -48,10 +48,6 @@ def write_gsd(structure, filename, box, ref_distance=1.0, ref_mass=1.0,
     import_('gsd')
     import gsd.hoomd
 
-    forcefield = True
-    if structure[0].type == '':
-        forcefield = False
-
     xyz = np.array([[atom.xx, atom.xy, atom.xz] for atom in structure.atoms])
 
     gsd_file = gsd.hoomd.Snapshot()
@@ -73,7 +69,7 @@ def write_gsd(structure, filename, box, ref_distance=1.0, ref_mass=1.0,
     gsd.hoomd.create(filename, gsd_file)
 
 def _write_particle_information(gsd_file, structure, xyz, ref_distance,
-        ref_mass, ref_energy, popleft_underscore, rigid_bodies):
+        ref_mass, ref_energy, rigid_bodies):
     """Write out the particle information.
 
     """
@@ -81,10 +77,8 @@ def _write_particle_information(gsd_file, structure, xyz, ref_distance,
     gsd_file.particles.N = len(structure.atoms)
     gsd_file.particles.position = xyz / ref_distance
 
-    if forcefield:
-        types = [atom.type for atom in structure.atoms]
-    else:
-        types = [atom.name for atom in structure.atoms]
+    types = [atom.name if atom.type == '' else atom.type 
+             for atom in structure.atoms]
 
     unique_types = list(set(types))
     unique_types.sort(key=_natural_sort)
@@ -106,6 +100,8 @@ def _write_particle_information(gsd_file, structure, xyz, ref_distance,
     charge_factor = (4.0*np.pi*e0*ref_distance*ref_energy)**0.5
     gsd_file.particles.charge = charges / charge_factor
 
+    if rigid_bodies:
+        rigid_bodies = [-1 if body is None else body for body in rigid_bodies]
     gsd_file.particles.body = rigid_bodies
 
 def _write_bond_information(gsd_file, structure):
@@ -148,7 +144,7 @@ def _write_bond_information(gsd_file, structure):
         except AttributeError: # no forcefield applied, bond.type is None
             bond_type = ('-'.join((t1, t2)), 0.0, 0.0)
         bond_typeids.append(unique_bond_types.index(bond_type))
-        bond_groups.append((bond.atom1.index, bond.atom2.index))
+        bond_groups.append((bond.atom1.idx, bond.atom2.idx))
 
     gsd_file.bonds.typeid = bond_typeids
     gsd_file.bonds.group = bond_groups
@@ -168,7 +164,7 @@ def _write_angle_information(gsd_file, structure):
     gsd_file.angles.N = len(structure.angles)
 
     unique_angle_types = set()
-    for angle in structure.angle:
+    for angle in structure.angles:
         t1, t2, t3 = angle.atom1.type, angle.atom2.type, angle.atom3.type
         t1, t3 = sorted([t1, t3], key=_natural_sort)
         angle_type = ('-'.join((t1, t2, t3)))
@@ -183,8 +179,8 @@ def _write_angle_information(gsd_file, structure):
         t1, t3 = sorted([t1, t3], key=_natural_sort)
         angle_type = ('-'.join((t1, t2, t3)))
         angle_typeids.append(unique_angle_types.index(angle_type))
-        angle_groups.append((angle.atom1.index, angle.atom2.index, 
-                             angle.atom3.index))
+        angle_groups.append((angle.atom1.idx, angle.atom2.idx, 
+                             angle.atom3.idx))
 
     gsd_file.angles.typeid = angle_typeids
     gsd_file.angles.group = angle_groups
@@ -204,7 +200,7 @@ def _write_dihedral_information(gsd_file, structure):
     gsd_file.dihedrals.N = len(dihedrals)
 
     unique_dihedral_types = set()
-    for dihedral in structure.dihedral:
+    for dihedral in structure.dihedrals:
         t1, t2 = dihedral.atom1.type, dihedral.atom2.type
         t3, t4 = dihedral.atom3.type, dihedral.atom4.type
         if [t2, t3] == sorted([t2, t3], key=_natural_sort):
@@ -225,8 +221,8 @@ def _write_dihedral_information(gsd_file, structure):
         else:
             dihedral_type = ('-'.join((t4, t3, t2, t1)))
         dihedral_typeids.append(unique_dihedral_types.index(dihedral_type))
-        dihedral_groups.append((dihedral.atom1.index, dihedral.atom2.index,
-                                dihedral.atom3.index, dihedral.atom4.index))
+        dihedral_groups.append((dihedral.atom1.idx, dihedral.atom2.idx,
+                                dihedral.atom3.idx, dihedral.atom4.idx))
 
     gsd_file.dihedrals.typeid = dihedral_typeids
     gsd_file.dihedrals.group = dihedral_groups

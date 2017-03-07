@@ -1148,10 +1148,10 @@ class Compound(object):
                                            for p in self.rigid_particles()]))
             if max(unique_rigid_ids) != len(unique_rigid_ids) - 1:
                 warn("Unique rigid body IDs are not sequential starting from zero.")
+            if extension in ['.hoomdxml', '.gsd']:
+                kwargs['rigid_bodies'] = [p.rigid_id for p in self.particles()]
 
         if saver:  # mBuild supported saver.
-            if extension in ['.hoomdxml']:
-                kwargs['rigid_bodies'] = [p.rigid_id for p in self.particles()]
             saver(filename=filename, structure=structure, box=box, **kwargs)
         else:  # ParmEd supported saver.
             structure.save(filename, overwrite=overwrite, **kwargs)
