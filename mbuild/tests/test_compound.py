@@ -260,7 +260,7 @@ class TestCompound(BaseTest):
         assert brush1['pmpc']['monomer'][0].n_particles == 41
         assert brush1['pmpc']['monomer'][0].n_bonds == 40
 
-    def test_to_trajectory(self, ethane):
+    def test_to_trajectory(self, ethane, c3, n4):
         traj = ethane.to_trajectory()
         assert traj.n_atoms == 8
         assert traj.top.n_bonds == 7
@@ -282,6 +282,19 @@ class TestCompound(BaseTest):
         assert traj.n_residues == 2
         assert all(chain.n_atoms == 4 for chain in traj.top.chains)
         assert all(chain.n_residues == 1 for chain in traj.top.chains)
+
+        system = mb.Compound(c3)
+        traj = system.to_trajectory(residues='C')
+        assert traj.n_atoms == 1
+        assert traj.top.n_bonds == 0
+        assert traj.n_chains == 1
+        assert traj.n_residues == 1
+
+        traj = system.to_trajectory(chains='C')
+        assert traj.n_atoms == 1
+        assert traj.top.n_bonds == 0
+        assert traj.n_chains == 1
+        assert traj.n_residues == 1
 
         methyl = next(iter(ethane.children))
         traj = methyl.to_trajectory()
