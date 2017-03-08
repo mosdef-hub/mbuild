@@ -1099,6 +1099,9 @@ class Compound(object):
 
         """
         if wrap_coordinates and box:
+            if self.contains_rigid:
+                warn("Wrapping rigid bodies may lead to undesired behavior. "
+                     "Make sure you know what you're doing!")
             self.wrap_coordinates(box)
 
         extension = os.path.splitext(filename)[-1]
@@ -1142,6 +1145,23 @@ class Compound(object):
                     box.mins[dim] -= 0.25
                     box.lengths[dim] += 0.5
 
+        # Create a new box, so the box provided by the user is unchanged
+        newbox = deepcopy(box)
+
+        # Convert from nm to angstroms, since ParmEd uses angstroms
+        newbox.scale(np.ones(3)*10)
+
+        structure.box[:3] = newbox.lengths
+
+        '''
+        ParmEd's box vectors start at the origin, so we need to shift our
+        Compound into the new box location.
+        '''
+        for particle in structure.atoms:
+            particle.xx += newbox.lengths[0] - newbox.maxs[0]
+            particle.xy += newbox.lengths[1] - newbox.maxs[1]
+            particle.xz += newbox.lengths[2] - newbox.maxs[2]
+
         # Provide a warning if rigid_ids are not sequential from 0
         if self.contains_rigid:
             unique_rigid_ids = sorted(set([p.rigid_id 
@@ -1152,7 +1172,7 @@ class Compound(object):
                 kwargs['rigid_bodies'] = [p.rigid_id for p in self.particles()]
 
         if saver:  # mBuild supported saver.
-            saver(filename=filename, structure=structure, box=box, **kwargs)
+            saver(filename=filename, structure=structure, **kwargs)
         else:  # ParmEd supported saver.
             structure.save(filename, overwrite=overwrite, **kwargs)
 

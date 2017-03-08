@@ -13,7 +13,7 @@ from mbuild.utils.io import import_
 __all__ = ['write_gsd']
 
 
-def write_gsd(structure, filename, box, ref_distance=1.0, ref_mass=1.0, 
+def write_gsd(structure, filename, ref_distance=1.0, ref_mass=1.0, 
               ref_energy=1.0, rigid_bodies=None):
     """Output a GSD file (HOOMD v2 default data format).
     
@@ -50,15 +50,11 @@ def write_gsd(structure, filename, box, ref_distance=1.0, ref_mass=1.0,
 
     xyz = np.array([[atom.xx, atom.xy, atom.xz] for atom in structure.atoms])
 
-    new_box = deepcopy(box)
-    new_box.scale(np.ones(3)*10)
-    new_box.center()
-
     gsd_file = gsd.hoomd.Snapshot()
 
     gsd_file.configuration.step = 0
     gsd_file.configuration.dimensions = 3
-    gsd_file.configuration.box = np.hstack((new_box.lengths / ref_distance,
+    gsd_file.configuration.box = np.hstack((structure.box[:3] / ref_distance,
                                             np.zeros(3)))
 
     _write_particle_information(gsd_file, structure, xyz, ref_distance,

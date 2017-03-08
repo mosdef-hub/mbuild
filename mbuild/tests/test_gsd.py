@@ -46,8 +46,10 @@ class TestGSD(BaseTest):
         assert n_particles == ethane.n_particles
 
         positions = frame.particles.position.astype(float)
+        shift = positions[0] - (ethane[0].pos * 10)
+        shifted_xyz = (ethane.xyz * 10) + shift
         assert np.array_equal(np.round(positions, decimals=4),
-                              np.round(ethane.xyz * 10, decimals=4))
+                              np.round(shifted_xyz, decimals=4))
 
         opls_type_dict = OrderedDict([('C', 'opls_135'), ('H', 'opls_140')])
         types_from_gsd = frame.particles.types
@@ -204,5 +206,7 @@ class TestGSD(BaseTest):
             assert round(charge, 3) == round(reduced_charge, 3)
 
         positions = frame.particles.position.astype(float)
+        shift = positions[0] - (ethane[0].pos * 10 / ref_distance)
+        shifted_xyz = (ethane.xyz * 10 / ref_distance) + shift
         assert np.array_equal(np.round(positions, decimals=4),
-                              np.round(ethane.xyz * 10 / ref_distance, decimals=4))
+                              np.round(shifted_xyz, decimals=4))
