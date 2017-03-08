@@ -1048,7 +1048,7 @@ class Compound(object):
             raise RuntimeError('Visualization is only supported in Jupyter '
                                'Notebooks.')
 
-    def update_coordinates(self, filename, update_port_locations=True):
+    def update_coordinates(self, filename, update_port_locations=False):
         """Update the coordinates of this Compound from a file.
 
         Parameters
