@@ -297,18 +297,18 @@ class TestCompound(BaseTest):
         assert all(chain.n_atoms == 4 for chain in traj.top.chains)
         assert all(chain.n_residues == 1 for chain in traj.top.chains)
 
-        system = mb.Compound(c3)
-        traj = system.to_trajectory(residues='C')
-        assert traj.n_atoms == 1
+        system = mb.Compound([c3, n4])
+        traj = system.to_trajectory(residues=['C', 'N'])
+        assert traj.n_atoms == 2
         assert traj.top.n_bonds == 0
         assert traj.n_chains == 1
-        assert traj.n_residues == 1
+        assert traj.n_residues == 2
 
-        traj = system.to_trajectory(chains='C')
-        assert traj.n_atoms == 1
+        traj = system.to_trajectory(chains=['C', 'N'])
+        assert traj.n_atoms == 2
         assert traj.top.n_bonds == 0
-        assert traj.n_chains == 1
-        assert traj.n_residues == 1
+        assert traj.n_chains == 2
+        assert traj.n_residues == 2
 
         methyl = next(iter(ethane.children))
         traj = methyl.to_trajectory()
