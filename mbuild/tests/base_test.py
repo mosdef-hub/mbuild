@@ -124,6 +124,16 @@ class BaseTest:
         return benzene
 
     @pytest.fixture
+    def box_of_benzenes(self, benzene):
+        n_benzenes = 10
+        benzene.name = 'Benzene'
+        filled = mb.fill_box(benzene,
+                             n_compounds=n_benzenes,
+                             box=[0, 0, 0, 4, 4, 4]) 
+        filled.label_rigid_bodies(discrete_bodies='Benzene', rigid_particles='C')
+        return filled
+
+    @pytest.fixture
     def rigid_ch(self):
         ch = mb.load(get_fn('ch.mol2'))
         ch.name = 'CH'
