@@ -1048,7 +1048,7 @@ class Compound(object):
             raise RuntimeError('Visualization is only supported in Jupyter '
                                'Notebooks.')
 
-    def update_coordinates(self, filename, update_port_locations=False):
+    def update_coordinates(self, filename, update_port_locations=True):
         """Update the coordinates of this Compound from a file.
 
         Parameters
@@ -1068,25 +1068,25 @@ class Compound(object):
 
         """
         if update_port_locations:
-            compound_init = clone(self)
+            xyz_init = self.xyz
             load(filename, compound=self, coords_only=True)
-            self._update_port_locations(compound_init)
+            self._update_port_locations(xyz_init)
         else:
             load(filename, compound=self, coords_only=True)
 
-    def _update_port_locations(self, initial_compound):
+    def _update_port_locations(self, initial_coordinates):
         """Adjust port locations after particles have moved
 
-        Compares the locations of Particles between 'self' and a reference
-        Compound.  Shifts Ports in accordance with how far anchors have
-        been moved.  This conserves the location of Ports with respect to their
-        anchor Particles, but does not conserve the orientation of Ports with
-        respect to the molecule as a whole.
+        Compares the locations of Particles between 'self' and an array of
+        reference coordinates.  Shifts Ports in accordance with how far anchors 
+        have been moved.  This conserves the location of Ports with respect to 
+        their anchor Particles, but does not conserve the orientation of Ports 
+        with respect to the molecule as a whole.
 
         Parameters
         ----------
-        initial_compound : mb.Compound
-            Reference Compound to use for comparing how far anchor Particles
+        initial_coordinates : np.ndarray, shape=(n, 3), dtype=float
+            Reference coordinates to use for comparing how far anchor Particles
             have shifted.
 
         """
@@ -1094,7 +1094,7 @@ class Compound(object):
         for port in self.all_ports():
             if port.anchor:
                 idx = particles.index(port.anchor)
-                shift = particles[idx].pos - initial_compound[idx].pos
+                shift = particles[idx].pos - initial_coordinates[idx]
                 port.translate(shift)
 
     def _kick(self):
@@ -1103,10 +1103,10 @@ class Compound(object):
         Provides a slight adjustment to coordinates to kick them out of local 
         energy minima.
         """
-        compound_init = clone(self)
+        xyz_init = self.xyz
         for particle in self.particles():
             particle.pos += (np.random.rand(3,) - 0.5) / 100
-        self._update_port_locations(compound_init)
+        self._update_port_locations(xyz_init)
 
     def energy_minimization(self, steps=2500, algorithm='cg',
                             forcefield='UFF'):
