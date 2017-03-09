@@ -1376,7 +1376,7 @@ class Compound(object):
             else:
                 if chains:
                     try: # Grab the default residue from the custom chain.
-                        next(current_chain.residues)
+                        current_residue = next(current_chain.residues)
                     except StopIteration: # Add the residue to the current chain
                         current_residue = top.add_residue('RES', current_chain)
                 else: # Grab the default chain's default residue
