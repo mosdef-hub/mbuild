@@ -58,7 +58,7 @@ class Port(Compound):
             pass
         else:
             normal = np.cross(default_direction, orientation)
-            self.rotate(-angle(default_direction, orientation), normal)
+            self.rotate(angle(default_direction, orientation), normal)
 
         if anchor:
             self.translate_to(anchor.pos)
