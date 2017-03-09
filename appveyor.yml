@@ -15,7 +15,6 @@ environment:
       ARCH: "64"
 
 install:
-  - set LOGNAME="mosdef"
   - set PATH=%PYTHON%;%PYTHON%\\Scripts;%PATH%
   - conda config --add channels omnia
   - conda config --add channels janschulz
