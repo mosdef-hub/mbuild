@@ -1341,38 +1341,40 @@ class Compound(object):
 
         for atom in atom_list:
             # Chains
-            if chains and atom.name in chains:
-                current_chain = top.add_chain()
-                compound_chain_map[atom] = current_chain
-            elif chains:
-                for parent in atom.ancestors():
-                    if chains and parent.name in chains:
-                        if parent not in compound_chain_map:
-                            current_chain = top.add_chain()
-                            compound_chain_map[parent] = current_chain
-                            current_residue = top.add_residue('RES', current_chain)
-                        break
+            if chains:
+                if atom.name in chains:
+                    current_chain = top.add_chain()
+                    compound_chain_map[atom] = current_chain
                 else:
-                    current_chain = default_chain
+                    for parent in atom.ancestors():
+                        if chains and parent.name in chains:
+                            if parent not in compound_chain_map:
+                                current_chain = top.add_chain()
+                                compound_chain_map[parent] = current_chain
+                                current_residue = top.add_residue('RES', current_chain)
+                            break
+                    else:
+                        current_chain = default_chain
             else:
                 current_chain = default_chain
             atom_chain_map[atom] = current_chain
 
             # Residues
-            if residues and atom.name in residues:
-                current_residue = top.add_residue(atom.name, current_chain)
-                compound_residue_map[atom] = current_residue
-            elif residues:
-                for parent in atom.ancestors():
-                    if residues and parent.name in residues:
-                        if parent not in compound_residue_map:
-                            current_residue = top.add_residue(parent.name, current_chain)
-                            compound_residue_map[parent] = current_residue
-                        break
+            if residues:
+                if atom.name in residues:
+                    current_residue = top.add_residue(atom.name, current_chain)
+                    compound_residue_map[atom] = current_residue
                 else:
-                    current_residue = default_residue
+                    for parent in atom.ancestors():
+                        if residues and parent.name in residues:
+                            if parent not in compound_residue_map:
+                                current_residue = top.add_residue(parent.name, current_chain)
+                                compound_residue_map[parent] = current_residue
+                            break
+                    else:
+                        current_residue = default_residue
             else:
-                if chains and current_chain.n_residues > 0: # Grab the default residue from the custom chain.
+                if chains: # Grab the default residue from the custom chain.
                     current_residue = next(current_chain.residues)
                 else: # Grab the default chain's default residue
                     current_residue = default_residue
