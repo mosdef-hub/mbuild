@@ -36,6 +36,7 @@ test:
     - mbuild/examples/*
 
   commands:
+    - set LOGNAME="appveyor"
     - py.test -v --pyargs mbuild
 
 about:

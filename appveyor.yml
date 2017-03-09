@@ -27,9 +27,4 @@ install:
 build: false
 
 test_script:
-  - python -c "import getpass; print(getpass.getuser())"
-  - python -c "import os; print(os.environ.get('LOGNAME'))"
-  - python -c "import os; print(os.environ.get('USER'))"
-  - python -c "import os; print(os.environ.get('LNAME'))"
-  - python -c "import os; print(os.environ.get('USERNAME'))"
   - conda build --quiet devtools\\conda-recipe
