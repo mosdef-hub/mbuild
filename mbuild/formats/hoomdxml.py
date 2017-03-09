@@ -94,7 +94,7 @@ def write_hoomdxml(structure, filename, box, rigid_bodies, ref_distance=1.0,
                 '<box units="sigma"  Lx="{}" Ly="{}" Lz="{}"/>\n'.format(
                     *box.lengths/ref_distance))
         _write_particle_information(xml_file, structure, xyz, forcefield,
-                ref_distance, ref_mass, ref_energy, popleft_underscore)
+                ref_distance, ref_mass, ref_energy)
         _write_bond_information(xml_file, structure, ref_distance, ref_energy)
         _write_angle_information(xml_file, structure, ref_energy)
         _write_dihedral_information(xml_file, structure, ref_energy)
@@ -104,7 +104,7 @@ def write_hoomdxml(structure, filename, box, rigid_bodies, ref_distance=1.0,
 
 
 def _write_particle_information(xml_file, structure, xyz, forcefield,
-        ref_distance, ref_mass, ref_energy, popleft_underscore):
+        ref_distance, ref_mass, ref_energy):
     """Write out the particle information.
 
     Parameters
@@ -123,10 +123,6 @@ def _write_particle_information(xml_file, structure, xyz, forcefield,
         Reference mass for conversion to reduced units
     ref_energy : float, default=1.0
         Reference energy for conversion to reduced units
-    popleft_underscore : bool, default=True
-        If True, remove a leading underscore from the particle names.
-        This is useful for non-atomistic (e.g., coarse-grained) systems, where
-        `Foyer` may need prepending underscores for non-atomistic particles.
 
     """
 
@@ -141,8 +137,6 @@ def _write_particle_information(xml_file, structure, xyz, forcefield,
 
     xml_file.write('<type>\n')
     for atom_type in types:
-        if popleft_underscore and atom_type.startswith('_'):
-            atom_type = atom_type[1:]
         xml_file.write('{}\n'.format(atom_type))
     xml_file.write('</type>\n')
 
@@ -260,7 +254,7 @@ def _write_dihedral_information(xml_file, structure, ref_energy):
     """
 
     unique_dihedral_types = set()
-    xml_file.write('<dihderal>\n')
+    xml_file.write('<dihedral>\n')
     for dihedral in structure.rb_torsions:
         t1, t2 = dihedral.atom1.type, dihedral.atom2.type,
         t3, t4 = dihedral.atom3.type, dihedral.atom4.type
