@@ -16,6 +16,10 @@ environment:
 
 install:
   - set PATH=%PYTHON%;%PYTHON%\\Scripts;%PATH%
+  - set LOGNAME="mosdef"
+  - set USER="mosdef"
+  - set LNAME="mosdef"
+  - set USERNAME="mosdef"
   - conda config --add channels omnia
   - conda config --add channels janschulz
   - conda config --add channels bioconda
