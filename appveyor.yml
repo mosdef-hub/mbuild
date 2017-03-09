@@ -23,10 +23,8 @@ install:
   - conda config --add channels mosdef
   - conda update -yq --all
   - conda install -yq conda-build jinja2
-  - python -c "import getpass; print(getpass.getuser())"
 
 build: false
 
 test_script:
-  - "%CMD_IN_ENV% conda build --quiet devtools\\conda-recipe"
-
+  - conda build --quiet devtools\\conda-recipe
