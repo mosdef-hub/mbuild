@@ -16,10 +16,6 @@ environment:
 
 install:
   - set PATH=%PYTHON%;%PYTHON%\\Scripts;%PATH%
-  - set LOGNAME="mosdef"
-  - set USER="mosdef"
-  - set LNAME="mosdef"
-  - set USERNAME="mosdef"
   - conda config --add channels omnia
   - conda config --add channels janschulz
   - conda config --add channels bioconda
@@ -27,8 +23,10 @@ install:
   - conda config --add channels mosdef
   - conda update -yq --all
   - conda install -yq conda-build jinja2
+  - python -c "import getpass; print(getpass.getuser())"
 
 build: false
 
 test_script:
+  - python -c "import getpass; print(getpass.getuser())"
   - conda build --quiet devtools\\conda-recipe
