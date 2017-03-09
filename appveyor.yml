@@ -6,6 +6,11 @@ environment:
     CMD_IN_ENV: "cmd /E:ON /V:ON /C .\\devtools\\appveyor-ci\\run_with_env.cmd"
     PYTHONUNBUFFERED: 1
 
+  LOGNAME: "mosdef"
+  USER: "mosdef"
+  LNAME: "mosdef"
+  USERNAME: "mosdef"
+
   matrix:
     - PYTHON: "C:\\Miniconda3-x64"
       CONDA_PY: "34"
@@ -13,8 +18,6 @@ environment:
     - PYTHON: "C:\\Miniconda3-x64"
       CONDA_PY: "35"
       ARCH: "64"
-
-  USERNAME: "mosdef"
 
 install:
   - set PATH=%PYTHON%;%PYTHON%\\Scripts;%PATH%
