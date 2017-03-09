@@ -9,37 +9,10 @@ from mbuild.utils.conversion import RB_to_OPLS
 __all__ = ['write_hoomdxml']
 
 
-def write_hoomdxml(structure, filename, box, ref_distance=1.0, ref_mass=1.0,
-                   ref_energy=1.0, rigid_bodies=None, wrap_coordinates=True,
-                   popleft_underscore=True):
+def write_hoomdxml(structure, filename, box, rigid_bodies, ref_distance=1.0, 
+                   ref_mass=1.0, ref_energy=1.0, wrap_coordinates=True):
     """Output a HOOMD XML file.
 
-    Parameters
-    ----------
-    structure : parmed.Structure
-        Parmed structure object
-    filename : str
-        Path of the output file.
-    box : mb.Box
-        Box information
-    ref_distance : float, default=1.0
-        Reference distance for conversion to reduced units
-    ref_mass : float, default=1.0
-        Reference mass for conversion to reduced units
-    ref_energy : float, default=1.0
-        Reference energy for conversion to reduced units
-    rigid_bodies : list, default=None
-        List of rigid body information following the HOOMD XML format.
-        An integer value is required for each atom corresponding to the
-        number of the rigid body with which the atom should be included.
-        A value of -1 indicates the atom is not part of a rigid body.
-    popleft_underscore : bool, default=True
-        If True (default), remove a leading underscore from the particle names.
-        This is useful for non-atomistic (e.g., coarse-grained) systems, where
-        `Foyer` may need prepending underscores for non-atomistic particles.
-
-    Notes
-    -----
     The following elements are always written:
 
     Position : atomic positions
@@ -71,6 +44,28 @@ def write_hoomdxml(structure, filename, box, ref_distance=1.0, ref_mass=1.0,
                       k1, k2, k3, k4 : force coefficients (units of energy)
     Dihedral : system dihedrals
     Body : rigid body to which each atom belongs
+
+    Parameters
+    ----------
+    structure : parmed.Structure
+        Parmed structure object
+    filename : str
+        Path of the output file.
+    box : mb.Box
+        Box information
+    rigid_bodies : list
+        List of rigid body information. An integer value is required
+        for each atom corresponding to the number of the rigid body with
+        which the atom should be included. A value of None indicates the
+        atom is not part of any rigid body.
+    ref_distance : float, optional, default=1.0
+        Reference distance for conversion to reduced units
+    ref_mass : float, optional, default=1.0
+        Reference mass for conversion to reduced units
+    ref_energy : float, optional, default=1.0
+        Reference energy for conversion to reduced units
+    wrap_coordinates : bool, optional, default=True
+        Wrap coordinates of all atoms into the box
 
     """
 
@@ -303,8 +298,10 @@ def _write_rigid_information(xml_file, rigid_bodies):
 
     """
 
-    if rigid_bodies is not None:
+    if not all(body is None for body in rigid_bodies):
         xml_file.write('<body>\n')
         for body in rigid_bodies:
+            if body is None:
+                body = -1
             xml_file.write('{}\n'.format(int(body)))
         xml_file.write('</body>\n')
