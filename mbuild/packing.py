@@ -163,4 +163,6 @@ def _packmol_error(out, err):
     with open('log.txt', 'w') as log_file, open('err.txt', 'w') as err_file:
         log_file.write(out)
         err_file.write(err)
+    print(out)
+    print(err)
     raise RuntimeError("PACKMOL failed. See 'err.txt' and 'log.txt'")
