@@ -8,6 +8,7 @@ from copy import deepcopy
 import itertools
 import os
 import sys
+import tempfile
 from warnings import warn
 
 import mdtraj as md
@@ -19,6 +20,7 @@ from six import integer_types, string_types
 
 from mbuild.bond_graph import BondGraph
 from mbuild.box import Box
+from mbuild.coordinate_transform import translate
 from mbuild.exceptions import MBuildError
 from mbuild.formats.hoomdxml import write_hoomdxml
 from mbuild.formats.lammpsdata import write_lammpsdata
@@ -724,6 +726,19 @@ class Compound(object):
         return [port for port in self.labels.values()
                 if isinstance(port, Port)]
 
+    def all_ports(self):
+        """Return all Ports referenced by this Compound and its successors
+
+        Returns
+        -------
+        list of mb.Compound
+            A list of all Ports referenced by this Compound and its successors
+
+        """
+        from mbuild.port import Port
+        return [successor for successor in self.successors()
+                if isinstance(successor, Port)]
+
     def available_ports(self):
         """Return all unoccupied Ports referenced by this Compound.
 
@@ -1033,7 +1048,7 @@ class Compound(object):
             raise RuntimeError('Visualization is only supported in Jupyter '
                                'Notebooks.')
 
-    def update_coordinates(self, filename):
+    def update_coordinates(self, filename, update_port_locations=True):
         """Update the coordinates of this Compound from a file.
 
         Parameters
@@ -1041,13 +1056,171 @@ class Compound(object):
         filename : str
             Name of file from which to load coordinates. Supported file types
             are the same as those supported by load()
+        update_port_locations : bool, optional, default=True
+            Update the locations of Ports so that they are shifted along with
+            their anchor particles.  Note: This conserves the location of
+            Ports with respect to the anchor Particle, but does not conserve
+            the orientation of Ports with respect to the molecule as a whole.
 
         See Also
         --------
         load : Load coordinates from a file
 
         """
-        load(filename, compound=self, coords_only=True)
+        if update_port_locations:
+            xyz_init = self.xyz
+            load(filename, compound=self, coords_only=True)
+            self._update_port_locations(xyz_init)
+        else:
+            load(filename, compound=self, coords_only=True)
+
+    def _update_port_locations(self, initial_coordinates):
+        """Adjust port locations after particles have moved
+
+        Compares the locations of Particles between 'self' and an array of
+        reference coordinates.  Shifts Ports in accordance with how far anchors 
+        have been moved.  This conserves the location of Ports with respect to 
+        their anchor Particles, but does not conserve the orientation of Ports 
+        with respect to the molecule as a whole.
+
+        Parameters
+        ----------
+        initial_coordinates : np.ndarray, shape=(n, 3), dtype=float
+            Reference coordinates to use for comparing how far anchor Particles
+            have shifted.
+
+        """
+        particles = list(self.particles())
+        for port in self.all_ports():
+            if port.anchor:
+                idx = particles.index(port.anchor)
+                shift = particles[idx].pos - initial_coordinates[idx]
+                port.translate(shift)
+
+    def _kick(self):
+        """Slightly adjust all coordinates in a Compound
+
+        Provides a slight adjustment to coordinates to kick them out of local 
+        energy minima.
+        """
+        xyz_init = self.xyz
+        for particle in self.particles():
+            particle.pos += (np.random.rand(3,) - 0.5) / 100
+        self._update_port_locations(xyz_init)
+
+    def energy_minimization(self, steps=2500, algorithm='cg',
+                            forcefield='UFF'):
+        """Perform an energy minimization on a Compound
+
+        Utilizes Open Babel (http://openbabel.org/docs/dev/) to perform an
+        energy minimization/geometry optimization on a Compound by applying
+        a generic force field.
+
+        This function is primarily intended to be used on smaller components,
+        with sizes on the order of 10's to 100's of particles, as the energy
+        minimization scales poorly with the number of particles.
+
+        Parameters
+        ----------
+        steps : int, optionl, default=1000
+            The number of optimization iterations
+        algorithm : str, optional, default='cg'
+            The energy minimization algorithm.  Valid options are 'steep', 
+            'cg', and 'md', corresponding to steepest descent, conjugate
+            gradient, and equilibrium molecular dynamics respectively.
+        forcefield : str, optional, default='UFF'
+            The generic force field to apply to the Compound for minimization.
+            Valid options are 'MMFF94', 'MMFF94s', ''UFF', 'GAFF', and 'Ghemical'.
+            Please refer to the Open Babel documentation (http://open-babel.
+            readthedocs.io/en/latest/Forcefields/Overview.html) when considering 
+            your choice of force field.
+
+        References
+        ----------
+        .. [1] O'Boyle, N.M.; Banck, M.; James, C.A.; Morley, C.; 
+               Vandermeersch, T.; Hutchison, G.R. "Open Babel: An open
+               chemical toolbox." (2011) J. Cheminf. 3, 33
+        .. [2] Open Babel, version X.X.X http://openbabel.org, (installed
+               Month Year)
+
+        If using the 'MMFF94' force field please also cite the following:
+        .. [3] T.A. Halgren, "Merck molecular force field. I. Basis, form,
+               scope, parameterization, and performance of MMFF94." (1996)
+               J. Comput. Chem. 17, 490-519
+        .. [4] T.A. Halgren, "Merck molecular force field. II. MMFF94 van der
+               Waals and electrostatic parameters for intermolecular
+               interactions." (1996) J. Comput. Chem. 17, 520-552
+        .. [5] T.A. Halgren, "Merck molecular force field. III. Molecular
+               geometries and vibrational frequencies for MMFF94." (1996)
+               J. Comput. Chem. 17, 553-586
+        .. [6] T.A. Halgren and R.B. Nachbar, "Merck molecular force field.
+               IV. Conformational energies and geometries for MMFF94." (1996)
+               J. Comput. Chem. 17, 587-615
+        .. [7] T.A. Halgren, "Merck molecular force field. V. Extension of
+               MMFF94 using experimental data, additional computational data,
+               and empirical rules." (1996) J. Comput. Chem. 17, 616-641
+
+        If using the 'MMFF94s' force field please cite the above along with:
+        .. [8] T.A. Halgren, "MMFF VI. MMFF94s option for energy minimization
+               studies." (1999) J. Comput. Chem. 20, 720-729
+
+        If using the 'UFF' force field please cite the following:
+        .. [3] Rappe, A.K., Casewit, C.J., Colwell, K.S., Goddard, W.A. III,
+               Skiff, W.M. "UFF, a full periodic table force field for
+               molecular mechanics and molecular dynamics simulations." (1992)
+               J. Am. Chem. Soc. 114, 10024-10039
+
+        If using the 'GAFF' force field please cite the following:
+        .. [3] Wang, J., Wolf, R.M., Caldwell, J.W., Kollman, P.A., Case, D.A.
+               "Development and testing of a general AMBER force field" (2004)
+               J. Comput. Chem. 25, 1157-1174
+
+        If using the 'Ghemical' force field please cite the following:
+        .. [3] T. Hassinen and M. Perakyla, "New energy terms for reduced 
+               protein models implemented in an off-lattice force field" (2001)
+               J. Comput. Chem. 22, 1229-1242
+        """
+        openbabel = import_('openbabel')
+
+        tmp_dir = tempfile.mkdtemp()
+        original = clone(self)
+        self._kick()
+        self.save(os.path.join(tmp_dir,'un-minimized.pdb'))
+        obConversion = openbabel.OBConversion()
+        obConversion.SetInAndOutFormats("pdb", "mol2")
+        mol = openbabel.OBMol()
+
+        obConversion.ReadFile(mol, os.path.join(tmp_dir, "un-minimized.pdb"))
+
+        ff = openbabel.OBForceField.FindForceField(forcefield)
+        if ff is None:
+            raise MBuildError("Force field '{}' not supported for energy "
+                              "minimization. Valid force fields are 'MMFF94', "
+                              "'MMFF94s', 'UFF', 'GAFF', and 'Ghemical'."
+                              "".format(forcefield))
+        warn("Performing energy minimization using the Open Babel package. Please "
+             "refer to the documentation to find the appropriate citations for "
+             "Open Babel and the {} force field".format(forcefield))
+        ff.Setup(mol)
+        if algorithm == 'steep':
+            ff.SteepestDescent(steps)
+        elif algorithm == 'md':
+            ff.MolecularDynamicsTakeNSteps(steps, 300)
+        elif algorithm == 'cg':
+            ff.ConjugateGradients(steps)
+        else:
+            raise MBuildError("Invalid minimization algorithm. Valid options "
+                              "are 'steep', 'cg', and 'md'.")
+        ff.UpdateCoordinates(mol)
+
+        obConversion.WriteFile(mol, os.path.join(tmp_dir, 'minimized.mol2'))
+        try:
+            self.update_coordinates(os.path.join(tmp_dir, 'minimized.mol2'))
+        except ValueError:
+            for i, particle in enumerate(self.particles()):
+                particle.pos = original.xyz[i]
+            warn("Minimization failed (perhaps your Compound contains non-"
+                 "element types). Coordinates not updated.", RuntimeWarning)
 
     def save(self, filename, show_ports=False, forcefield_name=None,
              forcefield_files=None, box=None, overwrite=False, residues=None,

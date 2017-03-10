@@ -66,6 +66,11 @@ class BaseTest:
         return Hexane()
 
     @pytest.fixture
+    def octane(self):
+        from mbuild.examples import Alkane
+        return Alkane(8, cap_front=True, cap_end=True)
+
+    @pytest.fixture
     def sixpoints(self):
         molecule = mb.Compound()
         molecule.add(mb.Particle(name='C', pos=[5, 5, 5]), label='middle')
