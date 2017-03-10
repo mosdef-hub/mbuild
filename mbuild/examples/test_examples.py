@@ -6,6 +6,7 @@ from https://gist.github.com/minrk/2620876.
 
 import glob
 import os
+import sys
 
 from jupyter_client import KernelManager
 import nbformat
