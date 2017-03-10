@@ -40,9 +40,9 @@ def load(filename, relative_to_module=None, compound=None, coords_only=False,
         Name of the file from which to load atom and bond information.
     relative_to_module : str, optional, default=None
         Instead of looking in the current working directory, look for the file
-        where this module is defined. This is typically used in Compound classes
-        that will be instantiated from a different directory (such as the
-        Compounds located in mbuild.lib).
+        where this module is defined. This is typically used in Compound
+        classes that will be instantiated from a different directory
+        (such as the Compounds located in mbuild.lib).
     compound : mb.Compound, optional, default=None
         Existing compound to load atom and bond information into.
     coords_only : bool, optional, default=False
@@ -195,7 +195,7 @@ class Compound(object):
 
     def particles(self, include_ports=False):
         """Return all Particles of the Compound.
-        
+
         Parameters
         ----------
         include_ports : bool, optional, default=False
@@ -864,15 +864,7 @@ class Compound(object):
         if os.path.exists(filename) and not overwrite:
             raise IOError('{0} exists; not overwriting'.format(filename))
 
-        structure = self.to_parmed(residues=residues)
-
-        # Apply a force field with foyer if specified
-        if forcefield_name or forcefield_files:
-            from foyer import Forcefield
-            ff = Forcefield(forcefield_files=forcefield_files,
-                            name=forcefield_name)
-            structure = ff.apply(structure)
-
+        # pad non periodic faces with .25nm buffers
         if box is None:
             box = self.boundingbox
             for dim, val in enumerate(self.periodicity):
@@ -885,8 +877,17 @@ class Compound(object):
                     box.mins[dim] -= 0.25
                     box.lengths[dim] += 0.5
 
+        structure = self.to_parmed(box=box, residues=residues)
+
+        # Apply a force field with foyer if specified
+        if forcefield_name or forcefield_files:
+            from foyer import Forcefield
+            ff = Forcefield(forcefield_files=forcefield_files,
+                            name=forcefield_name)
+            structure = ff.apply(structure)
+
         if saver:  # mBuild supported saver.
-            saver(filename=filename, structure=structure, box=box, **kwargs)
+            saver(filename=filename, box=box, structure=structure, **kwargs)
         else:  # ParmEd supported saver.
             structure.save(filename, overwrite=overwrite, **kwargs)
 
@@ -1191,7 +1192,7 @@ class Compound(object):
         else:
             self.periodicity = np.array([0., 0., 0.])
 
-    def to_parmed(self, title='', residues=None):
+    def to_parmed(self, box, title='', residues=None):
         """Create a ParmEd Structure from a Compound.
 
         Parameters
@@ -1269,14 +1270,10 @@ class Compound(object):
             bond = pmd.Bond(atom_mapping[atom1], atom_mapping[atom2])
             structure.bonds.append(bond)
 
-        box = self.boundingbox
         box_vector = np.empty(6)
         box_vector[3] = box_vector[4] = box_vector[5] = 90.0
         for dim, val in enumerate(self.periodicity):
-            if val:
-                box_vector[dim] = val * 10
-            else:
-                box_vector[dim] = box.lengths[dim] * 10 + 5
+            box_vector[dim] = box.lengths[dim] * 10
         structure.box = box_vector
         return structure
 

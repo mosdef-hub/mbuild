@@ -9,7 +9,6 @@ from mbuild.exceptions import MBuildError
 from mbuild.utils.io import get_fn, has_intermol
 from mbuild.tests.base_test import BaseTest
 
-
 class TestCompound(BaseTest):
 
     def test_load_and_create(self):
@@ -24,6 +23,15 @@ class TestCompound(BaseTest):
             outfile = 'methyl_out' + ext
             ch3.save(filename=outfile)
             assert os.path.exists(outfile)
+
+    def test_save_box(self, ch3):
+        extensions = ['.gsd', '.hoomdxml', '.lammps', '.lmp', '.top', '.gro',
+                      '.mol2', '.pdb', '.xyz']
+        box = mb.Box(lengths=np.array([.1, .1, .1]))
+        for ext in extensions:
+            outfile = 'lyhtem' + ext
+            ch3.save(filename=outfile, box=None, overwrite=True)
+            ch3.save(filename=outfile, box=box, overwrite=True)
 
     def test_save_overwrite(self, ch3):
         extensions = ['.gsd', '.hoomdxml', '.lammps', '.lmp']
@@ -362,10 +370,10 @@ class TestCompound(BaseTest):
     def test_parmed_conversion(self, ethane, h2o):
         compound = mb.Compound([ethane, h2o])
 
-        structure = compound.to_parmed()
+        structure = compound.to_parmed(box=compound.boundingbox)
         assert structure.title == 'Compound'
 
-        structure = compound.to_parmed(title='eth_h2o')
+        structure = compound.to_parmed(box=compound.boundingbox, title='eth_h2o')
         assert structure.title == 'eth_h2o'
 
         assert len(structure.atoms) == 11
@@ -390,27 +398,27 @@ class TestCompound(BaseTest):
 
     def test_resnames_parmed(self, h2o, ethane):
         system = mb.Compound([h2o, mb.clone(h2o), ethane])
-        struct = system.to_parmed(residues=['Ethane', 'H2O'])
+        struct = system.to_parmed(box=system.boundingbox, residues=['Ethane', 'H2O'])
         assert len(struct.residues) == 3
         assert struct.residues[0].name == 'H2O'
         assert struct.residues[1].name == 'H2O'
         assert struct.residues[2].name == 'Ethane'
         assert sum(len(res.atoms) for res in struct.residues) == len(struct.atoms)
 
-        struct = system.to_parmed(residues=['Ethane', 'H2O'])
+        struct = system.to_parmed(box=system.boundingbox, residues=['Ethane', 'H2O'])
         assert len(struct.residues) == 3
         assert struct.residues[0].name == 'H2O'
         assert struct.residues[1].name == 'H2O'
         assert struct.residues[2].name == 'Ethane'
         assert sum(len(res.atoms) for res in struct.residues) == len(struct.atoms)
 
-        struct = system.to_parmed(residues='Ethane')
+        struct = system.to_parmed(box=system.boundingbox, residues='Ethane')
         assert len(struct.residues) == 2
         assert struct.residues[0].name == 'RES'
         assert struct.residues[1].name == 'Ethane'
         assert sum(len(res.atoms) for res in struct.residues) == len(struct.atoms)
 
-        struct = system.to_parmed()
+        struct = system.to_parmed(box=system.boundingbox)
         assert len(struct.residues) == 1
         assert struct.residues[0].name == 'RES'
         assert sum(len(res.atoms) for res in struct.residues) == len(struct.atoms)
@@ -418,11 +426,11 @@ class TestCompound(BaseTest):
     def test_parmed_element_guess(self):
         compound = mb.Particle(name='foobar')
         with pytest.warns(UserWarning):
-            _ = compound.to_parmed()
+            _ = compound.to_parmed(box=compound.boundingbox)
 
         compound = mb.Particle(name='XXXXXX')
         with pytest.warns(UserWarning):
-            _ = compound.to_parmed()
+            _ = compound.to_parmed(box=compound.boundingbox)
 
     def test_min_periodic_dist(self, ethane):
         compound = mb.Compound(ethane)
@@ -457,6 +465,3 @@ class TestCompound(BaseTest):
         compound.remove_bond((carbons[0], carbons[1]))
         assert not any(compound.bond_graph.has_node(particle)
                        for particle in ch3_nobonds.particles())
-
-
-
