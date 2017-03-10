@@ -1,6 +1,5 @@
 from __future__ import division
 
-import os
 import sys
 import tempfile
 from distutils.spawn import find_executable
@@ -61,9 +60,9 @@ def fill_box(compound, n_compounds, box, overlap=0.2, seed=12345):
     box = _validate_box(box)
 
     n_compounds = int(n_compounds)
-    tmp_compound_file = tempfile.mkstemp(dir='.', suffix='.pdb')[1].split('/')[-1]
-    compound.save(tmp_compound_file, overwrite=True)
-    tmp_filled_file = tempfile.mkstemp(dir='.', suffix='.pdb')[1].split('/')[-1]
+    compound_pdb = tempfile.mkstemp(suffix='.pdb')[1]
+    compound.save(compound_pdb, overwrite=True)
+    filled_pdb = tempfile.mkstemp(suffix='.pdb')[1]
 
     # In angstroms for packmol.
     box_mins = box.mins * 10
@@ -71,8 +70,8 @@ def fill_box(compound, n_compounds, box, overlap=0.2, seed=12345):
     overlap *= 10
 
     # Build the input file and call packmol.
-    input_text = (PACKMOL_HEADER.format(overlap, tmp_filled_file, seed) +
-                  PACKMOL_BOX.format(tmp_compound_file, n_compounds,
+    input_text = (PACKMOL_HEADER.format(overlap, filled_pdb, seed) +
+                  PACKMOL_BOX.format(compound_pdb, n_compounds,
                                      box_mins[0], box_mins[1], box_mins[2],
                                      box_maxs[0], box_maxs[1], box_maxs[2]))
 
@@ -85,7 +84,7 @@ def fill_box(compound, n_compounds, box, overlap=0.2, seed=12345):
     filled = Compound()
     for _ in range(n_compounds):
         filled.add(clone(compound))
-    filled.update_coordinates(tmp_filled_file)
+    filled.update_coordinates(filled_pdb)
     return filled
 
 
