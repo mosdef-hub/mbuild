@@ -61,10 +61,9 @@ def fill_box(compound, n_compounds, box, overlap=0.2, seed=12345):
     box = _validate_box(box)
 
     n_compounds = int(n_compounds)
-    tmp_dir = tempfile.mkdtemp()
-    compound_pdb = 'compound.pdb'
-    compound.save(os.path.join(tmp_dir, compound_pdb), overwrite=True)
-    filled_pdb = 'filled.pdb'
+    tmp_compound_file = tempfile.mkstemp(dir='.', suffix='.pdb')
+    compound.save(tmp_compound_file, overwrite=True)
+    tmp_filled_file = tempfile.mkstemp(dir='.', suffix='.pdb')
 
     # In angstroms for packmol.
     box_mins = box.mins * 10
@@ -72,8 +71,8 @@ def fill_box(compound, n_compounds, box, overlap=0.2, seed=12345):
     overlap *= 10
 
     # Build the input file and call packmol.
-    input_text = (PACKMOL_HEADER.format(overlap, os.path.join(tmp_dir, filled_pdb), seed) +
-                  PACKMOL_BOX.format(os.path.join(tmp_dir, compound_pdb), n_compounds,
+    input_text = (PACKMOL_HEADER.format(overlap, tmp_filled_file, seed) +
+                  PACKMOL_BOX.format(tmp_compound_file, n_compounds,
                                      box_mins[0], box_mins[1], box_mins[2],
                                      box_maxs[0], box_maxs[1], box_maxs[2]))
 
@@ -86,7 +85,7 @@ def fill_box(compound, n_compounds, box, overlap=0.2, seed=12345):
     filled = Compound()
     for _ in range(n_compounds):
         filled.add(clone(compound))
-    filled.update_coordinates(os.path.join(tmp_dir, filled_pdb))
+    filled.update_coordinates(tmp_filled_file)
     return filled
 
 
