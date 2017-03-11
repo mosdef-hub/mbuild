@@ -16,7 +16,7 @@ import pytest
 EXAMPLE_NOTEBOOKS = [f for f in glob.glob('mbuild/examples/*/*.ipynb')]
 
 
-@pytest.mark.skipif(sys.platform in ['win32', 'cygwin'], 
+@pytest.mark.skipif(sys.platform in ['win32'],
                     reason="Not testing examples on Appveyor")
 @pytest.mark.parametrize("filepath", EXAMPLE_NOTEBOOKS)
 def test_examples(filepath):
