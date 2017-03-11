@@ -24,8 +24,8 @@ class SilicaInterface(mb.Compound):
     tile_y : int, optional, default=1
         Number of times to replicate bulk silica in y-direction
     thickness : float, optional, default=1.0
-        Desired thickness of the interface (in nm; not including
-        reactive surface sites)
+        Thickness of the slab to carve from the silica bulk. (in nm; not
+        including oxygen layers on the top and bottom of the surface)
 
     References
     ----------
