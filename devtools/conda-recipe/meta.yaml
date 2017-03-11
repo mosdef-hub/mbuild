@@ -36,6 +36,7 @@ test:
     - mbuild/examples/*
 
   commands:
+    - set LNAME=mosdef
     - py.test -v --pyargs mbuild
 
 about:

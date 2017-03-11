@@ -6,7 +6,7 @@ import pytest
 
 import mbuild as mb
 from mbuild.exceptions import MBuildError
-from mbuild.utils.io import get_fn, has_intermol
+from mbuild.utils.io import get_fn, has_intermol, has_openbabel
 from mbuild.tests.base_test import BaseTest
 
 
@@ -195,8 +195,22 @@ class TestCompound(BaseTest):
 
     def test_center(self, methane):
         assert np.array_equal(methane.center, np.array([0, 0, 0]))
-        port = mb.Port()
-        assert np.allclose(port.center, np.array([0.0, 0.0, 2.5e-3]))
+        for orientation in np.identity(3):
+            separation = 0.2
+            port = mb.Port(anchor=methane[0], orientation=orientation)
+            assert np.allclose(port.center, np.array([0.0, 0.0, 0.0]), atol=1e-15)
+            port = mb.Port(anchor=methane[0], orientation=orientation,
+                           separation=separation)
+            assert np.allclose(port.center, separation*orientation, atol=1e-15)
+        np.random.seed(0)
+        for orientation in np.random.rand(5, 3):
+            port = mb.Port(anchor=methane[0], orientation=orientation)
+            assert np.allclose(port.center, np.array([0.0, 0.0, 0.0]), atol=1e-15)
+            port = mb.Port(anchor=methane[0], orientation=orientation,
+                           separation=separation)
+            assert np.allclose(port.center,
+                               separation*orientation/np.linalg.norm(orientation),
+                               atol=1e-15)
 
     def test_single_particle(self):
         part = mb.Particle(name='A')
@@ -458,5 +472,69 @@ class TestCompound(BaseTest):
         assert not any(compound.bond_graph.has_node(particle)
                        for particle in ch3_nobonds.particles())
 
+    def test_update_coords_update_ports(self, ch2):
+        distances = np.round([ch2.min_periodic_distance(port.pos, ch2[0].pos)
+                              for port in ch2.referenced_ports()], 5)
+        orientations = np.round([port.pos - port.anchor.pos 
+                                 for port in ch2.referenced_ports()], 5)
 
+        ch2_clone = mb.clone(ch2)
+        ch2_clone[0].pos += [1, 1, 1]
+        ch2_clone.save('ch2-shift.pdb')
 
+        ch2.update_coordinates('ch2-shift.pdb')
+        updated_distances = np.round([ch2.min_periodic_distance(port.pos, ch2[0].pos)
+                                      for port in ch2.referenced_ports()], 5)
+        updated_orientations = np.round([port.pos - port.anchor.pos 
+                                         for port in ch2.referenced_ports()], 5)
+
+        assert np.array_equal(distances, updated_distances)
+        assert np.array_equal(orientations, updated_orientations)
+
+    @pytest.mark.skipif(not has_openbabel, reason="Open Babel package not installed")
+    def test_energy_minimization(self, octane):
+        octane.energy_minimization()
+
+    @pytest.mark.skipif(has_openbabel, reason="Open Babel package is installed")
+    def test_energy_minimization_openbabel_warn(self, octane):
+        with pytest.raises(MBuildError):
+            octane.energy_minimization()
+
+    @pytest.mark.skipif(not has_openbabel, reason="Open Babel package not installed")
+    def test_energy_minimization_ff(self, octane):
+        for ff in ['UFF', 'GAFF', 'MMFF94', 'MMFF94s', 'Ghemical']:
+            octane.energy_minimization(forcefield=ff)
+        with pytest.raises(MBuildError):
+            octane.energy_minimization(forcefield='fakeFF')
+
+    @pytest.mark.skipif(not has_openbabel, reason="Open Babel package not installed")
+    def test_energy_minimization_algorithm(self, octane):
+        for algorithm in ['cg', 'steep', 'md']:
+            octane.energy_minimization(algorithm=algorithm)
+        with pytest.raises(MBuildError):
+            octane.energy_minimization(algorithm='fakeAlg')
+
+    @pytest.mark.skipif(not has_openbabel, reason="Open Babel package not installed")
+    def test_energy_minimization_non_element(self, octane):
+        for particle in octane.particles():
+            particle.name = 'Q'
+        with pytest.warns(RuntimeWarning):
+            octane.energy_minimization()
+
+    @pytest.mark.skipif(not has_openbabel, reason="Open Babel package not installed")
+    def test_energy_minimization_ports(self, octane):
+        distances = np.round([octane.min_periodic_distance(port.pos, port.anchor.pos)
+                              for port in octane.all_ports()], 5)
+        orientations = np.round([port.pos - port.anchor.pos 
+                                 for port in octane.all_ports()], 5)
+
+        octane.energy_minimization()
+
+        updated_distances = np.round([octane.min_periodic_distance(port.pos, 
+                                                                   port.anchor.pos)
+                                      for port in octane.all_ports()], 5)
+        updated_orientations = np.round([port.pos - port.anchor.pos 
+                                         for port in octane.all_ports()], 5)
+
+        assert np.array_equal(distances, updated_distances)
+        assert np.array_equal(orientations, updated_orientations)

@@ -31,9 +31,8 @@ class Betacristobalite(mb.Compound):
         for particle in self.particles():
             if particle.name.startswith('O') and particle.pos[2] > 1.0:
                 count += 1
-                port = mb.Port(anchor=particle)
-                port.spin(np.pi/2, [1, 0, 0])
-                port.translate(np.array([0, 0, .1]))
+                port = mb.Port(anchor=particle, orientation=[0, 0, 1], 
+                               separation=0.1)
                 self.add(port, 'port_{}'.format(count))
                 particle.name = 'O'  # Strip numbers required in .mol2 files.
             elif particle.name.startswith('Si'):
