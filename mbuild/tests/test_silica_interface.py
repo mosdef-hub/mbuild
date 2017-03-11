@@ -19,9 +19,9 @@ class TestSilicaInterface(BaseTest):
                                        tile_y=tile_y,
                                        thickness=thickness)
 
-        thickness_tolerance = 0.25
+        thickness_tolerance = 0.05
         z = [atom.pos[2] for atom in interface.particles()
-             if atom.name in ['Si', 'O']]
+             if atom.name == 'Si']
         assert abs(max(z) - min(z) - thickness) < thickness_tolerance
 
         density_tolerance = 0.1
