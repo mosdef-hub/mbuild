@@ -1870,7 +1870,11 @@ class Compound(object):
     def _clone_bonds(self, clone_of=None):
         newone = clone_of[self]
         for c1, c2 in self.bonds():
-            newone.add_bond((clone_of[c1], clone_of[c2]))
+            try:
+                newone.add_bond((clone_of[c1], clone_of[c2]))
+            except KeyError:
+                raise MBuildError("Cloning failed. Compound contains bonds to "
+                                  "Particles outside of its containment hierarchy.")
 
 
 Particle = Compound

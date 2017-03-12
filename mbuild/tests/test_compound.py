@@ -538,3 +538,10 @@ class TestCompound(BaseTest):
 
         assert np.array_equal(distances, updated_distances)
         assert np.array_equal(orientations, updated_orientations)
+
+    def test_clone_outside_containment(self, ch2, ch3):
+        compound = mb.Compound()
+        compound.add(ch2)
+        mb.force_overlap(ch3, ch3['up'], ch2['up'])
+        with pytest.raises(MBuildError):
+            ch3_clone = mb.clone(ch3)
