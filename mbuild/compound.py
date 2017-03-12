@@ -1224,7 +1224,7 @@ class Compound(object):
 
     def save(self, filename, show_ports=False, forcefield_name=None,
              forcefield_files=None, box=None, overwrite=False, residues=None,
-             **kwargs):
+             output_refs=False, **kwargs):
         """Save the Compound to a file.
 
         Parameters
@@ -1294,7 +1294,7 @@ class Compound(object):
             from foyer import Forcefield
             ff = Forcefield(forcefield_files=forcefield_files,
                             name=forcefield_name)
-            structure = ff.apply(structure)
+            structure = ff.apply(structure, output_refs=output_refs)
 
         if box is None:
             box = self.boundingbox
