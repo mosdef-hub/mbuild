@@ -1,5 +1,4 @@
 import os
-import pdb
 
 import numpy as np
 import parmed as pmd
