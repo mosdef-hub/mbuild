@@ -45,10 +45,18 @@ class TestCompound(BaseTest):
     def test_save_resnames(self, ch3, h2o):
         system = mb.Compound([ch3, h2o])
         system.save('resnames.gro', residues=['CH3', 'H2O'])
-
         struct = pmd.load_file('resnames.gro')
+
         assert struct.residues[0].name == 'CH3'
         assert struct.residues[1].name == 'H2O'
+
+    def test_save_resnames_single(self, c3, n4):
+        system = mb.Compound([c3, n4])
+        system.save('resnames_single.gro', residues=['C3', 'N4'])
+
+        struct = pmd.load_file('resnames_single.gro')
+        assert struct.residues[0].number ==  1
+        assert struct.residues[1].number ==  2
 
     def test_batch_add(self, ethane, h2o):
         compound = mb.Compound()
@@ -265,7 +273,7 @@ class TestCompound(BaseTest):
         assert brush1['pmpc']['monomer'][0].n_particles == 41
         assert brush1['pmpc']['monomer'][0].n_bonds == 40
 
-    def test_to_trajectory(self, ethane):
+    def test_to_trajectory(self, ethane, c3, n4):
         traj = ethane.to_trajectory()
         assert traj.n_atoms == 8
         assert traj.top.n_bonds == 7
@@ -287,6 +295,19 @@ class TestCompound(BaseTest):
         assert traj.n_residues == 2
         assert all(chain.n_atoms == 4 for chain in traj.top.chains)
         assert all(chain.n_residues == 1 for chain in traj.top.chains)
+
+        system = mb.Compound([c3, n4])
+        traj = system.to_trajectory(residues=['C', 'N'])
+        assert traj.n_atoms == 2
+        assert traj.top.n_bonds == 0
+        assert traj.n_chains == 1
+        assert traj.n_residues == 2
+
+        traj = system.to_trajectory(chains=['C', 'N'])
+        assert traj.n_atoms == 2
+        assert traj.top.n_bonds == 0
+        assert traj.n_chains == 2
+        assert traj.n_residues == 2
 
         methyl = next(iter(ethane.children))
         traj = methyl.to_trajectory()
@@ -324,19 +345,15 @@ class TestCompound(BaseTest):
     def test_chainnames_mdtraj(self, h2o, ethane):
         system = mb.Compound([h2o, mb.clone(h2o), ethane])
         traj = system.to_trajectory(chains=['Ethane', 'H2O'])
-        chains = list(traj.top.chains)
         assert traj.n_chains == 3
 
         traj = system.to_trajectory(chains='Ethane')
-        chains = list(traj.top.chains)
         assert traj.n_chains == 2
 
         traj = system.to_trajectory(chains=['Ethane'])
-        chains = list(traj.top.chains)
         assert traj.n_chains == 2
 
         traj = system.to_trajectory()
-        chains = list(traj.top.chains)
         assert traj.n_chains == 1
 
     @pytest.mark.skipif(not has_intermol, reason="InterMol is not installed")

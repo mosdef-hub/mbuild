@@ -12,7 +12,7 @@ class C3(mb.Compound):
         self.add(mb.Particle(name='C'))
 
         self.add(mb.Port(anchor=self[0]), 'up')
-        self['up'].translate(self['up'], np.array([0, 0.07, 0]))
+        self['up'].translate(np.array([0, 0.07, 0]))
 
         self.add(mb.Port(anchor=self[0]), 'down')
         self['down'].translate(np.array([0, 0.07, 0]))
