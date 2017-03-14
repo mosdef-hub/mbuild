@@ -25,16 +25,28 @@ class TestCompound(BaseTest):
             assert os.path.exists(outfile)
 
     def test_save_box(self, ch3):
-        extensions = ['.gsd', '.hoomdxml', '.lammps', '.lmp', '.top', '.gro',
-                      '.mol2', '.pdb', '.xyz']
-        box = mb.Box(lengths=np.array([.1, .1, .1]))
+        extensions = ['.mol2', '.pdb', '.hoomdxml', '.gro', '.top']
+        box_attributes = ['mins', 'maxs', 'lengths']
+        custom_box = mb.Box([.8, .8, .8])
         for ext in extensions:
-            outfile = 'lyhtem' + ext
-            ch3.save(filename=outfile, box=None, overwrite=True)
-            ch3.save(filename=outfile, box=box, overwrite=True)
+            outfile_padded = 'padded_methyl' + ext
+            outfile_custom = 'custom_methyl' + ext
+            ch3.save(filename=outfile_padded, box=None, overwrite=True)
+            ch3.save(filename=outfile_custom, box=custom_box, overwrite=True)
+            padded_ch3 = mb.load(outfile_padded)
+            custom_ch3 = mb.load(outfile_custom)
+            for attr in box_attributes:
+                print('Box Attribute: {}'.format(attr))
+                print('File Extension: {}'.format(ext))
+                pad_attr = getattr(padded_ch3.boundingbox, attr)
+                custom_attr = getattr(custom_ch3.boundingbox, attr)
+                print('Padded {} : {}'.format(attr, pad_attr))
+                print('Custom {} : {}'.format(attr,custom_attr))
+                #assert(np.array_equal(pad_attr, custom_attr))
+        assert(False)
 
     def test_save_overwrite(self, ch3):
-        extensions = ['.gsd', '.hoomdxml', '.lammps', '.lmp']
+        extensions = ['.gsd', '.hoomdxml', '.lammps', '.lmp', '.top', '.gro']
         for ext in extensions:
             outfile = 'lyhtem' + ext
             ch3.save(filename=outfile)

@@ -856,10 +856,16 @@ class Compound(object):
                   '.lammps': write_lammpsdata,
                   '.lmp': write_lammpsdata}
 
+        print('SAVER BEGIN')
+        print(extension)
+
         try:
             saver = savers[extension]
         except KeyError:
             saver = None
+
+        print('Saver Type: {}'.format(saver))
+        print('SAVER END')
 
         if os.path.exists(filename) and not overwrite:
             raise IOError('{0} exists; not overwriting'.format(filename))
@@ -886,9 +892,12 @@ class Compound(object):
                             name=forcefield_name)
             structure = ff.apply(structure)
 
+        print('RESULT OF COND')
         if saver:  # mBuild supported saver.
             saver(filename=filename, box=box, structure=structure, **kwargs)
+            print('IN MBUILD SUPPORTED')
         else:  # ParmEd supported saver.
+            print('IN PARMED')
             structure.save(filename, overwrite=overwrite, **kwargs)
 
     def translate(self, by):
