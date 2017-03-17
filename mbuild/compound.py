@@ -27,8 +27,7 @@ from mbuild.periodic_kdtree import PeriodicCKDTree
 from mbuild.utils.io import run_from_ipython, import_
 from mbuild.coordinate_transform import _translate, _rotate
 
-def load(filename, relative_to_module=None, compound=None, coords_only=False,
-         ref_distance=1.0, ref_mass=1.0, ref_energy=1.0, **kwargs):
+def load(filename, relative_to_module=None, compound=None, coords_only=False, **kwargs):
     """Load a file into an mBuild Compound.
 
     Files are read using the MDTraj package. Please refer to http://mdtraj.org/
