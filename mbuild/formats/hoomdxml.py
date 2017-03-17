@@ -49,6 +49,8 @@ def write_hoomdxml(structure, filename, box, ref_distance=1.0, ref_mass=1.0,
         Reference distance for conversion to reduced units
     ref_mass : float, default=1.0
         Reference mass for conversion to reduced units
+    ref_energy : float, default=1.0
+        Reference energy for conversion to reduced units
     rigid_bodies : list, default=None
         List of rigid body information following the HOOMD XML format.
         An integer value is required for each atom corresponding to the
@@ -102,14 +104,6 @@ def write_hoomdxml(structure, filename, box, ref_distance=1.0, ref_mass=1.0,
     box_init = deepcopy(box)
     box.mins = np.array([-d/2 for d in box_init.lengths])
     box.maxs = np.array([d/2 for d in box_init.lengths])
-
-    if wrap_coordinates:
-        shift = [box_init.maxs[i] - max for i, max in enumerate(box.maxs)]
-        for i, pos in enumerate(xyz):
-            for j, coord in enumerate(pos):
-                xyz[i, j] -= shift[j]
-                rep = floor((xyz[i, j] - box.mins[j]) / box.lengths[j])
-                xyz[i, j] -= (rep * box.lengths[j])
 
     with open(filename, 'w') as xml_file:
         xml_file.write('<?xml version="1.2" encoding="UTF-8"?>\n')

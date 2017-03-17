@@ -28,7 +28,7 @@ from mbuild.utils.io import run_from_ipython, import_
 from mbuild.coordinate_transform import _translate, _rotate
 
 def load(filename, relative_to_module=None, compound=None, coords_only=False,
-         **kwargs):
+         ref_distance=1.0, ref_mass=1.0, ref_energy=1.0, **kwargs):
     """Load a file into an mBuild Compound.
 
     Files are read using the MDTraj package. Please refer to http://mdtraj.org/
@@ -47,6 +47,12 @@ def load(filename, relative_to_module=None, compound=None, coords_only=False,
         Existing compound to load atom and bond information into.
     coords_only : bool, optional, default=False
         Only load the coordinates into an existing compoint.
+    ref_distance : float, default=1.0
+        Reference distance for conversion to reduced units
+    ref_mass : float, default=1.0
+        Reference mass for conversion to reduced units
+    ref_energy : float, default=1.0
+        Reference energy for conversion to reduced units
 
     Returns
     -------
@@ -856,16 +862,10 @@ class Compound(object):
                   '.lammps': write_lammpsdata,
                   '.lmp': write_lammpsdata}
 
-        print('SAVER BEGIN')
-        print(extension)
-
         try:
             saver = savers[extension]
         except KeyError:
             saver = None
-
-        print('Saver Type: {}'.format(saver))
-        print('SAVER END')
 
         if os.path.exists(filename) and not overwrite:
             raise IOError('{0} exists; not overwriting'.format(filename))
@@ -875,13 +875,11 @@ class Compound(object):
             box = self.boundingbox
             for dim, val in enumerate(self.periodicity):
                 if val:
-                    box.lengths[dim] = val
                     box.maxs[dim] = val
                     box.mins[dim] = 0.0
                 if not val:
                     box.maxs[dim] += 0.25
                     box.mins[dim] -= 0.25
-                    box.lengths[dim] += 0.5
 
         structure = self.to_parmed(box=box, residues=residues)
 
@@ -892,12 +890,9 @@ class Compound(object):
                             name=forcefield_name)
             structure = ff.apply(structure)
 
-        print('RESULT OF COND')
         if saver:  # mBuild supported saver.
             saver(filename=filename, box=box, structure=structure, **kwargs)
-            print('IN MBUILD SUPPORTED')
         else:  # ParmEd supported saver.
-            print('IN PARMED')
             structure.save(filename, overwrite=overwrite, **kwargs)
 
     def translate(self, by):
