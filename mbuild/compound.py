@@ -1185,12 +1185,12 @@ class Compound(object):
         tmp_dir = tempfile.mkdtemp()
         original = clone(self)
         self._kick()
-        self.save(os.path.join(tmp_dir,'un-minimized.pdb'))
+        self.save(os.path.join(tmp_dir,'un-minimized.mol2'))
         obConversion = openbabel.OBConversion()
-        obConversion.SetInAndOutFormats("pdb", "mol2")
+        obConversion.SetInAndOutFormats("mol2", "mol2")
         mol = openbabel.OBMol()
 
-        obConversion.ReadFile(mol, os.path.join(tmp_dir, "un-minimized.pdb"))
+        obConversion.ReadFile(mol, os.path.join(tmp_dir, "un-minimized.mol2"))
 
         ff = openbabel.OBForceField.FindForceField(forcefield)
         if ff is None:
