@@ -1247,6 +1247,12 @@ class Compound(object):
             overlapping atoms.
         overwrite : bool, optional, default=False
             Overwrite if the filename already exists
+        residues : str or list of str
+            Labels of residues in the Compound. Residues are assigned by
+            checking against Compound.name.
+        references_file : str, optional, default=None
+            Specify a filename to write references for the forcefield that is
+            to be applied.  References are written in BibTeX format.
 
         Other Parameters
         ----------------
@@ -1435,8 +1441,9 @@ class Compound(object):
             Include all port atoms when converting to trajectory.
         chains : mb.Compound or list of mb.Compound
             Chain types to add to the topology
-        residues : mb.Compound or list of mb.Compound
-            Residue types to add to the topology
+        residues : str or list of str
+            Labels of residues in the Compound. Residues are assigned by
+            checking against Compound.name.
 
         Returns
         -------
@@ -1477,8 +1484,9 @@ class Compound(object):
             Atoms to include in the topology
         chains : mb.Compound or list of mb.Compound
             Chain types to add to the topology
-        residues : mb.Compound or list of mb.Compound
-            Residue types to add to the topology
+        residues : str or list of str
+            Labels of residues in the Compound. Residues are assigned by
+            checking against Compound.name.
 
         Returns
         -------
@@ -1630,6 +1638,9 @@ class Compound(object):
         ----------
         title : str, optional, default=self.name
             Title/name of the ParmEd Structure
+        residues : str or list of str
+            Labels of residues in the Compound. Residues are assigned by
+            checking against Compound.name.
 
         Returns
         -------
