@@ -16,6 +16,7 @@ import numpy as np
 from oset import oset as OrderedSet
 import parmed as pmd
 from parmed.periodic_table import AtomicNum, element_by_name, Mass
+import simtk.openmm.app.element as elem
 from six import integer_types, string_types
 
 from mbuild.bond_graph import BondGraph
@@ -1182,15 +1183,23 @@ class Compound(object):
         """
         openbabel = import_('openbabel')
 
+        for particle in self.particles():
+            try:
+                elem.get_by_symbol(particle.name)
+            except KeyError:
+                raise MBuildError("Element name {} not recognized. Cannot "
+                                  "perform minimization."
+                                  "".format(particle.name)) from None
+
         tmp_dir = tempfile.mkdtemp()
         original = clone(self)
         self._kick()
-        self.save(os.path.join(tmp_dir,'un-minimized.pdb'))
+        self.save(os.path.join(tmp_dir,'un-minimized.mol2'))
         obConversion = openbabel.OBConversion()
-        obConversion.SetInAndOutFormats("pdb", "mol2")
+        obConversion.SetInAndOutFormats("mol2", "mol2")
         mol = openbabel.OBMol()
 
-        obConversion.ReadFile(mol, os.path.join(tmp_dir, "un-minimized.pdb"))
+        obConversion.ReadFile(mol, os.path.join(tmp_dir, "un-minimized.mol2"))
 
         ff = openbabel.OBForceField.FindForceField(forcefield)
         if ff is None:
@@ -1214,13 +1223,7 @@ class Compound(object):
         ff.UpdateCoordinates(mol)
 
         obConversion.WriteFile(mol, os.path.join(tmp_dir, 'minimized.mol2'))
-        try:
-            self.update_coordinates(os.path.join(tmp_dir, 'minimized.mol2'))
-        except ValueError:
-            for i, particle in enumerate(self.particles()):
-                particle.pos = original.xyz[i]
-            warn("Minimization failed (perhaps your Compound contains non-"
-                 "element types). Coordinates not updated.", RuntimeWarning)
+        self.update_coordinates(os.path.join(tmp_dir, 'minimized.mol2'))
 
     def save(self, filename, show_ports=False, forcefield_name=None,
              forcefield_files=None, box=None, overwrite=False, residues=None,

@@ -535,7 +535,7 @@ class TestCompound(BaseTest):
     def test_energy_minimization_non_element(self, octane):
         for particle in octane.particles():
             particle.name = 'Q'
-        with pytest.warns(RuntimeWarning):
+        with pytest.raises(MBuildError):
             octane.energy_minimization()
 
     @pytest.mark.skipif(not has_openbabel, reason="Open Babel package not installed")
