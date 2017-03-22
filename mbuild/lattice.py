@@ -34,7 +34,7 @@ class Lattice(object):
         Vectors that define edges of unit cell corresponding to dimension.
     lattice_spacings : list-like, shape=(dimension,), optional, default=None
         Length of unit cell edges.
-    basis_vectors : dictionary-like, shape=(['id',[dimension,]], ...) optional
+    basis_atoms : dictionary-like, shape=(['id',[dimension,]], ...) optional
                     default={('default', ([0,0,0]))}
         Location of all basis Compounds in unit cell.
     angles : list-like,  shape=(dimension,), optional, default=None
@@ -49,7 +49,7 @@ class Lattice(object):
         Vectors that define edges of unit cell corresponding to dimension.
     lattice_spacings : list-like, shape=(dimension,), required, default=None
         Length of unit cell edges.
-    basis_vectors : list-like, shape=(['id',[dimension,]], ... ,) optional
+    basis_atoms : list-like, shape=(['id',[dimension,]], ... ,) optional
                     default={('default',([0,0,0]))}
         Location of all basis Compounds in unit cell.
     angles : list-like, optional, default=None
@@ -64,10 +64,10 @@ class Lattice(object):
     >>> # reading in the lattice parameters for crystalline cholesterol
     >>> angle_values = [94.64, 90.67, 96.32]
     >>> spacings = [1.4172, 3.4209, 1.0481]
-    >>> basis_vector = ( ('cholesterol', [0,0,0]), )
+    >>> basis_atom = ( ('cholesterol', [0,0,0]), )
     >>> cholesterol_lattice = mb.Lattice(spacings,
     ...                                  angles=angle_values,
-    ...                                  basis_vectors=basis_vector,
+    ...                                  basis_atoms=basis_atom,
     ...                                  dimension=3)
 
     The lattice based on the bravais lattice parameters of crystalline
@@ -93,8 +93,8 @@ class Lattice(object):
     >>> # angles not needed, when not provided, defaults to 90,90,90
     >>> cesium = mb.Compound(name='Cs')
     >>> spacings = [.4123, .4123, .4123]
-    >>> basis_vector = ( ('Cl', [0,0,0]), ('Cs', [.5, .5, .5]), )
-    >>> cscl_lattice = mb.Lattice(spacings, basis_vectors=basis_vector,
+    >>> basis_atom = ( ('Cl', [0,0,0]), ('Cs', [.5, .5, .5]), )
+    >>> cscl_lattice = mb.Lattice(spacings, basis_atoms=basis_atom,
     ...                           dimension=3)
 
     Now associate id with Compounds for basis atoms and replicate 3x3x3
@@ -103,7 +103,7 @@ class Lattice(object):
     ...                                       compound_dict=cscl_dict)
 
     A multi-Compound basis was created and replicated. For each unique basis
-    atom position, a separate entry must be completed for the basis_vector
+    atom position, a separate entry must be completed for the basis_atom
     input.
 
     Generating FCC Copper cell with lattice_vectors instead of angles
@@ -111,11 +111,11 @@ class Lattice(object):
     >>> copper = mb.Compound(name='Cu')
     >>> lattice_vector = ( [1, 0, 0], [0, 1, 0], [0, 0, 1])
     >>> spacings = [.36149, .36149, .36149]
-    >>> basis_vector = ( ('Cu', [0, 0, 0]), ('Cu', [.5, .5, 0]),
+    >>> basis_atom = ( ('Cu', [0, 0, 0]), ('Cu', [.5, .5, 0]),
     ...                 ('Cu', [.5, 0, .5] ), ('Cu', [0, .5, .5]), )
     >>> copper_lattice = mb.Lattice(spacings, dimension=3,
     ...                           lattice_vectors=lattice_vector,
-    ...                           basis_vectors=basis_vector)
+    ...                           basis_atoms=basis_atom)
     >>> copper_dict = {'Cu' : copper}
     >>> copper_cell = copper_lattice.populate(x=3, y=3, z=20,
     ...                                       compound_dict=copper_dict)
@@ -129,19 +129,55 @@ class Lattice(object):
     """
 
     def __init__(self, lattice_spacings, dimension=None,
-                 lattice_vectors=None, basis_vectors=None,
+                 lattice_vectors=None, basis_atoms=None,
                  angles=None):
         super(Lattice, self).__init__()
         self.lattice_spacings = None
         self.dimension = None
         self.lattice_vectors = None
-        self.basis_vectors = None
+        self.basis_atoms = None
         self.angles = None
-        self._validate_inputs(lattice_vectors=lattice_vectors,
+        self._sanitize_inputs(lattice_vectors=lattice_vectors,
                               dimension=dimension,
                               lattice_spacings=lattice_spacings,
-                              basis_vectors=basis_vectors,
+                              basis_atoms=basis_atoms,
                               angles=angles)
+
+    def _sanitize_inputs(self, lattice_vectors, dimension,
+                         lattice_spacings, basis_atoms, angles):
+        """Check for proper inputs and set instance attributes.
+
+        validate_inputs takes the data passed to the constructor by the user
+        and will ensure that the data is correctly formatted and will then
+        set its instance attributes.
+
+        validate_inputs checks that dimensionality is maintained,
+        the unit cell is right handed, the area or volume of the unit cell
+        is positive and non-zero for 2D and 3D respectively, lattice spacings
+        are provided, basis vectors do not overlap when the unit cell is
+        expanded.
+
+        Exceptions Raised
+        -----------------
+        TypeError : incorrect typing of the input parameters.
+
+        ValueError : values are not within restrictions.
+        """
+
+        self._validate_dimension(dimension)
+        self._validate_lattice_spacing(lattice_spacings, self.dimension)
+
+        if angles is not None and lattice_vectors is not None:
+            return ValueError('Overdefined system: angles and lattice_vectors '
+                              'provided. Only one of these should be passed.')
+        if angles is not None:
+            self._validate_angles(angles, self.dimension)
+            self.lattice_vectors = self._from_lattice_parameters(
+                                        self.angles, self.dimension)
+        else:
+            self._validate_lattice_vectors(lattice_vectors, self.dimension)
+
+        self._validate_basis_atoms(basis_atoms, self.dimension)
 
     def _validate_dimension(self, dimension):
         """Ensure that dimension input is correct.
@@ -222,6 +258,7 @@ class Lattice(object):
                                          'than the sum of the other two '
                                          'angles. {} is greater.'
                                          .format(subset[0]))
+                self.angles = angles
 
             elif len(angles) == 1 and dimension == 2:
                 if all(isinstance(theAngle, float) for theAngle in angles):
@@ -235,10 +272,12 @@ class Lattice(object):
                                              'guidelines for a bravais angle. '
                                              'Refer to documentation.'
                                              .format(theAngle))
+                    self.angles = angles
             else:
                 raise ValueError('Incorrect amount of angles provided for '
                                  'dimension {}. Recieved {} angles.'
                                  .format(dimension, len(angles)))
+
     def _validate_lattice_vectors(self, lattice_vectors, dimension):
         """Ensure that the lattice_vectors are reasonable inputs.
 
@@ -278,104 +317,48 @@ class Lattice(object):
                                      'of {} is negative, indicating a left-'
                                      'handed system.' .format(det))
         self.lattice_vectors = lattice_vectors
-    def _validate_inputs(self, lattice_vectors, dimension,
-                         lattice_spacings, basis_vectors, angles):
-        """Check for proper inputs and set instance attributes.
 
-        validate_inputs takes the data passed to the constructor by the user
-        and will ensure that the data is correctly formatted and will then
-        set its instance attributes.
 
-        validate_inputs checks that dimensionality is maintained,
-        the unit cell is right handed, the area or volume of the unit cell
-        is positive and non-zero for 2D and 3D respectively, lattice spacings
-        are provided, basis vectors do not overlap when the unit cell is
-        expanded.
+    def _check_for_overlap(self, basis_atoms, dimension):
 
-        Exceptions Raised
-        -----------------
-        TypeError : incorrect typing of the input parameters.
-
-        ValueError : values are not within restrictions.
-        """
-        # TODO (Justin Gilmer) Split cleaning into separate functions
-
-        if angles is not None and lattice_vectors is not None:
-            return ValueError('Over defined system. Lattice vectors and '
-                              'angles passed to constructor. Only one of '
-                              'these sets are required.')
-        if angles is not None and dimension != 1 and lattice_vectors is None:
-            lattice_vectors = self._from_lattice_parameters(angles, dimension)
-        # move lattice vector validatings into separate function
-        # TODO(Justin Gilmer) Require dict only, simpify args
-        if basis_vectors is None:
-            basis_vectors = defaultdict(list)
-            basis_vectors['default'].append((0,) * dimension)
-        elif isinstance(basis_vectors, tuple):
-            for lst in basis_vectors:
-                if len(lst) != 2:
-                    raise ValueError('Too many arguments per basis vector. '
-                                     '{} was provided, but the format should '
-                                     'be: vector = ( (\'ID1\' , [x1,y1,z1]), '
-                                     '( \'ID2\' , [x2,y2,z2]) )'.format(lst))
-                elif not isinstance(lst[0], string_types):
-                    raise TypeError('ID Error, not a string. {} is not of '
-                                    'type string_types. Please correct in the '
-                                    'basis_vectors input {}.'
-                                    .format(lst[0], basis_vectors))
-
-                if len(lst[1]) == dimension:
-                    if isinstance(lst[1], tuple) or isinstance(lst[1], list):
-                        for i in range(dimension):
-                            if (lst[1][i] < 0 or lst[1][i] >= 1):
-                                raise ValueError('Incorrect basis fractions. '
-                                                 '{} is supposed be 0 >= and '
-                                                 '< 1.'.format(lst[1]))
-
-                    else:
-                        raise TypeError('Incorrect Format: expected <list> '
-                                        'or <tuple>. {} was passed in as '
-                                        ' type: {} from basis_vectors.'
-                                        .format(lst[1], type(lst[1])))
-                else:
-                    raise ValueError('Basis Vector does not match dimension. '
-                                     '{} does not have vector components '
-                                     'equal to the dimension specified: {}'
-                                     .format(lst[1], dimension))
-        else:
-            raise TypeError('Incorrect Type: "basis_vectors" is of type {}, '
-                            'not <tuple>. Please review '
-                            'the documentation and examples for proper format.'
-                            .format(type(basis_vectors)))
-
-        if not isinstance(basis_vectors, defaultdict):
-            overlap_dict = defaultdict(list)
-            for the_id, vector in basis_vectors:
-                num_iter = 3
+        overlap_dict = defaultdict(list)
+        num_iter = 3
+        for name in basis_atoms.keys():
+            positions = basis_atoms[name]
+            for pos in positions:
                 for offsets in it.product(range(num_iter), repeat=dimension):
-                    offset_vector = tuple((v + offset for v, offset in zip(vector, offsets)))
-                    overlap_dict[offset_vector].append((the_id, vector))
+                    offset_vector = list((v+offset for v, offset in zip(pos, offsets)))
+                    overlap_dict[offset_vector].append((pos))
 
-            # now review for overlap
-            for key, val in overlap_dict.items():
-                if len(val) > 1:
-                    raise ValueError('Overlapping Basis Vectors: Basis '
-                                     'vectors overlap when the unit cell is '
-                                     'expanded to {}. This is an incorrect '
-                                     'perfect lattice. The offending '
-                                     'vectors are: {}'
-                                     .format(key, val))
-        basis_dict = defaultdict(list)
-        if not isinstance(basis_vectors, defaultdict):
-            for key, val in basis_vectors:
-                basis_dict[key].append(val)
+        for key, val in overlap_dict.items():
+            if len(val) > 1:
+                raise ValueError('Overlapping Basis Vectors: Basis '
+                                 'vectors overlap when the unit cell is '
+                                 'expanded to {}. This is an incorrect '
+                                 'perfect lattice. The offending '
+                                 'vectors are: {}'
+                                 .format(key, val))
+        return basis_atoms
+
+    def _validate_basis_atoms(self, basis_atoms, dimension):
+        if basis_atoms is None:
+            basis_atoms['default'] = [[0., 0., 0.]]
+        elif isinstance(basis_atoms, dict):
+            pass
         else:
-            basis_dict = deepcopy(basis_vectors)
+            raise TypeError('Incorrect type, basis_atoms is of type {}, '
+                            'Expected dict.'.format(type(basis_atoms)))
 
-        self.dimension = dimension
-        self.lattice_vectors = lattice_vectors
-        self.lattice_spacings = lattice_spacings
-        self.basis_vectors = basis_dict
+        for name in basis_atoms.keys():
+            positions = basis_atoms[name]
+            for pos in positions:
+                assert len(pos) == dimension
+                location_check = [coord for coord in pos if coord < 0 or coord >= 1]
+                assert location_check == []
+
+        self.basis_atoms = self._check_for_overlap(basis_atoms, dimension)
+
+
 
     def _from_lattice_parameters(self, angles, dimension):
         """Convert Bravais lattice parameters to lattice vectors.
@@ -493,7 +476,7 @@ class Lattice(object):
             raise ValueError('Dimension not defined.')
 
         cell = defaultdict(list)
-        for key, val in self.basis_vectors.items():
+        for key, val in self.basis_atoms.items():
             for val_item in range(len(val)):
                 if self.dimension == 3:
                     for i in range(x):
