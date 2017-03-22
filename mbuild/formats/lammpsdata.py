@@ -1,6 +1,7 @@
 from __future__ import division
-import re
+
 from collections import OrderedDict
+import re
 
 import numpy as np
 
@@ -12,25 +13,29 @@ __all__ = ['write_lammpsdata']
 def write_lammpsdata(structure, filename, box):
     """Output a LAMMPS data file.
     
-    Note: Output supports 'real' units and 'full' atom style only.
+    Outputs a LAMMPS data file in the 'full' atom style format. Assumes use
+    of 'real' units. See http://lammps.sandia.gov/doc/atom_style.html for
+    more information on atom styles.
 
     Parameters
     ----------
     structure : parmed.Structure
-        Parmed structure object
+        ParmEd structure object
     filename : str
         Path of the output file
     box : mb.Box
         Box information to save to data file
+
+    Notes
+    -----
+    See http://lammps.sandia.gov/doc/2001/data_format.html for a full description
+    of the LAMMPS data format. Currently the following sections are supported (in
+    addition to the header): *Masses*, *Nonbond Coeffs*, *Bond Coeffs*, *Angle
+    Coeffs*, *Dihedral Coeffs*, *Atoms*, *Bonds*, *Angles*, *Dihedrals*
+
     """
 
-    forcefield = True
-    if structure[0].type == '':
-        forcefield = False
-
-    # Convert box units from nm to angstroms
-    box.maxs *= 10.
-    box.mins *= 10.
+    xyz = np.array([[atom.xx,atom.xy,atom.xz] for atom in structure.atoms])
 
     if forcefield:
         types = [atom.type for atom in structure.atoms]
@@ -40,7 +45,6 @@ def write_lammpsdata(structure, filename, box):
     unique_types = list(set(types))
     unique_types.sort(key=_natural_sort)
 
-    xyz = np.array([[atom.xx,atom.xy,atom.xz] for atom in structure.atoms])
     charges = [atom.charge for atom in structure.atoms]
 
     bonds = [[bond.atom1.idx+1, bond.atom2.idx+1] for bond in structure.bonds]

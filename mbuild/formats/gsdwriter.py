@@ -23,8 +23,6 @@ def write_gsd(structure, filename, ref_distance=1.0, ref_mass=1.0,
         ParmEd Structure object
     filename : str
         Path of the output file.
-    box : mb.Box
-        Box information
     ref_distance : float, optional, default=1.0
         Reference distance for conversion to reduced units
     ref_mass : float, optional, default=1.0
@@ -34,14 +32,14 @@ def write_gsd(structure, filename, ref_distance=1.0, ref_mass=1.0,
     rigid_bodies : list of int, optional, default=None
         List of rigid body information. An integer value is required for
         each atom corresponding to the index of the rigid body the particle
-        is to be associated with. A value of -1 indicates the atom is not
+        is to be associated with. A value of None indicates the atom is not
         part of a rigid body.
 
     Notes
     -----
-    Force field information is not written to the GSD file and must be included
+    Force field parameters are not written to the GSD file and must be included
     manually into a HOOMD input script. Work on a HOOMD plugin is underway to
-    read force field information from a `Foyer` XML file.
+    read force field parameters from a Foyer XML file.
 
     """
 
