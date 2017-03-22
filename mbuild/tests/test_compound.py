@@ -68,7 +68,6 @@ class TestCompound(BaseTest):
     def test_save_resnames_single(self, c3, n4):
         system = mb.Compound([c3, n4])
         system.save('resnames_single.gro', residues=['C3', 'N4'])
-
         struct = pmd.load_file('resnames_single.gro')
         assert struct.residues[0].number ==  1
         assert struct.residues[1].number ==  2
@@ -507,7 +506,7 @@ class TestCompound(BaseTest):
     def test_update_coords_update_ports(self, ch2):
         distances = np.round([ch2.min_periodic_distance(port.pos, ch2[0].pos)
                               for port in ch2.referenced_ports()], 5)
-        orientations = np.round([port.pos - port.anchor.pos 
+        orientations = np.round([port.pos - port.anchor.pos
                                  for port in ch2.referenced_ports()], 5)
 
         ch2_clone = mb.clone(ch2)
@@ -517,7 +516,7 @@ class TestCompound(BaseTest):
         ch2.update_coordinates('ch2-shift.pdb')
         updated_distances = np.round([ch2.min_periodic_distance(port.pos, ch2[0].pos)
                                       for port in ch2.referenced_ports()], 5)
-        updated_orientations = np.round([port.pos - port.anchor.pos 
+        updated_orientations = np.round([port.pos - port.anchor.pos
                                          for port in ch2.referenced_ports()], 5)
 
         assert np.array_equal(distances, updated_distances)
@@ -557,15 +556,15 @@ class TestCompound(BaseTest):
     def test_energy_minimization_ports(self, octane):
         distances = np.round([octane.min_periodic_distance(port.pos, port.anchor.pos)
                               for port in octane.all_ports()], 5)
-        orientations = np.round([port.pos - port.anchor.pos 
+        orientations = np.round([port.pos - port.anchor.pos
                                  for port in octane.all_ports()], 5)
 
         octane.energy_minimization()
 
-        updated_distances = np.round([octane.min_periodic_distance(port.pos, 
+        updated_distances = np.round([octane.min_periodic_distance(port.pos,
                                                                    port.anchor.pos)
                                       for port in octane.all_ports()], 5)
-        updated_orientations = np.round([port.pos - port.anchor.pos 
+        updated_orientations = np.round([port.pos - port.anchor.pos
                                          for port in octane.all_ports()], 5)
 
         assert np.array_equal(distances, updated_distances)
