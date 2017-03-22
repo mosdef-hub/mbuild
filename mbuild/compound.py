@@ -1189,7 +1189,7 @@ class Compound(object):
             except KeyError:
                 raise MBuildError("Element name {} not recognized. Cannot "
                                   "perform minimization."
-                                  "".format(particle.name)) from None
+                                  "".format(particle.name))
 
         tmp_dir = tempfile.mkdtemp()
         original = clone(self)
