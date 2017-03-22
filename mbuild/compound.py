@@ -1227,7 +1227,7 @@ class Compound(object):
 
     def save(self, filename, show_ports=False, forcefield_name=None,
              forcefield_files=None, box=None, overwrite=False, residues=None,
-             **kwargs):
+             references_file=None, **kwargs):
         """Save the Compound to a file.
 
         Parameters
@@ -1250,6 +1250,9 @@ class Compound(object):
             overlapping atoms.
         overwrite : bool, optional, default=False
             Overwrite if the filename already exists
+        references_file : str, optional, default=None
+            Specify a filename to write references for the forcefield that is
+            to be applied. References are written in BiBTeX format.
 
         Other Parameters
         ----------------
@@ -1297,7 +1300,7 @@ class Compound(object):
             from foyer import Forcefield
             ff = Forcefield(forcefield_files=forcefield_files,
                             name=forcefield_name)
-            structure = ff.apply(structure)
+            structure = ff.apply(structure, references_file=references_file)
 
         if box is None:
             box = self.boundingbox
