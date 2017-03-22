@@ -28,7 +28,7 @@ class Port(Compound):
         transform.
 
     """
-    def __init__(self, anchor=None, orientation=[0, 1, 0], separation=0):
+    def __init__(self, anchor=None, orientation=None, separation=0):
         super(Port, self).__init__(name='Port', port_particle=True)
         self.anchor = anchor
 
@@ -49,6 +49,9 @@ class Port(Compound):
         self.add(down, 'down')
         self.used = False
 
+        if orientation is None:
+            orientation = [0, 1, 0]
+
         default_direction = [0, 1, 0]
         if np.array_equal(
                 np.asarray(default_direction), unit_vector(-np.asarray(orientation))):
@@ -58,7 +61,7 @@ class Port(Compound):
             pass
         else:
             normal = np.cross(default_direction, orientation)
-            self.rotate(-angle(default_direction, orientation), normal)
+            self.rotate(angle(default_direction, orientation), normal)
 
         if anchor:
             self.translate_to(anchor.pos)

@@ -42,6 +42,16 @@ class BaseTest:
         return CH3()
 
     @pytest.fixture
+    def c3(self):
+        from mbuild.lib.atoms import C3
+        return C3()
+
+    @pytest.fixture
+    def n4(self):
+        from mbuild.lib.atoms import N4
+        return N4()
+
+    @pytest.fixture
     def betacristobalite(self):
         from mbuild.lib.surfaces import Betacristobalite
         return Betacristobalite()
@@ -64,6 +74,11 @@ class BaseTest:
                                  self['propyl1']['down'],
                                  self['propyl2']['down'])
         return Hexane()
+
+    @pytest.fixture
+    def octane(self):
+        from mbuild.examples import Alkane
+        return Alkane(8, cap_front=True, cap_end=True)
 
     @pytest.fixture
     def sixpoints(self):
@@ -122,6 +137,16 @@ class BaseTest:
         benzene.add_bond((carbons[0],carbons[-1]))
 
         return benzene
+
+    @pytest.fixture
+    def box_of_benzenes(self, benzene):
+        n_benzenes = 10
+        benzene.name = 'Benzene'
+        filled = mb.fill_box(benzene,
+                             n_compounds=n_benzenes,
+                             box=[0, 0, 0, 4, 4, 4]) 
+        filled.label_rigid_bodies(discrete_bodies='Benzene', rigid_particles='C')
+        return filled
 
     @pytest.fixture
     def rigid_ch(self):

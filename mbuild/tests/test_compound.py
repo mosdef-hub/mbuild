@@ -6,7 +6,7 @@ import pytest
 
 import mbuild as mb
 from mbuild.exceptions import MBuildError
-from mbuild.utils.io import get_fn, has_intermol
+from mbuild.utils.io import get_fn, has_intermol, has_openbabel
 from mbuild.tests.base_test import BaseTest
 
 
@@ -45,10 +45,18 @@ class TestCompound(BaseTest):
     def test_save_resnames(self, ch3, h2o):
         system = mb.Compound([ch3, h2o])
         system.save('resnames.gro', residues=['CH3', 'H2O'])
-
         struct = pmd.load_file('resnames.gro')
+
         assert struct.residues[0].name == 'CH3'
         assert struct.residues[1].name == 'H2O'
+
+    def test_save_resnames_single(self, c3, n4):
+        system = mb.Compound([c3, n4])
+        system.save('resnames_single.gro', residues=['C3', 'N4'])
+
+        struct = pmd.load_file('resnames_single.gro')
+        assert struct.residues[0].number ==  1
+        assert struct.residues[1].number ==  2
 
     def test_batch_add(self, ethane, h2o):
         compound = mb.Compound()
@@ -265,7 +273,7 @@ class TestCompound(BaseTest):
         assert brush1['pmpc']['monomer'][0].n_particles == 41
         assert brush1['pmpc']['monomer'][0].n_bonds == 40
 
-    def test_to_trajectory(self, ethane):
+    def test_to_trajectory(self, ethane, c3, n4):
         traj = ethane.to_trajectory()
         assert traj.n_atoms == 8
         assert traj.top.n_bonds == 7
@@ -287,6 +295,19 @@ class TestCompound(BaseTest):
         assert traj.n_residues == 2
         assert all(chain.n_atoms == 4 for chain in traj.top.chains)
         assert all(chain.n_residues == 1 for chain in traj.top.chains)
+
+        system = mb.Compound([c3, n4])
+        traj = system.to_trajectory(residues=['C', 'N'])
+        assert traj.n_atoms == 2
+        assert traj.top.n_bonds == 0
+        assert traj.n_chains == 1
+        assert traj.n_residues == 2
+
+        traj = system.to_trajectory(chains=['C', 'N'])
+        assert traj.n_atoms == 2
+        assert traj.top.n_bonds == 0
+        assert traj.n_chains == 2
+        assert traj.n_residues == 2
 
         methyl = next(iter(ethane.children))
         traj = methyl.to_trajectory()
@@ -324,19 +345,15 @@ class TestCompound(BaseTest):
     def test_chainnames_mdtraj(self, h2o, ethane):
         system = mb.Compound([h2o, mb.clone(h2o), ethane])
         traj = system.to_trajectory(chains=['Ethane', 'H2O'])
-        chains = list(traj.top.chains)
         assert traj.n_chains == 3
 
         traj = system.to_trajectory(chains='Ethane')
-        chains = list(traj.top.chains)
         assert traj.n_chains == 2
 
         traj = system.to_trajectory(chains=['Ethane'])
-        chains = list(traj.top.chains)
         assert traj.n_chains == 2
 
         traj = system.to_trajectory()
-        chains = list(traj.top.chains)
         assert traj.n_chains == 1
 
     @pytest.mark.skipif(not has_intermol, reason="InterMol is not installed")
@@ -472,5 +489,76 @@ class TestCompound(BaseTest):
         assert not any(compound.bond_graph.has_node(particle)
                        for particle in ch3_nobonds.particles())
 
+    def test_update_coords_update_ports(self, ch2):
+        distances = np.round([ch2.min_periodic_distance(port.pos, ch2[0].pos)
+                              for port in ch2.referenced_ports()], 5)
+        orientations = np.round([port.pos - port.anchor.pos 
+                                 for port in ch2.referenced_ports()], 5)
 
+        ch2_clone = mb.clone(ch2)
+        ch2_clone[0].pos += [1, 1, 1]
+        ch2_clone.save('ch2-shift.pdb')
 
+        ch2.update_coordinates('ch2-shift.pdb')
+        updated_distances = np.round([ch2.min_periodic_distance(port.pos, ch2[0].pos)
+                                      for port in ch2.referenced_ports()], 5)
+        updated_orientations = np.round([port.pos - port.anchor.pos 
+                                         for port in ch2.referenced_ports()], 5)
+
+        assert np.array_equal(distances, updated_distances)
+        assert np.array_equal(orientations, updated_orientations)
+
+    @pytest.mark.skipif(not has_openbabel, reason="Open Babel package not installed")
+    def test_energy_minimization(self, octane):
+        octane.energy_minimization()
+
+    @pytest.mark.skipif(has_openbabel, reason="Open Babel package is installed")
+    def test_energy_minimization_openbabel_warn(self, octane):
+        with pytest.raises(MBuildError):
+            octane.energy_minimization()
+
+    @pytest.mark.skipif(not has_openbabel, reason="Open Babel package not installed")
+    def test_energy_minimization_ff(self, octane):
+        for ff in ['UFF', 'GAFF', 'MMFF94', 'MMFF94s', 'Ghemical']:
+            octane.energy_minimization(forcefield=ff)
+        with pytest.raises(MBuildError):
+            octane.energy_minimization(forcefield='fakeFF')
+
+    @pytest.mark.skipif(not has_openbabel, reason="Open Babel package not installed")
+    def test_energy_minimization_algorithm(self, octane):
+        for algorithm in ['cg', 'steep', 'md']:
+            octane.energy_minimization(algorithm=algorithm)
+        with pytest.raises(MBuildError):
+            octane.energy_minimization(algorithm='fakeAlg')
+
+    @pytest.mark.skipif(not has_openbabel, reason="Open Babel package not installed")
+    def test_energy_minimization_non_element(self, octane):
+        for particle in octane.particles():
+            particle.name = 'Q'
+        with pytest.raises(MBuildError):
+            octane.energy_minimization()
+
+    @pytest.mark.skipif(not has_openbabel, reason="Open Babel package not installed")
+    def test_energy_minimization_ports(self, octane):
+        distances = np.round([octane.min_periodic_distance(port.pos, port.anchor.pos)
+                              for port in octane.all_ports()], 5)
+        orientations = np.round([port.pos - port.anchor.pos 
+                                 for port in octane.all_ports()], 5)
+
+        octane.energy_minimization()
+
+        updated_distances = np.round([octane.min_periodic_distance(port.pos, 
+                                                                   port.anchor.pos)
+                                      for port in octane.all_ports()], 5)
+        updated_orientations = np.round([port.pos - port.anchor.pos 
+                                         for port in octane.all_ports()], 5)
+
+        assert np.array_equal(distances, updated_distances)
+        assert np.array_equal(orientations, updated_orientations)
+
+    def test_clone_outside_containment(self, ch2, ch3):
+        compound = mb.Compound()
+        compound.add(ch2)
+        mb.force_overlap(ch3, ch3['up'], ch2['up'])
+        with pytest.raises(MBuildError):
+            ch3_clone = mb.clone(ch3)
