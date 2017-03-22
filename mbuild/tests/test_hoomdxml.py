@@ -4,7 +4,6 @@ import xml.etree.ElementTree
 
 import mbuild as mb
 from mbuild.tests.base_test import BaseTest
-from mbuild.utils.io import has_foyer
 
 
 class TestHoomdXML(BaseTest):
@@ -12,7 +11,6 @@ class TestHoomdXML(BaseTest):
     def test_save(self, ethane):
         ethane.save(filename='ethane.hoomdxml')
 
-    @pytest.mark.skipif(not has_foyer, reason="Foyer is not installed")
     def test_save_forcefield(self, ethane):
         ethane.save(filename='ethane-opls.hoomdxml', forcefield_name='oplsaa')
 
