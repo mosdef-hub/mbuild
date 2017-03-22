@@ -1305,7 +1305,7 @@ class Compound(object):
         if box is None:
             box = self.boundingbox
             box_vec_max = box.maxs.tolist()
-            box_vec_min = box.maxs.tolist()
+            box_vec_min = box.mins.tolist()
             for dim, val in enumerate(self.periodicity):
                 if val:
                     box_vec_max[dim] = val
