@@ -54,15 +54,7 @@ def load(filename, relative_to_module=None, compound=None, coords_only=False,
     rigid : bool, optional, default=False
         Treat the compound as a rigid body
     **kwargs : keyword arguments
-        Arbitrary keyword arguments.
-
-    Args:
-      **ref_distance : float, default=1.0
-        Reference distance for conversion to reduced units
-      **ref_mass : float, default=1.0
-        Reference mass for conversion to reduced units
-      **ref_energy : float, default=1.0
-        Reference energy for conversion to reduced units
+        Key word arguments passed to mdTraj for loading.
 
     Returns
     -------
