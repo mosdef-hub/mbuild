@@ -34,8 +34,8 @@ class Lattice(object):
         Vectors that define edges of unit cell corresponding to dimension.
     lattice_spacings : list-like, shape=(dimension,), optional, default=None
         Length of unit cell edges.
-    basis_atoms : dictionary-like, shape=(['id',[dimension,]], ...) optional
-                    default={('default', ([0,0,0]))}
+    basis_atoms : dictionary, shape={'id':[nested list of coordinate pairs]}
+                    default={'default':[[0., 0., 0.]]
         Location of all basis Compounds in unit cell.
     angles : list-like,  shape=(dimension,), optional, default=None
         Interplanar angles describing unit cell.
@@ -64,10 +64,10 @@ class Lattice(object):
     >>> # reading in the lattice parameters for crystalline cholesterol
     >>> angle_values = [94.64, 90.67, 96.32]
     >>> spacings = [1.4172, 3.4209, 1.0481]
-    >>> basis_atom = ( ('cholesterol', [0,0,0]), )
+    >>> basis = {'cholesterol':[[0., 0., 0.]]}
     >>> cholesterol_lattice = mb.Lattice(spacings,
     ...                                  angles=angle_values,
-    ...                                  basis_atoms=basis_atom,
+    ...                                  basis_atoms=basis,
     ...                                  dimension=3)
 
     The lattice based on the bravais lattice parameters of crystalline
@@ -93,8 +93,8 @@ class Lattice(object):
     >>> # angles not needed, when not provided, defaults to 90,90,90
     >>> cesium = mb.Compound(name='Cs')
     >>> spacings = [.4123, .4123, .4123]
-    >>> basis_atom = ( ('Cl', [0,0,0]), ('Cs', [.5, .5, .5]), )
-    >>> cscl_lattice = mb.Lattice(spacings, basis_atoms=basis_atom,
+    >>> basis = {'Cl' : [[0., 0., 0.]], 'Cs' : [[.5, .5, .5]]}
+    >>> cscl_lattice = mb.Lattice(spacings, basis_atoms=basis,
     ...                           dimension=3)
 
     Now associate id with Compounds for basis atoms and replicate 3x3x3
@@ -111,21 +111,19 @@ class Lattice(object):
     >>> copper = mb.Compound(name='Cu')
     >>> lattice_vector = ( [1, 0, 0], [0, 1, 0], [0, 0, 1])
     >>> spacings = [.36149, .36149, .36149]
-    >>> basis_atom = ( ('Cu', [0, 0, 0]), ('Cu', [.5, .5, 0]),
-    ...                 ('Cu', [.5, 0, .5] ), ('Cu', [0, .5, .5]), )
+    >>> copper_locations = [[0., 0., 0.], [.5, .5, 0.],
+    ...                     [.5, 0., .5], [0., .5, .5]]
+    >>> basis = {'Cu' : copper_locations}
     >>> copper_lattice = mb.Lattice(spacings, dimension=3,
     ...                           lattice_vectors=lattice_vector,
-    ...                           basis_atoms=basis_atom)
+    ...                           basis_atoms=basis)
     >>> copper_dict = {'Cu' : copper}
     >>> copper_cell = copper_lattice.populate(x=3, y=3, z=20,
     ...                                       compound_dict=copper_dict)
 
-    TODO(Justin Gilmer) : migrate data cleaning to separate functions
     TODO(Justin Gilmer) : Print function to display info about Lattice (repr)
     TODO(Justin Gilmer) : inheritance(Cubic, orthorhombic, hexangonal)
-    TODO(Justin Gilmer) : nested for loop cleaning up
     TODO(Justin Gilmer) : orientation functionality
-    TODO(Justin Gilmer) : conversion to idiomatic python
     """
 
     def __init__(self, lattice_spacings, dimension=None,
@@ -319,6 +317,25 @@ class Lattice(object):
         self.lattice_vectors = lattice_vectors
 
 
+
+    def _validate_basis_atoms(self, basis_atoms, dimension):
+        if basis_atoms is None:
+            basis_atoms['default'] = [[0., 0., 0.]]
+        elif isinstance(basis_atoms, dict):
+            pass
+        else:
+            raise TypeError('Incorrect type, basis_atoms is of type {}, '
+                            'Expected dict.'.format(type(basis_atoms)))
+
+        for name in basis_atoms.keys():
+            positions = basis_atoms[name]
+            for pos in positions:
+                assert len(pos) == dimension
+                location_check = [coord for coord in pos if coord < 0 or coord >= 1]
+                assert location_check == []
+
+        self.basis_atoms = self._check_for_overlap(basis_atoms, dimension)
+
     def _check_for_overlap(self, basis_atoms, dimension):
 
         overlap_dict = defaultdict(list)
@@ -339,26 +356,6 @@ class Lattice(object):
                                  'vectors are: {}'
                                  .format(key, val))
         return basis_atoms
-
-    def _validate_basis_atoms(self, basis_atoms, dimension):
-        if basis_atoms is None:
-            basis_atoms['default'] = [[0., 0., 0.]]
-        elif isinstance(basis_atoms, dict):
-            pass
-        else:
-            raise TypeError('Incorrect type, basis_atoms is of type {}, '
-                            'Expected dict.'.format(type(basis_atoms)))
-
-        for name in basis_atoms.keys():
-            positions = basis_atoms[name]
-            for pos in positions:
-                assert len(pos) == dimension
-                location_check = [coord for coord in pos if coord < 0 or coord >= 1]
-                assert location_check == []
-
-        self.basis_atoms = self._check_for_overlap(basis_atoms, dimension)
-
-
 
     def _from_lattice_parameters(self, angles, dimension):
         """Convert Bravais lattice parameters to lattice vectors.
