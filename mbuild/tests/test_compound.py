@@ -407,10 +407,10 @@ class TestCompound(BaseTest):
     def test_parmed_conversion(self, ethane, h2o):
         compound = mb.Compound([ethane, h2o])
 
-        structure = compound.to_parmed(box=compound.boundingbox)
+        structure = compound.to_parmed()
         assert structure.title == 'Compound'
 
-        structure = compound.to_parmed(box=compound.boundingbox, title='eth_h2o')
+        structure = compound.to_parmed(title='eth_h2o')
         assert structure.title == 'eth_h2o'
 
         assert len(structure.atoms) == 11
@@ -435,27 +435,27 @@ class TestCompound(BaseTest):
 
     def test_resnames_parmed(self, h2o, ethane):
         system = mb.Compound([h2o, mb.clone(h2o), ethane])
-        struct = system.to_parmed(box=system.boundingbox, residues=['Ethane', 'H2O'])
+        struct = system.to_parmed(residues=['Ethane', 'H2O'])
         assert len(struct.residues) == 3
         assert struct.residues[0].name == 'H2O'
         assert struct.residues[1].name == 'H2O'
         assert struct.residues[2].name == 'Ethane'
         assert sum(len(res.atoms) for res in struct.residues) == len(struct.atoms)
 
-        struct = system.to_parmed(box=system.boundingbox, residues=['Ethane', 'H2O'])
+        struct = system.to_parmed(residues=['Ethane', 'H2O'])
         assert len(struct.residues) == 3
         assert struct.residues[0].name == 'H2O'
         assert struct.residues[1].name == 'H2O'
         assert struct.residues[2].name == 'Ethane'
         assert sum(len(res.atoms) for res in struct.residues) == len(struct.atoms)
 
-        struct = system.to_parmed(box=system.boundingbox, residues='Ethane')
+        struct = system.to_parmed(residues='Ethane')
         assert len(struct.residues) == 2
         assert struct.residues[0].name == 'RES'
         assert struct.residues[1].name == 'Ethane'
         assert sum(len(res.atoms) for res in struct.residues) == len(struct.atoms)
 
-        struct = system.to_parmed(box=system.boundingbox)
+        struct = system.to_parmed()
         assert len(struct.residues) == 1
         assert struct.residues[0].name == 'RES'
         assert sum(len(res.atoms) for res in struct.residues) == len(struct.atoms)
@@ -463,11 +463,11 @@ class TestCompound(BaseTest):
     def test_parmed_element_guess(self):
         compound = mb.Particle(name='foobar')
         with pytest.warns(UserWarning):
-            _ = compound.to_parmed(box=compound.boundingbox)
+            _ = compound.to_parmed()
 
         compound = mb.Particle(name='XXXXXX')
         with pytest.warns(UserWarning):
-            _ = compound.to_parmed(box=compound.boundingbox)
+            _ = compound.to_parmed()
 
     def test_min_periodic_dist(self, ethane):
         compound = mb.Compound(ethane)

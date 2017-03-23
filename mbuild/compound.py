@@ -1645,7 +1645,7 @@ class Compound(object):
         else:
             self.periodicity = np.array([0., 0., 0.])
 
-    def to_parmed(self, box, title='', residues=None):
+    def to_parmed(self, box=None, title='', residues=None):
         """Create a ParmEd Structure from a Compound.
 
         Parameters
@@ -1728,6 +1728,20 @@ class Compound(object):
         for atom1, atom2 in self.bonds():
             bond = pmd.Bond(atom_mapping[atom1], atom_mapping[atom2])
             structure.bonds.append(bond)
+
+        if box is None:
+            box = self.boundingbox
+            box_vec_max = box.maxs.tolist()
+            box_vec_min = box.mins.tolist()
+            for dim, val in enumerate(self.periodicity):
+                if val:
+                    box_vec_max[dim] = val
+                    box_vec_min[dim] = 0.0
+                if not val:
+                    box_vec_max[dim] += 0.25
+                    box_vec_min[dim] -= 0.25
+            box.mins = np.asarray(box_vec_min)
+            box.maxs = np.asarray(box_vec_max)
 
         box_vector = np.empty(6)
         box_vector[3] = box_vector[4] = box_vector[5] = 90.0
