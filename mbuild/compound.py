@@ -1731,7 +1731,7 @@ class Compound(object):
 
         box_vector = np.empty(6)
         box_vector[3] = box_vector[4] = box_vector[5] = 90.0
-        for dim, val in enumerate(self.periodicity):
+        for dim in range(3):
             box_vector[dim] = box.lengths[dim] * 10
         structure.box = box_vector
         return structure
