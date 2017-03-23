@@ -8,23 +8,22 @@ import re
 import numpy as np
 from oset import oset as OrderedSet
 
+from mbuild import Box
 from mbuild.utils.io import import_
 
 __all__ = ['write_gsd']
 
 
-def write_gsd(structure, filename, box, ref_distance=1.0, ref_mass=1.0,
+def write_gsd(structure, filename, ref_distance=1.0, ref_mass=1.0,
               ref_energy=1.0):
     """Output a GSD file (HOOMD default data format).
-    
+
     Parameters
     ----------
     structure : parmed.Structure
         Parmed Structure object
     filename : str
         Path of the output file.
-    box : mb.Box
-        Box information
     ref_distance : float, default=1.0
         Reference distance for conversion to reduced units
     ref_mass : float, default=1.0
@@ -42,6 +41,7 @@ def write_gsd(structure, filename, box, ref_distance=1.0, ref_mass=1.0,
 
     xyz = np.array([[atom.xx, atom.xy, atom.xz] for atom in structure.atoms])
 
+    box = Box(lengths=np.array([structure.box[0], structure.box[1], structure.box[2]]))
     # Center box at origin and remap coordinates into box
     box.lengths *= 10.0
     box.maxs *= 10.0
@@ -49,7 +49,6 @@ def write_gsd(structure, filename, box, ref_distance=1.0, ref_mass=1.0,
     box_init = deepcopy(box)
     box.mins = np.array([-d/2 for d in box_init.lengths])
     box.maxs = np.array([d/2 for d in box_init.lengths])
-    
     shift = [box_init.maxs[i] - max for i, max in enumerate(box.maxs)]
     for i, pos in enumerate(xyz):
         for j, coord in enumerate(pos):
@@ -79,7 +78,7 @@ def write_gsd(structure, filename, box, ref_distance=1.0, ref_mass=1.0,
 
     gsd_file.particles.types = unique_types
     gsd_file.particles.typeid = typeids
-    
+
     masses = np.array([atom.mass for atom in structure.atoms])
     masses[masses==0] = 1.0
     gsd_file.particles.mass = masses / ref_mass
@@ -111,7 +110,7 @@ def write_gsd(structure, filename, box, ref_distance=1.0, ref_mass=1.0,
         gsd_file.bonds.group = bonds
 
     angles = [[angle.atom1.idx,
-               angle.atom2.idx, 
+               angle.atom2.idx,
                angle.atom3.idx] for angle in structure.angles]
     if angles:
         angles = np.asarray(angles)

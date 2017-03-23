@@ -4,14 +4,15 @@ from collections import OrderedDict
 
 import numpy as np
 
+from mbuild import Box
 from mbuild.utils.conversion import RB_to_OPLS
 
 __all__ = ['write_lammpsdata']
 
 
-def write_lammpsdata(structure, filename, box):
+def write_lammpsdata(structure, filename):
     """Output a LAMMPS data file.
-    
+
     Note: Output supports 'real' units and 'full' atom style only.
 
     Parameters
@@ -20,14 +21,12 @@ def write_lammpsdata(structure, filename, box):
         Parmed structure object
     filename : str
         Path of the output file
-    box : mb.Box
-        Box information to save to data file
     """
-
     forcefield = True
     if structure[0].type == '':
         forcefield = False
 
+    box = Box(lengths=np.array([structure.box[0], structure.box[1], structure.box[2]]))
     # Convert box units from nm to angstroms
     box.maxs *= 10.
     box.mins *= 10.
