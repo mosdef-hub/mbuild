@@ -38,7 +38,7 @@ class TestCompound(BaseTest):
             for attr in box_attributes:
                 pad_attr = getattr(padded_ch3.boundingbox, attr)
                 custom_attr = getattr(custom_ch3.boundingbox, attr)
-                assert(np.array_equal(pad_attr, custom_attr))
+                assert np.array_equal(pad_attr, custom_attr)
 
     def test_save_overwrite(self, ch3):
         extensions = ['.gsd', '.hoomdxml', '.lammps', '.lmp', '.top', '.gro']
