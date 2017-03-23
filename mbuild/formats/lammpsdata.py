@@ -22,12 +22,11 @@ def write_lammpsdata(structure, filename):
     filename : str
         Path of the output file
     """
-    box = Box(lengths=[1., 1., 1.])
     forcefield = True
     if structure[0].type == '':
         forcefield = False
 
-    box.lengths = np.array([structure.box[0], structure.box[1], structure.box[2]])
+    box = Box(lengths=np.array([structure.box[0], structure.box[1], structure.box[2]]))
     # Convert box units from nm to angstroms
     box.maxs *= 10.
     box.mins *= 10.

@@ -35,14 +35,13 @@ def write_gsd(structure, filename, ref_distance=1.0, ref_mass=1.0,
     import_('gsd')
     import gsd.hoomd
 
-    box = Box(lengths=[1., 1., 1.])
     forcefield = True
     if structure[0].type == '':
         forcefield = False
 
     xyz = np.array([[atom.xx, atom.xy, atom.xz] for atom in structure.atoms])
 
-    box.lengths = np.array([structure.box[0], structure.box[1], structure.box[2]])
+    box = Box(lengths=np.array([structure.box[0], structure.box[1], structure.box[2]]))
     # Center box at origin and remap coordinates into box
     box.lengths *= 10.0
     box.maxs *= 10.0

@@ -67,14 +67,12 @@ def write_hoomdxml(structure, filename, rigid_bodies, ref_distance=1.0,
         Wrap coordinates of all atoms into the box
 
     """
-    box = Box(lengths=[1., 1., 1.,])
     forcefield = True
     if structure[0].type == '':
         forcefield = False
     xyz = np.array([[atom.xx, atom.xy, atom.xz] for atom in structure.atoms])
 
-    box.lengths = np.array([structure.box[0], structure.box[1], structure.box[2]])
-    box.maxs *= 10.
+    box = Box(lengths=np.array([structure.box[0], structure.box[1], structure.box[2]]))
     box.mins *= 10.
     box_init = deepcopy(box)
     box.mins = np.array([-d/2 for d in box_init.lengths])
