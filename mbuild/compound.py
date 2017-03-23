@@ -1293,20 +1293,6 @@ class Compound(object):
         if os.path.exists(filename) and not overwrite:
             raise IOError('{0} exists; not overwriting'.format(filename))
 
-        # pad non periodic faces with .25nm buffers
-        if box is None:
-            box = self.boundingbox
-            box_vec_max = box.maxs.tolist()
-            box_vec_min = box.mins.tolist()
-            for dim, val in enumerate(self.periodicity):
-                if val:
-                    box_vec_max[dim] = val
-                    box_vec_min[dim] = 0.0
-                if not val:
-                    box_vec_max[dim] += 0.25
-                    box_vec_min[dim] -= 0.25
-            box.mins = np.asarray(box_vec_min)
-            box.maxs = np.asarray(box_vec_max)
         structure = self.to_parmed(box=box, residues=residues)
         # Apply a force field with foyer if specified
         if forcefield_name or forcefield_files:
@@ -1325,7 +1311,7 @@ class Compound(object):
         if saver:  # mBuild supported saver.
             if extension in ['.hoomdxml']:
                 kwargs['rigid_bodies'] = [p.rigid_id for p in self.particles()]
-            saver(filename=filename, box=box, structure=structure, **kwargs)
+            saver(filename=filename, structure=structure, **kwargs)
         else:  # ParmEd supported saver.
             structure.save(filename, overwrite=overwrite, **kwargs)
 
@@ -1728,7 +1714,7 @@ class Compound(object):
         for atom1, atom2 in self.bonds():
             bond = pmd.Bond(atom_mapping[atom1], atom_mapping[atom2])
             structure.bonds.append(bond)
-
+        # pad box with .25nm buffers
         if box is None:
             box = self.boundingbox
             box_vec_max = box.maxs.tolist()

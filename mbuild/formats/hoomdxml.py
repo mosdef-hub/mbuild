@@ -4,12 +4,13 @@ from math import floor, radians
 
 import numpy as np
 
+from mbuild import Box
 from mbuild.utils.conversion import RB_to_OPLS
 
 __all__ = ['write_hoomdxml']
 
 
-def write_hoomdxml(structure, filename, box, rigid_bodies, ref_distance=1.0, 
+def write_hoomdxml(structure, filename, rigid_bodies, ref_distance=1.0,
                    ref_mass=1.0, ref_energy=1.0, wrap_coordinates=True):
     """Output a HOOMD XML file.
 
@@ -51,8 +52,6 @@ def write_hoomdxml(structure, filename, box, rigid_bodies, ref_distance=1.0,
         Parmed structure object
     filename : str
         Path of the output file.
-    box : mb.Box
-        Box information
     rigid_bodies : list
         List of rigid body information. An integer value is required
         for each atom corresponding to the number of the rigid body with
@@ -68,12 +67,13 @@ def write_hoomdxml(structure, filename, box, rigid_bodies, ref_distance=1.0,
         Wrap coordinates of all atoms into the box
 
     """
-
+    box = Box(lengths=[1., 1., 1.,])
     forcefield = True
     if structure[0].type == '':
         forcefield = False
     xyz = np.array([[atom.xx, atom.xy, atom.xz] for atom in structure.atoms])
 
+    box.lengths = np.array([structure.box[0], structure.box[1], structure.box[2]])
     box.maxs *= 10.
     box.mins *= 10.
     box_init = deepcopy(box)
