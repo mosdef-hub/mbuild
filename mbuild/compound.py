@@ -1241,12 +1241,13 @@ class Compound(object):
             extensions are: 'hoomdxml', 'gsd', 'gro', 'top', 'lammps', 'lmp'
         show_ports : bool, optional, default=False
             Save ports contained within the compound.
-        forcefield_name : str, optional, default=None
+        forcefield_file : str, optional, default=None
             Apply a forcefield to the output file using a forcefield provided
             by the `foyer` package.
         forcefield_name : str, optional, default=None
-            Apply a forcefield to the output file using the `foyer` package and
-            a specific forcefield.xml file.
+            Apply a named forcefield to the output file using the `foyer`
+            package, e.g. 'oplsaa'. Forcefields listed here:
+            https://github.com/mosdef-hub/foyer/tree/master/foyer/forcefields
         box : mb.Box, optional, default=self.boundingbox (with buffer)
             Box information to be written to the output file. If 'None', a
             bounding box is used with 0.25nm buffers at each face to avoid
