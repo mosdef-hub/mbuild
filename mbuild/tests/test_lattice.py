@@ -135,9 +135,9 @@ class TestLattice(BaseTest):
             neg_lattice = mb.Lattice(neg_test3, dimension=3, lattice_vectors=None)
 
     def test_basis_default(self):
-        three_d = mb.Lattice([1, 1, 1], dimension=3, basis_vectors=None)
-        two_d = mb.Lattice([1, 1], dimension=2, basis_vectors=None)
-        one_d = mb.Lattice([1], dimension=1, basis_vectors=None)
+        three_d = mb.Lattice([1, 1, 1], dimension=3, basis_atoms=None)
+        two_d = mb.Lattice([1, 1], dimension=2, basis_atoms=None)
+        one_d = mb.Lattice([1], dimension=1, basis_atoms=None)
 
         assert len(three_d.basis_vectors) == 1
         assert len(two_d.basis_vectors) == 1
