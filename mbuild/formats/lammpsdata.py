@@ -5,12 +5,13 @@ import re
 
 import numpy as np
 
+from mbuild import Box
 from mbuild.utils.conversion import RB_to_OPLS
 
 __all__ = ['write_lammpsdata']
 
 
-def write_lammpsdata(structure, filename, box):
+def write_lammpsdata(structure, filename):
     """Output a LAMMPS data file.
     
     Outputs a LAMMPS data file in the 'full' atom style format. Assumes use
@@ -23,8 +24,6 @@ def write_lammpsdata(structure, filename, box):
         ParmEd structure object
     filename : str
         Path of the output file
-    box : mb.Box
-        Box information to save to data file
 
     Notes
     -----
@@ -36,6 +35,12 @@ def write_lammpsdata(structure, filename, box):
     """
 
     xyz = np.array([[atom.xx,atom.xy,atom.xz] for atom in structure.atoms])
+
+    forcefield = True
+    if structure[0].type == '':
+        forcefield = False
+
+    box = Box(lengths=np.array([structure.box[0], structure.box[1], structure.box[2]]))
 
     if forcefield:
         types = [atom.type for atom in structure.atoms]

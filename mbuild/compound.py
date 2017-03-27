@@ -30,6 +30,7 @@ from mbuild.periodic_kdtree import PeriodicCKDTree
 from mbuild.utils.io import run_from_ipython, import_
 from mbuild.coordinate_transform import _translate, _rotate
 
+
 def load(filename, relative_to_module=None, compound=None, coords_only=False,
          rigid=False, **kwargs):
     """Load a file into an mbuild compound.
@@ -43,15 +44,17 @@ def load(filename, relative_to_module=None, compound=None, coords_only=False,
         Name of the file from which to load atom and bond information.
     relative_to_module : str, optional, default=None
         Instead of looking in the current working directory, look for the file
-        where this module is defined. This is typically used in Compound classes
-        that will be instantiated from a different directory (such as the
-        Compounds located in mbuild.lib).
+        where this module is defined. This is typically used in Compound
+        classes that will be instantiated from a different directory
+        (such as the Compounds located in mbuild.lib).
     compound : mb.Compound, optional, default=None
         Existing compound to load atom and bond information into.
     coords_only : bool, optional, default=False
         Only load the coordinates into an existing compoint.
-    rigid : bool, optional
+    rigid : bool, optional, default=False
         Treat the compound as a rigid body
+    **kwargs : keyword arguments
+        Key word arguments passed to mdTraj for loading.
 
     Returns
     -------
@@ -156,7 +159,7 @@ class Compound(object):
     rigid_id : int, default=None
         The ID of the rigid body that this Compound belongs to.  Only Particles
         (the bottom of the containment hierarchy) can have integer values for
-        `rigid_id`. Compounds containing rigid particles will always have 
+        `rigid_id`. Compounds containing rigid particles will always have
         `rigid_id == None`. See also `contains_rigid`.
     boundingbox
     center
@@ -213,7 +216,7 @@ class Compound(object):
 
     def particles(self, include_ports=False):
         """Return all Particles of the Compound.
-        
+
         Parameters
         ----------
         include_ports : bool, optional, default=False
@@ -348,7 +351,7 @@ class Compound(object):
     def contains_rigid(self):
         """Returns True if the Compound contains rigid bodies
 
-        If the Compound contains any particle with a rigid_id != None 
+        If the Compound contains any particle with a rigid_id != None
         then contains_rigid will return True. If the Compound has no
         children (i.e. the Compound resides at the bottom of the containment
         hierarchy) then contains_rigid will return False.
@@ -425,22 +428,22 @@ class Compound(object):
 
         If no arguments are provided, this function will treat the compound
         as a single rigid body by providing all particles in `self` with the
-        same rigid_id. If `discrete_bodies` is not None, each instance of 
-        a Compound with a name found in `discrete_bodies` will be treated as a 
-        unique rigid body. If `rigid_particles` is not None, only Particles 
-        (Compounds at the bottom of the containment hierarchy) matching this name 
+        same rigid_id. If `discrete_bodies` is not None, each instance of
+        a Compound with a name found in `discrete_bodies` will be treated as a
+        unique rigid body. If `rigid_particles` is not None, only Particles
+        (Compounds at the bottom of the containment hierarchy) matching this name
         will be considered part of the rigid body.
 
         Parameters
         ----------
         discrete_bodies : str or list of str, optional, default=None
             Name(s) of Compound instances to be treated as unique rigid bodies.
-            Compound instances matching this (these) name(s) will be provided 
+            Compound instances matching this (these) name(s) will be provided
             with unique rigid_ids
         rigid_particles : str or list of str, optional, default=None
             Name(s) of Compound instances at the bottom of the containment
             hierarchy (Particles) to be included in rigid bodies. Only Particles
-            matching this (these) name(s) will have their rigid_ids altered to 
+            matching this (these) name(s) will have their rigid_ids altered to
             match the rigid body number.
 
         Examples
@@ -531,7 +534,7 @@ class Compound(object):
     def _reorder_rigid_ids(self):
         """Reorder rigid body IDs ensuring consecutiveness.
 
-        Primarily used internally to ensure consecutive rigid_ids following 
+        Primarily used internally to ensure consecutive rigid_ids following
         removal of a Compound.
 
         """
@@ -571,7 +574,7 @@ class Compound(object):
             Replace the periodicity of self with the periodicity of the
             Compound being added
         reset_rigid_ids : bool, optional, default=True
-            If the Compound to be added contains rigid bodies, reset the 
+            If the Compound to be added contains rigid bodies, reset the
             rigid_ids such that values remain distinct from rigid_ids
             already present in `self`. Can be set to False if attempting
             to add Compounds to an existing rigid body.
@@ -1079,9 +1082,9 @@ class Compound(object):
         """Adjust port locations after particles have moved
 
         Compares the locations of Particles between 'self' and an array of
-        reference coordinates.  Shifts Ports in accordance with how far anchors 
-        have been moved.  This conserves the location of Ports with respect to 
-        their anchor Particles, but does not conserve the orientation of Ports 
+        reference coordinates.  Shifts Ports in accordance with how far anchors
+        have been moved.  This conserves the location of Ports with respect to
+        their anchor Particles, but does not conserve the orientation of Ports
         with respect to the molecule as a whole.
 
         Parameters
@@ -1101,7 +1104,7 @@ class Compound(object):
     def _kick(self):
         """Slightly adjust all coordinates in a Compound
 
-        Provides a slight adjustment to coordinates to kick them out of local 
+        Provides a slight adjustment to coordinates to kick them out of local
         energy minima.
         """
         xyz_init = self.xyz
@@ -1126,19 +1129,19 @@ class Compound(object):
         steps : int, optionl, default=1000
             The number of optimization iterations
         algorithm : str, optional, default='cg'
-            The energy minimization algorithm.  Valid options are 'steep', 
+            The energy minimization algorithm.  Valid options are 'steep',
             'cg', and 'md', corresponding to steepest descent, conjugate
             gradient, and equilibrium molecular dynamics respectively.
         forcefield : str, optional, default='UFF'
             The generic force field to apply to the Compound for minimization.
             Valid options are 'MMFF94', 'MMFF94s', ''UFF', 'GAFF', and 'Ghemical'.
             Please refer to the Open Babel documentation (http://open-babel.
-            readthedocs.io/en/latest/Forcefields/Overview.html) when considering 
+            readthedocs.io/en/latest/Forcefields/Overview.html) when considering
             your choice of force field.
 
         References
         ----------
-        .. [1] O'Boyle, N.M.; Banck, M.; James, C.A.; Morley, C.; 
+        .. [1] O'Boyle, N.M.; Banck, M.; James, C.A.; Morley, C.;
                Vandermeersch, T.; Hutchison, G.R. "Open Babel: An open
                chemical toolbox." (2011) J. Cheminf. 3, 33
         .. [2] Open Babel, version X.X.X http://openbabel.org, (installed
@@ -1177,7 +1180,7 @@ class Compound(object):
                J. Comput. Chem. 25, 1157-1174
 
         If using the 'Ghemical' force field please cite the following:
-        .. [3] T. Hassinen and M. Perakyla, "New energy terms for reduced 
+        .. [3] T. Hassinen and M. Perakyla, "New energy terms for reduced
                protein models implemented in an off-lattice force field" (2001)
                J. Comput. Chem. 22, 1229-1242
         """
@@ -1238,12 +1241,13 @@ class Compound(object):
             extensions are: 'hoomdxml', 'gsd', 'gro', 'top', 'lammps', 'lmp'
         show_ports : bool, optional, default=False
             Save ports contained within the compound.
-        forcefield_name : str, optional, default=None
+        forcefield_file : str, optional, default=None
             Apply a forcefield to the output file using a forcefield provided
             by the `foyer` package.
         forcefield_name : str, optional, default=None
-            Apply a forcefield to the output file using the `foyer` package and
-            a specific forcefield.xml file.
+            Apply a named forcefield to the output file using the `foyer`
+            package, e.g. 'oplsaa'. Forcefields listed here:
+            https://github.com/mosdef-hub/foyer/tree/master/foyer/forcefields
         box : mb.Box, optional, default=self.boundingbox (with buffer)
             Box information to be written to the output file. If 'None', a
             bounding box is used with 0.25nm buffers at each face to avoid
@@ -1300,8 +1304,7 @@ class Compound(object):
         if os.path.exists(filename) and not overwrite:
             raise IOError('{0} exists; not overwriting'.format(filename))
 
-        structure = self.to_parmed(residues=residues)
-
+        structure = self.to_parmed(box=box, residues=residues)
         # Apply a force field with foyer if specified
         if forcefield_name or forcefield_files:
             from foyer import Forcefield
@@ -1309,38 +1312,9 @@ class Compound(object):
                             name=forcefield_name)
             structure = ff.apply(structure)
 
-        if box is None:
-            box = self.boundingbox
-            for dim, val in enumerate(self.periodicity):
-                if val:
-                    box.lengths[dim] = val
-                    box.maxs[dim] = val
-                    box.mins[dim] = 0.0
-                if not val:
-                    box.maxs[dim] += 0.25
-                    box.mins[dim] -= 0.25
-                    box.lengths[dim] += 0.5
-
-        # Create a new box, so the box provided by the user is unchanged
-        newbox = deepcopy(box)
-
-        # Convert from nm to angstroms, since ParmEd uses angstroms
-        newbox.scale(np.ones(3)*10)
-
-        structure.box[:3] = newbox.lengths
-
-        '''
-        ParmEd's box vectors start at the origin, so we need to shift our
-        Compound into the new box location.
-        '''
-        for particle in structure.atoms:
-            particle.xx += newbox.lengths[0] - newbox.maxs[0]
-            particle.xy += newbox.lengths[1] - newbox.maxs[1]
-            particle.xz += newbox.lengths[2] - newbox.maxs[2]
-
         # Provide a warning if rigid_ids are not sequential from 0
         if self.contains_rigid:
-            unique_rigid_ids = sorted(set([p.rigid_id 
+            unique_rigid_ids = sorted(set([p.rigid_id
                                            for p in self.rigid_particles()]))
             if max(unique_rigid_ids) != len(unique_rigid_ids) - 1:
                 warn("Unique rigid body IDs are not sequential starting from zero.")
@@ -1348,6 +1322,8 @@ class Compound(object):
                 kwargs['rigid_bodies'] = [p.rigid_id for p in self.particles()]
 
         if saver:  # mBuild supported saver.
+            if extension in ['.hoomdxml']:
+                kwargs['rigid_bodies'] = [p.rigid_id for p in self.particles()]
             saver(filename=filename, structure=structure, **kwargs)
         else:  # ParmEd supported saver.
             structure.save(filename, overwrite=overwrite, **kwargs)
@@ -1682,7 +1658,7 @@ class Compound(object):
         else:
             self.periodicity = np.array([0., 0., 0.])
 
-    def to_parmed(self, title='', residues=None):
+    def to_parmed(self, box=None, title='', residues=None):
         """Create a ParmEd Structure from a Compound.
 
         Parameters
@@ -1765,15 +1741,25 @@ class Compound(object):
         for atom1, atom2 in self.bonds():
             bond = pmd.Bond(atom_mapping[atom1], atom_mapping[atom2])
             structure.bonds.append(bond)
+        # pad box with .25nm buffers
+        if box is None:
+            box = self.boundingbox
+            box_vec_max = box.maxs.tolist()
+            box_vec_min = box.mins.tolist()
+            for dim, val in enumerate(self.periodicity):
+                if val:
+                    box_vec_max[dim] = val
+                    box_vec_min[dim] = 0.0
+                if not val:
+                    box_vec_max[dim] += 0.25
+                    box_vec_min[dim] -= 0.25
+            box.mins = np.asarray(box_vec_min)
+            box.maxs = np.asarray(box_vec_max)
 
-        box = self.boundingbox
         box_vector = np.empty(6)
         box_vector[3] = box_vector[4] = box_vector[5] = 90.0
-        for dim, val in enumerate(self.periodicity):
-            if val:
-                box_vector[dim] = val * 10
-            else:
-                box_vector[dim] = box.lengths[dim] * 10 + 5
+        for dim in range(3):
+            box_vector[dim] = box.lengths[dim] * 10
         structure.box = box_vector
         return structure
 

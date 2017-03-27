@@ -8,6 +8,7 @@ import re
 import numpy as np
 from oset import oset as OrderedSet
 
+from mbuild import Box
 from mbuild.utils.io import import_
 
 __all__ = ['write_gsd']
@@ -16,7 +17,7 @@ __all__ = ['write_gsd']
 def write_gsd(structure, filename, ref_distance=1.0, ref_mass=1.0, 
               ref_energy=1.0, rigid_bodies=None):
     """Output a GSD file (HOOMD v2 default data format).
-    
+
     Parameters
     ----------
     structure : parmed.Structure
@@ -84,7 +85,7 @@ def _write_particle_information(gsd_file, structure, xyz, ref_distance,
 
     typeids = np.array([unique_types.index(t) for t in types])
     gsd_file.particles.typeid = typeids
-    
+
     masses = np.array([atom.mass for atom in structure.atoms])
     masses[masses==0] = 1.0
     gsd_file.particles.mass = masses / ref_mass

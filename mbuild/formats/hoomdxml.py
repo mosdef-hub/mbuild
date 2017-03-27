@@ -4,14 +4,15 @@ from math import floor, radians
 
 import numpy as np
 
+from mbuild import Box
 from mbuild.utils.conversion import RB_to_OPLS
 
 __all__ = ['write_hoomdxml']
 
 
-def write_hoomdxml(structure, filename, box, ref_distance=1.0, ref_mass=1.0,
+def write_hoomdxml(structure, filename, ref_distance=1.0, ref_mass=1.0, 
                    ref_energy=1.0, rigid_bodies=None, wrap_coordinates=True):
-    """Output a HOOMD XML file (HOOMD v1 default data format)
+    """Output a HOOMD XML file.
 
     Parameters
     ----------
@@ -19,8 +20,6 @@ def write_hoomdxml(structure, filename, box, ref_distance=1.0, ref_mass=1.0,
         ParmEd structure object
     filename : str
         Path of the output file.
-    box : mb.Box
-        Box information
     ref_distance : float, optional, default=1.0, units=angstroms
         Reference distance for conversion to reduced units
     ref_mass : float, optional, default=1.0, units=amu
@@ -76,24 +75,18 @@ def write_hoomdxml(structure, filename, box, ref_distance=1.0, ref_mass=1.0,
     * **body** : ID of the rigid body to which each particle belongs
 
     """
-
     forcefield = True
     if structure[0].type == '':
         forcefield = False
     xyz = np.array([[atom.xx, atom.xy, atom.xz] for atom in structure.atoms])
 
+    box = Box(lengths=np.array([structure.box[0], structure.box[1], structure.box[2]]))
     box.maxs *= 10.
     box.mins *= 10.
     box_init = deepcopy(box)
     box.mins = np.array([-d/2 for d in box_init.lengths])
     box.maxs = np.array([d/2 for d in box_init.lengths])
-    if wrap_coordinates:
-        shift = [box_init.maxs[i] - max for i, max in enumerate(box.maxs)]
-        for i, pos in enumerate(xyz):
-            for j, coord in enumerate(pos):
-                xyz[i, j] -= shift[j]
-                rep = floor((xyz[i, j] - box.mins[j]) / box.lengths[j])
-                xyz[i, j] -= (rep * box.lengths[j])
+
     with open(filename, 'w') as xml_file:
         xml_file.write('<?xml version="1.2" encoding="UTF-8"?>\n')
         xml_file.write('<hoomd_xml version="1.2">\n')
