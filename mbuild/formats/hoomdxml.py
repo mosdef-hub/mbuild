@@ -11,7 +11,7 @@ __all__ = ['write_hoomdxml']
 
 
 def write_hoomdxml(structure, filename, ref_distance=1.0, ref_mass=1.0, 
-                   ref_energy=1.0, rigid_bodies=None, wrap_coordinates=True):
+                   ref_energy=1.0, rigid_bodies=None):
     """Output a HOOMD XML file.
 
     Parameters
@@ -31,8 +31,6 @@ def write_hoomdxml(structure, filename, ref_distance=1.0, ref_mass=1.0,
         for each particle corresponding to the number of the rigid body with
         which the particle should be included. A value of None indicates the
         particle is not part of any rigid body.
-    wrap_coordinates : bool, optional, default=True
-        Wrap coordinates of all particles into the box
 
     Notes
     -----
@@ -80,20 +78,13 @@ def write_hoomdxml(structure, filename, ref_distance=1.0, ref_mass=1.0,
         forcefield = False
     xyz = np.array([[atom.xx, atom.xy, atom.xz] for atom in structure.atoms])
 
-    box = Box(lengths=np.array([structure.box[0], structure.box[1], structure.box[2]]))
-    box.maxs *= 10.
-    box.mins *= 10.
-    box_init = deepcopy(box)
-    box.mins = np.array([-d/2 for d in box_init.lengths])
-    box.maxs = np.array([d/2 for d in box_init.lengths])
-
     with open(filename, 'w') as xml_file:
         xml_file.write('<?xml version="1.2" encoding="UTF-8"?>\n')
         xml_file.write('<hoomd_xml version="1.2">\n')
         xml_file.write('<configuration time_step="0">\n')
         xml_file.write(
                 '<box units="sigma"  Lx="{}" Ly="{}" Lz="{}"/>\n'.format(
-                    *box.lengths/ref_distance))
+                    *structure.box[:3] / ref_distance))
         _write_particle_information(xml_file, structure, xyz, forcefield,
                 ref_distance, ref_mass, ref_energy)
         _write_bond_information(xml_file, structure, ref_distance, ref_energy)

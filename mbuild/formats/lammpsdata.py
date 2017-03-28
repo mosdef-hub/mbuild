@@ -1,7 +1,6 @@
 from __future__ import division
 
 from collections import OrderedDict
-import re
 
 import numpy as np
 
