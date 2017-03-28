@@ -12,7 +12,6 @@ class TestHoomdXML(BaseTest):
     def test_save(self, ethane):
         ethane.save(filename='ethane.hoomdxml')
 
-    @pytest.mark.skipif(not has_foyer, reason="Foyer is not installed")
     def test_save_forcefield(self, ethane):
         ethane.save(filename='ethane-opls.hoomdxml', forcefield_name='oplsaa')
 

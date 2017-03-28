@@ -74,6 +74,13 @@ class TestGSD(BaseTest):
         assert np.array_equal(box_from_gsd[:3], box.lengths*10)
         assert not np.any(box_from_gsd[3:])
 
+        ethane.periodicity = [1.0, 2.0, 3.0]
+        ethane.save(filename='ethane-periodicity.gsd', forcefield_name='oplsaa')
+        gsd_file = gsd.pygsd.GSDFile(open('ethane-periodicity.gsd', 'rb'))
+        frame = gsd.hoomd.HOOMDTrajectory(gsd_file).read_frame(0)
+        box_from_gsd_periodic = frame.configuration.box.astype(float)
+        assert np.array_equal(box_from_gsd, box_from_gsd_periodic)
+
     @pytest.mark.skipif(not has_gsd, reason="GSD package not installed")
     def test_rigid(self, benzene):
         import gsd, gsd.pygsd
