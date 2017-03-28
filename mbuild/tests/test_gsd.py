@@ -14,12 +14,10 @@ class TestGSD(BaseTest):
         ethane.save(filename='ethane.gsd')
 
     @pytest.mark.skipif(not has_gsd, reason="GSD package not installed")
-    @pytest.mark.skipif(not has_foyer, reason="Foyer is not installed")
     def test_save_forcefield(self, ethane):
         ethane.save(filename='ethane-opls.gsd', forcefield_name='oplsaa')
 
     @pytest.mark.skipif(not has_gsd, reason="GSD package not installed")
-    @pytest.mark.skipif(not has_foyer, reason="Foyer is not installed")
     def test_save_box(self, ethane):
         box = mb.Box(lengths=np.array([2.0,2.0,2.0]))
         ethane.save(filename='ethane-box.gsd', forcefield_name='oplsaa',box=box)
@@ -64,7 +62,6 @@ class TestGSD(BaseTest):
         assert np.array_equal(typeids_from_gsd, expected_typeids)
 
     @pytest.mark.skipif(not has_gsd, reason="GSD package not installed")
-    @pytest.mark.skipif(not has_foyer, reason="Foyer is not installed")
     def test_box(self, ethane):
         import gsd, gsd.pygsd
 
@@ -78,7 +75,6 @@ class TestGSD(BaseTest):
         assert not np.any(box_from_gsd[3:])
 
     @pytest.mark.skipif(not has_gsd, reason="GSD package not installed")
-    @pytest.mark.skipif(not has_foyer, reason="Foyer is not installed")
     def test_rigid(self, benzene):
         import gsd, gsd.pygsd
 
@@ -94,35 +90,7 @@ class TestGSD(BaseTest):
             assert gsd_body == expected_body
 
     @pytest.mark.skipif(not has_gsd, reason="GSD package not installed")
-    @pytest.mark.skipif(not has_foyer, reason="Foyer is not installed")
-    def test_bonds(self, ethane):
-        import gsd, gsd.pygsd
-
-        ethane.save(filename='ethane.gsd', forcefield_name='oplsaa')
-        gsd_file = gsd.pygsd.GSDFile(open('ethane.gsd', 'rb'))
-        frame = gsd.hoomd.HOOMDTrajectory(gsd_file).read_frame(0)
-
-        n_bonds = frame.bonds.N
-        assert n_bonds == ethane.n_bonds
-
-        expected_unique_bond_types = ['opls_135-opls_135', 'opls_135-opls_140']
-        bond_types = frame.bonds.types
-        assert np.array_equal(bond_types, expected_unique_bond_types)
-
-        bond_typeids = frame.bonds.typeid
-        bond_atoms = frame.bonds.group
-        particles = list(ethane.particles())
-        expected_bond_atoms = [[particles.index(bond[0]), particles.index(bond[1])] 
-                               for bond in ethane.bonds()]
-        assert np.array_equal(bond_atoms, expected_bond_atoms)
-        bond_type_dict = {('C', 'C') : 0, ('C', 'H') : 1, ('H', 'C') : 1}
-        expected_bond_typeids = [bond_type_dict[(bond[0].name, bond[1].name)]
-                                 for bond in ethane.bonds()]
-        assert np.array_equal(bond_typeids, expected_bond_typeids)
-
-    @pytest.mark.skipif(not has_gsd, reason="GSD package not installed")
-    @pytest.mark.skipif(not has_foyer, reason="Foyer is not installed")
-    def test_angles_dihedrals(self, ethane):
+    def test_bonded(self, ethane):
         from foyer import Forcefield
         import gsd, gsd.pygsd
 
@@ -134,6 +102,28 @@ class TestGSD(BaseTest):
         forcefield = Forcefield(name='oplsaa')
         structure = forcefield.apply(structure)
 
+        # Bonds
+        n_bonds = frame.bonds.N
+        assert n_bonds == len(structure.bonds)
+
+        expected_unique_bond_types = ['opls_135-opls_135', 'opls_135-opls_140']
+        bond_types = frame.bonds.types
+        assert np.array_equal(bond_types, expected_unique_bond_types)
+
+        bond_typeids = frame.bonds.typeid
+        bond_atoms = frame.bonds.group
+        expected_bond_atoms = [[bond.atom1.idx, bond.atom2.idx] 
+                               for bond in structure.bonds]
+        assert np.array_equal(bond_atoms, expected_bond_atoms)
+
+        bond_type_dict = {('C', 'C') : 0, ('C', 'H') : 1, ('H', 'C') : 1}
+        expected_bond_typeids = []
+        for bond in structure.bonds:
+            expected_bond_typeids.append(bond_type_dict[(bond.atom1.name,
+                                                         bond.atom2.name)])
+        assert np.array_equal(bond_typeids, expected_bond_typeids)
+
+        # Angles
         n_angles = frame.angles.N
         assert n_angles == len(structure.angles)
 
@@ -147,6 +137,7 @@ class TestGSD(BaseTest):
         expected_angle_atoms = [[angle.atom1.idx, angle.atom2.idx, angle.atom3.idx] 
                                 for angle in structure.angles]
         assert np.array_equal(angle_atoms, expected_angle_atoms)
+
         angle_type_dict = {('C', 'C', 'H') : 0, ('H', 'C', 'C') : 0, 
                            ('H', 'C', 'H') : 1}
         expected_angle_typeids = []
@@ -156,6 +147,7 @@ class TestGSD(BaseTest):
                                                            angle.atom3.name)])
         assert np.array_equal(angle_typeids, expected_angle_typeids)
 
+        # Dihedrals
         n_dihedrals = frame.dihedrals.N
         assert n_dihedrals == len(structure.rb_torsions)
 
@@ -173,7 +165,6 @@ class TestGSD(BaseTest):
         assert np.array_equal(dihedral_typeids, np.zeros(n_dihedrals))
 
     @pytest.mark.skipif(not has_gsd, reason="GSD package not installed")
-    @pytest.mark.skipif(not has_foyer, reason="Foyer is not installed")
     def test_units(self, ethane):
         import gsd, gsd.pygsd
 

@@ -10,6 +10,7 @@ from oset import oset as OrderedSet
 
 from mbuild import Box
 from mbuild.utils.io import import_
+from mbuild.utils.sorting import natural_sort
 
 __all__ = ['write_gsd']
 
@@ -80,7 +81,7 @@ def _write_particle_information(gsd_file, structure, xyz, ref_distance,
              for atom in structure.atoms]
 
     unique_types = list(set(types))
-    unique_types.sort(key=_natural_sort)
+    unique_types.sort(key=natural_sort)
     gsd_file.particles.types = unique_types
 
     typeids = np.array([unique_types.index(t) for t in types])
@@ -122,13 +123,13 @@ def _write_bond_information(gsd_file, structure):
         t1, t2 = bond.atom1.type, bond.atom2.type
         if t1 == '' or t2 == '':
             t1, t2 = bond.atom1.name, bond.atom2.name
-        t1, t2 = sorted([t1, t2], key=_natural_sort)
+        t1, t2 = sorted([t1, t2], key=natural_sort)
         try:
             bond_type = ('-'.join((t1, t2)))
         except AttributeError: # no forcefield applied, bond.type is None
             bond_type = ('-'.join((t1, t2)), 0.0, 0.0)
         unique_bond_types.add(bond_type)
-    unique_bond_types = sorted(list(unique_bond_types), key=_natural_sort)
+    unique_bond_types = sorted(list(unique_bond_types), key=natural_sort)
     gsd_file.bonds.types = unique_bond_types
 
     bond_typeids = []
@@ -137,7 +138,7 @@ def _write_bond_information(gsd_file, structure):
         t1, t2 = bond.atom1.type, bond.atom2.type
         if t1 == '' or t2 == '':
             t1, t2 = bond.atom1.name, bond.atom2.name
-        t1, t2 = sorted([t1, t2], key=_natural_sort)
+        t1, t2 = sorted([t1, t2], key=natural_sort)
         try:
             bond_type = ('-'.join((t1, t2)))
         except AttributeError: # no forcefield applied, bond.type is None
@@ -165,17 +166,17 @@ def _write_angle_information(gsd_file, structure):
     unique_angle_types = set()
     for angle in structure.angles:
         t1, t2, t3 = angle.atom1.type, angle.atom2.type, angle.atom3.type
-        t1, t3 = sorted([t1, t3], key=_natural_sort)
+        t1, t3 = sorted([t1, t3], key=natural_sort)
         angle_type = ('-'.join((t1, t2, t3)))
         unique_angle_types.add(angle_type)
-    unique_angle_types = sorted(list(unique_angle_types), key=_natural_sort)
+    unique_angle_types = sorted(list(unique_angle_types), key=natural_sort)
     gsd_file.angles.types = unique_angle_types
 
     angle_typeids = []
     angle_groups = []
     for angle in structure.angles:
         t1, t2, t3 = angle.atom1.type, angle.atom2.type, angle.atom3.type
-        t1, t3 = sorted([t1, t3], key=_natural_sort)
+        t1, t3 = sorted([t1, t3], key=natural_sort)
         angle_type = ('-'.join((t1, t2, t3)))
         angle_typeids.append(unique_angle_types.index(angle_type))
         angle_groups.append((angle.atom1.idx, angle.atom2.idx, 
@@ -202,12 +203,12 @@ def _write_dihedral_information(gsd_file, structure):
     for dihedral in structure.rb_torsions:
         t1, t2 = dihedral.atom1.type, dihedral.atom2.type
         t3, t4 = dihedral.atom3.type, dihedral.atom4.type
-        if [t2, t3] == sorted([t2, t3], key=_natural_sort):
+        if [t2, t3] == sorted([t2, t3], key=natural_sort):
             dihedral_type = ('-'.join((t1, t2, t3, t4)))
         else:
             dihedral_type = ('-'.join((t4, t3, t2, t1)))
         unique_dihedral_types.add(dihedral_type)
-    unique_dihedral_types = sorted(list(unique_dihedral_types), key=_natural_sort)
+    unique_dihedral_types = sorted(list(unique_dihedral_types), key=natural_sort)
     gsd_file.dihedrals.types = unique_dihedral_types
 
     dihedral_typeids = []
@@ -215,7 +216,7 @@ def _write_dihedral_information(gsd_file, structure):
     for dihedral in structure.rb_torsions:
         t1, t2 = dihedral.atom1.type, dihedral.atom2.type
         t3, t4 = dihedral.atom3.type, dihedral.atom4.type
-        if [t2, t3] == sorted([t2, t3], key=_natural_sort):
+        if [t2, t3] == sorted([t2, t3], key=natural_sort):
             dihedral_type = ('-'.join((t1, t2, t3, t4)))
         else:
             dihedral_type = ('-'.join((t4, t3, t2, t1)))
@@ -225,10 +226,3 @@ def _write_dihedral_information(gsd_file, structure):
 
     gsd_file.dihedrals.typeid = dihedral_typeids
     gsd_file.dihedrals.group = dihedral_groups
-
-def _atoi(text):
-    return int(text) if text.isdigit() else text
-
-
-def _natural_sort(text):
-    return [_atoi(a) for a in re.split(r'(\d+)', text)]

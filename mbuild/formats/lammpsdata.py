@@ -7,6 +7,7 @@ import numpy as np
 
 from mbuild import Box
 from mbuild.utils.conversion import RB_to_OPLS
+from mbuild.utils.sorting import natural_sort
 
 __all__ = ['write_lammpsdata']
 
@@ -48,7 +49,7 @@ def write_lammpsdata(structure, filename):
         types = [atom.name for atom in structure.atoms]
 
     unique_types = list(set(types))
-    unique_types.sort(key=_natural_sort)
+    unique_types.sort(key=natural_sort)
 
     charges = [atom.charge for atom in structure.atoms]
 
@@ -181,11 +182,3 @@ def write_lammpsdata(structure, filename):
             data.write('\nDihedrals\n\n')
             for i,dihedral in enumerate(dihedrals):
                 data.write('{:d}\t{:d}\t{:d}\t{:d}\t{:d}\t{:d}\n'.format(i+1,dihedral_types[i],dihedral[0],dihedral[1],dihedral[2],dihedral[3]))
-
-
-def _atoi(text):
-    return int(text) if text.isdigit() else text
-
-
-def _natural_sort(text):
-    return [_atoi(a) for a in re.split(r'(\d+)', text)]
