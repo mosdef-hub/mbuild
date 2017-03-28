@@ -1230,7 +1230,7 @@ class Compound(object):
 
     def save(self, filename, show_ports=False, forcefield_name=None,
              forcefield_files=None, box=None, overwrite=False, residues=None,
-             wrap_coordinates=False, **kwargs):
+             **kwargs):
         """Save the Compound to a file.
 
         Parameters
@@ -1254,10 +1254,6 @@ class Compound(object):
             overlapping atoms.
         overwrite : bool, optional, default=False
             Overwrite if the filename already exists
-        residues : ?
-        wrap_coordinates : bool, optional, default=False
-            If True (and if a box is provided) wrap the coordinates of this 
-            Compound into the provided box.
 
         Other Parameters
         ----------------
@@ -1278,12 +1274,6 @@ class Compound(object):
         formats.lammpsdata.write_lammpsdata : Write to LAMMPS data format
 
         """
-        if wrap_coordinates and box:
-            if self.contains_rigid:
-                warn("Wrapping rigid bodies may lead to undesired behavior. "
-                     "Make sure you know what you're doing!")
-            self.wrap_coordinates(box)
-
         extension = os.path.splitext(filename)[-1]
         if extension == '.xyz':
             traj = self.to_trajectory(show_ports=show_ports)
@@ -1318,29 +1308,13 @@ class Compound(object):
                                            for p in self.rigid_particles()]))
             if max(unique_rigid_ids) != len(unique_rigid_ids) - 1:
                 warn("Unique rigid body IDs are not sequential starting from zero.")
-            if extension in ['.hoomdxml', '.gsd']:
-                kwargs['rigid_bodies'] = [p.rigid_id for p in self.particles()]
 
         if saver:  # mBuild supported saver.
-            if extension in ['.hoomdxml']:
+            if extension in ['.gsd', '.hoomdxml']:
                 kwargs['rigid_bodies'] = [p.rigid_id for p in self.particles()]
             saver(filename=filename, structure=structure, **kwargs)
         else:  # ParmEd supported saver.
             structure.save(filename, overwrite=overwrite, **kwargs)
-
-    def wrap_coordinates(self, box):
-        """Wrap a Compound's coordinates into a box
-
-        Parameters
-        ----------
-        box : mb.Box
-            Box to wrap coordinates into
-
-        """
-        for pos in (self.xyz):
-            for i, dim in enumerate(pos):
-                rep = floor((dim - box.mins[i]) / box.lengths[i])
-                dim -= rep * box.lengths[i]
 
     def translate(self, by):
         """Translate the Compound by a vector
