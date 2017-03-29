@@ -1192,7 +1192,7 @@ class Compound(object):
             except KeyError:
                 raise MBuildError("Element name {} not recognized. Cannot "
                                   "perform minimization."
-                                  "".format(particle.name)) from None
+                                  "".format(particle.name))
 
         tmp_dir = tempfile.mkdtemp()
         original = clone(self)
@@ -1310,7 +1310,7 @@ class Compound(object):
                 warn("Unique rigid body IDs are not sequential starting from zero.")
 
         if saver:  # mBuild supported saver.
-            if extension in ['.hoomdxml']:
+            if extension in ['.gsd', '.hoomdxml']:
                 kwargs['rigid_bodies'] = [p.rigid_id for p in self.particles()]
             saver(filename=filename, structure=structure, **kwargs)
         else:  # ParmEd supported saver.
