@@ -196,8 +196,6 @@ class Compound(object):
         else:
             self._pos = np.zeros(3)
 
-        self.charge = charge
-
         self.parent = None
         self.children = OrderedSet()
         self.labels = OrderedDict()
@@ -212,7 +210,12 @@ class Compound(object):
 
         # self.add() must be called after labels and children are initialized.
         if subcompounds:
+            if charge:
+                raise MBuildError('Cannot set the charge of a Compound containing 
+                                  'subcompounds.')
             self.add(subcompounds)
+        else:
+            self._charge = charge
 
     def particles(self, include_ports=False):
         """Return all Particles of the Compound.
@@ -332,6 +335,18 @@ class Compound(object):
         for particle in self.particles():
             if particle.name == name:
                 yield particle
+
+    @property
+    def charge(self):
+        return sum([particle._charge for particle in self.particles()])
+
+    @charge.setter
+    def charge(self, value):
+        if self._contains_only_ports():
+            self._charge = value
+        else:
+            raise AttributeError("charge is immutable for Compounds that are "
+                                 "not at the bottom of the containment hierarchy.")
 
     @property
     def rigid_id(self):
