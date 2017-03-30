@@ -1317,6 +1317,11 @@ class Compound(object):
                             name=forcefield_name)
             structure = ff.apply(structure)
 
+        total_charge = sum([atom.charge for atom in structure])
+        if round(total_charge, 4) != 0.0:
+            warn('System is not charge neutral. Total charge is {}.'
+                 ''.format(total_charge))
+
         # Provide a warning if rigid_ids are not sequential from 0
         if self.contains_rigid:
             unique_rigid_ids = sorted(set([p.rigid_id
