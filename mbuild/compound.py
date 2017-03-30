@@ -1701,7 +1701,7 @@ class Compound(object):
             atomic_number = atomic_number or AtomicNum[element]
             mass = Mass[element]
             pmd_atom = pmd.Atom(atomic_number=atomic_number, name=atom.name,
-                                mass=mass)
+                                mass=mass, charge=atom.charge)
             pmd_atom.xx, pmd_atom.xy, pmd_atom.xz = atom.pos * 10  # Angstroms
 
             residue = atom_residue_map[atom]
