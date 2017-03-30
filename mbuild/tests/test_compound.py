@@ -577,3 +577,28 @@ class TestCompound(BaseTest):
         with pytest.raises(MBuildError):
             ch3_clone = mb.clone(ch3)
 
+    def test_charge(self, ch2, ch3):
+        compound = mb.Compound(charge=2.0)
+        assert compound.charge == 2.0
+        compound2 = mb.Compound()
+        assert compound2.charge == 0.0
+
+        ch2[0].charge = 0.5
+        ch2[1].charge = -0.25
+        ch3[0].charge = 1.0
+        compound.add([ch2, ch3])
+        assert compound.charge == 1.25
+        assert ch2.charge == 0.25
+        assert compound[0].charge == 0.5
+
+        with pytest.raises(AttributeError):
+            compound.charge = 2.0
+
+    def test_charge_subcompounds(self, ch2, ch3):
+        ch2[0].charge = 0.5
+        ch2[1].charge = -0.25
+        compound = mb.Compound(subcompounds=ch2)
+        assert compound.charge == 0.25
+
+        with pytest.raises(MBuildError):
+            compound = mb.Compound(subcompounds=ch3, charge=1.0)

@@ -211,7 +211,7 @@ class Compound(object):
         # self.add() must be called after labels and children are initialized.
         if subcompounds:
             if charge:
-                raise MBuildError('Cannot set the charge of a Compound containing 
+                raise MBuildError('Cannot set the charge of a Compound containing '
                                   'subcompounds.')
             self.add(subcompounds)
         else:
@@ -1866,11 +1866,11 @@ class Compound(object):
         newone.name = deepcopy(self.name)
         newone.periodicity = deepcopy(self.periodicity)
         newone._pos = deepcopy(self._pos)
-        newone.charge = deepcopy(self.charge)
         newone.port_particle = deepcopy(self.port_particle)
         newone._check_if_contains_rigid_bodies = deepcopy(self._check_if_contains_rigid_bodies)
         newone._contains_rigid = deepcopy(self._contains_rigid)
         newone._rigid_id = deepcopy(self._rigid_id)
+        newone._charge = deepcopy(self._charge)
         if hasattr(self, 'index'):
             newone.index = deepcopy(self.index)
 
