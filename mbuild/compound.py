@@ -214,6 +214,7 @@ class Compound(object):
                 raise MBuildError('Cannot set the charge of a Compound containing '
                                   'subcompounds.')
             self.add(subcompounds)
+            self._charge = 0.0
         else:
             self._charge = charge
 
