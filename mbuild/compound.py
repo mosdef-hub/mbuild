@@ -196,8 +196,6 @@ class Compound(object):
         else:
             self._pos = np.zeros(3)
 
-        self.charge = charge
-
         self.parent = None
         self.children = OrderedSet()
         self.labels = OrderedDict()
@@ -212,7 +210,13 @@ class Compound(object):
 
         # self.add() must be called after labels and children are initialized.
         if subcompounds:
+            if charge:
+                raise MBuildError('Cannot set the charge of a Compound containing '
+                                  'subcompounds.')
             self.add(subcompounds)
+            self._charge = 0.0
+        else:
+            self._charge = charge
 
     def particles(self, include_ports=False):
         """Return all Particles of the Compound.
@@ -332,6 +336,18 @@ class Compound(object):
         for particle in self.particles():
             if particle.name == name:
                 yield particle
+
+    @property
+    def charge(self):
+        return sum([particle._charge for particle in self.particles()])
+
+    @charge.setter
+    def charge(self, value):
+        if self._contains_only_ports():
+            self._charge = value
+        else:
+            raise AttributeError("charge is immutable for Compounds that are "
+                                 "not at the bottom of the containment hierarchy.")
 
     @property
     def rigid_id(self):
@@ -1302,6 +1318,11 @@ class Compound(object):
                             name=forcefield_name)
             structure = ff.apply(structure)
 
+        total_charge = sum([atom.charge for atom in structure])
+        if round(total_charge, 4) != 0.0:
+            warn('System is not charge neutral. Total charge is {}.'
+                 ''.format(total_charge))
+
         # Provide a warning if rigid_ids are not sequential from 0
         if self.contains_rigid:
             unique_rigid_ids = sorted(set([p.rigid_id
@@ -1701,7 +1722,7 @@ class Compound(object):
             atomic_number = atomic_number or AtomicNum[element]
             mass = Mass[element]
             pmd_atom = pmd.Atom(atomic_number=atomic_number, name=atom.name,
-                                mass=mass)
+                                mass=mass, charge=atom.charge)
             pmd_atom.xx, pmd_atom.xy, pmd_atom.xz = atom.pos * 10  # Angstroms
 
             residue = atom_residue_map[atom]
@@ -1851,11 +1872,11 @@ class Compound(object):
         newone.name = deepcopy(self.name)
         newone.periodicity = deepcopy(self.periodicity)
         newone._pos = deepcopy(self._pos)
-        newone.charge = deepcopy(self.charge)
         newone.port_particle = deepcopy(self.port_particle)
         newone._check_if_contains_rigid_bodies = deepcopy(self._check_if_contains_rigid_bodies)
         newone._contains_rigid = deepcopy(self._contains_rigid)
         newone._rigid_id = deepcopy(self._rigid_id)
+        newone._charge = deepcopy(self._charge)
         if hasattr(self, 'index'):
             newone.index = deepcopy(self.index)
 
