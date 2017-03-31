@@ -35,8 +35,10 @@ def load(filename, relative_to_module=None, compound=None, coords_only=False,
          rigid=False, use_parmed=False, **kwargs):
     """Load a file into an mbuild compound.
 
-    Files are read using the MDTraj package. Please refer to http://mdtraj.org/
-    1.8.0/load_functions.html for supported formats.
+    Files are read using the MDTraj package unless the `use_parmed` argument is
+    specified as True. Please refer to http://mdtraj.org/1.8.0/load_functions.html
+    for formats supported by MDTraj and https://parmed.github.io/ParmEd/html/
+    readwrite.html for formats supported by ParmEd.
 
     Parameters
     ----------
@@ -53,6 +55,8 @@ def load(filename, relative_to_module=None, compound=None, coords_only=False,
         Only load the coordinates into an existing compoint.
     rigid : bool, optional, default=False
         Treat the compound as a rigid body
+    use_parmed : bool, optional, default=False
+        Use readers from ParmEd instead of MDTraj.
     **kwargs : keyword arguments
         Key word arguments passed to mdTraj for loading.
 
