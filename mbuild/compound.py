@@ -32,7 +32,7 @@ from mbuild.coordinate_transform import _translate, _rotate
 
 
 def load(filename, relative_to_module=None, compound=None, coords_only=False,
-         rigid=False, **kwargs):
+         rigid=False, use_parmed=False, **kwargs):
     """Load a file into an mbuild compound.
 
     Files are read using the MDTraj package. Please refer to http://mdtraj.org/
@@ -72,8 +72,13 @@ def load(filename, relative_to_module=None, compound=None, coords_only=False,
     if compound is None:
         compound = Compound()
 
-    traj = md.load(filename, **kwargs)
-    compound.from_trajectory(traj, frame=-1, coords_only=coords_only)
+    if use_parmed:
+        structure = pmd.load_file(filename, structure=True)
+        compound.from_parmed(structure)
+    else:
+        traj = md.load(filename, **kwargs)
+        compound.from_trajectory(traj, frame=-1, coords_only=coords_only)
+
     if rigid:
         compound.label_rigid_bodies()
     return compound
