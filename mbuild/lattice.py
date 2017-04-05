@@ -133,7 +133,7 @@ class Lattice(object):
         self.lattice_spacings = None
         self.dimension = None
         self.lattice_vectors = None
-        self.basis_atoms = None
+        self.basis_atoms = dict()
         self.angles = None
         self._sanitize_inputs(lattice_vectors=lattice_vectors,
                               dimension=dimension,
@@ -171,7 +171,7 @@ class Lattice(object):
         if angles is not None:
             self._validate_angles(angles, self.dimension)
             self.lattice_vectors = self._from_lattice_parameters(
-                                        self.angles, self.dimension)
+                self.angles, self.dimension)
         else:
             self._validate_lattice_vectors(lattice_vectors, self.dimension)
 
@@ -232,8 +232,6 @@ class Lattice(object):
         self.lattice_spacings = lattice_spacings
 
     def _validate_angles(self, angles, dimension):
-        """Ensure that the
-        """
         if angles is not None:
             if (len(angles), dimension) == (3, 3):
                 if all(isinstance(theAngle, float) for theAngle in angles):
@@ -316,11 +314,10 @@ class Lattice(object):
                                      'handed system.' .format(det))
         self.lattice_vectors = lattice_vectors
 
-
-
     def _validate_basis_atoms(self, basis_atoms, dimension):
         if basis_atoms is None:
-            basis_atoms['default'] = [[0., 0., 0.]]
+            basis_atoms = {}
+            basis_atoms = {'default': [[0. for x in range(dimension)]]}
         elif isinstance(basis_atoms, dict):
             pass
         else:
@@ -330,9 +327,24 @@ class Lattice(object):
         for name in basis_atoms.keys():
             positions = basis_atoms[name]
             for pos in positions:
-                assert len(pos) == dimension
-                location_check = [coord for coord in pos if coord < 0 or coord >= 1]
-                assert location_check == []
+                location_check = []
+                if len(pos) != dimension:
+                    raise ValueError("Incorrect basis atom position size. "
+                                     "Basis atom {} was passed with location "
+                                     "{}, which is inconsistent with the "
+                                     "dimension {}.".format(name, pos,
+                                                            dimension))
+                if pos is None:
+                    raise ValueError("NoneType passed, expected float. "
+                                     "None was passed in as position for {}."
+                                     .format(name))
+
+                location_check = [coord for coord in pos if coord is None or coord >= 1. or coord < 0.]
+                if len(location_check) != 0:
+                    raise ValueError("Incorrect coordinate value for basis. "
+                                     "Basis {}, was passed coordinates {}. "
+                                     "The coordinates {}, were either < 0, or"
+                                     " > 1.".format(name, pos, location_check))
 
         self.basis_atoms = self._check_for_overlap(basis_atoms, dimension)
 
@@ -344,7 +356,7 @@ class Lattice(object):
             positions = basis_atoms[name]
             for pos in positions:
                 for offsets in it.product(range(num_iter), repeat=dimension):
-                    offset_vector = list((v+offset for v, offset in zip(pos, offsets)))
+                    offset_vector = tuple((v + offset for v, offset in zip(pos, offsets)))
                     overlap_dict[offset_vector].append((pos))
 
         for key, val in overlap_dict.items():
@@ -378,20 +390,20 @@ class Lattice(object):
             (alpha, beta, gamma) = angles
 
             degree = np.pi / 180.0
-            cosa = np.cos(alpha*degree)
-            cosb = np.cos(beta*degree)
-            sinb = np.sin(beta*degree)
-            cosg = np.cos(gamma*degree)
-            sing = np.sin(gamma*degree)
+            cosa = np.cos(alpha * degree)
+            cosb = np.cos(beta * degree)
+            sinb = np.sin(beta * degree)
+            cosg = np.cos(gamma * degree)
+            sing = np.sin(gamma * degree)
             lattice_vec = ([1, 0, 0],
                            [cosg, sing, 0],
-                           [cosb, (cosa-cosb*cosg)/sing,
-                            np.sqrt(sinb**2 - ((cosa - cosb*cosg)/sing)**2)])
+                           [cosb, (cosa - cosb * cosg) / sing,
+                            np.sqrt(sinb**2 - ((cosa - cosb * cosg) / sing)**2)])
         else:
             alpha = angles
             degree = np.pi / 180.0
-            cosa = np.cos(alpha*degree)
-            sina = np.sin(alpha*degree)
+            cosa = np.cos(alpha * degree)
+            sina = np.sin(alpha * degree)
             lattice_vec = ([1, 0], [cosa, sina])
 
         return lattice_vec

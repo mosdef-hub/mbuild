@@ -2,7 +2,6 @@ import numpy as np
 import pytest
 from mbuild.tests.base_test import BaseTest
 import mbuild as mb
-from collections import defaultdict
 
 
 class TestLattice(BaseTest):
@@ -69,13 +68,13 @@ class TestLattice(BaseTest):
         invalid_3d = np.asarray(([1, 0], [0, 1]), dtype=float)
         with pytest.raises(ValueError):
             a_test_1d = mb.Lattice(space1, dimension=1,
-                                lattice_vectors=invalid_1d)
+                                   lattice_vectors=invalid_1d)
         with pytest.raises(ValueError):
             a_test_2d = mb.Lattice(space2, dimension=2,
-                                lattice_vectors=invalid_2d)
+                                   lattice_vectors=invalid_2d)
         with pytest.raises(ValueError):
             a_test_3d = mb.Lattice(space3, dimension=3,
-                                lattice_vectors=invalid_3d)
+                                   lattice_vectors=invalid_3d)
 
     def test_colinear_lattice_vectors(self):
         shape2 = [1, 1]
@@ -84,10 +83,10 @@ class TestLattice(BaseTest):
         invalid_3d = np.asarray(([1, 0, 0], [0, 1, 0], [2, 0, 0]), dtype=float)
         with pytest.raises(ValueError):
             a_test_2d = mb.Lattice(shape2, dimension=2,
-                                lattice_vectors=invalid_2d)
+                                   lattice_vectors=invalid_2d)
         with pytest.raises(ValueError):
             a_test_3d = mb.Lattice(shape3, dimension=3,
-                                lattice_vectors=invalid_3d)
+                                   lattice_vectors=invalid_3d)
 
     def test_handedness_lattice_vectors(self):
         shape2 = [1, 1]
@@ -96,19 +95,19 @@ class TestLattice(BaseTest):
         invalid_3d = np.asarray(([1, 2, 3], [3, 2, 1], [2, 1, 3]), dtype=float)
         with pytest.raises(ValueError):
             a_test_2d = mb.Lattice(shape2, dimension=2,
-                                lattice_vectors=invalid_2d)
+                                   lattice_vectors=invalid_2d)
         with pytest.raises(ValueError):
             a_test_3d = mb.Lattice(shape3, dimension=3,
-                                lattice_vectors=invalid_3d)
+                                   lattice_vectors=invalid_3d)
 
     def test_lattice_spacings_dimension(self):
         with pytest.raises(ValueError):
             spacing_test = mb.Lattice(dimension=3, lattice_vectors=None,
-                                   lattice_spacings=([.12], [.13], [.14]))
+                                      lattice_spacings=([.12], [.13], [.14]))
 
         with pytest.raises(ValueError):
             spacing_test = mb.Lattice(dimension=3, lattice_vectors=None,
-                                   lattice_spacings=([.12, .13, .14, .15]))
+                                      lattice_spacings=([.12, .13, .14, .15]))
 
     def test_lattice_spacings_negative_or_zero(self):
         zero_test1 = [0]
@@ -119,68 +118,102 @@ class TestLattice(BaseTest):
         neg_test3 = [.12, .13, -.14]
         with pytest.raises(ValueError):
             zero_lattice = mb.Lattice(zero_test1, dimension=1,
-                                   lattice_vectors=None)
+                                      lattice_vectors=None)
         with pytest.raises(ValueError):
             neg_lattice = mb.Lattice(neg_test1, dimension=1,
-                                  lattice_vectors=None)
+                                     lattice_vectors=None)
         with pytest.raises(ValueError):
             zero_lattice = mb.Lattice(zero_test2, dimension=2,
-                                   lattice_vectors=None)
+                                      lattice_vectors=None)
         with pytest.raises(ValueError):
-            neg_lattice = mb.Lattice(neg_test2, dimension=2, lattice_vectors=None)
+            neg_lattice = mb.Lattice(neg_test2, dimension=2,
+                                     lattice_vectors=None)
         with pytest.raises(ValueError):
             zero_lattice = mb.Lattice(zero_test3, dimension=3,
-                                   lattice_vectors=None)
+                                      lattice_vectors=None)
         with pytest.raises(ValueError):
-            neg_lattice = mb.Lattice(neg_test3, dimension=3, lattice_vectors=None)
+            neg_lattice = mb.Lattice(neg_test3, dimension=3,
+                                     lattice_vectors=None)
 
-    def test_basis_default(self):
-        three_d = mb.Lattice([1, 1, 1], dimension=3, basis_atoms=None)
-        two_d = mb.Lattice([1, 1], dimension=2, basis_atoms=None)
-        one_d = mb.Lattice([1], dimension=1, basis_atoms=None)
+    def test_lattice_spacings_correct(self):
+        correct_spacings = [0.12, 0.13, 0.14]
+        input_spacings = [0.12, 0.13, 0.14]
+        test_lattice = mb.Lattice(input_spacings)
+        np.testing.assert_array_equal(test_lattice.lattice_spacings,
+                                      correct_spacings)
 
-        assert len(three_d.basis_vectors) == 1
-        assert len(two_d.basis_vectors) == 1
-        assert len(one_d.basis_vectors) == 1
+    def test_lattice_basis_atoms_default(self):
+        space_1d = [1.]
+        space_2d = [1., 1.]
+        space_3d = [1., 1., 1.]
+        correct_name = 'default'
 
-        assert three_d.basis_vectors['default'][0] == (0, 0, 0)
-        assert two_d.basis_vectors['default'][0] == (0, 0)
-        assert one_d.basis_vectors['default'][0] == (0, )
+        test_1d = mb.Lattice(space_1d, dimension=1, basis_atoms=None)
+        test_2d = mb.Lattice(space_2d, dimension=2, basis_atoms=None)
+        test_3d = mb.Lattice(space_3d, dimension=3, basis_atoms=None)
 
-    def test_basis_1d(self):
-        basis_1d = (('test', [.25]),)
-        lat_1d = mb.Lattice([1], dimension=1, basis_vectors=basis_1d)
-        assert len(lat_1d.basis_vectors) == 1
-        assert lat_1d.basis_vectors['test'][0] == [.25]
+        assert len(test_1d.basis_atoms.keys()) == 1
+        assert len(test_2d.basis_atoms.keys()) == 1
+        assert len(test_3d.basis_atoms.keys()) == 1
+        for lattice in test_1d, test_2d, test_3d:
+            for key in lattice.basis_atoms.keys():
+                assert key == correct_name
 
-    def test_basis_2d(self):
-        basis_2d = (('test', [.25, .60]),)
-        lat_1d = mb.Lattice([1, 1], dimension=2, basis_vectors=basis_2d)
-        assert len(lat_1d.basis_vectors) == 1
-        assert lat_1d.basis_vectors['test'][0] == [.25, .60]
+            correct_pos = [0. for x in range(lattice.dimension)]
+            np.testing.assert_array_equal(lattice.basis_atoms[correct_name][0],
+                                          correct_pos)
 
-    def test_basis_3d(self):
-        basis_3d = (('test', [.25, .60, .70]),)
-        lat_1d = mb.Lattice([1, 1, 1], dimension=3, basis_vectors=basis_3d)
-        assert len(lat_1d.basis_vectors) == 1
-        assert lat_1d.basis_vectors['test'][0] == [.25, .60, .70]
+    def test_lattice_basis_atoms_input_type(self):
+        incorrect_types = [list(), tuple(), str()]
+        lat_space = [1., 1., 1.]
+        for the_type in incorrect_types:
+            with pytest.raises(TypeError):
+                test_lat = mb.Lattice(lat_space, basis_atoms=the_type)
 
-    def test_basis_multi(self):
-        basis_1d = (('test1', [0]), ('test2', [.25]),)
-        basis_2d = (('test1', [0, 0]), ('test2', [.25, .25]),)
-        basis_3d = (('test1', [0, 0, 0]), ('test2', [.25, .25, .25]),)
+    def test_lattice_basis_atoms_input_size(self):
+        dim = 3
+        lat_space = [1., 1., 1.]
+        basis_too_large = {'test': [[0., 0., 0., 0.]]}
+        basis_too_large_mult = {'test': [[0., 0., 0., 0.], [0., 0., 0]]}
+        basis_too_small = {'test': [[0., 0.]]}
+        basis_too_small_mult = {'test': [[0., 0.], [0., 0., 0.]]}
+        basis_empty = {'test': [[]]}
+        basis_none = {'test': [[None, None, None]]}
+        to_test = [basis_too_large, basis_too_small, basis_empty, basis_none]
 
-        lat_1d = mb.Lattice([1], dimension=1, basis_vectors=basis_1d)
-        lat_2d = mb.Lattice([1, 1], dimension=2, basis_vectors=basis_2d)
-        lat_3d = mb.Lattice([1, 1, 1], dimension=3, basis_vectors=basis_3d)
+        for errors in to_test:
+            with pytest.raises(ValueError):
+                test_lattice = mb.Lattice(lat_space, dimension=3,
+                                          basis_atoms=errors)
 
-        assert len(lat_1d.basis_vectors) == 2
-        assert len(lat_2d.basis_vectors) == 2
-        assert len(lat_3d.basis_vectors) == 2
+    def test_lattice_basis_atoms_location(self):
+        dim = 3
+        lat_space = [1., 1., 1.]
+        basis_neg = {'test': [[0., 0., -.2]]}
+        basis_neg_mult = {'test': [[0., 0., 0.], [0., 0., -.2]]}
+        basis_positive = {'test': [[0., 0., 1.2]]}
+        basis_positive_mult = {'test': [[0., 0., 0.], [0., 0., 1.2]]}
+        to_test = [basis_neg, basis_neg_mult, basis_positive, basis_positive_mult]
 
-        assert lat_1d.basis_vectors['test1'][0] == [0]
-        assert lat_1d.basis_vectors['test2'][0] == [.25]
-        assert lat_2d.basis_vectors['test1'][0] == [0, 0]
-        assert lat_2d.basis_vectors['test2'][0] == [.25, .25]
-        assert lat_3d.basis_vectors['test1'][0] == [0, 0, 0]
-        assert lat_3d.basis_vectors['test2'][0] == [.25, .25, .25]
+        for errors in to_test:
+            with pytest.raises(ValueError):
+                test_lattice = mb.Lattice(lat_space, dimension=dim, basis_atoms=errors)
+
+    def test_lattice_basis_atoms_overlap(self):
+        dim = 3
+        lat_space = [1., 1., 1.]
+        overlap_same_basis_repeat = {'test': [[0., 0., 0.], [0., 0., 0.]]}
+        overlap_diff_basis_repeat = {'test': [[0., 0., 0.]],
+                                     'test2': [[.5, .5, .5], [0., 0., 0.]]}
+
+        to_test = [overlap_same_basis_repeat, overlap_diff_basis_repeat]
+        for errors in to_test:
+            with pytest.raises(ValueError):
+                test_lattice = mb.Lattice(lat_space, dimension=dim,
+                                          basis_atoms=errors)
+
+    def test_lattice_overdefinied_inputs(self):
+        dim = 3
+        lat_space = [1., 1., 1.]
+        angles = [90., 90., 90.]
+        lattice_vec = [1, 1, 1]
