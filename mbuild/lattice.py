@@ -166,8 +166,8 @@ class Lattice(object):
         self._validate_lattice_spacing(lattice_spacings, self.dimension)
 
         if angles is not None and lattice_vectors is not None:
-            return ValueError('Overdefined system: angles and lattice_vectors '
-                              'provided. Only one of these should be passed.')
+            raise ValueError('Overdefined system: angles and lattice_vectors '
+                             'provided. Only one of these should be passed.')
         if angles is not None:
             self._validate_angles(angles, self.dimension)
             self.lattice_vectors = self._from_lattice_parameters(
@@ -233,20 +233,19 @@ class Lattice(object):
 
     def _validate_angles(self, angles, dimension):
         if angles is not None:
+            for index, value in enumerate(angles):
+                angles[index] = float(value)
             if (len(angles), dimension) == (3, 3):
-                if all(isinstance(theAngle, float) for theAngle in angles):
-                    if sum(angles) < 360.0 or sum(angles) > -360.0:
-                        for theAngle in angles:
-                            if(theAngle != 180.0 and theAngle != 0.0):
-                                pass
-                            else:
-                                raise ValueError('Angles cannot be 180.0 or '
-                                                 '0.0.')
-                    else:
-                        raise ValueError('Angles sum to a value greater than '
-                                         '360.0 or less than -360.0.')
+                if sum(angles) < 360.0 or sum(angles) > -360.0:
+                    for theAngle in angles:
+                        if(theAngle != 180.0 and theAngle != 0.0):
+                            pass
+                        else:
+                            raise ValueError('Angles cannot be 180.0 or '
+                                             '0.0.')
                 else:
-                    raise TypeError('Angles are not type float.')
+                    raise ValueError('Angles sum to a value greater than '
+                                     '360.0 or less than -360.0.')
 
                 for subset in it.permutations(angles, 3):
                     if not subset[0] < sum(angles) - subset[0]:
@@ -257,18 +256,16 @@ class Lattice(object):
                 self.angles = angles
 
             elif len(angles) == 1 and dimension == 2:
-                if all(isinstance(theAngle, float) for theAngle in angles):
-                    for theAngle in angles:
-                        if (theAngle != 180.0 and theAngle != 0.0 and
-                                theAngle < 180.0 and theAngle > -180.0):
-                            pass
-                        else:
-                            raise ValueError('Angle incorrectly defined. {} '
-                                             'does not follow the proper '
-                                             'guidelines for a bravais angle. '
-                                             'Refer to documentation.'
-                                             .format(theAngle))
-                    self.angles = angles
+                for theAngle in angles:
+                    if (theAngle != 180.0 and theAngle != 0.0 and
+                            theAngle < 180.0 and theAngle > -180.0):
+                        pass
+                    else:
+                        raise ValueError('Angle incorrectly defined. {} '
+                                         'does not follow the proper '
+                                         'guidelines for a bravais angle. '
+                                         .format(theAngle))
+                self.angles = angles
             else:
                 raise ValueError('Incorrect amount of angles provided for '
                                  'dimension {}. Recieved {} angles.'
@@ -279,28 +276,16 @@ class Lattice(object):
 
         """
         if lattice_vectors is None:
-            if dimension is 3:
-                lattice_vectors = np.asarray(([1.0, 0.0, 0.0],
-                                              [0.0, 1.0, 0.0],
-                                              [0.0, 0.0, 1.0]))
-            elif dimension is 2:
-                lattice_vectors = np.asarray(([1.0, 0.0], [0.0, 1.0]))
-            else:
-                lattice_vectors = np.asarray(([1.0]))
+                lattice_vectors = np.identity(dimension, dtype=float)
         else:
             lattice_vectors = np.asarray(lattice_vectors, dtype=float)
             shape = np.shape(lattice_vectors)
 
-            if dimension in (3, 2):
-                if (dimension, dimension) != shape:
-                    raise ValueError('Dimensionality of lattice_vectors is '
-                                     ' of shape {} not {}.'
-                                     .format(shape, (dimension, dimension)))
-            else:
-                if (1, ) != shape:
-                    raise ValueError('Dimensionality of lattice_vectors is'
-                                     ' of {}, not (1, ).' .format(shape))
-            if dimension != 1:
+            if (dimension, dimension) != shape:
+                raise ValueError('Dimensionality of lattice_vectors is '
+                                 ' of shape {} not {}.'
+                                 .format(shape, (dimension, dimension)))
+            if dimension > 1:
                 det = np.linalg.det(lattice_vectors)
                 if abs(det) == 0.0:
                     raise ValueError('Co-linear vectors: {}'
@@ -385,6 +370,8 @@ class Lattice(object):
         ----------
         angles : list-like, required
             Angles of bravais lattice.
+        dimension : integer, required
+            Dimensionality of system, can only be 2 or 3.
         """
         if dimension is 3:
             (alpha, beta, gamma) = angles
@@ -408,7 +395,7 @@ class Lattice(object):
 
         return lattice_vec
 
-    def populate(self, compound_dict=None, x=None, y=None, z=None):
+    def populate(self, compound_dict=None, x=1, y=1, z=1):
         """Expand lattice and create compound from lattice.
 
         populate will expand lattice based on user input. The user must also
@@ -420,11 +407,11 @@ class Lattice(object):
 
         Parameters
         ----------
-        x : int, optional, default=None
+        x : int, optional, default=1
             How many iterations in the x direction.
-        y : int, optional, default=None
+        y : int, optional, default=1
             How many iterations in the y direction.
-        z : int, optional, default=None
+        z : int, optional, default=1
             How many iterations in the z direction.
         compound_dict : dictionary, optional, default=None
             Link between basis_dict and Compounds.
@@ -438,76 +425,61 @@ class Lattice(object):
         -----------------
         Called after constructor by user.
         """
-        # TODO(Justin Gilmer) Clean these conditionals up, too complicated
-        if self.dimension == 3:
-            a = self.lattice_spacings[0]
-            b = self.lattice_spacings[1]
-            c = self.lattice_spacings[2]
-            if x is None:
-                x = 1
-            if y is None:
-                y = 1
-            if z is None:
-                z = 1
-            if x < 1 or y < 1 or z < 1:
-                raise ValueError('Incorrect populate value: X, Y, or Z is < 1.'
-                                 ' Cannot replicate unit cell less than 1')
-        elif self.dimension == 2:
-            a = self.lattice_spacings[0]
-            b = self.lattice_spacings[1]
-            if x is None:
-                x = 1
-            if y is None:
-                y = 1
-            if z is None:
-                pass
-            else:
-                raise ValueError('Z is defined although dimension is 2D')
-            if x < 1 or y < 1:
-                raise ValueError('Incorrect populate value: X or Y is < 1. '
-                                 ' Cannot replicate unit cell less than 1')
+        error_dict = {0:'X', 1:'Y', 2:'Z'}
+
+        # padded for Compound compatibility
+        cell_edges = [edge[0] for edge in it.zip_longest(self.lattice_spacings, range(3), fillvalue=0.0)]
+
+        for replication_amount in x, y, z:
+            if replication_amount is None:
+                raise ValueError('Attempt to replicate None times. '
+                                 'None is not an acceptable replication amount, '
+                                 '1 is the default.')
+
+        for replication_amount, index in zip([x, y, z], range(3)):
+            if replication_amount < 1:
+                raise ValueError('Incorrect populate value: {} : {} is < 1. '
+                                 .format(error_dict[index], replication_amount))
+
+        if self.dimension == 2:
+            if z > 1:
+                raise ValueError('Attempting to replicate in Z. '
+                                 'A non-default value for Z is being '
+                                 'passed. 1 is the default value, not {}.'
+                                 .format(z))
         elif self.dimension == 1:
-            a = self.lattice_spacings[0]
-            if x is None:
-                x = 1
-            if y is None:
-                pass
-            else:
-                raise ValueError('Y is defined although dimension is 1D')
-            if z is None:
-                pass
-            if z is not None:
-                raise ValueError('Z is defined although dimension is 2D')
-            if x < 1:
-                raise ValueError('Incorrect populate value: X < 1. '
-                                 ' Cannot replicate unit cell less than 1')
+            if (y > 1) or (z > 1):
+                raise ValueError('Attempting to replicate in Y or Z. '
+                                 'A non-default value for Y or Z is being '
+                                 'passed. 1 is the default value.')
         else:
-            raise ValueError('Dimension not defined.')
+            pass
+
+        if ((isinstance(compound_dict, dict)) or (compound_dict is None)):
+            pass
+        else:
+            raise TypeError('Compound dictionary is not of type dict. '
+                            '{} was passed.'.format(type(compound_dict)))
 
         cell = defaultdict(list)
-        for key, val in self.basis_atoms.items():
-            for val_item in range(len(val)):
-                if self.dimension == 3:
-                    for i in range(x):
-                        for j in range(y):
-                            for k in range(z):
-                                tmpx = (val[val_item][0] + i) * a
-                                tmpy = (val[val_item][1] + j) * b
-                                tmpz = (val[val_item][2] + k) * c
-                                tmp_tuple = tuple((tmpx, tmpy, tmpz))
-                                cell[key].append(((tmp_tuple)))
-                elif self.dimension == 2:
-                    for i in range(x):
-                        for j in range(y):
-                            tmpx = (val[val_item][0] + i) * a
-                            tmpy = (val[val_item][1] + j) * b
-                            tmp_tuple = tuple((tmpx, tmpy))
-                            cell[key].append(((tmp_tuple)))
-                else:
-                    for i in range(x):
-                        tmpx = (val[val_item][0] + i) * a
-                        tmp_tuple = tuple((tmpx))
-                        cell[key].append(((tmp_tuple)))
+        [a, b, c] = cell_edges
+        for key, locations in self.basis_atoms.items():
+            for coords in range(len(locations)):
+                for replication in it.product(range(x), range(y), range(z)):
+                    tmpx = (locations[coords][0] + replication[0]) * a
+
+                    try:
+                        tmpy = (locations[coords][1] + replication[1]) * b
+                    except IndexError:
+                        tmpy = 0.0
+
+                    try:
+                        tmpz = (locations[coords][2] + replication[2]) * c
+                    except IndexError:
+                        tmpz = 0.0
+
+                    tmp_tuple = tuple((tmpx, tmpy, tmpz))
+                    cell[key].append(((tmp_tuple)))
 
         ret_lattice = mb.Compound()
         if compound_dict is None:
@@ -527,7 +499,7 @@ class Lattice(object):
                         ret_lattice.add(tmp_comp)
                 else:
                     err_type = type(compound_dict.get(key_id))
-                    TypeError('Invalid type in provided Compound Dictionary. '
+                    raise TypeError('Invalid type in provided Compound dictionary. '
                               'For key {}, type: {} was provided, '
-                              'not Compound.'.format(key_id, err_type))
+                              'not mbuild.Compound.'.format(key_id, err_type))
         return ret_lattice
