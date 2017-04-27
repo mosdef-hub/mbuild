@@ -10,61 +10,67 @@ from mbuild.utils.conversion import RB_to_OPLS
 __all__ = ['write_hoomdxml']
 
 
-def write_hoomdxml(structure, filename, rigid_bodies, ref_distance=1.0,
-                   ref_mass=1.0, ref_energy=1.0, wrap_coordinates=True):
+def write_hoomdxml(structure, filename, ref_distance=1.0, ref_mass=1.0, 
+                   ref_energy=1.0, rigid_bodies=None):
     """Output a HOOMD XML file.
-
-    The following elements are always written:
-
-    Position : atomic positions
-    Type : atom types
-    Mass : atom masses (default 1.0)
-    Charge : atom charges
-
-    The following elements may be written if applicable:
-    Pair_Coeffs : Pair coefficients for each atom type, assumes a 12-6
-                  LJ pair style. The following information is written:
-                  type : atom type
-                  epsilon : LJ epsilon
-                  sigma : LJ sigma
-    Bond_Coeffs : Coefficients for each bond type, assumes a harmonic
-                  bond style. The following information is written:
-                  type : bond type
-                  k : force constant (units of energy/distance^2)
-                  r0 : bond rest length (units of distance)
-    Bond : system bonds
-    Angle_Coeffs : Coefficients for each angle type, assumes a harmonic
-                   angle style. The following information is written:
-                   type : angle type
-                   k : force constant (units of energy/radians^2)
-                   theta : rest angle (units of radians)
-    Angle : system angles
-    Dihedral_Coeffs : Coefficients for each dihedral type, assumes an OPLS
-                      dihedral style. The following information is written:
-                      type : dihedral type
-                      k1, k2, k3, k4 : force coefficients (units of energy)
-    Dihedral : system dihedrals
-    Body : rigid body to which each atom belongs
 
     Parameters
     ----------
     structure : parmed.Structure
-        Parmed structure object
+        ParmEd structure object
     filename : str
         Path of the output file.
+    ref_distance : float, optional, default=1.0, units=angstroms
+        Reference distance for conversion to reduced units
+    ref_mass : float, optional, default=1.0, units=amu
+        Reference mass for conversion to reduced units
+    ref_energy : float, optional, default=1.0, units=kcal/mol
+        Reference energy for conversion to reduced units
     rigid_bodies : list
         List of rigid body information. An integer value is required
-        for each atom corresponding to the number of the rigid body with
-        which the atom should be included. A value of None indicates the
-        atom is not part of any rigid body.
-    ref_distance : float, optional, default=1.0
-        Reference distance for conversion to reduced units
-    ref_mass : float, optional, default=1.0
-        Reference mass for conversion to reduced units
-    ref_energy : float, optional, default=1.0
-        Reference energy for conversion to reduced units
-    wrap_coordinates : bool, optional, default=True
-        Wrap coordinates of all atoms into the box
+        for each particle corresponding to the number of the rigid body with
+        which the particle should be included. A value of None indicates the
+        particle is not part of any rigid body.
+
+    Notes
+    -----
+    The following elements are always written:
+
+    * **position** : particle positions
+    * **type** : particle types
+    * **mass** : particle masses (default 1.0)
+    * **charge** : particle charges
+
+    The following elements may be written if applicable:
+
+    * **pair_coeffs** : Pair coefficients for each particle type (assumes a 12-6 LJ pair style). The following information is written for each particle type:
+
+                        * type : particle type
+                        * epsilon : LJ epsilon
+                        * sigma : LJ sigma
+
+    * **bond_coeffs** : Coefficients for each bond type (assumes a harmonic bond style). The following information is written for each bond type:
+
+                        * type : bond type
+                        * k : force constant (units of energy/distance^2)
+                        * r0 : bond rest length (units of distance)
+
+    * **bond** : system bonds
+    * **angle_coeffs** : Coefficients for each angle type (assumes a harmonic angle style). The following information is written for each angle type:
+
+                         * type : angle type
+                         * k : force constant (units of energy/radians^2)
+                         * theta : rest angle (units of radians)
+
+    * **angle** : system angles
+    * **dihedral_coeffs** : Coefficients for each dihedral type (assumes an OPLS dihedral style). The following information is written for each dihedral type:
+
+                            * type : dihedral type
+                            * k1, k2, k3, k4 : force coefficients (units of energy)
+
+    * **dihedral** : system dihedrals
+
+    * **body** : ID of the rigid body to which each particle belongs
 
     """
     forcefield = True
@@ -72,20 +78,13 @@ def write_hoomdxml(structure, filename, rigid_bodies, ref_distance=1.0,
         forcefield = False
     xyz = np.array([[atom.xx, atom.xy, atom.xz] for atom in structure.atoms])
 
-    box = Box(lengths=np.array([structure.box[0], structure.box[1], structure.box[2]]))
-    box.maxs *= 10.
-    box.mins *= 10.
-    box_init = deepcopy(box)
-    box.mins = np.array([-d/2 for d in box_init.lengths])
-    box.maxs = np.array([d/2 for d in box_init.lengths])
-
     with open(filename, 'w') as xml_file:
         xml_file.write('<?xml version="1.2" encoding="UTF-8"?>\n')
         xml_file.write('<hoomd_xml version="1.2">\n')
         xml_file.write('<configuration time_step="0">\n')
         xml_file.write(
                 '<box units="sigma"  Lx="{}" Ly="{}" Lz="{}"/>\n'.format(
-                    *box.lengths/ref_distance))
+                    *structure.box[:3] / ref_distance))
         _write_particle_information(xml_file, structure, xyz, forcefield,
                 ref_distance, ref_mass, ref_energy)
         _write_bond_information(xml_file, structure, ref_distance, ref_energy)
