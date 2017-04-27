@@ -612,3 +612,8 @@ class TestCompound(BaseTest):
         mb.force_overlap(ch3, ch3['up'], ch2['up'])
         with pytest.raises(MBuildError):
             ch3_clone = mb.clone(ch3)
+
+    def test_load_mol2_parmed(self):
+        with pytest.raises(KeyError):
+            mb.load(get_fn('benzene-nonelement.mol2'))
+        mb.load(get_fn('benzene-nonelement.mol2'), use_parmed=True)
