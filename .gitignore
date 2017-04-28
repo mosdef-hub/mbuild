@@ -26,6 +26,7 @@ pip-log.txt
 .tox
 nosetests.xml
 htmlcov
+.cache
 
 # Translations
 *.mo
@@ -44,6 +45,9 @@ docs/_build
 # Vagrant
 .vagrant
 Vagrantfile
+
+# rope project settings
+.ropeproject
 
 #conda version
 __conda_version__.txt
