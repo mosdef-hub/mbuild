@@ -1629,8 +1629,9 @@ class Compound(object):
                                  ' {self}'.format(**locals()))
             atoms_particles = zip(structure.atoms,
                                   self._particles(include_ports=False))
+            coordinates = structure.coordinates
             for parmed_atom, particle in atoms_particles:
-                particle.pos = structure.coordinates[parmed_atom.idx]
+                particle.pos = coordinates[parmed_atom.idx]
             return
 
         atom_mapping = dict()
