@@ -11,7 +11,6 @@ import sys
 import tempfile
 from warnings import warn
 
-import mdtraj as md
 import numpy as np
 from oset import oset as OrderedSet
 import parmed as pmd
@@ -21,7 +20,6 @@ from six import integer_types, string_types
 
 from mbuild.bond_graph import BondGraph
 from mbuild.box import Box
-from mbuild.coordinate_transform import translate
 from mbuild.exceptions import MBuildError
 from mbuild.formats.hoomdxml import write_hoomdxml
 from mbuild.formats.lammpsdata import write_lammpsdata
@@ -32,7 +30,7 @@ from mbuild.coordinate_transform import _translate, _rotate
 
 
 def load(filename, relative_to_module=None, compound=None, coords_only=False,
-         rigid=False, use_parmed=False, **kwargs):
+         rigid=False, use_mdtraj=False, **kwargs):
     """Load a file into an mbuild compound.
 
     Files are read using the MDTraj package unless the `use_parmed` argument is
@@ -55,8 +53,8 @@ def load(filename, relative_to_module=None, compound=None, coords_only=False,
         Only load the coordinates into an existing compoint.
     rigid : bool, optional, default=False
         Treat the compound as a rigid body
-    use_parmed : bool, optional, default=False
-        Use readers from ParmEd instead of MDTraj.
+    use_mdtraj : bool, optional, default=False
+        Use readers from MDTraj instead of Parmed.
     **kwargs : keyword arguments
         Key word arguments passed to mdTraj for loading.
 
@@ -76,12 +74,14 @@ def load(filename, relative_to_module=None, compound=None, coords_only=False,
     if compound is None:
         compound = Compound()
 
-    if use_parmed:
-        structure = pmd.load_file(filename, structure=True)
-        compound.from_parmed(structure)
-    else:
-        traj = md.load(filename, **kwargs)
+    if use_mdtraj:
+        mdtraj = import_('mdtraj')
+
+        traj = mdtraj.load(filename, **kwargs)
         compound.from_trajectory(traj, frame=-1, coords_only=coords_only)
+    else:
+        structure = pmd.load_file(filename, structure=True)
+        compound.from_parmed(structure, coords_only=coords_only)
 
     if rigid:
         compound.label_rigid_bodies()
@@ -1471,6 +1471,7 @@ class Compound(object):
         _to_topology
 
         """
+        mdtraj = import_('mdtraj')
         atom_list = [particle for particle in self.particles(show_ports)]
 
         top = self._to_topology(atom_list, chains, residues)
@@ -1489,7 +1490,7 @@ class Compound(object):
             else:
                 unitcell_lengths[dim] = box.lengths[dim]
 
-        return md.Trajectory(xyz, top, unitcell_lengths=unitcell_lengths,
+        return mdtraj.Trajectory(xyz, top, unitcell_lengths=unitcell_lengths,
                              unitcell_angles=np.array([90, 90, 90]))
 
     def _to_topology(self, atom_list, chains=None, residues=None):
@@ -1632,7 +1633,7 @@ class Compound(object):
             for parmed_atom, particle in atoms_particles:
                 particle.pos = np.array([parmed_atom.xx,
                                          parmed_atom.xy,
-                                         parmed_atom.xz])
+                                         parmed_atom.xz]) / 10
             return
 
         atom_mapping = dict()
@@ -1649,7 +1650,7 @@ class Compound(object):
                 chain_compound = self
             for residue in residues:
                 for atom in residue.atoms:
-                    pos = np.array([atom.xx, atom.xy, atom.xz])
+                    pos = np.array([atom.xx, atom.xy, atom.xz]) / 10
                     new_atom = Particle(name=str(atom.name), pos=pos)
                     chain_compound.add(new_atom, label='{0}[$]'.format(atom.name))
                     atom_mapping[atom] = new_atom
