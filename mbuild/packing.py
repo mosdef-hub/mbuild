@@ -114,14 +114,10 @@ def solvate(solute, solvent, n_solvent, box, overlap=0.2, seed=12345):
         raise IOError("Packmol not found")
 
     box = _validate_box(box)
-
-    n_solvent = int(n_solvent)
-
-    solute_pdb = tempfile.mkstemp(suffix='.pdb')[1]
-    solute.save(solute_pdb, overwrite=True)
-    solvent_pdb = tempfile.mkstemp(suffix='.pdb')[1]
-    solvent.save(solvent_pdb, overwrite=True)
-    solvated_pdb = tempfile.mkstemp(suffix='.pdb')[1]
+    if isinstance(solvent, (list, set)) == False:
+        solvent = [solvent]
+    if isinstance(n_solvent, (list, set)) == False:
+        n_solvent = [n_solvent]
 
     # In angstroms for packmol.
     box_mins = box.mins * 10
@@ -129,12 +125,20 @@ def solvate(solute, solvent, n_solvent, box, overlap=0.2, seed=12345):
     overlap *= 10
     center_solute = (box_maxs + box_mins) / 2
 
-    # Build the input file and call packmol.
+    # Build the input file for each compound and call packmol.
+    solvated_pdb = tempfile.mkstemp(suffix='.pdb')[1]
+    solute_pdb = tempfile.mkstemp(suffix='.pdb')[1]
+    solute.save(solute_pdb, overwrite=True)
     input_text = (PACKMOL_HEADER.format(overlap, solvated_pdb, seed) +
-                  PACKMOL_SOLUTE.format(solute_pdb, *center_solute) +
-                  PACKMOL_BOX.format(solvent_pdb, n_solvent,
-                                     box_mins[0], box_mins[1], box_mins[2],
-                                     box_maxs[0], box_maxs[1], box_maxs[2]))
+                  PACKMOL_SOLUTE.format(solute_pdb, *center_solute))
+
+    for solv, m_solvent in zip(solvent, n_solvent):
+        m_solvent = int(m_solvent)
+        solvent_pdb = tempfile.mkstemp(suffix='.pdb')[1]
+        solv.save(solvent_pdb, overwrite=True)
+        input_text += PACKMOL_BOX.format(solvent_pdb, m_solvent,
+                           box_mins[0], box_mins[1], box_mins[2],
+                           box_maxs[0], box_maxs[1], box_maxs[2])
 
     proc = Popen(PACKMOL, stdin=PIPE, stdout=PIPE, stderr=PIPE, universal_newlines=True)
     out, err = proc.communicate(input=input_text)
@@ -144,8 +148,9 @@ def solvate(solute, solvent, n_solvent, box, overlap=0.2, seed=12345):
     # Create the topology and update the coordinates.
     solvated = Compound()
     solvated.add(solute)
-    for _ in range(n_solvent):
-        solvated.add(clone(solvent))
+    for solv, m_solvent in zip(solvent, n_solvent):
+        for _ in range(m_solvent):
+            solvated.add(clone(solv))
     solvated.update_coordinates(solvated_pdb)
     return solvated
 
