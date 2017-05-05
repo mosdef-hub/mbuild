@@ -12,6 +12,12 @@ class TestPacking(BaseTest):
         assert filled.n_particles == 20 * 8
         assert filled.n_bonds == 20 * 7
 
+    def test_fill_box_multiple(self, ethane, h2o):
+        n_solvent = 100
+        filled = mb.fill_box([ethane, h2o], [1, 100], box=[4, 4, 4])
+        assert filled.n_particles == 8 + n_solvent * 3
+        assert filled.n_bonds == 7 + n_solvent * 2
+
     def test_solvate(self, ethane, h2o):
         n_solvent = 100
         solvated = mb.solvate(ethane, h2o, n_solvent=n_solvent, box=[4, 4, 4])

@@ -40,8 +40,8 @@ def fill_box(compound, n_compounds, box, overlap=0.2, seed=12345):
 
     Parameters
     ----------
-    compound : mb.Compound
-    n_compounds : int
+    compound : mb.Compound or list of mb.Compound
+    n_compounds : int or list of int
     box : mb.Box
     overlap : float
 
@@ -58,22 +58,28 @@ def fill_box(compound, n_compounds, box, overlap=0.2, seed=12345):
         raise IOError(msg)
 
     box = _validate_box(box)
-
-    n_compounds = int(n_compounds)
-    compound_pdb = tempfile.mkstemp(suffix='.pdb')[1]
-    compound.save(compound_pdb, overwrite=True)
-    filled_pdb = tempfile.mkstemp(suffix='.pdb')[1]
+    if type(compound) != list:
+        compound = [compound]
+    if type(n_compounds) != list:
+        n_compounds = [n_compounds]
 
     # In angstroms for packmol.
     box_mins = box.mins * 10
     box_maxs = box.maxs * 10
     overlap *= 10
 
-    # Build the input file and call packmol.
-    input_text = (PACKMOL_HEADER.format(overlap, filled_pdb, seed) +
-                  PACKMOL_BOX.format(compound_pdb, n_compounds,
-                                     box_mins[0], box_mins[1], box_mins[2],
-                                     box_maxs[0], box_maxs[1], box_maxs[2]))
+    # Build the input file for each compound and call packmol.
+    filled_pdb = tempfile.mkstemp(suffix='.pdb')[1]
+    input_text = PACKMOL_HEADER.format(overlap, filled_pdb, seed)
+
+    for comp, m_compounds in zip(compound, n_compounds):
+        print(comp, m_compounds)
+        m_compounds = int(m_compounds)
+        compound_pdb = tempfile.mkstemp(suffix='.pdb')[1]
+        comp.save(compound_pdb, overwrite=True)
+        input_text += PACKMOL_BOX.format(compound_pdb, m_compounds,
+                           box_mins[0], box_mins[1], box_mins[2],
+                           box_maxs[0], box_maxs[1], box_maxs[2])
 
     proc = Popen(PACKMOL, stdin=PIPE, stdout=PIPE, stderr=PIPE, universal_newlines=True)
     out, err = proc.communicate(input=input_text)
@@ -82,8 +88,9 @@ def fill_box(compound, n_compounds, box, overlap=0.2, seed=12345):
 
     # Create the topology and update the coordinates.
     filled = Compound()
-    for _ in range(n_compounds):
-        filled.add(clone(compound))
+    for comp, m_compounds in zip(compound, n_compounds):
+        for _ in range(m_compounds):
+            filled.add(clone(comp))
     filled.update_coordinates(filled_pdb)
     return filled
 
