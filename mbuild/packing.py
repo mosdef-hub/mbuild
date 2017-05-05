@@ -58,9 +58,9 @@ def fill_box(compound, n_compounds, box, overlap=0.2, seed=12345):
         raise IOError(msg)
 
     box = _validate_box(box)
-    if isinstance(compound, (list, set)):
+    if isinstance(compound, (list, set)) == False:
         compound = [compound]
-    if isinstance(n_compounds, (list, set)):
+    if isinstance(n_compounds, (list, set)) == False:
         n_compounds = [n_compounds]
 
     # In angstroms for packmol.
