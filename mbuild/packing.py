@@ -58,9 +58,9 @@ def fill_box(compound, n_compounds, box, overlap=0.2, seed=12345):
         raise IOError(msg)
 
     box = _validate_box(box)
-    if type(compound) != list:
+    if isinstance(compound, (list, set)):
         compound = [compound]
-    if type(n_compounds) != list:
+    if isinstance(n_compounds, (list, set)):
         n_compounds = [n_compounds]
 
     # In angstroms for packmol.
@@ -73,7 +73,6 @@ def fill_box(compound, n_compounds, box, overlap=0.2, seed=12345):
     input_text = PACKMOL_HEADER.format(overlap, filled_pdb, seed)
 
     for comp, m_compounds in zip(compound, n_compounds):
-        print(comp, m_compounds)
         m_compounds = int(m_compounds)
         compound_pdb = tempfile.mkstemp(suffix='.pdb')[1]
         comp.save(compound_pdb, overwrite=True)
