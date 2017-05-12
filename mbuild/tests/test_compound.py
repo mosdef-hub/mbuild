@@ -71,6 +71,11 @@ class TestCompound(BaseTest):
         struct = pmd.load_file('resnames_single.gro')
         assert struct.residues[0].number ==  1
         assert struct.residues[1].number ==  2
+        
+    def test_save_references(self, methane):
+        methane.save('methyl.mol2', forcefield_name='oplsaa', 
+                     references_file='methane.bib')
+        assert os.path.isfile('methane.bib')
 
     def test_batch_add(self, ethane, h2o):
         compound = mb.Compound()
