@@ -40,8 +40,8 @@ def fill_box(compound, n_compounds, box, overlap=0.2, seed=12345):
 
     Parameters
     ----------
-    compound : mb.Compound
-    n_compounds : int
+    compound : mb.Compound or list of mb.Compound
+    n_compounds : int or list of int
     box : mb.Box
     overlap : float
 
@@ -58,22 +58,27 @@ def fill_box(compound, n_compounds, box, overlap=0.2, seed=12345):
         raise IOError(msg)
 
     box = _validate_box(box)
-
-    n_compounds = int(n_compounds)
-    compound_pdb = tempfile.mkstemp(suffix='.pdb')[1]
-    compound.save(compound_pdb, overwrite=True)
-    filled_pdb = tempfile.mkstemp(suffix='.pdb')[1]
+    if not isinstance(compound, (list, set)):
+        compound = [compound]
+    if not isinstance(n_compounds, (list, set)):
+        n_compounds = [n_compounds]
 
     # In angstroms for packmol.
     box_mins = box.mins * 10
     box_maxs = box.maxs * 10
     overlap *= 10
 
-    # Build the input file and call packmol.
-    input_text = (PACKMOL_HEADER.format(overlap, filled_pdb, seed) +
-                  PACKMOL_BOX.format(compound_pdb, n_compounds,
-                                     box_mins[0], box_mins[1], box_mins[2],
-                                     box_maxs[0], box_maxs[1], box_maxs[2]))
+    # Build the input file for each compound and call packmol.
+    filled_pdb = tempfile.mkstemp(suffix='.pdb')[1]
+    input_text = PACKMOL_HEADER.format(overlap, filled_pdb, seed)
+
+    for comp, m_compounds in zip(compound, n_compounds):
+        m_compounds = int(m_compounds)
+        compound_pdb = tempfile.mkstemp(suffix='.pdb')[1]
+        comp.save(compound_pdb, overwrite=True)
+        input_text += PACKMOL_BOX.format(compound_pdb, m_compounds,
+                           box_mins[0], box_mins[1], box_mins[2],
+                           box_maxs[0], box_maxs[1], box_maxs[2])
 
     proc = Popen(PACKMOL, stdin=PIPE, stdout=PIPE, stderr=PIPE, universal_newlines=True)
     out, err = proc.communicate(input=input_text)
@@ -82,8 +87,9 @@ def fill_box(compound, n_compounds, box, overlap=0.2, seed=12345):
 
     # Create the topology and update the coordinates.
     filled = Compound()
-    for _ in range(n_compounds):
-        filled.add(clone(compound))
+    for comp, m_compounds in zip(compound, n_compounds):
+        for _ in range(m_compounds):
+            filled.add(clone(comp))
     filled.update_coordinates(filled_pdb)
     return filled
 
@@ -108,14 +114,10 @@ def solvate(solute, solvent, n_solvent, box, overlap=0.2, seed=12345):
         raise IOError("Packmol not found")
 
     box = _validate_box(box)
-
-    n_solvent = int(n_solvent)
-
-    solute_pdb = tempfile.mkstemp(suffix='.pdb')[1]
-    solute.save(solute_pdb, overwrite=True)
-    solvent_pdb = tempfile.mkstemp(suffix='.pdb')[1]
-    solvent.save(solvent_pdb, overwrite=True)
-    solvated_pdb = tempfile.mkstemp(suffix='.pdb')[1]
+    if not isinstance(solvent, (list, set)):
+        solvent = [solvent]
+    if not isinstance(n_solvent, (list, set)):
+        n_solvent = [n_solvent]
 
     # In angstroms for packmol.
     box_mins = box.mins * 10
@@ -123,12 +125,20 @@ def solvate(solute, solvent, n_solvent, box, overlap=0.2, seed=12345):
     overlap *= 10
     center_solute = (box_maxs + box_mins) / 2
 
-    # Build the input file and call packmol.
+    # Build the input file for each compound and call packmol.
+    solvated_pdb = tempfile.mkstemp(suffix='.pdb')[1]
+    solute_pdb = tempfile.mkstemp(suffix='.pdb')[1]
+    solute.save(solute_pdb, overwrite=True)
     input_text = (PACKMOL_HEADER.format(overlap, solvated_pdb, seed) +
-                  PACKMOL_SOLUTE.format(solute_pdb, *center_solute) +
-                  PACKMOL_BOX.format(solvent_pdb, n_solvent,
-                                     box_mins[0], box_mins[1], box_mins[2],
-                                     box_maxs[0], box_maxs[1], box_maxs[2]))
+                  PACKMOL_SOLUTE.format(solute_pdb, *center_solute))
+
+    for solv, m_solvent in zip(solvent, n_solvent):
+        m_solvent = int(m_solvent)
+        solvent_pdb = tempfile.mkstemp(suffix='.pdb')[1]
+        solv.save(solvent_pdb, overwrite=True)
+        input_text += PACKMOL_BOX.format(solvent_pdb, m_solvent,
+                           box_mins[0], box_mins[1], box_mins[2],
+                           box_maxs[0], box_maxs[1], box_maxs[2])
 
     proc = Popen(PACKMOL, stdin=PIPE, stdout=PIPE, stderr=PIPE, universal_newlines=True)
     out, err = proc.communicate(input=input_text)
@@ -138,8 +148,9 @@ def solvate(solute, solvent, n_solvent, box, overlap=0.2, seed=12345):
     # Create the topology and update the coordinates.
     solvated = Compound()
     solvated.add(solute)
-    for _ in range(n_solvent):
-        solvated.add(clone(solvent))
+    for solv, m_solvent in zip(solvent, n_solvent):
+        for _ in range(m_solvent):
+            solvated.add(clone(solv))
     solvated.update_coordinates(solvated_pdb)
     return solvated
 
