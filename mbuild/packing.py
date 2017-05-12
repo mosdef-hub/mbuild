@@ -58,9 +58,9 @@ def fill_box(compound, n_compounds, box, overlap=0.2, seed=12345):
         raise IOError(msg)
 
     box = _validate_box(box)
-    if isinstance(compound, (list, set)) == False:
+    if not isinstance(compound, (list, set)):
         compound = [compound]
-    if isinstance(n_compounds, (list, set)) == False:
+    if not isinstance(n_compounds, (list, set)):
         n_compounds = [n_compounds]
 
     # In angstroms for packmol.
@@ -114,9 +114,9 @@ def solvate(solute, solvent, n_solvent, box, overlap=0.2, seed=12345):
         raise IOError("Packmol not found")
 
     box = _validate_box(box)
-    if isinstance(solvent, (list, set)) == False:
+    if not isinstance(solvent, (list, set)):
         solvent = [solvent]
-    if isinstance(n_solvent, (list, set)) == False:
+    if not isinstance(n_solvent, (list, set)):
         n_solvent = [n_solvent]
 
     # In angstroms for packmol.
