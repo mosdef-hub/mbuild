@@ -103,9 +103,9 @@ class Pattern(object):
         assert_port_exists(guest_port_name, guest)
         box = host.boundingbox
         if scale:
-            pattern = self.points * box.lengths + box.mins
-        else:
-            pattern = self.points
+            self.scale(box.lengths)
+            self.points += box.mins
+        pattern = self.points
         port_positions = np.empty(shape=(n_ports, 3))
         port_list = list()
         for port_idx, port in enumerate(host.available_ports()):
