@@ -29,7 +29,7 @@ class TestPacking(BaseTest):
         assert filled.n_bonds == 2 * 7 + 2 * 2
         assert np.max(filled.xyz[:16, 0]) < 4
         assert np.min(filled.xyz[16:, 0]) > 4
-    
+
     def test_fill_box_multiple(self, ethane, h2o):
         n_solvent = 100
         filled = mb.fill_box([ethane, h2o], [1, 100], box=[4, 4, 4])
