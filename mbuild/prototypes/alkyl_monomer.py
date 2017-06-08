@@ -24,5 +24,4 @@ class AlkylMonomer(mb.Compound):
 
 if __name__ == '__main__':
     ch2 = AlkylMonomer()
-    ch2.visualize(show_ports=True)
     ch2.save('alkylmonomer.mol2')

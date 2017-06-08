@@ -16,7 +16,7 @@ class ALC(mb.Compound):
                 from_positions=self['tailcap']['up'],
                 to_positions=self['tail']['up'])
         mb.force_overlap(move_this=self['head'],
-                from_positions=self['head']['cbond'],
+                from_positions=self['head']['up'],
                 to_positions=self['tail']['down'])
 
 if __name__ == '__main__':

@@ -5,26 +5,35 @@ from mbuild.prototypes.OH import OH
 
 class COOH(mb.Compound):
     """Creates headgroup of a carboxylic acid"""
-    def __init__(self):
+    def __init__(self, ester = None):
         super(COOH,self).__init__()
         self.add(mb.Particle(name='C'), label='C')
-        self.add(mb.Particle(name='O', pos = [.123, 0, 0]),label='CO')
-        self.add_bond((self[0],self[1]))
-                                                        
-        self.add(mb.Port(anchor=self[0]), label='up')
-        self['up'].translate([-.132/2,0,0])
-        theta = (111 / 2) * np.pi / 180
-        self['up'].rotate(theta, around=[0,0,1])
+        self.add(mb.Particle(name='O', pos = [0, .123, 0]),label='O[$]')
+        self.add_bond((self['C'],self['O'][0]))
         
-        self.add(mb.Port(anchor=self[0]), label='down')
-        self['down'].translate([-.15/2,0,0])
-        self['down'].rotate(-theta, around=[0,0,1])
-        self.add(OH(),label='hydroxyl')
-        mb.force_overlap(move_this=self['hydroxyl'],
-                from_positions=self['hydroxyl']['cbond'],
-                to_positions=self['up'])
+        self.add(mb.Port(anchor=self[0],
+            orientation=[-1,-np.tan(34.5*np.pi/180),0],
+            separation=.132/2), label='up')
+        
+        if ester:
+            self.add(mb.Particle(name='O'), label='O[$]')
+            self['O'][1].translate([.15,0,0])
+            theta = ((180-111) / 2) * np.pi / 180
+            self['O'][1].rotate(-theta, around=[0,0,1])
+            self.add_bond((self['C'],self['O'][1]))
+
+            self.add(mb.Port(anchor=self['O'][1],
+                orientation=[1,np.tan(52.5*np.pi/180),0],
+                separation=.14/2), label='down')
+        else:
+            self.add(mb.Port(anchor=self[0], 
+                orientation=[1,-np.tan(32*np.pi/180), 0], 
+                separation=.132/2),label='down')
+            self.add(OH(),label='OH')
+            mb.force_overlap(move_this=self['OH'],
+                    from_positions=self['OH']['up'],
+                    to_positions=self['down'])
 
 if __name__ == '__main__':
     cooh = COOH()
-    cooh.energy_minimization()
-    cooh.save('cooh.mol2')
+    cooh.save('cooh.mol2', overwrite=True)
