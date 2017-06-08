@@ -94,20 +94,23 @@ def fill_box(compound, n_compounds, box, overlap=0.2, seed=12345):
     return filled
 
 
-def fill_region(compound, n_compounds, region, overlap=0.2, seed=12345):
+def fill_region(compound, n_compounds, region, box, overlap=0.2, seed=12345):
     """Fill a region of a box with a compound using packmol.
 
     Parameters
     ----------
-    compound : mb.Compound
-    n_compounds : int
-    region : mb.Box
+    compound : mb.Compound or list of mb.Compound
+    n_compounds : int or list of int
+    region : mb.Box or list of mb.Box
+    box : mb.Box
     overlap : float
 
     Returns
     -------
     filled : mb.Compound
 
+    If using mulitple regions and compounds, the nth value in each list are used in order.
+    For example, if the third compound will be put in the third region using the third value in n_compounds.
     """
     if not PACKMOL:
         msg = "Packmol not found."
@@ -116,23 +119,33 @@ def fill_region(compound, n_compounds, region, overlap=0.2, seed=12345):
                          "packmol.exe is on the path.")
         raise IOError(msg)
 
-    region = _validate_box(region)
-
-    n_compounds = int(n_compounds)
-    compound_pdb = tempfile.mkstemp(suffix='.pdb')[1]
-    compound.save(compound_pdb, overwrite=True)
-    filled_pdb = tempfile.mkstemp(suffix='.pdb')[1]
+    box = _validate_box(box)
+    if not isinstance(compound, (list, set)):
+        compound = [compound]
+    if not isinstance(n_compounds, (list, set)):
+        n_compounds = [n_compounds]
+    if not any(isinstance(reg, list) for reg in region): # See if region is a single region or list
+        region = [region]
+    region = [_validate_box(reg) for reg in region]
 
     # In angstroms for packmol.
-    region_mins = region.mins * 10
-    region_maxs = region.maxs * 10
+    box_mins = box.mins * 10
+    box_maxs = box.maxs * 10
     overlap *= 10
 
     # Build the input file and call packmol.
-    input_text = (PACKMOL_HEADER.format(overlap, filled_pdb, seed) +
-                  PACKMOL_BOX.format(compound_pdb, n_compounds,
-                                     region_mins[0], region_mins[1], region_mins[2],
-                                     region_maxs[0], region_maxs[1], region_maxs[2]))
+    filled_pdb = tempfile.mkstemp(suffix='.pdb')[1]
+    input_text = PACKMOL_HEADER.format(overlap, filled_pdb, seed)
+
+    for comp, m_compounds, reg in zip(compound, n_compounds, region):
+        m_compounds = int(m_compounds)
+        compound_pdb = tempfile.mkstemp(suffix='.pdb')[1]
+        comp.save(compound_pdb, overwrite=True)
+        reg_mins = reg.mins * 10
+        reg_maxs = reg.maxs * 10
+        input_text += PACKMOL_BOX.format(compound_pdb, m_compounds,
+                                        reg_mins[0], reg_mins[1], reg_mins[2],
+                                        reg_maxs[0], reg_maxs[1], reg_maxs[2])
 
     proc = Popen(PACKMOL, stdin=PIPE, stdout=PIPE, stderr=PIPE, universal_newlines=True)
     out, err = proc.communicate(input=input_text)
@@ -141,8 +154,9 @@ def fill_region(compound, n_compounds, region, overlap=0.2, seed=12345):
 
     # Create the topology and update the coordinates.
     filled = Compound()
-    for _ in range(n_compounds):
-        filled.add(clone(compound))
+    for comp, m_compounds in zip(compound, n_compounds):
+        for _ in range(m_compounds):
+            filled.add(clone(comp))
     filled.update_coordinates(filled_pdb)
     return filled
 
