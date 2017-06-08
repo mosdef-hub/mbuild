@@ -94,7 +94,7 @@ def fill_box(compound, n_compounds, box, overlap=0.2, seed=12345):
     return filled
 
 
-def fill_region(compound, n_compounds, region, box, overlap=0.2, seed=12345):
+def fill_region(compound, n_compounds, region, overlap=0.2, seed=12345):
     """Fill a region of a box with a compound using packmol.
 
     Parameters
@@ -102,7 +102,6 @@ def fill_region(compound, n_compounds, region, box, overlap=0.2, seed=12345):
     compound : mb.Compound or list of mb.Compound
     n_compounds : int or list of int
     region : mb.Box or list of mb.Box
-    box : mb.Box
     overlap : float
 
     Returns
@@ -119,7 +118,6 @@ def fill_region(compound, n_compounds, region, box, overlap=0.2, seed=12345):
                          "packmol.exe is on the path.")
         raise IOError(msg)
 
-    box = _validate_box(box)
     if not isinstance(compound, (list, set)):
         compound = [compound]
     if not isinstance(n_compounds, (list, set)):
@@ -129,8 +127,6 @@ def fill_region(compound, n_compounds, region, box, overlap=0.2, seed=12345):
     region = [_validate_box(reg) for reg in region]
 
     # In angstroms for packmol.
-    box_mins = box.mins * 10
-    box_maxs = box.maxs * 10
     overlap *= 10
 
     # Build the input file and call packmol.

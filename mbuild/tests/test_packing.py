@@ -14,8 +14,7 @@ class TestPacking(BaseTest):
 
     def test_fill_region(self, h2o):
         filled = mb.fill_region(h2o, n_compounds=50,
-                                region=[3, 2, 2, 4, 4, 3],
-                                box=[3, 2, 2, 4, 4, 3])
+                                region=[3, 2, 2, 4, 4, 3])
         assert filled.n_particles == 50 * 3
         assert filled.n_bonds == 50 * 2
         assert np.min(filled.xyz[:,0]) >= 3
@@ -23,8 +22,7 @@ class TestPacking(BaseTest):
 
     def test_fill_region_multiple(self, ethane, h2o):
         filled = mb.fill_region(compound=[ethane, h2o], n_compounds=[2, 2],
-                                region=[[2, 2, 2, 4, 4, 4], [4, 2, 2, 6, 4, 4]],
-                                box=[2, 2, 2, 6, 4, 4])
+                                region=[[2, 2, 2, 4, 4, 4], [4, 2, 2, 6, 4, 4]])
         assert filled.n_particles == 2 * 8 + 2 * 3
         assert filled.n_bonds == 2 * 7 + 2 * 2
         assert np.max(filled.xyz[:16, 0]) < 4
