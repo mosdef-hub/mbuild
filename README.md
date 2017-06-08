@@ -4,7 +4,6 @@
 [![Windows Build status](https://ci.appveyor.com/api/projects/status/x4aiyeio2c1xf3vx/branch/master?svg=true)](https://ci.appveyor.com/project/ctk3b/mbuild-o0viu/branch/master)
 [![PyPI Version](https://badge.fury.io/py/mbuild.svg)](https://pypi.python.org/pypi/mbuild)
 [![Binstar Badge](https://anaconda.org/mosdef/mbuild/badges/version.svg)](https://anaconda.org/mosdef/mbuild)
-[![Code Health](https://landscape.io/github/mosdef-hub/mbuild/master/landscape.svg?style=flat)](https://landscape.io/github/mosdef-hub/mbuild/master)
 [![Coverage Status](https://coveralls.io/repos/github/mosdef-hub/mbuild/badge.svg?branch=master)](https://coveralls.io/github/mosdef-hub/mbuild?branch=master)
 
 With just a few lines of mBuild code, you can assemble reusable components into

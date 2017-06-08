@@ -16,18 +16,17 @@ env:
   - ENCRYPTION_LABEL: "898e0934cf65"
   - COMMIT_AUTHOR_EMAIL: "janos.sallai@vanderbilt.edu"
 
-
-
 install:
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew install md5sha1sum; fi
   - source devtools/travis-ci/install.sh
   - conda config --set always_yes yes --set changeps1 no
-  - conda env create -q -n test-environment python=$PYTHON_VERSION -f environment.yml
+  - conda env create -n test-environment python=$PYTHON_VERSION -f environment.yml
   - source activate test-environment
   - pip install -e .
+
+script:
   - py.test -v --cov=mbuild  --cov-report= --pyargs mbuild
-  - coveralls
 
 after_success:
-  - conda build --python $PYTHON_VERSION devtools/conda-recipe
+  - coveralls
   - if [[ $PYTHON_VERSION == 3.5 ]] && [[ "$TRAVIS_OS_NAME" == "linux" ]]; then source devtools/travis-ci/update_gh_pages.sh; fi

@@ -6,17 +6,17 @@ from mbuild.tests.base_test import BaseTest
 
 class TestPattern(BaseTest):
 
-    def test_apply_to_compound(self, betacristobalite, alkyl, ch3):
+    def test_apply_to_compound(self, betacristobalite, propyl, ch3):
         pattern = mb.Random2DPattern(90)
         chains, backfills = pattern.apply_to_compound(
-            guest=alkyl, host=betacristobalite, backfill=ch3)
+            guest=propyl, host=betacristobalite, backfill=ch3)
         assert len(chains) == 90
         assert len(backfills) == 10
 
         with pytest.raises(AssertionError):
             pattern = mb.Random2DPattern(101)
             chains, backfills = pattern.apply_to_compound(
-                guest=alkyl, host=betacristobalite, backfill=ch3)
+                guest=propyl, host=betacristobalite, backfill=ch3)
 
     def test_random_2d(self):
         pattern = mb.Random2DPattern(100)
@@ -115,3 +115,28 @@ class TestPattern(BaseTest):
         scale = [[3.14159], [2.71828], [0.110001]]
         with pytest.raises(ValueError):
             pattern.scale(scale)
+
+    def test_scaling(self):
+        for pattern_name in mb.pattern.__all__:
+            if pattern_name not in ['Pattern']:
+                pattern = getattr(mb.pattern, pattern_name)
+                test = pattern(n=5, m=6, l=7, scale=3.0, seed=1)
+                control = pattern(n=5, m=6, l=7, seed=1)
+                control.scale(3.0)
+                assert(np.allclose(test.points, control.points, atol=1e-16))
+
+    def test_scaling_error_string(self):
+        with pytest.raises(TypeError):
+            pattern = mb.Random3DPattern(10, scale='tim')
+
+    def test_scaling_error_dict(self):
+        with pytest.raises(TypeError):
+            pattern = mb.Random3DPattern(10, scale={'name': 'tim'})
+
+    def test_scaling_error_dict(self):
+        with pytest.raises(TypeError):
+            pattern = mb.Random3DPattern(10, scale={'name': 'tim'})
+
+    def test_scaling_error_dict(self):
+        with pytest.raises(TypeError):
+            pattern = mb.Random3DPattern(10, scale={'name': 'tim'})
