@@ -32,12 +32,11 @@ class TestPacking(BaseTest):
         assert solvated.n_particles == 8 + n_solvent * 3
         assert solvated.n_bonds == 7 + n_solvent * 2
 
-<<<<<<< HEAD
     def test_fill_box_seed(self, h2o):
         filled = mb.fill_box(h2o, n_compounds=50, box=[2, 2, 2])
         filled_same = mb.fill_box(h2o, n_compounds=50, box=[2, 2, 2])
         filled_diff = mb.fill_box(h2o, n_compounds=50, box=[2, 2, 2], seed=2)
-=======
+
     def test_solvate_multiple(self, methane, ethane, h2o):
         init_box = mb.fill_box(methane, 2, box=[4, 4, 4])
         solvated = mb.solvate(init_box, [ethane, h2o], [20, 20], box=[4, 4, 4])
@@ -48,7 +47,6 @@ class TestPacking(BaseTest):
         filled = mb.fill_box(ethane, n_compounds=20, box=[2, 2, 2])
         filled_same = mb.fill_box(ethane, n_compounds=20, box=[2, 2, 2])
         filled_diff = mb.fill_box(ethane, n_compounds=20, box=[2, 2, 2], seed=2)
->>>>>>> 51630af9cb7472e3b50e76be60c3ec268ce7424a
         assert np.array_equal(filled.xyz,filled_same.xyz)
         assert not np.array_equal(filled.xyz,filled_diff.xyz)
 
