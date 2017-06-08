@@ -1630,7 +1630,9 @@ class Compound(object):
             atoms_particles = zip(structure.atoms,
                                   self._particles(include_ports=False))
             for parmed_atom, particle in atoms_particles:
-                particle.pos = structure.coordinates[parmed_atom.idx]
+                particle.pos = np.array([parmed_atom.xx,
+                                         parmed_atom.xy,
+                                         parmed_atom.xz])
             return
 
         atom_mapping = dict()
@@ -1647,10 +1649,10 @@ class Compound(object):
                 chain_compound = self
             for residue in residues:
                 for atom in residue.atoms:
-                    new_atom = Particle(name=str(atom.name), pos=structure.coordinates[atom.idx])
+                    pos = np.array([atom.xx, atom.xy, atom.xz])
+                    new_atom = Particle(name=str(atom.name), pos=pos)
                     chain_compound.add(new_atom, label='{0}[$]'.format(atom.name))
                     atom_mapping[atom] = new_atom
-                    print('Added', atom, residue)
 
         for bond in structure.bonds:
             atom1 = atom_mapping[bond.atom1]
