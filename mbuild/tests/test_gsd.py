@@ -4,7 +4,7 @@ import mbuild as mb
 import numpy as np
 import pytest
 from mbuild.tests.base_test import BaseTest
-from mbuild.utils.io import has_foyer, has_gsd
+from mbuild.utils.io import has_gsd
 
 
 class TestGSD(BaseTest):
