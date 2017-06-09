@@ -1,5 +1,6 @@
 import os
 
+from foyer.exceptions import ValidationWarning
 import numpy as np
 import parmed as pmd
 import pytest
@@ -553,10 +554,14 @@ class TestCompound(BaseTest):
         with pytest.warns(UserWarning):
             benzene.save('charge-test.mol2')
 
+        with pytest.warns(ValidationWarning):
+            benzene.save('charge-test.mol2', forcefield_name='oplsaa',
+                         overwrite=True)
+
         with pytest.warns(None) as record_warnings:
             benzene.save('charge-test.mol2', forcefield_name='oplsaa', 
                          overwrite=True)
-        assert len(record_warnings) == 0
+        assert len(record_warnings) - 1 == 0
 
     @pytest.mark.skipif(not has_openbabel, reason="Open Babel package not installed")
     def test_energy_minimization(self, octane):
