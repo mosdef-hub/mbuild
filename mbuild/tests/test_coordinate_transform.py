@@ -368,11 +368,11 @@ class TestCoordinateTransform(BaseTest):
         spun_points = _spin(points, np.pi/2, [0, 0, 1])
         assert np.allclose(spun_points, new_points_should_be, atol=1e-15)
     def test_xyz_axis_transform(self):
-        rot_by_compound = mb.Compound(name = 'rot_by_compound')
+        rot_by_compound = mb.Compound(name='rot_by_compound')
         b = mb.Compound(name = 'b')
         c = mb.Compound(name = 'c')
         d = mb.Compound(name = 'd')
-        rot_by_array = mb.Compound(name = 'rot_by_array')
+        rot_by_array = mb.Compound(name='rot_by_array')
         b.pos = np.array([0,0,0])
         c.pos = np.array([.5,.5,.5])
         d.pos = np.array([1,0,1])

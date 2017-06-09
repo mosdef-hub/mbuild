@@ -652,11 +652,11 @@ def x_axis_transform(compound, new_origin=None,
     ----------
     compound : mb.Compound
         The compound to move.
-    new_origin : mb.Compound, list, or np.ndarray, optional, default=[0.0, 0.0, 0.0]
+    new_origin : mb.Compound or list-like, optional, default=[0.0, 0.0, 0.0]
         Where to place the new origin of the coordinate system.
-    point_on_x_axis : mb.Compound, list,  or np.ndarray, optional, default=[1.0, 0.0, 0.0]
+    point_on_x_axis : mb.Compound or list-like, optional, default=[1.0, 0.0, 0.0]
         A point on the new x-axis.
-    point_on_xy_plane : mb.Compound, list, or np.ndarray, optional, default=[1.0, 0.0, 0.0]
+    point_on_xy_plane : mb.Compound, or list-like, optional, default=[1.0, 0.0, 0.0]
         A point on the new xy-plane.
 
     """
@@ -666,7 +666,7 @@ def x_axis_transform(compound, new_origin=None,
         new_origin = np.array([0, 0, 0])
     elif isinstance(new_origin, mb.Compound):
         new_origin = new_origin.pos
-    elif isinstance(new_origin, (list,np.ndarray)):
+    elif isinstance(new_origin, (tuple, list,np.ndarray)):
         new_origin = np.asarray(new_origin)
     else:
         raise TypeError('x_axis_transform, y_axis_transform, and z_axis_transform only accept'
@@ -676,7 +676,7 @@ def x_axis_transform(compound, new_origin=None,
         point_on_x_axis = np.array([1.0, 0.0, 0.0])
     elif isinstance(point_on_x_axis, mb.Compound):
         point_on_x_axis = point_on_x_axis.pos
-    elif isinstance(point_on_x_axis, (list, np.ndarray)):
+    elif isinstance(point_on_x_axis, (list, tuple, np.ndarray)):
         point_on_x_axis = np.asarray(point_on_x_axis)
     else:
         raise TypeError('x_axis_transform, y_axis_transform, and z_axis_transform only accept'
@@ -686,7 +686,7 @@ def x_axis_transform(compound, new_origin=None,
         point_on_xy_plane = np.array([1.0, 1.0, 0.0])
     elif isinstance(point_on_xy_plane, mb.Compound):
         point_on_xy_plane = point_on_xy_plane.pos
-    elif isinstance(point_on_xy_plane, (list, np.ndarray)):
+    elif isinstance(point_on_xy_plane, (list, tuple, np.ndarray)):
         point_on_xy_plane = np.asarray(point_on_xy_plane)
     else:
         raise TypeError('x_axis_transform, y_axis_transform, and z_axis_transform only accept'
