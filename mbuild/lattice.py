@@ -1,8 +1,11 @@
 from collections import defaultdict
 from copy import deepcopy
 import itertools as it
-from six import string_types
+
 import numpy as np
+from six import string_types
+from six.moves import zip_longest
+
 import mbuild as mb
 
 __all__ = ['Lattice']
@@ -428,7 +431,7 @@ class Lattice(object):
         error_dict = {0:'X', 1:'Y', 2:'Z'}
 
         # padded for Compound compatibility
-        cell_edges = [edge[0] for edge in it.zip_longest(self.lattice_spacings, range(3), fillvalue=0.0)]
+        cell_edges = [edge[0] for edge in zip_longest(self.lattice_spacings, range(3), fillvalue=0.0)]
 
         for replication_amount in x, y, z:
             if replication_amount is None:

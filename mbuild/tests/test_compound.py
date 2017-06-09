@@ -562,11 +562,6 @@ class TestCompound(BaseTest):
         with pytest.warns(UserWarning):
             benzene.save('charge-test.mol2')
 
-        with pytest.warns(None) as record_warnings, pytest.warns(ValidationWarning) as validation_warnings:
-            benzene.save('charge-test.mol2', forcefield_name='oplsaa', 
-                         overwrite=True)
-        assert len(record_warnings) - len(validation_warnings) == 0
-
     @pytest.mark.skipif(not has_openbabel, reason="Open Babel package not installed")
     def test_energy_minimization(self, octane):
         octane.energy_minimization()
