@@ -18,6 +18,15 @@ class TestPattern(BaseTest):
             chains, backfills = pattern.apply_to_compound(
                 guest=propyl, host=betacristobalite, backfill=ch3)
 
+    def test_apply_to_compound_noscale(self, betacristobalite, propyl):
+        pattern = mb.Grid2DPattern(3,3)
+        chains, _ = pattern.apply_to_compound(guest=propyl, host=betacristobalite, 
+            scale=False)
+        chain_positions = [chain.pos for chain in chains]
+        for i, pos in enumerate(chain_positions):
+            for pos2 in chain_positions[i+1:]:
+                assert betacristobalite.min_periodic_distance(pos, pos2) < 1.5
+
     def test_random_2d(self):
         pattern = mb.Random2DPattern(100)
         assert len(pattern) == 100
