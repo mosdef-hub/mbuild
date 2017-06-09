@@ -1255,7 +1255,7 @@ class Compound(object):
 
     def save(self, filename, show_ports=False, forcefield_name=None,
              forcefield_files=None, box=None, overwrite=False, residues=None,
-             **kwargs):
+             references_file=None, **kwargs):
         """Save the Compound to a file.
 
         Parameters
@@ -1279,6 +1279,12 @@ class Compound(object):
             overlapping atoms.
         overwrite : bool, optional, default=False
             Overwrite if the filename already exists
+        residues : str of list of str
+            Labels of residues in the Compound. Residues are assigned by
+            checking against Compound.name.
+        references_file : str, optional, default=None
+            Specify a filename to write references for the forcefield that is
+            to be applied. References are written in BiBTeX format.
 
         Other Parameters
         ----------------
@@ -1325,7 +1331,7 @@ class Compound(object):
             from foyer import Forcefield
             ff = Forcefield(forcefield_files=forcefield_files,
                             name=forcefield_name)
-            structure = ff.apply(structure)
+            structure = ff.apply(structure, references_file=references_file)
 
         total_charge = sum([atom.charge for atom in structure])
         if round(total_charge, 4) != 0.0:
@@ -1459,8 +1465,9 @@ class Compound(object):
             Include all port atoms when converting to trajectory.
         chains : mb.Compound or list of mb.Compound
             Chain types to add to the topology
-        residues : mb.Compound or list of mb.Compound
-            Residue types to add to the topology
+        residues : str of list of str
+            Labels of residues in the Compound. Residues are assigned by
+            checking against Compound.name.
 
         Returns
         -------
@@ -1501,8 +1508,9 @@ class Compound(object):
             Atoms to include in the topology
         chains : mb.Compound or list of mb.Compound
             Chain types to add to the topology
-        residues : mb.Compound or list of mb.Compound
-            Residue types to add to the topology
+        residues : str of list of str
+            Labels of residues in the Compound. Residues are assigned by
+            checking against Compound.name.
 
         Returns
         -------
@@ -1671,6 +1679,9 @@ class Compound(object):
         ----------
         title : str, optional, default=self.name
             Title/name of the ParmEd Structure
+        residues : str of list of str
+            Labels of residues in the Compound. Residues are assigned by
+            checking against Compound.name.
 
         Returns
         -------
