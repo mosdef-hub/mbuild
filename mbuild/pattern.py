@@ -73,16 +73,26 @@ class Pattern(object):
         return compounds
 
     def apply_to_compound(self, guest, guest_port_name='down', host=None,
-                          backfill=None, backfill_port_name='up'):
+                          backfill=None, backfill_port_name='up', scale=True):
         """Attach copies of a guest Compound to Ports on a host Compound.
 
         Parameters
         ----------
-        guest
-        guest_port_name
-        host
-        backfill
-        backfill_port_name
+        guest : mb.Compound
+            The Compound prototype to be applied to the host Compound
+        guest_port_name : str, optional, default='down'
+            The name of the port located on `guest` to attach to the host
+        host : mb.Compound, optional, default=None
+            A Compound with available ports to add copies of `guest` to
+        backfill : mb.Compound, optional, default=None
+            A Compound to add to the remaining available ports on `host`
+            after clones of `guest` have been added for each point in the
+            pattern
+        backfill_port_name : str, optional, default='up'
+            The name of the port located on `backfill` to attach to the host
+        scale : bool, optional, default=True
+            Scale the points in the pattern to the lengths of the `host`'s
+            `boundingbox` and shift them by the `boundingbox`'s mins
 
         Returns
         -------
@@ -92,7 +102,10 @@ class Pattern(object):
         assert n_ports >= self.points.shape[0], "Not enough ports for pattern."
         assert_port_exists(guest_port_name, guest)
         box = host.boundingbox
-        pattern = self.points * box.lengths + box.mins
+        if scale:
+            self.scale(box.lengths)
+            self.points += box.mins
+        pattern = self.points
         port_positions = np.empty(shape=(n_ports, 3))
         port_list = list()
         for port_idx, port in enumerate(host.available_ports()):

@@ -118,13 +118,6 @@ except ImportError:
     has_intermol = False
 
 try:
-    import foyer
-    has_foyer = True
-    del foyer
-except ImportError:
-    has_foyer = False
-
-try:
     import gsd
     has_gsd = True
     del gsd
