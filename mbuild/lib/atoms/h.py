@@ -16,4 +16,4 @@ class H(mb.Compound):
 
 if __name__ == '__main__':
     m = H()
-    m.visualize(show_ports=True)
+    m.save('h.mol2', overwrite=True)

@@ -25,4 +25,4 @@ class C3(mb.Compound):
 
 if __name__ == '__main__':
     m = C3()
-    m.visualize(show_ports=True)
+    m.save('c3.mol2',overwrite=True)

@@ -27,4 +27,4 @@ class N4(mb.Compound):
 
 if __name__ == '__main__':
     m = N4()
-    m.visualize(show_ports=True)
+    m.save('n4.mol2', overwrite=True)
