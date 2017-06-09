@@ -652,26 +652,46 @@ def x_axis_transform(compound, new_origin=None,
     ----------
     compound : mb.Compound
         The compound to move.
-    new_origin : mb.Compound or np.ndarray, optional, default=[0.0, 0.0, 0.0]
+    new_origin : mb.Compound or list-like, optional, default=[0.0, 0.0, 0.0]
         Where to place the new origin of the coordinate system.
-    point_on_x_axis : mb.Compound or np.ndarray, optional, default=[1.0, 0.0, 0.0]
+    point_on_x_axis : mb.Compound or list-like, optional, default=[1.0, 0.0, 0.0]
         A point on the new x-axis.
-    point_on_xy_plane : mb.Compound or np.ndarray, optional, default=[1.0, 0.0, 0.0]
+    point_on_xy_plane : mb.Compound, or list-like, optional, default=[1.0, 0.0, 0.0]
         A point on the new xy-plane.
 
     """
+    import mbuild as mb
+
     if new_origin is None:
         new_origin = np.array([0, 0, 0])
-    else:
+    elif isinstance(new_origin, mb.Compound):
         new_origin = new_origin.pos
+    elif isinstance(new_origin, (tuple, list,np.ndarray)):
+        new_origin = np.asarray(new_origin)
+    else:
+        raise TypeError('x_axis_transform, y_axis_transform, and z_axis_transform only accept'
+                        ' np.ndarrays, mb.Compounds, lists, or None of size 3 for the new_origin'
+                        ' parameter. User passed type: {}.'.format(type(new_origin)))
     if point_on_x_axis is None:
         point_on_x_axis = np.array([1.0, 0.0, 0.0])
-    else:
+    elif isinstance(point_on_x_axis, mb.Compound):
         point_on_x_axis = point_on_x_axis.pos
+    elif isinstance(point_on_x_axis, (list, tuple, np.ndarray)):
+        point_on_x_axis = np.asarray(point_on_x_axis)
+    else:
+        raise TypeError('x_axis_transform, y_axis_transform, and z_axis_transform only accept'
+                         ' np.ndarrays, mb.Compounds, lists, or None of size 3 for the'
+                         ' point_on_x_axis parameter. User passed type: {}.'.format(type(point_on_x_axis)))    
     if point_on_xy_plane is None:
         point_on_xy_plane = np.array([1.0, 1.0, 0.0])
-    else:
+    elif isinstance(point_on_xy_plane, mb.Compound):
         point_on_xy_plane = point_on_xy_plane.pos
+    elif isinstance(point_on_xy_plane, (list, tuple, np.ndarray)):
+        point_on_xy_plane = np.asarray(point_on_xy_plane)
+    else:
+        raise TypeError('x_axis_transform, y_axis_transform, and z_axis_transform only accept'
+                          ' np.ndarrays, mb.Compounds, lists, or None of size 3 for the'
+                          ' point_on_xy_plane parameter. User passed type: {}.'.format(type(point_on_xy_plane)))
 
     atom_positions = compound.xyz_with_ports
     transform = AxisTransform(new_origin=new_origin,
