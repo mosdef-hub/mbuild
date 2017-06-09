@@ -41,4 +41,4 @@ class Betacristobalite(mb.Compound):
 if __name__ == "__main__":
     single = Betacristobalite()
     multiple = mb.TiledCompound(single, n_tiles=(2, 1, 1), name="tiled")
-    multiple.visualize(show_ports=True)
+    multiple.save('betacristobalite.mol2')
