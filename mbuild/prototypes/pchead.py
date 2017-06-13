@@ -38,6 +38,8 @@ class PCHead(mb.Compound):
                 to_positions=self['alkyl_body']['up'])
         
         self.add(AlkylMonomer(), label='alkyl_split')
+        self['alkyl_split']['down'].spin(np.pi/2,
+                self['alkyl_split']['down'].pos)
         mb.force_overlap(move_this=self['alkyl_split'], 
                          from_positions=self['alkyl_split']['down'],
                          to_positions=self['PO4']['up'])
