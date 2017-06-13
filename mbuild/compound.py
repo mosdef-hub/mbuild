@@ -79,7 +79,7 @@ def load(filename, relative_to_module=None, compound=None, coords_only=False,
         structure = pmd.load_file(filename, structure=True, **kwargs)
         compound.from_parmed(structure, coords_only=coords_only)
     else:
-        traj = mdtraj.load(filename, **kwargs)
+        traj = md.load(filename, **kwargs)
         compound.from_trajectory(traj, frame=-1, coords_only=coords_only)
 
     if rigid:
@@ -1495,7 +1495,7 @@ class Compound(object):
             else:
                 unitcell_lengths[dim] = box.lengths[dim]
 
-        return mdtraj.Trajectory(xyz, top, unitcell_lengths=unitcell_lengths,
+        return md.Trajectory(xyz, top, unitcell_lengths=unitcell_lengths,
                              unitcell_angles=np.array([90, 90, 90]))
 
     def _to_topology(self, atom_list, chains=None, residues=None):
