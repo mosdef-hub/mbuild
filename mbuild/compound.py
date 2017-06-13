@@ -76,6 +76,8 @@ def load(filename, relative_to_module=None, compound=None, coords_only=False,
         compound = Compound()
 
     if use_parmed:
+        warn("use_parmed set to True.  Bonds may be inferred from inter-particle "
+             "distances and standard residue templates!")
         structure = pmd.load_file(filename, structure=True, **kwargs)
         compound.from_parmed(structure, coords_only=coords_only)
     else:
