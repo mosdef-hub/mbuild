@@ -618,3 +618,6 @@ class TestCompound(BaseTest):
         with pytest.raises(KeyError):
             mb.load(get_fn('benzene-nonelement.mol2'))
         mb.load(get_fn('benzene-nonelement.mol2'), use_parmed=True)
+
+    def test_siliane_bond_number(self, silane):
+        assert silane.n_bonds == 4
