@@ -1,6 +1,5 @@
 import os
 
-from foyer.exceptions import ValidationWarning
 import numpy as np
 import parmed as pmd
 import pytest
