@@ -125,12 +125,6 @@ except ImportError:
     has_gsd = False
 
 try:
-    import mdtraj
-    has_mdtraj = True
-except ImportError:
-    has_mdtraj = False
-
-try:
     import openbabel
     has_openbabel = True
 except ImportError:

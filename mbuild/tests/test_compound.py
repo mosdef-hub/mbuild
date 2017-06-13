@@ -1,6 +1,5 @@
 import os
 
-from foyer.exceptions import ValidationWarning
 import numpy as np
 import parmed as pmd
 import pytest
@@ -30,15 +29,12 @@ class TestCompound(BaseTest):
         box_attributes = ['mins', 'maxs', 'lengths']
         custom_box = mb.Box([.8, .8, .8])
         for ext in extensions:
-            use_mdtraj = False
-            if ext == '.hoomdxml':
-                use_mdtraj = True
             outfile_padded = 'padded_methyl' + ext
             outfile_custom = 'custom_methyl' + ext
             ch3.save(filename=outfile_padded, box=None, overwrite=True)
             ch3.save(filename=outfile_custom, box=custom_box, overwrite=True)
-            padded_ch3 = mb.load(outfile_padded, use_mdtraj=use_mdtraj)
-            custom_ch3 = mb.load(outfile_custom, use_mdtraj=use_mdtraj)
+            padded_ch3 = mb.load(outfile_padded)
+            custom_ch3 = mb.load(outfile_custom)
             for attr in box_attributes:
                 pad_attr = getattr(padded_ch3.boundingbox, attr)
                 custom_attr = getattr(custom_ch3.boundingbox, attr)
@@ -619,5 +615,8 @@ class TestCompound(BaseTest):
 
     def test_load_mol2_mdtraj(self):
         with pytest.raises(KeyError):
-            mb.load(get_fn('benzene-nonelement.mol2'), use_mdtraj=True)
-        mb.load(get_fn('benzene-nonelement.mol2'))
+            mb.load(get_fn('benzene-nonelement.mol2'))
+        mb.load(get_fn('benzene-nonelement.mol2'), use_parmed=True)
+
+    def test_siliane_bond_number(self, silane):
+        assert silane.n_bonds == 4
