@@ -19,10 +19,11 @@ class ISIS(mb.Compound):
         self['acid'].translate(-self['acid']['head']['O'][1].pos)
         self['acid']['head']['down'].rotate(125*np.pi/180, [0,0,1])
         self.add(ALC(17), label='alcohol')
+        self['alcohol'].translate(-self['alcohol']['tail'][0].pos)
         self['alcohol'].add(mb.Port(anchor=self['alcohol']['tail'][0], 
             orientation=self['alcohol']['head'][0].pos,
             separation=.15/2), label='up')
-        self['alcohol']['up'].spin(-np.pi/2, self['alcohol']['up'].pos)
+        self['alcohol']['up'].spin(-3*np.pi/4, self['alcohol']['up'].pos)
         self['alcohol'].remove(self['alcohol']['head'])
         mb.force_overlap(move_this=self['alcohol'], 
                 from_positions=self['alcohol']['up'],
