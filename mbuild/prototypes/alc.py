@@ -26,4 +26,4 @@ class ALC(mb.Compound):
 if __name__ == '__main__':
     alcohol = ALC(16)
     alcohol.energy_minimization()
-    alcohol.save('OH16.mol2', overwrite=True)
+    alcohol.save('alc.mol2', overwrite=True)

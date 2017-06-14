@@ -34,6 +34,7 @@ class FFA(mb.Compound):
         mb.force_overlap(move_this=self['head'],
                 from_positions=self['head']['up'],
                 to_positions=self['tail']['down'])
+        self.spin(np.pi/2, [0,1,0])
 
 if __name__ == '__main__':
     ffa = FFA(24)

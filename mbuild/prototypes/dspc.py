@@ -14,7 +14,7 @@ class DSPC(mb.Compound):
         mb.force_overlap(move_this=self['ffatails'],
                         from_positions=self['ffatails']['base']['up'],
                         to_positions=self['headgroup']['alkyl_split']['up'])
-    
+
 if __name__ == '__main__':
     dspc = DSPC()
     dspc.save('dspc.mol2', overwrite=True)
