@@ -1,0 +1,18 @@
+@<TRIPOS>MOLECULE
+RES
+4 3 1 0 1
+SMALL
+NO_CHARGES
+@<TRIPOS>CRYSIN
+    7.2327     6.4438     5.9472    90.0000    90.0000    90.0000  1  1
+@<TRIPOS>ATOM
+       1 C           -0.0781     0.0830     0.0288 C             1 RES     
+       2 O            1.3002    -0.1272     0.0006 O             1 RES     
+       3 O           -0.7389    -1.1442    -0.0165 O             1 RES     
+       4 H           -0.9325    -1.3608     0.9307 H             1 RES     
+@<TRIPOS>BOND
+       1        3        1 1
+       2        3        4 1
+       3        2        1 1
+@<TRIPOS>SUBSTRUCTURE
+       1 RES             1 RESIDUE    0 **** ROOT      0
