@@ -13,4 +13,4 @@ class AmorphousSilica(mb.Compound):
 
 if __name__ == "__main__":
     bulk = AmorphousSilica()
-    bulk.visualize()
+    bulk.save('bulk.mol2')

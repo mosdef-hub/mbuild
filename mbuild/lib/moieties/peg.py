@@ -14,3 +14,7 @@ class PegMonomer(mb.Compound):
 
         self.add(mb.Port(anchor=self[6]), 'up')
         self['up'].translate([0, 0.073, 0])
+
+if __name__ == '__main__':
+    peg = PegMonomer()
+    peg.save('peg.mol2')

@@ -21,5 +21,4 @@ class Ester(mb.Compound):
 
 if __name__ == '__main__':
     m = Ester()
-    m.visualize(show_ports=True)
-
+    m.save('ester.mol2', overwrite=True)

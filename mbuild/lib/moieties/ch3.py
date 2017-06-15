@@ -14,5 +14,4 @@ class CH3(mb.Compound):
 
 if __name__ == '__main__':
     m = CH3()
-    m.visualize(show_ports=True)
-
+    m.save('ch3.mol2', overwrite=True)

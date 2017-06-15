@@ -21,7 +21,6 @@ from six import integer_types, string_types
 
 from mbuild.bond_graph import BondGraph
 from mbuild.box import Box
-from mbuild.coordinate_transform import translate
 from mbuild.exceptions import MBuildError
 from mbuild.formats.hoomdxml import write_hoomdxml
 from mbuild.formats.lammpsdata import write_lammpsdata
@@ -77,8 +76,10 @@ def load(filename, relative_to_module=None, compound=None, coords_only=False,
         compound = Compound()
 
     if use_parmed:
-        structure = pmd.load_file(filename, structure=True)
-        compound.from_parmed(structure)
+        warn("use_parmed set to True.  Bonds may be inferred from inter-particle "
+             "distances and standard residue templates!")
+        structure = pmd.load_file(filename, structure=True, **kwargs)
+        compound.from_parmed(structure, coords_only=coords_only)
     else:
         traj = md.load(filename, **kwargs)
         compound.from_trajectory(traj, frame=-1, coords_only=coords_only)
@@ -1255,7 +1256,7 @@ class Compound(object):
 
     def save(self, filename, show_ports=False, forcefield_name=None,
              forcefield_files=None, box=None, overwrite=False, residues=None,
-             **kwargs):
+             references_file=None, **kwargs):
         """Save the Compound to a file.
 
         Parameters
@@ -1279,6 +1280,12 @@ class Compound(object):
             overlapping atoms.
         overwrite : bool, optional, default=False
             Overwrite if the filename already exists
+        residues : str of list of str
+            Labels of residues in the Compound. Residues are assigned by
+            checking against Compound.name.
+        references_file : str, optional, default=None
+            Specify a filename to write references for the forcefield that is
+            to be applied. References are written in BiBTeX format.
 
         Other Parameters
         ----------------
@@ -1325,7 +1332,7 @@ class Compound(object):
             from foyer import Forcefield
             ff = Forcefield(forcefield_files=forcefield_files,
                             name=forcefield_name)
-            structure = ff.apply(structure)
+            structure = ff.apply(structure, references_file=references_file)
 
         total_charge = sum([atom.charge for atom in structure])
         if round(total_charge, 4) != 0.0:
@@ -1459,8 +1466,9 @@ class Compound(object):
             Include all port atoms when converting to trajectory.
         chains : mb.Compound or list of mb.Compound
             Chain types to add to the topology
-        residues : mb.Compound or list of mb.Compound
-            Residue types to add to the topology
+        residues : str of list of str
+            Labels of residues in the Compound. Residues are assigned by
+            checking against Compound.name.
 
         Returns
         -------
@@ -1501,8 +1509,9 @@ class Compound(object):
             Atoms to include in the topology
         chains : mb.Compound or list of mb.Compound
             Chain types to add to the topology
-        residues : mb.Compound or list of mb.Compound
-            Residue types to add to the topology
+        residues : str of list of str
+            Labels of residues in the Compound. Residues are assigned by
+            checking against Compound.name.
 
         Returns
         -------
@@ -1632,7 +1641,7 @@ class Compound(object):
             for parmed_atom, particle in atoms_particles:
                 particle.pos = np.array([parmed_atom.xx,
                                          parmed_atom.xy,
-                                         parmed_atom.xz])
+                                         parmed_atom.xz]) / 10
             return
 
         atom_mapping = dict()
@@ -1649,7 +1658,7 @@ class Compound(object):
                 chain_compound = self
             for residue in residues:
                 for atom in residue.atoms:
-                    pos = np.array([atom.xx, atom.xy, atom.xz])
+                    pos = np.array([atom.xx, atom.xy, atom.xz]) / 10
                     new_atom = Particle(name=str(atom.name), pos=pos)
                     chain_compound.add(new_atom, label='{0}[$]'.format(atom.name))
                     atom_mapping[atom] = new_atom
@@ -1671,6 +1680,9 @@ class Compound(object):
         ----------
         title : str, optional, default=self.name
             Title/name of the ParmEd Structure
+        residues : str of list of str
+            Labels of residues in the Compound. Residues are assigned by
+            checking against Compound.name.
 
         Returns
         -------

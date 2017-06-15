@@ -72,4 +72,4 @@ if __name__ == "__main__":
     from mbuild.lib.moieties import CH2
     ch2 = CH2()
     poly = Polymer(ch2, n=13, port_labels=("up", "down"))
-    poly.visualize(show_ports=True)
+    poly.save('polymer.mol2')
