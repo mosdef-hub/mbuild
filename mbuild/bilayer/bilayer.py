@@ -5,11 +5,9 @@ import numpy as np
 import mbuild as mb
 from mbuild import clone
 from mbuild.lib.moieties import H2O
-from mbuild.prototypes import DSPC
-from mbuild.prototypes import ALC
-from mbuild.prototypes import FFA
-from mbuild.prototypes import ISIS
-from mbuild.prototypes import HDHD
+from mbuild.prototypes import DSPC, ALC, FFA, ISIS, HDHD
+from mbuild.UA_molecules import DSPCUA, DMPCUA, DPPCUA, FFAUA, ISISUA, HDHDUA, ALCUA
+from mbuild.lib.cg_molecules import ECer2, UCer2, Chol, FFAC16, FFAC20, FFAC24, Water
 
 class Bilayer(mb.Compound):
     """The Bilayer Builder creates a lipid bilayer, solvates it, and stores it as an mBuild Compound. 
@@ -26,13 +24,12 @@ class Bilayer(mb.Compound):
     Parameters
     ----------
     lipids : list
-        List of tuples in format (lipid, frac, z-offset),
-        where frac is the fraction of that lipid in the bilayer 
-        (lipid is a Compound), and z-offset is the distance in nanometers
+        List of tuples in format (lipid, frac, z-offset) where frac is the fraction of
+        that lipid in the bilayer (lipid is a Compound), amd z-offset is the distance in nanometers
         from the headgroup to the lipid-water interface
     ref_atoms : int
-        Indices of the atom in lipids to form the solvent interface. 
-        By definition, this atom denotes the headgroup of the lipid.
+        Indices of the atom in lipids to form the solvent interface. By definition, this atom denotes
+        the headgroup of the lipid.
     n_lipids_x : int
         Number of lipids in the x-direction per layer.
     n_lipids_y : int
@@ -42,10 +39,12 @@ class Bilayer(mb.Compound):
     tilt_angle : float, optional, default=0.0
         Tilt angle of each lipid with respect to the y-axis, in degrees.
     max_tail_randomization : float, optional, default=0.0
-        For a set tilt angle, the maximum amount each lipid may be 
-        randomly spun around the z-axis.
+        For a set tilt angle, the maximum amount each lipid may be randomly spun around the z-axis.
     solvent : Compound, optional, default=H2O()
-        Compound to solvate the bilayer with. 
+        Compound to solvate the bilayer with. Typically, a pre-equilibrated box
+        of solvent.
+    lipid_box : Box, optional
+        A Box containing the lipids where no solvent will be added.
     spacing_z : float, optional, default=0.2
         Amount of space to add between opposing monolayers, in nanometers.
     solvent_per_lipid : int, optional, default=
@@ -56,6 +55,8 @@ class Bilayer(mb.Compound):
         Make top and bottom layers mirrors of each other. 
     cross_tilt : bool, optional, default=False
         Gives the bilayer a cross-tilting property
+    unit_conversion : int, optional, default=1
+        Adjust for unit conversions if necessary
         
     Attributes
     ----------
@@ -64,25 +65,27 @@ class Bilayer(mb.Compound):
     n_lipids_y : int
         Number of lipids in the y-direction per layer.
     lipids : list
-        List of tuples in format (lipid, frac, z-offset) 
-        where frac is the fraction of that lipid in the bilayer 
-        (lipid is a Compound), and z-offset is the distance in nanometers
+        List of tuples in format (lipid, frac, z-offset) where frac is the fraction of
+        that lipid in the bilayer (lipid is a Compound), amd z-offset is the distance in nanometers
         from the headgroup to the lipid-water interface
     ref_atoms : int
         Indices of the atom in lipids to form the solvent interface
     lipid_box : Box, optional
         A Box containing the lipids where no solvent will be added.
     solvent : Compound
-        Compound to solvate the bilayer with. 
-    solvent_per_lipid : int, optional, default=0
+        Compound to solvate the bilayer with. Typically, a pre-equilibrated box
+        of solvent.
+    solvent_per_lipid : int, optional, default=
         Number of solvent molecules per lipid
+    unit_conversion : int, optional, default=1
+        Adjust for unit conversions if necessary
     """
     
     def __init__(self, lipids, ref_atoms, n_lipids_x=5, n_lipids_y=5, 
-                 area_per_lipid=0.3, tilt_angle = 0.0,
-                 max_tail_randomization = 0, solvent=H2O(), 
-                 spacing_z=0.4, solvent_per_lipid=0, mirror=True, 
-                 cross_tilt=False):
+                 area_per_lipid=0.3, tilt_angle = 0.0, 
+                 max_tail_randomization = 0, solvent=H2O(), lipid_box=None,
+                 spacing_z=0.4, solvent_per_lipid=None, mirror=True, 
+                 cross_tilt=False, unit_conversion=1):
         super(Bilayer, self).__init__()
 
         self._sanitize_inputs(lipids, ref_atoms)
@@ -92,6 +95,7 @@ class Bilayer(mb.Compound):
         self.lipids = lipids
         self.ref_atoms = ref_atoms
         self._lipid_box = lipid_box
+        self.unit_conversion = unit_conversion
 
         # Set the 2D lipid locations on a grid pattern
         self._set_grid_pattern(area_per_lipid)
@@ -104,12 +108,11 @@ class Bilayer(mb.Compound):
         self.solvent = solvent
         self.solvent_per_lipid = solvent_per_lipid
         
-
         # Private attributes for getter methods 
         self._number_of_each_lipid_per_layer = []
         self._solvent_per_layer = None
         
-        # Create lipid leaflets, add them to the bilayer Compound structure.
+        # Create lipid leaflets and add them to the bilayer Compound structure.
         lipid_bilayer = mb.Compound()
         solvent_components = mb.Compound()
         top_leaflet, top_lipid_labels = self.create_layer()
@@ -129,8 +132,8 @@ class Bilayer(mb.Compound):
 
         # add everything to the overall Compound structure
         self.add(lipid_bilayer, label = 'lipid_bilayer')
-        self.add(solvent_components, label='solvent') 
-
+        self.add(solvent_components, label='solvent')
+        
     def create_layer(self, lipid_indices=None, flip_orientation=False):
         """Create a monolayer of lipids.
 
@@ -139,7 +142,7 @@ class Bilayer(mb.Compound):
         lipid_indices : list, optional, default=None
             A list of indices associated with each lipid in the layer.
         flip_orientation : bool, optional, default=False
-            Flip the orientation of the layer wrt the z-dimension.
+            Flip the orientation of the layer with respect to the z-dimension.
 
         """
         layer = mb.Compound()
@@ -161,10 +164,9 @@ class Bilayer(mb.Compound):
                 ref_atom = self.ref_atoms[n_type]
                 new_lipid.spin(-self.tilt, [0, 1, 0])
                 new_lipid.spin(theta = uniform(-self.z_orientation, 
-                    self.z_orientation) * np.pi/180, 
-                               around = [0, 0, 1])
-                new_lipid.translate(-particles[ref_atom].pos  
-                                    + [0, 0, self.lipids[n_type][2]])
+                    self.z_orientation) * np.pi/180, around = [0, 0, 1])
+                new_lipid.translate(-particles[ref_atom].pos  + 
+                        [0, 0, self.lipids[n_type][2]])
                 
                 # Move to point on pattern and add the lipid to the leaflet Compound
                 if flip_orientation == True:
@@ -174,6 +176,17 @@ class Bilayer(mb.Compound):
                 
             n_previous_types += n_of_lipid_type
         return layer, lipid_indices
+    
+    def _translate_bottom_leaflet(self, lipid_bilayer, spacing_z, 
+            cross_tilt):
+        mins = np.amin(lipid_bilayer['top_leaflet'].xyz, axis=0)
+        z_min = mins[2]
+        spacing_z *= self.unit_conversion
+        lipid_bilayer['bottom_leaflet'].translate([0 , 0, 
+            (z_min - spacing_z)])
+        lipid_bilayer['bottom_leaflet'].spin(np.pi, [1, 0, 0])
+        if not cross_tilt:
+            lipid_bilayer['bottom_leaflet'].spin(np.pi, [0, 0, 1])
 
     def solvate_bilayer(self, lipid_bilayer, solvent_components):
         """Solvate the constructed bilayer. 
@@ -183,15 +196,16 @@ class Bilayer(mb.Compound):
         lipid_bilayer : mb.Compound
             An mBuild compound containing both leaflets of the bilayer
         solvent_components : mb.Compound
-            A (temporarily) empty Compound that will serve as the container for
-            the solvated boxes
+            A (temporarily) empty Compound that will serve as the container
+            for the solvated boxes
         
         Returns
         -------
         solvent_components : mb.Compound
             The container for the solvated boxes created in this function
         """
-        water_volume = .0299 #TODO: Support other solvents' volumes in a user-friendly way
+        water_volume = .0299 * np.power(self.unit_conversion, 3) 
+        #TODO: Support other solvents' volumes in a user-friendly way
         
         #Calculate box dimension
         box_volume = water_volume * self.solvent_per_layer
@@ -213,17 +227,17 @@ class Bilayer(mb.Compound):
         top_solvent_box = mb.Box(mins=[x_min_box, y_min_box, z_min_top],
                                      maxs=[x_max_box, y_max_box, z_max_top])
         
-        bottom_solvent_box= mb.Box(
-                mins=[x_min_box, y_min_box, z_min_bottom], 
-                maxs=[x_max_box, y_max_box, z_max_bottom])
+        bottom_solvent_box = mb.Box(mins=[x_min_box, y_min_box, 
+            z_min_bottom], 
+            maxs=[x_max_box, y_max_box, z_max_bottom])
 
-        solvent_components.add(mb.fill_region(
-            compound = [self.solvent, self.solvent],
+        solvent_components.add(mb.fill_region(compound = [self.solvent, 
+            self.solvent],
             n_compounds = [self.solvent_per_layer, self.solvent_per_layer],
             region=[top_solvent_box, bottom_solvent_box]))
         
         return solvent_components
-
+            
     @property
     def solvent_per_layer(self):
         """Determine the number of solvent molecules per single layer.  """
@@ -240,7 +254,8 @@ class Bilayer(mb.Compound):
 
         # TODO: give warning if frac * n different than actual
         # Rounding errors may make this off by 1, so just do total - whats_been_added.
-        self._number_of_each_lipid_per_layer.append(self.lipids_per_leaflet - sum(self._number_of_each_lipid_per_layer))
+        self._number_of_each_lipid_per_layer.append(self.lipids_per_leaflet 
+                - sum(self._number_of_each_lipid_per_layer))
         assert len(self._number_of_each_lipid_per_layer) == len(self.lipids)
         return self._number_of_each_lipid_per_layer
 
@@ -263,38 +278,31 @@ class Bilayer(mb.Compound):
     def _sanitize_inputs(self, lipids, ref_atoms):
         """Check for proper inputs
     
-        Ensure that the user's lipid fractions add up to 1, or raise a ValueError.
+        Ensure that the user's lipid fractions add up to 1, 
+        or raise a ValueError.
     
-        Ensure that the user has input the same number of reference atoms as lipid components, 
-        or raise an AssertionError."""
+        Ensure that the user has input the same number of reference
+        atoms and lipid components, or raise an AssertionError."""
     
         if sum([lipid[1] for lipid in lipids]) != 1.0:
             raise ValueError('Lipid fractions do not add up to 1.')
         assert len(ref_atoms) == len(lipids), "Please provide one reference atom for each lipid"
         
     def _set_grid_pattern(self, area_per_lipid):
-        """Utilize an mBuild 2DGridPattern to create the scaffold of points
-        that the lipids will be laid onto"""
+        """Utilize an mBuild 2DGridPattern to create the scaffold of points that the lipids will be laid onto"""
         
         self.lipids_per_leaflet = self.n_lipids_x * self.n_lipids_y
         pattern = mb.Grid2DPattern(self.n_lipids_x, self.n_lipids_y)
-        pattern.scale(np.sqrt(area_per_lipid * self.lipids_per_leaflet))
+        pattern.scale(np.sqrt(area_per_lipid * self.lipids_per_leaflet) *
+                self.unit_conversion)
         
         self.pattern = pattern
     
-    def _translate_bottom_leaflet(self, lipid_bilayer, spacing_z, cross_tilt):
-        mins = np.amin(lipid_bilayer['top_leaflet'].xyz, axis=0)
-        z_min = mins[2]
-        lipid_bilayer['bottom_leaflet'].translate([0 , 0, 
-            (z_min - spacing_z)])
-        lipid_bilayer['bottom_leaflet'].spin(np.pi, [1, 0, 0])
-        if not cross_tilt:
-            lipid_bilayer['bottom_leaflet'].spin(np.pi, [0, 0, 1])
-            
+    
 if __name__ == '__main__':
-    lipids = [(DSPC(), 0.5, 0), (FFA(16, hcap = True), 0.25, -.25), 
-            (ISIS(), 0.25, -.2)]
+    lipids = [(DMPCUA(), 0.5, 0), (FFAUA(16, hcap = True), 0.25, -.25), 
+            (ISISUA(), 0.25, -.2)]
     bilayer = Bilayer(lipids, n_lipids_x = 8, n_lipids_y = 8, 
-            ref_atoms=[0,2,1], tilt_angle = 20, max_tail_randomization = 15
-            solvent_per_lipid=20)
+            ref_atoms=[0,2,1], tilt_angle = 20, max_tail_randomization =15,
+            solvent_per_lipid=20) 
     bilayer.save('bilayer_test.mol2', overwrite=True)
