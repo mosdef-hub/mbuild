@@ -14,7 +14,7 @@ __all__ = ['fill_box', 'fill_region', 'solvate']
 
 PACKMOL = find_executable('packmol')
 PACKMOL_HEADER = """
-tolerance {0:.1f}
+tolerance {0:.16f}
 filetype pdb
 output {1}
 seed {2}
@@ -122,7 +122,7 @@ def fill_region(compound, n_compounds, region, overlap=0.2, seed=12345):
         compound = [compound]
     if not isinstance(n_compounds, (list, set)):
         n_compounds = [n_compounds]
-    if not any(isinstance(reg, list) for reg in region): # See if region is a single region or list
+    if not any(isinstance(reg, (list, set, Box)) for reg in region): # See if region is a single region or list
         region = [region]
     region = [_validate_box(reg) for reg in region]
 

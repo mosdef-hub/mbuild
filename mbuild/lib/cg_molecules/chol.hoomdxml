@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<hoomd_xml version="1.5">
+<configuration time_step="4010000" dimensions="3" natoms="9" >
+<box lx="2.791181182861" ly="2.791181182861" lz="1.207699584961" xy="0" xz="0" yz="0"/>
+<position num="9">
+-0.822631 0.376346 -0.538270
+-0.852221 0.435311 -0.562882
+-0.839445 0.379207 -0.578679
+-0.866066 0.430172 -0.620720
+-0.866279 0.483807 -0.619444
+-0.865904 0.488939 -0.682675
+-0.870089 0.536734 -0.737617
+-0.872738 0.395064 -0.567220
+-0.903967 0.456435 -0.616959
+</position>
+<mass num="9">
+0.611858010292
+0.72327798605
+0.556457996368
+0.737277984619
+0.751277983189
+0.779277980328
+0.793277978897
+0.208819001913
+0.208819001913
+</mass>
+<type num="9">
+_chead
+_ring1
+_ring2
+_ring3
+_ring4
+_ctail
+_cterm
+_chme
+_chme
+</type>
+<bond num="11">
+chead-ring1 0 1
+chead-ring2 0 2
+ring1-ring2 1 2
+ring1-ring3 1 3
+ring1-ring4 1 4
+ring2-ring3 2 3
+ring2-chme 2 7
+ring3-ring4 3 4
+ring3-chme 3 8
+ring4-ctail 4 5
+ctail-cterm 5 6
+</bond>
+<angle num="23">
+ring1-chead-ring2 1 0 2
+chead-ring1-ring2 0 1 2
+chead-ring1-ring3 0 1 3
+chead-ring1-ring4 0 1 4
+ring2-ring1-ring3 2 1 3
+ring2-ring1-ring4 2 1 4
+ring3-ring2-ring4 3 1 4
+chead-ring2-ring1 0 2 1
+chead-ring2-ring3 0 2 3
+chead-ring2-chme 0 2 7
+ring1-ring2-ring3 1 2 3
+ring1-ring2-chme 1 2 7
+ring3-ring2-chme 3 2 7
+ring1-ring3-ring2 1 3 2
+ring1-ring3-ring4 1 3 4
+ring1-ring3-chme 1 3 8
+ring2-ring3-ring4 2 3 4
+ring2-ring3-chme 2 3 8
+ring4-ring3-chme 4 3 8
+ring1-ring4-ring3 1 4 3
+ring1-ring4-ctail 1 4 5
+ring3-ring4-ctail 3 4 5
+ring4-ctail-cterm 4 5 6
+</angle>
+<dihedral num="0">
+</dihedral>
+<improper num="0">
+</improper>
+<wall>
+</wall>
+<charge num="9">
+0
+0
+0
+0
+0
+0
+0
+0
+0
+</charge>
+</configuration>
+</hoomd_xml>

@@ -1,18 +1,20 @@
 import mbuild as mb
 import numpy as np
 
-from mbuild.prototypes.ffa import FFA
-from mbuild.prototypes.alc import ALC
+from mbuild.UA_molecules.ffaua import FFAUA
+from mbuild.UA_molecules.alcua import ALCUA
 
-class HDHD(mb.Compound):
+class HDHDUA(mb.Compound):
     def __init__(self):
-        super(HDHD, self).__init__()
+        super(HDHDUA, self).__init__()
         
-        self.add(FFA(17), label='acid')
+        self.add(FFAUA(17), label='acid')
         self['acid'].translate(-self['acid']['head']['O'][1].pos)
         self['acid']['head']['down'].rotate(125*np.pi/180, [1,0,0])
+        self['acid']['head']['down'].spin(40*np.pi/180, 
+                self['acid']['head']['down'].pos)
         
-        self.add(ALC(17), label='alcohol')
+        self.add(ALCUA(17), label='alcohol')
         self['alcohol'].translate(-self['alcohol']['tail'][0].pos)
         self['alcohol'].add(mb.Port(anchor=self['alcohol']['tail'][0], 
             orientation=self['alcohol']['head'][0].pos,
@@ -34,5 +36,5 @@ class HDHD(mb.Compound):
         self.rotate(np.pi, [0,1,0])
         
 if __name__ == '__main__':
-    hdhd = HDHD()
-    hdhd.save('hdhd.mol2', overwrite=True)
+    hdhd = HDHDUA()
+    hdhd.save('hdhdua.mol2', overwrite=True)

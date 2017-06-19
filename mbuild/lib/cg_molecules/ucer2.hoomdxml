@@ -1,0 +1,120 @@
+<?xml version ="1.0" encoding ="UTF-8" ?>
+<hoomd_xml version="1.4">
+<configuration time_step="0" natoms="17">
+<type num="17">
+_tail
+_tail
+_tail
+_tail
+_tail
+_tail
+_tail
+_tail
+_amide
+_mhead2
+_tail
+_tail
+_tail
+_tail
+_tail
+_oh1
+_oh2
+</type>
+<mass num="17">
+0.403639
+0.584458
+0.584458
+0.584458
+0.584458
+0.584458
+0.584458
+0.584458
+0.597575
+0.556458
+0.556458
+0.584458
+0.584458
+0.584458
+0.598458
+0.236214
+0.236214
+</mass>
+<charge num="17">
+0.000000
+0.000000
+0.000000
+0.000000
+0.000000
+0.000000
+0.000000
+0.000000
+0.000000
+0.000000
+0.000000
+0.000000
+0.000000
+0.000000
+0.000000
+0.000000
+0.000000
+</charge>
+<bond num="16">
+tail-ter2 0 1
+tail-tail 1 2
+tail-tail 2 3
+tail-tail 3 4
+tail-tail 4 5
+tail-tail 5 6
+tail-tail 6 7
+amide-tail 7 8
+amide-mhead2 8 9
+mhead2-tail 9 10
+mhead2-oh1 9 15
+mhead2-oh2 9 16
+tail-tail 10 11
+tail-tail 11 12
+tail-tail 12 13
+tail-tail 13 14
+</bond>
+<angle num="18">
+ter2-tail-tail 0 1 2
+tail-tail-tail 1 2 3
+tail-tail-tail 2 3 4
+tail-tail-tail 3 4 5
+tail-tail-tail 4 5 6
+tail-tail-tail 5 6 7
+tail-tail-tail 6 7 8
+mhead2-amide-tail 7 8 9
+amide-mhead2-tail 8 9 10
+tail-tail-tail 9 10 11
+tail-tail-tail 10 11 12
+tail-tail-tail 11 12 13
+tail-tail-tail 12 13 14
+amide-mhead2-oh1 8 9 15
+amide-mhead2-oh2 8 9 16
+oh1-mhead2-tail 10 9 15
+oh2-mhead2-tail 10 9 16
+oh1-mhead2-oh2 15 9 16
+</angle>
+<box lx="1.7991203" ly="1.7991203" lz="3.9277740" />
+<position num="17">
+-0.8523400       -0.6517980        0.2079570
+-0.8325370       -0.6696050        0.1590140
+-0.8435800       -0.6710140        0.0978228
+-0.8560480       -0.6720430        0.0353930
+-0.8629550       -0.6558100       -0.0267188
+-0.8674670       -0.6472230       -0.0909221
+-0.8810160       -0.6279490       -0.1523150
+-0.8905460       -0.6155640       -0.2154860
+-0.9032550       -0.5938780       -0.2608340
+-0.8562700       -0.5829530       -0.2759620
+-0.8319880       -0.5569790       -0.2275580
+-0.8261850       -0.5713780       -0.1678230
+-0.8210690       -0.5828940       -0.1040390
+-0.8097140       -0.6040110       -0.0446125
+-0.7986160       -0.6155560        0.0175298
+-0.8311460       -0.6082780       -0.2898040
+-0.8452990       -0.5507180       -0.2864790
+</position>
+</configuration>
+</hoomd_xml>

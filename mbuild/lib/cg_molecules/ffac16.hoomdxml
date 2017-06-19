@@ -1,0 +1,37 @@
+<?xml version ="1.0" encoding ="UTF-8" ?>
+<hoomd_xml version="1.4">
+<configuration time_step="0" natoms="6">
+<type num="6">
+_tail
+_tail
+_tail
+_tail
+_tail
+_head
+</type>
+<mass num="6">
+0.403639
+0.584458
+0.584458
+0.584458
+0.584458
+0.625247
+</mass>
+<bond num="5">
+tail-tail 0 1
+tail-tail 1 2
+tail-tail 2 3
+tail-tail 3 4
+head-tail 4 5
+</bond>
+<box lx="22.281601" ly="22.281601" lz="35.251301" />
+<position num="6">
+1.1103001 1.0430700 0.3436670
+1.1103001 1.0430700 0.2844560
+1.1103001 1.0430700 0.2220720
+1.1103001 1.0430700 0.1575400
+1.1103001 1.0430700 0.0946455
+1.1103001 1.0430700 0.0719082
+</position>
+</configuration>
+</hoomd_xml>
