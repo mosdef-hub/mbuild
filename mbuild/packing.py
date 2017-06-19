@@ -14,7 +14,7 @@ __all__ = ['fill_box', 'fill_region', 'solvate']
 
 PACKMOL = find_executable('packmol')
 PACKMOL_HEADER = """
-tolerance {0:.1f}
+tolerance {0:.16f}
 filetype pdb
 output {1}
 seed {2}

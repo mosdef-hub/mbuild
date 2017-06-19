@@ -4,7 +4,6 @@ import xml.etree.ElementTree
 
 import mbuild as mb
 from mbuild.tests.base_test import BaseTest
-from mbuild.utils.io import has_foyer
 
 
 class TestHoomdXML(BaseTest):

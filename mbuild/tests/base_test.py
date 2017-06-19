@@ -162,3 +162,8 @@ class BaseTest:
         mb.translate(ch['b'], [0, 0.07, 0]) 
         mb.rotate_around_z(ch['b'], -120.0 * (np.pi/180.0))
         return ch
+
+    @pytest.fixture
+    def silane(self):
+        from mbuild.lib.moieties import Silane
+        return Silane()

@@ -14,5 +14,4 @@ class H2O(mb.Compound):
 
 if __name__ == '__main__':
     m = H2O()
-    m.visualize()
-
+    m.save('h2o.mol2')

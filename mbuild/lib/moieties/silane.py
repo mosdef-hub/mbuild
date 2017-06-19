@@ -23,4 +23,4 @@ class Silane(mb.Compound):
 
 if __name__ == "__main__":
     m = Silane()
-    m.visualize(show_ports=True)
+    m.save('silane.mol2')
