@@ -125,7 +125,7 @@ def fill_region(compound, n_compounds, region, overlap=0.2, seed=12345):
     # See if region is a single region or list
     if type(region) == Box: # Cannot iterate over boxes
         region = [region]
-    elif not any(isinstance(reg, (list, set)) for reg in region): 
+    elif not any(isinstance(reg, (list, set, Box)) for reg in region):
         region = [region]
     region = [_validate_box(reg) for reg in region]
 
