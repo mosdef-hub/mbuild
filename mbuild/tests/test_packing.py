@@ -20,9 +20,37 @@ class TestPacking(BaseTest):
         assert np.min(filled.xyz[:,0]) >= 3
         assert np.max(filled.xyz[:,2]) <= 3
 
+    def test_fill_region_box(self, h2o):
+        mybox = mb.Box([4, 4, 4])
+        filled = mb.fill_region(h2o, n_compounds=50, region=mybox)
+        assert filled.n_particles == 50 * 3
+        assert filled.n_bonds == 50 * 2
+        assert np.min(filled.xyz[:,0]) >= 0
+        assert np.max(filled.xyz[:,2]) <= 4
+
     def test_fill_region_multiple(self, ethane, h2o):
         filled = mb.fill_region(compound=[ethane, h2o], n_compounds=[2, 2],
                                 region=[[2, 2, 2, 4, 4, 4], [4, 2, 2, 6, 4, 4]])
+        assert filled.n_particles == 2 * 8 + 2 * 3
+        assert filled.n_bonds == 2 * 7 + 2 * 2
+        assert np.max(filled.xyz[:16, 0]) < 4
+        assert np.min(filled.xyz[16:, 0]) > 4
+
+    def test_fill_region_multiple_boxes(self, ethane, h2o):
+        box1 = mb.Box(mins=[2, 2, 2], maxs=[4, 4, 4])
+        box2 = mb.Box(mins=[4, 2, 2], maxs=[6, 4, 4])
+        filled = mb.fill_region(compound=[ethane, h2o], n_compounds=[2, 2],
+                                region=[box1, box2])
+        assert filled.n_particles == 2 * 8 + 2 * 3
+        assert filled.n_bonds == 2 * 7 + 2 * 2
+        assert np.max(filled.xyz[:16, 0]) < 4
+        assert np.min(filled.xyz[16:, 0]) > 4
+
+    def test_fill_region_multiple_types(self, ethane, h2o):
+        box1 = mb.Box(mins=[2, 2, 2], maxs=[4, 4, 4])
+        box2 = [4, 2, 2, 6, 4, 4]
+        filled = mb.fill_region(compound=[ethane, h2o], n_compounds=[2, 2],
+                                region=[box1, box2])
         assert filled.n_particles == 2 * 8 + 2 * 3
         assert filled.n_bonds == 2 * 7 + 2 * 2
         assert np.max(filled.xyz[:16, 0]) < 4
