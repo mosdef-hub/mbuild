@@ -37,6 +37,12 @@ class Phosphate(mb.Compound):
             orientation=[-1,np.tan(36.75*np.pi/180),0],separation=.143/2),
             label='down')
 
+        #follow .itp naming convention
+        self['O'][0].name = 'OA'
+        self['O'][1].name = 'OA'
+        self['O'][2].name = 'OM'
+        self['O'][3].name = 'OM'
+
 if __name__ == '__main__':
     po4 = Phosphate()
     po4.save('po4.mol2', overwrite=True)

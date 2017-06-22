@@ -15,11 +15,11 @@ class PCTails(mb.Compound):
             separation=.143/2), label='side')
         self.remove(self['base'][5])
         
-        self.add(FFA(tail_1_length), label='FFA[$]')
+        self.add(FFA(tail_1_length, ester=True), label='FFA[$]')
         mb.force_overlap(move_this=self['base'], 
                 from_positions=self['base']['down'],
                 to_positions=self['FFA'][0]['head']['down'])
-        self.add(FFA(tail_2_length), label='FFA[$]')
+        self.add(FFA(tail_2_length, ester=True), label='FFA[$]')
         mb.force_overlap(move_this=self['FFA'][1], 
                 from_positions=self['FFA'][1]['head']['down'],
                 to_positions=self['base']['side'])

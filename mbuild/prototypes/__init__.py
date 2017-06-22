@@ -6,6 +6,7 @@ from mbuild.prototypes.dppc import DPPC
 from mbuild.prototypes.dspc import DSPC
 from mbuild.prototypes.ffa import FFA
 from mbuild.prototypes.hdhd import HDHD
+from mbuild.prototypes.h2o import H2O
 from mbuild.prototypes.isis import ISIS
 from mbuild.prototypes.OH import OH
 from mbuild.prototypes.pchead import PCHead

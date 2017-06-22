@@ -1,5 +1,6 @@
 from mbuild.UA_molecules.alcua import ALCUA
 from mbuild.UA_molecules.alkyl_monomerua import AlkylMonomerUA
+from mbuild.UA_molecules.ch1ua import CH1UA
 from mbuild.UA_molecules.ch3ua import CH3UA
 from mbuild.UA_molecules.dmpcua import DMPCUA
 from mbuild.UA_molecules.dppcua import DPPCUA

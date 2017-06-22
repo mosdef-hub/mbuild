@@ -5,7 +5,7 @@ class OH(mb.Compound):
     """Creates a hydroxyl group"""
     def __init__(self):
         super(OH,self).__init__()
-        self.add(mb.Particle(name='O', pos = [0,0,0]), label='O')
+        self.add(mb.Particle(name='OA', pos = [0,0,0]), label='O')
         self.add(mb.Particle(name='H', pos = [.096, 0, 0]), label='H')
         self.add_bond((self[0], self[1]))
 

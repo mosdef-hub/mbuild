@@ -10,11 +10,13 @@ class PCHeadUA(mb.Compound):
     def __init__(self):
         super(PCHeadUA,self).__init__()
         
+        self.add(CH3UA(), label='methyl[$]')
+        self.add(CH3UA(), label='methyl[$]')
+        self.add(CH3UA(), label='methyl[$]')
         self.add(N4(), label='N4')
+        self['N4']['N'][0].name = 'NL'
         
         for i in range(0,3):
-            self.add(CH3UA(), label='methyl[$]')
-        
             mb.force_overlap(move_this=self['methyl'][i],
                     from_positions=self['methyl'][i]['up'],
                     to_positions=self['N4']['port_'+str(i)])

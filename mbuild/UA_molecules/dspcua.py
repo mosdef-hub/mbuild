@@ -1,7 +1,7 @@
 import mbuild as mb
 import numpy as np
 
-from mbuild.UA_molecules.pctailsua import PCTailsUA
+from mbuild.UA_molecules.pctailsua  import PCTailsUA
 from mbuild.UA_molecules.pcheadua import PCHeadUA
 
 class DSPCUA(mb.Compound):
@@ -12,12 +12,15 @@ class DSPCUA(mb.Compound):
         self.add(PCTailsUA(18,18), label='ffatails')
         
         mb.force_overlap(move_this=self['ffatails'],
-                        from_positions=self['ffatails']['base']['up'],
+                        from_positions=self['ffatails']['CH1']['side'],
                         to_positions=self['headgroup']['alkyl_split']['up'])
 
-        mb.z_axis_transform(self, new_origin=self['headgroup'][0],
-                point_on_z_axis=self['ffatails']['FFA'][0][0])
+        mb.z_axis_transform(self, new_origin=self['ffatails']['CH1'],
+                point_on_z_axis=self['ffatails']['FFA'][0][4],
+                point_on_zx_plane=self['ffatails']['FFA'][1]['C'])
         self.rotate(np.pi, [1,0,0])
+        self.name = 'DSPC'
+        self['headgroup']['N4'].name = 'NL'
 
 if __name__ == '__main__':
     dspc = DSPCUA()

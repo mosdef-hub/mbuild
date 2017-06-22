@@ -8,13 +8,13 @@ from mbuild.prototypes.cooh import COOH
 class FFA(mb.Compound):
     """Creates a saturated free fatty acid of n carbons based on user
     input"""
-    def __init__(self, chain_length, hcap=None):
+    def __init__(self, chain_length, ester=True):
         super(FFA, self).__init__()
         
-        if hcap:
-            self.add(COOH(), label='head')
-        else:
+        if ester:
             self.add(COOH(ester=True), label='head')
+        else:
+            self.add(COOH(), label='head')
         
         tail = mb.Polymer(AlkylMonomer(), (chain_length - 2))
         self.add(tail, label='tail')

@@ -22,6 +22,7 @@ class ALCUA(mb.Compound):
         mb.z_axis_transform(self, new_origin=self['head'][0], 
                 point_on_z_axis=self['tailcap'][0])
         self.rotate(np.pi, [1,0,0])
+        self.name = 'ALC' + str(chain_length)
 
 if __name__ == '__main__':
     alcohol = ALCUA(16)

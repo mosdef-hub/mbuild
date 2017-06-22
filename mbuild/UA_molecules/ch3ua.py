@@ -13,7 +13,7 @@ class CH3UA(mb.Compound):
 
         self.remove([self[1], self[2], self[3]])
 
-        self[0].name == 'CH3'
+        self[0].name = 'CH3'
 
 if __name__ == '__main__':
     m = CH3UA()
