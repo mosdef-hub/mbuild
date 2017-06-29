@@ -34,7 +34,9 @@ class PCHeadUA(mb.Compound):
                 to_positions=self['alkyl_body']['up'])
         
         self.add(AlkylMonomerUA(), label='alkyl_split')
-        self['alkyl_split']['down'].spin(np.pi/2,
+        self['alkyl_split']['down'].spin(-np.pi/2,
+                self['alkyl_split']['down'].pos)
+        self['alkyl_split']['up'].spin(-60*np.pi/180,
                 self['alkyl_split']['down'].pos)
         mb.force_overlap(move_this=self['alkyl_split'], 
                          from_positions=self['alkyl_split']['down'],

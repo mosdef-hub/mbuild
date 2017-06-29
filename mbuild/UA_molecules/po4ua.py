@@ -32,10 +32,10 @@ class Phosphate(mb.Compound):
         
         self.add(mb.Port(anchor=self['O'][0],
             orientation=[1,np.tan(36.75*np.pi/180),0],separation=.143/2), 
-            label='up')
+            label='down')
         self.add(mb.Port(anchor=self['O'][3],
             orientation=[-1,np.tan(36.75*np.pi/180),0],separation=.143/2),
-            label='down')
+            label='up')
 
 if __name__ == '__main__':
     po4 = Phosphate()

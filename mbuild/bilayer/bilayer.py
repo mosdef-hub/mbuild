@@ -1,5 +1,6 @@
 from random import shuffle, random, uniform
 import numpy as np
+import argparse
 
 import mbuild as mb
 from mbuild import clone
@@ -29,10 +30,6 @@ class Bilayer(mb.Compound):
     ref_atoms : int
         Indices of the atom in lipids to form the solvent interface.
         By definition, this atom denotes the headgroup of the lipid.
-    n_lipids_x : int
-        Number of lipids in the x-direction per layer.
-    n_lipids_y : int
-        Number of lipids in the y-direction per layer.
     area_per_lipid : float, optional, default=0.3
         Area per lipid in nanometers squared.
     tilt_angle : float, optional, default=0.0
@@ -83,18 +80,18 @@ class Bilayer(mb.Compound):
         Adjust for unit conversions if necessary
     """
     
-    def __init__(self, lipids, ref_atoms, itp_path, 
-            n_lipids_x=5, n_lipids_y=5, area_per_lipid=0.3, 
-            tilt_angle = 0.0, max_tail_randomization = 0,
-            solvent=H2O(), lipid_box=None,spacing_z=0.4, 
-            solvent_per_lipid=0, mirror=True, cross_tilt=False, 
-            unit_conversion=1, filename=None):
+    def __init__(self, lipids, args, ref_atoms, itp_path, 
+            area_per_lipid=0.3, tilt_angle = 0.0, 
+            max_tail_randomization = 0, solvent=H2O(), 
+            lipid_box=None,spacing_z=0.4, solvent_per_lipid=0, 
+            mirror=True, cross_tilt=False, unit_conversion=1, 
+            filename=None):
         super(Bilayer, self).__init__()
 
         self._sanitize_inputs(lipids, ref_atoms)
 
-        self.n_lipids_x = n_lipids_x
-        self.n_lipids_y = n_lipids_y
+        self.n_lipids_x = args.n_lipids_x
+        self.n_lipids_y = args.n_lipids_y
         self.lipids = lipids
         self.ref_atoms = ref_atoms
         self._lipid_box = lipid_box
@@ -315,11 +312,11 @@ class Bilayer(mb.Compound):
         top_file = open(filename + '.top', 'w')
 
         #Include statements to locate .itp files for .top creation
-        top_file.write("#include \"{}ff.itp\"\n".format(self.itp_path))
-        top_file.write(";#include \"{}ff_b.itp\"\n".format(self.itp_path))
+        top_file.write(";#include \"{}ff.itp\"\n".format(self.itp_path))
+        top_file.write("#include \"{}ff_b.itp\"\n".format(self.itp_path))
         top_file.write("; SPC water topology \n")
-        top_file.write("#include \"{}spc.itp\"\n".format(self.itp_path))
-        top_file.write(";#include \"{}spc_b.itp\"\n".format(self.itp_path))
+        top_file.write(";#include \"{}spc.itp\"\n".format(self.itp_path))
+        top_file.write("#include \"{}spc_b.itp\"\n".format(self.itp_path))
         top_file.write("\n[ system]\n")
         top_file.write("United-atom bilayer system\n")
         #top_file.write("All-atom bilayer system\n")
@@ -391,14 +388,19 @@ class Bilayer(mb.Compound):
     
     
 if __name__ == '__main__':
-    lipids = [(DSPCUA(), 0.5, 0), (FFAUA(16, ester=False), 0.5, -.25)] 
-    bilayer = Bilayer(lipids, n_lipids_x = 8, n_lipids_y = 8, 
-            ref_atoms=[0,17],
+    parser = argparse.ArgumentParser()
+    
+    parser.add_argument('n_lipids_x', type=int, help='The number of lipids in the x direction')
+    parser.add_argument('n_lipids_y', type=int, help='The number of lipids in the y direction')
+    args = parser.parse_args()
+    lipids = [(DSPCUA(), 1.0, 0)]#, (FFAUA(16, ester=False), 0.5, -.25)] 
+    bilayer = Bilayer(lipids, args, n_lipids_x = 8, n_lipids_y = 8, 
+            ref_atoms=[0],
             itp_path="/home/loganguy/builds/setup/FF/gromos53a6/", 
-            tilt_angle = 20, max_tail_randomization =15, 
-            solvent_per_lipid=20) 
+            tilt_angle = 0, area_per_lipid=0.3, 
+            max_tail_randomization =30, solvent_per_lipid=20)
     print('Writing <{0}.gro ...'.format(bilayer.filename))
     bilayer.save(bilayer.filename + '.gro', box=bilayer.boundingbox,
-            residues=['DSPC','FFA16','HOH'], overwrite=True)
+            residues=['DSPC','HOH'], overwrite=True)
     print('Creating <{0}.mol2 ...'.format(bilayer.filename))
     bilayer.save(bilayer.filename + '.mol2', overwrite=True)

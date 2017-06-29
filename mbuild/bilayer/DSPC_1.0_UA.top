@@ -1,0 +1,13 @@
+;#include "/home/loganguy/builds/setup/FF/gromos53a6/ff.itp"
+#include "/home/loganguy/builds/setup/FF/gromos53a6/ff_b.itp"
+; SPC water topology 
+;#include "/home/loganguy/builds/setup/FF/gromos53a6/spc.itp"
+#include "/home/loganguy/builds/setup/FF/gromos53a6/spc_b.itp"
+
+[ system]
+United-atom bilayer system
+
+[ molecules ]
+DSPC      16        
+DSPC      16        
+SOL       640       

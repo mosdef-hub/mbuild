@@ -12,12 +12,14 @@ class PCTailsUA(mb.Compound):
         self.add(CH1UA(), label='CH1')
         self.add(FFAUA(tail_1_length), label='FFA[$]')
         self['FFA'][0].translate(-self['FFA'][0]['head']['O'][0].pos)
-        self['FFA'][0]['head']['down'].spin(np.pi/2,
-                self['FFA'][0]['head']['down'].pos)
+        self['FFA'][0]['head']['down'].rotate(-216*np.pi/180, [1,0,0])
+        self['FFA'][0]['head']['down'].spin(-np.pi/2, self['FFA'][0]['head']['down'].pos)
         mb.force_overlap(move_this=self['CH1'], 
                 from_positions=self['CH1']['up'],
                 to_positions=self['FFA'][0]['head']['down'])
         self.add(AlkylMonomerUA(), label='CH2')
+        self['CH2']['up'].spin(-np.pi/2, self['CH2']['up'].pos)
+        self['CH2']['down'].spin(-np.pi/2, self['CH2']['down'].pos)
         mb.force_overlap(move_this=self['CH2'],
                         from_positions=self['CH2']['up'],
                         to_positions=self['CH1']['down'])
@@ -28,10 +30,8 @@ class PCTailsUA(mb.Compound):
         mb.force_overlap(move_this=self['FFA'][1], 
                 from_positions=self['FFA'][1]['head']['down'],
                 to_positions=self['CH2']['down'])
-        
-        self.translate(-self['CH2'].pos)
-        self['FFA'][1].rotate(-np.pi/2, self['FFA'][1]['head']['O'][0].pos)
-        self.translate(-self['FFA'][1]['head']['O'][0].pos)
-        self['FFA'][1].rotate(-np.pi, self['FFA'][1]['head']['C'].pos)
-        
+
+if __name__ == '__main__':
+    pctailsua = PCTailsUA(14,14)
+    pctailsua.save('pctailsua.mol2', overwrite=True)
 
