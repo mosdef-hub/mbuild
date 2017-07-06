@@ -5,6 +5,8 @@ import tempfile
 from distutils.spawn import find_executable
 from subprocess import Popen, PIPE
 
+import numpy as np
+
 from mbuild.compound import Compound
 from mbuild.exceptions import MBuildError
 from mbuild.box import Box
@@ -35,7 +37,7 @@ end structure
 """
 
 
-def fill_box(compound, n_compounds, box, overlap=0.2, seed=12345):
+def fill_box(compound, n_compounds=None, box=None, density=None, overlap=0.2, seed=12345):
     """Fill a box with a compound using packmol.
 
     Parameters
@@ -44,11 +46,13 @@ def fill_box(compound, n_compounds, box, overlap=0.2, seed=12345):
     n_compounds : int or list of int
     box : mb.Box
     overlap : float
-
+    density : float
     Returns
     -------
     filled : mb.Compound
-
+    
+    TODO : Support aspect ratios in generated boxes
+    TODO : Support ratios of n_compounds
     """
     if not PACKMOL:
         msg = "Packmol not found."
@@ -57,11 +61,25 @@ def fill_box(compound, n_compounds, box, overlap=0.2, seed=12345):
                          "packmol.exe is on the path.")
         raise IOError(msg)
 
-    box = _validate_box(box)
+    if box is not None:
+        box = _validate_box(box)
     if not isinstance(compound, (list, set)):
         compound = [compound]
-    if not isinstance(n_compounds, (list, set)):
+    if n_compounds is not None and not isinstance(n_compounds, (list, set)):
         n_compounds = [n_compounds]
+
+    if density is not None:
+        if box is None and n_compounds is not None:
+            total_mass = np.sum([n*np.sum([a.mass for a in c.to_parmed().atoms]) for c,n in zip(compound, n_compounds)])
+            L = (total_mass/density)**(1/3)*1.1841763 # Conversion from amu/(kg/m^3) to nm
+            box = _validate_box(Box(3*[L]))
+        if n_compounds is None and box is not None:
+            if len(compound) > 1:
+                msg = "Determing n_compounds from system density currently supports systems with only one compound type"
+                raise ValueError(msg)
+            else:
+                compound_mass = np.sum([a.mass for a in compound[0].to_parmed().atoms])
+                n_compounds = [int(density/compound_mass*np.prod(box.lengths)*.60224)]
 
     # In angstroms for packmol.
     box_mins = box.mins * 10
@@ -91,6 +109,7 @@ def fill_box(compound, n_compounds, box, overlap=0.2, seed=12345):
         for _ in range(m_compounds):
             filled.add(clone(comp))
     filled.update_coordinates(filled_pdb)
+    filled.periodicity = np.asarray(box.lengths, dtype=np.float32)
     return filled
 
 
