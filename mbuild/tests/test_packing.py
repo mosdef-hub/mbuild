@@ -14,9 +14,9 @@ class TestPacking(BaseTest):
 
     def test_fill_box_density_box(self, h2o):
         filled = mb.fill_box(h2o, n_compounds=1000, density=1000)
-        assert [3.1 < period < 3.11 for period in packed.periodicity]
+        assert [3.1 < period < 3.11 for period in filled.periodicity]
 
-    def test_fill_box_density_box(self, h2o):
+    def test_fill_box_density_n_compounds(self, h2o):
         filled = mb.fill_box(h2o, box=mb.Box([3.1, 3.1, 3.1]), density=1000)
         assert 2900 < filled.n_particles < 3100
 
