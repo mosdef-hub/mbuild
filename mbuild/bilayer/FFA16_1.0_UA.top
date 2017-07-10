@@ -8,6 +8,6 @@
 United-atom bilayer system
 
 [ molecules ]
-DSPC      16        
-DSPC      16        
-SOL       640       
+FFA16     64        
+FFA16     64        
+SOL       2560      

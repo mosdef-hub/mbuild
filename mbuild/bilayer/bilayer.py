@@ -1,4 +1,4 @@
-from random import shuffle, random, uniform
+from random import shuffle, uniform
 import numpy as np
 import argparse
 
@@ -27,9 +27,6 @@ class Bilayer(mb.Compound):
         the fraction of that lipid in the bilayer (lipid is a
         Compound), and z-offset is the distance in nanometers from the
         headgroup to the lipid-water interface
-    ref_atoms : list
-        Indices of the atom in lipids to form the solvent interface.
-        By definition, this atom denotes the headgroup of the lipid.
     args : NameSpace
         The parser passed by the argparse module; allows for command-line integration with
         the Bilayer builder.
@@ -51,7 +48,7 @@ class Bilayer(mb.Compound):
     n_lipids_y : int
         Number of lipids in the y-direction per layer.
     lipids : list
-        List of tuples in format (lipid, frac, z-offset) where frac is
+        List of tuples in format (lipid, frac, z-offset, ref_atom) where frac is
         the fraction of that lipid in the bilayer (lipid is a
         Compound), and z-offset is the distance in nanometers from the
         headgroup to the lipid-water interface
@@ -69,22 +66,22 @@ class Bilayer(mb.Compound):
         Adjust for unit conversions if necessary
     """
     
-    def __init__(self, lipids, args, ref_atoms, itp_path, max_tail_randomization=0, solvent=H2O(),
-                 lipid_box=None, solvent_per_lipid=0, cross_tilt=False, unit_conversion=1,
+    def __init__(self, lipids, args, itp_path, max_tail_randomization=0, solvent=H2O(),
+                 lipid_box=None, cross_tilt=False, unit_conversion=1,
                  filename=None):
         super(Bilayer, self).__init__()
 
-        self._sanitize_inputs(lipids, ref_atoms)
+        self._sanitize_inputs(lipids)
 
         self.n_lipids_x = args.n_lipids_x
         self.n_lipids_y = args.n_lipids_y
         self.lipids = lipids
-        if args.apl:
-            area_per_lipid = args.apl
-        else:
-            area_per_lipid = 0.3    # Set default apl equal to 0.3 nm^2
+        area_per_lipid = args.apl
 
-        self.ref_atoms = ref_atoms
+        self.ref_atoms = []
+        for lipid in lipids:
+            self.ref_atoms.append(lipid[3])
+        assert len(self.ref_atoms) == len(lipids)
         self._lipid_box = lipid_box
         self.unit_conversion = unit_conversion
         if filename:
@@ -100,21 +97,16 @@ class Bilayer(mb.Compound):
 
         # Set the 2D lipid locations on a grid pattern
         self._set_grid_pattern(area_per_lipid)
-        if args.spacing:
-            z_spacing = args.spacing
-        else:
-            z_spacing = 0.4
-        
+        z_spacing = args.spacing
+
         # Set other important geometric attributes of the lipids
-        if args.tilt_angle:
-            self.tilt = args.tilt_angle * np.pi / 180
-        else:
-            self.tilt = 0.0
+        self.tilt = args.tilt_angle * np.pi / 180
+
         self.z_orientation = max_tail_randomization
 
         # Solvent attributes.
         self.solvent = solvent
-        self.solvent_per_lipid = args.solvent
+        self.solvent_per_lipid = args.solvate
         
         # Private attributes for getter methods 
         self._number_of_each_lipid_per_layer = []
@@ -141,10 +133,10 @@ class Bilayer(mb.Compound):
         
         # Translate and rotate the bottom leaflet
         self._translate_bottom_leaflet(lipid_bilayer, z_spacing,
-                                       args.cross_tilt)
+                                       args)
         
         # solvate the lipids
-        if solvent_per_lipid > 0:
+        if self.solvent_per_lipid > 0:
             top_file, solvent_components = self.solvate_bilayer(top_file,
                                                                 lipid_bilayer, solvent_components)
         # close the completed topology file
@@ -152,7 +144,7 @@ class Bilayer(mb.Compound):
 
         # add everything to the overall Compound structure
         self.add(lipid_bilayer, label='lipid_bilayer')
-        if solvent_per_lipid > 0:
+        if self.solvent_per_lipid > 0:
             self.add(solvent_components, label='solvent')
         
     def create_layer(self, top_file, lipid_indices=None):
@@ -247,7 +239,7 @@ class Bilayer(mb.Compound):
         solvent_components : mb.Compound
             The container for the solvated boxes created in this function
         """
-        water_volume = .0299 * np.power(self.unit_conversion, 3) 
+        water_volume = .06 * np.power(self.unit_conversion, 3)
         # TODO: Support other solvents' volumes in a user-friendly way
         
         # Calculate box dimension
@@ -260,10 +252,10 @@ class Bilayer(mb.Compound):
         box_area = (x_max_box - x_min_box) * (y_max_box - y_min_box)
         box_height = box_volume / box_area
         
-        z_min_top = max(lipid_bilayer.xyz[:, 2])
+        z_min_top = max(lipid_bilayer.xyz[:, 2]) + 0.5
         z_max_top = z_min_top + box_height
         
-        z_max_bottom = min(lipid_bilayer.xyz[:, 2])
+        z_max_bottom = min(lipid_bilayer.xyz[:, 2]) - 0.5
         z_min_bottom = z_max_bottom - box_height
 
         top_solvent_box = mb.Box(mins=[x_min_box, y_min_box, z_min_top],
@@ -341,18 +333,15 @@ class Bilayer(mb.Compound):
         return self._number_of_each_lipid_per_layer
 
     @staticmethod
-    def _sanitize_inputs(lipids, ref_atoms):
+    def _sanitize_inputs(lipids):
         """Check for proper inputs
     
         Ensure that the user's lipid fractions add up to 1, 
         or raise a ValueError.
-    
-        Ensure that the user has input the same number of reference
-        atoms and lipid components, or raise an AssertionError."""
+        """
     
         if sum([lipid[1] for lipid in lipids]) != 1.0:
             raise ValueError('Lipid fractions do not add up to 1.')
-        assert len(ref_atoms) == len(lipids), "Please provide one reference atom for each lipid"
         
     def _set_grid_pattern(self, area_per_lipid):
         """Utilize an mBuild 2DGridPattern to create the scaffold of points that the lipids will be laid onto"""
@@ -365,21 +354,82 @@ class Bilayer(mb.Compound):
     
     
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(description='Welcome to the Bilayer Builder!',
+                                     formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+                                     epilog='For more robust descriptions of variables and '
+                                            'functionality of the Bilayer Builder, see the '
+                                            'README file.')
     
     parser.add_argument('n_lipids_x', type=int, help='The number of lipids in the x direction')
     parser.add_argument('n_lipids_y', type=int, help='The number of lipids in the y direction')
-    parser.add_argument('-a', '--apl', type=float, help='The area per lipid of the bilayer')
-    parser.add_argument('-t', '--tilt_angle', type=float, help='The tilt angle of the lipids')
-    parser.add_argument('-z', '--spacing', type=float, help='The spacing in between the two bilayer leaflets')
-    parser.add_argument('-m', '--mirror', action='store_true')
-    parser.add_argument('-c', '--cross_tilt', action='store_true')
-    parser.add_argument('-s', '--solvent', type=int, help='The number of solvent molecules per lipid')
+    frac = parser.add_argument_group('Component Fractions', 'The fraction of the bilayer containing each component')
+    frac.add_argument('--DSPC', type=float, default=1.0)
+    frac.add_argument('--DPPC', type=float, default=0.0)
+    frac.add_argument('--DMPC', type=float, default=0.0)
+    frac.add_argument('--acd12', type=float, default=0.0)
+    frac.add_argument('--acd14', type=float, default=0.0)
+    frac.add_argument('--acd16', type=float, default=0.0)
+    frac.add_argument('--acd18', type=float, default=0.0)
+    frac.add_argument('--acd20', type=float, default=0.0)
+    frac.add_argument('--acd22', type=float, default=0.0)
+    frac.add_argument('--acd24', type=float, default=0.0)
+    frac.add_argument('--alc12', type=float, default=0.0)
+    frac.add_argument('--alc14', type=float, default=0.0)
+    frac.add_argument('--alc16', type=float, default=0.0)
+    frac.add_argument('--alc18', type=float, default=0.0)
+    frac.add_argument('--alc20', type=float, default=0.0)
+    frac.add_argument('--alc22', type=float, default=0.0)
+    frac.add_argument('--alc24', type=float, default=0.0)
+    geometry = parser.add_argument_group('Bilayer Geometry', 'Important System-Level Geometric Specifications')
+    geometry.add_argument('-a', '--apl', type=float, default=uniform(0.25, 0.35),
+                          help='The area per lipid of the bilayer')
+    geometry.add_argument('-t', '--tilt_angle', type=float, default=uniform(5, 30),
+                          help='The tilt angle of the lipids')
+    geometry.add_argument('-z', '--spacing', type=float, default=-0.3,
+                          help='The spacing in between the two bilayer leaflets')
+    geometry.add_argument('-m', '--mirror', action='store_true', default=False,
+                          help='Makes the top and bottom leaflets mirror images of one another')
+    geometry.add_argument('-c', '--cross_tilt', action='store_true', default=False,
+                          help='Induces a cross-tilt in the bilayer')
+    parser.add_argument('-s', '--solvate', type=int, default=0, help='Solvates the bilayer with a specified number '
+                                                                     ' of solvent molecules per lipid')
+    parser.add_argument('-u', '--units', type=float, default=1.0, help='Input any unit conversion that is necessary '
+                                                                       'here (mBuild default units are in nanometers)')
     args = parser.parse_args()
-    lipids = [(DSPCUA(), 1.0, 0)]  # (FFAUA(16, ester=False), 0.5, -.25)]
-    bilayer = Bilayer(lipids, args, ref_atoms=[0], itp_path="/home/loganguy/builds/setup/FF/gromos53a6/",
+
+    lipids = [(DSPCUA(), args.DSPC, 0, 0),
+              (DPPCUA(), args.DPPC, -0.3, 0),
+              (DMPCUA(), args.DMPC, -0.5, 0),
+              (ALCUA(12), args.alc12, -0.2, 13),
+              (FFAUA(12, ester=False), args.acd12, -0.2, 13),
+              (ALCUA(14), args.alc14, -0.2, 15),
+              (FFAUA(14, ester=False), args.acd14, -0.2, 15),
+              (ALCUA(16), args.alc16, -0.4, 17),
+              (FFAUA(16, ester=False), args.acd16, -0.4, 17),
+              (ALCUA(18), args.alc18, -0.4, 19),
+              (FFAUA(18, ester=False), args.acd18, -0.4, 19),
+              (ALCUA(20), args.alc20, -0.5, 21),
+              (FFAUA(20, ester=False), args.acd20, -0.5, 21),
+              (ALCUA(22), args.alc22, -0.5, 23),
+              (FFAUA(22, ester=False), args.acd22, -0.5, 23),
+              (ALCUA(24), args.alc24, -0.4, 25),
+              (FFAUA(24, ester=False), args.acd24, -0.4, 25)]
+
+    # Remove all lipid tuples whose fractions are 0
+    lipids_to_pop = []
+    for index, lipid in enumerate(lipids):
+        if lipid[1] == 0.0:
+            lipids_to_pop.append(index)
+    for index in sorted(lipids_to_pop, reverse=True):
+        lipids.pop(index)
+
+    bilayer = Bilayer(lipids, args, itp_path="/home/loganguy/builds/setup/FF/gromos53a6/",
                       max_tail_randomization=30)
-    print('Writing <{0}.gro ...'.format(bilayer.filename))
-    bilayer.save(bilayer.filename + '.gro', box=bilayer.boundingbox, residues=['DSPC', 'HOH'], overwrite=True)
-    print('Creating <{0}.mol2 ...'.format(bilayer.filename))
+    bilayer.translate(-bilayer.xyz.min(axis=0)) # Bring the bilayer inside the bounding box for the .gro file
+    print('Writing <{0}.gro> ...'.format(bilayer.filename))
+    bilayer.save(bilayer.filename + '.gro', box=bilayer.boundingbox,
+                 residues=['DSPC', 'FFA12', 'ALC12', 'FFA14', 'ALC14', 'FFA16', 'ALC16',
+                           'FFA18', 'ALC18', 'FFA20', 'ALC20', 'FFA22', 'ALC22', 'FFA24',
+                           'ALC24', 'HOH'], overwrite=True)
+    print('Creating <{0}.mol2> ...'.format(bilayer.filename))
     bilayer.save(bilayer.filename + '.mol2', overwrite=True)
