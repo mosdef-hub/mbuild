@@ -71,12 +71,12 @@ class Bilayer(mb.Compound):
                  filename=None):
         super(Bilayer, self).__init__()
 
-        self._sanitize_inputs(lipids)
-
         self.n_lipids_x = args.n_lipids_x
         self.n_lipids_y = args.n_lipids_y
         self.lipids = lipids
         area_per_lipid = args.apl
+
+        self._sanitize_inputs()
 
         self.ref_atoms = []
         for lipid in lipids:
@@ -332,17 +332,20 @@ class Bilayer(mb.Compound):
         assert len(self._number_of_each_lipid_per_layer) == len(self.lipids)
         return self._number_of_each_lipid_per_layer
 
-    @staticmethod
-    def _sanitize_inputs(lipids):
+    def _sanitize_inputs(self):
         """Check for proper inputs
     
         Ensure that the user's lipid fractions add up to 1, 
         or raise a ValueError.
         """
     
-        if sum([lipid[1] for lipid in lipids]) != 1.0:
+        if sum([lipid[1] for lipid in self.lipids]) != 1.0:
             raise ValueError('Lipid fractions do not add up to 1.')
-        
+        if not (self.n_lipids_x > 0 and self.n_lipids_y > 0):
+            raise ValueError('Bilayer dimensions must be greater than 0')
+        if len(self.lipids) > (self.n_lipids_x * self.n_lipids_y):
+            raise ValueError('Number of lipids provided exceeds number of available grid spaces')
+
     def _set_grid_pattern(self, area_per_lipid):
         """Utilize an mBuild 2DGridPattern to create the scaffold of points that the lipids will be laid onto"""
         
