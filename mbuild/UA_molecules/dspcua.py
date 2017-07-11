@@ -4,6 +4,7 @@ import numpy as np
 from mbuild.UA_molecules.pctailsua  import PCTailsUA
 from mbuild.UA_molecules.pcheadua import PCHeadUA
 
+
 class DSPCUA(mb.Compound):
     def __init__(self):
         super(DSPCUA, self).__init__()

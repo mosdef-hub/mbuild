@@ -5,6 +5,7 @@ from mbuild.UA_molecules.ffaua import FFAUA
 from mbuild.UA_molecules.alkyl_monomerua import AlkylMonomerUA
 from mbuild.UA_molecules.ch1ua import CH1UA
 
+
 class PCTailsUA(mb.Compound):
     def __init__(self, tail_1_length, tail_2_length):
         super(PCTailsUA, self).__init__()
@@ -30,6 +31,8 @@ class PCTailsUA(mb.Compound):
         mb.force_overlap(move_this=self['FFA'][1], 
                 from_positions=self['FFA'][1]['head']['down'],
                 to_positions=self['CH2']['down'])
+        self['FFA'][0].name = 'ffatail'
+        self['FFA'][1].name = 'ffatail'
 
 if __name__ == '__main__':
     pctailsua = PCTailsUA(14,14)

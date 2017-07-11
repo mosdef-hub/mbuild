@@ -5,7 +5,7 @@ from mbuild.prototypes.OH import OH
 
 class COOH(mb.Compound):
     """Creates headgroup of a carboxylic acid"""
-    def __init__(self, ester = None):
+    def __init__(self, ester = None, cis=False):
         super(COOH,self).__init__()
         if ester:
             self.add(mb.Particle(name='OE'), label='O[$]')
@@ -22,10 +22,15 @@ class COOH(mb.Compound):
             self['O'][0].rotate(-theta, around=[0,0,1])
 
             self.add_bond((self['C'],self['O'][0]))
-
-            self.add(mb.Port(anchor=self['O'][0],
-                orientation=[1,np.tan(52.5*np.pi/180),0],
-                separation=.14/2), label='down')
+            
+            if cis:
+                self.add(mb.Port(anchor=self['O'][0],
+                    orientation=[0,-1,0], separation=.14/2), 
+                    label='down')
+            else:
+                self.add(mb.Port(anchor=self['O'][0],
+                    orientation=[1,np.tan(52.5*np.pi/180),0],
+                    separation=.14/2), label='down')
         else:
             self.add(mb.Particle(name='O', pos = [0, .123, 0]),label='O[$]')
             self.add(mb.Particle(name='C'), label='C')

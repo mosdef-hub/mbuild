@@ -5,8 +5,9 @@ import argparse
 import mbuild as mb
 from mbuild import clone
 from mbuild.prototypes import DSPC, ALC, FFA, ISIS, HDHD, H2O
-from mbuild.UA_molecules import DSPCUA, DMPCUA, DPPCUA, FFAUA, ISISUA, HDHDUA, ALCUA
+from mbuild.UA_molecules import DSPCUA, DMPCUA, DPPCUA, FFAUA, ISISUA, ALCUA
 from mbuild.lib.cg_molecules import ECer2, UCer2, Chol, FFAC16, FFAC20, FFAC24, Water
+
 
 class Bilayer(mb.Compound):
     """The Bilayer Builder creates a lipid bilayer, solvates it, and stores it as an mBuild Compound. 
@@ -18,7 +19,7 @@ class Bilayer(mb.Compound):
         - The rest of the lipid is pointing in the negative z direction
         
     The user may input the fraction of each lipid in the bilayer, as well as a number of important bilayer 
-    properties such as area per lipid and tilt angle.
+    properties such as area per lipid, bilayer size, and tilt angle.
 
     Parameters
     ----------
@@ -383,6 +384,7 @@ if __name__ == '__main__':
     frac.add_argument('--alc20', type=float, default=0.0)
     frac.add_argument('--alc22', type=float, default=0.0)
     frac.add_argument('--alc24', type=float, default=0.0)
+    frac.add_argument('--ISIS', type=float, default=0.0)
     geometry = parser.add_argument_group('Bilayer Geometry', 'Important System-Level Geometric Specifications')
     geometry.add_argument('-a', '--apl', type=float, default=uniform(0.25, 0.35),
                           help='The area per lipid of the bilayer')
@@ -416,7 +418,8 @@ if __name__ == '__main__':
               (ALCUA(22), args.alc22, -0.5, 23),
               (FFAUA(22, ester=False), args.acd22, -0.5, 23),
               (ALCUA(24), args.alc24, -0.4, 25),
-              (FFAUA(24, ester=False), args.acd24, -0.4, 25)]
+              (FFAUA(24, ester=False), args.acd24, -0.4, 25),
+              (ISISUA(), args.ISIS, -0.4, 20)]
 
     # Remove all lipid tuples whose fractions are 0
     lipids_to_pop = []
@@ -428,11 +431,11 @@ if __name__ == '__main__':
 
     bilayer = Bilayer(lipids, args, itp_path="/home/loganguy/builds/setup/FF/gromos53a6/",
                       max_tail_randomization=30)
-    bilayer.translate(-bilayer.xyz.min(axis=0)) # Bring the bilayer inside the bounding box for the .gro file
+    bilayer.translate(-bilayer.xyz.min(axis=0))  # Bring the bilayer inside the bounding box for the .gro file
     print('Writing <{0}.gro> ...'.format(bilayer.filename))
     bilayer.save(bilayer.filename + '.gro', box=bilayer.boundingbox,
                  residues=['DSPC', 'FFA12', 'ALC12', 'FFA14', 'ALC14', 'FFA16', 'ALC16',
                            'FFA18', 'ALC18', 'FFA20', 'ALC20', 'FFA22', 'ALC22', 'FFA24',
-                           'ALC24', 'HOH'], overwrite=True)
+                           'ALC24', 'ISIS', 'HOH'], overwrite=True)
     print('Creating <{0}.mol2> ...'.format(bilayer.filename))
     bilayer.save(bilayer.filename + '.mol2', overwrite=True)
