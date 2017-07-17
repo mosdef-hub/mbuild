@@ -15,10 +15,10 @@ class ALCUA(mb.Compound):
         self.add(OH(), label='head')
         mb.force_overlap(move_this=self['tailcap'],
                 from_positions=self['tailcap']['up'],
-                to_positions=self['tail']['up'])
+                to_positions=self['tail']['down'])
         mb.force_overlap(move_this=self['head'],
                 from_positions=self['head']['up'],
-                to_positions=self['tail']['down'])
+                to_positions=self['tail']['up'])
         mb.z_axis_transform(self, new_origin=self['head'][0], 
                 point_on_z_axis=self['tailcap'][0])
         self.rotate(np.pi, [1,0,0])

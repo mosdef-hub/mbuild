@@ -38,19 +38,19 @@ class FFAUA(mb.Compound):
                 from_positions=self['tailcap']['up'],
                 to_positions=self['tail']['down'])
 
-        self['head']['up'].spin(-np.pi/2, self['head']['C'].pos)
+        self['head']['up'].spin(np.pi/2, self['head']['C'].pos)
         if ester: 
             mb.force_overlap(move_this=self['head'],
                 from_positions=self['head']['up'],
                 to_positions=self['tail']['down'])
+            self.spin(np.pi/2, [0,1,0])
         else:
             mb.force_overlap(move_this=self['head'],
                 from_positions=self['head']['up'],
-                to_positions=self['tail']['down'])
-        self.spin(np.pi/2, [0,1,0])
+                to_positions=self['tail']['up'])
+            self.spin(-np.pi/2, [0,1,0])
         self.name = 'FFA' + str(chain_length)
 
 if __name__ == '__main__':
-    ffa = FFAUA(24, ester = False)
-    #ffa.energy_minimization() for single C-O bond character
+    ffa = FFAUA(24, ester = True)
     ffa.save('ffa24ua.mol2', overwrite=True)

@@ -13,7 +13,7 @@ class PCTailsUA(mb.Compound):
         self.add(CH1UA(), label='CH1')
         self.add(FFAUA(tail_1_length), label='FFA[$]')
         self['FFA'][0].translate(-self['FFA'][0]['head']['O'][0].pos)
-        self['FFA'][0]['head']['down'].rotate(-216*np.pi/180, [1,0,0])
+        #self['FFA'][0]['head']['down'].rotate(-216*np.pi/180, [1,0,0])
         self['FFA'][0]['head']['down'].spin(-np.pi/2, self['FFA'][0]['head']['down'].pos)
         mb.force_overlap(move_this=self['CH1'], 
                 from_positions=self['CH1']['up'],
