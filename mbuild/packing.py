@@ -40,13 +40,26 @@ end structure
 def fill_box(compound, n_compounds=None, box=None, density=None, overlap=0.2, seed=12345):
     """Fill a box with a compound using packmol.
 
+    Two arguments of `n_compounds, box, and density` must be specified.
+
+    If `n_compounds` and `box` are not None, the specified number of
+    n_compounds will be inserted into a box of the specified size.
+
+    If `n_compounds` and `density` are not None, the box corresponding box
+    size will be calculated internally.
+
+    If `box` and `density` are not None, the box corresponding number of
+    compounds will be calculated internally. In this case, `n_compounds`
+    must be an int and not a list of int.
+
     Parameters
     ----------
     compound : mb.Compound or list of mb.Compound
     n_compounds : int or list of int
     box : mb.Box
-    overlap : float
-    density : float
+    overlap : float, units nm
+    density : float, units kg/nm^3
+
     Returns
     -------
     filled : mb.Compound
@@ -60,6 +73,11 @@ def fill_box(compound, n_compounds=None, box=None, density=None, overlap=0.2, se
             msg = (msg + " If packmol is already installed, make sure that the "
                          "packmol.exe is on the path.")
         raise IOError(msg)
+
+    arg_count = 3 - [n_compounds, box, density].count(None)
+    if arg_count != 2:
+        msg = "Exactly 2 of n_compounds, box, and density must be specified. {} were given.".format(arg_count)
+        raise ValueError(msg)
 
     if box is not None:
         box = _validate_box(box)
