@@ -45,12 +45,12 @@ def fill_box(compound, n_compounds=None, box=None, density=None, overlap=0.2, se
     If `n_compounds` and `box` are not None, the specified number of
     n_compounds will be inserted into a box of the specified size.
 
-    If `n_compounds` and `density` are not None, the box corresponding box
-    size will be calculated internally.
+    If `n_compounds` and `density` are not None, the corresponding box
+    size will be calculated internally. In this case, `n_compounds`
+    must be an int and not a list of int.
 
     If `box` and `density` are not None, the box corresponding number of
-    compounds will be calculated internally. In this case, `n_compounds`
-    must be an int and not a list of int.
+    compounds will be calculated internally.
 
     Parameters
     ----------
