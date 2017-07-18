@@ -58,7 +58,7 @@ def fill_box(compound, n_compounds=None, box=None, density=None, overlap=0.2, se
     n_compounds : int or list of int
     box : mb.Box
     overlap : float, units nm
-    density : float, units kg/nm^3
+    density : float, units kg/m^3
 
     Returns
     -------
