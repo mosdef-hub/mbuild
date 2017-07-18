@@ -19,7 +19,8 @@ env:
 install:
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew install md5sha1sum; fi
   - source devtools/travis-ci/install.sh
-  - conda config --set always_yes yes --set changeps1 no
+  - conda config --set always_yes yes
+  - echo $PYTHON_VERSION
   - conda env create -n test-environment python=$PYTHON_VERSION -f environment.yml
   - source activate test-environment
   - pip install -e .
