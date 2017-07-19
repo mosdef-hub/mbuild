@@ -68,14 +68,16 @@ class Bilayer(mb.Compound):
     """
     
     def __init__(self, lipids, args, itp_path, max_tail_randomization=0, solvent=H2O(),
-                 lipid_box=None, cross_tilt=False, unit_conversion=1,
-                 filename=None):
+                 lipid_box=None, unit_conversion=1, filename=None):
         super(Bilayer, self).__init__()
 
         self.n_lipids_x = args.n_lipids_x
         self.n_lipids_y = args.n_lipids_y
         self.lipids = lipids
-        area_per_lipid = args.apl
+        if args.apl is None:
+            area_per_lipid = uniform(0.25 + (0.3 * args.DSPC), 0.35 + (0.3 * args.DSPC))
+        else:
+            area_per_lipid = args.apl
 
         self._sanitize_inputs()
 
@@ -240,23 +242,23 @@ class Bilayer(mb.Compound):
         solvent_components : mb.Compound
             The container for the solvated boxes created in this function
         """
-        water_volume = .06 * np.power(self.unit_conversion, 3)
+        water_volume = .04 * np.power(self.unit_conversion, 3)
         # TODO: Support other solvents' volumes in a user-friendly way
         
         # Calculate box dimension
         box_volume = water_volume * self.solvent_per_layer
-        x_min_box = min(lipid_bilayer.xyz[:, 0])
-        x_max_box = max(lipid_bilayer.xyz[:, 0])
-        y_min_box = min(lipid_bilayer.xyz[:, 1])
-        y_max_box = max(lipid_bilayer.xyz[:, 1])
+        x_min_box = min(self.pattern[:, 0]) # lipid_bilayer.xyz[:, 0])
+        x_max_box = max(self.pattern[:, 0]) # .xyz[:, 0])
+        y_min_box = min(self.pattern[:, 1]) # lipid_bilayer.xyz[:, 1])
+        y_max_box = max(self.pattern[:, 1]) # lipid_bilayer.xyz[:, 1])
         
         box_area = (x_max_box - x_min_box) * (y_max_box - y_min_box)
         box_height = box_volume / box_area
         
-        z_min_top = max(lipid_bilayer.xyz[:, 2]) + 0.5
+        z_min_top = max(lipid_bilayer.xyz[:, 2]) + 0.3
         z_max_top = z_min_top + box_height
         
-        z_max_bottom = min(lipid_bilayer.xyz[:, 2]) - 0.5
+        z_max_bottom = min(lipid_bilayer.xyz[:, 2]) - 0.3
         z_min_bottom = z_max_bottom - box_height
 
         top_solvent_box = mb.Box(mins=[x_min_box, y_min_box, z_min_top],
@@ -386,11 +388,10 @@ if __name__ == '__main__':
     frac.add_argument('--alc24', type=float, default=0.0)
     frac.add_argument('--ISIS', type=float, default=0.0)
     geometry = parser.add_argument_group('Bilayer Geometry', 'Important System-Level Geometric Specifications')
-    geometry.add_argument('-a', '--apl', type=float, default=uniform(0.25, 0.35),
-                          help='The area per lipid of the bilayer')
-    geometry.add_argument('-t', '--tilt_angle', type=float, default=uniform(5, 30),
+    geometry.add_argument('-a', '--apl', type=float, help='The area per lipid of the bilayer')
+    geometry.add_argument('-t', '--tilt_angle', type=float, default=uniform(20, 30),
                           help='The tilt angle of the lipids')
-    geometry.add_argument('-z', '--spacing', type=float, default=-0.3,
+    geometry.add_argument('-z', '--spacing', type=float, default=0.4,
                           help='The spacing in between the two bilayer leaflets')
     geometry.add_argument('-m', '--mirror', action='store_true', default=False,
                           help='Makes the top and bottom leaflets mirror images of one another')

@@ -18,9 +18,10 @@ class DSPCUA(mb.Compound):
         self.translate(-self['ffatails']['CH1']['C'].pos)
         self['headgroup'].rotate(-60*np.pi/180, [0,1,0])
 
-        mb.z_axis_transform(self, new_origin=self['headgroup']['N'],
-                point_on_z_axis=self['ffatails']['FFA'][1][12],
-                point_on_zx_plane=self['ffatails']['FFA'][0]['C'])
+        mb.z_axis_transform(self,
+                new_origin=self['ffatails']['FFA'][1][5],
+                point_on_z_axis=self['ffatails']['FFA'][1][7],
+                point_on_zx_plane=self['ffatails']['FFA'][1][6])
         self.rotate(np.pi, [1,0,0])
         self.name = 'DSPC'
 
