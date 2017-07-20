@@ -1,5 +1,6 @@
 from random import shuffle, uniform
 import numpy as np
+import math
 import argparse
 
 import mbuild as mb
@@ -75,7 +76,8 @@ class Bilayer(mb.Compound):
         self.n_lipids_y = args.n_lipids_y
         self.lipids = lipids
         if args.apl is None:
-            area_per_lipid = uniform(0.25 + (0.3 * args.DSPC), 0.35 + (0.3 * args.DSPC))
+            area_per_lipid = uniform(0.25 + (0.3 * (args.DSPC + args.DPPC + args.DMPC)),
+                                     0.35 + (0.3 * (args.DSPC + args.DPPC + args.DMPC)))
         else:
             area_per_lipid = args.apl
 
@@ -135,13 +137,23 @@ class Bilayer(mb.Compound):
         lipid_bilayer.add(bottom_leaflet, label='bottom_leaflet')
         
         # Translate and rotate the bottom leaflet
-        self._translate_bottom_leaflet(lipid_bilayer, z_spacing,
-                                       args)
+        self._translate_bottom_leaflet(lipid_bilayer, z_spacing, args)
+
+        # Check to make sure leaflets have been spaced correctly
+        top_z_min = np.amin(lipid_bilayer['top_leaflet'].xyz, axis=0)[2]
+        bottom_z_max = np.amax(lipid_bilayer['bottom_leaflet'].xyz, axis=0)[2]
+        space = top_z_min - bottom_z_max
+        assert math.isclose(space, args.spacing), \
+            "Desired spacing: {}, Actual spacing: {}".format(args.spacing, space)
         
         # solvate the lipids
         if self.solvent_per_lipid > 0:
             top_file, solvent_components = self.solvate_bilayer(top_file,
                                                                 lipid_bilayer, solvent_components)
+
+        # recenter the bottom leaflet over the bottom water box
+        self._post_translate(solvent_components, lipid_bilayer)
+
         # close the completed topology file
         top_file.close()
 
@@ -149,7 +161,13 @@ class Bilayer(mb.Compound):
         self.add(lipid_bilayer, label='lipid_bilayer')
         if self.solvent_per_lipid > 0:
             self.add(solvent_components, label='solvent')
-        
+
+        # adjust the periodicity of the system, center the system in the new box
+        water_box = (np.amax(self['solvent'].xyz, axis=0) - np.amin(self['solvent'].xyz, axis=0)) + 0.5
+        self.periodicity = water_box
+        distance = -self['solvent'].xyz.min(axis=0) + 0.25
+        self.translate(distance)  # Bring the bilayer inside the bounding box for the .gro file
+
     def create_layer(self, top_file, lipid_indices=None):
         """Create a monolayer of lipids.
 
@@ -214,11 +232,13 @@ class Bilayer(mb.Compound):
         return top_file, layer, lipid_indices
     
     def _translate_bottom_leaflet(self, lipid_bilayer, spacing_z, args):
-        mins = np.amin(lipid_bilayer['top_leaflet'].xyz, axis=0)
-        z_min = mins[2]
+
         spacing_z *= self.unit_conversion
-        lipid_bilayer['bottom_leaflet'].translate([0, 0, (z_min - spacing_z)])
         lipid_bilayer['bottom_leaflet'].spin(np.pi, [1, 0, 0])
+        top_z_min = np.amin(lipid_bilayer['top_leaflet'].xyz, axis=0)[2]
+        bottom_z_max = np.amax(lipid_bilayer['bottom_leaflet'].xyz, axis=0)[2]
+        space = top_z_min - bottom_z_max
+        lipid_bilayer['bottom_leaflet'].translate([0, 0, (space - spacing_z)])
         if not args.cross_tilt:
             lipid_bilayer['bottom_leaflet'].spin(np.pi, [0, 0, 1])
 
@@ -276,6 +296,11 @@ class Bilayer(mb.Compound):
                                                  self.solvent_per_layer * 2))
 
         return top_file, solvent_components
+
+    def _post_translate(self, solvent_components, lipid_bilayer):
+        distance = np.amax(solvent_components.xyz, axis=0)[0] - \
+                   np.amax(lipid_bilayer['bottom_leaflet'].xyz, axis=0)[0]
+        lipid_bilayer['bottom_leaflet'].translate([distance, 0, 0])
             
     def write_top_header(self, filename='bilayer_test'):
         """ Generate topology file header based on existing .itp files
@@ -432,9 +457,9 @@ if __name__ == '__main__':
 
     bilayer = Bilayer(lipids, args, itp_path="/home/loganguy/builds/setup/FF/gromos53a6/",
                       max_tail_randomization=30)
-    bilayer.translate(-bilayer.xyz.min(axis=0))  # Bring the bilayer inside the bounding box for the .gro file
+
     print('Writing <{0}.gro> ...'.format(bilayer.filename))
-    bilayer.save(bilayer.filename + '.gro', box=bilayer.boundingbox,
+    bilayer.save(bilayer.filename + '.gro',
                  residues=['DSPC', 'FFA12', 'ALC12', 'FFA14', 'ALC14', 'FFA16', 'ALC16',
                            'FFA18', 'ALC18', 'FFA20', 'ALC20', 'FFA22', 'ALC22', 'FFA24',
                            'ALC24', 'ISIS', 'HOH'], overwrite=True)
