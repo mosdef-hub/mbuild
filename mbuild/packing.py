@@ -76,7 +76,8 @@ def fill_box(compound, n_compounds=None, box=None, density=None, overlap=0.2, se
 
     arg_count = 3 - [n_compounds, box, density].count(None)
     if arg_count != 2:
-        msg = "Exactly 2 of n_compounds, box, and density must be specified. {} were given.".format(arg_count)
+        msg = ("Exactly 2 of `n_compounds`, `box`, and `density` "
+            "must be specified. {} were given.".format(arg_count))
         raise ValueError(msg)
 
     if box is not None:
@@ -88,15 +89,20 @@ def fill_box(compound, n_compounds=None, box=None, density=None, overlap=0.2, se
 
     if density is not None:
         if box is None and n_compounds is not None:
-            total_mass = np.sum([n*np.sum([a.mass for a in c.to_parmed().atoms]) for c,n in zip(compound, n_compounds)])
-            L = (total_mass/density)**(1/3)*1.1841763 # Conversion from amu/(kg/m^3) to nm
+            total_mass = np.sum([n*np.sum([a.mass for a in c.to_parmed().atoms])
+                for c,n in zip(compound, n_compounds)])
+            # Conversion from (amu/(kg/m^3))**(1/3) to nm
+            L = (total_mass/density)**(1/3)*1.1841763
             box = _validate_box(Box(3*[L]))
         if n_compounds is None and box is not None:
             if len(compound) > 1:
-                msg = "Determing n_compounds from system density currently supports systems with only one compound type"
+                msg = ("Determing `n_compounds` from `density` and `box` "
+                    "currently only supported for systems with one "
+                    "compound type.")
                 raise ValueError(msg)
             else:
                 compound_mass = np.sum([a.mass for a in compound[0].to_parmed().atoms])
+                # Conversion from kg/m^3 / amu * nm^3 to dimensionless units
                 n_compounds = [int(density/compound_mass*np.prod(box.lengths)*.60224)]
 
     # In angstroms for packmol.
