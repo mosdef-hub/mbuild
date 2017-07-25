@@ -5,10 +5,8 @@ sudo: false
 matrix:
   include:
     - { os: linux, env: PYTHON_VERSION=2.7 }
-    - { os: linux, env: PYTHON_VERSION=3.4 }
     - { os: linux, env: PYTHON_VERSION=3.5 }
     - { os: osx, env: PYTHON_VERSION=2.7 }
-    - { os: osx, env: PYTHON_VERSION=3.4 }
     - { os: osx, env: PYTHON_VERSION=3.5 }
 
 env:
@@ -20,7 +18,12 @@ install:
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew install md5sha1sum; fi
   - source devtools/travis-ci/install.sh
   - conda config --set always_yes yes --set changeps1 no
-  - conda env create -n test-environment python=$PYTHON_VERSION -f environment.yml
+  - conda config --add channels omnia
+  - conda config --add channels janschulz
+  - conda config --add channels glotzer
+  - conda config --add channels bioconda
+  - conda config --add channels mosdef
+  - conda create -n test-environment python=$PYTHON_VERSION --file requirements.txt
   - source activate test-environment
   - pip install -e .
 
