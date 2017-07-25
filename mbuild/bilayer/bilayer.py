@@ -76,8 +76,8 @@ class Bilayer(mb.Compound):
         self.n_lipids_y = args.n_lipids_y
         self.lipids = lipids
         if args.apl is None:
-            area_per_lipid = uniform(0.25 + (0.3 * (args.DSPC + args.DPPC + args.DMPC)),
-                                     0.35 + (0.3 * (args.DSPC + args.DPPC + args.DMPC)))
+            area_per_lipid = uniform(0.25 + (0.3 * (args.DSPC + args.DPPC + args.DMPC + args.ISIS)),
+                                     0.35 + (0.3 * (args.DSPC + args.DPPC + args.DMPC + args.ISIS)))
         else:
             area_per_lipid = args.apl
 
@@ -152,7 +152,8 @@ class Bilayer(mb.Compound):
                                                                 lipid_bilayer, solvent_components)
 
         # recenter the bottom leaflet over the bottom water box
-        self._post_translate(solvent_components, lipid_bilayer)
+        if self.solvent_per_lipid > 0:
+            self._post_translate(solvent_components, lipid_bilayer)
 
         # close the completed topology file
         top_file.close()
@@ -163,10 +164,11 @@ class Bilayer(mb.Compound):
             self.add(solvent_components, label='solvent')
 
         # adjust the periodicity of the system, center the system in the new box
-        water_box = (np.amax(self['solvent'].xyz, axis=0) - np.amin(self['solvent'].xyz, axis=0)) + 0.5
-        self.periodicity = water_box
-        distance = -self['solvent'].xyz.min(axis=0) + 0.25
-        self.translate(distance)  # Bring the bilayer inside the bounding box for the .gro file
+        if self.solvent_per_lipid > 0:
+            water_box = (np.amax(self['solvent'].xyz, axis=0) - np.amin(self['solvent'].xyz, axis=0)) + 0.5
+            self.periodicity = water_box
+            distance = -self['solvent'].xyz.min(axis=0) + 0.25
+            self.translate(distance)  # Bring the bilayer inside the bounding box for the .gro file
 
     def create_layer(self, top_file, lipid_indices=None):
         """Create a monolayer of lipids.
@@ -394,7 +396,7 @@ if __name__ == '__main__':
     parser.add_argument('n_lipids_x', type=int, help='The number of lipids in the x direction')
     parser.add_argument('n_lipids_y', type=int, help='The number of lipids in the y direction')
     frac = parser.add_argument_group('Component Fractions', 'The fraction of the bilayer containing each component')
-    frac.add_argument('--DSPC', type=float, default=1.0)
+    frac.add_argument('--DSPC', type=float, default=0.0)
     frac.add_argument('--DPPC', type=float, default=0.0)
     frac.add_argument('--DMPC', type=float, default=0.0)
     frac.add_argument('--acd12', type=float, default=0.0)
