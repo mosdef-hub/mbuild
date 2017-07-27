@@ -1256,7 +1256,7 @@ class Compound(object):
 
     def save(self, filename, show_ports=False, forcefield_name=None,
              forcefield_files=None, box=None, overwrite=False, residues=None,
-             references_file=None, **kwargs):
+             references_file=None, combining_rule='lorentz', **kwargs):
         """Save the Compound to a file.
 
         Parameters
@@ -1286,6 +1286,11 @@ class Compound(object):
         references_file : str, optional, default=None
             Specify a filename to write references for the forcefield that is
             to be applied. References are written in BiBTeX format.
+        combining_rule : str, optional, default='lorentz'
+            Specify the combining rule for nonbonded interactions. Only relevant
+            when the `foyer` package is used to apply a forcefield. Valid
+            options are 'lorentz' and 'geometric', specifying Lorentz-Berthelot
+            and geometric combining rules respectively.
 
         Other Parameters
         ----------------
@@ -1333,6 +1338,7 @@ class Compound(object):
             ff = Forcefield(forcefield_files=forcefield_files,
                             name=forcefield_name)
             structure = ff.apply(structure, references_file=references_file)
+            structure.combining_rule = combining_rule
 
         total_charge = sum([atom.charge for atom in structure])
         if round(total_charge, 4) != 0.0:
