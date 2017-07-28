@@ -77,6 +77,18 @@ class TestCompound(BaseTest):
                      references_file='methane.bib')
         assert os.path.isfile('methane.bib')
 
+    def test_save_combining_rule(self, methane):
+        combining_rules = ['lorentz', 'geometric']
+        gmx_rules = {'lorentz': 2, 'geometric': 3}
+        for combining_rule in combining_rules:
+            methane.save('methane.top', forcefield_name='oplsaa',
+                         combining_rule=combining_rule, overwrite=True)
+            with open('methane.top') as fp:
+                for i, line in enumerate(fp):
+                    if i == 18:
+                        gmx_rule = int(line.split()[1])
+                        assert gmx_rule == gmx_rules[combining_rule]
+
     def test_batch_add(self, ethane, h2o):
         compound = mb.Compound()
         compound.add([ethane, h2o])
