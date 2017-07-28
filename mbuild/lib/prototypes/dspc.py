@@ -1,8 +1,8 @@
 import mbuild as mb
 import numpy as np
 
-from mbuild.prototypes.pctails import PCTails
-from mbuild.prototypes.pchead import PCHead
+from mbuild.lib.prototypes.pctails import PCTails
+from mbuild.lib.prototypes.pchead import PCHead
 
 
 class DSPC(mb.Compound):

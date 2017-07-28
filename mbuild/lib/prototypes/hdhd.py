@@ -1,8 +1,8 @@
 import mbuild as mb
 import numpy as np
 
-from mbuild.prototypes.ffa import FFA
-from mbuild.prototypes.alc import ALC
+from mbuild.lib.prototypes.ffa import FFA
+from mbuild.lib.prototypes.alc import ALC
 
 class HDHD(mb.Compound):
     def __init__(self):

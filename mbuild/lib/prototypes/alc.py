@@ -1,8 +1,8 @@
 import mbuild as mb
 import numpy as np
 from mbuild.lib.moieties.ch3 import CH3
-from mbuild.prototypes.alkyl_monomer import AlkylMonomer
-from mbuild.prototypes.OH import OH
+from mbuild.lib.prototypes.alkyl_monomer import AlkylMonomer
+from mbuild.lib.prototypes.OH import OH
 
 class ALC(mb.Compound):
     """Creates a straight-chain alcohol of n carbons based on user

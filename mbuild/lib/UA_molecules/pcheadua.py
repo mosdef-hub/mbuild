@@ -2,9 +2,9 @@ import mbuild as mb
 import numpy as np
 
 from mbuild.lib.atoms.n4 import N4
-from mbuild.UA_molecules.po4ua import Phosphate
-from mbuild.UA_molecules.alkyl_monomerua import AlkylMonomerUA
-from mbuild.UA_molecules.ch3ua import CH3UA
+from mbuild.lib.UA_molecules.po4ua import Phosphate
+from mbuild.lib.UA_molecules.alkyl_monomerua import AlkylMonomerUA
+from mbuild.lib.UA_molecules.ch3ua import CH3UA
 
 class PCHeadUA(mb.Compound):
     def __init__(self):

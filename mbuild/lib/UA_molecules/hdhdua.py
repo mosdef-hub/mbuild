@@ -1,8 +1,8 @@
 import mbuild as mb
 import numpy as np
 
-from mbuild.UA_molecules import CH3UA, AlkylMonomerUA
-from mbuild.prototypes import COOH
+from mbuild.lib.UA_molecules import CH3UA, AlkylMonomerUA
+from mbuild.lib.prototypes import COOH
 
 class HDHDUA(mb.Compound):
     def __init__(self):

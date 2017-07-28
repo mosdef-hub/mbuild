@@ -1,8 +1,8 @@
 import mbuild as mb
 import numpy as np
-from mbuild.UA_molecules.ch3ua import CH3UA
-from mbuild.UA_molecules.alkyl_monomerua import AlkylMonomerUA
-from mbuild.prototypes.OH import OH
+from mbuild.lib.UA_molecules.ch3ua import CH3UA
+from mbuild.lib.UA_molecules.alkyl_monomerua import AlkylMonomerUA
+from mbuild.lib.prototypes.OH import OH
 
 class ALCUA(mb.Compound):
     """Creates a straight-chain alcohol of n carbons based on user

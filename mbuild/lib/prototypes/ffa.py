@@ -1,7 +1,7 @@
 import mbuild as mb
 import numpy as np
 
-from mbuild.prototypes import COOH, AlkylMonomer
+from mbuild.lib.prototypes import COOH, AlkylMonomer
 from mbuild.lib.moieties.ch3 import CH3
 
 class FFA(mb.Compound):

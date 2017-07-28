@@ -1,8 +1,8 @@
 import mbuild as mb
 import numpy as np
 
-from mbuild.UA_molecules.pctailsua  import PCTailsUA
-from mbuild.UA_molecules.pcheadua import PCHeadUA
+from mbuild.lib.UA_molecules.pctailsua  import PCTailsUA
+from mbuild.lib.UA_molecules.pcheadua import PCHeadUA
 
 
 class DPPCUA(mb.Compound):

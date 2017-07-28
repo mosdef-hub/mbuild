@@ -1,8 +1,8 @@
 import mbuild as mb
 import numpy as np
 
-from mbuild.UA_molecules import CH3UA, CH1UA, AlkylMonomerUA
-from mbuild.prototypes import COOH
+from mbuild.lib.UA_molecules import CH3UA, CH1UA, AlkylMonomerUA
+from mbuild.lib.prototypes import COOH
 
 
 class ISISUA(mb.Compound):

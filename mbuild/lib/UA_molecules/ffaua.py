@@ -1,9 +1,9 @@
 import mbuild as mb
 import numpy as np
 
-from mbuild.UA_molecules.ch3ua import CH3UA
-from mbuild.UA_molecules.alkyl_monomerua import AlkylMonomerUA
-from mbuild.prototypes.cooh import COOH
+from mbuild.lib.UA_molecules.ch3ua import CH3UA
+from mbuild.lib.UA_molecules.alkyl_monomerua import AlkylMonomerUA
+from mbuild.lib.prototypes.cooh import COOH
 
 class FFAUA(mb.Compound):
     """Creates a saturated free fatty acid of n carbons based on user

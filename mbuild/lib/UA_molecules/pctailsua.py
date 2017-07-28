@@ -1,9 +1,9 @@
 import mbuild as mb
 import numpy as np
 
-from mbuild.UA_molecules.ffaua import FFAUA
-from mbuild.UA_molecules.alkyl_monomerua import AlkylMonomerUA
-from mbuild.UA_molecules.ch1ua import CH1UA
+from mbuild.lib.UA_molecules.ffaua import FFAUA
+from mbuild.lib.UA_molecules.alkyl_monomerua import AlkylMonomerUA
+from mbuild.lib.UA_molecules.ch1ua import CH1UA
 
 
 class PCTailsUA(mb.Compound):

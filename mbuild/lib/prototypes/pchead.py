@@ -3,8 +3,8 @@ import numpy as np
 
 from mbuild.examples.methane.methane import Methane
 from mbuild.lib.atoms.n4 import N4
-from mbuild.prototypes.po4 import Phosphate
-from mbuild.prototypes.alkyl_monomer import AlkylMonomer
+from mbuild.lib.prototypes.po4 import Phosphate
+from mbuild.lib.prototypes.alkyl_monomer import AlkylMonomer
 
 class PCHead(mb.Compound):
     def __init__(self):

@@ -1,13 +1,8 @@
-
-# coding: utf-8
-
-# In[9]:
-
 import mbuild as mb
 import numpy as np
 
-from mbuild.prototypes.ffa import FFA
-from mbuild.prototypes.alkyl_monomer import AlkylMonomer
+from mbuild.lib.prototypes.ffa import FFA
+from mbuild.lib.prototypes.alkyl_monomer import AlkylMonomer
 
 class PCTails(mb.Compound):
     def __init__(self, tail_1_length, tail_2_length):

@@ -1,7 +1,7 @@
 import mbuild as mb
 import numpy as np
 
-from mbuild.prototypes.OH import OH
+from mbuild.lib.prototypes.OH import OH
 
 class COOH(mb.Compound):
     """Creates headgroup of a carboxylic acid"""

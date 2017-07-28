@@ -2,9 +2,9 @@ import mbuild as mb
 import numpy as np
 
 from mbuild.lib.moieties.ch3 import CH3
-from mbuild.prototypes.ffa import FFA
-from mbuild.prototypes.alkyl_monomer import AlkylMonomer
-from mbuild.prototypes.alc import ALC
+from mbuild.lib.prototypes.ffa import FFA
+from mbuild.lib.prototypes.alkyl_monomer import AlkylMonomer
+from mbuild.lib.prototypes.alc import ALC
 
 class ISIS(mb.Compound):
     def __init__(self):
