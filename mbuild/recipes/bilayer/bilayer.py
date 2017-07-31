@@ -2,6 +2,7 @@ from random import shuffle, uniform
 import numpy as np
 import math
 import argparse
+import warnings
 
 import mbuild as mb
 from mbuild import clone
@@ -20,7 +21,9 @@ class Bilayer(mb.Compound):
         - The rest of the lipid is pointing in the negative z direction
         
     The user may input the fraction of each lipid in the bilayer, as well as a number of important bilayer 
-    properties such as area per lipid, bilayer size, and tilt angle.
+    properties such as area per lipid, bilayer size, and tilt angle. For a more robust description of the
+    various features of the Bilayer Builder, see the bilayer_tutorial.ipynb file, located in
+    mbuild/recipes/bilayer/bilayer_tutorial.ipynb.
 
     Parameters
     ----------
@@ -102,15 +105,19 @@ class Bilayer(mb.Compound):
                  filename='', make_files=False):
         super(Bilayer, self).__init__()
 
+        print('Setting bilayer attributes and system information...')
         self.lipids = lipids
         self.ref_atoms = []
-        multiplier = 0 # placeholder that will be used to calculate the necessary area per lipid
+        multiplier = 0  # placeholder that will be used to calculate the necessary area per lipid
         for component in lipids:
             self.ref_atoms.append(component[3])
             if component[0] is ('DSPC' or 'DPPC' or 'DMPC' or 'ISIS'):
                 multiplier += component[1]
         assert len(self.ref_atoms) == len(lipids)
 
+        if not isinstance(n_lipids_x, int) or not isinstance(n_lipids_y, int):
+            raise TypeError('Both dimensions provided must be an integer: n_lipids_x is of type {}, '
+                            'n_lipids_y is of type {}'.format(type(n_lipids_x, n_lipids_y)))
         self.n_lipids_x = n_lipids_x
         self.n_lipids_y = n_lipids_y
 
@@ -119,14 +126,30 @@ class Bilayer(mb.Compound):
             area_per_lipid = uniform(0.2 + (0.3 * multiplier), 0.3 + (0.3 * multiplier))
         else:
             area_per_lipid = area_per_lipid
+            warnings.warn('You have specified a custom APL value. This is not recommended, as the APL'
+                          'default has been intelligently set.')
 
         # Geometric attributes
+        if not isinstance(tilt_angle, (float, int)):
+            raise TypeError('Tilt angle must be a valid number. The tilt angle provided is of type {}'
+                            .format(type(tilt_angle)))
         self.tilt = tilt_angle * np.pi / 180
+        if not isinstance(max_tail_randomization, (float, int)):
+            raise TypeError('Z-axis randomization must be a valid number. The tilt angle provided is of type {}'
+                            .format(type(max_tail_randomization)))
+        if max_tail_randomization > 90:
+            raise ValueError('The tail randomization maximum provided is too large. Please pick an angle < 90)')
         self.z_orientation = max_tail_randomization
+        if not isinstance(cross_tilt, bool):
+            raise TypeError('cross_tilt parameter must be a valid boolean.')
         self.cross_tilt = cross_tilt
 
         # Solvent attributes
+        if not isinstance(solvent, mb.Compound):
+            raise TypeError('Solvent provided must be a valid mb.Compound')
         self.solvent = solvent
+        if not isinstance(solvent_per_lipid, int):
+            raise ValueError('solvent_per_lipid must be an integer')
         self.solvent_per_lipid = solvent_per_lipid
 
         # Private attributes for getter methods
@@ -134,8 +157,12 @@ class Bilayer(mb.Compound):
         self._solvent_per_layer = None
 
         # Path to .itp files and file attributes
+        if not isinstance(itp_path, str):
+            raise TypeError('Directory path to itp files must be a valid string')
         self.itp_path = itp_path
         self.make_files = make_files
+        if not isinstance(filename, str):
+            raise TypeError('Filename must be a valid string')
         self.filename = filename
         if len(filename) == 0:
             components = [str(lipid[0].name) + '_' + str(lipid[1]) + '_' for lipid in lipids]
@@ -162,8 +189,10 @@ class Bilayer(mb.Compound):
         # Create lipid leaflets and add them to the bilayer compound structure
         lipid_bilayer = mb.Compound()
         solvent_components = mb.Compound()
+        print('Creating top leaflet...')
         top_file, top_leaflet, top_lipid_labels = self.create_layer(top_file=top_file)
         lipid_bilayer.add(top_leaflet, label='top_leaflet')
+        print('Creating bottom leaflet...')
         if mirror:
             top_file, bottom_leaflet, bottom_lipid_labels = self.create_layer(top_file, lipid_indices=top_lipid_labels)
         else:
@@ -182,6 +211,7 @@ class Bilayer(mb.Compound):
         
         # solvate the lipids
         if self.solvent_per_lipid > 0:
+            print('Solvating the bilayer...')
             top_file, solvent_components = self.solvate_bilayer(top_file,
                                                                 lipid_bilayer, solvent_components)
 
@@ -194,6 +224,7 @@ class Bilayer(mb.Compound):
             top_file.close()
 
         # add everything to the overall Compound structure
+        print('Adding the system components to mb.Compound...')
         self.add(lipid_bilayer, label='lipid_bilayer')
         if self.solvent_per_lipid > 0:
             self.add(solvent_components, label='solvent')
@@ -209,11 +240,12 @@ class Bilayer(mb.Compound):
         if self.make_files:
             print('Writing <{0}.gro> ...'.format(self.filename))
             self.save(self.filename + '.gro',
-                         residues=['DSPC', 'FFA12', 'ALC12', 'FFA14', 'ALC14', 'FFA16', 'ALC16',
-                                   'FFA18', 'ALC18', 'FFA20', 'ALC20', 'FFA22', 'ALC22', 'FFA24',
-                                   'ALC24', 'ISIS', 'HOH'], overwrite=True)
+                      residues=['DSPC', 'FFA12', 'ALC12', 'FFA14', 'ALC14', 'FFA16', 'ALC16',
+                                'FFA18', 'ALC18', 'FFA20', 'ALC20', 'FFA22', 'ALC22', 'FFA24',
+                                'ALC24', 'ISIS', 'HOH'], overwrite=True)
             print('Creating <{0}.mol2> ...'.format(self.filename))
             self.save(self.filename + '.mol2', overwrite=True)
+        print('Bilayer construction complete.')
 
     def create_layer(self, top_file=None, lipid_indices=None):
         """Create a monolayer of lipids.
@@ -399,16 +431,19 @@ class Bilayer(mb.Compound):
 
         for lipid in self.lipids[:-1]:
             self._number_of_each_lipid_per_layer.append(int(round(lipid[1] * self.lipids_per_leaflet)))
-
-        # TODO: give warning if frac * n different than actual
-        # Rounding errors may make this off by 1, so just do total - whats_been_added.
+            if abs(round(lipid[1] * self.lipids_per_leaflet) - (lipid[1] * self.lipids_per_leaflet)) > 1:
+                message = 'The Bilayer Builder was unable to create a bilayer with the exact fraction ' \
+                          'specified for lipid {}. Please check that the combination of bilayer size and' \
+                          'given composition fractions is logical'.format(lipid[0])
+                warnings.warn(message)
         self._number_of_each_lipid_per_layer.append(self.lipids_per_leaflet
                                                     - sum(self._number_of_each_lipid_per_layer))
         assert len(self._number_of_each_lipid_per_layer) == len(self.lipids)
         return self._number_of_each_lipid_per_layer
 
     def _sanitize_inputs(self):
-        """Check for proper inputs
+        """Checks that the values passed by the user to the constructor are valid before instance attributes
+        are created.
     
         Ensure that the user's lipid fractions add up to 1, 
         or raise a ValueError.
@@ -438,8 +473,8 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Welcome to the Bilayer Builder!',
                                      formatter_class=argparse.ArgumentDefaultsHelpFormatter,
                                      epilog='For more robust descriptions of variables and '
-                                            'functionality of the Bilayer Builder, see the '
-                                            'README file.')
+                                            'functionality of the Bilayer Builder, see tutorial_bilayer.ipynb, '
+                                            'found in the tutorials directory.')
     
     parser.add_argument('n_lipids_x', type=int, help='The number of lipids in the x direction')
     parser.add_argument('n_lipids_y', type=int, help='The number of lipids in the y direction')
