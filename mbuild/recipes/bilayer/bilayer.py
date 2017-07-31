@@ -41,7 +41,7 @@ class Bilayer(mb.Compound):
         Random tilt angle applied equally to all lipids (tilted with respect to the y-axis)
     z_spacing : float, optional
         The distance between the two bilayer leaflets. A negative distance leads to interdigitation
-    max_tail_randomization : float, optional, default=0.0
+    max_tail_randomization : float, optional, default=25.0
         For a set tilt angle, the maximum amount each lipid may be randomly spun around the z-axis
     mirror : boolean, optional, default=False
         Indicates whether or not the bottom leaflet will be a mirror image of the top leaflet
@@ -96,7 +96,7 @@ class Bilayer(mb.Compound):
         Adjust for unit conversions if necessary
     """
     
-    def __init__(self, lipids, n_lipids_x=4, n_lipids_y=4, itp_path="/home/loganguy/builds/setup/FF/gromos53a6/",
+    def __init__(self, lipids, n_lipids_x=8, n_lipids_y=8, itp_path="/home/loganguy/builds/setup/FF/gromos53a6/",
                  area_per_lipid=None, tilt_angle=uniform(20, 30), z_spacing=-0.2, max_tail_randomization=25,
                  mirror=False, cross_tilt=False, solvent=H2O(), solvent_per_lipid=20, unit_conversion=1,
                  filename='', make_files=False):
@@ -117,6 +117,8 @@ class Bilayer(mb.Compound):
         # Calculate the necessary area per lipid
         if area_per_lipid is None:
             area_per_lipid = uniform(0.2 + (0.3 * multiplier), 0.3 + (0.3 * multiplier))
+        else:
+            area_per_lipid = area_per_lipid
 
         # Geometric attributes
         self.tilt = tilt_angle * np.pi / 180
@@ -184,7 +186,7 @@ class Bilayer(mb.Compound):
                                                                 lipid_bilayer, solvent_components)
 
         # recenter the bottom leaflet over the bottom water box
-        if self.solvent_per_lipid > 0:
+        if self.solvent_per_lipid > 0 and not self.cross_tilt:
             self._post_translate(solvent_components, lipid_bilayer)
 
         # close the completed topology file
