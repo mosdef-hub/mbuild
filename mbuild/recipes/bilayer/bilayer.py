@@ -6,13 +6,16 @@ import warnings
 
 import mbuild as mb
 from mbuild import clone
-from mbuild.lib.prototypes import DSPC, ALC, FFA, ISIS, HDHD, H2O
+from mbuild.lib.prototypes import H2O
 from mbuild.lib.UA_molecules import DSPCUA, DMPCUA, DPPCUA, FFAUA, ISISUA, ALCUA
-from mbuild.lib.cg_molecules import ECer2, UCer2, Chol, FFAC16, FFAC20, FFAC24, Water
+
+# for coarse-grained bilayers
+# from mbuild.lib.cg_molecules import ECer2, UCer2, Chol, FFAC16, FFAC20, FFAC24, Water
 
 
 class Bilayer(mb.Compound):
-    """The Bilayer Builder creates a lipid bilayer, solvates it, and stores it as an mBuild Compound. 
+    """
+    The Bilayer Builder creates a lipid bilayer, solvates it, and stores it as an mBuild Compound.
     Because the Bilayer Builder does not check for the orientation of the mBuild molecules the user 
     provides from a previously created class or file, the user must ensure the following things are true 
     about the lipids they input to the builder:
@@ -117,7 +120,7 @@ class Bilayer(mb.Compound):
 
         if not isinstance(n_lipids_x, int) or not isinstance(n_lipids_y, int):
             raise TypeError('Both dimensions provided must be an integer: n_lipids_x is of type {}, '
-                            'n_lipids_y is of type {}'.format(type(n_lipids_x, n_lipids_y)))
+                            'n_lipids_y is of type {}'.format(type(n_lipids_x), type(n_lipids_y)))
         self.n_lipids_x = n_lipids_x
         self.n_lipids_y = n_lipids_y
 
@@ -165,7 +168,7 @@ class Bilayer(mb.Compound):
             raise TypeError('Filename must be a valid string')
         self.filename = filename
         if len(filename) == 0:
-            components = [str(lipid[0].name) + '_' + str(lipid[1]) + '_' for lipid in lipids]
+            components = [str(lip[0].name) + '_' + str(lip[1]) + '_' for lip in lipids]
             for component in components:
                 self.filename += component
             self.filename += 'UA'
@@ -429,12 +432,12 @@ class Bilayer(mb.Compound):
         if self._number_of_each_lipid_per_layer:
             return self._number_of_each_lipid_per_layer
 
-        for lipid in self.lipids[:-1]:
-            self._number_of_each_lipid_per_layer.append(int(round(lipid[1] * self.lipids_per_leaflet)))
-            if abs(round(lipid[1] * self.lipids_per_leaflet) - (lipid[1] * self.lipids_per_leaflet)) > 1:
+        for lpd in self.lipids[:-1]:
+            self._number_of_each_lipid_per_layer.append(int(round(lpd[1] * self.lipids_per_leaflet)))
+            if abs(round(lpd[1] * self.lipids_per_leaflet) - (lpd[1] * self.lipids_per_leaflet)) > 1:
                 message = 'The Bilayer Builder was unable to create a bilayer with the exact fraction ' \
                           'specified for lipid {}. Please check that the combination of bilayer size and' \
-                          'given composition fractions is logical'.format(lipid[0])
+                          'given composition fractions is logical'.format(lpd[0])
                 warnings.warn(message)
         self._number_of_each_lipid_per_layer.append(self.lipids_per_leaflet
                                                     - sum(self._number_of_each_lipid_per_layer))
@@ -453,7 +456,7 @@ class Bilayer(mb.Compound):
         or raise a ValueError.
         """
     
-        if sum([lipid[1] for lipid in self.lipids]) != 1.0:
+        if sum([lpd[1] for lpd in self.lipids]) != 1.0:
             raise ValueError('Lipid fractions do not add up to 1.')
         if not (self.n_lipids_x > 0 and self.n_lipids_y > 0):
             raise ValueError('Bilayer dimensions must be greater than 0')
@@ -548,23 +551,23 @@ if __name__ == '__main__':
         lipids.pop(index)
 
     # Set all parameter values
-    n_lipids_x = cmdline.n_lipids_x
-    n_lipids_y = cmdline.n_lipids_y
-    itp_path = cmdline.itp_path
+    n_x = cmdline.n_lipids_x
+    n_y = cmdline.n_lipids_y
+    path = cmdline.itp_path
     if cmdline.apl is None:
-        area_per_lipid = uniform(0.2 + (0.3 * (cmdline.DSPC + cmdline.DPPC + cmdline.DMPC + cmdline.ISIS)),
-                                 0.3 + (0.3 * (cmdline.DSPC + cmdline.DPPC + cmdline.DMPC + cmdline.ISIS)))
+        apl = uniform(0.2 + (0.3 * (cmdline.DSPC + cmdline.DPPC + cmdline.DMPC + cmdline.ISIS)),
+                      0.3 + (0.3 * (cmdline.DSPC + cmdline.DPPC + cmdline.DMPC + cmdline.ISIS)))
     else:
-        area_per_lipid = cmdline.apl
-    tilt_angle = cmdline.tilt_angle
-    z_spacing = cmdline.spacing
-    max_tail_randomization = cmdline.randomization
-    mirror = cmdline.mirror
-    cross_tilt = cmdline.cross_tilt
-    solvent_per_lipid = cmdline.solvate
-    unit_conversion = cmdline.units
+        apl = cmdline.apl
+    tilt = cmdline.tilt_angle
+    z_space = cmdline.spacing
+    tail_randomization = cmdline.randomization
+    mir = cmdline.mirror
+    cross = cmdline.cross_tilt
+    spl = cmdline.solvate
+    units = cmdline.units
 
-    bilayer = Bilayer(lipids, n_lipids_x=n_lipids_x, n_lipids_y=n_lipids_y, itp_path=itp_path,
-                      area_per_lipid=area_per_lipid, tilt_angle=tilt_angle, z_spacing=z_spacing,
-                      max_tail_randomization=max_tail_randomization, mirror=mirror, cross_tilt=cross_tilt,
-                      solvent_per_lipid=solvent_per_lipid, unit_conversion=unit_conversion, make_files=True)
+    bilayer = Bilayer(lipids, n_lipids_x=n_x, n_lipids_y=n_y, itp_path=path,
+                      area_per_lipid=apl, tilt_angle=tilt, z_spacing=z_space,
+                      max_tail_randomization=tail_randomization, mirror=mir, cross_tilt=cross,
+                      solvent_per_lipid=spl, unit_conversion=units, make_files=True)

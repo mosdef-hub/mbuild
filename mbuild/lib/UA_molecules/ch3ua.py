@@ -1,5 +1,6 @@
 import mbuild as mb
 
+
 class CH3UA(mb.Compound):
     """A methyl group for united-atom model. """
     def __init__(self):
@@ -9,8 +10,6 @@ class CH3UA(mb.Compound):
         self['up'].translate([0, -0.07, 0])
 
         self[0].name = 'CH3'
-        
 
 if __name__ == '__main__':
     m = CH3UA()
-

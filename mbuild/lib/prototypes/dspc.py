@@ -10,15 +10,13 @@ class DSPC(mb.Compound):
         super(DSPC, self).__init__()
         
         self.add(PCHead(), label='headgroup')
-        self.add(PCTails(18,18), label='ffatails')
+        self.add(PCTails(18, 18), label='ffatails')
         
-        mb.force_overlap(move_this=self['ffatails'],
-                        from_positions=self['ffatails']['base']['up'],
-                        to_positions=self['headgroup']['alkyl_split']['up'])
+        mb.force_overlap(move_this=self['ffatails'], from_positions=self['ffatails']['base']['up'],
+                         to_positions=self['headgroup']['alkyl_split']['up'])
         mb.z_axis_transform(self, self['headgroup']['N4']['N'][0], self['headgroup']['PO4']['P'][0])
         self.spin(np.pi, [1, 0, 0])
 
 if __name__ == '__main__':
     dspc = DSPC()
     dspc.save('dspc.mol2', overwrite=True)
-
