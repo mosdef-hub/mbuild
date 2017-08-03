@@ -6,6 +6,7 @@ import collections
 from collections import OrderedDict, defaultdict
 from copy import deepcopy
 import itertools
+from itertools import product
 import os
 import sys
 import tempfile
@@ -27,7 +28,8 @@ from mbuild.formats.lammpsdata import write_lammpsdata
 from mbuild.formats.gsdwriter import write_gsd
 from mbuild.periodic_kdtree import PeriodicCKDTree
 from mbuild.utils.io import run_from_ipython, import_
-from mbuild.coordinate_transform import _translate, _rotate
+from mbuild.coordinate_transform import _translate, _rotate, \
+    normalized_matrix, unit_vector, angle
 
 
 def load(filename, relative_to_module=None, compound=None, coords_only=False,
@@ -274,6 +276,31 @@ class Compound(object):
                 yield subpart
 
     @property
+    def my_label(self):
+       """Returns the label of the current compound, as seen by the compound's
+       parent.
+
+       The default MBuild labeling convention when building compounds
+       is label = "name[{}]".format(ii) where ii is the order (zero indexed)
+       which that kind of that compound/particle is added.
+       """
+       if self.parent:
+           for lab in self.parent.labels:
+               if isinstance(lab, list):
+                   continue
+               if self.parent[lab] is self:
+                   return lab
+                   break
+           else:
+               raise AttributeError("Developer Error")
+               # revisit this error an also should I make this a property?
+       else:
+           warn ("Object {} is at the top of its hierarchy and thus has no label."
+                 " Returning None.".format(self))
+           return None
+
+
+    @property
     def n_particles(self):
         """Return the number of Particles in the Compound.
 
@@ -346,6 +373,238 @@ class Compound(object):
         for particle in self.particles():
             if particle.name == name:
                 yield particle
+
+    def find_particle_in_path(self, within_path):
+       """"
+       Yields all particles that exist within the hierarchal pathway description provided
+        in the parameter 'within_path'.
+
+       A hierarchal pathway is a list or tuple containing any combination of strings,
+       list/tuples, or mb.Compounds. Each element of the list/tuple either describes a series
+       of subcompounds (this occurs in the instance where an inner list/tuple is passed), or describes
+       one subcompound or type of subcompound (when a string is passed), or even IS a subcompound
+       (in the instance where a mb.Compound object is passed). Strings correspond
+       to either the names or labels of subcompounds, and list/tuples hold multiple strings that
+       correspond to names and/or labels. They are used when the user wishes to describe multiple
+       pathways, for example, path = [..., ["subcompound[1]", "subcompound[4]"], ...].
+       This example demonstrates that the user can describe some but not all of the pathways
+       that have the name "subcompound". The order of the elements in the outer list/tuple correspond
+       to their position in the hierarchal pathway, where the first index is the lowest level and the
+       last is the highest specified. The number of subcompounds the user can specify is unlimited so
+       long as each subcompound specified lies within the hierarchy of the list/tuple element that
+       follows. In the context of this function, the first index correspond to a mb.Particle.
+
+       The idea of a pathway is similar to how one sorts through directories on a computer,
+       i.e. "C:/user/username/documents" BUT since MBuild uses hierarchal pathways from lowest
+       to highest, the MBuild style of writing it would be "documents/username/user/C:".
+       # best hierarchal description
+
+       EX: path =["target",
+                         ["SubSubSubCompound[0]",
+                          "SubSubSubCompound[3]",
+                          "SubSubSubCompound[4]"],
+                        "SubSubCompound",
+                        "SubCompound[6]"]
+
+       :param within_path: accepts list, tuple, or mb.particle
+           If a mb.particle is provided, the function will return within_path.
+           The a list/tuple is specified, each element is either a str, mb.Compound,
+           list/tuple (containing any combination of strs and mb.Compounds). If
+           a mb.Compound is provided the function skips to that index and ignores
+           all data beyond that index. For example, given
+           ["a0", "a1", <mb.Compound>, "a3"], the function would ignore the value "a3"
+            and skip straight to the mb.Compound. See
+           above description for more information on pathways.
+
+       :yields
+           All particles that match the hierarchal description provided.
+
+       """
+       # revisit bc of the list option. i'm worried it won't return any errors. maybe track which ones
+       # it doesnt find. That would probably need to be done in find_subc_in_path
+       if not isinstance(within_path, (list,tuple)):
+           if not isinstance(within_path, mb.Particle):
+               raise TypeError("within_path must be of type list or tuple. "
+                               "User passed type: {}. within_path can also "
+                               "accept a mb.Particle but in this instance "
+                               "find_particle_in_path just returns within_path"
+                               ".".format(type(within_path)))
+           else:
+               yield within_path
+               return
+       if not within_path:
+           raise ValueError("within_path cannot be empty.")
+       within_path = list(within_path)
+       no_yield = True
+       parti = within_path[0]
+       if len(within_path) ==1:
+           if isinstance(parti,mb.Particle):
+               yield parti
+               return
+           elif isinstance(parti, str):
+               for parts in self:
+                   if parts.name == parti or parts.my_label == parti:
+                       if no_yield:
+                           no_yield = False
+                       yield parts
+           elif isinstance(parti, (list, tuple)):
+               for parts in self:
+                   if parts.name in parti or parts.my_label in parti:
+                       if no_yield:
+                           no_yield = False
+                       yield parts
+           else:
+               raise TypeError("The object contained in within_path is not of "
+                               "an acceptable type. Acceptable types are str, tuple,"
+                               "list, mb.Particle (for only the first index), "
+                               "and mb.Compound (valid for any index except the first)."
+                               " User passed object of type: {}.".format(type(parti)))
+       elif isinstance(parti, (list,tuple)):
+           for subc in self.find_subcompounds_in_path(pathway=within_path[1:]):
+               if subc:
+                   for parts in subc:
+                       if parts.name in parti or parts.my_label in parti:
+                           if no_yield:
+                               no_yield = False
+                           yield parts
+       else:
+           for subc in self.find_subcompounds_in_path(pathway= within_path[1:]):
+               if subc:
+                   for parts in subc:
+                       if parts.name == parti or parts.my_label == parti:
+                           if no_yield:
+                               no_yield = False
+                           yield parts
+       if no_yield:
+           raise ValueError("Particle in path {} not found. Verify that "
+                            "this is the correct path.".format(within_path))
+
+
+    def subcompounds_by_name_or_label(self, looking_for):
+       """
+       Yields all the subcompounds that exhibit the specified name or label.
+
+       Parameters:
+
+       looking_for: accepts str
+           This string will specify the name or label of the particle(s) the user wishes
+           to find.
+
+       Editors note:
+       Whenever calling this function within a function make sure to add in a method to track
+       if anything in looking_for was not found
+       """
+       if isinstance(looking_for, str):
+           for parti in self.children:
+               if parti.name == looking_for or parti.my_label == looking_for:
+                   if parti.n_particles > 1:
+                       yield parti
+                   else:
+                       raise ValueError("The user passed {}, the name of an atom/ particle within this "
+                                       "object. Please use particles_by_name, find_particle_in_path,"
+                                        "or a similar method instead.".format(parti.name))
+               else:
+                   if parti.n_particles > 1:
+                       yield from parti.subcompounds_by_name_or_label(looking_for)
+                   else:
+                       yield None
+
+       elif isinstance(looking_for, (list, tuple)) and all(looking_for):
+           for l in looking_for:
+               yield from self.subcompounds_by_name_or_label(looking_for=l)
+       else:
+           raise TypeError("looking_for must be of type str or a list/tuple of strs."
+                           " User passed: {}.".format(type(looking_for)))
+
+    def find_subcompounds_in_path(self, pathway):
+       """
+       yield all subcompounds that are in the specified hierarchal pathway
+
+       :param pathway: list or tuple containing strings or mb.Compounds
+           A hierarchal pathway (see below) to the desired subcompounds.
+
+       :return: yields all particles that match the path description.
+               yields None if the particle path specified doesn't exist
+
+       A hierarchal pathway is a list or tuple containing any combination of strings,
+       list/tuples, or mb.Compounds. Each element of the list/tuple either describes a series
+       of subcompounds (this occurs in the instance where an inner list/tuple is passed), or describes
+       one subcompound or type of subcompound (when a string is passed), or even IS a subcompound
+       (in the instance where a mb.Compound object is passed). Strings correspond
+       to either the names or labels of subcompounds, and list/tuples hold multiple strings that
+       correspond to names and/or labels. They are used when the user wishes to describe multiple
+       pathways, for example, path = [..., ["subcompound[1]", "subcompound[4]"], ...].
+       This example demonstrates that the user can describe some but not all of the pathways
+       that have the name "subcompound". The order of the elements in the outer list/tuple correspond
+       to their position in the hierarchal pathway, where the first index is the lowest level and the
+       last is the highest specified. The number of subcompounds the user can specify is unlimited so
+       long as each subcompound specified lies within the hierarchy of the list/tuple element that
+       follows. In the context of this function, the first index must correspond to a subcompound, not
+       a mb.Particle.
+
+       The idea of a pathway is similar to how one sorts through directories on a computer,
+       i.e. "C:/user/username/documents" BUT since MBuild uses hierarchal pathways from lowest
+       to highest, the MBuild style of writing it would be "documents/username/user/C:".
+
+       EX: path =["target",
+                         ["SubSubSubCompound[0]",
+                          "SubSubSubCompound[3]",
+                          "SubSubSubCompound[4]"],
+                        "SubSubCompound",
+                        "SubCompound[6]"]
+       """
+
+       if not isinstance(pathway, (list, tuple)):
+           raise TypeError("Parameter pathway must be of type list or tuple. User"
+                           " passed type: {}.".format(type(pathway)))
+       if not pathway:
+           raise ValueError("Parameter 'pathway' cannot be an empty {}.".format(type(pathway)))
+       pathway = list(pathway)
+       for n, ii in enumerate(pathway):
+           if isinstance(ii, (str, list, tuple)):
+               pass
+           elif isinstance(ii, mb.Compound):
+               if pathway[:n]:
+                   yield from ii._which_subc(looking_for=pathway[:n])
+               else:
+                   yield ii
+               break
+           else:
+               raise TypeError("pathway parameter must be either a list or tuple containing"
+                               " only strings, lists, tuples or mb.Compounds. User passed {}"
+                               " containing invalid type: "
+                               "{} at index {}.".format(type(pathway), type(ii), n))
+       else:
+           yield from self._which_subc(looking_for=pathway)
+
+    def _which_subc(self, looking_for):
+       """
+       refer to def find_subcompounds_in_path
+       """
+       shorten = len(looking_for)-1
+       lf = looking_for[-1]
+       if len(looking_for) > 1:
+           we_ok = False
+           if isinstance(lf, str):
+               for subp in self.subcompounds_by_name_or_label(looking_for=lf):
+                   if subp:
+                       we_ok = True
+                       yield from subp._which_subc(looking_for=looking_for[:shorten])
+           else:
+               for l in lf:
+                   for subp in self.subcompounds_by_name_or_label(looking_for=l):
+                       if subp:
+                           we_ok = True
+                           yield from subp._which_subc(looking_for=looking_for[:shorten])
+           if not we_ok:
+               yield None
+               #raise ValueError('{} was not found within {}'.format(within, self.name))
+       else:
+           if isinstance(lf, str):
+               yield from self.subcompounds_by_name_or_label(looking_for=lf)
+           else:
+               for l in lf:
+                   yield from self.subcompounds_by_name_or_label(looking_for=l)
 
     @property
     def charge(self):
@@ -648,7 +907,7 @@ class Compound(object):
 
         # Add new_part to labels. Does not currently support batch add.
         if label is None:
-            label = '{0}[$]'.format(new_child.__class__.__name__)
+            label = '{0}[$]'.format(new_child.name)
 
         if label.endswith('[$]'):
             label = label[:-3]
@@ -1358,6 +1617,142 @@ class Compound(object):
             saver(filename=filename, structure=structure, **kwargs)
         else:  # ParmEd supported saver.
             structure.save(filename, overwrite=overwrite, **kwargs)
+
+    def align_vectors(self, align_these, with_these, anchor_pt = None, lattice_override=False):
+       """
+       Given 2 sets (align_these and with_these) of 2 vectors, rotate a compound
+       so that the vectors align_these point in the direction that with_these do.
+
+       :param align_these: list-like
+           The vectors to be aligned. Must represent 3D cartesian coordinates.
+
+       :param with_these: list-like
+           The vectors to serve as the end goal for align_these to be aligned with.
+           Must represent 3D cartesian coordinates.
+
+       :param anchor_pt: optional, accepts list-like, defaults to self.center
+           anchor_pt is used as a way to identify a point in the compound that will remain
+           unchanged after alignment. The list-like either contains 3D coordinates or the
+           hierarchal pathway (see below) to a unique particle that will serve as the anchor
+           point.
+
+       :param lattice_override:
+           ### revisit when i see justin
+
+       A hierarchal pathway is a list or tuple containing any combination of strings,
+       list/tuples, or mb.Compounds. Each element of the list/tuple either describes a series
+       of subcompounds (this occurs in the instance where an inner list/tuple is passed), or describes
+       one subcompound or type of subcompound (when a string is passed), or even IS a subcompound
+       (in the instance where a mb.Compound object is passed). Strings correspond
+       to either the names or labels of subcompounds, and list/tuples hold multiple strings that
+       correspond to names and/or labels. They are used when the user wishes to describe multiple
+       pathways, for example, path = [..., ["subcompound[1]", "subcompound[4]"], ...].
+       This example demonstrates that the user can describe some but not all of the pathways
+       that have the name "subcompound". The order of the elements in the outer list/tuple correspond
+       to their position in the hierarchal pathway, where the first index is the lowest level and the
+       last is the highest specified. The number of subcompounds the user can specify is unlimited so
+       long as each subcompound specified lies within the hierarchy of the list/tuple element that
+       follows. In the context of this function, the first index must correspond to a mb.Particle.
+
+       The idea of a pathway is similar to how one sorts through directories on a computer,
+       i.e. "C:/user/username/documents" BUT since MBuild uses hierarchal pathways from lowest
+       to highest, the MBuild style of writing it would be "documents/username/user/C:".
+
+       EX: path =["target",
+                         ["SubSubSubCompound[0]",
+                          "SubSubSubCompound[3]",
+                          "SubSubSubCompound[4]"],
+                        "SubSubCompound",
+                        "SubCompound[6]"]
+
+       """
+       if self.made_from_lattice and not lattice_override:
+           warn("This compound was made from a lattice, please use the "
+                "Lattice.rotate(axis_align= True) or "
+                "Lattice.rotate(miller_directions=True) methods."
+                " To proceed use the Compound.align_vectors() method  with "
+                "this compound, pass align_vectors's optional parameter "
+                "lattice_override as True. This compound has not "
+                "been changed.")
+           return
+       for aligner in list([align_these, with_these]):
+           if not isinstance(aligner, (list,tuple)):
+               if not isinstance(aligner, np.ndarry):
+                   raise TypeError("Parameters align_these and with_these must be a list-like of"
+                                   " list-like types.")
+               else:
+                   aligner = aligner.tolist
+           else:
+               aligner = list(aligner)
+           if len(aligner) !=2:
+               raise ValueError("Vector pair {} is not of length 2. Both vectors are required to "
+                                "sufficienly and concisely describe a plane. If you are in"
+                                " the 2D case, please pass (0,0,1) as one of your vectors.".format(aligner))
+       ang_current, ang_goal = map(lambda x: angle(x[0], x[1]),
+                                   [align_these, with_these])
+       if not np.allclose(ang_current, ang_goal, atol= 1e-2):
+           raise ValueError("The vectors specified cannot be aligned because the "
+                            "angle between the vectors specified in align_these "
+                            "is too different from the angle between the vectors "
+                            "specified in with_these. Angles were {} and {} degrees, "
+                            "respectively.".format(ang_current*180/np.pi,
+                                                   ang_goal*180/np.pi))
+       align_these, with_these = map(lambda x: normalized_matrix(x), [align_these, with_these])
+       if not np.allclose(ang_goal,np.pi/2, atol= 5e-3):
+           align_these[1], with_these[1] = map(lambda x: unit_vector(np.cross(x[0], x[1])),
+                                                     [align_these, with_these])
+           # this ensures that the vector pair will be orthagonal
+       if anchor_pt is None:
+           anchor_pt = self.center
+       else:
+           if isinstance(anchor_pt, np.ndarray):
+               pass
+           elif isinstance(anchor_pt, (tuple, list)):
+               if all(isinstance(ap, (int,float)) for ap in anchor_pt):
+                   anchor_pt = np.array(anchor_pt)
+               else:
+                   path = deepcopy(anchor_pt)
+                   anchor_pt = list(self.find_particle_in_path(within_path=anchor_pt))
+                   if len(anchor_pt) > 1:
+                       raise MBuildError("This is not a unique anchor point. "
+                                         "The hierarchal path {} is invalid."
+                                         "".format(path))
+                   else:
+                       anchor_pt = anchor_pt[0].pos
+
+           else:
+               raise TypeError("Parameter anchor_pt must be of type list, tuple, or"
+                               " np.ndarray.")
+
+       self._align(align_these=align_these, with_these=with_these,
+                   anchor_pt=anchor_pt, lattice_override=lattice_override)
+
+
+    def _align(self, align_these, with_these, anchor_pt, lattice_override=False):
+       """
+       This alignment technique assumes that all the input methods have been checked.
+       The function align_vectors() checks input and calls upon this to execute the alignment.
+       See def align_vectors() for more information.
+       """
+       current = deepcopy(np.array(align_these))
+       goal = np.array(with_these)
+       self.translate(-anchor_pt)
+       for ii in range(2):
+           if np.allclose(current[ii], goal[ii], atol=1e-3):
+               continue
+           elif np.allclose(current[ii]*-1, goal[ii], atol= 1e-3):
+               self. rotate(theta = np.pi, around= current[(ii+1)%2])
+               current[ii]*=-1
+               continue
+           orthag = np.cross(current[ii], goal[ii])
+           theta = abs(angle(current[ii], goal[ii]))
+           current = np.array(list(_rotate(coordinates=current, around=orthag, theta=theta)))
+           # look into checks here like allclose's
+           current = normalized_matrix(current)
+           self.rotate(theta=theta, around=orthag)
+       self.translate(anchor_pt)
+
+
 
     def translate(self, by):
         """Translate the Compound by a vector
