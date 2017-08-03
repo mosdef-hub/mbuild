@@ -449,17 +449,17 @@ class Bilayer(mb.Compound):
         self.solvent_per_lipid = solvent_per_lipid
 
         # Path to .itp files and file attributes
+        if not isinstance(make_files, bool):
+            raise TypeError('make_files parameter must be a valid boolean')
+        self.make_files = make_files
+        if not isinstance(filename, str):
+            raise TypeError('Filename must be a valid string')
         if not isinstance(itp_path, str):
             raise TypeError('Directory path to itp files must be a valid string')
         if make_files is True:
             if not os.path.exists(itp_path):
                 raise IOError('The provided itp file path does not exist')
         self.itp_path = itp_path
-        if not isinstance(make_files, bool):
-            raise TypeError('make_files parameter must be a valid boolean')
-        self.make_files = make_files
-        if not isinstance(filename, str):
-            raise TypeError('Filename must be a valid string')
         self.filename = filename
         if len(self.filename) == 0:
             components = [str(lip[0].name) + '_' + str(lip[1]) + '_' for lip in self.lipids]

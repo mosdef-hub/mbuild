@@ -76,7 +76,7 @@ class TestBilayer(BaseTest):
 
     def test_bad_itp(self, binary_lipid_mix):
         with pytest.raises(TypeError):
-            Bilayer(binary_lipid_mix, make_files=True, itp_path=24)
+            Bilayer(binary_lipid_mix, make_files=False, itp_path=24)
         with pytest.raises(IOError):
             Bilayer(binary_lipid_mix, make_files=True, itp_path="bruh")
 
@@ -84,4 +84,4 @@ class TestBilayer(BaseTest):
         with pytest.raises(TypeError):
             Bilayer(binary_lipid_mix, make_files="banana", itp_path='bruh')
         with pytest.raises(TypeError):
-            Bilayer(binary_lipid_mix, make_files=True, filename=67)
+            Bilayer(binary_lipid_mix, make_files=False, filename=67)
