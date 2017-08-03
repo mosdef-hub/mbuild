@@ -3,7 +3,6 @@ import math
 import pytest
 from mbuild.tests.base_test import BaseTest
 from mbuild.recipes.bilayer.bilayer import Bilayer
-
 from mbuild.exceptions import MBuildError
 
 
@@ -77,12 +76,12 @@ class TestBilayer(BaseTest):
 
     def test_bad_itp(self, binary_lipid_mix):
         with pytest.raises(TypeError):
-            Bilayer(binary_lipid_mix, itp_path=24)
+            Bilayer(binary_lipid_mix, make_files=True, itp_path=24)
         with pytest.raises(IOError):
-            Bilayer(binary_lipid_mix, itp_path="bruh")
+            Bilayer(binary_lipid_mix, make_files=True, itp_path="bruh")
 
     def test_bad_files(self, binary_lipid_mix):
         with pytest.raises(TypeError):
-            Bilayer(binary_lipid_mix, make_files="banana")
+            Bilayer(binary_lipid_mix, make_files="banana", itp_path='bruh')
         with pytest.raises(TypeError):
-            Bilayer(binary_lipid_mix, filename=67)
+            Bilayer(binary_lipid_mix, make_files=True, filename=67)
