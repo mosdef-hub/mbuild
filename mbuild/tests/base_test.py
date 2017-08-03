@@ -179,11 +179,6 @@ class BaseTest:
         return FFA(chain_length, ester=False)
 
     @pytest.fixture
-    def ester(self, chain_length):
-        from mbuild.lib.prototypes import FFA
-        return FFA(chain_length, ester=True)
-
-    @pytest.fixture
     def alc(self, chain_length):
         from mbuild.lib.prototypes import ALC
         return ALC(chain_length)

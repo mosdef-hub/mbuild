@@ -83,6 +83,6 @@ class TestBilayer(BaseTest):
 
     def test_bad_files(self, binary_lipid_mix):
         with pytest.raises(TypeError):
-            Bilayer(binary_lipid_mix, make_files="true")
+            Bilayer(binary_lipid_mix, make_files="banana")
         with pytest.raises(TypeError):
             Bilayer(binary_lipid_mix, filename=67)

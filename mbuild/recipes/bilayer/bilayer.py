@@ -451,8 +451,9 @@ class Bilayer(mb.Compound):
         # Path to .itp files and file attributes
         if not isinstance(itp_path, str):
             raise TypeError('Directory path to itp files must be a valid string')
-        if not os.path.exists(itp_path):
-            raise IOError('The provided itp file path does not exist')
+        if make_files:
+            if not os.path.exists(itp_path):
+                raise IOError('The provided itp file path does not exist')
         self.itp_path = itp_path
         if not isinstance(make_files, bool):
             raise TypeError('make_files parameter must be a valid boolean')
