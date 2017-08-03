@@ -1,10 +1,10 @@
 from random import shuffle, uniform
 import numpy as np
-import math
 import argparse
-import warnings
+import os
 
 import mbuild as mb
+from mbuild.exceptions import MBuildError
 from mbuild import clone
 from mbuild.lib.prototypes import H2O
 from mbuild.lib.UA_molecules import DSPCUA, DMPCUA, DPPCUA, FFAUA, ISISUA, ALCUA
@@ -30,7 +30,7 @@ class Bilayer(mb.Compound):
 
     Parameters
     ----------
-    lipids : list of tuple
+    lipids : tuple or list of tuples
         List of tuples in format (lipid, frac, z-offset, ref_atom) where frac is
         the fraction of that lipid in the bilayer (lipid is a
         Compound), and z-offset is the distance in nanometers from the
@@ -67,7 +67,7 @@ class Bilayer(mb.Compound):
         
     Attributes
     ----------
-    lipids : list
+    lipids : list of tuples
         List of tuples in format (lipid, frac, z-offset, ref_atom) where frac is
         the fraction of that lipid in the bilayer (lipid is a
         Compound), and z-offset is the distance in nanometers from the
@@ -107,85 +107,27 @@ class Bilayer(mb.Compound):
                  mirror=False, cross_tilt=False, solvent=H2O(), solvent_per_lipid=20, unit_conversion=1,
                  filename='', make_files=False):
         super(Bilayer, self).__init__()
-
         print('Setting bilayer attributes and system information...')
-        self.lipids = lipids
+
+        # Ensure the user has entered plausible inputs
+        self._sanitize_inputs(lipids,  n_lipids_x, n_lipids_y, tilt_angle, max_tail_randomization,
+                              z_spacing, cross_tilt, solvent, solvent_per_lipid, itp_path, make_files,
+                              filename, unit_conversion)
+
         self.ref_atoms = []
-        multiplier = 0  # placeholder that will be used to calculate the necessary area per lipid
-        for component in lipids:
-            self.ref_atoms.append(component[3])
-            if component[0] is ('DSPC' or 'DPPC' or 'DMPC' or 'ISIS'):
-                multiplier += component[1]
-        assert len(self.ref_atoms) == len(lipids)
-
-        if not isinstance(n_lipids_x, int) or not isinstance(n_lipids_y, int):
-            raise TypeError('Both dimensions provided must be an integer: n_lipids_x is of type {}, '
-                            'n_lipids_y is of type {}'.format(type(n_lipids_x), type(n_lipids_y)))
-        self.n_lipids_x = n_lipids_x
-        self.n_lipids_y = n_lipids_y
-
-        # Calculate the necessary area per lipid
-        if area_per_lipid is None:
-            area_per_lipid = uniform(0.2 + (0.3 * multiplier), 0.3 + (0.3 * multiplier))
-        else:
-            area_per_lipid = area_per_lipid
-            warnings.warn('You have specified a custom APL value. This is not recommended, as the APL'
-                          'default has been intelligently set.')
-
-        # Geometric attributes
-        if not isinstance(tilt_angle, (float, int)):
-            raise TypeError('Tilt angle must be a valid number. The tilt angle provided is of type {}'
-                            .format(type(tilt_angle)))
-        self.tilt = tilt_angle * np.pi / 180
-        if not isinstance(max_tail_randomization, (float, int)):
-            raise TypeError('Z-axis randomization must be a valid number. The tilt angle provided is of type {}'
-                            .format(type(max_tail_randomization)))
-        if max_tail_randomization > 90:
-            raise ValueError('The tail randomization maximum provided is too large. Please pick an angle < 90)')
-        self.z_orientation = max_tail_randomization
-        if not isinstance(cross_tilt, bool):
-            raise TypeError('cross_tilt parameter must be a valid boolean.')
-        self.cross_tilt = cross_tilt
-
-        # Solvent attributes
-        if not isinstance(solvent, mb.Compound):
-            raise TypeError('Solvent provided must be a valid mb.Compound')
-        self.solvent = solvent
-        if not isinstance(solvent_per_lipid, int):
-            raise ValueError('solvent_per_lipid must be an integer')
-        self.solvent_per_lipid = solvent_per_lipid
+        print('Calculating proper area per lipid...')
+        area_per_lipid = self.calculate_apl(area_per_lipid)
 
         # Private attributes for getter methods
         self._number_of_each_lipid_per_layer = []
         self._solvent_per_layer = None
-
-        # Path to .itp files and file attributes
-        if not isinstance(itp_path, str):
-            raise TypeError('Directory path to itp files must be a valid string')
-        self.itp_path = itp_path
-        self.make_files = make_files
-        if not isinstance(filename, str):
-            raise TypeError('Filename must be a valid string')
-        self.filename = filename
-        if len(filename) == 0:
-            components = [str(lip[0].name) + '_' + str(lip[1]) + '_' for lip in lipids]
-            for component in components:
-                self.filename += component
-            self.filename += 'UA'
-            # self.filename += 'AA' TODO: Make a command line flag
-            # self.filename += 'CG' TODO: Same as above
-
-        self.unit_conversion = unit_conversion
-
-        # Ensure the user has entered plausible inputs
-        self._sanitize_inputs()
 
         # Set the 2D lipid locations on a grid pattern
         self._set_grid_pattern(area_per_lipid)
 
         # Write topology file header
         top_file = None
-        if self.make_files:
+        if self.make_files is True:
             print('Writing <{0}> ...'.format(self.filename + '.top'))
             top_file = self.write_top_header(self.filename)
 
@@ -205,25 +147,17 @@ class Bilayer(mb.Compound):
         # Translate and rotate the bottom leaflet
         self._translate_bottom_leaflet(lipid_bilayer, z_spacing)
 
-        # Check to make sure leaflets have been spaced correctly
-        top_z_min = np.amin(lipid_bilayer['top_leaflet'].xyz, axis=0)[2]
-        bottom_z_max = np.amax(lipid_bilayer['bottom_leaflet'].xyz, axis=0)[2]
-        space = top_z_min - bottom_z_max
-        assert math.isclose(space, z_spacing), \
-            "Desired spacing: {}, Actual spacing: {}".format(z_spacing, space)
-        
         # solvate the lipids
         if self.solvent_per_lipid > 0:
             print('Solvating the bilayer...')
-            top_file, solvent_components = self.solvate_bilayer(top_file,
-                                                                lipid_bilayer, solvent_components)
+            top_file, solvent_components = self.solvate_bilayer(top_file, lipid_bilayer, solvent_components)
 
         # recenter the bottom leaflet over the bottom water box
         if self.solvent_per_lipid > 0 and not self.cross_tilt:
             self._post_translate(solvent_components, lipid_bilayer)
 
         # close the completed topology file
-        if self.make_files:
+        if self.make_files is True:
             top_file.close()
 
         # add everything to the overall Compound structure
@@ -240,7 +174,7 @@ class Bilayer(mb.Compound):
             self.translate(distance)  # Bring the bilayer inside the bounding box for the .gro file
 
         # Create .gro file and .mol2 file
-        if self.make_files:
+        if self.make_files is True:
             print('Writing <{0}.gro> ...'.format(self.filename))
             self.save(self.filename + '.gro',
                       residues=['DSPC', 'FFA12', 'ALC12', 'FFA14', 'ALC14', 'FFA16', 'ALC16',
@@ -283,7 +217,7 @@ class Bilayer(mb.Compound):
             current_type = self.lipids[n_type][0]
             
             # Write to topology file
-            if (self.number_of_each_lipid_per_leaflet[n_type] != 0) and self.make_files:
+            if (self.number_of_each_lipid_per_leaflet[n_type] != 0) and self.make_files is True:
                 top_file.write("{:<10s}{:<10d}\n".format(
                     self.lipids[n_type][0].name,
                     self.number_of_each_lipid_per_leaflet[n_type]))
@@ -374,7 +308,7 @@ class Bilayer(mb.Compound):
                                               region=[top_solvent_box, bottom_solvent_box]))
 
         # Write solvent components to topology file
-        if self.make_files:
+        if self.make_files is True:
             top_file.write("{:<10s}{:<10d}\n".format('SOL', self.solvent_per_layer * 2))
 
         return top_file, solvent_components
@@ -434,17 +368,21 @@ class Bilayer(mb.Compound):
 
         for lpd in self.lipids[:-1]:
             self._number_of_each_lipid_per_layer.append(int(round(lpd[1] * self.lipids_per_leaflet)))
-            if abs(round(lpd[1] * self.lipids_per_leaflet) - (lpd[1] * self.lipids_per_leaflet)) > 1:
+            estimate = abs(round(lpd[1] * self.lipids_per_leaflet))
+            actual = (lpd[1] * self.lipids_per_leaflet)
+            if (abs(estimate - actual) / actual) > 0.1:
                 message = 'The Bilayer Builder was unable to create a bilayer with the exact fraction ' \
-                          'specified for lipid {}. Please check that the combination of bilayer size and' \
-                          'given composition fractions is logical'.format(lpd[0])
-                warnings.warn(message)
+                          'specified for lipid {}. \nPlease check that the combination of bilayer size and' \
+                          ' given composition fractions is logical'.format(lpd[0])
+                raise MBuildError(message)
         self._number_of_each_lipid_per_layer.append(self.lipids_per_leaflet
                                                     - sum(self._number_of_each_lipid_per_layer))
         assert len(self._number_of_each_lipid_per_layer) == len(self.lipids)
         return self._number_of_each_lipid_per_layer
 
-    def _sanitize_inputs(self):
+    def _sanitize_inputs(self, lipids, n_lipids_x, n_lipids_y, tilt_angle,
+                         max_tail_randomization, z_spacing, cross_tilt, solvent, solvent_per_lipid,
+                         itp_path, make_files, filename, unit_conversion):
         """Checks that the values passed by the user to the constructor are valid before instance attributes
         are created.
     
@@ -455,13 +393,100 @@ class Bilayer(mb.Compound):
         Ensure that the user has not provided more lipids than available grid spaces,
         or raise a ValueError.
         """
-    
+        if not isinstance(lipids, (list, tuple, set)):
+            raise TypeError('Parameter lipids must be an iterable: lipids parameter is of type {}'
+                            .format(type(lipids)))
+
+        # Check if lipids has more than one lipid element
+        if isinstance(lipids[0], mb.Compound):
+            self.lipids = [lipids]
+        else:
+            self.lipids = lipids
+        modellipid = (mb.Compound(), 1.0, -0.1, 0)
+        for i, lpd in enumerate(self.lipids):
+            if len(lpd) != 4:
+                raise ValueError('One or more lipid tuples are missing required elements')
+            for j, element in enumerate(lpd):
+                if not isinstance(element, type(modellipid[j])):
+                    raise TypeError('Element {} of lipid {} is of invalid type: given type is {}, should be {}'
+                                    .format(j, (i + 1), type(element), type(modellipid[j])))
         if sum([lpd[1] for lpd in self.lipids]) != 1.0:
             raise ValueError('Lipid fractions do not add up to 1.')
-        if not (self.n_lipids_x > 0 and self.n_lipids_y > 0):
+        if not (n_lipids_x > 0 and n_lipids_y > 0):
             raise ValueError('Bilayer dimensions must be greater than 0')
-        if len(self.lipids) > (self.n_lipids_x * self.n_lipids_y):
+        if not isinstance(n_lipids_x, int) or not isinstance(n_lipids_y, int):
+            raise TypeError('Both dimensions provided must be an integer: n_lipids_x is of type {}, '
+                            'n_lipids_y is of type {}'.format(type(n_lipids_x), type(n_lipids_y)))
+        if len(self.lipids) > (n_lipids_x * n_lipids_y):
             raise ValueError('Number of lipids provided exceeds number of available grid spaces')
+        self.n_lipids_x = n_lipids_x
+        self.n_lipids_y = n_lipids_y
+
+        # Geometric attributes
+
+        if not isinstance(tilt_angle, (float, int)):
+            raise TypeError('Tilt angle must be a valid number.')
+        self.tilt = tilt_angle * np.pi / 180
+        if not isinstance(max_tail_randomization, (float, int)):
+            raise TypeError('Z-axis randomization must be a valid number.')
+        if max_tail_randomization >= 90:
+            raise ValueError('The tail randomization maximum provided is too large. Please pick an angle < 90)')
+        self.z_orientation = max_tail_randomization
+        if not isinstance(z_spacing, float):
+            raise TypeError('z_spacing parameter must be of type float: z_spacing provided is of type {}'
+                            .format(type(z_spacing)))
+        self.z_spacing = z_spacing
+        if not isinstance(cross_tilt, bool):
+            raise TypeError('cross_tilt parameter must be a valid boolean.')
+        self.cross_tilt = cross_tilt
+
+        # Solvent attributes
+        if not isinstance(solvent, mb.Compound):
+            raise TypeError('Solvent provided must be a valid mb.Compound')
+        self.solvent = solvent
+        if not isinstance(solvent_per_lipid, int):
+            raise ValueError('solvent_per_lipid must be an integer')
+        self.solvent_per_lipid = solvent_per_lipid
+
+        # Path to .itp files and file attributes
+        if not isinstance(itp_path, str):
+            raise TypeError('Directory path to itp files must be a valid string')
+        if not os.path.exists(itp_path):
+            raise IOError('The provided itp file path does not exist')
+        self.itp_path = itp_path
+        if not isinstance(make_files, bool):
+            raise TypeError('make_files parameter must be a valid boolean')
+        self.make_files = make_files
+        if not isinstance(filename, str):
+            raise TypeError('Filename must be a valid string')
+        self.filename = filename
+        if len(self.filename) == 0:
+            components = [str(lip[0].name) + '_' + str(lip[1]) + '_' for lip in self.lipids]
+            for component in components:
+                self.filename += component
+            self.filename += 'UA'
+            # self.filename += 'AA' TODO: Make a command line flag
+            # self.filename += 'CG' TODO: Same as above
+
+        self.unit_conversion = unit_conversion
+
+    def calculate_apl(self, area_per_lipid):
+        """Calculate the proper APL based on lipid input"""
+        multiplier = 0  # placeholder that will be used to calculate the necessary area per lipid
+
+        for component in self.lipids:
+            self.ref_atoms.append(component[3])
+            if component[0] is ('DSPC' or 'DPPC' or 'DMPC' or 'ISIS'):
+                multiplier += component[1]
+
+        # Calculate the necessary area per lipid
+        if area_per_lipid is None:
+            area_per_lipid = uniform(0.2 + (0.3 * multiplier), 0.3 + (0.3 * multiplier))
+        else:
+            if not isinstance(area_per_lipid, (float, int)):
+                raise TypeError('Area per lipid must be a valid number.')
+            area_per_lipid = area_per_lipid
+        return area_per_lipid
 
     def _set_grid_pattern(self, area_per_lipid):
         """Utilize an mBuild 2DGridPattern to create the scaffold of points that the lipids will be laid onto"""
@@ -523,7 +548,7 @@ if __name__ == '__main__':
                                                                        'here (mBuild default units are in nanometers)')
     cmdline = parser.parse_args()
 
-    lipids = [(DSPCUA(), cmdline.DSPC, 0, 0),
+    lipids = [(DSPCUA(), cmdline.DSPC, 0.0, 0),
               (DPPCUA(), cmdline.DPPC, -0.3, 0),
               (DMPCUA(), cmdline.DMPC, -0.5, 0),
               (ALCUA(12), cmdline.alc12, -0.2, 13),
