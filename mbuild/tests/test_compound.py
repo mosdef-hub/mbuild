@@ -453,7 +453,7 @@ class TestCompound(BaseTest):
     def test_name(self):
         with pytest.raises(ValueError):
             mb.Compound(name=1)
-            
+
     def test_my_label_custom(self, ch3):
        ch3["H[0]"].pos = [-.1, 0, -.07]
        ch3["H[1]"].pos = [0,.1,.07]
