@@ -6,8 +6,12 @@ from mbuild.lib.prototypes.OH import OH
 
 
 class ALC(mb.Compound):
-    """Creates a straight-chain alcohol of n carbons based on user
-    input"""
+
+    """
+    Creates a straight-chain alcohol of n carbons based on user
+    input
+    """
+
     def __init__(self, chain_length):
         super(ALC, self).__init__()
         self.add(CH3(), label='tailcap')

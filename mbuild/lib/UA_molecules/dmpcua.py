@@ -15,7 +15,7 @@ class DMPCUA(mb.Compound):
         mb.force_overlap(move_this=self['ffatails'], from_positions=self['ffatails']['CH1']['side'],
                          to_positions=self['headgroup']['alkyl_split']['up'])
         self.translate(-self['ffatails']['CH1']['C'].pos)
-        self['headgroup'].rotate(-60*np.pi/180, [0, 1, 0])
+        self['headgroup'].rotate(-60 * np.pi/180, [0, 1, 0])
 
         mb.z_axis_transform(self, new_origin=self['ffatails']['FFA'][1][5],
                             point_on_z_axis=self['ffatails']['FFA'][1][7],

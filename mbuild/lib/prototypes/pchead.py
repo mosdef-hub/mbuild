@@ -8,6 +8,9 @@ from mbuild.lib.prototypes.alkyl_monomer import AlkylMonomer
 
 
 class PCHead(mb.Compound):
+
+    """Create a phosphatidylcholine head group"""
+
     def __init__(self):
         super(PCHead, self).__init__()
         
@@ -21,7 +24,7 @@ class PCHead(mb.Compound):
             self['methyl'][i].translate([-.5, 0, 0])
         
             mb.force_overlap(move_this=self['methyl'][i], from_positions=self['methyl'][i]['up'],
-                             to_positions=self['N4']['port_'+str(i)])
+                             to_positions=self['N4']['port_' + str(i)])
         
         self.add(mb.Polymer(AlkylMonomer(), 2), label='alkyl_body')
         mb.force_overlap(move_this=self['alkyl_body'], 
@@ -34,7 +37,7 @@ class PCHead(mb.Compound):
                          to_positions=self['alkyl_body']['up'])
         
         self.add(AlkylMonomer(), label='alkyl_split')
-        self['alkyl_split']['down'].spin(np.pi/2, self['alkyl_split']['down'].pos)
+        self['alkyl_split']['down'].spin(np.pi / 2, self['alkyl_split']['down'].pos)
         mb.force_overlap(move_this=self['alkyl_split'], from_positions=self['alkyl_split']['down'],
                          to_positions=self['PO4']['up'])
         
