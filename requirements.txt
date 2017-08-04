@@ -1,0 +1,17 @@
+numpy
+scipy
+packmol=1.0.0
+nglview>=0.6.2.3
+oset
+parmed
+mdtraj
+foyer
+gsd
+openbabel
+pytest >=3.0
+jupyter
+nbformat
+ipykernel
+ipyext
+python-coveralls
+pytest-cov

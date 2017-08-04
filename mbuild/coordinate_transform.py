@@ -652,11 +652,11 @@ def x_axis_transform(compound, new_origin=None,
     ----------
     compound : mb.Compound
         The compound to move.
-    new_origin : mb.Compound or list-like, optional, default=[0.0, 0.0, 0.0]
+    new_origin : mb.Compound or list-like of size 3, optional, default=[0.0, 0.0, 0.0]
         Where to place the new origin of the coordinate system.
-    point_on_x_axis : mb.Compound or list-like, optional, default=[1.0, 0.0, 0.0]
+    point_on_x_axis : mb.Compound or list-like of size 3, optional, default=[1.0, 0.0, 0.0]
         A point on the new x-axis.
-    point_on_xy_plane : mb.Compound, or list-like, optional, default=[1.0, 0.0, 0.0]
+    point_on_xy_plane : mb.Compound, or list-like of size 3, optional, default=[1.0, 0.0, 0.0]
         A point on the new xy-plane.
 
     """
@@ -670,7 +670,7 @@ def x_axis_transform(compound, new_origin=None,
         new_origin = np.asarray(new_origin)
     else:
         raise TypeError('x_axis_transform, y_axis_transform, and z_axis_transform only accept'
-                        ' np.ndarrays, mb.Compounds, lists, or None of size 3 for the new_origin'
+                        ' mb.Compounds, list-like of length 3 or None for the new_origin'
                         ' parameter. User passed type: {}.'.format(type(new_origin)))
     if point_on_x_axis is None:
         point_on_x_axis = np.array([1.0, 0.0, 0.0])
@@ -680,8 +680,8 @@ def x_axis_transform(compound, new_origin=None,
         point_on_x_axis = np.asarray(point_on_x_axis)
     else:
         raise TypeError('x_axis_transform, y_axis_transform, and z_axis_transform only accept'
-                         ' np.ndarrays, mb.Compounds, lists, or None of size 3 for the'
-                         ' point_on_x_axis parameter. User passed type: {}.'.format(type(point_on_x_axis)))    
+                        ' mb.Compounds, list-like of size 3, or None for the point_on_x_axis'
+                        ' parameter. User passed type: {}.'.format(type(point_on_x_axis)))    
     if point_on_xy_plane is None:
         point_on_xy_plane = np.array([1.0, 1.0, 0.0])
     elif isinstance(point_on_xy_plane, mb.Compound):
@@ -690,8 +690,8 @@ def x_axis_transform(compound, new_origin=None,
         point_on_xy_plane = np.asarray(point_on_xy_plane)
     else:
         raise TypeError('x_axis_transform, y_axis_transform, and z_axis_transform only accept'
-                          ' np.ndarrays, mb.Compounds, lists, or None of size 3 for the'
-                          ' point_on_xy_plane parameter. User passed type: {}.'.format(type(point_on_xy_plane)))
+                        ' mb.Compounds, list-like of size 3, or None for the point_on_xy_plane'
+                        ' parameter. User passed type: {}.'.format(type(point_on_xy_plane)))
 
     atom_positions = compound.xyz_with_ports
     transform = AxisTransform(new_origin=new_origin,
@@ -710,11 +710,11 @@ def y_axis_transform(compound, new_origin=None,
     ----------
     compound : mb.Compound
         The compound to move.
-    new_origin : mb.Compound or np.ndarray, optional, default=[0.0, 0.0, 0.0]
+    new_origin : mb.Compound or like-like of size 3, optional, default=[0.0, 0.0, 0.0]
         Where to place the new origin of the coordinate system.
-    point_on_y_axis : mb.Compound or np.ndarray, optional, default=[0.0, 1.0, 0.0]
-        A point on the new x-axis.
-    point_on_xy_plane : mb.Compound or np.ndarray, optional, default=[0.0, 1.0, 0.0]
+    point_on_y_axis : mb.Compound or list-like of size 3, optional, default=[0.0, 1.0, 0.0]
+        A point on the new y-axis.
+    point_on_xy_plane : mb.Compound or list-like of size 3, optional, default=[0.0, 1.0, 0.0]
         A point on the new xy-plane.
 
     """
@@ -733,11 +733,11 @@ def z_axis_transform(compound, new_origin=None,
     ----------
     compound : mb.Compound
         The compound to move.
-    new_origin : mb.Compound or np.ndarray, optional, default=[0.0, 0.0, 0.0]
+    new_origin : mb.Compound or list-like of size 3, optional, default=[0.0, 0.0, 0.0]
         Where to place the new origin of the coordinate system.
-    point_on_y_axis : mb.Compound or np.ndarray, optional, default=[0.0, 0.0, 1.0]
+    point_on_z_axis : mb.Compound or list-like of size 3, optional, default=[0.0, 0.0, 1.0]
         A point on the new z-axis.
-    point_on_xy_plane : mb.Compound or np.ndarray, optional, default=[0.0, 0.0, 1.0]
+    point_on_zx_plane : mb.Compound or list-like of size 3, optional, default=[0.0, 0.0, 1.0]
         A point on the new xz-plane.
 
     """
