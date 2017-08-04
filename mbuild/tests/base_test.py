@@ -234,16 +234,14 @@ class BaseTest:
     @pytest.fixture(scope='module')
     def bilayer_no_solvent(self):
         from mbuild.lib.UA_molecules import DSPCUA
-        from mbuild.recipes.bilayer.bilayer import Bilayer
         lipid = (DSPCUA(), 1.0, 0.0, 0)
-        bilayer = Bilayer(lipids=lipid, n_lipids_x=2, n_lipids_y=2, solvent_per_lipid=0)
+        bilayer = mb.Bilayer(lipids=lipid, n_lipids_x=2, n_lipids_y=2, solvent_per_lipid=0)
         return bilayer
 
     @pytest.fixture(scope='module')
     def bilayer_default(self):
         from mbuild.lib.UA_molecules import DSPCUA
-        from mbuild.recipes.bilayer.bilayer import Bilayer
         lipid = (DSPCUA(), 1.0, 0.0, 0)
-        bilayer = Bilayer(lipids=lipid, n_lipids_x=2, n_lipids_y=2, solvent_per_lipid=20)
+        bilayer = mb.Bilayer(lipids=lipid, n_lipids_x=2, n_lipids_y=2, solvent_per_lipid=20)
         return bilayer
 
