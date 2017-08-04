@@ -4,16 +4,20 @@ import argparse
 import os
 
 import mbuild as mb
+from mbuild.compound import Compound
+from mbuild.box import Box
+from mbuild.packing import *
+from mbuild.pattern import Grid2DPattern
 from mbuild.exceptions import MBuildError
 from mbuild import clone
-from mbuild.lib.prototypes import H2O
-from mbuild.lib.UA_molecules import DSPCUA, DMPCUA, DPPCUA, FFAUA, ISISUA, ALCUA
 
 # for coarse-grained bilayers
 # from mbuild.lib.cg_molecules import ECer2, UCer2, Chol, FFAC16, FFAC20, FFAC24, Water
 
+__all__ = ['Bilayer']
 
-class Bilayer(mb.Compound):
+
+class Bilayer(Compound):
     """
     The Bilayer Builder creates a lipid bilayer, solvates it, and stores it as an mBuild Compound.
     Because the Bilayer Builder does not check for the orientation of the mBuild molecules the user 
@@ -104,7 +108,7 @@ class Bilayer(mb.Compound):
     
     def __init__(self, lipids, n_lipids_x=8, n_lipids_y=8, itp_path="/home/loganguy/builds/setup/FF/gromos53a6/",
                  area_per_lipid=None, tilt_angle=uniform(20, 30), z_spacing=-0.2, max_tail_randomization=25,
-                 mirror=False, cross_tilt=False, solvent=H2O(), solvent_per_lipid=20, unit_conversion=1,
+                 mirror=False, cross_tilt=False, solvent=None, solvent_per_lipid=20, unit_conversion=1,
                  filename='', make_files=False):
         super(Bilayer, self).__init__()
         print('Setting bilayer attributes and system information...')
@@ -132,8 +136,8 @@ class Bilayer(mb.Compound):
             top_file = self.write_top_header(self.filename)
 
         # Create lipid leaflets and add them to the bilayer compound structure
-        lipid_bilayer = mb.Compound()
-        solvent_components = mb.Compound()
+        lipid_bilayer = Compound()
+        solvent_components = Compound()
         print('Creating top leaflet...')
         top_file, top_leaflet, top_lipid_labels = self.create_layer(top_file=top_file)
         lipid_bilayer.add(top_leaflet, label='top_leaflet')
@@ -206,7 +210,7 @@ class Bilayer(mb.Compound):
             the top and bottom leaflets
         
         """
-        layer = mb.Compound()
+        layer = Compound()
         if not lipid_indices:
             lipid_indices = list(range(self.lipids_per_leaflet))
             shuffle(lipid_indices)
@@ -297,13 +301,13 @@ class Bilayer(mb.Compound):
         z_max_bottom = min(lipid_bilayer.xyz[:, 2])
         z_min_bottom = z_max_bottom - box_height
 
-        top_solvent_box = mb.Box(mins=[x_min_box, y_min_box, z_min_top],
+        top_solvent_box = Box(mins=[x_min_box, y_min_box, z_min_top],
                                  maxs=[x_max_box, y_max_box, z_max_top])
         
-        bottom_solvent_box = mb.Box(mins=[x_min_box, y_min_box, z_min_bottom],
+        bottom_solvent_box = Box(mins=[x_min_box, y_min_box, z_min_bottom],
                                     maxs=[x_max_box, y_max_box, z_max_bottom])
 
-        solvent_components.add(mb.fill_region(compound=[self.solvent, self.solvent],
+        solvent_components.add(fill_region(compound=[self.solvent, self.solvent],
                                               n_compounds=[self.solvent_per_layer, self.solvent_per_layer],
                                               region=[top_solvent_box, bottom_solvent_box]))
 
@@ -398,11 +402,11 @@ class Bilayer(mb.Compound):
                             .format(type(lipids)))
 
         # Check if lipids has more than one lipid element
-        if isinstance(lipids[0], mb.Compound):
+        if isinstance(lipids[0], Compound):
             self.lipids = [lipids]
         else:
             self.lipids = lipids
-        modellipid = (mb.Compound(), 1.0, -0.1, 0)
+        modellipid = (Compound(), 1.0, -0.1, 0)
         for i, lpd in enumerate(self.lipids):
             if len(lpd) != 4:
                 raise ValueError('One or more lipid tuples are missing required elements')
@@ -441,8 +445,12 @@ class Bilayer(mb.Compound):
         self.cross_tilt = cross_tilt
 
         # Solvent attributes
-        if not isinstance(solvent, mb.Compound):
-            raise TypeError('Solvent provided must be a valid mb.Compound')
+        if solvent is not None:
+            if not isinstance(solvent, Compound):
+                raise TypeError('Solvent provided must be a valid mb.Compound')
+        else:
+            from mbuild.lib.prototypes import H2O
+            solvent = H2O()
         self.solvent = solvent
         if not isinstance(solvent_per_lipid, int):
             raise ValueError('solvent_per_lipid must be an integer')
@@ -493,7 +501,7 @@ class Bilayer(mb.Compound):
         """Utilize an mBuild 2DGridPattern to create the scaffold of points that the lipids will be laid onto"""
         
         self.lipids_per_leaflet = self.n_lipids_x * self.n_lipids_y
-        pattern = mb.Grid2DPattern(self.n_lipids_x, self.n_lipids_y)
+        pattern = Grid2DPattern(self.n_lipids_x, self.n_lipids_y)
         pattern.scale(np.sqrt(area_per_lipid * self.lipids_per_leaflet) * self.unit_conversion)
         
         self.pattern = pattern
@@ -548,6 +556,8 @@ if __name__ == '__main__':
     parser.add_argument('-u', '--units', type=float, default=1.0, help='Input any unit conversion that is necessary '
                                                                        'here (mBuild default units are in nanometers)')
     cmdline = parser.parse_args()
+
+    from mbuild.lib.UA_molecules import DSPCUA, DMPCUA, DPPCUA, FFAUA, ISISUA, ALCUA
 
     lipids = [(DSPCUA(), cmdline.DSPC, 0.0, 0),
               (DPPCUA(), cmdline.DPPC, -0.3, 0),
