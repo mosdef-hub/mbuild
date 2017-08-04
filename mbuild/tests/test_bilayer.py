@@ -1,6 +1,5 @@
 import numpy as np
 import mbuild as mb
-import math
 import pytest
 from mbuild.tests.base_test import BaseTest
 from mbuild.exceptions import MBuildError
@@ -28,7 +27,7 @@ class TestBilayer(BaseTest):
         top_z_min = np.amin(bilayer_default['lipid_bilayer']['top_leaflet'].xyz, axis=0)[2]
         bottom_z_max = np.amax(bilayer_default['lipid_bilayer']['bottom_leaflet'].xyz, axis=0)[2]
         space = top_z_min - bottom_z_max
-        assert math.isclose(space, bilayer_default.z_spacing)
+        assert np.allclose(space, bilayer_default.z_spacing)
 
     def test_bad_dimensions(self, binary_lipid_mix, ternary_lipid_mix):
         with pytest.raises(ValueError):
