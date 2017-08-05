@@ -250,6 +250,20 @@ def unit_vector(v):
     """Returns the unit vector of the vector. """
     return v / norm(v)
 
+def normalized_matrix(m):
+   """
+   Returns a normalized array
+   :param m: an array-like object (tuple of tuples, list of lists, np.ndarrays
+           list of tuples, and similar variations)
+   :return: normalized array
+   """
+   if not isinstance(m, (list, tuple, np.ndarray)):
+       raise TypeError("The parameter 'm' must be of type tuple, list or"
+                       " np.ndarray. User passed type: {}.".format(type(m)))
+   m = np.array(m, dtype=float)
+   for ii in range(m.shape[0]):
+       m[ii] = unit_vector(m[ii])
+   return m
 
 def angle(u, v, w=None):
     """Returns the angle in radians between two vectors. """

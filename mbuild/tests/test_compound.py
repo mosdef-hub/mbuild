@@ -140,14 +140,337 @@ class TestCompound(BaseTest):
         xyz = ethane.xyz_with_ports
         assert xyz.shape == (24, 3)
 
-    def test_particles_by_name(self, ethane):
-        assert sum(1 for _ in ethane.particles()) == 8
+    def test_mirror_std_axis(self, labeled_tetrahedral):
+       origdict = {piece.my_label: piece.pos for piece in labeled_tetrahedral}
+       labeled_tetrahedral.mirror(about_vectors=[(-1,6,0),(1,1,0)])
+       for k, v in origdict.items():
+           v[2]*=-1
+           assert np.allclose(labeled_tetrahedral[k].pos, v, atol=1e-8)
 
-        only_H = ethane.particles_by_name('H')
-        assert sum(1 for _ in only_H) == 6
+    def test_mirror_colinearity(self, methane):
+       with pytest.raises(ValueError):
+           methane.mirror(about_vectors=[[-1,-1,-1],[1,1,1]])
 
-        only_C = ethane.particles_by_name('C')
-        assert sum(1 for _ in only_C) == 2
+    def test_mirror_overdefined_4points(self, labeled_tetrahedral):
+       with pytest.raises(ValueError):
+           labeled_tetrahedral.mirror(about_vectors= None,
+                                      mirror_plane_points= [["H"],
+                                                            ["F"],
+                                                            ["N"],
+                                                            ["O"]])
+
+    def test_mirror_overdefined_3vecs(self, labeled_tetrahedral):
+       with pytest.raises(ValueError):
+           labeled_tetrahedral.mirror(about_vectors= [(0,1,0), (1,0,0), (-1,0,0)])
+
+    def test_mirror_overdefined_2vecs_2points(self, labeled_tetrahedral):
+       with pytest.raises(ValueError):
+           labeled_tetrahedral.mirror(about_vectors= [(1,0,0), (0,0,1)],
+                                      mirror_plane_points=[["H[0]"],["F[0]"]])
+
+    def test_mirror_overdefined_1vec_3points(self, labeled_tetrahedral):
+       with pytest.raises(ValueError):
+           labeled_tetrahedral.mirror(about_vectors= [(1,0,0)],
+                                      mirror_plane_points=[["H[0]"],["F[0]"], ["N"]])
+
+    def test_mirror_underdefined_1vec(self, labeled_tetrahedral):
+       with pytest.raises(ValueError):
+           labeled_tetrahedral.mirror(about_vectors= [(1,0,0)])
+
+    def test_mirror_underdefined_2points(self, labeled_tetrahedral):
+       with pytest.raises(ValueError):
+           labeled_tetrahedral.mirror(mirror_plane_points=[["H[0]"],["F[0]"]])
+
+    def test_mirror_3points_and_anchor(self,labeled_tetrahedral):
+       l = labeled_tetrahedral
+       anchor = np.array([1,1,1])
+       l.translate(anchor)
+       f = l["F[0]"].pos
+       n = l["N[0]"].pos
+       o = l["O[0]"].pos
+       hfuture = 2*anchor-l["H[0]"].pos
+       dist = 2*(np.mean([o,n,f], axis=0) - anchor)
+       l.mirror(mirror_plane_points= [["F"], ["O"], ["N"]], anchor_point=anchor)
+       assert np.allclose(anchor, l["C[0]"].pos, atol=1e-15)
+       assert np.allclose(hfuture, l["H[0]"].pos, atol=2e-3)
+       assert np.allclose((l["F[0]"].pos + dist), f, atol=7e-4)
+       assert np.allclose(l["N[0]"].pos+dist, n, atol = 7e-4)
+       assert np.allclose(l["O[0]"].pos+dist, o, atol = 7e-4)
+
+
+    def test_mirror_2points_1vec(self, benzene):
+       b=benzene
+       c0, c1, c2, c3, c4, c5 = (b["C[{}]".format(ii)].pos for ii in range(6))
+       b.mirror(about_vectors=[[0,0,1]], mirror_plane_points=[["C[0]"], ["C[3]"]])
+       assert np.allclose(b["C[0]"].pos, c0, atol=1e-6)
+       assert np.allclose(b["C[3]"].pos, c3, atol=5e-4)
+       assert np.allclose(b["C[1]"].pos, c5, atol=5e-4)
+       assert np.allclose(b["C[2]"].pos, c4, atol=5e-4)
+       assert np.allclose(b["C[4]"].pos, c2, atol=5e-4)
+       assert np.allclose(b["C[5]"].pos, c1, atol=5e-4)
+
+    def test_mirror_2vec(self, labeled_tetrahedral):
+       l = labeled_tetrahedral
+       l.translate([1,1,1])
+       old_N = l["N[0]"].pos
+       old_O = l["O[0]"].pos
+       old_H = l["H[0]"].pos
+       old_F = l["F[0]"].pos
+       men = np.mean([old_O, old_H, old_F], axis=0)
+       dist = 2*(men-old_N)
+       vecs = [old_O-old_H,old_O-old_F]
+       l.mirror(about_vectors=vecs, anchor_point= men)
+       print(l["N[0]"].pos-dist)
+       print(l["N[0]"].pos+dist)
+       print(old_N)
+       # print(dist)
+       # print(l["N[0]"].pos)
+       # print(old_N-(l["N[0]"].pos-dist))
+       # print(old_N+l["N[0]"].pos)
+       assert np.allclose(l["N[0]"].pos-dist, old_N, atol=5e-3)
+       print(l["F[0]"].pos)
+       print(old_F)
+       assert np.allclose(l["F[0]"].pos, old_F, atol= 1e-10)
+       assert np.allclose(l["O[0]"].pos, old_O, atol= 1e-10)
+       assert np.allclose(l["H[0]"].pos, old_H, atol= 1e-10)
+
+    def test_mirror_3pts(self, labeled_tetrahedral):
+       l = labeled_tetrahedral
+       l.translate([1,1,1])
+       old_N = l["N[0]"].pos
+       old_O = l["O[0]"].pos
+       old_H = l["H[0]"].pos
+       old_F = l["F[0]"].pos
+       men = np.mean([old_O, old_H, old_N], axis=0)
+       dist = 2*(men-old_F)
+       l.mirror(mirror_plane_points=[["O"], ["H"], ["N"]])
+       assert np.allclose(l["F[0]"].pos-dist, old_F, atol=5e-3)
+       assert np.allclose(l["N[0]"].pos, old_N, atol= 1e-10)
+       assert np.allclose(l["O[0]"].pos, old_O, atol= 1e-10)
+       assert np.allclose(l["H[0]"].pos, old_H, atol= 1e-10)
+
+
+    def test_mirror_pos_neg_vectors(self, labeled_tetrahedral):
+       l = deepcopy(labeled_tetrahedral)
+       l.mirror(about_vectors=((6,8,9),(-90,-5,-10)))
+       labeled_tetrahedral.mirror(about_vectors=((6,8,9),(90,5,10)))
+       for ii, jj in zip(l, labeled_tetrahedral):
+           assert np.allclose(ii.pos, jj.pos, atol=1e-8)
+
+    def test_mirror_non_unique_anchor(self, methane):
+       with pytest.raises(MBuildError):
+           methane.mirror(about_vectors=None, mirror_plane_points=None,
+                          anchor_point=["H"])
+
+    def test_mirror_non_unique_plane_point1(self, methane):
+       with pytest.raises(MBuildError):
+           methane.mirror(mirror_plane_points= [["C"], ["H"]],
+                          about_vectors=[(1,1,1)])
+
+    def test_mirror_non_unique_plane_point2(self, methane):
+       with pytest.raises(MBuildError):
+           methane.mirror(mirror_plane_points= [["H"],["H[0]"]],
+                          about_vectors=[(1,1,1)])
+
+    def test_mirror_anchor_exterior_coordinates(self, labeled_tetrahedral):
+       l = labeled_tetrahedral
+       anchor = (0,.1,0)
+       l.mirror(anchor_point=anchor)
+       assert np.allclose(l["C[0]"].pos, (0,.2,0), atol=1e-10)
+       assert np.allclose(l["H[0]"].pos, (.1, .2, -.07), atol=1e-10)
+       assert np.allclose(l["O[0]"].pos, (-.1, .2, -.07), atol=1e-10)
+       assert np.allclose(l["F[0]"].pos, (0,.1,.07), atol=1e-10)
+       assert np.allclose(l["N[0]"].pos, (0, .3, .07), atol=1e-10)
+
+    def test_align_vectors_2D_default_anchor(self,benzene):
+       c1 = []
+       h1 = []
+       c2 = []
+       h2 = []
+       for b in benzene:
+           if b.name == 'H':
+               h1.append(b.pos)
+           else:
+               c1.append(b.pos)
+       benzene.align_vectors(align_these=(benzene["C[0]"].pos - benzene.center, (-.0117,.23333,1)-benzene.center),
+                       with_these=(benzene["C[1]"].pos - benzene.center, (-.1325, .1637, 1)- benzene.center))
+       for b in benzene:
+           if b.name == "H":
+               h2.append(b.pos)
+           else:
+               c2.append(b.pos)
+       h1.append(h1.pop(0))
+       c1.append(c1.pop(0))
+       assert np.allclose(h1,h2, atol= 1e-5)
+       assert np.allclose(c1,c2, atol =1e-5)
+
+    def test_align_vectors_2D_defined_anchor(self, benzene):
+       pre = benzene["C[2]"].pos
+       anchor = ["C[4]"]
+       benzene.align_vectors(align_these=(benzene["C[0]"].pos - benzene["C[4]"].pos, (0,0,1)),
+                             with_these=(benzene["C[2]"].pos- benzene["C[4]"].pos, (0,0,3)),
+                             anchor_pt=anchor)
+       assert np.allclose(benzene["C[0]"].pos, pre, atol = 1e-4)
+
+    def test_align_vectors_3D_default_anchor(self, labeled_tetrahedral):
+       l = labeled_tetrahedral
+       l.translate([1,1,1])
+       old_O = l["O"][0].pos
+       old_H = l["H"][0].pos
+       old_N = l["N[0]"].pos
+       old_F = l["F[0]"].pos
+       l.align_vectors(align_these=(l["C[0]"].pos - l["F[0]"].pos, l["C[0]"].pos - l["H[0]"].pos),
+                       with_these=(l["C[0]"].pos - l["O[0]"].pos, l["C[0]"].pos - l["N[0]"].pos),
+                       anchor_pt=[1,1,1])
+       assert np.allclose(l["C[0]"].pos, (1,1,1), atol=1e-10)
+       assert np.allclose(l["O[0]"].pos, old_F, atol= 1e-10)
+       assert np.allclose(l["N[0]"].pos, old_H, atol= 1e-10)
+       assert np.allclose(l["F[0]"].pos, old_O, atol= 1e-10)
+       assert np.allclose(l["H[0]"].pos, old_N, atol= 1e-10)
+
+
+    def test_align_vectors_3D_defined_anchor1(self, labeled_tetrahedral):
+       l = labeled_tetrahedral
+       l.translate([1,1,1])
+       anchor = l["N[0]"].pos
+       old_O = l["O[0]"].pos
+       old_H = l["H[0]"].pos
+       old_F = l["F[0]"].pos
+       l.align_vectors(align_these=(anchor - l["O[0]"].pos, anchor - l["H[0]"].pos),
+                       with_these=(anchor - l["F[0]"].pos, anchor - l["O[0]"].pos),
+                       anchor_pt=anchor)
+       assert np.allclose(l["C[0]"].pos, (1,1,1), atol=8e-4)
+       assert np.allclose(l["N[0]"].pos, anchor, atol= 1e-3)
+       assert np.allclose(l["O[0]"].pos, old_F, atol= 1e-3)
+       assert np.allclose(l["F[0]"].pos, old_H, atol= .00213)
+       assert np.allclose(l["H[0]"].pos, old_O, atol= .0015)
+
+    def test_align_vectors_3D_defined_anchor2(self, labeled_tetrahedral):
+       l = labeled_tetrahedral
+       l.translate([1,1,1])
+       anchor = l["N[0]"].pos
+       old_O = l["O[0]"].pos
+       old_H = l["H[0]"].pos
+       old_F = l["F[0]"].pos
+       men = np.mean([old_O, old_H, anchor], axis=0)
+       dist = 2*(men-old_F)
+       l.align_vectors(align_these=(anchor - l["O[0]"].pos, anchor - l["H[0]"].pos),
+                       with_these=(anchor - l["H[0]"].pos, anchor - l["O[0]"].pos),
+                       anchor_pt=anchor)
+       assert np.allclose(l["F[0]"].pos-dist, old_F, atol=5e-3)
+       assert np.allclose(l["N[0]"].pos, anchor, atol= 1e-10)
+       assert np.allclose(l["O[0]"].pos, old_H, atol= 1e-10)
+       assert np.allclose(l["H[0]"].pos, old_O, atol= 1e-10)
+
+    def test_subcompounds_by_name_or_label_particle_case1(self, benzene_from_parts):
+       with pytest.raises(ValueError):
+           list(benzene_from_parts.subcompounds_by_name_or_label(looking_for= "H"))
+
+    def test_subcompounds_by_name_or_label_particle_case2(self, benzene_from_parts):
+       with pytest.raises(ValueError):
+           list(benzene_from_parts.subcompounds_by_name_or_label(looking_for= "C[0]"))
+
+    def test_subcompounds_by_name_or_label_label_case1(self, benzene_from_parts):
+       bet=0
+       Bet=False
+       for l in benzene_from_parts.subcompounds_by_name_or_label(looking_for="CH[2]"):
+           if l:
+               bet+=1
+               if np.allclose([  1.73417655e-01,  -2.38361811e-01,   1.70108418e-17], l.pos):
+                   Bet = True
+       assert bet ==1
+       assert Bet is True
+
+
+    def test_subcompounds_by_name_or_label_hierarchy1(self, mixed_bilayer):
+       tot = 0
+       d = 0
+       a = 0
+       for money in list( t for t in mixed_bilayer.subcompounds_by_name_or_label(looking_for="AlkylMonomer") if t):
+           tot+=1
+           if "DSPC" in list(y.name for y in money.ancestors()):
+               d+=1
+           elif "ALC" in list(y.name for y in money.ancestors()):
+               a+=1
+       assert tot == 994
+       assert a == 270
+       assert d == 444
+
+    def test_subcompounds_by_name_or_label_hierarchy2(self, mixed_bilayer):
+       assert 18 == len(list(t for t in mixed_bilayer.subcompounds_by_name_or_label(looking_for="ALC") if t))
+       assert 12 == len(list(t for t in mixed_bilayer.subcompounds_by_name_or_label(looking_for="DSPC") if t))
+
+    def test_subcompounds_by_name_or_label_hierarchy3(self, mixed_bilayer):
+       assert 2 == len(list(t for t in mixed_bilayer.subcompounds_by_name_or_label(looking_for="ALC[0]") if t))
+       assert 2 == len(list(t for t in mixed_bilayer.subcompounds_by_name_or_label(looking_for="ALC[3]") if t))
+       assert 2 == len(list(t for t in mixed_bilayer.subcompounds_by_name_or_label(looking_for="DSPC[0]") if t))
+       assert 0 == len(list(t for t in mixed_bilayer.subcompounds_by_name_or_label(looking_for="DSPC[6]") if t))
+
+
+    def test_find_subcompound_in_path_str1(self, mixed_bilayer):
+       path = ["AlkylMonomer","DSPC[0]"]
+       assert 74 == len(list(t for t in mixed_bilayer.find_subcompounds_in_path(path) if t))
+
+    def test_find_subcompound_in_path_empty(self, mixed_bilayer):
+       path = ["COOH", "ALC"]
+       assert 0 == len(list(t for t in mixed_bilayer.find_subcompounds_in_path(path) if t))
+
+    def test_find_subcompound_in_path_str2(self, mixed_bilayer):
+       path = ("AlkylMonomer","DSPC")
+       assert 444 == len(list(t for t in mixed_bilayer.find_subcompounds_in_path(path) if t))
+
+    def test_find_subcompound_in_path_toError(self, mixed_bilayer):
+       pass
+
+    def test_find_subcompound_in_path_cmpnd(self, mixed_bilayer):
+       parti = list(t for t in mixed_bilayer.find_subcompounds_in_path(["ALC[0]","top_leaflet"]) if t)[0]
+       path1 = [ "OH", parti, "lipid_bilayer"]
+       path2 = ["OH", parti, "ip"]
+       path1parti = list(t for t in mixed_bilayer.find_subcompounds_in_path(pathway=path1) if t)
+       path2parti = list(t for t in mixed_bilayer.find_subcompounds_in_path(pathway=path2) if t)
+       assert 1 == len(path1parti)
+       assert path1parti[0] is path2parti[0]
+
+    def test_find_subcompound_in_path_list(self, mixed_bilayer):
+       path = ["AlkylMonomer", ["DSPC[{}]".format(t) for t in range(4)], "top_leaflet"]
+       assert len(list(t for t in mixed_bilayer.find_subcompounds_in_path(pathway=path) if t)) == 37*4
+
+    def test_find_subcompound_in_path_tuple(self, mixed_bilayer):
+       path = ["AlkylMonomer", tuple("DSPC[{}]".format(t) for t in range(2,6)), "top_leaflet"]
+       assert len(list(t for t in mixed_bilayer.find_subcompounds_in_path(pathway=path) if t)) == 37*4
+
+    def test_find_particles_in_path_hierarchy(self, mixed_bilayer):
+       path = ["P", tuple("DSPC[{}]".format(t) for t in range(2,6)), "top_leaflet"]
+       assert 4 == len(list(t for t in mixed_bilayer.find_particles_in_path(path) if t))
+
+    def test_find_particles_in_path_yield_self1(self, mixed_bilayer):
+       for p in mixed_bilayer.particles_by_name("C"):
+           i = p
+           break
+       assert i is list(mixed_bilayer.find_particles_in_path([i]))[0]
+
+    def test_find_particles_in_path_yield_self2(self, mixed_bilayer):
+       for p in mixed_bilayer.particles_by_name("C"):
+           i = p
+           break
+       assert i is list(mixed_bilayer.find_particles_in_path(i))[0]
+
+    def test_find_particles_in_path_yield_self3(self, alc):
+       assert np.allclose(list(alc.find_particles_in_path(["O"]))[0].pos, np.array([0,0,0]))
+
+    def test_find_particles_in_path_Not_Found(self, mixed_bilayer):
+       with pytest.raises(ValueError):
+           path = ["AlkylMonomer","DSPC[0]"]
+           list(mixed_bilayer.find_particles_in_path(within_path=path))
+
+    def test_find_particles_in_path_bad_input(self, mixed_bilayer):
+       with pytest.raises(ValueError):
+           path = ["P", "P", "DSPC"]
+           list(mixed_bilayer.find_particles_in_path(within_path=path))
+
+    def test_find_particles_in_path_specific_location(self, benzene_from_parts):
+       path = ['C', "CH[0]"]
+       assert np.allclose(np.array([0,0,0]), list(benzene_from_parts.find_particles_in_path(path))[0].pos)
 
     def test_particles_in_range(self, ethane):
         group = ethane.particles_in_range(ethane[0], 0.141)
@@ -263,6 +586,38 @@ class TestCompound(BaseTest):
     def test_name(self):
         with pytest.raises(ValueError):
             mb.Compound(name=1)
+
+    def test_my_label_custom(self, ch3):
+       ch3["H[0]"].pos = [-.1, 0, -.07]
+       ch3["H[1]"].pos = [0,.1,.07]
+       ch3["H[2]"].pos = [0,-.1, .07]
+       ch3.add(mb.Particle(name="H", pos=[.1,0,-.07]), label="odd_one")
+       assert ch3[1].name == ch3[4].name
+       assert ch3[4].my_label == "odd_one"
+       assert ch3["odd_one"] is ch3[4]
+       assert len(ch3["H"])  == 3
+
+    def test_my_label_default(self,ch3):
+       ch3["H[0]"].pos = [-.1, 0, -.07]
+       ch3["H[1]"].pos = [0,.1,.07]
+       ch3["H[2]"].pos = [0,-.1, .07]
+       ch3.add(mb.Particle(name="H", pos=[.1,0,-.07]))
+       assert len(ch3["H"]) == 4
+       assert ch3["H[3]"] is ch3[4]
+       assert ch3[4].my_label == "H[3]"
+       assert ch3[1].name == ch3[4].name
+
+    def test_my_label_parmed(self, alc):
+       # dumalc=alc.to_parmed()
+       # a = mb.Compound()
+       # a.from_parmed(dumalc)
+       #assert np.allclose(d["H[0]"].pos, (.1,0,-.07))
+       # i did a test case with methane. it worked. When i tried to
+       # do it with alc from parmed it did not preserve the hierarchy.
+       # this should have been expected. the labeling convention still
+       # is relevant for particles.
+       pass
+
 
     def test_particle_in_particle(self):
         part = mb.Particle(name='A')

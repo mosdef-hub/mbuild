@@ -22,6 +22,11 @@ class BaseTest:
         return Methane()
 
     @pytest.fixture
+    def labeled_tetrahedral(self):
+       from mbuild.examples.labeled_tetrahedral.labeled_tetrahedral import Labeled_tetrahedral
+       return Labeled_tetrahedral()
+
+    @pytest.fixture
     def h2o(self):
         from mbuild.lib.moieties import H2O
         return H2O()
@@ -167,3 +172,19 @@ class BaseTest:
     def silane(self):
         from mbuild.lib.moieties import Silane
         return Silane()
+
+    @pytest.fixture
+    def mixed_bilayer(self):
+       from mbuild.recipes.bilayer.bilayer import Bilayer
+       from mbuild.lib.prototypes import FFA, DSPC, ALC
+       bi = Bilayer(lipids=[(FFA(16), .4, 0, 17), (DSPC(), .25, 0, 0),
+                            (ALC(16), .35, -.4, 17)],
+                    solvent_per_lipid=0,
+                    n_lipids_x=5,
+                    n_lipids_y=5)
+       return bi
+
+    @pytest.fixture
+    def alc(self):
+       from mbuild.lib.prototypes import ALC
+       return ALC(10)
