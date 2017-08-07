@@ -649,7 +649,6 @@ class Compound(object):
        moving_anchor = deepcopy(anchor)
        moving_anchor[which_flip] *=-1
        if len(align_position) >0:
-           print(align_position)
            norm2 = deepcopy(norm1)
            norm2[which_flip]*=-1
            norm2*=-1
@@ -744,7 +743,6 @@ class Compound(object):
 
        alignment_vectors= []
        relative_to = None
-       print(type(anchor_point))
        if anchor_point is not None:
            if not isinstance(anchor_point, (tuple, list)):
                if not isinstance(anchor_point, np.ndarray):
@@ -809,7 +807,6 @@ class Compound(object):
                to_vec = point[0].pos
            else:
                relative_to = point[0].pos
-               print("pee'in")
                to_vec = relative_to
            for path in mirror_plane_points[1:]:
                point = list(self.find_particles_in_path(within_path=path))
