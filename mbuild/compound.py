@@ -219,6 +219,7 @@ class Compound(object):
         self._rigid_id = None
         self._contains_rigid = False
         self._check_if_contains_rigid_bodies = False
+        self._made_from_lattice = False
 
         # self.add() must be called after labels and children are initialized.
         if subcompounds:
@@ -1882,7 +1883,7 @@ class Compound(object):
        :param lattice_override:
            revisit
        """
-       if self.made_from_lattice and not lattice_override:
+       if self._made_from_lattice and not lattice_override:
            warn("This compound was made from a lattice, please use the "
                 "Lattice.rotate(axis_align= True) or "
                 "Lattice.rotate(miller_directions=True) methods."
