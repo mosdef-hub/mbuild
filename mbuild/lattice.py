@@ -130,7 +130,7 @@ class Lattice(object):
         self.angles = None
         self._sanitize_inputs(lattice_spacing=lattice_spacing,
                               lattice_vectors=lattice_vectors,
-                              lattice_points=None,
+                              lattice_points=lattice_points,
                               angles=angles)
 
     def _sanitize_inputs(self, lattice_spacing, lattice_vectors,
@@ -185,6 +185,8 @@ class Lattice(object):
 
         if lattice_spacing is not None:
             lattice_spacing = np.asarray(lattice_spacing, dtype=dataType)
+            lattice_spacing = lattice_spacing.reshape((1, self.dimension),
+                                                      order='C')
             if np.shape(lattice_spacing) != (1, self.dimension):
                 raise ValueError('Lattice spacing should be a vector of '
                                  'size:(1,{}). Please include lattice spacing '
@@ -208,6 +210,7 @@ class Lattice(object):
 
         dataType = np.float64
         tempAngles = np.asarray(angles, dtype=dataType)
+        tempAngles = tempAngles.reshape((1, self.dimension), order='C')
 
         if np.shape(tempAngles) == (1, self.dimension):
             if np.sum(tempAngles) < 360.0 or np.sum(tempAngles) > -360.0:
@@ -322,7 +325,7 @@ class Lattice(object):
                                  .format(key, val))
         return lattice_points
 
-    def _from_lattice_parameters(self, angles, dimension):
+    def _from_lattice_parameters(self, angles):
         """Convert Bravais lattice parameters to lattice vectors.
 
         _from_lattice_parameters will generate the lattice vectors based on
@@ -339,12 +342,10 @@ class Lattice(object):
         ----------
         angles : list-like, required
             Angles of bravais lattice.
-        dimension : integer, required
-            Dimensionality of system, can only be 2 or 3.
         """
 
         dataType = np.float64
-        (alpha, beta, gamma) = angles
+        (alpha, beta, gamma) = angles[0]
 
         radianConversion = np.pi / 180.0
         cosa = np.cos(alpha * radianConversion)
@@ -420,23 +421,35 @@ class Lattice(object):
                             '{} was passed.'.format(type(compound_dict)))
 
         cell = defaultdict(list)
-        [a, b, c] = self.lattice_spacing
+        [a, b, c] = self.lattice_spacing[0]
+
         transformMat = self.lattice_vectors
-        lattice_params = np.reshape(self.lattice_spacing, (3, 1), order='C')
+        transformMat = np.asarray(transformMat, dtype=np.float64)
+        transformMat = np.transpose(transformMat, axes=None)
 
         for key, locations in self.lattice_points.items():
             for coords in locations:
                 for replication in it.product(range(x), range(y), range(z)):
-                    new_coords = transformMat.dot(lattice_params)
+                    temp_location = list()
+                    temp_location.append((a * replication[0]))
+                    temp_location.append((b * replication[1]))
+                    temp_location.append((c * replication[2]))
 
-                    new_coords[0][0] = new_coords[0][0] + a * replication[0]
-                    new_coords[0][1] = new_coords[0][1] + b * replication[1]
-                    new_coords[0][2] = new_coords[0][2] + c * replication[2]
+                    new_coords = np.asarray(coords, dtype=np.float64)
+                    new_coords = np.reshape(new_coords, (1, 3), order='C')
+
+                    new_coords[0][0] = new_coords[0][0] + temp_location[0]
+                    new_coords[0][1] = new_coords[0][1] + temp_location[1]
+                    new_coords[0][2] = new_coords[0][2] + temp_location[2]
+
+                    new_coords = transformMat.dot(np.transpose(new_coords))
+                    new_coords = np.reshape(new_coords, (1, 3), order='C')
 
                     tuple_of_coords = tuple(new_coords.flatten())
                     cell[key].append(tuple_of_coords)
 
         ret_lattice = mb.Compound()
+
         if compound_dict is None:
             for key_id, all_pos in cell.items():
                 particle = mb.Particle(name=key_id, pos=[0, 0, 0])
