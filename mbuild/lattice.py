@@ -71,6 +71,7 @@ class Lattice(object):
     cholesterol was generated.
 
     Replicating the triclinic unit cell out 3 in x,y,z directions.
+
     >>> cholesterol_unit = mb.Compound()
     >>> cholesterol_unit = mb.load(get_fn('cholesterol.pdb'))
     >>> # associate basis vector with id 'cholesterol' to cholesterol Compound
@@ -85,6 +86,7 @@ class Lattice(object):
 
 
     Generating BCC CsCl crystal structure
+
     >>> import mbuild as mb
     >>> chlorine = mb.Compound(name='Cl')
     >>> # angles not needed, when not provided, defaults to 90,90,90
@@ -95,6 +97,7 @@ class Lattice(object):
     ...                           dimension=3)
 
     Now associate id with Compounds for lattice points and replicate 3x3x3
+
     >>> cscl_dict = {'Cl' : chlorine, 'Cs' : cesium}
     >>> cscl_compound = cscl_lattice.populate(x=3, y=3, z=3,
     ...                                       compound_dict=cscl_dict)
@@ -104,6 +107,7 @@ class Lattice(object):
     input.
 
     Generating FCC Copper cell with lattice_vectors instead of angles
+
     >>> import mbuild as mb
     >>> copper = mb.Compound(name='Cu')
     >>> lattice_vector = ( [1, 0, 0], [0, 1, 0], [0, 0, 1])
@@ -166,6 +170,7 @@ class Lattice(object):
                 self.angles)
         else:
             self._validate_lattice_vectors(lattice_vectors)
+            self.angles = self._from_lattice_vectors()
 
         self._validate_lattice_points(lattice_points)
 
@@ -194,11 +199,14 @@ class Lattice(object):
                                  'dimensionality.'
                                  .format(self.dimension))
         else:
-            raise TypeError('No lattice_spacing provided. Please provide '
-                            'lattice spacing\'s that are >= 0. with size {}'
-                            .format((1, self.dimension)))
+            raise ValueError('No lattice_spacing provided. Please provide '
+                             'lattice spacing\'s that are >= 0. with size {}'
+                             .format((1, self.dimension)))
 
-        if np.any(lattice_spacing < 0.0):
+        if np.any(np.isnan(lattice_spacing)):
+            raise ValueError('None type or NaN type values present in '
+                             'lattice_spacing: {}.'.format(lattice_spacing))
+        elif np.any(lattice_spacing < 0.0):
             raise ValueError('Negative lattice spacing value. One of '
                              'the spacing: {} is negative.'
                              .format(lattice_spacing))
@@ -364,11 +372,35 @@ class Lattice(object):
                              'Lattice parameters chosen return a non-positive '
                              'z vector.')
 
-        lattice_vec = ([1, 0, 0],
+        lattice_vec = [[1, 0, 0],
                        [cosg, sing, 0],
-                       [cosb, matCoef_y, matCoef_z])
+                       [cosb, matCoef_y, matCoef_z]]
 
-        return lattice_vec
+        return np.asarray(lattice_vec, dtype=np.float64)
+
+    def _from_lattice_vectors(self):
+        """Calculate the angles between the vectors that define the lattice.
+
+        _from_lattice_vectors will calculate the angles alpha, beta, and
+        gamma from the Lattice object attribute lattice_vectors.
+        """
+
+        degreeConvsersion = 180.0 / np.pi
+        vector_magnitudes = np.linalg.norm(self.lattice_vectors, axis=1)
+
+        a_dot_b = np.dot(self.lattice_vectors[0], self.lattice_vectors[1])
+        b_dot_c = np.dot(self.lattice_vectors[1], self.lattice_vectors[2])
+        a_dot_c = np.dot(self.lattice_vectors[0], self.lattice_vectors[2])
+
+        alpha_raw = a_dot_c / (vector_magnitudes[0] * vector_magnitudes[2])
+        beta_raw = b_dot_c / (vector_magnitudes[1] * vector_magnitudes[2])
+        gamma_raw = a_dot_b / (vector_magnitudes[0] * vector_magnitudes[1])
+
+        alpha = np.arccos(np.clip(alpha_raw, -1.0, 1.0)) * degreeConvsersion
+        beta = np.arccos(np.clip(beta_raw, -1.0, 1.0)) * degreeConvsersion
+        gamma = np.arccos(np.clip(gamma_raw, -1.0, 1.0)) * degreeConvsersion
+
+        self.angles = np.asarray([alpha, beta, gamma], dtype=np.float64)
 
     def populate(self, compound_dict=None, x=1, y=1, z=1):
         """Expand lattice and create compound from lattice.
