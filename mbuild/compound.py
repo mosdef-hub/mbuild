@@ -871,10 +871,17 @@ class Compound(object):
             The pair of Particles to remove the bond between
 
         """
+        from mbuild.port import Port
         if self.root.bond_graph is None or not self.root.bond_graph.has_edge(*particle_pair):
             warn("Bond between {} and {} doesn't exist!".format(*particle_pair))
             return
         self.root.bond_graph.remove_edge(*particle_pair)
+        bond_vector = particle_pair[0].pos - particle_pair[1].pos
+        distance = np.linalg.norm(bond_vector)
+        particle_pair[0].add(Port(anchor=particle_pair[0], orientation=-bond_vector,
+                                  separation=distance/2))
+        particle_pair[1].add(Port(anchor=particle_pair[1], orientation=bond_vector,
+                                  separation=distance/2))
 
     @property
     def pos(self):
