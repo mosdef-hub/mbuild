@@ -632,3 +632,39 @@ class TestCompound(BaseTest):
 
     def test_siliane_bond_number(self, silane):
         assert silane.n_bonds == 4
+
+    def test_add_bond_remove_ports(self, hydrogen):
+        h_clone = mb.clone(hydrogen)
+        h2 = mb.Compound(subcompounds=(hydrogen, h_clone))
+        assert len(h2.all_ports()) == 2
+        assert len(hydrogen.all_ports()) == 1
+        assert len(h_clone.all_ports()) == 1
+
+        mb.force_overlap(h_clone, h_clone['up'], hydrogen['up'])
+        assert len(h2.all_ports()) == 0
+        assert len(hydrogen.all_ports()) == 0
+        assert len(h_clone.all_ports()) == 0
+
+    def test_remove_bond_add_ports(self, hydrogen):
+        h_clone = mb.clone(hydrogen)
+        h2 = mb.Compound(subcompounds=(hydrogen, h_clone))
+        mb.force_overlap(h_clone, h_clone['up'], hydrogen['up'])
+        h2.remove_bond((h2[0], h2[1]))
+        assert len(h2.all_ports()) == 2
+        assert len(hydrogen.all_ports()) == 1
+        assert len(h_clone.all_ports()) == 1
+
+    def test_add_remove_bonds_ports(self, hydrogen):
+        h_clone = mb.clone(hydrogen)
+        h2 = mb.Compound(subcompounds=(hydrogen, h_clone))
+        mb.force_overlap(h_clone, h_clone['up'], hydrogen['up'])
+        h2.remove_bond((h2[0], h2[1]))
+        assert False
+        mb.force_overlap(h2[0], h2[0].referenced_ports[0], h2[1].referenced_ports[0])
+        assert len(h2.all_ports()) == 0
+        assert len(hydrogen.all_ports()) == 0
+        assert len(h_clone.all_ports()) == 0
+        h2.remove_bond((h2[0], h2[1]))
+        assert len(h2.all_ports()) == 2
+        assert len(hydrogen.all_ports()) == 1
+        assert len(h_clone.all_ports()) == 1
