@@ -52,6 +52,11 @@ class BaseTest:
         return N4()
 
     @pytest.fixture
+    def hydrogen(self):
+        from mbuild.lib.atoms import H
+        return H()
+
+    @pytest.fixture
     def betacristobalite(self):
         from mbuild.lib.surfaces import Betacristobalite
         return Betacristobalite()
