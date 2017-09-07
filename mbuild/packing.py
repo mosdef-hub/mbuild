@@ -38,7 +38,7 @@ end structure
 
 
 def fill_box(compound, n_compounds=None, box=None, aspect_ratio=None,
-        density=None, overlap=0.2, edge=0.2, seed=12345):
+        density=None, compound_ratio=None, overlap=0.2, edge=0.2, seed=12345):
     """Fill a box with a compound using packmol.
 
     Two arguments of `n_compounds, box, and density` must be specified.
@@ -106,15 +106,18 @@ def fill_box(compound, n_compounds=None, box=None, aspect_ratio=None,
                 L *= np.prod(aspect_ratio) ** (-1/3)
                 box = _validate_box(Box([val*L for val in aspect_ratio]))
         if n_compounds is None and box is not None:
-            if len(compound) > 1:
+            if compound_ratio is None:
                 msg = ("Determing `n_compounds` from `density` and `box` "
-                    "currently only supported for systems with one "
-                    "compound type.")
+                    "for systems with more than one compound type requires"
+                    "`compound_ratio` is required")
                 raise ValueError(msg)
-            else:
+            elif len(n_compounds) == 1:
                 compound_mass = np.sum([a.mass for a in compound[0].to_parmed().atoms])
                 # Conversion from kg/m^3 / amu * nm^3 to dimensionless units
                 n_compounds = [int(density/compound_mass*np.prod(box.lengths)*.60224)]
+            else:
+                prototype_mass = 0
+                np.sum([a.mass for a in 
 
     # In angstroms for packmol.
     box_mins = box.mins * 10
