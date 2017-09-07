@@ -37,7 +37,8 @@ end structure
 """
 
 
-def fill_box(compound, n_compounds=None, box=None, density=None, overlap=0.2, seed=12345):
+def fill_box(compound, n_compounds=None, box=None, density=None,
+        overlap=0.2, edge=0.2, seed=12345):
     """Fill a box with a compound using packmol.
 
     Two arguments of `n_compounds, box, and density` must be specified.
@@ -58,6 +59,7 @@ def fill_box(compound, n_compounds=None, box=None, density=None, overlap=0.2, se
     n_compounds : int or list of int
     box : mb.Box
     overlap : float, units nm
+    edge : float, units nm
     density : float, units kg/m^3
 
     Returns
@@ -109,6 +111,11 @@ def fill_box(compound, n_compounds=None, box=None, density=None, overlap=0.2, se
     box_mins = box.mins * 10
     box_maxs = box.maxs * 10
     overlap *= 10
+    
+    # Apply edge buffer 
+    print(type(box_maxs))
+    print(type(edge))
+    box_maxs - edge * 10
 
     # Build the input file for each compound and call packmol.
     filled_pdb = tempfile.mkstemp(suffix='.pdb')[1]
@@ -137,7 +144,7 @@ def fill_box(compound, n_compounds=None, box=None, density=None, overlap=0.2, se
     return filled
 
 
-def fill_region(compound, n_compounds, region, overlap=0.2, seed=12345):
+def fill_region(compound, n_compounds, region, overlap=0.2, edge=0.2, seed=12345):
     """Fill a region of a box with a compound using packmol.
 
     Parameters
@@ -203,7 +210,7 @@ def fill_region(compound, n_compounds, region, overlap=0.2, seed=12345):
     return filled
 
 
-def solvate(solute, solvent, n_solvent, box, overlap=0.2, seed=12345):
+def solvate(solute, solvent, n_solvent, box, overlap=0.2, edge=0.2, seed=12345):
     """Solvate a compound in a box of solvent using packmol.
 
     Parameters
@@ -233,6 +240,9 @@ def solvate(solute, solvent, n_solvent, box, overlap=0.2, seed=12345):
     box_maxs = box.maxs * 10
     overlap *= 10
     center_solute = (box_maxs + box_mins) / 2
+    
+    # Apply edge buffer 
+    box_maxs -= edge * 10
 
     # Build the input file for each compound and call packmol.
     solvated_pdb = tempfile.mkstemp(suffix='.pdb')[1]
