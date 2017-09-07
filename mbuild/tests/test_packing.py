@@ -27,6 +27,10 @@ class TestPacking(BaseTest):
                              box=mb.Box([3.1042931, 3.1042931, 3.1042931]))
         assert filled.n_particles == 3000
 
+    def test_fill_box_compound_ratio(self, h2o, ethane):
+        filled = mb.fill_box(compound=[h2o, ethane], density=800,
+                compound_ratio=[2, 1], box=[2, 2, 2, 4, 4, 4])
+
     def test_fill_region(self, h2o):
         filled = mb.fill_region(h2o, n_compounds=50,
                                 region=[3, 2, 2, 4, 4, 3])

@@ -106,18 +106,28 @@ def fill_box(compound, n_compounds=None, box=None, aspect_ratio=None,
                 L *= np.prod(aspect_ratio) ** (-1/3)
                 box = _validate_box(Box([val*L for val in aspect_ratio]))
         if n_compounds is None and box is not None:
-            if compound_ratio is None:
-                msg = ("Determing `n_compounds` from `density` and `box` "
-                    "for systems with more than one compound type requires"
-                    "`compound_ratio` is required")
-                raise ValueError(msg)
-            elif len(n_compounds) == 1:
+            if len(compound) == 1:
                 compound_mass = np.sum([a.mass for a in compound[0].to_parmed().atoms])
                 # Conversion from kg/m^3 / amu * nm^3 to dimensionless units
                 n_compounds = [int(density/compound_mass*np.prod(box.lengths)*.60224)]
             else:
+                if compound_ratio is None:
+                    msg = ("Determing `n_compounds` from `density` and `box` "
+                    "for systems with more than one compound type requires"
+                    "`compound_ratio`")
+                    raise ValueError(msg)
+                if len(compound) != len(compound_ratio):
+                    msg = ("Length of `compound_ratio` must equal length of "
+                        "`compound`")
+                    raise ValueError(msg)
                 prototype_mass = 0
-                np.sum([a.mass for a in 
+                for c, r in zip(compound, compound_ratio):
+                    prototype_mass += r * np.sum([a.mass for a in c.to_parmed().atoms])
+                # Conversion from kg/m^3 / amu * nm^3 to dimensionless units
+                n_prototypes = int(density/prototype_mass*np.prod(box.lengths)*.60224)
+                print(n_prototypes)
+                print(compound_ratio)
+                n_compounds = n_prototypes * compound_ratio
 
     # In angstroms for packmol.
     box_mins = box.mins * 10
