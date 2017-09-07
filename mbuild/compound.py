@@ -879,9 +879,9 @@ class Compound(object):
         bond_vector = particle_pair[0].pos - particle_pair[1].pos
         distance = np.linalg.norm(bond_vector)
         particle_pair[0].add(Port(anchor=particle_pair[0], orientation=-bond_vector,
-                                  separation=distance/2))
+                                  separation=distance/2), 'port[$]')
         particle_pair[1].add(Port(anchor=particle_pair[1], orientation=bond_vector,
-                                  separation=distance/2))
+                                  separation=distance/2), 'port[$]')
 
     @property
     def pos(self):
