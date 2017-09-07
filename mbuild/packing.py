@@ -37,8 +37,8 @@ end structure
 """
 
 
-def fill_box(compound, n_compounds=None, box=None, density=None,
-        overlap=0.2, edge=0.2, seed=12345):
+def fill_box(compound, n_compounds=None, box=None, aspect_ratio=None,
+        density=None, overlap=0.2, edge=0.2, seed=12345):
     """Fill a box with a compound using packmol.
 
     Two arguments of `n_compounds, box, and density` must be specified.
@@ -53,11 +53,16 @@ def fill_box(compound, n_compounds=None, box=None, density=None,
     If `box` and `density` are not None, the corresponding number of
     compounds will be calculated internally.
 
+    For the cases in which `box` is not specified but generated internally,
+    the default behavior is to calculate a cubic box. Optionally,
+    `aspect_ratio` can be passed to generate a non-cubic box.
+
     Parameters
     ----------
     compound : mb.Compound or list of mb.Compound
     n_compounds : int or list of int
     box : mb.Box
+    aspect_ratio : list of float
     overlap : float, units nm
     edge : float, units nm
     density : float, units kg/m^3
@@ -95,7 +100,11 @@ def fill_box(compound, n_compounds=None, box=None, density=None,
                 for c,n in zip(compound, n_compounds)])
             # Conversion from (amu/(kg/m^3))**(1/3) to nm
             L = (total_mass/density)**(1/3)*1.1841763
-            box = _validate_box(Box(3*[L]))
+            if aspect_ratio is None:
+                box = _validate_box(Box(3*[L]))
+            else:
+                L *= np.prod(aspect_ratio) ** (-1/3)
+                box = _validate_box(Box([val*L for val in aspect_ratio]))
         if n_compounds is None and box is not None:
             if len(compound) > 1:
                 msg = ("Determing `n_compounds` from `density` and `box` "
@@ -113,9 +122,7 @@ def fill_box(compound, n_compounds=None, box=None, density=None,
     overlap *= 10
     
     # Apply edge buffer 
-    print(type(box_maxs))
-    print(type(edge))
-    box_maxs - edge * 10
+    box_maxs = box_maxs - edge * 10
 
     # Build the input file for each compound and call packmol.
     filled_pdb = tempfile.mkstemp(suffix='.pdb')[1]
@@ -242,7 +249,7 @@ def solvate(solute, solvent, n_solvent, box, overlap=0.2, edge=0.2, seed=12345):
     center_solute = (box_maxs + box_mins) / 2
     
     # Apply edge buffer 
-    box_maxs -= edge * 10
+    box_maxs = box_maxs - edge * 10
 
     # Build the input file for each compound and call packmol.
     solvated_pdb = tempfile.mkstemp(suffix='.pdb')[1]
