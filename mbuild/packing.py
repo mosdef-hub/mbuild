@@ -71,8 +71,6 @@ def fill_box(compound, n_compounds=None, box=None, aspect_ratio=None,
     -------
     filled : mb.Compound
     
-    TODO : Support aspect ratios in generated boxes
-    TODO : Support ratios of n_compounds
     """
     if not PACKMOL:
         msg = "Packmol not found."
