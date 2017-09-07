@@ -18,12 +18,12 @@ class Box(object):
         if lengths is not None:
             assert mins is None and maxs is None
             self._mins = np.array([0.0, 0.0, 0.0])
-            self._maxs = np.array(lengths)
-            self._lengths = np.array(lengths)
+            self._maxs = np.array(lengths, dtype=np.float64)
+            self._lengths = np.array(lengths, dtype=np.float64)
         elif maxs is not None:
             assert mins is not None and lengths is None
-            self._mins = np.array(mins)
-            self._maxs = np.array(maxs)
+            self._mins = np.array(mins, dtype=np.float64)
+            self._maxs = np.array(maxs, dtype=np.float64)
             self._lengths = self.maxs - self.mins
         else:
             raise ValueError("Either provide `lengths` or `mins` and `maxs`."
