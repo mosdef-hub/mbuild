@@ -30,6 +30,9 @@ class TestPacking(BaseTest):
     def test_fill_box_compound_ratio(self, h2o, ethane):
         filled = mb.fill_box(compound=[h2o, ethane], density=800,
                 compound_ratio=[2, 1], box=[2, 2, 2, 4, 4, 4])
+        n_ethane = len([c for c in filled.children if c.name == 'Ethane'])
+        n_water = len([c for c in filled.children if c.name == 'H2O'])
+        assert n_water / n_ethane == 2
 
     def test_fill_region(self, h2o):
         filled = mb.fill_region(h2o, n_compounds=50,
