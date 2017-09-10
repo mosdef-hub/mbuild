@@ -125,7 +125,7 @@ def fill_box(compound, n_compounds=None, box=None, aspect_ratio=None,
                 n_prototypes = int(density/prototype_mass*np.prod(box.lengths)*.60224)
                 n_compounds = list()
                 for c in compound_ratio:
-                    n_compounds.append(n_prototypes * c)
+                    n_compounds.append(int(n_prototypes * c))
 
     # In angstroms for packmol.
     box_mins = box.mins * 10
