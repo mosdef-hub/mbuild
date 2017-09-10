@@ -253,7 +253,7 @@ def unit_vector(v):
 
 def angle(u, v, w=None):
     """Returns the angle in radians between two vectors. """
-    if w != None:
+    if w is not None:
         u = u - v
         v = w - v
     c = np.dot(u, v) / norm(u) / norm(v)
