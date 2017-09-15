@@ -166,8 +166,7 @@ class Lattice(object):
 
         if angles is not None:
             self._validate_angles(angles)
-            self.lattice_vectors = self._from_lattice_parameters(
-                self.angles)
+            self.lattice_vectors = self._from_lattice_parameters(self.angles)
         else:
             self._validate_lattice_vectors(lattice_vectors)
             self.angles = self._from_lattice_vectors()
@@ -400,7 +399,7 @@ class Lattice(object):
         beta = np.arccos(np.clip(beta_raw, -1.0, 1.0)) * degreeConvsersion
         gamma = np.arccos(np.clip(gamma_raw, -1.0, 1.0)) * degreeConvsersion
 
-        self.angles = np.asarray([alpha, beta, gamma], dtype=np.float64)
+        return np.asarray([alpha, beta, gamma], dtype=np.float64)
 
     def populate(self, compound_dict=None, x=1, y=1, z=1):
         """Expand lattice and create compound from lattice.
@@ -433,6 +432,14 @@ class Lattice(object):
         Called after constructor by user.
         """
         error_dict = {0: 'X', 1: 'Y', 2: 'Z'}
+        try:
+            x = int(x)
+            y = int(y)
+            z = int(z)
+        except (ValueError, TypeError):
+            raise ValueError('Cannot convert replication amounts into '
+                             'integers. x= {}, y= {}, z= {} needs to '
+                             'be an int.'.format(x, y, z))
 
         for replication_amount in x, y, z:
             if replication_amount is None:

@@ -98,46 +98,62 @@ class TestLattice(BaseTest):
     def test_basis_atoms_input_type(self, type):
         with pytest.raises(TypeError):
             mb.Lattice(lattice_spacing=[1, 1, 1], basis_atoms=type)
-    # @pytest.mark.parametrize("spacing, dim, x, y, z",
-    #                            [
-    #                                 ([1, 1, 1], 3, 0, 1, 1),
-    #                                 ([1, 1, 1], 3, 1, 0, 1),
-    #                                 ([1, 1, 1], 3, 1, 1, 0),
-    #                                 ([1, 1, 1], 3, None, 1, 0),
-    #                                 ([1, 1, 1], 3, -1, -1, -1)
-    #                            ]
-    #                          )
-    # def test_populate_3d_incorrect_inputs(self, spacing, dim, x, y, z):
-    #     test_lattice = mb.Lattice(spacing, dimension=dim)
-    #     with pytest.raises(ValueError):
-    #         test_lattice.populate(x=x, y=y, z=z)
-    #
-    # @pytest.mark.parametrize("spacing, dim, x, y",
-    #                          [
-    #                                 ([1, 1], 2, 0, 1),
-    #                                 ([1, 1], 2, 1, 0),
-    #                                 ([1, 1], 2, None, 0),
-    #                                 ([1, 1], 2, -1, -1)
-    #                          ]
-    #                          )
-    # def test_populate_2d_incorrect_inputs(self, spacing, dim, x, y):
-    #     test_lattice = mb.Lattice(spacing, dimension=dim)
-    #     with pytest.raises(ValueError):
-    #         test_lattice.populate(x=x, y=y)
-    #
-    # @pytest.mark.parametrize("spacing, dim, x",
-    #                          [
-    #                                 ([1], 1, 0),
-    #                                 ([1], 1, -1)
-    #                          ]
-    #                          )
-    # def test_populate_1d_incorrect_inputs(self, spacing, dim, x):
-    #     test_lattice = mb.Lattice(spacing, dimension=dim)
-    #     with pytest.raises(ValueError):
-    #         test_lattice.populate(x=x)
-    #         test_lattice.populate(y=x)
-    #         test_lattice.populate(z=x)
-    #
+
+    @pytest.mark.parametrize("vectors, angles",
+                             [
+                                ([[1, 0, 0], [0, 1, 0], [0, 0, 1]],
+                                    [90, 90, 90])
+                             ]
+                             )
+    def test_proper_angles(self, vectors, angles):
+        testlattice = mb.Lattice(lattice_spacing=[1, 1, 1],
+                                  lattice_vectors=vectors)
+        np.testing.assert_allclose(testlattice.angles,
+                                   np.asarray(angles, dtype=np.float64),
+                                   rtol=1e-05, atol=1e-08, equal_nan=False)
+
+    @pytest.mark.parametrize("x, y, z",
+                              [
+                                (None, 1, 0),
+                                (-1, 1, 1),
+                                (1, -1, 1),
+                                (1, 1, -1),
+                                (1, 1, np.NaN)
+                              ])
+    def test_incorrect_populate_inputs(self, x, y, z):
+        with pytest.raises(ValueError):
+            test_lattice = mb.Lattice(lattice_spacing=[1, 1, 1])
+            test_lattice.populate(compound_dict={'id':mb.Compound()},
+                                  x=x, y=y, z=z)
+
+    @pytest.mark.parametrize("my_type",
+                             [
+                                ([]),
+                                (()),
+                                (np.array),
+                                (np.ndarray)
+                            ]
+                            )
+    def test_populate_basis_type_incorrect(self, my_type):
+        test_lattice = mb.Lattice(lattice_spacing=[1, 1, 1])
+        with pytest.raises(TypeError):
+            test_lattice.populate(compound_dict=my_type)
+
+    @pytest.mark.parametrize("not_compound",
+                             [
+                                    (1),
+                                    (mb.Box(lengths=[1, 1, 1])),
+                                    ("aLattice")
+                             ]
+                             )
+    def test_populate_not_compound(self, not_compound):
+        test_lattice = mb.Lattice(lattice_spacing=[1, 1, 1])
+        particle_dict = {'id': not_compound}
+        with pytest.raises(TypeError):
+            test_lattice.populate(compound_dict=particle_dict)
+
+    def test_proper_populate(self):
+        # TODO Determine proper populate test
     # def test_populate_3d_default(self):
     #     test_lattice = mb.Lattice([1, 1, 1], dimension=3)
     #     a = test_lattice.populate()
@@ -152,29 +168,3 @@ class TestLattice(BaseTest):
     #     test_lattice = mb.Lattice([1], dimension=1)
     #     a = test_lattice.populate()
     #     np.testing.assert_array_equal(a.xyz[0], [0., 0., 0.])
-    #
-    # @pytest.mark.parametrize("my_type",
-    #                          [
-    #                                 ([]),
-    #                                 (()),
-    #                                 (np.array),
-    #                                 (np.ndarray)
-    #                          ]
-    #                          )
-    # def test_populate_basis_type_incorrect(self, my_type):
-    #     test_lattice = mb.Lattice([1, 1, 1], dimension=3)
-    #     with pytest.raises(TypeError):
-    #         test_lattice.populate(compound_dict=my_type)
-    #
-    # @pytest.mark.parametrize("not_compound",
-    #                          [
-    #                                 (1),
-    #                                 (mb.Box(lengths=[1, 1, 1])),
-    #                                 ("aLattice")
-    #                          ]
-    #                          )
-    # def test_populate_not_compound(self, not_compound):
-    #     test_lattice = mb.Lattice([1, 1, 1])
-    #     particle_dict = {'default': not_compound}
-    #     with pytest.raises(TypeError):
-    #         test_lattice.populate(compound_dict=particle_dict)
