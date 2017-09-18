@@ -491,10 +491,12 @@ class Lattice(object):
 
         if compound_dict is None:
             for key_id, all_pos in cell.items():
-                particle = mb.Particle(name=key_id, pos=[0, 0, 0])
+                particle = mb.Compound(name=key_id, pos=[0, 0, 0])
                 for pos in all_pos:
                     particle_to_add = mb.clone(particle)
-                    mb.translate(particle_to_add, list(pos))
+                    print(particle.center)
+                    print(particle.xyz)
+                    particle_to_add.translate_to(list(pos))
                     ret_lattice.add(particle_to_add)
         else:
             for key_id, all_pos in cell.items():
@@ -502,7 +504,7 @@ class Lattice(object):
                     compound_to_move = compound_dict[key_id]
                     for pos in all_pos:
                         tmp_comp = mb.clone(compound_to_move)
-                        mb.translate(tmp_comp, list(pos))
+                        tmp_comp.translate_to(list(pos))
                         ret_lattice.add(tmp_comp)
                 else:
                     err_type = type(compound_dict.get(key_id))

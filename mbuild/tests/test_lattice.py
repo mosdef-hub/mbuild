@@ -153,18 +153,19 @@ class TestLattice(BaseTest):
             test_lattice.populate(compound_dict=particle_dict)
 
     def test_proper_populate(self):
-        # TODO Determine proper populate test
-    # def test_populate_3d_default(self):
-    #     test_lattice = mb.Lattice([1, 1, 1], dimension=3)
-    #     a = test_lattice.populate()
-    #     np.testing.assert_array_equal(a.xyz[0], [0., 0., 0.])
-    #
-    # def test_populate_2d_default(self):
-    #     test_lattice = mb.Lattice([1, 1], dimension=2)
-    #     a = test_lattice.populate()
-    #     np.testing.assert_array_equal(a.xyz[0], [0., 0., 0.])
-    #
-    # def test_populate_1d_default(self):
-    #     test_lattice = mb.Lattice([1], dimension=1)
-    #     a = test_lattice.populate()
-    #     np.testing.assert_array_equal(a.xyz[0], [0., 0., 0.])
+        values_to_check = [[0, 0, 0], [1, 0, 0], [0, 1, 0], [0, 0, 1],
+                           [1, 1, 0], [0, 1, 1], [1, 0, 1], [1, 1, 1]]
+        test_lattice = mb.Lattice(lattice_spacing=[1, 1, 1],
+                                  angles=[90, 90, 90])
+
+        new_compound = test_lattice.populate(x=2, y=2, z=2)
+
+        values_to_check = np.asarray(values_to_check, dtype=np.float64)
+
+        is_true = []
+        for pos1 in np.split(values_to_check, 8, axis=0):
+            for pos2 in np.split(new_compound.xyz, 8, axis=0):
+                if np.allclose(pos1, pos2):
+                    is_true.append(True)
+
+        assert len(is_true) == len(values_to_check)
