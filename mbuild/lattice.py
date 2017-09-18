@@ -17,8 +17,8 @@ class Lattice(object):
 
     A Lattice is defined through the Bravais lattice definitions. With edge
     vectors a1, a2, a3; lattice spacing a,b,c; and lattice points at unique
-    fractional positions between 0-1 in 3 dimensions. This encapsulated
-    distance, area, volume, depending on the dimensions defined.
+    fractional positions between 0-1 in 3 dimensions. This encapsulates
+    distance, area, volume, depending on the parameters defined.
 
 
     Parameters
@@ -64,13 +64,13 @@ class Lattice(object):
     >>> basis = {'cholesterol':[[0., 0., 0.]]}
     >>> cholesterol_lattice = mb.Lattice(spacing,
     ...                                  angles=angle_values,
-    ...                                  lattice_points=basis,
-    ...                                  dimension=3)
+    ...                                  lattice_points=basis)
 
-    The lattice based on the bravais lattice parameters of crystalline
-    cholesterol was generated.
+    >>> # The lattice based on the bravais lattice parameters of crystalline
+    >>> # cholesterol was generated.
 
-    Replicating the triclinic unit cell out 3 in x,y,z directions.
+    >>> # Replicating the triclinic unit cell out 3 replications
+    >>> # in x,y,z directions.
 
     >>> cholesterol_unit = mb.Compound()
     >>> cholesterol_unit = mb.load(get_fn('cholesterol.pdb'))
@@ -93,10 +93,9 @@ class Lattice(object):
     >>> cesium = mb.Compound(name='Cs')
     >>> spacing = [.4123, .4123, .4123]
     >>> basis = {'Cl' : [[0., 0., 0.]], 'Cs' : [[.5, .5, .5]]}
-    >>> cscl_lattice = mb.Lattice(spacing, lattice_points=basis,
-    ...                           dimension=3)
+    >>> cscl_lattice = mb.Lattice(spacing, lattice_points=basis)
 
-    Now associate id with Compounds for lattice points and replicate 3x3x3
+    >>> # Now associate id with Compounds for lattice points and replicate 3x
 
     >>> cscl_dict = {'Cl' : chlorine, 'Cs' : cesium}
     >>> cscl_compound = cscl_lattice.populate(x=3, y=3, z=3,
@@ -110,17 +109,30 @@ class Lattice(object):
 
     >>> import mbuild as mb
     >>> copper = mb.Compound(name='Cu')
-    >>> lattice_vector = ( [1, 0, 0], [0, 1, 0], [0, 0, 1])
+    >>> lattice_vector = [[1, 0, 0], [0, 1, 0], [0, 0, 1]]
     >>> spacing = [.36149, .36149, .36149]
     >>> copper_locations = [[0., 0., 0.], [.5, .5, 0.],
     ...                     [.5, 0., .5], [0., .5, .5]]
     >>> basis = {'Cu' : copper_locations}
-    >>> copper_lattice = mb.Lattice(spacing, dimension=3,
-    ...                           lattice_vectors=lattice_vector,
-    ...                           lattice_points=basis)
+    >>> copper_lattice = mb.Lattice(lattice_spacing = spacing,
+    ...                             lattice_vectors=lattice_vector,
+    ...                             lattice_points=basis)
     >>> copper_dict = {'Cu' : copper}
-    >>> copper_cell = copper_lattice.populate(x=3, y=3, z=20,
+    >>> copper_pillar = copper_lattice.populate(x=3, y=3, z=20,
     ...                                       compound_dict=copper_dict)
+
+    Generating the 2d Structure Graphene carbon backbone
+
+    >>> import mbuild as mb
+    >>> carbon = mb.Compound(name='C')
+    >>> angles = [90, 90, 120]
+    >>> carbon_locations = [[0, 0, 0], [2/3, 1/3, 0]]
+    >>> basis = {'C' : carbon_locations}
+    >>> graphene = mb.Lattice(lattice_spacing=[.2456, .2456, 0],
+    ...                        angles=angles, lattice_points=basis)
+    >>> carbon_dict = {'C' : carbon}
+    >>> graphene_cell = graphene.populate(compound_dict=carbon_dict,
+    ...                                   x=3, y=3, z=1)
 
     """
 
