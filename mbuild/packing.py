@@ -60,12 +60,22 @@ def fill_box(compound, n_compounds=None, box=None, aspect_ratio=None,
     Parameters
     ----------
     compound : mb.Compound or list of mb.Compound
+        Compound or list of compounds to be put in box.
     n_compounds : int or list of int
+        Number of compounds to be put in box.
     box : mb.Box
+        Box to be filled by compounds.
     aspect_ratio : list of float
-    overlap : float, units nm
-    edge : float, units nm
+        If a non-cubic box is desired, the ratio of box lengths in the x, y,
+        and z directions.
+    overlap : float, units nm, default=0.2
+        Minimum separation between atoms of different molecules.
+    edge : float, units nm, default=0.2
+        Buffer at the edge of the box to not place molecules. This is necessary
+        in some systems because PACKMOL does not account for periodic boundary
+        conditions in its optimizaiton.
     density : float, units kg/m^3
+        Target density for the system.
 
     Returns
     -------
@@ -168,9 +178,13 @@ def fill_region(compound, n_compounds, region, overlap=0.2, edge=0.2, seed=12345
     Parameters
     ----------
     compound : mb.Compound or list of mb.Compound
+        Compound or list of compounds to be put in box.
     n_compounds : int or list of int
+        Number of compounds to be put in box.
     region : mb.Box or list of mb.Box
+        Region to be filled by compounds.
     overlap : float
+        Minimum separation between atoms of different molecules.
 
     Returns
     -------
@@ -234,10 +248,15 @@ def solvate(solute, solvent, n_solvent, box, overlap=0.2, edge=0.2, seed=12345):
     Parameters
     ----------
     solute : mb.Compound
+        Compound to be placed in a box and solvated.
     solvent : mb.Compound
+        Compound to solvate the box.
     n_solvent : int
+        Number of solvents to be put in box.
     box : mb.Box
+        Box to be filled by compounds.
     overlap : float
+        Minimum separation between atoms of different molecules.
 
     Returns
     -------
