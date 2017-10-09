@@ -133,12 +133,12 @@ class TestCompound(BaseTest):
         with pytest.raises(MBuildError):
             ethane.pos = [0, 0, 0]
 
-    def test_xyz(self, ethane):
-        xyz = ethane.xyz
-        assert xyz.shape == (8, 3)
+    def test_xyz(self, ch3):
+        xyz = ch3.xyz
+        assert xyz.shape == (4, 3)
 
-        xyz = ethane.xyz_with_ports
-        assert xyz.shape == (24, 3)
+        xyz = ch3.xyz_with_ports
+        assert xyz.shape == (12, 3)
 
     def test_particles_by_name(self, ethane):
         assert sum(1 for _ in ethane.particles()) == 8
@@ -649,21 +649,6 @@ class TestCompound(BaseTest):
         h_clone = mb.clone(hydrogen)
         h2 = mb.Compound(subcompounds=(hydrogen, h_clone))
         mb.force_overlap(h_clone, h_clone['up'], hydrogen['up'])
-        h2.remove_bond((h2[0], h2[1]))
-        assert len(h2.all_ports()) == 2
-        assert len(hydrogen.all_ports()) == 1
-        assert len(h_clone.all_ports()) == 1
-
-    def test_add_remove_bonds_ports(self, hydrogen):
-        h_clone = mb.clone(hydrogen)
-        h2 = mb.Compound(subcompounds=(hydrogen, h_clone))
-        mb.force_overlap(h_clone, h_clone['up'], hydrogen['up'])
-        h2.remove_bond((h2[0], h2[1]))
-        assert False
-        mb.force_overlap(h2[0], h2[0].referenced_ports[0], h2[1].referenced_ports[0])
-        assert len(h2.all_ports()) == 0
-        assert len(hydrogen.all_ports()) == 0
-        assert len(h_clone.all_ports()) == 0
         h2.remove_bond((h2[0], h2[1]))
         assert len(h2.all_ports()) == 2
         assert len(hydrogen.all_ports()) == 1
