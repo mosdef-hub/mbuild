@@ -22,12 +22,13 @@ class TestRigid(BaseTest):
         assert len(list(benzene.rigid_particles())) == 0
 
     def test_rigid_from_parts(self, rigid_ch):
+        rigid_ch_copy = mb.clone(rigid_ch)
         benzene = mb.Compound()
         benzene.add(rigid_ch)
         current = rigid_ch
 
         for _ in range(5):
-            ch_new = mb.clone(rigid_ch)
+            ch_new = mb.clone(rigid_ch_copy)
             mb.force_overlap(move_this=ch_new,
                              from_positions=ch_new['a'],
                              to_positions=current['b'])
@@ -45,12 +46,13 @@ class TestRigid(BaseTest):
         assert len(list(benzene.rigid_particles(rigid_id=0))) == 12
 
     def test_rigid_from_parts2(self, rigid_ch):
+        rigid_ch_copy = mb.clone(rigid_ch)
         benzene = mb.Compound()
         benzene.add(rigid_ch, reset_rigid_ids=False)
         current = rigid_ch
 
         for _ in range(5):
-            ch_new = mb.clone(rigid_ch)
+            ch_new = mb.clone(rigid_ch_copy)
             mb.force_overlap(move_this=ch_new,
                              from_positions=ch_new['a'],
                              to_positions=current['b'])
@@ -68,12 +70,13 @@ class TestRigid(BaseTest):
         assert len(list(benzene.rigid_particles(rigid_id=0))) == 12
 
     def test_rigid_from_parts3(self, rigid_ch):
+        rigid_ch_copy = mb.clone(rigid_ch)
         benzene = mb.Compound()
         benzene.add(rigid_ch)
         current = rigid_ch
 
         for _ in range(5):
-            ch_new = mb.clone(rigid_ch)
+            ch_new = mb.clone(rigid_ch_copy)
             mb.force_overlap(move_this=ch_new,
                              from_positions=ch_new['a'],
                              to_positions=current['b'])
