@@ -1255,8 +1255,9 @@ class Compound(object):
         self.update_coordinates(os.path.join(tmp_dir, 'minimized.mol2'))
 
     def save(self, filename, show_ports=False, forcefield_name=None,
-             forcefield_files=None, box=None, overwrite=False, residues=None,
-             references_file=None, combining_rule='lorentz', **kwargs):
+             forcefield_files=None, forcefield_debug=False, box=None,
+             overwrite=False, residues=None, references_file=None,
+             combining_rule='lorentz', **kwargs):
         """Save the Compound to a file.
 
         Parameters
@@ -1274,6 +1275,10 @@ class Compound(object):
             Apply a named forcefield to the output file using the `foyer`
             package, e.g. 'oplsaa'. Forcefields listed here:
             https://github.com/mosdef-hub/foyer/tree/master/foyer/forcefields
+        forcefield_debug : bool, optional, default=False
+            Choose level of verbosity when applying a forcefield through `foyer`.
+            Specifically, when missing atom types in the forcefield xml file,
+            determine if the warning is condensed or verbose.
         box : mb.Box, optional, default=self.boundingbox (with buffer)
             Box information to be written to the output file. If 'None', a
             bounding box is used with 0.25nm buffers at each face to avoid
@@ -1336,7 +1341,7 @@ class Compound(object):
         if forcefield_name or forcefield_files:
             from foyer import Forcefield
             ff = Forcefield(forcefield_files=forcefield_files,
-                            name=forcefield_name)
+                            name=forcefield_name, debug=forcefield_debug)
             structure = ff.apply(structure, references_file=references_file)
             structure.combining_rule = combining_rule
 
