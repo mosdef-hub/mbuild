@@ -101,3 +101,15 @@ class TestPacking(BaseTest):
             filled = mb.fill_box(h2o, n_compounds=50, box=[2, 2])
         with pytest.raises(MBuildError):
             filled = mb.fill_box(h2o, n_compounds=50, box=[2, 2, 2, 2])
+
+    def test_bad_args(self, h2o):
+        with pytest.raises(ValueError):
+            mb.fill_box(h2o, n_compounds=10)
+        with pytest.raises(ValueError):
+            mb.fill_box(h2o, density=1000)
+        with pytest.raises(ValueError):
+            mb.fill_box(h2o, box=[2, 2, 2])
+        with pytest.raises(ValueError):
+            mb.fill_box(h2o, n_compounds=10, density=1000, box=[2, 2, 2])
+        with pytest.raises(ValueError):
+            mb.fill_box(compound=[h2o, h2o], n_compounds=[10], density=1000)
