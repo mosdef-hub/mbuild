@@ -87,6 +87,11 @@ def fill_box(compound, n_compounds=None, box=None, density=None, overlap=0.2, se
     if n_compounds is not None and not isinstance(n_compounds, (list, set)):
         n_compounds = [n_compounds]
 
+    if compound is not None and n_compounds is not None:
+        if len(compound) != len(n_compounds):
+            msg = ("`compound` and `n_compounds` must be of equal length.")
+            raise ValueError(msg)
+
     if density is not None:
         if box is None and n_compounds is not None:
             total_mass = np.sum([n*np.sum([a.mass for a in c.to_parmed().atoms])
@@ -165,6 +170,12 @@ def fill_region(compound, n_compounds, region, overlap=0.2, seed=12345):
         compound = [compound]
     if not isinstance(n_compounds, (list, set)):
         n_compounds = [n_compounds]
+
+    if compound is not None and n_compounds is not None:
+        if len(compound) != len(n_compounds):
+            msg = ("`compound` and `n_compounds` must be of equal length.")
+            raise ValueError(msg)
+
     # See if region is a single region or list
     if isinstance(region, Box): # Cannot iterate over boxes
         region = [region]
@@ -227,6 +238,10 @@ def solvate(solute, solvent, n_solvent, box, overlap=0.2, seed=12345):
         solvent = [solvent]
     if not isinstance(n_solvent, (list, set)):
         n_solvent = [n_solvent]
+
+    if len(solvent) != len(n_solvent):
+        msg = ("`n_solvent` and `n_solvent` must be of equal length.")
+        raise ValueError(msg)
 
     # In angstroms for packmol.
     box_mins = box.mins * 10

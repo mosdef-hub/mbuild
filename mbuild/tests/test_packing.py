@@ -113,3 +113,7 @@ class TestPacking(BaseTest):
             mb.fill_box(h2o, n_compounds=10, density=1000, box=[2, 2, 2])
         with pytest.raises(ValueError):
             mb.fill_box(compound=[h2o, h2o], n_compounds=[10], density=1000)
+        with pytest.raises(ValueError):
+            mb.solvate(solute=h2o, solvent=[h2o], n_solvent=[10, 10], box=[2, 2, 2])
+        with pytest.raises(ValueError):
+            mb.fill_region(h2o, n_compounds=[10, 10], region=[2, 2, 2, 4, 4, 4])
