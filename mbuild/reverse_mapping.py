@@ -1,9 +1,6 @@
 import pdb
 import numpy as np
 import mbuild as mb
-#from mapping_moieties.ch2_aa import CH2_aa
-#from mapping_moieties.ch3_aa import CH3_aa
-#from mapping_moieties.propane_aa import Propane_aa
 
 from parmed.periodic_table import Mass
 from collections import OrderedDict
