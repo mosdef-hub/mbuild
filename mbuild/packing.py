@@ -1,6 +1,7 @@
 from __future__ import division
 
 import sys
+import os
 import tempfile
 from distutils.spawn import find_executable
 from subprocess import Popen, PIPE
@@ -37,7 +38,8 @@ end structure
 """
 
 
-def fill_box(compound, n_compounds=None, box=None, density=None, overlap=0.2, seed=12345):
+def fill_box(compound, n_compounds=None, box=None, density=None, overlap=0.2,
+             seed=12345, write_tempfile=False):
     """Fill a box with a compound using packmol.
 
     Two arguments of `n_compounds, box, and density` must be specified.
@@ -73,6 +75,9 @@ def fill_box(compound, n_compounds=None, box=None, density=None, overlap=0.2, se
             msg = (msg + " If packmol is already installed, make sure that the "
                          "packmol.exe is on the path.")
         raise IOError(msg)
+
+    if write_tempfile:
+        original_dir = os.getcwd() # Avoid saving to a temp dir
 
     arg_count = 3 - [n_compounds, box, density].count(None)
     if arg_count != 2:
@@ -134,10 +139,14 @@ def fill_box(compound, n_compounds=None, box=None, density=None, overlap=0.2, se
             filled.add(clone(comp))
     filled.update_coordinates(filled_pdb)
     filled.periodicity = np.asarray(box.lengths, dtype=np.float32)
+    if write_tempfile:
+        os.chdir(original_dir)
+        filled.save(os.path.join(os.getcwd(), 'packmol_temp.pdb'), overwrite=True)
     return filled
 
 
-def fill_region(compound, n_compounds, region, overlap=0.2, seed=12345):
+def fill_region(compound, n_compounds, region, overlap=0.2,
+                seed=12345, write_tempfile=False):
     """Fill a region of a box with a compound using packmol.
 
     Parameters
@@ -160,6 +169,9 @@ def fill_region(compound, n_compounds, region, overlap=0.2, seed=12345):
             msg = (msg + " If packmol is already installed, make sure that the "
                          "packmol.exe is on the path.")
         raise IOError(msg)
+
+    if write_tempfile:
+        original_dir = os.getcwd() # Avoid saving to a temp dir
 
     if not isinstance(compound, (list, set)):
         compound = [compound]
@@ -200,10 +212,14 @@ def fill_region(compound, n_compounds, region, overlap=0.2, seed=12345):
         for _ in range(m_compounds):
             filled.add(clone(comp))
     filled.update_coordinates(filled_pdb)
+    if write_tempfile:
+        os.chdir(original_dir)
+        filled.save(os.path.join(os.getcwd(), 'packmol_temp.pdb'), overwrite=True)
     return filled
 
 
-def solvate(solute, solvent, n_solvent, box, overlap=0.2, seed=12345):
+def solvate(solute, solvent, n_solvent, box, overlap=0.2,
+            seed=12345, write_tempfile=False):
     """Solvate a compound in a box of solvent using packmol.
 
     Parameters
@@ -221,6 +237,9 @@ def solvate(solute, solvent, n_solvent, box, overlap=0.2, seed=12345):
     """
     if not PACKMOL:
         raise IOError("Packmol not found")
+
+    if write_tempfile:
+        original_dir = os.getcwd() # Avoid saving to a temp dir
 
     box = _validate_box(box)
     if not isinstance(solvent, (list, set)):
@@ -261,6 +280,9 @@ def solvate(solute, solvent, n_solvent, box, overlap=0.2, seed=12345):
         for _ in range(m_solvent):
             solvated.add(clone(solv))
     solvated.update_coordinates(solvated_pdb)
+    if write_tempfile:
+        os.chdir(original_dir)
+        solvated.save(os.path.join(os.getcwd(), 'packmol_temp.pdb'), overwrite=True)
     return solvated
 
 

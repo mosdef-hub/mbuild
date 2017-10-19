@@ -1,3 +1,5 @@
+import os
+
 import pytest
 import numpy as np
 
@@ -101,3 +103,8 @@ class TestPacking(BaseTest):
             filled = mb.fill_box(h2o, n_compounds=50, box=[2, 2])
         with pytest.raises(MBuildError):
             filled = mb.fill_box(h2o, n_compounds=50, box=[2, 2, 2, 2])
+
+    def test_write_tempfile(self, h2o):
+        cwd = os.getcwd() # Must keep track of the temp dir that pytest creates
+        filled = mb.fill_box(h2o, n_compounds=50, box=[2, 2, 2, 4, 4, 4], write_tempfile=True)
+        assert os.path.isfile(os.path.join(cwd, 'packmol_temp.pdb'))
