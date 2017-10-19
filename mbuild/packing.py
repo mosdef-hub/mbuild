@@ -1,7 +1,9 @@
 from __future__ import division
 
 import sys
+import os
 import tempfile
+import warnings
 from distutils.spawn import find_executable
 from subprocess import Popen, PIPE
 
@@ -38,7 +40,7 @@ end structure
 
 
 def fill_box(compound, n_compounds=None, box=None, aspect_ratio=None,
-        density=None, compound_ratio=None, overlap=0.2, edge=0.2, seed=12345):
+        density=None, overlap=0.2, seed=12345, write_tempfile=False):
     """Fill a box with a compound using packmol.
 
     Two arguments of `n_compounds, box, and density` must be specified.
@@ -88,6 +90,9 @@ def fill_box(compound, n_compounds=None, box=None, aspect_ratio=None,
             msg = (msg + " If packmol is already installed, make sure that the "
                          "packmol.exe is on the path.")
         raise IOError(msg)
+
+    if write_tempfile:
+        original_dir = os.getcwd() # Avoid saving to a temp dir
 
     arg_count = 3 - [n_compounds, box, density].count(None)
     if arg_count != 2:
@@ -164,8 +169,19 @@ def fill_box(compound, n_compounds=None, box=None, aspect_ratio=None,
 
     proc = Popen(PACKMOL, stdin=PIPE, stdout=PIPE, stderr=PIPE, universal_newlines=True)
     out, err = proc.communicate(input=input_text)
-    if err:
+    #import pdb; pdb.set_trace()
+    if 'WITHOUT PERFECT PACKING' in out:
+        msg = ("Packmol finished with imperfect packing. Using "
+               "the .pdb_FORCED file instead. This may not be a "
+               "sufficient packing result.")
+        warnings.warn(msg)
+        os.system('cp {0}_FORCED {0}'.format(filled_pdb))
+    if 'ERROR' in out:
         _packmol_error(out, err)
+
+    if write_tempfile:
+        os.system('cp {0} {1}'.format(filled_pdb,
+                                      os.path.join(original_dir, 'packmol_temp.pdb')))
 
     # Create the topology and update the coordinates.
     filled = Compound()
@@ -177,7 +193,8 @@ def fill_box(compound, n_compounds=None, box=None, aspect_ratio=None,
     return filled
 
 
-def fill_region(compound, n_compounds, region, overlap=0.2, edge=0.2, seed=12345):
+def fill_region(compound, n_compounds, region, overlap=0.2, edge=0.2,
+                seed=12345, write_tempfile=False):
     """Fill a region of a box with a compound using packmol.
 
     Parameters
@@ -204,6 +221,9 @@ def fill_region(compound, n_compounds, region, overlap=0.2, edge=0.2, seed=12345
             msg = (msg + " If packmol is already installed, make sure that the "
                          "packmol.exe is on the path.")
         raise IOError(msg)
+
+    if write_tempfile:
+        original_dir = os.getcwd() # Avoid saving to a temp dir
 
     if not isinstance(compound, (list, set)):
         compound = [compound]
@@ -244,6 +264,10 @@ def fill_region(compound, n_compounds, region, overlap=0.2, edge=0.2, seed=12345
     if err:
         _packmol_error(out, err)
 
+    if write_tempfile:
+        os.system('cp {0} {1}'.format(solvated_pdb,
+                                      os.path.join(original_dir, 'packmol_temp.pdb')))
+
     # Create the topology and update the coordinates.
     filled = Compound()
     for comp, m_compounds in zip(compound, n_compounds):
@@ -253,7 +277,8 @@ def fill_region(compound, n_compounds, region, overlap=0.2, edge=0.2, seed=12345
     return filled
 
 
-def solvate(solute, solvent, n_solvent, box, overlap=0.2, edge=0.2, seed=12345):
+def solvate(solute, solvent, n_solvent, box, overlap=0.2, edge=0.2,
+            seed=12345, write_tempfile=False):
     """Solvate a compound in a box of solvent using packmol.
 
     Parameters
@@ -276,6 +301,9 @@ def solvate(solute, solvent, n_solvent, box, overlap=0.2, edge=0.2, seed=12345):
     """
     if not PACKMOL:
         raise IOError("Packmol not found")
+
+    if write_tempfile:
+        original_dir = os.getcwd() # Avoid saving to a temp dir
 
     box = _validate_box(box)
     if not isinstance(solvent, (list, set)):
@@ -315,6 +343,10 @@ def solvate(solute, solvent, n_solvent, box, overlap=0.2, edge=0.2, seed=12345):
     out, err = proc.communicate(input=input_text)
     if err:
         _packmol_error(out, err)
+
+    if write_tempfile:
+        os.system('cp {0} {1}'.format(solvated_pdb,
+                                      os.path.join(original_dir, 'packmol_temp.pdb')))
 
     # Create the topology and update the coordinates.
     solvated = Compound()
