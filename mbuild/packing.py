@@ -132,6 +132,10 @@ def fill_box(compound, n_compounds=None, box=None, density=None, overlap=0.2,
     if err:
         _packmol_error(out, err)
 
+    if write_tempfile:
+        os.system('cp {0} {1}'.format(filled_pdb,
+                                      os.path.join(original_dir, 'packmol_temp.pdb')))
+
     # Create the topology and update the coordinates.
     filled = Compound()
     for comp, m_compounds in zip(compound, n_compounds):
@@ -139,9 +143,6 @@ def fill_box(compound, n_compounds=None, box=None, density=None, overlap=0.2,
             filled.add(clone(comp))
     filled.update_coordinates(filled_pdb)
     filled.periodicity = np.asarray(box.lengths, dtype=np.float32)
-    if write_tempfile:
-        os.chdir(original_dir)
-        filled.save(os.path.join(os.getcwd(), 'packmol_temp.pdb'), overwrite=True)
     return filled
 
 
@@ -206,15 +207,16 @@ def fill_region(compound, n_compounds, region, overlap=0.2,
     if err:
         _packmol_error(out, err)
 
+    if write_tempfile:
+        os.system('cp {0} {1}'.format(solvated_pdb,
+                                      os.path.join(original_dir, 'packmol_temp.pdb')))
+
     # Create the topology and update the coordinates.
     filled = Compound()
     for comp, m_compounds in zip(compound, n_compounds):
         for _ in range(m_compounds):
             filled.add(clone(comp))
     filled.update_coordinates(filled_pdb)
-    if write_tempfile:
-        os.chdir(original_dir)
-        filled.save(os.path.join(os.getcwd(), 'packmol_temp.pdb'), overwrite=True)
     return filled
 
 
@@ -273,6 +275,10 @@ def solvate(solute, solvent, n_solvent, box, overlap=0.2,
     if err:
         _packmol_error(out, err)
 
+    if write_tempfile:
+        os.system('cp {0} {1}'.format(solvated_pdb,
+                                      os.path.join(original_dir, 'packmol_temp.pdb')))
+
     # Create the topology and update the coordinates.
     solvated = Compound()
     solvated.add(solute)
@@ -280,9 +286,6 @@ def solvate(solute, solvent, n_solvent, box, overlap=0.2,
         for _ in range(m_solvent):
             solvated.add(clone(solv))
     solvated.update_coordinates(solvated_pdb)
-    if write_tempfile:
-        os.chdir(original_dir)
-        solvated.save(os.path.join(os.getcwd(), 'packmol_temp.pdb'), overwrite=True)
     return solvated
 
 
