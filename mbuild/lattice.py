@@ -474,26 +474,29 @@ class Lattice(object):
         cell = defaultdict(list)
         [a, b, c] = self.lattice_spacing[0]
 
-        transformMat = self.lattice_vectors
-        transformMat = np.asarray(transformMat, dtype=np.float64)
-        transformMat = np.transpose(transformMat, axes=None)
+        transform_mat = self.lattice_vectors
+	# unit vectors
+        transform_mat = np.asarray(transform_mat, dtype=np.float64)
+        norms = np.linalg.norm(transform_mat, axis=1)
+ 
+        unit_vecs = np.divide(transform_mat.transpose(), norms)
 
         for key, locations in self.lattice_points.items():
             for coords in locations:
                 for replication in it.product(range(x), range(y), range(z)):
                     temp_location = list()
-                    temp_location.append((a * replication[0]))
-                    temp_location.append((b * replication[1]))
-                    temp_location.append((c * replication[2]))
 
                     new_coords = np.asarray(coords, dtype=np.float64)
                     new_coords = np.reshape(new_coords, (1, 3), order='C')
 
-                    new_coords[0][0] = new_coords[0][0] + temp_location[0]
-                    new_coords[0][1] = new_coords[0][1] + temp_location[1]
-                    new_coords[0][2] = new_coords[0][2] + temp_location[2]
-
-                    new_coords = transformMat.dot(np.transpose(new_coords))
+                    new_coords[0][0] = new_coords[0][0] + replication[0]
+                    new_coords[0][1] = new_coords[0][1] + replication[1]
+                    new_coords[0][2] = new_coords[0][2] + replication[2]
+                    new_coords = np.dot(unit_vecs, new_coords.transpose())
+                    
+                    new_coords[0] = new_coords[0] * a
+                    new_coords[1] = new_coords[1] * b
+                    new_coords[2] = new_coords[2] * c
                     new_coords = np.reshape(new_coords, (1, 3), order='C')
 
                     tuple_of_coords = tuple(new_coords.flatten())
