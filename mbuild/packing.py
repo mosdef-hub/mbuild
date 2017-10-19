@@ -3,6 +3,7 @@ from __future__ import division
 import sys
 import os
 import tempfile
+import warnings
 from distutils.spawn import find_executable
 from subprocess import Popen, PIPE
 
@@ -129,7 +130,14 @@ def fill_box(compound, n_compounds=None, box=None, density=None, overlap=0.2,
 
     proc = Popen(PACKMOL, stdin=PIPE, stdout=PIPE, stderr=PIPE, universal_newlines=True)
     out, err = proc.communicate(input=input_text)
-    if err:
+    #import pdb; pdb.set_trace()
+    if 'WITHOUT PERFECT PACKING' in out:
+        msg = ("Packmol finished with imperfect packing. Using "
+               "the .pdb_FORCED file instead. This may not be a "
+               "sufficient packing result.")
+        warnings.warn(msg)
+        os.system('cp {0}_FORCED {0}'.format(filled_pdb))
+    if 'ERROR' in out:
         _packmol_error(out, err)
 
     if write_tempfile:
