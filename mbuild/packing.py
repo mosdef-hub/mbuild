@@ -39,8 +39,9 @@ end structure
 """
 
 
-def fill_box(compound, n_compounds=None, box=None, aspect_ratio=None,
-        density=None, overlap=0.2, seed=12345, write_tempfile=False):
+def fill_box(compound, n_compounds=None, box=None, density=None, overlap=0.2,
+             seed=12345, edge=0.2, compound_ratio=None,
+             aspect_ratio=None, write_tempfile=False):
     """Fill a box with a compound using packmol.
 
     Two arguments of `n_compounds, box, and density` must be specified.
@@ -193,8 +194,8 @@ def fill_box(compound, n_compounds=None, box=None, aspect_ratio=None,
     return filled
 
 
-def fill_region(compound, n_compounds, region, overlap=0.2, edge=0.2,
-                seed=12345, write_tempfile=False):
+def fill_region(compound, n_compounds, region, overlap=0.2,
+                seed=12345, edge=0.2, write_tempfile=False):
     """Fill a region of a box with a compound using packmol.
 
     Parameters
@@ -277,8 +278,8 @@ def fill_region(compound, n_compounds, region, overlap=0.2, edge=0.2,
     return filled
 
 
-def solvate(solute, solvent, n_solvent, box, overlap=0.2, edge=0.2,
-            seed=12345, write_tempfile=False):
+def solvate(solute, solvent, n_solvent, box, overlap=0.2,
+            seed=12345, edge=0.2, write_tempfile=False):
     """Solvate a compound in a box of solvent using packmol.
 
     Parameters
