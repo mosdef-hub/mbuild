@@ -30,7 +30,7 @@ install:
   - pip install -e .
 
 script:
-  - py.test -v --cov=mbuild  --cov-report= --pyargs mbuild
+  - python -m pytest -v --cov=mbuild  --cov-report= --pyargs mbuild
 
 after_success:
   - coveralls
