@@ -84,3 +84,26 @@ class Port(Compound):
         """The unit vector pointing in the 'direction' of the Port
         """
         return unit_vector(self.xyz_with_ports[1]-self.xyz_with_ports[0])
+
+    def __repr__(self):
+        descr = list('<')
+        descr.append(self.name + ', ')
+
+        descr.append('direction: ({:.4f}, {:.4f}, {:.4f}), ' \
+                     ''.format(*self.direction))
+        descr.append('position: ({:.4f}, {:.4f}, {:.4f}), ' \
+                     ''.format(*self.center))
+        if self.anchor:
+            descr.append('anchor: {}, '.format(self.anchor))
+        else:
+            descr.append('anchor: None, ')
+
+        if self.parent:
+            labels = [key for key, val in self.parent.labels.items()
+                      if val == self]
+            descr.append('Labels: {}, '.format(labels))
+            # Find the label in parent.labels
+            # Perhaps print the code to access? (i.e. ch2['up'])
+
+        descr.append('id: {}>'.format(id(self)))
+        return ''.join(descr)
