@@ -14,4 +14,4 @@ nbformat
 ipykernel
 ipyext
 python-coveralls
-pytest-cov
+pytest-cov=2.3.1
