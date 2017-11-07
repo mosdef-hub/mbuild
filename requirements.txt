@@ -1,5 +1,4 @@
 numpy
-pycosat=0.6.2
 scipy
 packmol=1.0.0
 nglview>=0.6.2.3
