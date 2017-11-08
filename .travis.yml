@@ -15,7 +15,6 @@ env:
   - COMMIT_AUTHOR_EMAIL: "janos.sallai@vanderbilt.edu"
 
 install:
-  - pyenv global system $PYTHON_VERSION
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew update; fi
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew install md5sha1sum; fi
   - source devtools/travis-ci/install.sh
