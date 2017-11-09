@@ -1,0 +1,17 @@
+<?xml version ="1.0" encoding ="UTF-8" ?>
+<hoomd_xml version="1.4">
+<configuration time_step="0" natoms="1">
+<type num="1">
+_water
+</type>
+<mass num="1">
+1.0
+</mass>
+<bond num="0">
+</bond>
+<box lx="22.281601" ly="22.281601" lz="35.251301" />
+<position num="1">
+0.0 0.0 0.0
+</position>
+</configuration>
+</hoomd_xml>

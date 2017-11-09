@@ -167,3 +167,81 @@ class BaseTest:
     def silane(self):
         from mbuild.lib.moieties import Silane
         return Silane()
+
+    @pytest.fixture
+    def dspc(self):
+        from mbuild.lib.prototypes import DSPC
+        return DSPC()
+
+    @pytest.fixture
+    def ffa(self, chain_length):
+        from mbuild.lib.prototypes import FFA
+        return FFA(chain_length, ester=False)
+
+    @pytest.fixture
+    def alc(self, chain_length):
+        from mbuild.lib.prototypes import ALC
+        return ALC(chain_length)
+
+    @pytest.fixture
+    def isis(self):
+        from mbuild.lib.prototypes import ISIS
+        return ISIS()
+
+    @pytest.fixture
+    def hdhd(self):
+        from mbuild.lib.prototypes import HDHD
+        return HDHD()
+
+    @pytest.fixture
+    def dspcua(self):
+        from mbuild.lib.UA_molecules import DSPCUA
+        return DSPCUA()
+
+    @pytest.fixture
+    def ffaua(self):
+        from mbuild.lib.UA_molecules import FFAUA
+        return FFAUA(16, ester=False)
+
+    @pytest.fixture
+    def esterua(self):
+        from mbuild.lib.UA_molecules import FFAUA
+        return FFAUA(16, ester=True)
+
+    @pytest.fixture
+    def alcua(self):
+        from mbuild.lib.UA_molecules import ALCUA
+        return ALCUA(16)
+
+    @pytest.fixture
+    def isisua(self):
+        from mbuild.lib.UA_molecules import ISISUA
+        return ISISUA()
+
+    @pytest.fixture
+    def binary_lipid_mix(self):
+        from mbuild.lib.UA_molecules import DSPCUA, FFAUA
+        lipid = [(DSPCUA(), 0.5, 0.0, 0), (FFAUA(16, ester=False), 0.5, 0.0, 17)]
+        return lipid
+
+    @pytest.fixture
+    def ternary_lipid_mix(self):
+        from mbuild.lib.UA_molecules import DSPCUA, FFAUA, ALCUA
+        lipid = [(DSPCUA(), 0.5, 0.0, 0), (ALCUA(16), 0.25, 0.0, 17),
+                 (FFAUA(16, ester=False), 0.25, 0.0, 17)]
+        return lipid
+
+    @pytest.fixture(scope='module')
+    def bilayer_no_solvent(self):
+        from mbuild.lib.UA_molecules import DSPCUA
+        lipid = (DSPCUA(), 1.0, 0.0, 0)
+        bilayer = mb.Bilayer(lipids=lipid, n_lipids_x=2, n_lipids_y=2, solvent_per_lipid=0)
+        return bilayer
+
+    @pytest.fixture(scope='module')
+    def bilayer_default(self):
+        from mbuild.lib.UA_molecules import DSPCUA
+        lipid = (DSPCUA(), 1.0, 0.0, 0)
+        bilayer = mb.Bilayer(lipids=lipid, n_lipids_x=2, n_lipids_y=2, solvent_per_lipid=20)
+        return bilayer
+

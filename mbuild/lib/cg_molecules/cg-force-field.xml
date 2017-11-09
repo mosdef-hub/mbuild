@@ -1,0 +1,90 @@
+<ForceField>
+ <AtomTypes>
+ <Type name="tail" class="tail" element="_tail" mass="0.584458" def="[_tail]" 
+     desc="tail bead"/>
+ <Type name="amide" class="amide" element="_amide" mass="0.597575" def="[_amide]" 
+     desc="amide bead"/>
+ <Type name="mhead2" class="mhead2" element="_mhead2" mass="0.556458" def="[_mhead2]" 
+     desc="mhead2 bead"/>
+ <Type name="oh1" class="oh1" element="_oh1" mass="0.236214" def="[_oh1]" 
+     desc="oh1 bead"/>
+ <Type name="oh2" class="oh2" element="_oh2" mass="0.236214" def="[_oh2]" 
+     desc="oh2 bead"/>
+ <Type name="head" class="head" element="_head" mass="0.625247" def="[_head]" 
+     desc="ffa head bead"/>
+ <Type name="water" class="water" element="_water" mass="1.0" def="[_water]" 
+     desc="cg water bead"/>
+ <Type name="chead" class="chead" element="_chead" mass="0.611858" def="[_chead]"
+     desc="chol head bead"/>
+ <Type name="ring1" class="ring1" element="_ring1" mass="0.723277"
+     def="[_ring1]" desc="first ring bead"/>
+ <Type name="ring2" class="ring2" element="_ring2" mass="0.556457"
+     def="[_ring2]"/>
+ <Type name="ring3" class="ring3" element="_ring3" mass="0.737278"
+     def="[_ring3]"/>
+ <Type name="ring4" class="ring4" element="_ring4" mass="0.751278"
+     def="[_ring4]"/>
+ <Type name="ctail" class="ctail" element="_ctail" mass="0.779278" def="[_ctail]"/>
+ <Type name="cterm" class="cterm" element="_cterm" mass="0.793278" def="[_cterm]"/>
+ <Type name="chme" class="chme" element="_chme" mass="0.208819" def="[_chme]"/>
+ </AtomTypes>
+
+ <HarmonicBondForce>
+  <Bond class1="tail" class2="tail" length="1" k="1"/>
+  <Bond class1="tail" class2="amide" length="2" k="2"/>
+  <Bond class1="mhead2" class2="amide" length="3" k="3"/>
+  <Bond class1="tail" class2="mhead2" length="4" k="4"/>
+  <Bond class1="oh1" class2="mhead2" length="5" k="5"/>
+  <Bond class1="oh2" class2="mhead2" length="6" k="6"/>
+  <Bond class1="tail" class2="head" length="7" k="7"/>
+  <Bond class1="chead" class2="ring1" length="8" k="8"/>
+  <Bond class1="chead" class2="ring2" length="9" k="9"/>
+  <Bond class1="ring1" class2="ring2" length="10" k="10"/>
+  <Bond class1="ring1" class2="ring3" length="11" k="11"/>
+  <Bond class1="ring1" class2="ring4" length="12" k="12"/>
+  <Bond class1="ring2" class2="ring3" length="13" k="13"/>
+  <Bond class1="ring2" class2="ring3" length="14" k="14"/>
+  <Bond class1="ring2" class2="chme" length="15" k="15"/>
+  <Bond class1="ring3" class2="ring4" length="16" k="16"/>
+  <Bond class1="ring3" class2="chme" length="17" k="17"/>
+  <Bond class1="ring4" class2="ctail" length="18" k="18"/>
+  <Bond class1="ctail" class2="cterm" length="19" k="19"/>
+ </HarmonicBondForce> 
+
+ <HarmonicAngleForce>
+  <Angle class1="tail" class2="tail" class3="tail" angle="1" k="1"/>
+  <Angle class1="amide" class2="tail" class3="tail" angle="2" k="2"/>
+  <Angle class1="tail" class2="amide" class3="mhead2" angle="3" k="3"/>
+  <Angle class1="amide" class2="mhead2" class3="tail" angle="4" k="4"/>
+  <Angle class1="mhead2" class2="tail" class3="tail" angle="5" k="5"/>
+  <Angle class1="oh1" class2="mhead2" class3="oh2" angle="6" k="6"/>
+  <Angle class1="tail" class2="mhead2" class3="oh2" angle="7" k="7"/>
+  <Angle class1="tail" class2="mhead2" class3="oh1" angle="8" k="8"/>
+  <Angle class1="amide" class2="mhead2" class3="oh2" angle="9" k="9"/>
+  <Angle class1="amide" class2="mhead2" class3="oh1" angle="10" k="10"/>
+  <Angle class1="tail" class2="tail" class3="head" angle="11" k="11"/>
+<Angle class1="ring1" class2="chead" class3="ring2" angle="12" k="12"/>
+<Angle class1="chead" class2="ring1" class3="ring2" angle="13" k="13"/>
+<Angle class1="chead" class2="ring1" class3="ring3" angle="14" k="14"/>
+<Angle class1="chead" class2="ring1" class3="ring4" angle="15" k="15"/>
+<Angle class1="ring2" class2="ring1" class3="ring3" angle="16" k="16"/>
+<Angle class1="ring2" class2="ring1" class3="ring4" angle="17" k="17"/>
+<Angle class1="ring3" class2="ring2" class3="ring4" angle="18" k="18"/>
+<Angle class1="chead" class2="ring2" class3="ring1" angle="19" k="19"/>
+<Angle class1="chead" class2="ring2" class3="ring3" angle="20" k="20"/>
+<Angle class1="chead" class2="ring2" class3="chme" angle="21" k="21"/>
+<Angle class1="ring1" class2="ring2" class3="ring3" angle="22" k="22"/>
+<Angle class1="ring1" class2="ring2" class3="chme" angle="23" k="23"/>
+<Angle class1="ring3" class2="ring2" class3="chme" angle="24" k="24"/>
+<Angle class1="ring1" class2="ring3" class3="ring2" angle="25" k="25"/>
+<Angle class1="ring1" class2="ring3" class3="ring4" angle="26" k="26"/>
+<Angle class1="ring1" class2="ring3" class3="chme" angle="27" k="27"/>
+<Angle class1="ring2" class2="ring3" class3="ring4" angle="28" k="28"/>
+<Angle class1="ring2" class2="ring3" class3="chme" angle="29" k="29"/>
+<Angle class1="ring4" class2="ring3" class3="chme" angle="30" k="30"/>
+<Angle class1="ring1" class2="ring4" class3="ring3" angle="31" k="31"/>
+<Angle class1="ring1" class2="ring4" class3="ctail" angle="32" k="32"/>
+<Angle class1="ring3" class2="ring4" class3="ctail" angle="33" k="33"/>
+<Angle class1="ring4" class2="ctail" class3="cterm" angle="34" k="34"/>
+ </HarmonicAngleForce>
+</ForceField>
