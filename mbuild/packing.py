@@ -73,13 +73,17 @@ def fill_box(compound, n_compounds=None, box=None, density=None, overlap=0.2,
         and z directions.
     overlap : float, units nm, default=0.2
         Minimum separation between atoms of different molecules.
+    seed : int, default=12345
+        Random seed to be passed to PACKMOL.
     edge : float, units nm, default=0.2
         Buffer at the edge of the box to not place molecules. This is necessary
         in some systems because PACKMOL does not account for periodic boundary
-        conditions in its optimizaiton.
-    density : float, units kg/m^3
+        conditions in its optimization.
+    density : float, units kg/m^3, default=None
         Target density for the system in macroscale units. If not None, one of
         `n_compounds` or `box`, but not both, must be specified.
+    temp_file : str, default=None
+        File name to write PACKMOL's raw output to.
 
     Returns
     -------
@@ -192,6 +196,14 @@ def fill_region(compound, n_compounds, region, overlap=0.2,
         Region to be filled by compounds.
     overlap : float, units nm, default=0.2
         Minimum separation between atoms of different molecules.
+    seed : int, default=12345
+        Random seed to be passed to PACKMOL.
+    edge : float, units nm, default=0.2
+        Buffer at the edge of the box to not place molecules. This is necessary
+        in some systems because PACKMOL does not account for periodic boundary
+        conditions in its optimization.
+    temp_file : str, default=None
+        File name to write PACKMOL's raw output to.
 
     Returns
     -------
@@ -269,6 +281,14 @@ def solvate(solute, solvent, n_solvent, box, overlap=0.2,
         Box to be filled by compounds.
     overlap : float, units nm, default=0.2
         Minimum separation between atoms of different molecules.
+    seed : int, default=12345
+        Random seed to be passed to PACKMOL.
+    edge : float, units nm, default=0.2
+        Buffer at the edge of the box to not place molecules. This is necessary
+        in some systems because PACKMOL does not account for periodic boundary
+        conditions in its optimization.
+    temp_file : str, default=None
+        File name to write PACKMOL's raw output to.
 
     Returns
     -------
