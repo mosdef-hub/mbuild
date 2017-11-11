@@ -133,9 +133,9 @@ class TestPacking(BaseTest):
         with pytest.raises(ValueError):
             mb.fill_region(h2o, n_compounds=[10, 10], region=[2, 2, 2, 4, 4, 4])
 
-    def test_write_tempfile(self, h2o):
+    def test_write_temp_file(self, h2o):
         cwd = os.getcwd() # Must keep track of the temp dir that pytest creates
-        filled = mb.fill_box(h2o, n_compounds=50, box=[2, 2, 2, 4, 4, 4], write_tempfile=True)
+        filled = mb.fill_box(h2o, n_compounds=50, box=[2, 2, 2, 4, 4, 4], temp_file='packmol_temp.pdb')
         assert os.path.isfile(os.path.join(cwd, 'packmol_temp.pdb'))
 
     def test_packmol_error(self, h2o):
