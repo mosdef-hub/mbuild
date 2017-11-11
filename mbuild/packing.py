@@ -155,7 +155,7 @@ def fill_box(compound, n_compounds=None, box=None, density=None, overlap=0.2,
     overlap *= 10
     
     # Apply edge buffer 
-    box_maxs = box_maxs - edge * 10
+    box_maxs -= edge * 10
 
     # Build the input file for each compound and call packmol.
     filled_pdb = tempfile.mkstemp(suffix='.pdb')[1]
@@ -188,9 +188,9 @@ def fill_region(compound, n_compounds, region, overlap=0.2,
     Parameters
     ----------
     compound : mb.Compound or list of mb.Compound
-        Compound or list of compounds to be put in box.
+        Compound or list of compounds to be put in region.
     n_compounds : int or list of int
-        Number of compounds to be put in box.
+        Number of compounds to be put in region.
     region : mb.Box or list of mb.Box
         Region to be filled by compounds.
     overlap : float, units nm, default=0.2
@@ -198,9 +198,9 @@ def fill_region(compound, n_compounds, region, overlap=0.2,
     seed : int, default=12345
         Random seed to be passed to PACKMOL.
     edge : float, units nm, default=0.2
-        Buffer at the edge of the box to not place molecules. This is necessary
-        in some systems because PACKMOL does not account for periodic boundary
-        conditions in its optimization.
+        Buffer at the edge of the region to not place molecules. This is
+        necessary in some systems because PACKMOL does not account for
+        periodic boundary conditions in its optimization.
     temp_file : str, default=None
         File name to write PACKMOL's raw output to.
 
@@ -243,6 +243,7 @@ def fill_region(compound, n_compounds, region, overlap=0.2,
         comp.save(compound_pdb, overwrite=True)
         reg_mins = reg.mins * 10
         reg_maxs = reg.maxs * 10
+        reg_maxs -= edge * 10 # Apply edge buffer
         input_text += PACKMOL_BOX.format(compound_pdb, m_compounds,
                                         reg_mins[0], reg_mins[1], reg_mins[2],
                                         reg_maxs[0], reg_maxs[1], reg_maxs[2])
@@ -307,7 +308,7 @@ def solvate(solute, solvent, n_solvent, box, overlap=0.2,
     center_solute = (box_maxs + box_mins) / 2
     
     # Apply edge buffer 
-    box_maxs = box_maxs - edge * 10
+    box_maxs -= edge * 10
 
     # Build the input file for each compound and call packmol.
     solvated_pdb = tempfile.mkstemp(suffix='.pdb')[1]
