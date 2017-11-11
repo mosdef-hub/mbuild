@@ -68,9 +68,9 @@ def fill_box(compound, n_compounds=None, box=None, density=None, overlap=0.2,
         Number of compounds to be put in box.
     box : mb.Box
         Box to be filled by compounds.
-    aspect_ratio : list of float
-        If a non-cubic box is desired, the ratio of box lengths in the x, y,
-        and z directions.
+    density : float, units kg/m^3, default=None
+        Target density for the system in macroscale units. If not None, one of
+        `n_compounds` or `box`, but not both, must be specified.
     overlap : float, units nm, default=0.2
         Minimum separation between atoms of different molecules.
     seed : int, default=12345
@@ -79,9 +79,13 @@ def fill_box(compound, n_compounds=None, box=None, density=None, overlap=0.2,
         Buffer at the edge of the box to not place molecules. This is necessary
         in some systems because PACKMOL does not account for periodic boundary
         conditions in its optimization.
-    density : float, units kg/m^3, default=None
-        Target density for the system in macroscale units. If not None, one of
-        `n_compounds` or `box`, but not both, must be specified.
+    compound_ratio : list, default=None
+        Ratio of number of each compound to be put in box. Only used in the
+        case of `density` and `box` having been specified, `n_compounds` not
+        specified, and more than one `compound`.
+    aspect_ratio : list of float
+        If a non-cubic box is desired, the ratio of box lengths in the x, y,
+        and z directions.
     temp_file : str, default=None
         File name to write PACKMOL's raw output to.
 
