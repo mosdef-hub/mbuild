@@ -78,7 +78,8 @@ def fill_box(compound, n_compounds=None, box=None, density=None, overlap=0.2,
         in some systems because PACKMOL does not account for periodic boundary
         conditions in its optimizaiton.
     density : float, units kg/m^3
-        Target density for the system.
+        Target density for the system in macroscale units. If not None, one of
+        `n_compounds` or `box`, but not both, must be specified.
 
     Returns
     -------
@@ -170,7 +171,7 @@ def fill_box(compound, n_compounds=None, box=None, density=None, overlap=0.2,
 
     proc = Popen(PACKMOL, stdin=PIPE, stdout=PIPE, stderr=PIPE, universal_newlines=True)
     out, err = proc.communicate(input=input_text)
-    #import pdb; pdb.set_trace()
+
     if 'WITHOUT PERFECT PACKING' in out:
         msg = ("Packmol finished with imperfect packing. Using "
                "the .pdb_FORCED file instead. This may not be a "
@@ -206,7 +207,7 @@ def fill_region(compound, n_compounds, region, overlap=0.2,
         Number of compounds to be put in box.
     region : mb.Box or list of mb.Box
         Region to be filled by compounds.
-    overlap : float
+    overlap : float, units nm, default=0.2
         Minimum separation between atoms of different molecules.
 
     Returns
@@ -292,7 +293,7 @@ def solvate(solute, solvent, n_solvent, box, overlap=0.2,
         Number of solvents to be put in box.
     box : mb.Box
         Box to be filled by compounds.
-    overlap : float
+    overlap : float, units nm, default=0.2
         Minimum separation between atoms of different molecules.
 
     Returns
