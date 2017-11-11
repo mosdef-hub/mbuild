@@ -90,12 +90,7 @@ def fill_box(compound, n_compounds=None, box=None, density=None, overlap=0.2,
     filled : mb.Compound
     
     """
-    if not PACKMOL:
-        msg = "Packmol not found."
-        if sys.platform.startswith("win"):
-            msg = (msg + " If packmol is already installed, make sure that the "
-                         "packmol.exe is on the path.")
-        raise IOError(msg)
+    _check_packmol(PACKMOL)
 
     arg_count = 3 - [n_compounds, box, density].count(None)
     if arg_count != 2:
@@ -212,13 +207,7 @@ def fill_region(compound, n_compounds, region, overlap=0.2,
     If using mulitple regions and compounds, the nth value in each list are used in order.
     For example, if the third compound will be put in the third region using the third value in n_compounds.
     """
-    if not PACKMOL:
-        msg = "Packmol not found."
-        if sys.platform.startswith("win"):
-            msg = (msg + " If packmol is already installed, make sure that the "
-                         "packmol.exe is on the path.")
-        raise IOError(msg)
-
+    _check_packmol(PACKMOL)
 
     if not isinstance(compound, (list, set)):
         compound = [compound]
@@ -295,9 +284,7 @@ def solvate(solute, solvent, n_solvent, box, overlap=0.2,
     solvated : mb.Compound
 
     """
-    if not PACKMOL:
-        raise IOError("Packmol not found")
-
+    _check_packmol(PACKMOL)
 
     box = _validate_box(box)
     if not isinstance(solvent, (list, set)):
@@ -381,3 +368,11 @@ def _run_packmol(input_text, filled_pdb, temp_file):
 
     if temp_file is not None:
         os.system('cp {0} {1}'.format(filled_pdb, os.path.join(temp_file)))
+
+def _check_packmol(PACKMOL):
+    if not PACKMOL:
+        msg = "Packmol not found."
+        if sys.platform.startswith("win"):
+            msg = (msg + " If packmol is already installed, make sure that the "
+                         "packmol.exe is on the path.")
+        raise IOError(msg)
