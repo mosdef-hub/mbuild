@@ -135,8 +135,12 @@ class TestPacking(BaseTest):
 
     def test_write_temp_file(self, h2o):
         cwd = os.getcwd() # Must keep track of the temp dir that pytest creates
-        filled = mb.fill_box(h2o, n_compounds=50, box=[2, 2, 2, 4, 4, 4], temp_file='packmol_temp.pdb')
-        assert os.path.isfile(os.path.join(cwd, 'packmol_temp.pdb'))
+        filled = mb.fill_box(h2o, n_compounds=10, box=[4, 4, 4], temp_file='temp_file1.pdb')
+        region = mb.fill_region(h2o, 10, [2, 2, 2, 4, 4, 4], temp_file='temp_file2.pdb')
+        solvated = mb.solvate(filled, h2o, 10, box=[4, 4, 4], temp_file='temp_file3.pdb')
+        assert os.path.isfile(os.path.join(cwd, 'temp_file1.pdb'))
+        assert os.path.isfile(os.path.join(cwd, 'temp_file2.pdb'))
+        assert os.path.isfile(os.path.join(cwd, 'temp_file3.pdb'))
 
     def test_packmol_error(self, h2o):
         with pytest.raises(RuntimeError):
