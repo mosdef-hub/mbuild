@@ -19,7 +19,7 @@ class TestLattice(BaseTest):
                              )
     def test_spacing_success(self, spacing):
         spacing = np.asarray(spacing, dtype=np.float64)
-        spacing = np.reshape(spacing, (1, 3), order='C')
+        spacing = np.reshape(spacing, (3,))
         test_lattice = mb.Lattice(lattice_spacing=spacing)
         np.testing.assert_allclose(spacing, test_lattice.lattice_spacing,
                                    rtol=1e-7, atol=0, equal_nan=True)

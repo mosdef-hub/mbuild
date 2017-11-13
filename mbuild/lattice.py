@@ -201,18 +201,17 @@ class Lattice(object):
 
         if lattice_spacing is not None:
             lattice_spacing = np.asarray(lattice_spacing, dtype=dataType)
-            lattice_spacing = lattice_spacing.reshape((1, self.dimension),
-                                                      order='C')
-            if np.shape(lattice_spacing) != (1, self.dimension):
+            lattice_spacing = lattice_spacing.reshape((3,))
+            if np.shape(lattice_spacing) != (self.dimension,):
                 raise ValueError('Lattice spacing should be a vector of '
-                                 'size:(1,{}). Please include lattice spacing '
+                                 'size:({},). Please include lattice spacing '
                                  'of size >= 0 depending on desired '
                                  'dimensionality.'
                                  .format(self.dimension))
         else:
             raise ValueError('No lattice_spacing provided. Please provide '
-                             'lattice spacing\'s that are >= 0. with size {}'
-                             .format((1, self.dimension)))
+                             'lattice spacing\'s that are >= 0. with size ({},)'
+                             .format((self.dimension)))
 
         if np.any(np.isnan(lattice_spacing)):
             raise ValueError('None type or NaN type values present in '
@@ -229,9 +228,9 @@ class Lattice(object):
 
         dataType = np.float64
         tempAngles = np.asarray(angles, dtype=dataType)
-        tempAngles = tempAngles.reshape((1, self.dimension), order='C')
+        tempAngles = tempAngles.reshape((3,))
 
-        if np.shape(tempAngles) == (1, self.dimension):
+        if np.shape(tempAngles) == (self.dimension,):
             if np.sum(tempAngles) < 360.0 or np.sum(tempAngles) > -360.0:
                 if (np.all(tempAngles != 180.0)
                         and np.all(tempAngles != 0.0)):
@@ -243,7 +242,7 @@ class Lattice(object):
                                  '360.0 or less than -360.0'
                                  .format(np.sum(tempAngles)))
 
-            for subset in it.permutations(tempAngles[0], r=self.dimension):
+            for subset in it.permutations(tempAngles, r=self.dimension):
                 if not subset[0] < np.sum(tempAngles) - subset[0]:
                     raise ValueError('Each angle provided must be less'
                                      'than the sum of the other angles. '
@@ -252,7 +251,7 @@ class Lattice(object):
             raise ValueError('Incorrect array size. When converted to a '
                              'Numpy array, the shape is: {}, expected {}.'
                              .format(np.shape(tempAngles),
-                                     (1, self.dimension)))
+                                     (3,)))
         self.angles = tempAngles
 
     def _validate_lattice_vectors(self, lattice_vectors):
@@ -356,7 +355,7 @@ class Lattice(object):
         """
 
         dataType = np.float64
-        (alpha, beta, gamma) = angles[0]
+        (alpha, beta, gamma) = angles
 
         radianConversion = np.pi / 180.0
         cosa = np.cos(alpha * radianConversion)
@@ -464,7 +463,7 @@ class Lattice(object):
                             '{} was passed.'.format(type(compound_dict)))
 
         cell = defaultdict(list)
-        [a, b, c] = self.lattice_spacing[0]
+        [a, b, c] = self.lattice_spacing
 
         transform_mat = self.lattice_vectors
         # unit vectors
