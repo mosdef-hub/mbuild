@@ -984,7 +984,7 @@ class Compound(object):
             The cartesian center of the Compound based on its Particles
 
         """
-        if len(self.xyz) != 0:
+        if np.all(np.isfinite(self.xyz)):
             return np.mean(self.xyz, axis=0)
 
     @property

@@ -294,8 +294,7 @@ class Lattice(object):
             raise TypeError('Incorrect type, lattice_points is of type {}, '
                             'Expected dict.'.format(type(lattice_points)))
 
-        for name in lattice_points.keys():
-            positions = lattice_points[name]
+        for name, positions in lattice_points.items():
             for pos in positions:
                 if len(pos) != self.dimension:
                     raise ValueError("Incorrect lattice point position size. "
@@ -308,13 +307,7 @@ class Lattice(object):
                                      "None was passed in as position for {}."
                                      .format(name))
                 for coord in pos:
-                    try:
-                            coord = float(coord)
-                    except (ValueError, TypeError) as e:
-                        raise TypeError('Connot convert coordinate {} in {} '
-                                        'to type float.'.format(coord, pos))
-
-                    if (coord is None) or (coord >= 1.) or (coord < 0.):
+                    if (0 > coord >=1):
                         raise ValueError('Incorrect lattice point fractional '
                                          'coordinates. Coordinates cannot be '
                                          '{}, {}, or {}. You passed {}.'
@@ -327,8 +320,7 @@ class Lattice(object):
         overlap_dict = defaultdict(list)
         num_iter = 3
         dim = self.dimension
-        for name in lattice_points.keys():
-            positions = lattice_points[name]
+        for name, positions in lattice_points.items():
             for pos in positions:
                 for offsets in it.product(range(num_iter), repeat=dim):
                     offset_vector = tuple((v + offset for v, offset in zip(pos, offsets)))
@@ -513,8 +505,6 @@ class Lattice(object):
                 particle = mb.Compound(name=key_id, pos=[0, 0, 0])
                 for pos in all_pos:
                     particle_to_add = mb.clone(particle)
-                    print(particle.center)
-                    print(particle.xyz)
                     particle_to_add.translate_to(list(pos))
                     ret_lattice.add(particle_to_add)
         else:
