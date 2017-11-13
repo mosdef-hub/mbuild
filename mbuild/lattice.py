@@ -475,10 +475,12 @@ class Lattice(object):
         [a, b, c] = self.lattice_spacing[0]
 
         transform_mat = self.lattice_vectors
-	# unit vectors
+        # unit vectors
         transform_mat = np.asarray(transform_mat, dtype=np.float64)
+        transform_mat = np.reshape(transform_mat, newshape=(3,3))
         norms = np.linalg.norm(transform_mat, axis=1)
- 
+
+        # normalized vectors for change of basis
         unit_vecs = np.divide(transform_mat.transpose(), norms)
 
         for key, locations in self.lattice_points.items():
@@ -492,8 +494,10 @@ class Lattice(object):
                     new_coords[0][0] = new_coords[0][0] + replication[0]
                     new_coords[0][1] = new_coords[0][1] + replication[1]
                     new_coords[0][2] = new_coords[0][2] + replication[2]
+
+                    # change of basis to cartesian
                     new_coords = np.dot(unit_vecs, new_coords.transpose())
-                    
+
                     new_coords[0] = new_coords[0] * a
                     new_coords[1] = new_coords[1] * b
                     new_coords[2] = new_coords[2] * c
@@ -527,4 +531,6 @@ class Lattice(object):
                                     'dictionary. For key {}, type: {} was '
                                     'provided, not mbuild.Compound.'
                                     .format(key_id, err_type))
+        # set periodicity
+        ret_lattice.periodicity = np.asarray([a * x, b * y, c * z], dtype=np.float64)
         return ret_lattice
