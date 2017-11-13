@@ -294,8 +294,7 @@ class Lattice(object):
             raise TypeError('Incorrect type, lattice_points is of type {}, '
                             'Expected dict.'.format(type(lattice_points)))
 
-        for name in lattice_points.keys():
-            positions = lattice_points[name]
+        for name, positions in lattice_points.items():
             for pos in positions:
                 if len(pos) != self.dimension:
                     raise ValueError("Incorrect lattice point position size. "
@@ -308,13 +307,7 @@ class Lattice(object):
                                      "None was passed in as position for {}."
                                      .format(name))
                 for coord in pos:
-                    try:
-                            coord = float(coord)
-                    except (ValueError, TypeError) as e:
-                        raise TypeError('Connot convert coordinate {} in {} '
-                                        'to type float.'.format(coord, pos))
-
-                    if (coord is None) or (coord >= 1.) or (coord < 0.):
+                    if (0 > coord >=1):
                         raise ValueError('Incorrect lattice point fractional '
                                          'coordinates. Coordinates cannot be '
                                          '{}, {}, or {}. You passed {}.'
@@ -327,8 +320,7 @@ class Lattice(object):
         overlap_dict = defaultdict(list)
         num_iter = 3
         dim = self.dimension
-        for name in lattice_points.keys():
-            positions = lattice_points[name]
+        for name, positions in lattice_points.items():
             for pos in positions:
                 for offsets in it.product(range(num_iter), repeat=dim):
                     offset_vector = tuple((v + offset for v, offset in zip(pos, offsets)))
@@ -475,10 +467,12 @@ class Lattice(object):
         [a, b, c] = self.lattice_spacing[0]
 
         transform_mat = self.lattice_vectors
-	# unit vectors
+        # unit vectors
         transform_mat = np.asarray(transform_mat, dtype=np.float64)
+        transform_mat = np.reshape(transform_mat, newshape=(3,3))
         norms = np.linalg.norm(transform_mat, axis=1)
- 
+
+        # normalized vectors for change of basis
         unit_vecs = np.divide(transform_mat.transpose(), norms)
 
         for key, locations in self.lattice_points.items():
@@ -492,8 +486,10 @@ class Lattice(object):
                     new_coords[0][0] = new_coords[0][0] + replication[0]
                     new_coords[0][1] = new_coords[0][1] + replication[1]
                     new_coords[0][2] = new_coords[0][2] + replication[2]
+
+                    # change of basis to cartesian
                     new_coords = np.dot(unit_vecs, new_coords.transpose())
-                    
+
                     new_coords[0] = new_coords[0] * a
                     new_coords[1] = new_coords[1] * b
                     new_coords[2] = new_coords[2] * c
@@ -509,8 +505,6 @@ class Lattice(object):
                 particle = mb.Compound(name=key_id, pos=[0, 0, 0])
                 for pos in all_pos:
                     particle_to_add = mb.clone(particle)
-                    print(particle.center)
-                    print(particle.xyz)
                     particle_to_add.translate_to(list(pos))
                     ret_lattice.add(particle_to_add)
         else:
@@ -527,4 +521,6 @@ class Lattice(object):
                                     'dictionary. For key {}, type: {} was '
                                     'provided, not mbuild.Compound.'
                                     .format(key_id, err_type))
+        # set periodicity
+        ret_lattice.periodicity = np.asarray([a * x, b * y, c * z], dtype=np.float64)
         return ret_lattice
