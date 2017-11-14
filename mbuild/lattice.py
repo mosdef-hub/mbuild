@@ -25,17 +25,17 @@ class Lattice(object):
 
     Parameters
     ----------
-    lattice_spacing : numpy array, shape=(3,), required, dtype=float
+    lattice_spacing : array-like, shape=(3,), required, dtype=float
         Array of lattice spacings a,b,c for the cell.
-    lattice_vectors : numpy array, shape=(3, 3), optional
+    lattice_vectors : array-like, shape=(3, 3), optional
                       default=[[1,0,0], [0,1,0], [0,0,1]]
         Vectors that encase the unit cell corresponding to dimension. Will
         only default to these values if no angles were defined as well.
     lattice_points : dictionary, shape={'id': [[nested list of positions]]
         optional, default={'default': [[0.,0.,0.]]}
         Locations of all lattice points in cell using fractional coordinates.
-    angles : numpy array, shape=(3,), optional, dtype=float
-        Array of inter-planar Bravais angles
+    angles : array-like, shape=(3,), optional, dtype=float
+        Array of inter-planar Bravais angles in degrees.
 
     Attributes
     ----------

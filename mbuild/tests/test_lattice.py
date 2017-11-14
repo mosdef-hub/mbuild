@@ -94,7 +94,8 @@ class TestLattice(BaseTest):
                              [
                                  (list()),
                                  (tuple()),
-                                 (str())
+                                 (str()),
+                                 ([])
                              ]
                              )
     def test_lattice_points_input_type(self, the_type):
