@@ -308,7 +308,7 @@ class Lattice(object):
                                      "None was passed in as position for {}."
                                      .format(name))
                 for coord in pos:
-                    if (0 > coord >=1):
+                    if (coord is None) or (0 > coord) or (coord >=1):
                         raise ValueError('Incorrect lattice point fractional '
                                          'coordinates. Coordinates cannot be '
                                          '{}, {}, or {}. You passed {}.'

@@ -40,7 +40,9 @@ class TestLattice(BaseTest):
                                 (1),
                                 ([1, 1]),
                                 ([-1, 1, 1]),
+                                ([1, 1, 1, 1]),
                                 ([1, 'a']),
+                                (None),
                                 ([]),
                                 ([None, None, None]),
                              ])
@@ -88,16 +90,44 @@ class TestLattice(BaseTest):
             mb.Lattice(lattice_spacing=space, lattice_vectors=vectors,
                        angles=angles)
 
-    @pytest.mark.parametrize("type",
+    @pytest.mark.parametrize("the_type",
                              [
-                                 ([1, 1, 1], 3, list()),
-                                 ([1, 1, 1], 3, tuple()),
-                                 ([1, 1, 1], 3, str())
+                                 (list()),
+                                 (tuple()),
+                                 (str())
                              ]
                              )
-    def test_basis_atoms_input_type(self, type):
+    def test_lattice_points_input_type(self, the_type):
         with pytest.raises(TypeError):
-            mb.Lattice(lattice_spacing=[1, 1, 1], basis_atoms=type)
+            mb.Lattice(lattice_spacing=[1, 1, 1], lattice_points=the_type)
+
+    @pytest.mark.parametrize("incorrect",
+                             [
+                                 ({'A' : [[.2, .3, .2, .1]]}),
+                                 ({'A' : [[None]]}),
+                                 ({'A' : [[.2, .3, None]]}),
+                                 ({'A' : [[.2, .3, -.5]]}),
+                                 ({'A' : [[.2, .3, 1]]}),
+                                 ({'A' : [[.2, .3, .1], [.2, .3, .1]]})
+                             ]
+                             )
+    def test_lattice_points_input_type(self, incorrect):
+        with pytest.raises(ValueError):
+            mb.Lattice(lattice_spacing=[1, 1, 1], lattice_points=incorrect)
+
+    @pytest.mark.parametrize("angles",
+                             [
+                                ([150, 150, 150]),
+                                ([90, 90, -90]),
+                                ([90, 90, 180]),
+                                ([90, 90, 0]),
+                                ([90, 90, 90, 90]),
+                                ([97, 3, 120])
+                             ]
+                             )
+    def test_proper_angles(self, angles):
+        with pytest.raises(ValueError):
+            mb.Lattice(lattice_spacing=[1, 1, 1], angles=angles)
 
     @pytest.mark.parametrize("vectors, angles",
                              [
@@ -115,6 +145,8 @@ class TestLattice(BaseTest):
     @pytest.mark.parametrize("x, y, z",
                               [
                                 (None, 1, 0),
+                                (1, None, 1),
+                                (1, 1, None),
                                 (-1, 1, 1),
                                 (1, -1, 1),
                                 (1, 1, -1),
