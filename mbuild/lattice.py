@@ -1,7 +1,9 @@
 from collections import defaultdict
 import itertools as it
+from warnings import warn
 
 import numpy as np
+
 
 import mbuild as mb
 
@@ -522,4 +524,8 @@ class Lattice(object):
                                     .format(key_id, err_type))
         # set periodicity
         ret_lattice.periodicity = np.asarray([a * x, b * y, c * z], dtype=np.float64)
+        warn('Periodicity of non-cubic lattices are not valid with '
+                    'default rectangular boxes. Only cubic lattices are valid '
+                    'at this time.')
+
         return ret_lattice
