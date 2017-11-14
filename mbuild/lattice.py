@@ -25,16 +25,16 @@ class Lattice(object):
 
     Parameters
     ----------
-    lattice_spacing : numpy array, shape=(1, 3), required, dtype=float
+    lattice_spacing : numpy array, shape=(3,), required, dtype=float
         Array of lattice spacings a,b,c for the cell.
     lattice_vectors : numpy array, shape=(3, 3), optional
                       default=[[1,0,0], [0,1,0], [0,0,1]]
-        Vectors that define edges of unit cell corresponding to dimension. Will
+        Vectors that encase the unit cell corresponding to dimension. Will
         only default to these values if no angles were defined as well.
     lattice_points : dictionary, shape={'id': [[nested list of positions]]
         optional, default={'default': [[0.,0.,0.]]}
         Locations of all lattice points in cell using fractional coordinates.
-    angles : numpy array, shape=(1,3), optional, dtype=float
+    angles : numpy array, shape=(3,), optional, dtype=float
         Array of inter-planar Bravais angles
 
     Attributes
@@ -42,16 +42,16 @@ class Lattice(object):
     dimension : int, 3
         Default dimensionality within mBuild. If choosing a lower dimension,
         pad the relevant arrays with zeroes.
-    lattice_spacing : numpy array, shape=(1, 3), required, dtype=float
+    lattice_spacing : numpy array, shape=(3,), required, dtype=float
         Array of lattice spacings a,b,c for the cell.
     lattice_vectors : numpy array, shape=(3, 3), optional
                       default=[[1,0,0], [0,1,0], [0,0,1]]
-        Vectors that define edges of unit cell corresponding to dimension. Will
+        Vectors that encase the unit cell corresponding to dimension. Will
         only default to these values if no angles were defined as well.
     lattice_points : dictionary, shape={'id': [[nested list of positions]]
         optional, default={'default': [[0.,0.,0.]]}
         Locations of all lattice points in cell using fractional coordinates.
-    angles : numpy array, shape=(1,3), optional, dtype=float
+    angles : numpy array, shape=(3,), optional, dtype=float
         Array of inter-planar Bravais angles
 
     Examples
@@ -524,8 +524,8 @@ class Lattice(object):
                                     .format(key_id, err_type))
         # set periodicity
         ret_lattice.periodicity = np.asarray([a * x, b * y, c * z], dtype=np.float64)
-        warn('Periodicity of non-cubic lattices are not valid with '
-                    'default rectangular boxes. Only cubic lattices are valid '
+        warn('Periodicity of non-rectangular lattices are not valid with '
+                    'default boxes. Only rectangular lattices are valid '
                     'at this time.')
 
         return ret_lattice
