@@ -885,7 +885,7 @@ class Compound(object):
             return
         distance = np.linalg.norm(bond_vector)
         particle_pair[0].parent.add(Port(anchor=particle_pair[0],
-                                         orientation=-deepcopy(bond_vector),
+                                         orientation=-bond_vector,
                                          separation=distance/2), 'port[$]')
         particle_pair[1].parent.add(Port(anchor=particle_pair[1],
                                          orientation=bond_vector,
@@ -999,7 +999,7 @@ class Compound(object):
             The cartesian center of the Compound based on its Particles
 
         """
-        if self.xyz.any():
+        if len(self.xyz) != 0:
             return np.mean(self.xyz, axis=0)
 
     @property
