@@ -1,3 +1,5 @@
+import itertools
+
 import numpy as np
 
 from mbuild.compound import Compound, Particle
@@ -85,25 +87,39 @@ class Port(Compound):
         """
         return unit_vector(self.xyz_with_ports[1]-self.xyz_with_ports[0])
 
+    @property
+    def access_labels(self):
+        """List of labels used to access the Port
+
+        Returns
+        -------
+        list of str
+            Strings that can be used to access this Port relative to self.root
+        """
+        access_labels = []
+        for referrer in self.referrers:
+            referrer_labels = [key for key, val in self.root.labels.items()
+                               if val == referrer]
+            port_labels = [key for key, val in referrer.labels.items()
+                           if val == self]
+            if referrer == self.root:
+                for label in port_labels:
+                    access_labels.append("['{}']".format(label))
+            for label in itertools.product(referrer_labels, port_labels):
+                access_labels.append("['{}']".format("']['".join(label)))
+
+        return access_labels
+
     def __repr__(self):
         descr = list('<')
         descr.append(self.name + ', ')
 
-        descr.append('direction: ({:.4f}, {:.4f}, {:.4f}), ' \
-                     ''.format(*self.direction))
-        descr.append('position: ({:.4f}, {:.4f}, {:.4f}), ' \
-                     ''.format(*self.center))
         if self.anchor:
-            descr.append('anchor: {}, '.format(self.anchor))
+            descr.append("anchor: '{}', ".format(self.anchor.name))
         else:
             descr.append('anchor: None, ')
 
-        if self.parent:
-            labels = [key for key, val in self.parent.labels.items()
-                      if val == self]
-            descr.append('Labels: {}, '.format(labels))
-            # Find the label in parent.labels
-            # Perhaps print the code to access? (i.e. ch2['up'])
+        descr.append('labels: {}, '.format(', '.join(self.access_labels)))
 
         descr.append('id: {}>'.format(id(self)))
         return ''.join(descr)
