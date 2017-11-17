@@ -1,3 +1,4 @@
+from math import isclose
 import os
 
 import numpy as np
@@ -6,6 +7,7 @@ import pytest
 
 import mbuild as mb
 from mbuild.exceptions import MBuildError
+from mbuild.utils.geometry import calc_dihedral
 from mbuild.utils.io import get_fn, has_intermol, has_openbabel
 from mbuild.tests.base_test import BaseTest
 
@@ -653,3 +655,26 @@ class TestCompound(BaseTest):
         assert len(h2.all_ports()) == 2
         assert len(hydrogen.all_ports()) == 1
         assert len(h_clone.all_ports()) == 1
+
+    def test_reconnect_keeps_structure_x(self, chf, connect_and_reconnect):
+        bond_vector = np.array([1, 0, 0]) 
+        angle1, angle2 = connect_and_reconnect(chf, bond_vector)
+        assert isclose(angle1, angle2, abs_tol=1e-6)
+
+    def test_reconnect_keeps_structure_y(self, chf, connect_and_reconnect):
+        chf.spin(np.pi/2, [1, 0, 0]) 
+        bond_vector = np.array([0, 1, 0]) 
+        angle1, angle2 = connect_and_reconnect(chf, bond_vector)
+        assert isclose(angle1, angle2, abs_tol=1e-6)
+
+    def test_reconnect_keeps_structure_z(self, chf, connect_and_reconnect):
+        bond_vector = np.array([0, 0, 1]) 
+        angle1, angle2 = connect_and_reconnect(chf, bond_vector)
+        assert isclose(angle1, angle2, abs_tol=1e-6)
+
+    def test_reconnect_keeps_structure_random(self, chf, connect_and_reconnect):
+        np.random.seed(92)
+        for _ in range(5):
+            bond_vector = np.random.random(3) - 0.5 
+            angle1, angle2 = connect_and_reconnect(chf, bond_vector)
+            assert isclose(angle1, angle2, abs_tol=1e-6)
