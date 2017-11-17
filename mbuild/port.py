@@ -80,7 +80,7 @@ class Port(Compound):
                 np.asarray(default_direction), unit_vector(-orientation)):
             self.rotate(np.pi, [0, 0, 1])
         elif np.allclose(
-                np.asarray(default_direction), unit_vector(-orientation)):
+                np.asarray(default_direction), unit_vector(orientation)):
             pass
         else:
             normal = np.cross(default_direction, orientation)
