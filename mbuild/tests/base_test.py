@@ -2,6 +2,7 @@ import numpy as np
 import pytest
 
 import mbuild as mb
+from mbuild.utils.geometry import calc_dihedral
 from mbuild.utils.io import get_fn
 
 
@@ -171,3 +172,36 @@ class BaseTest:
     def silane(self):
         from mbuild.lib.moieties import Silane
         return Silane()
+
+    @pytest.fixture
+    def chf(self):
+        class CHF(mb.Compound):
+            def __init__(self):
+                super(CHF, self).__init__()
+                carbon = mb.Particle(name='C', pos=[0.0, 0.0, 0.0])
+                hydrogen = mb.Particle(name='H', pos=[0.0, -0.15, 0.0])
+                fluorine = mb.Particle(name='F', pos=[0.0, 0.15, 0.0])
+                self.add([carbon, hydrogen, fluorine])
+                self.add_bond((carbon, hydrogen))
+                self.add_bond((carbon, fluorine))
+        return CHF()
+
+    @pytest.fixture
+    def connect_and_reconnect(self, chf):
+        def _connect_and_reconnect(chf, bond_vector):
+            first = mb.clone(chf)
+            second = mb.clone(chf)
+            first.add(mb.Port(anchor=first[0], orientation=bond_vector,
+                separation=0.075), label='up')
+            second.add(mb.Port(anchor=second[0], orientation=-bond_vector,
+                separation=0.075), label='down')
+            c2h2f2 = mb.Compound(subcompounds=(first, second))
+            mb.force_overlap(first, first['up'], second['down'])
+            fccf_dihedral_init = calc_dihedral(first[2].pos, first[0].pos,
+                second[0].pos, second[2].pos)
+            c2h2f2.remove_bond((first[0], second[0]))
+            mb.force_overlap(first, first['port[0]'], second['port[0]'])
+            fccf_dihedral_final = calc_dihedral(first[2].pos, first[0].pos,
+                second[0].pos, second[2].pos)
+            return fccf_dihedral_init, fccf_dihedral_final
+        return _connect_and_reconnect
