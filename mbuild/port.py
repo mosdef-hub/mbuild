@@ -12,6 +12,12 @@ class Port(Compound):
     ----------
     anchor : mb.Particle, optional, default=None
         A Particle associated with the port. Used to form bonds.
+    orientation : array-like, shape=(3,), optional, default=[0, 1, 0]
+        Vector along which to orient the port
+    separation : float, optional, default=0
+        Distance to shift port along the orientation vector from the anchor
+        particle position. If no anchor is provided, the port will be shifted
+        from the origin.
 
     Attributes
     ----------
@@ -28,7 +34,7 @@ class Port(Compound):
         transform.
 
     """
-    def __init__(self, anchor=None, orientation=None, separation=0):
+    def __init__(self, anchor=None, orientation=[0, 1, 0], separation=0):
         super(Port, self).__init__(name='Port', port_particle=True)
         self.anchor = anchor
 
@@ -45,18 +51,31 @@ class Port(Compound):
         down = clone(up)
         down.rotate(np.pi, [0, 0, 1])
 
-        self.add(up, 'up')
-        self.add(down, 'down')
+        '''
+        Ports along antiparallel vectors should have 'up' and 'down' subports
+        at equivalent positions, except with reverse labels (i.e. the 'up'
+        subport for a port oriented in one direction will have the same xyz
+        positions as the 'down' port oriented in the opposite direction. As
+        a bit of a trick, when the z coordinate of the orientation vector is
+        negative the subports are created as if the vector was of the opposite
+        orientation and the labels are switched manually.
+        '''
+        swap_labels = False
+        if orientation[2] < 0:
+            swap_labels = True
+            orientation = -np.array(orientation)
+            self.add(up, 'down')
+            self.add(down, 'up')
+        else:
+            self.add(up, 'up')
+            self.add(down, 'down')
         self.used = False
 
-        if orientation is None:
-            orientation = [0, 1, 0]
-
         default_direction = [0, 1, 0]
-        if np.array_equal(
+        if np.allclose(
                 np.asarray(default_direction), unit_vector(-np.asarray(orientation))):
-            self.rotate(np.pi, [1, 0, 0])
-        elif np.array_equal(
+            self.rotate(np.pi, [0, 0, 1])
+        elif np.allclose(
                 np.asarray(default_direction), unit_vector(np.asarray(orientation))):
             pass
         else:
@@ -66,7 +85,10 @@ class Port(Compound):
         if anchor:
             self.translate_to(anchor.pos)
 
-        self.translate(separation*unit_vector(orientation))
+        if swap_labels == True:
+            self.translate(separation*unit_vector(-orientation))
+        else:
+            self.translate(separation*unit_vector(orientation))
 
     def _clone(self, clone_of=None, root_container=None):
         newone = super(Port, self)._clone(clone_of, root_container)
