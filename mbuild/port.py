@@ -34,9 +34,13 @@ class Port(Compound):
         transform.
 
     """
-    def __init__(self, anchor=None, orientation=[0, 1, 0], separation=0):
+    def __init__(self, anchor=None, orientation=None, separation=0):
         super(Port, self).__init__(name='Port', port_particle=True)
         self.anchor = anchor
+
+        if orientation is None:
+            orientation = [0, 1, 0]
+        orientation = np.asarray(orientation)
 
         up = Compound(name='subport', port_particle=True)
         up.add(Particle(name='G', pos=[0.005, 0.0025, -0.0025],
@@ -63,7 +67,7 @@ class Port(Compound):
         swap_labels = False
         if orientation[2] < 0:
             swap_labels = True
-            orientation = -np.array(orientation)
+            orientation = -orientation
             self.add(up, 'down')
             self.add(down, 'up')
         else:
@@ -73,10 +77,10 @@ class Port(Compound):
 
         default_direction = [0, 1, 0]
         if np.allclose(
-                np.asarray(default_direction), unit_vector(-np.asarray(orientation))):
+                np.asarray(default_direction), unit_vector(-orientation)):
             self.rotate(np.pi, [0, 0, 1])
         elif np.allclose(
-                np.asarray(default_direction), unit_vector(np.asarray(orientation))):
+                np.asarray(default_direction), unit_vector(-orientation)):
             pass
         else:
             normal = np.cross(default_direction, orientation)
@@ -85,7 +89,7 @@ class Port(Compound):
         if anchor:
             self.translate_to(anchor.pos)
 
-        if swap_labels == True:
+        if swap_labels:
             self.translate(separation*unit_vector(-orientation))
         else:
             self.translate(separation*unit_vector(orientation))
