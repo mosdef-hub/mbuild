@@ -24,11 +24,11 @@ class TestRigid(BaseTest):
     def test_rigid_from_parts(self, rigid_ch):
         rigid_ch_copy = mb.clone(rigid_ch)
         benzene = mb.Compound()
-        benzene.add(rigid_ch)
-        current = rigid_ch
+        benzene.add(rigid_ch_copy)
+        current = rigid_ch_copy
 
         for _ in range(5):
-            ch_new = mb.clone(rigid_ch_copy)
+            ch_new = mb.clone(rigid_ch)
             mb.force_overlap(move_this=ch_new,
                              from_positions=ch_new['a'],
                              to_positions=current['b'])
@@ -48,11 +48,11 @@ class TestRigid(BaseTest):
     def test_rigid_from_parts2(self, rigid_ch):
         rigid_ch_copy = mb.clone(rigid_ch)
         benzene = mb.Compound()
-        benzene.add(rigid_ch, reset_rigid_ids=False)
-        current = rigid_ch
+        benzene.add(rigid_ch_copy, reset_rigid_ids=False)
+        current = rigid_ch_copy
 
         for _ in range(5):
-            ch_new = mb.clone(rigid_ch_copy)
+            ch_new = mb.clone(rigid_ch)
             mb.force_overlap(move_this=ch_new,
                              from_positions=ch_new['a'],
                              to_positions=current['b'])
@@ -72,11 +72,11 @@ class TestRigid(BaseTest):
     def test_rigid_from_parts3(self, rigid_ch):
         rigid_ch_copy = mb.clone(rigid_ch)
         benzene = mb.Compound()
-        benzene.add(rigid_ch)
-        current = rigid_ch
+        benzene.add(rigid_ch_copy)
+        current = rigid_ch_copy
 
         for _ in range(5):
-            ch_new = mb.clone(rigid_ch_copy)
+            ch_new = mb.clone(rigid_ch)
             mb.force_overlap(move_this=ch_new,
                              from_positions=ch_new['a'],
                              to_positions=current['b'])
