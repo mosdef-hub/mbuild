@@ -1289,7 +1289,7 @@ class Compound(object):
 
 
 
-    def _minimize_energy_openbabel(self, tmp_dir, steps=10000, algorithm='cg',
+    def _minimize_energy_openbabel(self, tmp_dir, steps=1000, algorithm='cg',
                             forcefield='UFF'):
         """Perform an energy minimization on a Compound
 
