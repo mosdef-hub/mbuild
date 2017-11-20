@@ -1,0 +1,33 @@
+<ForceField>
+    <AtomTypes>
+        <Type name="CH3" class="CH3" element="_CH3" mass="15.03500" def="[_CH3]" desc="Alkane CH3, united atom" doi="10.1021/jp972543+"/>
+        <Type name="CH2" class="CH2" element="_CH2" mass="14.02700" def="[_CH2]" desc="Alkane CH2, united atom" doi="10.1021/jp972543+"/>
+    </AtomTypes>
+    <HarmonicBondForce>
+        <Bond class1="CH3" class2="CH3" length="0.1540" k="502416.0"/>
+        <Bond class1="CH3" class2="CH2" length="0.1540" k="502416.0"/>
+        <Bond class1="CH2" class2="CH2" length="0.1540" k="502416.0"/>
+    </HarmonicBondForce>
+    <HarmonicAngleForce>
+        <Angle class1="CH3" class2="CH2" class3="CH3" angle="1.98967" k="519.65389"/>
+        <Angle class1="CH3" class2="CH2" class3="CH2" angle="1.98967" k="519.65389"/>
+        <Angle class1="CH2" class2="CH2" class3="CH2" angle="1.98967" k="519.65389"/>
+        <Angle class1="CH3" class2="CH3" class3="CH2" angle="1.98967" k="519.65389"/>
+        <Angle class1="CH2" class2="CH3" class3="CH2" angle="1.98967" k="519.65389"/>
+        <Angle class1="CH3" class2="CH3" class3="CH3" angle="1.98967" k="519.65389"/>
+    </HarmonicAngleForce>
+    <RBTorsionForce>
+        <Proper class1="CH3" class2="CH2" class3="CH2" class4="CH3" c0="8.39736" c1="16.78632" c2="1.13393" c3="-26.31760" c4="0.0" c5="0.0"/>
+        <Proper class1="CH3" class2="CH3" class3="CH3" class4="CH3" c0="8.39736" c1="16.78632" c2="1.13393" c3="-26.31760" c4="0.0" c5="0.0"/>
+        <Proper class1="CH3" class2="CH3" class3="CH3" class4="CH2" c0="8.39736" c1="16.78632" c2="1.13393" c3="-26.31760" c4="0.0" c5="0.0"/>
+        <Proper class1="CH3" class2="CH3" class3="CH2" class4="CH2" c0="8.39736" c1="16.78632" c2="1.13393" c3="-26.31760" c4="0.0" c5="0.0"/>
+        <Proper class1="CH3" class2="CH3" class3="CH2" class4="CH3" c0="8.39736" c1="16.78632" c2="1.13393" c3="-26.31760" c4="0.0" c5="0.0"/>
+        <Proper class1="CH3" class2="CH2" class3="CH2" class4="CH2" c0="8.39736" c1="16.78632" c2="1.13393" c3="-26.31760" c4="0.0" c5="0.0"/>
+        <Proper class1="CH2" class2="CH2" class3="CH2" class4="CH2" c0="8.39736" c1="16.78632" c2="1.13393" c3="-26.31760" c4="0.0" c5="0.0"/>
+    </RBTorsionForce>
+    <NonbondedForce coulomb14scale="0" lj14scale="0">
+        <Atom type="CH2" charge="0.0" sigma="0.395" epsilon="0.382465"/>
+        <Atom type="CH3" charge="0.0" sigma="0.375" epsilon="0.814817"/>
+    </NonbondedForce>
+</ForceField>
+

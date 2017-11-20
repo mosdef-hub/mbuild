@@ -1,13 +1,15 @@
 import pdb
 import numpy as np
 import mbuild as mb
+import pdb
 
 from parmed.periodic_table import Mass
 from collections import OrderedDict
 
 __all__ = ['reverse_map']
 
-def reverse_map(coarse_grained, mapping_moieties):
+def reverse_map(coarse_grained, mapping_moieties, minimize_energy=True,**kwargs
+        ):
     """ Reverse map an mb.Compound
 
     Parameters
@@ -16,6 +18,14 @@ def reverse_map(coarse_grained, mapping_moieties):
         original structure
     mapping_moieties : dictionary
         Relate CG bead names to finer-detailed mbuild Compound
+    minimize_energy : boolean, optional, default=True
+        Perform energy minimization on reverse-mapped compound
+    use_openmm : boolean, optional, default=False
+        If using energy minimization, use openmm (requires forcefield xml)
+    use_openbabel : boolean, optional, default=True
+        If using energy minimization, use openbabel
+
+
 
     """
     # Get molecular information through bonding 
@@ -34,20 +44,22 @@ def reverse_map(coarse_grained, mapping_moieties):
             new_atom.translate(bead.pos)
             new_molecule.add(new_atom)
         aa_system.add(new_molecule)
-
     # Go back and include bonds
     for p_i, p_j in coarse_grained.bonds():
         mb.force_overlap(cg_to_aa[p_i],
                 from_positions=cg_to_aa[p_i].available_ports()[0],
                 to_positions=cg_to_aa[p_j].available_ports()[0])
-
     # Iterative energy minimization
     # Energy minimize each molecule separately,
     # compute RMSD, check tolerance, translate back to CG representation
-    aa_system = _energy_minimize_loop(aa_system, cg_to_aa, n_iter=10)
+    if minimize_energy:
+        for molecule in aa_system.children:
+            molecule.energy_minimization(**kwargs)
+        #aa_system = _energy_minimize_loop(aa_system, cg_to_aa, n_iter=10,)
     return aa_system
 
-def _energy_minimize_loop(aa_system, cg_to_aa, n_iter=10, rel_tol=1e-4):
+def _energy_minimize_loop(aa_system, cg_to_aa, n_iter=10, rel_tol=1e-4,
+        forcefield='UFF'):
     """ Minimize reverse-mapped structure according to rmsd
 
     aa_system : mb.Compound()
@@ -57,7 +69,7 @@ def _energy_minimize_loop(aa_system, cg_to_aa, n_iter=10, rel_tol=1e-4):
         Number of iterations for EM loop
     rel_tol : float
         Relative tolerance for RMSD comparisons 
-        """
+    """
     
     # Loop molecule by molecule for each EM 
     for molecule in aa_system.children:
@@ -76,7 +88,7 @@ def _energy_minimize_loop(aa_system, cg_to_aa, n_iter=10, rel_tol=1e-4):
             # Minimize energy
             # Reduce iterations here?
             #aa_system.energy_minimization()
-            molecule.energy_minimization(steps=1000, algorithm='cg')
+            molecule.energy_minimization(forcefield=forcefield)
 
             # Measure RMSD
             new_rmsd = _compute_rmsd(cg_to_aa)
@@ -103,7 +115,7 @@ def _compute_rmsd(cg_to_aa):
 
 def _compute_center_of_mass(particles):
     """ Compute center of mass"""
-    masses = [Mass[particle.name[0:1]] for particle in particles]
+    masses = [Mass[particle.name[1:2]] for particle in particles]
     total_mass = sum(masses)
     com = np.ndarray(3)
     for i in range(3):

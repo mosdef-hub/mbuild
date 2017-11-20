@@ -1138,7 +1138,158 @@ class Compound(object):
             particle.pos += (np.random.rand(3,) - 0.5) / 100
         self._update_port_locations(xyz_init)
 
-    def energy_minimization(self, steps=2500, algorithm='cg',
+    def energy_minimization(self, steps=1000, algorithm='cg',
+                            forcefield='UFF'):
+        """Perform an energy minimization on a Compound
+
+        Utilizes Open Babel (http://openbabel.org/docs/dev/) to perform an
+        energy minimization/geometry optimization on a Compound by applying
+        a generic force field.
+
+        This function is primarily intended to be used on smaller components,
+        with sizes on the order of 10's to 100's of particles, as the energy
+        minimization scales poorly with the number of particles.
+
+        Parameters
+        ----------
+        steps : int, optionl, default=1000
+            The number of optimization iterations
+        algorithm : str, optional, default='cg'
+            The energy minimization algorithm.  Valid options are 'steep',
+            'cg', and 'md', corresponding to steepest descent, conjugate
+            gradient, and equilibrium molecular dynamics respectively.
+        forcefield : str, optional, default='UFF'
+            The generic force field to apply to the Compound for minimization.
+            Valid options are 'MMFF94', 'MMFF94s', ''UFF', 'GAFF', and 'Ghemical'.
+            Please refer to the Open Babel documentation (http://open-babel.
+            readthedocs.io/en/latest/Forcefields/Overview.html) when considering
+            your choice of force field.
+
+        """
+        tmp_dir = tempfile.mkdtemp()
+        original = clone(self)
+        self._kick()
+        self.save(os.path.join(tmp_dir,'un-minimized.mol2'))
+        extension = os.path.splitext(forcefield)[-1]
+        if extension == '.xml':
+            self._minimize_energy_openmm(tmp_dir, forcefield=forcefield)
+
+        else:
+            self._minimize_energy_openbabel(tmp_dir, forcefield=forcefield)
+
+
+        self.update_coordinates(os.path.join(tmp_dir, 'minimized.pdb'))
+
+    def _minimize_energy_openmm(self, tmp_dir, forcefield=None, steps=1000,
+            scale_bonds=1, scale_angles=1, scale_torsions=0.5,
+            scale_nonbonded=0.75):
+        """ Perform energy minimization using OpenMM
+
+        Converts an mBuild Compound to a Parmed Structure,
+        applies a forcefield, and creates an OpenMM System.
+
+        Parameters
+        ----------
+        forcefield = str
+            Path to forcefield xml file
+        steps = int
+            Number of energy minimization iterations
+        scale_bonds = float
+            Scales the bond force constant (1 is completely on)
+        scale_angles = float
+            Scales the angle force constant (1 is completely on)
+        scale_torsions = float
+            Scales the torsional force constants (1 is completely on)
+        scale_nonbonded = float
+            Scales epsilon (1 is completely on)
+
+
+        Notes
+        -----
+        Assumes a particular organization for the force groups
+        (HarmonicBondForce, HarmonicAngleForce, RBTorsionForce, NonBondedForce)
+
+
+        """
+        from foyer import Forcefield
+        to_parmed = self.to_parmed()
+        ff = Forcefield(forcefield_files=[forcefield])
+        to_parmed = ff.apply(to_parmed)
+
+
+        #system = to_parmed.createSystem(
+                #nonbondedMethod=PME,
+                #nonbondedCutoff=0.1*nanometer,constraints=None)
+        from simtk.openmm.app.simulation import Simulation
+        from simtk.openmm.app.pdbreporter import PDBReporter
+        from simtk.openmm.openmm import LangevinIntegrator
+        import simtk.unit as u
+
+        system = to_parmed.createSystem()
+        integrator = LangevinIntegrator(298*u.kelvin, 1/u.picosecond, 
+                0.002*u.picoseconds)
+        simulation = Simulation(to_parmed.topology, system, integrator)
+
+
+        # Reduce the force constants to prevent blowing up simulation
+        # And also relax energy barriers (especially useful for torsions)
+        all_forces = system.getForces()
+        bond_forces = all_forces[0]
+        angle_forces = all_forces[1]
+        torsion_forces = all_forces[2]
+        nb_forces = all_forces[3]
+
+        # Scaling HarmonicBondForces
+        for bond_index in range(bond_forces.getNumBonds()):
+            old_bond_parameters=bond_forces.getBondParameters(bond_index)
+            bond_forces.setBondParameters(bond_index,
+                    old_bond_parameters[0], old_bond_parameters[1],
+                    old_bond_parameters[2], old_bond_parameters[3]*scale_bonds)
+        bond_forces.updateParametersInContext(simulation.context)
+
+        # Scaling HarmonicAngleForces
+        for angle_index in range(angle_forces.getNumAngles()):
+            old_angle_parameters = angle_forces.getAngleParameters(angle_index)
+            angle_forces.setAngleParameters(angle_index,
+                    old_angle_parameters[0], old_angle_parameters[1],
+                    old_angle_parameters[2], old_angle_parameters[3],
+                    old_angle_parameters[4]*scale_angles)
+        angle_forces.updateParametersInContext(simulation.context)
+
+        # Scaling RBTorsionForces
+        for torsion_index in range(torsion_forces.getNumTorsions()):
+            old_torsion_parameters = torsion_forces.getTorsionParameters(torsion_index)
+            torsion_forces.setTorsionParameters(torsion_index,
+                    old_torsion_parameters[0], old_torsion_parameters[1],
+                    old_torsion_parameters[2], old_torsion_parameters[3],
+                    old_torsion_parameters[4]*scale_torsions, 
+                    old_torsion_parameters[5]*scale_torsions,
+                    old_torsion_parameters[6]*scale_torsions,
+                    old_torsion_parameters[7]*scale_torsions,
+                    old_torsion_parameters[8]*scale_torsions,
+                    old_torsion_parameters[9]*scale_torsions)
+        torsion_forces.updateParametersInContext(simulation.context)
+
+        # Scaling NonbondedForces
+        for nb_index in range(nb_forces.getNumParticles()):
+            old_nb_parameters = nb_forces.getParticleParameters(nb_index)
+            nb_forces.setParticleParameters(nb_index,
+                    old_nb_parameters[0], old_nb_parameters[1],
+                    old_nb_parameters[2]*scale_nonbonded)
+        nb_forces.updateParametersInContext(simulation.context)
+
+
+        simulation.context.setPositions(to_parmed.positions)
+        simulation.minimizeEnergy(maxIterations=steps)
+        #simulation.reporters.append(PDBReporter('minimized.pdb',1))
+        simulation.reporters.append(PDBReporter(
+            os.path.join(tmp_dir, 'minimized.pdb'),1))
+        simulation.step(1)
+
+
+
+
+    def _minimize_energy_openbabel(self, tmp_dir, steps=10000, algorithm='cg',
                             forcefield='UFF'):
         """Perform an energy minimization on a Compound
 
@@ -1210,22 +1361,23 @@ class Compound(object):
                protein models implemented in an off-lattice force field" (2001)
                J. Comput. Chem. 22, 1229-1242
         """
+ 
         openbabel = import_('openbabel')
 
         for particle in self.particles():
             try:
                 elem.get_by_symbol(particle.name)
             except KeyError:
-                raise MBuildError("Element name {} not recognized. Cannot "
+                try:
+                    elem.get_by_symbol(particle.name[1:2])
+                except KeyError:
+                    raise MBuildError("Element name {} not recognized. Cannot "
                                   "perform minimization."
                                   "".format(particle.name))
 
-        tmp_dir = tempfile.mkdtemp()
-        original = clone(self)
-        self._kick()
-        self.save(os.path.join(tmp_dir,'un-minimized.mol2'))
+        
         obConversion = openbabel.OBConversion()
-        obConversion.SetInAndOutFormats("mol2", "mol2")
+        obConversion.SetInAndOutFormats("mol2", "pdb")
         mol = openbabel.OBMol()
 
         obConversion.ReadFile(mol, os.path.join(tmp_dir, "un-minimized.mol2"))
@@ -1251,8 +1403,7 @@ class Compound(object):
                               "are 'steep', 'cg', and 'md'.")
         ff.UpdateCoordinates(mol)
 
-        obConversion.WriteFile(mol, os.path.join(tmp_dir, 'minimized.mol2'))
-        self.update_coordinates(os.path.join(tmp_dir, 'minimized.mol2'))
+        obConversion.WriteFile(mol, os.path.join(tmp_dir, 'minimized.pdb'))
 
     def save(self, filename, show_ports=False, forcefield_name=None,
              forcefield_files=None, box=None, overwrite=False, residues=None,
