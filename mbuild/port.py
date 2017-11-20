@@ -38,6 +38,7 @@ class Port(Compound):
         super(Port, self).__init__(name='Port', port_particle=True)
         self.anchor = anchor
 
+        default_direction = [0, 1, 0]
         if orientation is None:
             orientation = [0, 1, 0]
         orientation = np.asarray(orientation)
@@ -53,46 +54,26 @@ class Port(Compound):
                         port_particle=True), 'right')
 
         down = clone(up)
-        down.rotate(np.pi, [0, 0, 1])
-
-        '''
-        Ports along antiparallel vectors should have 'up' and 'down' subports
-        at equivalent positions, except with reverse labels (i.e. the 'up'
-        subport for a port oriented in one direction will have the same xyz
-        positions as the 'down' port oriented in the opposite direction. As
-        a bit of a trick, when the z coordinate of the orientation vector is
-        negative the subports are created as if the vector was of the opposite
-        orientation and the labels are switched manually.
-        '''
-        swap_labels = False
-        if orientation[2] < 0:
-            swap_labels = True
-            orientation = -orientation
-            self.add(up, 'down')
-            self.add(down, 'up')
-        else:
-            self.add(up, 'up')
-            self.add(down, 'down')
+        self.add(up, 'up')
+        self.add(down, 'down')
         self.used = False
 
-        default_direction = [0, 1, 0]
         if np.allclose(
                 np.asarray(default_direction), unit_vector(-orientation)):
+            down.rotate(np.pi, [0, 0, 1])
             self.rotate(np.pi, [0, 0, 1])
         elif np.allclose(
                 np.asarray(default_direction), unit_vector(orientation)):
-            pass
+            down.rotate(np.pi, [0, 0, 1])
         else:
             normal = np.cross(default_direction, orientation)
             self.rotate(angle(default_direction, orientation), normal)
+            down.rotate(np.pi, normal)
 
         if anchor:
             self.translate_to(anchor.pos)
 
-        if swap_labels:
-            self.translate(separation*unit_vector(-orientation))
-        else:
-            self.translate(separation*unit_vector(orientation))
+        self.translate(separation*unit_vector(orientation))
 
     def _clone(self, clone_of=None, root_container=None):
         newone = super(Port, self)._clone(clone_of, root_container)
