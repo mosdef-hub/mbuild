@@ -1680,7 +1680,8 @@ class Compound(object):
             self.add_bond((atom1, atom2))
 
         if structure.box is not None:
-            self.periodicity = structure.box[0:3]
+            # Convert from A to nm
+            self.periodicity = 0.1 * structure.box[0:3]
         else:
             self.periodicity = np.array([0., 0., 0.])
 
