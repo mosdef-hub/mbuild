@@ -1330,43 +1330,48 @@ class Compound(object):
                 0.002*u.picoseconds)
         simulation = Simulation(to_parmed.topology, system, integrator)
 
+        for force in system.getForces():
+            if type(force).__name__ == "HarmonicBondForce":
+                for bond_index in range(force.getNumBonds()):
+                    atom1, atom2, r0, k = force.getBondParameters(bond_index)
+                    force.setBondParameters(bond_index,
+                        atom1, atom2,
+                        r0, k*scale_bonds)
+                force.updateParametersInContext(simulation.context)
 
-        bond_forces, angle_forces, torsion_forces, nb_forces, cmm = system.getForces()
-        
+            elif type(force).__name__ == "HarmonicAngleForce":
+                for angle_index in range(force.getNumAngles()):
+                    atom1, atom2, atom3, r0, k = force.getAngleParameters(angle_index)
+                    force.setAngleParameters(angle_index,
+                            atom1, atom2, atom3,
+                            r0, k*scale_angles)
+                force.updateParametersInContext(simulation.context)
 
-        # Scaling HarmonicBondForces
-        for bond_index in range(bond_forces.getNumBonds()):
-            atom1, atom2, r0, k = bond_forces.getBondParameters(bond_index)
-            bond_forces.setBondParameters(bond_index,
-                    atom1, atom2,
-                    r0, k*scale_bonds)
-        bond_forces.updateParametersInContext(simulation.context)
+            elif type(force).__name__ == "RBTorsionForce":
+                for torsion_index in range(force.getNumTorsions()):
+                    atom1, atom2, atom3, atom4, c0, c1, c2, c3, c4, c5 = force.getTorsionParameters(torsion_index)
+                    force.setTorsionParameters(torsion_index,
+                            atom1, atom2, atom3, atom4,
+                            c0*scale_torsions, c1*scale_torsions,
+                            c2*scale_torsions, c3*scale_torsions,
+                            c4*scale_torsions, c5*scale_torsions)
+                force.updateParametersInContext(simulation.context)
+                            
+            elif type(force).__name__ == "NonbondedForce":
+                for nb_index in range(force.getNumParticles()):
+                    charge, sigma, epsilon = force.getParticleParameters(nb_index)
+                    force.setParticleParameters(nb_index,
+                            charge, sigma, epsilon*scale_nonbonded)
+                force.updateParametersInContext(simulation.context)
 
-        # Scaling HarmonicAngleForces
-        for angle_index in range(angle_forces.getNumAngles()):
-            atom1, atom2, atom3, r0, k = angle_forces.getAngleParameters(angle_index)
-            angle_forces.setAngleParameters(angle_index,
-                    atom1, atom2, atom3,
-                    r0, k*scale_angles)
-        angle_forces.updateParametersInContext(simulation.context)
+            elif type(force).__name__ == "CMMotionRemover":
+                pass
 
-        # Scaling RBTorsionForces
-        for torsion_index in range(torsion_forces.getNumTorsions()):
-            atom1, atom2, atom3, atom4, c0, c1, c2, c3, c4, c5 = torsion_forces.getTorsionParameters(torsion_index)
-            torsion_forces.setTorsionParameters(torsion_index,
-                    atom1, atom2, atom3, atom4,
-                    c0*scale_torsions, c1*scale_torsions,
-                    c2*scale_torsions, c3*scale_torsions,
-                    c4*scale_torsions, c5*scale_torsions)
-                    
-        torsion_forces.updateParametersInContext(simulation.context)
+            else:
+                warn('OpenMM Force {} is '
+                    'not currently supported in _energy_minimize_openmm. '
+                    'This Force will not be updated!'.format(type(force).__name__))
 
-        # Scaling NonbondedForces
-        for nb_index in range(nb_forces.getNumParticles()):
-            charge, sigma, epsilon = nb_forces.getParticleParameters(nb_index)
-            nb_forces.setParticleParameters(nb_index,
-                    charge, sigma, epsilon*scale_nonbonded)
-        nb_forces.updateParametersInContext(simulation.context)
 
 
         simulation.context.setPositions(to_parmed.positions)
