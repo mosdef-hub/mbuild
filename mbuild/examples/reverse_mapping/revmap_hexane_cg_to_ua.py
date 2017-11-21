@@ -10,6 +10,6 @@ united-atom representations
 coarse_grained = mb.load('two_hexane_cg.mol2')
 mapping_moieties = {'Propane': Propane_ua}
 
-recovered = mb.reverse_map(coarse_grained, mapping_moieties, minimize_energy=True,forcefield='toy_ua.xml',steps=5000)
+recovered = mb.reverse_map(coarse_grained, mapping_moieties, energy_minimize=True,forcefield='toy_ua.xml',steps=5000)
 recovered.save('revmap.mol2', overwrite=True)
 

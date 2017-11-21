@@ -10,6 +10,7 @@ import os
 import sys
 import tempfile
 from warnings import warn
+from mbuild.utils.decorators import deprecated
 
 import mdtraj as md
 import numpy as np
@@ -1138,13 +1139,22 @@ class Compound(object):
             particle.pos += (np.random.rand(3,) - 0.5) / 100
         self._update_port_locations(xyz_init)
 
-    def energy_minimization(self, forcefield='UFF',steps=1000, ):
+    warning_message = 'Please use Compound.energy_minimize()'
+    @deprecated(warning_message)
+    def energy_minimization(self, forcefield='UFF', steps=1000, **kwargs):
+        self.energy_minimize(forcefield=forcefield, steps=steps, **kwargs)
+
+    def energy_minimize(self, forcefield='UFF',steps=1000, **kwargs):
         """Perform an energy minimization on a Compound
 
         Utilizes Open Babel (http://openbabel.org/docs/dev/) to perform an
         energy minimization/geometry optimization on a Compound by applying
-        a generic force field or OpenMM (http://openmm.org/) to energy minimize
-        using a user-defined forcefield xml.
+        a generic force field 
+        
+        Can also utilize OpenMM (http://openmm.org/) to energy minimize
+        after atomtyping a Compound using 
+        Foyer (https://github.com/mosdef-hub/foyer) to apply a forcefield
+        XML file that contains valid SMARTS strings.
 
         This function is primarily intended to be used on smaller components,
         with sizes on the order of 10's to 100's of particles, as the energy
@@ -1152,7 +1162,7 @@ class Compound(object):
 
         Parameters
         ----------
-        steps : int, optionl, default=1000
+        steps : int, optional, default=1000
             The number of optimization iterations
         forcefield : str, optional, default='UFF'
             The generic force field to apply to the Compound for minimization.
@@ -1160,9 +1170,90 @@ class Compound(object):
             Please refer to the Open Babel documentation (http://open-babel.
             readthedocs.io/en/latest/Forcefields/Overview.html) when considering
             your choice of force field.
-        **kwargs : keyword arguments
-            Key word arguments passed to _minimize_energy_openbabel or 
-            _minimize_energy_openmm
+            Utilizing OpenMM for energy minimization requires a forcefield
+            XML file with valid SMARTS strings. Please refer to (http://docs.
+            openmm.org/7.0.0/userguide/application.html#creating-force-fields)
+            for more information.
+
+
+        Keyword Args
+        ------------
+        scale_bonds : float, optional, default=1
+            Scales the bond force constant (1 is completely on). 
+            For _energy_minimize_openmm
+        scale_angles : float, optional, default=1
+            Scales the angle force constant (1 is completely on)
+            For _energy_minimize_openmm
+        scale_torsions : float, optional, default=0.5
+            Scales the torsional force constants (1 is completely on)
+            For _energy_minimize_openmm
+        scale_nonbonded : float, optional, default=0.75
+            Scales epsilon (1 is completely on)
+            For _energy_minimize_openmm
+        algorithm : str, optional, default='cg'
+            The energy minimization algorithm.  Valid options are 'steep',
+            'cg', and 'md', corresponding to steepest descent, conjugate
+            gradient, and equilibrium molecular dynamics respectively.
+            For _energy_minimize_openbabel
+
+        References
+        ----------
+        If using _energy_minimize_openmm(), please cite:
+        .. [1] P. Eastman, M. S. Friedrichs, J. D. Chodera, R. J. Radmer, 
+               C. M. Bruns, J. P. Ku, K. A. Beauchamp, T. J. Lane, 
+               L.-P. Wang, D. Shukla, T. Tye, M. Houston, T. Stich, 
+               C. Klein, M. R. Shirts, and V. S. Pande. 
+               “OpenMM 4: A Reusable, Extensible, Hardware Independent 
+               Library for High Performance Molecular Simulation.” 
+               J. Chem. Theor. Comput. 9(1): 461-469. (2013). 
+
+
+        If using _energy_minimize_openbabel(), please cite:
+        .. [1] O'Boyle, N.M.; Banck, M.; James, C.A.; Morley, C.;
+               Vandermeersch, T.; Hutchison, G.R. "Open Babel: An open
+               chemical toolbox." (2011) J. Cheminf. 3, 33
+
+        .. [2] Open Babel, version X.X.X http://openbabel.org, (installed
+               Month Year)
+
+        If using the 'MMFF94' force field please also cite the following:
+        .. [3] T.A. Halgren, "Merck molecular force field. I. Basis, form,
+               scope, parameterization, and performance of MMFF94." (1996)
+               J. Comput. Chem. 17, 490-519
+        .. [4] T.A. Halgren, "Merck molecular force field. II. MMFF94 van der
+               Waals and electrostatic parameters for intermolecular
+               interactions." (1996) J. Comput. Chem. 17, 520-552
+        .. [5] T.A. Halgren, "Merck molecular force field. III. Molecular
+               geometries and vibrational frequencies for MMFF94." (1996)
+               J. Comput. Chem. 17, 553-586
+        .. [6] T.A. Halgren and R.B. Nachbar, "Merck molecular force field.
+               IV. Conformational energies and geometries for MMFF94." (1996)
+               J. Comput. Chem. 17, 587-615
+        .. [7] T.A. Halgren, "Merck molecular force field. V. Extension of
+               MMFF94 using experimental data, additional computational data,
+               and empirical rules." (1996) J. Comput. Chem. 17, 616-641
+
+        If using the 'MMFF94s' force field please cite the above along with:
+        .. [8] T.A. Halgren, "MMFF VI. MMFF94s option for energy minimization
+               studies." (1999) J. Comput. Chem. 20, 720-729
+
+        If using the 'UFF' force field please cite the following:
+        .. [3] Rappe, A.K., Casewit, C.J., Colwell, K.S., Goddard, W.A. III,
+               Skiff, W.M. "UFF, a full periodic table force field for
+               molecular mechanics and molecular dynamics simulations." (1992)
+               J. Am. Chem. Soc. 114, 10024-10039
+
+        If using the 'GAFF' force field please cite the following:
+        .. [3] Wang, J., Wolf, R.M., Caldwell, J.W., Kollman, P.A., Case, D.A.
+               "Development and testing of a general AMBER force field" (2004)
+               J. Comput. Chem. 25, 1157-1174
+
+        If using the 'Ghemical' force field please cite the following:
+        .. [3] T. Hassinen and M. Perakyla, "New energy terms for reduced
+               protein models implemented in an off-lattice force field" (2001)
+               J. Comput. Chem. 22, 1229-1242
+
+
 
         """
         tmp_dir = tempfile.mkdtemp()
@@ -1171,37 +1262,37 @@ class Compound(object):
         self.save(os.path.join(tmp_dir,'un-minimized.mol2'))
         extension = os.path.splitext(forcefield)[-1]
         if extension == '.xml':
-            self._minimize_energy_openmm(tmp_dir, forcefield=forcefield,
-                    steps=steps)
+            self._energy_minimize_openmm(tmp_dir, forcefield=forcefield,
+                    steps=steps, **kwargs)
 
         else:
-            self._minimize_energy_openbabel(tmp_dir, forcefield=forcefield,
-                    steps=steps)
+            self._energy_minimize_openbabel(tmp_dir, forcefield=forcefield,
+                    steps=steps, **kwargs)
 
 
         self.update_coordinates(os.path.join(tmp_dir, 'minimized.pdb'))
 
-    def _minimize_energy_openmm(self, tmp_dir, forcefield="", steps=1000,
+    def _energy_minimize_openmm(self, tmp_dir, forcefield=None, steps=1000,
             scale_bonds=1, scale_angles=1, scale_torsions=0.5,
             scale_nonbonded=0.75):
         """ Perform energy minimization using OpenMM
 
         Converts an mBuild Compound to a Parmed Structure,
-        applies a forcefield, and creates an OpenMM System.
+        applies a forcefield using Foyer, and creates an OpenMM System.
 
         Parameters
         ----------
-        forcefield = str
+        forcefield : str
             Path to forcefield xml file
-        steps = int
+        steps : int, optional, default=1000
             Number of energy minimization iterations
-        scale_bonds = float
+        scale_bonds : float, optional, default=1
             Scales the bond force constant (1 is completely on)
-        scale_angles = float
+        scale_angles : float, optiona, default=1
             Scales the angle force constant (1 is completely on)
-        scale_torsions = float
+        scale_torsions : float, optional, default=0.5
             Scales the torsional force constants (1 is completely on)
-        scale_nonbonded = float
+        scale_nonbonded : float, optional, default=0.75
             Scales epsilon (1 is completely on)
 
 
@@ -1210,6 +1301,18 @@ class Compound(object):
         Assumes a particular organization for the force groups
         (HarmonicBondForce, HarmonicAngleForce, RBTorsionForce, NonBondedForce)
 
+        References
+        ----------
+
+        .. [1] P. Eastman, M. S. Friedrichs, J. D. Chodera, R. J. Radmer, 
+               C. M. Bruns, J. P. Ku, K. A. Beauchamp, T. J. Lane, 
+               L.-P. Wang, D. Shukla, T. Tye, M. Houston, T. Stich, 
+               C. Klein, M. R. Shirts, and V. S. Pande. 
+               “OpenMM 4: A Reusable, Extensible, Hardware Independent 
+               Library for High Performance Molecular Simulation.” 
+               J. Chem. Theor. Comput. 9(1): 461-469. (2013). 
+
+
 
         """
         from foyer import Forcefield
@@ -1217,10 +1320,6 @@ class Compound(object):
         ff = Forcefield(forcefield_files=[forcefield])
         to_parmed = ff.apply(to_parmed)
 
-
-        #system = to_parmed.createSystem(
-                #nonbondedMethod=PME,
-                #nonbondedCutoff=0.1*nanometer,constraints=None)
         from simtk.openmm.app.simulation import Simulation
         from simtk.openmm.app.pdbreporter import PDBReporter
         from simtk.openmm.openmm import LangevinIntegrator
@@ -1232,57 +1331,46 @@ class Compound(object):
         simulation = Simulation(to_parmed.topology, system, integrator)
 
 
-        # Reduce the force constants to prevent blowing up simulation
-        # And also relax energy barriers (especially useful for torsions)
-        all_forces = system.getForces()
-        bond_forces = all_forces[0]
-        angle_forces = all_forces[1]
-        torsion_forces = all_forces[2]
-        nb_forces = all_forces[3]
+        bond_forces, angle_forces, torsion_forces, nb_forces, cmm = system.getForces()
+        
 
         # Scaling HarmonicBondForces
         for bond_index in range(bond_forces.getNumBonds()):
-            old_bond_parameters=bond_forces.getBondParameters(bond_index)
+            atom1, atom2, r0, k = bond_forces.getBondParameters(bond_index)
             bond_forces.setBondParameters(bond_index,
-                    old_bond_parameters[0], old_bond_parameters[1],
-                    old_bond_parameters[2], old_bond_parameters[3]*scale_bonds)
+                    atom1, atom2,
+                    r0, k*scale_bonds)
         bond_forces.updateParametersInContext(simulation.context)
 
         # Scaling HarmonicAngleForces
         for angle_index in range(angle_forces.getNumAngles()):
-            old_angle_parameters = angle_forces.getAngleParameters(angle_index)
+            atom1, atom2, atom3, r0, k = angle_forces.getAngleParameters(angle_index)
             angle_forces.setAngleParameters(angle_index,
-                    old_angle_parameters[0], old_angle_parameters[1],
-                    old_angle_parameters[2], old_angle_parameters[3],
-                    old_angle_parameters[4]*scale_angles)
+                    atom1, atom2, atom3,
+                    r0, k*scale_angles)
         angle_forces.updateParametersInContext(simulation.context)
 
         # Scaling RBTorsionForces
         for torsion_index in range(torsion_forces.getNumTorsions()):
-            old_torsion_parameters = torsion_forces.getTorsionParameters(torsion_index)
+            atom1, atom2, atom3, atom4, c0, c1, c2, c3, c4, c5 = torsion_forces.getTorsionParameters(torsion_index)
             torsion_forces.setTorsionParameters(torsion_index,
-                    old_torsion_parameters[0], old_torsion_parameters[1],
-                    old_torsion_parameters[2], old_torsion_parameters[3],
-                    old_torsion_parameters[4]*scale_torsions, 
-                    old_torsion_parameters[5]*scale_torsions,
-                    old_torsion_parameters[6]*scale_torsions,
-                    old_torsion_parameters[7]*scale_torsions,
-                    old_torsion_parameters[8]*scale_torsions,
-                    old_torsion_parameters[9]*scale_torsions)
+                    atom1, atom2, atom3, atom4,
+                    c0*scale_torsions, c1*scale_torsions,
+                    c2*scale_torsions, c3*scale_torsions,
+                    c4*scale_torsions, c5*scale_torsions)
+                    
         torsion_forces.updateParametersInContext(simulation.context)
 
         # Scaling NonbondedForces
         for nb_index in range(nb_forces.getNumParticles()):
-            old_nb_parameters = nb_forces.getParticleParameters(nb_index)
+            charge, sigma, epsilon = nb_forces.getParticleParameters(nb_index)
             nb_forces.setParticleParameters(nb_index,
-                    old_nb_parameters[0], old_nb_parameters[1],
-                    old_nb_parameters[2]*scale_nonbonded)
+                    charge, sigma, epsilon*scale_nonbonded)
         nb_forces.updateParametersInContext(simulation.context)
 
 
         simulation.context.setPositions(to_parmed.positions)
         simulation.minimizeEnergy(maxIterations=steps)
-        #simulation.reporters.append(PDBReporter('minimized.pdb',1))
         simulation.reporters.append(PDBReporter(
             os.path.join(tmp_dir, 'minimized.pdb'),1))
         simulation.step(1)
@@ -1290,7 +1378,7 @@ class Compound(object):
 
 
 
-    def _minimize_energy_openbabel(self, tmp_dir, steps=1000, algorithm='cg',
+    def _energy_minimize_openbabel(self, tmp_dir, steps=1000, algorithm='cg',
                             forcefield='UFF'):
         """Perform an energy minimization on a Compound
 

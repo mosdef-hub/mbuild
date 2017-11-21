@@ -8,8 +8,7 @@ from collections import OrderedDict
 
 __all__ = ['reverse_map']
 
-def reverse_map(coarse_grained, mapping_moieties, minimize_energy=True,
-        forcefield='UFF', steps=1000):
+def reverse_map(coarse_grained, mapping_moieties, energy_minimize=True, **kwargs):
     """ Reverse map an mb.Compound
 
     Parameters
@@ -41,18 +40,19 @@ def reverse_map(coarse_grained, mapping_moieties, minimize_energy=True,
             new_atom.translate(bead.pos)
             new_molecule.add(new_atom)
         aa_system.add(new_molecule)
+
     # Go back and include bonds
     for p_i, p_j in coarse_grained.bonds():
         mb.force_overlap(cg_to_aa[p_i],
                 from_positions=cg_to_aa[p_i].available_ports()[0],
                 to_positions=cg_to_aa[p_j].available_ports()[0])
+
     # Iterative energy minimization
     # Energy minimize each molecule separately,
     # compute RMSD, check tolerance, translate back to CG representation
-    if minimize_energy:
+    if energy_minimize:
         for molecule in aa_system.children:
-            molecule.energy_minimization(forcefield=forcefield, steps=steps)
-        #aa_system = _energy_minimize_loop(aa_system, cg_to_aa, n_iter=10,)
+            molecule.energy_minimize(**kwargs)
     return aa_system
 
 def _energy_minimize_loop(aa_system, cg_to_aa, n_iter=10, rel_tol=1e-4,
