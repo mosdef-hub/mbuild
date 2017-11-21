@@ -15,6 +15,7 @@ env:
   - COMMIT_AUTHOR_EMAIL: "janos.sallai@vanderbilt.edu"
 
 install:
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew update; fi
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew install md5sha1sum; fi
   - source devtools/travis-ci/install.sh
   - conda config --set always_yes yes --set changeps1 no
@@ -22,13 +23,14 @@ install:
   - conda config --add channels janschulz
   - conda config --add channels glotzer
   - conda config --add channels bioconda
+  - conda config --add channels conda-forge
   - conda config --add channels mosdef
   - conda create -n test-environment python=$PYTHON_VERSION --file requirements.txt
   - source activate test-environment
   - pip install -e .
 
 script:
-  - py.test -v --cov=mbuild  --cov-report= --pyargs mbuild
+  - python -m pytest -v --cov=mbuild  --cov-report= --pyargs mbuild
 
 after_success:
   - coveralls

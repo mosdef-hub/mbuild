@@ -985,7 +985,7 @@ class Compound(object):
             The cartesian center of the Compound based on its Particles
 
         """
-        if self.xyz.any():
+        if np.all(np.isfinite(self.xyz)):
             return np.mean(self.xyz, axis=0)
 
     @property
@@ -1495,8 +1495,9 @@ class Compound(object):
         obConversion.WriteFile(mol, os.path.join(tmp_dir, 'minimized.pdb'))
 
     def save(self, filename, show_ports=False, forcefield_name=None,
-             forcefield_files=None, box=None, overwrite=False, residues=None,
-             references_file=None, combining_rule='lorentz', **kwargs):
+             forcefield_files=None, forcefield_debug=False, box=None,
+             overwrite=False, residues=None, references_file=None,
+             combining_rule='lorentz', **kwargs):
         """Save the Compound to a file.
 
         Parameters
@@ -1514,6 +1515,10 @@ class Compound(object):
             Apply a named forcefield to the output file using the `foyer`
             package, e.g. 'oplsaa'. Forcefields listed here:
             https://github.com/mosdef-hub/foyer/tree/master/foyer/forcefields
+        forcefield_debug : bool, optional, default=False
+            Choose level of verbosity when applying a forcefield through `foyer`.
+            Specifically, when missing atom types in the forcefield xml file,
+            determine if the warning is condensed or verbose.
         box : mb.Box, optional, default=self.boundingbox (with buffer)
             Box information to be written to the output file. If 'None', a
             bounding box is used with 0.25nm buffers at each face to avoid
@@ -1576,7 +1581,7 @@ class Compound(object):
         if forcefield_name or forcefield_files:
             from foyer import Forcefield
             ff = Forcefield(forcefield_files=forcefield_files,
-                            name=forcefield_name)
+                            name=forcefield_name, debug=forcefield_debug)
             structure = ff.apply(structure, references_file=references_file)
             structure.combining_rule = combining_rule
 
@@ -1915,7 +1920,8 @@ class Compound(object):
             self.add_bond((atom1, atom2))
 
         if structure.box is not None:
-            self.periodicity = structure.box[0:3]
+            # Convert from A to nm
+            self.periodicity = 0.1 * structure.box[0:3]
         else:
             self.periodicity = np.array([0., 0., 0.])
 
