@@ -1138,13 +1138,13 @@ class Compound(object):
             particle.pos += (np.random.rand(3,) - 0.5) / 100
         self._update_port_locations(xyz_init)
 
-    def energy_minimization(self, steps=1000, algorithm='cg',
-                            forcefield='UFF'):
+    def energy_minimization(self, forcefield='UFF',steps=1000, ):
         """Perform an energy minimization on a Compound
 
         Utilizes Open Babel (http://openbabel.org/docs/dev/) to perform an
         energy minimization/geometry optimization on a Compound by applying
-        a generic force field.
+        a generic force field or OpenMM (http://openmm.org/) to energy minimize
+        using a user-defined forcefield xml.
 
         This function is primarily intended to be used on smaller components,
         with sizes on the order of 10's to 100's of particles, as the energy
@@ -1154,16 +1154,15 @@ class Compound(object):
         ----------
         steps : int, optionl, default=1000
             The number of optimization iterations
-        algorithm : str, optional, default='cg'
-            The energy minimization algorithm.  Valid options are 'steep',
-            'cg', and 'md', corresponding to steepest descent, conjugate
-            gradient, and equilibrium molecular dynamics respectively.
         forcefield : str, optional, default='UFF'
             The generic force field to apply to the Compound for minimization.
             Valid options are 'MMFF94', 'MMFF94s', ''UFF', 'GAFF', and 'Ghemical'.
             Please refer to the Open Babel documentation (http://open-babel.
             readthedocs.io/en/latest/Forcefields/Overview.html) when considering
             your choice of force field.
+        **kwargs : keyword arguments
+            Key word arguments passed to _minimize_energy_openbabel or 
+            _minimize_energy_openmm
 
         """
         tmp_dir = tempfile.mkdtemp()
@@ -1172,15 +1171,17 @@ class Compound(object):
         self.save(os.path.join(tmp_dir,'un-minimized.mol2'))
         extension = os.path.splitext(forcefield)[-1]
         if extension == '.xml':
-            self._minimize_energy_openmm(tmp_dir, forcefield=forcefield)
+            self._minimize_energy_openmm(tmp_dir, forcefield=forcefield,
+                    steps=steps)
 
         else:
-            self._minimize_energy_openbabel(tmp_dir, forcefield=forcefield)
+            self._minimize_energy_openbabel(tmp_dir, forcefield=forcefield,
+                    steps=steps)
 
 
         self.update_coordinates(os.path.join(tmp_dir, 'minimized.pdb'))
 
-    def _minimize_energy_openmm(self, tmp_dir, forcefield=None, steps=1000,
+    def _minimize_energy_openmm(self, tmp_dir, forcefield="", steps=1000,
             scale_bonds=1, scale_angles=1, scale_torsions=0.5,
             scale_nonbonded=0.75):
         """ Perform energy minimization using OpenMM

@@ -8,8 +8,8 @@ from collections import OrderedDict
 
 __all__ = ['reverse_map']
 
-def reverse_map(coarse_grained, mapping_moieties, minimize_energy=True,**kwargs
-        ):
+def reverse_map(coarse_grained, mapping_moieties, minimize_energy=True,
+        forcefield='UFF', steps=1000):
     """ Reverse map an mb.Compound
 
     Parameters
@@ -20,12 +20,9 @@ def reverse_map(coarse_grained, mapping_moieties, minimize_energy=True,**kwargs
         Relate CG bead names to finer-detailed mbuild Compound
     minimize_energy : boolean, optional, default=True
         Perform energy minimization on reverse-mapped compound
-    use_openmm : boolean, optional, default=False
-        If using energy minimization, use openmm (requires forcefield xml)
-    use_openbabel : boolean, optional, default=True
-        If using energy minimization, use openbabel
 
-
+    **kwargs : keyword arguments
+        Key word arguments passed to energy_minimization
 
     """
     # Get molecular information through bonding 
@@ -54,7 +51,7 @@ def reverse_map(coarse_grained, mapping_moieties, minimize_energy=True,**kwargs
     # compute RMSD, check tolerance, translate back to CG representation
     if minimize_energy:
         for molecule in aa_system.children:
-            molecule.energy_minimization(**kwargs)
+            molecule.energy_minimization(forcefield=forcefield, steps=steps)
         #aa_system = _energy_minimize_loop(aa_system, cg_to_aa, n_iter=10,)
     return aa_system
 
