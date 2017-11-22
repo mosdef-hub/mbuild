@@ -1203,8 +1203,8 @@ class Compound(object):
                C. M. Bruns, J. P. Ku, K. A. Beauchamp, T. J. Lane, 
                L.-P. Wang, D. Shukla, T. Tye, M. Houston, T. Stich, 
                C. Klein, M. R. Shirts, and V. S. Pande. 
-               “OpenMM 4: A Reusable, Extensible, Hardware Independent 
-               Library for High Performance Molecular Simulation.” 
+               "OpenMM 4: A Reusable, Extensible, Hardware Independent 
+               Library for High Performance Molecular Simulation." 
                J. Chem. Theor. Comput. 9(1): 461-469. (2013). 
 
 
@@ -1308,8 +1308,8 @@ class Compound(object):
                C. M. Bruns, J. P. Ku, K. A. Beauchamp, T. J. Lane, 
                L.-P. Wang, D. Shukla, T. Tye, M. Houston, T. Stich, 
                C. Klein, M. R. Shirts, and V. S. Pande. 
-               “OpenMM 4: A Reusable, Extensible, Hardware Independent 
-               Library for High Performance Molecular Simulation.” 
+               "OpenMM 4: A Reusable, Extensible, Hardware Independent 
+               Library for High Performance Molecular Simulation."
                J. Chem. Theor. Comput. 9(1): 461-469. (2013). 
 
 
