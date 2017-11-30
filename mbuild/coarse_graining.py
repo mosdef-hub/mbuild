@@ -1,8 +1,9 @@
 from collections import OrderedDict
 
 from mbuild.compound import Compound
+from mbuild.coordinate_transform import force_overlap
 
-__all__ = ['coarse_grain']
+__all__ = ['coarse_grain', 'reverse_map']
 
 
 def coarse_grain(real_thing, memo=None, particle_classes=None):
@@ -17,6 +18,55 @@ def coarse_grain(real_thing, memo=None, particle_classes=None):
     _create_proxy_labels(real_thing, memo)
 
     return proxy
+
+
+def reverse_map(coarse_grained, mapping_moieties, energy_minimize=True, **kwargs):
+    """ Reverse map an mb.Compound
+
+    Parameters
+    ---------
+    coarse_grained : mb.Compound
+        original structure
+    mapping_moieties : dictionary
+        Relate CG bead names to finer-detailed mbuild Compound
+    minimize_energy : boolean, optional, default=True
+        Perform energy minimization on reverse-mapped compound
+
+    **kwargs : keyword arguments
+        Key word arguments passed to energy_minimization
+
+    """
+    # Get molecular information through bonding 
+    molecules = coarse_grained.bond_graph.connected_components()
+    
+    aa_system = Compound()
+    # CG to AA relates the CG bead to its AA representation
+    cg_to_aa = OrderedDict()
+
+    # For each bead, replace it with the appropriate mb compound
+    for molecule in molecules:
+        new_molecule =  Compound()
+        for bead in molecule:
+            new_atom = mapping_moieties[bead.name]()
+            cg_to_aa[bead] = new_atom
+            new_atom.translate(bead.pos)
+            new_molecule.add(new_atom)
+        aa_system.add(new_molecule)
+
+    # Go back and include bonds
+    for p_i, p_j in coarse_grained.bonds():
+        force_overlap(cg_to_aa[p_i],
+                from_positions=cg_to_aa[p_i].available_ports()[0],
+                to_positions=cg_to_aa[p_j].available_ports()[0])
+
+    # Iterative energy minimization
+    # Energy minimize each molecule separately,
+    # compute RMSD, check tolerance, translate back to CG representation
+    if energy_minimize:
+        for molecule in aa_system.children:
+            molecule.energy_minimize(**kwargs)
+    return aa_system
+
 
 
 class Proxy(Compound):
