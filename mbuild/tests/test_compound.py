@@ -618,6 +618,16 @@ class TestCompound(BaseTest):
         assert np.array_equal(distances, updated_distances)
         assert np.array_equal(orientations, updated_orientations)
 
+    def test_energy_minimize_openmm(self, octane):
+        import foyer
+        ff_xml = '/'.join(foyer.__file__.split('/')[:-1])+"/forcefields/oplsaa.xml"
+        octane.energy_minimize(forcefield=ff_xml)
+        with pytest.raises(FileNotFoundError):
+            ff_xml = 'fake_ff.xml'
+            octane.energy_minimize(forcefield=ff_xml)
+
+
+
     def test_clone_outside_containment(self, ch2, ch3):
         compound = mb.Compound()
         compound.add(ch2)
