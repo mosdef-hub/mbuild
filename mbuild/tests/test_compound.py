@@ -4,6 +4,8 @@ import numpy as np
 import parmed as pmd
 import pytest
 
+import foyer
+
 import mbuild as mb
 from mbuild.exceptions import MBuildError
 from mbuild.utils.io import get_fn, has_intermol, has_openbabel
@@ -619,12 +621,8 @@ class TestCompound(BaseTest):
         assert np.array_equal(orientations, updated_orientations)
 
     def test_energy_minimize_openmm(self, octane):
-        import foyer
-        ff_xml = '/'.join(foyer.__file__.split('/')[:-1])+"/forcefields/oplsaa.xml"
+        ff_xml = get_fn('oplsaa.xml')
         octane.energy_minimize(forcefield=ff_xml)
-        with pytest.raises(FileNotFoundError):
-            ff_xml = 'fake_ff.xml'
-            octane.energy_minimize(forcefield=ff_xml)
 
 
 
