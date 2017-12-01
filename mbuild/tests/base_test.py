@@ -167,3 +167,11 @@ class BaseTest:
     def silane(self):
         from mbuild.lib.moieties import Silane
         return Silane()
+
+    @pytest.fixture
+    def propane_aa(self):
+
+        from mbuild.examples.reverse_mapping.mapping_moieties.propane_aa import Propane_aa
+
+        return Propane_aa
+
