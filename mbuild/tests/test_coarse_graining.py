@@ -1,5 +1,6 @@
 import mbuild as mb
 from mbuild.tests.base_test import BaseTest
+
 from mbuild.utils.io import get_fn
 
 
@@ -12,9 +13,9 @@ class TestCoarseGraining(BaseTest):
         assert all(child.name.startswith(propyl.name)
                    for child in cg.children)
 
-    def test_reverse_map_hexane(self, propane_aa):
+    def test_reverse_map_hexane(self, propyl):
 
-        mapping_moieties = {'Propane': propane_aa}
+        mapping_moieties = {'Propane': propyl}
         cg = mb.load(get_fn('hexane_cg.mol2')) 
 
         recovered = mb.reverse_map(cg, mapping_moieties, energy_minimize=False)

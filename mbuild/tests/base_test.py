@@ -168,9 +168,4 @@ class BaseTest:
         from mbuild.lib.moieties import Silane
         return Silane()
 
-    @pytest.fixture
-    def propane_aa(self):
-        from mbuild.examples import Propane_aa
-
-        return Propane_aa
 
