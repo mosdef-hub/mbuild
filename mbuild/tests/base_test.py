@@ -170,8 +170,7 @@ class BaseTest:
 
     @pytest.fixture
     def propane_aa(self):
-
-        from mbuild.examples.reverse_mapping.mapping_moieties.propane_aa import Propane_aa
+        from mbuild.examples import Propane_aa
 
         return Propane_aa
 
