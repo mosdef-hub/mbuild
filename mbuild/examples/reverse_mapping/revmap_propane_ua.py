@@ -8,7 +8,7 @@ beads. The reverse mapping finds the CH3 and CH2 beads
 and replaces them with their all-atom representations"""
 
 coarse_grained = mb.load('two_propane_ua.mol2')
-mapping_moieties = {'_CH3':CH3_aa, 
-                    '_CH2':CH2_aa}
+mapping_moieties = {'_CH3':CH3_aa(), 
+                    '_CH2':CH2_aa()}
 
 recovered = mb.reverse_map(coarse_grained, mapping_moieties)
