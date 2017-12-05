@@ -1,6 +1,7 @@
 from collections import OrderedDict
 
 from mbuild.compound import Compound
+from mbuild.compound import clone
 from mbuild.coordinate_transform import force_overlap
 
 __all__ = ['coarse_grain', 'reverse_map']
@@ -47,7 +48,8 @@ def reverse_map(coarse_grained, mapping_moieties, energy_minimize=True, **kwargs
     for molecule in molecules:
         new_molecule =  Compound()
         for bead in molecule:
-            new_atom = mapping_moieties[bead.name]()
+            #new_atom = mapping_moieties[bead.name]()
+            new_atom = clone(mapping_moieties[bead.name])
             cg_to_aa[bead] = new_atom
             new_atom.translate(bead.pos)
             new_molecule.add(new_atom)
