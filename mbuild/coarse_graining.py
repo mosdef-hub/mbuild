@@ -21,7 +21,8 @@ def coarse_grain(real_thing, memo=None, particle_classes=None):
     return proxy
 
 
-def reverse_map(coarse_grained, mapping_moieties, energy_minimize=True, **kwargs):
+def reverse_map(coarse_grained, mapping_moieties, energy_minimize=True, 
+        n_loops = 10, **kwargs):
     """ Reverse map an mb.Compound
 
     Parameters
@@ -32,6 +33,8 @@ def reverse_map(coarse_grained, mapping_moieties, energy_minimize=True, **kwargs
         Relate CG bead names to finer-detailed mbuild Compound
     minimize_energy : boolean, optional, default=True
         Perform energy minimization on reverse-mapped compound
+    n_loops : int, optional, default=True
+        Number of energy minimization loops to perform
 
     **kwargs : keyword arguments
         Key word arguments passed to energy_minimization
@@ -60,13 +63,20 @@ def reverse_map(coarse_grained, mapping_moieties, energy_minimize=True, **kwargs
         force_overlap(cg_to_aa[p_i],
                 from_positions=cg_to_aa[p_i].available_ports()[0],
                 to_positions=cg_to_aa[p_j].available_ports()[0])
+    # Put molecules back after energy minimization
+    for cg_particle, aa_particles in cg_to_aa.items():
+        aa_particles.translate_to(cg_particle.pos)
 
     # Iterative energy minimization
     # Energy minimize each molecule separately,
-    # compute RMSD, check tolerance, translate back to CG representation
     if energy_minimize:
-        for molecule in aa_system.children:
-            molecule.energy_minimize(**kwargs)
+        for i in range(n_loops):
+           # Put molecules back after energy minimization
+           for cg_particle, aa_particles in cg_to_aa.items():
+                aa_particles.translate_to(cg_particle.pos) 
+           for molecule in aa_system.children:
+                molecule.energy_minimize(**kwargs)
+            
     return aa_system
 
 
