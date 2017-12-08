@@ -1376,9 +1376,13 @@ class Compound(object):
 
         simulation.context.setPositions(to_parmed.positions)
         simulation.minimizeEnergy(maxIterations=steps)
-        simulation.reporters.append(PDBReporter(
-            os.path.join(tmp_dir, 'minimized.pdb'),1))
-        simulation.step(1)
+        reporter = PDBReporter(os.path.join(tmp_dir, 'minimized.pdb'),1)
+        reporter.report(simulation, simulation.context.getState(getPositions=True))
+        #import pdb
+        #pdb.set_trace()
+        #simulation.reporters.append(PDBReporter(
+            #os.path.join(tmp_dir, 'minimized.pdb'),1))
+        #simulation.step(1)
 
 
 
