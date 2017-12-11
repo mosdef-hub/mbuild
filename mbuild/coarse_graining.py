@@ -51,7 +51,6 @@ def reverse_map(coarse_grained, mapping_moieties, energy_minimize=True,
     for molecule in molecules:
         new_molecule =  Compound()
         for bead in molecule:
-            #new_atom = mapping_moieties[bead.name]()
             new_atom = clone(mapping_moieties[bead.name])
             cg_to_aa[bead] = new_atom
             new_atom.translate(bead.pos)
@@ -60,9 +59,14 @@ def reverse_map(coarse_grained, mapping_moieties, energy_minimize=True,
 
     # Go back and include bonds
     for p_i, p_j in coarse_grained.bonds():
-        force_overlap(cg_to_aa[p_i],
-                from_positions=cg_to_aa[p_i].available_ports()[0],
-                to_positions=cg_to_aa[p_j].available_ports()[0])
+        p_i_port, p_j_port = _find_matching_ports(cg_to_aa[p_i], 
+                cg_to_aa[p_j])
+        force_overlap(cg_to_aa[p_i], from_positions=p_i_port, 
+                to_positions=p_j_port)
+        #force_overlap(cg_to_aa[p_i],
+        #        from_positions=cg_to_aa[p_i].available_ports()[0],
+        #        to_positions=cg_to_aa[p_j].available_ports()[0])
+
     # Put molecules back after energy minimization
     for cg_particle, aa_particles in cg_to_aa.items():
         aa_particles.translate_to(cg_particle.pos)
@@ -78,6 +82,20 @@ def reverse_map(coarse_grained, mapping_moieties, energy_minimize=True,
                 molecule.energy_minimize(**kwargs)
             
     return aa_system
+
+def _find_matching_ports(i, j):
+    """ Find corresponding ports on two mBuild compounds"""
+    def _sort_by_name(port):
+        return port.name
+
+    i_ports = sorted(i.available_ports(), key=_sort_by_name)
+    i_port = i_ports[0]
+    j_ports = sorted(j.available_ports(), key=_sort_by_name)
+    for j_port in j_ports:
+        if j_port.name == i_port.name:
+            return i_port, j_port
+    return i_port, j_ports[0]
+
 
 
 
@@ -172,3 +190,5 @@ def _create_proxy_labels(real_thing, memo):
 
         for part in real_thing.children:
             _create_proxy_labels(part, memo)
+
+
