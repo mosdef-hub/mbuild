@@ -21,8 +21,8 @@ def coarse_grain(real_thing, memo=None, particle_classes=None):
     return proxy
 
 
-def reverse_map(coarse_grained, mapping_moieties, energy_minimize=True, 
-        n_loops = 10, **kwargs):
+def reverse_map(coarse_grained, mapping_moieties, target_structure=None,
+        energy_minimize=True, n_loops = 10, **kwargs):
     """ Reverse map an mb.Compound
 
     Parameters
@@ -31,6 +31,12 @@ def reverse_map(coarse_grained, mapping_moieties, energy_minimize=True,
         original structure
     mapping_moieties : dictionary
         Relate CG bead names to finer-detailed mbuild Compound
+    target_structure : mb.Compound, optional, default=False
+        A target atomistic structure which can be used to reconstruct 
+        bonding.
+        Bond network in the reverse-mapped structure will be completely
+        overridden by the bond network from the target atomistic structure
+        Care must be taken that atom indices match perfectly
     minimize_energy : boolean, optional, default=True
         Perform energy minimization on reverse-mapped compound
     n_loops : int, optional, default=True
@@ -58,14 +64,20 @@ def reverse_map(coarse_grained, mapping_moieties, energy_minimize=True,
         aa_system.add(new_molecule)
 
     # Go back and include bonds
-    for p_i, p_j in coarse_grained.bonds():
-        p_i_port, p_j_port = _find_matching_ports(cg_to_aa[p_i], 
-                cg_to_aa[p_j])
-        force_overlap(cg_to_aa[p_i], from_positions=p_i_port, 
-                to_positions=p_j_port)
-        #force_overlap(cg_to_aa[p_i],
-        #        from_positions=cg_to_aa[p_i].available_ports()[0],
-        #        to_positions=cg_to_aa[p_j].available_ports()[0])
+    if target_structure:
+        # Set bonds based on the target atomistic structure
+        aa_system.root.bond_graph = None
+        for i, j in target_structure.bonds():
+            aa_system.add_bond([i, j])
+    else:
+        for p_i, p_j in coarse_grained.bonds():
+            p_i_port, p_j_port = _find_matching_ports(cg_to_aa[p_i], 
+                    cg_to_aa[p_j])
+            force_overlap(cg_to_aa[p_i], from_positions=p_i_port, 
+                    to_positions=p_j_port)
+            #force_overlap(cg_to_aa[p_i],
+            #        from_positions=cg_to_aa[p_i].available_ports()[0],
+            #        to_positions=cg_to_aa[p_j].available_ports()[0])
 
     # Put molecules back after energy minimization
     for cg_particle, aa_particles in cg_to_aa.items():
