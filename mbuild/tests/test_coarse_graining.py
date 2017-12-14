@@ -22,4 +22,13 @@ class TestCoarseGraining(BaseTest):
         assert recovered.n_particles == 20
         assert recovered.n_bonds == 19
 
+    def test_reverse_map_hexane_from_target(self,propyl):
+        cg = mb.load(get_fn('hexane_cg.mol2')) 
 
+        mapping_moieties = {'Propane': propyl}
+        target_structure = mb.load(get_fn('one_hexane_aa.mol2'))
+
+        recovered = mb.reverse_map(cg, mapping_moieties, 
+                target_structure=target_structure, energy_minimize=False)
+        assert recovered.n_particles == 20
+        assert recovered.n_bonds == 19
