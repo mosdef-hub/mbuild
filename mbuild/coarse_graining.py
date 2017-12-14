@@ -65,19 +65,18 @@ def reverse_map(coarse_grained, mapping_moieties, target_structure=None,
 
     # Go back and include bonds
     if target_structure:
-        # Set bonds based on the target atomistic structure
         aa_system.root.bond_graph = None
-        for i, j in target_structure.bonds():
-            aa_system.add_bond([i, j])
+        target_traj = target_structure.to_trajectory()
+
+        for (i,j) in target_traj.topology.bonds:
+            aa_system.add_bond([aa_system[i.index], aa_system[j.index]])
+        
     else:
         for p_i, p_j in coarse_grained.bonds():
             p_i_port, p_j_port = _find_matching_ports(cg_to_aa[p_i], 
                     cg_to_aa[p_j])
             force_overlap(cg_to_aa[p_i], from_positions=p_i_port, 
                     to_positions=p_j_port)
-            #force_overlap(cg_to_aa[p_i],
-            #        from_positions=cg_to_aa[p_i].available_ports()[0],
-            #        to_positions=cg_to_aa[p_j].available_ports()[0])
 
     # Put molecules back after energy minimization
     for cg_particle, aa_particles in cg_to_aa.items():

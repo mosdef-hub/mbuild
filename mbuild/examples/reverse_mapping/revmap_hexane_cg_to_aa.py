@@ -1,6 +1,5 @@
 import mbuild as mb
 from mbuild.examples import Alkane
-#from mapping_moieties.propane_aa import Propane_aa
 
 """Here, the coarse-grained system is two hexanes, 
 each expressed as two propanes. The reverse-mapping
@@ -9,8 +8,7 @@ all-atom representations
 
 """
 coarse_grained = mb.load('two_hexane_cg.mol2')
-#mapping_moieties = {'Propane': Propane_aa()}
 mapping_moieties = {'Propane': Alkane(n=3, cap_end=False)}
 
-recovered = mb.reverse_map(coarse_grained, mapping_moieties, energy_minimize=True)
+recovered = mb.reverse_map(coarse_grained, mapping_moieties, energy_minimize=True,forcefield='oplsaa.xml' ,scale_torsions=0.10)
 recovered.save('revmap.mol2',overwrite=True)
