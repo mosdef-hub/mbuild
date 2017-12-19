@@ -205,3 +205,10 @@ class BaseTest:
                 second[0].pos, second[2].pos)
             return fccf_dihedral_init, fccf_dihedral_final
         return _connect_and_reconnect
+
+    @pytest.fixture
+    def alkane_monolayer(self):
+        from mbuild.examples import AlkaneMonolayer
+        pattern = mb.Random2DPattern(50, seed=1)
+        monolayer = AlkaneMonolayer(pattern=pattern)
+        return monolayer
