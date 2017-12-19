@@ -51,3 +51,13 @@ class TestPattern(BaseTest):
         assert(np.allclose([0, 1, 0], port.direction, atol=1e-16))
         mb.coordinate_transform.rotate(port, np.pi, [1, 0, 0])
         assert(np.allclose([0, -1, 0], port.direction, atol=1e-15))
+
+    def test_access_labels(self):
+        port = mb.Port()
+        compound = mb.Compound()
+        compound.add(port, label='foo')
+        assert port.access_labels == ["['foo']"]
+
+        compound2 = mb.Compound(name='C2')
+        compound2.add(compound, label='bar')
+        assert port.access_labels == ["['bar']['foo']"]
