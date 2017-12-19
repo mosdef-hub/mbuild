@@ -102,7 +102,7 @@ class Port(Compound):
                                if val == referrer]
             port_labels = [key for key, val in referrer.labels.items()
                            if val == self]
-            if referrer == self.root:
+            if referrer is self.root:
                 for label in port_labels:
                     access_labels.append("['{}']".format(label))
             for label in itertools.product(referrer_labels, port_labels):
