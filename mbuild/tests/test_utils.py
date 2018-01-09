@@ -1,4 +1,4 @@
-import filecmp
+import difflib
 import pytest
 from mbuild.tests.base_test import BaseTest
 from mbuild.utils.io import get_fn
@@ -15,4 +15,8 @@ class TestUtils(BaseTest):
     def test_structure_reproducibility(self, alkane_monolayer):
         filename = 'monolayer-tmp.pdb'
         alkane_monolayer.save(filename)
-        assert filecmp.cmp(get_fn('monolayer.pdb'), filename)
+        with open(get_fn('monolayer.pdb')) as file1:
+            with open('monolayer-tmp.pdb') as file2:
+                diff = difflib.ndiff(file1.readlines(), file2.readlines())
+        changes = [l for l in diff if l.startswith('+ ') or l.startswith('- ')]
+        assert not changes
