@@ -528,4 +528,8 @@ class Lattice(object):
                     'default boxes. Only rectangular lattices are valid '
                     'at this time.')
 
+        # if coordinates are below a certain threshold, set to 0
+        tolerance = 1e-12
+        ret_lattice.xyz_with_ports[ret_lattice.xyz_with_ports <= tolerance] = 0.
+
         return ret_lattice
