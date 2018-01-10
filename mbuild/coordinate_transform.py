@@ -56,6 +56,8 @@ def force_overlap(move_this, from_positions, to_positions, add_bond=True):
             else:
                 from_positions.anchor.parent.add_bond((from_positions.anchor, to_positions.anchor))
                 to_positions.anchor.parent.add_bond((from_positions.anchor, to_positions.anchor))
+                from_positions.anchor.parent.remove(from_positions)
+                to_positions.anchor.parent.remove(to_positions)
 
 
 class CoordinateTransform(object):
