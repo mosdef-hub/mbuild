@@ -14,6 +14,12 @@ class Port(Compound):
     ----------
     anchor : mb.Particle, optional, default=None
         A Particle associated with the port. Used to form bonds.
+    orientation : array-like, shape=(3,), optional, default=[0, 1, 0]
+        Vector along which to orient the port
+    separation : float, optional, default=0
+        Distance to shift port along the orientation vector from the anchor
+        particle position. If no anchor is provided, the port will be shifted
+        from the origin.
 
     Attributes
     ----------
@@ -34,6 +40,11 @@ class Port(Compound):
         super(Port, self).__init__(name='Port', port_particle=True)
         self.anchor = anchor
 
+        default_direction = np.array([0, 1, 0])
+        if orientation is None:
+            orientation = [0, 1, 0]
+        orientation = np.asarray(orientation)
+
         up = Compound(name='subport', port_particle=True)
         up.add(Particle(name='G', pos=[0.005, 0.0025, -0.0025],
                         port_particle=True), 'middle')
@@ -45,25 +56,21 @@ class Port(Compound):
                         port_particle=True), 'right')
 
         down = clone(up)
-        down.rotate(np.pi, [0, 0, 1])
-
         self.add(up, 'up')
         self.add(down, 'down')
         self.used = False
 
-        if orientation is None:
-            orientation = [0, 1, 0]
-
-        default_direction = [0, 1, 0]
-        if np.array_equal(
-                np.asarray(default_direction), unit_vector(-np.asarray(orientation))):
-            self.rotate(np.pi, [1, 0, 0])
-        elif np.array_equal(
-                np.asarray(default_direction), unit_vector(np.asarray(orientation))):
-            pass
+        if np.allclose(
+                default_direction, unit_vector(-orientation)):
+            down.rotate(np.pi, [0, 0, 1])
+            self.rotate(np.pi, [0, 0, 1])
+        elif np.allclose(
+                default_direction, unit_vector(orientation)):
+            down.rotate(np.pi, [0, 0, 1])
         else:
             normal = np.cross(default_direction, orientation)
             self.rotate(angle(default_direction, orientation), normal)
+            down.rotate(np.pi, normal)
 
         if anchor:
             self.translate_to(anchor.pos)

@@ -31,13 +31,14 @@ test:
     - nbformat
     - ipykernel
     - ipyext
+    - pytest-ignore-flaky
 
   source_files:
     - mbuild/examples/*
 
   commands:
     - set LNAME=mosdef
-    - py.test -v --pyargs mbuild
+    - pytest --ignore-flaky -v --pyargs mbuild
 
 about:
   home: http://mosdef-hub.github.io/mbuild

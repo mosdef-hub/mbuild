@@ -16,3 +16,4 @@ ipyext
 python-coveralls
 pytest-cov
 pytest-faulthandler
+pytest-ignore-flaky
