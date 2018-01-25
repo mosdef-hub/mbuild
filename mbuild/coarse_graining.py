@@ -80,38 +80,11 @@ def reverse_map(coarse_grained, mapping_moieties, target_structure=None,
             aa_system.add_bond([aa_system[i.index], aa_system[j.index]])
         
     else:
-        # What if i look at bonding particle-by-particle?
         for p_i, p_j in coarse_grained.bonds():
-            # So p_i is supposed to bond to p_i_partners
-            p_i_bonds = [bond for bond in coarse_grained.bonds() if 
-                    p_i in bond]
-            # Sort through each of the bonding partners to find the correct matches
-            bonding_candidates = _find_all_matching_ports(cg_to_aa,
-                    p_i, p_i_bonds)
-            # Now that we know all the bonding port candidates, 
-            # Find the ports with the fewest common names
-            re_arranged = sorted(bonding_candidates, key=lambda x: len(x[2]))
-
-            # Take the first bonding pair (bonding partners with the fewest
-            # common names, and bond them
-            i_port = [port for port in cg_to_aa[bonding_candidates[0][0]].available_ports() if port.name==bonding_candidates[0][2]]
-            j_port = [port for port in cg_to_aa[bonding_candidates[0][1]].available_ports() if port.name==bonding_candidates[0][2]]
-            if len(i_port) ==0 or len(j_port ==0):
-                print("Bonding issue with {}".format(p_i))
-            force_overlap(cg_to_aa[p_i], from_positions=i_port[0], to_positions=j_port[0])
-
-
-
-
-
-        # This is the stuff that was working
-        #for p_i, p_j in coarse_grained.bonds():
-        #    p_i_port, p_j_port = _find_matching_ports(cg_to_aa[p_i], 
-        #            cg_to_aa[p_j])
-        #    print("{} and {}: {} and {}".format(p_i.name, p_j.name,
-        #        p_i_port.name, p_j_port.name))
-        #    force_overlap(cg_to_aa[p_i], from_positions=p_i_port, 
-        #            to_positions=p_j_port)
+            p_i_port, p_j_port = _find_matching_ports(cg_to_aa[p_i], 
+                    cg_to_aa[p_j])
+            force_overlap(cg_to_aa[p_i], from_positions=p_i_port, 
+                    to_positions=p_j_port)
 
     # Put molecules back after energy minimization
     for cg_particle, aa_particles in cg_to_aa.items():
@@ -151,11 +124,6 @@ def _find_all_matching_ports(cg_to_aa, p_i, p_i_bonds):
 
 def _find_matching_ports(i, j):
     """ Find corresponding ports on two mBuild compounds"""
-    def _sort_by_name(port):
-        return port.name
-
-    #i_port = i_ports[0]
-    #j_ports = sorted(j.available_ports(), key=_sort_by_name)
 
     i_ports = i.available_ports()
     j_ports = j.available_ports()
