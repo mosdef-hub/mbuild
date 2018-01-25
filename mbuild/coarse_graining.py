@@ -51,6 +51,7 @@ def reverse_map(coarse_grained, mapping_moieties, target_structure=None,
 
     """
     # Get molecular information through bonding 
+    # molecules is a list where each item is a list of bonded components
     molecules = coarse_grained.bond_graph.connected_components()
     
     aa_system = Compound()
@@ -58,9 +59,12 @@ def reverse_map(coarse_grained, mapping_moieties, target_structure=None,
     cg_to_aa = OrderedDict()
 
     # For each bead, replace it with the appropriate mb compound
+    # Iterate through each molecule (set of particles that are bonded together)
     for molecule in molecules:
-        new_molecule =  Compound()
-        for bead in molecule:
+        new_molecule = Compound()
+        # Rather than sort through the molecule, which may be unsorted
+        # Look at the parent's particles, which will be sorted
+        for bead in molecule[0].parent.particles():
             new_atom = clone(mapping_moieties[bead.name])
             cg_to_aa[bead] = new_atom
             new_atom.translate(bead.pos)
