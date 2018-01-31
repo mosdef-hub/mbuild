@@ -35,13 +35,20 @@ PACKMOL_BOX = """
 structure {0}
     number {1:d}
     inside box {2:.3f} {3:.3f} {4:.3f} {5:.3f} {6:.3f} {7:.3f}
+    {8}
 end structure
+"""
+
+PACKMOL_CONSTRAIN = """
+constrain_rotation x 0. 0.
+constrain_rotation y 0. 0.
+constrain_rotation z 0. 0.
 """
 
 
 def fill_box(compound, n_compounds=None, box=None, density=None, overlap=0.2,
              seed=12345, edge=0.2, compound_ratio=None,
-             aspect_ratio=None, temp_file=None):
+             aspect_ratio=None, fix_orientation=False, temp_file=None):
     """Fill a box with a compound using packmol.
 
     Two arguments of `n_compounds, box, and density` must be specified.
@@ -86,13 +93,16 @@ def fill_box(compound, n_compounds=None, box=None, density=None, overlap=0.2,
     aspect_ratio : list of float
         If a non-cubic box is desired, the ratio of box lengths in the x, y,
         and z directions.
+    fix_orientation : bool or list of bools
+        Specify if compounds should be rotated when filling box,
+        default=False.
     temp_file : str, default=None
         File name to write PACKMOL's raw output to.
 
     Returns
     -------
     filled : mb.Compound
-    
+
     """
     _check_packmol(PACKMOL)
 
@@ -108,11 +118,18 @@ def fill_box(compound, n_compounds=None, box=None, density=None, overlap=0.2,
         compound = [compound]
     if n_compounds is not None and not isinstance(n_compounds, (list, set)):
         n_compounds = [n_compounds]
+    if not isinstance(fix_orientation, (list, set)):
+        fix_orientation = [fix_orientation]*len(n_compounds)
 
     if compound is not None and n_compounds is not None:
         if len(compound) != len(n_compounds):
             msg = ("`compound` and `n_compounds` must be of equal length.")
             raise ValueError(msg)
+
+    if len(compound) != len(fix_orientation):
+        msg = ("`compound`, `n_compounds`, and `fix_orientation` must be of equal length.")
+        raise ValueError(msg)
+
 
     if density is not None:
         if box is None and n_compounds is not None:
@@ -153,21 +170,22 @@ def fill_box(compound, n_compounds=None, box=None, density=None, overlap=0.2,
     box_mins = box.mins * 10
     box_maxs = box.maxs * 10
     overlap *= 10
-    
-    # Apply edge buffer 
+
+    # Apply edge buffer
     box_maxs -= edge * 10
 
     # Build the input file for each compound and call packmol.
     filled_pdb = tempfile.mkstemp(suffix='.pdb')[1]
     input_text = PACKMOL_HEADER.format(overlap, filled_pdb, seed)
 
-    for comp, m_compounds in zip(compound, n_compounds):
+    for comp, m_compounds, rotate in zip(compound, n_compounds, fix_orientation):
         m_compounds = int(m_compounds)
         compound_pdb = tempfile.mkstemp(suffix='.pdb')[1]
         comp.save(compound_pdb, overwrite=True)
         input_text += PACKMOL_BOX.format(compound_pdb, m_compounds,
                            box_mins[0], box_mins[1], box_mins[2],
-                           box_maxs[0], box_maxs[1], box_maxs[2])
+                           box_maxs[0], box_maxs[1], box_maxs[2],
+                           PACKMOL_CONSTRAIN if rotate else "")
 
     _run_packmol(input_text, filled_pdb, temp_file)
 
@@ -306,8 +324,8 @@ def solvate(solute, solvent, n_solvent, box, overlap=0.2,
     box_maxs = box.maxs * 10
     overlap *= 10
     center_solute = (box_maxs + box_mins) / 2
-    
-    # Apply edge buffer 
+
+    # Apply edge buffer
     box_maxs -= edge * 10
 
     # Build the input file for each compound and call packmol.
