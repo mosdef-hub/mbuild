@@ -126,9 +126,10 @@ def fill_box(compound, n_compounds=None, box=None, density=None, overlap=0.2,
             msg = ("`compound` and `n_compounds` must be of equal length.")
             raise ValueError(msg)
 
-    if len(compound) != len(fix_orientation):
-        msg = ("`compound`, `n_compounds`, and `fix_orientation` must be of equal length.")
-        raise ValueError(msg)
+    if compound is not None:
+        if len(compound) != len(fix_orientation):
+            msg = ("`compound`, `n_compounds`, and `fix_orientation` must be of equal length.")
+            raise ValueError(msg)
 
 
     if density is not None:
@@ -200,7 +201,7 @@ def fill_box(compound, n_compounds=None, box=None, density=None, overlap=0.2,
 
 
 def fill_region(compound, n_compounds, region, overlap=0.2,
-                seed=12345, edge=0.2, temp_file=None):
+                seed=12345, edge=0.2, fix_orientation=False, temp_file=None):
     """Fill a region of a box with a compound using packmol.
 
     Parameters
@@ -219,6 +220,9 @@ def fill_region(compound, n_compounds, region, overlap=0.2,
         Buffer at the edge of the region to not place molecules. This is
         necessary in some systems because PACKMOL does not account for
         periodic boundary conditions in its optimization.
+    fix_orientation : bool or list of bools
+        Specify if compounds should be rotated when filling box,
+        default=False.
     temp_file : str, default=None
         File name to write PACKMOL's raw output to.
 
@@ -235,11 +239,18 @@ def fill_region(compound, n_compounds, region, overlap=0.2,
         compound = [compound]
     if not isinstance(n_compounds, (list, set)):
         n_compounds = [n_compounds]
+    if not isinstance(fix_orientation, (list, set)):
+        fix_orientation = [fix_orientation]*len(n_compounds)
 
     if compound is not None and n_compounds is not None:
         if len(compound) != len(n_compounds):
             msg = ("`compound` and `n_compounds` must be of equal length.")
             raise ValueError(msg)
+    if compound is not None:
+        if len(compound) != len(fix_orientation):
+            msg = ("`compound`, `n_compounds`, and `fix_orientation` must be of equal length.")
+            raise ValueError(msg)
+
 
     # See if region is a single region or list
     if isinstance(region, Box): # Cannot iterate over boxes
@@ -255,7 +266,7 @@ def fill_region(compound, n_compounds, region, overlap=0.2,
     filled_pdb = tempfile.mkstemp(suffix='.pdb')[1]
     input_text = PACKMOL_HEADER.format(overlap, filled_pdb, seed)
 
-    for comp, m_compounds, reg in zip(compound, n_compounds, region):
+    for comp, m_compounds, reg, rotate in zip(compound, n_compounds, region, fix_orientation):
         m_compounds = int(m_compounds)
         compound_pdb = tempfile.mkstemp(suffix='.pdb')[1]
         comp.save(compound_pdb, overwrite=True)
@@ -264,7 +275,8 @@ def fill_region(compound, n_compounds, region, overlap=0.2,
         reg_maxs -= edge * 10 # Apply edge buffer
         input_text += PACKMOL_BOX.format(compound_pdb, m_compounds,
                                         reg_mins[0], reg_mins[1], reg_mins[2],
-                                        reg_maxs[0], reg_maxs[1], reg_maxs[2])
+                                        reg_maxs[0], reg_maxs[1], reg_maxs[2],
+                                        PACKMOL_CONSTRAIN if rotate else "")
 
     _run_packmol(input_text, filled_pdb, temp_file)
 
@@ -278,7 +290,7 @@ def fill_region(compound, n_compounds, region, overlap=0.2,
 
 
 def solvate(solute, solvent, n_solvent, box, overlap=0.2,
-            seed=12345, edge=0.2, temp_file=None):
+            seed=12345, edge=0.2, fix_orientation=False, temp_file=None):
     """Solvate a compound in a box of solvent using packmol.
 
     Parameters
@@ -299,6 +311,9 @@ def solvate(solute, solvent, n_solvent, box, overlap=0.2,
         Buffer at the edge of the box to not place molecules. This is necessary
         in some systems because PACKMOL does not account for periodic boundary
         conditions in its optimization.
+    fix_orientation : bool
+        Specify if solvent should be rotated when filling box,
+        default=False.
     temp_file : str, default=None
         File name to write PACKMOL's raw output to.
 
@@ -314,10 +329,13 @@ def solvate(solute, solvent, n_solvent, box, overlap=0.2,
         solvent = [solvent]
     if not isinstance(n_solvent, (list, set)):
         n_solvent = [n_solvent]
+    if not isinstance(fix_orientation, (list, set)):
+        fix_orientation = [fix_orientation]
 
     if len(solvent) != len(n_solvent):
         msg = ("`n_solvent` and `n_solvent` must be of equal length.")
         raise ValueError(msg)
+
 
     # In angstroms for packmol.
     box_mins = box.mins * 10
@@ -335,14 +353,14 @@ def solvate(solute, solvent, n_solvent, box, overlap=0.2,
     input_text = (PACKMOL_HEADER.format(overlap, solvated_pdb, seed) +
                   PACKMOL_SOLUTE.format(solute_pdb, *center_solute))
 
-    for solv, m_solvent in zip(solvent, n_solvent):
+    for solv, m_solvent, rotate in zip(solvent, n_solvent, fix_orientation):
         m_solvent = int(m_solvent)
         solvent_pdb = tempfile.mkstemp(suffix='.pdb')[1]
         solv.save(solvent_pdb, overwrite=True)
         input_text += PACKMOL_BOX.format(solvent_pdb, m_solvent,
                            box_mins[0], box_mins[1], box_mins[2],
-                           box_maxs[0], box_maxs[1], box_maxs[2])
-
+                           box_maxs[0], box_maxs[1], box_maxs[2],
+                           PACKMOL_CONSTRAIN if rotate else "")
     _run_packmol(input_text, solvated_pdb, temp_file)
 
     # Create the topology and update the coordinates.
