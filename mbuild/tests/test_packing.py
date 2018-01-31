@@ -132,6 +132,9 @@ class TestPacking(BaseTest):
             mb.solvate(solute=h2o, solvent=[h2o], n_solvent=[10, 10], box=[2, 2, 2])
         with pytest.raises(ValueError):
             mb.fill_region(h2o, n_compounds=[10, 10], region=[2, 2, 2, 4, 4, 4])
+        with pytest.raises(ValueError):
+            mb.fill_box(compound=[h2o, h2o], n_compounds=[10], density=1000,
+                        fix_orientation=[True, True, True])
 
     def test_write_temp_file(self, h2o):
         cwd = os.getcwd() # Must keep track of the temp dir that pytest creates
