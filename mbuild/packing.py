@@ -119,7 +119,7 @@ def fill_box(compound, n_compounds=None, box=None, density=None, overlap=0.2,
     if n_compounds is not None and not isinstance(n_compounds, (list, set)):
         n_compounds = [n_compounds]
     if not isinstance(fix_orientation, (list, set)):
-        fix_orientation = [fix_orientation]*len(n_compounds)
+        fix_orientation = [fix_orientation]*len(compound)
 
     if compound is not None and n_compounds is not None:
         if len(compound) != len(n_compounds):
@@ -240,7 +240,7 @@ def fill_region(compound, n_compounds, region, overlap=0.2,
     if not isinstance(n_compounds, (list, set)):
         n_compounds = [n_compounds]
     if not isinstance(fix_orientation, (list, set)):
-        fix_orientation = [fix_orientation]*len(n_compounds)
+        fix_orientation = [fix_orientation]*len(compound)
 
     if compound is not None and n_compounds is not None:
         if len(compound) != len(n_compounds):
@@ -330,7 +330,7 @@ def solvate(solute, solvent, n_solvent, box, overlap=0.2,
     if not isinstance(n_solvent, (list, set)):
         n_solvent = [n_solvent]
     if not isinstance(fix_orientation, (list, set)):
-        fix_orientation = [fix_orientation]
+        fix_orientation = [fix_orientation] * len(solvent)
 
     if len(solvent) != len(n_solvent):
         msg = ("`n_solvent` and `n_solvent` must be of equal length.")
