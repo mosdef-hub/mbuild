@@ -23,6 +23,7 @@ requirements:
     - parmed
     - mdtraj
     - foyer
+    - openmm
 
 test:
   requires:
