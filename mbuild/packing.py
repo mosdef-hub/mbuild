@@ -94,7 +94,7 @@ def fill_box(compound, n_compounds=None, box=None, density=None, overlap=0.2,
         If a non-cubic box is desired, the ratio of box lengths in the x, y,
         and z directions.
     fix_orientation : bool or list of bools
-        Specify if compounds should be rotated when filling box,
+        Specify that compounds should not be rotated when filling the box,
         default=False.
     temp_file : str, default=None
         File name to write PACKMOL's raw output to.
@@ -221,7 +221,7 @@ def fill_region(compound, n_compounds, region, overlap=0.2,
         necessary in some systems because PACKMOL does not account for
         periodic boundary conditions in its optimization.
     fix_orientation : bool or list of bools
-        Specify if compounds should be rotated when filling box,
+        Specify that compounds should not be rotated when filling the box,
         default=False.
     temp_file : str, default=None
         File name to write PACKMOL's raw output to.
@@ -312,7 +312,7 @@ def solvate(solute, solvent, n_solvent, box, overlap=0.2,
         in some systems because PACKMOL does not account for periodic boundary
         conditions in its optimization.
     fix_orientation : bool
-        Specify if solvent should be rotated when filling box,
+        Specify if solvent should not be rotated when filling box,
         default=False.
     temp_file : str, default=None
         File name to write PACKMOL's raw output to.
