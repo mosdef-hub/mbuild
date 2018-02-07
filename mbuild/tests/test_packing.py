@@ -152,3 +152,12 @@ class TestPacking(BaseTest):
     def test_packmol_warning(self, h2o):
         with pytest.warns(UserWarning):
             filled = mb.fill_box(h2o, n_compounds=10, box=[1, 1, 1], overlap=100)
+
+    def test_rotate(self, h2o):
+        filled = mb.fill_box(h2o, 2, box=[1, 1, 1], fix_orientation=True)
+        w0 = filled.xyz[:3]
+        w1 = filled.xyz[3:]
+        # Translate w0 and w1 to COM
+        w0 -= w0.sum(0) / len(w0)
+        w1 -= w1.sum(0) / len(w1)
+        assert np.isclose(w0, w1).all()
