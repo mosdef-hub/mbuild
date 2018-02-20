@@ -161,3 +161,12 @@ class TestPacking(BaseTest):
         w0 -= w0.sum(0) / len(w0)
         w1 -= w1.sum(0) / len(w1)
         assert np.isclose(w0, w1).all()
+
+    def test_no_rotate(self, h2o):
+        filled = mb.fill_box([h2o, h2o], [1, 1], box=[1, 1, 1], fix_orientation=[False, True])
+        w0 = filled.xyz[:3]
+        w1 = filled.xyz[3:]
+        # Translate w0 and w1 to COM
+        w0 -= w0.sum(0) / len(w0)
+        w1 -= w1.sum(0) / len(w1)
+        assert np.isclose(w0, w1).all() is not True
