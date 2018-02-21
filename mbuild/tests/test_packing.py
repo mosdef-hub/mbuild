@@ -1,3 +1,5 @@
+import os
+
 import pytest
 import numpy as np
 
@@ -16,10 +18,23 @@ class TestPacking(BaseTest):
         filled = mb.fill_box(h2o, n_compounds=1000, density=1000)
         assert [3.1042931 < period < 3.1042932 for period in filled.periodicity]
 
+    def test_fill_box_aspect_ratio(self, h2o):
+        filled = mb.fill_box(h2o, n_compounds=1000,
+                density=1000, aspect_ratio=[1, 2, 1])
+        assert filled.periodicity[0]/filled.periodicity[1] == 0.5
+        assert filled.periodicity[1]/filled.periodicity[2] == 2
+
     def test_fill_box_density_n_compounds(self, h2o):
         filled = mb.fill_box(h2o, density=1000,
                              box=mb.Box([3.1042931, 3.1042931, 3.1042931]))
         assert filled.n_particles == 3000
+
+    def test_fill_box_compound_ratio(self, h2o, ethane):
+        filled = mb.fill_box(compound=[h2o, ethane], density=800,
+                compound_ratio=[2, 1], box=[2, 2, 2, 4, 4, 4])
+        n_ethane = len([c for c in filled.children if c.name == 'Ethane'])
+        n_water = len([c for c in filled.children if c.name == 'H2O'])
+        assert n_water / n_ethane == 2
 
     def test_fill_region(self, h2o):
         filled = mb.fill_region(h2o, n_compounds=50,
@@ -101,3 +116,36 @@ class TestPacking(BaseTest):
             filled = mb.fill_box(h2o, n_compounds=50, box=[2, 2])
         with pytest.raises(MBuildError):
             filled = mb.fill_box(h2o, n_compounds=50, box=[2, 2, 2, 2])
+
+    def test_bad_args(self, h2o):
+        with pytest.raises(ValueError):
+            mb.fill_box(h2o, n_compounds=10)
+        with pytest.raises(ValueError):
+            mb.fill_box(h2o, density=1000)
+        with pytest.raises(ValueError):
+            mb.fill_box(h2o, box=[2, 2, 2])
+        with pytest.raises(ValueError):
+            mb.fill_box(h2o, n_compounds=10, density=1000, box=[2, 2, 2])
+        with pytest.raises(ValueError):
+            mb.fill_box(compound=[h2o, h2o], n_compounds=[10], density=1000)
+        with pytest.raises(ValueError):
+            mb.solvate(solute=h2o, solvent=[h2o], n_solvent=[10, 10], box=[2, 2, 2])
+        with pytest.raises(ValueError):
+            mb.fill_region(h2o, n_compounds=[10, 10], region=[2, 2, 2, 4, 4, 4])
+
+    def test_write_temp_file(self, h2o):
+        cwd = os.getcwd() # Must keep track of the temp dir that pytest creates
+        filled = mb.fill_box(h2o, n_compounds=10, box=[4, 4, 4], temp_file='temp_file1.pdb')
+        region = mb.fill_region(h2o, 10, [2, 2, 2, 4, 4, 4], temp_file='temp_file2.pdb')
+        solvated = mb.solvate(filled, h2o, 10, box=[4, 4, 4], temp_file='temp_file3.pdb')
+        assert os.path.isfile(os.path.join(cwd, 'temp_file1.pdb'))
+        assert os.path.isfile(os.path.join(cwd, 'temp_file2.pdb'))
+        assert os.path.isfile(os.path.join(cwd, 'temp_file3.pdb'))
+
+    def test_packmol_error(self, h2o):
+        with pytest.raises(RuntimeError):
+            filled = mb.fill_box(h2o, n_compounds=10, box=[0, 0, 0])
+
+    def test_packmol_warning(self, h2o):
+        with pytest.warns(UserWarning):
+            filled = mb.fill_box(h2o, n_compounds=10, box=[1, 1, 1], overlap=100)

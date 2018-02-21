@@ -51,3 +51,33 @@ class TestPattern(BaseTest):
         assert(np.allclose([0, 1, 0], port.direction, atol=1e-16))
         mb.coordinate_transform.rotate(port, np.pi, [1, 0, 0])
         assert(np.allclose([0, -1, 0], port.direction, atol=1e-15))
+
+    def test_access_labels(self):
+        port = mb.Port()
+        compound = mb.Compound()
+        compound.add(port, label='foo')
+        assert port.access_labels == ["['foo']"]
+
+        compound2 = mb.Compound(name='C2')
+        compound2.add(compound, label='bar')
+        assert port.access_labels == ["['bar']['foo']"]
+
+    def test_up_down_reverse_orientation_axes(self):
+        for vector in [[1, 0, 0], [0, 1, 0], [0, 0, 1]]:
+            port1 = mb.Port(orientation=vector)
+            port2 = mb.Port(orientation=-np.array(vector))
+            assert np.allclose(port1['up'].xyz_with_ports,
+                               port2['down'].xyz_with_ports)
+            assert np.allclose(port1['down'].xyz_with_ports,
+                               port2['up'].xyz_with_ports)
+
+    def test_up_down_reverse_orientation_random(self):
+        np.random.seed(84)
+        for _ in range(15):
+            vector = np.random.random(3) - 0.5
+            port1 = mb.Port(orientation=vector)
+            port2 = mb.Port(orientation=-vector)
+            assert np.allclose(port1['up'].xyz_with_ports,
+                               port2['down'].xyz_with_ports)
+            assert np.allclose(port1['down'].xyz_with_ports,
+                               port2['up'].xyz_with_ports)

@@ -5,9 +5,8 @@ from __future__ import print_function
 import os
 import shutil
 
-from sphinx.util.compat import Directive
 from docutils import nodes
-from docutils.parsers.rst import directives
+from docutils.parsers.rst import Directive, directives
 import nbformat
 from nbconvert import HTMLExporter, PythonExporter
 

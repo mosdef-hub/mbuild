@@ -6,6 +6,7 @@ import pytest
 
 import mbuild as mb
 from mbuild.exceptions import MBuildError
+from mbuild.utils.geometry import calc_dihedral
 from mbuild.utils.io import get_fn, has_intermol, has_openbabel
 from mbuild.tests.base_test import BaseTest
 
@@ -133,12 +134,12 @@ class TestCompound(BaseTest):
         with pytest.raises(MBuildError):
             ethane.pos = [0, 0, 0]
 
-    def test_xyz(self, ethane):
-        xyz = ethane.xyz
-        assert xyz.shape == (8, 3)
+    def test_xyz(self, ch3):
+        xyz = ch3.xyz
+        assert xyz.shape == (4, 3)
 
-        xyz = ethane.xyz_with_ports
-        assert xyz.shape == (24, 3)
+        xyz = ch3.xyz_with_ports
+        assert xyz.shape == (12, 3)
 
     def test_particles_by_name(self, ethane):
         assert sum(1 for _ in ethane.particles()) == 8
@@ -189,7 +190,7 @@ class TestCompound(BaseTest):
         assert ethane.n_particles == 0
         assert ethane.n_bonds == 0
         assert len(ethane.children) == 2
-        assert len(ethane.children[0].children) == 1  # Still contains a port
+        assert len(ethane.children[0].children) == 7  # Still contains ports
 
     def test_remove_many(self, ethane):
         ethane.remove([ethane.children[0], ethane.children[1]])
@@ -632,3 +633,47 @@ class TestCompound(BaseTest):
 
     def test_siliane_bond_number(self, silane):
         assert silane.n_bonds == 4
+
+    def test_add_bond_remove_ports(self, hydrogen):
+        h_clone = mb.clone(hydrogen)
+        h2 = mb.Compound(subcompounds=(hydrogen, h_clone))
+        assert len(h2.all_ports()) == 2
+        assert len(hydrogen.all_ports()) == 1
+        assert len(h_clone.all_ports()) == 1
+
+        mb.force_overlap(h_clone, h_clone['up'], hydrogen['up'])
+        assert len(h2.all_ports()) == 0
+        assert len(hydrogen.all_ports()) == 0
+        assert len(h_clone.all_ports()) == 0
+
+    def test_remove_bond_add_ports(self, hydrogen):
+        h_clone = mb.clone(hydrogen)
+        h2 = mb.Compound(subcompounds=(hydrogen, h_clone))
+        mb.force_overlap(h_clone, h_clone['up'], hydrogen['up'])
+        h2.remove_bond((h2[0], h2[1]))
+        assert len(h2.all_ports()) == 2
+        assert len(hydrogen.all_ports()) == 1
+        assert len(h_clone.all_ports()) == 1
+
+    def test_reconnect_keeps_structure_x(self, chf, connect_and_reconnect):
+        bond_vector = np.array([1, 0, 0]) 
+        angle1, angle2 = connect_and_reconnect(chf, bond_vector)
+        assert np.isclose(angle1, angle2, atol=1e-6)
+
+    def test_reconnect_keeps_structure_y(self, chf, connect_and_reconnect):
+        chf.spin(np.pi/2, [1, 0, 0]) 
+        bond_vector = np.array([0, 1, 0]) 
+        angle1, angle2 = connect_and_reconnect(chf, bond_vector)
+        assert np.isclose(angle1, angle2, atol=1e-6)
+
+    def test_reconnect_keeps_structure_z(self, chf, connect_and_reconnect):
+        bond_vector = np.array([0, 0, 1]) 
+        angle1, angle2 = connect_and_reconnect(chf, bond_vector)
+        assert np.isclose(angle1, angle2, atol=1e-6)
+
+    def test_reconnect_keeps_structure_random(self, chf, connect_and_reconnect):
+        np.random.seed(92)
+        for _ in range(5):
+            bond_vector = np.random.random(3) - 0.5 
+            angle1, angle2 = connect_and_reconnect(chf, bond_vector)
+            assert np.isclose(angle1, angle2, atol=1e-6)

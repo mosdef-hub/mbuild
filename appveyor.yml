@@ -3,7 +3,7 @@ environment:
     PYTHONUNBUFFERED: 1
 
   matrix:
-    - PYTHON: "C:\\Miniconda3-x64"
+    - PYTHON: "C:\\Miniconda36-x64"
       CONDA_PY: "35"
       ARCH: "64"
 
@@ -13,6 +13,7 @@ install:
   - conda config --add channels janschulz
   - conda config --add channels glotzer
   - conda config --add channels bioconda
+  - conda config --add channels conda-forge
   - conda config --add channels mosdef
   - conda update -yq --all
   - conda install -yq conda-build jinja2
