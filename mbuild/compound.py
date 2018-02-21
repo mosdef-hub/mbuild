@@ -13,11 +13,11 @@ from warnings import warn
 from mbuild.utils.decorators import deprecated
 
 import mdtraj as md
+from mdtraj.core.element import get_by_symbol
 import numpy as np
 from oset import oset as OrderedSet
 import parmed as pmd
 from parmed.periodic_table import AtomicNum, element_by_name, Mass
-import simtk.openmm.app.element as elem
 from six import integer_types, string_types
 
 from mbuild.bond_graph import BondGraph
@@ -1480,7 +1480,7 @@ class Compound(object):
 
         for particle in self.particles():
             try:
-                elem.get_by_symbol(particle.name)
+                get_by_symbol(particle.name)
             except KeyError:
                 try:
                     elem.get_by_symbol(particle.name[1:2])
@@ -1798,7 +1798,6 @@ class Compound(object):
         mdtraj.Topology : Details on the mdtraj Topology object
 
         """
-        from mdtraj.core.element import get_by_symbol
         from mdtraj.core.topology import Topology
 
         if isinstance(chains, string_types):
