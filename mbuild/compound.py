@@ -25,6 +25,7 @@ from mbuild.exceptions import MBuildError
 from mbuild.formats.hoomdxml import write_hoomdxml
 from mbuild.formats.lammpsdata import write_lammpsdata
 from mbuild.formats.gsdwriter import write_gsd
+from mbuild.formats.xyzwriter import write_xyz
 from mbuild.periodic_kdtree import PeriodicCKDTree
 from mbuild.utils.io import run_from_ipython, import_
 from mbuild.coordinate_transform import _translate, _rotate
@@ -1329,6 +1330,7 @@ class Compound(object):
         --------
         formats.gsdwrite.write_gsd : Write to GSD format
         formats.hoomdxml.write_hoomdxml : Write to Hoomd XML format
+        formats.xyzwriter.write_xyz : Write to XYZ format
         formats.lammpsdata.write_lammpsdata : Write to LAMMPS data format
 
         """
@@ -1341,6 +1343,7 @@ class Compound(object):
         # Savers supported by mbuild.formats
         savers = {'.hoomdxml': write_hoomdxml,
                   '.gsd': write_gsd,
+                  '.xyz': write_xyz,
                   '.lammps': write_lammpsdata,
                   '.lmp': write_lammpsdata}
 
