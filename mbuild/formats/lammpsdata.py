@@ -8,10 +8,12 @@ from mbuild import Box
 from mbuild.utils.conversion import RB_to_OPLS
 from mbuild.utils.sorting import natural_sort
 
+import sys
+
 __all__ = ['write_lammpsdata']
 
 
-def write_lammpsdata(structure, filename):
+def write_lammpsdata(structure, filename, atomstyle):
     """Output a LAMMPS data file.
     
     Outputs a LAMMPS data file in the 'full' atom style format. Assumes use
@@ -24,6 +26,8 @@ def write_lammpsdata(structure, filename):
         ParmEd structure object
     filename : str
         Path of the output file
+    atomstyle: str
+        Style of atoms to use in LAMMPS simulation
 
     Notes
     -----
@@ -100,17 +104,19 @@ def write_lammpsdata(structure, filename):
     with open(filename, 'w') as data:
         data.write(filename+' - created by mBuild\n\n')
         data.write('{:d} atoms\n'.format(len(structure.atoms)))
-        data.write('{:d} bonds\n'.format(len(bonds)))
-        data.write('{:d} angles\n'.format(len(angles)))
-        data.write('{:d} dihedrals\n\n'.format(len(dihedrals)))
+        if atomstyle == 'full' or atomstyle == 'molecular':
+            data.write('{:d} bonds\n'.format(len(bonds)))
+            data.write('{:d} angles\n'.format(len(angles)))
+            data.write('{:d} dihedrals\n\n'.format(len(dihedrals)))
 
         data.write('{:d} atom types\n'.format(len(set(types))))
-        if bonds:
-            data.write('{:d} bond types\n'.format(len(set(bond_types))))
-        if angles:
-            data.write('{:d} angle types\n'.format(len(set(angle_types))))
-        if dihedrals:
-            data.write('{:d} dihedral types\n'.format(len(set(dihedral_types))))
+        if atomstyle == 'full' or atomstyle == 'molecular':
+            if bonds:
+                data.write('{:d} bond types\n'.format(len(set(bond_types))))
+            if angles:
+                data.write('{:d} angle types\n'.format(len(set(angle_types))))
+            if dihedrals:
+                data.write('{:d} dihedral types\n'.format(len(set(dihedral_types))))
 
         data.write('\n')
         # Box data
@@ -161,23 +167,37 @@ def write_lammpsdata(structure, filename):
 
         # Atom data
         data.write('\nAtoms\n\n')
-        for i,coords in enumerate(xyz):
-            data.write('{:d}\t{:d}\t{:d}\t{:.6f}\t{:.6f}\t{:.6f}\t{:.6f}\n'.format(i+1,0,unique_types.index(types[i])+1,charges[i],*coords))
+        if atomstyle == 'atomic':
+            for i,coords in enumerate(xyz):
+                data.write('{:d}\t{:d}\t{:.6f}\t{:.6f}\t{:.6f}\n'.format(i+1,0,*coords))
 
-        # Bond data
-        if bonds:
-            data.write('\nBonds\n\n')
-            for i,bond in enumerate(bonds):
-                data.write('{:d}\t{:d}\t{:d}\t{:d}\n'.format(i+1,bond_types[i],bond[0],bond[1]))
+        elif atomstyle == 'charge':
+            for i,coords in enumerate(xyz):
+                data.write('{:d}\t{:d}\t{:.6f}\t{:.6f}\t{:.6f}\t{:.6f}\n'.format(i+1,0,charges[i],*coords))
 
-        # Angle data
-        if angles:
-            data.write('\nAngles\n\n')
-            for i,angle in enumerate(angles):
-                data.write('{:d}\t{:d}\t{:d}\t{:d}\t{:d}\n'.format(i+1,angle_types[i],angle[0],angle[1],angle[2]))
+        elif atomstyle == 'molecular':
+            for i,coords in enumerate(xyz):
+                data.write('{:d}\t{:d}\t{:d}\t{:.6f}\t{:.6f}\t{:.6f}\n'.format(i+1,0,unique_types.index(types[i])+1,*coords))
 
-        # Dihedral data
-        if dihedrals:
-            data.write('\nDihedrals\n\n')
-            for i,dihedral in enumerate(dihedrals):
-                data.write('{:d}\t{:d}\t{:d}\t{:d}\t{:d}\t{:d}\n'.format(i+1,dihedral_types[i],dihedral[0],dihedral[1],dihedral[2],dihedral[3]))
+        elif atomstyle == 'full':
+            for i,coords in enumerate(xyz):
+                data.write('{:d}\t{:d}\t{:d}\t{:.6f}\t{:.6f}\t{:.6f}\t{:.6f}\n'.format(i+1,0,unique_types.index(types[i])+1,charges[i],*coords))
+
+        if atomstyle == 'full' or atomstyle == 'molecular':
+            # Bond data
+            if bonds:
+                data.write('\nBonds\n\n')
+                for i,bond in enumerate(bonds):
+                    data.write('{:d}\t{:d}\t{:d}\t{:d}\n'.format(i+1,bond_types[i],bond[0],bond[1]))
+
+            # Angle data
+            if angles:
+                data.write('\nAngles\n\n')
+                for i,angle in enumerate(angles):
+                    data.write('{:d}\t{:d}\t{:d}\t{:d}\t{:d}\n'.format(i+1,angle_types[i],angle[0],angle[1],angle[2]))
+
+            # Dihedral data
+            if dihedrals:
+                data.write('\nDihedrals\n\n')
+                for i,dihedral in enumerate(dihedrals):
+                    data.write('{:d}\t{:d}\t{:d}\t{:d}\t{:d}\t{:d}\n'.format(i+1,dihedral_types[i],dihedral[0],dihedral[1],dihedral[2],dihedral[3]))
