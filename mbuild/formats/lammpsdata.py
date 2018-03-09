@@ -169,11 +169,11 @@ def write_lammpsdata(structure, filename, atomstyle):
         data.write('\nAtoms\n\n')
         if atomstyle == 'atomic':
             for i,coords in enumerate(xyz):
-                data.write('{:d}\t{:d}\t{:.6f}\t{:.6f}\t{:.6f}\n'.format(i+1,0,*coords))
+                data.write('{:d}\t{:d}\t{:.6f}\t{:.6f}\t{:.6f}\n'.format(i+1,unique_types.index(types[i])+1,*coords))
 
         elif atomstyle == 'charge':
             for i,coords in enumerate(xyz):
-                data.write('{:d}\t{:d}\t{:.6f}\t{:.6f}\t{:.6f}\t{:.6f}\n'.format(i+1,0,charges[i],*coords))
+                data.write('{:d}\t{:d}\t{:d}\t{:.6f}\t{:.6f}\t{:.6f}\t{:.6f}\n'.format(i+1,unique_types.index(types[i])+1,charges[i],*coords))
 
         elif atomstyle == 'molecular':
             for i,coords in enumerate(xyz):
