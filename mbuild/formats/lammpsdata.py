@@ -8,12 +8,10 @@ from mbuild import Box
 from mbuild.utils.conversion import RB_to_OPLS
 from mbuild.utils.sorting import natural_sort
 
-import sys
-
 __all__ = ['write_lammpsdata']
 
 
-def write_lammpsdata(structure, filename, atomstyle):
+def write_lammpsdata(structure, filename, atom_style='full'):
     """Output a LAMMPS data file.
     
     Outputs a LAMMPS data file in the 'full' atom style format. Assumes use
@@ -26,7 +24,7 @@ def write_lammpsdata(structure, filename, atomstyle):
         ParmEd structure object
     filename : str
         Path of the output file
-    atomstyle: str
+    atom_style: str
         Style of atoms to use in LAMMPS simulation
 
     Notes
@@ -104,13 +102,13 @@ def write_lammpsdata(structure, filename, atomstyle):
     with open(filename, 'w') as data:
         data.write(filename+' - created by mBuild\n\n')
         data.write('{:d} atoms\n'.format(len(structure.atoms)))
-        if atomstyle == 'full' or atomstyle == 'molecular':
+        if atom_style == 'full' or atom_style == 'molecular':
             data.write('{:d} bonds\n'.format(len(bonds)))
             data.write('{:d} angles\n'.format(len(angles)))
             data.write('{:d} dihedrals\n\n'.format(len(dihedrals)))
 
         data.write('{:d} atom types\n'.format(len(set(types))))
-        if atomstyle == 'full' or atomstyle == 'molecular':
+        if atom_style == 'full' or atom_style == 'molecular':
             if bonds:
                 data.write('{:d} bond types\n'.format(len(set(bond_types))))
             if angles:
@@ -167,23 +165,23 @@ def write_lammpsdata(structure, filename, atomstyle):
 
         # Atom data
         data.write('\nAtoms\n\n')
-        if atomstyle == 'atomic':
+        if atom_style == 'atomic':
             for i,coords in enumerate(xyz):
                 data.write('{:d}\t{:d}\t{:.6f}\t{:.6f}\t{:.6f}\n'.format(i+1,unique_types.index(types[i])+1,*coords))
 
-        elif atomstyle == 'charge':
+        elif atom_style == 'charge':
             for i,coords in enumerate(xyz):
-                data.write('{:d}\t{:d}\t{:d}\t{:.6f}\t{:.6f}\t{:.6f}\t{:.6f}\n'.format(i+1,unique_types.index(types[i])+1,charges[i],*coords))
+                data.write('{:d}\t{:d}\t{:.6f}\t{:.6f}\t{:.6f}\t{:.6f}\n'.format(i+1,unique_types.index(types[i])+1,charges[i],*coords))
 
-        elif atomstyle == 'molecular':
+        elif atom_style == 'molecular':
             for i,coords in enumerate(xyz):
                 data.write('{:d}\t{:d}\t{:d}\t{:.6f}\t{:.6f}\t{:.6f}\n'.format(i+1,0,unique_types.index(types[i])+1,*coords))
 
-        elif atomstyle == 'full':
+        elif atom_style == 'full':
             for i,coords in enumerate(xyz):
                 data.write('{:d}\t{:d}\t{:d}\t{:.6f}\t{:.6f}\t{:.6f}\t{:.6f}\n'.format(i+1,0,unique_types.index(types[i])+1,charges[i],*coords))
 
-        if atomstyle == 'full' or atomstyle == 'molecular':
+        if atom_style == 'full' or atom_style == 'molecular':
             # Bond data
             if bonds:
                 data.write('\nBonds\n\n')
