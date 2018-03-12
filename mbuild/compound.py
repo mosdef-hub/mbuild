@@ -1299,6 +1299,11 @@ class Compound(object):
             Normalization factor used when saving to .gsd and .hoomdxml formats
             for converting mass values to reduced units.
 
+        atom_style: str, default='full'
+            Defines the style of atoms to be saved in a LAMMPS data file.
+            see http://lammps.sandia.gov/doc/atom_style.html for more
+            information on atom styles.
+
         See Also
         --------
         formats.gsdwrite.write_gsd : Write to GSD format
