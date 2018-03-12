@@ -1,3 +1,5 @@
+import itertools
+
 import numpy as np
 
 from mbuild.compound import Compound, Particle
@@ -12,6 +14,12 @@ class Port(Compound):
     ----------
     anchor : mb.Particle, optional, default=None
         A Particle associated with the port. Used to form bonds.
+    orientation : array-like, shape=(3,), optional, default=[0, 1, 0]
+        Vector along which to orient the port
+    separation : float, optional, default=0
+        Distance to shift port along the orientation vector from the anchor
+        particle position. If no anchor is provided, the port will be shifted
+        from the origin.
 
     Attributes
     ----------
@@ -32,6 +40,11 @@ class Port(Compound):
         super(Port, self).__init__(name='Port', port_particle=True)
         self.anchor = anchor
 
+        default_direction = np.array([0, 1, 0])
+        if orientation is None:
+            orientation = [0, 1, 0]
+        orientation = np.asarray(orientation)
+
         up = Compound(name='subport', port_particle=True)
         up.add(Particle(name='G', pos=[0.005, 0.0025, -0.0025],
                         port_particle=True), 'middle')
@@ -43,25 +56,21 @@ class Port(Compound):
                         port_particle=True), 'right')
 
         down = clone(up)
-        down.rotate(np.pi, [0, 0, 1])
-
         self.add(up, 'up')
         self.add(down, 'down')
         self.used = False
 
-        if orientation is None:
-            orientation = [0, 1, 0]
-
-        default_direction = [0, 1, 0]
-        if np.array_equal(
-                np.asarray(default_direction), unit_vector(-np.asarray(orientation))):
-            self.rotate(np.pi, [1, 0, 0])
-        elif np.array_equal(
-                np.asarray(default_direction), unit_vector(np.asarray(orientation))):
-            pass
+        if np.allclose(
+                default_direction, unit_vector(-orientation)):
+            down.rotate(np.pi, [0, 0, 1])
+            self.rotate(np.pi, [0, 0, 1])
+        elif np.allclose(
+                default_direction, unit_vector(orientation)):
+            down.rotate(np.pi, [0, 0, 1])
         else:
             normal = np.cross(default_direction, orientation)
             self.rotate(angle(default_direction, orientation), normal)
+            down.rotate(np.pi, normal)
 
         if anchor:
             self.translate_to(anchor.pos)
@@ -84,3 +93,40 @@ class Port(Compound):
         """The unit vector pointing in the 'direction' of the Port
         """
         return unit_vector(self.xyz_with_ports[1]-self.xyz_with_ports[0])
+
+    @property
+    def access_labels(self):
+        """List of labels used to access the Port
+
+        Returns
+        -------
+        list of str
+            Strings that can be used to access this Port relative to self.root
+        """
+        access_labels = []
+        for referrer in self.referrers:
+            referrer_labels = [key for key, val in self.root.labels.items()
+                               if val == referrer]
+            port_labels = [key for key, val in referrer.labels.items()
+                           if val == self]
+            if referrer is self.root:
+                for label in port_labels:
+                    access_labels.append("['{}']".format(label))
+            for label in itertools.product(referrer_labels, port_labels):
+                access_labels.append("['{}']".format("']['".join(label)))
+
+        return access_labels
+
+    def __repr__(self):
+        descr = list('<')
+        descr.append(self.name + ', ')
+
+        if self.anchor:
+            descr.append("anchor: '{}', ".format(self.anchor.name))
+        else:
+            descr.append('anchor: None, ')
+
+        descr.append('labels: {}, '.format(', '.join(self.access_labels)))
+
+        descr.append('id: {}>'.format(id(self)))
+        return ''.join(descr)
