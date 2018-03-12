@@ -11,8 +11,7 @@ class TestLammpsData(BaseTest):
         ethane.save(filename='ethane.lammps')
 
     def test_save_forcefield(self, ethane):
-        ethane.save(filename='ethane-opls.lammps',
-                forcefield_name='oplsaa')
+        ethane.save(filename='ethane-opls.lammps',forcefield_name='oplsaa')
 
     def test_save_box(self, ethane):
         box = mb.Box(lengths=np.array([2.0, 2.0, 2.0])) 
