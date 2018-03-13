@@ -17,42 +17,14 @@ class TestLammpsData(BaseTest):
         box = mb.Box(lengths=np.array([2.0, 2.0, 2.0])) 
         ethane.save(filename='ethane-box.lammps', forcefield_name='oplsaa', box=box)
 
-    def test_full_atoms(self, ethane):
-        ethane.save(filename='ethane.lammps', atom_style='full')
+    @pytest.mark.parametrize('atom_style, n_columns', [('full', 7), ('atomic', 5), ('molecular', 6), ('charge', 6)])
+    def test_writing_atom_styles(self, ethane, atom_style, n_columns):
+        ethane.save(filename='ethane.lammps', atom_style=atom_style)
         with open('ethane.lammps', 'r') as f:
             for line in f:
-                if "Atoms" in line:
-                    for index in range(2):
-                        lines = next(f)
-                    columns = lines.split("\t")
-                    assert len(columns) == 7
-
-    def test_atomic_atoms(self, ethane):
-        ethane.save(filename='ethane.lammps', atom_style='atomic')
-        with open('ethane.lammps', 'r') as f:
-            for line in f:
-                if "Atoms" in line:
-                    for index in range(2):
-                        lines = next(f)
-                    columns = lines.split("\t")
-                    assert len(columns) == 5
-
-    def test_molecular_atoms(self, ethane):
-        ethane.save(filename='ethane.lammps', atom_style='molecular')
-        with open('ethane.lammps', 'r') as f:
-            for line in f:
-                if "Atoms" in line:
-                    for index in range(2):
-                        lines = next(f)
-                    columns = lines.split("\t")
-                    assert len(columns) == 6
-
-    def test_charge_atoms(self, ethane):
-        ethane.save(filename='ethane.lammps', atom_style='charge')
-        with open('ethane.lammps', 'r') as f:
-            for line in f:
-                if "Atoms" in line:
-                    for index in range(2):
-                        lines = next(f)
-                    columns = lines.split("\t")
-                    assert len(columns) == 6
+                if "Atoms" not in line:
+                    continue
+                    atoms_header = next(f)
+                    first_atom_line = next(f)
+                    columns = first_atom_line.split("\t")
+                    assert len(columns) == n_columns
