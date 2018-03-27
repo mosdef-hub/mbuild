@@ -10,6 +10,7 @@ import os
 import sys
 import tempfile
 from warnings import warn
+from mbuild.utils.decorators import deprecated
 
 import mdtraj as md
 from mdtraj.core.element import get_by_symbol
@@ -1154,7 +1155,255 @@ class Compound(object):
             particle.pos += (np.random.rand(3,) - 0.5) / 100
         self._update_port_locations(xyz_init)
 
-    def energy_minimization(self, steps=2500, algorithm='cg',
+    warning_message = 'Please use Compound.energy_minimize()'
+    @deprecated(warning_message)
+    def energy_minimization(self, forcefield='UFF', steps=1000, **kwargs):
+        self.energy_minimize(forcefield=forcefield, steps=steps, **kwargs)
+
+    def energy_minimize(self, forcefield='UFF',steps=1000, **kwargs):
+        """Perform an energy minimization on a Compound
+
+        Utilizes Open Babel (http://openbabel.org/docs/dev/) to perform an
+        energy minimization/geometry optimization on a Compound by applying
+        a generic force field
+
+        Can also utilize OpenMM (http://openmm.org/) to energy minimize
+        after atomtyping a Compound using
+        Foyer (https://github.com/mosdef-hub/foyer) to apply a forcefield
+        XML file that contains valid SMARTS strings.
+
+        This function is primarily intended to be used on smaller components,
+        with sizes on the order of 10's to 100's of particles, as the energy
+        minimization scales poorly with the number of particles.
+
+        Parameters
+        ----------
+        steps : int, optional, default=1000
+            The number of optimization iterations
+        forcefield : str, optional, default='UFF'
+            The generic force field to apply to the Compound for minimization.
+            Valid options are 'MMFF94', 'MMFF94s', ''UFF', 'GAFF', and 'Ghemical'.
+            Please refer to the Open Babel documentation (http://open-babel.
+            readthedocs.io/en/latest/Forcefields/Overview.html) when considering
+            your choice of force field.
+            Utilizing OpenMM for energy minimization requires a forcefield
+            XML file with valid SMARTS strings. Please refer to (http://docs.
+            openmm.org/7.0.0/userguide/application.html#creating-force-fields)
+            for more information.
+
+
+        Keyword Args
+        ------------
+        scale_bonds : float, optional, default=1
+            Scales the bond force constant (1 is completely on).
+            For _energy_minimize_openmm
+        scale_angles : float, optional, default=1
+            Scales the angle force constant (1 is completely on)
+            For _energy_minimize_openmm
+        scale_torsions : float, optional, default=0.5
+            Scales the torsional force constants (1 is completely on)
+            For _energy_minimize_openmm
+        scale_nonbonded : float, optional, default=0.75
+            Scales epsilon (1 is completely on)
+            For _energy_minimize_openmm
+        algorithm : str, optional, default='cg'
+            The energy minimization algorithm.  Valid options are 'steep',
+            'cg', and 'md', corresponding to steepest descent, conjugate
+            gradient, and equilibrium molecular dynamics respectively.
+            For _energy_minimize_openbabel
+
+        References
+        ----------
+        If using _energy_minimize_openmm(), please cite:
+        .. [1] P. Eastman, M. S. Friedrichs, J. D. Chodera, R. J. Radmer,
+               C. M. Bruns, J. P. Ku, K. A. Beauchamp, T. J. Lane,
+               L.-P. Wang, D. Shukla, T. Tye, M. Houston, T. Stich,
+               C. Klein, M. R. Shirts, and V. S. Pande.
+               "OpenMM 4: A Reusable, Extensible, Hardware Independent
+               Library for High Performance Molecular Simulation."
+               J. Chem. Theor. Comput. 9(1): 461-469. (2013).
+
+
+        If using _energy_minimize_openbabel(), please cite:
+        .. [1] O'Boyle, N.M.; Banck, M.; James, C.A.; Morley, C.;
+               Vandermeersch, T.; Hutchison, G.R. "Open Babel: An open
+               chemical toolbox." (2011) J. Cheminf. 3, 33
+
+        .. [2] Open Babel, version X.X.X http://openbabel.org, (installed
+               Month Year)
+
+        If using the 'MMFF94' force field please also cite the following:
+        .. [3] T.A. Halgren, "Merck molecular force field. I. Basis, form,
+               scope, parameterization, and performance of MMFF94." (1996)
+               J. Comput. Chem. 17, 490-519
+        .. [4] T.A. Halgren, "Merck molecular force field. II. MMFF94 van der
+               Waals and electrostatic parameters for intermolecular
+               interactions." (1996) J. Comput. Chem. 17, 520-552
+        .. [5] T.A. Halgren, "Merck molecular force field. III. Molecular
+               geometries and vibrational frequencies for MMFF94." (1996)
+               J. Comput. Chem. 17, 553-586
+        .. [6] T.A. Halgren and R.B. Nachbar, "Merck molecular force field.
+               IV. Conformational energies and geometries for MMFF94." (1996)
+               J. Comput. Chem. 17, 587-615
+        .. [7] T.A. Halgren, "Merck molecular force field. V. Extension of
+               MMFF94 using experimental data, additional computational data,
+               and empirical rules." (1996) J. Comput. Chem. 17, 616-641
+
+        If using the 'MMFF94s' force field please cite the above along with:
+        .. [8] T.A. Halgren, "MMFF VI. MMFF94s option for energy minimization
+               studies." (1999) J. Comput. Chem. 20, 720-729
+
+        If using the 'UFF' force field please cite the following:
+        .. [3] Rappe, A.K., Casewit, C.J., Colwell, K.S., Goddard, W.A. III,
+               Skiff, W.M. "UFF, a full periodic table force field for
+               molecular mechanics and molecular dynamics simulations." (1992)
+               J. Am. Chem. Soc. 114, 10024-10039
+
+        If using the 'GAFF' force field please cite the following:
+        .. [3] Wang, J., Wolf, R.M., Caldwell, J.W., Kollman, P.A., Case, D.A.
+               "Development and testing of a general AMBER force field" (2004)
+               J. Comput. Chem. 25, 1157-1174
+
+        If using the 'Ghemical' force field please cite the following:
+        .. [3] T. Hassinen and M. Perakyla, "New energy terms for reduced
+               protein models implemented in an off-lattice force field" (2001)
+               J. Comput. Chem. 22, 1229-1242
+
+
+
+        """
+        tmp_dir = tempfile.mkdtemp()
+        original = clone(self)
+        self._kick()
+        self.save(os.path.join(tmp_dir,'un-minimized.mol2'))
+        extension = os.path.splitext(forcefield)[-1]
+        if extension == '.xml':
+            self._energy_minimize_openmm(tmp_dir, forcefield=forcefield,
+                    steps=steps, **kwargs)
+
+        else:
+            self._energy_minimize_openbabel(tmp_dir, forcefield=forcefield,
+                    steps=steps, **kwargs)
+
+
+        self.update_coordinates(os.path.join(tmp_dir, 'minimized.pdb'))
+
+    def _energy_minimize_openmm(self, tmp_dir, forcefield=None, steps=1000,
+            scale_bonds=1, scale_angles=1, scale_torsions=0.5,
+            scale_nonbonded=0.75):
+        """ Perform energy minimization using OpenMM
+
+        Converts an mBuild Compound to a Parmed Structure,
+        applies a forcefield using Foyer, and creates an OpenMM System.
+
+        Parameters
+        ----------
+        forcefield : str
+            Path to forcefield xml file
+        steps : int, optional, default=1000
+            Number of energy minimization iterations
+        scale_bonds : float, optional, default=1
+            Scales the bond force constant (1 is completely on)
+        scale_angles : float, optiona, default=1
+            Scales the angle force constant (1 is completely on)
+        scale_torsions : float, optional, default=0.5
+            Scales the torsional force constants (1 is completely on)
+        scale_nonbonded : float, optional, default=0.75
+            Scales epsilon (1 is completely on)
+
+
+        Notes
+        -----
+        Assumes a particular organization for the force groups
+        (HarmonicBondForce, HarmonicAngleForce, RBTorsionForce, NonBondedForce)
+
+        References
+        ----------
+
+        .. [1] P. Eastman, M. S. Friedrichs, J. D. Chodera, R. J. Radmer,
+               C. M. Bruns, J. P. Ku, K. A. Beauchamp, T. J. Lane,
+               L.-P. Wang, D. Shukla, T. Tye, M. Houston, T. Stich,
+               C. Klein, M. R. Shirts, and V. S. Pande.
+               "OpenMM 4: A Reusable, Extensible, Hardware Independent
+               Library for High Performance Molecular Simulation."
+               J. Chem. Theor. Comput. 9(1): 461-469. (2013).
+
+
+
+        """
+        from foyer import Forcefield
+        to_parmed = self.to_parmed()
+        ff = Forcefield(forcefield_files=[forcefield])
+        to_parmed = ff.apply(to_parmed)
+
+        from simtk.openmm.app.simulation import Simulation
+        from simtk.openmm.app.pdbreporter import PDBReporter
+        from simtk.openmm.openmm import LangevinIntegrator
+        import simtk.unit as u
+
+        system = to_parmed.createSystem()
+        integrator = LangevinIntegrator(298*u.kelvin, 1/u.picosecond,
+                0.002*u.picoseconds)
+        simulation = Simulation(to_parmed.topology, system, integrator)
+
+        for force in system.getForces():
+            if type(force).__name__ == "HarmonicBondForce":
+                for bond_index in range(force.getNumBonds()):
+                    atom1, atom2, r0, k = force.getBondParameters(bond_index)
+                    force.setBondParameters(bond_index,
+                        atom1, atom2,
+                        r0, k*scale_bonds)
+                force.updateParametersInContext(simulation.context)
+
+            elif type(force).__name__ == "HarmonicAngleForce":
+                for angle_index in range(force.getNumAngles()):
+                    atom1, atom2, atom3, r0, k = force.getAngleParameters(angle_index)
+                    force.setAngleParameters(angle_index,
+                            atom1, atom2, atom3,
+                            r0, k*scale_angles)
+                force.updateParametersInContext(simulation.context)
+
+            elif type(force).__name__ == "RBTorsionForce":
+                for torsion_index in range(force.getNumTorsions()):
+                    atom1, atom2, atom3, atom4, c0, c1, c2, c3, c4, c5 = force.getTorsionParameters(torsion_index)
+                    force.setTorsionParameters(torsion_index,
+                            atom1, atom2, atom3, atom4,
+                            c0*scale_torsions, c1*scale_torsions,
+                            c2*scale_torsions, c3*scale_torsions,
+                            c4*scale_torsions, c5*scale_torsions)
+                force.updateParametersInContext(simulation.context)
+
+            elif type(force).__name__ == "NonbondedForce":
+                for nb_index in range(force.getNumParticles()):
+                    charge, sigma, epsilon = force.getParticleParameters(nb_index)
+                    force.setParticleParameters(nb_index,
+                            charge, sigma, epsilon*scale_nonbonded)
+                force.updateParametersInContext(simulation.context)
+
+            elif type(force).__name__ == "CMMotionRemover":
+                pass
+
+            else:
+                warn('OpenMM Force {} is '
+                    'not currently supported in _energy_minimize_openmm. '
+                    'This Force will not be updated!'.format(type(force).__name__))
+
+
+
+        simulation.context.setPositions(to_parmed.positions)
+        simulation.minimizeEnergy(maxIterations=steps)
+        reporter = PDBReporter(os.path.join(tmp_dir, 'minimized.pdb'),1)
+        reporter.report(simulation, simulation.context.getState(getPositions=True))
+        #import pdb
+        #pdb.set_trace()
+        #simulation.reporters.append(PDBReporter(
+            #os.path.join(tmp_dir, 'minimized.pdb'),1))
+        #simulation.step(1)
+
+
+
+
+    def _energy_minimize_openbabel(self, tmp_dir, steps=1000, algorithm='cg',
                             forcefield='UFF'):
         """Perform an energy minimization on a Compound
 
@@ -1226,22 +1475,23 @@ class Compound(object):
                protein models implemented in an off-lattice force field" (2001)
                J. Comput. Chem. 22, 1229-1242
         """
+
         openbabel = import_('openbabel')
 
         for particle in self.particles():
             try:
                 get_by_symbol(particle.name)
             except KeyError:
-                raise MBuildError("Element name {} not recognized. Cannot "
+                try:
+                    elem.get_by_symbol(particle.name[1:2])
+                except KeyError:
+                    raise MBuildError("Element name {} not recognized. Cannot "
                                   "perform minimization."
                                   "".format(particle.name))
 
-        tmp_dir = tempfile.mkdtemp()
-        original = clone(self)
-        self._kick()
-        self.save(os.path.join(tmp_dir,'un-minimized.mol2'))
+
         obConversion = openbabel.OBConversion()
-        obConversion.SetInAndOutFormats("mol2", "mol2")
+        obConversion.SetInAndOutFormats("mol2", "pdb")
         mol = openbabel.OBMol()
 
         obConversion.ReadFile(mol, os.path.join(tmp_dir, "un-minimized.mol2"))
@@ -1267,8 +1517,7 @@ class Compound(object):
                               "are 'steep', 'cg', and 'md'.")
         ff.UpdateCoordinates(mol)
 
-        obConversion.WriteFile(mol, os.path.join(tmp_dir, 'minimized.mol2'))
-        self.update_coordinates(os.path.join(tmp_dir, 'minimized.mol2'))
+        obConversion.WriteFile(mol, os.path.join(tmp_dir, 'minimized.pdb'))
 
     def save(self, filename, show_ports=False, forcefield_name=None,
              forcefield_files=None, forcefield_debug=False, box=None,
