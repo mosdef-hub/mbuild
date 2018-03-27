@@ -1,6 +1,7 @@
 from collections import OrderedDict
 
 from mbuild.compound import Compound
+from mbuild.compound import clone
 
 __all__ = ['reverse_map']
 
