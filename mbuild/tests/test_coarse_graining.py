@@ -13,15 +13,6 @@ class TestCoarseGraining(BaseTest):
         assert all(child.name.startswith(propyl.name)
                    for child in cg.children)
 
-    def test_reverse_map_hexane(self, propyl):
-
-        mapping_moieties = {'Propane': propyl}
-        cg = mb.load(get_fn('hexane_cg.mol2')) 
-
-        recovered = mb.reverse_map(cg, mapping_moieties, energy_minimize=False)
-        assert recovered.n_particles == 20
-        assert recovered.n_bonds == 19
-
     def test_reverse_map_hexane_from_target(self,propyl):
         cg = mb.load(get_fn('hexane_cg.mol2')) 
 
@@ -29,6 +20,6 @@ class TestCoarseGraining(BaseTest):
         target_structure = mb.load(get_fn('one_hexane_aa.mol2'))
 
         recovered = mb.reverse_map(cg, mapping_moieties, 
-                target_structure=target_structure, energy_minimize=False)
+                target_structure=target_structure)
         assert recovered.n_particles == 20
         assert recovered.n_bonds == 19

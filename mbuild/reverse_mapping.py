@@ -61,24 +61,6 @@ def reverse_map(coarse_grained, mapping_moieties, target_structure=None):
 
     return aa_system
 
-def _find_all_matching_ports(cg_to_aa, p_i, p_i_bonds):
-    """ Determine the ports that should be bonded to each other"""
-
-    bonding_candidates =[]
-    for bond in p_i_bonds:
-        if p_i != bond[0]:
-            p_j = bond[0]
-        else:
-            p_j = bond[1]
-        #i_ports = p_i.available_ports()
-        #j_ports = p_j.available_ports()
-        i_port_names = [p.name for p in cg_to_aa[p_i].available_ports()]
-        j_port_names = [p.name for p in cg_to_aa[p_j].available_ports()]
-        common_names = list(set(i_port_names).intersection(j_port_names))
-        bonding_candidates.append([p_i, p_j, common_names])
-    return bonding_candidates
-        
-
 
 
 def _find_matching_ports(i, j):
