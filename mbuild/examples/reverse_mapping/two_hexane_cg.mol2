@@ -1,0 +1,17 @@
+@<TRIPOS>MOLECULE
+RES
+4 2 1 0 1
+SMALL
+NO_CHARGES
+@<TRIPOS>CRYSIN
+   20.7237     6.6202     8.3925    90.0000    90.0000    90.0000  1  1
+@<TRIPOS>ATOM
+       1 Propane             5.1465     2.2479     1.8384 Propane              1 RES     
+       2 Propane             7.5547     1.3292     5.2309 Propane              1 RES     
+       3 Propane            17.8048     2.8963     4.7937 Propane              1 RES     
+       4 Propane            20.8702     1.2761     2.3177 Propane              1 RES     
+@<TRIPOS>BOND
+       1        1        2 1
+       2        3        4 1
+@<TRIPOS>SUBSTRUCTURE
+       1 RES             1 RESIDUE    0 **** ROOT      0

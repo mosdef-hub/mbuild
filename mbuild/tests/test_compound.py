@@ -4,6 +4,8 @@ import numpy as np
 import parmed as pmd
 import pytest
 
+import foyer
+
 import mbuild as mb
 from mbuild.exceptions import MBuildError
 from mbuild.utils.geometry import calc_dihedral
@@ -618,6 +620,12 @@ class TestCompound(BaseTest):
 
         assert np.array_equal(distances, updated_distances)
         assert np.array_equal(orientations, updated_orientations)
+
+    def test_energy_minimize_openmm(self, octane):
+        ff_xml = get_fn('oplsaa.xml')
+        octane.energy_minimize(forcefield=ff_xml)
+
+
 
     def test_clone_outside_containment(self, ch2, ch3):
         compound = mb.Compound()
