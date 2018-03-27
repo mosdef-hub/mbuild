@@ -2,8 +2,7 @@ from mbuild.compound import Compound
 
 __all__ = ['reverse_map']
 
-def reverse_map(coarse_grained, mapping_moieties, target_structure=None,
-        energy_minimize=True, n_loops = 10, **kwargs):
+def reverse_map(coarse_grained, mapping_moieties, target_structure=None):
     """ Reverse map an mb.Compound
 
     Parameters
@@ -18,14 +17,7 @@ def reverse_map(coarse_grained, mapping_moieties, target_structure=None,
         Bond network in the reverse-mapped structure will be completely
         overridden by the bond network from the target atomistic structure
         Care must be taken that atom indices match perfectly
-    minimize_energy : boolean, optional, default=True
-        Perform energy minimization on reverse-mapped compound
-    n_loops : int, optional, default=True
-        Number of energy minimization loops to perform
-
-    **kwargs : keyword arguments
-        Key word arguments passed to energy_minimization
-
+    
     """
     # Get molecular information through bonding 
     # molecules is a list where each item is a list of bonded components
@@ -67,16 +59,6 @@ def reverse_map(coarse_grained, mapping_moieties, target_structure=None,
     for cg_particle, aa_particles in cg_to_aa.items():
         aa_particles.translate_to(cg_particle.pos)
 
-    # Iterative energy minimization
-    # Energy minimize each molecule separately,
-    if energy_minimize:
-        for i in range(n_loops):
-           # Put molecules back after energy minimization
-           for cg_particle, aa_particles in cg_to_aa.items():
-                aa_particles.translate_to(cg_particle.pos) 
-           for molecule in aa_system.children:
-                molecule.energy_minimize(**kwargs)
-            
     return aa_system
 
 def _find_all_matching_ports(cg_to_aa, p_i, p_i_bonds):
