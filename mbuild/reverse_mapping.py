@@ -1,3 +1,5 @@
+from collections import OrderedDict
+
 from mbuild.compound import Compound
 
 __all__ = ['reverse_map']
