@@ -1483,7 +1483,7 @@ class Compound(object):
                 get_by_symbol(particle.name)
             except KeyError:
                 try:
-                    elem.get_by_symbol(particle.name[1:2])
+                    get_by_symbol(particle.name[1:2])
                 except KeyError:
                     raise MBuildError("Element name {} not recognized. Cannot "
                                   "perform minimization."
