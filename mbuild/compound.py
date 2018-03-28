@@ -1394,13 +1394,6 @@ class Compound(object):
         simulation.minimizeEnergy(maxIterations=steps)
         reporter = PDBReporter(os.path.join(tmp_dir, 'minimized.pdb'),1)
         reporter.report(simulation, simulation.context.getState(getPositions=True))
-        #import pdb
-        #pdb.set_trace()
-        #simulation.reporters.append(PDBReporter(
-            #os.path.join(tmp_dir, 'minimized.pdb'),1))
-        #simulation.step(1)
-
-
 
 
     def _energy_minimize_openbabel(self, tmp_dir, steps=1000, algorithm='cg',
