@@ -181,20 +181,25 @@ def write_lammpsdata(structure, filename, atom_style='full'):
             atom_line ='{index:d}\t{zero:d}\t{type_index:d}\t{charge:.6f}\t{x:.6f}\t{y:.6f}\t{z:.6f}\n'
 
         for i,coords in enumerate(xyz):
-            data.write(atom_line.format(index=i+1,type_index=unique_types.index(types[i])+1,zero=0,charge=charges[i],x=coords[0],y=coords[1],z=coords[2]))
+            data.write(atom_line.format(
+                index=i+1,type_index=unique_types.index(types[i])+1,
+                zero=0,charge=charges[i],
+                x=coords[0],y=coords[1],z=coords[2]))
 
         if atom_style in ['full', 'molecular']:
             # Bond data
             if bonds:
                 data.write('\nBonds\n\n')
                 for i,bond in enumerate(bonds):
-                    data.write('{:d}\t{:d}\t{:d}\t{:d}\n'.format(i+1,bond_types[i],bond[0],bond[1]))
+                    data.write('{:d}\t{:d}\t{:d}\t{:d}\n'.format(
+                        i+1,bond_types[i],bond[0],bond[1]))
 
             # Angle data
             if angles:
                 data.write('\nAngles\n\n')
                 for i,angle in enumerate(angles):
-                    data.write('{:d}\t{:d}\t{:d}\t{:d}\t{:d}\n'.format(i+1,angle_types[i],angle[0],angle[1],angle[2]))
+                    data.write('{:d}\t{:d}\t{:d}\t{:d}\t{:d}\n'.format(
+                        i+1,angle_types[i],angle[0],angle[1],angle[2]))
 
             # Dihedral data
             if dihedrals:
