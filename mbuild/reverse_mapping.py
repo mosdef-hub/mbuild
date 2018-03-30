@@ -1,7 +1,12 @@
 from collections import OrderedDict
 
+from warnings import warn
+
 from mbuild.compound import Compound
 from mbuild.compound import clone
+from mbuild.coordinate_transform import force_overlap
+
+import pdb
 
 __all__ = ['reverse_map']
 
@@ -45,6 +50,8 @@ def reverse_map(coarse_grained, mapping_moieties, target_structure=None):
 
     # Go back and include bonds
     if target_structure:
+        # If a target atomistic structure is provided, just its bond graph
+        # to the reverse-mapped structure
         aa_system.root.bond_graph = None
         target_traj = target_structure.to_trajectory()
 
@@ -52,11 +59,22 @@ def reverse_map(coarse_grained, mapping_moieties, target_structure=None):
             aa_system.add_bond([aa_system[i.index], aa_system[j.index]])
         
     else:
-        for p_i, p_j in coarse_grained.bonds():
-            p_i_port, p_j_port = _find_matching_ports(cg_to_aa[p_i], 
-                    cg_to_aa[p_j])
-            force_overlap(cg_to_aa[p_i], from_positions=p_i_port, 
-                    to_positions=p_j_port)
+        # If no target atomistic structure is provided, look at each molecule, 
+        # working inwards from the ends of the molecule
+        
+        cg_bonds = list(coarse_grained.bonds())
+        # Repeatedly iterate through the coarse grained bonds, but only bond
+        # particles that have a certain number of available ports
+        while len(cg_bonds) > 0:
+            for p_i, p_j in cg_bonds:
+                if 0 < len(cg_to_aa[p_i].available_ports()) <= 1 or \
+                    0 < len(cg_to_aa[p_j].available_ports()) <= 1:
+                            p_i_port, p_j_port = _find_matching_ports(cg_to_aa[p_i], 
+                                cg_to_aa[p_j])
+                            force_overlap(cg_to_aa[p_i], from_positions=p_i_port, 
+                                to_positions=p_j_port)
+                            cg_bonds.remove((p_i, p_j))
+
 
     # Put molecules back after energy minimization
     for cg_particle, aa_particles in cg_to_aa.items():
