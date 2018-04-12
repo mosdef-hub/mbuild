@@ -205,4 +205,6 @@ def write_lammpsdata(structure, filename, atom_style='full'):
             if dihedrals:
                 data.write('\nDihedrals\n\n')
                 for i,dihedral in enumerate(dihedrals):
-                    data.write('{:d}\t{:d}\t{:d}\t{:d}\t{:d}\t{:d}\n'.format(i+1,dihedral_types[i],dihedral[0],dihedral[1],dihedral[2],dihedral[3]))
+                    data.write('{:d}\t{:d}\t{:d}\t{:d}\t{:d}\t{:d}\n'.format(
+                        i+1,dihedral_types[i],dihedral[0],
+                        dihedral[1],dihedral[2],dihedral[3]))

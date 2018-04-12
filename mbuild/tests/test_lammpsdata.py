@@ -14,7 +14,7 @@ class TestLammpsData(BaseTest):
         ethane.save(filename='ethane-opls.lammps',forcefield_name='oplsaa')
 
     def test_save_box(self, ethane):
-        box = mb.Box(lengths=np.array([2.0, 2.0, 2.0])) 
+        box = mb.Box(lengths=np.array([2.0, 2.0, 2.0]))
         ethane.save(filename='ethane-box.lammps', forcefield_name='oplsaa', box=box)
 
     @pytest.mark.parametrize('atom_style, n_columns', [('full', 7), ('atomic', 5), ('molecular', 6), ('charge', 6)])
