@@ -43,8 +43,6 @@ class TestPacking(BaseTest):
         assert filled.n_bonds == 50 * 2
         assert ((np.min(filled.xyz[:,0]) >= 3 - 0.01) or
                 (np.min(filled.xyz[:,0]) >= 3 + 0.01))
-
-        assert np.min(filled.xyz[:,0]) >= 3
         assert np.max(filled.xyz[:,2]) <= 3
 
     def test_fill_region_box(self, h2o):
