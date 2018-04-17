@@ -389,14 +389,16 @@ def _validate_box(box):
 
 def _packmol_error(out, err):
     """Log packmol output to files. """
-    with open('log.txt', 'w') as log_file, open('err.txt', 'w') as err_file:
+    with open('log.txt', 'w') as log_file:
         log_file.write(out)
-        err_file.write(err)
-    raise RuntimeError("PACKMOL failed. See 'err.txt' and 'log.txt'")
+    raise RuntimeError("PACKMOL failed. See 'log.txt'")
 
 def _run_packmol(input_text, filled_pdb, temp_file):
-    proc = Popen(PACKMOL, stdin=PIPE, stdout=PIPE, stderr=PIPE, universal_newlines=True)
-    out, err = proc.communicate(input=input_text)
+    inp_file = tempfile.mkstemp(suffix=".inp")[1]
+    with open(inp_file, "w") as inp:
+        inp.write(input_text)
+    proc = Popen(PACKMOL, stdin=open(inp_file), stdout=PIPE, universal_newlines=True)
+    out, err = proc.communicate()
 
     if 'WITHOUT PERFECT PACKING' in out:
         msg = ("Packmol finished with imperfect packing. Using "
