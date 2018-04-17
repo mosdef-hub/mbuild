@@ -41,6 +41,9 @@ class TestPacking(BaseTest):
                                 region=[3, 2, 2, 4, 4, 3])
         assert filled.n_particles == 50 * 3
         assert filled.n_bonds == 50 * 2
+        assert ((np.min(filled.xyz[:,0]) >= 3 - 0.01) or
+                (np.min(filled.xyz[:,0]) >= 3 + 0.01))
+
         assert np.min(filled.xyz[:,0]) >= 3
         assert np.max(filled.xyz[:,2]) <= 3
 
@@ -160,7 +163,7 @@ class TestPacking(BaseTest):
         # Translate w0 and w1 to COM
         w0 -= w0.sum(0) / len(w0)
         w1 -= w1.sum(0) / len(w1)
-        assert np.isclose(w0, w1).all()
+        assert np.isclose(w0, w1, atol=1e-07).all()
 
     def test_no_rotate(self, h2o):
         filled = mb.fill_box([h2o, h2o], [1, 1], box=[1, 1, 1], fix_orientation=[False, True])
