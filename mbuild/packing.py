@@ -19,7 +19,7 @@ __all__ = ['fill_box', 'fill_region', 'solvate']
 PACKMOL = find_executable('packmol')
 PACKMOL_HEADER = """
 tolerance {0:.16f}
-filetype pdb
+filetype xyz
 output {1}
 seed {2}
 
@@ -176,12 +176,12 @@ def fill_box(compound, n_compounds=None, box=None, density=None, overlap=0.2,
     box_maxs -= edge * 10
 
     # Build the input file for each compound and call packmol.
-    filled_pdb = tempfile.mkstemp(suffix='.pdb')[1]
+    filled_pdb = tempfile.mkstemp(suffix='.xyz')[1]
     input_text = PACKMOL_HEADER.format(overlap, filled_pdb, seed)
 
     for comp, m_compounds, rotate in zip(compound, n_compounds, fix_orientation):
         m_compounds = int(m_compounds)
-        compound_pdb = tempfile.mkstemp(suffix='.pdb')[1]
+        compound_pdb = tempfile.mkstemp(suffix='.xyz')[1]
         comp.save(compound_pdb, overwrite=True)
         input_text += PACKMOL_BOX.format(compound_pdb, m_compounds,
                            box_mins[0], box_mins[1], box_mins[2],
@@ -191,11 +191,17 @@ def fill_box(compound, n_compounds=None, box=None, density=None, overlap=0.2,
     _run_packmol(input_text, filled_pdb, temp_file)
 
     # Create the topology and update the coordinates.
+    xyz_cords = _get_xyz_cords(filled_pdb)
     filled = Compound()
     for comp, m_compounds in zip(compound, n_compounds):
         for _ in range(m_compounds):
-            filled.add(clone(comp))
-    filled.update_coordinates(filled_pdb)
+            new_comp = clone(comp)
+            init_xyz = new_comp.xyz
+            new_cords = xyz_cords[0]
+            xyz_cords = xyz_cords[1:]
+            new_comp.translate_to(new_cords)
+            new_comp._update_port_locations(init_xyz)
+            filled.add(new_comp)
     filled.periodicity = np.asarray(box.lengths, dtype=np.float32)
     return filled
 
@@ -263,12 +269,12 @@ def fill_region(compound, n_compounds, region, overlap=0.2,
     overlap *= 10
 
     # Build the input file and call packmol.
-    filled_pdb = tempfile.mkstemp(suffix='.pdb')[1]
+    filled_pdb = tempfile.mkstemp(suffix='.xyz')[1]
     input_text = PACKMOL_HEADER.format(overlap, filled_pdb, seed)
 
     for comp, m_compounds, reg, rotate in zip(compound, n_compounds, region, fix_orientation):
         m_compounds = int(m_compounds)
-        compound_pdb = tempfile.mkstemp(suffix='.pdb')[1]
+        compound_pdb = tempfile.mkstemp(suffix='.xyz')[1]
         comp.save(compound_pdb, overwrite=True)
         reg_mins = reg.mins * 10
         reg_maxs = reg.maxs * 10
@@ -280,12 +286,18 @@ def fill_region(compound, n_compounds, region, overlap=0.2,
 
     _run_packmol(input_text, filled_pdb, temp_file)
 
-    # Create the topology and update the coordinates.
+    xyz_cords = _get_xyz_cords(filled_pdb)
     filled = Compound()
     for comp, m_compounds in zip(compound, n_compounds):
         for _ in range(m_compounds):
-            filled.add(clone(comp))
-    filled.update_coordinates(filled_pdb)
+            new_comp = clone(comp)
+            init_xyz = new_comp.xyz
+            new_cords = xyz_cords[0]
+            xyz_cords = xyz_cords[1:]
+            new_comp.translate_to(new_cords)
+            new_comp._update_port_locations(init_xyz)
+            filled.add(new_comp)
+
     return filled
 
 
@@ -347,15 +359,15 @@ def solvate(solute, solvent, n_solvent, box, overlap=0.2,
     box_maxs -= edge * 10
 
     # Build the input file for each compound and call packmol.
-    solvated_pdb = tempfile.mkstemp(suffix='.pdb')[1]
-    solute_pdb = tempfile.mkstemp(suffix='.pdb')[1]
+    solvated_pdb = tempfile.mkstemp(suffix='.xyz')[1]
+    solute_pdb = tempfile.mkstemp(suffix='.xyz')[1]
     solute.save(solute_pdb, overwrite=True)
     input_text = (PACKMOL_HEADER.format(overlap, solvated_pdb, seed) +
                   PACKMOL_SOLUTE.format(solute_pdb, *center_solute))
 
     for solv, m_solvent, rotate in zip(solvent, n_solvent, fix_orientation):
         m_solvent = int(m_solvent)
-        solvent_pdb = tempfile.mkstemp(suffix='.pdb')[1]
+        solvent_pdb = tempfile.mkstemp(suffix='.xyz')[1]
         solv.save(solvent_pdb, overwrite=True)
         input_text += PACKMOL_BOX.format(solvent_pdb, m_solvent,
                            box_mins[0], box_mins[1], box_mins[2],
@@ -363,13 +375,19 @@ def solvate(solute, solvent, n_solvent, box, overlap=0.2,
                            PACKMOL_CONSTRAIN if rotate else "")
     _run_packmol(input_text, solvated_pdb, temp_file)
 
-    # Create the topology and update the coordinates.
+    xyz_cords = _get_xyz_cords(solvated_pdb)
     solvated = Compound()
     solvated.add(solute)
     for solv, m_solvent in zip(solvent, n_solvent):
         for _ in range(m_solvent):
-            solvated.add(clone(solv))
-    solvated.update_coordinates(solvated_pdb)
+            new_solv = clone(solv)
+            init_xyz = new_solv.xyz
+            new_cords = xyz_cords[0]
+            xyz_cords = xyz_cords[1:]
+            new_solv.translate_to(new_cords)
+            new_solv._update_port_locations(init_xyz)
+            solvated.add(new_solv)
+
     return solvated
 
 
@@ -419,3 +437,13 @@ def _check_packmol(PACKMOL):
             msg = (msg + " If packmol is already installed, make sure that the "
                          "packmol.exe is on the path.")
         raise IOError(msg)
+
+def _get_xyz_cords(file_name):
+    with open(file_name) as xyz_file:
+        natoms = int(xyz_file.readline())  # First line of xyz lists natoms
+        next(xyz_file)  # Skips title of xyz file
+        coords = np.zeros([natoms, 3], dtype="float64")
+        for i, x in enumerate(coords):
+            line = xyz_file.readline().split()
+            coords[i] = line[1:4]
+        return coords/10  # Unit conversion
