@@ -1163,9 +1163,9 @@ class Compound(object):
     def energy_minimize(self, forcefield='UFF',steps=1000, **kwargs):
         """Perform an energy minimization on a Compound
 
-        Utilizes Open Babel (http://openbabel.org/docs/dev/) to perform an
-        energy minimization/geometry optimization on a Compound by applying
-        a generic force field
+        Default beahvior utilizes Open Babel (http://openbabel.org/docs/dev/) 
+        to perform an energy minimization/geometry optimization on a 
+        Compound by applying a generic force field
 
         Can also utilize OpenMM (http://openmm.org/) to energy minimize
         after atomtyping a Compound using
@@ -1192,9 +1192,14 @@ class Compound(object):
             for more information.
 
 
-        Keyword Args
+        Keyword Arguments
         ------------
-        scale_bonds : float, optional, default=1
+       algorithm : str, optional, default='cg'
+            The energy minimization algorithm.  Valid options are 'steep',
+            'cg', and 'md', corresponding to steepest descent, conjugate
+            gradient, and equilibrium molecular dynamics respectively.
+            For _energy_minimize_openbabel
+    scale_bonds : float, optional, default=1
             Scales the bond force constant (1 is completely on).
             For _energy_minimize_openmm
         scale_angles : float, optional, default=1
@@ -1206,12 +1211,7 @@ class Compound(object):
         scale_nonbonded : float, optional, default=0.75
             Scales epsilon (1 is completely on)
             For _energy_minimize_openmm
-        algorithm : str, optional, default='cg'
-            The energy minimization algorithm.  Valid options are 'steep',
-            'cg', and 'md', corresponding to steepest descent, conjugate
-            gradient, and equilibrium molecular dynamics respectively.
-            For _energy_minimize_openbabel
-
+        
         References
         ----------
         If using _energy_minimize_openmm(), please cite:
@@ -1279,18 +1279,18 @@ class Compound(object):
         extension = os.path.splitext(forcefield)[-1]
         if extension == '.xml':
             self._energy_minimize_openmm(tmp_dir, forcefield=forcefield,
-                    steps=steps, **kwargs)
+                                         steps=steps, **kwargs)
 
         else:
             self._energy_minimize_openbabel(tmp_dir, forcefield=forcefield,
-                    steps=steps, **kwargs)
+                                            steps=steps, **kwargs)
 
 
         self.update_coordinates(os.path.join(tmp_dir, 'minimized.pdb'))
 
     def _energy_minimize_openmm(self, tmp_dir, forcefield=None, steps=1000,
-            scale_bonds=1, scale_angles=1, scale_torsions=0.5,
-            scale_nonbonded=0.75):
+                                scale_bonds=1, scale_angles=1, scale_torsions=0.5,
+                                scale_nonbonded=0.75):
         """ Perform energy minimization using OpenMM
 
         Converts an mBuild Compound to a Parmed Structure,
@@ -1343,7 +1343,7 @@ class Compound(object):
 
         system = to_parmed.createSystem()
         integrator = LangevinIntegrator(298*u.kelvin, 1/u.picosecond,
-                0.002*u.picoseconds)
+                                        0.002*u.picoseconds)
         simulation = Simulation(to_parmed.topology, system, integrator)
 
         for force in system.getForces():
@@ -1357,20 +1357,21 @@ class Compound(object):
 
             elif type(force).__name__ == "HarmonicAngleForce":
                 for angle_index in range(force.getNumAngles()):
-                    atom1, atom2, atom3, r0, k = force.getAngleParameters(angle_index)
+                    atom1, atom2, atom3, r0, k = force.getAngleParameters(
+                        angle_index)
                     force.setAngleParameters(angle_index,
-                            atom1, atom2, atom3,
-                            r0, k*scale_angles)
+                                             atom1, atom2, atom3,
+                                             r0, k*scale_angles)
                 force.updateParametersInContext(simulation.context)
 
             elif type(force).__name__ == "RBTorsionForce":
                 for torsion_index in range(force.getNumTorsions()):
                     atom1, atom2, atom3, atom4, c0, c1, c2, c3, c4, c5 = force.getTorsionParameters(torsion_index)
                     force.setTorsionParameters(torsion_index,
-                            atom1, atom2, atom3, atom4,
-                            c0*scale_torsions, c1*scale_torsions,
-                            c2*scale_torsions, c3*scale_torsions,
-                            c4*scale_torsions, c5*scale_torsions)
+                                               atom1, atom2, atom3, atom4,
+                                               c0*scale_torsions, c1*scale_torsions,
+                                               c2*scale_torsions, c3*scale_torsions,
+                                               c4*scale_torsions, c5*scale_torsions)
                 force.updateParametersInContext(simulation.context)
 
             elif type(force).__name__ == "NonbondedForce":
