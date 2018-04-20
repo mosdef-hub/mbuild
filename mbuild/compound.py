@@ -20,6 +20,8 @@ import parmed as pmd
 from parmed.periodic_table import AtomicNum, element_by_name, Mass
 from six import integer_types, string_types
 
+from foyer import Forcefield
+
 from mbuild.bond_graph import BondGraph
 from mbuild.box import Box
 from mbuild.exceptions import MBuildError
@@ -1324,8 +1326,8 @@ class Compound(object):
             steps=1000,
             scale_bonds=1,
             scale_angles=1,
-            scale_torsions=0.5,
-            scale_nonbonded=0.75):
+            scale_torsions=1,
+            scale_nonbonded=1):
         """ Perform energy minimization using OpenMM
 
         Converts an mBuild Compound to a Parmed Structure,
@@ -1341,9 +1343,9 @@ class Compound(object):
             Scales the bond force constant (1 is completely on)
         scale_angles : float, optiona, default=1
             Scales the angle force constant (1 is completely on)
-        scale_torsions : float, optional, default=0.5
+        scale_torsions : float, optional, default=1
             Scales the torsional force constants (1 is completely on)
-        scale_nonbonded : float, optional, default=0.75
+        scale_nonbonded : float, optional, default=1
             Scales epsilon (1 is completely on)
 
 
@@ -1366,7 +1368,6 @@ class Compound(object):
 
 
         """
-        from foyer import Forcefield
         to_parmed = self.to_parmed()
         ff = Forcefield(forcefield_files=[forcefield])
         to_parmed = ff.apply(to_parmed)
