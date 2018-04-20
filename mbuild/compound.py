@@ -69,7 +69,8 @@ def load(filename, relative_to_module=None, compound=None, coords_only=False,
     # in its own folder. E.g., you build a system from ~/foo.py and it imports
     # from ~/bar/baz.py where baz.py loads ~/bar/baz.pdb.
     if relative_to_module:
-        script_path = os.path.realpath(sys.modules[relative_to_module].__file__)
+        script_path = os.path.realpath(
+            sys.modules[relative_to_module].__file__)
         file_dir = os.path.dirname(script_path)
         filename = os.path.join(file_dir, filename)
 
@@ -77,8 +78,9 @@ def load(filename, relative_to_module=None, compound=None, coords_only=False,
         compound = Compound()
 
     if use_parmed:
-        warn("use_parmed set to True.  Bonds may be inferred from inter-particle "
-             "distances and standard residue templates!")
+        warn(
+            "use_parmed set to True.  Bonds may be inferred from inter-particle "
+            "distances and standard residue templates!")
         structure = pmd.load_file(filename, structure=True, **kwargs)
         compound.from_parmed(structure, coords_only=coords_only)
     else:
@@ -190,8 +192,9 @@ class Compound(object):
 
         if name:
             if not isinstance(name, string_types):
-                raise ValueError('Compound.name should be a string. You passed '
-                                 '{}'.format(name))
+                raise ValueError(
+                    'Compound.name should be a string. You passed '
+                    '{}'.format(name))
             self.name = name
         else:
             self.name = self.__class__.__name__
@@ -222,8 +225,9 @@ class Compound(object):
         # self.add() must be called after labels and children are initialized.
         if subcompounds:
             if charge:
-                raise MBuildError('Cannot set the charge of a Compound containing '
-                                  'subcompounds.')
+                raise MBuildError(
+                    'Cannot set the charge of a Compound containing '
+                    'subcompounds.')
             self.add(subcompounds)
             self._charge = 0.0
         else:
@@ -357,8 +361,9 @@ class Compound(object):
         if self._contains_only_ports():
             self._charge = value
         else:
-            raise AttributeError("charge is immutable for Compounds that are "
-                                 "not at the bottom of the containment hierarchy.")
+            raise AttributeError(
+                "charge is immutable for Compounds that are "
+                "not at the bottom of the containment hierarchy.")
 
     @property
     def rigid_id(self):
@@ -371,8 +376,9 @@ class Compound(object):
             for ancestor in self.ancestors():
                 ancestor._check_if_contains_rigid_bodies = True
         else:
-            raise AttributeError("rigid_id is immutable for Compounds that are "
-                                 "not at the bottom of the containment hierarchy.")
+            raise AttributeError(
+                "rigid_id is immutable for Compounds that are "
+                "not at the bottom of the containment hierarchy.")
 
     @property
     def contains_rigid(self):
@@ -566,10 +572,12 @@ class Compound(object):
 
         """
         max_rigid = self.max_rigid_id
-        unique_rigid_ids = sorted(set([p.rigid_id for p in self.rigid_particles()]))
+        unique_rigid_ids = sorted(
+            set([p.rigid_id for p in self.rigid_particles()]))
         n_unique_rigid = len(unique_rigid_ids)
         if max_rigid and n_unique_rigid != max_rigid + 1:
-            missing_rigid_id = (unique_rigid_ids[-1] * (unique_rigid_ids[-1] + 1))/2 - sum(unique_rigid_ids)
+            missing_rigid_id = (
+                unique_rigid_ids[-1] * (unique_rigid_ids[-1] + 1)) / 2 - sum(unique_rigid_ids)
             for successor in self.successors():
                 if successor.rigid_id is not None:
                     if successor.rigid_id > missing_rigid_id:
@@ -703,7 +711,8 @@ class Compound(object):
             if removed_part.rigid_id is not None:
                 for ancestor in removed_part.ancestors():
                     ancestor._check_if_contains_rigid_bodies = True
-            if self.root.bond_graph and self.root.bond_graph.has_node(removed_part):
+            if self.root.bond_graph and self.root.bond_graph.has_node(
+                    removed_part):
                 for neighbor in self.root.bond_graph.neighbors(removed_part):
                     self.root.remove_bond((removed_part, neighbor))
                 self.root.bond_graph.remove_node(removed_part)
@@ -802,7 +811,8 @@ class Compound(object):
             if self.root == self:
                 return self.root.bond_graph.edges_iter()
             else:
-                return self.root.bond_graph.subgraph(self.particles()).edges_iter()
+                return self.root.bond_graph.subgraph(
+                    self.particles()).edges_iter()
         else:
             return iter(())
 
@@ -847,7 +857,8 @@ class Compound(object):
             The maximum distance between Particles for considering a bond
 
         """
-        particle_kdtree = PeriodicCKDTree(data=self.xyz, bounds=self.periodicity)
+        particle_kdtree = PeriodicCKDTree(
+            data=self.xyz, bounds=self.periodicity)
         particle_array = np.array(list(self.particles()))
         added_bonds = list()
         for p1 in self.particles_by_name(name_a):
@@ -875,7 +886,8 @@ class Compound(object):
 
         """
         from mbuild.port import Port
-        if self.root.bond_graph is None or not self.root.bond_graph.has_edge(*particle_pair):
+        if self.root.bond_graph is None or not self.root.bond_graph.has_edge(
+                *particle_pair):
             warn("Bond between {} and {} doesn't exist!".format(*particle_pair))
             return
         self.root.bond_graph.remove_edge(*particle_pair)
@@ -887,10 +899,10 @@ class Compound(object):
         distance = np.linalg.norm(bond_vector)
         particle_pair[0].parent.add(Port(anchor=particle_pair[0],
                                          orientation=-bond_vector,
-                                         separation=distance/2), 'port[$]')
+                                         separation=distance / 2), 'port[$]')
         particle_pair[1].parent.add(Port(anchor=particle_pair[1],
                                          orientation=bond_vector,
-                                         separation=distance/2), 'port[$]')
+                                         separation=distance / 2), 'port[$]')
 
     @property
     def pos(self):
@@ -945,8 +957,10 @@ class Compound(object):
         if not self.children:
             pos = self._pos
         else:
-            arr = np.fromiter(itertools.chain.from_iterable(
-                particle.pos for particle in self.particles(include_ports=True)), dtype=float)
+            arr = np.fromiter(
+                itertools.chain.from_iterable(
+                    particle.pos for particle in self.particles(
+                        include_ports=True)), dtype=float)
             pos = arr.reshape((-1, 3))
         return pos
 
@@ -964,11 +978,15 @@ class Compound(object):
         """
         if not self.children:
             if not arrnx3.shape[0] == 1:
-                raise ValueError('Trying to set position of {} with more than one'
-                                 'coordinate: {}'.format(self, arrnx3))
+                raise ValueError(
+                    'Trying to set position of {} with more than one'
+                    'coordinate: {}'.format(
+                        self, arrnx3))
             self.pos = np.squeeze(arrnx3)
         else:
-            for atom, coords in zip(self._particles(include_ports=False), arrnx3):
+            for atom, coords in zip(
+                self._particles(
+                    include_ports=False), arrnx3):
                 atom.pos = coords
 
     @xyz_with_ports.setter
@@ -983,11 +1001,15 @@ class Compound(object):
         """
         if not self.children:
             if not arrnx3.shape[0] == 1:
-                raise ValueError('Trying to set position of {} with more than one'
-                                 'coordinate: {}'.format(self, arrnx3))
+                raise ValueError(
+                    'Trying to set position of {} with more than one'
+                    'coordinate: {}'.format(
+                        self, arrnx3))
             self.pos = np.squeeze(arrnx3)
         else:
-            for atom, coords in zip(self._particles(include_ports=True), arrnx3):
+            for atom, coords in zip(
+                self._particles(
+                    include_ports=True), arrnx3):
                 atom.pos = coords
 
     @property
@@ -1038,8 +1060,13 @@ class Compound(object):
         d = np.where(d > 0.5 * self.periodicity, self.periodicity - d, d)
         return np.sqrt((d ** 2).sum(axis=-1))
 
-    def particles_in_range(self, compound, dmax, max_particles=20, particle_kdtree=None,
-                           particle_array=None):
+    def particles_in_range(
+            self,
+            compound,
+            dmax,
+            max_particles=20,
+            particle_kdtree=None,
+            particle_array=None):
         """Find particles within a specified range of another particle.
 
         Parameters
@@ -1069,8 +1096,10 @@ class Compound(object):
 
         """
         if particle_kdtree is None:
-            particle_kdtree = PeriodicCKDTree(data=self.xyz, bounds=self.periodicity)
-        _, idxs = particle_kdtree.query(compound.pos, k=max_particles, distance_upper_bound=dmax)
+            particle_kdtree = PeriodicCKDTree(
+                data=self.xyz, bounds=self.periodicity)
+        _, idxs = particle_kdtree.query(
+            compound.pos, k=max_particles, distance_upper_bound=dmax)
         idxs = idxs[idxs != self.n_particles]
         if particle_array is None:
             particle_array = np.array(list(self.particles()))
@@ -1156,15 +1185,16 @@ class Compound(object):
         self._update_port_locations(xyz_init)
 
     warning_message = 'Please use Compound.energy_minimize()'
+
     @deprecated(warning_message)
     def energy_minimization(self, forcefield='UFF', steps=1000, **kwargs):
         self.energy_minimize(forcefield=forcefield, steps=steps, **kwargs)
 
-    def energy_minimize(self, forcefield='UFF',steps=1000, **kwargs):
+    def energy_minimize(self, forcefield='UFF', steps=1000, **kwargs):
         """Perform an energy minimization on a Compound
 
-        Default beahvior utilizes Open Babel (http://openbabel.org/docs/dev/) 
-        to perform an energy minimization/geometry optimization on a 
+        Default beahvior utilizes Open Babel (http://openbabel.org/docs/dev/)
+        to perform an energy minimization/geometry optimization on a
         Compound by applying a generic force field
 
         Can also utilize OpenMM (http://openmm.org/) to energy minimize
@@ -1211,7 +1241,7 @@ class Compound(object):
         scale_nonbonded : float, optional, default=0.75
             Scales epsilon (1 is completely on)
             For _energy_minimize_openmm
-        
+
         References
         ----------
         If using _energy_minimize_openmm(), please cite:
@@ -1275,7 +1305,7 @@ class Compound(object):
         tmp_dir = tempfile.mkdtemp()
         original = clone(self)
         self._kick()
-        self.save(os.path.join(tmp_dir,'un-minimized.mol2'))
+        self.save(os.path.join(tmp_dir, 'un-minimized.mol2'))
         extension = os.path.splitext(forcefield)[-1]
         if extension == '.xml':
             self._energy_minimize_openmm(tmp_dir, forcefield=forcefield,
@@ -1285,12 +1315,17 @@ class Compound(object):
             self._energy_minimize_openbabel(tmp_dir, forcefield=forcefield,
                                             steps=steps, **kwargs)
 
-
         self.update_coordinates(os.path.join(tmp_dir, 'minimized.pdb'))
 
-    def _energy_minimize_openmm(self, tmp_dir, forcefield=None, steps=1000,
-                                scale_bonds=1, scale_angles=1, scale_torsions=0.5,
-                                scale_nonbonded=0.75):
+    def _energy_minimize_openmm(
+            self,
+            tmp_dir,
+            forcefield=None,
+            steps=1000,
+            scale_bonds=1,
+            scale_angles=1,
+            scale_torsions=0.5,
+            scale_nonbonded=0.75):
         """ Perform energy minimization using OpenMM
 
         Converts an mBuild Compound to a Parmed Structure,
@@ -1342,8 +1377,8 @@ class Compound(object):
         import simtk.unit as u
 
         system = to_parmed.createSystem()
-        integrator = LangevinIntegrator(298*u.kelvin, 1/u.picosecond,
-                                        0.002*u.picoseconds)
+        integrator = LangevinIntegrator(298 * u.kelvin, 1 / u.picosecond,
+                                        0.002 * u.picoseconds)
         simulation = Simulation(to_parmed.topology, system, integrator)
 
         for force in system.getForces():
@@ -1351,8 +1386,8 @@ class Compound(object):
                 for bond_index in range(force.getNumBonds()):
                     atom1, atom2, r0, k = force.getBondParameters(bond_index)
                     force.setBondParameters(bond_index,
-                        atom1, atom2,
-                        r0, k*scale_bonds)
+                                            atom1, atom2,
+                                            r0, k * scale_bonds)
                 force.updateParametersInContext(simulation.context)
 
             elif type(force).__name__ == "HarmonicAngleForce":
@@ -1361,44 +1396,56 @@ class Compound(object):
                         angle_index)
                     force.setAngleParameters(angle_index,
                                              atom1, atom2, atom3,
-                                             r0, k*scale_angles)
+                                             r0, k * scale_angles)
                 force.updateParametersInContext(simulation.context)
 
             elif type(force).__name__ == "RBTorsionForce":
                 for torsion_index in range(force.getNumTorsions()):
-                    atom1, atom2, atom3, atom4, c0, c1, c2, c3, c4, c5 = force.getTorsionParameters(torsion_index)
-                    force.setTorsionParameters(torsion_index,
-                                               atom1, atom2, atom3, atom4,
-                                               c0*scale_torsions, c1*scale_torsions,
-                                               c2*scale_torsions, c3*scale_torsions,
-                                               c4*scale_torsions, c5*scale_torsions)
+                    atom1, atom2, atom3, atom4, c0, c1, c2, c3, c4, c5 = force.getTorsionParameters(
+                        torsion_index)
+                    force.setTorsionParameters(
+                        torsion_index,
+                        atom1,
+                        atom2,
+                        atom3,
+                        atom4,
+                        c0 * scale_torsions,
+                        c1 * scale_torsions,
+                        c2 * scale_torsions,
+                        c3 * scale_torsions,
+                        c4 * scale_torsions,
+                        c5 * scale_torsions)
                 force.updateParametersInContext(simulation.context)
 
             elif type(force).__name__ == "NonbondedForce":
                 for nb_index in range(force.getNumParticles()):
-                    charge, sigma, epsilon = force.getParticleParameters(nb_index)
+                    charge, sigma, epsilon = force.getParticleParameters(
+                        nb_index)
                     force.setParticleParameters(nb_index,
-                            charge, sigma, epsilon*scale_nonbonded)
+                                                charge, sigma,
+                                                epsilon * scale_nonbonded)
                 force.updateParametersInContext(simulation.context)
 
             elif type(force).__name__ == "CMMotionRemover":
                 pass
 
             else:
-                warn('OpenMM Force {} is '
+                warn(
+                    'OpenMM Force {} is '
                     'not currently supported in _energy_minimize_openmm. '
-                    'This Force will not be updated!'.format(type(force).__name__))
-
-
+                    'This Force will not be updated!'.format(
+                        type(force).__name__))
 
         simulation.context.setPositions(to_parmed.positions)
         simulation.minimizeEnergy(maxIterations=steps)
-        reporter = PDBReporter(os.path.join(tmp_dir, 'minimized.pdb'),1)
-        reporter.report(simulation, simulation.context.getState(getPositions=True))
-
+        reporter = PDBReporter(os.path.join(tmp_dir, 'minimized.pdb'), 1)
+        reporter.report(
+            simulation,
+            simulation.context.getState(
+                getPositions=True))
 
     def _energy_minimize_openbabel(self, tmp_dir, steps=1000, algorithm='cg',
-                            forcefield='UFF'):
+                                   forcefield='UFF'):
         """Perform an energy minimization on a Compound
 
         Utilizes Open Babel (http://openbabel.org/docs/dev/) to perform an
@@ -1480,9 +1527,8 @@ class Compound(object):
                     get_by_symbol(particle.name[1:2])
                 except KeyError:
                     raise MBuildError("Element name {} not recognized. Cannot "
-                                  "perform minimization."
-                                  "".format(particle.name))
-
+                                      "perform minimization."
+                                      "".format(particle.name))
 
         obConversion = openbabel.OBConversion()
         obConversion.SetInAndOutFormats("mol2", "pdb")
@@ -1496,9 +1542,10 @@ class Compound(object):
                               "minimization. Valid force fields are 'MMFF94', "
                               "'MMFF94s', 'UFF', 'GAFF', and 'Ghemical'."
                               "".format(forcefield))
-        warn("Performing energy minimization using the Open Babel package. Please "
-             "refer to the documentation to find the appropriate citations for "
-             "Open Babel and the {} force field".format(forcefield))
+        warn(
+            "Performing energy minimization using the Open Babel package. Please "
+            "refer to the documentation to find the appropriate citations for "
+            "Open Babel and the {} force field".format(forcefield))
         ff.Setup(mol)
         if algorithm == 'steep':
             ff.SteepestDescent(steps)
@@ -1717,8 +1764,11 @@ class Compound(object):
                 chain_compound = self
             for res in chain.residues:
                 for atom in res.atoms:
-                    new_atom = Particle(name=str(atom.name), pos=traj.xyz[frame, atom.index])
-                    chain_compound.add(new_atom, label='{0}[$]'.format(atom.name))
+                    new_atom = Particle(name=str(atom.name),
+                                        pos=traj.xyz[frame, atom.index])
+                    chain_compound.add(
+                        new_atom, label='{0}[$]'.format(
+                            atom.name))
                     atom_mapping[atom] = new_atom
 
         for mdtraj_atom1, mdtraj_atom2 in traj.topology.bonds:
@@ -1831,7 +1881,8 @@ class Compound(object):
                             if parent not in compound_chain_map:
                                 current_chain = top.add_chain()
                                 compound_chain_map[parent] = current_chain
-                                current_residue = top.add_residue('RES', current_chain)
+                                current_residue = top.add_residue(
+                                    'RES', current_chain)
                             break
                     else:
                         current_chain = default_chain
@@ -1848,18 +1899,19 @@ class Compound(object):
                     for parent in atom.ancestors():
                         if residues and parent.name in residues:
                             if parent not in compound_residue_map:
-                                current_residue = top.add_residue(parent.name, current_chain)
+                                current_residue = top.add_residue(
+                                    parent.name, current_chain)
                                 compound_residue_map[parent] = current_residue
                             break
                     else:
                         current_residue = default_residue
             else:
                 if chains:
-                    try: # Grab the default residue from the custom chain.
+                    try:  # Grab the default residue from the custom chain.
                         current_residue = next(current_chain.residues)
-                    except StopIteration: # Add the residue to the current chain
+                    except StopIteration:  # Add the residue to the current chain
                         current_residue = top.add_residue('RES', current_chain)
-                else: # Grab the default chain's default residue
+                else:  # Grab the default chain's default residue
                     current_residue = default_residue
             atom_residue_map[atom] = current_residue
 
@@ -1873,7 +1925,8 @@ class Compound(object):
             atom_mapping[atom] = at
 
         # Remove empty default residues.
-        chains_to_remove = [chain for chain in top.chains if chain.n_atoms == 0]
+        chains_to_remove = [
+            chain for chain in top.chains if chain.n_atoms == 0]
         residues_to_remove = [res for res in top.residues if res.n_atoms == 0]
         for chain in chains_to_remove:
             top._chains.remove(chain)
@@ -1908,8 +1961,10 @@ class Compound(object):
         """
         if coords_only:
             if len(structure.atoms) != self.n_particles:
-                raise ValueError('Number of atoms in {structure} does not match'
-                                 ' {self}'.format(**locals()))
+                raise ValueError(
+                    'Number of atoms in {structure} does not match'
+                    ' {self}'.format(
+                        **locals()))
             atoms_particles = zip(structure.atoms,
                                   self._particles(include_ports=False))
             for parmed_atom, particle in atoms_particles:
@@ -1934,7 +1989,9 @@ class Compound(object):
                 for atom in residue.atoms:
                     pos = np.array([atom.xx, atom.xy, atom.xz]) / 10
                     new_atom = Particle(name=str(atom.name), pos=pos)
-                    chain_compound.add(new_atom, label='{0}[$]'.format(atom.name))
+                    chain_compound.add(
+                        new_atom, label='{0}[$]'.format(
+                            atom.name))
                     atom_mapping[atom] = new_atom
 
         for bond in structure.bonds:
@@ -2008,11 +2065,14 @@ class Compound(object):
 
             atomic_number = None
             name = ''.join(char for char in atom.name if not char.isdigit())
-            try: atomic_number = AtomicNum[atom.name]
+            try:
+                atomic_number = AtomicNum[atom.name]
             except KeyError:
                 element = element_by_name(atom.name)
                 if name not in guessed_elements:
-                    warn('Guessing that "{}" is element: "{}"'.format(atom, element))
+                    warn(
+                        'Guessing that "{}" is element: "{}"'.format(
+                            atom, element))
                     guessed_elements.add(name)
             else:
                 element = atom.name
@@ -2086,16 +2146,20 @@ class Compound(object):
                 if type(parent) in molecule_types:
                     # Check if we have encountered this molecule type before.
                     if parent.name not in intermol_system.molecule_types:
-                        self._add_intermol_molecule_type(intermol_system, parent)
+                        self._add_intermol_molecule_type(
+                            intermol_system, parent)
                     if parent != last_molecule_compound:
                         last_molecule_compound = parent
                         last_molecule = Molecule(name=parent.name)
                         intermol_system.add_molecule(last_molecule)
                     break
             else:
-                # Should never happen if molecule_types only contains type(self)
-                raise ValueError('Found an atom {} that is not part of any of '
-                                 'the specified molecule types {}'.format(atom, molecule_types))
+                # Should never happen if molecule_types only contains
+                # type(self)
+                raise ValueError(
+                    'Found an atom {} that is not part of any of '
+                    'the specified molecule types {}'.format(
+                        atom, molecule_types))
 
             # Add the actual intermol atoms.
             intermol_atom = InterMolAtom(atom_index + 1, name=atom.name,
@@ -2171,7 +2235,8 @@ class Compound(object):
         newone.periodicity = deepcopy(self.periodicity)
         newone._pos = deepcopy(self._pos)
         newone.port_particle = deepcopy(self.port_particle)
-        newone._check_if_contains_rigid_bodies = deepcopy(self._check_if_contains_rigid_bodies)
+        newone._check_if_contains_rigid_bodies = deepcopy(
+            self._check_if_contains_rigid_bodies)
         newone._contains_rigid = deepcopy(self._contains_rigid)
         newone._rigid_id = deepcopy(self._rigid_id)
         newone._charge = deepcopy(self._charge)
@@ -2199,15 +2264,18 @@ class Compound(object):
         if self.labels:
             for label, compound in self.labels.items():
                 if not isinstance(compound, list):
-                    newone.labels[label] = compound._clone(clone_of, root_container)
+                    newone.labels[label] = compound._clone(
+                        clone_of, root_container)
                     compound.referrers.add(clone_of[compound])
                 else:
                     # compound is a list of compounds, so we create an empty
                     # list, and add the clones of the original list elements.
                     newone.labels[label] = []
                     for subpart in compound:
-                        newone.labels[label].append(subpart._clone(clone_of, root_container))
-                        # Referrers must have been handled already, or the will be handled
+                        newone.labels[label].append(
+                            subpart._clone(clone_of, root_container))
+                        # Referrers must have been handled already, or the will
+                        # be handled
 
         return newone
 
@@ -2217,8 +2285,9 @@ class Compound(object):
             try:
                 newone.add_bond((clone_of[c1], clone_of[c2]))
             except KeyError:
-                raise MBuildError("Cloning failed. Compound contains bonds to "
-                                  "Particles outside of its containment hierarchy.")
+                raise MBuildError(
+                    "Cloning failed. Compound contains bonds to "
+                    "Particles outside of its containment hierarchy.")
 
 
 Particle = Compound
