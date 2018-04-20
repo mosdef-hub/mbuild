@@ -67,3 +67,8 @@ different licenses. See those files for their specific terms.
    :hidden:
 
    recipes
+
+.. toctree::
+   :hidden:
+
+   citing_mbuild
