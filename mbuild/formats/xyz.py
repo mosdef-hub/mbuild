@@ -34,7 +34,7 @@ def read_xyz(filename):
             line = xyz_file.readline().split()
             coords[row] = line[1:4]
             coords[row] *= 0.1
-            particle = mb.Compound(pos = coords[row], name=line[0])
+            particle = mb.Compound(pos=coords[row], name=line[0])
             compound.add(mb.clone(particle))
 
     return compound
