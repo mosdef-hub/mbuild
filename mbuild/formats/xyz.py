@@ -36,11 +36,5 @@ def read_xyz(filename):
             coords[row] *= 0.1
             particle = mb.Compound(pos = coords[row], name=line[0])
             compound.add(mb.clone(particle))
-#        coords *= 0.1  # Convert from A to nm
-#
-#    compound = mb.Compound()
-#    for row  in range(n_atoms):
-#        particle = mb.Compound(pos = coords[row])
-#        compound.add(mb.clone(particle))
 
     return compound
