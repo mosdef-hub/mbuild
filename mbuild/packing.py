@@ -385,9 +385,10 @@ def solvate(solute, solvent, n_solvent, box, overlap=0.2,
         for _ in range(m_solvent):
             new_solv = clone(solv)
             init_xyz = new_solv.xyz
-            new_cords = xyz_cords[0]
-            xyz_cords = xyz_cords[1:]
-            new_solv.translate_to(new_cords)
+            for particle in new_solv.particles(include_ports=False):
+                new_cord = xyz_cords[0]
+                particle.pos = new_cord
+                xyz_cords = xyz_cords[1:]
             new_solv._update_port_locations(init_xyz)
             solvated.add(new_solv)
 
