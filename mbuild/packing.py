@@ -197,11 +197,13 @@ def fill_box(compound, n_compounds=None, box=None, density=None, overlap=0.2,
         for _ in range(m_compounds):
             new_comp = clone(comp)
             init_xyz = new_comp.xyz
-            new_cords = xyz_cords[0]
-            xyz_cords = xyz_cords[1:]
-            new_comp.translate_to(new_cords)
+            for particle in new_comp.particles(include_ports=False):
+                new_cord = xyz_cords[0]
+                particle.pos = new_cord
+                xyz_cords = xyz_cords[1:]
             new_comp._update_port_locations(init_xyz)
             filled.add(new_comp)
+
     filled.periodicity = np.asarray(box.lengths, dtype=np.float32)
     return filled
 
@@ -292,7 +294,7 @@ def fill_region(compound, n_compounds, region, overlap=0.2,
         for _ in range(m_compounds):
             new_comp = clone(comp)
             init_xyz = new_comp.xyz
-            for particle in new_comp._particles(include_ports=False):
+            for particle in new_comp.particles(include_ports=False):
                 new_cord = xyz_cords[0]
                 particle.pos = new_cord
                 xyz_cords = xyz_cords[1:]
