@@ -291,9 +291,9 @@ def fill_region(compound, n_compounds, region, overlap=0.2,
     for comp, m_compounds in zip(compound, n_compounds):
         for _ in range(m_compounds):
             new_comp = clone(comp)
-            new_cord = xyz_cords[0]
             init_xyz = new_comp.xyz
             for particle in new_comp._particles(include_ports=False):
+                new_cord = xyz_cords[0]
                 particle.pos = new_cord
                 xyz_cords = xyz_cords[1:]
             new_comp._update_port_locations(init_xyz)
