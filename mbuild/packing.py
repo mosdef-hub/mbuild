@@ -176,22 +176,22 @@ def fill_box(compound, n_compounds=None, box=None, density=None, overlap=0.2,
     box_maxs -= edge * 10
 
     # Build the input file for each compound and call packmol.
-    filled_pdb = tempfile.mkstemp(suffix='.xyz')[1]
-    input_text = PACKMOL_HEADER.format(overlap, filled_pdb, seed)
+    filled_xyz = tempfile.mkstemp(suffix='.xyz')[1]
+    input_text = PACKMOL_HEADER.format(overlap, filled_xyz, seed)
 
     for comp, m_compounds, rotate in zip(compound, n_compounds, fix_orientation):
         m_compounds = int(m_compounds)
-        compound_pdb = tempfile.mkstemp(suffix='.xyz')[1]
-        comp.save(compound_pdb, overwrite=True)
-        input_text += PACKMOL_BOX.format(compound_pdb, m_compounds,
+        compound_xyz = tempfile.mkstemp(suffix='.xyz')[1]
+        comp.save(compound_xyz, overwrite=True)
+        input_text += PACKMOL_BOX.format(compound_xyz, m_compounds,
                            box_mins[0], box_mins[1], box_mins[2],
                            box_maxs[0], box_maxs[1], box_maxs[2],
                            PACKMOL_CONSTRAIN if rotate else "")
 
-    _run_packmol(input_text, filled_pdb, temp_file)
+    _run_packmol(input_text, filled_xyz, temp_file)
 
     # Create the topology and update the coordinates.
-    xyz_cords = _get_xyz_cords(filled_pdb)
+    xyz_cords = _get_xyz_cords(filled_xyz)
     filled = Compound()
     for comp, m_compounds in zip(compound, n_compounds):
         for _ in range(m_compounds):
@@ -271,24 +271,24 @@ def fill_region(compound, n_compounds, region, overlap=0.2,
     overlap *= 10
 
     # Build the input file and call packmol.
-    filled_pdb = tempfile.mkstemp(suffix='.xyz')[1]
-    input_text = PACKMOL_HEADER.format(overlap, filled_pdb, seed)
+    filled_xyz = tempfile.mkstemp(suffix='.xyz')[1]
+    input_text = PACKMOL_HEADER.format(overlap, filled_xyz, seed)
 
     for comp, m_compounds, reg, rotate in zip(compound, n_compounds, region, fix_orientation):
         m_compounds = int(m_compounds)
-        compound_pdb = tempfile.mkstemp(suffix='.xyz')[1]
-        comp.save(compound_pdb, overwrite=True)
+        compound_xyz = tempfile.mkstemp(suffix='.xyz')[1]
+        comp.save(compound_xyz, overwrite=True)
         reg_mins = reg.mins * 10
         reg_maxs = reg.maxs * 10
         reg_maxs -= edge * 10 # Apply edge buffer
-        input_text += PACKMOL_BOX.format(compound_pdb, m_compounds,
+        input_text += PACKMOL_BOX.format(compound_xyz, m_compounds,
                                         reg_mins[0], reg_mins[1], reg_mins[2],
                                         reg_maxs[0], reg_maxs[1], reg_maxs[2],
                                         PACKMOL_CONSTRAIN if rotate else "")
 
-    _run_packmol(input_text, filled_pdb, temp_file)
+    _run_packmol(input_text, filled_xyz, temp_file)
 
-    xyz_cords = _get_xyz_cords(filled_pdb)
+    xyz_cords = _get_xyz_cords(filled_xyz)
     filled = Compound()
     for comp, m_compounds in zip(compound, n_compounds):
         for _ in range(m_compounds):
@@ -362,23 +362,23 @@ def solvate(solute, solvent, n_solvent, box, overlap=0.2,
     box_maxs -= edge * 10
 
     # Build the input file for each compound and call packmol.
-    solvated_pdb = tempfile.mkstemp(suffix='.xyz')[1]
-    solute_pdb = tempfile.mkstemp(suffix='.xyz')[1]
-    solute.save(solute_pdb, overwrite=True)
-    input_text = (PACKMOL_HEADER.format(overlap, solvated_pdb, seed) +
-                  PACKMOL_SOLUTE.format(solute_pdb, *center_solute))
+    solvated_xyz = tempfile.mkstemp(suffix='.xyz')[1]
+    solute_xyz = tempfile.mkstemp(suffix='.xyz')[1]
+    solute.save(solute_xyz, overwrite=True)
+    input_text = (PACKMOL_HEADER.format(overlap, solvated_xyz, seed) +
+                  PACKMOL_SOLUTE.format(solute_xyz, *center_solute))
 
     for solv, m_solvent, rotate in zip(solvent, n_solvent, fix_orientation):
         m_solvent = int(m_solvent)
-        solvent_pdb = tempfile.mkstemp(suffix='.xyz')[1]
-        solv.save(solvent_pdb, overwrite=True)
-        input_text += PACKMOL_BOX.format(solvent_pdb, m_solvent,
+        solvent_xyz = tempfile.mkstemp(suffix='.xyz')[1]
+        solv.save(solvent_xyz, overwrite=True)
+        input_text += PACKMOL_BOX.format(solvent_xyz, m_solvent,
                            box_mins[0], box_mins[1], box_mins[2],
                            box_maxs[0], box_maxs[1], box_maxs[2],
                            PACKMOL_CONSTRAIN if rotate else "")
-    _run_packmol(input_text, solvated_pdb, temp_file)
+    _run_packmol(input_text, solvated_xyz, temp_file)
 
-    xyz_cords = _get_xyz_cords(solvated_pdb)
+    xyz_cords = _get_xyz_cords(solvated_xyz)
     solvated = Compound()
     solvated.add(solute)
     for solv, m_solvent in zip(solvent, n_solvent):
@@ -415,7 +415,7 @@ def _packmol_error(out, err):
         log_file.write(out)
     raise RuntimeError("PACKMOL failed. See 'log.txt'")
 
-def _run_packmol(input_text, filled_pdb, temp_file):
+def _run_packmol(input_text, filled_file, temp_file):
     inp_file = tempfile.mkstemp(suffix=".inp")[1]
     with open(inp_file, "w") as inp:
         inp.write(input_text)
@@ -424,15 +424,15 @@ def _run_packmol(input_text, filled_pdb, temp_file):
 
     if 'WITHOUT PERFECT PACKING' in out:
         msg = ("Packmol finished with imperfect packing. Using "
-               "the .pdb_FORCED file instead. This may not be a "
+               "the .xyz_FORCED file instead. This may not be a "
                "sufficient packing result.")
         warnings.warn(msg)
-        os.system('cp {0}_FORCED {0}'.format(filled_pdb))
+        os.system('cp {0}_FORCED {0}'.format(filled_file))
     if 'ERROR' in out:
         _packmol_error(out, err)
 
     if temp_file is not None:
-        os.system('cp {0} {1}'.format(filled_pdb, os.path.join(temp_file)))
+        os.system('cp {0} {1}'.format(filled_file, os.path.join(temp_file)))
 
 def _check_packmol(PACKMOL):
     if not PACKMOL:
