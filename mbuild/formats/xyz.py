@@ -28,7 +28,7 @@ def read_xyz(filename):
 
     with open(filename, 'r') as xyz_file:
         n_atoms = int(xyz_file.readline())
-        next(xyz_file)
+        xyz_file.readline()
         coords = np.zeros(shape=(n_atoms, 3), dtype=np.float64)
         for row, _ in enumerate(coords):
             line = xyz_file.readline().split()
