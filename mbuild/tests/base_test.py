@@ -173,6 +173,7 @@ class BaseTest:
         from mbuild.lib.moieties import Silane
         return Silane()
 
+
     @pytest.fixture
     def chf(self):
         class CHF(mb.Compound):
