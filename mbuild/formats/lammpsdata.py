@@ -266,3 +266,10 @@ def write_lammpsdata(structure, filename, atom_style='full'):
                     data.write('{:d}\t{:d}\t{:d}\t{:d}\t{:d}\t{:d}\n'.format(
                         i+1,dihedral_types[i],dihedral[0],
                         dihedral[1],dihedral[2],dihedral[3]))
+            # Dihedral data
+            if impropers:
+                data.write('\nImpropers\n\n')
+                for i,improper in enumerate(impropers):
+                    data.write('{:d}\t{:d}\t{:d}\t{:d}\t{:d}\t{:d}\n'.format(
+                        i+1,improper_types[i],improper[0],
+                        improper[1],improper[2],improper[3]))
