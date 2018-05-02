@@ -80,6 +80,9 @@ def write_lammpsdata(structure, filename, atom_style='full'):
         use_dihedrals = True
         use_rb_torsions = False
 
+    else:
+        dihedrals = None
+
 
     if bonds:
         if len(structure.bond_types) == 0:
