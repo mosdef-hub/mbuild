@@ -83,6 +83,12 @@ def write_lammpsdata(structure, filename, atom_style='full'):
     else:
         dihedrals = None
 
+    impropers = [[improper.atom1.idx+1,
+                  improper.atom2.idx+1,
+                  improper.atom3.idx+1,
+                  improper.atom4.idx+1] for improper in structure.impropers]
+
+
 
     if bonds:
         if len(structure.bond_types) == 0:
@@ -135,6 +141,12 @@ def write_lammpsdata(structure, filename, atom_style='full'):
                                                      round(weight,3),
                                                      round(dihedral.type.scee,1),
                                                      round(dihedral.type.scnb,1))] for dihedral in structure.dihedrals]
+    if impropers:
+            unique_improper_types = dict(enumerate(set([(round(improper.type.psi_k,3),
+                                                         round(improper.type.psi_eq,3)) for improper in structure.impropers])))
+            unique_improper_types = OrderedDict([(y,x+1) for x,y in unique_improper_types.items()])
+            improper_types = [unique_improper_types[(round(improper.type.psi_k,3),
+                                                     round(dihedral.type.psi_eq,3))] for improper in structure.impropers]
 
     with open(filename, 'w') as data:
         data.write(filename+' - created by mBuild\n\n')
@@ -143,6 +155,7 @@ def write_lammpsdata(structure, filename, atom_style='full'):
             data.write('{:d} bonds\n'.format(len(bonds)))
             data.write('{:d} angles\n'.format(len(angles)))
             data.write('{:d} dihedrals\n\n'.format(len(dihedrals)))
+            data.write('{:d} impropers\n'.format(len(impropers)))
 
         data.write('{:d} atom types\n'.format(len(set(types))))
         if atom_style in ['full', 'molecular']:
@@ -152,6 +165,9 @@ def write_lammpsdata(structure, filename, atom_style='full'):
                 data.write('{:d} angle types\n'.format(len(set(angle_types))))
             if dihedrals:
                 data.write('{:d} dihedral types\n'.format(len(set(dihedral_types))))
+            if impropers:
+                data.write('{:d} improper types\n'.format(len(set(improper_types))))
+
 
         data.write('\n')
         # Box data
@@ -204,6 +220,12 @@ def write_lammpsdata(structure, filename, atom_style='full'):
                     data.write('\nDihedral Coeffs # charmm\n\n')
                     for params, idx in unique_dihedral_types.items():
                         data.write('{}\t{:.5f}\t{:d}\t{:d}\t{:.5f}\n'.format(idx, *params))
+
+            # Improper coefficients
+            if impropers:
+                data.write('\nImproper Coeffs # charmm\n\n')
+                for params,idx in unique_improper_types.items():
+                    data.write('{}\t{:.5f}\t{:.5f}\n'.format(idx, *params))
 
         # Atom data
         data.write('\nAtoms\n\n')
