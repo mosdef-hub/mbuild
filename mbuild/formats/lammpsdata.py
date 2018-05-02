@@ -146,7 +146,7 @@ def write_lammpsdata(structure, filename, atom_style='full'):
                                                          round(improper.type.psi_eq,3)) for improper in structure.impropers])))
             unique_improper_types = OrderedDict([(y,x+1) for x,y in unique_improper_types.items()])
             improper_types = [unique_improper_types[(round(improper.type.psi_k,3),
-                                                     round(dihedral.type.psi_eq,3))] for improper in structure.impropers]
+                                                     round(improper.type.psi_eq,3))] for improper in structure.impropers]
 
     with open(filename, 'w') as data:
         data.write(filename+' - created by mBuild\n\n')
