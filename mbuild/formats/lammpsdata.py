@@ -154,8 +154,8 @@ def write_lammpsdata(structure, filename, atom_style='full'):
         if atom_style in ['full', 'molecular']:
             data.write('{:d} bonds\n'.format(len(bonds)))
             data.write('{:d} angles\n'.format(len(angles)))
-            data.write('{:d} dihedrals\n\n'.format(len(dihedrals)))
-            data.write('{:d} impropers\n'.format(len(impropers)))
+            data.write('{:d} dihedrals\n'.format(len(dihedrals)))
+            data.write('{:d} impropers\n\n'.format(len(impropers)))
 
         data.write('{:d} atom types\n'.format(len(set(types))))
         if atom_style in ['full', 'molecular']:
