@@ -223,7 +223,7 @@ def write_lammpsdata(structure, filename, atom_style='full'):
 
             # Improper coefficients
             if impropers:
-                data.write('\nImproper Coeffs # charmm\n\n')
+                data.write('\nImproper Coeffs # harmonic\n\n')
                 for params,idx in unique_improper_types.items():
                     data.write('{}\t{:.5f}\t{:.5f}\n'.format(idx, *params))
 
