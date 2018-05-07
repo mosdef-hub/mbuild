@@ -1525,10 +1525,9 @@ class Compound(object):
             try:
                 get_by_symbol(particle.name)
             except KeyError:
-                except KeyError:
-                    raise MBuildError("Element name {} not recognized. Cannot "
-                                      "perform minimization."
-                                      "".format(particle.name))
+                raise MBuildError("Element name {} not recognized. Cannot "
+                                  "perform minimization."
+                                  "".format(particle.name))
 
         obConversion = openbabel.OBConversion()
         obConversion.SetInAndOutFormats("mol2", "pdb")
