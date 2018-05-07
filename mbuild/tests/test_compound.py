@@ -625,8 +625,6 @@ class TestCompound(BaseTest):
         ff_xml = get_fn('oplsaa.xml')
         octane.energy_minimize(forcefield=ff_xml)
 
-
-
     def test_clone_outside_containment(self, ch2, ch3):
         compound = mb.Compound()
         compound.add(ch2)
