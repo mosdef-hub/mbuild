@@ -78,7 +78,7 @@ def load(filename, relative_to_module=None, compound=None, coords_only=False,
 
     # Handle the case of a xyz file, which must use an internal reader
     extension = os.path.splitext(filename)[-1]
-    if extension == '.xyz':
+    if extension == '.xyz' and not 'top' in kwargs:
         compound = read_xyz(filename)
         return compound
 
