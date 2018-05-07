@@ -76,7 +76,7 @@ def write_lammpsdata(structure, filename, atom_style='full'):
         dihedrals = [[dihedral.atom1.idx+1,
                       dihedral.atom2.idx+1,
                       dihedral.atom3.idx+1,
-                      dihedral.atom4.idx+1] for dihedral in structure.dihedrals]
+                      dihedral.atom4.idx+1] for dihedral in structure.dihedrals if not dihedral.improper]
         use_dihedrals = True
         use_rb_torsions = False
 
@@ -133,14 +133,14 @@ def write_lammpsdata(structure, filename, atom_style='full'):
                                                          int(round(dihedral.type.phase,0)),
                                                          round(weight,3),
                                                          round(dihedral.type.scee,1),
-                                                         round(dihedral.type.scnb,1)) for dihedral in structure.dihedrals])))
+                                                         round(dihedral.type.scnb,1)) for dihedral in structure.dihedrals if not dihedral.improper])))
             unique_dihedral_types = OrderedDict([(y,x+1) for x,y in unique_dihedral_types.items()])
             dihedral_types = [unique_dihedral_types[(round(dihedral.type.phi_k,3),
                                                      int(round(dihedral.type.per,0)),
                                                      int(round(dihedral.type.phase,0)),
                                                      round(weight,3),
                                                      round(dihedral.type.scee,1),
-                                                     round(dihedral.type.scnb,1))] for dihedral in structure.dihedrals]
+                                                     round(dihedral.type.scnb,1))] for dihedral in structure.dihedrals if not dihedral.improper]
     if impropers:
             unique_improper_types = dict(enumerate(set([(round(improper.type.psi_k,3),
                                                          round(improper.type.psi_eq,3)) for improper in structure.impropers])))
