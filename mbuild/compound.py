@@ -1226,21 +1226,22 @@ class Compound(object):
 
         Keyword Arguments
         ------------
-       algorithm : str, optional, default='cg'
+        algorithm : str, optional, default='cg'
             The energy minimization algorithm.  Valid options are 'steep',
             'cg', and 'md', corresponding to steepest descent, conjugate
             gradient, and equilibrium molecular dynamics respectively.
             For _energy_minimize_openbabel
-    scale_bonds : float, optional, default=1
+        scale_bonds : float, optional, default=1
             Scales the bond force constant (1 is completely on).
             For _energy_minimize_openmm
         scale_angles : float, optional, default=1
             Scales the angle force constant (1 is completely on)
             For _energy_minimize_openmm
-        scale_torsions : float, optional, default=0.5
+        scale_torsions : float, optional, default=1
             Scales the torsional force constants (1 is completely on)
             For _energy_minimize_openmm
-        scale_nonbonded : float, optional, default=0.75
+            Note: Only Ryckaert-Bellemans style torsions are currently supported 
+        scale_nonbonded : float, optional, default=1
             Scales epsilon (1 is completely on)
             For _energy_minimize_openmm
 
@@ -1524,8 +1525,6 @@ class Compound(object):
             try:
                 get_by_symbol(particle.name)
             except KeyError:
-                try:
-                    get_by_symbol(particle.name[1:2])
                 except KeyError:
                     raise MBuildError("Element name {} not recognized. Cannot "
                                       "perform minimization."
