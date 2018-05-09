@@ -149,6 +149,13 @@ class TestPacking(BaseTest):
         with pytest.raises(RuntimeError):
             filled = mb.fill_box(h2o, n_compounds=10, box=[0, 0, 0])
 
+    def test_packmol_log_error(self, h2o):
+        try:
+            filled = mb.fill_box(h2o, n_compounds=10, box=[0, 0, 0])
+        except(RuntimeError):
+            with open("log.txt", "r") as logfile:
+                assert "ERROR" in logfile.read()
+
     def test_packmol_warning(self, h2o):
         with pytest.warns(UserWarning):
             filled = mb.fill_box(h2o, n_compounds=10, box=[1, 1, 1], overlap=100)
