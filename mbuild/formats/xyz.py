@@ -1,6 +1,7 @@
 import numpy as np
 
 import mbuild as mb
+from mbuild.exceptions import MBuildError
 
 __all__ = ['read_xyz']
 
@@ -43,8 +44,8 @@ def read_xyz(filename):
             if not line:
                 msg = ('Incorrect number of lines in input file. Based on the '
                        'number in the first line of the file, {} rows of atoms '
-                       'were expected')
-                raise IndexError(msg.format(n_atoms))
+                       'were expected, but at least one fewer was found.')
+                raise MBuildError(msg.format(n_atoms))
             coords[row] = line[1:4]
             coords[row] *= 0.1
             particle = mb.Compound(pos=coords[row], name=line[0])
@@ -53,6 +54,9 @@ def read_xyz(filename):
         # Verify we have read the last line by ensuring the next line in blank
         line = xyz_file.readline().split()
         if line:
-            raise IndexError
+            msg = ('Incorrect number of lines in input file. Based on the '
+                   'number in the first line of the file, {} rows of atoms '
+                   'were expected, but at least one more was found.')
+            raise MBuildError(msg.format(n_atoms))
 
     return compound
