@@ -409,7 +409,7 @@ def _validate_box(box):
     return box
 
 
-def _packmol_error(out, err):
+def _packmol_error(out):
     """Log packmol output to files. """
     with open('log.txt', 'w') as log_file:
         log_file.write(out)
@@ -429,7 +429,7 @@ def _run_packmol(input_text, filled_file, temp_file):
         warnings.warn(msg)
         os.system('cp {0}_FORCED {0}'.format(filled_file))
     if 'ERROR' in out:
-        _packmol_error(out, err)
+        _packmol_error(out)
 
     if temp_file is not None:
         os.system('cp {0} {1}'.format(filled_file, os.path.join(temp_file)))
