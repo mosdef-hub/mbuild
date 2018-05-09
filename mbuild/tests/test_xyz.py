@@ -2,6 +2,7 @@ import numpy as np
 import pytest
 
 import mbuild as mb
+from mbuild.utils.io import get_fn
 from mbuild.tests.base_test import BaseTest
 
 
@@ -20,3 +21,7 @@ class TestXYZ(BaseTest):
         assert len(ethane_in.children) == 8
         assert ethane_in.n_bonds == 7
         assert set([child.name for child in ethane_in.children]) == {'C', 'H'}
+
+    def test_wrong_n_atoms(self):
+        with pytest.raises(IndexError):
+            mb.load(get_fn('ethane_wrong_n_atoms.xyz'))
