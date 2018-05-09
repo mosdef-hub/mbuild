@@ -38,17 +38,21 @@ def read_xyz(filename):
         n_atoms = int(xyz_file.readline())
         xyz_file.readline()
         coords = np.zeros(shape=(n_atoms, 3), dtype=np.float64)
-        for row, _ in enumerate(coords+2):
-            try:
-                line = xyz_file.readline().split()
-                coords[row] = line[1:4]
-                coords[row] *= 0.1
-                particle = mb.Compound(pos=coords[row], name=line[0])
-                compound.add(particle)
-            except IndexError:
+        for row, _ in enumerate(coords):
+            line = xyz_file.readline().split()
+            if not line:
                 msg = ('Incorrect number of lines in input file. Based on the '
                        'number in the first line of the file, {} rows of atoms '
                        'were expected')
                 raise IndexError(msg.format(n_atoms))
+            coords[row] = line[1:4]
+            coords[row] *= 0.1
+            particle = mb.Compound(pos=coords[row], name=line[0])
+            compound.add(particle)
+
+        # Verify we have read the last line by ensuring the next line in blank
+        line = xyz_file.readline().split()
+        if line:
+            raise IndexError
 
     return compound

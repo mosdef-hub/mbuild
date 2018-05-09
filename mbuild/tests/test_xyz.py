@@ -24,4 +24,6 @@ class TestXYZ(BaseTest):
 
     def test_wrong_n_atoms(self):
         with pytest.raises(IndexError):
-            mb.load(get_fn('ethane_wrong_n_atoms.xyz'))
+            mb.load(get_fn('too_few_atoms.xyz'))
+        with pytest.raises(IndexError):
+            mb.load(get_fn('too_many_atoms.xyz'))
