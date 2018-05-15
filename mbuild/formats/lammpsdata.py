@@ -60,29 +60,54 @@ def write_lammpsdata(structure, filename, atom_style='full'):
 
     charges = [atom.charge for atom in structure.atoms]
 
+    
+    # Lammps syntax depends on the functional form
+    # Infer functional form based on the properties of the structure
+
+    # Check angles
+    if len(structure.urey_bradleys)> 0 :
+        print("Urey bradley terms detected, will use angle_style charmm")
+        use_urey_bradleys = True
+    else:
+        print("No urey bradley terms detected, will use angle_style harmonic")
+        use_urey_bradleys = False
+
+    # Check dihedrals
+    if len(structure.rb_torsions) > 0:
+        print("RB Torsions detected, will use dihedral_style opls")
+        use_rb_torsions = True
+    else:
+        use_rb_torsions = False
+    if len(structure.dihedrals) > 0:
+        print("Charmm dihedrals detected, will use dihedral_style charmm")
+        use_dihedrals = True
+    else:
+        use_dihedrals = False
+    if use_rb_torsions and use_dihedrals:
+        raise FoyerError("Multiple dihedral styles detected, check your "
+                         "Forcefield XML and structure")
+
+    # Check impropers
+    for dihedral in structure.diherals:
+        if structure.improper:
+            raise FoyerError("Amber-style impropers are currently not supported")
+
     bonds = [[bond.atom1.idx+1, bond.atom2.idx+1] for bond in structure.bonds]
     angles = [[angle.atom1.idx+1,
                angle.atom2.idx+1,
                angle.atom3.idx+1] for angle in structure.angles]
-    if len(structure.rb_torsions) > 0 :
+    if use_rb_torsions:
         dihedrals = [[dihedral.atom1.idx+1,
                       dihedral.atom2.idx+1,
                       dihedral.atom3.idx+1,
                       dihedral.atom4.idx+1] for dihedral in structure.rb_torsions]
-        use_rb_torsions = True
-        use_dihedrals = False
-
-    elif len(structure.dihedrals) > 0:
+    elif use_dihedrals:
         dihedrals = [[dihedral.atom1.idx+1,
                       dihedral.atom2.idx+1,
                       dihedral.atom3.idx+1,
-                      dihedral.atom4.idx+1] for dihedral in structure.dihedrals if not dihedral.improper]
-        use_dihedrals = True
-        use_rb_torsions = False
-
+                      dihedral.atom4.idx+1] for dihedral in structure.dihedrals]
     else:
         dihedrals = []
-
     impropers = [[improper.atom1.idx+1,
                   improper.atom2.idx+1,
                   improper.atom3.idx+1,
