@@ -173,20 +173,21 @@ def write_lammpsdata(structure, filename, atom_style='full'):
                                                      round(dihedral.type.scee,1),
                                                      round(dihedral.type.scnb,1))] for dihedral in structure.rb_torsions]
         elif use_dihedrals:
-            weight = 1.0
-            unique_dihedral_types = dict(enumerate(set([(round(dihedral.type.phi_k,3),
-                                                         int(round(dihedral.type.per,0)),
-                                                         int(round(dihedral.type.phase,0)),
-                                                         round(weight,3),
-                                                         round(dihedral.type.scee,1),
-                                                         round(dihedral.type.scnb,1)) for dihedral in structure.dihedrals if not dihedral.improper])))
+            charmm_dihedrals = []
+            for dihedral in structure.dihedrals:
+                if not dihedral.improper:
+                    weight = 1 / len(dihedral.type.list)
+                    charmm_dihedrals.append((round(dihedral.type.phi_k,3),
+                                             int(round(dihedral.type.per,0)),
+                                             int(round(dihedral.type.phase,0)),
+                                             round(weight, 1),
+                                             round(dihedral.type.scee,1),
+                                             round(dihedral.type.scnb,1)))
+
+            unique_dihedral_types = dict(enumerate(set(charmm_dihedrals)))
             unique_dihedral_types = OrderedDict([(y,x+1) for x,y in unique_dihedral_types.items()])
-            dihedral_types = [unique_dihedral_types[(round(dihedral.type.phi_k,3),
-                                                     int(round(dihedral.type.per,0)),
-                                                     int(round(dihedral.type.phase,0)),
-                                                     round(weight,3),
-                                                     round(dihedral.type.scee,1),
-                                                     round(dihedral.type.scnb,1))] for dihedral in structure.dihedrals if not dihedral.improper]
+            dihedral_types = [unique_dihedral_types[dihedral_info] for dihedral_info in charmm_dihedrals]
+            
     if impropers:
             unique_improper_types = dict(enumerate(set([(round(improper.type.psi_k,3),
                                                          round(improper.type.psi_eq,3)) for improper in structure.impropers])))
