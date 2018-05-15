@@ -88,8 +88,8 @@ def write_lammpsdata(structure, filename, atom_style='full'):
                          "Forcefield XML and structure")
 
     # Check impropers
-    for dihedral in structure.diherals:
-        if structure.improper:
+    for dihedral in structure.dihedrals:
+        if dihedral.improper:
             raise FoyerError("Amber-style impropers are currently not supported")
 
     bonds = [[bond.atom1.idx+1, bond.atom2.idx+1] for bond in structure.bonds]
@@ -126,11 +126,32 @@ def write_lammpsdata(structure, filename, atom_style='full'):
                                              round(bond.type.req,3))] for bond in structure.bonds]
 
     if angles:
-        unique_angle_types = dict(enumerate(set([(round(angle.type.k,3),
-                                                  round(angle.type.theteq,3)) for angle in structure.angles])))
-        unique_angle_types = OrderedDict([(y,x+1) for x,y in unique_angle_types.items()])
-        angle_types = [unique_angle_types[(round(angle.type.k,3),
-                                           round(angle.type.theteq,3))] for angle in structure.angles]
+        if use_urey_bradleys:
+            charmm_angle_types = []
+            for angle in structure.angles:
+                for ub in structure.urey_bradleys:
+                    if (angle.atom1, angle.atom3) == (ub.atom1, ub.atom2):
+                        ub_k = ub.type.k
+                        ub_req = ub.type.req
+                    else:
+                        ub_k = 0
+                        ub_req = 0
+                    charmm_angle_types.append((round(angle.type.k,3), 
+                                               round(angle.type.theteq,3),
+                                               round(ub_k, 3),
+                                               round(ub_req, 3)))
+
+            unique_angle_types = dict(enumerate(set(charmm_angle_types)))
+            unique_angle_types = OrderedDict([(y,x+1) for x,y in unique_angle_types.items()])
+            angle_types = [unique_angle_types[ub_info] for ub_info in charmm_angle_types]
+
+
+        else:
+            unique_angle_types = dict(enumerate(set([(round(angle.type.k,3),
+                                                      round(angle.type.theteq,3)) for angle in structure.angles])))
+            unique_angle_types = OrderedDict([(y,x+1) for x,y in unique_angle_types.items()])
+            angle_types = [unique_angle_types[(round(angle.type.k,3),
+                                               round(angle.type.theteq,3))] for angle in structure.angles]
 
     if dihedrals:
         if use_rb_torsions:
