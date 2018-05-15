@@ -11,7 +11,9 @@ from mbuild.utils.sorting import natural_sort
 __all__ = ['write_lammpsdata']
 
 
-def write_lammpsdata(structure, filename, atom_style='full'):
+def write_lammpsdata(structure, filename, atom_style='full', 
+                    detect_forcefield_style=True, use_urey_bradleys=False,
+                    use_rb_torsions=True, use_dihedrals=False):
     """Output a LAMMPS data file.
     
     Outputs a LAMMPS data file in the 'full' atom style format. Assumes use
@@ -29,13 +31,26 @@ def write_lammpsdata(structure, filename, atom_style='full'):
         styles are currently supported: 'full', 'atomic', 'charge', 'molecular'
         see http://lammps.sandia.gov/doc/atom_style.html for more
         information on atom styles.
+    detect_forcefield_style: boolean
+        If True, format lammpsdata parameters based on the contents of 
+        the parmed Structure
+    use_urey_bradleys: boolean
+        If True, will treat angles as CHARMM-style angles with urey bradley terms
+        while looking for `structure.urey_bradleys`
+    use_rb_torsions:
+        If True, will treat dihedrals OPLS-style torsions while looking for
+        `structure.rb_torsions`
+    use_dihedrals:
+        If True, will treat dihedrals as CHARMM-style dihedrals while looking for 
+        `structure.dihedrals`
 
     Notes
     -----
     See http://lammps.sandia.gov/doc/2001/data_format.html for a full description
     of the LAMMPS data format. Currently the following sections are supported (in
     addition to the header): *Masses*, *Nonbond Coeffs*, *Bond Coeffs*, *Angle
-    Coeffs*, *Dihedral Coeffs*, *Atoms*, *Bonds*, *Angles*, *Dihedrals*
+    Coeffs*, *Dihedral Coeffs*, *Atoms*, *Bonds*, *Angles*, *Dihedrals*, *Impropers*
+    OPLS and CHARMM forcefield styles are supported, AMBER forcefield styles are NOT
 
     """
 
@@ -63,26 +78,26 @@ def write_lammpsdata(structure, filename, atom_style='full'):
     
     # Lammps syntax depends on the functional form
     # Infer functional form based on the properties of the structure
+    if detect_forcefield_style:
+        # Check angles
+        if len(structure.urey_bradleys) > 0 :
+            print("Urey bradley terms detected, will use angle_style charmm")
+            use_urey_bradleys = True
+        else:
+            print("No urey bradley terms detected, will use angle_style harmonic")
+            use_urey_bradleys = False
 
-    # Check angles
-    if len(structure.urey_bradleys)> 0 :
-        print("Urey bradley terms detected, will use angle_style charmm")
-        use_urey_bradleys = True
-    else:
-        print("No urey bradley terms detected, will use angle_style harmonic")
-        use_urey_bradleys = False
-
-    # Check dihedrals
-    if len(structure.rb_torsions) > 0:
-        print("RB Torsions detected, will use dihedral_style opls")
-        use_rb_torsions = True
-    else:
-        use_rb_torsions = False
-    if len(structure.dihedrals) > 0:
-        print("Charmm dihedrals detected, will use dihedral_style charmm")
-        use_dihedrals = True
-    else:
-        use_dihedrals = False
+        # Check dihedrals
+        if len(structure.rb_torsions) > 0:
+            print("RB Torsions detected, will use dihedral_style opls")
+            use_rb_torsions = True
+        else:
+            use_rb_torsions = False
+        if len(structure.dihedrals) > 0:
+            print("Charmm dihedrals detected, will use dihedral_style charmm")
+            use_dihedrals = True
+        else:
+            use_dihedrals = False
     if use_rb_torsions and use_dihedrals:
         raise FoyerError("Multiple dihedral styles detected, check your "
                          "Forcefield XML and structure")
@@ -247,9 +262,15 @@ def write_lammpsdata(structure, filename, atom_style='full'):
 
             # Angle coefficients
             if angles:
-                data.write('\nAngle Coeffs # harmonic\n\n')
-                for params,idx in unique_angle_types.items():
-                    data.write('{}\t{}\t{:.5f}\n'.format(idx,*params))
+                if use_urey_bradleys:
+                    data.write('\nAngle Coeffs # charmm\n\n')
+                    for params,idx in unique_angle_types.items():
+                        data.write('{}\t{}\t{:.5f}\t{:.5f}\t{:.5f}\n'.format(idx,*params))
+
+                else:
+                    data.write('\nAngle Coeffs # harmonic\n\n')
+                    for params,idx in unique_angle_types.items():
+                        data.write('{}\t{}\t{:.5f}\n'.format(idx,*params))
 
             # Dihedral coefficients
             if dihedrals:
