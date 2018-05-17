@@ -1075,7 +1075,7 @@ class Compound(object):
             particle_array = np.array(list(self.particles()))
         return particle_array[idxs]
 
-    def visualize(self, show_ports=False):
+    def visualize(self, show_ports=False, **kwargs):
         """Visualize the Compound using nglview.
 
         Allows for visualization of a Compound within a Jupyter Notebook.
@@ -1089,7 +1089,7 @@ class Compound(object):
         nglview = import_('nglview')
         if run_from_ipython():
             structure = self.to_trajectory(show_ports)
-            return nglview.show_mdtraj(structure)
+            return nglview.show_mdtraj(structure, **kwargs)
         else:
             raise RuntimeError('Visualization is only supported in Jupyter '
                                'Notebooks.')
