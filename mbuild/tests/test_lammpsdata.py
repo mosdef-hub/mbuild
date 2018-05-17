@@ -3,6 +3,7 @@ import pytest
 
 import mbuild as mb
 from mbuild.tests.base_test import BaseTest
+from mbuild.utils.io import get_fn
 
 
 class TestLammpsData(BaseTest):
@@ -12,6 +13,21 @@ class TestLammpsData(BaseTest):
 
     def test_save_forcefield(self, ethane):
         ethane.save(filename='ethane-opls.lammps', forcefield_name='oplsaa')
+
+    def test_save_charmm(self):
+        cmpd = mb.load(get_fn('charmm_dihedral.mol2'))
+        for i in cmpd.particles():
+            i.name = "_{}".format(i.name)
+        structure = cmpd.to_parmed(box=cmpd.boundingbox, 
+                                    residues=set([p.parent.name for \
+                                                 p in cmpd.particles()]))
+
+        from foyer import Forcefield
+        ff = Forcefield(forcefield_files=[get_fn('charmm_truncated.xml')])
+        structure = ff.apply(structure, assert_dihedral_params=False)
+
+        from mbuild.formats.lammpsdata import write_lammpsdata
+        write_lammpsdata(structure, 'charmm_dihedral.lammps')
 
     def test_save_box(self, ethane):
         box = mb.Box(lengths=np.array([2.0, 2.0, 2.0]))
