@@ -144,17 +144,16 @@ def write_lammpsdata(structure, filename, atom_style='full',
         if use_urey_bradleys:
             charmm_angle_types = []
             for angle in structure.angles:
+                ub_k = 0
+                ub_req = 0
                 for ub in structure.urey_bradleys:
                     if (angle.atom1, angle.atom3) == (ub.atom1, ub.atom2):
                         ub_k = ub.type.k
                         ub_req = ub.type.req
-                    else:
-                        ub_k = 0
-                        ub_req = 0
-                    charmm_angle_types.append((round(angle.type.k,3), 
-                                               round(angle.type.theteq,3),
-                                               round(ub_k, 3),
-                                               round(ub_req, 3)))
+                charmm_angle_types.append((round(angle.type.k,3), 
+                                           round(angle.type.theteq,3),
+                                           round(ub_k, 3),
+                                           round(ub_req, 3)))
 
             unique_angle_types = dict(enumerate(set(charmm_angle_types)))
             unique_angle_types = OrderedDict([(y,x+1) for x,y in unique_angle_types.items()])
@@ -192,12 +191,13 @@ def write_lammpsdata(structure, filename, atom_style='full',
             structure.join_dihedrals()
             for dihedral in structure.dihedrals:
                 if not dihedral.improper:
-                    weight = 1 / len(dihedral.type)
+                    #weight = 1 / len(dihedral.type)
+                    weight = 1
                     for dih_type in dihedral.type:
                         charmm_dihedrals.append((round(dih_type.phi_k,3),
                                                  int(round(dih_type.per,0)),
                                                  int(round(dih_type.phase,0)),
-                                                 round(weight, 1),
+                                                 round(weight, 2),
                                                  round(dih_type.scee,1),
                                                  round(dih_type.scnb,1)))
 
