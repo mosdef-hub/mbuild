@@ -1,4 +1,5 @@
 import os
+import time
 
 import numpy as np
 import parmed as pmd
@@ -86,6 +87,16 @@ class TestCompound(BaseTest):
         struct = pmd.load_file('resnames_single.gro')
         assert struct.residues[0].number ==  1
         assert struct.residues[1].number ==  2
+
+    def test_save_residue_map(self, methane):
+        filled = mb.fill_box(methane, n_compounds=100, box=[0, 0, 0, 4, 4, 4])
+        t0 = time.time()
+        filled.save('filled.mol2', forcefield_name='oplsaa', residues='Methane')
+        t1 = time.time()
+        filled.save('filled.mol2', forcefield_name='oplsaa', overwrite=True,
+                    residues='Methane', use_residue_map=False)
+        t2 = time.time()
+        assert (t2 - t1) > (t1 - t0)
 
     def test_save_references(self, methane):
         methane.save('methyl.mol2', forcefield_name='oplsaa',
