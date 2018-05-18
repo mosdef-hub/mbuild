@@ -10,8 +10,8 @@ import os
 import sys
 import tempfile
 from warnings import warn
-from mbuild.utils.decorators import deprecated
 
+from foyer import Forcefield
 import mdtraj as md
 from mdtraj.core.element import get_by_symbol
 import numpy as np
@@ -20,11 +20,10 @@ import parmed as pmd
 from parmed.periodic_table import AtomicNum, element_by_name, Mass
 from six import integer_types, string_types
 
-from foyer import Forcefield
-
 from mbuild.bond_graph import BondGraph
 from mbuild.box import Box
 from mbuild.exceptions import MBuildError
+from mbuild.utils.decorators import deprecated
 from mbuild.formats.hoomdxml import write_hoomdxml
 from mbuild.formats.lammpsdata import write_lammpsdata
 from mbuild.formats.gsdwriter import write_gsd
