@@ -58,6 +58,20 @@ class TestCompound(BaseTest):
                          forcefield_name='oplsaa',
                          overwrite=True)
 
+    @pytest.mark.parametrize("ff_filename,kwargs", [
+        ("ethane-angle-typo.xml", {"assert_angle_params": False}),
+        ("ethane-dihedral-typo.xml", {"assert_dihedral_params": False})
+    ])
+    def test_save_missing_topo_params(self, ff_filename, kwargs):
+        """Test that the user is notified if not all topology parameters are found."""
+        from foyer.tests.utils import get_fn
+        ethane = mb.load(get_fn('ethane.mol2'))
+        with pytest.raises(Exception):
+            ethane.save('ethane.mol2', forcefield_files=get_fn(ff_filename))
+        with pytest.warns(UserWarning):
+            ethane.save('ethane.mol2', forcefield_files=get_fn(ff_filename),
+                        overwrite=True, **kwargs)
+
     def test_save_resnames(self, ch3, h2o):
         system = mb.Compound([ch3, h2o])
         system.save('resnames.gro', residues=['CH3', 'H2O'])
