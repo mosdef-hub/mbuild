@@ -1309,20 +1309,26 @@ class Compound(object):
         self._kick()
         self.save(os.path.join(tmp_dir, 'un-minimized.mol2'))
         extension = os.path.splitext(forcefield)[-1]
-        if extension == '.xml':
-            self._energy_minimize_openmm(tmp_dir, forcefield=forcefield,
-                                         steps=steps, **kwargs)
-
-        else:
+        openbabel_ffs = ['MMFF94', 'MMFF94s', 'UFF', 'GAFF', 'Ghemical']
+        if forcefield in openbabel_ffs:
             self._energy_minimize_openbabel(tmp_dir, forcefield=forcefield,
                                             steps=steps, **kwargs)
+        if extension == '.xml':
+            self._energy_minimize_openmm(tmp_dir, forcefield_files=forcefield,
+                                         forcefield_name=None,
+                                         steps=steps, **kwargs)
+        else:
+            self._energy_minimize_openmm(tmp_dir, forcefield_files=None,
+                                         forcefield_name=forcefield,
+                                         steps=steps, **kwargs)
 
         self.update_coordinates(os.path.join(tmp_dir, 'minimized.pdb'))
 
     def _energy_minimize_openmm(
             self,
             tmp_dir,
-            forcefield=None,
+            forcefield_files=None,
+            forcefield_name=None,
             steps=1000,
             scale_bonds=1,
             scale_angles=1,
@@ -1335,8 +1341,12 @@ class Compound(object):
 
         Parameters
         ----------
-        forcefield : str
-            Path to forcefield xml file
+        forcefield_files : str or list of str, optional, default=None
+            Forcefield files to load 
+        forcefield_name : str, optional, default=None
+            Apply a named forcefield to the output file using the `foyer`
+            package, e.g. 'oplsaa'. Forcefields listed here:
+            https://github.com/mosdef-hub/foyer/tree/master/foyer/forcefields
         steps : int, optional, default=1000
             Number of energy minimization iterations
         scale_bonds : float, optional, default=1
@@ -1369,7 +1379,7 @@ class Compound(object):
 
         """
         to_parmed = self.to_parmed()
-        ff = Forcefield(forcefield_files=[forcefield])
+        ff = Forcefield(forcefield_files=forcefield_files, name=forcefield_name)
         to_parmed = ff.apply(to_parmed)
 
         from simtk.openmm.app.simulation import Simulation
