@@ -622,8 +622,7 @@ class TestCompound(BaseTest):
         assert np.array_equal(orientations, updated_orientations)
 
     def test_energy_minimize_openmm(self, octane):
-        ff_xml = get_fn('oplsaa.xml')
-        octane.energy_minimize(forcefield=ff_xml)
+        octane.energy_minimize(forcefield='oplsaa')
 
     def test_clone_outside_containment(self, ch2, ch3):
         compound = mb.Compound()
