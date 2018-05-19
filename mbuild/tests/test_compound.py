@@ -586,7 +586,7 @@ class TestCompound(BaseTest):
     def test_energy_minimization_ff(self, octane):
         for ff in ['UFF', 'GAFF', 'MMFF94', 'MMFF94s', 'Ghemical']:
             octane.energy_minimization(forcefield=ff)
-        with pytest.raises(MBuildError):
+        with pytest.raises(IOError):
             octane.energy_minimization(forcefield='fakeFF')
 
     @pytest.mark.skipif(not has_openbabel, reason="Open Babel package not installed")
