@@ -1313,7 +1313,7 @@ class Compound(object):
         if forcefield in openbabel_ffs:
             self._energy_minimize_openbabel(tmp_dir, forcefield=forcefield,
                                             steps=steps, **kwargs)
-        if extension == '.xml':
+        elif extension == '.xml':
             self._energy_minimize_openmm(tmp_dir, forcefield_files=forcefield,
                                          forcefield_name=None,
                                          steps=steps, **kwargs)
