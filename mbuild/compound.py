@@ -31,7 +31,7 @@ from mbuild.coordinate_transform import _translate, _rotate
 
 
 def load(filename, relative_to_module=None, compound=None, coords_only=False,
-         rigid=False, use_parmed=False, **kwargs):
+         rigid=False, use_parmed=False, smarts=False, **kwargs):
     """Load a file into an mbuild compound.
 
     Files are read using the MDTraj package unless the `use_parmed` argument is
@@ -56,6 +56,9 @@ def load(filename, relative_to_module=None, compound=None, coords_only=False,
         Treat the compound as a rigid body
     use_parmed : bool, optional, default=False
         Use readers from ParmEd instead of MDTraj.
+    smarts: bool, optional, default=False
+        Use Open Babel to parse filename as a SMARTS string
+        or file containing a SMARTS string
     **kwargs : keyword arguments
         Key word arguments passed to mdTraj for loading.
 
@@ -80,6 +83,25 @@ def load(filename, relative_to_module=None, compound=None, coords_only=False,
              "distances and standard residue templates!")
         structure = pmd.load_file(filename, structure=True, **kwargs)
         compound.from_parmed(structure, coords_only=coords_only)
+
+    elif smarts:
+        import pybel
+        # First we try trating filename as a SMARTS string
+        try:
+            mymol = pybel.readstring("smi", filename)
+        # Now we treat it as a filename
+        except(OSError):
+            # For now, we only support reading in a single SMARTS molecule,
+            # but pybel returns a generator, so we get the first molecule
+            mymol = next(pybel.readfile("smi", filename))
+
+        tmp_dir = tempfile.mkdtemp()
+        temp_file = os.path.join(tmp_dir, 'smiles_to_mol2_intermediate.mol2')
+        mymol.make3D()
+        mymol.write("MOL2", temp_file)
+        structure = pmd.load_file(temp_file, structure=True, **kwargs)
+        compound.from_parmed(structure, coords_only=coords_only)
+
     else:
         traj = md.load(filename, **kwargs)
         compound.from_trajectory(traj, frame=-1, coords_only=coords_only)
