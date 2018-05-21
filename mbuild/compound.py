@@ -85,7 +85,7 @@ def load(filename, relative_to_module=None, compound=None, coords_only=False,
         compound.from_parmed(structure, coords_only=coords_only)
 
     elif smarts:
-        import pybel
+        pybel = import_('pybel')
         # First we try trating filename as a SMARTS string
         try:
             mymol = pybel.readstring("smi", filename)
