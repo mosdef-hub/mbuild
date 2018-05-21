@@ -191,13 +191,12 @@ def write_lammpsdata(structure, filename, atom_style='full',
             structure.join_dihedrals()
             for dihedral in structure.dihedrals:
                 if not dihedral.improper:
-                    #weight = 1 / len(dihedral.type)
-                    weight = 1
+                    weight = 1 / len(dihedral.type)
                     for dih_type in dihedral.type:
                         charmm_dihedrals.append((round(dih_type.phi_k,3),
                                                  int(round(dih_type.per,0)),
                                                  int(round(dih_type.phase,0)),
-                                                 round(weight, 2),
+                                                 round(weight, 4),
                                                  round(dih_type.scee,1),
                                                  round(dih_type.scnb,1)))
 
