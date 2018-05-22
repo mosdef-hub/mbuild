@@ -1274,10 +1274,8 @@ class Compound(object):
 
     def save(self, filename, show_ports=False, forcefield_name=None,
              forcefield_files=None, forcefield_debug=False, box=None,
-             overwrite=False, residues=None, references_file=None,
-             combining_rule='lorentz', use_residue_map=True,
-             assert_angle_params=True, assert_dihedral_params=True,
-             assert_improper_params=False, **kwargs):
+             overwrite=False, residues=None, combining_rule='lorentz',
+             foyer_kwargs, **kwargs):
         """Save the Compound to a file.
 
         Parameters
@@ -1308,27 +1306,13 @@ class Compound(object):
         residues : str of list of str
             Labels of residues in the Compound. Residues are assigned by
             checking against Compound.name.
-        references_file : str, optional, default=None
-            Specify a filename to write references for the forcefield that is
-            to be applied. References are written in BiBTeX format.
         combining_rule : str, optional, default='lorentz'
             Specify the combining rule for nonbonded interactions. Only relevant
             when the `foyer` package is used to apply a forcefield. Valid
             options are 'lorentz' and 'geometric', specifying Lorentz-Berthelot
             and geometric combining rules respectively.
-        use_residue_map : boolean, optional, default=True
-            Used when applying a force field with Foyer. Provides a speed-up
-            by avoiding atomtyping of duplicate residues if combined with
-            the `residues` arg.
-        assert_angle_params : boolean, optional, default=True
-            Used when applying a force field with Foyer. If True, Foyer will
-            exit if parameters are not found for all system angles.
-        assert_dihedral_params : boolean, optional, default=True
-            Used when applying a force field with Foyer. If True, Foyer will
-            exit if parameters are not found for all system proper dihedrals.
-        assert_improper_params : boolean, optional, default=False
-            Used when applying a force field with Foyer. If True, Foyer will
-            exit if parameters are not found for all system improper dihedrals.
+        foyer_kwargs : dict
+            Keyword arguments to provide to `foyer.Forcefield.apply`.
         **kwargs
             Depending on the file extension these will be passed to either
             `write_gsd`, `write_hoomdxml`, `write_lammpsdata`, or
@@ -1385,11 +1369,7 @@ class Compound(object):
             from foyer import Forcefield
             ff = Forcefield(forcefield_files=forcefield_files,
                             name=forcefield_name, debug=forcefield_debug)
-            structure = ff.apply(structure, references_file=references_file,
-                                 use_residue_map=use_residue_map,
-                                 assert_angle_params=assert_angle_params,
-                                 assert_dihedral_params=assert_dihedral_params,
-                                 assert_improper_params=assert_improper_params)
+            structure = ff.apply(structure, **foyer_kwargs)
             structure.combining_rule = combining_rule
 
         total_charge = sum([atom.charge for atom in structure])
