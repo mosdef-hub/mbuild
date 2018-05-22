@@ -1084,6 +1084,8 @@ class Compound(object):
         ----------
         show_ports : bool, optional, default=False
             Visualize Ports in addition to Particles
+        **kwargs
+            Passed to `nglview.show_mdtraj` (see http://nglviewer.org/nglview/latest/_modules/nglview/show.html#show_mdtraj)
 
         """
         nglview = import_('nglview')
@@ -1327,6 +1329,11 @@ class Compound(object):
         assert_improper_params : boolean, optional, default=False
             Used when applying a force field with Foyer. If True, Foyer will
             exit if parameters are not found for all system improper dihedrals.
+        **kwargs
+            Depending on the file extension these will be passed to either
+            `write_gsd`, `write_hoomdxml`, `write_lammpsdata`, or
+            `parmed.Structure.save`.
+            See https://parmed.github.io/ParmEd/html/structobj/parmed.structure.Structure.html#parmed.structure.Structure.save
 
         Other Parameters
         ----------------
