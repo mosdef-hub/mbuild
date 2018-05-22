@@ -90,7 +90,7 @@ def load(filename, relative_to_module=None, compound=None, coords_only=False,
         try:
             mymol = pybel.readstring("smi", filename)
         # Now we treat it as a filename
-        except(OSError):
+        except(OSError,IOError):
             # For now, we only support reading in a single SMARTS molecule,
             # but pybel returns a generator, so we get the first molecule
             mymol = next(pybel.readfile("smi", filename))
