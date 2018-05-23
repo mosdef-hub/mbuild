@@ -57,6 +57,11 @@ class TestCompound(BaseTest):
             methane.save('lythem' + ext,
                          forcefield_name='oplsaa',
                          overwrite=True)
+
+    def test_save_forcefield_with_file(self, methane):
+        exts = ['.gsd', '.hoomdxml', '.lammps', '.lmp', '.top', '.gro',
+                '.mol2', '.pdb', '.xyz']
+        for ext in exts:
             methane.save('lythem' + ext,
                          forcefield_files=get_fn('oplsaa.xml'),
                          overwrite=True)
