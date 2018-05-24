@@ -1284,7 +1284,7 @@ class Compound(object):
             extensions are: 'hoomdxml', 'gsd', 'gro', 'top', 'lammps', 'lmp'
         show_ports : bool, optional, default=False
             Save ports contained within the compound.
-        forcefield_file : str, optional, default=None
+        forcefield_files : str, optional, default=None
             Apply a forcefield to the output file using a forcefield provided
             by the `foyer` package.
         forcefield_name : str, optional, default=None
