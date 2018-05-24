@@ -679,11 +679,11 @@ class TestCompound(BaseTest):
             assert np.isclose(angle1, angle2, atol=1e-6)
 
     def test_smarts_from_string(self):
-        p3ht = mb.load('CCCCCCC1=C(SC(=C1)C)C', smarts=True)
+        p3ht = mb.load('CCCCCCC1=C(SC(=C1)C)C', smiles=True)
         assert p3ht.n_bonds == 33
         assert p3ht.n_particles == 33
 
     def test_smarts_from_file(self):
-        p3ht = mb.load(get_fn('p3ht.smi'), smarts=True)
+        p3ht = mb.load(get_fn('p3ht.smi'), smiles=True)
         assert p3ht.n_bonds == 33
         assert p3ht.n_particles == 33
