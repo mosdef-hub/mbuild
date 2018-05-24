@@ -100,10 +100,9 @@ def load(filename, relative_to_module=None, compound=None, coords_only=False,
             if len(mymol_list) == 1:
                 mymol = mymol_list[0]
             else:
-                # Warn
-                warn("More than one SMILES string in file, more than one SMILES "
-                     "string is not supported, using the first")
                 mymol = mymol_list[0]
+                warn("More than one SMILES string in file, more than one SMILES "
+                     "string is not supported, using {}".format(mymol.write("smi")))
 
         tmp_dir = tempfile.mkdtemp()
         temp_file = os.path.join(tmp_dir, 'smiles_to_mol2_intermediate.mol2')
