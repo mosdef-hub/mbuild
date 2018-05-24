@@ -63,7 +63,7 @@ class TestCompound(BaseTest):
                 '.mol2', '.pdb', '.xyz']
         for ext in exts:
             methane.save('lythem' + ext,
-                         forcefield_files=get_fn('oplsaa.xml'),
+                         forcefield_files=get_fn('methane_oplssaa.xml'),
                          overwrite=True)
 
     def test_save_resnames(self, ch3, h2o):
