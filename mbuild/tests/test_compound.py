@@ -632,6 +632,10 @@ class TestCompound(BaseTest):
     def test_energy_minimize_openmm(self, octane):
         octane.energy_minimize(forcefield='oplsaa')
 
+    def test_energy_minimize_openmm_xml(self, octane):
+        octane.energy_minimize(forcefield=get_fn('small_oplsaa.xml'))
+
+
     def test_clone_outside_containment(self, ch2, ch3):
         compound = mb.Compound()
         compound.add(ch2)
