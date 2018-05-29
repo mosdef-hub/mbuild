@@ -22,6 +22,7 @@ from six import integer_types, string_types
 from mbuild.bond_graph import BondGraph
 from mbuild.box import Box
 from mbuild.exceptions import MBuildError
+from mbuild.formats.xyz import read_xyz
 from mbuild.formats.hoomdxml import write_hoomdxml
 from mbuild.formats.lammpsdata import write_lammpsdata
 from mbuild.formats.gsdwriter import write_gsd
@@ -77,6 +78,12 @@ def load(filename, relative_to_module=None, compound=None, coords_only=False,
 
     if compound is None:
         compound = Compound()
+
+    # Handle the case of a xyz file, which must use an internal reader
+    extension = os.path.splitext(filename)[-1]
+    if extension == '.xyz' and not 'top' in kwargs:
+        compound = read_xyz(filename)
+        return compound
 
     if use_parmed:
         warn("use_parmed set to True.  Bonds may be inferred from inter-particle "
