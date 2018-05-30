@@ -1313,7 +1313,7 @@ class Compound(object):
     def save(self, filename, show_ports=False, forcefield_name=None,
              forcefield_files=None, forcefield_debug=False, box=None,
              overwrite=False, residues=None, combining_rule='lorentz',
-             foyer_kwargs, **kwargs):
+             foyer_kwargs=None, **kwargs):
         """Save the Compound to a file.
 
         Parameters
