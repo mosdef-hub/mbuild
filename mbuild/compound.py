@@ -1113,7 +1113,7 @@ class Compound(object):
             particle_array = np.array(list(self.particles()))
         return particle_array[idxs]
 
-    def visualize(self, show_ports=False):
+    def visualize(self, show_ports=False, **kwargs):
         """Visualize the Compound using nglview.
 
         Allows for visualization of a Compound within a Jupyter Notebook.
@@ -1122,12 +1122,14 @@ class Compound(object):
         ----------
         show_ports : bool, optional, default=False
             Visualize Ports in addition to Particles
+        **kwargs
+            Passed to `nglview.show_mdtraj` (see http://nglviewer.org/nglview/latest/_modules/nglview/show.html#show_mdtraj)
 
         """
         nglview = import_('nglview')
         if run_from_ipython():
             structure = self.to_trajectory(show_ports)
-            return nglview.show_mdtraj(structure)
+            return nglview.show_mdtraj(structure, **kwargs)
         else:
             raise RuntimeError('Visualization is only supported in Jupyter '
                                'Notebooks.')
@@ -1310,8 +1312,8 @@ class Compound(object):
 
     def save(self, filename, show_ports=False, forcefield_name=None,
              forcefield_files=None, forcefield_debug=False, box=None,
-             overwrite=False, residues=None, references_file=None,
-             combining_rule='lorentz', **kwargs):
+             overwrite=False, residues=None, combining_rule='lorentz',
+             foyer_kwargs, **kwargs):
         """Save the Compound to a file.
 
         Parameters
@@ -1342,14 +1344,18 @@ class Compound(object):
         residues : str of list of str
             Labels of residues in the Compound. Residues are assigned by
             checking against Compound.name.
-        references_file : str, optional, default=None
-            Specify a filename to write references for the forcefield that is
-            to be applied. References are written in BiBTeX format.
         combining_rule : str, optional, default='lorentz'
             Specify the combining rule for nonbonded interactions. Only relevant
             when the `foyer` package is used to apply a forcefield. Valid
             options are 'lorentz' and 'geometric', specifying Lorentz-Berthelot
             and geometric combining rules respectively.
+        foyer_kwargs : dict
+            Keyword arguments to provide to `foyer.Forcefield.apply`.
+        **kwargs
+            Depending on the file extension these will be passed to either
+            `write_gsd`, `write_hoomdxml`, `write_lammpsdata`, or
+            `parmed.Structure.save`.
+            See https://parmed.github.io/ParmEd/html/structobj/parmed.structure.Structure.html#parmed.structure.Structure.save
 
         Other Parameters
         ----------------
@@ -1401,7 +1407,7 @@ class Compound(object):
             from foyer import Forcefield
             ff = Forcefield(forcefield_files=forcefield_files,
                             name=forcefield_name, debug=forcefield_debug)
-            structure = ff.apply(structure, references_file=references_file)
+            structure = ff.apply(structure, **foyer_kwargs)
             structure.combining_rule = combining_rule
 
         total_charge = sum([atom.charge for atom in structure])

@@ -1,4 +1,5 @@
 import os
+import time
 
 import numpy as np
 import parmed as pmd
@@ -66,6 +67,20 @@ class TestCompound(BaseTest):
                          forcefield_files=get_fn('methane_oplssaa.xml'),
                          overwrite=True)
 
+    @pytest.mark.parametrize("ff_filename,kwargs", [
+        ("ethane-angle-typo.xml", {"assert_angle_params": False}),
+        ("ethane-dihedral-typo.xml", {"assert_dihedral_params": False})
+    ])
+    def test_save_missing_topo_params(self, ff_filename, kwargs):
+        """Test that the user is notified if not all topology parameters are found."""
+        from foyer.tests.utils import get_fn
+        ethane = mb.load(get_fn('ethane.mol2'))
+        with pytest.raises(Exception):
+            ethane.save('ethane.mol2', forcefield_files=get_fn(ff_filename))
+        with pytest.warns(UserWarning):
+            ethane.save('ethane.mol2', forcefield_files=get_fn(ff_filename),
+                        overwrite=True, **kwargs)
+
     def test_save_resnames(self, ch3, h2o):
         system = mb.Compound([ch3, h2o])
         system.save('resnames.gro', residues=['CH3', 'H2O'])
@@ -80,6 +95,16 @@ class TestCompound(BaseTest):
         struct = pmd.load_file('resnames_single.gro')
         assert struct.residues[0].number ==  1
         assert struct.residues[1].number ==  2
+
+    def test_save_residue_map(self, methane):
+        filled = mb.fill_box(methane, n_compounds=100, box=[0, 0, 0, 4, 4, 4])
+        t0 = time.time()
+        filled.save('filled.mol2', forcefield_name='oplsaa', residues='Methane')
+        t1 = time.time()
+        filled.save('filled.mol2', forcefield_name='oplsaa', overwrite=True,
+                    residues='Methane', use_residue_map=False)
+        t2 = time.time()
+        assert (t2 - t1) > (t1 - t0)
 
     def test_save_references(self, methane):
         methane.save('methyl.mol2', forcefield_name='oplsaa',
