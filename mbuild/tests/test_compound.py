@@ -59,6 +59,14 @@ class TestCompound(BaseTest):
                          forcefield_name='oplsaa',
                          overwrite=True)
 
+    def test_save_forcefield_with_file(self, methane):
+        exts = ['.gsd', '.hoomdxml', '.lammps', '.lmp', '.top', '.gro',
+                '.mol2', '.pdb', '.xyz']
+        for ext in exts:
+            methane.save('lythem' + ext,
+                         forcefield_files=get_fn('methane_oplssaa.xml'),
+                         overwrite=True)
+
     @pytest.mark.parametrize("ff_filename,kwargs", [
         ("ethane-angle-typo.xml", {"assert_angle_params": False}),
         ("ethane-dihedral-typo.xml", {"assert_dihedral_params": False})
@@ -681,24 +689,34 @@ class TestCompound(BaseTest):
         assert len(h_clone.all_ports()) == 1
 
     def test_reconnect_keeps_structure_x(self, chf, connect_and_reconnect):
-        bond_vector = np.array([1, 0, 0]) 
+        bond_vector = np.array([1, 0, 0])
         angle1, angle2 = connect_and_reconnect(chf, bond_vector)
         assert np.isclose(angle1, angle2, atol=1e-6)
 
     def test_reconnect_keeps_structure_y(self, chf, connect_and_reconnect):
-        chf.spin(np.pi/2, [1, 0, 0]) 
-        bond_vector = np.array([0, 1, 0]) 
+        chf.spin(np.pi/2, [1, 0, 0])
+        bond_vector = np.array([0, 1, 0])
         angle1, angle2 = connect_and_reconnect(chf, bond_vector)
         assert np.isclose(angle1, angle2, atol=1e-6)
 
     def test_reconnect_keeps_structure_z(self, chf, connect_and_reconnect):
-        bond_vector = np.array([0, 0, 1]) 
+        bond_vector = np.array([0, 0, 1])
         angle1, angle2 = connect_and_reconnect(chf, bond_vector)
         assert np.isclose(angle1, angle2, atol=1e-6)
 
     def test_reconnect_keeps_structure_random(self, chf, connect_and_reconnect):
         np.random.seed(92)
         for _ in range(5):
-            bond_vector = np.random.random(3) - 0.5 
+            bond_vector = np.random.random(3) - 0.5
             angle1, angle2 = connect_and_reconnect(chf, bond_vector)
             assert np.isclose(angle1, angle2, atol=1e-6)
+
+    def test_smarts_from_string(self):
+        p3ht = mb.load('CCCCCCC1=C(SC(=C1)C)C', smiles=True)
+        assert p3ht.n_bonds == 33
+        assert p3ht.n_particles == 33
+
+    def test_smarts_from_file(self):
+        p3ht = mb.load(get_fn('p3ht.smi'), smiles=True)
+        assert p3ht.n_bonds == 33
+        assert p3ht.n_particles == 33
