@@ -1349,7 +1349,7 @@ class Compound(object):
             when the `foyer` package is used to apply a forcefield. Valid
             options are 'lorentz' and 'geometric', specifying Lorentz-Berthelot
             and geometric combining rules respectively.
-        foyer_kwargs : dict
+        foyer_kwargs : dict, optional, default=None
             Keyword arguments to provide to `foyer.Forcefield.apply`.
         **kwargs
             Depending on the file extension these will be passed to either
