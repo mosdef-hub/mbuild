@@ -67,11 +67,11 @@ class TestCompound(BaseTest):
                          forcefield_files=get_fn('methane_oplssaa.xml'),
                          overwrite=True)
 
-    @pytest.mark.parametrize("ff_filename,kwargs", [
+    @pytest.mark.parametrize("ff_filename,foyer_kwargs", [
         ("ethane-angle-typo.xml", {"assert_angle_params": False}),
         ("ethane-dihedral-typo.xml", {"assert_dihedral_params": False})
     ])
-    def test_save_missing_topo_params(self, ff_filename, kwargs):
+    def test_save_missing_topo_params(self, ff_filename, foyer_kwargs):
         """Test that the user is notified if not all topology parameters are found."""
         from foyer.tests.utils import get_fn
         ethane = mb.load(get_fn('ethane.mol2'))
@@ -79,7 +79,7 @@ class TestCompound(BaseTest):
             ethane.save('ethane.mol2', forcefield_files=get_fn(ff_filename))
         with pytest.warns(UserWarning):
             ethane.save('ethane.mol2', forcefield_files=get_fn(ff_filename),
-                        overwrite=True, **kwargs)
+                        overwrite=True, foyer_kwargs=foyer_kwargs)
 
     def test_save_resnames(self, ch3, h2o):
         system = mb.Compound([ch3, h2o])
@@ -101,14 +101,16 @@ class TestCompound(BaseTest):
         t0 = time.time()
         filled.save('filled.mol2', forcefield_name='oplsaa', residues='Methane')
         t1 = time.time()
+        foyer_kwargs = {'use_residue_map': False}
         filled.save('filled.mol2', forcefield_name='oplsaa', overwrite=True,
-                    residues='Methane', use_residue_map=False)
+                    residues='Methane', foyer_kwargs=foyer_kwargs)
         t2 = time.time()
         assert (t2 - t1) > (t1 - t0)
 
     def test_save_references(self, methane):
+        foyer_kwargs = {'references_file': 'methane.bib'}
         methane.save('methyl.mol2', forcefield_name='oplsaa',
-                     references_file='methane.bib')
+                     foyer_kwargs=foyer_kwargs)
         assert os.path.isfile('methane.bib')
 
     def test_save_combining_rule(self, methane):
