@@ -1407,6 +1407,8 @@ class Compound(object):
             from foyer import Forcefield
             ff = Forcefield(forcefield_files=forcefield_files,
                             name=forcefield_name, debug=forcefield_debug)
+            if not foyer_kwargs:
+                foyer_kwargs = {}
             structure = ff.apply(structure, **foyer_kwargs)
             structure.combining_rule = combining_rule
 
