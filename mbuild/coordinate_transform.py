@@ -247,6 +247,19 @@ class RigidTransform(CoordinateTransform):
 
         super(RigidTransform, self).__init__(T)
 
+def normalized_matrix(m):
+    """
+    Returns a normalized array
+    :param m: an array-like object (tuple of tuples, list of lists, np.ndarrays
+            list of tuples, and similar variations)
+    :return: a numpy array of unit vectors
+    """
+    if not isinstance(m, (list, tuple, np.ndarray)):
+        raise TypeError("The parameter 'm' must be of type tuple, list or"
+                        " np.ndarray. User passed type: {}.".format(type(m)))
+    m = np.array(m, dtype=float)
+    m = np.array(list(map(unit_vector,m)))
+    return m
 
 def unit_vector(v):
     """Returns the unit vector of the vector. """

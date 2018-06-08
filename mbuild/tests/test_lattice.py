@@ -203,6 +203,7 @@ class TestLattice(BaseTest):
 
         assert len(is_true) == len(values_to_check)
 
+
     def test_set_periodicity(self):
         lattice = mb.Lattice(lattice_spacing=[1, 1, 1], angles=[90, 90, 90],
                              lattice_points={'A' : [[0, 0, 0]]})

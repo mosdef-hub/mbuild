@@ -28,7 +28,7 @@ from mbuild.formats.lammpsdata import write_lammpsdata
 from mbuild.formats.gsdwriter import write_gsd
 from mbuild.periodic_kdtree import PeriodicCKDTree
 from mbuild.utils.io import run_from_ipython, import_
-from mbuild.coordinate_transform import _translate, _rotate
+from mbuild.coordinate_transform import _translate, _rotate, unit_vector, angle, normalized_matrix
 
 
 def load(filename, relative_to_module=None, compound=None, coords_only=False,
@@ -209,6 +209,11 @@ class Compound(object):
         (the bottom of the containment hierarchy) can have integer values for
         `rigid_id`. Compounds containing rigid particles will always have
         `rigid_id == None`. See also `contains_rigid`.
+    lattice_vectors : None or 3x3 array
+        None, unless the Compound was instantiated from the Lattice class. Pending
+        a PR to create a moving set of rigid particles to accompany lattices,
+        when the Compound is created from a Lattice the call will return the
+        current location of the lattice vectors.
     boundingbox
     center
     contains_rigid
@@ -244,17 +249,22 @@ class Compound(object):
         else:
             self._pos = np.zeros(3)
 
+        self._rigid_id = None
+        self._contains_rigid = False
+        self._check_if_contains_rigid_bodies = False
+        self._lattice_vectors = None
+
         self.parent = None
         self.children = OrderedSet()
         self.labels = OrderedDict()
         self.referrers = set()
+        self.lattice_vectors = deepcopy(self._lattice_vectors)
 
         self.bond_graph = None
         self.port_particle = port_particle
 
-        self._rigid_id = None
-        self._contains_rigid = False
-        self._check_if_contains_rigid_bodies = False
+
+        # CAVEAT: When adding new attributes, also add them in the clone method
 
         # self.add() must be called after labels and children are initialized.
         if subcompounds:
@@ -265,6 +275,7 @@ class Compound(object):
             self._charge = 0.0
         else:
             self._charge = charge
+
 
     def particles(self, include_ports=False):
         """Return all Particles of the Compound.
@@ -1475,6 +1486,94 @@ class Compound(object):
         self.rotate(theta, around)
         self.translate(center_pos)
 
+    def align_vector_with_vector(self, align_this, with_this, anchor_pt = None):
+        """
+        Given vectors, align_this and with_this, rotate a compound so that the vector align_this
+        is aligned with the vector with_this. After this operation the two vectors will point in
+        the same direction.
+
+        Parameters
+        ----------
+        align_this : list-like
+            The vector to be aligned. Must represent vector in 3D cartesian coordinates.
+        with_this : list-like
+           The vector serves as the end goal for align_this to be aligned with. Must
+           represent vector in 3D cartesian coordinates.
+        anchor_pt : optional, accepts list-like, defaults to self.center
+           anchor_pt is used as a way to identify a point in the compound that will remain
+           in the same cartesian coordinates after alignment as it was before. The list-like
+           must contain XYZ coordinates.
+        """
+        for aligner in [align_this, with_this]:
+            if aligner is not None:
+                try:
+                    aligner = np.array(aligner, dtype=np.float64)
+                except ValueError:
+                    raise ValueError("Parameters align_this and with_this must be list-like of length 3 "
+                                     "containing numeric values.")
+                try:
+                    aligner = aligner.reshape((3,))
+                except ValueError:
+                    raise ValueError("Parameters align_this and with_this must be list-like of length 3. "
+                                     "User passed list-like of length {}.".format(len(aligner)))
+            else:
+                raise ValueError("Parameters align_this and with_this must be list-like of length 3"
+                                " containing numerical values.")
+            if np.isnan(aligner).any():
+                raise ValueError("Vector {} contains a NaN value. This function does not handle NaNs."
+                                 .format(aligner))
+        if anchor_pt is None:
+            anchor_pt = self.center
+        else:
+            try:
+                anchor_pt = np.array(anchor_pt, dtype=np.float64)
+            except ValueError:
+                raise ValueError("When describing the anchor_pt parameter as a set of cartesian"
+                                 " coordinates, it must be done by specifying a list-like of length 3"
+                                 " that contains exclusively numeric values. User passed {} of length {}"
+                                 " with non-numerical values.".format(type(anchor_pt), len(anchor_pt)))
+            try:
+                anchor_pt = anchor_pt.reshape((3,))
+            except ValueError:
+                raise ValueError("Parameter anchor_pt must be list-like of length 3. "
+                                 "User passed list-like of length {}.".format(len(anchor_pt)))
+            if np.isnan(anchor_pt).any():
+                raise ValueError("Vector {} contains a NaN value. This function does not handle NaNs."
+                                 .format(anchor_pt))
+
+        self._align_vector_with_vector(vec1=align_this, vec2=with_this, anchor_pt=anchor_pt)
+
+    def _align_vector_with_vector(self, vec1, vec2, anchor_pt):
+        """
+        This alignment technique assumes that all the input methods have been checked.
+        The function align_vector_with_vector() checks input and calls upon this to execute
+        the alignment. See def align_vector_with_vector() for more information.
+        """
+        self.translate(-anchor_pt)
+        goal = unit_vector(np.array(deepcopy(vec2)))
+        current = unit_vector(np.array(deepcopy(vec1)))
+        if np.allclose(goal,current, atol=1e-4):
+            warn("The vectors {} and {} are already aligned. "
+                 "No operation has been performed on the object."
+                 .format(vec1,vec2), UserWarning)
+            pass
+        elif np.allclose(goal, -1*current, atol=1e-4):
+            warn("The vectors {} and {} are parallel but point in opposite directions. No alignment performed."
+                 .format(vec1, vec2), UserWarning)
+            pass
+        else:
+            for passes in range(3):
+                orthag = np.cross(current, goal)
+                theta = angle(current, goal)
+                current = list(_rotate(coordinates=current, around=orthag, theta=theta))[0]
+                self.rotate(theta=theta, around=orthag)
+                if not np.allclose(goal,current, atol=1e-3):
+                    if passes > 5:
+                        raise MBuildError("The alignment technique was unsuccesful.")
+                else:
+                    break
+        self.translate(anchor_pt)
+
     # Interface to Trajectory for reading/writing .pdb and .mol2 files.
     # -----------------------------------------------------------------
     def from_trajectory(self, traj, frame=-1, coords_only=False):
@@ -1970,6 +2069,8 @@ class Compound(object):
         newone._contains_rigid = deepcopy(self._contains_rigid)
         newone._rigid_id = deepcopy(self._rigid_id)
         newone._charge = deepcopy(self._charge)
+        newone._lattice_vectors = deepcopy(self._lattice_vectors)
+        newone.lattice_vectors = deepcopy(self.lattice_vectors)
         if hasattr(self, 'index'):
             newone.index = deepcopy(self.index)
 
