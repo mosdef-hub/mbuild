@@ -1042,6 +1042,65 @@ class Compound(object):
             return np.mean(self.xyz, axis=0)
 
     @property
+    def center_of_mass(self):
+        """
+        Returns
+        -------
+        np.ndarray, shape=(3,), dtype=float
+           The cartesian center of the Compound based on its Particles and molecular weight.
+            """
+        guessed_elements = set()
+        mass_vector = np.array([0., 0., 0.])
+        total_mass = 0
+        for atom in self.particles():
+            name = ''.join(char for char in atom.name if not char.isdigit())
+            try:
+                AtomicNum[atom.name]
+            except KeyError:
+                element = element_by_name(atom.name)
+                if name not in guessed_elements:
+                    warn('Guessing that "{}" is element: "{}"'.format(atom, element))
+                    guessed_elements.add(name)
+            else:
+                element = atom.name
+            mass = Mass[element]
+            total_mass += mass
+            mass_vector += mass*atom.pos
+
+        return mass_vector/total_mass
+
+    @property
+    def _molecular_mass(self):
+        """
+        The summation of the individual atomic weights within a Compound.
+
+        Returns
+        -------
+        molecular_mass : Float
+            The summation of the individual atomic weights within a Compound.
+
+        RECIPE:
+        To return the molecular masses of the children/subcompounds of a Compound (each benzene within a box
+        of benzene), this method can be combined with a looping procedure.
+        EX:
+        >> [benzene._molecular_mass for benzene in box_of_benzene.children]
+        [78.116, ... , 78.116]
+        """
+        return sum(map(lambda x: x._atomic_mass, self.particles()))
+
+    @property
+    def _atomic_mass(self):
+        try:
+            AtomicNum[self.name]
+        except KeyError:
+            element = element_by_name(self.name)
+            warn('Guessing that "{}" is element: "{}"'.format(self.name, element))
+        else:
+            element = self.name
+        return Mass[element]
+
+
+    @property
     def boundingbox(self):
         """Compute the bounding box of the compound.
 

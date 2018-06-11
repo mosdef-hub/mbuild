@@ -3,6 +3,7 @@ import os
 import numpy as np
 import parmed as pmd
 import pytest
+from copy import deepcopy
 
 import mbuild as mb
 from mbuild.exceptions import MBuildError
@@ -259,6 +260,25 @@ class TestCompound(BaseTest):
             assert np.allclose(port.center,
                                separation*orientation/np.linalg.norm(orientation),
                                atol=1e-15)
+
+    def test_center_of_mass_SC(self, simple_cube):
+        shift = np.random.randint(-10, 10)*np.random.randn(3)
+        simple_cube.translate_to(shift)
+        s = deepcopy(simple_cube)
+        # spinning uses self.center, since center and center_of_mass should be
+        # the same here, it proves that orientation is not a factor in calculating
+        # center_of_mass for a uniform, isotropic cubic system
+        simple_cube.spin(theta=np.pi/6, around=[2, 1, 1])
+        assert np.allclose(simple_cube.center_of_mass, s.center_of_mass)
+        assert np.allclose(simple_cube.center_of_mass, shift)
+        assert np.allclose(simple_cube.center_of_mass, simple_cube.center)
+
+    def test_center_of_mass_BB(self, box_of_benzenes):
+        assert(np.allclose([1.80109156, 1.98718323, 1.61528965], box_of_benzenes.center_of_mass))
+
+    def test_molecular_mass(self,box_of_benzenes, benzene):
+        assert np.allclose(box_of_benzenes._molecular_mass, 10*benzene._molecular_mass)
+        assert np.allclose(781.1159999999995, box_of_benzenes._molecular_mass)
 
     def test_single_particle(self):
         part = mb.Particle(name='A')

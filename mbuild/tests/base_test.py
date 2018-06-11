@@ -174,6 +174,16 @@ class BaseTest:
         return Silane()
 
     @pytest.fixture
+    def simple_cube(self):
+        from mbuild import Lattice as L
+        simple_basis = {"Po": [[0., 0., 0.]]}
+        simple_lat = L(lattice_spacing=[1, 1, 1], lattice_points=simple_basis)
+        Po = mb.Compound(name="Po")
+        simple_dictionary = {"Po":Po}
+        simple_comp = simple_lat.populate(x=2, y=2, z=2, compound_dict=simple_dictionary)
+        return simple_comp
+
+    @pytest.fixture
     def chf(self):
         class CHF(mb.Compound):
             def __init__(self):
