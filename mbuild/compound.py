@@ -213,7 +213,7 @@ class Compound(object):
         None, unless the Compound was instantiated from the Lattice class. Pending
         a PR to create a moving set of rigid particles to accompany lattices,
         when the Compound is created from a Lattice the call will return the
-        current location of the lattice vectors.
+        current direction of the lattice vectors.
     boundingbox
     center
     contains_rigid
@@ -1562,14 +1562,14 @@ class Compound(object):
                  .format(vec1, vec2), UserWarning)
             pass
         else:
-            for passes in range(3):
+            for passes in range(4):
                 orthag = np.cross(current, goal)
                 theta = angle(current, goal)
                 current = list(_rotate(coordinates=current, around=orthag, theta=theta))[0]
                 self.rotate(theta=theta, around=orthag)
                 if not np.allclose(goal,current, atol=1e-3):
-                    if passes > 5:
-                        raise MBuildError("The alignment technique was unsuccesful.")
+                    if passes > 2:
+                        raise MBuildError("The alignment technique was unsuccessful.")
                 else:
                     break
         self.translate(anchor_pt)

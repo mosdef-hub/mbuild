@@ -193,6 +193,7 @@ class BaseTest:
         simple_comp = simple_lat.populate(x=3, y=2, z=2, compound_dict=simple_dictionary)
         return simple_comp
 
+    @pytest.fixture
     def chf(self):
         class CHF(mb.Compound):
             def __init__(self):
