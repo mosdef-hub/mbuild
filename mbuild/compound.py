@@ -1043,7 +1043,8 @@ class Compound(object):
 
     @property
     def center_of_mass(self):
-        """
+        """Returns the center of mass of a Compound in cartesian coordinates.
+
         Returns
         -------
         np.ndarray, shape=(3,), dtype=float
@@ -1071,18 +1072,18 @@ class Compound(object):
 
     @property
     def _molecular_mass(self):
-        """
-        The summation of the individual atomic weights within a Compound.
+        """The summation of the individual atomic weights within a Compound.
 
         Returns
         -------
         molecular_mass : Float
             The summation of the individual atomic weights within a Compound.
 
-        RECIPE:
-        To return the molecular masses of the children/subcompounds of a Compound (each benzene within a box
+        Example
+        -------
+        To return the molecular masses of the children/subcompounds of a Compound (i.e. benzene within a box
         of benzene), this method can be combined with a looping procedure.
-        EX:
+
         >> [benzene._molecular_mass for benzene in box_of_benzene.children]
         [78.116, ... , 78.116]
         """
