@@ -7,6 +7,8 @@ import numpy as np
 
 import mbuild as mb
 
+from mbuild.coordinate_transform import normalized_matrix
+
 __all__ = ['Lattice']
 
 
@@ -406,7 +408,7 @@ class Lattice(object):
 
         return np.asarray([alpha, beta, gamma], dtype=np.float64)
 
-    def populate(self, compound_dict=None, x=1, y=1, z=1):
+    def populate(self, compound_dict=None, x=1, y=1, z=1, functionalize=None, skin=0.0):
         """Expand lattice and create compound from lattice.
 
         populate will expand lattice based on user input. The user must also
@@ -426,6 +428,10 @@ class Lattice(object):
             How many iterations in the z direction.
         compound_dict : dictionary, optional, default=None
             Link between basis_dict and Compounds.
+        functionalize : optional
+
+        skin : float, optional, default=0.0
+
 
         Exceptions Raised
         -----------------
@@ -438,9 +444,7 @@ class Lattice(object):
         """
         error_dict = {0: 'X', 1: 'Y', 2: 'Z'}
         try:
-            x = int(x)
-            y = int(y)
-            z = int(z)
+            x, y, z = map(int, (x, y, z))
         except (ValueError, TypeError):
             raise ValueError('Cannot convert replication amounts into '
                              'integers. x= {}, y= {}, z= {} needs to '
@@ -458,48 +462,26 @@ class Lattice(object):
                                  .format(error_dict[index],
                                          replication_amount))
 
-        if ((isinstance(compound_dict, dict)) or (compound_dict is None)):
+        if isinstance(compound_dict, dict) or (compound_dict is None):
             pass
         else:
             raise TypeError('Compound dictionary is not of type dict. '
                             '{} was passed.'.format(type(compound_dict)))
 
         cell = defaultdict(list)
-        [a, b, c] = self.lattice_spacing
+        a, b, c = self.lattice_spacing
+        ret_lattice = mb.Compound()
 
-        transform_mat = self.lattice_vectors
         # unit vectors
-        transform_mat = np.asarray(transform_mat, dtype=np.float64)
-        transform_mat = np.reshape(transform_mat, newshape=(3,3))
-        norms = np.linalg.norm(transform_mat, axis=1)
-
-        # normalized vectors for change of basis
-        unit_vecs = np.divide(transform_mat.transpose(), norms)
+        unit_vecs = normalized_matrix(np.asarray(self.lattice_vectors, dtype=np.float64).reshape(3,3))
 
         for key, locations in self.lattice_points.items():
             for coords in locations:
                 for replication in it.product(range(x), range(y), range(z)):
-                    temp_location = list()
-
-                    new_coords = np.asarray(coords, dtype=np.float64)
-                    new_coords = np.reshape(new_coords, (1, 3), order='C')
-
-                    new_coords[0][0] = new_coords[0][0] + replication[0]
-                    new_coords[0][1] = new_coords[0][1] + replication[1]
-                    new_coords[0][2] = new_coords[0][2] + replication[2]
-
+                    new_coords = np.asarray(coords, dtype=np.float64) + replication
                     # change of basis to cartesian
-                    new_coords = np.dot(unit_vecs, new_coords.transpose())
-
-                    new_coords[0] = new_coords[0] * a
-                    new_coords[1] = new_coords[1] * b
-                    new_coords[2] = new_coords[2] * c
-                    new_coords = np.reshape(new_coords, (1, 3), order='C')
-
-                    tuple_of_coords = tuple(new_coords.flatten())
-                    cell[key].append(tuple_of_coords)
-
-        ret_lattice = mb.Compound()
+                    new_coords = np.dot(unit_vecs, new_coords.reshape(3, 1)).reshape(3,)*(a, b, c)
+                    cell[key].append(tuple(new_coords))
 
         if compound_dict is None:
             for key_id, all_pos in cell.items():
