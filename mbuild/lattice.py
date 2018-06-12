@@ -468,42 +468,49 @@ class Lattice(object):
             raise TypeError('Compound dictionary is not of type dict. '
                             '{} was passed.'.format(type(compound_dict)))
 
-        cell = defaultdict(list)
         a, b, c = self.lattice_spacing
         ret_lattice = mb.Compound()
 
         # unit vectors
-        unit_vecs = normalized_matrix(np.asarray(self.lattice_vectors, dtype=np.float64).reshape(3,3))
-
-        for key, locations in self.lattice_points.items():
-            for coords in locations:
-                for replication in it.product(range(x), range(y), range(z)):
-                    new_coords = np.asarray(coords, dtype=np.float64) + replication
-                    # change of basis to cartesian
-                    new_coords = np.dot(unit_vecs, new_coords.reshape(3, 1)).reshape(3,)*(a, b, c)
-                    cell[key].append(tuple(new_coords))
+        unit_vecs = normalized_matrix(np.asarray(self.lattice_vectors, dtype=np.float64).reshape(3, 3))
 
         if compound_dict is None:
-            for key_id, all_pos in cell.items():
-                particle = mb.Compound(name=key_id, pos=[0, 0, 0])
-                for pos in all_pos:
-                    particle_to_add = mb.clone(particle)
-                    particle_to_add.translate_to(list(pos))
-                    ret_lattice.add(particle_to_add)
+            for key, locations in self.lattice_points.items():
+                particle = mb.Compound(name=key, pos=[0, 0, 0])
+                for coords in locations:
+                    for replication in it.product(range(x), range(y), range(z)):
+                        # operating in lattice space
+                        new_coords = np.asarray(coords, dtype=np.float64) + replication
+                        # change of basis to cartesian space
+                        new_coords = np.dot(unit_vecs, new_coords.reshape(3, 1)).reshape(3,)*(a, b, c)
+                        particle_to_add = mb.clone(particle)
+                        particle_to_add.translate_to(new_coords)
+                        if False:
+                            pass
+                        ret_lattice.add(particle_to_add)
+
         else:
-            for key_id, all_pos in cell.items():
-                if isinstance(compound_dict[key_id], mb.Compound):
-                    compound_to_move = compound_dict[key_id]
-                    for pos in all_pos:
-                        tmp_comp = mb.clone(compound_to_move)
-                        tmp_comp.translate_to(list(pos))
-                        ret_lattice.add(tmp_comp)
+            for key, locations in self.lattice_points.items():
+                if isinstance(compound_dict[key], mb.Compound):
+                    compound_to_move = compound_dict[key]
+                    for coords in locations:
+                        for replication in it.product(range(x), range(y), range(z)):
+                            # operating in lattice space
+                            new_coords = np.asarray(coords, dtype=np.float64) + replication
+                            # change of basis to cartesian space
+                            new_coords = np.dot(unit_vecs, new_coords.reshape(3, 1)).reshape(3,)*(a, b, c)
+                            tmp_comp = mb.clone(compound_to_move)
+                            tmp_comp.translate_to(new_coords)
+                            if False:
+                                pass
+                            ret_lattice.add(tmp_comp)
                 else:
-                    err_type = type(compound_dict.get(key_id))
+                    err_type = type(compound_dict.get(key))
                     raise TypeError('Invalid type in provided Compound '
                                     'dictionary. For key {}, type: {} was '
                                     'provided, not mbuild.Compound.'
-                                    .format(key_id, err_type))
+                                    .format(key, err_type))
+
         # set periodicity
         ret_lattice.periodicity = np.asarray([a * x, b * y, c * z], dtype=np.float64)
         warn('Periodicity of non-rectangular lattices are not valid with '
