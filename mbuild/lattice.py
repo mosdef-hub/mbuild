@@ -408,7 +408,7 @@ class Lattice(object):
 
         return np.asarray([alpha, beta, gamma], dtype=np.float64)
 
-    def populate(self, compound_dict=None, x=1, y=1, z=1, functionalize=None, skin=0.0):
+    def populate(self, compound_dict=None, x=1, y=1, z=1, functionalize=False, skin=0.0):
         """Expand lattice and create compound from lattice.
 
         populate will expand lattice based on user input. The user must also
@@ -468,25 +468,86 @@ class Lattice(object):
             raise TypeError('Compound dictionary is not of type dict. '
                             '{} was passed.'.format(type(compound_dict)))
 
-        a, b, c = self.lattice_spacing
-        ret_lattice = mb.Compound()
+        if not isinstance(functionalize, bool):
+            raise TypeError("Parameter 'functionalize' must be a boolean value.")
 
+        a, b, c = self.lattice_spacing
         # unit vectors
         unit_vecs = normalized_matrix(np.asarray(self.lattice_vectors, dtype=np.float64).reshape(3, 3))
+
+        if (skin != abs(skin)) or (skin > (min(a, b, c))) or (skin and (not functionalize)) \
+                or (skin and (compound_dict is None)):
+            raise ValueError("Parameter 'skin' must be a positive number no larger than the smallest lattice"
+                             " spacing. Parameter 'functionalize' cannot be False when skin is non-zero. "
+                             "Parameter 'skin' is only available when a compound_dict is specified.")
+
+        if functionalize:
+            port_info = np.array([["X", unit_vecs[0]],
+                                  ["Y", unit_vecs[1]],
+                                  ["Z", unit_vecs[2]],
+                                  ["negX", -1*unit_vecs[0]],
+                                  ["negY", -1*unit_vecs[1]],
+                                  ["negZ", -1*unit_vecs[2]]
+                                  ],
+                                 dtype=object)
+            # unpack all lattice spacings to a np.ndarray of shape (length, 3)
+            chain_lattice_space = np.array(list(it.chain.from_iterable(v for k, v in self.lattice_points.items())))
+            print('chain_lattice_space')
+            print(chain_lattice_space)
+            print(chain_lattice_space.shape)
+            print(' ')
+            # convert to cartesian coordinates while keeping order of objects constant
+            chain_cartesian = np.array([(np.dot(unit_vecs, cl.reshape(3, 1)).reshape(3,)*(a, b, c)).tolist() for cl in chain_lattice_space])
+            edge_coors = [None]*6
+            # build a list of the lattice coordinates that fall within the cartesian skin range
+            # edge coors will have a shape of [ [np.ndarray([x, y, z]), ... ],
+            #                                   [np.ndarray([x, y, z]), ... ],
+            #                                   [np.ndarray([x, y, z]) ],
+            #                                   [np.ndarray([x, y, z]), ... ],
+            #                                   [np.ndarray([x, y, z]), ... ],
+            #                                   [np.ndarray([x, y, z]) ]
+            #                                   ]
+            # or something similar
+            for ii in range(3):
+                cc_index = chain_cartesian[:, ii] >= (max(chain_cartesian[:, ii])-skin)
+                edge_coors[ii] = chain_lattice_space[cc_index][0].tolist()
+                cc_index = chain_cartesian[:, ii] <= (min(chain_cartesian[:, ii])+skin)
+                edge_coors[ii+3] = chain_lattice_space[cc_index][0].tolist()
+                print("edge coors")
+                print(edge_coors)
+            print(" ")
+
+        # make sure to check that we are working with particles only
+
+        ret_lattice = mb.Compound()
 
         if compound_dict is None:
             for key, locations in self.lattice_points.items():
                 particle = mb.Compound(name=key, pos=[0, 0, 0])
                 for coords in locations:
-                    for replication in it.product(range(x), range(y), range(z)):
+                    for A, B, C in it.product(range(x), range(y), range(z)):
                         # operating in lattice space
-                        new_coords = np.asarray(coords, dtype=np.float64) + replication
+                        new_coords = np.asarray(coords, dtype=np.float64) + (A, B, C)
                         # change of basis to cartesian space
                         new_coords = np.dot(unit_vecs, new_coords.reshape(3, 1)).reshape(3,)*(a, b, c)
                         particle_to_add = mb.clone(particle)
                         particle_to_add.translate_to(new_coords)
-                        if False:
-                            pass
+                        if functionalize:
+                            which_edge = np.equal([x, y, z, 0, 0, 0], [A+1, B+1, C+1, A, B, C])
+                            print("which_edge")
+                            print(which_edge)
+                            if any(which_edge):
+                                refined_info = list(it.compress(port_info, which_edge))
+                                name = "".join(i for i in refined_info[:, 0])
+                                print('name')
+                                print(name)
+                                orient = np.mean(refined_info[:, 1])
+                                print("particle_to_add")
+                                print(particle_to_add)
+                                print("particle_to_add[0]")
+                                print(particle_to_add[0])
+                                particle_to_add.add(mb.Port(anchor=particle_to_add[0],
+                                                            orientation=orient), label=name)
                         ret_lattice.add(particle_to_add)
 
         else:
@@ -494,15 +555,37 @@ class Lattice(object):
                 if isinstance(compound_dict[key], mb.Compound):
                     compound_to_move = compound_dict[key]
                     for coords in locations:
-                        for replication in it.product(range(x), range(y), range(z)):
+                        for A, B, C in it.product(range(x), range(y), range(z)):
                             # operating in lattice space
-                            new_coords = np.asarray(coords, dtype=np.float64) + replication
+                            new_coords = np.asarray(coords, dtype=np.float64) + (A, B, C)
                             # change of basis to cartesian space
                             new_coords = np.dot(unit_vecs, new_coords.reshape(3, 1)).reshape(3,)*(a, b, c)
                             tmp_comp = mb.clone(compound_to_move)
                             tmp_comp.translate_to(new_coords)
-                            if False:
-                                pass
+                            if functionalize:
+                                which_edge = np.equal([x, y, z, 0, 0, 0], [A+1, B+1, C+1, A, B, C])
+                                print("which_edge")
+                                print(which_edge)
+                                if any(which_edge):
+                                    point_bank = list(it.compress(edge_coors, which_edge))
+                                    print('point bank')
+                                    print(point_bank)
+                                    print('coords')
+                                    print(coords)
+                                    print(coords in point_bank)
+                                    print("\n!\n!\n!\n!\n!\n!\n!")
+
+                                    if coords in point_bank:
+                                        refined_info = np.array(list(it.compress(port_info, which_edge)))
+                                        print(refined_info)
+                                        name = "".join(i for i in refined_info[:, 0])
+                                        print("\n\n\n\n\n\n\n\n\n\n\nname")
+                                        print(name)
+                                        orient = np.mean(refined_info[:, 1])
+                                        print("orientation")
+                                        print(orient)
+                                        tmp_comp.add(mb.Port(anchor=tmp_comp[0],
+                                                             orientation=orient), label=name)
                             ret_lattice.add(tmp_comp)
                 else:
                     err_type = type(compound_dict.get(key))
@@ -511,11 +594,12 @@ class Lattice(object):
                                     'provided, not mbuild.Compound.'
                                     .format(key, err_type))
 
+
         # set periodicity
         ret_lattice.periodicity = np.asarray([a * x, b * y, c * z], dtype=np.float64)
         warn('Periodicity of non-rectangular lattices are not valid with '
-                    'default boxes. Only rectangular lattices are valid '
-                    'at this time.')
+             'default boxes. Only rectangular lattices are valid '
+             'at this time.')
 
         # if coordinates are below a certain threshold, set to 0
         tolerance = 1e-12
