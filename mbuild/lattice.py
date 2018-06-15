@@ -551,6 +551,7 @@ class Lattice(object):
                         ret_lattice.add(particle_to_add)
 
         else:
+            adder=0
             for key, locations in self.lattice_points.items():
                 if isinstance(compound_dict[key], mb.Compound):
                     compound_to_move = compound_dict[key]
@@ -584,8 +585,9 @@ class Lattice(object):
                                         orient = np.mean(refined_info[:, 1])
                                         print("orientation")
                                         print(orient)
-                                        tmp_comp.add(mb.Port(anchor=tmp_comp[0],
+                                        tmp_comp.add(mb.Port(anchor=tmp_comp,
                                                              orientation=orient), label=name)
+                            adder += 1
                             ret_lattice.add(tmp_comp)
                 else:
                     err_type = type(compound_dict.get(key))
@@ -594,7 +596,8 @@ class Lattice(object):
                                     'provided, not mbuild.Compound.'
                                     .format(key, err_type))
 
-
+            print("HEY THIS IS THE ADDER")
+            print(adder)
         # set periodicity
         ret_lattice.periodicity = np.asarray([a * x, b * y, c * z], dtype=np.float64)
         warn('Periodicity of non-rectangular lattices are not valid with '
