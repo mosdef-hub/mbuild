@@ -2,12 +2,13 @@ from collections import defaultdict
 import itertools as it
 from warnings import warn
 
+
 import numpy as np
 
 
 import mbuild as mb
 
-from mbuild.coordinate_transform import normalized_matrix
+from mbuild.coordinate_transform import normalized_matrix, unit_vector
 
 __all__ = ['Lattice']
 
@@ -477,6 +478,7 @@ class Lattice(object):
 
         if (skin != abs(skin)) or (skin > (min(a, b, c))) or (skin and (not functionalize)) \
                 or (skin and (compound_dict is None)):
+            # find out how to ensure the basis only contains particles
             raise ValueError("Parameter 'skin' must be a positive number no larger than the smallest lattice"
                              " spacing. Parameter 'functionalize' cannot be False when skin is non-zero. "
                              "Parameter 'skin' is only available when a compound_dict is specified.")
@@ -490,40 +492,57 @@ class Lattice(object):
                                   ["negZ", -1*unit_vecs[2]]
                                   ],
                                  dtype=object)
-            # unpack all lattice spacings to a np.ndarray of shape (length, 3)
-            chain_lattice_space = np.array(list(it.chain.from_iterable(v for k, v in self.lattice_points.items())))
-            print('chain_lattice_space')
-            print(chain_lattice_space)
-            print(chain_lattice_space.shape)
-            print(' ')
-            # convert to cartesian coordinates while keeping order of objects constant
-            chain_cartesian = np.array([(np.dot(unit_vecs, cl.reshape(3, 1)).reshape(3,)*(a, b, c)).tolist() for cl in chain_lattice_space])
-            edge_coors = [None]*6
-            # build a list of the lattice coordinates that fall within the cartesian skin range
-            # edge coors will have a shape of [ [np.ndarray([x, y, z]), ... ],
-            #                                   [np.ndarray([x, y, z]), ... ],
-            #                                   [np.ndarray([x, y, z]) ],
-            #                                   [np.ndarray([x, y, z]), ... ],
-            #                                   [np.ndarray([x, y, z]), ... ],
-            #                                   [np.ndarray([x, y, z]) ]
-            #                                   ]
-            # or something similar
-            for ii in range(3):
-                cc_index = chain_cartesian[:, ii] >= (max(chain_cartesian[:, ii])-skin)
-                edge_coors[ii] = chain_lattice_space[cc_index][0].tolist()
-                cc_index = chain_cartesian[:, ii] <= (min(chain_cartesian[:, ii])+skin)
-                edge_coors[ii+3] = chain_lattice_space[cc_index][0].tolist()
-                print("edge coors")
-                print(edge_coors)
-            print(" ")
+            if compound_dict is not None:
+                # unpack all lattice spacings to a np.ndarray of shape (length, 3)
+                chain_lattice_space = np.array(list(it.chain.from_iterable(v for k, v in self.lattice_points.items())))
+                # convert to cartesian coordinates while keeping order of objects constant
+                chain_cartesian = np.array([(np.dot(unit_vecs, cl.reshape(3, 1)).reshape(3,)*(a, b, c)).tolist()
+                                            for cl in chain_lattice_space])
+                print("chains")
+                print(chain_lattice_space)
+                print(chain_cartesian)
+                edge_coors = [[], [], [], [], [], []]
+                # build a list of the lattice coordinates that fall within the cartesian skin range
+                # edge coors will have a shape of [ [[x, y, z], ... ],
+                #                                   [[x, y, z], ... ],
+                #                                   [[x, y, z]],
+                #                                   [[x, y, z], ... ],
+                #                                   [[x, y, z], ... ],
+                #                                   [[x, y, z]]
+                #                                   ]
+                # or something similar
+                for ii in range(3):
+                    ##### change this to the outline I made
+                    ###
+                    ###
+                    ###
+                    cross = unit_vector(np.cross(unit_vecs[(ii+1) % 3], unit_vecs[(ii+2) % 3]))
+                    skin_L = cross*skin
+                    plane_point_high = chain_cartesian[np.argmax(chain_lattice_space[:, ii])] - skin_L
+                    plane_point_low = chain_cartesian[np.argmin(chain_lattice_space[:, ii])] + skin_L
+                    # do plane math to see if the cartesian coordinates lie on the surface
+                    for en, loc in enumerate(chain_cartesian):
+                        if sum(map((lambda i, j, k: i*(j-k)), cross, loc, plane_point_high)) >= 0:
+                            edge_coors[ii].append(chain_lattice_space[en].tolist())
+                        if sum(map((lambda i, j, k: i*(j-k)), cross, loc, plane_point_low)) <= 0:
+                            edge_coors[ii+3].append(chain_lattice_space[en].tolist())
+                    # cc_index = chain_cartesian[:, ii] >= (max(chain_cartesian[:, ii])-skin)
+                    # edge_coors[ii] = chain_lattice_space[cc_index][0].tolist()
+                    # cc_index = chain_cartesian[:, ii] <= (min(chain_cartesian[:, ii])+skin)
+                    # edge_coors[ii+3] = chain_lattice_space[cc_index][0].tolist()
+                    print("edge coors")
+                    print(edge_coors)
+                print(" ")
 
         # make sure to check that we are working with particles only
 
         ret_lattice = mb.Compound()
 
         if compound_dict is None:
+            # The default name for the particle is "H" because "default" is not compatible with ngl view
+            # if there are ports.
             for key, locations in self.lattice_points.items():
-                particle = mb.Compound(name=key, pos=[0, 0, 0])
+                particle = mb.Compound(name="H", pos=[0, 0, 0])
                 for coords in locations:
                     for A, B, C in it.product(range(x), range(y), range(z)):
                         # operating in lattice space
@@ -537,21 +556,31 @@ class Lattice(object):
                             print("which_edge")
                             print(which_edge)
                             if any(which_edge):
-                                refined_info = list(it.compress(port_info, which_edge))
-                                name = "".join(i for i in refined_info[:, 0])
+                                refined_info = np.array(list(it.compress(port_info, which_edge)))
+                                print("refined_info")
+                                print(refined_info)
+                                name = "".join(i for i in refined_info[:, 0]) + '[$]'
                                 print('name')
                                 print(name)
                                 orient = np.mean(refined_info[:, 1])
-                                print("particle_to_add")
-                                print(particle_to_add)
-                                print("particle_to_add[0]")
-                                print(particle_to_add[0])
-                                particle_to_add.add(mb.Port(anchor=particle_to_add[0],
-                                                            orientation=orient), label=name)
+                                if abs(np.linalg.norm(orient)) <= .01:
+                                    # write about this in the docstring, it is a crude solution
+                                    # but shouldn't cause too much trouble because the ports can
+                                    # be found easily by their names.
+                                    try:
+                                        one_idx = [x, y, z].index(1)
+                                    except ValueError:
+                                        raise MbuildError("Unknown error.")
+                                    orient = unit_vecs[one_idx]
+                                ret_lattice.add(mb.Port(anchor=particle_to_add,
+                                                        orientation=orient,
+                                                        separation=0.1), label=name)
+                                # fix the separation parameter when i push it
+
                         ret_lattice.add(particle_to_add)
 
         else:
-            adder=0
+            # check to see if unit cell size is 1 particle, use same routine as when compound is None to improve speed
             for key, locations in self.lattice_points.items():
                 if isinstance(compound_dict[key], mb.Compound):
                     compound_to_move = compound_dict[key]
@@ -568,26 +597,36 @@ class Lattice(object):
                                 print("which_edge")
                                 print(which_edge)
                                 if any(which_edge):
-                                    point_bank = list(it.compress(edge_coors, which_edge))
+                                    point_bank = list(it.chain.from_iterable(it.compress(edge_coors, which_edge)))
                                     print('point bank')
                                     print(point_bank)
                                     print('coords')
                                     print(coords)
                                     print(coords in point_bank)
-                                    print("\n!\n!\n!\n!\n!\n!\n!")
+                                    print("\n!\n!")
 
                                     if coords in point_bank:
                                         refined_info = np.array(list(it.compress(port_info, which_edge)))
                                         print(refined_info)
-                                        name = "".join(i for i in refined_info[:, 0])
-                                        print("\n\n\n\n\n\n\n\n\n\n\nname")
+                                        name = "".join(i for i in refined_info[:, 0]) + '[$]'
+                                        print("\n\n\nname")
                                         print(name)
                                         orient = np.mean(refined_info[:, 1])
+                                        if abs(np.linalg.norm(orient)) <= .01:
+                                            # write about this in the docstring, it is a crude solution
+                                            # but shouldn't cause too much trouble because the ports can
+                                            # be found easily by their names.
+                                            try:
+                                                one_idx = [x, y, z].index(1)
+                                            except ValueError:
+                                                raise MbuildError("Unknown error.")
+                                            orient = unit_vecs[one_idx]
                                         print("orientation")
                                         print(orient)
-                                        tmp_comp.add(mb.Port(anchor=tmp_comp,
-                                                             orientation=orient), label=name)
-                            adder += 1
+                                        ret_lattice.add(mb.Port(anchor=tmp_comp,
+                                                                orientation=orient,
+                                                                separation=.04), label=name)
+                                        # fix the separation parameter when i push it
                             ret_lattice.add(tmp_comp)
                 else:
                     err_type = type(compound_dict.get(key))
@@ -596,8 +635,6 @@ class Lattice(object):
                                     'provided, not mbuild.Compound.'
                                     .format(key, err_type))
 
-            print("HEY THIS IS THE ADDER")
-            print(adder)
         # set periodicity
         ret_lattice.periodicity = np.asarray([a * x, b * y, c * z], dtype=np.float64)
         warn('Periodicity of non-rectangular lattices are not valid with '
