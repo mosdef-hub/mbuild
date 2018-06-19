@@ -73,22 +73,6 @@ class Polymer(Compound):
         # Hoist the first part's bottom port to be the bottom port of the polymer.
         self.add(first_part.labels[port_labels[1]], port_labels[1], containment=False)
 
-        # # Add a cap to the right end of the pattern i.e. ABABAB<-C
-        # if caps[1] != None:
-        #     assert_port_exists(cap_ports[1], caps[1])
-        #     self.add(caps[1])
-        #     force_overlap(caps[1],
-        #     caps[1].labels[cap_ports[1]],
-        #     last_part.labels[port_labels[0]])
-
-        # # Add a cap to the left end of the pattern i.e. C->ABABAB
-        # if caps[0] != None:
-        #     assert_port_exists(cap_ports[0], caps[0])
-        #     self.add(caps[0])
-        #     force_overlap(caps[0],
-        #     caps[0].labels[cap_ports[0]],
-        #     first_part.labels[port_labels[1]])
-
         # Add a cap to left/right or both ends of the pattern i.e. C->ABABAB
         for cap, c_port, end, e_port in zip(caps,cap_ports,
         [first_part,last_part],[1,0]):
