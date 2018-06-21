@@ -203,13 +203,101 @@ class TestLattice(BaseTest):
 
         assert len(is_true) == len(values_to_check)
 
+    def test_populate_functionalize_no_dict(self):
+        # validate port orientation, location, naming
+        simple_lat = mb.Lattice([.2, .2, .2], angles=[94.64, 90.67, 96.32])
+        expanded_cell = simple_lat.populate(x=3, y=3, z=3, functionalize=True)
+        tot, x, y, z, negx, negy, negz = 0, 0, 0, 0, 0, 0, 0
+        for ii in expanded_cell.available_ports():
+            tot += 1
+            n = ii.access_labels
+            assert len(n) == 1
+            inc1 = n[0].count("negX")
+            inc2 = n[0].count("negY")
+            inc3 = n[0].count("negZ")
+            x += n[0].count("X") - inc1
+            y += n[0].count("Y") - inc2
+            z += n[0].count("Z") - inc3
+            negx += inc1
+            negy += inc2
+            negz += inc3
+            if (inc1 + inc2 + inc3) == 3:
+                assert np.allclose(ii.anchor.pos, np.array([0.0, 0.0, 0.0]))
+        assert len(expanded_cell.all_ports()) == tot == 26
+        assert x == y == z == negx == negy == negz == 9
+        assert len(list(expanded_cell.particles())) == 27
+
+    def test_populate_functionalize_complex_unit(self):
+        # validate port locations, orientation, naming, and count
+        cscl_lattice = mb.Lattice(lattice_spacing=[.4123, .4123, .4123],
+                                  lattice_points={'Cl': [[0., 0., 0.]],
+                                                  'Cs': [[.5, .5, .5], [.5, .5, 0]]})
+        cscl_dict = {'Cl': mb.Compound(name='Cl'),
+                     'Cs': mb.Compound(name='Cs')}
+        cscl_compound = cscl_lattice.populate(x=4, y=3, z=3,
+                                              compound_dict=cscl_dict,
+                                              functionalize=True)
+        tot, x, y, z, negx, negy, negz = 0, 0, 0, 0, 0, 0, 0
+        for ii in cscl_compound.available_ports():
+            tot += 1
+            n = ii.access_labels
+            assert len(n) == 1
+            inc1 = n[0].count("negX")
+            inc2 = n[0].count("negY")
+            inc3 = n[0].count("negZ")
+            x += n[0].count("X") - inc1
+            y += n[0].count("Y") - inc2
+            z += n[0].count("Z") - inc3
+            negx += inc1
+            negz += inc3
+            if (inc1 + inc2 + inc3) == 3 and ii.anchor.name == "CL":
+                assert np.allclose(ii.anchor.pos, np.array([0.0, 0.0, 0.0]))
+                assert np.allclose(ii.direction/np.linalg.norm(ii.direction),
+                                   np.array([-0.57735027, -0.57735027, -0.57735027]))
+        assert negz == 30 == y
+        assert 24 == z
+        assert 23 == x
+        assert tot == 72 == len(cscl_compound.all_ports())
+        assert len(list(cscl_compound.particles())) == 108
+
+    def test_populate_functionalize_2D_simple_unit(self):
+        pass
+
+    def test_populate_functionalize_2D_complex_unit(self):
+        pass
+
+    def test_populate_functionalize_triclinic(self):
+        pass
+
+    def test_populate_functionalize_validate_basis(self):
+        pass
+
+    @pytest.mark.parametrize("no_skin",
+                             [
+                                 (True)
+                             ])
+    def test_populate_cannot_skin(self, no_skin):
+        pass
+
+    def test_populate_triclinic_skin(self):
+        tric_latti = mb.Lattice(lattice_spacing=[1, 1, 1],
+                                lattice_points={"Cu": [[0., 0., 0.], [.5, .5, 0.],
+                                                       [.5, 0., .5], [0., .5, .5]]},
+                                angles=[94.64, 90.67, 96.32])
+        comp_dict = {"Cu": mb.Compound(name="Cu")}
+        tric_comp = tric_latti.populate(x=3, y=3, z=3,
+                                        compound_dict=comp_dict,
+                                        functionalize=True)
+
     def test_set_periodicity(self):
         lattice = mb.Lattice(lattice_spacing=[1, 1, 1], angles=[90, 90, 90],
-                             lattice_points={'A' : [[0, 0, 0]]})
+                             lattice_points={'A': [[0, 0, 0]]})
 
-        compound_test = lattice.populate(compound_dict={'A' : mb.Compound()},
+        compound_test = lattice.populate(compound_dict={'A': mb.Compound()},
                                          x=2, y=5, z=9)
 
-        replication=[2, 5, 9]
+        replication = [2, 5, 9]
         np.testing.assert_allclose(compound_test.periodicity,
-                                   np.asarray([x*y for x,y in zip(replication, lattice.lattice_spacing)]))
+                                   np.asarray([x*y for x, y in zip(replication, lattice.lattice_spacing)]))
+
+
