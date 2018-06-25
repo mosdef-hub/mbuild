@@ -348,13 +348,13 @@ class TestLattice(BaseTest):
         tric_comp = tric_latti.populate(x=3, y=3, z=3,
                                         compound_dict=comp_dict,
                                         functionalize=True,
-                                        skin=.085)
+                                        skin=.018)
         assert len(tric_comp.all_ports()) == 46
         assert len(list(tric_comp.particles())) == 54
 
     @pytest.mark.parametrize("comp_dict",
                              [
-                                 ({"Cu": mb.Compound(name="Cu") , "Au": mb.Compound(name="Au")}),
+                                 ({"Cu": mb.Compound(name="Cu"), "Au": mb.Compound(name="Au")}),
                                  (None)
                              ])
     def test_populate_triclinic_insufficient_skin(self, comp_dict):
@@ -365,7 +365,7 @@ class TestLattice(BaseTest):
         tric_comp = tric_latti.populate(x=3, y=3, z=3,
                                         compound_dict=comp_dict,
                                         functionalize=True,
-                                        skin=.065)
+                                        skin=.0165)
         assert len(tric_comp.all_ports()) == 38
         assert len(list(tric_comp.particles())) == 54
 
