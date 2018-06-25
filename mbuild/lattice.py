@@ -415,7 +415,8 @@ class Lattice(object):
         populate will expand lattice based on user input. The user can also
         pass in a dictionary that contains the keys that exist in the
         basis_dict. The corresponding Compound will be the full lattice
-        returned to the user.
+        returned to the user. When the functionalize parameter is True, Ports
+        will be placed on the lattice surface.
 
         If no dictionary is passed to the user, Dummy Compounds will be used.
 
@@ -431,22 +432,23 @@ class Lattice(object):
             Link between basis_dict and Compounds.
         functionalize : bool, optional, default=False
             When True, it covers the surface of the lattice with port particles.
-            Ports are set to point outward. The Port labeling convention to
-            combine the names of the extremes in that unit cell. For example,
-            a port in the middle of the plane where the normal points in the
-            negative Z--in lattice space, not cartesian--would be labeled as
-            "negZ[$]" where $ indicates any random integer that produces a unique
-            label. The corners and edges are named as a combination of X, Y, Z,
-            negX, negY, negZ according to which surface the Port lies on. No more
-            than 1 Port is attached to each surface Particle.
-            #############When functionalize is
-            True, the basis dict can only contain Particles or be None.
+            Ports are set to point outward. See more about Port orientation in
+            the Notes section. The Port labeling convention to combine the
+            names of the extremes in that unit cell. For example, a port in the
+            middle of the plane where the normal points in the negative Z--in
+            lattice space, not cartesian--would be labeled as "negZ[$]" where $
+            indicates any random integer that produces a unique label. The
+            corners and edges are named as a combination of X, Y, Z, negX, negY,
+            negZ according to which surface the Port lies on. One Port is attached
+            to each surface Particle. Please ensure that when the compound_dict is
+            not None, that it contains objects that can receive a Port. Default Port
+            separation is 0.1 nanometer (see port.py for information on separation).
         skin : float, optional, default=0.0
             All particles falling within the skin--a specified distance in nanometers
             from the surface of the lattice on all 6 sides--will be given a Port.
-            Cannot be non-zero if parameter functionalize is False or if parameter
-            compound_dict is None. Must be a positive number, no larger than the
-            smallest dimension of the unit cell (nanometers).
+            Cannot be non-zero value if parameter functionalize is False, if parameter
+            compound_dict is None or if len(lattice_points) == 1. Must be a positive number, no larger
+            (nanometers) than the smallest dimension of the unit cell (lattice_spacing).
 
         Exceptions Raised
         -----------------
@@ -457,12 +459,22 @@ class Lattice(object):
         -----------------
         Called after constructor by user.
 
-        Note
+        Notes
         ----
-        When attaching Compounds to a lattice surface, one can access the Ports by iterating
-        with the all_ports() or available_ports() methods to the lattice Compound. When
-        iterating, calling access_labels will return the labels of each Port, which are
-        assigned in the
+        - When attaching Compounds to a functionalized lattice surface, one can access the
+        Ports by iterating with the all_ports() or available_ports() methods to the lattice
+        Compound. When iterating, calling access_labels will return the labels of each Port,
+        which are assigned to correspond to which face of the lattice that the Port lies on.
+        More naming information is found above in the functionalize parameter description.
+
+        - If the user wishes to make a functionalized sheet (where the repeat unit in one or more
+        directions = 1) like graphene, with all of the Ports facing the same direction, then the
+        user should set functionalize=False, and instead attach a Port to the compound in the
+        compound_dict before the Lattice is populated.
+
+        - When functionalizing sheet-like cases it's crucial to visualize the Compound to ensure
+        the Ports are oriented correctly. If they are not oriented correctly, iterate through the
+        Ports and assert the direction.
         """
         error_dict = {0: 'X', 1: 'Y', 2: 'Z'}
         try:
@@ -491,18 +503,20 @@ class Lattice(object):
                             '{} was passed.'.format(type(compound_dict)))
 
         if not isinstance(functionalize, bool):
-            raise TypeError("Parameter 'functionalize' must be a boolean value.")
+            raise TypeError("Parameter 'functionalize' must be a boolean value. User passed"
+                            " {}.".format(type(functionalize)))
 
         a, b, c = self.lattice_spacing
-        # unit vectors
-        unit_vecs = normalized_matrix(np.asarray(self.lattice_vectors, dtype=np.float64).reshape(3, 3))
+        unit_vecs = normalized_matrix(np.asarray(self.lattice_vectors, dtype=np.float64).reshape(3, 3)).transpose()
+
+        # unpack all lattice points to a np.ndarray of shape (length, 3)
+        chain_lattice_space = np.array(list(it.chain.from_iterable(v for k, v in self.lattice_points.items())))
 
         if (skin != abs(skin)) or (skin > (min(a, b, c))) or (skin and (not functionalize)) \
-                or (skin and (compound_dict is None)):
-            # find out how to ensure the basis only contains particles
+                or ((len(chain_lattice_space) == 1) and skin):
             raise ValueError("Parameter 'skin' must be a positive number no larger than the smallest lattice"
                              " spacing. Parameter 'functionalize' cannot be False when skin is non-zero. "
-                             "Parameter 'skin' is only available when a compound_dict is specified.")
+                             "Parameter 'skin' is only available when len(lattice_points) > 1.")
 
         if functionalize:
             port_info = np.array([["X", unit_vecs[0]],
@@ -513,81 +527,62 @@ class Lattice(object):
                                   ["negZ", -1*unit_vecs[2]]
                                   ],
                                  dtype=object)
-            if compound_dict is not None:
-                # unpack all lattice points to a np.ndarray of shape (length, 3)
-                chain_lattice_space = np.array(list(it.chain.from_iterable(v for k, v in self.lattice_points.items())))
+            if len(chain_lattice_space) != 1:
                 # convert to cartesian coordinates--related to chain_lattice_space by its indices
                 chain_cartesian = np.array([(np.dot(unit_vecs, cl.reshape(3, 1)).reshape(3,)*(a, b, c)).tolist()
                                             for cl in chain_lattice_space])
-                print("chains")
-                print(chain_lattice_space)
-                print(chain_cartesian)
-                if len(chain_cartesian) != 1:
-                    edge_coors = [[], [], [], [], [], []]
-                    # build a list of the lattice coordinates that fall within the cartesian skin range
-                    # edge coors will have a shape of [ [[x, y, z], ... ],
-                    #                                   [[x, y, z], ... ],
-                    #                                   [[x, y, z]],
-                    #                                   [[x, y, z], ... ],
-                    #                                   [[x, y, z], ... ],
-                    #                                   [[x, y, z]]
-                    #                                   ]
-                    # or something similar
-                    for ii in range(3):
-                        cross = unit_vector(np.cross(unit_vecs[(ii+1) % 3], unit_vecs[(ii+2) % 3]))
-                        skin_ = cross*skin
-                        plane_point_high = chain_cartesian[np.argmax(chain_lattice_space[:, ii])] - skin_
-                        plane_point_low = chain_cartesian[np.argmin(chain_lattice_space[:, ii])] + skin_
-                        print("\n\n\n\n\nplanepts!!!!")
-                        print(plane_point_high)
-                        print(plane_point_low)
-                        # do plane math to see if the cartesian coordinates lie on the surface
-                        for en, loc in enumerate(chain_cartesian):
-                            if sum(map((lambda i, j, k: i*(j-k)), cross, loc, plane_point_high)) >= 0:
-                                edge_coors[ii].append(chain_lattice_space[en].tolist())
-                            if sum(map((lambda i, j, k: i*(j-k)), cross, loc, plane_point_low)) <= 0:
-                                edge_coors[ii+3].append(chain_lattice_space[en].tolist())
-                        print("edge coors")
-                        print(edge_coors)
-                    print(" ")
-
-        # make sure to check that we are working with particles only
-        # make sure to edit skin minimum
+                edge_coors = [[], [], [], [], [], []]
+                # build a list of the lattice coordinates that fall within the cartesian skin range
+                # edge coors will have a shape of [ [[x, y, z], ... ],
+                #                                   [[x, y, z], ... ],
+                #                                   [[x, y, z]],
+                #                                   [[x, y, z], ... ],
+                #                                   [[x, y, z], ... ],
+                #                                   [[x, y, z]]
+                #                                   ]
+                # or something similar
+                for ii in range(3):
+                    cross = unit_vector(np.cross(unit_vecs[(ii+1) % 3], unit_vecs[(ii+2) % 3]))
+                    skin_ = cross*skin
+                    plane_point_high = chain_cartesian[np.argmax(chain_lattice_space[:, ii])] - skin_
+                    plane_point_low = chain_cartesian[np.argmin(chain_lattice_space[:, ii])] + skin_
+                    # do plane math to see if the cartesian coordinates lie on the surface
+                    for en, loc in enumerate(chain_cartesian):
+                        if sum(map((lambda i, j, k: i*(j-k)), cross, loc, plane_point_high)) >= -0.005:
+                            edge_coors[ii].append(chain_lattice_space[en].tolist())
+                        if sum(map((lambda i, j, k: i*(j-k)), cross, loc, plane_point_low)) <= 0.005:
+                            edge_coors[ii+3].append(chain_lattice_space[en].tolist())
 
         ret_lattice = mb.Compound()
-
-        if compound_dict is None or (functionalize and len(chain_cartesian) == 1):
-            # When none is specified, the default name for the particle become "H". The name "default"
-            # is not compatible with ngl view if there are ports.
+        number_of_ports_added = 0
+        if functionalize and (len(chain_lattice_space) == 1):
             for key, locations in self.lattice_points.items():
                 if compound_dict is None:
-                    particle = mb.Compound(name="H", pos=[0, 0, 0])
+                    # When no compound dict is specified, the default name for the particle becomes "H",
+                    # which makes it compatible with nglview.
+                    compound_to_move = mb.Compound(name="H", pos=[0, 0, 0])
+                elif isinstance(compound_dict[key], mb.Compound):
+                    compound_to_move = compound_dict[key]
                 else:
-                    particle = mb.Compound(name=key, pos=[0, 0, 0])
+                    err_type = type(compound_dict.get(key))
+                    raise TypeError('Invalid type in provided Compound '
+                                    'dictionary. For key {}, type: {} was '
+                                    'provided, not mbuild.Compound.'.format(key, err_type))
                 for coords in locations:
                     for A, B, C in it.product(range(x), range(y), range(z)):
                         # operating in lattice space
                         new_coords = np.asarray(coords, dtype=np.float64) + (A, B, C)
                         # change of basis to cartesian space
                         new_coords = np.dot(unit_vecs, new_coords.reshape(3, 1)).reshape(3,)*(a, b, c)
-                        particle_to_add = mb.clone(particle)
+                        particle_to_add = mb.clone(compound_to_move)
                         particle_to_add.translate_to(new_coords)
                         if functionalize:
                             which_edge = np.equal([x, y, z, 0, 0, 0], [A+1, B+1, C+1, A, B, C])
-                            print("which_edge")
-                            print(which_edge)
                             if any(which_edge):
                                 refined_info = np.array(list(it.compress(port_info, which_edge)))
-                                print("refined_info")
-                                print(refined_info)
                                 name = "".join(i for i in refined_info[:, 0]) + '[$]'
-                                print('name')
-                                print(name)
                                 orient = np.mean(refined_info[:, 1])
                                 if abs(np.linalg.norm(orient)) <= .01:
-                                    # write about this in the docstring, it is a crude solution
-                                    # but shouldn't cause too much trouble because the ports can
-                                    # be found easily by their names.
                                     try:
                                         one_idx = [x, y, z].index(1)
                                     except ValueError:
@@ -596,107 +591,118 @@ class Lattice(object):
                                 ret_lattice.add(mb.Port(anchor=particle_to_add,
                                                         orientation=orient,
                                                         separation=0.1), label=name)
-                                # fix the separation parameter when i push it
+                                number_of_ports_added += 1
 
                         ret_lattice.add(particle_to_add)
 
-        elif 1 in (x, y, z) and functionalize:
+        elif functionalize and (1 in (x, y, z)):
             where_one = np.array([x, y, z]) == 1
             for key, locations in self.lattice_points.items():
-                if isinstance(compound_dict[key], mb.Compound):
+                if compound_dict is None:
+                    # When no compound dict is specified, the default name for the particle becomes "H",
+                    # which makes it compatible with nglview.
+                    compound_to_move = mb.Compound(name="H", pos=[0, 0, 0])
+                elif isinstance(compound_dict[key], mb.Compound):
                     compound_to_move = compound_dict[key]
-                    for coords in locations:
-                        for A, B, C in it.product(range(x), range(y), range(z)):
-                            # operating in lattice space
-                            new_coords = np.asarray(coords, dtype=np.float64) + (A, B, C)
-                            # change of basis to cartesian space
-                            new_coords = np.dot(unit_vecs, new_coords.reshape(3, 1)).reshape(3,)*(a, b, c)
-                            tmp_comp = mb.clone(compound_to_move)
-                            tmp_comp.translate_to(new_coords)
-                            which_edge = np.equal([A+1, B+1, C+1, A, B, C], [x, y, z, 0, 0, 0])
-                            point_bank = tuple(it.compress(edge_coors, which_edge))
-                            idx = tuple(it.compress(range(6), which_edge))
-                            if len(point_bank) == 2:
-                                for pb, i in zip(point_bank, idx):
-                                    if coords in pb:
-                                        name = port_info[i, 0]
-                                        orient = port_info[i, 1]
-                                        # break
-                            else:
-                                name = ""
-                                orient = []
-                                backup = None
-                                for pb, i in zip(point_bank, idx):
-                                    if coords in pb:
-                                        name += port_info[i, 0]
-                                        if where_one[i % 3]:
-                                            backup = port_info[i, 1]
-                                            continue
-                                        orient.append(port_info[i, 1])
-                                if orient:
-                                    orient = sum(orient)/len(orient)
-                                else:
-                                    orient = backup
-                            ret_lattice.add(mb.Port(anchor=tmp_comp,
-                                                    orientation=orient,
-                                                    separation=.04), label=name+"[$]")
-                            # fix the separation parameter when i push it
-                            ret_lattice.add(tmp_comp)
-
-        else:
-            for key, locations in self.lattice_points.items():
-                if isinstance(compound_dict[key], mb.Compound):
-                    compound_to_move = compound_dict[key]
-                    for coords in locations:
-                        for A, B, C in it.product(range(x), range(y), range(z)):
-                            # operating in lattice space
-                            new_coords = np.asarray(coords, dtype=np.float64) + (A, B, C)
-                            # change of basis to cartesian space
-                            new_coords = np.dot(unit_vecs, new_coords.reshape(3, 1)).reshape(3,)*(a, b, c)
-                            tmp_comp = mb.clone(compound_to_move)
-                            tmp_comp.translate_to(new_coords)
-                            if functionalize:
-                                which_edge = np.equal([x, y, z, 0, 0, 0], [A+1, B+1, C+1, A, B, C])
-                                print("which_edge")
-                                print(which_edge)
-                                if any(which_edge):
-                                    point_bank = list(it.chain.from_iterable(it.compress(edge_coors, which_edge)))
-                                    print('point bank')
-                                    print(point_bank)
-                                    print('coords')
-                                    print(coords)
-                                    print(coords in point_bank)
-                                    print("\n!\n!")
-
-                                    if coords in point_bank:
-                                        refined_info = np.array(list(it.compress(port_info, which_edge)))
-                                        print(refined_info)
-                                        name = "".join(i for i in refined_info[:, 0]) + '[$]'
-                                        print("\n\n\nname")
-                                        print(name)
-                                        orient = np.mean(refined_info[:, 1])
-                                        if abs(np.linalg.norm(orient)) <= .01:
-                                            # write about this in the docstring, it is a crude solution
-                                            # but shouldn't cause too much trouble because the ports can
-                                            # be found easily by their names.
-                                            try:
-                                                one_idx = [x, y, z].index(1)
-                                            except ValueError:
-                                                raise MbuildError("Unknown error.")
-                                            orient = unit_vecs[one_idx]
-                                        print("orientation")
-                                        print(orient)
-                                        ret_lattice.add(mb.Port(anchor=tmp_comp,
-                                                                orientation=orient,
-                                                                separation=.04), label=name)
-                                        # fix the separation parameter when i push it
-                            ret_lattice.add(tmp_comp)
                 else:
                     err_type = type(compound_dict.get(key))
                     raise TypeError('Invalid type in provided Compound '
                                     'dictionary. For key {}, type: {} was '
                                     'provided, not mbuild.Compound.'
                                     .format(key, err_type))
+                for coords in locations:
+                    for A, B, C in it.product(range(x), range(y), range(z)):
+                        # operating in lattice space
+                        new_coords = np.asarray(coords, dtype=np.float64) + (A, B, C)
+                        # change of basis to cartesian space
+                        new_coords = np.dot(unit_vecs, new_coords.reshape(3, 1)).reshape(3,)*(a, b, c)
+                        tmp_comp = mb.clone(compound_to_move)
+                        tmp_comp.translate_to(new_coords)
+                        which_edge = np.equal([A+1, B+1, C+1, A, B, C], [x, y, z, 0, 0, 0])
+                        point_bank = tuple(it.compress(edge_coors, which_edge))
+                        idx = tuple(it.compress(range(6), which_edge))
+                        add_port = False
+                        if len(point_bank) == 2:
+                            for pb, i in zip(point_bank, idx):
+                                if coords in pb:
+                                    name = port_info[i, 0]
+                                    orient = port_info[i, 1]
+                                    add_port = True
+                        else:
+                            name = ""
+                            orient = []
+                            backup = None
+                            for pb, i in zip(point_bank, idx):
+                                if coords in pb:
+                                    add_port = True
+                                    name += port_info[i, 0]
+                                    if where_one[i % 3]:
+                                        backup = port_info[i, 1]
+                                    orient.append(port_info[i, 1])
+                            if orient:
+                                orient = sum(orient)/len(orient)
+                                if abs(np.linalg.norm(orient)) <= .01:
+                                    orient = backup
+                        if add_port:
+                            ret_lattice.add(mb.Port(anchor=tmp_comp,
+                                                    orientation=orient,
+                                                    separation=.1),
+                                            label=name+"[$]")
+                            number_of_ports_added += 1
+                        ret_lattice.add(tmp_comp)
+
+        else:
+            for key, locations in self.lattice_points.items():
+                if compound_dict is None:
+                    # When no compound dict is specified, the default name for the particle becomes "H",
+                    # which makes it compatible with nglview.
+                    compound_to_move = mb.Compound(name="H", pos=[0, 0, 0])
+                elif isinstance(compound_dict[key], mb.Compound):
+                    compound_to_move = compound_dict[key]
+                else:
+                    err_type = type(compound_dict.get(key))
+                    raise TypeError('Invalid type in provided Compound '
+                                    'dictionary. For key {}, type: {} was '
+                                    'provided, not mbuild.Compound.'
+                                    .format(key, err_type))
+                for coords in locations:
+                    for A, B, C in it.product(range(x), range(y), range(z)):
+                        # operating in lattice space
+                        new_coords = np.asarray(coords, dtype=np.float64) + (A, B, C)
+                        # change of basis to cartesian space
+                        new_coords = np.dot(unit_vecs, new_coords.reshape(3, 1)).reshape(3,)*(a, b, c)
+                        tmp_comp = mb.clone(compound_to_move)
+                        tmp_comp.translate_to(new_coords)
+                        if functionalize:
+                            which_edge = np.equal([x, y, z, 0, 0, 0], [A+1, B+1, C+1, A, B, C])
+                            if any(which_edge):
+                                point_bank = list(it.chain.from_iterable(it.compress(edge_coors, which_edge)))
+                                if coords in point_bank:
+                                    refined_info = np.array(list(it.compress(port_info, which_edge)))
+                                    name = "".join(i for i in refined_info[:, 0]) + '[$]'
+                                    orient = np.mean(refined_info[:, 1])
+                                    if abs(np.linalg.norm(orient)) <= .01:
+                                        try:
+                                            one_idx = [x, y, z].index(1)
+                                        except ValueError:
+                                            raise MbuildError("Unexpected error. Could not determine orientation"
+                                                              " of Port.")
+                                        orient = unit_vecs[one_idx]
+                                    ret_lattice.add(mb.Port(anchor=tmp_comp,
+                                                            orientation=orient,
+                                                            separation=.1), label=name)
+                                    number_of_ports_added += 1
+                        ret_lattice.add(tmp_comp)
+
+        tryer = len(list(ret_lattice.children)) - number_of_ports_added - x*y*z*len(chain_lattice_space)
+        try:
+            assert tryer == 0
+        except AssertionError:
+            if tryer < 0 and functionalize:
+                raise MbuildError("There are fewer atoms in the lattice than expected. Ensure that "
+                                  "the basis atoms can accept a Port.")
+            else:
+                raise MbuildError("The lattice returned an unexpected number of children. Unexpected error.")
 
         # set periodicity
         ret_lattice.periodicity = np.asarray([a * x, b * y, c * z], dtype=np.float64)

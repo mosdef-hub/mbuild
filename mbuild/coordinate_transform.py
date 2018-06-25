@@ -258,7 +258,7 @@ def normalized_matrix(m):
         raise TypeError("The parameter 'm' must be of type tuple, list or"
                         " np.ndarray. User passed type: {}.".format(type(m)))
     m = np.array(m, dtype=float)
-    m = np.array(list(map(unit_vector,m)))
+    m = np.array(list(map(unit_vector, m)))
     return m
 
 
