@@ -1,0 +1,32 @@
+<ForceField>
+    <AtomTypes>
+      <Type name="opls_135" class="CT" element="C" mass="12.01100" def="[C;X4](C)(H)(H)H" desc="alkane CH3" doi="10.1021/ja9621760"/>
+      <Type name="opls_136" class="CT" element="C" mass="12.01100" def="[C;X4](C)(C)(H)H" desc="alkane CH2" doi="10.1021/ja9621760"/>
+      <Type name="opls_137" class="CT" element="C" mass="12.01100" def="[C;X4](C)(C)(C)H" desc="alkane CH" doi="10.1021/ja9621760"/>
+      <Type name="opls_138" class="CT" element="C" mass="12.01100" def="[C;X4](H)(H)(H)H" desc="alkane CH4" doi="10.1021/ja9621760"/>
+      <Type name="opls_139" class="CT" element="C" mass="12.01100" def="[C;X4](C)(C)(C)C" desc="alkane C" doi="10.1021/ja9621760"/>
+  <Type name="opls_140" class="HC" element="H" mass="1.00800"  def="H[C;X4]" desc="alkane H" doi="10.1021/ja9621760"/>
+  </AtomTypes>
+ <HarmonicBondForce>
+  <Bond class1="CT" class2="CT" length="0.1529" k="224262.4"/>
+  <Bond class1="CT" class2="HC" length="0.1529" k="224262.4"/>
+  </HarmonicBondForce>
+  <HarmonicAngleForce>
+  <Angle class1="CT" class2="CT" class3="CT" angle="2.12232037043" k="585.76"/>
+  <Angle class1="HC" class2="CT" class3="HC" angle="2.12232037043" k="585.76"/>
+  <Angle class1="HC" class2="CT" class3="CT" angle="2.12232037043" k="585.76"/>
+  </HarmonicAngleForce>
+ <RBTorsionForce>
+  <Proper class1="CT" class2="CT" class3="CT" class4="CT" c0="0.8368" c1="2.5104" c2="0.0" c3="-3.3472" c4="0.0" c5="0.0"/>
+  <Proper class1="HC" class2="CT" class3="CT" class4="CT" c0="0.8368" c1="2.5104" c2="0.0" c3="-3.3472" c4="0.0" c5="0.0"/>
+  <Proper class1="HC" class2="CT" class3="CT" class4="HC" c0="0.8368" c1="2.5104" c2="0.0" c3="-3.3472" c4="0.0" c5="0.0"/>
+  </RBTorsionForce>
+ <NonbondedForce coulomb14scale="0.5" lj14scale="0.5">
+    <Atom type="opls_135" charge="-0.18" sigma="0.35" epsilon="0.276144"/>
+      <Atom type="opls_136" charge="-0.12" sigma="0.35" epsilon="0.276144"/>
+      <Atom type="opls_137" charge="-0.06" sigma="0.35" epsilon="0.276144"/>
+      <Atom type="opls_138" charge="-0.24" sigma="0.35" epsilon="0.276144"/>
+      <Atom type="opls_139" charge="0.0" sigma="0.35" epsilon="0.276144"/>
+      <Atom type="opls_140" charge="0.06" sigma="0.25" epsilon="0.12552"/>
+  </NonbondedForce>
+  </ForceField>
