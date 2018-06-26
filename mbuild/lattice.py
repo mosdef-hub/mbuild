@@ -512,6 +512,12 @@ class Lattice(object):
         # unpack all lattice points to a np.ndarray of shape (length, 3)
         chain_lattice_space = np.array(list(it.chain.from_iterable(v for k, v in self.lattice_points.items())))
 
+        try:
+            float(skin)
+        except (ValueError, TypeError):
+            raise TypeError("Optional parameter skin must be numeric or a string containing a numeric value. "
+                            "User passed type {}.".format(type(skin)))
+
         if (skin != abs(skin)) or (skin > (min(a, b, c))) or (skin and (not functionalize)) \
                 or ((len(chain_lattice_space) == 1) and skin):
             raise ValueError("Parameter 'skin' must be a positive number no larger than the smallest lattice"
