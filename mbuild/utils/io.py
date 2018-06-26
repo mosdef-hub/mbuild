@@ -63,6 +63,8 @@ or from source following instructions at:
 # http://openbabel.org/docs/current/UseTheLibrary/PythonInstall.html
 '''
 
+MESSAGES['pybel'] = MESSAGES['openbabel']
+
 
 def import_(module):
     """Import a module, and issue a nice message to stderr if the module isn't installed.
@@ -127,6 +129,7 @@ except ImportError:
 try:
     import openbabel
     has_openbabel = True
+    del openbabel
 except ImportError:
     has_openbabel = False
 
