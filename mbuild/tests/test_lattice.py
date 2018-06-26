@@ -185,23 +185,25 @@ class TestLattice(BaseTest):
         with pytest.raises(TypeError):
             test_lattice.populate(compound_dict=particle_dict)
 
-    def test_proper_populate(self):
-        values_to_check = [[0, 0, 0], [1, 0, 0], [0, 1, 0], [0, 0, 1],
-                           [1, 1, 0], [0, 1, 1], [1, 0, 1], [1, 1, 1]]
-        test_lattice = mb.Lattice(lattice_spacing=[1, 1, 1],
-                                  angles=[90, 90, 90])
-
-        new_compound = test_lattice.populate(x=2, y=2, z=2)
-
-        values_to_check = np.asarray(values_to_check, dtype=np.float64)
-
-        is_true = []
-        for pos1 in np.split(values_to_check, 8, axis=0):
-            for pos2 in np.split(new_compound.xyz, 8, axis=0):
-                if np.allclose(pos1, pos2):
-                    is_true.append(True)
-
-        assert len(is_true) == len(values_to_check)
+    def test_populate_correct_locations_triclinic(self):
+        spaces = [[0.02247968, 0.24848065, 0.25], [-0.03256095, 0.74544194, 0.25],
+                  [0.52247968, 0.24848065, 0.25], [0.46743905, 0.74544194, 0.25], [0, 0, 0],
+                  [-0.05504063, 0.4969613, 0.], [0.5, 0.,  0.], [0.44495937, 0.4969613,  0.]]
+        tric_latti = mb.Lattice(lattice_spacing=[.5, .5, .5],
+                                lattice_points={"Au": [[0., 0., 0.]],
+                                                "Cu": [[0.1, .5, .5]]},
+                                angles=[90, 90, 96.32])
+        tric_comp = tric_latti.populate(x=2, y=2, z=1)
+        for ii in tric_comp.particles():
+            for en, jj in enumerate(spaces):
+                if np.allclose(ii.pos, jj, atol=1e-4):
+                    del spaces[en]
+                    break
+            else:
+                raise MbuildError("The particle {} is not in an acceptable location. The population "
+                                  "math has been changed and no longer produces correct coordinates."
+                                  .format(ii))
+        assert len(spaces) == 0
 
     def test_populate_functionalize_no_dict(self):
         simple_lat = mb.Lattice([.2, .2, .2], angles=[94.64, 90.67, 96.32])
