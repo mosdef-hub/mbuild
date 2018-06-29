@@ -1,4 +1,5 @@
 from collections import Counter
+import pytest
 
 import mbuild as mb
 from mbuild.tests.base_test import BaseTest
@@ -38,7 +39,7 @@ class TestPolymer(BaseTest):
         c6 = mb.Polymer(ch2, n=n,caps=(ch3,ester),cap_ports=('up','down'))
         assert c6.n_particles == n * 3 + 7
         assert c6.n_bonds == n * 2 + (n - 1) + 7
-        assert c6.children[6].name == 'CH2'
+        assert c6.children[6].name == 'CH3'
         assert c6.children[7].name == 'Ester'
         assert len(c6.all_ports()) == 1
         assert assert_port_exists('up', c6.children[7])
@@ -70,5 +71,6 @@ class TestPolymer(BaseTest):
         assert assert_port_exists('down',abba)
 
     def test_cap_values(self, ch2, ch3):
+        n=2
         with pytest.raises(ValueError):
             mb.Polymer(ch2, n=n, caps = (None,ch3), cap_ports=('up',None))
