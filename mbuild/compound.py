@@ -1075,7 +1075,7 @@ class Compound(object):
             particle_array = np.array(list(self.particles()))
         return particle_array[idxs]
 
-    def visualize(self, show_ports=False, **kwargs):
+    def visualize(self, show_ports=False):
         """Visualize the Compound using nglview.
 
         Allows for visualization of a Compound within a Jupyter Notebook.
@@ -1095,8 +1095,11 @@ class Compound(object):
                 particle.name = remove_digits(particle.name).upper()
                 if not particle.name:
                     particle.name = 'UNK'
-            self.save('tmp.mol2', show_ports=show_ports, overwrite=True)
-            widget = nglview.show_file('tmp.mol2')
+            tmp_dir = tempfile.mkdtemp()
+            self.save(os.path.join(tmp_dir, 'tmp.mol2'),
+                      show_ports=show_ports,
+                      overwrite=True)
+            widget = nglview.show_file(os.path.join(tmp_dir, 'tmp.mol2'))
             widget.clear()
             widget.add_ball_and_stick(cylinderOnly=True)
             elements = set([particle.name for particle in self.particles()])
