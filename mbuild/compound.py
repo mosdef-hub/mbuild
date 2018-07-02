@@ -1106,16 +1106,19 @@ class Compound(object):
             scale = 50.
             for element in elements:
                 try:
-                    widget.add_ball_and_stick('_{}'.format(element.upper()),
-                        aspect_ratio=_ATOMIC_RADII[element.title()]**1.5 * scale)
+                    widget.add_ball_and_stick('_{}'.format(
+                        element.upper()), aspect_ratio=_ATOMIC_RADII[element.title()]**1.5 * scale)
                 except KeyError:
                     ids = [str(i) for i, particle in enumerate(self.particles())
                            if particle.name == element]
-                    widget.add_ball_and_stick('@{}'.format(','.join(ids)),
-                        aspect_ratio=0.17**1.5 * scale, color='grey')
+                    widget.add_ball_and_stick(
+                        '@{}'.format(
+                            ','.join(ids)),
+                        aspect_ratio=0.17**1.5 * scale,
+                        color='grey')
             if show_ports:
                 widget.add_ball_and_stick('_VS',
-                    aspect_ratio=1.0, color='#991f00')
+                                          aspect_ratio=1.0, color='#991f00')
             return widget
         else:
             raise RuntimeError('Visualization is only supported in Jupyter '
