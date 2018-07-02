@@ -1,4 +1,5 @@
 import itertools as it
+from copy import deepcopy
 
 from mbuild.compound import Compound
 from mbuild.coordinate_transform import force_overlap
@@ -24,14 +25,18 @@ class Polymer(Compound):
         monomers in the order assigned by the built-in `sorted()`.
     port_labels : 2-tuple of strs, optional, default=('up', 'down')
         The names of the two ports to use to connect copies of proto.
-    caps : 2-tuple of Compounds, optional, default=(None, None)
+    caps : Compound or 2-tuple of Compounds, optional, default=(None, None)
         The cap compounds should contain at least one open port. The first
         argument will cap the beginning of the pattern i.e. C->ABAB and
-        the second argument caps the end of the pattern i.e. ABAB<-C
-    cap_ports : 2-tuple of strs, optional, default=(None, None)
+        the second argument caps the end of the pattern i.e. ABAB<-C.
+        If a Compound is given it will be used to cap both ends.
+    cap_ports : str 2-tuple of strs, optional, default=(None, None)
         The names of the ports from the cap compound(s) to connect to polymer.
+        If a str is given that port will be used for both ends.
     """
-    def __init__(self, monomers, n, sequence='A', port_labels=('up', 'down'),caps=(None, None),cap_ports=(None,None)):
+
+    def __init__(self, monomers, n, sequence='A', port_labels=(
+            'up', 'down'), caps=(None, None), cap_ports=(None, None)):
         if n < 1:
             raise ValueError('n must be 1 or more')
         super(Polymer, self).__init__()
@@ -68,20 +73,33 @@ class Polymer(Compound):
                 break
 
         # Hoist the last part's top port to be the top port of the polymer.
-        self.add(last_part.labels[port_labels[0]], port_labels[0], containment=False)
+        self.add(last_part.labels[port_labels[0]],
+                 port_labels[0], containment=False)
 
-        # Hoist the first part's bottom port to be the bottom port of the polymer.
-        self.add(first_part.labels[port_labels[1]], port_labels[1], containment=False)
+        # Hoist the first part's bottom port to be the bottom port of the
+        # polymer.
+        self.add(first_part.labels[port_labels[1]],
+                 port_labels[1], containment=False)
+
+        if isinstance(caps, Compound):
+            caps = (caps, deepcopy(caps))
+        if isinstance(cap_ports, str):
+            cap_ports = (cap_ports, cap_ports)
+
+        if len(caps) != 2 and len(cap_ports) != 2:
+            raise ValueError('Two viable caps and cap ports must be provided')
 
         # Add a cap to left/right or both ends of the pattern i.e. C->ABABAB
-        for cap, c_port, end, e_port in zip(caps,cap_ports,
-        [first_part,last_part],[1,0]):
-            if cap != None:
-                assert_port_exists(c_port, cap)
+        for cap, cap_port, end_port in zip(
+                caps,
+                cap_ports,
+                reversed(port_labels)):
+            if cap is not None:
                 self.add(cap)
                 force_overlap(cap,
-                cap.labels[c_port],
-                end.labels[port_labels[e_port]])
+                              cap[cap_port],
+                              self[end_port])
+
 
 if __name__ == "__main__":
     from mbuild.lib.moieties import CH2

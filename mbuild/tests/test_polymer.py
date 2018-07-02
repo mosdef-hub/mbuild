@@ -74,3 +74,9 @@ class TestPolymer(BaseTest):
         n=2
         with pytest.raises(ValueError):
             mb.Polymer(ch2, n=n, caps = (None,ch3), cap_ports=('up',None))
+
+    def test_cap_non_tuples(self, ch2):
+        n=2
+        c4 = mb.Polymer(ch2, n=n, caps=ch2, cap_ports='up')
+        assert len(c4.all_ports()) == 2
+        assert len(c4.children) == 4
