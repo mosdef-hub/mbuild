@@ -1,0 +1,13 @@
+<ForceField>
+ <AtomTypes>
+  <Type name="opls_138" class="CT" element="C" mass="12.01100" def="[C;X4](H)(H)(H)H" desc="alkane CH4" doi="10.1021/ja9621760"/>
+  <Type name="opls_140" class="HC" element="H" mass="1.00800"  def="H[C;X4]" desc="alkane H" doi="10.1021/ja9621760"/>
+ </AtomTypes>
+ <HarmonicBondForce>
+  <Bond class1="CT" class2="CT" length="0.1529" k="224262.4"/>
+  <Bond class1="CT" class2="HC" length="0.109" k="284512.0"/>
+ </HarmonicBondForce>
+ <HarmonicAngleForce>
+  <Angle class1="HC" class2="CT" class3="HC" angle="1.88146493365" k="276.144"/>
+ </HarmonicAngleForce>
+</ForceField>
