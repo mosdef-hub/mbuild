@@ -11,7 +11,6 @@ import sys
 import tempfile
 from warnings import warn
 
-from foyer import Forcefield
 import mdtraj as md
 from mdtraj.core.element import get_by_symbol
 import numpy as np
@@ -1416,6 +1415,7 @@ class Compound(object):
 
 
         """
+        from foyer import Forcefield
         to_parmed = self.to_parmed()
         ff = Forcefield(forcefield_files=forcefield_files, name=forcefield_name)
         to_parmed = ff.apply(to_parmed)
