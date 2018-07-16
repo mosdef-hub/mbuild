@@ -1171,7 +1171,7 @@ class Compound(object):
             widget.clear()
             widget.add_ball_and_stick(cylinderOnly=True)
             elements = set([particle.name for particle in self.particles()])
-            scale = 50.
+            scale = 50.0
             for element in elements:
                 try:
                     widget.add_ball_and_stick('_{}'.format(
