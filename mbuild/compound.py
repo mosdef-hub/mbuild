@@ -2087,11 +2087,19 @@ class Compound(object):
 
         Parameters
         ----------
+        box : mb.Box, optional, default=self.boundingbox (with buffer)
+            Box information to be used when converting to a `Structure`.
+            If 'None', a bounding box is used with 0.25nm buffers at
+            each face to avoid overlapping atoms, unless `self.periodicity`
+            is not None, in which case those values are used for the
+            box lengths.
         title : str, optional, default=self.name
             Title/name of the ParmEd Structure
         residues : str of list of str
             Labels of residues in the Compound. Residues are assigned by
             checking against Compound.name.
+        show_ports : boolean, optional, default=False
+            Include all port atoms when converting to a `Structure`.
 
         Returns
         -------
