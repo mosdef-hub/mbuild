@@ -14,7 +14,7 @@ class Box(object):
         Box length in x, y and z directions.
 
     """
-    def __init__(self, lengths=None, mins=None, maxs=None):
+    def __init__(self, lengths=None, mins=None, maxs=None, angles=None):
         if lengths is not None:
             assert mins is None and maxs is None
             self._mins = np.array([0.0, 0.0, 0.0])
@@ -28,6 +28,11 @@ class Box(object):
         else:
             raise ValueError("Either provide `lengths` or `mins` and `maxs`."
                              "You provided: lengths={} mins={} maxs={}".format(lengths, mins, maxs))
+        if angles is None:
+            angles = np.array([90.0, 90.0, 90.0])
+        elif isinstance(angles, (list, np.array)):
+            angles = np.array(angles, dtype=np.float)
+        self._angles = angles
 
     @property
     def mins(self):
@@ -40,6 +45,10 @@ class Box(object):
     @property
     def lengths(self):
         return self._lengths
+
+    @property
+    def angles(self):
+        return self._angles
 
     @mins.setter
     def mins(self, mins):
