@@ -43,3 +43,18 @@ class TestBox(BaseTest):
         box.lengths = 2 * np.ones(3)
         assert (box.lengths == 2 * np.ones(3)).all()
         assert (box.maxs - box.mins == 2 * np.ones(3)).all()
+
+    def test_setters_with_lists(self):
+        box = mb.Box(mins=np.zeros(3), maxs=2 * np.ones(3))
+        box.mins = [1, 1, 1]
+        assert (box.mins == np.ones(3)).all()
+        assert (box.maxs - box.mins == np.ones(3)).all()
+        assert (box.lengths == np.ones(3)).all()
+        box.maxs = [3, 3, 3]
+        assert (box.maxs == 2 * np.ones(3)).all()
+        assert (box.maxs - box.mins == 2 * np.ones(3)).all()
+        assert (box.lengths == 2 * np.ones(3)).all()
+        box = mb.Box(mins=np.zeros(3), maxs=np.ones(3))
+        box.lengths = [4, 4, 4]
+        assert (box.lengths == 3 * np.ones(3)).all()
+        assert (box.maxs - box.mins == 3 * np.ones(3)).all()
