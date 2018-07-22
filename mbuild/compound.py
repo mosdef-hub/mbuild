@@ -2212,6 +2212,7 @@ class Compound(object):
         for dim in range(3):
             box_vector[dim] = box.lengths[dim] * 10
         structure.box = box_vector
+        structure.box[3:6] = box.angles
         return structure
 
     def to_intermol(self, molecule_types=None):
