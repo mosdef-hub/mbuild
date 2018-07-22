@@ -1859,7 +1859,7 @@ class Compound(object):
             self.periodicity = np.array([0., 0., 0.])
 
     def to_trajectory(self, show_ports=False, chains=None,
-                      residues=None):
+                      residues=None, box=None):
         """Convert to an md.Trajectory and flatten the compound.
 
         Parameters
@@ -1871,6 +1871,12 @@ class Compound(object):
         residues : str of list of str
             Labels of residues in the Compound. Residues are assigned by
             checking against Compound.name.
+        box : mb.Box, optional, default=self.boundingbox (with buffer)
+            Box information to be used when converting to a `Trajectory`.
+            If 'None', a bounding box is used with a 0.5nm buffer in each
+            dimension. to avoid overlapping atoms, unless `self.periodicity`
+            is not None, in which case those values are used for the
+            box lengths.
 
         Returns
         -------
@@ -1891,16 +1897,21 @@ class Compound(object):
             xyz[0, idx] = atom.pos
 
         # Unitcell information.
-        box = self.boundingbox
-        unitcell_lengths = np.empty(3)
-        for dim, val in enumerate(self.periodicity):
-            if val:
-                unitcell_lengths[dim] = val
-            else:
-                unitcell_lengths[dim] = box.lengths[dim]
+        unitcell_angles = [90.0, 90.0, 90.0]
+        if box is None:
+            box = self.boundingbox
+            unitcell_lengths = np.empty(3)
+            for dim, val in enumerate(self.periodicity):
+                if val:
+                    unitcell_lengths[dim] = val + 0.5
+                else:
+                    unitcell_lengths[dim] = box.lengths[dim]
+        else:
+            unitcell_lengths = box.lengths
+            unitcell_angles = box.angles
 
         return md.Trajectory(xyz, top, unitcell_lengths=unitcell_lengths,
-                             unitcell_angles=np.array([90, 90, 90]))
+                             unitcell_angles=unitcell_angles)
 
     def _to_topology(self, atom_list, chains=None, residues=None):
         """Create a mdtraj.Topology from a Compound.
