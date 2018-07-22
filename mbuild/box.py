@@ -76,4 +76,4 @@ class Box(object):
         self._lengths = lengths
 
     def __repr__(self):
-        return "Box(mins={}, maxs={})".format(self.mins, self.maxs)
+        return "Box(mins={}, maxs={}, angles={})".format(self.mins, self.maxs, self.angles)
