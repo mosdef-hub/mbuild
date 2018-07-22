@@ -51,10 +51,9 @@ class TestBox(BaseTest):
         assert (box.maxs - box.mins == np.ones(3)).all()
         assert (box.lengths == np.ones(3)).all()
         box.maxs = [3, 3, 3]
-        assert (box.maxs == 2 * np.ones(3)).all()
+        assert (box.maxs == 3 * np.ones(3)).all()
         assert (box.maxs - box.mins == 2 * np.ones(3)).all()
         assert (box.lengths == 2 * np.ones(3)).all()
-        box = mb.Box(mins=np.zeros(3), maxs=np.ones(3))
         box.lengths = [4, 4, 4]
-        assert (box.lengths == 3 * np.ones(3)).all()
-        assert (box.maxs - box.mins == 3 * np.ones(3)).all()
+        assert (box.lengths == 4 * np.ones(3)).all()
+        assert (box.maxs - box.mins == 4 * np.ones(3)).all()
