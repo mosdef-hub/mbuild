@@ -43,18 +43,24 @@ class Box(object):
 
     @mins.setter
     def mins(self, mins):
+        if isinstance(mins, list):
+            mins = np.array(mins, dtype=np.float)
         assert mins.shape == (3, )
         self._mins = mins
         self._lengths = self.maxs - self.mins
 
     @maxs.setter
     def maxs(self, maxes):
+        if isinstance(maxes, list):
+            maxes = np.array(maxes, dtype=np.float)
         assert maxes.shape == (3, )
         self._maxs = maxes
         self._lengths = self.maxs - self.mins
 
     @lengths.setter
     def lengths(self, lengths):
+        if isinstance(lengths, list):
+            lengths = np.array(lengths, dtype=np.float)
         assert lengths.shape == (3, )
         self._maxs += 0.5*lengths - 0.5*self.lengths
         self._mins -= 0.5*lengths - 0.5*self.lengths
