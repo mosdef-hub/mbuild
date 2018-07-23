@@ -2219,11 +2219,13 @@ class Compound(object):
             box.maxs = np.asarray(box_vec_max)
 
         box_vector = np.empty(6)
-        box_vector[3] = box_vector[4] = box_vector[5] = 90.0
+        if box.angles is not None:
+            box_vector[3:6] = box.angles
+        else:
+            box_vector[3] = box_vector[4] = box_vector[5] = 90.0
         for dim in range(3):
             box_vector[dim] = box.lengths[dim] * 10
         structure.box = box_vector
-        structure.box[3:6] = box.angles
         return structure
 
     def to_intermol(self, molecule_types=None):
