@@ -497,6 +497,13 @@ class TestCompound(BaseTest):
         with pytest.warns(UserWarning):
             _ = compound.to_parmed()
 
+    def test_parmed_box(self, h2o):
+        compound = mb.Compound()
+        compound.add(h2o)
+        tilted_box = mb.Box(lengths=[2.0, 2.0, 2.0], angles=[60.0, 80.0, 100.0])
+        structure = compound.to_parmed(box=tilted_box)
+        assert all(structure.box == [20.0, 20.0, 20.0, 60.0, 80.0, 100.0])
+
     def test_min_periodic_dist(self, ethane):
         compound = mb.Compound(ethane)
         C_pos = np.array([atom.pos for atom in list(compound.particles_by_name('C'))])
