@@ -398,6 +398,15 @@ class TestCompound(BaseTest):
         traj = system.to_trajectory()
         assert traj.n_chains == 1
 
+    def test_mdtraj_box(self, h2o):
+        compound = mb.Compound()
+        compound.add(h2o)
+        tilted_box = mb.Box(lengths=[2.0, 2.0, 2.0], angles=[60.0, 80.0, 100.0])
+        trajectory = compound.to_trajectory(box=tilted_box)
+        assert (trajectory.unitcell_lengths == [2.0, 2.0, 2.0]).all()
+        assert (trajectory.unitcell_angles == [60.0, 80.0, 100.0]).all()
+        print(trajectory.unitcell_vectors)
+
     @pytest.mark.skipif(not has_intermol, reason="InterMol is not installed")
     def test_intermol_conversion1(self, ethane, h2o):
         compound = mb.Compound([ethane, h2o])
