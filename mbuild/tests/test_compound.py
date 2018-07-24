@@ -4,6 +4,8 @@ import numpy as np
 import parmed as pmd
 import pytest
 
+import foyer
+
 import mbuild as mb
 from mbuild.exceptions import MBuildError
 from mbuild.utils.geometry import calc_dihedral
@@ -56,6 +58,14 @@ class TestCompound(BaseTest):
         for ext in exts:
             methane.save('lythem' + ext,
                          forcefield_name='oplsaa',
+                         overwrite=True)
+
+    def test_save_forcefield_with_file(self, methane):
+        exts = ['.gsd', '.hoomdxml', '.lammps', '.lmp', '.top', '.gro',
+                '.mol2', '.pdb', '.xyz']
+        for ext in exts:
+            methane.save('lythem' + ext,
+                         forcefield_files=get_fn('methane_oplssaa.xml'),
                          overwrite=True)
 
     def test_save_resnames(self, ch3, h2o):
@@ -584,7 +594,7 @@ class TestCompound(BaseTest):
     def test_energy_minimization_ff(self, octane):
         for ff in ['UFF', 'GAFF', 'MMFF94', 'MMFF94s', 'Ghemical']:
             octane.energy_minimization(forcefield=ff)
-        with pytest.raises(MBuildError):
+        with pytest.raises(IOError):
             octane.energy_minimization(forcefield='fakeFF')
 
     @pytest.mark.skipif(not has_openbabel, reason="Open Babel package not installed")
@@ -618,6 +628,13 @@ class TestCompound(BaseTest):
 
         assert np.array_equal(distances, updated_distances)
         assert np.array_equal(orientations, updated_orientations)
+
+    def test_energy_minimize_openmm(self, octane):
+        octane.energy_minimize(forcefield='oplsaa')
+
+    def test_energy_minimize_openmm_xml(self, octane):
+        octane.energy_minimize(forcefield=get_fn('small_oplsaa.xml'))
+
 
     def test_clone_outside_containment(self, ch2, ch3):
         compound = mb.Compound()
@@ -656,24 +673,34 @@ class TestCompound(BaseTest):
         assert len(h_clone.all_ports()) == 1
 
     def test_reconnect_keeps_structure_x(self, chf, connect_and_reconnect):
-        bond_vector = np.array([1, 0, 0]) 
+        bond_vector = np.array([1, 0, 0])
         angle1, angle2 = connect_and_reconnect(chf, bond_vector)
         assert np.isclose(angle1, angle2, atol=1e-6)
 
     def test_reconnect_keeps_structure_y(self, chf, connect_and_reconnect):
-        chf.spin(np.pi/2, [1, 0, 0]) 
-        bond_vector = np.array([0, 1, 0]) 
+        chf.spin(np.pi/2, [1, 0, 0])
+        bond_vector = np.array([0, 1, 0])
         angle1, angle2 = connect_and_reconnect(chf, bond_vector)
         assert np.isclose(angle1, angle2, atol=1e-6)
 
     def test_reconnect_keeps_structure_z(self, chf, connect_and_reconnect):
-        bond_vector = np.array([0, 0, 1]) 
+        bond_vector = np.array([0, 0, 1])
         angle1, angle2 = connect_and_reconnect(chf, bond_vector)
         assert np.isclose(angle1, angle2, atol=1e-6)
 
     def test_reconnect_keeps_structure_random(self, chf, connect_and_reconnect):
         np.random.seed(92)
         for _ in range(5):
-            bond_vector = np.random.random(3) - 0.5 
+            bond_vector = np.random.random(3) - 0.5
             angle1, angle2 = connect_and_reconnect(chf, bond_vector)
             assert np.isclose(angle1, angle2, atol=1e-6)
+
+    def test_smarts_from_string(self):
+        p3ht = mb.load('CCCCCCC1=C(SC(=C1)C)C', smiles=True)
+        assert p3ht.n_bonds == 33
+        assert p3ht.n_particles == 33
+
+    def test_smarts_from_file(self):
+        p3ht = mb.load(get_fn('p3ht.smi'), smiles=True)
+        assert p3ht.n_bonds == 33
+        assert p3ht.n_particles == 33
