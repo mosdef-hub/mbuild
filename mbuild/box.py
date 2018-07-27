@@ -30,7 +30,7 @@ class Box(object):
                              "You provided: lengths={} mins={} maxs={}".format(lengths, mins, maxs))
         if angles is None:
             angles = np.array([90.0, 90.0, 90.0])
-        elif isinstance(angles, (list, np.array)):
+        elif isinstance(angles, (list, np.ndarray)):
             angles = np.array(angles, dtype=np.float)
         self._angles = angles
 
