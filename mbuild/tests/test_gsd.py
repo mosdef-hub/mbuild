@@ -22,6 +22,10 @@ class TestGSD(BaseTest):
         box = mb.Box(lengths=np.array([2.0,2.0,2.0]))
         ethane.save(filename='ethane-box.gsd', forcefield_name='oplsaa',box=box)
 
+    def test_save_triclinic_box_(self, ethane):
+        box = mb.Box(lengths=np.array([2.0, 2.0, 2.0]), angles=[60, 70, 80])
+        ethane.save(filename='triclinic-box.gsd', forcefield_name='oplsaa', box=box)
+
     @pytest.mark.skipif(not has_gsd, reason="GSD package not installed")
     def test_particles(self, ethane):
         from collections import OrderedDict
@@ -80,6 +84,21 @@ class TestGSD(BaseTest):
         frame = gsd.hoomd.HOOMDTrajectory(gsd_file).read_frame(0)
         box_from_gsd_periodic = frame.configuration.box.astype(float)
         assert np.array_equal(box_from_gsd, box_from_gsd_periodic)
+
+        box = mb.Box(lengths=np.array([2.0, 2.0, 2.0]), angles=[60, 70, 80])
+        ethane.save(filename='triclinic-box.gsd', forcefield_name='oplsaa', box=box)
+        gsd_file = gsd.pygsd.GSDFile(open('triclinic-box.gsd', 'rb'))
+        frame = gsd.hoomd.HOOMDTrajectory(gsd_file).read_frame(0)
+        lx, ly, lz, xy, xz, yz = frame.configuration.box
+
+        a = lx
+        b = np.sqrt(ly ** 2 + xy ** 2)
+        c = np.sqrt(lz ** 2 + xz ** 2 + yz ** 2)
+
+        assert np.isclose(np.cos(np.radians(60)), (xy * xz + ly * yz) / (b * c))
+        assert np.isclose(np.cos(np.radians(70)), xz / c)
+        assert np.isclose(np.cos(np.radians(80)), xy / b)
+
 
     @pytest.mark.skipif(not has_gsd, reason="GSD package not installed")
     def test_rigid(self, benzene):
