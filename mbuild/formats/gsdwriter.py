@@ -54,8 +54,23 @@ def write_gsd(structure, filename, ref_distance=1.0, ref_mass=1.0,
 
     gsd_file.configuration.step = 0
     gsd_file.configuration.dimensions = 3
-    gsd_file.configuration.box = np.hstack((structure.box[:3] / ref_distance,
-                                            np.zeros(3)))
+
+    # Write box information
+    if np.allclose(structure.box[3:6], np.array([90, 90, 90])):
+        gsd_file.configuration.box = np.hstack((structure.box[:3] / ref_distance,
+                                                np.zeros(3)))
+    else:
+        a, b, c = structure.box[0:3] / ref_distance
+        alpha, beta, gamma = np.radians(structure.box[3:6])
+
+        lx = a
+        xy = b * np.cos(gamma)
+        xz = c * np.cos(beta)
+        ly = np.sqrt(b**2 - xy**2)
+        yz = (b*c*np.cos(alpha) - xy*xz) / ly
+        lz = np.sqrt(c**2 - xz**2 - yz**2)
+
+        gsd_file.configuration.box = np.array([lx, ly, lz, xy, xz, yz])
 
     _write_particle_information(gsd_file, structure, xyz, ref_distance,
             ref_mass, ref_energy, rigid_bodies)
