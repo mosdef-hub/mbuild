@@ -15,7 +15,7 @@ from mbuild.utils.sorting import natural_sort
 __all__ = ['write_gsd']
 
 
-def write_gsd(structure, filename, ref_distance=1.0, ref_mass=1.0, 
+def write_gsd(structure, filename, ref_distance=1.0, ref_mass=1.0,
               ref_energy=1.0, rigid_bodies=None):
     """Output a GSD file (HOOMD v2 default data format).
 
@@ -49,6 +49,12 @@ def write_gsd(structure, filename, ref_distance=1.0, ref_mass=1.0,
     import gsd.hoomd
 
     xyz = np.array([[atom.xx, atom.xy, atom.xz] for atom in structure.atoms])
+    # Check if we need to shift things to -L/2, L/2
+    box_max = structure.box[:3]/2.
+    wrap = np.greater(xyz, box_max).any()
+    # Shift all atoms by box_min
+    if wrap:
+        xyz -= box_max
 
     gsd_file = gsd.hoomd.Snapshot()
 
@@ -77,7 +83,7 @@ def _write_particle_information(gsd_file, structure, xyz, ref_distance,
     gsd_file.particles.N = len(structure.atoms)
     gsd_file.particles.position = xyz / ref_distance
 
-    types = [atom.name if atom.type == '' else atom.type 
+    types = [atom.name if atom.type == '' else atom.type
              for atom in structure.atoms]
 
     unique_types = list(set(types))
@@ -109,7 +115,7 @@ def _write_bond_information(gsd_file, structure):
 
     Parameters
     ----------
-    gsd_file : 
+    gsd_file :
         The file object of the GSD file being written
     structure : parmed.Structure
         Parmed structure object holding system information
@@ -154,7 +160,7 @@ def _write_angle_information(gsd_file, structure):
 
     Parameters
     ----------
-    gsd_file : 
+    gsd_file :
         The file object of the GSD file being written
     structure : parmed.Structure
         Parmed structure object holding system information
@@ -179,7 +185,7 @@ def _write_angle_information(gsd_file, structure):
         t1, t3 = sorted([t1, t3], key=natural_sort)
         angle_type = ('-'.join((t1, t2, t3)))
         angle_typeids.append(unique_angle_types.index(angle_type))
-        angle_groups.append((angle.atom1.idx, angle.atom2.idx, 
+        angle_groups.append((angle.atom1.idx, angle.atom2.idx,
                              angle.atom3.idx))
 
     gsd_file.angles.typeid = angle_typeids
@@ -190,7 +196,7 @@ def _write_dihedral_information(gsd_file, structure):
 
     Parameters
     ----------
-    gsd_file : 
+    gsd_file :
         The file object of the GSD file being written
     structure : parmed.Structure
         Parmed structure object holding system information
