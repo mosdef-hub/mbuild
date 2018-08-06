@@ -10,7 +10,7 @@ from mbuild.utils.conversion import RB_to_OPLS
 __all__ = ['write_hoomdxml']
 
 
-def write_hoomdxml(structure, filename, ref_distance=1.0, ref_mass=1.0, 
+def write_hoomdxml(structure, filename, ref_distance=1.0, ref_mass=1.0,
                    ref_energy=1.0, rigid_bodies=None):
     """Output a HOOMD XML file.
 
@@ -77,6 +77,13 @@ def write_hoomdxml(structure, filename, ref_distance=1.0, ref_mass=1.0,
     if structure[0].type == '':
         forcefield = False
     xyz = np.array([[atom.xx, atom.xy, atom.xz] for atom in structure.atoms])
+
+    # Check if we need to shift things to -L/2, L/2
+    box_max = structure.box[:3]/2.
+    wrap = np.greater(xyz, box_max).any()
+    # Shift all atoms by box_min
+    if wrap:
+        xyz -= box_max
 
     with open(filename, 'w') as xml_file:
         xml_file.write('<?xml version="1.2" encoding="UTF-8"?>\n')
