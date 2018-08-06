@@ -1,5 +1,4 @@
 import numpy as np
-import pytest
 import xml.etree.ElementTree
 
 import mbuild as mb

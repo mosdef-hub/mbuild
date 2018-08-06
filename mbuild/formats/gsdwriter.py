@@ -1,14 +1,8 @@
 from __future__ import division
 
-from collections import OrderedDict
-from copy import deepcopy
-from math import floor
-import re
 
 import numpy as np
-from oset import oset as OrderedSet
 
-from mbuild import Box
 from mbuild.utils.io import import_
 from mbuild.utils.sorting import natural_sort
 
@@ -64,7 +58,7 @@ def write_gsd(structure, filename, ref_distance=1.0, ref_mass=1.0,
                                             np.zeros(3)))
 
     _write_particle_information(gsd_file, structure, xyz, ref_distance,
-            ref_mass, ref_energy, rigid_bodies)
+                                ref_mass, ref_energy, rigid_bodies)
     if structure.bonds:
         _write_bond_information(gsd_file, structure)
     if structure.angles:
@@ -74,8 +68,9 @@ def write_gsd(structure, filename, ref_distance=1.0, ref_mass=1.0,
 
     gsd.hoomd.create(filename, gsd_file)
 
+
 def _write_particle_information(gsd_file, structure, xyz, ref_distance,
-        ref_mass, ref_energy, rigid_bodies):
+                                ref_mass, ref_energy, rigid_bodies):
     """Write out the particle information.
 
     """
@@ -94,7 +89,7 @@ def _write_particle_information(gsd_file, structure, xyz, ref_distance,
     gsd_file.particles.typeid = typeids
 
     masses = np.array([atom.mass for atom in structure.atoms])
-    masses[masses==0] = 1.0
+    masses[masses == 0] = 1.0
     gsd_file.particles.mass = masses / ref_mass
 
     charges = np.array([atom.charge for atom in structure.atoms])
@@ -109,6 +104,7 @@ def _write_particle_information(gsd_file, structure, xyz, ref_distance,
     if rigid_bodies:
         rigid_bodies = [-1 if body is None else body for body in rigid_bodies]
     gsd_file.particles.body = rigid_bodies
+
 
 def _write_bond_information(gsd_file, structure):
     """Write the bonds in the system.
@@ -132,7 +128,7 @@ def _write_bond_information(gsd_file, structure):
         t1, t2 = sorted([t1, t2], key=natural_sort)
         try:
             bond_type = ('-'.join((t1, t2)))
-        except AttributeError: # no forcefield applied, bond.type is None
+        except AttributeError:  # no forcefield applied, bond.type is None
             bond_type = ('-'.join((t1, t2)), 0.0, 0.0)
         unique_bond_types.add(bond_type)
     unique_bond_types = sorted(list(unique_bond_types), key=natural_sort)
@@ -147,13 +143,14 @@ def _write_bond_information(gsd_file, structure):
         t1, t2 = sorted([t1, t2], key=natural_sort)
         try:
             bond_type = ('-'.join((t1, t2)))
-        except AttributeError: # no forcefield applied, bond.type is None
+        except AttributeError:  # no forcefield applied, bond.type is None
             bond_type = ('-'.join((t1, t2)), 0.0, 0.0)
         bond_typeids.append(unique_bond_types.index(bond_type))
         bond_groups.append((bond.atom1.idx, bond.atom2.idx))
 
     gsd_file.bonds.typeid = bond_typeids
     gsd_file.bonds.group = bond_groups
+
 
 def _write_angle_information(gsd_file, structure):
     """Write the angles in the system.
@@ -191,6 +188,7 @@ def _write_angle_information(gsd_file, structure):
     gsd_file.angles.typeid = angle_typeids
     gsd_file.angles.group = angle_groups
 
+
 def _write_dihedral_information(gsd_file, structure):
     """Write the dihedrals in the system.
 
@@ -214,7 +212,8 @@ def _write_dihedral_information(gsd_file, structure):
         else:
             dihedral_type = ('-'.join((t4, t3, t2, t1)))
         unique_dihedral_types.add(dihedral_type)
-    unique_dihedral_types = sorted(list(unique_dihedral_types), key=natural_sort)
+    unique_dihedral_types = sorted(list(unique_dihedral_types),
+                                   key=natural_sort)
     gsd_file.dihedrals.types = unique_dihedral_types
 
     dihedral_typeids = []

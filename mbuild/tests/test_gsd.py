@@ -19,13 +19,14 @@ class TestGSD(BaseTest):
 
     @pytest.mark.skipif(not has_gsd, reason="GSD package not installed")
     def test_save_box(self, ethane):
-        box = mb.Box(lengths=np.array([2.0,2.0,2.0]))
-        ethane.save(filename='ethane-box.gsd', forcefield_name='oplsaa',box=box)
+        box = mb.Box(lengths=np.array([2.0, 2.0, 2.0]))
+        ethane.save(filename='ethane-box.gsd', forcefield_name='oplsaa', box=box)
 
     @pytest.mark.skipif(not has_gsd, reason="GSD package not installed")
     def test_particles(self, ethane):
         from collections import OrderedDict
-        import gsd, gsd.pygsd
+        import gsd
+        import gsd.pygsd
         from mbuild.utils.sorting import natural_sort
 
         ethane.save(filename='ethane.gsd', forcefield_name='oplsaa')
@@ -35,7 +36,7 @@ class TestGSD(BaseTest):
         assert frame.configuration.step == 0
         assert frame.configuration.dimensions == 3
 
-        mass_dict = {'C' : 12.011, 'H' : 1.008}
+        mass_dict = {'C': 12.011, 'H': 1.008}
         masses = frame.particles.mass.astype(float)
         for mass, particle in zip(masses, ethane.particles()):
             assert round(mass, 3) == mass_dict[particle.name]
@@ -63,7 +64,8 @@ class TestGSD(BaseTest):
 
     @pytest.mark.skipif(not has_gsd, reason="GSD package not installed")
     def test_box(self, ethane):
-        import gsd, gsd.pygsd
+        import gsd
+        import gsd.pygsd
 
         box = mb.Box(lengths=[1.0, 2.0, 3.0])
         ethane.save(filename='ethane.gsd', forcefield_name='oplsaa', box=box)
@@ -83,7 +85,8 @@ class TestGSD(BaseTest):
 
     @pytest.mark.skipif(not has_gsd, reason="GSD package not installed")
     def test_rigid(self, benzene):
-        import gsd, gsd.pygsd
+        import gsd
+        import gsd.pygsd
 
         benzene.label_rigid_bodies(rigid_particles='C')
         benzene.save(filename='benzene.gsd', forcefield_name='oplsaa')
@@ -99,7 +102,8 @@ class TestGSD(BaseTest):
     @pytest.mark.skipif(not has_gsd, reason="GSD package not installed")
     def test_bonded(self, ethane):
         from foyer import Forcefield
-        import gsd, gsd.pygsd
+        import gsd
+        import gsd.pygsd
 
         ethane.save(filename='ethane.gsd', forcefield_name='oplsaa')
         gsd_file = gsd.pygsd.GSDFile(open('ethane.gsd', 'rb'))
@@ -123,7 +127,7 @@ class TestGSD(BaseTest):
                                for bond in structure.bonds]
         assert np.array_equal(bond_atoms, expected_bond_atoms)
 
-        bond_type_dict = {('C', 'C') : 0, ('C', 'H') : 1, ('H', 'C') : 1}
+        bond_type_dict = {('C', 'C'): 0, ('C', 'H'): 1, ('H', 'C'): 1}
         expected_bond_typeids = []
         for bond in structure.bonds:
             expected_bond_typeids.append(bond_type_dict[(bond.atom1.name,
@@ -145,8 +149,8 @@ class TestGSD(BaseTest):
                                 for angle in structure.angles]
         assert np.array_equal(angle_atoms, expected_angle_atoms)
 
-        angle_type_dict = {('C', 'C', 'H') : 0, ('H', 'C', 'C') : 0,
-                           ('H', 'C', 'H') : 1}
+        angle_type_dict = {('C', 'C', 'H'): 0, ('H', 'C', 'C'): 0,
+                           ('H', 'C', 'H'): 1}
         expected_angle_typeids = []
         for angle in structure.angles:
             expected_angle_typeids.append(angle_type_dict[(angle.atom1.name,
@@ -173,7 +177,8 @@ class TestGSD(BaseTest):
 
     @pytest.mark.skipif(not has_gsd, reason="GSD package not installed")
     def test_units(self, ethane):
-        import gsd, gsd.pygsd
+        import gsd
+        import gsd.pygsd
 
         ref_distance = 3.5
         ref_energy = 0.066
@@ -190,12 +195,12 @@ class TestGSD(BaseTest):
         assert np.array_equal(np.round(box_from_gsd[:3], decimals=5),
                               np.round(box.lengths * 10 / ref_distance, decimals=5))
 
-        mass_dict = {'C' : 12.011, 'H' : 1.008}
+        mass_dict = {'C': 12.011, 'H': 1.008}
         masses = frame.particles.mass.astype(float)
         for mass, particle in zip(masses, ethane.particles()):
             assert round(mass, 3) == round(mass_dict[particle.name] / ref_mass, 3)
 
-        charge_dict = {'C' : -0.18, 'H' : 0.06}
+        charge_dict = {'C': -0.18, 'H': 0.06}
         charges = frame.particles.charge.astype(float)
         e0 = 2.39725e-4
         charge_factor = (4.0 * np.pi * e0 * ref_distance * ref_energy)**0.5

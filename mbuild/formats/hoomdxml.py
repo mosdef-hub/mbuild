@@ -1,10 +1,7 @@
 from __future__ import division
-from copy import deepcopy
-from math import floor, radians
-
+from math import radians
 import numpy as np
 
-from mbuild import Box
 from mbuild.utils.conversion import RB_to_OPLS
 
 __all__ = ['write_hoomdxml']
@@ -93,7 +90,7 @@ def write_hoomdxml(structure, filename, ref_distance=1.0, ref_mass=1.0,
                 '<box units="sigma"  Lx="{}" Ly="{}" Lz="{}"/>\n'.format(
                     *structure.box[:3] / ref_distance))
         _write_particle_information(xml_file, structure, xyz, forcefield,
-                ref_distance, ref_mass, ref_energy)
+                                    ref_distance, ref_mass, ref_energy)
         _write_bond_information(xml_file, structure, ref_distance, ref_energy)
         _write_angle_information(xml_file, structure, ref_energy)
         _write_dihedral_information(xml_file, structure, ref_energy)
@@ -103,7 +100,7 @@ def write_hoomdxml(structure, filename, ref_distance=1.0, ref_mass=1.0,
 
 
 def _write_particle_information(xml_file, structure, xyz, forcefield,
-        ref_distance, ref_mass, ref_energy):
+                                ref_distance, ref_mass, ref_energy):
     """Write out the particle information.
 
     Parameters
@@ -202,7 +199,8 @@ def _write_bond_information(xml_file, structure, ref_distance, ref_energy):
     xml_file.write('<!-- type k r_eq -->\n')
     for bond_type, k, req in unique_bond_types:
         xml_file.write('{} {} {}\n'.format(bond_type,
-            k * 2.0 / ref_energy * ref_distance**2.0, req/ref_distance))
+                                           k * 2.0 / ref_energy * ref_distance**2.0,
+                                           req/ref_distance))
     xml_file.write('</bond_coeffs>\n')
 
 
@@ -234,7 +232,7 @@ def _write_angle_information(xml_file, structure, ref_energy):
     xml_file.write('<!-- type k theta_eq -->\n')
     for angle_type, k, teq in unique_angle_types:
         xml_file.write('{} {} {}\n'.format(angle_type,
-            k * 2.0 / ref_energy, radians(teq)))
+                                           k * 2.0 / ref_energy, radians(teq)))
     xml_file.write('</angle_coeffs>\n')
 
 
@@ -262,8 +260,9 @@ def _write_dihedral_information(xml_file, structure, ref_energy):
         else:
             types_in_dihedral = '-'.join((t4, t3, t2, t1))
         dihedral_type = (types_in_dihedral, dihedral.type.c0,
-        dihedral.type.c1, dihedral.type.c2, dihedral.type.c3, dihedral.type.c4,
-        dihedral.type.c5, dihedral.type.scee, dihedral.type.scnb)
+                         dihedral.type.c1, dihedral.type.c2, dihedral.type.c3,
+                         dihedral.type.c4, dihedral.type.c5, dihedral.type.scee,
+                         dihedral.type.scnb)
         unique_dihedral_types.add(dihedral_type)
         xml_file.write('{} {} {} {} {}\n'.format(
             dihedral_type[0], dihedral.atom1.idx, dihedral.atom2.idx,
