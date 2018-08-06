@@ -1899,13 +1899,12 @@ class Compound(object):
         # Unitcell information.
         unitcell_angles = [90.0, 90.0, 90.0]
         if box is None:
-            box = self.boundingbox
             unitcell_lengths = np.empty(3)
             for dim, val in enumerate(self.periodicity):
                 if val:
                     unitcell_lengths[dim] = val
                 else:
-                    unitcell_lengths[dim] = box.lengths[dim] + 0.5
+                    unitcell_lengths[dim] = self.boundingbox.lengths[dim] + 0.5
         else:
             unitcell_lengths = box.lengths
             unitcell_angles = box.angles
