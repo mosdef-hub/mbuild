@@ -76,7 +76,7 @@ class Box(object):
         self._lengths = lengths
 
     @angles.setter
-    def angles(self. angles):
+    def angles(self, angles):
         if isinstance(angles, list):
             angles = np.array(angles, dtype=np.float)
         assert angles.shape == (3, )

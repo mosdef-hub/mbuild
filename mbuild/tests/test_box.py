@@ -48,6 +48,11 @@ class TestBox(BaseTest):
         assert (box.lengths == 2 * np.ones(3)).all()
         assert (box.maxs - box.mins == 2 * np.ones(3)).all()
 
+    def test_angles_setter(self):
+        box = mb.Box(mins=np.zeros(3), maxs=np.ones(3), angles=90*np.ones(3))
+        box.angles = np.array([60.0, 120.0, 60.0])
+        assert (box.angles == np.array([60.0, 120.0, 60.0])).all()
+
     def test_setters_with_lists(self):
         box = mb.Box(mins=np.zeros(3), maxs=2 * np.ones(3))
         box.mins = [1, 1, 1]
