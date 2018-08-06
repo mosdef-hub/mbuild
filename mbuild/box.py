@@ -75,5 +75,12 @@ class Box(object):
         self._mins -= 0.5*lengths - 0.5*self.lengths
         self._lengths = lengths
 
+    @angles.setter
+    def angles(self. angles):
+        if isinstance(angles, list):
+            angles = np.array(angles, dtype=np.float)
+        assert angles.shape == (3, )
+        self._angles = angles
+
     def __repr__(self):
         return "Box(mins={}, maxs={}, angles={})".format(self.mins, self.maxs, self.angles)
