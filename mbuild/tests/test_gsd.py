@@ -214,6 +214,7 @@ class TestGSD(BaseTest):
         assert np.array_equal(np.round(positions, decimals=4),
                               np.round(shifted_xyz, decimals=4))
 
+    @pytest.mark.skipif(not has_gsd, reason="GSD package not installed")
     def test_box_dimensions(self, benzene):
         import gsd
         n_benzenes = 10
