@@ -210,11 +210,15 @@ class TestGSD(BaseTest):
                               np.round(shifted_xyz, decimals=4))
 
     def test_box_dimensions(self, benzene):
+        import gsd
         n_benzenes = 10
         filled = mb.fill_box(benzene,
                              n_compounds=n_benzenes,
                              box=[0, 0, 0, 4, 4, 4])
         filled.save(filename='benzene.gsd')
-        for atom in mb.load('benzene.gsd'):
-            assert atom.pos.max() < 20
-            assert atom.pos.min() > -20
+        gsd_file = gsd.pygsd.GSDFile(open('benzene.gsd', 'rb'))
+        frame = gsd.hoomd.HOOMDTrajectory(gsd_file).read_frame(0)
+        positions = frame.particles.position.astype(float)
+        for coords in positions:
+            assert coords.max() < 20
+            assert coords.min() > -20
