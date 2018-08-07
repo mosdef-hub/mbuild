@@ -11,6 +11,7 @@ from oset import oset as OrderedSet
 from mbuild import Box
 from mbuild.utils.io import import_
 from mbuild.utils.sorting import natural_sort
+from mbuild.utils.geometry import shift_coords
 
 __all__ = ['write_gsd']
 
@@ -49,12 +50,7 @@ def write_gsd(structure, filename, ref_distance=1.0, ref_mass=1.0,
     import gsd.hoomd
 
     xyz = np.array([[atom.xx, atom.xy, atom.xz] for atom in structure.atoms])
-    # Check if we need to shift things to -L/2, L/2
-    box_max = structure.box[:3]/2.
-    wrap = np.greater(xyz, box_max).any()
-    # Shift all atoms by box_min
-    if wrap:
-        xyz -= box_max
+    xyz = shift_coords(xyz, structure.box[:3])
 
     gsd_file = gsd.hoomd.Snapshot()
 
