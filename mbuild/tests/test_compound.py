@@ -358,6 +358,29 @@ class TestCompound(BaseTest):
         assert traj.n_chains == 1
         assert traj.n_residues == 1
 
+    def test_box_mdtraj(self, ethane):
+        assert np.allclose(ethane.periodicity, np.zeros(3))
+        traj_boundingbox = ethane.to_trajectory()
+        assert np.allclose(
+            traj_boundingbox.unitcell_lengths,
+            ethane.boundingbox.lengths + 0.5
+        )
+
+        ethane.periodicity = [4.0, 5.0, 6.0]
+        assert ethane.periodicity is not None
+        traj_periodicity = ethane.to_trajectory()
+        assert np.allclose(
+            traj_periodicity.unitcell_lengths,
+            ethane.periodicity
+        )
+
+        box = mb.Box(mins=np.zeros(3), maxs=8.0*np.zeros(3))
+        traj_box = ethane.to_trajectory(box=box)
+        assert np.allclose(
+            traj_box.unitcell_lengths,
+            box.lengths
+        )
+
     def test_resnames_mdtraj(self, h2o, ethane):
         system = mb.Compound([h2o, mb.clone(h2o), ethane])
         traj = system.to_trajectory(residues=['Ethane', 'H2O'])
