@@ -340,5 +340,5 @@ def write_lammpsdata(structure, filename, atom_style='full',
                 data.write('\nImpropers\n\n')
                 for i,improper in enumerate(impropers):
                     data.write('{:d}\t{:d}\t{:d}\t{:d}\t{:d}\t{:d}\n'.format(
-                        i+1,improper_types[i],improper[0],
-                        improper[1],improper[2],improper[3]))
+                        i+1,improper_types[i],improper[2],
+                        improper[1],improper[0],improper[3]))
