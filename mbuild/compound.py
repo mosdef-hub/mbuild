@@ -1155,9 +1155,39 @@ class Compound(object):
 
         """
         nglview = import_('nglview')
+        from mdtraj.geometry.sasa import _ATOMIC_RADII
         if run_from_ipython():
-            structure = self.to_trajectory(show_ports)
-            return nglview.show_mdtraj(structure)
+            remove_digits = lambda x: ''.join(i for i in x if not i.isdigit()
+                                              or i == '_')
+            for particle in self.particles():
+                particle.name = remove_digits(particle.name).upper()
+                if not particle.name:
+                    particle.name = 'UNK'
+            tmp_dir = tempfile.mkdtemp()
+            self.save(os.path.join(tmp_dir, 'tmp.mol2'),
+                      show_ports=show_ports,
+                      overwrite=True)
+            widget = nglview.show_file(os.path.join(tmp_dir, 'tmp.mol2'))
+            widget.clear()
+            widget.add_ball_and_stick(cylinderOnly=True)
+            elements = set([particle.name for particle in self.particles()])
+            scale = 50.0
+            for element in elements:
+                try:
+                    widget.add_ball_and_stick('_{}'.format(
+                        element.upper()), aspect_ratio=_ATOMIC_RADII[element.title()]**1.5 * scale)
+                except KeyError:
+                    ids = [str(i) for i, particle in enumerate(self.particles())
+                           if particle.name == element]
+                    widget.add_ball_and_stick(
+                        '@{}'.format(
+                            ','.join(ids)),
+                        aspect_ratio=0.17**1.5 * scale,
+                        color='grey')
+            if show_ports:
+                widget.add_ball_and_stick('_VS',
+                                          aspect_ratio=1.0, color='#991f00')
+            return widget
         else:
             raise RuntimeError('Visualization is only supported in Jupyter '
                                'Notebooks.')
@@ -1693,7 +1723,8 @@ class Compound(object):
         if os.path.exists(filename) and not overwrite:
             raise IOError('{0} exists; not overwriting'.format(filename))
 
-        structure = self.to_parmed(box=box, residues=residues)
+        structure = self.to_parmed(box=box, residues=residues,
+                                   show_ports=show_ports)
         # Apply a force field with foyer if specified
         if forcefield_name or forcefield_files:
             from foyer import Forcefield
@@ -2051,16 +2082,24 @@ class Compound(object):
         else:
             self.periodicity = np.array([0., 0., 0.])
 
-    def to_parmed(self, box=None, title='', residues=None):
+    def to_parmed(self, box=None, title='', residues=None, show_ports=False):
         """Create a ParmEd Structure from a Compound.
 
         Parameters
         ----------
+        box : mb.Box, optional, default=self.boundingbox (with buffer)
+            Box information to be used when converting to a `Structure`.
+            If 'None', a bounding box is used with 0.25nm buffers at
+            each face to avoid overlapping atoms, unless `self.periodicity`
+            is not None, in which case those values are used for the
+            box lengths.
         title : str, optional, default=self.name
             Title/name of the ParmEd Structure
         residues : str of list of str
             Labels of residues in the Compound. Residues are assigned by
             checking against Compound.name.
+        show_ports : boolean, optional, default=False
+            Include all port atoms when converting to a `Structure`.
 
         Returns
         -------
@@ -2083,51 +2122,64 @@ class Compound(object):
             residues = tuple(residues)
 
         default_residue = pmd.Residue('RES')
+        port_residue = pmd.Residue('PRT')
         compound_residue_map = dict()
         atom_residue_map = dict()
 
-        for atom in self.particles():
-            if residues and atom.name in residues:
-                current_residue = pmd.Residue(atom.name)
+        for atom in self.particles(include_ports=show_ports):
+            if atom.port_particle:
+                current_residue = port_residue
                 atom_residue_map[atom] = current_residue
-                compound_residue_map[atom] = current_residue
-            elif residues:
-                for parent in atom.ancestors():
-                    if residues and parent.name in residues:
-                        if parent not in compound_residue_map:
-                            current_residue = pmd.Residue(parent.name)
-                            compound_residue_map[parent] = current_residue
+
+                if current_residue not in structure.residues:
+                    structure.residues.append(current_residue)
+
+                pmd_atom = pmd.Atom(atomic_number=0, name='VS',
+                                    mass=0, charge=0)
+                pmd_atom.xx, pmd_atom.xy, pmd_atom.xz = atom.pos * 10  # Angstroms
+
+            else:
+                if residues and atom.name in residues:
+                    current_residue = pmd.Residue(atom.name)
+                    atom_residue_map[atom] = current_residue
+                    compound_residue_map[atom] = current_residue
+                elif residues:
+                    for parent in atom.ancestors():
+                        if residues and parent.name in residues:
+                            if parent not in compound_residue_map:
+                                current_residue = pmd.Residue(parent.name)
+                                compound_residue_map[parent] = current_residue
+                            atom_residue_map[atom] = current_residue
+                            break
+                    else:  # Did not find specified residues in ancestors.
+                        current_residue = default_residue
                         atom_residue_map[atom] = current_residue
-                        break
-                else:  # Did not find specified residues in ancestors.
+                else:
                     current_residue = default_residue
                     atom_residue_map[atom] = current_residue
-            else:
-                current_residue = default_residue
-                atom_residue_map[atom] = current_residue
 
-            if current_residue not in structure.residues:
-                structure.residues.append(current_residue)
+                if current_residue not in structure.residues:
+                    structure.residues.append(current_residue)
 
-            atomic_number = None
-            name = ''.join(char for char in atom.name if not char.isdigit())
-            try:
-                atomic_number = AtomicNum[atom.name]
-            except KeyError:
-                element = element_by_name(atom.name)
-                if name not in guessed_elements:
-                    warn(
-                        'Guessing that "{}" is element: "{}"'.format(
-                            atom, element))
-                    guessed_elements.add(name)
-            else:
-                element = atom.name
+                atomic_number = None
+                name = ''.join(char for char in atom.name if not char.isdigit())
+                try:
+                    atomic_number = AtomicNum[atom.name]
+                except KeyError:
+                    element = element_by_name(atom.name)
+                    if name not in guessed_elements:
+                        warn(
+                            'Guessing that "{}" is element: "{}"'.format(
+                                atom, element))
+                        guessed_elements.add(name)
+                else:
+                    element = atom.name
 
-            atomic_number = atomic_number or AtomicNum[element]
-            mass = Mass[element]
-            pmd_atom = pmd.Atom(atomic_number=atomic_number, name=atom.name,
-                                mass=mass, charge=atom.charge)
-            pmd_atom.xx, pmd_atom.xy, pmd_atom.xz = atom.pos * 10  # Angstroms
+                atomic_number = atomic_number or AtomicNum[element]
+                mass = Mass[element]
+                pmd_atom = pmd.Atom(atomic_number=atomic_number, name=atom.name,
+                                    mass=mass, charge=atom.charge)
+                pmd_atom.xx, pmd_atom.xy, pmd_atom.xz = atom.pos * 10  # Angstroms
 
             residue = atom_residue_map[atom]
             structure.add_atom(pmd_atom, resname=residue.name,
