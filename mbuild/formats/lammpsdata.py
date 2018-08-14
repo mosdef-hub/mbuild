@@ -147,7 +147,6 @@ def write_lammpsdata(structure, filename, atom_style='full'):
                 data.write('{}\t{:.5f}\t{:.5f}\n'.format(idx,epsilon,sigma_dict[idx]))
 
             # Modified cross-interactions
-            import pdb; pdb.set_trace()
             if structure.has_NBFIX():
                 data.write('\nPairIJ Coeff # modified lj\n\n')
                 params = ParameterSet.from_structure(structure)
