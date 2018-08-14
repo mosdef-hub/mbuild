@@ -1,6 +1,7 @@
 from __future__ import division
 
 from collections import OrderedDict
+from parmed.parameters import ParameterSet
 
 import numpy as np
 
@@ -144,6 +145,19 @@ def write_lammpsdata(structure, filename, atom_style='full'):
             data.write('\nPair Coeffs # lj\n\n')
             for idx,epsilon in epsilon_dict.items():
                 data.write('{}\t{:.5f}\t{:.5f}\n'.format(idx,epsilon,sigma_dict[idx]))
+
+            # Modified cross-interactions
+            import pdb; pdb.set_trace()
+            if structure.has_NBFIX():
+                data.write('\nPairIJ Coeff # modified lj\n\n')
+                params = ParameterSet.from_structure(structure)
+                for key, val in params.nbfix_types.items():
+                    type1 = unique_types.index(key[0])
+                    type2 = unique_types.index(key[1])
+                    eps = val[0] # kcal
+                    rmin = val[1] # Angstrom
+                    dest.write('{0} {1} 1 {2} {3}\n'.format(
+                        type1, type2, rmin/2**(1/6), eps))  
 
             # Bond coefficients
             if bonds:
