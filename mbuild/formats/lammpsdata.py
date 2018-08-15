@@ -2,6 +2,8 @@ from __future__ import division
 
 from collections import OrderedDict
 from parmed.parameters import ParameterSet
+from warnings import warn
+import itertools as it
 
 import numpy as np
 
@@ -137,26 +139,48 @@ def write_lammpsdata(structure, filename, atom_style='full'):
             data.write('{:d}\t{:.6f}\t# {}\n'.format(atom_type,mass,unique_types[atom_type-1]))
 
         if forcefield:
-            # Pair coefficients
-            epsilons = [atom.epsilon for atom in structure.atoms]
             sigmas = [atom.sigma for atom in structure.atoms]
-            epsilon_dict = dict([(unique_types.index(atom_type)+1,epsilon) for atom_type,epsilon in zip(types,epsilons)])
+            epsilons = [atom.epsilon for atom in structure.atoms]
             sigma_dict = dict([(unique_types.index(atom_type)+1,sigma) for atom_type,sigma in zip(types,sigmas)])
-            data.write('\nPair Coeffs # lj\n\n')
-            for idx,epsilon in epsilon_dict.items():
-                data.write('{}\t{:.5f}\t{:.5f}\n'.format(idx,epsilon,sigma_dict[idx]))
+            epsilon_dict = dict([(unique_types.index(atom_type)+1,epsilon) for atom_type,epsilon in zip(types,epsilons)])
 
             # Modified cross-interactions
+            coeffs = dict()
             if structure.has_NBFIX():
-                data.write('\nPairIJ Coeff # modified lj\n\n')
                 params = ParameterSet.from_structure(structure)
-                for key, val in params.nbfix_types.items():
-                    type1 = unique_types.index(key[0])
-                    type2 = unique_types.index(key[1])
-                    eps = val[0] # kcal
-                    rmin = val[1] # Angstrom
-                    dest.write('{0} {1} 1 {2} {3}\n'.format(
-                        type1, type2, rmin/2**(1/6), eps))  
+                warn('Explicitly writing cross interactions using mixing rule: {}'.format(
+                    structure.combining_rule))
+                for combo in it.combinations_with_replacement(unique_types, 2):
+                    # Attempt to find pair coeffis in nbfixes
+                    if combo in params.nbfix_types:
+                        type1 = unique_types.index(combo[0])+1
+                        type2 = unique_types.index(combo[1])+1
+                        epsilon = params.nbfix_types[combo][0] # kcal
+                        rmin = params.nbfix_types[combo][1] # Angstrom
+                        sigma = rmin/2**(1/6)
+                        coeffs[(type1, type2)] = (sigma, epsilon)
+                    else:
+                        type1 = unique_types.index(combo[0]) + 1
+                        type2 = unique_types.index(combo[1]) + 1
+                        # Might not be necessary to be this explicit
+                        if type1 == type2:
+                            sigma = sigma_dict[type1]
+                            epsilon = epsilon_dict[type1]
+                        else:
+                            sigma = (sigma_dict[type1]+sigma_dict[type2])*2
+                            epsilon = (epsilon_dict[type1]*epsilon_dict[type2])**0.5
+                        coeffs[(type1, type2)] = (sigma, epsilon)
+                data.write('\nPairIJ Coeffs # modified lj\n\n')
+                for key, val in coeffs.items():
+                    data.write('{0} {1} {2} {3}\n'.format(
+                        key[0], key[1], val[0], val[1]))
+
+            # Pair coefficients
+            else:
+                sigma_dict = dict([(unique_types.index(atom_type)+1,sigma) for atom_type,sigma in zip(types,sigmas)])
+                data.write('\nPair Coeffs # lj\n\n')
+                for idx,epsilon in epsilon_dict.items():
+                    data.write('{}\t{:.5f}\t{:.5f}\n'.format(idx,epsilon,sigma_dict[idx]))
 
             # Bond coefficients
             if bonds:
