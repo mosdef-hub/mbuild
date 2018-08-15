@@ -20,9 +20,10 @@ class TestLammpsData(BaseTest):
 
     def test_nbfix(self, ethane):
         from foyer import Forcefield
+
         OPLSAA = Forcefield(name='oplsaa')
         structure = OPLSAA.apply(ethane)
-	# Add nbfixes
+        # Add nbfixes
         types = list(set([a.atom_type for a in structure.atoms]))
         types[0].add_nbfix(types[1].name, 1.2, 2.1)
         types[1].add_nbfix(types[0].name, 1.2, 2.1)
