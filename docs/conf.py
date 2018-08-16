@@ -27,7 +27,7 @@ MOCK_MODULES = ['numpy',
                 'nglview',
                 'oset',
                 'parmed',
-                'parmed.parameters'
+                'parmed.parameters',
                 'parmed.periodic_table',
                 'scipy',
                 'scipy.spatial',
