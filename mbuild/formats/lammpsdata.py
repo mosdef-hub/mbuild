@@ -145,18 +145,18 @@ def write_lammpsdata(structure, filename, atom_style='full'):
             epsilon_dict = dict([(unique_types.index(atom_type)+1,epsilon) for atom_type,epsilon in zip(types,epsilons)])
 
             # Modified cross-interactions
-            coeffs = dict()
             if structure.has_NBFIX():
                 params = ParameterSet.from_structure(structure)
                 warn('Explicitly writing cross interactions using mixing rule: {}'.format(
                     structure.combining_rule))
+                coeffs = dict()
                 for combo in it.combinations_with_replacement(unique_types, 2):
                     # Attempt to find pair coeffis in nbfixes
                     if combo in params.nbfix_types:
                         type1 = unique_types.index(combo[0])+1
                         type2 = unique_types.index(combo[1])+1
-                        epsilon = params.nbfix_types[combo][0] # kcal
-                        rmin = params.nbfix_types[combo][1] # Angstrom
+                        rmin = params.nbfix_types[combo][0] # Angstrom
+                        epsilon = params.nbfix_types[combo][1] # kcal
                         sigma = rmin/2**(1/6)
                         coeffs[(type1, type2)] = (sigma, epsilon)
                     else:
@@ -167,7 +167,7 @@ def write_lammpsdata(structure, filename, atom_style='full'):
                             sigma = sigma_dict[type1]
                             epsilon = epsilon_dict[type1]
                         else:
-                            sigma = (sigma_dict[type1]+sigma_dict[type2])*2
+                            sigma = (sigma_dict[type1]+sigma_dict[type2])*0.5
                             epsilon = (epsilon_dict[type1]*epsilon_dict[type2])**0.5
                         coeffs[(type1, type2)] = (sigma, epsilon)
                 data.write('\nPairIJ Coeffs # modified lj\n\n')
