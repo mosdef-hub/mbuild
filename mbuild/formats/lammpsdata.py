@@ -167,7 +167,12 @@ def write_lammpsdata(structure, filename, atom_style='full'):
                             sigma = sigma_dict[type1]
                             epsilon = epsilon_dict[type1]
                         else:
-                            sigma = (sigma_dict[type1]+sigma_dict[type2])*0.5
+                            if structure.combining_rule == 'lorentz':
+                                sigma = (sigma_dict[type1]+sigma_dict[type2])*0.5
+                            elif structure.combining_rule == 'geometric':
+                                sigma = (sigma_dict[type1]*sigma_dict[type2])**0.5
+                            else:
+                                raise ValueError('Only lorentz and geometric combining rules are supported')
                             epsilon = (epsilon_dict[type1]*epsilon_dict[type2])**0.5
                         coeffs[(type1, type2)] = (sigma, epsilon)
                 data.write('\nPairIJ Coeffs # modified lj\n\n')
