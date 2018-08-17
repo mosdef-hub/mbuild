@@ -29,6 +29,30 @@ class TestLammpsData(BaseTest):
         types[1].add_nbfix(types[0].name, 1.2, 2.1)
         write_lammpsdata(filename='nbfix.lammps', structure=structure)
 
+        checked_section = False
+        with open('nbfix.lammps', 'r') as fi:
+            while not checked_section:
+                line = fi.readline()
+                if 'PairIJ Coeffs' in line:
+                    fi.readline()
+                    line = fi.readline()
+                    assert np.allclose(
+                        np.asarray(line.split(), dtype=float),
+                        [1, 1, 3.5, 0.066])
+                    line = fi.readline()
+                    assert np.allclose(
+                        np.asarray(line.split(), dtype=float),
+                        [1, 2, 1.06907846, 2.1])
+                    line = fi.readline()
+                    assert np.allclose(
+                        np.asarray(line.split(), dtype=float),
+                        [2, 2, 2.5, 0.03])
+                    line = fi.readline()
+                    checked_section = True
+                # Break if PairIJ Coeffs is not found
+                if 'Atoms' in line:
+                    break
+
     @pytest.mark.parametrize('atom_style, n_columns', [('full', 7), ('atomic', 5), ('molecular', 6), ('charge', 6)])
     def test_writing_atom_styles(self, ethane, atom_style, n_columns):
         ethane.save(filename='ethane.lammps', atom_style=atom_style)
