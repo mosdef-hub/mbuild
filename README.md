@@ -31,11 +31,11 @@ If you use this package, please cite [our paper](http://dx.doi.org/10.1007/978-9
 }
 ```
 
-#### Example system
+#### Tutorials
 
-*Additional interactive examples can be found here:* 
+*Interactive tutorials can be found here:* 
 
-[![Binder](http://mybinder.org/badge.svg)](http://mybinder.org/repo/imodels/mbuild_binder)
+[![Binder](https://mybinder.org/badge.svg)](https://mybinder.org/v2/gh/mosdef-hub/mbuild_tutorials/master)
 
 Components in dashed boxes are drawn by hand using, e.g.,
 [Avogadro](https://avogadro.cc/) or generated elsewhere. Each
