@@ -182,7 +182,6 @@ def write_lammpsdata(structure, filename, atom_style='full'):
 
             # Pair coefficients
             else:
-                sigma_dict = dict([(unique_types.index(atom_type)+1,sigma) for atom_type,sigma in zip(types,sigmas)])
                 data.write('\nPair Coeffs # lj\n\n')
                 for idx,epsilon in epsilon_dict.items():
                     data.write('{}\t{:.5f}\t{:.5f}\n'.format(idx,epsilon,sigma_dict[idx]))
