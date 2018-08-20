@@ -38,15 +38,15 @@ class TestLammpsData(BaseTest):
                     line = fi.readline()
                     assert np.allclose(
                         np.asarray(line.split(), dtype=float),
-                        [1, 1, 3.5, 0.066])
+                        [1, 1, 0.066, 3.5])
                     line = fi.readline()
                     assert np.allclose(
                         np.asarray(line.split(), dtype=float),
-                        [1, 2, 1.06907846, 2.1])
+                        [1, 2, 2.1, 1.06907846])
                     line = fi.readline()
                     assert np.allclose(
                         np.asarray(line.split(), dtype=float),
-                        [2, 2, 2.5, 0.03])
+                        [2, 2, 0.03, 2.5])
                     line = fi.readline()
                     checked_section = True
                 # Break if PairIJ Coeffs is not found

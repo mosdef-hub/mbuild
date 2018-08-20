@@ -176,9 +176,9 @@ def write_lammpsdata(structure, filename, atom_style='full'):
                             epsilon = (epsilon_dict[type1]*epsilon_dict[type2])**0.5
                         coeffs[(type1, type2)] = (sigma, epsilon)
                 data.write('\nPairIJ Coeffs # modified lj\n\n')
-                for key, val in coeffs.items():
+                for (type1, type2), (sigma, epsilon) in coeffs.items():
                     data.write('{0} {1} {2} {3}\n'.format(
-                        key[0], key[1], val[0], val[1]))
+                        type1, type2, epsilon, sigma))
 
             # Pair coefficients
             else:
