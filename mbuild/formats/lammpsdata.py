@@ -149,7 +149,7 @@ def write_lammpsdata(structure, filename, atom_style='full'):
                 params = ParameterSet.from_structure(structure)
                 warn('Explicitly writing cross interactions using mixing rule: {}'.format(
                     structure.combining_rule))
-                coeffs = dict()
+                coeffs = OrderedDict()
                 for combo in it.combinations_with_replacement(unique_types, 2):
                     # Attempt to find pair coeffis in nbfixes
                     if combo in params.nbfix_types:
