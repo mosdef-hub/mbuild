@@ -32,8 +32,6 @@ test:
     - ipyext
     - pytest-ignore-flaky
     - foyer
-    - openbabel
-    - gsd
 
   source_files:
     - mbuild/examples/*
