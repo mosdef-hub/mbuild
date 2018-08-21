@@ -56,11 +56,11 @@ class TestGSD(BaseTest):
         opls_type_dict = OrderedDict([('C', 'opls_135'), ('H', 'opls_140')])
         types_from_gsd = frame.particles.types
         typeids_from_gsd = frame.particles.typeid.astype(int)
-        expected_types = [opls_type_dict[particle.name] 
+        expected_types = [opls_type_dict[particle.name]
                           for particle in ethane.particles()]
         unique_types = list(set(expected_types))
         unique_types.sort(key=natural_sort)
-        expected_typeids = [unique_types.index(atype) 
+        expected_typeids = [unique_types.index(atype)
                             for atype in expected_types]
         assert np.array_equal(types_from_gsd, unique_types)
         assert np.array_equal(typeids_from_gsd, expected_typeids)
@@ -138,7 +138,7 @@ class TestGSD(BaseTest):
 
         bond_typeids = frame.bonds.typeid
         bond_atoms = frame.bonds.group
-        expected_bond_atoms = [[bond.atom1.idx, bond.atom2.idx] 
+        expected_bond_atoms = [[bond.atom1.idx, bond.atom2.idx]
                                for bond in structure.bonds]
         assert np.array_equal(bond_atoms, expected_bond_atoms)
 
@@ -153,18 +153,18 @@ class TestGSD(BaseTest):
         n_angles = frame.angles.N
         assert n_angles == len(structure.angles)
 
-        expected_unique_angle_types = ['opls_135-opls_135-opls_140', 
+        expected_unique_angle_types = ['opls_135-opls_135-opls_140',
                                        'opls_140-opls_135-opls_140']
         angle_types = frame.angles.types
         assert np.array_equal(angle_types, expected_unique_angle_types)
 
         angle_typeids = frame.angles.typeid
         angle_atoms = frame.angles.group
-        expected_angle_atoms = [[angle.atom1.idx, angle.atom2.idx, angle.atom3.idx] 
+        expected_angle_atoms = [[angle.atom1.idx, angle.atom2.idx, angle.atom3.idx]
                                 for angle in structure.angles]
         assert np.array_equal(angle_atoms, expected_angle_atoms)
 
-        angle_type_dict = {('C', 'C', 'H') : 0, ('H', 'C', 'C') : 0, 
+        angle_type_dict = {('C', 'C', 'H') : 0, ('H', 'C', 'C') : 0,
                            ('H', 'C', 'H') : 1}
         expected_angle_typeids = []
         for angle in structure.angles:
@@ -200,13 +200,13 @@ class TestGSD(BaseTest):
 
         box = mb.Box(lengths=[1.0, 2.0, 3.0])
         ethane.save(filename='ethane.gsd', forcefield_name='oplsaa',
-                    ref_distance=ref_distance, ref_energy=ref_energy, 
+                    ref_distance=ref_distance, ref_energy=ref_energy,
                     ref_mass=ref_mass, box=box)
         gsd_file = gsd.pygsd.GSDFile(open('ethane.gsd', 'rb'))
         frame = gsd.hoomd.HOOMDTrajectory(gsd_file).read_frame(0)
 
         box_from_gsd = frame.configuration.box.astype(float)
-        assert np.array_equal(np.round(box_from_gsd[:3], decimals=5), 
+        assert np.array_equal(np.round(box_from_gsd[:3], decimals=5),
                               np.round(box.lengths * 10 / ref_distance, decimals=5))
 
         mass_dict = {'C' : 12.011, 'H' : 1.008}
@@ -227,3 +227,18 @@ class TestGSD(BaseTest):
         shifted_xyz = (ethane.xyz * 10 / ref_distance) + shift
         assert np.array_equal(np.round(positions, decimals=4),
                               np.round(shifted_xyz, decimals=4))
+
+    @pytest.mark.skipif(not has_gsd, reason="GSD package not installed")
+    def test_box_dimensions(self, benzene):
+        import gsd
+        n_benzenes = 10
+        filled = mb.fill_box(benzene,
+                             n_compounds=n_benzenes,
+                             box=[0, 0, 0, 4, 4, 4])
+        filled.save(filename='benzene.gsd')
+        gsd_file = gsd.pygsd.GSDFile(open('benzene.gsd', 'rb'))
+        frame = gsd.hoomd.HOOMDTrajectory(gsd_file).read_frame(0)
+        positions = frame.particles.position.astype(float)
+        for coords in positions:
+            assert coords.max() < 20
+            assert coords.min() > -20

@@ -27,7 +27,7 @@ class TestHoomdXML(BaseTest):
         benzene.name = 'Benzene'
         filled = mb.fill_box(benzene,
                              n_compounds=n_benzenes,
-                             box=[0, 0, 0, 4, 4, 4]) 
+                             box=[0, 0, 0, 4, 4, 4])
         filled.label_rigid_bodies(discrete_bodies='Benzene', rigid_particles='C')
         filled.save(filename='benzene.hoomdxml')
 
@@ -41,7 +41,7 @@ class TestHoomdXML(BaseTest):
     def test_number_in_each_section(self, box_of_benzenes):
         box_of_benzenes.save(filename='benzene.hoomdxml', forcefield_name='oplsaa')
         xml_file = xml.etree.ElementTree.parse('benzene.hoomdxml').getroot()
-        for attribute in ['position', 'type', 'mass', 'charge']: 
+        for attribute in ['position', 'type', 'mass', 'charge']:
             body_text = xml_file[0].find(attribute).text
             list_of_things = [x for x in body_text.split('\n') if x]
             assert len(list_of_things) == 12*10
@@ -49,3 +49,13 @@ class TestHoomdXML(BaseTest):
             body_text = xml_file[0].find(attribute).text
             list_of_things = [x for x in body_text.split('\n') if x]
             assert len(list_of_things) == number*10
+
+    def test_box_dimensions(self, benzene):
+        n_benzenes = 10
+        filled = mb.fill_box(benzene,
+                             n_compounds=n_benzenes,
+                             box=[0, 0, 0, 4, 4, 4])
+        filled.save(filename='benzene.hoomdxml')
+        for atom in mb.load('benzene.hoomdxml'):
+            assert atom.pos.max() < 20
+            assert atom.pos.min() > -20

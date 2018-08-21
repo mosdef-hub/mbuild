@@ -6,12 +6,13 @@ import numpy as np
 
 from mbuild import Box
 from mbuild.utils.conversion import RB_to_OPLS
+from mbuild.utils.geometry import coord_shift
 
 __all__ = ['write_hoomdxml']
 
 
-def write_hoomdxml(structure, filename, ref_distance=1.0, ref_mass=1.0, 
-                   ref_energy=1.0, rigid_bodies=None):
+def write_hoomdxml(structure, filename, ref_distance=1.0, ref_mass=1.0,
+                   ref_energy=1.0, rigid_bodies=None, shift_coords=True):
     """Output a HOOMD XML file.
 
     Parameters
@@ -31,6 +32,8 @@ def write_hoomdxml(structure, filename, ref_distance=1.0, ref_mass=1.0,
         for each particle corresponding to the number of the rigid body with
         which the particle should be included. A value of None indicates the
         particle is not part of any rigid body.
+    shift_coords : bool, optional, default=True
+        Shift coordinates from (0, L) to (-L/2, L/2) if necessary.
 
     Notes
     -----
@@ -77,6 +80,8 @@ def write_hoomdxml(structure, filename, ref_distance=1.0, ref_mass=1.0,
     if structure[0].type == '':
         forcefield = False
     xyz = np.array([[atom.xx, atom.xy, atom.xz] for atom in structure.atoms])
+    if shift_coords:
+        xyz = coord_shift(xyz, structure.box[:3])
 
     with open(filename, 'w') as xml_file:
         xml_file.write('<?xml version="1.2" encoding="UTF-8"?>\n')
