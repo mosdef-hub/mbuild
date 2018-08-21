@@ -26,7 +26,7 @@ def calc_dihedral(point1, point2, point3, point4):
     return angle(x, y)
 
 
-def shift_coords(xyz, box):
+def coord_shift(xyz, box):
     """Ensures that coordinates are -L/2, L/2
 
     Checks if coordinates are -L/2, L/2 and then shifts coordinates

@@ -11,13 +11,13 @@ from oset import oset as OrderedSet
 from mbuild import Box
 from mbuild.utils.io import import_
 from mbuild.utils.sorting import natural_sort
-from mbuild.utils.geometry import shift_coords
+from mbuild.utils.geometry import coord_shift
 
 __all__ = ['write_gsd']
 
 
 def write_gsd(structure, filename, ref_distance=1.0, ref_mass=1.0,
-              ref_energy=1.0, rigid_bodies=None):
+              ref_energy=1.0, rigid_bodies=None, shift_coords=True):
     """Output a GSD file (HOOMD v2 default data format).
 
     Parameters
@@ -37,6 +37,8 @@ def write_gsd(structure, filename, ref_distance=1.0, ref_mass=1.0,
         each atom corresponding to the index of the rigid body the particle
         is to be associated with. A value of None indicates the atom is not
         part of a rigid body.
+    shift_coords : bool, optional, default=True
+        Shift coordinates from (0, L) to (-L/2, L/2) if necessary.
 
     Notes
     -----
@@ -50,7 +52,8 @@ def write_gsd(structure, filename, ref_distance=1.0, ref_mass=1.0,
     import gsd.hoomd
 
     xyz = np.array([[atom.xx, atom.xy, atom.xz] for atom in structure.atoms])
-    xyz = shift_coords(xyz, structure.box[:3])
+    if shift_coords:
+        xyz = coord_shift(xyz, structure.box[:3])
 
     gsd_file = gsd.hoomd.Snapshot()
 
