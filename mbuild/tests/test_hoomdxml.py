@@ -18,6 +18,10 @@ class TestHoomdXML(BaseTest):
         box = mb.Box(lengths=np.array([2.0, 2.0, 2.0]))
         ethane.save(filename='ethane-box.hoomdxml', box=box)
 
+    def test_save_triclinic_box_(self, ethane):
+        box = mb.Box(lengths=np.array([2.0, 2.0, 2.0]), angles=[60, 70, 80])
+        ethane.save(filename='triclinic-box.hoomdxml', box=box)
+
     def test_rigid(self, benzene):
         n_benzenes = 10
         benzene.name = 'Benzene'
