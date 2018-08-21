@@ -22,7 +22,6 @@ requirements:
     - oset
     - parmed
     - mdtraj
-    - foyer
 
 test:
   requires:
@@ -32,6 +31,9 @@ test:
     - ipykernel
     - ipyext
     - pytest-ignore-flaky
+    - foyer
+    - openbabel
+    - gsd
 
   source_files:
     - mbuild/examples/*
