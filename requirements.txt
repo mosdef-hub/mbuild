@@ -5,15 +5,3 @@ nglview>=0.6.2.3
 oset
 parmed
 mdtraj
-foyer
-gsd
-openbabel
-pytest >=3.0
-jupyter
-nbformat
-ipykernel
-ipyext
-python-coveralls
-pytest-cov
-pytest-faulthandler
-pytest-ignore-flaky

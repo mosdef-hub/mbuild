@@ -1,0 +1,13 @@
+-r requirements.txt
+foyer
+gsd
+openbabel
+pytest >=3.0
+jupyter
+nbformat
+ipykernel
+ipyext
+python-coveralls
+pytest-cov
+pytest-faulthandler
+pytest-ignore-flaky
