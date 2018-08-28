@@ -358,6 +358,29 @@ class TestCompound(BaseTest):
         assert traj.n_chains == 1
         assert traj.n_residues == 1
 
+    def test_box_mdtraj(self, ethane):
+        assert np.allclose(ethane.periodicity, np.zeros(3))
+        traj_boundingbox = ethane.to_trajectory()
+        assert np.allclose(
+            traj_boundingbox.unitcell_lengths,
+            ethane.boundingbox.lengths + 0.5
+        )
+
+        ethane.periodicity = [4.0, 5.0, 6.0]
+        assert ethane.periodicity is not None
+        traj_periodicity = ethane.to_trajectory()
+        assert np.allclose(
+            traj_periodicity.unitcell_lengths,
+            ethane.periodicity
+        )
+
+        box = mb.Box(mins=np.zeros(3), maxs=8.0*np.zeros(3))
+        traj_box = ethane.to_trajectory(box=box)
+        assert np.allclose(
+            traj_box.unitcell_lengths,
+            box.lengths
+        )
+
     def test_resnames_mdtraj(self, h2o, ethane):
         system = mb.Compound([h2o, mb.clone(h2o), ethane])
         traj = system.to_trajectory(residues=['Ethane', 'H2O'])
@@ -397,6 +420,15 @@ class TestCompound(BaseTest):
 
         traj = system.to_trajectory()
         assert traj.n_chains == 1
+
+    def test_mdtraj_box(self, h2o):
+        compound = mb.Compound()
+        compound.add(h2o)
+        tilted_box = mb.Box(lengths=[2.0, 2.0, 2.0], angles=[60.0, 80.0, 100.0])
+        trajectory = compound.to_trajectory(box=tilted_box)
+        assert (trajectory.unitcell_lengths == [2.0, 2.0, 2.0]).all()
+        assert (trajectory.unitcell_angles == [60.0, 80.0, 100.0]).all()
+        print(trajectory.unitcell_vectors)
 
     @pytest.mark.skipif(not has_intermol, reason="InterMol is not installed")
     def test_intermol_conversion1(self, ethane, h2o):
@@ -496,6 +528,13 @@ class TestCompound(BaseTest):
         compound = mb.Particle(name='XXXXXX')
         with pytest.warns(UserWarning):
             _ = compound.to_parmed()
+
+    def test_parmed_box(self, h2o):
+        compound = mb.Compound()
+        compound.add(h2o)
+        tilted_box = mb.Box(lengths=[2.0, 2.0, 2.0], angles=[60.0, 80.0, 100.0])
+        structure = compound.to_parmed(box=tilted_box)
+        assert all(structure.box == [20.0, 20.0, 20.0, 60.0, 80.0, 100.0])
 
     def test_min_periodic_dist(self, ethane):
         compound = mb.Compound(ethane)
