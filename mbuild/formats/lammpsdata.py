@@ -37,6 +37,9 @@ def write_lammpsdata(structure, filename, atom_style='full'):
     addition to the header): *Masses*, *Nonbond Coeffs*, *Bond Coeffs*, *Angle
     Coeffs*, *Dihedral Coeffs*, *Atoms*, *Bonds*, *Angles*, *Dihedrals*
 
+    Some of this function has beed adopted from `mdtraj`'s support of the LAMMPSTRJ
+    trajectory format. See https://github.com/mdtraj/mdtraj/blob/master/mdtraj/formats/lammpstrj.py for details.
+
     """
 
     if atom_style not in ['atomic', 'charge', 'molecular', 'full']:
@@ -48,7 +51,9 @@ def write_lammpsdata(structure, filename, atom_style='full'):
     if structure[0].type == '':
         forcefield = False
 
-    box = Box(lengths=np.array([structure.box[0], structure.box[1], structure.box[2]]))
+    # Internally use nm
+    box = Box(lengths=np.array([0.1 * val for val in structure.box[0:3]]),
+              angles=structure.box[3:6])
 
     if forcefield:
         types = [atom.type for atom in structure.atoms]
@@ -124,8 +129,35 @@ def write_lammpsdata(structure, filename, atom_style='full'):
 
         data.write('\n')
         # Box data
-        for i,dim in enumerate(['x','y','z']):
-            data.write('{0:.6f} {1:.6f} {2}lo {2}hi\n'.format(box.mins[i],box.maxs[i],dim))
+        if np.allclose(box.angles, np.array([90, 90, 90])):
+            for i,dim in enumerate(['x','y','z']):
+                data.write('{0:.6f} {1:.6f} {2}lo {2}hi\n'.format(box.mins[i],box.maxs[i],dim))
+        else:
+            a, b, c = box.lengths
+            alpha, beta, gamma = np.radians(box.angles)
+
+            lx = a
+            xy = b * np.cos(gamma)
+            xz = c * np.cos(beta)
+            ly = np.sqrt(b**2 - xy**2)
+            yz = (b*c*np.cos(alpha) - xy*xz) / ly
+            lz = np.sqrt(c**2 - xz**2 - yz**2)
+
+            xlo, ylo, zlo = box.mins
+            xhi = xlo + lx
+            yhi = ylo + ly
+            zhi = zlo + lz
+
+            xlo_bound = xlo + np.min([0.0, xy, xz, xy+xz])
+            xhi_bound = xhi + np.max([0.0, xy, xz, xy+xz])
+            ylo_bound = ylo + np.min([0.0, yz])
+            yhi_bound = yhi + np.max([0.0, yz])
+            zlo_bound = zlo
+            zhi_bound = zhi
+
+            data.write('{0} {1} {2}\n'.format(xlo_bound, xhi_bound, xy))
+            data.write('{0} {1} {2}\n'.format(ylo_bound, yhi_bound, xz))
+            data.write('{0} {1} {2}\n'.format(zlo_bound, zhi_bound, yz))
 
         # Mass data
         masses = [atom.mass for atom in structure.atoms]
