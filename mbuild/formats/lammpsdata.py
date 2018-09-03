@@ -131,9 +131,12 @@ def write_lammpsdata(structure, filename, atom_style='full'):
         # Box data
         if np.allclose(box.angles, np.array([90, 90, 90])):
             for i,dim in enumerate(['x','y','z']):
-                data.write('{0:.6f} {1:.6f} {2}lo {2}hi\n'.format(box.mins[i],box.maxs[i],dim))
+                data.write('{0:.6f} {1:.6f} {2}lo {2}hi\n'.format(
+                    10.0 * box.mins[i],
+                    10.0 * box.maxs[i],
+                    dim))
         else:
-            a, b, c = box.lengths
+            a, b, c = 10.0 * box.lengths
             alpha, beta, gamma = np.radians(box.angles)
 
             lx = a
@@ -143,7 +146,7 @@ def write_lammpsdata(structure, filename, atom_style='full'):
             yz = (b*c*np.cos(alpha) - xy*xz) / ly
             lz = np.sqrt(c**2 - xz**2 - yz**2)
 
-            xlo, ylo, zlo = box.mins
+            xlo, ylo, zlo = 10.0 * box.mins
             xhi = xlo + lx
             yhi = ylo + ly
             zhi = zlo + lz
