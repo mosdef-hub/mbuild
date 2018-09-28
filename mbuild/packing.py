@@ -14,7 +14,7 @@ from mbuild.exceptions import MBuildError
 from mbuild.box import Box
 from mbuild import clone
 
-__all__ = ['fill_box', 'fill_region', 'solvate']
+__all__ = ['fill_box', 'fill_region', 'fill_sphere', 'solvate']
 
 PACKMOL = find_executable('packmol')
 PACKMOL_HEADER = """
@@ -36,6 +36,13 @@ structure {0}
     number {1:d}
     inside box {2:.3f} {3:.3f} {4:.3f} {5:.3f} {6:.3f} {7:.3f}
     {8}
+end structure
+"""
+PACKMOL_SPHERE = """
+structure {0}
+    number {1:d}
+    inside sphere {2:.3f} {3:.3f} {4:.3f} {5:.3f}
+    {6}
 end structure
 """
 
@@ -286,6 +293,141 @@ def fill_region(compound, n_compounds, region, overlap=0.2,
         for _ in range(m_compounds):
             filled.add(clone(comp))
     filled.update_coordinates(filled_pdb)
+    return filled
+
+
+def fill_sphere(compound, sphere, n_compounds=None, density=None, overlap=0.2,
+             seed=12345, edge=0.2, compound_ratio=None,
+             fix_orientation=False, temp_file=None):
+    """Fill a sphere with a compound using packmol.
+
+    One argument of `n_compounds and density` must be specified.
+
+    If `n_compounds` is not None, the specified number of
+    n_compounds will be inserted into a sphere of the specified size.
+
+    If `density` is not None, the corresponding number of
+    compounds will be calculated internally.
+
+    Parameters
+    ----------
+    compound : mb.Compound or list of mb.Compound
+        Compound or list of compounds to be put in box.
+    sphere : list, units nm
+        Sphere coordinates in the form [x_center, y_center, z_center, radius]
+    n_compounds : int or list of int
+        Number of compounds to be put in box.
+    density : float, units kg/m^3, default=None
+        Target density for the system in macroscale units.
+    overlap : float, units nm, default=0.2
+        Minimum separation between atoms of different molecules.
+    seed : int, default=12345
+        Random seed to be passed to PACKMOL.
+    edge : float, units nm, default=0.2
+        Buffer at the edge of the sphere to not place molecules. This is necessary
+        in some systems because PACKMOL does not account for periodic boundary
+        conditions in its optimization.
+    compound_ratio : list, default=None
+        Ratio of number of each compound to be put in sphere. Only used in the
+        case of `density` having been specified, `n_compounds` not specified, 
+        and more than one `compound`.
+    fix_orientation : bool or list of bools
+        Specify that compounds should not be rotated when filling the sphere,
+        default=False.
+    temp_file : str, default=None
+        File name to write PACKMOL's raw output to.
+
+    Returns
+    -------
+    filled : mb.Compound
+
+    """
+    _check_packmol(PACKMOL)
+
+    arg_count = 2 - [n_compounds, density].count(None)
+    if arg_count != 1:
+        msg = ("Exactly 1 of `n_compounds` and `density` "
+            "must be specified. {} were given.".format(arg_count))
+        raise ValueError(msg)
+
+    # if sphere is not None:
+    #     sphere = _validate_sphere(sphere)
+    if not isinstance(compound, (list, set)):
+        compound = [compound]
+    if n_compounds is not None and not isinstance(n_compounds, (list, set)):
+        n_compounds = [n_compounds]
+    if not isinstance(fix_orientation, (list, set)):
+        fix_orientation = [fix_orientation]*len(compound)
+
+    if compound is not None and n_compounds is not None:
+        if len(compound) != len(n_compounds):
+            msg = ("`compound` and `n_compounds` must be of equal length.")
+            raise ValueError(msg)
+
+    if compound is not None:
+        if len(compound) != len(fix_orientation):
+            msg = ("`compound`, `n_compounds`, and `fix_orientation` must be of equal length.")
+            raise ValueError(msg)
+
+    for coord in sphere[:3]:
+        if coord < sphere[3]:
+            msg = ("`sphere` center coordinates must be greater than radius.")
+            raise ValueError(msg)
+
+    # Apply edge buffer
+    radius = sphere[3] - edge
+
+    if density is not None:
+        if n_compounds is None:
+            if len(compound) == 1:
+                compound_mass = np.sum([a.mass for a in compound[0].to_parmed().atoms])
+                # Conversion from kg/m^3 / amu * nm^3 to dimensionless units
+                n_compounds = [int(density/compound_mass*(4/3*np.pi*radius**3)*.60224)]
+            else:
+                if compound_ratio is None:
+                    msg = ("Determing `n_compounds` from `density` "
+                           "for systems with more than one compound type requires"
+                           "`compound_ratio`")
+                    raise ValueError(msg)
+                if len(compound) != len(compound_ratio):
+                    msg = ("Length of `compound_ratio` must equal length of "
+                           "`compound`")
+                    raise ValueError(msg)
+                prototype_mass = 0
+                for c, r in zip(compound, compound_ratio):
+                    prototype_mass += r * np.sum([a.mass for a in c.to_parmed().atoms])
+                # Conversion from kg/m^3 / amu * nm^3 to dimensionless units
+                n_prototypes = int(density/prototype_mass*(4/3*np.pi*radius**3)*.60224)
+                n_compounds = list()
+                for c in compound_ratio:
+                    n_compounds.append(int(n_prototypes * c))
+
+    # In angstroms for packmol.
+    sphere = np.multiply(sphere, 10)
+    radius *= 10
+    overlap *= 10
+
+    # Build the input file for each compound and call packmol.
+    filled_pdb = tempfile.mkstemp(suffix='.pdb')[1]
+    input_text = PACKMOL_HEADER.format(overlap, filled_pdb, seed)
+
+    for comp, m_compounds, rotate in zip(compound, n_compounds, fix_orientation):
+        m_compounds = int(m_compounds)
+        compound_pdb = tempfile.mkstemp(suffix='.pdb')[1]
+        comp.save(compound_pdb, overwrite=True)
+        input_text += PACKMOL_SPHERE.format(compound_pdb, m_compounds,
+                           sphere[0], sphere[1], sphere[2], radius,
+                           PACKMOL_CONSTRAIN if rotate else "")
+
+    _run_packmol(input_text, filled_pdb, temp_file)
+
+    # Create the topology and update the coordinates.
+    filled = Compound()
+    for comp, m_compounds in zip(compound, n_compounds):
+        for _ in range(m_compounds):
+            filled.add(clone(comp))
+    filled.update_coordinates(filled_pdb)
+    filled.periodicity = np.asarray(np.divide(sphere[:3],10), dtype=np.float32) + sphere[3]/10
     return filled
 
 
