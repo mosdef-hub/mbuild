@@ -406,7 +406,7 @@ class Lattice(object):
 
         return np.asarray([alpha, beta, gamma], dtype=np.float64)
 
-    def populate(self, compound_dict=None, x=1, y=1, z=1):
+    def populate(self, compound_dict=None, parent_dict=None, x=1, y=1, z=1):
         """Expand lattice and create compound from lattice.
 
         populate will expand lattice based on user input. The user must also
@@ -501,6 +501,12 @@ class Lattice(object):
 
         ret_lattice = mb.Compound()
 
+        if parent_dict is not None:
+            unique_parent_names = set(parent_dict.values())
+            for parent_name in unique_parent_names:
+                parent_compound = mb.Compound(name=parent_name)
+                ret_lattice.add(parent_compound)
+
         if compound_dict is None:
             for key_id, all_pos in cell.items():
                 particle = mb.Compound(name=key_id, pos=[0, 0, 0])
@@ -515,7 +521,13 @@ class Lattice(object):
                     for pos in all_pos:
                         tmp_comp = mb.clone(compound_to_move)
                         tmp_comp.translate_to(list(pos))
-                        ret_lattice.add(tmp_comp)
+                        if parent_dict is None:
+                            ret_lattice.add(tmp_comp)
+                        else:
+                            # Find the child (a.k.a. parent) in ret_lattice to add new particle to
+                            parent_to_add_to = [child for child in ret_lattice if child.name == parent_dict[key_id]][0]
+                            parent_to_add_to.add(tmp_comp)
+
                 else:
                     err_type = type(compound_dict.get(key_id))
                     raise TypeError('Invalid type in provided Compound '
