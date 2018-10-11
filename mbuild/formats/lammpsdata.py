@@ -14,7 +14,7 @@ from mbuild.utils.sorting import natural_sort
 __all__ = ['write_lammpsdata']
 
 
-def write_lammpsdata(structure, filename, atom_style='full'):
+def write_lammpsdata(structure, filename, atom_style='full', nbfix_in_data_file=False):
     """Output a LAMMPS data file.
     
     Outputs a LAMMPS data file in the 'full' atom style format. Assumes use
@@ -175,10 +175,21 @@ def write_lammpsdata(structure, filename, atom_style='full'):
                                 raise ValueError('Only lorentz and geometric combining rules are supported')
                             epsilon = (epsilon_dict[type1]*epsilon_dict[type2])**0.5
                         coeffs[(type1, type2)] = (sigma, epsilon)
-                data.write('\nPairIJ Coeffs # modified lj\n\n')
-                for (type1, type2), (sigma, epsilon) in coeffs.items():
-                    data.write('{0} {1} {2} {3}\n'.format(
-                        type1, type2, epsilon, sigma))
+                if nbfix_in_data_file:
+                    data.write('\nPairIJ Coeffs # modified lj\n\n')
+                    for (type1, type2), (sigma, epsilon) in coeffs.items():
+                        data.write('{0} {1} {2} {3}\n'.format(
+                            type1, type2, epsilon, sigma))
+                else:
+                    data.write('\nPair Coeffs # lj\n\n')
+                    print('Copy these commands into your input script:\n')
+                    for (type1, type2), (sigma, epsilon) in coeffs.items():
+                        if type1 == type2:
+                            data.write('{}\t{:.5f}\t{:.5f}\n'.format(
+                                type1,epsilon,sigma_dict[type1]))
+                        else:
+                            print('pair_coeff\t{0} {1} {2} {3}'.format(
+                                type1, type2, epsilon, sigma))
 
             # Pair coefficients
             else:
