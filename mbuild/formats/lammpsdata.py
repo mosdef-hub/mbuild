@@ -14,7 +14,7 @@ from mbuild.utils.sorting import natural_sort
 __all__ = ['write_lammpsdata']
 
 
-def write_lammpsdata(structure, filename, atom_style='full', nbfix_in_data_file=False):
+def write_lammpsdata(structure, filename, atom_style='full', nbfix_in_data_file=True):
     """Output a LAMMPS data file.
     
     Outputs a LAMMPS data file in the 'full' atom style format. Assumes use
