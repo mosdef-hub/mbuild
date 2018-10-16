@@ -4,7 +4,7 @@ from mbuild import Box
 
 __all__ = ['write_vasp']
 
-def write_vasp(structure, filename, lattice_constant, bravais,
+def write_vasp(compound, filename, lattice_constant, bravais,
         sel_dev=None,coord='cartesian'):
     """Output VASP input files.
 
@@ -13,8 +13,8 @@ def write_vasp(structure, filename, lattice_constant, bravais,
 
     Parameters
     ----------
-    structure: parmed.Structure
-        ParmEd structure object
+    compound: mb.Compound
+        mBuild Compound
     filename: str
         Path of the output file
     lattice_constant: float
@@ -25,6 +25,7 @@ def write_vasp(structure, filename, lattice_constant, bravais,
     coord: str, default = 'cartesian', other option = 'direct'
         Coordinate style of atom positions
     """
+    structure = compound.to_parmed()
     atom_names = np.unique([atom.name for atom in structure.atoms])
     count_list = list()
     xyz_list = list()
