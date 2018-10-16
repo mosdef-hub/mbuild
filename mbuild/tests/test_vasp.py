@@ -10,55 +10,53 @@ class TestLammpsData(BaseTest):
     Unit tests for Vasp writer
     """
 
-    def test_write(self):
-        copper = mb.Compound(name='Cu')
-        lattice_vector = [[1, 0, 0], [0, 1, 0], [0, 0, 1]]
-        spacing = [.36149, .36149, .36149]
-        copper_locations = [[0., 0., 0.], [.5, .5, 0.],
-                [.5, 0., .5], [0., .5, .5]]
-        basis = {'Cu': copper_locations}
-        copper_lattice = mb.Lattice(lattice_spacing = spacing,
-                lattice_vectors=lattice_vector, lattice_points=basis)
-        copper_dict = {'Cu' : copper}
-        copper_pillar = copper_lattice.populate(x=3, y=3, z=1,
-                compound_dict=copper_dict)
-        struct = copper_pillar.to_parmed()
-        write_vasp(struct, 'test.poscar',
-                lattice_constant=spacing[0], bravais=lattice_vector,
-                coord='cartesian')
+    def test_write(self, copper_cell):
+        write_vasp(copper_cell, 'test.poscar',
+                lattice_constant=.4123, bravais=[[1, 0, 0],
+                    [0, 1, 0], [0, 0, 1]])
 
-    def test_cartesian(self):
-        coord_list = list()
-        poscar_coord_list = list()
-        copper = mb.Compound(name='Cu')
-        lattice_vector = [[1, 0, 0], [0, 1, 0], [0, 0, 1]]
-        spacing = [.36149, .36149, .36149]
-        copper_locations = [[0., 0., 0.], [.5, .5, 0.],
-                [.5, 0., .5], [0., .5, .5]]
-        basis = {'Cu': copper_locations}
-        copper_lattice = mb.Lattice(lattice_spacing = spacing,
-                lattice_vectors=lattice_vector, lattice_points=basis)
-        copper_dict = {'Cu' : copper}
-        copper_pillar = copper_lattice.populate(x=3, y=3, z=1,
-                compound_dict=copper_dict)
-        for child in copper_pillar.children:
-            coord_list.append(child.xyz)
-        struct = copper_pillar.to_parmed()
-        write_vasp(struct, 'test.poscar',
-                lattice_constant=spacing[0], bravais=lattice_vector,
-                coord='cartesian')
+
+    def test_write_direct(self, copper_cell):
+        write_vasp(copper_cell, 'test.poscar',
+                lattice_constant=.4123, bravais=[[1, 0, 0],
+                    [0, 1, 0], [0, 0, 1]], coord='direct')
+
+
+    def test_lattice_constant(self, copper_cell):
+        write_vasp(copper_cell, 'test.poscar',
+                lattice_constant=.4123, bravais=[[1, 0, 0],
+                    [0, 1, 0], [0, 0, 1]])
         with open('test.poscar', 'r') as f:
-            f = f.readlines()[8:]
-            for line in f:
-                poscar_coord_list.append(
-                        np.genfromtxt(line.splitlines(True)))
-        
-        assert all([a.all() == b.all() for a,b in zip(
-            poscar_coord_list, coord_list)])
+            for i,line in enumerate(f):
+                if i == 1:
+                    lattice_constant = np.genfromtxt(
+                            line.splitlines(True))
 
-                
+        assert lattice_constant == 0.4123
 
-    #def test_direct(self):
+    def test_bravais(self, copper_cell):
+        write_vasp(copper_cell, 'test.poscar',
+                lattice_constant=.4123, bravais=[[1, 0, 0],
+                    [0, 1, 0], [0, 0, 1]])
+        with open('test.poscar', 'r') as f:
+            bravais = list()
+            for i,line in enumerate(f):
+                if i in [2,3,4]:
+                    bravais.append(np.genfromtxt(
+                            line.splitlines(True)))
+
+        assert all([a.all() == b.all() for a, b in zip(bravais,
+            [np.array([1,0,0]), np.array([0,1,0]),
+                np.array([0,0,1])])])
 
 
-    #def test_file_length(self):
+    def test_num_elements(self, cscl_crystal):
+        write_vasp(cscl_crystal, 'test.poscar',
+                lattice_constant=.4123, bravais=[[1, 0, 0],
+                    [0, 1, 0], [0, 0, 1]])
+        with open('test.poscar', 'r') as f:
+            for i,line in enumerate(f):
+                if i == 5:
+                    elements = line.split()
+
+        assert len(elements) == 2
