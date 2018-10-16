@@ -147,6 +147,16 @@ def write_lammpsdata(structure, filename, atom_style='full', nbfix_in_data_file=
             # Modified cross-interactions
             if structure.has_NBFIX():
                 params = ParameterSet.from_structure(structure)
+                # Sort keys (maybe they should be sorted in ParmEd)
+                new_nbfix_types = OrderedDict()
+                for key, val in params.nbfix_types.items():
+                    sorted_key = tuple(sorted(key))
+                    if sorted_key in new_nbfix_types:
+                        warn('Sorted key matches an existing key')
+                        if new_nbfix_types[sorted_key]:
+                            warn('nbfixes are not symmetric, overwriting old nbfix')
+                    new_nbfix_types[sorted_key] = params.nbfix_types[key]
+                params.nbfix_types = new_nbfix_types
                 warn('Explicitly writing cross interactions using mixing rule: {}'.format(
                     structure.combining_rule))
                 coeffs = OrderedDict()
