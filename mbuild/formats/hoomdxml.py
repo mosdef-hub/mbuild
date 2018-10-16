@@ -6,12 +6,13 @@ import numpy as np
 
 from mbuild import Box
 from mbuild.utils.conversion import RB_to_OPLS
+from mbuild.utils.geometry import coord_shift
 
 __all__ = ['write_hoomdxml']
 
 
-def write_hoomdxml(structure, filename, ref_distance=1.0, ref_mass=1.0, 
-                   ref_energy=1.0, rigid_bodies=None):
+def write_hoomdxml(structure, filename, ref_distance=1.0, ref_mass=1.0,
+                   ref_energy=1.0, rigid_bodies=None, shift_coords=True):
     """Output a HOOMD XML file.
 
     Parameters
@@ -31,6 +32,8 @@ def write_hoomdxml(structure, filename, ref_distance=1.0, ref_mass=1.0,
         for each particle corresponding to the number of the rigid body with
         which the particle should be included. A value of None indicates the
         particle is not part of any rigid body.
+    shift_coords : bool, optional, default=True
+        Shift coordinates from (0, L) to (-L/2, L/2) if necessary.
 
     Notes
     -----
@@ -77,14 +80,14 @@ def write_hoomdxml(structure, filename, ref_distance=1.0, ref_mass=1.0,
     if structure[0].type == '':
         forcefield = False
     xyz = np.array([[atom.xx, atom.xy, atom.xz] for atom in structure.atoms])
+    if shift_coords:
+        xyz = coord_shift(xyz, structure.box[:3])
 
     with open(filename, 'w') as xml_file:
         xml_file.write('<?xml version="1.2" encoding="UTF-8"?>\n')
         xml_file.write('<hoomd_xml version="1.2">\n')
         xml_file.write('<configuration time_step="0">\n')
-        xml_file.write(
-                '<box units="sigma"  Lx="{}" Ly="{}" Lz="{}"/>\n'.format(
-                    *structure.box[:3] / ref_distance))
+        _write_box_information(xml_file, structure, ref_distance)
         _write_particle_information(xml_file, structure, xyz, forcefield,
                 ref_distance, ref_mass, ref_energy)
         _write_bond_information(xml_file, structure, ref_distance, ref_energy)
@@ -291,3 +294,32 @@ def _write_rigid_information(xml_file, rigid_bodies):
                 body = -1
             xml_file.write('{}\n'.format(int(body)))
         xml_file.write('</body>\n')
+
+def _write_box_information(xml_file, structure, ref_distance):
+    """Write box information.
+
+    Parameters
+    ----------
+    xml_file : file object
+        The file object of the hoomdxml file being written
+    structure : parmed.Structure
+        Parmed structure object
+    ref_energy : float, default=1.0
+        Reference energy for conversion to reduced units
+
+    """
+    if np.allclose(structure.box[3:6], np.array([90, 90, 90])):
+        box_str = '<box units="sigma"  Lx="{}" Ly="{}" Lz="{}"/>\n'
+        xml_file.write(box_str.format(*structure.box[:3] / ref_distance))
+    else:
+        a, b, c = structure.box[0:3] / ref_distance
+        alpha, beta, gamma = np.radians(structure.box[3:6])
+
+        lx = a
+        xy = b * np.cos(gamma)
+        xz = c * np.cos(beta)
+        ly = np.sqrt(b**2 - xy**2)
+        yz = (b*c*np.cos(alpha) - xy*xz) / ly
+        lz = np.sqrt(c**2 - xz**2 - yz**2)
+        box_str = '<box units="sigma"  Lx="{}" Ly="{}" Lz="{}" xy="{}" xz="{}" yz="{}"/>\n'
+        xml_file.write(box_str.format(lx, ly, lz, xy, xz, yz))
