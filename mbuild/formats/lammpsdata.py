@@ -168,7 +168,7 @@ def write_lammpsdata(structure, filename, atom_style='full', nbfix_in_data_file=
                         rmin = params.nbfix_types[combo][0] # Angstrom
                         epsilon = params.nbfix_types[combo][1] # kcal
                         sigma = rmin/2**(1/6)
-                        coeffs[(type1, type2)] = (sigma, epsilon)
+                        coeffs[(type1, type2)] = (round(sigma, 6), round(epsilon, 6))
                     else:
                         type1 = unique_types.index(combo[0]) + 1
                         type2 = unique_types.index(combo[1]) + 1
@@ -184,7 +184,7 @@ def write_lammpsdata(structure, filename, atom_style='full', nbfix_in_data_file=
                             else:
                                 raise ValueError('Only lorentz and geometric combining rules are supported')
                             epsilon = (epsilon_dict[type1]*epsilon_dict[type2])**0.5
-                        coeffs[(type1, type2)] = (sigma, epsilon)
+                        coeffs[(type1, type2)] = (round(sigma, 6), round(epsilon, 6))
                 if nbfix_in_data_file:
                     data.write('\nPairIJ Coeffs # modified lj\n\n')
                     for (type1, type2), (sigma, epsilon) in coeffs.items():
