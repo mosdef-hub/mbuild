@@ -60,3 +60,26 @@ class TestLammpsData(BaseTest):
                     elements = line.split()
 
         assert len(elements) == 2
+
+
+    def test_num_atoms(self, copper_cell):
+        write_vasp(copper_cell, 'test.postcar',
+                lattice_constant=0.4123, bravais=[[1, 0, 0],
+                    [0, 1, 0], [0, 0, 1]])
+        with open('test.poscar', 'r') as f:
+            for i, line in enumerate(f):
+                pass
+
+        assert i + 1 == 26
+
+    @pytest.mark.parametrize('coord_type', ['direct', 'cartesian'])
+    def test_coordinate_header(self, copper_cell, coord_type):
+        write_vasp(copper_cell, 'test.poscar',
+                lattice_constant=0.4123, bravais=[[1, 0, 0],
+                    [0, 1, 0], [0, 0, 1]], coord=coord_type)
+        with open('test.poscar', 'r') as f:
+            for i, line in enumerate(f):
+                if i == 7:
+                   coord = line.strip() 
+
+        assert coord == coord_type
