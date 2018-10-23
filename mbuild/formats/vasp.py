@@ -5,7 +5,7 @@ from mbuild import Box
 __all__ = ['write_poscar']
 
 def write_poscar(compound, filename, lattice_constant, bravais=[[1,0,0],
-    [0,1,0],[0,0,1]], sel_dev=None,coord='cartesian'):
+    [0,1,0],[0,0,1]], sel_dev=False,coord='cartesian'):
     """
     Outputs VASP POSCAR files.  See //https://www.vasp.at for
     more information.
@@ -17,10 +17,12 @@ def write_poscar(compound, filename, lattice_constant, bravais=[[1,0,0],
     filename: str
         Path of the output file
     lattice_constant: float
-        Scaling constant for POSCAR file
+        Scaling constant for POSCAR file, used to scale all lattice vectors and
+        atomic coordinates
     bravais: array, default = [[1,0,0],[0,1,0],[0,0,1]]
-        array of bravais cell
-    sel_dev: yes
+        array of bravais cell that defines unit cell of the system
+    sel_dev: boolean, default=False
+        Turns selective dynamics on.  Not currently implemented.
     coord: str, default = 'cartesian', other option = 'direct'
         Coordinate style of atom positions
     """
@@ -46,7 +48,7 @@ def write_poscar(compound, filename, lattice_constant, bravais=[[1,0,0],
         count_list.append(atom_count)
         xyz = np.array([[atom.xx, atom.xy, atom.xz] for atom in
             structure.atoms if atom.name == atom_name])
-        xyz = xyz / 10
+        xyz = xyz / 10 # unit conversion from angstroms to nm
         xyz_list.append(xyz)
     
     with open(filename, 'w') as data:
