@@ -7,9 +7,8 @@ from mbuild.utils.io import get_fn
 
 
 class BaseTest:
-    #def __init__(self, instances):
-    #    self.instances = instances
 
+    @pytest.fixture(autouse=True)
     def initdir(self, tmpdir):
         tmpdir.chdir()
 
