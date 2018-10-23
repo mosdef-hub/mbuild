@@ -10,6 +10,10 @@ class TestVasp(BaseTest):
     Unit tests for Vasp POSCAR writer
     """
 
+    @pytest.fixture(autouse=True)
+    def initdir(self, tmpdir):
+        tmpdir.chdir()
+
     def test_write(self, copper_cell):
         write_poscar(copper_cell, 'test.poscar',
                 lattice_constant=.4123)
@@ -59,13 +63,13 @@ class TestVasp(BaseTest):
 
 
     def test_num_atoms(self, copper_cell):
-        write_poscar(copper_cell, 'test.postcar',
+        write_poscar(copper_cell, 'test.poscar',
                 lattice_constant=0.4123)
         with open('test.poscar', 'r') as f:
             for i, line in enumerate(f):
                 pass
 
-        assert i + 1 == 26
+        assert i + 1 == 44
 
 
     @pytest.mark.parametrize('coord_type', ['direct', 'cartesian'])
