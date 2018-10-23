@@ -2,12 +2,11 @@ import numpy as np
 
 from mbuild import Box
 
-__all__ = ['write_vasp']
+__all__ = ['write_poscar']
 
-def write_vasp(compound, filename, lattice_constant, bravais,
+def write_poscar(compound, filename, lattice_constant, bravais,
         sel_dev=None,coord='cartesian'):
-    """Output VASP input files.
-
+    """
     Outputs VASP POSCAR files.  See //https://www.vasp.at for
     more information.
 

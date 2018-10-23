@@ -2,28 +2,28 @@ import numpy as np
 import pytest
 
 import mbuild as mb
-from mbuild.formats.vasp import write_vasp
+from mbuild.formats.vasp import write_poscar
 from mbuild.tests.base_test import BaseTest
 
-class TestLammpsData(BaseTest):
+class TestVasp(BaseTest):
     """
-    Unit tests for Vasp writer
+    Unit tests for Vasp POSCAR writer
     """
 
     def test_write(self, copper_cell):
-        write_vasp(copper_cell, 'test.poscar',
+        write_poscar(copper_cell, 'test.poscar',
                 lattice_constant=.4123, bravais=[[1, 0, 0],
                     [0, 1, 0], [0, 0, 1]])
 
 
     def test_write_direct(self, copper_cell):
-        write_vasp(copper_cell, 'test.poscar',
+        write_poscar(copper_cell, 'test.poscar',
                 lattice_constant=.4123, bravais=[[1, 0, 0],
                     [0, 1, 0], [0, 0, 1]], coord='direct')
 
 
     def test_lattice_constant(self, copper_cell):
-        write_vasp(copper_cell, 'test.poscar',
+        write_poscar(copper_cell, 'test.poscar',
                 lattice_constant=.4123, bravais=[[1, 0, 0],
                     [0, 1, 0], [0, 0, 1]])
         with open('test.poscar', 'r') as f:
@@ -35,7 +35,7 @@ class TestLammpsData(BaseTest):
         assert lattice_constant == 0.4123
 
     def test_bravais(self, copper_cell):
-        write_vasp(copper_cell, 'test.poscar',
+        write_poscar(copper_cell, 'test.poscar',
                 lattice_constant=.4123, bravais=[[1, 0, 0],
                     [0, 1, 0], [0, 0, 1]])
         with open('test.poscar', 'r') as f:
@@ -51,7 +51,7 @@ class TestLammpsData(BaseTest):
 
 
     def test_num_elements(self, cscl_crystal):
-        write_vasp(cscl_crystal, 'test.poscar',
+        write_poscar(cscl_crystal, 'test.poscar',
                 lattice_constant=.4123, bravais=[[1, 0, 0],
                     [0, 1, 0], [0, 0, 1]])
         with open('test.poscar', 'r') as f:
@@ -63,7 +63,7 @@ class TestLammpsData(BaseTest):
 
 
     def test_num_atoms(self, copper_cell):
-        write_vasp(copper_cell, 'test.postcar',
+        write_poscar(copper_cell, 'test.postcar',
                 lattice_constant=0.4123, bravais=[[1, 0, 0],
                     [0, 1, 0], [0, 0, 1]])
         with open('test.poscar', 'r') as f:
@@ -74,7 +74,7 @@ class TestLammpsData(BaseTest):
 
     @pytest.mark.parametrize('coord_type', ['direct', 'cartesian'])
     def test_coordinate_header(self, copper_cell, coord_type):
-        write_vasp(copper_cell, 'test.poscar',
+        write_poscar(copper_cell, 'test.poscar',
                 lattice_constant=0.4123, bravais=[[1, 0, 0],
                     [0, 1, 0], [0, 0, 1]], coord=coord_type)
         with open('test.poscar', 'r') as f:
