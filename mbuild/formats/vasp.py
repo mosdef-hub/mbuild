@@ -4,8 +4,8 @@ from mbuild import Box
 
 __all__ = ['write_poscar']
 
-def write_poscar(compound, filename, lattice_constant, bravais,
-        sel_dev=None,coord='cartesian'):
+def write_poscar(compound, filename, lattice_constant, bravais=[[1,0,0],
+    [0,1,0],[0,0,1]], sel_dev=None,coord='cartesian'):
     """
     Outputs VASP POSCAR files.  See //https://www.vasp.at for
     more information.
@@ -18,7 +18,7 @@ def write_poscar(compound, filename, lattice_constant, bravais,
         Path of the output file
     lattice_constant: float
         Scaling constant for POSCAR file
-    bravais: array
+    bravais: array, default = [[1,0,0],[0,1,0],[0,0,1]]
         array of bravais cell
     sel_dev: yes
     coord: str, default = 'cartesian', other option = 'direct'

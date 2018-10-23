@@ -12,20 +12,17 @@ class TestVasp(BaseTest):
 
     def test_write(self, copper_cell):
         write_poscar(copper_cell, 'test.poscar',
-                lattice_constant=.4123, bravais=[[1, 0, 0],
-                    [0, 1, 0], [0, 0, 1]])
+                lattice_constant=.4123)
 
 
     def test_write_direct(self, copper_cell):
         write_poscar(copper_cell, 'test.poscar',
-                lattice_constant=.4123, bravais=[[1, 0, 0],
-                    [0, 1, 0], [0, 0, 1]], coord='direct')
+                lattice_constant=.4123, coord='direct')
 
 
     def test_lattice_constant(self, copper_cell):
         write_poscar(copper_cell, 'test.poscar',
-                lattice_constant=.4123, bravais=[[1, 0, 0],
-                    [0, 1, 0], [0, 0, 1]])
+                lattice_constant=.4123)
         with open('test.poscar', 'r') as f:
             for i,line in enumerate(f):
                 if i == 1:
@@ -36,8 +33,7 @@ class TestVasp(BaseTest):
 
     def test_bravais(self, copper_cell):
         write_poscar(copper_cell, 'test.poscar',
-                lattice_constant=.4123, bravais=[[1, 0, 0],
-                    [0, 1, 0], [0, 0, 1]])
+                lattice_constant=.4123)
         with open('test.poscar', 'r') as f:
             bravais = list()
             for i,line in enumerate(f):
@@ -52,8 +48,7 @@ class TestVasp(BaseTest):
 
     def test_num_elements(self, cscl_crystal):
         write_poscar(cscl_crystal, 'test.poscar',
-                lattice_constant=.4123, bravais=[[1, 0, 0],
-                    [0, 1, 0], [0, 0, 1]])
+                lattice_constant=.4123)
         with open('test.poscar', 'r') as f:
             for i,line in enumerate(f):
                 if i == 5:
@@ -64,8 +59,7 @@ class TestVasp(BaseTest):
 
     def test_num_atoms(self, copper_cell):
         write_poscar(copper_cell, 'test.postcar',
-                lattice_constant=0.4123, bravais=[[1, 0, 0],
-                    [0, 1, 0], [0, 0, 1]])
+                lattice_constant=0.4123)
         with open('test.poscar', 'r') as f:
             for i, line in enumerate(f):
                 pass
@@ -75,8 +69,7 @@ class TestVasp(BaseTest):
     @pytest.mark.parametrize('coord_type', ['direct', 'cartesian'])
     def test_coordinate_header(self, copper_cell, coord_type):
         write_poscar(copper_cell, 'test.poscar',
-                lattice_constant=0.4123, bravais=[[1, 0, 0],
-                    [0, 1, 0], [0, 0, 1]], coord=coord_type)
+                lattice_constant=0.4123, coord=coord_type)
         with open('test.poscar', 'r') as f:
             for i, line in enumerate(f):
                 if i == 7:
