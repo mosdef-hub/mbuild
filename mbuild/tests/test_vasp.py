@@ -31,6 +31,7 @@ class TestVasp(BaseTest):
 
         assert lattice_constant == 0.4123
 
+
     def test_bravais(self, copper_cell):
         write_poscar(copper_cell, 'test.poscar',
                 lattice_constant=.4123)
@@ -65,6 +66,7 @@ class TestVasp(BaseTest):
                 pass
 
         assert i + 1 == 26
+
 
     @pytest.mark.parametrize('coord_type', ['direct', 'cartesian'])
     def test_coordinate_header(self, copper_cell, coord_type):
