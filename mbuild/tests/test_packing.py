@@ -1,4 +1,4 @@
-import os
+import os, resource
 
 import pytest
 import numpy as np
@@ -170,3 +170,11 @@ class TestPacking(BaseTest):
         w0 -= w0.sum(0) / len(w0)
         w1 -= w1.sum(0) / len(w1)
         assert np.isclose(w0, w1).all() is not True
+
+    def test_too_many_open_files(self, h2o):
+        soft, hard = resource.getrlimit(resource.RLIMIT_NOFILE)
+        resource.setrlimit(resource.RLIMIT_NOFILE, (40, 40))
+        n_iter = 50
+        dummy_box = mb.Box([100, 100, 100])
+        [mb.fill_box(h2o, 1, dummy_box) for _ in range(n_iter)]
+        resource.setrlimit(resource.RLIMIT_NOFILE, (soft, hard))
