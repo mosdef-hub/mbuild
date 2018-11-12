@@ -178,6 +178,6 @@ class TestPacking(BaseTest):
         dummy_box = mb.Box([100, 100, 100])
         try:
             [mb.fill_box(h2o, 1, dummy_box) for _ in range(n_iter)]
-        except OSError:
+        except IOError or OSError:
             resource.setrlimit(resource.RLIMIT_NOFILE, (soft, hard))
             assert False
