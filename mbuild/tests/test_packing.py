@@ -176,5 +176,8 @@ class TestPacking(BaseTest):
         resource.setrlimit(resource.RLIMIT_NOFILE, (40, 40))
         n_iter = 50
         dummy_box = mb.Box([100, 100, 100])
-        [mb.fill_box(h2o, 1, dummy_box) for _ in range(n_iter)]
-        resource.setrlimit(resource.RLIMIT_NOFILE, (soft, hard))
+        try:
+            [mb.fill_box(h2o, 1, dummy_box) for _ in range(n_iter)]
+        except OSError:
+            resource.setrlimit(resource.RLIMIT_NOFILE, (soft, hard))
+            assert False
