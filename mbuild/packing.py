@@ -350,8 +350,13 @@ def fill_sphere(compound, sphere, n_compounds=None, density=None, overlap=0.2,
             "must be specified. {} were given.".format(arg_count))
         raise ValueError(msg)
 
-    # if sphere is not None:
-    #     sphere = _validate_sphere(sphere)
+    if isinstance(sphere, (list, set)):
+        if len(sphere) != 4:
+            msg = ("`sphere` must be a list of len 4")
+    else:
+        msg = ("`sphere` must be a list")
+        raise ValueError(msg)
+
     if not isinstance(compound, (list, set)):
         compound = [compound]
     if n_compounds is not None and not isinstance(n_compounds, (list, set)):
