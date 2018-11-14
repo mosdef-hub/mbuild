@@ -431,12 +431,12 @@ def _run_packmol(input_text, filled_pdb, temp_file):
                "the .pdb_FORCED file instead. This may not be a "
                "sufficient packing result.")
         warnings.warn(msg)
-        os.system('cp {0}_FORCED {0}'.format(filled_pdb))
+        os.system('cp {0}_FORCED {0}'.format(filled_pdb.name))
     if 'ERROR' in out:
         _packmol_error(out, err)
 
     if temp_file is not None:
-        os.system('cp {0} {1}'.format(filled_pdb, os.path.join(temp_file)))
+        os.system('cp {0} {1}'.format(filled_pdb.name, os.path.join(temp_file)))
 
 def _check_packmol(PACKMOL):
     if not PACKMOL:
