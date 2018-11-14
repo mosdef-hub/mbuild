@@ -382,7 +382,7 @@ def solvate(solute, solvent, n_solvent, box, overlap=0.2,
         for solv, m_solvent in zip(solvent, n_solvent):
             for _ in range(m_solvent):
                 solvated.add(clone(solv))
-        solvated.update_coordinates(solvated_pdb)
+        solvated.update_coordinates(solvated_pdb.name)
 
     finally:
         solvated_pdb.close()
