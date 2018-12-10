@@ -394,9 +394,19 @@ def _packmol_error(out, err):
         err_file.write(err)
     raise RuntimeError("PACKMOL failed. See 'err.txt' and 'log.txt'")
 
+
 def _run_packmol(input_text, filled_pdb, temp_file):
-    proc = Popen(PACKMOL, stdin=PIPE, stdout=PIPE, stderr=PIPE, universal_newlines=True)
-    out, err = proc.communicate(input=input_text)
+
+    # Create input file
+    packmol_inp = tempfile.NamedTemporaryFile(mode='w', delete=False,
+                                              prefix='packmol-', suffix='.inp')
+    packmol_inp.write(input_text)
+    packmol_inp.close()
+
+    proc = Popen('{} < {}'.format(PACKMOL, packmol_inp.name),
+                 stdin=PIPE, stdout=PIPE, stderr=PIPE,
+                 universal_newlines=True, shell=True)
+    out, err = proc.communicate()
 
     if 'WITHOUT PERFECT PACKING' in out:
         msg = ("Packmol finished with imperfect packing. Using "
@@ -404,11 +414,15 @@ def _run_packmol(input_text, filled_pdb, temp_file):
                "sufficient packing result.")
         warnings.warn(msg)
         os.system('cp {0}_FORCED {0}'.format(filled_pdb))
-    if 'ERROR' in out:
+    if 'ERROR' in out or proc.returncode != 0:
         _packmol_error(out, err)
+    else:
+        # Delete input file if success
+        os.remove(packmol_inp.name)
 
     if temp_file is not None:
         os.system('cp {0} {1}'.format(filled_pdb, os.path.join(temp_file)))
+
 
 def _check_packmol(PACKMOL):
     if not PACKMOL:
