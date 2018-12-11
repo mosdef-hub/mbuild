@@ -8,6 +8,10 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ### Features
 ### Misc and Bugfixes
 
+## 0.8.2 (unreleased)
+### Misc and Bugfixes
+* Fixed a bug that prevented Appveyor builds from running (#477)
+
 ## 0.8.1 (2018-11-28)
 ### Features
 * Packing functions can optionally constrain the rotation of `Compounds` when using `fill_box` (#407)
