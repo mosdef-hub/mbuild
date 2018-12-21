@@ -21,7 +21,7 @@ requirements:
     - nglview >=0.6
     - oset
     - parmed
-    - mdtraj
+    - mdtraj 1.9.1
     - foyer
 
 test:
