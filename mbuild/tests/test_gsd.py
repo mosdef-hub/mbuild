@@ -191,6 +191,26 @@ class TestGSD(BaseTest):
         assert np.array_equal(dihedral_typeids, np.zeros(n_dihedrals))
 
     @pytest.mark.skipif(not has_gsd, reason="GSD package not installed")
+    def test_pairs(self, benzene):
+        from foyer import Forcefield
+        import gsd, gsd.pygsd
+
+        benzene.save(filename='benzene.gsd', forcefield_name='oplsaa')
+        gsd_file = gsd.pygsd.GSDFile(open('benzene.gsd', 'rb'))
+        frame = gsd.hoomd.HOOMDTrajectory(gsd_file).read_frame(0)
+
+        structure = benzene.to_parmed()
+        forcefield = Forcefield(name='oplsaa')
+        structure = forcefield.apply(structure)
+
+        # Pairs
+        assert len(frame.pairs.types) == 3
+        assert frame.pairs.N == 21
+
+
+
+
+    @pytest.mark.skipif(not has_gsd, reason="GSD package not installed")
     def test_units(self, ethane):
         import gsd, gsd.pygsd
 
