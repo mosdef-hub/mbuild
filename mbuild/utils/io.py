@@ -65,6 +65,18 @@ or from source following instructions at:
 
 MESSAGES['pybel'] = MESSAGES['openbabel']
 
+MESSAGES['foyer'] = '''
+The code at {filename}:{line_number} requires the "foyer" package
+
+foyer can be installed using:
+
+# conda install -c mosdef foyer
+
+or
+
+# pip install foyer
+'''
+
 
 def import_(module):
     """Import a module, and issue a nice message to stderr if the module isn't installed.
@@ -132,6 +144,13 @@ try:
     del openbabel
 except ImportError:
     has_openbabel = False
+
+try:
+    import foyer
+    has_foyer = True
+    del foyer
+except ImportError:
+    has_foyer = False
 
 
 def get_fn(name):

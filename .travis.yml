@@ -25,7 +25,7 @@ install:
   - conda config --add channels bioconda
   - conda config --add channels conda-forge
   - conda config --add channels mosdef
-  - conda create -n test-environment python=$PYTHON_VERSION --file requirements.txt
+  - conda create -n test-environment python=$PYTHON_VERSION --file requirements-dev.txt
   - source activate test-environment
   - pip install -e .
 
