@@ -488,9 +488,9 @@ def _run_packmol(input_text, filled_pdb, temp_file):
                "the .pdb_FORCED file instead. This may not be a "
                "sufficient packing result.")
         warnings.warn(msg)
-        os.system('cp {0}_FORCED {0}'.format(filled_pdb.name))
+        os.system('cp {0}_forced {0}'.format(filled_pdb.name))
+
     if 'ERROR' in out or proc.returncode != 0:
-        os.system('cp {0}_FORCED {0}'.format(filled_pdb.name))
         _packmol_error(out, err)
     else:
         # Delete input file if success
@@ -498,6 +498,7 @@ def _run_packmol(input_text, filled_pdb, temp_file):
 
     if temp_file is not None:
         os.system('cp {0} {1}'.format(filled_pdb.name, os.path.join(temp_file)))
+
 
 
 def _check_packmol(PACKMOL):
