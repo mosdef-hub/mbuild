@@ -30,7 +30,6 @@ test:
     - nbformat
     - ipykernel
     - ipyext
-    - pytest-ignore-flaky
     - foyer
 
   source_files:
@@ -38,7 +37,7 @@ test:
 
   commands:
     - set LNAME=mosdef
-    - pytest --ignore-flaky -v --pyargs mbuild
+    - pytest -v --pyargs mbuild
 
 about:
   home: http://mosdef-hub.github.io/mbuild
