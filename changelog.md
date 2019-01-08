@@ -8,7 +8,13 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ### Features
 ### Misc and Bugfixes
 
-## 0.8.2 (unreleased)
+## 0.8.3 (unreleased)
+
+## 0.8.2 (2018-1-8)
+### Features
+* Special Pair Support (1,4 pair information) to GSD writers (#473)
+    * GSD files now include 1,4 special pairs for use in OPLS
+
 ### Misc and Bugfixes
 * Fixed a bug that prevented Appveyor builds from running (#477)
 * Temporary PDB files left behind by `packing.py` are now removed (#471)
@@ -21,6 +27,10 @@ not needed anymore, they are deleted
 * Removed pytest-ignore-flaky as a dependency for the unit tests (#471)
     * This `pytest` plugin is now broken on python2.7
     * The `pytest xfail` decorator provides similar enough support
+* Additonal fixes for PACKMOL input files (#474)
+    * Verify that the input file is closed so PACKMOL can be guaranteed to read it
+    * Also reports error based on process code instead of output, which prevented report of error about input issues
+* Microsoft VSCode extraneous files are now ignored when tracking changes (#478) 
 
 ## 0.8.1 (2018-11-28)
 ### Features
@@ -46,7 +56,7 @@ not needed anymore, they are deleted
 * An error is now generated if the miniconda MD5 sum does not match when performing tests (#409)
 * LAMMPS box values are now written appropriately in Angstroms (#459)
 * Coordinates in HOOMDXML and GSD files are now correctly written in the range [L /2 to L] (#452)
-* A bug in the ordering of some Bravais angles of some non-rectangular lattices has been fixed (#450)
+* A bug in the ordering of some Bravais angles in non-rectangular lattices has been fixed (#450)
 
 ## 0.8.0 (2018-01-18)
 ### Features
