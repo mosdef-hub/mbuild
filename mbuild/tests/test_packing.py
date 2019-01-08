@@ -155,7 +155,7 @@ class TestPacking(BaseTest):
 
     def test_packmol_warning(self, h2o):
         with pytest.warns(UserWarning):
-            filled = mb.fill_box(h2o, n_compounds=10, box=[1, 1, 1], overlap=100)
+            filled = mb.fill_box(h2o, n_compounds=10, box=[1, 1, 1], overlap=10)
 
     def test_rotate(self, h2o):
         filled = mb.fill_box(h2o, 2, box=[1, 1, 1], fix_orientation=True)
