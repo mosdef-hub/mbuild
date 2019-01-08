@@ -30,7 +30,7 @@ install:
   - pip install -e .
 
 script:
-  - python -m pytest --ignore-flaky -v --cov=mbuild  --cov-report= --pyargs mbuild
+  - python -m pytest  -v --cov=mbuild  --cov-report= --pyargs mbuild
 
 after_success:
   - coveralls
