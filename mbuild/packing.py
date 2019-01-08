@@ -109,7 +109,7 @@ def fill_box(compound, n_compounds=None, box=None, density=None, overlap=0.2,
     arg_count = 3 - [n_compounds, box, density].count(None)
     if arg_count != 2:
         msg = ("Exactly 2 of `n_compounds`, `box`, and `density` "
-            "must be specified. {} were given.".format(arg_count))
+               "must be specified. {} were given.".format(arg_count))
         raise ValueError(msg)
 
     if box is not None:
@@ -131,11 +131,10 @@ def fill_box(compound, n_compounds=None, box=None, density=None, overlap=0.2,
             msg = ("`compound`, `n_compounds`, and `fix_orientation` must be of equal length.")
             raise ValueError(msg)
 
-
     if density is not None:
         if box is None and n_compounds is not None:
             total_mass = np.sum([n*np.sum([a.mass for a in c.to_parmed().atoms])
-                for c,n in zip(compound, n_compounds)])
+                                for c, n in zip(compound, n_compounds)])
             # Conversion from (amu/(kg/m^3))**(1/3) to nm
             L = (total_mass/density)**(1/3)*1.1841763
             if aspect_ratio is None:
@@ -176,27 +175,39 @@ def fill_box(compound, n_compounds=None, box=None, density=None, overlap=0.2,
     box_maxs -= edge * 10
 
     # Build the input file for each compound and call packmol.
-    filled_pdb = tempfile.mkstemp(suffix='.pdb')[1]
-    input_text = PACKMOL_HEADER.format(overlap, filled_pdb, seed)
+    filled_pdb = _new_pdb_file()
 
-    for comp, m_compounds, rotate in zip(compound, n_compounds, fix_orientation):
-        m_compounds = int(m_compounds)
-        compound_pdb = tempfile.mkstemp(suffix='.pdb')[1]
-        comp.save(compound_pdb, overwrite=True)
-        input_text += PACKMOL_BOX.format(compound_pdb, m_compounds,
-                           box_mins[0], box_mins[1], box_mins[2],
-                           box_maxs[0], box_maxs[1], box_maxs[2],
-                           PACKMOL_CONSTRAIN if rotate else "")
+    # create a list to contain the file handles for the compound temp files
+    compound_pdb_list = list()
+    try:
+        input_text = PACKMOL_HEADER.format(overlap, filled_pdb.name, seed)
+        for comp, m_compounds, rotate in zip(compound, n_compounds, fix_orientation):
+            m_compounds = int(m_compounds)
 
-    _run_packmol(input_text, filled_pdb, temp_file)
+            compound_pdb = _new_pdb_file()
+            compound_pdb_list.append(compound_pdb)
 
-    # Create the topology and update the coordinates.
-    filled = Compound()
-    for comp, m_compounds in zip(compound, n_compounds):
-        for _ in range(m_compounds):
-            filled.add(clone(comp))
-    filled.update_coordinates(filled_pdb)
-    filled.periodicity = np.asarray(box.lengths, dtype=np.float32)
+            comp.save(compound_pdb.name, overwrite=True)
+            input_text += PACKMOL_BOX.format(compound_pdb.name, m_compounds,
+                                             box_mins[0], box_mins[1],
+                                             box_mins[2], box_maxs[0],
+                                             box_maxs[1], box_maxs[2],
+                                             PACKMOL_CONSTRAIN if rotate else "")
+
+        _run_packmol(input_text, filled_pdb, temp_file)
+
+        # Create the topology and update the coordinates.
+        filled = Compound()
+        filled = _create_topology(filled, compound, n_compounds)
+        filled.update_coordinates(filled_pdb.name)
+        filled.periodicity = np.asarray(box.lengths, dtype=np.float32)
+
+    finally:
+        for file_handle in compound_pdb_list:
+            file_handle.close()
+            os.unlink(file_handle.name)
+        filled_pdb.close()
+        os.unlink(filled_pdb.name)
     return filled
 
 
@@ -230,8 +241,10 @@ def fill_region(compound, n_compounds, region, overlap=0.2,
     -------
     filled : mb.Compound
 
-    If using mulitple regions and compounds, the nth value in each list are used in order.
-    For example, if the third compound will be put in the third region using the third value in n_compounds.
+    If using mulitple regions and compounds, the nth value in each
+    list are used in order.
+    For example, if the third compound will be put in the third
+    region using the third value in n_compounds.
     """
     _check_packmol(PACKMOL)
 
@@ -251,9 +264,8 @@ def fill_region(compound, n_compounds, region, overlap=0.2,
             msg = ("`compound`, `n_compounds`, and `fix_orientation` must be of equal length.")
             raise ValueError(msg)
 
-
     # See if region is a single region or list
-    if isinstance(region, Box): # Cannot iterate over boxes
+    if isinstance(region, Box):  # Cannot iterate over boxes
         region = [region]
     elif not any(isinstance(reg, (list, set, Box)) for reg in region):
         region = [region]
@@ -263,29 +275,41 @@ def fill_region(compound, n_compounds, region, overlap=0.2,
     overlap *= 10
 
     # Build the input file and call packmol.
-    filled_pdb = tempfile.mkstemp(suffix='.pdb')[1]
-    input_text = PACKMOL_HEADER.format(overlap, filled_pdb, seed)
+    filled_pdb = _new_pdb_file()
 
-    for comp, m_compounds, reg, rotate in zip(compound, n_compounds, region, fix_orientation):
-        m_compounds = int(m_compounds)
-        compound_pdb = tempfile.mkstemp(suffix='.pdb')[1]
-        comp.save(compound_pdb, overwrite=True)
-        reg_mins = reg.mins * 10
-        reg_maxs = reg.maxs * 10
-        reg_maxs -= edge * 10 # Apply edge buffer
-        input_text += PACKMOL_BOX.format(compound_pdb, m_compounds,
-                                        reg_mins[0], reg_mins[1], reg_mins[2],
-                                        reg_maxs[0], reg_maxs[1], reg_maxs[2],
-                                        PACKMOL_CONSTRAIN if rotate else "")
+    # List to hold file handles for the temporary compounds
+    compound_pdb_list = list()
+    try:
+        input_text = PACKMOL_HEADER.format(overlap, filled_pdb.name, seed)
 
-    _run_packmol(input_text, filled_pdb, temp_file)
+        for comp, m_compounds, reg, rotate in zip(compound, n_compounds, region, fix_orientation):
+            m_compounds = int(m_compounds)
 
-    # Create the topology and update the coordinates.
-    filled = Compound()
-    for comp, m_compounds in zip(compound, n_compounds):
-        for _ in range(m_compounds):
-            filled.add(clone(comp))
-    filled.update_coordinates(filled_pdb)
+            compound_pdb = _new_pdb_file()
+            compound_pdb_list.append(compound_pdb)
+
+            comp.save(compound_pdb.name, overwrite=True)
+            reg_mins = reg.mins * 10
+            reg_maxs = reg.maxs * 10
+            reg_maxs -= edge * 10  # Apply edge buffer
+            input_text += PACKMOL_BOX.format(compound_pdb.name, m_compounds,
+                                             reg_mins[0], reg_mins[1],
+                                             reg_mins[2], reg_maxs[0],
+                                             reg_maxs[1], reg_maxs[2],
+                                            PACKMOL_CONSTRAIN if rotate else "")
+
+        _run_packmol(input_text, filled_pdb, temp_file)
+
+        # Create the topology and update the coordinates.
+        filled = Compound()
+        filled = _create_topology(filled, compound, n_compounds)
+        filled.update_coordinates(filled_pdb.name)
+    finally:
+        for file_handle in compound_pdb_list:
+            file_handle.close()
+            os.unlink(file_handle.name)
+        filled_pdb.close()
+        os.unlink(filled_pdb.name)
     return filled
 
 
@@ -336,7 +360,6 @@ def solvate(solute, solvent, n_solvent, box, overlap=0.2,
         msg = ("`n_solvent` and `n_solvent` must be of equal length.")
         raise ValueError(msg)
 
-
     # In angstroms for packmol.
     box_mins = box.mins * 10
     box_maxs = box.maxs * 10
@@ -347,29 +370,45 @@ def solvate(solute, solvent, n_solvent, box, overlap=0.2,
     box_maxs -= edge * 10
 
     # Build the input file for each compound and call packmol.
-    solvated_pdb = tempfile.mkstemp(suffix='.pdb')[1]
-    solute_pdb = tempfile.mkstemp(suffix='.pdb')[1]
-    solute.save(solute_pdb, overwrite=True)
-    input_text = (PACKMOL_HEADER.format(overlap, solvated_pdb, seed) +
-                  PACKMOL_SOLUTE.format(solute_pdb, *center_solute))
+    solvated_pdb = _new_pdb_file()
+    solute_pdb = _new_pdb_file()
 
-    for solv, m_solvent, rotate in zip(solvent, n_solvent, fix_orientation):
-        m_solvent = int(m_solvent)
-        solvent_pdb = tempfile.mkstemp(suffix='.pdb')[1]
-        solv.save(solvent_pdb, overwrite=True)
-        input_text += PACKMOL_BOX.format(solvent_pdb, m_solvent,
-                           box_mins[0], box_mins[1], box_mins[2],
-                           box_maxs[0], box_maxs[1], box_maxs[2],
-                           PACKMOL_CONSTRAIN if rotate else "")
-    _run_packmol(input_text, solvated_pdb, temp_file)
+    # generate list of temp files for the solvents
+    solvent_pdb_list = list()
+    try:
+        solute.save(solute_pdb.name, overwrite=True)
+        input_text = (PACKMOL_HEADER.format(overlap, solvated_pdb.name, seed) +
+                      PACKMOL_SOLUTE.format(solute_pdb.name, *center_solute))
 
-    # Create the topology and update the coordinates.
-    solvated = Compound()
-    solvated.add(solute)
-    for solv, m_solvent in zip(solvent, n_solvent):
-        for _ in range(m_solvent):
-            solvated.add(clone(solv))
-    solvated.update_coordinates(solvated_pdb)
+        for solv, m_solvent, rotate in zip(solvent, n_solvent, fix_orientation):
+            m_solvent = int(m_solvent)
+
+            solvent_pdb = _new_pdb_file()
+            solvent_pdb_list.append(solvent_pdb)
+
+            solv.save(solvent_pdb.name, overwrite=True)
+            input_text += PACKMOL_BOX.format(solvent_pdb.name, m_solvent,
+                                             box_mins[0], box_mins[1],
+                                             box_mins[2], box_maxs[0],
+                                             box_maxs[1], box_maxs[2],
+                                             PACKMOL_CONSTRAIN if rotate else "")
+        _run_packmol(input_text, solvated_pdb, temp_file)
+
+        # Create the topology and update the coordinates.
+        solvated = Compound()
+        solvated.add(solute)
+        solvated = _create_topology(solvated, solvent, n_solvent)
+        solvated.update_coordinates(solvated_pdb.name)
+
+    finally:
+        for file_handle in solvent_pdb_list:
+            file_handle.close()
+            os.unlink(file_handle.name)
+        solvated_pdb.close()
+        solute_pdb.close()
+        os.unlink(solvated_pdb.name)
+        os.unlink(solute_pdb.name)
+
     return solvated
 
 
@@ -385,6 +424,42 @@ def _validate_box(box):
                           ' list/tuple of length 3 (box lengths) or length'
                           ' 6 (box mins and maxes) or an mbuild.Box object.')
     return box
+
+
+def _new_pdb_file():
+    """Generate PDB file using tempfile.NamedTemporaryFile.
+
+    Return
+    ------
+    _ : file-object
+        Temporary PDB file.
+    """
+
+    return tempfile.NamedTemporaryFile(suffix='.pdb', delete=False)
+
+
+def _create_topology(container, comp_to_add, n_compounds):
+    """Return updated mBuild compound with new coordinates.
+
+    Parameters
+    ----------
+    container : mb.Compound, required
+        Compound containing the updated system generated by PACKMOL.
+    comp_to_add : mb.Compound or list of mb.Compounds, required
+        Compound(s) to add to the container.
+    container : int or list of int, required
+        Amount of comp_to_add to container.
+
+    Return
+    ------
+    container : mb.Compound
+        Compound with added compounds from PACKMOL.
+    """
+
+    for comp, m_compound in zip(comp_to_add, n_compounds):
+            for _ in range(m_compound):
+                container.add(clone(comp))
+    return container
 
 
 def _packmol_error(out, err):
@@ -413,7 +488,8 @@ def _run_packmol(input_text, filled_pdb, temp_file):
                "the .pdb_FORCED file instead. This may not be a "
                "sufficient packing result.")
         warnings.warn(msg)
-        os.system('cp {0}_FORCED {0}'.format(filled_pdb))
+        os.system('cp {0}_forced {0}'.format(filled_pdb.name))
+
     if 'ERROR' in out or proc.returncode != 0:
         _packmol_error(out, err)
     else:
@@ -421,7 +497,8 @@ def _run_packmol(input_text, filled_pdb, temp_file):
         os.remove(packmol_inp.name)
 
     if temp_file is not None:
-        os.system('cp {0} {1}'.format(filled_pdb, os.path.join(temp_file)))
+        os.system('cp {0} {1}'.format(filled_pdb.name, os.path.join(temp_file)))
+
 
 
 def _check_packmol(PACKMOL):

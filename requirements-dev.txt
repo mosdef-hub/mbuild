@@ -28,4 +28,3 @@ python-coveralls
 # https://github.com/pywbem/pywbem/commit/d85a3e73e08d2846073087733b790b5a8864d93f
 pytest-cov>=2.4.0,<2.6
 pytest-faulthandler
-pytest-ignore-flaky
