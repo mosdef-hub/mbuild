@@ -11,6 +11,13 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ## 0.8.2 (unreleased)
 ### Misc and Bugfixes
 * Fixed a bug that prevented Appveyor builds from running (#477)
+* Temporary PDB files left behind by `packing.py` are now removed (#471)
+    * Packing.py uses temp files when packing or solvating a system,
+these files are never closed. This can cause the program to
+reach the limit of open files for a process set by the OS level
+`ulimit`.
+    * These files are now only present when required, and when they are
+not needed anymore, they are deleted.
 
 ## 0.8.1 (2018-11-28)
 ### Features
