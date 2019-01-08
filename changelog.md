@@ -15,9 +15,12 @@ This project adheres to [Semantic Versioning](http://semver.org/).
     * Packing.py uses temp files when packing or solvating a system,
 these files are never closed. This can cause the program to
 reach the limit of open files for a process set by the OS level
-`ulimit`.
+`ulimit`
     * These files are now only present when required, and when they are
-not needed anymore, they are deleted.
+not needed anymore, they are deleted
+* Removed pytest-ignore-flaky as a dependency for the unit tests (#471)
+    * This `pytest` plugin is now broken on python2.7
+    * The `pytest xfail` decorator provides similar enough support
 
 ## 0.8.1 (2018-11-28)
 ### Features
