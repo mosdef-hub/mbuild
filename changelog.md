@@ -12,25 +12,20 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## 0.8.2 (2018-1-8)
 ### Features
-* Special Pair Support (1,4 pair information) to GSD writers (#473)
-    * GSD files now include 1,4 special pairs for use in OPLS
+* Special Pair Support (1-4 pair information) to GSD writers (#473)
+    * GSD files now include 1-4 special pairs for use in OPLS
 
 ### Misc and Bugfixes
+* Dependency requirements have been updated (#457)
+    * A dependency loop between `Foyer` and `mBuild` has been resolved
 * Fixed a bug that prevented Appveyor builds from running (#477)
-* Temporary PDB files left behind by `packing.py` are now removed (#471)
-    * Packing.py uses temp files when packing or solvating a system,
-these files are never closed. This can cause the program to
-reach the limit of open files for a process set by the OS level
-`ulimit`
-    * These files are now only present when required, and when they are
-not needed anymore, they are deleted
-* Removed pytest-ignore-flaky as a dependency for the unit tests (#471)
-    * This `pytest` plugin is now broken on python2.7
-    * The `pytest xfail` decorator provides similar enough support
+* Temporary PDB files left behind by packing functions are now properly removed (#471)
+    * Packing.py uses temporary files which were previously never closed. This sometimes caused the program to reach the limit of open files for a process set by the OS
+* `pytest-ignore-flaky` has been replaced in favor of `xfail` (#471)
 * Additonal fixes for PACKMOL input files (#474)
-    * Verify that the input file is closed so PACKMOL can be guaranteed to read it
-    * Also reports error based on process code instead of output, which prevented report of error about input issues
-* Microsoft VSCode extraneous files are now ignored when tracking changes (#478) 
+    * Input files are now closed by `mBuild` in order to ensure it can be read by PACKMOL
+    * Error reporting is now caught when the subprocess returns an error code
+* Microsoft VSCode extraneous files are now ignored by git (#478)
 
 ## 0.8.1 (2018-11-28)
 ### Features
