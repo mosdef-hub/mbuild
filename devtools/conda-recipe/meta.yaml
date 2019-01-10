@@ -22,8 +22,7 @@ requirements:
     - nglview >=0.6
     - oset
     - parmed
-    - mdtraj
-    - foyer
+    - mdtraj 1.9.1
 
 test:
   requires:
@@ -32,14 +31,14 @@ test:
     - nbformat
     - ipykernel
     - ipyext
-    - pytest-ignore-flaky
+    - foyer
 
   source_files:
     - mbuild/examples/*
 
   commands:
     - set LNAME=mosdef
-    - pytest --ignore-flaky -v --pyargs mbuild
+    - pytest -v --pyargs mbuild
 
 about:
   home: http://mosdef-hub.github.io/mbuild

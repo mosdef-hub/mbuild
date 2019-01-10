@@ -1445,9 +1445,10 @@ class Compound(object):
 
 
         """
-        from foyer import Forcefield
+        foyer = import_('foyer')
+
         to_parmed = self.to_parmed()
-        ff = Forcefield(forcefield_files=forcefield_files, name=forcefield_name)
+        ff = foyer.Forcefield(forcefield_files=forcefield_files, name=forcefield_name)
         to_parmed = ff.apply(to_parmed)
 
         from simtk.openmm.app.simulation import Simulation
@@ -1727,9 +1728,9 @@ class Compound(object):
                                    show_ports=show_ports)
         # Apply a force field with foyer if specified
         if forcefield_name or forcefield_files:
-            from foyer import Forcefield
-            ff = Forcefield(forcefield_files=forcefield_files,
-                            name=forcefield_name, debug=forcefield_debug)
+            foyer = import_('foyer')
+            ff = foyer.Forcefield(forcefield_files=forcefield_files,
+                                  name=forcefield_name, debug=forcefield_debug)
             structure = ff.apply(structure, references_file=references_file)
             structure.combining_rule = combining_rule
 
