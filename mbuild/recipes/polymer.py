@@ -89,6 +89,16 @@ class Polymer(Compound):
         if len(caps) != 2 and len(cap_ports) != 2:
             raise ValueError('Two viable caps and cap ports must be provided')
 
+        # Check for duplicate ports and rename to avoid ambiguity if nessecary.
+        if caps[0] is not None and caps[1] is not None:
+            u_ports = set(caps[0].available_ports())
+            for port in u_ports:
+                if port in set(caps[1].available_ports()):
+                    for label in caps[0].labels[port]
+                        label.name = "lcap_"+label.name
+                    for label in caps[1].labels[port]
+                        label.name = "rcap_"+label.name
+
         # Add a cap to left/right or both ends of the pattern i.e. C->ABABAB
         for cap, cap_port, end_port in zip(
                 caps,
@@ -99,6 +109,9 @@ class Polymer(Compound):
                 force_overlap(cap,
                               cap[cap_port],
                               self[end_port])
+
+        
+
 
 
 if __name__ == "__main__":
