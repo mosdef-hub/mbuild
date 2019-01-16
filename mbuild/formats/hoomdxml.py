@@ -147,8 +147,6 @@ def _write_particle_information(xml_file, structure, xyz, forcefield,
 
     charges = [atom.charge for atom in structure.atoms]
     xml_file.write('<charge>\n')
-    e0 = 2.39725e-4  # e^2-mol/kcal-angstrom, permittivity of free space
-    e0 *= (10/4.184) # e^2-mol/kJ-nm, wanted to show how I got the new value, will delete before merge
     e0 = 5.72956500956023e-4 # e^2-mol/kJ-nm, permittivity of free space
     charge_factor = (4.0 * np.pi * e0 * ref_distance * ref_energy)**0.5
     for charge in charges:
