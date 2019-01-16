@@ -9,6 +9,10 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ### Misc and Bugfixes
 
 ## 0.8.3 (unreleased)
+### Breaking Changes
+* When writing hoomdxml files, units will now be in kJ/mol & nm instead of kcal/mol & ang, so particle positions will be different by a factor of 10.
+### Features
+### Misc and Bugfixes
 
 ## 0.8.2 (2018-1-8)
 ### Features
