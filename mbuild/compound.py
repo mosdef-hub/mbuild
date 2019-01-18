@@ -2240,8 +2240,10 @@ class Compound(object):
         G : networkx.DiGraph
         """
         nx = import_('networkx')
+
         nodelist = list()
         edgelist = list()
+        nodelist.append(self)
         nodelist, edgelist = self._iterate_children(nodelist, edgelist)
 
         compound_tree = nx.DiGraph()
@@ -2250,7 +2252,7 @@ class Compound(object):
         labels = {}
         for compound in compound_tree:
             node_key = compound
-            labels[node_key] = compound.name  # , compound_frequency[compound])
+            labels[node_key] = compound.name
         return compound_tree
 
     def _iterate_children(self, nodelist, edgelist):
@@ -2260,7 +2262,7 @@ class Compound(object):
             nodelist.append(child)
             edgelist.append([child.parent, child])
             nodelist, edgelist = child._iterate_children(nodelist, edgelist)
-        return edgelist, nodelist
+        return nodelist, edgelist
 
     def to_intermol(self, molecule_types=None):
         """Create an InterMol system from a Compound.
