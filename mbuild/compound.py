@@ -2228,6 +2228,40 @@ class Compound(object):
         structure.box = box_vector
         return structure
 
+    def to_networkx(self):
+        """Create a NetworkX graph representing the hierarchy of a Compound.
+
+        Parameters
+        ----------
+        None
+
+        Returns
+        -------
+        G : networkx.DiGraph
+        """
+        nx = import_('networkx')
+        nodelist = list()
+        edgelist = list()
+        nodelist, edgelist = self._iterate_children(nodelist, edgelist)
+
+        compound_tree = nx.DiGraph()
+        compound_tree.add_nodes_from(nodelist)
+        compound_tree.add_edges_from(edgelist)
+        labels = {}
+        for compound in compound_tree:
+            node_key = compound
+            labels[node_key] = compound.name  # , compound_frequency[compound])
+        return compound_tree
+
+    def _iterate_children(self, nodelist, edgelist):
+        if not self.children:
+            pass
+        for child in self.children:
+            nodelist.append(child)
+            edgelist.append([child.parent, child])
+            nodelist, edgelist = child._iterate_children(nodelist, edgelist)
+        return edgelist, nodelist
+
     def to_intermol(self, molecule_types=None):
         """Create an InterMol system from a Compound.
 
