@@ -7,10 +7,12 @@ import numpy as np
 from mbuild import Box
 from mbuild.utils.conversion import RB_to_OPLS
 from mbuild.utils.geometry import coord_shift
+from mbuild.utils.decorators import breaking_change
 
 __all__ = ['write_hoomdxml']
 
 
+@breaking_change("See PR#463 on github")
 def write_hoomdxml(structure, filename, ref_distance=1.0, ref_mass=1.0,
                    ref_energy=1.0, rigid_bodies=None, shift_coords=True):
     """Output a HOOMD XML file.
