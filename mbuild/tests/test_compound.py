@@ -767,3 +767,13 @@ class TestCompound(BaseTest):
 
         assert graph.number_of_edges() == 8
         assert graph.number_of_nodes() == 9
+
+    @pytest.mark.skipif(not has_networkx, reason="NetworkX is not installed")
+    def test_to_networkx_no_hierarchy(self):
+        comp = mb.Compound()
+        comp.name = 'Parent'
+
+        graph = comp.to_networkx()
+
+        assert graph.number_of_edges() == 0
+        assert graph.number_of_nodes() == 1
