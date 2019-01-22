@@ -2257,7 +2257,7 @@ class Compound(object):
 
     def _iterate_children(self, nodelist, edgelist):
         if not self.children:
-            pass
+            return nodelist, edgelist
         for child in self.children:
             nodelist.append(child)
             edgelist.append([child.parent, child])
