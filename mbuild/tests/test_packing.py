@@ -38,11 +38,15 @@ class TestPacking(BaseTest):
 
     def test_fill_region(self, h2o):
         filled = mb.fill_region(h2o, n_compounds=50,
-                                region=[3, 2, 2, 4, 4, 3])
+                                region=[3, 2, 2, 5, 5, 5])
         assert filled.n_particles == 50 * 3
         assert filled.n_bonds == 50 * 2
         assert np.min(filled.xyz[:,0]) >= 3
-        assert np.max(filled.xyz[:,2]) <= 3
+        assert np.min(filled.xyz[:,1]) >= 2
+        assert np.min(filled.xyz[:,2]) >= 2
+        assert np.max(filled.xyz[:,0]) <= 5
+        assert np.max(filled.xyz[:,1]) <= 5
+        assert np.max(filled.xyz[:,2]) <= 5
 
     def test_fill_region_box(self, h2o):
         mybox = mb.Box([4, 4, 4])
@@ -151,7 +155,7 @@ class TestPacking(BaseTest):
 
     def test_packmol_warning(self, h2o):
         with pytest.warns(UserWarning):
-            filled = mb.fill_box(h2o, n_compounds=10, box=[1, 1, 1], overlap=100)
+            filled = mb.fill_box(h2o, n_compounds=10, box=[1, 1, 1], overlap=10)
 
     def test_rotate(self, h2o):
         filled = mb.fill_box(h2o, 2, box=[1, 1, 1], fix_orientation=True)
