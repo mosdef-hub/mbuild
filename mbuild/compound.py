@@ -2254,10 +2254,6 @@ class Compound(object):
         compound_tree = nx.DiGraph()
         compound_tree.add_nodes_from(nodelist)
         compound_tree.add_edges_from(edgelist)
-        labels = {}
-        for compound in compound_tree:
-            node_key = compound
-            labels[node_key] = compound.name
         return compound_tree
 
     def _iterate_children(self, nodelist, edgelist, names_only=False):
