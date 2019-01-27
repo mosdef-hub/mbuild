@@ -768,6 +768,8 @@ class TestCompound(BaseTest):
         assert graph.number_of_edges() == 8
         assert graph.number_of_nodes() == 9
 
+        assert all([isinstance(n, mb.Compound) for n in graph.nodes()])
+
     @pytest.mark.skipif(not has_networkx, reason="NetworkX is not installed")
     def test_to_networkx_no_hierarchy(self):
         comp = mb.Compound()
@@ -777,3 +779,26 @@ class TestCompound(BaseTest):
 
         assert graph.number_of_edges() == 0
         assert graph.number_of_nodes() == 1
+
+        assert all([isinstance(n, mb.Compound) for n in graph.nodes()])
+
+    @pytest.mark.skipif(not has_networkx, reason="NetworkX is not installed")
+    def test_to_networkx_names_only(self):
+        comp = mb.Compound()
+        comp.name = 'Parent'
+
+        for n in range(2):
+            child = mb.Compound()
+            child.name = 'c_{}'.format(n)
+            comp.add(child)
+            for m in range(3):
+                child_child = mb.Compound()
+                child_child.name = 'c_{0}_{1}'.format(m, n)
+                child.add(child_child)
+
+        graph = comp.to_networkx(names_only=True)
+
+        assert graph.number_of_edges() == 8
+        assert graph.number_of_nodes() == 9
+
+        assert all([isinstance(n, str) for n in graph.nodes()])
