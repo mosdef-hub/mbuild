@@ -2243,31 +2243,31 @@ class Compound(object):
         """
         nx = import_('networkx')
 
-        nodelist = list()
-        edgelist = list()
+        nodes = list()
+        edges = list()
         if names_only:
-            nodelist.append(self.name)
+            nodes.append(self.name)
         else:
-            nodelist.append(self)
-        nodelist, edgelist = self._iterate_children(nodelist, edgelist, names_only=names_only)
+            nodes.append(self)
+        nodes, edges = self._iterate_children(nodes, edges, names_only=names_only)
 
-        compound_tree = nx.DiGraph()
-        compound_tree.add_nodes_from(nodelist)
-        compound_tree.add_edges_from(edgelist)
-        return compound_tree
+        graph = nx.DiGraph()
+        graph.add_nodes_from(nodes)
+        graph.add_edges_from(edges)
+        return graph
 
-    def _iterate_children(self, nodelist, edgelist, names_only=False):
+    def _iterate_children(self, nodes, edges, names_only=False):
         if not self.children:
-            return nodelist, edgelist
+            return nodes, edges
         for child in self.children:
             if names_only:
-                nodelist.append(child.name)
-                edgelist.append([child.parent.name, child.name])
+                nodes.append(child.name)
+                edges.append([child.parent.name, child.name])
             else:
-                nodelist.append(child)
-                edgelist.append([child.parent, child])
-            nodelist, edgelist = child._iterate_children(nodelist, edgelist, names_only=names_only)
-        return nodelist, edgelist
+                nodes.append(child)
+                edges.append([child.parent, child])
+            nodes, edges = child._iterate_children(nodes, edges, names_only=names_only)
+        return nodes, edges
 
     def to_intermol(self, molecule_types=None):
         """Create an InterMol system from a Compound.
