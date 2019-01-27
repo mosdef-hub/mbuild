@@ -2228,12 +2228,14 @@ class Compound(object):
         structure.box = box_vector
         return structure
 
-    def to_networkx(self):
+    def to_networkx(self, names_only=False):
         """Create a NetworkX graph representing the hierarchy of a Compound.
 
         Parameters
         ----------
-        None
+        names_only : bool, optional, default=False Store only the names of the
+            compounds in the graph. When set to False, the default behavior,
+            the nodes are the compounds themselves.
 
         Returns
         -------
@@ -2243,8 +2245,11 @@ class Compound(object):
 
         nodelist = list()
         edgelist = list()
-        nodelist.append(self)
-        nodelist, edgelist = self._iterate_children(nodelist, edgelist)
+        if names_only:
+            nodelist.append(self.name)
+        else:
+            nodelist.append(self)
+        nodelist, edgelist = self._iterate_children(nodelist, edgelist, names_only=names_only)
 
         compound_tree = nx.DiGraph()
         compound_tree.add_nodes_from(nodelist)
@@ -2255,13 +2260,17 @@ class Compound(object):
             labels[node_key] = compound.name
         return compound_tree
 
-    def _iterate_children(self, nodelist, edgelist):
+    def _iterate_children(self, nodelist, edgelist, names_only=False):
         if not self.children:
             return nodelist, edgelist
         for child in self.children:
-            nodelist.append(child)
-            edgelist.append([child.parent, child])
-            nodelist, edgelist = child._iterate_children(nodelist, edgelist)
+            if names_only:
+                nodelist.append(child.name)
+                edgelist.append([child.parent.name, child.name])
+            else:
+                nodelist.append(child)
+                edgelist.append([child.parent, child])
+            nodelist, edgelist = child._iterate_children(nodelist, edgelist, names_only=names_only)
         return nodelist, edgelist
 
     def to_intermol(self, molecule_types=None):
