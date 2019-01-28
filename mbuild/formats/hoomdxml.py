@@ -7,10 +7,12 @@ import numpy as np
 from mbuild import Box
 from mbuild.utils.conversion import RB_to_OPLS
 from mbuild.utils.geometry import coord_shift
+from mbuild.utils.decorators import breaking_change
 
 __all__ = ['write_hoomdxml']
 
 
+@breaking_change("See PR#463 on github")
 def write_hoomdxml(structure, filename, ref_distance=1.0, ref_mass=1.0,
                    ref_energy=1.0, rigid_bodies=None, shift_coords=True):
     """Output a HOOMD XML file.
@@ -21,11 +23,11 @@ def write_hoomdxml(structure, filename, ref_distance=1.0, ref_mass=1.0,
         ParmEd structure object
     filename : str
         Path of the output file.
-    ref_distance : float, optional, default=1.0, units=angstroms
+    ref_distance : float, optional, default=1.0, units=nanometers
         Reference distance for conversion to reduced units
     ref_mass : float, optional, default=1.0, units=amu
         Reference mass for conversion to reduced units
-    ref_energy : float, optional, default=1.0, units=kcal/mol
+    ref_energy : float, optional, default=1.0, units=kJ/mol
         Reference energy for conversion to reduced units
     rigid_bodies : list
         List of rigid body information. An integer value is required
@@ -76,6 +78,8 @@ def write_hoomdxml(structure, filename, ref_distance=1.0, ref_mass=1.0,
     * **body** : ID of the rigid body to which each particle belongs
 
     """
+    ref_distance *= 10  # Parmed unit hack
+    ref_energy /= 4.184 # Parmed unit hack
     forcefield = True
     if structure[0].type == '':
         forcefield = False
@@ -145,7 +149,7 @@ def _write_particle_information(xml_file, structure, xyz, forcefield,
 
     charges = [atom.charge for atom in structure.atoms]
     xml_file.write('<charge>\n')
-    e0 = 2.39725e-4  # e^2-mol/kcal-angstrom, permittivity of free space
+    e0 = 5.72956500956023e-4 # e^2-mol/kJ-nm, permittivity of free space
     charge_factor = (4.0 * np.pi * e0 * ref_distance * ref_energy)**0.5
     for charge in charges:
         xml_file.write('{}\n'.format(charge/charge_factor))
