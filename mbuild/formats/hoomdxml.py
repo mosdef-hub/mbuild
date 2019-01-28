@@ -1,11 +1,10 @@
 from __future__ import division
-from copy import deepcopy
-from math import floor, radians
+from math import radians
+from collections import namedtuple
 
 import numpy as np
 import operator
 
-from mbuild import Box
 from mbuild.utils.conversion import RB_to_OPLS
 from mbuild.utils.geometry import coord_shift
 from mbuild.utils.decorators import breaking_change
@@ -115,6 +114,10 @@ def write_hoomdxml(structure, filename, ref_distance=1.0, ref_mass=1.0,
         _write_rigid_information(xml_file, rigid_bodies)
         xml_file.write('</configuration>\n')
         xml_file.write('</hoomd_xml>')
+
+    ReferenceValues = namedtuple("ref_values", ["distance", "mass", "energy"])
+
+    return ReferenceValues(ref_distance, ref_mass, ref_energy)
 
 
 def _write_particle_information(xml_file, structure, xyz, forcefield,
