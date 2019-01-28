@@ -41,6 +41,17 @@ def write_hoomdxml(structure, filename, ref_distance=1.0, ref_mass=1.0,
         Automatically use largest sigma value as ref_distance, largest mass value
         as ref_mass and largest epsilon value as ref_energy.
 
+    Returns
+    -------
+    ReferenceValues : namedtuple
+        Values used in scaling
+
+    Example
+    -------
+    ref_values = ethane.save(filename='ethane-opls.hoomdxml', forcefield_name='oplsaa', auto_scale=True)
+    print(ref_values.mass, ref_values.distance, ref_values.energy)
+
+
     Notes
     -----
     The following elements are always written:
