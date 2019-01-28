@@ -3,6 +3,7 @@ from copy import deepcopy
 from math import floor, radians
 
 import numpy as np
+import operator
 
 from mbuild import Box
 from mbuild.utils.conversion import RB_to_OPLS
@@ -14,7 +15,8 @@ __all__ = ['write_hoomdxml']
 
 @breaking_change("See PR#463 on github")
 def write_hoomdxml(structure, filename, ref_distance=1.0, ref_mass=1.0,
-                   ref_energy=1.0, rigid_bodies=None, shift_coords=True):
+                   ref_energy=1.0, rigid_bodies=None, shift_coords=True,
+                   auto_scale=False):
     """Output a HOOMD XML file.
 
     Parameters
@@ -36,6 +38,9 @@ def write_hoomdxml(structure, filename, ref_distance=1.0, ref_mass=1.0,
         particle is not part of any rigid body.
     shift_coords : bool, optional, default=True
         Shift coordinates from (0, L) to (-L/2, L/2) if necessary.
+    auto_scale : bool, optional, default=False
+        Automatically use largest sigma value as ref_distance, largest mass value
+        as ref_mass and largest epsilon value as ref_energy.
 
     Notes
     -----
@@ -79,10 +84,18 @@ def write_hoomdxml(structure, filename, ref_distance=1.0, ref_mass=1.0,
 
     """
     ref_distance *= 10  # Parmed unit hack
-    ref_energy /= 4.184 # Parmed unit hack
+    ref_energy /= 4.184  # Parmed unit hack
     forcefield = True
     if structure[0].type == '':
         forcefield = False
+    if auto_scale and forcefield:
+        ref_mass = max([atom.mass for atom in structure.atoms])
+        pair_coeffs = list(set((atom.type,
+                                atom.epsilon,
+                                atom.sigma) for atom in structure.atoms))
+        ref_energy = max(pair_coeffs, key=operator.itemgetter(1))[1]
+        ref_distance = max(pair_coeffs, key=operator.itemgetter(2))[2]
+
     xyz = np.array([[atom.xx, atom.xy, atom.xz] for atom in structure.atoms])
     if shift_coords:
         xyz = coord_shift(xyz, structure.box[:3])
@@ -90,6 +103,8 @@ def write_hoomdxml(structure, filename, ref_distance=1.0, ref_mass=1.0,
     with open(filename, 'w') as xml_file:
         xml_file.write('<?xml version="1.2" encoding="UTF-8"?>\n')
         xml_file.write('<hoomd_xml version="1.2">\n')
+        xml_file.write('<!-- ref_distance (nm) ref_mass (amu) ref_energy (kJ/mol) -->\n')
+        xml_file.write('<!-- {} {} {} -->\n'.format(ref_distance, ref_mass, ref_energy))
         xml_file.write('<configuration time_step="0">\n')
         _write_box_information(xml_file, structure, ref_distance)
         _write_particle_information(xml_file, structure, xyz, forcefield,
