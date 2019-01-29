@@ -9,7 +9,7 @@ import foyer
 import mbuild as mb
 from mbuild.exceptions import MBuildError
 from mbuild.utils.geometry import calc_dihedral
-from mbuild.utils.io import get_fn, has_intermol, has_openbabel
+from mbuild.utils.io import get_fn, has_foyer, has_intermol, has_openbabel
 from mbuild.tests.base_test import BaseTest
 
 class TestCompound(BaseTest):
@@ -52,6 +52,7 @@ class TestCompound(BaseTest):
             with pytest.raises(IOError):
                 ch3.save(filename=outfile, overwrite=False)
 
+    @pytest.mark.skipif(not has_foyer, reason="Foyer is not installed")
     def test_save_forcefield(self, methane):
         exts = ['.gsd', '.hoomdxml', '.lammps', '.lmp', '.top', '.gro',
                 '.mol2', '.pdb', '.xyz']
@@ -60,6 +61,7 @@ class TestCompound(BaseTest):
                          forcefield_name='oplsaa',
                          overwrite=True)
 
+    @pytest.mark.skipif(not has_foyer, reason="Foyer is not installed")
     def test_save_forcefield_with_file(self, methane):
         exts = ['.gsd', '.hoomdxml', '.lammps', '.lmp', '.top', '.gro',
                 '.mol2', '.pdb', '.xyz']
@@ -83,11 +85,13 @@ class TestCompound(BaseTest):
         assert struct.residues[0].number ==  1
         assert struct.residues[1].number ==  2
 
+    @pytest.mark.skipif(not has_foyer, reason="Foyer is not installed")
     def test_save_references(self, methane):
         methane.save('methyl.mol2', forcefield_name='oplsaa',
                      references_file='methane.bib')
         assert os.path.isfile('methane.bib')
 
+    @pytest.mark.skipif(not has_foyer, reason="Foyer is not installed")
     def test_save_combining_rule(self, methane):
         combining_rules = ['lorentz', 'geometric']
         gmx_rules = {'lorentz': 2, 'geometric': 3}
@@ -668,12 +672,13 @@ class TestCompound(BaseTest):
         assert np.array_equal(distances, updated_distances)
         assert np.array_equal(orientations, updated_orientations)
 
+    @pytest.mark.skipif(not has_foyer, reason="Foyer is not installed")
     def test_energy_minimize_openmm(self, octane):
         octane.energy_minimize(forcefield='oplsaa')
 
+    @pytest.mark.skipif(not has_foyer, reason="Foyer is not installed")
     def test_energy_minimize_openmm_xml(self, octane):
         octane.energy_minimize(forcefield=get_fn('small_oplsaa.xml'))
-
 
     def test_clone_outside_containment(self, ch2, ch3):
         compound = mb.Compound()
