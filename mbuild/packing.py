@@ -321,8 +321,8 @@ def fill_region(compound, n_compounds, region, overlap=0.2,
 
 
 def fill_sphere(compound, sphere, n_compounds=None, density=None, overlap=0.2,
-             seed=12345, edge=0.2, compound_ratio=None,
-             fix_orientation=False, temp_file=None):
+                seed=12345, edge=0.2, compound_ratio=None,
+                fix_orientation=False, temp_file=None):
     """Fill a sphere with a compound using packmol.
 
     One argument of `n_compounds and density` must be specified.
@@ -342,7 +342,7 @@ def fill_sphere(compound, sphere, n_compounds=None, density=None, overlap=0.2,
     n_compounds : int or list of int
         Number of compounds to be put in box.
     density : float, units kg/m^3, default=None
-        Target density for the system in macroscale units.
+        Target density for the sphere in macroscale units.
     overlap : float, units nm, default=0.2
         Minimum separation between atoms of different molecules.
     seed : int, default=12345
@@ -371,7 +371,7 @@ def fill_sphere(compound, sphere, n_compounds=None, density=None, overlap=0.2,
     arg_count = 2 - [n_compounds, density].count(None)
     if arg_count != 1:
         msg = ("Exactly 1 of `n_compounds` and `density` "
-            "must be specified. {} were given.".format(arg_count))
+               "must be specified. {} were given.".format(arg_count))
         raise ValueError(msg)
 
     if isinstance(sphere, (list, set)):
