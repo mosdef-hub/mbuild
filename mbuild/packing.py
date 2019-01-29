@@ -437,26 +437,36 @@ def fill_sphere(compound, sphere, n_compounds=None, density=None, overlap=0.2,
     overlap *= 10
 
     # Build the input file for each compound and call packmol.
-    filled_pdb = tempfile.mkstemp(suffix='.pdb')[1]
-    input_text = PACKMOL_HEADER.format(overlap, filled_pdb, seed)
+    filled_pdb = _new_pdb_file()
 
-    for comp, m_compounds, rotate in zip(compound, n_compounds, fix_orientation):
-        m_compounds = int(m_compounds)
-        compound_pdb = tempfile.mkstemp(suffix='.pdb')[1]
-        comp.save(compound_pdb, overwrite=True)
-        input_text += PACKMOL_SPHERE.format(compound_pdb, m_compounds,
-                           sphere[0], sphere[1], sphere[2], radius,
-                           PACKMOL_CONSTRAIN if rotate else "")
+    # List to hold file handles for the temporary compounds
+    compound_pdb_list = list()
+    try:
+        input_text = PACKMOL_HEADER.format(overlap, filled_pdb.name, seed)
+        for comp, m_compounds, rotate in zip(compound, n_compounds, fix_orientation):
+            m_compounds = int(m_compounds)
 
-    _run_packmol(input_text, filled_pdb, temp_file)
+            compound_pdb = _new_pdb_file()
+            compound_pdb_list.append(compound_pdb)
 
-    # Create the topology and update the coordinates.
-    filled = Compound()
-    for comp, m_compounds in zip(compound, n_compounds):
-        for _ in range(m_compounds):
-            filled.add(clone(comp))
-    filled.update_coordinates(filled_pdb)
-    filled.periodicity = np.asarray(np.divide(sphere[:3],10), dtype=np.float32) + sphere[3]/10
+            comp.save(compound_pdb.name, overwrite=True)
+            input_text += PACKMOL_SPHERE.format(compound_pdb.name, m_compounds,
+                                                sphere[0], sphere[1],
+                                                sphere[2], radius,
+                                                PACKMOL_CONSTRAIN if rotate else "")
+        print(input_text)
+        _run_packmol(input_text, filled_pdb, temp_file)
+
+        # Create the topology and update the coordinates.
+        filled = Compound()
+        filled = _create_topology(filled, compound, n_compounds)
+        filled.update_coordinates(filled_pdb.name)
+    finally:
+        for file_handle in compound_pdb_list:
+            file_handle.close()
+            os.unlink(file_handle.name)
+        filled_pdb.close()
+        os.unlink(filled_pdb.name)
     return filled
 
 
