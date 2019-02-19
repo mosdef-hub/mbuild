@@ -1213,10 +1213,10 @@ class Compound(object):
         """
         if update_port_locations:
             xyz_init = self.xyz
-            load(filename, compound=self, coords_only=True)
+            self = load(filename, compound=self, coords_only=True)
             self._update_port_locations(xyz_init)
         else:
-            load(filename, compound=self, coords_only=True)
+            self = load(filename, compound=self, coords_only=True)
 
     def _update_port_locations(self, initial_coordinates):
         """Adjust port locations after particles have moved
