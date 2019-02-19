@@ -396,8 +396,8 @@ class Lattice(object):
         b_dot_c = np.dot(self.lattice_vectors[1], self.lattice_vectors[2])
         a_dot_c = np.dot(self.lattice_vectors[0], self.lattice_vectors[2])
 
-        alpha_raw = a_dot_c / (vector_magnitudes[0] * vector_magnitudes[2])
-        beta_raw = b_dot_c / (vector_magnitudes[1] * vector_magnitudes[2])
+        alpha_raw = b_dot_c / (vector_magnitudes[1] * vector_magnitudes[2])
+        beta_raw = a_dot_c / (vector_magnitudes[0] * vector_magnitudes[2])
         gamma_raw = a_dot_b / (vector_magnitudes[0] * vector_magnitudes[1])
 
         alpha = np.arccos(np.clip(alpha_raw, -1.0, 1.0)) * degreeConvsersion

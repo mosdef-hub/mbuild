@@ -1445,9 +1445,10 @@ class Compound(object):
 
 
         """
-        from foyer import Forcefield
+        foyer = import_('foyer')
+
         to_parmed = self.to_parmed()
-        ff = Forcefield(forcefield_files=forcefield_files, name=forcefield_name)
+        ff = foyer.Forcefield(forcefield_files=forcefield_files, name=forcefield_name)
         to_parmed = ff.apply(to_parmed)
 
         from simtk.openmm.app.simulation import Simulation
@@ -1727,9 +1728,9 @@ class Compound(object):
                                    show_ports=show_ports)
         # Apply a force field with foyer if specified
         if forcefield_name or forcefield_files:
-            from foyer import Forcefield
-            ff = Forcefield(forcefield_files=forcefield_files,
-                            name=forcefield_name, debug=forcefield_debug)
+            foyer = import_('foyer')
+            ff = foyer.Forcefield(forcefield_files=forcefield_files,
+                                  name=forcefield_name, debug=forcefield_debug)
             structure = ff.apply(structure, references_file=references_file)
             structure.combining_rule = combining_rule
 
@@ -1859,7 +1860,7 @@ class Compound(object):
             self.periodicity = np.array([0., 0., 0.])
 
     def to_trajectory(self, show_ports=False, chains=None,
-                      residues=None):
+                      residues=None, box=None):
         """Convert to an md.Trajectory and flatten the compound.
 
         Parameters
@@ -1871,6 +1872,12 @@ class Compound(object):
         residues : str of list of str
             Labels of residues in the Compound. Residues are assigned by
             checking against Compound.name.
+        box : mb.Box, optional, default=self.boundingbox (with buffer)
+            Box information to be used when converting to a `Trajectory`.
+            If 'None', a bounding box is used with a 0.5nm buffer in each
+            dimension. to avoid overlapping atoms, unless `self.periodicity`
+            is not None, in which case those values are used for the
+            box lengths.
 
         Returns
         -------
@@ -1891,16 +1898,20 @@ class Compound(object):
             xyz[0, idx] = atom.pos
 
         # Unitcell information.
-        box = self.boundingbox
-        unitcell_lengths = np.empty(3)
-        for dim, val in enumerate(self.periodicity):
-            if val:
-                unitcell_lengths[dim] = val
-            else:
-                unitcell_lengths[dim] = box.lengths[dim]
+        unitcell_angles = [90.0, 90.0, 90.0]
+        if box is None:
+            unitcell_lengths = np.empty(3)
+            for dim, val in enumerate(self.periodicity):
+                if val:
+                    unitcell_lengths[dim] = val
+                else:
+                    unitcell_lengths[dim] = self.boundingbox.lengths[dim] + 0.5
+        else:
+            unitcell_lengths = box.lengths
+            unitcell_angles = box.angles
 
         return md.Trajectory(xyz, top, unitcell_lengths=unitcell_lengths,
-                             unitcell_angles=np.array([90, 90, 90]))
+                             unitcell_angles=unitcell_angles)
 
     def _to_topology(self, atom_list, chains=None, residues=None):
         """Create a mdtraj.Topology from a Compound.
@@ -2208,11 +2219,55 @@ class Compound(object):
             box.maxs = np.asarray(box_vec_max)
 
         box_vector = np.empty(6)
-        box_vector[3] = box_vector[4] = box_vector[5] = 90.0
+        if box.angles is not None:
+            box_vector[3:6] = box.angles
+        else:
+            box_vector[3] = box_vector[4] = box_vector[5] = 90.0
         for dim in range(3):
             box_vector[dim] = box.lengths[dim] * 10
         structure.box = box_vector
         return structure
+
+    def to_networkx(self, names_only=False):
+        """Create a NetworkX graph representing the hierarchy of a Compound.
+
+        Parameters
+        ----------
+        names_only : bool, optional, default=False Store only the names of the
+            compounds in the graph. When set to False, the default behavior,
+            the nodes are the compounds themselves.
+
+        Returns
+        -------
+        G : networkx.DiGraph
+        """
+        nx = import_('networkx')
+
+        nodes = list()
+        edges = list()
+        if names_only:
+            nodes.append(self.name)
+        else:
+            nodes.append(self)
+        nodes, edges = self._iterate_children(nodes, edges, names_only=names_only)
+
+        graph = nx.DiGraph()
+        graph.add_nodes_from(nodes)
+        graph.add_edges_from(edges)
+        return graph
+
+    def _iterate_children(self, nodes, edges, names_only=False):
+        if not self.children:
+            return nodes, edges
+        for child in self.children:
+            if names_only:
+                nodes.append(child.name)
+                edges.append([child.parent.name, child.name])
+            else:
+                nodes.append(child)
+                edges.append([child.parent, child])
+            nodes, edges = child._iterate_children(nodes, edges, names_only=names_only)
+        return nodes, edges
 
     def to_intermol(self, molecule_types=None):
         """Create an InterMol system from a Compound.

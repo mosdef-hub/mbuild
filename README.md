@@ -5,6 +5,7 @@
 [![PyPI Version](https://badge.fury.io/py/mbuild.svg)](https://pypi.python.org/pypi/mbuild)
 [![Binstar Badge](https://anaconda.org/mosdef/mbuild/badges/version.svg)](https://anaconda.org/mosdef/mbuild)
 [![Coverage Status](https://coveralls.io/repos/github/mosdef-hub/mbuild/badge.svg?branch=master)](https://coveralls.io/github/mosdef-hub/mbuild?branch=master)
+[![codecov](https://codecov.io/gh/mosdef-hub/mbuild/branch/master/graph/badge.svg)](https://codecov.io/gh/mosdef-hub/mbuild)
 
 With just a few lines of mBuild code, you can assemble reusable components into
 complex molecular systems for molecular dynamics simulations.
@@ -31,11 +32,11 @@ If you use this package, please cite [our paper](http://dx.doi.org/10.1007/978-9
 }
 ```
 
-#### Example system
+#### Tutorials
 
-*Additional interactive examples can be found here:* 
+*Interactive tutorials can be found here:* 
 
-[![Binder](http://mybinder.org/badge.svg)](http://mybinder.org/repo/imodels/mbuild_binder)
+[![Binder](https://mybinder.org/badge.svg)](https://mybinder.org/v2/gh/mosdef-hub/mbuild_tutorials/master)
 
 Components in dashed boxes are drawn by hand using, e.g.,
 [Avogadro](https://avogadro.cc/) or generated elsewhere. Each
