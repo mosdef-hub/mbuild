@@ -27,6 +27,7 @@ pip-log.txt
 nosetests.xml
 htmlcov
 .cache
+.pytest_cache/
 
 # Translations
 *.mo
@@ -41,6 +42,10 @@ docs/_build
 # PyCharm
 .idea
 .idea/*
+
+# VSCode
+.vscode
+.vscode/*
 
 # Vagrant
 .vagrant

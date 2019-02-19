@@ -1,17 +1,21 @@
 from __future__ import division
-from copy import deepcopy
-from math import floor, radians
+from math import radians
+from collections import namedtuple
 
 import numpy as np
+import operator
 
-from mbuild import Box
 from mbuild.utils.conversion import RB_to_OPLS
+from mbuild.utils.geometry import coord_shift
+from mbuild.utils.decorators import breaking_change
 
 __all__ = ['write_hoomdxml']
 
 
-def write_hoomdxml(structure, filename, ref_distance=1.0, ref_mass=1.0, 
-                   ref_energy=1.0, rigid_bodies=None):
+@breaking_change("See PR#463 on github")
+def write_hoomdxml(structure, filename, ref_distance=1.0, ref_mass=1.0,
+                   ref_energy=1.0, rigid_bodies=None, shift_coords=True,
+                   auto_scale=False):
     """Output a HOOMD XML file.
 
     Parameters
@@ -20,17 +24,33 @@ def write_hoomdxml(structure, filename, ref_distance=1.0, ref_mass=1.0,
         ParmEd structure object
     filename : str
         Path of the output file.
-    ref_distance : float, optional, default=1.0, units=angstroms
+    ref_distance : float, optional, default=1.0, units=nanometers
         Reference distance for conversion to reduced units
     ref_mass : float, optional, default=1.0, units=amu
         Reference mass for conversion to reduced units
-    ref_energy : float, optional, default=1.0, units=kcal/mol
+    ref_energy : float, optional, default=1.0, units=kJ/mol
         Reference energy for conversion to reduced units
     rigid_bodies : list
         List of rigid body information. An integer value is required
         for each particle corresponding to the number of the rigid body with
         which the particle should be included. A value of None indicates the
         particle is not part of any rigid body.
+    shift_coords : bool, optional, default=True
+        Shift coordinates from (0, L) to (-L/2, L/2) if necessary.
+    auto_scale : bool, optional, default=False
+        Automatically use largest sigma value as ref_distance, largest mass value
+        as ref_mass and largest epsilon value as ref_energy.
+
+    Returns
+    -------
+    ReferenceValues : namedtuple
+        Values used in scaling
+
+    Example
+    -------
+    ref_values = ethane.save(filename='ethane-opls.hoomdxml', forcefield_name='oplsaa', auto_scale=True)
+    print(ref_values.mass, ref_values.distance, ref_values.energy)
+
 
     Notes
     -----
@@ -73,18 +93,30 @@ def write_hoomdxml(structure, filename, ref_distance=1.0, ref_mass=1.0,
     * **body** : ID of the rigid body to which each particle belongs
 
     """
+    ref_distance *= 10  # Parmed unit hack
+    ref_energy /= 4.184  # Parmed unit hack
     forcefield = True
     if structure[0].type == '':
         forcefield = False
+    if auto_scale and forcefield:
+        ref_mass = max([atom.mass for atom in structure.atoms])
+        pair_coeffs = list(set((atom.type,
+                                atom.epsilon,
+                                atom.sigma) for atom in structure.atoms))
+        ref_energy = max(pair_coeffs, key=operator.itemgetter(1))[1]
+        ref_distance = max(pair_coeffs, key=operator.itemgetter(2))[2]
+
     xyz = np.array([[atom.xx, atom.xy, atom.xz] for atom in structure.atoms])
+    if shift_coords:
+        xyz = coord_shift(xyz, structure.box[:3])
 
     with open(filename, 'w') as xml_file:
         xml_file.write('<?xml version="1.2" encoding="UTF-8"?>\n')
         xml_file.write('<hoomd_xml version="1.2">\n')
+        xml_file.write('<!-- ref_distance (nm) ref_mass (amu) ref_energy (kJ/mol) -->\n')
+        xml_file.write('<!-- {} {} {} -->\n'.format(ref_distance, ref_mass, ref_energy))
         xml_file.write('<configuration time_step="0">\n')
-        xml_file.write(
-                '<box units="sigma"  Lx="{}" Ly="{}" Lz="{}"/>\n'.format(
-                    *structure.box[:3] / ref_distance))
+        _write_box_information(xml_file, structure, ref_distance)
         _write_particle_information(xml_file, structure, xyz, forcefield,
                 ref_distance, ref_mass, ref_energy)
         _write_bond_information(xml_file, structure, ref_distance, ref_energy)
@@ -93,6 +125,10 @@ def write_hoomdxml(structure, filename, ref_distance=1.0, ref_mass=1.0,
         _write_rigid_information(xml_file, rigid_bodies)
         xml_file.write('</configuration>\n')
         xml_file.write('</hoomd_xml>')
+
+    ReferenceValues = namedtuple("ref_values", ["distance", "mass", "energy"])
+
+    return ReferenceValues(ref_distance, ref_mass, ref_energy)
 
 
 def _write_particle_information(xml_file, structure, xyz, forcefield,
@@ -142,7 +178,7 @@ def _write_particle_information(xml_file, structure, xyz, forcefield,
 
     charges = [atom.charge for atom in structure.atoms]
     xml_file.write('<charge>\n')
-    e0 = 2.39725e-4  # e^2-mol/kcal-angstrom, permittivity of free space
+    e0 = 5.72956500956023e-4 # e^2-mol/kJ-nm, permittivity of free space
     charge_factor = (4.0 * np.pi * e0 * ref_distance * ref_energy)**0.5
     for charge in charges:
         xml_file.write('{}\n'.format(charge/charge_factor))
@@ -291,3 +327,32 @@ def _write_rigid_information(xml_file, rigid_bodies):
                 body = -1
             xml_file.write('{}\n'.format(int(body)))
         xml_file.write('</body>\n')
+
+def _write_box_information(xml_file, structure, ref_distance):
+    """Write box information.
+
+    Parameters
+    ----------
+    xml_file : file object
+        The file object of the hoomdxml file being written
+    structure : parmed.Structure
+        Parmed structure object
+    ref_energy : float, default=1.0
+        Reference energy for conversion to reduced units
+
+    """
+    if np.allclose(structure.box[3:6], np.array([90, 90, 90])):
+        box_str = '<box units="sigma"  Lx="{}" Ly="{}" Lz="{}"/>\n'
+        xml_file.write(box_str.format(*structure.box[:3] / ref_distance))
+    else:
+        a, b, c = structure.box[0:3] / ref_distance
+        alpha, beta, gamma = np.radians(structure.box[3:6])
+
+        lx = a
+        xy = b * np.cos(gamma)
+        xz = c * np.cos(beta)
+        ly = np.sqrt(b**2 - xy**2)
+        yz = (b*c*np.cos(alpha) - xy*xz) / ly
+        lz = np.sqrt(c**2 - xz**2 - yz**2)
+        box_str = '<box units="sigma"  Lx="{}" Ly="{}" Lz="{}" xy="{}" xz="{}" yz="{}"/>\n'
+        xml_file.write(box_str.format(lx, ly, lz, xy, xz, yz))

@@ -1,0 +1,31 @@
+numpy
+scipy
+packmol=1.0.0
+nglview>=0.6.2.3
+oset
+parmed
+# TODO: Remove pinning of mdtraj version once mol2 reader issues have been resolved.
+#       https://github.com/mdtraj/mdtraj/pull/1378
+#       Once this has been released in a new MDTraj version, this can be removed.
+mdtraj==1.9.1
+foyer
+gsd
+openbabel
+pytest >=3.0
+jupyter
+nbformat
+ipykernel
+ipyext
+python-coveralls
+# TODO: Remove the pinning of the pytest-cov version again once issue
+#       https://github.com/z4r/python-coveralls/issues/66
+#       is resolved.
+#       Background: pytest-cov 2.6.0 has increased the version
+#       requirement for the coverage package from >=3.7.1 to
+#       >=4.4, which is in conflict with the version requirement
+#       defined by the python-coveralls package for coverage==4.0.3.
+# This fix from:
+# https://github.com/pywbem/pywbem/commit/d85a3e73e08d2846073087733b790b5a8864d93f
+pytest-cov>=2.4.0,<2.6
+pytest-faulthandler
+codecov
