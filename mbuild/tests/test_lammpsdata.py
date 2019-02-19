@@ -16,6 +16,7 @@ class TestLammpsData(BaseTest):
     def test_save_forcefield(self, ethane):
         ethane.save(filename='ethane-opls.lammps', forcefield_name='oplsaa')
 
+    @pytest.mark.skipif(not has_foyer, reason="Foyer package not installed")
     def test_save_charmm(self):
         cmpd = mb.load(get_fn('charmm_dihedral.mol2'))
         for i in cmpd.particles():
