@@ -9,7 +9,7 @@ import foyer
 import mbuild as mb
 from mbuild.exceptions import MBuildError
 from mbuild.utils.geometry import calc_dihedral
-from mbuild.utils.io import get_fn, has_foyer, has_intermol, has_openbabel
+from mbuild.utils.io import get_fn, has_foyer, has_intermol, has_openbabel, has_networkx
 from mbuild.tests.base_test import BaseTest
 
 class TestCompound(BaseTest):
@@ -748,3 +748,57 @@ class TestCompound(BaseTest):
         p3ht = mb.load(get_fn('p3ht.smi'), smiles=True)
         assert p3ht.n_bonds == 33
         assert p3ht.n_particles == 33
+
+    @pytest.mark.skipif(not has_networkx, reason="NetworkX is not installed")
+    def test_to_networkx(self):
+        comp = mb.Compound()
+        comp.name = 'Parent'
+
+        for n in range(2):
+            child = mb.Compound()
+            child.name = 'c_{}'.format(n)
+            comp.add(child)
+            for m in range(3):
+                child_child = mb.Compound()
+                child_child.name = 'c_{0}_{1}'.format(m, n)
+                child.add(child_child)
+
+        graph = comp.to_networkx()
+
+        assert graph.number_of_edges() == 8
+        assert graph.number_of_nodes() == 9
+
+        assert all([isinstance(n, mb.Compound) for n in graph.nodes()])
+
+    @pytest.mark.skipif(not has_networkx, reason="NetworkX is not installed")
+    def test_to_networkx_no_hierarchy(self):
+        comp = mb.Compound()
+        comp.name = 'Parent'
+
+        graph = comp.to_networkx()
+
+        assert graph.number_of_edges() == 0
+        assert graph.number_of_nodes() == 1
+
+        assert all([isinstance(n, mb.Compound) for n in graph.nodes()])
+
+    @pytest.mark.skipif(not has_networkx, reason="NetworkX is not installed")
+    def test_to_networkx_names_only(self):
+        comp = mb.Compound()
+        comp.name = 'Parent'
+
+        for n in range(2):
+            child = mb.Compound()
+            child.name = 'c_{}'.format(n)
+            comp.add(child)
+            for m in range(3):
+                child_child = mb.Compound()
+                child_child.name = 'c_{0}_{1}'.format(m, n)
+                child.add(child_child)
+
+        graph = comp.to_networkx(names_only=True)
+
+        assert graph.number_of_edges() == 8
+        assert graph.number_of_nodes() == 9
+
+        assert all([isinstance(n, str) for n in graph.nodes()])

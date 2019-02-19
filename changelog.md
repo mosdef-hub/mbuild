@@ -12,6 +12,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ### Breaking Changes
 * When writing hoomdxml files, units will now be in kJ/mol & nm instead of kcal/mol & ang, so particle positions will be different by a factor of 10.
 ### Features
+* When saving hoomdxml files, `auto_scale=True` will scale reference units from max forcefield parameters.
 ### Misc and Bugfixes
 
 ## 0.8.2 (2018-1-8)
