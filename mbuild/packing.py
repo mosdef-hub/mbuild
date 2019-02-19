@@ -19,7 +19,7 @@ __all__ = ['fill_box', 'fill_region', 'solvate']
 PACKMOL = find_executable('packmol')
 PACKMOL_HEADER = """
 tolerance {0:.16f}
-filetype pdb
+filetype xyz
 output {1}
 seed {2}
 
@@ -408,7 +408,6 @@ def solvate(solute, solvent, n_solvent, box, overlap=0.2,
         solute_pdb.close()
         os.unlink(solvated_pdb.name)
         os.unlink(solute_pdb.name)
-
     return solvated
 
 
@@ -464,10 +463,9 @@ def _create_topology(container, comp_to_add, n_compounds):
 
 def _packmol_error(out, err):
     """Log packmol output to files. """
-    with open('log.txt', 'w') as log_file, open('err.txt', 'w') as err_file:
+    with open('log.txt', 'w') as log_file:
         log_file.write(out)
-        err_file.write(err)
-    raise RuntimeError("PACKMOL failed. See 'err.txt' and 'log.txt'")
+    raise RuntimeError("PACKMOL failed. See 'log.txt'")
 
 
 def _run_packmol(input_text, filled_pdb, temp_file):
@@ -485,7 +483,7 @@ def _run_packmol(input_text, filled_pdb, temp_file):
 
     if 'WITHOUT PERFECT PACKING' in out:
         msg = ("Packmol finished with imperfect packing. Using "
-               "the .pdb_FORCED file instead. This may not be a "
+               "the .xyz_FORCED file instead. This may not be a "
                "sufficient packing result.")
         warnings.warn(msg)
         os.system('cp {0}_forced {0}'.format(filled_pdb.name))
@@ -500,7 +498,6 @@ def _run_packmol(input_text, filled_pdb, temp_file):
         os.system('cp {0} {1}'.format(filled_pdb.name, os.path.join(temp_file)))
 
 
-
 def _check_packmol(PACKMOL):
     if not PACKMOL:
         msg = "Packmol not found."
@@ -508,3 +505,13 @@ def _check_packmol(PACKMOL):
             msg = (msg + " If packmol is already installed, make sure that the "
                          "packmol.exe is on the path.")
         raise IOError(msg)
+
+def _get_xyz_cords(file_name):
+    with open(file_name) as xyz_file:
+        natoms = int(xyz_file.readline())  # First line of xyz lists natoms
+        xyz_file.readline()  # Skips title of xyz file
+        coords = np.zeros([natoms, 3], dtype="float64")
+        for i, x in enumerate(coords):
+            line = xyz_file.readline().split()
+            coords[i] = line[1:4]
+        return coords/10  # Unit conversion
