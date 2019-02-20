@@ -84,7 +84,17 @@ def load(filename, relative_to_module=None, compound=None, coords_only=False,
     # Handle the case of a xyz file, which must use an internal reader
     extension = os.path.splitext(filename)[-1]
     if extension == '.xyz' and not 'top' in kwargs:
-        compound = read_xyz(filename)
+        if coords_only:
+            tmp = read_xyz(filename)
+            if tmp.n_particles != compound.n_particles:
+                raise ValueError('Number of atoms in {filename} does not match'
+                                 ' {compound}'.format(**locals()))
+            ref_and_compound = zip(tmp._particles(include_ports=False),
+                                   compound.particles(include_ports=False))
+            for ref_particle, particle in ref_and_compound:
+                particle.pos = ref_particle.pos
+        else:
+            compound = read_xyz(filename)
         return compound
 
     if use_parmed:
