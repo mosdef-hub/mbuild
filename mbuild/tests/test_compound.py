@@ -320,14 +320,17 @@ class TestCompound(BaseTest):
         assert brush1['pmpc']['monomer'][0].n_bonds == 40
 
     @pytest.mark.parametrize('extension', [('.xyz'), ('.pdb')])
-    def test_update_coordsinates(self, ethane, extension):
+    def test_update_coordinates(self, ethane, extension):
         ethane_clone = mb.clone(ethane)
         ethane_clone.xyz += [1, 1, 1]
 
         fn = 'ethane_clone' + extension
         ethane_clone.save(fn)
         ethane.update_coordinates(fn)
+
+        new_file = mb.load(fn)
         assert np.allclose(ethane.xyz, ethane_clone.xyz)
+        assert np.allclose(ethane.xyz, new_file.xyz)
 
     def test_to_trajectory(self, ethane, c3, n4):
         traj = ethane.to_trajectory()
