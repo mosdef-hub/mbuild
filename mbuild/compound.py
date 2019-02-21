@@ -1839,6 +1839,8 @@ class Compound(object):
                                  ' {self}'.format(**locals()))
             atoms_particles = zip(traj.topology.atoms,
                                   self._particles(include_ports=False))
+            if None in [*atoms_particles]:
+                raise ValueError('Some particles are None')
             for mdtraj_atom, particle in atoms_particles:
                 particle.pos = traj.xyz[frame, mdtraj_atom.index]
             return
