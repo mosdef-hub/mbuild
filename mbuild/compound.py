@@ -1838,8 +1838,7 @@ class Compound(object):
                 raise ValueError('Number of atoms in {traj} does not match'
                                  ' {self}'.format(**locals()))
             atoms_particles = zip(traj.topology.atoms,
-            self.particles(include_ports=False))
-                                  self._particles(include_ports=False))
+                                  self.particles(include_ports=False))
             if None in self._particles(include_ports=False):
                 raise ValueError('Some particles are None')
             for mdtraj_atom, particle in atoms_particles:
