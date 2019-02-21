@@ -329,7 +329,7 @@ class TestCompound(BaseTest):
         ethane.update_coordinates(fn)
 
         new_file = mb.load(fn)
-        assert np.allclose(ethane.xyz, ethane_clone.xyz)
+        assert np.allclose(ethane.xyz, ethane_clone.xyz, atol=1e-3)
         assert np.allclose(ethane.xyz, new_file.xyz)
 
     def test_to_trajectory(self, ethane, c3, n4):
