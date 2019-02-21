@@ -332,6 +332,19 @@ class TestCompound(BaseTest):
         assert np.allclose(ethane.xyz, ethane_clone.xyz, atol=1e-3)
         assert np.allclose(ethane.xyz, new_file.xyz)
 
+    def test_update_coordinates_no_hierarchy(self):
+        mycomp = mb.Compound()
+        myclone = mb.clone(mycomp)
+        myclone.xyz += 1
+
+        myclone.save('myclone.pdb', overwrite=True)
+
+        assert np.allclose(mycomp.xyz, np.array([0, 0, 0]))
+        mycomp.update_coordinates('myclone.pdb')
+        assert np.allclose(mycomp.xyz, np.array([1, 1, 1]))
+        ref = mb.load('myclone.pdb')
+        assert np.allclose(mycomp.xyz, ref.xyz)
+
     def test_to_trajectory(self, ethane, c3, n4):
         traj = ethane.to_trajectory()
         assert traj.n_atoms == 8
