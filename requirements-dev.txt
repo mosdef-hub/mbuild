@@ -11,6 +11,7 @@ mdtraj==1.9.1
 foyer
 gsd
 openbabel
+networkx
 pytest >=3.0
 jupyter
 nbformat
