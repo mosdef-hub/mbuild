@@ -2066,7 +2066,7 @@ class Compound(object):
                     ' {self}'.format(
                         **locals()))
             atoms_particles = zip(structure.atoms,
-                                  self._particles(include_ports=False))
+                                  self.particles(include_ports=False))
             if None in self._particles(include_ports=False):
                 raise ValueError('Some particles are None')
             for parmed_atom, particle in atoms_particles:
