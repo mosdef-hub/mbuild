@@ -319,7 +319,7 @@ class TestCompound(BaseTest):
         assert brush1['pmpc']['monomer'][0].n_particles == 41
         assert brush1['pmpc']['monomer'][0].n_bonds == 40
 
-    @pytest.mark.parametrize('extension', [('.xyz'), ('.pdb')])
+    @pytest.mark.parametrize('extension', [('.xyz'), ('.pdb'), ('.mol2'), ('.gro')])
     def test_update_coordinates(self, ethane, extension):
         ethane_clone = mb.clone(ethane)
         ethane_clone.xyz += [1, 1, 1]
@@ -329,8 +329,21 @@ class TestCompound(BaseTest):
         ethane.update_coordinates(fn)
 
         new_file = mb.load(fn)
-        assert np.allclose(ethane.xyz, ethane_clone.xyz)
+        assert np.allclose(ethane.xyz, ethane_clone.xyz, atol=1e-3)
         assert np.allclose(ethane.xyz, new_file.xyz)
+
+    def test_update_coordinates_no_hierarchy(self):
+        mycomp = mb.Compound()
+        myclone = mb.clone(mycomp)
+        myclone.xyz += 1
+
+        myclone.save('myclone.pdb', overwrite=True)
+
+        assert np.allclose(mycomp.xyz, np.array([0, 0, 0]))
+        mycomp.update_coordinates('myclone.pdb')
+        assert np.allclose(mycomp.xyz, np.array([1, 1, 1]))
+        ref = mb.load('myclone.pdb')
+        assert np.allclose(mycomp.xyz, ref.xyz)
 
     def test_to_trajectory(self, ethane, c3, n4):
         traj = ethane.to_trajectory()
