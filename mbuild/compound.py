@@ -1838,7 +1838,7 @@ class Compound(object):
                 raise ValueError('Number of atoms in {traj} does not match'
                                  ' {self}'.format(**locals()))
             atoms_particles = zip(traj.topology.atoms,
-                                  self._particles(include_ports=False))
+                                  self.particles(include_ports=False))
             for mdtraj_atom, particle in atoms_particles:
                 particle.pos = traj.xyz[frame, mdtraj_atom.index]
             return
