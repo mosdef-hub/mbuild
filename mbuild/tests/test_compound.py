@@ -319,7 +319,7 @@ class TestCompound(BaseTest):
         assert brush1['pmpc']['monomer'][0].n_particles == 41
         assert brush1['pmpc']['monomer'][0].n_bonds == 40
 
-    @pytest.mark.parametrize('extension', [('.xyz'), ('.pdb')])
+    @pytest.mark.parametrize('extension', [('.xyz'), ('.pdb'), ('.mol2'), ('.gro')])
     def test_update_coordinates(self, ethane, extension):
         ethane_clone = mb.clone(ethane)
         ethane_clone.xyz += [1, 1, 1]
