@@ -4,8 +4,6 @@ import numpy as np
 import parmed as pmd
 import pytest
 
-import foyer
-
 import mbuild as mb
 from mbuild.exceptions import MBuildError
 from mbuild.utils.geometry import calc_dihedral
