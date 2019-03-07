@@ -436,36 +436,36 @@ def fill_sphere(compound, sphere, n_compounds=None, density=None, overlap=0.2,
     overlap *= 10
 
     # Build the input file for each compound and call packmol.
-    filled_pdb = _new_pdb_file()
+    filled_xyz = _new_xyz_file()
 
     # List to hold file handles for the temporary compounds
-    compound_pdb_list = list()
+    compound_xyz_list = list()
     try:
-        input_text = PACKMOL_HEADER.format(overlap, filled_pdb.name, seed)
+        input_text = PACKMOL_HEADER.format(overlap, filled_xyz.name, seed)
         for comp, m_compounds, rotate in zip(compound, n_compounds, fix_orientation):
             m_compounds = int(m_compounds)
 
-            compound_pdb = _new_pdb_file()
-            compound_pdb_list.append(compound_pdb)
+            compound_xyz = _new_xyz_file()
+            compound_xyz_list.append(compound_xyz)
 
-            comp.save(compound_pdb.name, overwrite=True)
-            input_text += PACKMOL_SPHERE.format(compound_pdb.name, m_compounds,
+            comp.save(compound_xyz.name, overwrite=True)
+            input_text += PACKMOL_SPHERE.format(compound_xyz.name, m_compounds,
                                                 sphere[0], sphere[1],
                                                 sphere[2], radius,
                                                 PACKMOL_CONSTRAIN if rotate else "")
         print(input_text)
-        _run_packmol(input_text, filled_pdb, temp_file)
+        _run_packmol(input_text, filled_xyz, temp_file)
 
         # Create the topology and update the coordinates.
         filled = Compound()
         filled = _create_topology(filled, compound, n_compounds)
-        filled.update_coordinates(filled_pdb.name)
+        filled.update_coordinates(filled_xyz.name)
     finally:
-        for file_handle in compound_pdb_list:
+        for file_handle in compound_xyz_list:
             file_handle.close()
             os.unlink(file_handle.name)
-        filled_pdb.close()
-        os.unlink(filled_pdb.name)
+        filled_xyz.close()
+        os.unlink(filled_xyz.name)
     return filled
 
 
