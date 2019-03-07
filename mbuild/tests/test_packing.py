@@ -55,6 +55,13 @@ class TestPacking(BaseTest):
         n_water = len([c for c in filled.children if c.name == 'H2O'])
         assert n_water / n_ethane == 2
 
+    def test_fill_sphere_bad_args(self, h2o, ethane):
+        with pytest.raises(ValueError):
+            mb.fill_sphere(compound=h2o, sphere=[4, 4, 4, 1])
+        with pytest.raises(ValueError):
+            mb.fill_sphere(compound=h2o, n_compounds=100,
+                density=100, sphere=[4, 4, 4, 1])
+
     def test_fill_region(self, h2o):
         filled = mb.fill_region(h2o, n_compounds=50,
                                 region=[3, 2, 2, 5, 5, 5])
