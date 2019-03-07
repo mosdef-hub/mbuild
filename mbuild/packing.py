@@ -373,7 +373,7 @@ def fill_sphere(compound, sphere, n_compounds=None, density=None, overlap=0.2,
                "must be specified. {} were given.".format(arg_count))
         raise ValueError(msg)
 
-    if isinstance(sphere, (list, set)):
+    if isinstance(sphere, (list, set, tuple)):
         if len(sphere) != 4:
             msg = ("`sphere` must be a list of len 4")
     else:
