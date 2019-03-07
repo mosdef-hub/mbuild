@@ -152,6 +152,12 @@ try:
 except ImportError:
     has_foyer = False
 
+try:
+    import networkx
+    has_networkx = True
+    del networkx
+except ImportError:
+    has_networkx = False
 
 def get_fn(name):
     """Get the full path to one of the reference files shipped for utils.

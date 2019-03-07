@@ -1,6 +1,6 @@
 numpy
 scipy
-packmol=1.0.0
+packmol>=1!18.013
 nglview>=0.6.2.3
 oset
 parmed
@@ -11,6 +11,7 @@ mdtraj==1.9.1
 foyer
 gsd
 openbabel
+networkx
 pytest >=3.0
 jupyter
 nbformat
@@ -28,3 +29,4 @@ python-coveralls
 # https://github.com/pywbem/pywbem/commit/d85a3e73e08d2846073087733b790b5a8864d93f
 pytest-cov>=2.4.0,<2.6
 pytest-faulthandler
+codecov
