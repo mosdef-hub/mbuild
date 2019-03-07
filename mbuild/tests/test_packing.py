@@ -61,6 +61,15 @@ class TestPacking(BaseTest):
         with pytest.raises(ValueError):
             mb.fill_sphere(compound=h2o, n_compounds=100,
                 density=100, sphere=[4, 4, 4, 1])
+        with pytest.raises(ValueError):
+            mb.fill_sphere(compound=h2o, density=1000, sphere='yes')
+        with pytest.raises(ValueError):
+            mb.fill_sphere(compound=[h2o, ethane], n_compounds=1000, sphere=[1, 1, 1, 4])
+        with pytest.raises(ValueError):
+            mb.fill_sphere(compound=h2o, n_compounds=[10, 10], sphere=[1, 1, 1, 4])
+        with pytest.raises(ValueError):
+            mb.fill_sphere(compound=h2o, n_compounds=100, sphere=[1, 1, 1, 4])
+
 
     def test_fill_region(self, h2o):
         filled = mb.fill_region(h2o, n_compounds=50,
