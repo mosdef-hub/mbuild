@@ -101,10 +101,10 @@ setup(
                              ]},
     entry_points={
         'mbuild.plugins':[
-            "monolayer = mbuild.recipes.monolayer:Monolayer",
-            "polymer = mbuild.recipes.polymer:Polymer",
-            "silica_interface = mbuild.recipes.silica_interface:SilicaInterface",
-            "tiled_compound = mbuild.recipes.tiled_compound:TiledCompound",
+            "Monolayer = mbuild.recipes.monolayer:Monolayer",
+            "Polymer = mbuild.recipes.polymer:Polymer",
+            "SilicaInterface = mbuild.recipes.silica_interface:SilicaInterface",
+            "TiledCompound = mbuild.recipes.tiled_compound:TiledCompound",
         ]
     },
     package_dir={'mbuild': 'mbuild'},

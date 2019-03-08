@@ -60,7 +60,7 @@ class SilicaInterface(mb.Compound):
         """
         O_buffer = self._O_buffer
         tile_z = int(math.ceil((thickness + 2*O_buffer) / bulk_silica.periodicity[2]))
-        bulk = mb.TiledCompound(bulk_silica, n_tiles=(tile_x, tile_y, tile_z))
+        bulk = mb.my_recipes.TiledCompound(bulk_silica, n_tiles=(tile_x, tile_y, tile_z))
 
         interface = mb.Compound(periodicity=(bulk.periodicity[0],
                                              bulk.periodicity[1],
@@ -153,5 +153,5 @@ class SilicaInterface(mb.Compound):
 
 if __name__ == "__main__":
     from mbuild.lib.bulk_materials import AmorphousSilica
-    silica_interface = mb.SilicaInterface(bulk_silica=AmorphousSilica(), thickness=1.2)
+    silica_interface = mb.my_recipes.SilicaInterface(bulk_silica=AmorphousSilica(), thickness=1.2)
     silica_interface.save('silica_interface.mol2', show_ports=True)

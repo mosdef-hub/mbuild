@@ -14,10 +14,10 @@ class TestSilicaInterface(BaseTest):
         tile_y = 1
         thickness = 0.6
 
-        interface = mb.SilicaInterface(bulk_silica=AmorphousSilica(),
-                                       tile_x=tile_x,
-                                       tile_y=tile_y,
-                                       thickness=thickness)
+        interface = mb.my_recipes.SilicaInterface(bulk_silica=AmorphousSilica(),
+                                                  tile_x=tile_x,
+                                                  tile_y=tile_y,
+                                                  thickness=thickness)
 
         thickness_tolerance = 0.05
         z = [atom.pos[2] for atom in interface.particles()
@@ -35,14 +35,14 @@ class TestSilicaInterface(BaseTest):
         thickness = 0.6
         seed = 12345
 
-        interface1 = mb.SilicaInterface(bulk_silica=AmorphousSilica(),
+        interface1 = mb.my_recipes.SilicaInterface(bulk_silica=AmorphousSilica(),
                                         tile_x=tile_x,
                                         tile_y=tile_y,
                                         thickness=thickness,
                                         seed=seed)
         atom_names1 = np.array([atom.name for atom in interface1.particles()])
 
-        interface2 = mb.SilicaInterface(bulk_silica=AmorphousSilica(),
+        interface2 = mb.my_recipes.SilicaInterface(bulk_silica=AmorphousSilica(),
                                         tile_x=tile_x,
                                         tile_y=tile_y,
                                         thickness=thickness,
