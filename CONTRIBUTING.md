@@ -26,12 +26,14 @@ affect many parts of the codebase can be harder to review and are more likely to
 
 ## Use a consistent style
 
-It is important to have a consistent style throughout the source code. The following criteria are recommended (but strict
-adherence is not necessary):
+It is important to have a consistent style throughout the source code. The following criteria are desired:
 
-* Lines to 80 characters
-* General consistent with [PEP8](https://www.python.org/dev/peps/pep-0008)
-* The use of linters such as [Black](https://github.com/ambv/black) or [pycodestyle](https://github.com/PyCQA/pycodestyle) 
+* Lines wrapped to 80 characters
+* Lines are indented with spaces
+* Lines do not end with whitespace
+* For other details, refer to [PEP8](https://www.python.org/dev/peps/pep-0008)
+
+To help with the above, there are tools such as [flake8](https://pypi.org/project/flake8/) and [Black](https://github.com/ambv/black).
 
 ## Document code with comments
 
