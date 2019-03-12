@@ -1,0 +1,85 @@
+import mbuild as mb
+import parmed as pmd
+from foyer import Forcefield
+
+__all__ = ['write_par']
+
+def write_par(structure, filename):
+    """ Write CHARMM Par file given a parametrized structureture """
+
+    # ATOMS
+    with open(filename, 'w') as f:
+        f.write("ATOMS\n")
+        for atom in structure.atoms:
+            f.write("MASS -1 {:8s} {:8.4f}\n".format(atom.atom_type.name, atom.mass))
+
+        f.write("BONDS\n")
+        unique_bonds = set()
+        for bond_type in structure.bond_types:
+            for bond in structure.bonds:
+                if bond.type == bond_type:
+                    unique_bonds.add((bond.atom1.atom_type.name, 
+                        bond.atom2.atom_type.name, bond.type))
+                    
+        for bond in unique_bonds:                
+            f.write('{:8s} {:8s} {:.5f} {:.5f}\n'.format(bond[0], bond[1],
+                                                bond[2].k, bond[2].req))
+                
+        f.write("ANGLES\n")
+        unique_angles = set()
+        for angle_type in structure.angle_types:
+            for angle in structure.angles:
+                if angle.type == angle_type:
+                    unique_angles.add((angle.atom1.atom_type.name, 
+                                        angle.atom2.atom_type.name, 
+                                       angle.atom3.atom_type.name, angle.type))
+                    
+        for angle in unique_angles:                
+            f.write('{:8s} {:8s} {:8s} {:.5f} {:.5f}\n'.format(angle[0], angle[1], 
+                                                angle[2],
+                                                angle[3].k, angle[3].theteq))
+            
+        # TODO :UREY-BRADLEYS in structure
+        #unique_ubs = set()
+        #for ub_type in structure.ub_types:
+        #    for ub in structure.ubs:
+        #        if ub.type == ub_type:
+        #            unique_ubs.add((ub.atom1.atom_type.name, 
+        #                                ub.atom2.atom_type.name, 
+        #                               ub.atom3.atom_type.name, ub.type))
+        #            
+        #for ub in unique_ubs:                
+        #    f.write('{:8s} {:8s} {:8s} {:.5f} {:.5f}\n'.format(ub[0], ub[1], 
+        #                                        ub[2],
+        #                                        ub[3].k, ub[3].theteq))
+
+        f.write("DIHEDRALS\n")
+        unique_dihedrals = set()
+        for dihedral_type in structure.dihedral_types:
+            for dihedral in structure.dihedrals:
+                if dihedral.type == dihedral_type:
+                    unique_dihedrals.add((dihedral.atom1.atom_type.name, 
+                                         dihedral.atom2.atom_type.name,
+                                         dihedral.atom3.atom_type.name, 
+                                         dihedral.atom4.atom_type.name,
+                                         dihedral.type))
+        for dihedral in unique_dihedrals:                
+            f.write('{:8s} {:8s} {:8s} {:8s} {:.5f} {:5d} {:.5f}\n'.format(
+                dihedral[0], dihedral[1], dihedral[2], dihedral[3],
+                dihedral[4].phi_k, dihedral[4].per, dihedral[4].phase))
+
+
+        f.write("IMPROPERS\n")
+        unique_impropers = set()
+        for improper_type in structure.improper_types:
+            for improper in structure.impropers:
+                if improper.type == improper_type:
+                    unique_impropers.add((improper.atom1.atom_type.name, 
+                        improper.atom2.atom_type.name,
+                        improper.atom3.atom_type.name, 
+                        improper.atom4.atom_type.name, improper.type))
+        for improper in unique_impropers:                
+            f.write('{:8s} {:8s} {:8s} {:8s} {:.5f} {:5d} {:.5f}\n'.format(
+                improper[2], improper[0], improper[1], improper[3],
+                improper[4].psi_k, 0, improper[4].psi_eq))
+
