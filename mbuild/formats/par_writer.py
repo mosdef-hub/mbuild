@@ -83,3 +83,11 @@ def write_par(structure, filename):
                 improper[2], improper[0], improper[1], improper[3],
                 improper[4].psi_k, 0, improper[4].psi_eq))
 
+        f.write("NONBONDED\n")
+        unique_atypes = set()
+        for atom in struture.atoms:
+            unique_atypes.append(atom.atom_type)
+        for atype in unique_atypes:
+            f.write('{:8s} {8.3f} {:8f} {:8f}\n'.format(atype.name,
+                0.0, -1 *atype.epsilon, atype.rmin/2))
+
