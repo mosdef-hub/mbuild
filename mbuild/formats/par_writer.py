@@ -11,8 +11,11 @@ def write_par(structure, filename):
     # ATOMS
     with open(filename, 'w') as f:
         f.write("ATOMS\n")
+        unique_atoms = set()
         for atom in structure.atoms:
-            f.write("MASS -1 {:8s} {:8.4f}\n".format(atom.atom_type.name, atom.mass))
+            unique_atoms.add((atom.atom_type.name, atom.atom_type.mass))
+        for atom in unique_atoms:
+            f.write("MASS -1 {:8s} {:8.4f}\n".format(atom[0], atom[1]))
 
         f.write("\nBONDS\n")
         unique_bonds = set()
@@ -95,7 +98,6 @@ def write_par(structure, filename):
             raise ValueError("Multiple 1-4 LJ scalings were detected")
         elif len(sc_nb) == 0:
             sc_nb = [1]
-        sc_nb = [1]
 
         f.write("\nNONBONDED\n")
         unique_atypes = set()
