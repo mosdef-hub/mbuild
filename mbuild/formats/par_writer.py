@@ -1,5 +1,6 @@
 import mbuild as mb
 import parmed as pmd
+import warnings
 from foyer import Forcefield
 
 __all__ = ['write_par']
@@ -13,7 +14,7 @@ def write_par(structure, filename):
         for atom in structure.atoms:
             f.write("MASS -1 {:8s} {:8.4f}\n".format(atom.atom_type.name, atom.mass))
 
-        f.write("BONDS\n")
+        f.write("\nBONDS\n")
         unique_bonds = set()
         for bond_type in structure.bond_types:
             for bond in structure.bonds:
@@ -25,7 +26,7 @@ def write_par(structure, filename):
             f.write('{:8s} {:8s} {:.5f} {:.5f}\n'.format(bond[0], bond[1],
                                                 bond[2].k, bond[2].req))
                 
-        f.write("ANGLES\n")
+        f.write("\nANGLES\n")
         unique_angles = set()
         for angle_type in structure.angle_types:
             for angle in structure.angles:
@@ -53,8 +54,11 @@ def write_par(structure, filename):
         #                                        ub[2],
         #                                        ub[3].k, ub[3].theteq))
 
-        f.write("DIHEDRALS\n")
+        # These dihedrals need to be put in PeriodicTorsion Style (Charmm style)
+        # IF there are RB (OPLS-style) torsions, we will need to convert them
+        f.write("\nDIHEDRALS\n")
         unique_dihedrals = set()
+        scnb = set()
         for dihedral_type in structure.dihedral_types:
             for dihedral in structure.dihedrals:
                 if dihedral.type == dihedral_type:
@@ -63,13 +67,15 @@ def write_par(structure, filename):
                                          dihedral.atom3.atom_type.name, 
                                          dihedral.atom4.atom_type.name,
                                          dihedral.type))
+                    scnb.add(dihedral.type.scnb)
+                    
         for dihedral in unique_dihedrals:                
             f.write('{:8s} {:8s} {:8s} {:8s} {:.5f} {:5d} {:.5f}\n'.format(
                 dihedral[0], dihedral[1], dihedral[2], dihedral[3],
                 dihedral[4].phi_k, dihedral[4].per, dihedral[4].phase))
 
 
-        f.write("IMPROPERS\n")
+        f.write("\nIMPROPERS\n")
         unique_impropers = set()
         for improper_type in structure.improper_types:
             for improper in structure.impropers:
@@ -84,11 +90,29 @@ def write_par(structure, filename):
                 improper[4].psi_k, 0, improper[4].psi_eq))
 
         # TODO additional nonbonded parameters
-        f.write("NONBONDED\n")
+        sc_nb = [a for a in scnb]
+        if len(sc_nb) > 1:
+            raise ValueError("Multiple 1-4 LJ scalings were detected")
+        elif len(sc_nb) == 0:
+            sc_nb = [1]
+        sc_nb = [1]
+
+        f.write("\nNONBONDED\n")
         unique_atypes = set()
         for atom in structure.atoms:
             unique_atypes.add(atom.atom_type)
         for atype in unique_atypes:
-            f.write('{:8s} {:8.3f} {:8f} {:8f}\n'.format(atype.name,
-                0.0, -1 *atype.epsilon, atype.rmin/2))
+            # atype, 0.0, epsilon, rmin/2
+            #f.write('{:8s} {:8.3f} {:8f} {:8f}\n'.format(atype.name,
+                #0.0, -1 *atype.epsilon, atype.rmin/2))
 
+            # atype, 0.0, epsilon, rmin/2, 0.0, epsilon(1-4), rmin/2 (1-4)
+            f.write('{:8s} {:8.3f} {:8f} {:8f} {:8f} {:8f} {:8f}\n'.format(
+                atype.name,
+                0.0, -1 *atype.epsilon, atype.rmin/2, 0.0,
+                -1*sc_nb[0]*atype.epsilon, atype.rmin/2))
+
+        if structure.has_NBFIX(): 
+            warnings.warn("NBFixes detected but unsupported in .par writer")
+
+        f.write("\nEND")
