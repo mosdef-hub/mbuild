@@ -1689,9 +1689,14 @@ class Compound(object):
             when the `foyer` package is used to apply a forcefield. Valid
             options are 'lorentz' and 'geometric', specifying Lorentz-Berthelot
             and geometric combining rules respectively.
+        
 
         Other Parameters
         ----------------
+        saverkwargs : dict, optional
+            Specify keyword arguments for the actual save function
+        foyerkwargs : dict, optional
+            Specify keyword arguments when applying the foyer Forcefield
         ref_distance : float, optional, default=1.0
             Normalization factor used when saving to .gsd and .hoomdxml formats
             for converting distance values to reduced units.
