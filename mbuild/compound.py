@@ -1755,8 +1755,8 @@ class Compound(object):
 
         # Provide a warning if rigid_ids are not sequential from 0
         if self.contains_rigid:
-            unique_rigid_ids = sorted(set([p.rigid_id
-                                           for p in self.rigid_particles()]))
+            unique_rigid_ids = sorted(set([
+                p.rigid_id for p in self.rigid_particles()]))
             if max(unique_rigid_ids) != len(unique_rigid_ids) - 1:
                 warn("Unique rigid body IDs are not sequential starting from zero.")
 
