@@ -1650,7 +1650,7 @@ class Compound(object):
     def save(self, filename, show_ports=False, forcefield_name=None,
              forcefield_files=None, forcefield_debug=False, box=None,
              overwrite=False, residues=None, references_file=None,
-             combining_rule='lorentz', **kwargs):
+             combining_rule='lorentz', saverkwargs={}, foyerkwargs={}):
         """Save the Compound to a file.
 
         Parameters
@@ -1741,7 +1741,8 @@ class Compound(object):
             foyer = import_('foyer')
             ff = foyer.Forcefield(forcefield_files=forcefield_files,
                                   name=forcefield_name, debug=forcefield_debug)
-            structure = ff.apply(structure, references_file=references_file)
+            structure = ff.apply(structure, references_file=references_file,
+                    **foyerkwargs)
             structure.combining_rule = combining_rule
 
         total_charge = sum([atom.charge for atom in structure])
@@ -1758,10 +1759,11 @@ class Compound(object):
 
         if saver:  # mBuild supported saver.
             if extension in ['.gsd', '.hoomdxml']:
-                kwargs['rigid_bodies'] = [p.rigid_id for p in self.particles()]
-            saver(filename=filename, structure=structure, **kwargs)
+                saverkwargs['rigid_bodies'] = [
+                        p.rigid_id for p in self.particles()]
+            saver(filename=filename, structure=structure, **saverkwargs)
         else:  # ParmEd supported saver.
-            structure.save(filename, overwrite=overwrite, **kwargs)
+            structure.save(filename, overwrite=overwrite, **saverkwargs)
 
     def translate(self, by):
         """Translate the Compound by a vector
