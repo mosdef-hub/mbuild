@@ -1650,7 +1650,7 @@ class Compound(object):
     def save(self, filename, show_ports=False, forcefield_name=None,
              forcefield_files=None, forcefield_debug=False, box=None,
              overwrite=False, residues=None, references_file=None,
-             combining_rule='lorentz', saverkwargs={}, foyerkwargs={}):
+             combining_rule='lorentz', foyerkwargs={}, **kwargs):
         """Save the Compound to a file.
 
         Parameters
@@ -1693,8 +1693,6 @@ class Compound(object):
 
         Other Parameters
         ----------------
-        saverkwargs : dict, optional
-            Specify keyword arguments for the actual save function
         foyerkwargs : dict, optional
             Specify keyword arguments when applying the foyer Forcefield
         ref_distance : float, optional, default=1.0
@@ -1764,11 +1762,11 @@ class Compound(object):
 
         if saver:  # mBuild supported saver.
             if extension in ['.gsd', '.hoomdxml']:
-                saverkwargs['rigid_bodies'] = [
+                kwargs['rigid_bodies'] = [
                         p.rigid_id for p in self.particles()]
-            saver(filename=filename, structure=structure, **saverkwargs)
+            saver(filename=filename, structure=structure, **kwargs)
         else:  # ParmEd supported saver.
-            structure.save(filename, overwrite=overwrite, **saverkwargs)
+            structure.save(filename, overwrite=overwrite, **kwargs)
 
     def translate(self, by):
         """Translate the Compound by a vector
