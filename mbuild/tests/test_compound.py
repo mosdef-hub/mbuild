@@ -75,7 +75,7 @@ class TestCompound(BaseTest):
         with pytest.raises(Exception):
             for ext in exts:
                 methane.save('lythem' + ext,
-                             forcefield_files=get_fn('methane_oplssaa_broke.xml'),
+                             forcefield_files=get_fn('methane_oplssaa.xml'),
                              overwrite=True, foyerkwargs=foyerkwargs)
 
 
