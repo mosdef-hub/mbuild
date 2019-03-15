@@ -126,25 +126,29 @@ class TestLattice(BaseTest):
                                 ([97, 3, 120])
                              ]
                              )
-    def test_proper_angles(self, angles):
+    def test_improper_angles(self, angles):
         with pytest.raises(ValueError):
             mb.Lattice(lattice_spacing=[1, 1, 1], angles=angles)
 
     @pytest.mark.parametrize("vectors, angles",
                              [
                                 ([[1, 0, 0], [0, 1, 0], [0, 0, 1]],
-                                    [90, 90, 90])
+                                    [90, 90, 90]),
+                                ([[1.0, 0.0, 0.0],
+                                  [-0.45399049973954675, 0.8910065241883679, 0.0],
+                                  [-0.034899496702500955, -0.037369475398893195, 0.9986919181801381]],
+                                    [91, 92, 117])
                              ]
                              )
     def test_proper_angles(self, vectors, angles):
         testlattice = mb.Lattice(lattice_spacing=[1, 1, 1],
-                                  lattice_vectors=vectors)
+                                 lattice_vectors=vectors)
         np.testing.assert_allclose(testlattice.angles,
                                    np.asarray(angles, dtype=np.float64),
                                    rtol=1e-05, atol=1e-08, equal_nan=False)
 
     @pytest.mark.parametrize("x, y, z",
-                              [
+                             [
                                 (None, 1, 0),
                                 (1, None, 1),
                                 (1, 1, None),
