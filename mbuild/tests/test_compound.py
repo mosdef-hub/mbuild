@@ -4,12 +4,10 @@ import numpy as np
 import parmed as pmd
 import pytest
 
-import foyer
-
 import mbuild as mb
 from mbuild.exceptions import MBuildError
 from mbuild.utils.geometry import calc_dihedral
-from mbuild.utils.io import get_fn, has_foyer, has_intermol, has_openbabel
+from mbuild.utils.io import get_fn, has_foyer, has_intermol, has_openbabel, has_networkx
 from mbuild.tests.base_test import BaseTest
 
 class TestCompound(BaseTest):
@@ -318,6 +316,32 @@ class TestCompound(BaseTest):
         assert len(brush1['pmpc']['monomer']) == 4
         assert brush1['pmpc']['monomer'][0].n_particles == 41
         assert brush1['pmpc']['monomer'][0].n_bonds == 40
+
+    @pytest.mark.parametrize('extension', [('.xyz'), ('.pdb'), ('.mol2'), ('.gro')])
+    def test_update_coordinates(self, ethane, extension):
+        ethane_clone = mb.clone(ethane)
+        ethane_clone.xyz += [1, 1, 1]
+
+        fn = 'ethane_clone' + extension
+        ethane_clone.save(fn)
+        ethane.update_coordinates(fn)
+
+        new_file = mb.load(fn)
+        assert np.allclose(ethane.xyz, ethane_clone.xyz, atol=1e-3)
+        assert np.allclose(ethane.xyz, new_file.xyz)
+
+    def test_update_coordinates_no_hierarchy(self):
+        mycomp = mb.Compound()
+        myclone = mb.clone(mycomp)
+        myclone.xyz += 1
+
+        myclone.save('myclone.pdb', overwrite=True)
+
+        assert np.allclose(mycomp.xyz, np.array([0, 0, 0]))
+        mycomp.update_coordinates('myclone.pdb')
+        assert np.allclose(mycomp.xyz, np.array([1, 1, 1]))
+        ref = mb.load('myclone.pdb')
+        assert np.allclose(mycomp.xyz, ref.xyz)
 
     def test_to_trajectory(self, ethane, c3, n4):
         traj = ethane.to_trajectory()
@@ -748,3 +772,57 @@ class TestCompound(BaseTest):
         p3ht = mb.load(get_fn('p3ht.smi'), smiles=True)
         assert p3ht.n_bonds == 33
         assert p3ht.n_particles == 33
+
+    @pytest.mark.skipif(not has_networkx, reason="NetworkX is not installed")
+    def test_to_networkx(self):
+        comp = mb.Compound()
+        comp.name = 'Parent'
+
+        for n in range(2):
+            child = mb.Compound()
+            child.name = 'c_{}'.format(n)
+            comp.add(child)
+            for m in range(3):
+                child_child = mb.Compound()
+                child_child.name = 'c_{0}_{1}'.format(m, n)
+                child.add(child_child)
+
+        graph = comp.to_networkx()
+
+        assert graph.number_of_edges() == 8
+        assert graph.number_of_nodes() == 9
+
+        assert all([isinstance(n, mb.Compound) for n in graph.nodes()])
+
+    @pytest.mark.skipif(not has_networkx, reason="NetworkX is not installed")
+    def test_to_networkx_no_hierarchy(self):
+        comp = mb.Compound()
+        comp.name = 'Parent'
+
+        graph = comp.to_networkx()
+
+        assert graph.number_of_edges() == 0
+        assert graph.number_of_nodes() == 1
+
+        assert all([isinstance(n, mb.Compound) for n in graph.nodes()])
+
+    @pytest.mark.skipif(not has_networkx, reason="NetworkX is not installed")
+    def test_to_networkx_names_only(self):
+        comp = mb.Compound()
+        comp.name = 'Parent'
+
+        for n in range(2):
+            child = mb.Compound()
+            child.name = 'c_{}'.format(n)
+            comp.add(child)
+            for m in range(3):
+                child_child = mb.Compound()
+                child_child.name = 'c_{0}_{1}'.format(m, n)
+                child.add(child_child)
+
+        graph = comp.to_networkx(names_only=True)
+
+        assert graph.number_of_edges() == 8
+        assert graph.number_of_nodes() == 9
+
+        assert all([isinstance(n, str) for n in graph.nodes()])
