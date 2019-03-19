@@ -70,19 +70,14 @@ class TestCompound(BaseTest):
 
     @pytest.mark.skipif(not has_foyer, reason="Foyer is not installed")
     def test_save_forcefield_with_file_foyerkwargs(self, methane):
-        exts = ['.hoomdxml']
         foyerkwargs = {'assert_improper_params': True}
         with pytest.raises(Exception):
-            for ext in exts:
-                methane.save('lythem' + ext,
+            methane.save('lythem.hoomdxml',
                              forcefield_files=get_fn('methane_oplssaa.xml'),
                              overwrite=True, foyerkwargs=foyerkwargs)
-        for ext in exts:
-            methane.save('lythem' + ext,
-                         forcefield_files=get_fn('methane_oplssaa.xml'),
-                         overwrite=True, foyerkwargs={})
-
-
+        methane.save('lythem.hoomdxml',
+                forcefield_files=get_fn('methane_oplssaa.xml'),
+                overwrite=True, foyerkwargs={})
 
     def test_save_resnames(self, ch3, h2o):
         system = mb.Compound([ch3, h2o])
