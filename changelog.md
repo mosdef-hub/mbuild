@@ -6,9 +6,25 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ## 0.9.1 (unreleased)
 ### Breaking Changes
 ### Features
-### Misc and Bugfixes
+### Maintenance
+### Bugfixes
 
-## 0.8.3 (unreleased)
+## 0.8.3 (2018-2-23)
+### Breaking Changes
+* When writing hoomdxml files, units will now be in kJ/mol & nm instead of kcal/mol & ang, so particle positions will differ by a factor of 10.
+
+### Features
+* A `to_networkx` function was added to convert the hierarchy of a compound to a graph (#484)
+* Packing functions now use XYZ files while running PACKMOL, bypassing some issues with PDB files (#422)
+* When saving hoomdxml files, `auto_scale=True` will scale reference units from max forcefield parameters. (#488)
+
+### Maintenance
+* Switched to codecov for code coverage testing (#485)
+* Some dependencies accidentally missing in earlier PRs were cleaned up (#493)
+
+### Bugfixes
+* `update_coordinates` now behaves well when passed an XYZ file or operating on simple hierarchies (#496)
+* Internal conversion from ParmEd structures to HOOMDXML files was improved (#463, see above)
 
 ## 0.8.2 (2018-1-8)
 ### Features
