@@ -15,8 +15,6 @@ networkx
 pytest >=3.0
 jupyter
 nbformat
-ipykernel
-ipyext
 python-coveralls
 # TODO: Remove the pinning of the pytest-cov version again once issue
 #       https://github.com/z4r/python-coveralls/issues/66
