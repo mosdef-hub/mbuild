@@ -4,8 +4,6 @@ import numpy as np
 import parmed as pmd
 import pytest
 
-import foyer
-
 import mbuild as mb
 from mbuild.exceptions import MBuildError
 from mbuild.utils.geometry import calc_dihedral
@@ -69,6 +67,17 @@ class TestCompound(BaseTest):
             methane.save('lythem' + ext,
                          forcefield_files=get_fn('methane_oplssaa.xml'),
                          overwrite=True)
+
+    @pytest.mark.skipif(not has_foyer, reason="Foyer is not installed")
+    def test_save_forcefield_with_file_foyerkwargs(self, methane):
+        foyerkwargs = {'assert_improper_params': True}
+        with pytest.raises(Exception):
+            methane.save('lythem.hoomdxml',
+                             forcefield_files=get_fn('methane_oplssaa.xml'),
+                             overwrite=True, foyerkwargs=foyerkwargs)
+        methane.save('lythem.hoomdxml',
+                forcefield_files=get_fn('methane_oplssaa.xml'),
+                overwrite=True, foyerkwargs={})
 
     def test_save_resnames(self, ch3, h2o):
         system = mb.Compound([ch3, h2o])
@@ -318,6 +327,32 @@ class TestCompound(BaseTest):
         assert len(brush1['pmpc']['monomer']) == 4
         assert brush1['pmpc']['monomer'][0].n_particles == 41
         assert brush1['pmpc']['monomer'][0].n_bonds == 40
+
+    @pytest.mark.parametrize('extension', [('.xyz'), ('.pdb'), ('.mol2'), ('.gro')])
+    def test_update_coordinates(self, ethane, extension):
+        ethane_clone = mb.clone(ethane)
+        ethane_clone.xyz += [1, 1, 1]
+
+        fn = 'ethane_clone' + extension
+        ethane_clone.save(fn)
+        ethane.update_coordinates(fn)
+
+        new_file = mb.load(fn)
+        assert np.allclose(ethane.xyz, ethane_clone.xyz, atol=1e-3)
+        assert np.allclose(ethane.xyz, new_file.xyz)
+
+    def test_update_coordinates_no_hierarchy(self):
+        mycomp = mb.Compound()
+        myclone = mb.clone(mycomp)
+        myclone.xyz += 1
+
+        myclone.save('myclone.pdb', overwrite=True)
+
+        assert np.allclose(mycomp.xyz, np.array([0, 0, 0]))
+        mycomp.update_coordinates('myclone.pdb')
+        assert np.allclose(mycomp.xyz, np.array([1, 1, 1]))
+        ref = mb.load('myclone.pdb')
+        assert np.allclose(mycomp.xyz, ref.xyz)
 
     def test_to_trajectory(self, ethane, c3, n4):
         traj = ethane.to_trajectory()

@@ -1,6 +1,6 @@
 numpy
 scipy
-packmol=1.0.0
+packmol>=1!18.013
 nglview>=0.6.2.3
 oset
 parmed
@@ -11,11 +11,10 @@ mdtraj==1.9.1
 foyer
 gsd
 openbabel
+networkx
 pytest >=3.0
 jupyter
 nbformat
-ipykernel
-ipyext
 python-coveralls
 # TODO: Remove the pinning of the pytest-cov version again once issue
 #       https://github.com/z4r/python-coveralls/issues/66

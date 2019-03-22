@@ -84,7 +84,17 @@ def load(filename, relative_to_module=None, compound=None, coords_only=False,
     # Handle the case of a xyz file, which must use an internal reader
     extension = os.path.splitext(filename)[-1]
     if extension == '.xyz' and not 'top' in kwargs:
-        compound = read_xyz(filename)
+        if coords_only:
+            tmp = read_xyz(filename)
+            if tmp.n_particles != compound.n_particles:
+                raise ValueError('Number of atoms in {filename} does not match'
+                                 ' {compound}'.format(**locals()))
+            ref_and_compound = zip(tmp._particles(include_ports=False),
+                                   compound.particles(include_ports=False))
+            for ref_particle, particle in ref_and_compound:
+                particle.pos = ref_particle.pos
+        else:
+            compound = read_xyz(filename)
         return compound
 
     if use_parmed:
@@ -1213,10 +1223,10 @@ class Compound(object):
         """
         if update_port_locations:
             xyz_init = self.xyz
-            load(filename, compound=self, coords_only=True)
+            self = load(filename, compound=self, coords_only=True)
             self._update_port_locations(xyz_init)
         else:
-            load(filename, compound=self, coords_only=True)
+            self = load(filename, compound=self, coords_only=True)
 
     def _update_port_locations(self, initial_coordinates):
         """Adjust port locations after particles have moved
@@ -1640,7 +1650,7 @@ class Compound(object):
     def save(self, filename, show_ports=False, forcefield_name=None,
              forcefield_files=None, forcefield_debug=False, box=None,
              overwrite=False, residues=None, references_file=None,
-             combining_rule='lorentz', **kwargs):
+             combining_rule='lorentz', foyerkwargs={}, **kwargs):
         """Save the Compound to a file.
 
         Parameters
@@ -1679,9 +1689,12 @@ class Compound(object):
             when the `foyer` package is used to apply a forcefield. Valid
             options are 'lorentz' and 'geometric', specifying Lorentz-Berthelot
             and geometric combining rules respectively.
+        
 
         Other Parameters
         ----------------
+        foyerkwargs : dict, optional
+            Specify keyword arguments when applying the foyer Forcefield
         ref_distance : float, optional, default=1.0
             Normalization factor used when saving to .gsd and .hoomdxml formats
             for converting distance values to reduced units.
@@ -1731,7 +1744,8 @@ class Compound(object):
             foyer = import_('foyer')
             ff = foyer.Forcefield(forcefield_files=forcefield_files,
                                   name=forcefield_name, debug=forcefield_debug)
-            structure = ff.apply(structure, references_file=references_file)
+            structure = ff.apply(structure, references_file=references_file,
+                    **foyerkwargs)
             structure.combining_rule = combining_rule
 
         total_charge = sum([atom.charge for atom in structure])
@@ -1741,14 +1755,15 @@ class Compound(object):
 
         # Provide a warning if rigid_ids are not sequential from 0
         if self.contains_rigid:
-            unique_rigid_ids = sorted(set([p.rigid_id
-                                           for p in self.rigid_particles()]))
+            unique_rigid_ids = sorted(set([
+                p.rigid_id for p in self.rigid_particles()]))
             if max(unique_rigid_ids) != len(unique_rigid_ids) - 1:
                 warn("Unique rigid body IDs are not sequential starting from zero.")
 
         if saver:  # mBuild supported saver.
             if extension in ['.gsd', '.hoomdxml']:
-                kwargs['rigid_bodies'] = [p.rigid_id for p in self.particles()]
+                kwargs['rigid_bodies'] = [
+                        p.rigid_id for p in self.particles()]
             saver(filename=filename, structure=structure, **kwargs)
         else:  # ParmEd supported saver.
             structure.save(filename, overwrite=overwrite, **kwargs)
@@ -1828,7 +1843,9 @@ class Compound(object):
                 raise ValueError('Number of atoms in {traj} does not match'
                                  ' {self}'.format(**locals()))
             atoms_particles = zip(traj.topology.atoms,
-                                  self._particles(include_ports=False))
+                                  self.particles(include_ports=False))
+            if None in self._particles(include_ports=False):
+                raise ValueError('Some particles are None')
             for mdtraj_atom, particle in atoms_particles:
                 particle.pos = traj.xyz[frame, mdtraj_atom.index]
             return
@@ -2054,7 +2071,9 @@ class Compound(object):
                     ' {self}'.format(
                         **locals()))
             atoms_particles = zip(structure.atoms,
-                                  self._particles(include_ports=False))
+                                  self.particles(include_ports=False))
+            if None in self._particles(include_ports=False):
+                raise ValueError('Some particles are None')
             for parmed_atom, particle in atoms_particles:
                 particle.pos = np.array([parmed_atom.xx,
                                          parmed_atom.xy,
