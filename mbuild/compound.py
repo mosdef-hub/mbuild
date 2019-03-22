@@ -1650,7 +1650,7 @@ class Compound(object):
     def save(self, filename, show_ports=False, forcefield_name=None,
              forcefield_files=None, forcefield_debug=False, box=None,
              overwrite=False, residues=None, references_file=None,
-             combining_rule='lorentz', **kwargs):
+             combining_rule='lorentz', foyerkwargs={}, **kwargs):
         """Save the Compound to a file.
 
         Parameters
@@ -1689,9 +1689,12 @@ class Compound(object):
             when the `foyer` package is used to apply a forcefield. Valid
             options are 'lorentz' and 'geometric', specifying Lorentz-Berthelot
             and geometric combining rules respectively.
+        
 
         Other Parameters
         ----------------
+        foyerkwargs : dict, optional
+            Specify keyword arguments when applying the foyer Forcefield
         ref_distance : float, optional, default=1.0
             Normalization factor used when saving to .gsd and .hoomdxml formats
             for converting distance values to reduced units.
@@ -1741,7 +1744,8 @@ class Compound(object):
             foyer = import_('foyer')
             ff = foyer.Forcefield(forcefield_files=forcefield_files,
                                   name=forcefield_name, debug=forcefield_debug)
-            structure = ff.apply(structure, references_file=references_file)
+            structure = ff.apply(structure, references_file=references_file,
+                    **foyerkwargs)
             structure.combining_rule = combining_rule
 
         total_charge = sum([atom.charge for atom in structure])
@@ -1751,14 +1755,15 @@ class Compound(object):
 
         # Provide a warning if rigid_ids are not sequential from 0
         if self.contains_rigid:
-            unique_rigid_ids = sorted(set([p.rigid_id
-                                           for p in self.rigid_particles()]))
+            unique_rigid_ids = sorted(set([
+                p.rigid_id for p in self.rigid_particles()]))
             if max(unique_rigid_ids) != len(unique_rigid_ids) - 1:
                 warn("Unique rigid body IDs are not sequential starting from zero.")
 
         if saver:  # mBuild supported saver.
             if extension in ['.gsd', '.hoomdxml']:
-                kwargs['rigid_bodies'] = [p.rigid_id for p in self.particles()]
+                kwargs['rigid_bodies'] = [
+                        p.rigid_id for p in self.particles()]
             saver(filename=filename, structure=structure, **kwargs)
         else:  # ParmEd supported saver.
             structure.save(filename, overwrite=overwrite, **kwargs)
