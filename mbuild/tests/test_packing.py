@@ -36,6 +36,41 @@ class TestPacking(BaseTest):
         n_water = len([c for c in filled.children if c.name == 'H2O'])
         assert n_water / n_ethane == 2
 
+    def test_fill_sphere(self, h2o):
+        filled = mb.fill_sphere(h2o, sphere=[3, 3, 3, 1.5], n_compounds=50)
+        assert filled.n_particles == 50 * 3
+        assert filled.n_bonds == 50 * 2
+
+        center = np.array([3.0, 3.0, 3.0])
+        assert np.alltrue(np.linalg.norm(filled.xyz - center, axis=1) < 1.5)
+
+    def test_fill_sphere_density(self, h2o):
+        filled = mb.fill_sphere(h2o, sphere=[3, 3, 3, 1.5], density=1000)
+        assert filled.n_particles == 921
+
+    def test_fill_sphere_compound_ratio(self, h2o, ethane):
+        filled = mb.fill_sphere(compound=[h2o, ethane], sphere=[3, 3, 3, 1.5],
+                density=800, compound_ratio=[2, 1])
+        n_ethane = len([c for c in filled.children if c.name == 'Ethane'])
+        n_water = len([c for c in filled.children if c.name == 'H2O'])
+        assert n_water / n_ethane == 2
+
+    def test_fill_sphere_bad_args(self, h2o, ethane):
+        with pytest.raises(ValueError):
+            mb.fill_sphere(compound=h2o, sphere=[4, 4, 4, 1])
+        with pytest.raises(ValueError):
+            mb.fill_sphere(compound=h2o, n_compounds=100,
+                density=100, sphere=[4, 4, 4, 1])
+        with pytest.raises(ValueError):
+            mb.fill_sphere(compound=h2o, density=1000, sphere='yes')
+        with pytest.raises(ValueError):
+            mb.fill_sphere(compound=[h2o, ethane], n_compounds=1000, sphere=[1, 1, 1, 4])
+        with pytest.raises(ValueError):
+            mb.fill_sphere(compound=h2o, n_compounds=[10, 10], sphere=[1, 1, 1, 4])
+        with pytest.raises(ValueError):
+            mb.fill_sphere(compound=h2o, n_compounds=100, sphere=[1, 1, 1, 4])
+
+
     def test_fill_region(self, h2o):
         filled = mb.fill_region(h2o, n_compounds=50,
                                 region=[3, 2, 2, 5, 5, 5])
