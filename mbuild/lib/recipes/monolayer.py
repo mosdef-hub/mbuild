@@ -4,6 +4,7 @@ from warnings import warn
 import numpy as np
 
 import mbuild as mb
+from mbuild.lib.recipes.tiled_compound import TiledCompound
 
 __all__ = ['Monolayer']
 
@@ -37,7 +38,7 @@ class Monolayer(mb.Compound):
         super(Monolayer, self).__init__()
 
         # Replicate the surface.
-        tiled_compound = mb.my_recipes.TiledCompound(surface, n_tiles=(tile_x, tile_y, 1))
+        tiled_compound = TiledCompound(surface, n_tiles=(tile_x, tile_y, 1))
         self.add(tiled_compound, label='tiled_surface')
 
         if pattern is None:  # Fill the surface.

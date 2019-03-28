@@ -1,6 +1,7 @@
 import numpy as np
 
 import mbuild as mb
+from mbuild.lib.recipes import TiledCompound
 
 
 class Betacristobalite(mb.Compound):
@@ -40,5 +41,5 @@ class Betacristobalite(mb.Compound):
 
 if __name__ == "__main__":
     single = Betacristobalite()
-    multiple = mb.my_recipes.TiledCompound(single, n_tiles=(2, 1, 1), name="tiled")
+    multiple = TiledCompound(single, n_tiles=(2, 1, 1), name="tiled")
     multiple.save('betacristobalite.mol2')
