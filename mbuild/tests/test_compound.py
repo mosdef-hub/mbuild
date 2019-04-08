@@ -6,7 +6,8 @@ import pytest
 
 import mbuild as mb
 from mbuild.exceptions import MBuildError
-from mbuild.utils.io import get_fn, has_intermol, has_openbabel
+from mbuild.utils.geometry import calc_dihedral
+from mbuild.utils.io import get_fn, has_foyer, has_intermol, has_openbabel, has_networkx
 from mbuild.tests.base_test import BaseTest
 
 class TestCompound(BaseTest):
@@ -49,6 +50,7 @@ class TestCompound(BaseTest):
             with pytest.raises(IOError):
                 ch3.save(filename=outfile, overwrite=False)
 
+    @pytest.mark.skipif(not has_foyer, reason="Foyer is not installed")
     def test_save_forcefield(self, methane):
         exts = ['.gsd', '.hoomdxml', '.lammps', '.lmp', '.top', '.gro',
                 '.mol2', '.pdb', '.xyz']
@@ -56,6 +58,26 @@ class TestCompound(BaseTest):
             methane.save('lythem' + ext,
                          forcefield_name='oplsaa',
                          overwrite=True)
+
+    @pytest.mark.skipif(not has_foyer, reason="Foyer is not installed")
+    def test_save_forcefield_with_file(self, methane):
+        exts = ['.gsd', '.hoomdxml', '.lammps', '.lmp', '.top', '.gro',
+                '.mol2', '.pdb', '.xyz']
+        for ext in exts:
+            methane.save('lythem' + ext,
+                         forcefield_files=get_fn('methane_oplssaa.xml'),
+                         overwrite=True)
+
+    @pytest.mark.skipif(not has_foyer, reason="Foyer is not installed")
+    def test_save_forcefield_with_file_foyerkwargs(self, methane):
+        foyerkwargs = {'assert_improper_params': True}
+        with pytest.raises(Exception):
+            methane.save('lythem.hoomdxml',
+                             forcefield_files=get_fn('methane_oplssaa.xml'),
+                             overwrite=True, foyerkwargs=foyerkwargs)
+        methane.save('lythem.hoomdxml',
+                forcefield_files=get_fn('methane_oplssaa.xml'),
+                overwrite=True, foyerkwargs={})
 
     def test_save_resnames(self, ch3, h2o):
         system = mb.Compound([ch3, h2o])
@@ -72,11 +94,13 @@ class TestCompound(BaseTest):
         assert struct.residues[0].number ==  1
         assert struct.residues[1].number ==  2
 
+    @pytest.mark.skipif(not has_foyer, reason="Foyer is not installed")
     def test_save_references(self, methane):
         methane.save('methyl.mol2', forcefield_name='oplsaa',
                      references_file='methane.bib')
         assert os.path.isfile('methane.bib')
 
+    @pytest.mark.skipif(not has_foyer, reason="Foyer is not installed")
     def test_save_combining_rule(self, methane):
         combining_rules = ['lorentz', 'geometric']
         gmx_rules = {'lorentz': 2, 'geometric': 3}
@@ -133,12 +157,12 @@ class TestCompound(BaseTest):
         with pytest.raises(MBuildError):
             ethane.pos = [0, 0, 0]
 
-    def test_xyz(self, ethane):
-        xyz = ethane.xyz
-        assert xyz.shape == (8, 3)
+    def test_xyz(self, ch3):
+        xyz = ch3.xyz
+        assert xyz.shape == (4, 3)
 
-        xyz = ethane.xyz_with_ports
-        assert xyz.shape == (24, 3)
+        xyz = ch3.xyz_with_ports
+        assert xyz.shape == (12, 3)
 
     def test_particles_by_name(self, ethane):
         assert sum(1 for _ in ethane.particles()) == 8
@@ -189,7 +213,7 @@ class TestCompound(BaseTest):
         assert ethane.n_particles == 0
         assert ethane.n_bonds == 0
         assert len(ethane.children) == 2
-        assert len(ethane.children[0].children) == 1  # Still contains a port
+        assert len(ethane.children[0].children) == 7  # Still contains ports
 
     def test_remove_many(self, ethane):
         ethane.remove([ethane.children[0], ethane.children[1]])
@@ -304,6 +328,32 @@ class TestCompound(BaseTest):
         assert brush1['pmpc']['monomer'][0].n_particles == 41
         assert brush1['pmpc']['monomer'][0].n_bonds == 40
 
+    @pytest.mark.parametrize('extension', [('.xyz'), ('.pdb'), ('.mol2'), ('.gro')])
+    def test_update_coordinates(self, ethane, extension):
+        ethane_clone = mb.clone(ethane)
+        ethane_clone.xyz += [1, 1, 1]
+
+        fn = 'ethane_clone' + extension
+        ethane_clone.save(fn)
+        ethane.update_coordinates(fn)
+
+        new_file = mb.load(fn)
+        assert np.allclose(ethane.xyz, ethane_clone.xyz, atol=1e-3)
+        assert np.allclose(ethane.xyz, new_file.xyz)
+
+    def test_update_coordinates_no_hierarchy(self):
+        mycomp = mb.Compound()
+        myclone = mb.clone(mycomp)
+        myclone.xyz += 1
+
+        myclone.save('myclone.pdb', overwrite=True)
+
+        assert np.allclose(mycomp.xyz, np.array([0, 0, 0]))
+        mycomp.update_coordinates('myclone.pdb')
+        assert np.allclose(mycomp.xyz, np.array([1, 1, 1]))
+        ref = mb.load('myclone.pdb')
+        assert np.allclose(mycomp.xyz, ref.xyz)
+
     def test_to_trajectory(self, ethane, c3, n4):
         traj = ethane.to_trajectory()
         assert traj.n_atoms == 8
@@ -347,6 +397,29 @@ class TestCompound(BaseTest):
         assert traj.n_chains == 1
         assert traj.n_residues == 1
 
+    def test_box_mdtraj(self, ethane):
+        assert np.allclose(ethane.periodicity, np.zeros(3))
+        traj_boundingbox = ethane.to_trajectory()
+        assert np.allclose(
+            traj_boundingbox.unitcell_lengths,
+            ethane.boundingbox.lengths + 0.5
+        )
+
+        ethane.periodicity = [4.0, 5.0, 6.0]
+        assert ethane.periodicity is not None
+        traj_periodicity = ethane.to_trajectory()
+        assert np.allclose(
+            traj_periodicity.unitcell_lengths,
+            ethane.periodicity
+        )
+
+        box = mb.Box(mins=np.zeros(3), maxs=8.0*np.zeros(3))
+        traj_box = ethane.to_trajectory(box=box)
+        assert np.allclose(
+            traj_box.unitcell_lengths,
+            box.lengths
+        )
+
     def test_resnames_mdtraj(self, h2o, ethane):
         system = mb.Compound([h2o, mb.clone(h2o), ethane])
         traj = system.to_trajectory(residues=['Ethane', 'H2O'])
@@ -386,6 +459,15 @@ class TestCompound(BaseTest):
 
         traj = system.to_trajectory()
         assert traj.n_chains == 1
+
+    def test_mdtraj_box(self, h2o):
+        compound = mb.Compound()
+        compound.add(h2o)
+        tilted_box = mb.Box(lengths=[2.0, 2.0, 2.0], angles=[60.0, 80.0, 100.0])
+        trajectory = compound.to_trajectory(box=tilted_box)
+        assert (trajectory.unitcell_lengths == [2.0, 2.0, 2.0]).all()
+        assert (trajectory.unitcell_angles == [60.0, 80.0, 100.0]).all()
+        print(trajectory.unitcell_vectors)
 
     @pytest.mark.skipif(not has_intermol, reason="InterMol is not installed")
     def test_intermol_conversion1(self, ethane, h2o):
@@ -486,6 +568,13 @@ class TestCompound(BaseTest):
         with pytest.warns(UserWarning):
             _ = compound.to_parmed()
 
+    def test_parmed_box(self, h2o):
+        compound = mb.Compound()
+        compound.add(h2o)
+        tilted_box = mb.Box(lengths=[2.0, 2.0, 2.0], angles=[60.0, 80.0, 100.0])
+        structure = compound.to_parmed(box=tilted_box)
+        assert all(structure.box == [20.0, 20.0, 20.0, 60.0, 80.0, 100.0])
+
     def test_min_periodic_dist(self, ethane):
         compound = mb.Compound(ethane)
         C_pos = np.array([atom.pos for atom in list(compound.particles_by_name('C'))])
@@ -583,7 +672,7 @@ class TestCompound(BaseTest):
     def test_energy_minimization_ff(self, octane):
         for ff in ['UFF', 'GAFF', 'MMFF94', 'MMFF94s', 'Ghemical']:
             octane.energy_minimization(forcefield=ff)
-        with pytest.raises(MBuildError):
+        with pytest.raises(IOError):
             octane.energy_minimization(forcefield='fakeFF')
 
     @pytest.mark.skipif(not has_openbabel, reason="Open Babel package not installed")
@@ -618,6 +707,14 @@ class TestCompound(BaseTest):
         assert np.array_equal(distances, updated_distances)
         assert np.array_equal(orientations, updated_orientations)
 
+    @pytest.mark.skipif(not has_foyer, reason="Foyer is not installed")
+    def test_energy_minimize_openmm(self, octane):
+        octane.energy_minimize(forcefield='oplsaa')
+
+    @pytest.mark.skipif(not has_foyer, reason="Foyer is not installed")
+    def test_energy_minimize_openmm_xml(self, octane):
+        octane.energy_minimize(forcefield=get_fn('small_oplsaa.xml'))
+
     def test_clone_outside_containment(self, ch2, ch3):
         compound = mb.Compound()
         compound.add(ch2)
@@ -632,3 +729,111 @@ class TestCompound(BaseTest):
 
     def test_siliane_bond_number(self, silane):
         assert silane.n_bonds == 4
+
+    def test_add_bond_remove_ports(self, hydrogen):
+        h_clone = mb.clone(hydrogen)
+        h2 = mb.Compound(subcompounds=(hydrogen, h_clone))
+        assert len(h2.all_ports()) == 2
+        assert len(hydrogen.all_ports()) == 1
+        assert len(h_clone.all_ports()) == 1
+
+        mb.force_overlap(h_clone, h_clone['up'], hydrogen['up'])
+        assert len(h2.all_ports()) == 0
+        assert len(hydrogen.all_ports()) == 0
+        assert len(h_clone.all_ports()) == 0
+
+    def test_remove_bond_add_ports(self, hydrogen):
+        h_clone = mb.clone(hydrogen)
+        h2 = mb.Compound(subcompounds=(hydrogen, h_clone))
+        mb.force_overlap(h_clone, h_clone['up'], hydrogen['up'])
+        h2.remove_bond((h2[0], h2[1]))
+        assert len(h2.all_ports()) == 2
+        assert len(hydrogen.all_ports()) == 1
+        assert len(h_clone.all_ports()) == 1
+
+    def test_reconnect_keeps_structure_x(self, chf, connect_and_reconnect):
+        bond_vector = np.array([1, 0, 0])
+        angle1, angle2 = connect_and_reconnect(chf, bond_vector)
+        assert np.isclose(angle1, angle2, atol=1e-6)
+
+    def test_reconnect_keeps_structure_y(self, chf, connect_and_reconnect):
+        chf.spin(np.pi/2, [1, 0, 0])
+        bond_vector = np.array([0, 1, 0])
+        angle1, angle2 = connect_and_reconnect(chf, bond_vector)
+        assert np.isclose(angle1, angle2, atol=1e-6)
+
+    def test_reconnect_keeps_structure_z(self, chf, connect_and_reconnect):
+        bond_vector = np.array([0, 0, 1])
+        angle1, angle2 = connect_and_reconnect(chf, bond_vector)
+        assert np.isclose(angle1, angle2, atol=1e-6)
+
+    def test_reconnect_keeps_structure_random(self, chf, connect_and_reconnect):
+        np.random.seed(92)
+        for _ in range(5):
+            bond_vector = np.random.random(3) - 0.5
+            angle1, angle2 = connect_and_reconnect(chf, bond_vector)
+            assert np.isclose(angle1, angle2, atol=1e-6)
+
+    def test_smarts_from_string(self):
+        p3ht = mb.load('CCCCCCC1=C(SC(=C1)C)C', smiles=True)
+        assert p3ht.n_bonds == 33
+        assert p3ht.n_particles == 33
+
+    def test_smarts_from_file(self):
+        p3ht = mb.load(get_fn('p3ht.smi'), smiles=True)
+        assert p3ht.n_bonds == 33
+        assert p3ht.n_particles == 33
+
+    @pytest.mark.skipif(not has_networkx, reason="NetworkX is not installed")
+    def test_to_networkx(self):
+        comp = mb.Compound()
+        comp.name = 'Parent'
+
+        for n in range(2):
+            child = mb.Compound()
+            child.name = 'c_{}'.format(n)
+            comp.add(child)
+            for m in range(3):
+                child_child = mb.Compound()
+                child_child.name = 'c_{0}_{1}'.format(m, n)
+                child.add(child_child)
+
+        graph = comp.to_networkx()
+
+        assert graph.number_of_edges() == 8
+        assert graph.number_of_nodes() == 9
+
+        assert all([isinstance(n, mb.Compound) for n in graph.nodes()])
+
+    @pytest.mark.skipif(not has_networkx, reason="NetworkX is not installed")
+    def test_to_networkx_no_hierarchy(self):
+        comp = mb.Compound()
+        comp.name = 'Parent'
+
+        graph = comp.to_networkx()
+
+        assert graph.number_of_edges() == 0
+        assert graph.number_of_nodes() == 1
+
+        assert all([isinstance(n, mb.Compound) for n in graph.nodes()])
+
+    @pytest.mark.skipif(not has_networkx, reason="NetworkX is not installed")
+    def test_to_networkx_names_only(self):
+        comp = mb.Compound()
+        comp.name = 'Parent'
+
+        for n in range(2):
+            child = mb.Compound()
+            child.name = 'c_{}'.format(n)
+            comp.add(child)
+            for m in range(3):
+                child_child = mb.Compound()
+                child_child.name = 'c_{0}_{1}'.format(m, n)
+                child.add(child_child)
+
+        graph = comp.to_networkx(names_only=True)
+
+        assert graph.number_of_edges() == 8
+        assert graph.number_of_nodes() == 9
+
+        assert all([isinstance(n, str) for n in graph.nodes()])

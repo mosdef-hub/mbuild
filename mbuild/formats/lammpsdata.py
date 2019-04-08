@@ -11,7 +11,7 @@ from mbuild.utils.sorting import natural_sort
 __all__ = ['write_lammpsdata']
 
 
-def write_lammpsdata(structure, filename):
+def write_lammpsdata(structure, filename, atom_style='full'):
     """Output a LAMMPS data file.
     
     Outputs a LAMMPS data file in the 'full' atom style format. Assumes use
@@ -24,6 +24,11 @@ def write_lammpsdata(structure, filename):
         ParmEd structure object
     filename : str
         Path of the output file
+    atom_style: str
+        Defines the style of atoms to be saved in a LAMMPS data file. The following atom
+        styles are currently supported: 'full', 'atomic', 'charge', 'molecular'
+        see http://lammps.sandia.gov/doc/atom_style.html for more
+        information on atom styles.
 
     Notes
     -----
@@ -32,7 +37,13 @@ def write_lammpsdata(structure, filename):
     addition to the header): *Masses*, *Nonbond Coeffs*, *Bond Coeffs*, *Angle
     Coeffs*, *Dihedral Coeffs*, *Atoms*, *Bonds*, *Angles*, *Dihedrals*
 
+    Some of this function has beed adopted from `mdtraj`'s support of the LAMMPSTRJ
+    trajectory format. See https://github.com/mdtraj/mdtraj/blob/master/mdtraj/formats/lammpstrj.py for details.
+
     """
+
+    if atom_style not in ['atomic', 'charge', 'molecular', 'full']:
+        raise ValueError('Atom style "{}" is invalid or is not currently supported'.format(atom_style))
 
     xyz = np.array([[atom.xx,atom.xy,atom.xz] for atom in structure.atoms])
 
@@ -40,7 +51,9 @@ def write_lammpsdata(structure, filename):
     if structure[0].type == '':
         forcefield = False
 
-    box = Box(lengths=np.array([structure.box[0], structure.box[1], structure.box[2]]))
+    # Internally use nm
+    box = Box(lengths=np.array([0.1 * val for val in structure.box[0:3]]),
+              angles=structure.box[3:6])
 
     if forcefield:
         types = [atom.type for atom in structure.atoms]
@@ -100,22 +113,59 @@ def write_lammpsdata(structure, filename):
     with open(filename, 'w') as data:
         data.write(filename+' - created by mBuild\n\n')
         data.write('{:d} atoms\n'.format(len(structure.atoms)))
-        data.write('{:d} bonds\n'.format(len(bonds)))
-        data.write('{:d} angles\n'.format(len(angles)))
-        data.write('{:d} dihedrals\n\n'.format(len(dihedrals)))
+        if atom_style in ['full', 'molecular']:
+            data.write('{:d} bonds\n'.format(len(bonds)))
+            data.write('{:d} angles\n'.format(len(angles)))
+            data.write('{:d} dihedrals\n\n'.format(len(dihedrals)))
 
         data.write('{:d} atom types\n'.format(len(set(types))))
-        if bonds:
-            data.write('{:d} bond types\n'.format(len(set(bond_types))))
-        if angles:
-            data.write('{:d} angle types\n'.format(len(set(angle_types))))
-        if dihedrals:
-            data.write('{:d} dihedral types\n'.format(len(set(dihedral_types))))
+        if atom_style in ['full', 'molecular']:
+            if bonds:
+                data.write('{:d} bond types\n'.format(len(set(bond_types))))
+            if angles:
+                data.write('{:d} angle types\n'.format(len(set(angle_types))))
+            if dihedrals:
+                data.write('{:d} dihedral types\n'.format(len(set(dihedral_types))))
 
         data.write('\n')
         # Box data
-        for i,dim in enumerate(['x','y','z']):
-            data.write('{0:.6f} {1:.6f} {2}lo {2}hi\n'.format(box.mins[i],box.maxs[i],dim))
+        if np.allclose(box.angles, np.array([90, 90, 90])):
+            for i,dim in enumerate(['x','y','z']):
+                data.write('{0:.6f} {1:.6f} {2}lo {2}hi\n'.format(
+                    10.0 * box.mins[i],
+                    10.0 * box.maxs[i],
+                    dim))
+        else:
+            a, b, c = 10.0 * box.lengths
+            alpha, beta, gamma = np.radians(box.angles)
+
+            lx = a
+            xy = b * np.cos(gamma)
+            xz = c * np.cos(beta)
+            ly = np.sqrt(b**2 - xy**2)
+            yz = (b*c*np.cos(alpha) - xy*xz) / ly
+            lz = np.sqrt(c**2 - xz**2 - yz**2)
+
+            xlo, ylo, zlo = 10.0 * box.mins
+            xhi = xlo + lx
+            yhi = ylo + ly
+            zhi = zlo + lz
+
+            xlo_bound = xlo + np.min([0.0, xy, xz, xy+xz])
+            xhi_bound = xhi + np.max([0.0, xy, xz, xy+xz])
+            ylo_bound = ylo + np.min([0.0, yz])
+            yhi_bound = yhi + np.max([0.0, yz])
+            zlo_bound = zlo
+            zhi_bound = zhi
+
+            data.write('{0:.6f} {1:.6f} xlo xhi\n'.format(
+                xlo_bound, xhi_bound))
+            data.write('{0:.6f} {1:.6f} ylo yhi\n'.format(
+                ylo_bound, yhi_bound))
+            data.write('{0:.6f} {1:.6f} zlo zhi\n'.format(
+                zlo_bound, zhi_bound))
+            data.write('{0:.6f} {1:.6f} {2:6f} xy xz yz\n'.format(
+                xy, xz, yz))
 
         # Mass data
         masses = [atom.mass for atom in structure.atoms]
@@ -161,23 +211,40 @@ def write_lammpsdata(structure, filename):
 
         # Atom data
         data.write('\nAtoms\n\n')
+        if atom_style == 'atomic':
+            atom_line = '{index:d}\t{type_index:d}\t{x:.6f}\t{y:.6f}\t{z:.6f}\n'
+        elif atom_style == 'charge':
+            atom_line = '{index:d}\t{type_index:d}\t{charge:.6f}\t{x:.6f}\t{y:.6f}\t{z:.6f}\n'
+        elif atom_style == 'molecular':
+            atom_line = '{index:d}\t{zero:d}\t{type_index:d}\t{x:.6f}\t{y:.6f}\t{z:.6f}\n'
+        elif atom_style == 'full':
+            atom_line ='{index:d}\t{zero:d}\t{type_index:d}\t{charge:.6f}\t{x:.6f}\t{y:.6f}\t{z:.6f}\n'
+
         for i,coords in enumerate(xyz):
-            data.write('{:d}\t{:d}\t{:d}\t{:.6f}\t{:.6f}\t{:.6f}\t{:.6f}\n'.format(i+1,0,unique_types.index(types[i])+1,charges[i],*coords))
+            data.write(atom_line.format(
+                index=i+1,type_index=unique_types.index(types[i])+1,
+                zero=0,charge=charges[i],
+                x=coords[0],y=coords[1],z=coords[2]))
 
-        # Bond data
-        if bonds:
-            data.write('\nBonds\n\n')
-            for i,bond in enumerate(bonds):
-                data.write('{:d}\t{:d}\t{:d}\t{:d}\n'.format(i+1,bond_types[i],bond[0],bond[1]))
+        if atom_style in ['full', 'molecular']:
+            # Bond data
+            if bonds:
+                data.write('\nBonds\n\n')
+                for i,bond in enumerate(bonds):
+                    data.write('{:d}\t{:d}\t{:d}\t{:d}\n'.format(
+                        i+1,bond_types[i],bond[0],bond[1]))
 
-        # Angle data
-        if angles:
-            data.write('\nAngles\n\n')
-            for i,angle in enumerate(angles):
-                data.write('{:d}\t{:d}\t{:d}\t{:d}\t{:d}\n'.format(i+1,angle_types[i],angle[0],angle[1],angle[2]))
+            # Angle data
+            if angles:
+                data.write('\nAngles\n\n')
+                for i,angle in enumerate(angles):
+                    data.write('{:d}\t{:d}\t{:d}\t{:d}\t{:d}\n'.format(
+                        i+1,angle_types[i],angle[0],angle[1],angle[2]))
 
-        # Dihedral data
-        if dihedrals:
-            data.write('\nDihedrals\n\n')
-            for i,dihedral in enumerate(dihedrals):
-                data.write('{:d}\t{:d}\t{:d}\t{:d}\t{:d}\t{:d}\n'.format(i+1,dihedral_types[i],dihedral[0],dihedral[1],dihedral[2],dihedral[3]))
+            # Dihedral data
+            if dihedrals:
+                data.write('\nDihedrals\n\n')
+                for i,dihedral in enumerate(dihedrals):
+                    data.write('{:d}\t{:d}\t{:d}\t{:d}\t{:d}\t{:d}\n'.format(
+                        i+1,dihedral_types[i],dihedral[0],
+                        dihedral[1],dihedral[2],dihedral[3]))
