@@ -8,14 +8,14 @@ class TestPolymer(BaseTest):
 
     def test_polymer(self, ch2):
         n = 6
-        c6 = Polymer(ch2, n=n)
+        c6 = mb.Recipes.Polymer(ch2, n=n)
         assert c6.n_particles == n * 3
         assert c6.n_bonds == n * 2 + (n - 1)
 
     def test_block_copolymer(self, ch2, ester):
         n = 2
         sequence = 'ABBA'
-        abba = Polymer([ch2, ester], sequence=sequence, n=n)
+        abba = mb.Recipes.Polymer([ch2, ester], sequence=sequence, n=n)
 
         assert abba.n_particles == n * 3 * len(sequence)
         assert len(abba.children) == len(sequence) * n

@@ -12,7 +12,7 @@ from mbuild.lib.recipes import Monolayer
 from mbuild.examples.pmpc.brush import Brush
 
 
-class PMPCLayer(Monolayer):
+class PMPCLayer(mb.Recipes.Monolayer):
     """Create a layer of grafted pMPC brushes on a beta-cristobalite surface."""
     def __init__(self, pattern, tile_x=1, tile_y=1, chain_length=4, alpha=pi / 4):
         surface = Betacristobalite()

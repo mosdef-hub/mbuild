@@ -10,7 +10,7 @@ from mbuild.lib.recipes import Monolayer
 from mbuild.examples.alkane_monolayer.alkylsilane import AlkylSilane
 
 
-class AlkaneMonolayer(Monolayer):
+class AlkaneMonolayer(mb.Recipes.Monolayer):
     """An akylsilane monolayer on beta-cristobalite. """
 
     def __init__(self, pattern, tile_x=1, tile_y=1, chain_length=10):

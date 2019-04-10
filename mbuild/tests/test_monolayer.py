@@ -12,12 +12,12 @@ class TestMonolayer(BaseTest):
         m = 8
         pattern = mb.Grid2DPattern(n, m)
 
-        chain = Polymer(ch2, n=10)
-        monolayer = Monolayer(
-                              surface=Betacristobalite(),
-                              chains=chain,
-                              backfill=H(),
-                              pattern=pattern)
+        chain = mb.Recipes.Polymer(ch2, n=10)
+        monolayer = mb.Recipes.Monolayer(
+                                            surface=Betacristobalite(),
+                                            chains=chain,
+                                            backfill=H(),
+                                            pattern=pattern)
 
         assert monolayer.n_particles == 1900 + n * m * (10*3) + (100 - n*m)
         assert monolayer.n_bonds == 2400 + n * m * (10 * 2 + 9 + 1) + (100 - n * m)
@@ -27,6 +27,7 @@ class TestMonolayer(BaseTest):
         m = 8
         pattern = mb.Grid2DPattern(n, m)
 
+<<<<<<< HEAD
         chain = Polymer(ch2, n=10)
         monolayer = Monolayer(surface=Betacristobalite(),
                               chains=H(),
@@ -34,6 +35,15 @@ class TestMonolayer(BaseTest):
                               backfill=chain,
                               backfill_port_name='down',
                               pattern=pattern)
+=======
+        chain = mb.Recipes.Polymer(ch2, n=10)
+        monolayer = mb.Recipes.Monolayer(surface=Betacristobalite(),
+                                            chains=H(),
+                                            guest_port_name='up',
+                                            backfill=chain,
+                                            backfill_port_name='down',
+                                            pattern=pattern)
+>>>>>>> Replace instances of my_recipes with Recipes
 
         chains = 100 - (n*m)
 
@@ -46,10 +56,17 @@ class TestMonolayer(BaseTest):
         pattern = mb.Grid2DPattern(n, m)
         fractions = [0.75,0.25]
 
+<<<<<<< HEAD
         chain_a = Polymer(ch2, n=5)
         chain_b = Polymer(ch2, n=15)
         monolayer = Monolayer(surface=Betacristobalite(),
                               chains=[chain_a, chain_b],
+=======
+        chain_a = mb.Recipes.Polymer(ch2, n=5)
+        chain_b = mb.Recipes.Polymer(ch2, n=15)
+        monolayer = mb.Recipes.Monolayer(surface=Betacristobalite(),
+                                 chains=[chain_a, chain_b],
+>>>>>>> Replace instances of my_recipes with Recipes
                                  fractions=fractions,
                                  backfill=H(),
                                  pattern=pattern)

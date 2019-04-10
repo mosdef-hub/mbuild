@@ -17,7 +17,7 @@ class Brush(mb.Compound):
         # Add parts
         self.add(Silane(), label='silane')
         self.add(Initiator(), label='initiator')
-        self.add(Polymer(MPC(alpha=alpha), n=chain_length,
+        self.add(mb.Recipes.Polymer(MPC(alpha=alpha), n=chain_length,
                             port_labels=('up', 'down')), label='pmpc')
         self.add(CH3(), label='methyl')
 
