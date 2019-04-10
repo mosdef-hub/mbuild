@@ -6,5 +6,5 @@ from mbuild.pattern import *
 from mbuild.packing import *
 from mbuild.port import Port
 from mbuild.lattice import Lattice
-
+from mbuild.recipes import Recipes
 from mbuild.version import version

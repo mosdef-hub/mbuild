@@ -6,6 +6,7 @@ from __future__ import division
 
 from numpy import pi
 
+import mbuild as mb
 from mbuild.lib.atoms import H
 from mbuild.lib.surfaces import Betacristobalite
 from mbuild.lib.recipes import Monolayer

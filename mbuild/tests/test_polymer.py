@@ -1,7 +1,8 @@
 from collections import Counter
 
+import mbuild as mb
 from mbuild.tests.base_test import BaseTest
-from mbuild.lib.recipes import Polymer
+#from mbuild.lib.recipes import Polymer
 
 
 class TestPolymer(BaseTest):
