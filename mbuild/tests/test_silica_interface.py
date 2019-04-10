@@ -36,20 +36,6 @@ class TestSilicaInterface(BaseTest):
         thickness = 0.6
         seed = 12345
 
-<<<<<<< HEAD
-        interface1 = SilicaInterface(bulk_silica=AmorphousSilica(),
-                                     tile_x=tile_x,
-                                     tile_y=tile_y,
-                                     thickness=thickness,
-                                     seed=seed)
-        atom_names1 = np.array([atom.name for atom in interface1.particles()])
-
-        interface2 = SilicaInterface(bulk_silica=AmorphousSilica(),
-                                     tile_x=tile_x,
-                                     tile_y=tile_y,
-                                     thickness=thickness,
-                                     seed=seed)
-=======
         interface1 = mb.Recipes.SilicaInterface(bulk_silica=AmorphousSilica(),
                                         tile_x=tile_x,
                                         tile_y=tile_y,
@@ -62,7 +48,6 @@ class TestSilicaInterface(BaseTest):
                                         tile_y=tile_y,
                                         thickness=thickness,
                                         seed=seed)
->>>>>>> Replace instances of my_recipes with Recipes
         atom_names2 = np.array([atom.name for atom in interface2.particles()])
 
         assert np.array_equal(atom_names1, atom_names2)
