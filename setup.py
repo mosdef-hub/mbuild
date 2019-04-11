@@ -99,6 +99,14 @@ setup(
     package_data={'mbuild': ['utils/reference/*.{pdb,mol2}',
                              'lib/*.{pdb,mol2}',
                              ]},
+    entry_points={
+        'mbuild.plugins':[
+            "Monolayer = mbuild.lib.recipes.monolayer:Monolayer",
+            "Polymer = mbuild.lib.recipes.polymer:Polymer",
+            "SilicaInterface = mbuild.lib.recipes.silica_interface:SilicaInterface",
+            "TiledCompound = mbuild.lib.recipes.tiled_compound:TiledCompound",
+        ]
+    },
     package_dir={'mbuild': 'mbuild'},
     include_package_data=True,
     license="MIT",
