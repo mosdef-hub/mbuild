@@ -15,10 +15,10 @@ class TestSilicaInterface(BaseTest):
         tile_y = 1
         thickness = 0.6
 
-        interface = SilicaInterface(bulk_silica=AmorphousSilica(),
-                                    tile_x=tile_x,
-                                    tile_y=tile_y,
-                                    thickness=thickness)
+        interface = mb.recipes.SilicaInterface(bulk_silica=AmorphousSilica(),
+                                                  tile_x=tile_x,
+                                                  tile_y=tile_y,
+                                                  thickness=thickness)
 
         thickness_tolerance = 0.05
         z = [atom.pos[2] for atom in interface.particles()
@@ -36,18 +36,18 @@ class TestSilicaInterface(BaseTest):
         thickness = 0.6
         seed = 12345
 
-        interface1 = SilicaInterface(bulk_silica=AmorphousSilica(),
-                                     tile_x=tile_x,
-                                     tile_y=tile_y,
-                                     thickness=thickness,
-                                     seed=seed)
+        interface1 = mb.recipes.SilicaInterface(bulk_silica=AmorphousSilica(),
+                                        tile_x=tile_x,
+                                        tile_y=tile_y,
+                                        thickness=thickness,
+                                        seed=seed)
         atom_names1 = np.array([atom.name for atom in interface1.particles()])
 
-        interface2 = SilicaInterface(bulk_silica=AmorphousSilica(),
-                                     tile_x=tile_x,
-                                     tile_y=tile_y,
-                                     thickness=thickness,
-                                     seed=seed)
+        interface2 = mb.recipes.SilicaInterface(bulk_silica=AmorphousSilica(),
+                                        tile_x=tile_x,
+                                        tile_y=tile_y,
+                                        thickness=thickness,
+                                        seed=seed)
         atom_names2 = np.array([atom.name for atom in interface2.particles()])
 
         assert np.array_equal(atom_names1, atom_names2)

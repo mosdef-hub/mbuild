@@ -6,13 +6,14 @@ from __future__ import division
 
 from numpy import pi
 
+import mbuild as mb
 from mbuild.lib.atoms import H
 from mbuild.lib.surfaces import Betacristobalite
 from mbuild.lib.recipes import Monolayer
 from mbuild.examples.pmpc.brush import Brush
 
 
-class PMPCLayer(Monolayer):
+class PMPCLayer(mb.recipes.Monolayer):
     """Create a layer of grafted pMPC brushes on a beta-cristobalite surface."""
     def __init__(self, pattern, tile_x=1, tile_y=1, chain_length=4, alpha=pi / 4):
         surface = Betacristobalite()
