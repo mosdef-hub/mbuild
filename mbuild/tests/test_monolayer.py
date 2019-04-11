@@ -12,8 +12,8 @@ class TestMonolayer(BaseTest):
         m = 8
         pattern = mb.Grid2DPattern(n, m)
 
-        chain = mb.Recipes.Polymer(ch2, n=10)
-        monolayer = mb.Recipes.Monolayer(
+        chain = mb.recipes.Polymer(ch2, n=10)
+        monolayer = mb.recipes.Monolayer(
                                             surface=Betacristobalite(),
                                             chains=chain,
                                             backfill=H(),
@@ -27,8 +27,8 @@ class TestMonolayer(BaseTest):
         m = 8
         pattern = mb.Grid2DPattern(n, m)
 
-        chain = mb.Recipes.Polymer(ch2, n=10)
-        monolayer = mb.Recipes.Monolayer(surface=Betacristobalite(),
+        chain = mb.recipes.Polymer(ch2, n=10)
+        monolayer = mb.recipes.Monolayer(surface=Betacristobalite(),
                                             chains=H(),
                                             guest_port_name='up',
                                             backfill=chain,
@@ -46,9 +46,9 @@ class TestMonolayer(BaseTest):
         pattern = mb.Grid2DPattern(n, m)
         fractions = [0.75,0.25]
 
-        chain_a = mb.Recipes.Polymer(ch2, n=5)
-        chain_b = mb.Recipes.Polymer(ch2, n=15)
-        monolayer = mb.Recipes.Monolayer(surface=Betacristobalite(),
+        chain_a = mb.recipes.Polymer(ch2, n=5)
+        chain_b = mb.recipes.Polymer(ch2, n=15)
+        monolayer = mb.recipes.Monolayer(surface=Betacristobalite(),
                                  chains=[chain_a, chain_b],
                                  fractions=fractions,
                                  backfill=H(),
