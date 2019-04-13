@@ -539,6 +539,12 @@ class TestCompound(BaseTest):
 
         assert compound2.n_bonds == 9
 
+        compound3 = mb.clone(compound2)
+        compound3.xyz = np.random.random(compound3.xyz.shape)
+        compound3.from_parmed(structure, coords_only=True)
+
+        assert np.allclose(compound2.xyz, compound3.xyz)
+
     def test_resnames_parmed(self, h2o, ethane):
         system = mb.Compound([h2o, mb.clone(h2o), ethane])
         struct = system.to_parmed(residues=['Ethane', 'H2O'])
