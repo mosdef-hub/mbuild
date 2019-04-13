@@ -70,3 +70,5 @@ class TestBox(BaseTest):
         box.lengths = [4, 4, 4]
         assert (box.lengths == 4 * np.ones(3)).all()
         assert (box.maxs - box.mins == 4 * np.ones(3)).all()
+        box.angles = [90, 90, 120]
+        assert (box.angles == np.array([90, 90, 120])).all()
