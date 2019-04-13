@@ -18,6 +18,10 @@ class TestBox(BaseTest):
         assert np.array_equal(box.mins, np.zeros(3))
         assert np.array_equal(box.maxs, np.ones(3))
 
+    def test_bad_args(self):
+        with pytest.raises(ValueError):
+            mb.Box(maxs=[4, 4, 4])
+
     def test_init_angles(self):
         box = mb.Box(mins=np.zeros(3), maxs=np.ones(3), angles=[40.0, 50.0, 60.0])
         assert np.array_equal(box.angles, [40.0, 50.0, 60.0])
