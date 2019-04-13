@@ -164,6 +164,11 @@ class TestCompound(BaseTest):
         xyz = ch3.xyz_with_ports
         assert xyz.shape == (12, 3)
 
+    def test_xyz_setter_bad_shape(self, ch3):
+        single_compound = mb.Compound()
+        with pytest.raises(ValueError):
+            single_compound.xyz = np.zeros(shape=(4, 10))
+
     def test_particles_by_name(self, ethane):
         assert sum(1 for _ in ethane.particles()) == 8
 
