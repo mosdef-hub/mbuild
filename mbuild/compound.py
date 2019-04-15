@@ -1153,7 +1153,7 @@ class Compound(object):
             particle_array = np.array(list(self.particles()))
         return particle_array[idxs]
 
-    def visualize(self, show_ports=False):
+    def visualize(self, show_ports=False): # pragma: no cover
         """Visualize the Compound using nglview.
 
         Allows for visualization of a Compound within a Jupyter Notebook.
@@ -2288,7 +2288,7 @@ class Compound(object):
             nodes, edges = child._iterate_children(nodes, edges, names_only=names_only)
         return nodes, edges
 
-    def to_intermol(self, molecule_types=None):
+    def to_intermol(self, molecule_types=None): # pragma: no cover
         """Create an InterMol system from a Compound.
 
         Parameters
@@ -2341,7 +2341,7 @@ class Compound(object):
         return intermol_system
 
     @staticmethod
-    def _add_intermol_molecule_type(intermol_system, parent):
+    def _add_intermol_molecule_type(intermol_system, parent): # pragma: no cover
         """Create a molecule type for the parent and add bonds. """
         from intermol.moleculetype import MoleculeType
         from intermol.forces.bond import Bond as InterMolBond
