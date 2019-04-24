@@ -3,6 +3,7 @@ from mbuild.tests.base_test import BaseTest
 
 from mbuild.lib.surfaces import Betacristobalite
 from mbuild.lib.atoms import H
+from mbuild.lib.recipes import Polymer, Monolayer
 
 
 class TestMonolayer(BaseTest):
@@ -11,9 +12,12 @@ class TestMonolayer(BaseTest):
         m = 8
         pattern = mb.Grid2DPattern(n, m)
 
-        chain = mb.Polymer(ch2, n=10)
-        monolayer = mb.Monolayer(surface=Betacristobalite(), chains=chain,
-                                 backfill=H(), pattern=pattern)
+        chain = mb.recipes.Polymer(ch2, n=10)
+        monolayer = mb.recipes.Monolayer(
+                                            surface=Betacristobalite(),
+                                            chains=chain,
+                                            backfill=H(),
+                                            pattern=pattern)
 
         assert monolayer.n_particles == 1900 + n * m * (10*3) + (100 - n*m)
         assert monolayer.n_bonds == 2400 + n * m * (10 * 2 + 9 + 1) + (100 - n * m)
@@ -23,10 +27,13 @@ class TestMonolayer(BaseTest):
         m = 8
         pattern = mb.Grid2DPattern(n, m)
 
-        chain = mb.Polymer(ch2, n=10)
-        monolayer = mb.Monolayer(surface=Betacristobalite(), chains=H(),
-                                 guest_port_name='up', backfill=chain,
-                                 backfill_port_name='down', pattern=pattern)
+        chain = mb.recipes.Polymer(ch2, n=10)
+        monolayer = mb.recipes.Monolayer(surface=Betacristobalite(),
+                                            chains=H(),
+                                            guest_port_name='up',
+                                            backfill=chain,
+                                            backfill_port_name='down',
+                                            pattern=pattern)
 
         chains = 100 - (n*m)
 
@@ -39,9 +46,9 @@ class TestMonolayer(BaseTest):
         pattern = mb.Grid2DPattern(n, m)
         fractions = [0.75,0.25]
 
-        chain_a = mb.Polymer(ch2, n=5)
-        chain_b = mb.Polymer(ch2, n=15)
-        monolayer = mb.Monolayer(surface=Betacristobalite(),
+        chain_a = mb.recipes.Polymer(ch2, n=5)
+        chain_b = mb.recipes.Polymer(ch2, n=15)
+        monolayer = mb.recipes.Monolayer(surface=Betacristobalite(),
                                  chains=[chain_a, chain_b],
                                  fractions=fractions,
                                  backfill=H(),

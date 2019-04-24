@@ -4,6 +4,7 @@ import mbuild as mb
 
 from mbuild.lib.moieties import Silane
 from mbuild.lib.moieties import CH3
+from mbuild.lib.recipes import Polymer
 from mbuild.examples.pmpc.mpc import MPC
 from mbuild.examples.pmpc.initiator import Initiator
 
@@ -16,7 +17,7 @@ class Brush(mb.Compound):
         # Add parts
         self.add(Silane(), label='silane')
         self.add(Initiator(), label='initiator')
-        self.add(mb.Polymer(MPC(alpha=alpha), n=chain_length,
+        self.add(mb.recipes.Polymer(MPC(alpha=alpha), n=chain_length,
                             port_labels=('up', 'down')), label='pmpc')
         self.add(CH3(), label='methyl')
 
