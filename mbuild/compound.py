@@ -1858,10 +1858,12 @@ class Compound(object):
             else:
                 chain_compound = self
             for res in chain.residues:
+                res_compound = Compound(name=res.name)
+                chain_compound.add(res_compound)
                 for atom in res.atoms:
                     new_atom = Particle(name=str(atom.name),
                                         pos=traj.xyz[frame, atom.index])
-                    chain_compound.add(
+                    res_compound.add(
                         new_atom, label='{0}[$]'.format(
                             atom.name))
                     atom_mapping[atom] = new_atom
