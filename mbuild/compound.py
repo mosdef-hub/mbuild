@@ -2095,10 +2095,12 @@ class Compound(object):
             else:
                 chain_compound = self
             for residue in residues:
+                residue_compound = Compound(name=residue.name)
+                chain_compound.add(residue_compound)
                 for atom in residue.atoms:
                     pos = np.array([atom.xx, atom.xy, atom.xz]) / 10
                     new_atom = Particle(name=str(atom.name), pos=pos)
-                    chain_compound.add(
+                    residue_compound.add(
                         new_atom, label='{0}[$]'.format(
                             atom.name))
                     atom_mapping[atom] = new_atom
