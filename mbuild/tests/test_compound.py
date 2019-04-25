@@ -233,7 +233,8 @@ class TestCompound(BaseTest):
         assert ethane.n_particles == 4
         assert ethane.n_bonds == 3
         assert len(ethane.children) == 1
-        assert len(ethane.children[0].children) == 5  # Still contains a port
+        # Still contains a port
+        assert len(ethane.children[0].children[0].children) == 5  
 
         methyl = ethane.children[0]
         ethane.remove(methyl)
