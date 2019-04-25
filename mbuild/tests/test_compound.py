@@ -2,6 +2,7 @@ import os
 
 import numpy as np
 import parmed as pmd
+import mdtraj
 import pytest
 
 import mbuild as mb
@@ -837,3 +838,15 @@ class TestCompound(BaseTest):
         assert graph.number_of_nodes() == 9
 
         assert all([isinstance(n, str) for n in graph.nodes()])
+
+    def test_from_trajectory(self):
+        comp = mb.Compound()
+        traj = mdtraj.load(get_fn('spc.pdb'))
+        comp.from_trajectory(traj)
+        assert comp.children[0].name == 'SPC'
+
+    def test_from_parmed(self):
+        comp = mb.Compound()
+        struc = pmd.load_file(get_fn('spc.pdb'))
+        comp.from_parmed(struc)
+        assert comp.children[0].name == 'SPC'
