@@ -214,7 +214,8 @@ class TestCompound(BaseTest):
         assert ethane.n_particles == 0
         assert ethane.n_bonds == 0
         assert len(ethane.children) == 2
-        assert len(ethane.children[0].children) == 7  # Still contains ports
+        # Still contains ports
+        assert len(ethane.children[0].children[0].children) == 7  
 
     def test_remove_many(self, ethane):
         ethane.remove([ethane.children[0], ethane.children[1]])
