@@ -6,8 +6,10 @@ matrix:
   include:
     - { os: linux, env: PYTHON_VERSION=2.7 }
     - { os: linux, env: PYTHON_VERSION=3.5 }
+    - { os: linux, env: PYTHON_VERSION=3.6 }
     - { os: osx, env: PYTHON_VERSION=2.7 }
     - { os: osx, env: PYTHON_VERSION=3.5 }
+    - { os: osx, env: PYTHON_VERSION=3.6 }
 
 env:
   global:
@@ -21,8 +23,6 @@ install:
   - conda config --set always_yes yes --set changeps1 no
   - conda config --add channels omnia
   - conda config --add channels janschulz
-  - conda config --add channels glotzer
-  - conda config --add channels bioconda
   - conda config --add channels conda-forge
   - conda config --add channels mosdef
   - conda create -n test-environment python=$PYTHON_VERSION --file requirements-dev.txt

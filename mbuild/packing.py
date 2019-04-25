@@ -661,13 +661,3 @@ def _check_packmol(PACKMOL):
             msg = (msg + " If packmol is already installed, make sure that the "
                          "packmol.exe is on the path.")
         raise IOError(msg)
-
-def _get_xyz_cords(file_name):
-    with open(file_name) as xyz_file:
-        natoms = int(xyz_file.readline())  # First line of xyz lists natoms
-        xyz_file.readline()  # Skips title of xyz file
-        coords = np.zeros([natoms, 3], dtype="float64")
-        for i, x in enumerate(coords):
-            line = xyz_file.readline().split()
-            coords[i] = line[1:4]
-        return coords/10  # Unit conversion
