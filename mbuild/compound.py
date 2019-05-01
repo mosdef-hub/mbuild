@@ -1153,8 +1153,31 @@ class Compound(object):
             particle_array = np.array(list(self.particles()))
         return particle_array[idxs]
 
-    def visualize(self, show_ports=False):
-        """Visualize the Compound using nglview.
+    def visualize(self, show_ports=False, use_py3dmol=False):
+        """Visualize the Compound using nglview (default) or py3dmol.
+
+        Allows for visualization of a Compound within a Jupyter Notebook.
+
+        Parameters
+        ----------
+        show_ports : bool, optional, default=False
+            Visualize Ports in addition to Particles
+        use_py3dmol : bool, optional, default=False
+            If True, use py3Dmol to visualize compound
+
+        """
+        if run_from_ipython():
+            if not use_py3dmol:
+                return self._visualize_nglview(show_ports=show_ports)
+            else:
+                return self._visualize_py3dmol(show_ports=show_ports)
+            
+        else:
+            raise RuntimeError('Visualization is only supported in Jupyter '
+                               'Notebooks.')
+
+    def _visualize_py3dmol(self, show_ports=False):
+        """Visualize the Compound using py3Dmol.
 
         Allows for visualization of a Compound within a Jupyter Notebook.
 
@@ -1163,44 +1186,83 @@ class Compound(object):
         show_ports : bool, optional, default=False
             Visualize Ports in addition to Particles
 
+        Returns
+        ------
+        view : py3Dmol.view
+
         """
+        py3Dmol = import_('py3Dmol')
+        remove_digits = lambda x: ''.join(i for i in x if not i.isdigit()
+                                              or i == '_')
+        for particle in self.particles():
+            particle.name = remove_digits(particle.name).upper()
+            if not particle.name:
+                particle.name = 'UNK'
+        tmp_dir = tempfile.mkdtemp()
+        self.save(os.path.join(tmp_dir, 'tmp.mol2'),
+                  show_ports=show_ports,
+                  overwrite=True)
+
+        view = py3Dmol.view()
+        view.addModel(open(os.path.join(tmp_dir, 'tmp.mol2'), 'r').read(),
+                'mol2', keepH=True)
+        view.setStyle({'stick':{}})
+        if show_ports:
+            for p in self.particles(include_ports=True):
+                if p.port_particle:
+                    view.addSphere({
+                        'center': {'x':p.pos[0], 'y':p.pos[1], 'z':p.pos[2]},
+                        'radius' :0.4,
+                        'color': '0x991f00',
+                        'alpha': 0.9})
+        view.zoomTo()
+        view.show()
+
+        return view
+
+    def _visualize_nglview(self, show_ports=False):
+        """Visualize the Compound using nglview.
+
+        Allows for visualization of a Compound within a Jupyter Notebook.
+
+        Parameters
+        ----------
+        show_ports : bool, optional, default=False
+            Visualize Ports in addition to Particles
+            """
         nglview = import_('nglview')
         from mdtraj.geometry.sasa import _ATOMIC_RADII
-        if run_from_ipython():
-            remove_digits = lambda x: ''.join(i for i in x if not i.isdigit()
+        remove_digits = lambda x: ''.join(i for i in x if not i.isdigit()
                                               or i == '_')
-            for particle in self.particles():
-                particle.name = remove_digits(particle.name).upper()
-                if not particle.name:
-                    particle.name = 'UNK'
-            tmp_dir = tempfile.mkdtemp()
-            self.save(os.path.join(tmp_dir, 'tmp.mol2'),
-                      show_ports=show_ports,
-                      overwrite=True)
-            widget = nglview.show_file(os.path.join(tmp_dir, 'tmp.mol2'))
-            widget.clear()
-            widget.add_ball_and_stick(cylinderOnly=True)
-            elements = set([particle.name for particle in self.particles()])
-            scale = 50.0
-            for element in elements:
-                try:
-                    widget.add_ball_and_stick('_{}'.format(
-                        element.upper()), aspect_ratio=_ATOMIC_RADII[element.title()]**1.5 * scale)
-                except KeyError:
-                    ids = [str(i) for i, particle in enumerate(self.particles())
-                           if particle.name == element]
-                    widget.add_ball_and_stick(
-                        '@{}'.format(
-                            ','.join(ids)),
-                        aspect_ratio=0.17**1.5 * scale,
-                        color='grey')
-            if show_ports:
-                widget.add_ball_and_stick('_VS',
-                                          aspect_ratio=1.0, color='#991f00')
-            return widget
-        else:
-            raise RuntimeError('Visualization is only supported in Jupyter '
-                               'Notebooks.')
+        for particle in self.particles():
+            particle.name = remove_digits(particle.name).upper()
+            if not particle.name:
+                particle.name = 'UNK'
+        tmp_dir = tempfile.mkdtemp()
+        self.save(os.path.join(tmp_dir, 'tmp.mol2'),
+                  show_ports=show_ports,
+                  overwrite=True)
+        widget = nglview.show_file(os.path.join(tmp_dir, 'tmp.mol2'))
+        widget.clear()
+        widget.add_ball_and_stick(cylinderOnly=True)
+        elements = set([particle.name for particle in self.particles()])
+        scale = 50.0
+        for element in elements:
+            try:
+                widget.add_ball_and_stick('_{}'.format(
+                    element.upper()), aspect_ratio=_ATOMIC_RADII[element.title()]**1.5 * scale)
+            except KeyError:
+                ids = [str(i) for i, particle in enumerate(self.particles())
+                       if particle.name == element]
+                widget.add_ball_and_stick(
+                    '@{}'.format(
+                        ','.join(ids)),
+                    aspect_ratio=0.17**1.5 * scale,
+                    color='grey')
+        if show_ports:
+            widget.add_ball_and_stick('_VS',
+                                      aspect_ratio=1.0, color='#991f00')
+        return widget
 
     def update_coordinates(self, filename, update_port_locations=True):
         """Update the coordinates of this Compound from a file.
