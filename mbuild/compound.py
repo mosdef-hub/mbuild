@@ -1153,7 +1153,7 @@ class Compound(object):
             particle_array = np.array(list(self.particles()))
         return particle_array[idxs]
 
-    def visualize(self, show_ports=False, use_py3dmol=False):
+    def visualize(self, show_ports=False, backend='nglview'):
         """Visualize the Compound using nglview (default) or py3dmol.
 
         Allows for visualization of a Compound within a Jupyter Notebook.
@@ -1162,16 +1162,21 @@ class Compound(object):
         ----------
         show_ports : bool, optional, default=False
             Visualize Ports in addition to Particles
-        use_py3dmol : bool, optional, default=False
-            If True, use py3Dmol to visualize compound
+        backend : str, optional, default='nglview'
+            Specify the backend package to visualize compounds
+            Currently supported: nglview, py3dmol
 
         """
+        viz_pkg = {'nglview': self._visualize_nglview,
+                'py3dmol': self._visualize_py3dmol}
         if run_from_ipython():
-            if not use_py3dmol:
-                return self._visualize_nglview(show_ports=show_ports)
+            if backend.lower() in viz_pkg:
+                viz_pkg[backend.lower()](show_ports=show_ports)
             else:
-                return self._visualize_py3dmol(show_ports=show_ports)
-            
+                raise RuntimeError("Unsupported visualization " +
+                        "backend ({}). ".format(backend) +
+                        "Currently supported backends include nglview and py3dmol")
+                        
         else:
             raise RuntimeError('Visualization is only supported in Jupyter '
                                'Notebooks.')
