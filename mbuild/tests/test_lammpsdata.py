@@ -20,6 +20,7 @@ class TestLammpsData(BaseTest):
         box = mb.Box(lengths=np.array([2.0, 2.0, 2.0]))
         ethane.save(filename='ethane-box.lammps', forcefield_name='oplsaa', box=box)
 
+    @pytest.mark.skipif(not has_foyer, reason="Foyer package not installed")
     def test_save_triclinic_box(self, ethane):
         box = mb.Box(lengths=np.array([2.0, 2.0, 2.0]), angles=[60, 70, 80])
         ethane.save(filename='triclinic-box.lammps', forcefield_name='oplsaa', box=box)
