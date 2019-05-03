@@ -1153,8 +1153,8 @@ class Compound(object):
             particle_array = np.array(list(self.particles()))
         return particle_array[idxs]
 
-    def visualize(self, show_ports=False, backend='nglview'):
-        """Visualize the Compound using nglview (default) or py3dmol.
+    def visualize(self, show_ports=False, backend='py3dmol'):
+        """Visualize the Compound using py3dmol (default) or nglview.
 
         Allows for visualization of a Compound within a Jupyter Notebook.
 
@@ -1162,9 +1162,9 @@ class Compound(object):
         ----------
         show_ports : bool, optional, default=False
             Visualize Ports in addition to Particles
-        backend : str, optional, default='nglview'
+        backend : str, optional, default='py3dmol'
             Specify the backend package to visualize compounds
-            Currently supported: nglview, py3dmol
+            Currently supported: py3dmol, nglview
 
         """
         viz_pkg = {'nglview': self._visualize_nglview,
