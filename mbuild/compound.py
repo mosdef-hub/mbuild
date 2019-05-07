@@ -1153,7 +1153,7 @@ class Compound(object):
             particle_array = np.array(list(self.particles()))
         return particle_array[idxs]
 
-    def visualize(self, show_ports=False, backend='py3dmol'):
+    def visualize(self, show_ports=False, backend='py3dmol', color_scheme={}):
         """Visualize the Compound using py3dmol (default) or nglview.
 
         Allows for visualization of a Compound within a Jupyter Notebook.
@@ -1165,13 +1165,19 @@ class Compound(object):
         backend : str, optional, default='py3dmol'
             Specify the backend package to visualize compounds
             Currently supported: py3dmol, nglview
+        color_scheme : dict, optional
+            Specify coloring for non-elemental particles
+            keys are strings of the particle names
+            values are strings of the colors
+            i.e. {'_CGBEAD': 'blue'}
 
         """
         viz_pkg = {'nglview': self._visualize_nglview,
                 'py3dmol': self._visualize_py3dmol}
         if run_from_ipython():
             if backend.lower() in viz_pkg:
-                viz_pkg[backend.lower()](show_ports=show_ports)
+                viz_pkg[backend.lower()](show_ports=show_ports, 
+                        color_scheme=color_scheme)
             else:
                 raise RuntimeError("Unsupported visualization " +
                         "backend ({}). ".format(backend) +
@@ -1181,7 +1187,7 @@ class Compound(object):
             raise RuntimeError('Visualization is only supported in Jupyter '
                                'Notebooks.')
 
-    def _visualize_py3dmol(self, show_ports=False):
+    def _visualize_py3dmol(self, show_ports=False, color_scheme={}):
         """Visualize the Compound using py3Dmol.
 
         Allows for visualization of a Compound within a Jupyter Notebook.
@@ -1190,6 +1196,12 @@ class Compound(object):
         ----------
         show_ports : bool, optional, default=False
             Visualize Ports in addition to Particles
+        color_scheme : dict, optional
+            Specify coloring for non-elemental particles
+            keys are strings of the particle names
+            values are strings of the colors
+            i.e. {'_CGBEAD': 'blue'}
+
 
         Returns
         ------
@@ -1199,6 +1211,15 @@ class Compound(object):
         py3Dmol = import_('py3Dmol')
         remove_digits = lambda x: ''.join(i for i in x if not i.isdigit()
                                               or i == '_')
+
+        modified_color_scheme = {}
+        for name, color in color_scheme.items():
+            # Py3dmol does some element string conversions, 
+            # first character is as-is, rest of the characters are lowercase
+            new_name = name[0] + name[1:].lower() 
+            modified_color_scheme[new_name] = color
+            modified_color_scheme[name] = color
+
         for particle in self.particles():
             particle.name = remove_digits(particle.name).upper()
             if not particle.name:
@@ -1211,7 +1232,10 @@ class Compound(object):
         view = py3Dmol.view()
         view.addModel(open(os.path.join(tmp_dir, 'tmp.mol2'), 'r').read(),
                 'mol2', keepH=True)
-        view.setStyle({'stick':{}})
+        view.setStyle({'stick': {'radius': 0.2,
+                                'color':'grey'},
+                        'sphere': {'scale': 0.3,
+                                    'colorscheme':modified_color_scheme}})
         if show_ports:
             for p in self.particles(include_ports=True):
                 if p.port_particle:
@@ -1225,7 +1249,7 @@ class Compound(object):
 
         return view
 
-    def _visualize_nglview(self, show_ports=False):
+    def _visualize_nglview(self, show_ports=False, color_scheme={}):
         """Visualize the Compound using nglview.
 
         Allows for visualization of a Compound within a Jupyter Notebook.
