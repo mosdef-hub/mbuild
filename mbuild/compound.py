@@ -1176,7 +1176,7 @@ class Compound(object):
                 'py3dmol': self._visualize_py3dmol}
         if run_from_ipython():
             if backend.lower() in viz_pkg:
-                viz_pkg[backend.lower()](show_ports=show_ports, 
+                return viz_pkg[backend.lower()](show_ports=show_ports, 
                         color_scheme=color_scheme)
             else:
                 raise RuntimeError("Unsupported visualization " +
