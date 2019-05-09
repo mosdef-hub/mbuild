@@ -4,8 +4,10 @@ import pytest
 import mbuild as mb
 from mbuild.tests.base_test import BaseTest
 from mbuild.formats.lammpsdata import write_lammpsdata
+from mbuild.utils.io import has_foyer
 
 
+@pytest.mark.skipif(not has_foyer, reason="Foyer package not installed")
 class TestLammpsData(BaseTest):
 
     def test_save(self, ethane):
@@ -57,7 +59,10 @@ class TestLammpsData(BaseTest):
         box = mb.Box(lengths=np.array([2.0, 2.0, 2.0]), angles=[60, 70, 80])
         ethane.save(filename='triclinic-box.lammps', forcefield_name='oplsaa', box=box)
 
-    @pytest.mark.parametrize('atom_style, n_columns', [('full', 7), ('atomic', 5), ('molecular', 6), ('charge', 6)])
+    @pytest.mark.parametrize(
+        'atom_style, n_columns',
+        [('full', 7), ('atomic', 5), ('molecular', 6), ('charge', 6)]
+    ) 
     def test_writing_atom_styles(self, ethane, atom_style, n_columns):
         ethane.save(filename='ethane.lammps', atom_style=atom_style)
         with open('ethane.lammps', 'r') as f:

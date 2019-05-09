@@ -161,9 +161,14 @@ def write_lammpsdata(structure, filename, atom_style='full', nbfix_in_data_file=
             zlo_bound = zlo
             zhi_bound = zhi
 
-            data.write('{0} {1} {2}\n'.format(xlo_bound, xhi_bound, xy))
-            data.write('{0} {1} {2}\n'.format(ylo_bound, yhi_bound, xz))
-            data.write('{0} {1} {2}\n'.format(zlo_bound, zhi_bound, yz))
+            data.write('{0:.6f} {1:.6f} xlo xhi\n'.format(
+                xlo_bound, xhi_bound))
+            data.write('{0:.6f} {1:.6f} ylo yhi\n'.format(
+                ylo_bound, yhi_bound))
+            data.write('{0:.6f} {1:.6f} zlo zhi\n'.format(
+                zlo_bound, zhi_bound))
+            data.write('{0:.6f} {1:.6f} {2:6f} xy xz yz\n'.format(
+                xy, xz, yz))
 
         # Mass data
         masses = [atom.mass for atom in structure.atoms]

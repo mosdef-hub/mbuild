@@ -4,7 +4,7 @@ import mbuild as mb
 import numpy as np
 import pytest
 from mbuild.tests.base_test import BaseTest
-from mbuild.utils.io import has_gsd
+from mbuild.utils.io import has_foyer, has_gsd
 
 
 class TestGSD(BaseTest):
@@ -13,19 +13,23 @@ class TestGSD(BaseTest):
     def test_save(self, ethane):
         ethane.save(filename='ethane.gsd')
 
+    @pytest.mark.skipif(not has_foyer, reason="Foyer package not installed")
     @pytest.mark.skipif(not has_gsd, reason="GSD package not installed")
     def test_save_forcefield(self, ethane):
         ethane.save(filename='ethane-opls.gsd', forcefield_name='oplsaa')
 
+    @pytest.mark.skipif(not has_foyer, reason="Foyer package not installed")
     @pytest.mark.skipif(not has_gsd, reason="GSD package not installed")
     def test_save_box(self, ethane):
         box = mb.Box(lengths=np.array([2.0,2.0,2.0]))
         ethane.save(filename='ethane-box.gsd', forcefield_name='oplsaa',box=box)
 
+    @pytest.mark.skipif(not has_foyer, reason="Foyer package not installed")
     def test_save_triclinic_box_(self, ethane):
         box = mb.Box(lengths=np.array([2.0, 2.0, 2.0]), angles=[60, 70, 80])
         ethane.save(filename='triclinic-box.gsd', forcefield_name='oplsaa', box=box)
 
+    @pytest.mark.skipif(not has_foyer, reason="Foyer package not installed")
     @pytest.mark.skipif(not has_gsd, reason="GSD package not installed")
     def test_particles(self, ethane):
         from collections import OrderedDict
@@ -65,6 +69,7 @@ class TestGSD(BaseTest):
         assert np.array_equal(types_from_gsd, unique_types)
         assert np.array_equal(typeids_from_gsd, expected_typeids)
 
+    @pytest.mark.skipif(not has_foyer, reason="Foyer package not installed")
     @pytest.mark.skipif(not has_gsd, reason="GSD package not installed")
     def test_box(self, ethane):
         import gsd, gsd.pygsd
@@ -99,7 +104,7 @@ class TestGSD(BaseTest):
         assert np.isclose(np.cos(np.radians(70)), xz / c)
         assert np.isclose(np.cos(np.radians(80)), xy / b)
 
-
+    @pytest.mark.skipif(not has_foyer, reason="Foyer package not installed")
     @pytest.mark.skipif(not has_gsd, reason="GSD package not installed")
     def test_rigid(self, benzene):
         import gsd, gsd.pygsd
@@ -115,6 +120,7 @@ class TestGSD(BaseTest):
         for gsd_body, expected_body in zip(rigid_bodies, expected_bodies):
             assert gsd_body == expected_body
 
+    @pytest.mark.skipif(not has_foyer, reason="Foyer package not installed")
     @pytest.mark.skipif(not has_gsd, reason="GSD package not installed")
     def test_bonded(self, ethane):
         from foyer import Forcefield
@@ -189,6 +195,27 @@ class TestGSD(BaseTest):
                                             dihedral.atom3.idx, dihedral.atom4.idx])
         assert np.array_equal(dihedral_atoms, expected_dihedral_atoms)
         assert np.array_equal(dihedral_typeids, np.zeros(n_dihedrals))
+
+    @pytest.mark.skipif(not has_foyer, reason="Foyer package not installed")
+    @pytest.mark.skipif(not has_gsd, reason="GSD package not installed")
+    def test_pairs(self, benzene):
+        from foyer import Forcefield
+        import gsd, gsd.pygsd
+
+        benzene.save(filename='benzene.gsd', forcefield_name='oplsaa')
+        gsd_file = gsd.pygsd.GSDFile(open('benzene.gsd', 'rb'))
+        frame = gsd.hoomd.HOOMDTrajectory(gsd_file).read_frame(0)
+
+        structure = benzene.to_parmed()
+        forcefield = Forcefield(name='oplsaa')
+        structure = forcefield.apply(structure)
+
+        # Pairs
+        assert len(frame.pairs.types) == 3
+        assert frame.pairs.N == 21
+
+
+
 
     @pytest.mark.skipif(not has_gsd, reason="GSD package not installed")
     def test_units(self, ethane):

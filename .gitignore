@@ -43,6 +43,10 @@ docs/_build
 .idea
 .idea/*
 
+# VSCode
+.vscode
+.vscode/*
+
 # Vagrant
 .vagrant
 Vagrantfile
