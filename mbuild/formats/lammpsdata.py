@@ -232,14 +232,12 @@ def write_lammpsdata(structure, filename, atom_style='full', nbfix_in_data_file=
                             type1, type2, epsilon, sigma))
                 else:
                     data.write('\nPair Coeffs # lj\n\n')
+                    for idx,epsilon in epsilon_dict.items():
+                        data.write('{}\t{:.5f}\t{:.5f}\n'.format(idx,epsilon,sigma_dict[idx]))
                     print('Copy these commands into your input script:\n')
                     for (type1, type2), (sigma, epsilon) in coeffs.items():
-                        if type1 == type2:
-                            data.write('{}\t{:.5f}\t{:.5f}\n'.format(
-                                type1,epsilon_dict[type1],sigma_dict[type1]))
-                        else:
-                            print('pair_coeff\t{0} {1} {2} {3}'.format(
-                                type1, type2, epsilon, sigma))
+                        print('pair_coeff\t{0} {1} {2} {3}'.format(
+                            type1, type2, epsilon, sigma))
 
             # Pair coefficients
             else:
