@@ -197,14 +197,14 @@ def write_lammpsdata(structure, filename, atom_style='full'):
             epsilon_dict = dict([(unique_types.index(atom_type)+1,epsilon) for atom_type,epsilon in zip(types,epsilons)])
             sigma_dict = dict([(unique_types.index(atom_type)+1,sigma) for atom_type,sigma in zip(types,sigmas)])
             data.write('\nPair Coeffs # lj \n\n')
-            data.write('#\tepsilon sigma \n\n')
+            data.write('#\tepsilon sigma \t     (kcal/mol, \tAngstrom)\n')
             for idx,epsilon in epsilon_dict.items():
                 data.write('{}\t{:.5f}\t{:.5f}\n'.format(idx,epsilon,sigma_dict[idx]))
 
             # Bond coefficients
             if bonds:
                 data.write('\nBond Coeffs # harmonic\n\n')
-                data.write('#\tk \treq \t   (kcal/mol/Angstrom^2, \tAngstroms)\n')
+                data.write('#\tk \treq \t    (kcal/mol/Angstrom^2, \tAngstroms)\n')
                 for params,idx in unique_bond_types.items():
                     data.write('{}\t{}\t{}\t# {}\n'.format(idx,*params))
 
