@@ -36,7 +36,7 @@ The code at {filename}:{line_number} requires the "gsd" package
 
 gsd can be installed with conda using:
 
-# conda install -c glotzer gsd
+# conda install -c conda-forge gsd
 '''
 
 MESSAGES['nglview'] = '''
