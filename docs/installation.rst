@@ -29,7 +29,7 @@ Install with `pip <https://pypi.org/project/pip/>`_
 
 .. note::
     `PACKMOL <http://m3g.iqm.unicamp.br/packmol/>`_ is not available on pip
-    but can installed from source or via conda.
+    but can be installed from source or via conda.
 
 Install an editable version from source
 ---------------------------------------
