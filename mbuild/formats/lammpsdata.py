@@ -194,12 +194,14 @@ def write_lammpsdata(structure, filename, atom_style='full'):
             # Pair coefficients
             epsilons = [atom.epsilon for atom in structure.atoms]
             sigmas = [atom.sigma for atom in structure.atoms]
+            forcefields = [atom.atom_type for atom in structure.atoms]
             epsilon_dict = dict([(unique_types.index(atom_type)+1,epsilon) for atom_type,epsilon in zip(types,epsilons)])
             sigma_dict = dict([(unique_types.index(atom_type)+1,sigma) for atom_type,sigma in zip(types,sigmas)])
+            forcefield_dict = dict([(unique_types.index(atom_type)+1,forcefield) for atom_type,forcefield in zip(types,forcefields)])
             data.write('\nPair Coeffs # lj \n\n')
             data.write('#\tepsilon\tsigma\n#\tkcal/mol\tAngstrom\n')
             for idx,epsilon in epsilon_dict.items():
-                data.write('{}\t{:.5f}\t\t{:.5f}\n'.format(idx,epsilon,sigma_dict[idx]))
+                data.write('{}\t{:.5f}\t\t{:.5f}\t\t# {}\n'.format(idx,epsilon,sigma_dict[idx],forcefield_dict[idx]))
 
             # Bond coefficients
             if bonds:
