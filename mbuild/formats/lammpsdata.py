@@ -199,7 +199,7 @@ def write_lammpsdata(structure, filename, atom_style='full'):
             sigma_dict = dict([(unique_types.index(atom_type)+1,sigma) for atom_type,sigma in zip(types,sigmas)])
             forcefield_dict = dict([(unique_types.index(atom_type)+1,forcefield) for atom_type,forcefield in zip(types,forcefields)])
             data.write('\nPair Coeffs # lj \n\n')
-            data.write('#\tepsilon\tsigma\n#\tkcal/mol\tAngstrom\n')
+            data.write('#\tepsilon\t\tsigma\n#\tkcal/mol\tAngstrom\n')
             for idx,epsilon in epsilon_dict.items():
                 data.write('{}\t{:.5f}\t\t{:.5f}\t\t# {}\n'.format(idx,epsilon,sigma_dict[idx],forcefield_dict[idx]))
 
@@ -228,7 +228,7 @@ def write_lammpsdata(structure, filename, atom_style='full'):
                                              params[3],
                                              params[4],
                                              params[5])
-                    data.write('{}\t{:.5f}\t{:.5f}\t\t{:.5f}\t\t{:.5f}\t# {}\t{}\t{}\t{}\n'.format(idx,*opls_coeffs,params[8],params[9],params[10],params[11]))
+                    data.write('{}\t{:.5f}\t{:.5f}\t\t{:.5f}\t\t{:.5f}\t# {}\t{}\t{}\t{}\n'.format(idx,opls_coeffs[0],opls_coeffs[1],opls_coeffs[2],opls_coeffs[3],params[8],params[9],params[10],params[11]))
 
         # Atom data
         data.write('\nAtoms\n\n')
