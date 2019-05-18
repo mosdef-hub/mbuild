@@ -3,6 +3,7 @@ import mbuild as mb
 
 from mbuild.lib.moieties import CH2
 from mbuild.lib.moieties import CH3
+from mbuild.lib.recipes import Polymer
 
 
 class Alkane(mb.Compound):
@@ -24,7 +25,7 @@ class Alkane(mb.Compound):
             n += 1
         if not cap_end:
             n += 1
-        chain = mb.Polymer(CH2(), n=n-2, port_labels=('up', 'down'))
+        chain = mb.recipes.Polymer(CH2(), n=n-2, port_labels=('up', 'down'))
         self.add(chain, 'chain')
 
         if cap_front:
