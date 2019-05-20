@@ -1,9 +1,10 @@
 import mbuild as mb
 from mbuild.formats import compound_pb2
+from google.protobuf.text_format import PrintMessage
 
-__all__ = ['write_pb3', 'read_pb3']
+__all__ = ['write_pb2', 'read_pb2']
 
-def write_pb3(cmpd, filename):
+def write_pb2(cmpd, filename):
     """ Convert mb.Compound to Protobuff3 file
 
     Parameters
@@ -27,8 +28,10 @@ def write_pb3(cmpd, filename):
 
     with open(filename, 'wb') as f:
         f.write(root_proto.SerializeToString())
+    PrintMessage(root_proto, open('stuff.txt', 'w'))
 
-def read_pb3(filename):
+
+def read_pb2(filename):
     """ Convert a Protobuff3 file into mb.Compound
 
     Parameters
