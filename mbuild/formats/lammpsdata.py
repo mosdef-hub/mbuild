@@ -80,25 +80,25 @@ def write_lammpsdata(structure, filename, atom_style='full'):
         else:
             unique_bond_types = dict(enumerate(set([(round(bond.type.k,3),
                                                      round(bond.type.req,3)
-                                                     ,'\t'.join(sorted((str(bond.atom1.atom_type),str(bond.atom2.atom_type))))
+                                                     ,'\t'.join(sorted((str(bond.atom1.type),str(bond.atom2.type))))
                                                      ) for bond in structure.bonds])))
             unique_bond_types = OrderedDict([(y,x+1) for x,y in unique_bond_types.items()])
             bond_types = [unique_bond_types[(round(bond.type.k,3),
                                              round(bond.type.req,3)
-                                             ,'\t'.join(sorted((str(bond.atom1.atom_type),str(bond.atom2.atom_type))))
+                                             ,'\t'.join(sorted((str(bond.atom1.type),str(bond.atom2.type))))
                                              )] for bond in structure.bonds]
 
     if angles:
         unique_angle_types = dict(enumerate(set([(round(angle.type.k,3),
                                                   round(angle.type.theteq,3)
-                                                  ,angle.atom2.atom_type.name
-                                                  ,tuple(sorted((str(angle.atom1.atom_type),str(angle.atom3.atom_type))))
+                                                  ,angle.atom2.type
+                                                  ,tuple(sorted((str(angle.atom1.type),str(angle.atom3.type))))
                                                   ) for angle in structure.angles])))
         unique_angle_types = OrderedDict([(y,x+1) for x,y in unique_angle_types.items()])
         angle_types = [unique_angle_types[(round(angle.type.k,3),
                                            round(angle.type.theteq,3)
-                                           ,angle.atom2.atom_type.name
-                                           ,tuple(sorted((str(angle.atom1.atom_type),str(angle.atom3.atom_type))))
+                                           ,angle.atom2.type
+                                           ,tuple(sorted((str(angle.atom1.type),str(angle.atom3.type))))
                                            )] for angle in structure.angles]
 
     if dihedrals:
@@ -109,8 +109,9 @@ def write_lammpsdata(structure, filename, atom_style='full'):
                                                      round(dihedral.type.c4,3),
                                                      round(dihedral.type.c5,3),
                                                      round(dihedral.type.scee,1),
-                                                     round(dihedral.type.scnb,1),
-                                                     str(dihedral.atom1.atom_type), str(dihedral.atom2.atom_type),str(dihedral.atom3.atom_type), str(dihedral.atom4.atom_type)
+                                                     round(dihedral.type.scnb,1)
+                                                     ,str(dihedral.atom1.type), str(dihedral.atom2.type),
+                                                     str(dihedral.atom3.type), str(dihedral.atom4.type)
                                                      ) for dihedral in structure.rb_torsions])))
         unique_dihedral_types = OrderedDict([(y,x+1) for x,y in unique_dihedral_types.items()])
         dihedral_types = [unique_dihedral_types[(round(dihedral.type.c0,3),
@@ -120,9 +121,9 @@ def write_lammpsdata(structure, filename, atom_style='full'):
                                                  round(dihedral.type.c4,3),
                                                  round(dihedral.type.c5,3),
                                                  round(dihedral.type.scee,1),
-                                                 round(dihedral.type.scnb,1),
-                                                 str(dihedral.atom1.atom_type), str(dihedral.atom2.atom_type),
-                                                 str(dihedral.atom3.atom_type), str(dihedral.atom4.atom_type)
+                                                 round(dihedral.type.scnb,1)
+                                                 ,str(dihedral.atom1.type), str(dihedral.atom2.type),
+                                                 str(dihedral.atom3.type), str(dihedral.atom4.type)
                                                  )] for dihedral in structure.rb_torsions]
 
     with open(filename, 'w') as data:
@@ -194,7 +195,7 @@ def write_lammpsdata(structure, filename, atom_style='full'):
             # Pair coefficients
             epsilons = [atom.epsilon for atom in structure.atoms]
             sigmas = [atom.sigma for atom in structure.atoms]
-            forcefields = [atom.atom_type for atom in structure.atoms]
+            forcefields = [atom.type for atom in structure.atoms]
             epsilon_dict = dict([(unique_types.index(atom_type)+1,epsilon) for atom_type,epsilon in zip(types,epsilons)])
             sigma_dict = dict([(unique_types.index(atom_type)+1,sigma) for atom_type,sigma in zip(types,sigmas)])
             forcefield_dict = dict([(unique_types.index(atom_type)+1,forcefield) for atom_type,forcefield in zip(types,forcefields)])
