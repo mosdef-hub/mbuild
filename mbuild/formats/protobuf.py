@@ -1,16 +1,24 @@
 import mbuild as mb
 from mbuild.formats import compound_pb2
-from google.protobuf.text_format import PrintMessage
+from google.protobuf.text_format import PrintMessage, Merge
 
 __all__ = ['write_pb2', 'read_pb2']
 
-def write_pb2(cmpd, filename):
-    """ Convert mb.Compound to Protobuff3 file
+def write_pb2(cmpd, filename, binary=True):
+    """ Convert mb.Compound to Protobuf Message file
 
     Parameters
     ---------
     cmpd : mb.Compound
     filename : str
+    binary: bool, default True 
+        If True, will print a binary file
+        If False, will print to a text file
+        Todo: This could be more elegantly detected
+
+    Notes
+    ----
+    Todo: Handle Ports in the protocol buffer (.proto) and in this writer/reader
     """
     cmpd_to_proto = {}
 
@@ -26,25 +34,37 @@ def write_pb2(cmpd, filename):
 
     _add_proto_bonds(cmpd, root_proto)
 
-    with open(filename, 'wb') as f:
-        f.write(root_proto.SerializeToString())
-    PrintMessage(root_proto, open('stuff.txt', 'w'))
+    if binary:
+        with open(filename, 'wb') as f:
+            f.write(root_proto.SerializeToString())
+    else:
+        with open(filename, 'w') as f:
+            PrintMessage(root_proto, f)
 
 
-def read_pb2(filename):
-    """ Convert a Protobuff3 file into mb.Compound
+def read_pb2(filename, binary=True):
+    """ Convert a Protobuf Message file into mb.Compound
 
     Parameters
     ---------
     filename : str
+    binary: bool, default True 
+        If True, will print a binary file
+        If False, will print to a text file
+        Todo: This could be more elegantly detected
 
     Returns
     ------
     root_compound : mb.Compound
     """
     root_proto = compound_pb2.Compound()
-    with open(filename, 'rb') as f:
-        root_proto.ParseFromString(f.read())
+    if binary:
+        with open(filename, 'rb') as f:
+            root_proto.ParseFromString(f.read())
+    else:
+        with open(filename, 'r') as f:
+            Merge(f.read(), root_proto)
+
 
     proto_to_cmpd = {}
     root_compound = _proto_to_mb(root_proto)
