@@ -54,7 +54,14 @@ def write_lammpsdata(structure, filename, atom_style='full'):
     # Internally use nm
     box = Box(lengths=np.array([0.1 * val for val in structure.box[0:3]]),
               angles=structure.box[3:6])
-
+    """
+    Note:
+    -----
+    unique_types : a sorted list of unique atom types for all atoms in the structure.
+    unique_bond_types: an enumarated OrderedDict of unique bond types for all bonds in the structure. Unique bond type is defined by bond parameters, in order, `k`, `req`, and a sorted string of atom types of component atoms.
+    unique_angle_types: an enumerated OrderedDict of unique angle types for all angles in the structure. Unique angle type is defined by angle parameteres, in order, `k`, `theteq`, `atom2.type` (vertex), and a sorted tuple of `atom1.type` and `atom3.type`.
+    unique_dihedral_types: an enumerated OrderedDict of unique dihedrals type for all dihedrals in the structure. Unique dihedral type is defined by dihedral parameters, in order, `c0`, `c1`, `c2`, `c3`, `c4`, `c5`, `scee`, `scnb`, `atom1.type`, `atom2.type`, `atom3`, `atom4.type`.
+    """
     if forcefield:
         types = [atom.type for atom in structure.atoms]
     else:
