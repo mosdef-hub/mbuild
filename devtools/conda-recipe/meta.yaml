@@ -23,6 +23,7 @@ requirements:
     - oset
     - parmed
     - mdtraj 1.9.1
+    - protobuf
 
 test:
   requires:
@@ -33,6 +34,7 @@ test:
     - ipyext
     - foyer
     - networkx
+    - protobuf
 
   source_files:
     - mbuild/examples/*
