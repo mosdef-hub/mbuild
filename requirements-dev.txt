@@ -28,3 +28,4 @@ python-coveralls
 pytest-cov>=2.4.0,<2.6
 pytest-faulthandler
 codecov
+protobuf
