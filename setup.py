@@ -14,6 +14,7 @@ from __future__ import print_function
 import os
 import subprocess
 from setuptools import setup, find_packages
+from distutils.spawn import find_executable
 
 #####################################
 VERSION = "0.9.0"
@@ -83,6 +84,31 @@ release = {release}
                            git_revision=git_revision,
                            release=isreleased))
 
+def proto_procedure():
+    # Find the Protocol Compiler and compile protocol buffers
+    # Taken from https://github.com/protocolbuffers/protobuf/blob/fcfc47d405113b59bd43c2e54daf5d9fe5c44593/python/setup.py
+    # Only compile if a protocompiler is found, otherwise don't do anything
+    if 'PROTOC' in os.environ and os.path.exists(os.environ['PROTOC']):
+      protoc = os.environ['PROTOC']
+    elif os.path.exists("../src/protoc"):
+      protoc = "../src/protoc"
+    elif os.path.exists("../src/protoc.exe"):
+      protoc = "../src/protoc.exe"
+    elif os.path.exists("../vsprojects/Debug/protoc.exe"):
+      protoc = "../vsprojects/Debug/protoc.exe"
+    elif os.path.exists("../vsprojects/Release/protoc.exe"):
+      protoc = "../vsprojects/Release/protoc.exe"
+    else:
+      protoc = find_executable("protoc")
+
+    if protoc is not None:
+        compile_proto(protoc)
+
+def compile_proto(protoc):
+    protoc_command = [protoc, '-I=mbuild/formats/', 
+            '--python_out=mbuild/formats/', 'compound.proto']
+    subprocess.call(protoc_command)
+
 
 write_version_py(VERSION, ISRELEASED, 'mbuild/version.py')
 
@@ -128,3 +154,6 @@ setup(
         'Operating System :: MacOS',
     ],
 )
+
+proto_procedure()
+
