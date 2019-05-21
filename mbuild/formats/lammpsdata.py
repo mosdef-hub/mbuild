@@ -57,10 +57,34 @@ def write_lammpsdata(structure, filename, atom_style='full'):
     """
     Note:
     -----
-    unique_types : a sorted list of unique atom types for all atoms in the structure.
-    unique_bond_types: an enumarated OrderedDict of unique bond types for all bonds in the structure. Unique bond type is defined by bond parameters, in order, `k`, `req`, and a sorted string of atom types of component atoms.
-    unique_angle_types: an enumerated OrderedDict of unique angle types for all angles in the structure. Unique angle type is defined by angle parameteres, in order, `k`, `theteq`, `atom2.type` (vertex), and a sorted tuple of `atom1.type` and `atom3.type`.
-    unique_dihedral_types: an enumerated OrderedDict of unique dihedrals type for all dihedrals in the structure. Unique dihedral type is defined by dihedral parameters, in order, `c0`, `c1`, `c2`, `c3`, `c4`, `c5`, `scee`, `scnb`, `atom1.type`, `atom2.type`, `atom3`, `atom4.type`.
+    unique_types : a sorted list of unique atomtypes for all atoms in the structure.
+        Defined by:
+            atomtype : atom.type
+    unique_bond_types: an enumarated OrderedDict of unique bond types for all bonds in the structure.
+        Defined by bond parameters and component atomtypes, in order:
+            k : bond.type.k
+            req : bond.type.k
+            atomtypes : sorted((bond.atom1.type, bond.atom2.type))
+    unique_angle_types: an enumerated OrderedDict of unique angle types for all angles in the structure.
+        Defined by angle parameteres amd component atomtypes, in order:
+            k : angle.type.k
+            theteq : angle.type.theteq
+            vertex atomtype: angle.atom2.type
+            atomtypes: sorted((bond.atom1.type, bond.atom3.type))
+    unique_dihedral_types: an enumerated OrderedDict of unique dihedrals type for all dihedrals in the structure.
+        Defined by dihedral parameters and component atomtypes, in order:
+            c0 : dihedral.type.c0
+            c1 : dihedral.type.c1
+            c2 : dihedral.type.c2
+            c3 : dihedral.type.c3
+            c4 : dihedral.type.c4
+            c5 : dihedral.type.c5
+            scee : dihedral.type.scee
+            scnb : dihedral.type.scnb
+            atomtype 1 : dihedral.atom1.type
+            atomtype 2 : dihedral.atom2.type
+            atomtype 3 : dihedral.atom3.type
+            atomtype 4 : dihedral.atom4.type
     """
     if forcefield:
         types = [atom.type for atom in structure.atoms]
@@ -86,26 +110,26 @@ def write_lammpsdata(structure, filename, atom_style='full'):
             bond_types = np.ones(len(bonds),dtype=int)
         else:
             unique_bond_types = dict(enumerate(set([(round(bond.type.k,3),
-                                                     round(bond.type.req,3)
-                                                     ,'\t'.join(sorted((str(bond.atom1.type),str(bond.atom2.type))))
+                                                     round(bond.type.req,3),
+                                                     tuple(sorted((bond.atom1.type,bond.atom2.type)))
                                                      ) for bond in structure.bonds])))
             unique_bond_types = OrderedDict([(y,x+1) for x,y in unique_bond_types.items()])
             bond_types = [unique_bond_types[(round(bond.type.k,3),
-                                             round(bond.type.req,3)
-                                             ,'\t'.join(sorted((str(bond.atom1.type),str(bond.atom2.type))))
+                                             round(bond.type.req,3),
+                                             tuple(sorted((bond.atom1.type,bond.atom2.type)))
                                              )] for bond in structure.bonds]
 
     if angles:
         unique_angle_types = dict(enumerate(set([(round(angle.type.k,3),
-                                                  round(angle.type.theteq,3)
-                                                  ,angle.atom2.type
-                                                  ,tuple(sorted((str(angle.atom1.type),str(angle.atom3.type))))
+                                                  round(angle.type.theteq,3),
+                                                  angle.atom2.type,
+                                                  tuple(sorted((angle.atom1.type,angle.atom3.type)))
                                                   ) for angle in structure.angles])))
         unique_angle_types = OrderedDict([(y,x+1) for x,y in unique_angle_types.items()])
         angle_types = [unique_angle_types[(round(angle.type.k,3),
-                                           round(angle.type.theteq,3)
-                                           ,angle.atom2.type
-                                           ,tuple(sorted((str(angle.atom1.type),str(angle.atom3.type))))
+                                           round(angle.type.theteq,3),
+                                           angle.atom2.type,
+                                           tuple(sorted((angle.atom1.type,angle.atom3.type)))
                                            )] for angle in structure.angles]
 
     if dihedrals:
@@ -116,9 +140,9 @@ def write_lammpsdata(structure, filename, atom_style='full'):
                                                      round(dihedral.type.c4,3),
                                                      round(dihedral.type.c5,3),
                                                      round(dihedral.type.scee,1),
-                                                     round(dihedral.type.scnb,1)
-                                                     ,str(dihedral.atom1.type), str(dihedral.atom2.type),
-                                                     str(dihedral.atom3.type), str(dihedral.atom4.type)
+                                                     round(dihedral.type.scnb,1),
+                                                     dihedral.atom1.type, dihedral.atom2.type,
+                                                     dihedral.atom3.type, dihedral.atom4.type
                                                      ) for dihedral in structure.rb_torsions])))
         unique_dihedral_types = OrderedDict([(y,x+1) for x,y in unique_dihedral_types.items()])
         dihedral_types = [unique_dihedral_types[(round(dihedral.type.c0,3),
@@ -128,9 +152,9 @@ def write_lammpsdata(structure, filename, atom_style='full'):
                                                  round(dihedral.type.c4,3),
                                                  round(dihedral.type.c5,3),
                                                  round(dihedral.type.scee,1),
-                                                 round(dihedral.type.scnb,1)
-                                                 ,str(dihedral.atom1.type), str(dihedral.atom2.type),
-                                                 str(dihedral.atom3.type), str(dihedral.atom4.type)
+                                                 round(dihedral.type.scnb,1),
+                                                 dihedral.atom1.type, dihedral.atom2.type,
+                                                 dihedral.atom3.type, dihedral.atom4.type
                                                  )] for dihedral in structure.rb_torsions]
 
     with open(filename, 'w') as data:
@@ -216,14 +240,15 @@ def write_lammpsdata(structure, filename, atom_style='full'):
                 data.write('\nBond Coeffs # harmonic\n\n')
                 data.write('#\tk\t\treq\n# kcal/mol/Angstrom^2\tAngstroms\n')
                 for params,idx in unique_bond_types.items():
-                    data.write('{}\t{}\t\t{}\t\t# {}\n'.format(idx,*params))
+                    data.write('{}\t{}\t\t{}\t\t# {}\t{}\n'.format(idx,params[0],params[1],params[2][0],params[2][1]))
 
             # Angle coefficients
             if angles:
                 data.write('\nAngle Coeffs # harmonic\n\n')
                 data.write('#\tk\t\ttheteq\n# kcal/mol/radians^2\tdegrees\n')
                 for params,idx in unique_angle_types.items():
-                    data.write('{}\t{}\t\t{:.5f}\t# {}\t{}\t{}\n'.format(idx,params[0],params[1],params[3][0],params[2],params[3][1]))
+                    data.write('{}\t{}\t\t{:.5f}\t# {}\t{}\t{}\n'.format(idx,params[0],params[1],
+                                                                         params[3][0],params[2],params[3][1]))
 
             # Dihedral coefficients
             if dihedrals:
@@ -236,7 +261,12 @@ def write_lammpsdata(structure, filename, atom_style='full'):
                                              params[3],
                                              params[4],
                                              params[5])
-                    data.write('{}\t{:.5f}\t{:.5f}\t\t{:.5f}\t\t{:.5f}\t# {}\t{}\t{}\t{}\n'.format(idx,opls_coeffs[0],opls_coeffs[1],opls_coeffs[2],opls_coeffs[3],params[8],params[9],params[10],params[11]))
+                    data.write('{}\t{:.5f}\t{:.5f}\t\t{:.5f}\t\t{:.5f}\t# {}\t{}\t{}\t{}\n'.format(idx,opls_coeffs[0],
+                                                                                                   opls_coeffs[1],
+                                                                                                   opls_coeffs[2],
+                                                                                                   opls_coeffs[3],
+                                                                                                   params[8],params[9],
+                                                                                                   params[10],params[11]))
 
         # Atom data
         data.write('\nAtoms\n\n')
