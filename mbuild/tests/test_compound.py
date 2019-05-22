@@ -852,3 +852,17 @@ class TestCompound(BaseTest):
         struc = pmd.load_file(get_fn('spc.pdb'))
         comp.from_parmed(struc)
         assert comp.children[0].name == 'SPC'
+
+    def test_complex_from_trajectory(self):
+        comp = mb.Compound()
+        traj = mdtraj.load(get_fn('pro_but.pdb'))
+        comp.from_trajectory(traj)
+        assert comp.children[0].children[0].name == 'pro'
+        assert comp.children[1].children[0].name == 'but'
+
+    def test_complex_from_parmed(self):
+        comp = mb.Compound()
+        struc = pmd.load_file(get_fn('pro_but.pdb'))
+        comp.from_parmed(struc)
+        assert comp.children[0].name == 'pro'
+        assert comp.children[1].name == 'but'
