@@ -100,6 +100,8 @@ def proto_procedure():
       protoc = "../vsprojects/Release/protoc.exe"
     else:
       protoc = find_executable("protoc")
+      if protoc is None:
+          protoc = find_executable("protoc.exe")
 
     if protoc is not None:
         compile_proto(protoc)
