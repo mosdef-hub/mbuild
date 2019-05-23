@@ -654,7 +654,7 @@ def _run_packmol(input_text, filled_xyz, temp_file):
         os.system('cp {0} {1}'.format(filled_xyz.name, os.path.join(temp_file)))
 
 
-def _check_packmol(PACKMOL):
+def _check_packmol(PACKMOL): # pragma: no cover
     if not PACKMOL:
         msg = "Packmol not found."
         if sys.platform.startswith("win"):

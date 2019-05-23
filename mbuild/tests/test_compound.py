@@ -164,6 +164,13 @@ class TestCompound(BaseTest):
         xyz = ch3.xyz_with_ports
         assert xyz.shape == (12, 3)
 
+    def test_xyz_setter_bad_shape(self):
+        single_compound = mb.Compound()
+        with pytest.raises(ValueError):
+            single_compound.xyz = np.zeros(shape=(4, 10))
+        with pytest.raises(ValueError):
+            single_compound.xyz_with_ports = np.zeros(shape=(4, 10))
+
     def test_particles_by_name(self, ethane):
         assert sum(1 for _ in ethane.particles()) == 8
 
@@ -531,6 +538,12 @@ class TestCompound(BaseTest):
         assert len([at for at in compound2.particles() if at.name == 'O']) == 1
 
         assert compound2.n_bonds == 9
+
+        compound3 = mb.clone(compound2)
+        compound3.xyz = np.random.random(compound3.xyz.shape)
+        compound3.from_parmed(structure, coords_only=True)
+
+        assert np.allclose(compound2.xyz, compound3.xyz)
 
     def test_resnames_parmed(self, h2o, ethane):
         system = mb.Compound([h2o, mb.clone(h2o), ethane])

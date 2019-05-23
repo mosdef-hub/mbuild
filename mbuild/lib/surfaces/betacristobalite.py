@@ -1,7 +1,6 @@
 import numpy as np
 
 import mbuild as mb
-from mbuild.lib.recipes import TiledCompound
 
 
 class Betacristobalite(mb.Compound):

@@ -6,7 +6,6 @@ import mbuild as mb
 
 from mbuild.lib.surfaces import Betacristobalite
 from mbuild.lib.atoms import H
-from mbuild.lib.recipes import Monolayer
 from mbuild.examples.alkane_monolayer.alkylsilane import AlkylSilane
 
 
