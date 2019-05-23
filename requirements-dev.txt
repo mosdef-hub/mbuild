@@ -8,7 +8,6 @@ parmed
 #       https://github.com/mdtraj/mdtraj/pull/1378
 #       Once this has been released in a new MDTraj version, this can be removed.
 mdtraj==1.9.1
-foyer
 gsd
 openbabel
 networkx
