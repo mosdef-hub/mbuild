@@ -4,7 +4,7 @@ packmol>=1!18.013
 nglview>=0.6.2.3
 oset
 parmed
-mdtraj=1.9.1;python_verion="3.5"
+mdtraj==1.9.1;python_verion="3.5"
 mdtraj;python_verion<"3.5"
 mdtraj;python_verion>"3.5"
 foyer
