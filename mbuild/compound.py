@@ -2112,7 +2112,8 @@ class Compound(object):
         else:
             self.periodicity = np.array([0., 0., 0.])
 
-    def to_parmed(self, box=None, title='', residues=None, show_ports=False):
+    def to_parmed(self, box=None, title='', residues=None, show_ports=False,
+            infer_residues=False):
         """Create a ParmEd Structure from a Compound.
 
         Parameters
@@ -2130,6 +2131,8 @@ class Compound(object):
             checking against Compound.name.
         show_ports : boolean, optional, default=False
             Include all port atoms when converting to a `Structure`.
+        infer_residues : bool, optional, default=False
+            Attempt to assign residues based on names of children.
 
         Returns
         -------
@@ -2145,6 +2148,9 @@ class Compound(object):
         structure.title = title if title else self.name
         atom_mapping = {}  # For creating bonds below
         guessed_elements = set()
+
+        if not residues and infer_residues:
+            residues = list(set([child.name for child in self.children]))
 
         if isinstance(residues, string_types):
             residues = [residues]
