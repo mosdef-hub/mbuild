@@ -4,10 +4,8 @@ packmol>=1!18.013
 nglview>=0.6.2.3
 oset
 parmed
-# TODO: Remove pinning of mdtraj version once mol2 reader issues have been resolved.
-#       https://github.com/mdtraj/mdtraj/pull/1378
-#       Once this has been released in a new MDTraj version, this can be removed.
 mdtraj
+# TODO: Add back foyer when it can be built on Python 3.7
 gsd
 openbabel
 networkx

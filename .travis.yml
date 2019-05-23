@@ -5,11 +5,9 @@ sudo: false
 matrix:
   include:
     - { os: linux, env: PYTHON_VERSION=2.7 }
-    - { os: linux, env: PYTHON_VERSION=3.5 }
     - { os: linux, env: PYTHON_VERSION=3.6 }
     - { os: linux, env: PYTHON_VERSION=3.7 }
     - { os: osx, env: PYTHON_VERSION=2.7 }
-    - { os: osx, env: PYTHON_VERSION=3.5 }
     - { os: osx, env: PYTHON_VERSION=3.6 }
     - { os: osx, env: PYTHON_VERSION=3.7 }
 
@@ -36,4 +34,4 @@ script:
 
 after_success:
   - codecov
-  - if [[ $PYTHON_VERSION == 3.5 ]] && [[ "$TRAVIS_OS_NAME" == "linux" ]]; then source devtools/travis-ci/update_gh_pages.sh; fi
+  - if [[ $PYTHON_VERSION == 3.7 ]] && [[ "$TRAVIS_OS_NAME" == "linux" ]]; then source devtools/travis-ci/update_gh_pages.sh; fi
