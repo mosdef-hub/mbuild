@@ -541,13 +541,6 @@ class TestCompound(BaseTest):
         assert struct.residues[2].name == 'Ethane'
         assert sum(len(res.atoms) for res in struct.residues) == len(struct.atoms)
 
-        struct = system.to_parmed(residues=['Ethane', 'H2O'])
-        assert len(struct.residues) == 3
-        assert struct.residues[0].name == 'H2O'
-        assert struct.residues[1].name == 'H2O'
-        assert struct.residues[2].name == 'Ethane'
-        assert sum(len(res.atoms) for res in struct.residues) == len(struct.atoms)
-
         struct = system.to_parmed(residues='Ethane')
         assert len(struct.residues) == 2
         assert struct.residues[0].name == 'RES'
@@ -557,6 +550,13 @@ class TestCompound(BaseTest):
         struct = system.to_parmed()
         assert len(struct.residues) == 1
         assert struct.residues[0].name == 'RES'
+        assert sum(len(res.atoms) for res in struct.residues) == len(struct.atoms)
+
+        struct = system.to_parmed(infer_residues=True)
+        assert len(struct.residues) == 3
+        assert struct.residues[0].name == 'H2O'
+        assert struct.residues[1].name == 'H2O'
+        assert struct.residues[2].name == 'Ethane'
         assert sum(len(res.atoms) for res in struct.residues) == len(struct.atoms)
 
     def test_parmed_element_guess(self):
