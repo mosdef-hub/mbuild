@@ -24,6 +24,6 @@ python-coveralls
 #       defined by the python-coveralls package for coverage==4.0.3.
 # This fix from:
 # https://github.com/pywbem/pywbem/commit/d85a3e73e08d2846073087733b790b5a8864d93f
-pytest-cov>=2.4.0,<2.6
+pytest-cov
 pytest-faulthandler
 codecov
