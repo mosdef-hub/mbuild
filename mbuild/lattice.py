@@ -479,7 +479,6 @@ class Lattice(object):
         for key, locations in self.lattice_points.items():
             for coords in locations:
                 for replication in it.product(range(x), range(y), range(z)):
-                    temp_location = list()
 
                     new_coords = np.asarray(coords, dtype=np.float64)
                     new_coords = np.reshape(new_coords, (1, 3), order='C')

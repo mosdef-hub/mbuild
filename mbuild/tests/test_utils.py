@@ -1,7 +1,10 @@
 import difflib
+
+import numpy as np
 import pytest
+
 from mbuild.tests.base_test import BaseTest
-from mbuild.utils.io import get_fn
+from mbuild.utils.io import get_fn, import_
 from mbuild.utils.validation import assert_port_exists
 
 
@@ -20,3 +23,15 @@ class TestUtils(BaseTest):
                 diff = difflib.ndiff(file1.readlines(), file2.readlines())
         changes = [l for l in diff if l.startswith('+ ') or l.startswith('- ')]
         assert not changes
+
+    def test_fn(self):
+        get_fn('benzene.mol2')
+
+        with pytest.raises((IOError, OSError)):
+            get_fn('garbage_file_name.foo')
+
+    def test_import(self):
+        assert np == import_('numpy')
+
+        with pytest.raises(ImportError):
+            import_('garbagepackagename')

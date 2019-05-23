@@ -1153,7 +1153,8 @@ class Compound(object):
             particle_array = np.array(list(self.particles()))
         return particle_array[idxs]
 
-    def visualize(self, show_ports=False, backend='py3dmol', color_scheme={}):
+    def visualize(self, show_ports=False, 
+            backend='py3dmol', color_scheme={}): # pragma: no cover
         """Visualize the Compound using py3dmol (default) or nglview.
 
         Allows for visualization of a Compound within a Jupyter Notebook.
@@ -2203,7 +2204,8 @@ class Compound(object):
         else:
             self.periodicity = np.array([0., 0., 0.])
 
-    def to_parmed(self, box=None, title='', residues=None, show_ports=False):
+    def to_parmed(self, box=None, title='', residues=None, show_ports=False,
+            infer_residues=False):
         """Create a ParmEd Structure from a Compound.
 
         Parameters
@@ -2221,6 +2223,8 @@ class Compound(object):
             checking against Compound.name.
         show_ports : boolean, optional, default=False
             Include all port atoms when converting to a `Structure`.
+        infer_residues : bool, optional, default=False
+            Attempt to assign residues based on names of children.
 
         Returns
         -------
@@ -2236,6 +2240,9 @@ class Compound(object):
         structure.title = title if title else self.name
         atom_mapping = {}  # For creating bonds below
         guessed_elements = set()
+
+        if not residues and infer_residues:
+            residues = list(set([child.name for child in self.children]))
 
         if isinstance(residues, string_types):
             residues = [residues]
@@ -2379,7 +2386,7 @@ class Compound(object):
             nodes, edges = child._iterate_children(nodes, edges, names_only=names_only)
         return nodes, edges
 
-    def to_intermol(self, molecule_types=None):
+    def to_intermol(self, molecule_types=None): # pragma: no cover
         """Create an InterMol system from a Compound.
 
         Parameters
@@ -2432,7 +2439,7 @@ class Compound(object):
         return intermol_system
 
     @staticmethod
-    def _add_intermol_molecule_type(intermol_system, parent):
+    def _add_intermol_molecule_type(intermol_system, parent): # pragma: no cover
         """Create a molecule type for the parent and add bonds. """
         from intermol.moleculetype import MoleculeType
         from intermol.forces.bond import Bond as InterMolBond
