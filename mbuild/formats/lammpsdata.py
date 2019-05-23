@@ -63,7 +63,7 @@ def write_lammpsdata(structure, filename, atom_style='full'):
     unique_bond_types: an enumarated OrderedDict of unique bond types for all bonds in the structure.
         Defined by bond parameters and component atomtypes, in order:
             k : bond.type.k
-            req : bond.type.k
+            req : bond.type.req
             atomtypes : sorted((bond.atom1.type, bond.atom2.type))
     unique_angle_types: an enumerated OrderedDict of unique angle types for all angles in the structure.
         Defined by angle parameteres amd component atomtypes, in order:
