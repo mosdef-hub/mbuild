@@ -1,8 +1,11 @@
 from __future__ import division
 
 from collections import OrderedDict
+from warnings import warn
+import itertools as it
 
 import numpy as np
+from parmed.parameters import ParameterSet
 
 from mbuild import Box
 from mbuild.utils.conversion import RB_to_OPLS
@@ -11,7 +14,7 @@ from mbuild.utils.sorting import natural_sort
 __all__ = ['write_lammpsdata']
 
 
-def write_lammpsdata(structure, filename, atom_style='full'):
+def write_lammpsdata(structure, filename, atom_style='full', nbfix_in_data_file=True):
     """Output a LAMMPS data file.
     
     Outputs a LAMMPS data file in the 'full' atom style format. Assumes use
@@ -176,14 +179,71 @@ def write_lammpsdata(structure, filename, atom_style='full'):
             data.write('{:d}\t{:.6f}\t# {}\n'.format(atom_type,mass,unique_types[atom_type-1]))
 
         if forcefield:
-            # Pair coefficients
-            epsilons = [atom.epsilon for atom in structure.atoms]
             sigmas = [atom.sigma for atom in structure.atoms]
-            epsilon_dict = dict([(unique_types.index(atom_type)+1,epsilon) for atom_type,epsilon in zip(types,epsilons)])
+            epsilons = [atom.epsilon for atom in structure.atoms]
             sigma_dict = dict([(unique_types.index(atom_type)+1,sigma) for atom_type,sigma in zip(types,sigmas)])
-            data.write('\nPair Coeffs # lj\n\n')
-            for idx,epsilon in epsilon_dict.items():
-                data.write('{}\t{:.5f}\t{:.5f}\n'.format(idx,epsilon,sigma_dict[idx]))
+            epsilon_dict = dict([(unique_types.index(atom_type)+1,epsilon) for atom_type,epsilon in zip(types,epsilons)])
+
+            # Modified cross-interactions
+            if structure.has_NBFIX():
+                params = ParameterSet.from_structure(structure)
+                # Sort keys (maybe they should be sorted in ParmEd)
+                new_nbfix_types = OrderedDict()
+                for key, val in params.nbfix_types.items():
+                    sorted_key = tuple(sorted(key))
+                    if sorted_key in new_nbfix_types:
+                        warn('Sorted key matches an existing key')
+                        if new_nbfix_types[sorted_key]:
+                            warn('nbfixes are not symmetric, overwriting old nbfix')
+                    new_nbfix_types[sorted_key] = params.nbfix_types[key]
+                params.nbfix_types = new_nbfix_types
+                warn('Explicitly writing cross interactions using mixing rule: {}'.format(
+                    structure.combining_rule))
+                coeffs = OrderedDict()
+                for combo in it.combinations_with_replacement(unique_types, 2):
+                    # Attempt to find pair coeffis in nbfixes
+                    if combo in params.nbfix_types:
+                        type1 = unique_types.index(combo[0])+1
+                        type2 = unique_types.index(combo[1])+1
+                        rmin = params.nbfix_types[combo][0] # Angstrom
+                        epsilon = params.nbfix_types[combo][1] # kcal
+                        sigma = rmin/2**(1/6)
+                        coeffs[(type1, type2)] = (round(sigma, 8), round(epsilon, 8))
+                    else:
+                        type1 = unique_types.index(combo[0]) + 1
+                        type2 = unique_types.index(combo[1]) + 1
+                        # Might not be necessary to be this explicit
+                        if type1 == type2:
+                            sigma = sigma_dict[type1]
+                            epsilon = epsilon_dict[type1]
+                        else:
+                            if structure.combining_rule == 'lorentz':
+                                sigma = (sigma_dict[type1]+sigma_dict[type2])*0.5
+                            elif structure.combining_rule == 'geometric':
+                                sigma = (sigma_dict[type1]*sigma_dict[type2])**0.5
+                            else:
+                                raise ValueError('Only lorentz and geometric combining rules are supported')
+                            epsilon = (epsilon_dict[type1]*epsilon_dict[type2])**0.5
+                        coeffs[(type1, type2)] = (round(sigma, 8), round(epsilon, 8))
+                if nbfix_in_data_file:
+                    data.write('\nPairIJ Coeffs # modified lj\n\n')
+                    for (type1, type2), (sigma, epsilon) in coeffs.items():
+                        data.write('{0} {1} {2} {3}\n'.format(
+                            type1, type2, epsilon, sigma))
+                else:
+                    data.write('\nPair Coeffs # lj\n\n')
+                    for idx,epsilon in epsilon_dict.items():
+                        data.write('{}\t{:.5f}\t{:.5f}\n'.format(idx,epsilon,sigma_dict[idx]))
+                    print('Copy these commands into your input script:\n')
+                    for (type1, type2), (sigma, epsilon) in coeffs.items():
+                        print('pair_coeff\t{0} {1} {2} {3}'.format(
+                            type1, type2, epsilon, sigma))
+
+            # Pair coefficients
+            else:
+                data.write('\nPair Coeffs # lj\n\n')
+                for idx,epsilon in epsilon_dict.items():
+                    data.write('{}\t{:.5f}\t{:.5f}\n'.format(idx,epsilon,sigma_dict[idx]))
 
             # Bond coefficients
             if bonds:
