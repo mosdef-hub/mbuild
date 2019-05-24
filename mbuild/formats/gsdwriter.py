@@ -1,14 +1,7 @@
 from __future__ import division
 
-from collections import OrderedDict
-from copy import deepcopy
-from math import floor
-import re
-
 import numpy as np
-from oset import oset as OrderedSet
 
-from mbuild import Box
 from mbuild.utils.io import import_
 from mbuild.utils.sorting import natural_sort
 from mbuild.utils.geometry import coord_shift
