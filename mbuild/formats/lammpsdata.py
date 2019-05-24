@@ -280,18 +280,20 @@ def write_lammpsdata(structure, filename, atom_style='full', nbfix_in_data_file=
                 if nbfix_in_data_file:
                     data.write('\nPairIJ Coeffs # modified lj\n\n')
                     data.write('# type1 type2 \tepsilon \tsigma\n')
-                    data.write('# \t\tkcal/mol \tAngstrom\n')
+                    data.write('# \t\tkcal/mol \tAngstroms\n')
                     for (type1, type2), (sigma, epsilon) in coeffs.items():
-                        data.write('{0} \t{1} \t{2} \t\t{3}\n'.format(
-                            type1, type2, epsilon, sigma))
+                        data.write('{0} \t{1} \t{2} \t\t{3}\t\t# {4}\t{5}\n'.format(
+                            type1, type2, epsilon, sigma, forcefield_dict[type1], forcefield_dict[type2]))
                 else:
                     data.write('\nPair Coeffs # lj\n\n')
                     for idx,epsilon in epsilon_dict.items():
                         data.write('{}\t{:.5f}\t{:.5f}\n'.format(idx,epsilon,sigma_dict[idx]))
                     print('Copy these commands into your input script:\n')
+                    print('# type1 type2 \tepsilon \tsigma\n')
+                    print('# \t\tkcal/mol \tAngstroms\n')
                     for (type1, type2), (sigma, epsilon) in coeffs.items():
-                        print('pair_coeff\t{0} {1} {2} {3}'.format(
-                            type1, type2, epsilon, sigma))
+                        print('pair_coeff\t{0} \t{1} \t{2} \t\t{3} \t\t# {4} \t{5}'.format(
+                            type1, type2, epsilon, sigma,forcefield_dict[type1],forcefield_dict[type2]))
 
             # Pair coefficients
             else:
