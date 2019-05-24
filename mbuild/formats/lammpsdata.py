@@ -279,8 +279,10 @@ def write_lammpsdata(structure, filename, atom_style='full', nbfix_in_data_file=
                         coeffs[(type1, type2)] = (round(sigma, 8), round(epsilon, 8))
                 if nbfix_in_data_file:
                     data.write('\nPairIJ Coeffs # modified lj\n\n')
+                    data.write('# type1 type2 \tepsilon \tsigma\n')
+                    data.write('# \t\tkcal/mol \tAngstrom\n')
                     for (type1, type2), (sigma, epsilon) in coeffs.items():
-                        data.write('{0} {1} {2} {3}\n'.format(
+                        data.write('{0} \t{1} \t{2} \t\t{3}\n'.format(
                             type1, type2, epsilon, sigma))
                 else:
                     data.write('\nPair Coeffs # lj\n\n')
