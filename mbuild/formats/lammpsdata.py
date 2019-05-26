@@ -57,7 +57,38 @@ def write_lammpsdata(structure, filename, atom_style='full', nbfix_in_data_file=
     # Internally use nm
     box = Box(lengths=np.array([0.1 * val for val in structure.box[0:3]]),
               angles=structure.box[3:6])
-
+    """
+    Note:
+    -----
+    unique_types : a sorted list of unique atomtypes for all atoms in the structure.
+        Defined by:
+            atomtype : atom.type
+    unique_bond_types: an enumarated OrderedDict of unique bond types for all bonds in the structure.
+        Defined by bond parameters and component atomtypes, in order:
+            k : bond.type.k
+            req : bond.type.req
+            atomtypes : sorted((bond.atom1.type, bond.atom2.type))
+    unique_angle_types: an enumerated OrderedDict of unique angle types for all angles in the structure.
+        Defined by angle parameteres amd component atomtypes, in order:
+            k : angle.type.k
+            theteq : angle.type.theteq
+            vertex atomtype: angle.atom2.type
+            atomtypes: sorted((bond.atom1.type, bond.atom3.type))
+    unique_dihedral_types: an enumerated OrderedDict of unique dihedrals type for all dihedrals in the structure.
+        Defined by dihedral parameters and component atomtypes, in order:
+            c0 : dihedral.type.c0
+            c1 : dihedral.type.c1
+            c2 : dihedral.type.c2
+            c3 : dihedral.type.c3
+            c4 : dihedral.type.c4
+            c5 : dihedral.type.c5
+            scee : dihedral.type.scee
+            scnb : dihedral.type.scnb
+            atomtype 1 : dihedral.atom1.type
+            atomtype 2 : dihedral.atom2.type
+            atomtype 3 : dihedral.atom3.type
+            atomtype 4 : dihedral.atom4.type
+    """
     if forcefield:
         types = [atom.type for atom in structure.atoms]
     else:
@@ -82,17 +113,27 @@ def write_lammpsdata(structure, filename, atom_style='full', nbfix_in_data_file=
             bond_types = np.ones(len(bonds),dtype=int)
         else:
             unique_bond_types = dict(enumerate(set([(round(bond.type.k,3),
-                                                     round(bond.type.req,3)) for bond in structure.bonds])))
+                                                     round(bond.type.req,3),
+                                                     tuple(sorted((bond.atom1.type,bond.atom2.type)))
+                                                     ) for bond in structure.bonds])))
             unique_bond_types = OrderedDict([(y,x+1) for x,y in unique_bond_types.items()])
             bond_types = [unique_bond_types[(round(bond.type.k,3),
-                                             round(bond.type.req,3))] for bond in structure.bonds]
+                                             round(bond.type.req,3),
+                                             tuple(sorted((bond.atom1.type,bond.atom2.type)))
+                                             )] for bond in structure.bonds]
 
     if angles:
         unique_angle_types = dict(enumerate(set([(round(angle.type.k,3),
-                                                  round(angle.type.theteq,3)) for angle in structure.angles])))
+                                                  round(angle.type.theteq,3),
+                                                  angle.atom2.type,
+                                                  tuple(sorted((angle.atom1.type,angle.atom3.type)))
+                                                  ) for angle in structure.angles])))
         unique_angle_types = OrderedDict([(y,x+1) for x,y in unique_angle_types.items()])
         angle_types = [unique_angle_types[(round(angle.type.k,3),
-                                           round(angle.type.theteq,3))] for angle in structure.angles]
+                                           round(angle.type.theteq,3),
+                                           angle.atom2.type,
+                                           tuple(sorted((angle.atom1.type,angle.atom3.type)))
+                                           )] for angle in structure.angles]
 
     if dihedrals:
         unique_dihedral_types = dict(enumerate(set([(round(dihedral.type.c0,3),
@@ -102,7 +143,10 @@ def write_lammpsdata(structure, filename, atom_style='full', nbfix_in_data_file=
                                                      round(dihedral.type.c4,3),
                                                      round(dihedral.type.c5,3),
                                                      round(dihedral.type.scee,1),
-                                                     round(dihedral.type.scnb,1)) for dihedral in structure.rb_torsions])))
+                                                     round(dihedral.type.scnb,1),
+                                                     dihedral.atom1.type, dihedral.atom2.type,
+                                                     dihedral.atom3.type, dihedral.atom4.type
+                                                     ) for dihedral in structure.rb_torsions])))
         unique_dihedral_types = OrderedDict([(y,x+1) for x,y in unique_dihedral_types.items()])
         dihedral_types = [unique_dihedral_types[(round(dihedral.type.c0,3),
                                                  round(dihedral.type.c1,3),
@@ -111,7 +155,10 @@ def write_lammpsdata(structure, filename, atom_style='full', nbfix_in_data_file=
                                                  round(dihedral.type.c4,3),
                                                  round(dihedral.type.c5,3),
                                                  round(dihedral.type.scee,1),
-                                                 round(dihedral.type.scnb,1))] for dihedral in structure.rb_torsions]
+                                                 round(dihedral.type.scnb,1),
+                                                 dihedral.atom1.type, dihedral.atom2.type,
+                                                 dihedral.atom3.type, dihedral.atom4.type
+                                                 )] for dihedral in structure.rb_torsions]
 
     with open(filename, 'w') as data:
         data.write(filename+' - created by mBuild\n\n')
@@ -179,10 +226,15 @@ def write_lammpsdata(structure, filename, atom_style='full', nbfix_in_data_file=
             data.write('{:d}\t{:.6f}\t# {}\n'.format(atom_type,mass,unique_types[atom_type-1]))
 
         if forcefield:
-            sigmas = [atom.sigma for atom in structure.atoms]
+        
             epsilons = [atom.epsilon for atom in structure.atoms]
-            sigma_dict = dict([(unique_types.index(atom_type)+1,sigma) for atom_type,sigma in zip(types,sigmas)])
+            sigmas = [atom.sigma for atom in structure.atoms]
+            forcefields = [atom.type for atom in structure.atoms]
             epsilon_dict = dict([(unique_types.index(atom_type)+1,epsilon) for atom_type,epsilon in zip(types,epsilons)])
+            sigma_dict = dict([(unique_types.index(atom_type)+1,sigma) for atom_type,sigma in zip(types,sigmas)])
+            forcefield_dict = dict([(unique_types.index(atom_type)+1,forcefield) for atom_type,forcefield in zip(types,forcefields)])
+            
+
 
             # Modified cross-interactions
             if structure.has_NBFIX():
@@ -227,39 +279,48 @@ def write_lammpsdata(structure, filename, atom_style='full', nbfix_in_data_file=
                         coeffs[(type1, type2)] = (round(sigma, 8), round(epsilon, 8))
                 if nbfix_in_data_file:
                     data.write('\nPairIJ Coeffs # modified lj\n\n')
+                    data.write('# type1 type2 \tepsilon \tsigma\n')
+                    data.write('# \t\tkcal/mol \tAngstroms\n')
                     for (type1, type2), (sigma, epsilon) in coeffs.items():
-                        data.write('{0} {1} {2} {3}\n'.format(
-                            type1, type2, epsilon, sigma))
+                        data.write('{0} \t{1} \t{2} \t\t{3}\t\t# {4}\t{5}\n'.format(
+                            type1, type2, epsilon, sigma, forcefield_dict[type1], forcefield_dict[type2]))
                 else:
                     data.write('\nPair Coeffs # lj\n\n')
                     for idx,epsilon in epsilon_dict.items():
                         data.write('{}\t{:.5f}\t{:.5f}\n'.format(idx,epsilon,sigma_dict[idx]))
                     print('Copy these commands into your input script:\n')
+                    print('# type1 type2 \tepsilon \tsigma\n')
+                    print('# \t\tkcal/mol \tAngstroms\n')
                     for (type1, type2), (sigma, epsilon) in coeffs.items():
-                        print('pair_coeff\t{0} {1} {2} {3}'.format(
-                            type1, type2, epsilon, sigma))
+                        print('pair_coeff\t{0} \t{1} \t{2} \t\t{3} \t\t# {4} \t{5}'.format(
+                            type1, type2, epsilon, sigma,forcefield_dict[type1],forcefield_dict[type2]))
 
             # Pair coefficients
             else:
-                data.write('\nPair Coeffs # lj\n\n')
+                data.write('\nPair Coeffs # lj \n\n')
+                data.write('#\tepsilon\t\tsigma\n#\tkcal/mol\tAngstrom\n')
                 for idx,epsilon in epsilon_dict.items():
-                    data.write('{}\t{:.5f}\t{:.5f}\n'.format(idx,epsilon,sigma_dict[idx]))
+                    data.write('{}\t{:.5f}\t\t{:.5f}\t\t# {}\n'.format(idx,epsilon,sigma_dict[idx],forcefield_dict[idx]))
 
             # Bond coefficients
             if bonds:
                 data.write('\nBond Coeffs # harmonic\n\n')
+                data.write('#\tk\t\treq\n# kcal/mol/Angstrom^2\tAngstroms\n')
                 for params,idx in unique_bond_types.items():
-                    data.write('{}\t{}\t{}\n'.format(idx,*params))
+                    data.write('{}\t{}\t\t{}\t\t# {}\t{}\n'.format(idx,params[0],params[1],params[2][0],params[2][1]))
 
             # Angle coefficients
             if angles:
                 data.write('\nAngle Coeffs # harmonic\n\n')
+                data.write('#\tk\t\ttheteq\n# kcal/mol/radians^2\tdegrees\n')
                 for params,idx in unique_angle_types.items():
-                    data.write('{}\t{}\t{:.5f}\n'.format(idx,*params))
+                    data.write('{}\t{}\t\t{:.5f}\t# {}\t{}\t{}\n'.format(idx,params[0],params[1],
+                                                                         params[3][0],params[2],params[3][1]))
 
             # Dihedral coefficients
             if dihedrals:
                 data.write('\nDihedral Coeffs # opls\n\n')
+                data.write('#\tf1\t\tf2\t\tf3\t\tf4\n#\tkcal/mol\tkcal/mol\tkcal/mol\tkcal/mol\n')
                 for params,idx in unique_dihedral_types.items():
                     opls_coeffs = RB_to_OPLS(params[0],
                                              params[1],
@@ -267,7 +328,12 @@ def write_lammpsdata(structure, filename, atom_style='full', nbfix_in_data_file=
                                              params[3],
                                              params[4],
                                              params[5])
-                    data.write('{}\t{:.5f}\t{:.5f}\t{:.5f}\t{:.5f}\n'.format(idx,*opls_coeffs))
+                    data.write('{}\t{:.5f}\t{:.5f}\t\t{:.5f}\t\t{:.5f}\t# {}\t{}\t{}\t{}\n'.format(idx,opls_coeffs[0],
+                                                                                                   opls_coeffs[1],
+                                                                                                   opls_coeffs[2],
+                                                                                                   opls_coeffs[3],
+                                                                                                   params[8],params[9],
+                                                                                                   params[10],params[11]))
 
         # Atom data
         data.write('\nAtoms\n\n')

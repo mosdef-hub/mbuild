@@ -37,15 +37,17 @@ class TestLammpsData(BaseTest):
                 line = fi.readline()
                 if 'PairIJ Coeffs' in line:
                     fi.readline()
-                    line = fi.readline()
+                    fi.readline()
+                    fi.readline()
+                    line = fi.readline().partition('#')[0]
                     assert np.allclose(
                         np.asarray(line.split(), dtype=float),
                         [1, 1, 0.066, 3.5])
-                    line = fi.readline()
+                    line = fi.readline().partition('#')[0]
                     assert np.allclose(
                         np.asarray(line.split(), dtype=float),
                         [1, 2, 2.1, 1.06907846])
-                    line = fi.readline()
+                    line = fi.readline().partition('#')[0]
                     assert np.allclose(
                         np.asarray(line.split(), dtype=float),
                         [2, 2, 0.03, 2.5])
