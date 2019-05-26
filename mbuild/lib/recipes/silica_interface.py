@@ -5,7 +5,6 @@ import random
 
 import mbuild as mb
 import numpy as np
-from mbuild.lib.recipes import TiledCompound
 
 
 class SilicaInterface(mb.Compound):
