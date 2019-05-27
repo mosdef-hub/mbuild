@@ -5,7 +5,7 @@ nglview>=0.6.2.3
 oset
 parmed
 mdtraj
-# TODO: Add back foyer when it can be built on Python 3.7
+foyer
 gsd
 openbabel
 networkx
