@@ -2458,6 +2458,8 @@ class Compound(object):
         if isinstance(selection, integer_types):
             return list(self.particles())[selection]
         if isinstance(selection, string_types):
+            if selection not in self.labels:
+                raise MBuildError('{}[\'{}\'] does not exist.'.format(self.name,selection))
             return self.labels.get(selection)
 
     def __repr__(self):

@@ -263,6 +263,10 @@ class TestCompound(BaseTest):
         with pytest.warns(UserWarning):
             ch3.remove_bond(ch_bond)
 
+    def test_port_does_not_exist(self, ethane):
+        with pytest.raises(MBuildError):
+            ethane['not_port']
+
     def test_center(self, methane):
         assert np.array_equal(methane.center, np.array([0, 0, 0]))
         for orientation in np.identity(3):
