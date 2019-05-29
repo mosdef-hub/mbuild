@@ -1246,7 +1246,6 @@ class Compound(object):
                         'color': '0x991f00',
                         'alpha': 0.9})
         view.zoomTo()
-        view.show()
 
         return view
 
