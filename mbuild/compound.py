@@ -2459,7 +2459,7 @@ class Compound(object):
             return list(self.particles())[selection]
         if isinstance(selection, string_types):
             if selection not in self.labels:
-                raise ValueError('{}[\'{}\'] does not exist.'.format(self.name,selection))
+                raise MBuildError('{}[\'{}\'] does not exist.'.format(self.name,selection))
             return self.labels.get(selection)
 
     def __repr__(self):
