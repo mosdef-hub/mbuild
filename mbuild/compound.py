@@ -1237,16 +1237,7 @@ class Compound(object):
                                 'color':'grey'},
                         'sphere': {'scale': 0.3,
                                     'colorscheme':modified_color_scheme}})
-        if show_ports:
-            for p in self.particles(include_ports=True):
-                if p.port_particle:
-                    view.addSphere({
-                        'center': {'x':p.pos[0], 'y':p.pos[1], 'z':p.pos[2]},
-                        'radius' :0.4,
-                        'color': '0x991f00',
-                        'alpha': 0.9})
         view.zoomTo()
-        view.show()
 
         return view
 
