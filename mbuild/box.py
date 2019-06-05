@@ -1,3 +1,5 @@
+from warnings import warn
+
 import numpy as np
 
 
@@ -15,19 +17,25 @@ class Box(object):
 
     """
     def __init__(self, lengths=None, mins=None, maxs=None, angles=None):
-        if lengths is not None:
-            assert mins is None and maxs is None
-            self._mins = np.array([0.0, 0.0, 0.0])
-            self._maxs = np.array(lengths, dtype=np.float)
-            self._lengths = np.array(lengths, dtype=np.float)
-        elif maxs is not None:
-            assert mins is not None and lengths is None
+        if lengths is None:
+            if mins is None or maxs is None:
+                raise ValueError(
+                    "Either provide `lengths` or `mins` and `maxs`. "
+                    "You provided: "
+                    "lengths={} mins={} maxs={}".format(lengths, mins, maxs)
+                )
             self._mins = np.array(mins, dtype=np.float)
             self._maxs = np.array(maxs, dtype=np.float)
             self._lengths = self.maxs - self.mins
         else:
-            raise ValueError("Either provide `lengths` or `mins` and `maxs`."
-                             "You provided: lengths={} mins={} maxs={}".format(lengths, mins, maxs))
+            warn(
+                "Provided `lengths` and `mins` and/or `maxs`. Only `lengths` "
+                "is being used. You provided: "
+                "lengths={} mins={} maxs={}".format(lengths, mins, maxs)
+            )
+            self._mins = np.array([0.0, 0.0, 0.0])
+            self._maxs = np.array(lengths, dtype=np.float)
+            self._lengths = np.array(lengths, dtype=np.float)
         if angles is None:
             angles = np.array([90.0, 90.0, 90.0])
         elif isinstance(angles, (list, np.ndarray)):
