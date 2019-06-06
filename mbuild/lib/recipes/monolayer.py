@@ -4,7 +4,6 @@ from warnings import warn
 import numpy as np
 
 import mbuild as mb
-from mbuild.lib.recipes.tiled_compound import TiledCompound
 
 __all__ = ['Monolayer']
 

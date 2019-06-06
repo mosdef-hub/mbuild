@@ -3,7 +3,6 @@ import mbuild as mb
 
 from mbuild.lib.moieties import CH2
 from mbuild.lib.moieties import CH3
-from mbuild.lib.recipes import Polymer
 
 
 class Alkane(mb.Compound):
