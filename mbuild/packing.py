@@ -205,7 +205,7 @@ def fill_box(compound, n_compounds=None, box=None, density=None, overlap=0.2,
         # Create the topology and update the coordinates.
         filled = Compound()
         filled = _create_topology(filled, compound, n_compounds)
-        filled.update_coordinates(filled_xyz.name)
+        filled.update_coordinates(filled_xyz.name, update_port_locations=False)
         filled.periodicity = np.asarray(box.lengths, dtype=np.float32)
 
     finally:
@@ -309,7 +309,7 @@ def fill_region(compound, n_compounds, region, overlap=0.2,
         # Create the topology and update the coordinates.
         filled = Compound()
         filled = _create_topology(filled, compound, n_compounds)
-        filled.update_coordinates(filled_xyz.name)
+        filled.update_coordinates(filled_xyz.name, update_port_locations=False)
     finally:
         for file_handle in compound_xyz_list:
             file_handle.close()
@@ -352,7 +352,7 @@ def fill_sphere(compound, sphere, n_compounds=None, density=None, overlap=0.2,
         conditions in its optimization.
     compound_ratio : list, default=None
         Ratio of number of each compound to be put in sphere. Only used in the
-        case of `density` having been specified, `n_compounds` not specified, 
+        case of `density` having been specified, `n_compounds` not specified,
         and more than one `compound`.
     fix_orientation : bool or list of bools
         Specify that compounds should not be rotated when filling the sphere,
@@ -459,7 +459,7 @@ def fill_sphere(compound, sphere, n_compounds=None, density=None, overlap=0.2,
         # Create the topology and update the coordinates.
         filled = Compound()
         filled = _create_topology(filled, compound, n_compounds)
-        filled.update_coordinates(filled_xyz.name)
+        filled.update_coordinates(filled_xyz.name, update_port_locations=False)
     finally:
         for file_handle in compound_xyz_list:
             file_handle.close()
@@ -554,7 +554,7 @@ def solvate(solute, solvent, n_solvent, box, overlap=0.2,
         solvated = Compound()
         solvated.add(solute)
         solvated = _create_topology(solvated, solvent, n_solvent)
-        solvated.update_coordinates(solvated_xyz.name)
+        solvated.update_coordinates(solvated_xyz.name, update_port_locations=False)
 
     finally:
         for file_handle in solvent_xyz_list:
