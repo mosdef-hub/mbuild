@@ -15,9 +15,9 @@ __all__ = ['write_lammpsdata']
 
 
 def write_lammpsdata(structure, filename, atom_style='full', 
-                    detect_forcefield_style=True, use_urey_bradleys=False,
-                    use_rb_torsions=True, use_dihedrals=False, 
-                    nbfix_in_data_file=True):
+                    detect_forcefield_style=True, nbfix_in_data_file=True,
+                    use_urey_bradleys=False,
+                    use_rb_torsions=True, use_dihedrals=False):
     """Output a LAMMPS data file.
     
     Outputs a LAMMPS data file in the 'full' atom style format. Assumes use
