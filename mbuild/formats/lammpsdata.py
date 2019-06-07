@@ -266,7 +266,9 @@ def write_lammpsdata(structure, filename, atom_style='full',
             
     if impropers:
             unique_improper_types = dict(enumerate(set([(round(improper.type.psi_k,3),
-                                                         round(improper.type.psi_eq,3)) for improper in structure.impropers])))
+                                                         round(improper.type.psi_eq,3),
+                                                         improper.atom1.type, improper.atom2.type,
+                                                         improper.atom3.type, improper.atom4.type) for improper in structure.impropers])))
             unique_improper_types = OrderedDict([(y,x+1) for x,y in unique_improper_types.items()])
             improper_types = [unique_improper_types[(round(improper.type.psi_k,3),
                                                      round(improper.type.psi_eq,3),
@@ -395,9 +397,8 @@ def write_lammpsdata(structure, filename, atom_style='full',
                             epsilon = (epsilon_dict[type1]*epsilon_dict[type2])**0.5
                         coeffs[(type1, type2)] = (round(sigma, 8), round(epsilon, 8))
                 if nbfix_in_data_file:
-                    data.write('\nPairIJ Coeffs # modified lj\n\n')
-                    data.write('# type1 type2 \tepsilon \tsigma\n')
-                    data.write('# \t\tkcal/mol \tAngstroms\n')
+                    data.write('\nPairIJ Coeffs # modified lj\n')
+                    data.write('# type1 type2 \tepsilon (kcal/mol) \tsigma (Angstrom)\n')
                     for (type1, type2), (sigma, epsilon) in coeffs.items():
                         data.write('{0} \t{1} \t{2} \t\t{3}\t\t# {4}\t{5}\n'.format(
                             type1, type2, epsilon, sigma, forcefield_dict[type1], forcefield_dict[type2]))
@@ -406,36 +407,36 @@ def write_lammpsdata(structure, filename, atom_style='full',
                     for idx,epsilon in epsilon_dict.items():
                         data.write('{}\t{:.5f}\t{:.5f}\n'.format(idx,epsilon,sigma_dict[idx]))
                     print('Copy these commands into your input script:\n')
-                    print('# type1 type2 \tepsilon \tsigma\n')
-                    print('# \t\tkcal/mol \tAngstroms\n')
+                    print('# type1 type2 \tepsilon (kcal/mol) \tsigma (Angstrom)\n')
                     for (type1, type2), (sigma, epsilon) in coeffs.items():
                         print('pair_coeff\t{0} \t{1} \t{2} \t\t{3} \t\t# {4} \t{5}'.format(
                             type1, type2, epsilon, sigma,forcefield_dict[type1],forcefield_dict[type2]))
 
             # Pair coefficients
             else:
-                data.write('\nPair Coeffs # lj \n\n')
-                data.write('#\tepsilon\t\tsigma\n#\tkcal/mol\tAngstrom\n')
+                data.write('\nPair Coeffs # lj \n')
+                data.write('#\tepsilon (kcal/mol)\t\tsigma (Angstrom)\n')
                 for idx,epsilon in epsilon_dict.items():
                     data.write('{}\t{:.5f}\t\t{:.5f}\t\t# {}\n'.format(idx,epsilon,sigma_dict[idx],forcefield_dict[idx]))
 
             # Bond coefficients
             if bonds:
-                data.write('\nBond Coeffs # harmonic\n\n')
-                data.write('#\tk\t\treq\n# kcal/mol/Angstrom^2\tAngstroms\n')
+                data.write('\nBond Coeffs # harmonic\n')
+                data.write('#\tk(kcal/mol/angstrom^2)\t\treq(angstrom)\n')
                 for params,idx in unique_bond_types.items():
                     data.write('{}\t{}\t\t{}\t\t# {}\t{}\n'.format(idx,params[0],params[1],params[2][0],params[2][1]))
 
             # Angle coefficients
             if angles:
                 if use_urey_bradleys:
-                    data.write('\nAngle Coeffs # charmm\n\n')
+                    data.write('\nAngle Coeffs # charmm\n')
+                    data.write('#\tk(kcal/mol/rad^2)\t\ttheteq(deg)\tk(kcal/mol/angstrom^2)\treq(angstrom)\n')
                     for params,idx in unique_angle_types.items():
                         data.write('{}\t{}\t{:.5f}\t{:.5f}\t{:.5f}\n'.format(idx,*params))
 
                 else:
-                    data.write('\nAngle Coeffs # harmonic\n\n')
-                    data.write('#\tk\t\ttheteq\n# kcal/mol/radians^2\tdegrees\n')
+                    data.write('\nAngle Coeffs # harmonic\n')
+                    data.write('#\tk(kcal/mol/rad^2)\t\ttheteq(deg)\n')
                     for params,idx in unique_angle_types.items():
                         data.write('{}\t{}\t\t{:.5f}\t# {}\t{}\t{}\n'.format(idx,params[0],params[1],
                                                                              params[3][0],params[2],params[3][1]))
@@ -443,8 +444,8 @@ def write_lammpsdata(structure, filename, atom_style='full',
             # Dihedral coefficients
             if dihedrals:
                 if use_rb_torsions:
-                    data.write('\nDihedral Coeffs # opls\n\n')
-                    data.write('#\tf1\t\tf2\t\tf3\t\tf4\n#\tkcal/mol\tkcal/mol\tkcal/mol\tkcal/mol\n')
+                    data.write('\nDihedral Coeffs # opls\n')
+                    data.write('#\tf1(kcal/mol)\tf2(kcal/mol)\tf3(kcal/mol)\tf4(kcal/mol)\n')
                     for params,idx in unique_dihedral_types.items():
                         opls_coeffs = RB_to_OPLS(params[0],
                                                  params[1],
@@ -459,7 +460,8 @@ def write_lammpsdata(structure, filename, atom_style='full',
                                                                                                        params[8],params[9],
                                                                                                        params[10],params[11]))
                 elif use_dihedrals:
-                    data.write('\nDihedral Coeffs # charmm\n\n')
+                    data.write('\nDihedral Coeffs # charmm\n')
+                    data.write('#k, n, phi, weight\n')
                     for params, idx in unique_dihedral_types.items():
                         data.write('{}\t{:.5f}\t{:d}\t{:d}\t{:.5f}\t# {}\t{}\t{}\t{}\n'.format(idx, params[0],
                                                                                                 params[1], params[2],
@@ -468,7 +470,8 @@ def write_lammpsdata(structure, filename, atom_style='full',
 
             # Improper coefficients
             if impropers:
-                data.write('\nImproper Coeffs # harmonic\n\n')
+                data.write('\nImproper Coeffs # harmonic\n')
+                data.write('#k, psi\n')
                 for params,idx in unique_improper_types.items():
                     data.write('{}\t{:.5f}\t{:.5f}\t# {}\t{}\t{}\t{}\n'.format(idx, params[0],
                                                                                 params[1], params[2],
