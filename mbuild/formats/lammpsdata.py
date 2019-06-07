@@ -198,7 +198,7 @@ def write_lammpsdata(structure, filename, atom_style='full',
                                            round(angle.type.theteq,3),
                                            round(ub_k, 3),
                                            round(ub_req, 3),
-                                           tuple(sorted(angle.atom1.type,angle.atom3.type))))
+                                           tuple(sorted((angle.atom1.type,angle.atom3.type)))))
 
             unique_angle_types = dict(enumerate(set(charmm_angle_types)))
             unique_angle_types = OrderedDict([(y,x+1) for x,y in unique_angle_types.items()])
@@ -428,7 +428,6 @@ def write_lammpsdata(structure, filename, atom_style='full',
 
             # Angle coefficients
             if angles:
-<<<<<<< HEAD
                 if use_urey_bradleys:
                     data.write('\nAngle Coeffs # charmm\n\n')
                     for params,idx in unique_angle_types.items():
