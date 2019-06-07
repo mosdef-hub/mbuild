@@ -6,11 +6,10 @@ import mbuild as mb
 
 from mbuild.lib.surfaces import Betacristobalite
 from mbuild.lib.atoms import H
-from mbuild.lib.recipes import Monolayer
 from mbuild.examples.alkane_monolayer.alkylsilane import AlkylSilane
 
 
-class AlkaneMonolayer(mb.recipes.Monolayer):
+class AlkaneMonolayer(mb.lib.recipes.Monolayer):
     """An akylsilane monolayer on beta-cristobalite. """
 
     def __init__(self, pattern, tile_x=1, tile_y=1, chain_length=10):
