@@ -55,8 +55,6 @@ class TestLammpsData(BaseTest):
                 line = fi.readline()
                 if 'PairIJ Coeffs' in line:
                     fi.readline()
-                    fi.readline()
-                    fi.readline()
                     line = fi.readline().partition('#')[0]
                     assert np.allclose(
                         np.asarray(line.split(), dtype=float),
