@@ -106,6 +106,9 @@ def fill_box(compound, n_compounds=None, box=None, density=None, overlap=0.2,
         default=False.
     temp_file : str, default=None
         File name to write PACKMOL's raw output to.
+    update_port_locations : bool, default=False
+        After packing, port locations can be updated, but since compounds
+        can be rotated, port orientation may be incorrect.
 
     Returns
     -------
@@ -244,6 +247,9 @@ def fill_region(compound, n_compounds, region, overlap=0.2,
         default=False.
     temp_file : str, default=None
         File name to write PACKMOL's raw output to.
+    update_port_locations : bool, default=False
+        After packing, port locations can be updated, but since compounds
+        can be rotated, port orientation may be incorrect.
 
     Returns
     -------
@@ -361,6 +367,9 @@ def fill_sphere(compound, sphere, n_compounds=None, density=None, overlap=0.2,
         default=False.
     temp_file : str, default=None
         File name to write PACKMOL's raw output to.
+    update_port_locations : bool, default=False
+        After packing, port locations can be updated, but since compounds
+        can be rotated, port orientation may be incorrect.
 
     Returns
     -------
@@ -499,6 +508,9 @@ def solvate(solute, solvent, n_solvent, box, overlap=0.2,
         default=False.
     temp_file : str, default=None
         File name to write PACKMOL's raw output to.
+    update_port_locations : bool, default=False
+        After packing, port locations can be updated, but since compounds
+        can be rotated, port orientation may be incorrect.
 
     Returns
     -------
