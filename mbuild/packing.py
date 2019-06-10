@@ -55,7 +55,8 @@ constrain_rotation z 0. 0.
 
 def fill_box(compound, n_compounds=None, box=None, density=None, overlap=0.2,
              seed=12345, edge=0.2, compound_ratio=None,
-             aspect_ratio=None, fix_orientation=False, temp_file=None):
+             aspect_ratio=None, fix_orientation=False, temp_file=None,
+             update_port_locations=False):
     """Fill a box with a compound using packmol.
 
     Two arguments of `n_compounds, box, and density` must be specified.
@@ -205,7 +206,7 @@ def fill_box(compound, n_compounds=None, box=None, density=None, overlap=0.2,
         # Create the topology and update the coordinates.
         filled = Compound()
         filled = _create_topology(filled, compound, n_compounds)
-        filled.update_coordinates(filled_xyz.name, update_port_locations=False)
+        filled.update_coordinates(filled_xyz.name, update_port_locations=update_port_locations)
         filled.periodicity = np.asarray(box.lengths, dtype=np.float32)
 
     finally:
@@ -218,7 +219,8 @@ def fill_box(compound, n_compounds=None, box=None, density=None, overlap=0.2,
 
 
 def fill_region(compound, n_compounds, region, overlap=0.2,
-                seed=12345, edge=0.2, fix_orientation=False, temp_file=None):
+                seed=12345, edge=0.2, fix_orientation=False, temp_file=None,
+                update_port_locations=False):
     """Fill a region of a box with a compound using packmol.
 
     Parameters
@@ -309,7 +311,7 @@ def fill_region(compound, n_compounds, region, overlap=0.2,
         # Create the topology and update the coordinates.
         filled = Compound()
         filled = _create_topology(filled, compound, n_compounds)
-        filled.update_coordinates(filled_xyz.name, update_port_locations=False)
+        filled.update_coordinates(filled_xyz.name, update_port_locations=update_port_locations)
     finally:
         for file_handle in compound_xyz_list:
             file_handle.close()
@@ -321,7 +323,7 @@ def fill_region(compound, n_compounds, region, overlap=0.2,
 
 def fill_sphere(compound, sphere, n_compounds=None, density=None, overlap=0.2,
                 seed=12345, edge=0.2, compound_ratio=None,
-                fix_orientation=False, temp_file=None):
+                fix_orientation=False, temp_file=None, update_port_locations=False):
     """Fill a sphere with a compound using packmol.
 
     One argument of `n_compounds and density` must be specified.
@@ -459,7 +461,7 @@ def fill_sphere(compound, sphere, n_compounds=None, density=None, overlap=0.2,
         # Create the topology and update the coordinates.
         filled = Compound()
         filled = _create_topology(filled, compound, n_compounds)
-        filled.update_coordinates(filled_xyz.name, update_port_locations=False)
+        filled.update_coordinates(filled_xyz.name, update_port_locations=update_port_locations)
     finally:
         for file_handle in compound_xyz_list:
             file_handle.close()
@@ -470,7 +472,8 @@ def fill_sphere(compound, sphere, n_compounds=None, density=None, overlap=0.2,
 
 
 def solvate(solute, solvent, n_solvent, box, overlap=0.2,
-            seed=12345, edge=0.2, fix_orientation=False, temp_file=None):
+            seed=12345, edge=0.2, fix_orientation=False, temp_file=None,
+            update_port_locations=False):
     """Solvate a compound in a box of solvent using packmol.
 
     Parameters
@@ -554,7 +557,7 @@ def solvate(solute, solvent, n_solvent, box, overlap=0.2,
         solvated = Compound()
         solvated.add(solute)
         solvated = _create_topology(solvated, solvent, n_solvent)
-        solvated.update_coordinates(solvated_xyz.name, update_port_locations=False)
+        solvated.update_coordinates(solvated_xyz.name, update_port_locations=update_port_locations)
 
     finally:
         for file_handle in solvent_xyz_list:
