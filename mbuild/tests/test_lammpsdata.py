@@ -32,6 +32,18 @@ class TestLammpsData(BaseTest):
 
         from mbuild.formats.lammpsdata import write_lammpsdata
         write_lammpsdata(structure, 'charmm_dihedral.lammps')
+        out_lammps = open('charmm_dihedral.lammps', 'r').readlines()
+        for i, line in enumerate(out_lammps):
+            if 'Angle Coeffs' in line:
+                assert '# charmm' in line
+                assert '#\tk(kcal/mol/rad^2)\t\ttheteq(deg)\tk(kcal/mol/angstrom^2)\treq(angstrom)\n' in out_lammps[i+1]
+                assert len(out_lammps[i+2].split('#')[0].split()) == 5
+            elif 'Dihedral Coeffs' in line:
+                assert '# charmm' in line
+                assert '#k, n, phi, weight' in out_lammps[i+1]
+                assert len(out_lammps[i+2].split('#')[0].split()) == 5
+            else:
+                pass
 
     @pytest.mark.skipif(not has_foyer, reason="Foyer package not installed")
     def test_save_box(self, ethane):
