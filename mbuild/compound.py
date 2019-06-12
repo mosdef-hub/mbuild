@@ -2283,16 +2283,16 @@ class Compound(object):
                 atomic_number = None
                 name = ''.join(char for char in atom.name if not char.isdigit())
                 try:
-                    atomic_number = AtomicNum[atom.name]
+                    atomic_number = AtomicNum[atom.name.capitalize()]
                 except KeyError:
-                    element = element_by_name(atom.name)
+                    element = element_by_name(atom.name.capitalize())
                     if name not in guessed_elements:
                         warn(
                             'Guessing that "{}" is element: "{}"'.format(
                                 atom, element))
                         guessed_elements.add(name)
                 else:
-                    element = atom.name
+                    element = atom.name.capitalize()
 
                 atomic_number = atomic_number or AtomicNum[element]
                 mass = Mass[element]
