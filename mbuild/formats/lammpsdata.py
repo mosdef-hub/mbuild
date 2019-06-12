@@ -139,13 +139,13 @@ def write_lammpsdata(structure, filename, atom_style='full',
         else:
             use_dihedrals = False
     if use_rb_torsions and use_dihedrals:
-        raise FoyerError("Multiple dihedral styles detected, check your "
+        raise ValueError("Multiple dihedral styles detected, check your "
                          "Forcefield XML and structure")
 
     # Check impropers
     for dihedral in structure.dihedrals:
         if dihedral.improper:
-            raise FoyerError("Amber-style impropers are currently not supported")
+            raise ValueError("Amber-style impropers are currently not supported")
 
     bonds = [[bond.atom1.idx+1, bond.atom2.idx+1] for bond in structure.bonds]
     angles = [[angle.atom1.idx+1,
