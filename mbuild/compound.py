@@ -2784,5 +2784,26 @@ class Compound(object):
                     "Cloning failed. Compound contains bonds to "
                     "Particles outside of its containment hierarchy.")
 
+    def get_SMILES(self):
+        """Get SMILES string for Compound.
+
+        Returns
+        -------
+        smiles : SMILES string
+        """
+        pybel = import_('pybel')
+
+        with tempfile.NamedTemporaryFile() as tmp:
+            try:
+                fformat = "pdb"
+                fname = "{}.{}".format(tmp.name, fformat)
+                self.save(fname)
+                # pybel readfile retruns a generator
+                my_mol = next(pybel.readfile(filename=fname, format=fformat))
+                # we only need the smiles string
+                smiles = my_mol.write().split()[0]
+            finally:
+                os.remove(fname)
+        return smiles
 
 Particle = Compound
