@@ -2383,8 +2383,8 @@ class Compound(object):
 
         Parameters
         ---------
-        box
-        title
+        box : mb.Box, def None
+        title : str
         residues
         show_ports
         infer_residues
@@ -2418,7 +2418,32 @@ class Compound(object):
             box = self.boundingbox
         a, b, c = 10.0 * box.lengths
         alpha, beta, gamma = np.radians(box.angles)
-        ucell.SetData(a, b, c, alpha, beta, gamma)
+
+        cosa = np.cos(alpha)
+        cosb = np.cos(beta)
+        sinb = np.sin(beta)
+        cosg = np.cos(gamma)
+        sing = np.sin(gamma)
+        mat_coef_y = (cosa - cosb * cosg) / sing
+        mat_coef_z = np.power(sinb, 2, dtype=float) - \
+                    np.power(mat_coef_y, 2, dtype=float)
+
+        if mat_coef_z > 0.:
+            mat_coef_z = np.sqrt(mat_coef_z)
+        else:
+            raise Warning('Non-positive z-vector. Angles {} '
+                                  'do not generate a box with the z-vector in the'
+                                  'positive z direction'.format(box.angles))
+
+        box_vec = [[1, 0, 0],
+                    [cosg, sing, 0],
+                    [cosb, mat_coef_y, mat_coef_z]]
+        box_vec = np.asarray(box_vec)
+        box_mat = (box.lengths * box_vec.T).T
+        first_vector = openbabel.vector3(*box_mat[0])
+        second_vector = openbabel.vector3(*box_mat[1])
+        third_vector = openbabel.vector3(*box_mat[2])
+        ucell.SetData(first_vector, second_vector, third_vector)
         mol.CloneData(ucell)
 
         for bond in cmpd.bonds():
