@@ -2402,12 +2402,12 @@ class Compound(object):
         """
 
         openbabel = import_('openbabel')
-        pybabel = import_('pybabel')
+        pybel = import_('pybel')
 
         mol = openbabel.OBMol()
         particle_to_atom_index = {}
 
-        for i, part in enumerate(cmpd.particles()):
+        for i, part in enumerate(self.particles()):
             temp = mol.NewAtom()
             temp.SetAtomicNum(AtomicNum[part.name.capitalize()])
             temp.SetVector(*(part.xyz[0]*10))
@@ -2446,7 +2446,7 @@ class Compound(object):
         ucell.SetData(first_vector, second_vector, third_vector)
         mol.CloneData(ucell)
 
-        for bond in cmpd.bonds():
+        for bond in self.bonds():
             bond_order = 1
             mol.AddBond(particle_to_atom_index[bond[0]]+1, 
                     particle_to_atom_index[bond[1]]+1, 
