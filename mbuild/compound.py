@@ -2377,6 +2377,61 @@ class Compound(object):
             nodes, edges = child._iterate_children(nodes, edges, names_only=names_only)
         return nodes, edges
 
+    def to_pybel(self, box=None, title='', residues=None, show_ports=False,
+            infer_residues=False):
+        """ Create a pybel.Molecule from a Compound
+
+        Parameters
+        ---------
+        box
+        title
+        residues
+        show_ports
+        infer_residues
+
+        Returns
+        ------
+        pybel.Molecule
+
+        Notes
+        -----
+        Most of the mb.Compound is first converted to openbabel.OBMol 
+        And then pybel creates a pybel.Molecule from the OBMol
+        Bond orders are assumed to be 1
+        OBMol atom indexing starts at 1, with spatial dimension Angstrom
+        """
+
+        openbabel = import_('openbabel')
+        pybabel = import_('pybabel')
+
+        mol = openbabel.OBMol()
+        particle_to_atom_index = {}
+
+        for i, part in enumerate(cmpd.particles()):
+            temp = mol.NewAtom()
+            temp.SetAtomicNum(AtomicNum[part.name.capitalize()])
+            temp.SetVector(*(part.xyz[0]*10))
+            particle_to_atom_index[part] = i
+
+        ucell = openbabel.OBUnitCell()
+        if box is None:
+            box = self.boundingbox
+        a, b, c = 10.0 * box.lengths
+        alpha, beta, gamma = np.radians(box.angles)
+        ucell.SetData(a, b, c, alpha, beta, gamma)
+        mol.CloneData(ucell)
+
+        for bond in cmpd.bonds():
+            bond_order = 1
+            mol.AddBond(particle_to_atom_index[bond[0]]+1, 
+                    particle_to_atom_index[bond[1]]+1, 
+                    bond_order)
+
+        pybelmol = pybel.Molecule(mol)
+        pybelmol.title = title if title else self.name
+
+        return pybelmol
+
     def to_intermol(self, molecule_types=None): # pragma: no cover
         """Create an InterMol system from a Compound.
 
