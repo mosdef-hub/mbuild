@@ -854,3 +854,11 @@ class TestCompound(BaseTest):
         assert graph.number_of_nodes() == 9
 
         assert all([isinstance(n, str) for n in graph.nodes()])
+
+    @pytest.mark.skipif(not has_openbabel, reason="NetworkX is not installed")
+    def test_to_pybel(self, ethane):
+        pybel_mol = ethane.to_pybel(box=None)
+        assert pybel_mol.OBMol.NumAtoms() == 8 
+        assert pybel_mol.OBMol.NumBonds() == 7 
+        assert np.allclose([pybel_mol.unitcell.GetA(), pybel_mol.unitcell.GetB(), 
+            pybel_mol.unitcell.GetC()], [0.2139999, 0.29380001, 0.1646])
