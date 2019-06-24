@@ -114,6 +114,8 @@ def compile_proto(protoc):
 
 write_version_py(VERSION, ISRELEASED, 'mbuild/version.py')
 
+proto_procedure()
+
 setup(
     name='mbuild',
     version=__version__,
@@ -156,6 +158,4 @@ setup(
         'Operating System :: MacOS',
     ],
 )
-
-proto_procedure()
 
