@@ -30,7 +30,6 @@ test:
     - jupyter
     - nbformat
     - ipykernel
-    - ipyext
     - foyer
     - networkx
 
