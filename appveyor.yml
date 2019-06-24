@@ -16,11 +16,11 @@ install:
   - conda config --add channels janschulz
   - conda config --add channels conda-forge
   - conda config --add channels mosdef
-  - conda update -yq --all
-  - conda install -yq conda-build jinja2
+  - conda update -y --all
+  - conda install -y conda-build jinja2
 
 build: false
 
 test_script:
   - activate base
-  - conda build --quiet devtools\\conda-recipe
+  - conda build devtools\\conda-recipe
