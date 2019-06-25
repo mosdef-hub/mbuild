@@ -26,4 +26,4 @@ build: false
 
 test_script:
   - activate base
-  - conda build devtools\\conda-recipe
+  - conda build --python %PYTHON_VERSION% devtools\\conda-recipe
