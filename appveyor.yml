@@ -20,7 +20,7 @@ install:
   - conda config --add channels mosdef
   - conda update -y --all
   - activate
-  - conda install -y conda-build jinja2
+  - conda install -y python=%PYTHON_VERSION% conda-build jinja2
 
 build: false
 
