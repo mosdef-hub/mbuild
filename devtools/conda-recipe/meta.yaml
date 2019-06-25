@@ -38,6 +38,7 @@ test:
 
   commands:
     - set LNAME=mosdef
+    - activate
     - pytest -v --pyargs mbuild
 
 about:
