@@ -2530,6 +2530,7 @@ class Compound(object):
         # This could just as easily be implemented by 
         # an OBMolAtomIter from the openbabel library, 
         # but this seemed more convenient at time of writing
+        # pybel atoms are 1-indexed, coordinates in Angstrom
         for atom in pybel_mol.atoms:
             xyz = np.array(atom.coords)/10
             if use_element:
