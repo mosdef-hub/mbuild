@@ -16,7 +16,7 @@ from mdtraj.core.element import get_by_symbol
 import numpy as np
 from oset import oset as OrderedSet
 import parmed as pmd
-from parmed.periodic_table import AtomicNum, element_by_name, Mass
+from parmed.periodic_table import AtomicNum, element_by_name, Mass, Element
 from six import integer_types, string_types
 
 from mbuild.bond_graph import BondGraph
@@ -2456,6 +2456,52 @@ class Compound(object):
         pybelmol.title = title if title else self.name
 
         return pybelmol
+
+    @staticmethod
+    def from_pybel(pybel_mol, return_box=True):
+        """Create a Compound from a Pybel.Molecule
+        
+        Parameters
+        ---------
+        pybel_mol: pybel.Molecule
+        return_box : bool, default True
+            If True, construct mb.Box from pybel_mol.unitcell information
+            
+        Returns
+        ------
+        cmpd : mb.Compound
+        box : mb.Box
+            Only if return_box=True
+            """
+
+        cmpd = Compound(name=pybel_mol.title.split('.')[0])
+        all_particles = []
+        # pybel.Atom objects are 1-indexed, coordinates are Angstroms
+        for i in range(pybel_mol.OBMol.NumAtoms()):
+            atom = pybel_mol.OBMol.GetAtom(i+1)
+            atomic_num = atom.GetAtomicNum()
+            x,y,z = atom.GetX()/10, atom.GetY()/10, atom.GetZ()/10
+            temp = Particle(name=Element[atomic_num], pos=[x,y,z])
+            all_particles.append(temp)
+            cmpd.add(temp)
+
+        # Bonds are 0-indexed
+        for i in range(pybel_mol.OBMol.NumBonds()):
+            bond = pybel_mol.OBMol.GetBond(i)
+            cmpd.add_bond([all_particles[bond.GetBeginAtomIdx()], 
+                            all_particles[bond.GetEndAtomIdx()]])
+
+        if not return_box:
+            return cmpd
+
+        box = Box(lengths=[pybel_mol.unitcell.GetA()/10, 
+                            pybel_mol.unitcell.GetB()/10, 
+                            pybel_mol.unitcell.GetC()/10],
+                    angles=[pybel_mol.unitcell.GetAlpha(), 
+                            pybel_mol.unitcell.GetBeta(), 
+                            pybel_mol.unitcell.GetGamma()])
+
+        return cmpd, box
 
     def to_intermol(self, molecule_types=None): # pragma: no cover
         """Create an InterMol system from a Compound.
