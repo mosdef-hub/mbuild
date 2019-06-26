@@ -124,12 +124,8 @@ def load(filename, relative_to_module=None, compound=None, coords_only=False,
                 warn("More than one SMILES string in file, more than one SMILES "
                      "string is not supported, using {}".format(mymol.write("smi")))
 
-        tmp_dir = tempfile.mkdtemp()
-        temp_file = os.path.join(tmp_dir, 'smiles_to_mol2_intermediate.mol2')
         mymol.make3D()
-        mymol.write("MOL2", temp_file)
-        structure = pmd.load_file(temp_file, structure=True, **kwargs)
-        compound.from_parmed(structure, coords_only=coords_only)
+        compound = Compound.from_pybel(mymol, return_box=False)
 
     else:
         traj = md.load(filename, **kwargs)
@@ -2491,15 +2487,20 @@ class Compound(object):
             cmpd.add_bond([all_particles[bond.GetBeginAtomIdx()-1], 
                             all_particles[bond.GetEndAtomIdx()-1]])
 
+        if hasattr(pybel_mol, 'unitcell'):
+            box = Box(lengths=[pybel_mol.unitcell.GetA()/10, 
+                                pybel_mol.unitcell.GetB()/10, 
+                                pybel_mol.unitcell.GetC()/10],
+                        angles=[pybel_mol.unitcell.GetAlpha(), 
+                                pybel_mol.unitcell.GetBeta(), 
+                                pybel_mol.unitcell.GetGamma()])
+            cmpd.periodicity = box.lengths
+        else:
+            warn("No unitcell detected for pybel.Molecule {}".format(pybel_mol))
+            box = None
+
         if not return_box:
             return cmpd
-
-        box = Box(lengths=[pybel_mol.unitcell.GetA()/10, 
-                            pybel_mol.unitcell.GetB()/10, 
-                            pybel_mol.unitcell.GetC()/10],
-                    angles=[pybel_mol.unitcell.GetAlpha(), 
-                            pybel_mol.unitcell.GetBeta(), 
-                            pybel_mol.unitcell.GetGamma()])
 
         return cmpd, box
 
