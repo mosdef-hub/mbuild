@@ -855,10 +855,33 @@ class TestCompound(BaseTest):
 
         assert all([isinstance(n, str) for n in graph.nodes()])
 
-    @pytest.mark.skipif(not has_openbabel, reason="NetworkX is not installed")
+    @pytest.mark.skipif(not has_openbabel, reason="Pybel is not installed")
     def test_to_pybel(self, ethane):
         pybel_mol = ethane.to_pybel(box=None)
         assert pybel_mol.OBMol.NumAtoms() == 8 
         assert pybel_mol.OBMol.NumBonds() == 7 
         assert np.allclose([pybel_mol.unitcell.GetA(), pybel_mol.unitcell.GetB(), 
             pybel_mol.unitcell.GetC()], [0.2139999, 0.29380001, 0.1646])
+
+    @pytest.mark.skipif(not has_openbabel, reason="Pybel is not installed")
+    def test_from_pybel(self):
+        import pybel
+        benzene = list(pybel.readfile('mol2', get_fn('benzene.mol2')))[0]
+        cmpd = mb.Compound.from_pybel(benzene, return_box=False)
+        assert benzene.OBMol.NumAtoms() == cmpd.n_particles
+        assert benzene.OBMol.NumBonds() == cmpd.n_bonds
+
+    @pytest.mark.skipif(not has_openbabel, reason="Pybel is not installed")
+    def test_from_pybel_monolayer(self):
+        import pybel
+        monolayer = list(pybel.readfile('pdb', get_fn('monolayer.pdb')))[0]
+        cmpd, box = mb.Compound.from_pybel(monolayer, return_box=True)
+        assert monolayer.OBMol.NumAtoms() == cmpd.n_particles
+        assert monolayer.OBMol.NumBonds() == cmpd.n_bonds
+        first_atom = monolayer.OBMol.GetAtom(1)
+        assert np.allclose(cmpd[0].pos, [first_atom.GetX()/10, first_atom.GetY()/10, first_atom.GetZ()/10])
+        assert np.allclose(box.lengths,
+                [monolayer.unitcell.GetA()/10, monolayer.unitcell.GetB()/10, 
+                    monolayer.unitcell.GetC()/10], 
+                rtol=1e-3)
+

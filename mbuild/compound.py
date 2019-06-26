@@ -2488,8 +2488,8 @@ class Compound(object):
         # Bonds are 0-indexed
         for i in range(pybel_mol.OBMol.NumBonds()):
             bond = pybel_mol.OBMol.GetBond(i)
-            cmpd.add_bond([all_particles[bond.GetBeginAtomIdx()], 
-                            all_particles[bond.GetEndAtomIdx()]])
+            cmpd.add_bond([all_particles[bond.GetBeginAtomIdx()-1], 
+                            all_particles[bond.GetEndAtomIdx()-1]])
 
         if not return_box:
             return cmpd
