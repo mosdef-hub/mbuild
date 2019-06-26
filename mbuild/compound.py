@@ -2373,15 +2373,22 @@ class Compound(object):
             nodes, edges = child._iterate_children(nodes, edges, names_only=names_only)
         return nodes, edges
 
-    def to_pybel(self, box=None, title='', residues=None, show_ports=False, infer_residues=False):
+    def to_pybel(self, box=None, title='', residues=None, show_ports=False, 
+            infer_residues=False):
         """ Create a pybel.Molecule from a Compound
 
         Parameters
         ---------
         box : mb.Box, def None
-        title : str
-        residues
-        infer_residues
+        title : str, optional, default=self.name
+            Title/name of the ParmEd Structure
+        residues : str of list of str
+            Labels of residues in the Compound. Residues are assigned by
+            checking against Compound.name.
+        show_ports : boolean, optional, default=False
+            Include all port atoms when converting to a `Structure`.
+        infer_residues : bool, optional, default=False
+            Attempt to assign residues based on names of children
 
         Returns
         ------
@@ -2401,17 +2408,54 @@ class Compound(object):
         mol = openbabel.OBMol()
         particle_to_atom_index = {}
 
-        for i, part in enumerate(self.particles(show_ports=show_ports)):
+        if not residues and infer_residues:
+            residues = list(set([child.name for child in self.children]))
+        if isinstance(residues, string_types):
+            residues = [residues]
+        if isinstance(residues, (list, set)):
+            residues = tuple(residues)
+
+        compound_residue_map = dict()
+        atom_residue_map = dict()
+
+        for i, part in enumerate(self.particles(include_ports=show_ports)):
+            if residues and part.name in residues:
+                current_residue = mol.NewResidue()
+                current_residue.SetName(part.name)
+                atom_residue_map[part] = current_residue
+                compound_residue_map[part] = current_residue
+            elif residues:
+                for parent in part.ancestors():
+                    if residues and parent.name in residues:
+                        if parent not in compound_residue_map:
+                            current_residue = mol.NewResidue()
+                            current_residue.SetName(parent.name)
+                            compound_residue_map[parent] = current_residue
+                        atom_residue_map[part] = current_residue
+                        break
+                else:  # Did not find specified residues in ancestors.
+                    current_residue = mol.NewResidue()
+                    current_residue.SetName("RES")
+                    atom_residue_map[part] = current_residue
+            else:
+                current_residue = mol.NewResidue()
+                current_residue.SetName("RES")
+                atom_residue_map[part] = current_residue
+
             temp = mol.NewAtom()
+            residue = atom_residue_map[part]
+            temp.SetResidue(residue)
             if part.port_particle:
                 temp.SetAtomicNum(0)
             else:
                 try:
                     temp.SetAtomicNum(AtomicNum[part.name.capitalize()])
-                else:
+                except KeyError:
                     warn("Could not infer atomic number from "
                             "{}, setting to 0".format(part.name))
                     temp.SetAtomicNum(0)
+
+
             temp.SetVector(*(part.xyz[0]*10))
             particle_to_atom_index[part] = i
 
@@ -2441,7 +2485,7 @@ class Compound(object):
                     [cosg, sing, 0],
                     [cosb, mat_coef_y, mat_coef_z]]
         box_vec = np.asarray(box_vec)
-        box_mat = (box.lengths * box_vec.T).T
+        box_mat = (np.array([a,b,c])* box_vec.T).T
         first_vector = openbabel.vector3(*box_mat[0])
         second_vector = openbabel.vector3(*box_mat[1])
         third_vector = openbabel.vector3(*box_mat[2])
