@@ -2504,7 +2504,7 @@ class Compound(object):
         return pybelmol
 
     @staticmethod
-    def from_pybel(pybel_mol, return_box=True):
+    def from_pybel(pybel_mol, return_box=True, use_element=True):
         """Create a Compound from a Pybel.Molecule
         
         Parameters
@@ -2512,6 +2512,9 @@ class Compound(object):
         pybel_mol: pybel.Molecule
         return_box : bool, default True
             If True, construct mb.Box from pybel_mol.unitcell information
+        use_element : bool, default True
+            If True, construct mb Particles based on the pybel Atom's element.
+            If False, construcs mb Particles based on the pybel Atom's type
             
         Returns
         ------
@@ -2519,31 +2522,44 @@ class Compound(object):
         box : mb.Box
             Only if return_box=True
             """
-
+        openbabel = import_("openbabel")
         cmpd = Compound(name=pybel_mol.title.split('.')[0])
-        all_particles = []
-        residue_to_cmpd = {}
-        # pybel.Atom objects are 1-indexed, coordinates are Angstroms
-        for i in range(pybel_mol.OBMol.NumAtoms()):
-            atom = pybel_mol.OBMol.GetAtom(i+1)
-            atomic_num = atom.GetAtomicNum()
-            x,y,z = atom.GetX()/10, atom.GetY()/10, atom.GetZ()/10
-            temp = Particle(name=Element[atomic_num], pos=[x,y,z])
-            all_particles.append(temp)
-            if hasattr(atom, 'residue'):
-                if atom.residue not in residue_to_cmpd:
-                    res_cmpd = mb.Compound(name=atom.residue.name)
-                    residue_to_cmpd[atom.residue] = res_cmpd
+        resindex_to_cmpd = {}
+
+        # Iterating through pybel_mol for atom/residue information
+        # This could just as easily be implemented by 
+        # an OBMolAtomIter from the openbabel library, 
+        # but this seemed more convenient at time of writing
+        for atom in pybel_mol.atoms:
+            xyz = np.array(atom.coords)/10
+            if use_element:
+                try:
+                    temp_name = Element[atom.atomicnum]
+                except KeyError:
+                    warn("No element detected for atom at index "
+                            "{} with number {}, type {}".format(
+                                atom.idx, atom.atomicnum, atom.type))
+                    temp_name = atom.type
+            else:
+                temp_name = atom.type
+            temp = Particle(name=temp_name, pos=xyz)
+            if hasattr(atom, 'residue'): # Is there a safer way to check for res?
+                if atom.residue.idx not in resindex_to_cmpd:
+                    res_cmpd = Compound(name=atom.residue.name)
+                    resindex_to_cmpd[atom.residue.idx] = res_cmpd
                     cmpd.add(res_cmpd)
-                residue_to_cmpd[atom.residue].add(temp)
+                resindex_to_cmpd[atom.residue.idx].add(temp)
             else:
                 cmpd.add(temp)
 
-        # Bonds are 0-indexed
-        for i in range(pybel_mol.OBMol.NumBonds()):
-            bond = pybel_mol.OBMol.GetBond(i)
-            cmpd.add_bond([all_particles[bond.GetBeginAtomIdx()-1], 
-                            all_particles[bond.GetEndAtomIdx()-1]])
+        # Iterating through pybel_mol.OBMol for bond information
+        # Bonds are 0-indexed, but the atoms are 1-indexed
+        # Bond information doesn't appear stored in pybel_mol,
+        # so we need to look into the OBMol object,
+        # using an iterator from the openbabel library
+        for bond in openbabel.OBMolBondIter(pybel_mol.OBMol):
+            cmpd.add_bond([cmpd[bond.GetBeginAtomIdx()-1],
+                            cmpd[bond.GetEndAtomIdx()-1]])
 
         if hasattr(pybel_mol, 'unitcell'):
             box = Box(lengths=[pybel_mol.unitcell.GetA()/10, 
