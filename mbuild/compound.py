@@ -2522,6 +2522,7 @@ class Compound(object):
 
         cmpd = Compound(name=pybel_mol.title.split('.')[0])
         all_particles = []
+        residue_to_cmpd = {}
         # pybel.Atom objects are 1-indexed, coordinates are Angstroms
         for i in range(pybel_mol.OBMol.NumAtoms()):
             atom = pybel_mol.OBMol.GetAtom(i+1)
@@ -2529,7 +2530,14 @@ class Compound(object):
             x,y,z = atom.GetX()/10, atom.GetY()/10, atom.GetZ()/10
             temp = Particle(name=Element[atomic_num], pos=[x,y,z])
             all_particles.append(temp)
-            cmpd.add(temp)
+            if hasattr(atom, 'residue'):
+                if atom.residue not in residue_to_cmpd:
+                    res_cmpd = mb.Compound(name=atom.residue.name)
+                    residue_to_cmpd[atom.residue] = res_cmpd
+                    cmpd.add(res_cmpd)
+                residue_to_cmpd[atom.residue].add(temp)
+            else:
+                cmpd.add(temp)
 
         # Bonds are 0-indexed
         for i in range(pybel_mol.OBMol.NumBonds()):
