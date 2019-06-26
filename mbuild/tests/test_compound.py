@@ -861,7 +861,7 @@ class TestCompound(BaseTest):
         assert pybel_mol.OBMol.NumAtoms() == 8 
         assert pybel_mol.OBMol.NumBonds() == 7 
         assert np.allclose([pybel_mol.unitcell.GetA(), pybel_mol.unitcell.GetB(), 
-            pybel_mol.unitcell.GetC()], [0.2139999, 0.29380001, 0.1646])
+            pybel_mol.unitcell.GetC()], [2.139999, 2.9380001, 1.646])
 
     @pytest.mark.skipif(not has_openbabel, reason="Pybel is not installed")
     def test_from_pybel(self):
