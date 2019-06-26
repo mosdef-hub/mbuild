@@ -2373,8 +2373,7 @@ class Compound(object):
             nodes, edges = child._iterate_children(nodes, edges, names_only=names_only)
         return nodes, edges
 
-    def to_pybel(self, box=None, title='', residues=None, show_ports=False,
-            infer_residues=False):
+    def to_pybel(self, box=None, title='', residues=None, show_ports=False, infer_residues=False):
         """ Create a pybel.Molecule from a Compound
 
         Parameters
@@ -2382,7 +2381,6 @@ class Compound(object):
         box : mb.Box, def None
         title : str
         residues
-        show_ports
         infer_residues
 
         Returns
@@ -2403,9 +2401,17 @@ class Compound(object):
         mol = openbabel.OBMol()
         particle_to_atom_index = {}
 
-        for i, part in enumerate(self.particles()):
+        for i, part in enumerate(self.particles(show_ports=show_ports)):
             temp = mol.NewAtom()
-            temp.SetAtomicNum(AtomicNum[part.name.capitalize()])
+            if part.port_particle:
+                temp.SetAtomicNum(0)
+            else:
+                try:
+                    temp.SetAtomicNum(AtomicNum[part.name.capitalize()])
+                else:
+                    warn("Could not infer atomic number from "
+                            "{}, setting to 0".format(part.name))
+                    temp.SetAtomicNum(0)
             temp.SetVector(*(part.xyz[0]*10))
             particle_to_atom_index[part] = i
 
