@@ -216,3 +216,10 @@ class TestPacking(BaseTest):
         w0 -= w0.sum(0) / len(w0)
         w1 -= w1.sum(0) / len(w1)
         assert np.isclose(w0, w1).all() is not True
+
+    def test_remove_port(self):
+        from mbuild.examples import Alkane
+
+        butane = Alkane(n=4)
+        butane.remove(butane[-1])
+        box = mb.fill_box(butane, n_compounds=10, density=1)
