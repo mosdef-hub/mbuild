@@ -4,25 +4,25 @@ Recipes
 Monolayer
 ---------
 
-.. autoclass:: mbuild.recipes.monolayer.Monolayer
+.. autoclass:: mbuild.recipes.Monolayer
     :members:
 
 Polymer
 -------
 
-.. autoclass:: mbuild.recipes.polymer.Polymer
+.. autoclass:: mbuild.recipes.Polymer
     :members:
 
 Tiled Compound
 --------------
 
-.. autoclass:: mbuild.recipes.tiled_compound.TiledCompound
+.. autoclass:: mbuild.recipes.TiledCompound
     :members:
 
 Silica Interface
 ----------------
 
-.. autoclass:: mbuild.recipes.silica_interface.SilicaInterface
+.. autoclass:: mbuild.recipes.SilicaInterface
     :members:
 
 Lattice
