@@ -16,6 +16,7 @@ build:
 requirements:
   build:
     - python
+    - protobuf
 
   run:
     - python
@@ -25,6 +26,7 @@ requirements:
     - nglview >=0.6
     - oset
     - parmed
+    - protobuf
     - mdtraj
 
 test:
