@@ -872,6 +872,19 @@ class TestCompound(BaseTest):
         assert benzene.OBMol.NumBonds() == cmpd.n_bonds
 
     @pytest.mark.skipif(not has_openbabel, reason="Pybel is not installed")
+    def test_to_pybel_residues(self, ethane):
+        pybel_mol = ethane.to_pybel(box=None, residues='Ethane')
+        assert 'Ethane' in pybel_mol.residues[0].name
+
+
+    @pytest.mark.skipif(not has_openbabel, reason="Pybel is not installed")
+    def test_from_pybel_residues(self):
+       import pybel
+       pybel_mol = list(pybel.readfile('mol2', get_fn('methyl.mol2')))[0]
+       cmpd = mb.Compound.from_pybel(pybel_mol, return_box=False)
+       assert 'LIG1' in cmpd.children[0].name
+
+    @pytest.mark.skipif(not has_openbabel, reason="Pybel is not installed")
     def test_from_pybel_monolayer(self):
         import pybel
         monolayer = list(pybel.readfile('pdb', get_fn('monolayer.pdb')))[0]
