@@ -33,7 +33,7 @@ from mbuild.coordinate_transform import _translate, _rotate
 
 
 def load(filename, relative_to_module=None, compound=None, coords_only=False,
-         rigid=False, use_parmed=False, smiles=False, **kwargs):
+         rigid=False, use_parmed=False, smiles=False, structure=False, **kwargs):
     """Load a file into an mbuild compound.
 
     Files are read using the MDTraj package unless the `use_parmed` argument is
@@ -60,7 +60,10 @@ def load(filename, relative_to_module=None, compound=None, coords_only=False,
         Use readers from ParmEd instead of MDTraj.
     smiles: bool, optional, default=False
         Use Open Babel to parse filename as a SMILES string
-        or file containing a SMILES string
+        or file containing a SMILES string.
+    structure : bool, optional, default=False
+        Use to convert existing parmed.Structure or mdtraj.Trajectory structure to mbuild.Compound
+        employing either from_parmed or from_trajectory method.
     **kwargs : keyword arguments
         Key word arguments passed to mdTraj for loading.
 
@@ -69,6 +72,17 @@ def load(filename, relative_to_module=None, compound=None, coords_only=False,
     compound : mb.Compound
 
     """
+    # First check if we are loading from an existing parmed or trajectory structure
+    if structure:
+        if isinstance(filename, pmd.Structure):
+            new_structure = Compound()
+            new_structure.from_parmed(filename)
+            return new_structure
+        elif isinstance(filename, md.Trajectory):
+            new_structure = Compound()
+            new_structure.from_trajectory(filename)
+            return new_structure
+
     # Handle mbuild *.py files containing a class that wraps a structure file
     # in its own folder. E.g., you build a system from ~/foo.py and it imports
     # from ~/bar/baz.py where baz.py loads ~/bar/baz.pdb.
