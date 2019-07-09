@@ -32,8 +32,8 @@ from mbuild.utils.io import run_from_ipython, import_
 from mbuild.coordinate_transform import _translate, _rotate
 
 
-def load(filename, relative_to_module=None, compound=None, coords_only=False,
-         rigid=False, use_parmed=False, smiles=False, structure=False, **kwargs):
+def load(filename_or_topology, relative_to_module=None, compound=None, coords_only=False,
+         rigid=False, use_parmed=False, smiles=False, **kwargs):
     """Load a file into an mbuild compound.
 
     Files are read using the MDTraj package unless the `use_parmed` argument is
@@ -43,8 +43,8 @@ def load(filename, relative_to_module=None, compound=None, coords_only=False,
 
     Parameters
     ----------
-    filename : str
-        Name of the file from which to load atom and bond information.
+    filename_or_topology : str
+        Name of the file or topology from which to load atom and bond information.
     relative_to_module : str, optional, default=None
         Instead of looking in the current working directory, look for the file
         where this module is defined. This is typically used in Compound
@@ -61,9 +61,6 @@ def load(filename, relative_to_module=None, compound=None, coords_only=False,
     smiles: bool, optional, default=False
         Use Open Babel to parse filename as a SMILES string
         or file containing a SMILES string.
-    structure : bool, optional, default=False
-        Use to convert existing parmed.Structure or mdtraj.Trajectory structure to mbuild.Compound
-        employing either from_parmed or from_trajectory method.
     **kwargs : keyword arguments
         Key word arguments passed to mdTraj for loading.
 
@@ -73,15 +70,14 @@ def load(filename, relative_to_module=None, compound=None, coords_only=False,
 
     """
     # First check if we are loading from an existing parmed or trajectory structure
-    if structure:
-        if isinstance(filename, pmd.Structure):
-            new_structure = Compound()
-            new_structure.from_parmed(filename)
-            return new_structure
-        elif isinstance(filename, md.Trajectory):
-            new_structure = Compound()
-            new_structure.from_trajectory(filename)
-            return new_structure
+    if isinstance(filename_or_topology, pmd.Structure):
+        new_structure = Compound()
+        new_structure.from_parmed(filename_or_topology)
+        return new_structure
+    elif isinstance(filename_or_topology, md.Trajectory):
+        new_structure = Compound()
+        new_structure.from_trajectory(filename_or_topology)
+        return new_structure
 
     # Handle mbuild *.py files containing a class that wraps a structure file
     # in its own folder. E.g., you build a system from ~/foo.py and it imports
@@ -90,46 +86,46 @@ def load(filename, relative_to_module=None, compound=None, coords_only=False,
         script_path = os.path.realpath(
             sys.modules[relative_to_module].__file__)
         file_dir = os.path.dirname(script_path)
-        filename = os.path.join(file_dir, filename)
+        filename_or_topology = os.path.join(file_dir, filename_or_topology)
 
     if compound is None:
         compound = Compound()
 
     # Handle the case of a xyz file, which must use an internal reader
-    extension = os.path.splitext(filename)[-1]
+    extension = os.path.splitext(filename_or_topology)[-1]
     if extension == '.xyz' and not 'top' in kwargs:
         if coords_only:
-            tmp = read_xyz(filename)
+            tmp = read_xyz(filename_or_topology)
             if tmp.n_particles != compound.n_particles:
-                raise ValueError('Number of atoms in {filename} does not match'
+                raise ValueError('Number of atoms in {filename_or_topology} does not match'
                                  ' {compound}'.format(**locals()))
             ref_and_compound = zip(tmp._particles(include_ports=False),
                                    compound.particles(include_ports=False))
             for ref_particle, particle in ref_and_compound:
                 particle.pos = ref_particle.pos
         else:
-            compound = read_xyz(filename)
+            compound = read_xyz(filename_or_topology)
         return compound
 
     if use_parmed:
         warn(
             "use_parmed set to True.  Bonds may be inferred from inter-particle "
             "distances and standard residue templates!")
-        structure = pmd.load_file(filename, structure=True, **kwargs)
+        structure = pmd.load_file(filename_or_topology, structure=True, **kwargs)
         compound.from_parmed(structure, coords_only=coords_only)
 
     elif smiles:
         pybel = import_('pybel')
-        # First we try treating filename as a SMILES string
+        # First we try treating filename_or_topology as a SMILES string
         try:
-            mymol = pybel.readstring("smi", filename)
+            mymol = pybel.readstring("smi", filename_or_topology)
         # Now we treat it as a filename
         except(OSError, IOError):
             # For now, we only support reading in a single smiles molecule,
             # but pybel returns a generator, so we get the first molecule
             # and warn the user if there is more
 
-            mymol_generator = pybel.readfile("smi", filename)
+            mymol_generator = pybel.readfile("smi", filename_or_topology)
             mymol_list = list(mymol_generator)
             if len(mymol_list) == 1:
                 mymol = mymol_list[0]
@@ -146,7 +142,7 @@ def load(filename, relative_to_module=None, compound=None, coords_only=False,
         compound.from_parmed(structure, coords_only=coords_only)
 
     else:
-        traj = md.load(filename, **kwargs)
+        traj = md.load(filename_or_topology, **kwargs)
         compound.from_trajectory(traj, frame=-1, coords_only=coords_only)
 
     if rigid:
