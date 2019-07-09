@@ -15,6 +15,24 @@ class TestCompound(BaseTest):
     def test_load_and_create(self):
         mb.load(get_fn('methyl.pdb'))
 
+    def test_load_conversion(self,ethane,h2o):
+        compound = mb.Compound([ethane,h2o])
+        parm = compound.to_parmed()
+        parm_converted = mb.load(parm,structure=True)
+
+        assert parm_converted.n_particles == 11
+        assert len([at for at in parm_converted.particles() if at.name == 'C']) == 2
+        assert len([at for at in parm_converted.particles() if at.name == 'H']) == 8
+        assert len([at for at in parm_converted.particles() if at.name == 'O']) == 1
+
+        traj = compound.to_trajectory()
+        traj_converted = mb.load(traj,structure=True)
+
+        assert traj_converted.n_particles == 11
+        assert len([at for at in traj_converted.particles() if at.name == 'C']) == 2
+        assert len([at for at in traj_converted.particles() if at.name == 'H']) == 8
+        assert len([at for at in traj_converted.particles() if at.name == 'O']) == 1
+
     def test_update_from_file(self, ch3):
         ch3.update_coordinates(get_fn("methyl.pdb"))
 
