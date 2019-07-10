@@ -78,6 +78,8 @@ def load(filename_or_topology, relative_to_module=None, compound=None, coords_on
         new_structure = Compound()
         new_structure.from_trajectory(filename_or_topology)
         return new_structure
+    elif isinstance(filename_or_topology, Compound):
+        return filename_or_topology
 
     # Handle mbuild *.py files containing a class that wraps a structure file
     # in its own folder. E.g., you build a system from ~/foo.py and it imports

@@ -17,6 +17,9 @@ class TestCompound(BaseTest):
 
     def test_load_conversion(self,ethane,h2o):
         compound = mb.Compound([ethane,h2o])
+
+        compound_test = mb.load(compound)
+        assert compound_test == compound
         parm = compound.to_parmed()
         parm_converted = mb.load(parm)
 
