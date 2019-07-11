@@ -21,21 +21,31 @@ class TestCompound(BaseTest):
         compound_test = mb.load(compound)
         assert compound_test == compound
         parm = compound.to_parmed()
-        parm_converted = mb.load(parm)
+        parm_converted_1 = mb.load(parm)
 
-        assert parm_converted.n_particles == 11
-        assert len([at for at in parm_converted.particles() if at.name == 'C']) == 2
-        assert len([at for at in parm_converted.particles() if at.name == 'H']) == 8
-        assert len([at for at in parm_converted.particles() if at.name == 'O']) == 1
+        assert parm_converted_1.n_particles == 11
+        assert len([at for at in parm_converted_1.particles() if at.name == 'C']) == 2
+        assert len([at for at in parm_converted_1.particles() if at.name == 'H']) == 8
+        assert len([at for at in parm_converted_1.particles() if at.name == 'O']) == 1
+
+        parm_converted_2 = mb.clone(parm_converted_1)
+        parm_converted_2.xyz = np.random.random(parm_converted_2.xyz.shape)
+        parm_converted_2 = mb.load(parm_converted_1, compound=parm_converted_2,coords_ony=True)
+
+        assert np.allclose(parm_converted_1.xyz, parm_converted_2.xyz)
 
         traj = compound.to_trajectory()
-        traj_converted = mb.load(traj)
+        traj_converted_1 = mb.load(traj)
 
-        assert traj_converted.n_particles == 11
-        assert len([at for at in traj_converted.particles() if at.name == 'C']) == 2
-        assert len([at for at in traj_converted.particles() if at.name == 'H']) == 8
-        assert len([at for at in traj_converted.particles() if at.name == 'O']) == 1
+        assert traj_converted_1.n_particles == 11
+        assert len([at for at in traj_converted_1.particles() if at.name == 'C']) == 2
+        assert len([at for at in traj_converted_1.particles() if at.name == 'H']) == 8
+        assert len([at for at in traj_converted_1.particles() if at.name == 'O']) == 1
 
+        traj_converted_2 = mb.clone(traj_converted_1)
+        traj_converted_2.xyz = np.random.random(traj_converted_2.xyz.shape)
+        traj_converted_2 = mb.load(traj_converted_1, compound=traj_converted_2, coords_ony=True)
+    
     def test_update_from_file(self, ch3):
         ch3.update_coordinates(get_fn("methyl.pdb"))
 
