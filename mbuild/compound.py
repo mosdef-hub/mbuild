@@ -34,7 +34,7 @@ from mbuild.coordinate_transform import _translate, _rotate
 
 def load(filename_or_topology, relative_to_module=None, compound=None, coords_only=False,
          rigid=False, use_parmed=False, smiles=False, **kwargs):
-    """Load a file into an mbuild compound.
+    """Load a file or an existing topology into an mbuild compound.
 
     Files are read using the MDTraj package unless the `use_parmed` argument is
     specified as True. Please refer to http://mdtraj.org/1.8.0/load_functions.html
@@ -69,15 +69,17 @@ def load(filename_or_topology, relative_to_module=None, compound=None, coords_on
     compound : mb.Compound
 
     """
+
+    if compound is None:
+        compound = Compound()
+
     # First check if we are loading from an existing parmed or trajectory structure
     if isinstance(filename_or_topology, pmd.Structure):
-        new_structure = Compound()
-        new_structure.from_parmed(filename_or_topology)
-        return new_structure
+        compound.from_parmed(filename_or_topology,coords_only=coords_only)
+        return compound
     elif isinstance(filename_or_topology, md.Trajectory):
-        new_structure = Compound()
-        new_structure.from_trajectory(filename_or_topology)
-        return new_structure
+        compound.from_trajectory(filename_or_topology,coords_only=coords_only)
+        return compound
     elif isinstance(filename_or_topology, Compound):
         return filename_or_topology
 
@@ -89,9 +91,6 @@ def load(filename_or_topology, relative_to_module=None, compound=None, coords_on
             sys.modules[relative_to_module].__file__)
         file_dir = os.path.dirname(script_path)
         filename_or_topology = os.path.join(file_dir, filename_or_topology)
-
-    if compound is None:
-        compound = Compound()
 
     # Handle the case of a xyz file, which must use an internal reader
     extension = os.path.splitext(filename_or_topology)[-1]
