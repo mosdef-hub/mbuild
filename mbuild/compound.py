@@ -75,10 +75,10 @@ def load(filename_or_topology, relative_to_module=None, compound=None, coords_on
 
     # First check if we are loading from an existing parmed or trajectory structure
     if isinstance(filename_or_topology, pmd.Structure):
-        compound.from_parmed(filename_or_topology,coords_only=coords_only)
+        compound.from_parmed(filename_or_topology,coords_only=coords_only, **kwargs)
         return compound
     elif isinstance(filename_or_topology, md.Trajectory):
-        compound.from_trajectory(filename_or_topology,coords_only=coords_only)
+        compound.from_trajectory(filename_or_topology,coords_only=coords_only, **kwargs)
         return compound
     elif isinstance(filename_or_topology, Compound):
         return filename_or_topology
