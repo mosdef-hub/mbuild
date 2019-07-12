@@ -77,7 +77,7 @@ def load(filename_or_topology, relative_to_module=None, compound=None, coords_on
     type_dict = {pmd.Structure:compound.from_parmed,md.Trajectory:compound.from_trajectory}
     if isinstance(filename_or_topology, Compound):
         return filename_or_topology
-    elif type(filename_or_topology) in type_dict:
+    elif isinstance(filename_or_topology, tuple(type_dict)):
         type_dict[type(filename_or_topology)](filename_or_topology,coords_only=coords_only, **kwargs)
         return compound
 
