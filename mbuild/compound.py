@@ -74,14 +74,12 @@ def load(filename_or_topology, relative_to_module=None, compound=None, coords_on
         compound = Compound()
 
     # First check if we are loading from an existing parmed or trajectory structure
-    if isinstance(filename_or_topology, pmd.Structure):
-        compound.from_parmed(filename_or_topology,coords_only=coords_only, **kwargs)
-        return compound
-    elif isinstance(filename_or_topology, md.Trajectory):
-        compound.from_trajectory(filename_or_topology,coords_only=coords_only, **kwargs)
-        return compound
-    elif isinstance(filename_or_topology, Compound):
+    type_dict = {pmd.Structure:compound.from_parmed,md.Trajectory:compound.from_trajectory}
+    if isinstance(filename_or_topology, Compound):
         return filename_or_topology
+    elif type(filename_or_topology) in type_dict:
+        type_dict[type(filename_or_topology)](filename_or_topology,coords_only=coords_only, **kwargs)
+        return compound
 
     # Handle mbuild *.py files containing a class that wraps a structure file
     # in its own folder. E.g., you build a system from ~/foo.py and it imports

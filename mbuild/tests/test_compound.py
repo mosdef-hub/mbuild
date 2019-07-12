@@ -17,35 +17,23 @@ class TestCompound(BaseTest):
 
     def test_load_conversion(self,ethane,h2o):
         compound = mb.Compound([ethane,h2o])
-
-        compound_test = mb.load(compound)
-        assert compound_test == compound
         parm = compound.to_parmed()
-        parm_converted_1 = mb.load(parm)
-
-        assert parm_converted_1.n_particles == 11
-        assert len([at for at in parm_converted_1.particles() if at.name == 'C']) == 2
-        assert len([at for at in parm_converted_1.particles() if at.name == 'H']) == 8
-        assert len([at for at in parm_converted_1.particles() if at.name == 'O']) == 1
-
-        parm_converted_2 = mb.clone(parm_converted_1)
-        parm_converted_2.xyz = np.random.random(parm_converted_2.xyz.shape)
-        parm_converted_2 = mb.load(parm_converted_1, compound=parm_converted_2,coords_ony=True)
-
-        assert np.allclose(parm_converted_1.xyz, parm_converted_2.xyz)
-
         traj = compound.to_trajectory()
-        traj_converted_1 = mb.load(traj)
 
-        assert traj_converted_1.n_particles == 11
-        assert len([at for at in traj_converted_1.particles() if at.name == 'C']) == 2
-        assert len([at for at in traj_converted_1.particles() if at.name == 'H']) == 8
-        assert len([at for at in traj_converted_1.particles() if at.name == 'O']) == 1
+        for topo in [compound,parm,traj]:
+            topo_converted = mb.load(topo)
+            assert isinstance(topo_converted, mb.Compound)
+            assert topo_converted.n_particles == 11
+            assert len([at for at in topo_converted.particles() if at.name == 'C']) == 2
+            assert len([at for at in topo_converted.particles() if at.name == 'H']) == 8
+            assert len([at for at in topo_converted.particles() if at.name == 'O']) == 1
 
-        traj_converted_2 = mb.clone(traj_converted_1)
-        traj_converted_2.xyz = np.random.random(traj_converted_2.xyz.shape)
-        traj_converted_2 = mb.load(traj_converted_1, compound=traj_converted_2, coords_ony=True)
-    
+        for topo in [parm,traj]:
+            new_topo = mb.load(compound)
+            new_topo.xyz = np.random.random(topo_converted.xyz.shape)
+            new_topo = mb.load(topo, compound=new_topo, coords_only=True)
+            assert np.allclose(mb.load(topo).xyz, new_topo.xyz)
+
     def test_update_from_file(self, ch3):
         ch3.update_coordinates(get_fn("methyl.pdb"))
 
