@@ -1236,7 +1236,7 @@ class Compound(object):
             if not particle.name:
                 particle.name = 'UNK'
         tmp_dir = tempfile.mkdtemp()
-        self.save(os.path.join(tmp_dir, 'tmp.mol2'),
+        cloned.save(os.path.join(tmp_dir, 'tmp.mol2'),
                   show_ports=show_ports,
                   overwrite=True)
 
