@@ -34,8 +34,8 @@ class TestCompound(BaseTest):
             new_topo = mb.load(topo, compound=new_topo, coords_only=True)
             assert np.allclose(mb.load(topo).xyz, new_topo.xyz)
 
-        # Extra test (test files from Parmed/test/files/test.mol2)
-        test = pmd.load_file(get_fn('test.mol2'),structure=True)
+        # Extra test
+        test = pmd.load_file(get_fn('styrene.mol2'),structure=True)
         assert isinstance(test, pmd.Structure)
         test_converted = mb.load(test)
         assert isinstance(test_converted, mb.Compound)
