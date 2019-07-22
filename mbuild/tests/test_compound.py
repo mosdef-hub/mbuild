@@ -37,10 +37,21 @@ class TestCompound(BaseTest):
         # Extra test
         test = pmd.load_file(get_fn('styrene.mol2'),structure=True)
         assert isinstance(test, pmd.Structure)
-        test_converted = mb.load(test)
-        assert isinstance(test_converted, mb.Compound)
-        assert test_converted.n_particles == len(test.atoms)
-        assert test_converted.n_bonds == len(test.bonds)
+        test_converted1 = mb.load(test)
+        test_converted2 = mb.Compound()
+        test_converted2.from_parmed(test)
+
+        assert isinstance(test_converted1, mb.Compound)
+        assert test_converted1.n_particles == len(test.atoms)
+        assert test_converted2.n_particles == test_converted1.n_particles
+        assert test_converted1.n_bonds == len(test.bonds)
+        assert test_converted2.n_bonds == test_converted2.n_bonds
+
+        test_converted1.xyz = np.random.random(test_converted1.xyz.shape)
+        test_converted1 = mb.load(test, compound=test_converted1, coords_only=True)
+        test_converted2.xyz = np.random.random(test_converted2.xyz.shape)
+        test_converted2.from_parmed(test, coords_only=True)
+        assert np.allclose(test_converted1.xyz, test_converted2.xyz)
 
     def test_update_from_file(self, ch3):
         ch3.update_coordinates(get_fn("methyl.pdb"))
