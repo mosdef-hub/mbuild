@@ -15,6 +15,16 @@ class TestCompound(BaseTest):
     def test_load_and_create(self):
         mb.load(get_fn('methyl.pdb'))
 
+    def test_load_xyz(self):
+        class MyCompound(mb.Compound):
+            def __init__(self):
+                super(MyCompound, self).__init__()
+
+                mb.load(get_fn('ethane.xyz'), compound=self)
+
+        myethane = MyCompound()
+        assert myethane.n_particles == 8
+
     def test_update_from_file(self, ch3):
         ch3.update_coordinates(get_fn("methyl.pdb"))
 
