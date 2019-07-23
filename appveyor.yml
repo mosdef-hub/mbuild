@@ -3,12 +3,14 @@ environment:
     PYTHONUNBUFFERED: 1
 
   matrix:
-    - PYTHON: "C:\\Miniconda36-x64"
+    - PYTHON: "C:\\Miniconda3-x64"
       CONDA_PY: "36"
       ARCH: "64"
-    - PYTHON: "C:\\Miniconda36-x64"
+      PYTHON_VERSION: "3.6"
+    - PYTHON: "C:\\Miniconda3-x64"
       CONDA_PY: "37"
       ARCH: "64"
+      PYTHON_VERSION: "3.7"
 
 install:
   - set PATH=%PYTHON%;%PYTHON%\\Scripts;%PATH%
@@ -16,11 +18,12 @@ install:
   - conda config --add channels janschulz
   - conda config --add channels conda-forge
   - conda config --add channels mosdef
-  - conda update -yq --all
-  - conda install -yq conda-build jinja2
+  - conda update -y --all
+  - activate
+  - conda install -y python=%PYTHON_VERSION% conda-build jinja2
 
 build: false
 
 test_script:
   - activate base
-  - conda build --quiet devtools\\conda-recipe
+  - conda build devtools\\conda-recipe --python=%PYTHON_VERSION% 
