@@ -94,7 +94,7 @@ def load(filename, relative_to_module=None, compound=None, coords_only=False,
             for ref_particle, particle in ref_and_compound:
                 particle.pos = ref_particle.pos
         else:
-            compound = read_xyz(filename)
+            compound = read_xyz(filename, compound=compound)
         return compound
 
     if use_parmed:
