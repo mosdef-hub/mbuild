@@ -4,7 +4,6 @@ import mbuild as mb
 
 from mbuild.lib.moieties import Silane
 from mbuild.lib.moieties import CH3
-from mbuild.lib.recipes import Polymer
 from mbuild.examples.pmpc.mpc import MPC
 from mbuild.examples.pmpc.initiator import Initiator
 
