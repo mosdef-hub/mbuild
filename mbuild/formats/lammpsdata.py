@@ -492,7 +492,7 @@ def write_lammpsdata(structure, filename, atom_style='full',
         for i,coords in enumerate(xyz):
             data.write(atom_line.format(
                 index=i+1,type_index=unique_types.index(types[i])+1,
-                zero=0,charge=charges[i],
+                zero=structure.atoms[i].residue.idx,charge=charges[i],
                 x=coords[0],y=coords[1],z=coords[2]))
 
         if atom_style in ['full', 'molecular']:
