@@ -15,3 +15,4 @@ nbformat
 pytest-cov
 pytest-faulthandler
 codecov
+protobuf
