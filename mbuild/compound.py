@@ -43,7 +43,7 @@ def load(filename_or_object, relative_to_module=None, compound=None, coords_only
 
     Parameters
     ----------
-    filename_or_object : str
+    filename_or_object : str, mdtraj.Trajectory, parmed.Structure, mbuild.Compound
         Name of the file or topology from which to load atom and bond information.
     relative_to_module : str, optional, default=None
         Instead of looking in the current working directory, look for the file
@@ -81,6 +81,10 @@ def load(filename_or_object, relative_to_module=None, compound=None, coords_only
         if isinstance(filename_or_object, type):
             type_dict[type](filename_or_object,coords_only=coords_only, **kwargs)
             return compound
+    if isinstance(filename_or_object, str):
+	continue
+    else:
+	raise ValueError('Input not supported.')
 
     # Handle mbuild *.py files containing a class that wraps a structure file
     # in its own folder. E.g., you build a system from ~/foo.py and it imports
