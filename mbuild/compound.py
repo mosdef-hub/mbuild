@@ -81,10 +81,8 @@ def load(filename_or_object, relative_to_module=None, compound=None, coords_only
         if isinstance(filename_or_object, type):
             type_dict[type](filename_or_object,coords_only=coords_only, **kwargs)
             return compound
-    if isinstance(filename_or_object, str):
-	continue
-    else:
-	raise ValueError('Input not supported.')
+    if not isinstance(filename_or_object, str):
+        raise ValueError('Input not supported.')
 
     # Handle mbuild *.py files containing a class that wraps a structure file
     # in its own folder. E.g., you build a system from ~/foo.py and it imports
