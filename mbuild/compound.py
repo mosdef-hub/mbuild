@@ -94,7 +94,7 @@ def load(filename, relative_to_module=None, compound=None, coords_only=False,
             for ref_particle, particle in ref_and_compound:
                 particle.pos = ref_particle.pos
         else:
-            compound = read_xyz(filename)
+            compound = read_xyz(filename, compound=compound)
         return compound
 
     if use_parmed:
@@ -1206,8 +1206,8 @@ class Compound(object):
 
         """
         py3Dmol = import_('py3Dmol')
-        remove_digits = lambda x: ''.join(i for i in x if not i.isdigit()
-                                              or i == '_')
+
+        cloned = clone(self)
 
         modified_color_scheme = {}
         for name, color in color_scheme.items():
@@ -1217,12 +1217,11 @@ class Compound(object):
             modified_color_scheme[new_name] = color
             modified_color_scheme[name] = color
 
-        for particle in self.particles():
-            particle.name = remove_digits(particle.name).upper()
+        for particle in cloned.particles():
             if not particle.name:
                 particle.name = 'UNK'
         tmp_dir = tempfile.mkdtemp()
-        self.save(os.path.join(tmp_dir, 'tmp.mol2'),
+        cloned.save(os.path.join(tmp_dir, 'tmp.mol2'),
                   show_ports=show_ports,
                   overwrite=True)
 
