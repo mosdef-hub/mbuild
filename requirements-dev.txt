@@ -6,7 +6,7 @@ oset
 parmed
 mdtraj
 foyer
-gsd=1.7
+gsd
 openbabel
 networkx
 pytest >=3.0
