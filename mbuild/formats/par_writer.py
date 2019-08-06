@@ -7,7 +7,7 @@ __all__ = ['write_par']
 
 
 def write_par(structure, filename):
-    """ Write CHARMM Par file given a parametrized structureture """
+    """ Write CHARMM Par file given a parametrized structure """
 
     # ATOMS
     with open(filename, 'w') as f:
