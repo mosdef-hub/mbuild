@@ -886,6 +886,15 @@ class TestCompound(BaseTest):
         pybel_mol = ethane.to_pybel(box=None, residues='Ethane')
         assert 'Ethane' in pybel_mol.residues[0].name
 
+    @pytest.mark.skipif(not has_openbabel, reason="Pybel is not installed")
+    def test_to_more_pybel_residues(self, methane, ethane):
+        box = mb.fill_box([methane, ethane], n_compounds=[3,3], 
+                box=mb.Box([10,10,10]))
+        pybel_mol = box.to_pybel(box=None, residues=['Ethane', 'Methane'])
+        pybel_mol_resnames = {a.name for a in pybel_mol.residues}
+        assert 'Ethane' in pybel_mol_resnames
+        assert 'Methane' in pybel_mol_resnames
+
 
     @pytest.mark.skipif(not has_openbabel, reason="Pybel is not installed")
     def test_from_pybel_residues(self):
