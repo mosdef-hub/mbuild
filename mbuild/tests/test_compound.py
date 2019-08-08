@@ -917,7 +917,7 @@ class TestCompound(BaseTest):
         import pybel
         benzene = list(pybel.readfile('mol2', get_fn('benzene.mol2')))[0]
         cmpd = mb.Compound()
-        cmpd.from_pybel(benzene, return_box=False)
+        cmpd.from_pybel(benzene)
         assert benzene.OBMol.NumAtoms() == cmpd.n_particles
         assert benzene.OBMol.NumBonds() == cmpd.n_bonds
 
@@ -941,7 +941,7 @@ class TestCompound(BaseTest):
        import pybel
        pybel_mol = list(pybel.readfile('mol2', get_fn('methyl.mol2')))[0]
        cmpd = mb.Compound()
-       cmpd.from_pybel(pybel_mol, return_box=False)
+       cmpd.from_pybel(pybel_mol)
        assert 'LIG1' in cmpd.children[0].name
 
     @pytest.mark.skipif(not has_openbabel, reason="Pybel is not installed")
@@ -950,7 +950,7 @@ class TestCompound(BaseTest):
         monolayer = list(pybel.readfile('pdb', get_fn('monolayer.pdb')))[0]
         # TODO: Actually store the box information
         cmpd = mb.Compound()
-        cmpd.from_pybel(monolayer, return_box=True)
+        cmpd.from_pybel(monolayer)
         assert monolayer.OBMol.NumAtoms() == cmpd.n_particles
         assert monolayer.OBMol.NumBonds() == cmpd.n_bonds
         first_atom = monolayer.OBMol.GetAtom(1)
