@@ -15,6 +15,44 @@ class TestCompound(BaseTest):
     def test_load_and_create(self):
         mb.load(get_fn('methyl.pdb'))
 
+    def test_load_conversion(self,ethane,h2o):
+        compound = mb.Compound([ethane,h2o])
+        parm = compound.to_parmed()
+        traj = compound.to_trajectory()
+
+        for topo in [compound,parm,traj]:
+            topo_converted = mb.load(topo)
+            assert isinstance(topo_converted, mb.Compound)
+            assert topo_converted.n_particles == 11
+            assert len([at for at in topo_converted.particles() if at.name == 'C']) == 2
+            assert len([at for at in topo_converted.particles() if at.name == 'H']) == 8
+            assert len([at for at in topo_converted.particles() if at.name == 'O']) == 1
+
+        for topo in [parm,traj]:
+            new_topo = mb.load(compound)
+            new_topo.xyz = np.random.random(topo_converted.xyz.shape)
+            new_topo = mb.load(topo, compound=new_topo, coords_only=True)
+            assert np.allclose(mb.load(topo).xyz, new_topo.xyz)
+
+        # Extra test
+        test = pmd.load_file(get_fn('styrene.mol2'),structure=True)
+        assert isinstance(test, pmd.Structure)
+        test_converted1 = mb.load(test)
+        test_converted2 = mb.Compound()
+        test_converted2.from_parmed(test)
+
+        assert isinstance(test_converted1, mb.Compound)
+        assert test_converted1.n_particles == len(test.atoms)
+        assert test_converted2.n_particles == test_converted1.n_particles
+        assert test_converted1.n_bonds == len(test.bonds)
+        assert test_converted2.n_bonds == test_converted2.n_bonds
+
+        test_converted1.xyz = np.random.random(test_converted1.xyz.shape)
+        test_converted1 = mb.load(test, compound=test_converted1, coords_only=True)
+        test_converted2.xyz = np.random.random(test_converted2.xyz.shape)
+        test_converted2.from_parmed(test, coords_only=True)
+        assert np.allclose(test_converted1.xyz, test_converted2.xyz)
+
     def test_load_xyz(self):
         class MyCompound(mb.Compound):
             def __init__(self):
