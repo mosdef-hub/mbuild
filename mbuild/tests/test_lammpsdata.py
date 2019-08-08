@@ -103,3 +103,18 @@ class TestLammpsData(BaseTest):
                     first_atom_line = next(f)
                     columns = first_atom_line.split("\t")
                     assert len(columns) == n_columns
+
+    def test_resid(self, ethane, methane):
+        structure = ethane.to_parmed() + methane.to_parmed()
+        n_atoms = len(structure.atoms)
+        write_lammpsdata(structure, 'compound.lammps')
+        res_list = list()
+        with open('compound.lammps', 'r') as f:
+            for i,line in enumerate(f):
+                if 'Atoms' in line:
+                    break
+        atom_lines = open('compound.lammps', 'r').readlines()[i+2:i+n_atoms+2]
+        for line in atom_lines:
+            res_list.append(line.rstrip().split()[1])
+
+        assert set(res_list) == set(['1', '0'])
