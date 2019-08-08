@@ -19,8 +19,9 @@ class TestCompound(BaseTest):
         compound = mb.Compound([ethane,h2o])
         parm = compound.to_parmed()
         traj = compound.to_trajectory()
+        belmol = compound.to_parmed()
 
-        for topo in [compound,parm,traj]:
+        for topo in [compound,parm,traj,belmol]:
             topo_converted = mb.load(topo)
             assert isinstance(topo_converted, mb.Compound)
             assert topo_converted.n_particles == 11

@@ -43,7 +43,8 @@ def load(filename_or_object, relative_to_module=None, compound=None, coords_only
 
     Parameters
     ----------
-    filename_or_object : str, mdtraj.Trajectory, parmed.Structure, mbuild.Compound
+    filename_or_object : str, mdtraj.Trajectory, parmed.Structure, mbuild.Compound,
+            pybel.Molecule
         Name of the file or topology from which to load atom and bond information.
     relative_to_module : str, optional, default=None
         Instead of looking in the current working directory, look for the file
@@ -69,12 +70,17 @@ def load(filename_or_object, relative_to_module=None, compound=None, coords_only
     compound : mb.Compound
 
     """
+    pybel = import_('pybel')
 
     if compound is None:
         compound = Compound()
 
     # First check if we are loading from an existing parmed or trajectory structure
-    type_dict = {pmd.Structure:compound.from_parmed,md.Trajectory:compound.from_trajectory}
+    type_dict = {
+        pmd.Structure:compound.from_parmed,
+        md.Trajectory:compound.from_trajectory,
+        pybel.Molecule:compound.from_pybel,
+    }
     if isinstance(filename_or_object, Compound):
         return filename_or_object
     for type in type_dict:
