@@ -143,7 +143,8 @@ def load(filename_or_object, relative_to_module=None, compound=None, coords_only
                      "string is not supported, using {}".format(mymol.write("smi")))
 
         mymol.make3D()
-        compound = Compound.from_pybel(mymol, return_box=False)
+        compound = Compound()
+        compound.from_pybel(mymol)
 
     else:
         traj = md.load(filename_or_object, **kwargs)
@@ -2520,29 +2521,28 @@ class Compound(object):
 
         return pybelmol
 
-    @staticmethod
-    def from_pybel(pybel_mol, return_box=True, use_element=True):
+    def from_pybel(self, pybel_mol, use_element=True, coords_only=False):
         """Create a Compound from a Pybel.Molecule
         
         Parameters
         ---------
         pybel_mol: pybel.Molecule
-        return_box : bool, default True
-            If True, construct mb.Box from pybel_mol.unitcell information
         use_element : bool, default True
             If True, construct mb Particles based on the pybel Atom's element.
             If False, construcs mb Particles based on the pybel Atom's type
-            
-        Returns
-        ------
-        cmpd : mb.Compound
-        box : mb.Box
-            Only if return_box=True
-            """
+        coords_only : bool, default False
+            Set preexisting atoms in compound to coordinates given by
+            structure.  Note: Not yet implemented, included only for parity
+            with other conversion functions
+
+        """
         openbabel = import_("openbabel")
-        cmpd = Compound(name=pybel_mol.title.split('.')[0])
+        self.name = pybel_mol.title.split('.')[0]
         resindex_to_cmpd = {}
 
+        if coords_only:
+            raise Warning('coords_only=True not yet implemented for '
+                    'conversion from pybel')
         # Iterating through pybel_mol for atom/residue information
         # This could just as easily be implemented by 
         # an OBMolAtomIter from the openbabel library, 
@@ -2565,10 +2565,10 @@ class Compound(object):
                 if atom.residue.idx not in resindex_to_cmpd:
                     res_cmpd = Compound(name=atom.residue.name)
                     resindex_to_cmpd[atom.residue.idx] = res_cmpd
-                    cmpd.add(res_cmpd)
+                    self.add(res_cmpd)
                 resindex_to_cmpd[atom.residue.idx].add(temp)
             else:
-                cmpd.add(temp)
+                self.add(temp)
 
         # Iterating through pybel_mol.OBMol for bond information
         # Bonds are 0-indexed, but the atoms are 1-indexed
@@ -2576,8 +2576,8 @@ class Compound(object):
         # so we need to look into the OBMol object,
         # using an iterator from the openbabel library
         for bond in openbabel.OBMolBondIter(pybel_mol.OBMol):
-            cmpd.add_bond([cmpd[bond.GetBeginAtomIdx()-1],
-                            cmpd[bond.GetEndAtomIdx()-1]])
+            self.add_bond([self[bond.GetBeginAtomIdx()-1],
+                            self[bond.GetEndAtomIdx()-1]])
 
         if hasattr(pybel_mol, 'unitcell'):
             box = Box(lengths=[pybel_mol.unitcell.GetA()/10, 
@@ -2586,15 +2586,14 @@ class Compound(object):
                         angles=[pybel_mol.unitcell.GetAlpha(), 
                                 pybel_mol.unitcell.GetBeta(), 
                                 pybel_mol.unitcell.GetGamma()])
-            cmpd.periodicity = box.lengths
+            self.periodicity = box.lengths
         else:
             warn("No unitcell detected for pybel.Molecule {}".format(pybel_mol))
             box = None
 
-        if not return_box:
-            return cmpd
-
-        return cmpd, box
+#       TODO: Decide how to gather PBC information from openbabel. Options may
+#             include storing it in .periodicity or writing a separate function
+#             that returns the box.
 
     def to_intermol(self, molecule_types=None): # pragma: no cover
         """Create an InterMol system from a Compound.
