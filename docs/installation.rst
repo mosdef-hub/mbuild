@@ -6,13 +6,14 @@ Install with `conda <http://continuum.io/downloads>`_
 -----------------------------------------------------
 ::
 
-    $ conda install -c omnia -c mosdef mbuild
+    $ conda install -c omnia -c mosdef -c conda-forge mbuild
 
 Alternatively you can add all the required channels to your ``.condarc``
 after which you can simply install without specifying the channels::
 
     $ conda config --add channels omnia
     $ conda config --add channels mosdef
+    $ conda config --add channels conda-forge
     $ conda install mbuild
 
 .. note::
@@ -46,9 +47,9 @@ in order to get all of the dependencies.
 Supported Python Versions
 -------------------------
 
-Python 2.7, 3.5 and 3.6 are officially supported, including testing during
-development and packaging. Support for Python 2.7 is planned to be dropped in
-late 2019. Other Python versions, such as 3.7 and 3.4 and older, may
+Python 3.6 and 3.7 are officially supported, including testing during
+development and packaging. Support for Python 2.7 has been dropped as of 
+August 6, 2019. Other Python versions, such as 3.8 and 3.5 and older, may
 successfully build and function but no guarantee is made.
 
 Testing your installation

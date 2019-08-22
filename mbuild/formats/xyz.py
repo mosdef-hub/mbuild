@@ -6,7 +6,7 @@ from mbuild.exceptions import MBuildError
 __all__ = ['read_xyz']
 
 
-def read_xyz(filename):
+def read_xyz(filename, compound=None):
     """Read an XYZ file. The expected format is as follows:
     The first line contains the number of atoms in the file The second line
     contains a comment, which is not read.  Remaining lines, one for each
@@ -33,7 +33,8 @@ def read_xyz(filename):
     XYZ format is not expected to be properly read.
     """
 
-    compound = mb.Compound()
+    if compound is None:
+        compound = mb.Compound()
 
     with open(filename, 'r') as xyz_file:
         n_atoms = int(xyz_file.readline())
