@@ -31,7 +31,7 @@ class Betacristobalite(mb.Compound):
         for particle in self.particles():
             if particle.name.startswith('O') and particle.pos[2] > 1.0:
                 count += 1
-                port = mb.Port(anchor=particle, orientation=[0, 0, 1], 
+                port = mb.Port(anchor=particle, orientation=[0, 0, 1],
                                separation=0.1)
                 self.add(port, 'port_{}'.format(count))
                 particle.name = 'O'  # Strip numbers required in .mol2 files.
@@ -40,5 +40,5 @@ class Betacristobalite(mb.Compound):
 
 if __name__ == "__main__":
     single = Betacristobalite()
-    multiple = mb.TiledCompound(single, n_tiles=(2, 1, 1), name="tiled")
+    multiple = mb.recipes.TiledCompound(single, n_tiles=(2, 1, 1), name="tiled")
     multiple.save('betacristobalite.mol2')

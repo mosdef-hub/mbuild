@@ -15,6 +15,54 @@ class TestCompound(BaseTest):
     def test_load_and_create(self):
         mb.load(get_fn('methyl.pdb'))
 
+    def test_load_conversion(self,ethane,h2o):
+        compound = mb.Compound([ethane,h2o])
+        parm = compound.to_parmed()
+        traj = compound.to_trajectory()
+
+        for topo in [compound,parm,traj]:
+            topo_converted = mb.load(topo)
+            assert isinstance(topo_converted, mb.Compound)
+            assert topo_converted.n_particles == 11
+            assert len([at for at in topo_converted.particles() if at.name == 'C']) == 2
+            assert len([at for at in topo_converted.particles() if at.name == 'H']) == 8
+            assert len([at for at in topo_converted.particles() if at.name == 'O']) == 1
+
+        for topo in [parm,traj]:
+            new_topo = mb.load(compound)
+            new_topo.xyz = np.random.random(topo_converted.xyz.shape)
+            new_topo = mb.load(topo, compound=new_topo, coords_only=True)
+            assert np.allclose(mb.load(topo).xyz, new_topo.xyz)
+
+        # Extra test
+        test = pmd.load_file(get_fn('styrene.mol2'),structure=True)
+        assert isinstance(test, pmd.Structure)
+        test_converted1 = mb.load(test)
+        test_converted2 = mb.Compound()
+        test_converted2.from_parmed(test)
+
+        assert isinstance(test_converted1, mb.Compound)
+        assert test_converted1.n_particles == len(test.atoms)
+        assert test_converted2.n_particles == test_converted1.n_particles
+        assert test_converted1.n_bonds == len(test.bonds)
+        assert test_converted2.n_bonds == test_converted2.n_bonds
+
+        test_converted1.xyz = np.random.random(test_converted1.xyz.shape)
+        test_converted1 = mb.load(test, compound=test_converted1, coords_only=True)
+        test_converted2.xyz = np.random.random(test_converted2.xyz.shape)
+        test_converted2.from_parmed(test, coords_only=True)
+        assert np.allclose(test_converted1.xyz, test_converted2.xyz)
+
+    def test_load_xyz(self):
+        class MyCompound(mb.Compound):
+            def __init__(self):
+                super(MyCompound, self).__init__()
+
+                mb.load(get_fn('ethane.xyz'), compound=self)
+
+        myethane = MyCompound()
+        assert myethane.n_particles == 8
+
     def test_update_from_file(self, ch3):
         ch3.update_coordinates(get_fn("methyl.pdb"))
 
@@ -164,6 +212,13 @@ class TestCompound(BaseTest):
         xyz = ch3.xyz_with_ports
         assert xyz.shape == (12, 3)
 
+    def test_xyz_setter_bad_shape(self):
+        single_compound = mb.Compound()
+        with pytest.raises(ValueError):
+            single_compound.xyz = np.zeros(shape=(4, 10))
+        with pytest.raises(ValueError):
+            single_compound.xyz_with_ports = np.zeros(shape=(4, 10))
+
     def test_particles_by_name(self, ethane):
         assert sum(1 for _ in ethane.particles()) == 8
 
@@ -255,6 +310,10 @@ class TestCompound(BaseTest):
 
         with pytest.warns(UserWarning):
             ch3.remove_bond(ch_bond)
+
+    def test_port_does_not_exist(self, ethane):
+        with pytest.raises(MBuildError):
+            ethane['not_port']
 
     def test_center(self, methane):
         assert np.array_equal(methane.center, np.array([0, 0, 0]))
@@ -532,15 +591,14 @@ class TestCompound(BaseTest):
 
         assert compound2.n_bonds == 9
 
+        compound3 = mb.clone(compound2)
+        compound3.xyz = np.random.random(compound3.xyz.shape)
+        compound3.from_parmed(structure, coords_only=True)
+
+        assert np.allclose(compound2.xyz, compound3.xyz)
+
     def test_resnames_parmed(self, h2o, ethane):
         system = mb.Compound([h2o, mb.clone(h2o), ethane])
-        struct = system.to_parmed(residues=['Ethane', 'H2O'])
-        assert len(struct.residues) == 3
-        assert struct.residues[0].name == 'H2O'
-        assert struct.residues[1].name == 'H2O'
-        assert struct.residues[2].name == 'Ethane'
-        assert sum(len(res.atoms) for res in struct.residues) == len(struct.atoms)
-
         struct = system.to_parmed(residues=['Ethane', 'H2O'])
         assert len(struct.residues) == 3
         assert struct.residues[0].name == 'H2O'
@@ -557,6 +615,13 @@ class TestCompound(BaseTest):
         struct = system.to_parmed()
         assert len(struct.residues) == 1
         assert struct.residues[0].name == 'RES'
+        assert sum(len(res.atoms) for res in struct.residues) == len(struct.atoms)
+
+        struct = system.to_parmed(infer_residues=True)
+        assert len(struct.residues) == 3
+        assert struct.residues[0].name == 'H2O'
+        assert struct.residues[1].name == 'H2O'
+        assert struct.residues[2].name == 'Ethane'
         assert sum(len(res.atoms) for res in struct.residues) == len(struct.atoms)
 
     def test_parmed_element_guess(self):
