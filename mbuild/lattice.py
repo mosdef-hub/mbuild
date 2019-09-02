@@ -155,21 +155,21 @@ class Lattice(object):
                          lattice_points, angles):
         """Check for proper inputs and set instance attributes.
 
-        _sanitize_inputs takes the data passed to the constructor by the user
-        and will ensure that the data is correctly formatted and will then
-        set its instance attributes.
+        Takes the data passed to the constructor by the user
+        and ensures that the data is correctly formatted and
+        then sets its instance attributes.
 
-        _sanitized_inputs checks that dimensionality is maintained,
-        the unit cell is right handed, the area or volume of the unit cell
+        This method checks that dimensionality is maintained, the unit
+        cell is right handed, the area or volume of the unit cell
         is positive and non-zero for 2D and 3D respectively, lattice spacing
         are provided, basis vectors do not overlap when the unit cell is
         expanded.
 
         Exceptions Raised
         -----------------
-        TypeError : incorrect typing of the input parameters.
+        TypeError : incorrect typing of the input parameters
 
-        ValueError : values are not within restrictions.
+        ValueError : values are not within restrictions
 
         """
 
@@ -191,9 +191,9 @@ class Lattice(object):
     def _validate_lattice_spacing(self, lattice_spacing):
         """Ensure that lattice spacing is provided and correct.
 
-        _validate_lattice_spacing will ensure that the lattice spacing
-        provided are acceptable values. Additional Numpy errors can also occur
-        due to the conversion to a Numpy array.
+        Ensures that the lattice spacing provided are acceptable values.
+        Additional NumPy errors can also occur due to the conversion
+        to a numpy array.
 
         Exceptions Raised
         -----------------
@@ -230,9 +230,9 @@ class Lattice(object):
     def _validate_angles(self, angles):
         """Ensure that the angles between the lattice_vectors are correct
 
-        _validate_angles will ensure that the angles input has an appropriate
-        array size and each components is in an acceptatble range. Additional
-        Numpy errors can also occur due to the conversion to a Numpy array.
+        Ensures that the angles input has an appropriate array size and each
+        components is in an acceptatble range. Additional NumPy errors can
+        also occur due to the conversion to a numpy array.
 
         Exception Raised
         ----------------
@@ -271,10 +271,10 @@ class Lattice(object):
     def _validate_lattice_vectors(self, lattice_vectors):
         """Ensure that the lattice_vectors are reasonable inputs.
 
-        _validate_lattice_vectors make sure that the provided lattice_vectors
-        input has the correct array size and their determinants have appropriate
-        values. Additional Numpy errors can also occur due to the conversion to
-        a Numpy array.
+        Makes sure that the provided lattice_vectors input has the correct
+        array size and their determinants have appropriate values.
+        Additional NumPy errors can also occur due to the conversion to
+        a numpy array.
 
         Exception Raised
         ----------------
@@ -310,9 +310,9 @@ class Lattice(object):
     def _validate_lattice_points(self, lattice_points):
         """Ensure that lattice_points are reasonable inputs.
 
-        _validate_lattice_points make sure that the provided lattice_points
-        are appropriate, specifically, making sure that the positions are
-        consistent with the dimension and have appropriate input types/values.
+        Makes sure that the provided lattice_points are appropriate,
+        specifically, making sure that the positions are consistent
+        with the dimension and have appropriate input types/values.
 
         Exception Raised
         ----------------
@@ -353,8 +353,8 @@ class Lattice(object):
     def _check_for_overlap(self, lattice_points):
         """Check for overlapping lattice
 
-        _check_for_overlap makes sure the lattice_points do not overlap when the
-        unit cell get expanded to certain extent.
+        Makes sure the lattice_points do not overlap when the unit cell
+        get expanded to certain extent.
 
         Exception Raised
         ----------------
@@ -384,9 +384,9 @@ class Lattice(object):
     def _from_lattice_parameters(self, angles):
         """Convert Bravais lattice parameters to lattice vectors.
 
-        _from_lattice_parameters will generate the lattice vectors based on
-        the parameters necessary to build a Bravais Lattice. The lattice
-        vectors are in the lower diagonal matrix form.
+        Generate the lattice vectors based on the parameters necessary
+        to build a Bravais Lattice. The lattice vectors are in the lower
+        diagonal matrix form.
 
         This was adapted from the ASE triclinic.py lattice parameter code.
 
@@ -430,8 +430,8 @@ class Lattice(object):
     def _from_lattice_vectors(self):
         """Calculate the angles between the vectors that define the lattice.
 
-        _from_lattice_vectors will calculate the angles alpha, beta, and
-        gamma from the Lattice object attribute lattice_vectors.
+        Calculates the angles alpha, beta, and gamma from the Lattice object
+        attribute lattice_vectors.
 
         """
 
@@ -455,7 +455,7 @@ class Lattice(object):
     def populate(self, compound_dict=None, x=1, y=1, z=1):
         """Expand lattice and create compound from lattice.
 
-        populate will expand lattice based on user input. The user must also
+        Expands lattice based on user input. The user must also
         pass in a dictionary that contains the keys that exist in the
         basis_dict. The corresponding Compound will be the full lattice
         returned to the user.
