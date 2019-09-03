@@ -2452,9 +2452,8 @@ class Compound(object):
     def _add_intermol_molecule_type(intermol_system, parent):  # pragma: no cover
         """Create a molecule type for the parent and add bonds.
 
-        This method takes in an intermol system and add the
-        parent compound, its particles and bonds to the
-        intermol system.
+        This method takes an intermol system and adds a
+        parent compound, including its particles and bonds, to it.
         """
         from intermol.moleculetype import MoleculeType
         from intermol.forces.bond import Bond as InterMolBond
