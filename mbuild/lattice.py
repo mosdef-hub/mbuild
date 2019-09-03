@@ -435,7 +435,7 @@ class Lattice(object):
 
         """
 
-        degreeConvsersion = 180.0 / np.pi
+        degreeConversion = 180.0 / np.pi
         vector_magnitudes = np.linalg.norm(self.lattice_vectors, axis=1)
 
         a_dot_b = np.dot(self.lattice_vectors[0], self.lattice_vectors[1])
@@ -446,9 +446,9 @@ class Lattice(object):
         beta_raw = a_dot_c / (vector_magnitudes[0] * vector_magnitudes[2])
         gamma_raw = a_dot_b / (vector_magnitudes[0] * vector_magnitudes[1])
 
-        alpha = np.arccos(np.clip(alpha_raw, -1.0, 1.0)) * degreeConvsersion
-        beta = np.arccos(np.clip(beta_raw, -1.0, 1.0)) * degreeConvsersion
-        gamma = np.arccos(np.clip(gamma_raw, -1.0, 1.0)) * degreeConvsersion
+        alpha = np.arccos(np.clip(alpha_raw, -1.0, 1.0)) * degreeConversion
+        beta = np.arccos(np.clip(beta_raw, -1.0, 1.0)) * degreeConversion
+        gamma = np.arccos(np.clip(gamma_raw, -1.0, 1.0)) * degreeConversion
 
         return np.asarray([alpha, beta, gamma], dtype=np.float64)
 
@@ -487,11 +487,10 @@ class Lattice(object):
         error_dict = {0: 'X', 1: 'Y', 2: 'Z'}
 
         # Make sure neither x, y, z input is None
-        for replication_amount in x, y, z:
-            if replication_amount is None:
-                raise ValueError('Attempt to replicate None times. '
-                                 'None is not an acceptable replication '
-                                 'amount, 1 is the default.')
+        if None in [x, y, z]:
+            raise ValueError('Attempt to replicate None times. '
+                             'None is not an acceptable replication '
+                             'amount, 1 is the default.')
 
         # Try to convert x, y, and z to int, raise a ValueError if fail
         try:
