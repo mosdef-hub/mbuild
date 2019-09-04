@@ -59,7 +59,7 @@ def fill_box(compound, n_compounds=None, box=None, density=None, overlap=0.2,
              update_port_locations=False):
     """Fill a box with a `mbuild.compound` or `Compound`s using PACKMOL.
 
-   `fill_box` will take a single `mbuild.Compound` or a,
+   `fill_box` takes a single `mbuild.Compound` or a
    list of `mbuild.Compound`'s and return an `mbuild.Compound` that has
    been filled to the user's specifications to the best of PACKMOL's ability.
 
@@ -85,7 +85,7 @@ def fill_box(compound, n_compounds=None, box=None, density=None, overlap=0.2,
     compound : mb.Compound or list of mb.Compound
         Compound or list of compounds to fill in box.
     n_compounds : int or list of int
-        Number of compounds to be fill in box.
+        Number of compounds to be filled in box.
     box : mb.Box
         Box to be filled by compounds.
     density : float, units kg/m^3, default=None
@@ -598,7 +598,7 @@ def _validate_box(box):
 
     Parameters
     ----------
-    box : mbuild.Box, tuple, list
+    box : mbuild.Box or a tuple or list thereof
         Box or inputs to `mbuild.Box` to generate a `mbuild.Box`.
 
     Returns
@@ -662,7 +662,7 @@ def _packmol_error(out, err):
 
 
 def _run_packmol(input_text, filled_xyz, temp_file):
-    """Apply PACKMOL packing based on the input text.
+    """Call PACKMOL to pack system based on the input text.
 
     Parameters
     ----------
