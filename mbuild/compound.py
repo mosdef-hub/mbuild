@@ -138,7 +138,7 @@ def load(filename_or_object, relative_to_module=None, compound=None, coords_only
                      "string is not supported, using {}".format(mymol.write("smi")))
 
         # We create a temporary directory and mol2 file that will created from the smiles string
-        # A parmed structure and subsequenc mBuild compound will be created from this mol2 file
+        # A ParmEd structure and subsequenc mBuild compound will be created from this mol2 file
         tmp_dir = tempfile.mkdtemp()
         temp_file = os.path.join(tmp_dir, 'smiles_to_mol2_intermediate.mol2')
         mymol.make3D()
@@ -1510,7 +1510,7 @@ class Compound(object):
             scale_nonbonded=1):
         """ Perform energy minimization using OpenMM
 
-        Converts an mBuild Compound to a Parmed Structure,
+        Converts an mBuild Compound to a ParmEd Structure,
         applies a forcefield using Foyer, and creates an OpenMM System.
 
         Parameters
