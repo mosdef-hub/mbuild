@@ -2365,7 +2365,7 @@ class Compound(object):
         nodes = list()
         edges = list()
         if names_only:
-            nodes.append(self.name)
+            nodes.append(self.name + str(id(self)))
         else:
             nodes.append(self)
         nodes, edges = self._iterate_children(nodes, edges, names_only=names_only)
@@ -2380,8 +2380,10 @@ class Compound(object):
             return nodes, edges
         for child in self.children:
             if names_only:
-                nodes.append(child.name)
-                edges.append([child.parent.name, child.name])
+                unique_name = child.name + str(id(child))
+                unique_name_parent = child.parent.name + str((id(child.parent)))
+                nodes.append(unique_name)
+                edges.append([unique_name_parent, unique_name])
             else:
                 nodes.append(child)
                 edges.append([child.parent, child])

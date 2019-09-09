@@ -902,3 +902,24 @@ class TestCompound(BaseTest):
         assert graph.number_of_nodes() == 9
 
         assert all([isinstance(n, str) for n in graph.nodes()])
+
+    @pytest.mark.skipif(not has_networkx, reason="NetworkX is not installed")
+    def test_to_networkx_names_only_with_same_names(self):
+        comp = mb.Compound()
+        comp.name = 'compound'
+
+        for n in range(2):
+            child = mb.Compound()
+            child.name = 'sub_compound'
+            comp.add(child)
+            for m in range(3):
+                child_child = mb.Compound()
+                child_child.name = 'sub_sub_compound'
+                child.add(child_child)
+
+        graph = comp.to_networkx(names_only=True)
+
+        assert graph.number_of_edges() == 8
+        assert graph.number_of_nodes() == 9
+
+        assert all([isinstance(n, str) for n in graph.nodes()])
