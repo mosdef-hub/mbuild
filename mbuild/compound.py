@@ -2353,7 +2353,8 @@ class Compound(object):
         Parameters
         ----------
         names_only : bool, optional, default=False Store only the names of the
-            compounds in the graph. When set to False, the default behavior,
+            compounds in the graph, appended with their IDs, for distinction even
+            if they have the same name. When set to False, the default behavior,
             the nodes are the compounds themselves.
 
         Returns
