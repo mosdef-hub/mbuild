@@ -3,7 +3,7 @@ from mbuild.formats.json_formats import compound_to_json, compound_from_json
 import mbuild as mb
 
 
-class TestPB2(BaseTest):
+class TestJSONFormats(BaseTest):
 
     def test_loop(self, ethane):
         compound_to_json(ethane, 'ethane.json')
@@ -28,10 +28,33 @@ class TestPB2(BaseTest):
         assert ethane_copy.labels.keys() == ethane_without_overlap.labels.keys()
 
     def test_loop_for_propyl(self, hexane):
-        compound_to_json(hexane, './hexane.json', include_ports=True)
-        propyl_copy = compound_from_json('hexane.json')
+        compound_to_json(hexane, 'hexane.json', include_ports=True)
+        hexane_copy = compound_from_json('hexane.json')
+        assert hexane.n_particles == hexane_copy.n_particles
+        assert hexane.n_bonds == hexane_copy.n_bonds
+        assert len(hexane.children) == len(hexane_copy.children)
+        assert len(hexane.all_ports()) == len(hexane_copy.all_ports())
+        assert hexane.labels.keys() == hexane_copy.labels.keys()
 
-
-
-
+    def test_nested_compound(self):
+        num_chidren = 100
+        num_grand_children = 100
+        num_ports = 2
+        ancestor = mb.Compound(name='Ancestor')
+        for i in range(num_chidren):
+            this_child = mb.Compound(name='Child{}'.format(i+1))
+            ancestor.add(this_child, label='Ancestor\'sChild{}'.format(i+1))
+            for j in range(num_ports):
+                port1 = mb.Port(anchor=this_child)
+                this_child.add(port1, label='port{}'.format(j+1))
+            for k in range(num_grand_children):
+                this_grand_child = mb.Compound(name='GrandChild{}'.format(k+1))
+                this_child.add(this_grand_child, label='Child{0}GrandChild{1}'.format(i+1, k+1))
+        compound_to_json(ancestor, 'large_compound.json', include_ports=True)
+        ancestor_copy = compound_from_json('large_compound.json')
+        assert ancestor.n_particles == ancestor_copy.n_particles
+        assert ancestor.n_bonds == ancestor_copy.n_bonds
+        assert len(ancestor.children) == len(ancestor_copy.children)
+        assert len(ancestor.all_ports()) == len(ancestor_copy.all_ports())
+        assert ancestor.labels.keys() == ancestor_copy.labels.keys()
 

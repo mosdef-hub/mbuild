@@ -1,5 +1,7 @@
 import json
 from collections import OrderedDict
+import mbuild as mb
+from mbuild.exceptions import MBuildError
 
 
 def compound_from_json(json_file):
@@ -17,10 +19,25 @@ def compound_from_json(json_file):
     Returns
     -------
     parent: mb.Compound, the compound equivelent of the json file
+
+    Raises
+    ------
+    ValueError: This is raised when the JSON file cannot be parsed by python's json module
+    MBuildError: This is raised on version incompatibility and missing JSON keys, when trying to
+                 convert the compound to JSON.
     """
+
     with open(json_file, 'r') as cmpdfile:
+        try:
+            cmpd_dict_and_meta = json.load(cmpdfile)
+        except ValueError as e:
+            raise e
+        try:
+            _perform_sanity_check(cmpd_dict_and_meta)
+        except MBuildError as e:
+            raise e
+        compound_dict = cmpd_dict_and_meta['Compound']
         converted_dict = {}
-        compound_dict = json.load(cmpdfile)
         parent = _dict_to_mb(compound_dict)
         converted_dict[compound_dict['id']] = parent
         for sub_compound, compound in _dict_successors(compound_dict):
@@ -51,14 +68,11 @@ def compound_to_json(cmpd, file_path, include_ports=False):
     cmpd: mb.Compound
     file_path: str, path to save the JSON file.
     include_ports: bool, whether to dump port information, default False
-
-    Raises
-    ------
-
     """
     # Maintain a bookkeeping dict, to do the nesting of children correctly
+    version = mb.version
     cmpd_info = {}
-    compound_dict = _particle_info(cmpd)
+    compound_dict = _particle_info(cmpd, include_ports)
     cmpd_info[cmpd] = compound_dict
 
     # Iteratively collect all the information for the children/successors
@@ -79,13 +93,17 @@ def compound_to_json(cmpd, file_path, include_ports=False):
 
     # Should this be nested as well? Not sure...
     compound_dict['bonds'] = _bond_info(cmpd)
+    compound_json = OrderedDict()
+    compound_json['mbuild-version'] = version
+    compound_json['type'] = 'Compound'
+    compound_json['Compound'] = compound_dict
 
     with open(file_path, 'w') as datafile:
-        json.dump(compound_dict, datafile, indent=2)
+        json.dump(compound_json, datafile, indent=2)
 
 
 def _particle_info(cmpd, include_ports=False):
-    """Return information about a particle, in a JSON serializable OrderdDict"""
+    """Return information about a particle, in a JSON serializable OrderedDict"""
     particle_dict = OrderedDict()
     particle_dict['id'] = id(cmpd)
     particle_dict['name'] = cmpd.name
@@ -95,13 +113,12 @@ def _particle_info(cmpd, include_ports=False):
 
     if include_ports:
         particle_dict['ports'] = list()
-        for port in cmpd.referenced_ports():
+        for port in cmpd.available_ports():
             port_info = OrderedDict()
             if port.anchor is not None:
                 port_info['anchor'] = id(port.anchor)
             else:
                 port_info['anchor'] = None
-            port_info['used'] = port.used
             port_info['label'] = None
             # Is this the most efficient way?
             for key, val in cmpd.labels.items():
@@ -121,7 +138,6 @@ def _bond_info(cmpd):
 
 def _dict_to_mb(compound_dict):
     """Given a dictionary, return the equivelent mb.Compound."""
-    import mbuild as mb
     name = compound_dict.get('name', "Compound")
     pos = compound_dict.get('pos', [0.0, 0.0, 0.0])
     charge = compound_dict.get('charge', 0.0)
@@ -132,7 +148,6 @@ def _dict_to_mb(compound_dict):
         for port in ports:
             label_str = port['label']
             port_to_add = mb.Port(anchor=this_particle)
-            port_to_add.used = port['used']
             this_particle.add(port_to_add, label_str)
     return this_particle
 
@@ -159,3 +174,47 @@ def _add_bonds(compound_dict, parent, converted_dict):
         parent.add_bond(particle_pair=(converted_dict[bond[0]], converted_dict[bond[1]]))
 
 
+def _perform_sanity_check(json_dict):
+    """Perform Sanity Check on the JSON File"""
+    from warnings import warn
+    warning_msg = "This Json was written using {0}, current mbuild version is {1}."
+    this_version = mb.version
+    json_mbuild_version = json_dict.get('mbuild-version', None)
+
+    if not json_mbuild_version:
+        raise MBuildError("Error. The uploaded JSON file doesn't seem to be correctly formatted")
+    json_mb_type = json_dict.get('type', None)
+
+    if (not json_mb_type) or (json_mb_type != 'Compound'):
+        raise MBuildError("Error. Cannot convert JSON of type: {}".format(json_mb_type))
+
+    [major, minor, patch] = json_mbuild_version.split('.')
+    [this_major, this_minor, this_patch] = this_version.split('.')
+    if major != this_major:
+        raise MBuildError(warning_msg.format(json_mbuild_version, this_version) + " Cannot Convert JSON to compound")
+    if minor != this_minor:
+        warn(warning_msg.format(json_mbuild_version, this_version) + " Will Proceed.")
+
+
+if __name__ == '__main__':
+    num_chidren = 100
+    num_grand_children = 100
+    num_ports = 2
+    ancestor = mb.Compound(name='Ancestor')
+    for i in range(num_chidren):
+        this_child = mb.Compound(name='Child{}'.format(i + 1))
+        ancestor.add(this_child, label='Ancestor\'sChild{}'.format(i + 1))
+        for j in range(num_ports):
+            port1 = mb.Port(anchor=this_child)
+            this_child.add(port1, label='port{}'.format(j + 1))
+        for k in range(num_grand_children):
+            this_grand_child = mb.Compound(name='GrandChild{}'.format(k + 1))
+            this_child.add(this_grand_child, label='Child{0}GrandChild{1}'.format(i + 1, k + 1))
+    compound_to_json(ancestor, 'large_compound.json', include_ports=True)
+    ancestor_copy = compound_from_json('large_compound.json')
+    compound_to_json(ancestor, 'large_compound-copy.json', include_ports=True)
+    assert ancestor.n_particles == ancestor_copy.n_particles
+    assert ancestor.n_bonds == ancestor_copy.n_bonds
+    assert len(ancestor.children) == len(ancestor_copy.children)
+    assert len(ancestor.all_ports()) == len(ancestor_copy.all_ports())
+    assert ancestor.labels.keys() == ancestor_copy.labels.keys()
