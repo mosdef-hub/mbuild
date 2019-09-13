@@ -194,27 +194,3 @@ def _perform_sanity_check(json_dict):
         raise MBuildError(warning_msg.format(json_mbuild_version, this_version) + " Cannot Convert JSON to compound")
     if minor != this_minor:
         warn(warning_msg.format(json_mbuild_version, this_version) + " Will Proceed.")
-
-
-if __name__ == '__main__':
-    num_chidren = 100
-    num_grand_children = 100
-    num_ports = 2
-    ancestor = mb.Compound(name='Ancestor')
-    for i in range(num_chidren):
-        this_child = mb.Compound(name='Child{}'.format(i + 1))
-        ancestor.add(this_child, label='Ancestor\'sChild{}'.format(i + 1))
-        for j in range(num_ports):
-            port1 = mb.Port(anchor=this_child)
-            this_child.add(port1, label='port{}'.format(j + 1))
-        for k in range(num_grand_children):
-            this_grand_child = mb.Compound(name='GrandChild{}'.format(k + 1))
-            this_child.add(this_grand_child, label='Child{0}GrandChild{1}'.format(i + 1, k + 1))
-    compound_to_json(ancestor, 'large_compound.json', include_ports=True)
-    ancestor_copy = compound_from_json('large_compound.json')
-    compound_to_json(ancestor, 'large_compound-copy.json', include_ports=True)
-    assert ancestor.n_particles == ancestor_copy.n_particles
-    assert ancestor.n_bonds == ancestor_copy.n_bonds
-    assert len(ancestor.children) == len(ancestor_copy.children)
-    assert len(ancestor.all_ports()) == len(ancestor_copy.all_ports())
-    assert ancestor.labels.keys() == ancestor_copy.labels.keys()
