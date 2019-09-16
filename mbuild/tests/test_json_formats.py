@@ -26,6 +26,7 @@ class TestJSONFormats(BaseTest):
         assert len(ethane_copy.children) == len(ethane_without_overlap.children)
         assert len(ethane_copy.all_ports()) == len(ethane_without_overlap.all_ports())
         assert ethane_copy.labels.keys() == ethane_without_overlap.labels.keys()
+        assert ethane_without_overlap['methyl2'].labels.keys() == ethane_copy['methyl2'].labels.keys()
 
     def test_loop_for_propyl(self, hexane):
         compound_to_json(hexane, 'hexane.json', include_ports=True)
@@ -57,4 +58,18 @@ class TestJSONFormats(BaseTest):
         assert len(ancestor.children) == len(ancestor_copy.children)
         assert len(ancestor.all_ports()) == len(ancestor_copy.all_ports())
         assert ancestor.labels.keys() == ancestor_copy.labels.keys()
+
+    def test_label_consistency(self):
+        from mbuild.lib.moieties import CH2, CH3
+        parent = mb.Compound(name='Hierarchy1')
+        for i in range(10):
+            parent.add(CH2())
+            parent.add(CH3())
+        compound_to_json(parent, 'parent.json', include_ports=True)
+        parent_copy = compound_from_json('parent.json')
+        assert len(parent_copy['CH2']) == len(parent['CH2'])
+        assert parent_copy.labels.keys() == parent.labels.keys()
+        for child, child_copy in zip(parent.particles(), parent_copy.particles()):
+            assert child.labels.keys() == child_copy.labels.keys()
+
 

@@ -1,5 +1,7 @@
 import json
 from collections import OrderedDict
+from typing import Iterable
+
 import mbuild as mb
 from mbuild.exceptions import MBuildError
 
@@ -52,6 +54,12 @@ def compound_from_json(json_file):
             sub_cmpd = converted_dict[sub_compound['id']]
 
             label_str = sub_compound['label']
+            label_list = compound.get('label_list', {})
+            for key, vals in label_list.items():
+                if not parent_compound.labels.get(key, None):
+                    parent_compound.labels[key] = list()
+                if sub_compound['id'] in vals:
+                    parent_compound.labels[key].append(sub_cmpd)
             parent_compound.add(sub_cmpd, label=label_str)
         _add_bonds(compound_dict, parent, converted_dict)
 
@@ -83,9 +91,14 @@ def compound_to_json(cmpd, file_path, include_ports=False):
             sub_compound_dict['parent_id'] = id(parent_compound)
             sub_compound_dict['is_port'] = False
             sub_compound_dict['label'] = None
-            for key, val in cmpd.labels.items():
+            for key, val in sub_compound.parent.labels.items():
                 if val == sub_compound:
                     sub_compound_dict['label'] = key
+                if isinstance(val, list):
+                    if not cmpd_info[sub_compound.parent].get('label_list', None):
+                        cmpd_info[sub_compound.parent]['label_list'] = OrderedDict()
+                    cmpd_info[sub_compound.parent]['label_list'][key] = [id(x) for x in val]
+
             if not cmpd_info[parent_compound].get('children', False):
                 cmpd_info[parent_compound]['children'] = list()
             cmpd_info[parent_compound]['children'].append(sub_compound_dict)
@@ -122,7 +135,7 @@ def _particle_info(cmpd, include_ports=False):
             port_info['label'] = None
             # Is this the most efficient way?
             for key, val in cmpd.labels.items():
-                if val == port:
+                if (val == port) and val.port_particle:
                     port_info['label'] = key
             particle_dict['ports'].append(port_info)
     return particle_dict
