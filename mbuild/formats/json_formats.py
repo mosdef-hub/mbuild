@@ -61,6 +61,8 @@ def compound_from_json(json_file):
                 if sub_compound['id'] in vals:
                     parent_compound.labels[key].append(sub_cmpd)
             parent_compound.add(sub_cmpd, label=label_str)
+
+        _add_ports(compound_dict, converted_dict)
         _add_bonds(compound_dict, parent, converted_dict)
 
         return parent
@@ -156,12 +158,6 @@ def _dict_to_mb(compound_dict):
     charge = compound_dict.get('charge', 0.0)
     periodicity = compound_dict.get('periodicity', [0.0, 0.0, 0.0])
     this_particle = mb.Compound(name=name, pos=pos, charge=charge, periodicity=periodicity)
-    ports = compound_dict.get('ports', None)
-    if ports:
-        for port in ports:
-            label_str = port['label']
-            port_to_add = mb.Port(anchor=this_particle)
-            this_particle.add(port_to_add, label_str)
     return this_particle
 
 
@@ -179,6 +175,26 @@ def _dict_successors(compound_dict):
             yield sub_compund, compound_dict
             for sub_sub_compound, parent_compound in _dict_successors(sub_compund):
                 yield (sub_sub_compound, parent_compound)
+
+
+def _add_ports(compound_dict, converted_dict):
+    """After adding all particles, this method will add ports if any exists"""
+    for subcompound, compound in _dict_successors(compound_dict):
+        ports = compound.get('ports', None)
+        if ports:
+            for port in ports:
+                label_str = port['label']
+                port_to_add = mb.Port(anchor=converted_dict[port['anchor']])
+                converted_dict[compound['id']].add(port_to_add, label_str)
+            # Not necessary to add same port twice
+            compound['ports'] = None
+        ports = subcompound.get('ports', None)
+        if ports:
+            for port in ports:
+                label_str = port['label']
+                port_to_add = mb.Port(anchor=converted_dict[port['anchor']])
+                converted_dict[subcompound['id']].add(port_to_add, label_str)
+            subcompound['ports'] = None
 
 
 def _add_bonds(compound_dict, parent, converted_dict):

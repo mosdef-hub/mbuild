@@ -69,7 +69,8 @@ class TestJSONFormats(BaseTest):
         parent_copy = compound_from_json('parent.json')
         assert len(parent_copy['CH2']) == len(parent['CH2'])
         assert parent_copy.labels.keys() == parent.labels.keys()
-        for child, child_copy in zip(parent.particles(), parent_copy.particles()):
+        for child, child_copy in zip(parent.successors(), parent_copy.successors()):
             assert child.labels.keys() == child_copy.labels.keys()
+        assert parent_copy.available_ports() == parent.available_ports()
 
 
