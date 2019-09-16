@@ -1165,7 +1165,7 @@ class Compound(object):
             particle_array = np.array(list(self.particles()))
         return particle_array[idxs]
 
-    def visualize(self, show_ports=False, 
+    def visualize(self, show_ports=False,
             backend='py3dmol', color_scheme={}): # pragma: no cover
         """Visualize the Compound using py3dmol (default) or nglview.
 
@@ -1189,13 +1189,13 @@ class Compound(object):
                 'py3dmol': self._visualize_py3dmol}
         if run_from_ipython():
             if backend.lower() in viz_pkg:
-                return viz_pkg[backend.lower()](show_ports=show_ports, 
+                return viz_pkg[backend.lower()](show_ports=show_ports,
                         color_scheme=color_scheme)
             else:
                 raise RuntimeError("Unsupported visualization " +
                         "backend ({}). ".format(backend) +
                         "Currently supported backends include nglview and py3dmol")
-                        
+
         else:
             raise RuntimeError('Visualization is only supported in Jupyter '
                                'Notebooks.')
@@ -1227,9 +1227,9 @@ class Compound(object):
 
         modified_color_scheme = {}
         for name, color in color_scheme.items():
-            # Py3dmol does some element string conversions, 
+            # Py3dmol does some element string conversions,
             # first character is as-is, rest of the characters are lowercase
-            new_name = name[0] + name[1:].lower() 
+            new_name = name[0] + name[1:].lower()
             modified_color_scheme[new_name] = color
             modified_color_scheme[name] = color
 
@@ -1242,8 +1242,9 @@ class Compound(object):
                   overwrite=True)
 
         view = py3Dmol.view()
-        view.addModel(open(os.path.join(tmp_dir, 'tmp.mol2'), 'r').read(),
-                'mol2', keepH=True)
+        with open(os.path.join(tmp_dir, 'tmp.mol2'), 'r') as f:
+            view.addModel(f.read(), 'mol2', keepH=True)
+
         view.setStyle({'stick': {'radius': 0.2,
                                 'color':'grey'},
                         'sphere': {'scale': 0.3,
@@ -1410,7 +1411,7 @@ class Compound(object):
         scale_torsions : float, optional, default=1
             Scales the torsional force constants (1 is completely on)
             For _energy_minimize_openmm
-            Note: Only Ryckaert-Bellemans style torsions are currently supported 
+            Note: Only Ryckaert-Bellemans style torsions are currently supported
         scale_nonbonded : float, optional, default=1
             Scales epsilon (1 is completely on)
             For _energy_minimize_openmm
@@ -1513,7 +1514,7 @@ class Compound(object):
         Parameters
         ----------
         forcefield_files : str or list of str, optional, default=None
-            Forcefield files to load 
+            Forcefield files to load
         forcefield_name : str, optional, default=None
             Apply a named forcefield to the output file using the `foyer`
             package, e.g. 'oplsaa'. Forcefields listed here:
@@ -1783,7 +1784,7 @@ class Compound(object):
             when the `foyer` package is used to apply a forcefield. Valid
             options are 'lorentz' and 'geometric', specifying Lorentz-Berthelot
             and geometric combining rules respectively.
-        
+
 
         Other Parameters
         ----------------
