@@ -17,4 +17,4 @@ pytest-faulthandler
 codecov
 protobuf
 nbval
-pymol3d
+py3Dmol
