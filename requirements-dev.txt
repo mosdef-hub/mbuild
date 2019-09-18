@@ -17,3 +17,4 @@ pytest-faulthandler
 codecov
 protobuf
 nbval
+ipyext
