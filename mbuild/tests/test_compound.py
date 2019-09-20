@@ -7,7 +7,7 @@ import pytest
 import mbuild as mb
 from mbuild.exceptions import MBuildError
 from mbuild.utils.geometry import calc_dihedral
-from mbuild.utils.io import get_fn, has_foyer, has_intermol, has_openbabel, has_networkx
+from mbuild.utils.io import get_fn, has_foyer, has_intermol, has_openbabel, has_networkx, has_matplotlib
 from mbuild.tests.base_test import BaseTest
 
 class TestCompound(BaseTest):
@@ -960,3 +960,27 @@ class TestCompound(BaseTest):
         #            monolayer.unitcell.GetC()/10], 
         #        rtol=1e-3)
 
+    @pytest.mark.skipif(not has_matplotlib or not has_networkx, reason="Networkx and/or matplotlib not available")
+    def test_visualize_bond_graph_with_hexane(self, hexane):
+        import matplotlib
+        from matplotlib import pyplot as plt
+        import matplotlib.testing.compare as compare
+        from matplotlib.image import imread
+        import numpy as np
+        import random
+        matplotlib.testing.set_reproducibility_for_testing()
+        np.random.seed(42)
+        random.seed(42)
+        hexane.draw_bond_graph(plot=False)
+        plt.savefig('graph1.png')
+        plt.clf()
+        hexane.draw_bond_graph(plot=False)
+        plt.savefig('graph2.png')
+        plt.close()
+        graph1_mat = imread('graph1.png')
+        graph2_mat = imread('graph2.png')
+        assert graph1_mat.shape == graph2_mat.shape
+        # Despite the randomness, the figures should closely resemble each other
+        assert np.allclose(np.sum(graph1_mat[:, :, 0]), np.sum(graph2_mat[:, :, 0]), atol=1000)
+        assert np.allclose(np.sum(graph1_mat[:, :, 1]), np.sum(graph2_mat[:, :, 1]), atol=1000)
+        assert np.allclose(np.sum(graph1_mat[:, :, 2]), np.sum(graph2_mat[:, :, 2]), atol=1000)
