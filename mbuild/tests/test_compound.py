@@ -67,11 +67,18 @@ class TestCompound(BaseTest):
         ch3.update_coordinates(get_fn("methyl.pdb"))
 
     def test_save_simple(self, ch3):
-        extensions = ['.xyz', '.pdb', '.mol2']
+        extensions = ['.xyz', '.pdb', '.mol2', '.json']
         for ext in extensions:
             outfile = 'methyl_out' + ext
             ch3.save(filename=outfile)
             assert os.path.exists(outfile)
+
+    def test_save_json_loop(self, ethane):
+        ethane.save('ethane.json', show_ports=True)
+        ethane_copy = mb.load('ethane.json')
+        assert ethane.n_particles == ethane_copy.n_particles
+        assert ethane.n_bonds == ethane_copy.n_bonds
+        assert len(ethane.children) == len(ethane_copy.children)
 
     def test_save_box(self, ch3):
         extensions = ['.mol2', '.pdb', '.hoomdxml', '.gro']

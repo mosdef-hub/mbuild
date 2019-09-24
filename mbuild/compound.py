@@ -24,6 +24,7 @@ from mbuild.box import Box
 from mbuild.exceptions import MBuildError
 from mbuild.utils.decorators import deprecated
 from mbuild.formats.xyz import read_xyz
+from mbuild.formats.json_formats import compound_to_json, compound_from_json
 from mbuild.formats.hoomdxml import write_hoomdxml
 from mbuild.formats.lammpsdata import write_lammpsdata
 from mbuild.formats.gsdwriter import write_gsd
@@ -53,7 +54,7 @@ def load(filename_or_object, relative_to_module=None, compound=None, coords_only
     compound : mb.Compound, optional, default=None
         Existing compound to load atom and bond information into.
     coords_only : bool, optional, default=False
-        Only load the coordinates into an existing compoint.
+        Only load the coordinates into an existing compound.
     rigid : bool, optional, default=False
         Treat the compound as a rigid body
     use_parmed : bool, optional, default=False
@@ -93,8 +94,12 @@ def load(filename_or_object, relative_to_module=None, compound=None, coords_only
         file_dir = os.path.dirname(script_path)
         filename_or_object = os.path.join(file_dir, filename_or_object)
 
-    # Handle the case of a xyz file, which must use an internal reader
+    # Handle the case of a xyz and json file, which must use an internal reader
     extension = os.path.splitext(filename_or_object)[-1]
+    if extension == '.json':
+        compound = compound_from_json(filename_or_object)
+        return compound
+
     if extension == '.xyz' and not 'top' in kwargs:
         if coords_only:
             tmp = read_xyz(filename_or_object)
@@ -1752,7 +1757,7 @@ class Compound(object):
         filename : str
             Filesystem path in which to save the trajectory. The extension or
             prefix will be parsed and control the format. Supported
-            extensions are: 'hoomdxml', 'gsd', 'gro', 'top', 'lammps', 'lmp'
+            extensions are: 'hoomdxml', 'gsd', 'gro', 'top', 'lammps', 'lmp', 'json'
         show_ports : bool, optional, default=False
             Save ports contained within the compound.
         forcefield_files : str, optional, default=None
@@ -1804,11 +1809,18 @@ class Compound(object):
             see http://lammps.sandia.gov/doc/atom_style.html for more
             information on atom styles.
 
+        Notes
+        ------
+        When saving the compound as a json, only the following arguments are used:
+            - filename
+            - show_ports
+
         See Also
         --------
         formats.gsdwrite.write_gsd : Write to GSD format
         formats.hoomdxml.write_hoomdxml : Write to Hoomd XML format
         formats.lammpsdata.write_lammpsdata : Write to LAMMPS data format
+        formats.json_formats.compound_to_json : Write to a json file
 
         """
         extension = os.path.splitext(filename)[-1]
@@ -1817,11 +1829,18 @@ class Compound(object):
             traj.save(filename)
             return
 
+        if extension == '.json':
+            compound_to_json(self,
+                             file_path=filename,
+                             include_ports=show_ports)
+            return
+
         # Savers supported by mbuild.formats
         savers = {'.hoomdxml': write_hoomdxml,
                   '.gsd': write_gsd,
                   '.lammps': write_lammpsdata,
-                  '.lmp': write_lammpsdata}
+                  '.lmp': write_lammpsdata,
+                  '.json': compound_to_json}
 
         try:
             saver = savers[extension]
