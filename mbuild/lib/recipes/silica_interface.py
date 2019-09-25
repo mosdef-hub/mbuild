@@ -129,7 +129,7 @@ class SilicaInterface(mb.Compound):
         for atom in self.particles():
             if len(self.bond_graph.neighbors(atom)) == 1:
                 if atom.name == 'O' and atom.pos[2] > thickness:
-                    atom.name = 'OS'
+                    atom.name = 'O_surface'
                     port = mb.Port(anchor=atom)
                     port.spin(np.pi/2, [1, 0, 0])
                     port.translate(np.array([0.0, 0.0, 0.1]))
