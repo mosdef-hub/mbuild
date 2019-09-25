@@ -28,11 +28,12 @@ class Box(object):
             self._maxs = np.array(maxs, dtype=np.float)
             self._lengths = self.maxs - self.mins
         else:
-            warn(
-                "Provided `lengths` and `mins` and/or `maxs`. Only `lengths` "
-                "is being used. You provided: "
-                "lengths={} mins={} maxs={}".format(lengths, mins, maxs)
-            )
+            if mins is not None or maxs is not None:
+                warn(
+                    "Provided `lengths` and `mins` and/or `maxs`. Only `lengths` "
+                    "is being used. You provided: "
+                    "lengths={} mins={} maxs={}".format(lengths, mins, maxs)
+                )
             self._mins = np.array([0.0, 0.0, 0.0])
             self._maxs = np.array(lengths, dtype=np.float)
             self._lengths = np.array(lengths, dtype=np.float)
