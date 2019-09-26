@@ -1839,8 +1839,7 @@ class Compound(object):
         savers = {'.hoomdxml': write_hoomdxml,
                   '.gsd': write_gsd,
                   '.lammps': write_lammpsdata,
-                  '.lmp': write_lammpsdata,
-                  '.json': compound_to_json}
+                  '.lmp': write_lammpsdata}
 
         try:
             saver = savers[extension]
