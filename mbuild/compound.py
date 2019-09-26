@@ -780,9 +780,9 @@ class Compound(object):
                     # remove ports along with remove_part
                     if 'port' not in self.labels:
                         self.root.labels['port'] = []
-                    tbr_port_label = 'port[{}]'.format(len(self.root.labels['port']))
+                    tbr_port_label = 'port[{}]'.format(len(self.labels['port']))
                     self.root.remove_bond((removed_part, neighbor))
-                    self.root.remove(self[tbr_port_label])
+                    self.remove(self[tbr_port_label])
                 self.root.bond_graph.remove_node(removed_part)
             self._remove_references(removed_part)
 
