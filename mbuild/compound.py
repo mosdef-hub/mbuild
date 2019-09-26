@@ -779,7 +779,7 @@ class Compound(object):
                 for neighbor in self.root.bond_graph.neighbors(removed_part):
                     # remove ports along with remove_part
                     if 'port' not in self.labels:
-                        self.root.labels['port'] = []
+                        self.labels['port'] = []
                     tbr_port_label = 'port[{}]'.format(len(self.labels['port']))
                     self.root.remove_bond((removed_part, neighbor))
                     self.remove(self[tbr_port_label])
