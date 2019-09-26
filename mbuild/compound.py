@@ -777,12 +777,7 @@ class Compound(object):
             if self.root.bond_graph and self.root.bond_graph.has_node(
                     removed_part):
                 for neighbor in self.root.bond_graph.neighbors(removed_part):
-                    # remove ports along with remove_part
-                    if 'port' not in self.labels:
-                        self.labels['port'] = []
-                    tbr_port_label = 'port[{}]'.format(len(self.labels['port']))
                     self.root.remove_bond((removed_part, neighbor))
-                    self.remove(self[tbr_port_label])
                 self.root.bond_graph.remove_node(removed_part)
             self._remove_references(removed_part)
 
@@ -791,6 +786,11 @@ class Compound(object):
             child.remove(yet_to_remove)
             if child.contains_rigid:
                 self.root._reorder_rigid_ids()
+        
+        # Remove port of removed part
+        for port in self.all_ports():
+            if id(port.anchor) not in [id(i) for i in self.children]:
+                self.remove(port)
 
     def _remove_references(self, removed_part):
         """Remove labels pointing to this part and vice versa. """
