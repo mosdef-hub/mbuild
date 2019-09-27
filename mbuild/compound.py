@@ -1369,7 +1369,7 @@ class Compound(object):
     def energy_minimize(self, forcefield='UFF', steps=1000, **kwargs):
         """Perform an energy minimization on a Compound
 
-        Default beahvior utilizes Open Babel (http://openbabel.org/docs/dev/)
+        Default behavior utilizes Open Babel (http://openbabel.org/docs/dev/)
         to perform an energy minimization/geometry optimization on a
         Compound by applying a generic force field
 
@@ -2363,6 +2363,14 @@ class Compound(object):
         Returns
         -------
         G : networkx.DiGraph
+
+        Notes
+        -----
+        This digraph is not the bondgraph of the compound.
+
+        See Also
+        --------
+        mbuild.bond_graph
         """
         nx = import_('networkx')
 
@@ -2380,6 +2388,7 @@ class Compound(object):
         return graph
 
     def _iterate_children(self, nodes, edges, names_only=False):
+        """Iterate through the compound hierarchy for building a graph"""
         if not self.children:
             return nodes, edges
         for child in self.children:
@@ -2606,7 +2615,6 @@ class Compound(object):
         Returns
         -------
         intermol_system : intermol.system.System
-
         """
         from intermol.atom import Atom as InterMolAtom
         from intermol.molecule import Molecule
@@ -2649,8 +2657,12 @@ class Compound(object):
         return intermol_system
 
     @staticmethod
-    def _add_intermol_molecule_type(intermol_system, parent): # pragma: no cover
-        """Create a molecule type for the parent and add bonds. """
+    def _add_intermol_molecule_type(intermol_system, parent):  # pragma: no cover
+        """Create a molecule type for the parent and add bonds.
+
+        This method takes an intermol system and adds a
+        parent compound, including its particles and bonds, to it.
+        """
         from intermol.moleculetype import MoleculeType
         from intermol.forces.bond import Bond as InterMolBond
 
@@ -2762,6 +2774,7 @@ class Compound(object):
         return newone
 
     def _clone_bonds(self, clone_of=None):
+        """While cloning, clone the bond of the source compound to clone compound"""
         newone = clone_of[self]
         for c1, c2 in self.bonds():
             try:
