@@ -1795,8 +1795,6 @@ class Compound(object):
 
         Other Parameters
         ----------------
-        foyerkwargs : dict, optional
-            Specify keyword arguments when applying the foyer Forcefield
         ref_distance : float, optional, default=1.0
             Normalization factor used when saving to .gsd and .hoomdxml formats
             for converting distance values to reduced units.
