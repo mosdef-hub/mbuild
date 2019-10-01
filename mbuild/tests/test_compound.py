@@ -907,9 +907,9 @@ class TestCompound(BaseTest):
     @pytest.mark.skipif(not has_openbabel, reason="Pybel is not installed")
     def test_to_pybel(self, ethane):
         pybel_mol = ethane.to_pybel(box=None)
-        assert pybel_mol.OBMol.NumAtoms() == 8 
-        assert pybel_mol.OBMol.NumBonds() == 7 
-        assert np.allclose([pybel_mol.unitcell.GetA(), pybel_mol.unitcell.GetB(), 
+        assert pybel_mol.OBMol.NumAtoms() == 8
+        assert pybel_mol.OBMol.NumBonds() == 7
+        assert np.allclose([pybel_mol.unitcell.GetA(), pybel_mol.unitcell.GetB(),
             pybel_mol.unitcell.GetC()], [2.139999, 2.9380001, 1.646])
 
     @pytest.mark.skipif(not has_openbabel, reason="Pybel is not installed")
@@ -928,7 +928,7 @@ class TestCompound(BaseTest):
 
     @pytest.mark.skipif(not has_openbabel, reason="Pybel is not installed")
     def test_to_more_pybel_residues(self, methane, ethane):
-        box = mb.fill_box([methane, ethane], n_compounds=[3,3], 
+        box = mb.fill_box([methane, ethane], n_compounds=[3,3],
                 box=mb.Box([10,10,10]))
         pybel_mol = box.to_pybel(box=None, residues=['Ethane', 'Methane'])
         pybel_mol_resnames = {a.name for a in pybel_mol.residues}
@@ -956,7 +956,12 @@ class TestCompound(BaseTest):
         first_atom = monolayer.OBMol.GetAtom(1)
         assert np.allclose(cmpd[0].pos, [first_atom.GetX()/10, first_atom.GetY()/10, first_atom.GetZ()/10])
         #assert np.allclose(box.lengths,
-        #        [monolayer.unitcell.GetA()/10, monolayer.unitcell.GetB()/10, 
-        #            monolayer.unitcell.GetC()/10], 
+        #        [monolayer.unitcell.GetA()/10, monolayer.unitcell.GetB()/10,
+        #            monolayer.unitcell.GetC()/10],
         #        rtol=1e-3)
 
+    @pytest.mark.skipif(not has_openbabel, reason="Pybel is not installed")
+    def test_get_smiles(self):
+        test_string = "CCO"
+        my_cmp = mb.load(test_string, smiles=True)
+        assert my_cmp.get_smiles() == test_string
