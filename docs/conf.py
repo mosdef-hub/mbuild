@@ -27,6 +27,7 @@ MOCK_MODULES = ['numpy',
                 'nglview',
                 'oset',
                 'parmed',
+                'parmed.parameters',
                 'parmed.periodic_table',
                 'scipy',
                 'scipy.spatial',
@@ -62,7 +63,7 @@ extensions = [
 nbsphinx_execute = 'always'
 
 autosummary_generate = True
-autodoc_default_flags = ['members', 'inherited-members']
+autodoc_default_flags = ['members',]
 numpydoc_class_members_toctree = False
 
 # stackoverflow.com/questions/12206334
@@ -94,7 +95,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'mbuild'
-copyright = u'2014-2017, Vanderbilt University'
+copyright = u'2014-2019, Vanderbilt University'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the

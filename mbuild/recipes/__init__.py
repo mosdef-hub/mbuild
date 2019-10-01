@@ -1,7 +1,8 @@
-__all__ = ['Polymer', 'TiledCompound', 'Monolayer', 'SilicaInterface']
+class Recipes(object):
+    pass
 
-
-from mbuild.recipes.polymer import Polymer
-from mbuild.recipes.tiled_compound import TiledCompound
-from mbuild.recipes.monolayer import Monolayer
-from mbuild.recipes.silica_interface import SilicaInterface
+recipes = Recipes()
+from pkg_resources import iter_entry_points
+available_methods = []
+for entry_point in iter_entry_points(group='mbuild.plugins', name=None):
+    setattr(recipes, entry_point.name, entry_point.load())

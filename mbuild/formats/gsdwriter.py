@@ -1,14 +1,7 @@
 from __future__ import division
 
-from collections import OrderedDict
-from copy import deepcopy
-from math import floor
-import re
-
 import numpy as np
-from oset import oset as OrderedSet
 
-from mbuild import Box
 from mbuild.utils.io import import_
 from mbuild.utils.sorting import natural_sort
 from mbuild.utils.geometry import coord_shift
@@ -17,7 +10,8 @@ __all__ = ['write_gsd']
 
 
 def write_gsd(structure, filename, ref_distance=1.0, ref_mass=1.0,
-              ref_energy=1.0, rigid_bodies=None, shift_coords=True):
+              ref_energy=1.0, rigid_bodies=None, shift_coords=True,
+              write_special_pairs=True):
     """Output a GSD file (HOOMD v2 default data format).
 
     Parameters
@@ -39,6 +33,9 @@ def write_gsd(structure, filename, ref_distance=1.0, ref_mass=1.0,
         part of a rigid body.
     shift_coords : bool, optional, default=True
         Shift coordinates from (0, L) to (-L/2, L/2) if necessary.
+    write_special_pairs : bool, optional, default=True
+        Writes out special pair information necessary to correctly use the OPLS fudged 1,4 interactions
+        in HOOMD.
 
     Notes
     -----
@@ -79,12 +76,15 @@ def write_gsd(structure, filename, ref_distance=1.0, ref_mass=1.0,
 
     _write_particle_information(gsd_file, structure, xyz, ref_distance,
             ref_mass, ref_energy, rigid_bodies)
+    if write_special_pairs:
+        _write_pair_information(gsd_file, structure)
     if structure.bonds:
         _write_bond_information(gsd_file, structure)
     if structure.angles:
         _write_angle_information(gsd_file, structure)
     if structure.rb_torsions:
         _write_dihedral_information(gsd_file, structure)
+
 
     gsd.hoomd.create(filename, gsd_file)
 
@@ -123,6 +123,33 @@ def _write_particle_information(gsd_file, structure, xyz, ref_distance,
     if rigid_bodies:
         rigid_bodies = [-1 if body is None else body for body in rigid_bodies]
     gsd_file.particles.body = rigid_bodies
+
+def _write_pair_information(gsd_file, structure):
+    """Write the special pairs in the system.
+
+        Parameters
+    ----------
+    gsd_file :
+        The file object of the GSD file being written
+    structure : parmed.Structure
+        Parmed structure object holding system information
+    """
+    pair_types = []
+    pair_typeid = []
+    pairs = []
+    for ai in structure.atoms:
+        for aj in ai.dihedral_partners:
+            #make sure we don't double add
+            if ai.idx > aj.idx:
+                ps = '-'.join(sorted([ai.type, aj.type], key=natural_sort))
+                if ps not in pair_types:
+                    pair_types.append(ps)
+                pair_typeid.append(pair_types.index(ps))
+                pairs.append((ai.idx, aj.idx))
+    gsd_file.pairs.types = pair_types
+    gsd_file.pairs.typeid = pair_typeid
+    gsd_file.pairs.group = pairs
+    gsd_file.pairs.N = len(pairs)
 
 def _write_bond_information(gsd_file, structure):
     """Write the bonds in the system.

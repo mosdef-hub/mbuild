@@ -6,23 +6,28 @@ source:
   path: ../../
 
 build:
+  noarch: python
   number: {{ environ.get('GIT_DESCRIBE_NUMBER', 0)}}
+  script_env:
+    - CONDA_PY
+  script: activate
   script: python setup.py install --single-version-externally-managed --record record.txt
 
 requirements:
   build:
     - python
+    - protobuf
 
   run:
     - python
     - numpy
     - scipy
-    - packmol 1.0.0
+    - packmol >=1!18.013
     - nglview >=0.6
     - oset
     - parmed
+    - protobuf
     - mdtraj
-    - foyer
 
 test:
   requires:
@@ -30,15 +35,16 @@ test:
     - jupyter
     - nbformat
     - ipykernel
-    - ipyext
-    - pytest-ignore-flaky
+    - foyer
+    - networkx
 
   source_files:
     - mbuild/examples/*
 
   commands:
     - set LNAME=mosdef
-    - pytest --ignore-flaky -v --pyargs mbuild
+    - activate
+    - pytest -v --pyargs mbuild
 
 about:
   home: http://mosdef-hub.github.io/mbuild
