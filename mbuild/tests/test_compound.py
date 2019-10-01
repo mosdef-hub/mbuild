@@ -962,6 +962,7 @@ class TestCompound(BaseTest):
 
     @pytest.mark.skipif(not has_openbabel, reason="Pybel is not installed")
     def test_get_smiles(self):
-        test_string = "CCO"
-        my_cmp = mb.load(test_string, smiles=True)
-        assert my_cmp.get_smiles() == test_string
+        test_strings = ["CCO", "CCCCCCCC", "c1ccccc1", "CC(=O)Oc1ccccc1C(=O)O"]
+        for test_string in test_strings:
+            my_cmp = mb.load(test_string, smiles=True)
+            assert my_cmp.get_smiles() == test_string
