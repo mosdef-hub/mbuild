@@ -30,3 +30,10 @@ class TestPar(BaseTest):
     def test_save_forcefield(self, ethane):
         ethane.save(filename='ethane-opls.par', forcefield_name='oplsaa')
 
+    def test_par_parameters(self, ethane):
+        ethane.save(filename='ethane-opls.par', forcefield_name='oplsaa')
+        from parmed.charmm import CharmmParameterSet
+        pset = CharmmParameterSet.load_set(pfile='ethane-opls.par')
+        assert len(pset.bond_types) == 3
+        assert len(pset.angle_types) == 3
+        assert len(pset.atom_types) == 2

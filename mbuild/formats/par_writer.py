@@ -7,7 +7,14 @@ __all__ = ['write_par']
 
 
 def write_par(structure, filename):
-    """ Write CHARMM Par file given a parametrized structure """
+    """ Write CHARMM Par file given a parametrized structure 
+        
+    Notes
+    -----
+    Follows format according to 
+    (https://www.ks.uiuc.edu/Training/Tutorials/namd/namd-tutorial-unix-html/
+    node25.html)
+    """
 
     # ATOMS
     with open(filename, 'w') as f:
