@@ -36,13 +36,52 @@ class TestPacking(BaseTest):
         n_water = len([c for c in filled.children if c.name == 'H2O'])
         assert n_water / n_ethane == 2
 
+    def test_fill_sphere(self, h2o):
+        filled = mb.fill_sphere(h2o, sphere=[3, 3, 3, 1.5], n_compounds=50)
+        assert filled.n_particles == 50 * 3
+        assert filled.n_bonds == 50 * 2
+
+        center = np.array([3.0, 3.0, 3.0])
+        assert np.alltrue(np.linalg.norm(filled.xyz - center, axis=1) < 1.5)
+
+    def test_fill_sphere_density(self, h2o):
+        filled = mb.fill_sphere(h2o, sphere=[3, 3, 3, 1.5], density=1000)
+        assert filled.n_particles == 921
+
+    def test_fill_sphere_compound_ratio(self, h2o, ethane):
+        filled = mb.fill_sphere(compound=[h2o, ethane], sphere=[3, 3, 3, 1.5],
+                density=800, compound_ratio=[2, 1])
+        n_ethane = len([c for c in filled.children if c.name == 'Ethane'])
+        n_water = len([c for c in filled.children if c.name == 'H2O'])
+        assert n_water / n_ethane == 2
+
+    def test_fill_sphere_bad_args(self, h2o, ethane):
+        with pytest.raises(ValueError):
+            mb.fill_sphere(compound=h2o, sphere=[4, 4, 4, 1])
+        with pytest.raises(ValueError):
+            mb.fill_sphere(compound=h2o, n_compounds=100,
+                density=100, sphere=[4, 4, 4, 1])
+        with pytest.raises(ValueError):
+            mb.fill_sphere(compound=h2o, density=1000, sphere='yes')
+        with pytest.raises(ValueError):
+            mb.fill_sphere(compound=[h2o, ethane], n_compounds=1000, sphere=[1, 1, 1, 4])
+        with pytest.raises(ValueError):
+            mb.fill_sphere(compound=h2o, n_compounds=[10, 10], sphere=[1, 1, 1, 4])
+        with pytest.raises(ValueError):
+            mb.fill_sphere(compound=h2o, n_compounds=100, sphere=[1, 1, 1, 4])
+
+
     def test_fill_region(self, h2o):
         filled = mb.fill_region(h2o, n_compounds=50,
-                                region=[3, 2, 2, 4, 4, 3])
+                                region=[3, 2, 2, 5, 5, 5])
         assert filled.n_particles == 50 * 3
         assert filled.n_bonds == 50 * 2
         assert np.min(filled.xyz[:,0]) >= 3
-        assert np.max(filled.xyz[:,2]) <= 3
+        assert np.min(filled.xyz[:,1]) >= 2
+        assert np.min(filled.xyz[:,2]) >= 2
+        assert np.max(filled.xyz[:,0]) <= 5
+        assert np.max(filled.xyz[:,1]) <= 5
+        assert np.max(filled.xyz[:,2]) <= 5
 
     def test_fill_region_box(self, h2o):
         mybox = mb.Box([4, 4, 4])
@@ -149,9 +188,16 @@ class TestPacking(BaseTest):
         with pytest.raises(RuntimeError):
             filled = mb.fill_box(h2o, n_compounds=10, box=[0, 0, 0])
 
+    def test_packmol_log_error(self, h2o):
+        try:
+            filled = mb.fill_box(h2o, n_compounds=10, box=[0, 0, 0])
+        except(RuntimeError):
+            with open("log.txt", "r") as logfile:
+                assert "ERROR" in logfile.read()
+
     def test_packmol_warning(self, h2o):
         with pytest.warns(UserWarning):
-            filled = mb.fill_box(h2o, n_compounds=10, box=[1, 1, 1], overlap=100)
+            filled = mb.fill_box(h2o, n_compounds=10, box=[1, 1, 1], overlap=10)
 
     def test_rotate(self, h2o):
         filled = mb.fill_box(h2o, 2, box=[1, 1, 1], fix_orientation=True)
@@ -170,3 +216,10 @@ class TestPacking(BaseTest):
         w0 -= w0.sum(0) / len(w0)
         w1 -= w1.sum(0) / len(w1)
         assert np.isclose(w0, w1).all() is not True
+
+    def test_remove_port(self):
+        from mbuild.examples import Alkane
+
+        butane = Alkane(n=4)
+        butane.remove(butane[-1])
+        box = mb.fill_box(butane, n_compounds=10, density=1)

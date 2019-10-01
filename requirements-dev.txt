@@ -1,0 +1,18 @@
+numpy
+scipy
+packmol>=1!18.013
+nglview>=0.6.2.3
+oset
+parmed
+mdtraj
+foyer
+gsd
+openbabel
+networkx
+pytest >=3.0
+jupyter
+nbformat
+pytest-cov
+pytest-faulthandler
+codecov
+protobuf

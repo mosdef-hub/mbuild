@@ -36,7 +36,7 @@ The code at {filename}:{line_number} requires the "gsd" package
 
 gsd can be installed with conda using:
 
-# conda install -c glotzer gsd
+# conda install -c conda-forge gsd
 '''
 
 MESSAGES['nglview'] = '''
@@ -64,6 +64,18 @@ or from source following instructions at:
 '''
 
 MESSAGES['pybel'] = MESSAGES['openbabel']
+
+MESSAGES['foyer'] = '''
+The code at {filename}:{line_number} requires the "foyer" package
+
+foyer can be installed using:
+
+# conda install -c mosdef foyer
+
+or
+
+# pip install foyer
+'''
 
 
 def import_(module):
@@ -133,6 +145,19 @@ try:
 except ImportError:
     has_openbabel = False
 
+try:
+    import foyer
+    has_foyer = True
+    del foyer
+except ImportError:
+    has_foyer = False
+
+try:
+    import networkx
+    has_networkx = True
+    del networkx
+except ImportError:
+    has_networkx = False
 
 def get_fn(name):
     """Get the full path to one of the reference files shipped for utils.

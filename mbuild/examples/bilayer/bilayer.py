@@ -7,7 +7,6 @@ from random import seed, shuffle
 import numpy as np
 
 import mbuild as mb
-from mbuild import clone
 
 class Bilayer(mb.Compound):
     """Create a lipid bilayer and add solvent above and below.
@@ -125,23 +124,25 @@ class Bilayer(mb.Compound):
             current_type = self.lipids[n_type][0]
             for n_this_type, n_this_lipid_type in enumerate(range(n_of_lipid_type)):
                 lipids_placed = n_type + n_this_type
-                new_lipid = clone(current_type)
+                new_lipid = mb.clone(current_type)
                 random_index = lipid_indices[lipids_placed]
                 position = self.pattern[random_index]
 
                 # Zero and space in z-direction
                 particles = list(new_lipid.particles())
                 ref_atom = self.ref_atoms[n_type]
-                new_lipid.translate(-particles[ref_atom].pos + self.spacing)
+                new_lipid.translate(new_lipid, -particles[ref_atom].pos + self.spacing)
 
                 # Move to point on pattern
                 if flip_orientation == True:
+                    # TODO: Function for this?
+                    # E.g., rotate_around_x_keep_com(compound, bool(3))
                     center = new_lipid.center
                     center[2] = 0.0
-                    new_lipid.translate(-center)
-                    new_lipid.rotate(np.pi, [1, 0, 0])
-                    new_lipid.translate(center)
-                new_lipid.translate(position)
+                    new_lipid.translate(new_lipid, -center)
+                    mb.rotate_around_x(new_lipid, np.pi)
+                    new_lipid.translate(new_lipid, center)
+                new_lipid.translate(new_lipid, position)
                 layer.add(new_lipid)
         return layer, lipid_indices
 

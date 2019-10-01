@@ -155,21 +155,22 @@ class Lattice(object):
                          lattice_points, angles):
         """Check for proper inputs and set instance attributes.
 
-        validate_inputs takes the data passed to the constructor by the user
-        and will ensure that the data is correctly formatted and will then
-        set its instance attributes.
+        Takes the data passed to the constructor by the user
+        and ensures that the data is correctly formatted and
+        then sets its instance attributes.
 
-        validate_inputs checks that dimensionality is maintained,
-        the unit cell is right handed, the area or volume of the unit cell
+        This method checks that dimensionality is maintained, the unit
+        cell is right handed, the area or volume of the unit cell
         is positive and non-zero for 2D and 3D respectively, lattice spacing
         are provided, basis vectors do not overlap when the unit cell is
         expanded.
 
         Exceptions Raised
         -----------------
-        TypeError : incorrect typing of the input parameters.
+        TypeError : incorrect typing of the input parameters
 
-        ValueError : values are not within restrictions.
+        ValueError : values are not within restrictions
+
         """
 
         if angles is not None and lattice_vectors is not None:
@@ -190,13 +191,14 @@ class Lattice(object):
     def _validate_lattice_spacing(self, lattice_spacing):
         """Ensure that lattice spacing is provided and correct.
 
-        _validate_lattice_spacing will ensure that the lattice spacing
-        provided are acceptable values. Additional Numpy errors can also occur
-        due to the conversion to a Numpy array.
+        Ensures that the lattice spacing provided are acceptable values.
+        Additional NumPy errors can also occur due to the conversion
+        to a numpy array.
 
         Exceptions Raised
         -----------------
         ValueError : Incorrect lattice_spacing input
+
         """
 
         dataType = np.float64
@@ -226,7 +228,17 @@ class Lattice(object):
         self.lattice_spacing = lattice_spacing
 
     def _validate_angles(self, angles):
-        """Ensure that the angles between the lattice_vectors are correct"""
+        """Ensure that the angles between the lattice_vectors are correct
+
+        Ensures that the angles input has an appropriate array size and each
+        components is in an acceptatble range. Additional NumPy errors can
+        also occur due to the conversion to a numpy array.
+
+        Exception Raised
+        ----------------
+        ValueError : Incorrect angles input
+
+        """
 
         dataType = np.float64
         tempAngles = np.asarray(angles, dtype=dataType)
@@ -259,7 +271,17 @@ class Lattice(object):
     def _validate_lattice_vectors(self, lattice_vectors):
         """Ensure that the lattice_vectors are reasonable inputs.
 
+        Makes sure that the provided lattice_vectors input has the correct
+        array size and their determinants have appropriate values.
+        Additional NumPy errors can also occur due to the conversion to
+        a numpy array.
+
+        Exception Raised
+        ----------------
+        ValueError : Incorrect lattice_vectors input
+
         """
+
         dataType = np.float64
         if lattice_vectors is None:
                 lattice_vectors = np.identity(self.dimension, dtype=dataType)
@@ -286,6 +308,18 @@ class Lattice(object):
         self.lattice_vectors = lattice_vectors
 
     def _validate_lattice_points(self, lattice_points):
+        """Ensure that lattice_points are reasonable inputs.
+
+        Makes sure that the provided lattice_points are appropriate,
+        specifically, making sure that the positions are consistent
+        with the dimension and have appropriate input types/values.
+
+        Exception Raised
+        ----------------
+        ValueError : Incorrect lattice_poins input
+
+        """
+
         if lattice_points is None:
             lattice_points = {}
             lattice_points = {'id': [[0. for x in range(self.dimension)]]}
@@ -298,14 +332,14 @@ class Lattice(object):
         for name, positions in lattice_points.items():
             for pos in positions:
                 if len(pos) != self.dimension:
-                    raise ValueError("Incorrect lattice point position size. "
-                                     "lattice point {} has location "
-                                     "{}, which is inconsistent with the "
-                                     "dimension {}.".format(name, pos,
+                    raise ValueError('Incorrect lattice point position size. '
+                                     'lattice point {} has location '
+                                     '{}, which is inconsistent with the '
+                                     'dimension {}.'.format(name, pos,
                                                             self.dimension))
                 if pos is None:
-                    raise ValueError("NoneType passed, expected float. "
-                                     "None was passed in as position for {}."
+                    raise ValueError('NoneType passed, expected float. '
+                                     'None was passed in as position for {}.'
                                      .format(name))
                 for coord in pos:
                     if (coord is None) or (0 > coord) or (coord >=1):
@@ -317,6 +351,16 @@ class Lattice(object):
         self.lattice_points = self._check_for_overlap(lattice_points)
 
     def _check_for_overlap(self, lattice_points):
+        """Check for overlapping lattice
+
+        Makes sure the lattice_points do not overlap when the unit cell
+        get expanded to certain extent.
+
+        Exception Raised
+        ----------------
+        ValueError : Incorrect lattice_points input
+
+        """
 
         overlap_dict = defaultdict(list)
         num_iter = 3
@@ -340,9 +384,9 @@ class Lattice(object):
     def _from_lattice_parameters(self, angles):
         """Convert Bravais lattice parameters to lattice vectors.
 
-        _from_lattice_parameters will generate the lattice vectors based on
-        the parameters necessary to build a Bravais Lattice. The lattice
-        vectors are in the lower diagonal matrix form.
+        Generate the lattice vectors based on the parameters necessary
+        to build a Bravais Lattice. The lattice vectors are in the lower
+        diagonal matrix form.
 
         This was adapted from the ASE triclinic.py lattice parameter code.
 
@@ -354,6 +398,7 @@ class Lattice(object):
         ----------
         angles : list-like, required
             Angles of bravais lattice.
+
         """
 
         dataType = np.float64
@@ -385,31 +430,32 @@ class Lattice(object):
     def _from_lattice_vectors(self):
         """Calculate the angles between the vectors that define the lattice.
 
-        _from_lattice_vectors will calculate the angles alpha, beta, and
-        gamma from the Lattice object attribute lattice_vectors.
+        Calculates the angles alpha, beta, and gamma from the Lattice object
+        attribute lattice_vectors.
+
         """
 
-        degreeConvsersion = 180.0 / np.pi
+        degreeConversion = 180.0 / np.pi
         vector_magnitudes = np.linalg.norm(self.lattice_vectors, axis=1)
 
         a_dot_b = np.dot(self.lattice_vectors[0], self.lattice_vectors[1])
         b_dot_c = np.dot(self.lattice_vectors[1], self.lattice_vectors[2])
         a_dot_c = np.dot(self.lattice_vectors[0], self.lattice_vectors[2])
 
-        alpha_raw = a_dot_c / (vector_magnitudes[0] * vector_magnitudes[2])
-        beta_raw = b_dot_c / (vector_magnitudes[1] * vector_magnitudes[2])
+        alpha_raw = b_dot_c / (vector_magnitudes[1] * vector_magnitudes[2])
+        beta_raw = a_dot_c / (vector_magnitudes[0] * vector_magnitudes[2])
         gamma_raw = a_dot_b / (vector_magnitudes[0] * vector_magnitudes[1])
 
-        alpha = np.arccos(np.clip(alpha_raw, -1.0, 1.0)) * degreeConvsersion
-        beta = np.arccos(np.clip(beta_raw, -1.0, 1.0)) * degreeConvsersion
-        gamma = np.arccos(np.clip(gamma_raw, -1.0, 1.0)) * degreeConvsersion
+        alpha = np.arccos(np.clip(alpha_raw, -1.0, 1.0)) * degreeConversion
+        beta = np.arccos(np.clip(beta_raw, -1.0, 1.0)) * degreeConversion
+        gamma = np.arccos(np.clip(gamma_raw, -1.0, 1.0)) * degreeConversion
 
         return np.asarray([alpha, beta, gamma], dtype=np.float64)
 
     def populate(self, compound_dict=None, x=1, y=1, z=1):
         """Expand lattice and create compound from lattice.
 
-        populate will expand lattice based on user input. The user must also
+        Expands lattice based on user input. The user must also
         pass in a dictionary that contains the keys that exist in the
         basis_dict. The corresponding Compound will be the full lattice
         returned to the user.
@@ -435,8 +481,18 @@ class Lattice(object):
         Call Restrictions
         -----------------
         Called after constructor by user.
+
         """
+
         error_dict = {0: 'X', 1: 'Y', 2: 'Z'}
+
+        # Make sure neither x, y, z input is None
+        if None in [x, y, z]:
+            raise ValueError('Attempt to replicate None times. '
+                             'None is not an acceptable replication '
+                             'amount, 1 is the default.')
+
+        # Try to convert x, y, and z to int, raise a ValueError if fail
         try:
             x = int(x)
             y = int(y)
@@ -445,12 +501,6 @@ class Lattice(object):
             raise ValueError('Cannot convert replication amounts into '
                              'integers. x= {}, y= {}, z= {} needs to '
                              'be an int.'.format(x, y, z))
-
-        for replication_amount in x, y, z:
-            if replication_amount is None:
-                raise ValueError('Attempt to replicate None times. '
-                                 'None is not an acceptable replication '
-                                 'amount, 1 is the default.')
 
         for replication_amount, index in zip([x, y, z], range(3)):
             if replication_amount < 1:
@@ -468,18 +518,18 @@ class Lattice(object):
         [a, b, c] = self.lattice_spacing
 
         transform_mat = self.lattice_vectors
-        # unit vectors
+        # Unit vectors
         transform_mat = np.asarray(transform_mat, dtype=np.float64)
         transform_mat = np.reshape(transform_mat, newshape=(3,3))
         norms = np.linalg.norm(transform_mat, axis=1)
 
-        # normalized vectors for change of basis
+        # Normalized vectors for change of basis
         unit_vecs = np.divide(transform_mat.transpose(), norms)
 
+        # Generate new coordinates
         for key, locations in self.lattice_points.items():
             for coords in locations:
                 for replication in it.product(range(x), range(y), range(z)):
-                    temp_location = list()
 
                     new_coords = np.asarray(coords, dtype=np.float64)
                     new_coords = np.reshape(new_coords, (1, 3), order='C')
@@ -488,7 +538,7 @@ class Lattice(object):
                     new_coords[0][1] = new_coords[0][1] + replication[1]
                     new_coords[0][2] = new_coords[0][2] + replication[2]
 
-                    # change of basis to cartesian
+                    # Change of basis to cartesian
                     new_coords = np.dot(unit_vecs, new_coords.transpose())
 
                     new_coords[0] = new_coords[0] * a
@@ -501,6 +551,7 @@ class Lattice(object):
 
         ret_lattice = mb.Compound()
 
+        # Create (clone) a mb.Compound for the newly generate positions
         if compound_dict is None:
             for key_id, all_pos in cell.items():
                 particle = mb.Compound(name=key_id, pos=[0, 0, 0])
@@ -533,3 +584,4 @@ class Lattice(object):
         ret_lattice.xyz_with_ports[ret_lattice.xyz_with_ports <= tolerance] = 0.
 
         return ret_lattice
+
