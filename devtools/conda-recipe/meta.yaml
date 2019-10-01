@@ -28,7 +28,6 @@ requirements:
     - parmed
     - protobuf
     - mdtraj
-    - foyer
 
 test:
   requires:
