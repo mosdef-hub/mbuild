@@ -1756,8 +1756,8 @@ class Compound(object):
 
     def save(self, filename, show_ports=False, forcefield_name=None,
              forcefield_files=None, forcefield_debug=False, box=None,
-             overwrite=False, residues=None, references_file=None,
-             combining_rule='lorentz', foyerkwargs={}, **kwargs):
+             overwrite=False, residues=None, combining_rule='lorentz',
+             foyer_kwargs=None, **kwargs):
         """Save the Compound to a file.
 
         Parameters
@@ -1788,20 +1788,22 @@ class Compound(object):
         residues : str of list of str
             Labels of residues in the Compound. Residues are assigned by
             checking against Compound.name.
-        references_file : str, optional, default=None
-            Specify a filename to write references for the forcefield that is
-            to be applied. References are written in BiBTeX format.
         combining_rule : str, optional, default='lorentz'
             Specify the combining rule for nonbonded interactions. Only relevant
             when the `foyer` package is used to apply a forcefield. Valid
             options are 'lorentz' and 'geometric', specifying Lorentz-Berthelot
             and geometric combining rules respectively.
+        foyer_kwargs : dict, optional, default=None
+            Keyword arguments to provide to `foyer.Forcefield.apply`.
+        **kwargs
+            Depending on the file extension these will be passed to either
+            `write_gsd`, `write_hoomdxml`, `write_lammpsdata`, or
+            `parmed.Structure.save`.
+            See https://parmed.github.io/ParmEd/html/structobj/parmed.structure.Structure.html#parmed.structure.Structure.save
 
 
         Other Parameters
         ----------------
-        foyerkwargs : dict, optional
-            Specify keyword arguments when applying the foyer Forcefield
         ref_distance : float, optional, default=1.0
             Normalization factor used when saving to .gsd and .hoomdxml formats
             for converting distance values to reduced units.
@@ -1850,9 +1852,10 @@ class Compound(object):
         if forcefield_name or forcefield_files:
             foyer = import_('foyer')
             ff = foyer.Forcefield(forcefield_files=forcefield_files,
-                                  name=forcefield_name, debug=forcefield_debug)
-            structure = ff.apply(structure, references_file=references_file,
-                    **foyerkwargs)
+                            name=forcefield_name, debug=forcefield_debug)
+            if not foyer_kwargs:
+                foyer_kwargs = {}
+            structure = ff.apply(structure, **foyer_kwargs)
             structure.combining_rule = combining_rule
 
         total_charge = sum([atom.charge for atom in structure])
