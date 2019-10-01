@@ -148,7 +148,7 @@ class Rotation(CoordinateTransform):
 
 
 class ChangeOfBasis(CoordinateTransform):
-    """ """
+    """Convert the basis of coordinates to another basis"""
     def __init__(self, basis, origin=None):
         assert np.shape(basis) == (3, 3)
         if origin is None:

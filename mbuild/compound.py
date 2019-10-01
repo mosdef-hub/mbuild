@@ -72,6 +72,7 @@ def load(filename_or_object, relative_to_module=None, compound=None, coords_only
     """
     pybel = import_('pybel')
 
+    # If compound doesn't exist, we will initialize one
     if compound is None:
         compound = Compound()
 
@@ -142,6 +143,10 @@ def load(filename_or_object, relative_to_module=None, compound=None, coords_only
                 warn("More than one SMILES string in file, more than one SMILES "
                      "string is not supported, using {}".format(mymol.write("smi")))
 
+        # We create a temporary directory and mol2 file that will created from the smiles string
+        # A ParmEd structure and subsequenc mBuild compound will be created from this mol2 file
+        tmp_dir = tempfile.mkdtemp()
+        temp_file = os.path.join(tmp_dir, 'smiles_to_mol2_intermediate.mol2')
         mymol.make3D()
         compound = Compound()
         compound.from_pybel(mymol)
@@ -1511,7 +1516,7 @@ class Compound(object):
             scale_nonbonded=1):
         """ Perform energy minimization using OpenMM
 
-        Converts an mBuild Compound to a Parmed Structure,
+        Converts an mBuild Compound to a ParmEd Structure,
         applies a forcefield using Foyer, and creates an OpenMM System.
 
         Parameters
@@ -1564,11 +1569,14 @@ class Compound(object):
         from simtk.openmm.openmm import LangevinIntegrator
         import simtk.unit as u
 
-        system = to_parmed.createSystem()
+        system = to_parmed.createSystem() # Create an OpenMM System
+        # Create a Langenvin Integrator in OpenMM
         integrator = LangevinIntegrator(298 * u.kelvin, 1 / u.picosecond,
                                         0.002 * u.picoseconds)
+        # Create Simulation object in OpenMM
         simulation = Simulation(to_parmed.topology, system, integrator)
 
+        # Loop through forces in OpenMM System and set parameters
         for force in system.getForces():
             if type(force).__name__ == "HarmonicBondForce":
                 for bond_index in range(force.getNumBonds()):
@@ -1625,6 +1633,7 @@ class Compound(object):
                         type(force).__name__))
 
         simulation.context.setPositions(to_parmed.positions)
+        # Run energy minimization through OpenMM
         simulation.minimizeEnergy(maxIterations=steps)
         reporter = PDBReporter(os.path.join(tmp_dir, 'minimized.pdb'), 1)
         reporter.report(
@@ -2247,6 +2256,7 @@ class Compound(object):
         atom_mapping = {}  # For creating bonds below
         guessed_elements = set()
 
+        # Attempt to grab residue names based on names of children
         if not residues and infer_residues:
             residues = list(set([child.name for child in self.children]))
 
@@ -2260,6 +2270,7 @@ class Compound(object):
         compound_residue_map = dict()
         atom_residue_map = dict()
 
+        # Loop through particles and add initialize ParmEd atoms
         for atom in self.particles(include_ports=show_ports):
             if atom.port_particle:
                 current_residue = port_residue
@@ -2321,8 +2332,10 @@ class Compound(object):
 
             atom_mapping[atom] = pmd_atom
 
+        # "Claim" all of the items it contains and subsequently index all of its items
         structure.residues.claim()
 
+        # Create and add bonds to ParmEd Structure
         for atom1, atom2 in self.bonds():
             bond = pmd.Bond(atom_mapping[atom1], atom_mapping[atom2])
             structure.bonds.append(bond)
@@ -2388,7 +2401,7 @@ class Compound(object):
         return graph
 
     def _iterate_children(self, nodes, edges, names_only=False):
-        """Iterate through the compound hierarchy for building a graph"""
+        """ Create nodes and edges that connect parents and their corresponding children"""
         if not self.children:
             return nodes, edges
         for child in self.children:
