@@ -27,6 +27,7 @@ from mbuild.formats.xyz import read_xyz
 from mbuild.formats.hoomdxml import write_hoomdxml
 from mbuild.formats.lammpsdata import write_lammpsdata
 from mbuild.formats.gsdwriter import write_gsd
+from mbuild.formats.par_writer import write_par
 from mbuild.periodic_kdtree import PeriodicCKDTree
 from mbuild.utils.io import run_from_ipython, import_
 from mbuild.coordinate_transform import _translate, _rotate
@@ -1836,7 +1837,8 @@ class Compound(object):
         savers = {'.hoomdxml': write_hoomdxml,
                   '.gsd': write_gsd,
                   '.lammps': write_lammpsdata,
-                  '.lmp': write_lammpsdata}
+                  '.lmp': write_lammpsdata,
+                  '.par': write_par}
 
         try:
             saver = savers[extension]
