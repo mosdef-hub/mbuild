@@ -1,18 +1,18 @@
 from __future__ import division
 
-import sys
 import os
+import sys
 import tempfile
 import warnings
 from distutils.spawn import find_executable
-from subprocess import Popen, PIPE
+from subprocess import PIPE, Popen
 
 import numpy as np
 
+from mbuild import clone
+from mbuild.box import Box
 from mbuild.compound import Compound
 from mbuild.exceptions import MBuildError
-from mbuild.box import Box
-from mbuild import clone
 
 __all__ = ['fill_box', 'fill_region', 'fill_sphere', 'solvate']
 
@@ -57,9 +57,14 @@ def fill_box(compound, n_compounds=None, box=None, density=None, overlap=0.2,
              seed=12345, edge=0.2, compound_ratio=None,
              aspect_ratio=None, fix_orientation=False, temp_file=None,
              update_port_locations=False):
-    """Fill a box with a compound using packmol.
+    """Fill a box with a `mbuild.compound` or `Compound`s using PACKMOL.
 
-    Two arguments of `n_compounds, box, and density` must be specified.
+   `fill_box` takes a single `mbuild.Compound` or a
+   list of `mbuild.Compound`'s and return an `mbuild.Compound` that has
+   been filled to the user's specifications to the best of PACKMOL's ability.
+
+    When filling a system, two arguments of `n_compounds, box, and density`
+    must be specified.
 
     If `n_compounds` and `box` are not None, the specified number of
     n_compounds will be inserted into a box of the specified size.
@@ -78,9 +83,9 @@ def fill_box(compound, n_compounds=None, box=None, density=None, overlap=0.2,
     Parameters
     ----------
     compound : mb.Compound or list of mb.Compound
-        Compound or list of compounds to be put in box.
+        Compound or list of compounds to fill in box.
     n_compounds : int or list of int
-        Number of compounds to be put in box.
+        Number of compounds to be filled in box.
     box : mb.Box
         Box to be filled by compounds.
     density : float, units kg/m^3, default=None
@@ -115,6 +120,7 @@ def fill_box(compound, n_compounds=None, box=None, density=None, overlap=0.2,
     filled : mb.Compound
 
     """
+    # check that the user has the PACKMOL binary on their PATH
     _check_packmol(PACKMOL)
 
     arg_count = 3 - [n_compounds, box, density].count(None)
@@ -139,7 +145,8 @@ def fill_box(compound, n_compounds=None, box=None, density=None, overlap=0.2,
 
     if compound is not None:
         if len(compound) != len(fix_orientation):
-            msg = ("`compound`, `n_compounds`, and `fix_orientation` must be of equal length.")
+            msg = ("`compound`, `n_compounds`, and `fix_orientation` "
+                   "must be of equal length.")
             raise ValueError(msg)
 
     if density is not None:
@@ -157,12 +164,13 @@ def fill_box(compound, n_compounds=None, box=None, density=None, overlap=0.2,
             if len(compound) == 1:
                 compound_mass = np.sum([a.mass for a in compound[0].to_parmed().atoms])
                 # Conversion from kg/m^3 / amu * nm^3 to dimensionless units
-                n_compounds = [int(density/compound_mass*np.prod(box.lengths)*.60224)]
+                n_compounds = [
+                    int(density/compound_mass*np.prod(box.lengths)*0.60224)]
             else:
                 if compound_ratio is None:
                     msg = ("Determing `n_compounds` from `density` and `box` "
-                           "for systems with more than one compound type requires"
-                           "`compound_ratio`")
+                           "for systems with more than one compound type "
+                           "requires `compound_ratio`")
                     raise ValueError(msg)
                 if len(compound) != len(compound_ratio):
                     msg = ("Length of `compound_ratio` must equal length of "
@@ -172,17 +180,17 @@ def fill_box(compound, n_compounds=None, box=None, density=None, overlap=0.2,
                 for c, r in zip(compound, compound_ratio):
                     prototype_mass += r * np.sum([a.mass for a in c.to_parmed().atoms])
                 # Conversion from kg/m^3 / amu * nm^3 to dimensionless units
-                n_prototypes = int(density/prototype_mass*np.prod(box.lengths)*.60224)
+                n_prototypes = int(density/prototype_mass*np.prod(box.lengths)*0.60224)
                 n_compounds = list()
                 for c in compound_ratio:
                     n_compounds.append(int(n_prototypes * c))
 
-    # In angstroms for packmol.
+    # Convert nm to angstroms for PACKMOL.
     box_mins = box.mins * 10
     box_maxs = box.maxs * 10
     overlap *= 10
 
-    # Apply edge buffer
+    # Apply 1nm edge buffer
     box_maxs -= edge * 10
 
     # Build the input file for each compound and call packmol.
@@ -212,6 +220,7 @@ def fill_box(compound, n_compounds=None, box=None, density=None, overlap=0.2,
         filled.update_coordinates(filled_xyz.name, update_port_locations=update_port_locations)
         filled.periodicity = np.asarray(box.lengths, dtype=np.float32)
 
+    # ensure that the temporary files are removed from the machine after filling
     finally:
         for file_handle in compound_xyz_list:
             file_handle.close()
@@ -224,13 +233,13 @@ def fill_box(compound, n_compounds=None, box=None, density=None, overlap=0.2,
 def fill_region(compound, n_compounds, region, overlap=0.2,
                 seed=12345, edge=0.2, fix_orientation=False, temp_file=None,
                 update_port_locations=False):
-    """Fill a region of a box with a compound using packmol.
+    """Fill a region of a box with `mbuild.Compound`(s) using PACKMOL.
 
     Parameters
     ----------
     compound : mb.Compound or list of mb.Compound
-        Compound or list of compounds to be put in region.
-    n_compounds : int or list of int
+        Compound or list of compounds to fill in region.
+    n_compounds : int or list of ints
         Number of compounds to be put in region.
     region : mb.Box or list of mb.Box
         Region to be filled by compounds.
@@ -260,6 +269,7 @@ def fill_region(compound, n_compounds, region, overlap=0.2,
     For example, if the third compound will be put in the third
     region using the third value in n_compounds.
     """
+    # check that the user has the PACKMOL binary on their PATH
     _check_packmol(PACKMOL)
 
     if not isinstance(compound, (list, set)):
@@ -517,6 +527,7 @@ def solvate(solute, solvent, n_solvent, box, overlap=0.2,
     solvated : mb.Compound
 
     """
+    # check that the user has the PACKMOL binary on their PATH
     _check_packmol(PACKMOL)
 
     box = _validate_box(box)
@@ -583,6 +594,17 @@ def solvate(solute, solvent, n_solvent, box, overlap=0.2,
 
 
 def _validate_box(box):
+    """Ensure that the box passed by the user can be formatted as an mbuild.Box
+
+    Parameters
+    ----------
+    box : mbuild.Box or a tuple or list thereof
+        Box or inputs to `mbuild.Box` to generate a `mbuild.Box`.
+
+    Returns
+    -------
+    box : mbuild.Box
+    """
     if isinstance(box, (list, tuple)):
         if len(box) == 3:
             box = Box(lengths=box)
@@ -627,8 +649,8 @@ def _create_topology(container, comp_to_add, n_compounds):
     """
 
     for comp, m_compound in zip(comp_to_add, n_compounds):
-            for _ in range(m_compound):
-                container.add(clone(comp))
+        for _ in range(m_compound):
+            container.add(clone(comp))
     return container
 
 
@@ -640,7 +662,17 @@ def _packmol_error(out, err):
 
 
 def _run_packmol(input_text, filled_xyz, temp_file):
+    """Call PACKMOL to pack system based on the input text.
 
+    Parameters
+    ----------
+    input_text : str, required
+        String formatted in the input file syntax for PACKMOL.
+    filled_xyz : `tempfile` object, required
+        Tempfile that will store the results of PACKMOL's packing.
+    temp_file : `tempfile` object, required
+        Where to copy the filled tempfile.
+    """
     # Create input file
     packmol_inp = tempfile.NamedTemporaryFile(mode='w', delete=False,
                                               prefix='packmol-', suffix='.inp')
