@@ -14,6 +14,8 @@ def write_par(structure, filename):
     Follows format according to 
     (https://www.ks.uiuc.edu/Training/Tutorials/namd/namd-tutorial-unix-html/
     node25.html)
+    Furthermore, ParmEd should support writing CHARMM par, rtf, str files
+    by converting the parmed.Structure into parmed.CharmmParameterSet
     """
 
     # ATOMS
