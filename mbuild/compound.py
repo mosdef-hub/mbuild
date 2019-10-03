@@ -30,6 +30,7 @@ from mbuild.formats.gsdwriter import write_gsd
 from mbuild.formats.par_writer import write_par
 from mbuild.periodic_kdtree import PeriodicCKDTree
 from mbuild.utils.io import run_from_ipython, import_
+from mbuild.utils.jsutils import _nglview_custom_tooltip
 from mbuild.coordinate_transform import _translate, _rotate
 
 
@@ -1303,22 +1304,8 @@ class Compound(object):
         if show_ports:
             widget.add_ball_and_stick('_VS',
                                       aspect_ratio=1.0, color='#991f00')
-        self._execute_tooltip_code(widget)
+        _nglview_custom_tooltip(widget)
         return widget
-
-    def _execute_tooltip_code(self, widget):
-        """This will execute the tooltip change plugin"""
-        log_tooltip = "console.log(this.stage.tooltip)"
-        tooltip_js = """
-                        this.stage.mouseControls.add('hoverPick', (stage, pickingProxy) => {
-                            let tooltip = this.stage.tooltip;
-                            if(pickingProxy && (pickingProxy.atom || pickingProxy.bond)){
-                                let atom = pickingProxy.atom || pickingProxy.closestBondAtom;
-                                tooltip.innerText = "helloworld";
-                            }
-                        });
-                     """
-        widget._js(tooltip_js)
 
     def update_coordinates(self, filename, update_port_locations=True):
         """Update the coordinates of this Compound from a file.
