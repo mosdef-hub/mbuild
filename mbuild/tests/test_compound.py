@@ -1,4 +1,5 @@
 import os
+import time
 
 import numpy as np
 import parmed as pmd
@@ -15,6 +16,55 @@ class TestCompound(BaseTest):
 
     def test_load_and_create(self):
         mb.load(get_fn('methyl.pdb'))
+
+    def test_load_conversion(self,ethane,h2o):
+        compound = mb.Compound([ethane,h2o])
+        parm = compound.to_parmed()
+        traj = compound.to_trajectory()
+        belmol = compound.to_pybel()
+
+        for topo in [compound,parm,traj,belmol]:
+            topo_converted = mb.load(topo)
+            assert isinstance(topo_converted, mb.Compound)
+            assert topo_converted.n_particles == 11
+            assert len([at for at in topo_converted.particles() if at.name == 'C']) == 2
+            assert len([at for at in topo_converted.particles() if at.name == 'H']) == 8
+            assert len([at for at in topo_converted.particles() if at.name == 'O']) == 1
+
+        for topo in [parm,traj]:
+            new_topo = mb.load(compound)
+            new_topo.xyz = np.random.random(topo_converted.xyz.shape)
+            new_topo = mb.load(topo, compound=new_topo, coords_only=True)
+            assert np.allclose(mb.load(topo).xyz, new_topo.xyz)
+
+        # Extra test
+        test = pmd.load_file(get_fn('styrene.mol2'),structure=True)
+        assert isinstance(test, pmd.Structure)
+        test_converted1 = mb.load(test)
+        test_converted2 = mb.Compound()
+        test_converted2.from_parmed(test)
+
+        assert isinstance(test_converted1, mb.Compound)
+        assert test_converted1.n_particles == len(test.atoms)
+        assert test_converted2.n_particles == test_converted1.n_particles
+        assert test_converted1.n_bonds == len(test.bonds)
+        assert test_converted2.n_bonds == test_converted2.n_bonds
+
+        test_converted1.xyz = np.random.random(test_converted1.xyz.shape)
+        test_converted1 = mb.load(test, compound=test_converted1, coords_only=True)
+        test_converted2.xyz = np.random.random(test_converted2.xyz.shape)
+        test_converted2.from_parmed(test, coords_only=True)
+        assert np.allclose(test_converted1.xyz, test_converted2.xyz)
+
+    def test_load_xyz(self):
+        class MyCompound(mb.Compound):
+            def __init__(self):
+                super(MyCompound, self).__init__()
+
+                mb.load(get_fn('ethane.xyz'), compound=self)
+
+        myethane = MyCompound()
+        assert myethane.n_particles == 8
 
     def test_update_from_file(self, ch3):
         ch3.update_coordinates(get_fn("methyl.pdb"))
@@ -69,16 +119,30 @@ class TestCompound(BaseTest):
                          forcefield_files=get_fn('methane_oplssaa.xml'),
                          overwrite=True)
 
+    @pytest.mark.parametrize("ff_filename,foyer_kwargs", [
+        ("ethane-angle-typo.xml", {"assert_angle_params": False}),
+        ("ethane-dihedral-typo.xml", {"assert_dihedral_params": False})
+    ])
+    def test_save_missing_topo_params(self, ff_filename, foyer_kwargs):
+        """Test that the user is notified if not all topology parameters are found."""
+        from foyer.tests.utils import get_fn
+        ethane = mb.load(get_fn('ethane.mol2'))
+        with pytest.raises(Exception):
+            ethane.save('ethane.mol2', forcefield_files=get_fn(ff_filename))
+        with pytest.warns(UserWarning):
+            ethane.save('ethane.mol2', forcefield_files=get_fn(ff_filename),
+                        overwrite=True, foyer_kwargs=foyer_kwargs)
+
     @pytest.mark.skipif(not has_foyer, reason="Foyer is not installed")
-    def test_save_forcefield_with_file_foyerkwargs(self, methane):
-        foyerkwargs = {'assert_improper_params': True}
+    def test_save_forcefield_with_file_foyer_kwargs(self, methane):
+        foyer_kwargs = {'assert_improper_params': True}
         with pytest.raises(Exception):
             methane.save('lythem.hoomdxml',
                              forcefield_files=get_fn('methane_oplssaa.xml'),
-                             overwrite=True, foyerkwargs=foyerkwargs)
+                             overwrite=True, foyer_kwargs=foyer_kwargs)
         methane.save('lythem.hoomdxml',
                 forcefield_files=get_fn('methane_oplssaa.xml'),
-                overwrite=True, foyerkwargs={})
+                overwrite=True, foyer_kwargs={})
 
     def test_save_resnames(self, ch3, h2o):
         system = mb.Compound([ch3, h2o])
@@ -95,10 +159,22 @@ class TestCompound(BaseTest):
         assert struct.residues[0].number ==  1
         assert struct.residues[1].number ==  2
 
+    def test_save_residue_map(self, methane):
+        filled = mb.fill_box(methane, n_compounds=100, box=[0, 0, 0, 4, 4, 4])
+        t0 = time.time()
+        filled.save('filled.mol2', forcefield_name='oplsaa', residues='Methane')
+        t1 = time.time()
+        foyer_kwargs = {'use_residue_map': False}
+        filled.save('filled.mol2', forcefield_name='oplsaa', overwrite=True,
+                    residues='Methane', foyer_kwargs=foyer_kwargs)
+        t2 = time.time()
+        assert (t2 - t1) > (t1 - t0)
+
     @pytest.mark.skipif(not has_foyer, reason="Foyer is not installed")
     def test_save_references(self, methane):
+        foyer_kwargs = {'references_file': 'methane.bib'}
         methane.save('methyl.mol2', forcefield_name='oplsaa',
-                     references_file='methane.bib')
+                     foyer_kwargs=foyer_kwargs)
         assert os.path.isfile('methane.bib')
 
     @pytest.mark.skipif(not has_foyer, reason="Foyer is not installed")
@@ -164,6 +240,13 @@ class TestCompound(BaseTest):
 
         xyz = ch3.xyz_with_ports
         assert xyz.shape == (12, 3)
+
+    def test_xyz_setter_bad_shape(self):
+        single_compound = mb.Compound()
+        with pytest.raises(ValueError):
+            single_compound.xyz = np.zeros(shape=(4, 10))
+        with pytest.raises(ValueError):
+            single_compound.xyz_with_ports = np.zeros(shape=(4, 10))
 
     def test_particles_by_name(self, ethane):
         assert sum(1 for _ in ethane.particles()) == 8
@@ -258,6 +341,10 @@ class TestCompound(BaseTest):
 
         with pytest.warns(UserWarning):
             ch3.remove_bond(ch_bond)
+
+    def test_port_does_not_exist(self, ethane):
+        with pytest.raises(MBuildError):
+            ethane['not_port']
 
     def test_center(self, methane):
         assert np.array_equal(methane.center, np.array([0, 0, 0]))
@@ -535,15 +622,14 @@ class TestCompound(BaseTest):
 
         assert compound2.n_bonds == 9
 
+        compound3 = mb.clone(compound2)
+        compound3.xyz = np.random.random(compound3.xyz.shape)
+        compound3.from_parmed(structure, coords_only=True)
+
+        assert np.allclose(compound2.xyz, compound3.xyz)
+
     def test_resnames_parmed(self, h2o, ethane):
         system = mb.Compound([h2o, mb.clone(h2o), ethane])
-        struct = system.to_parmed(residues=['Ethane', 'H2O'])
-        assert len(struct.residues) == 3
-        assert struct.residues[0].name == 'H2O'
-        assert struct.residues[1].name == 'H2O'
-        assert struct.residues[2].name == 'Ethane'
-        assert sum(len(res.atoms) for res in struct.residues) == len(struct.atoms)
-
         struct = system.to_parmed(residues=['Ethane', 'H2O'])
         assert len(struct.residues) == 3
         assert struct.residues[0].name == 'H2O'
@@ -560,6 +646,13 @@ class TestCompound(BaseTest):
         struct = system.to_parmed()
         assert len(struct.residues) == 1
         assert struct.residues[0].name == 'RES'
+        assert sum(len(res.atoms) for res in struct.residues) == len(struct.atoms)
+
+        struct = system.to_parmed(infer_residues=True)
+        assert len(struct.residues) == 3
+        assert struct.residues[0].name == 'H2O'
+        assert struct.residues[1].name == 'H2O'
+        assert struct.residues[2].name == 'Ethane'
         assert sum(len(res.atoms) for res in struct.residues) == len(struct.atoms)
 
     def test_parmed_element_guess(self):
@@ -841,6 +934,7 @@ class TestCompound(BaseTest):
 
         assert all([isinstance(n, str) for n in graph.nodes()])
 
+<<<<<<< HEAD
     def test_from_trajectory(self):
         comp = mb.Compound()
         traj = mdtraj.load(get_fn('spc.pdb'))
@@ -866,3 +960,67 @@ class TestCompound(BaseTest):
         comp.from_parmed(struc)
         assert comp.children[0].name == 'pro'
         assert comp.children[1].name == 'but'
+
+    @pytest.mark.skipif(not has_openbabel, reason="Pybel is not installed")
+    def test_to_pybel(self, ethane):
+        pybel_mol = ethane.to_pybel(box=None)
+        assert pybel_mol.OBMol.NumAtoms() == 8
+        assert pybel_mol.OBMol.NumBonds() == 7
+        assert np.allclose([pybel_mol.unitcell.GetA(), pybel_mol.unitcell.GetB(),
+            pybel_mol.unitcell.GetC()], [2.139999, 2.9380001, 1.646])
+
+    @pytest.mark.skipif(not has_openbabel, reason="Pybel is not installed")
+    def test_from_pybel(self):
+        import pybel
+        benzene = list(pybel.readfile('mol2', get_fn('benzene.mol2')))[0]
+        cmpd = mb.Compound()
+        cmpd.from_pybel(benzene)
+        assert benzene.OBMol.NumAtoms() == cmpd.n_particles
+        assert benzene.OBMol.NumBonds() == cmpd.n_bonds
+
+    @pytest.mark.skipif(not has_openbabel, reason="Pybel is not installed")
+    def test_to_pybel_residues(self, ethane):
+        pybel_mol = ethane.to_pybel(box=None, residues='Ethane')
+        assert 'Ethane' in pybel_mol.residues[0].name
+
+    @pytest.mark.skipif(not has_openbabel, reason="Pybel is not installed")
+    def test_to_more_pybel_residues(self, methane, ethane):
+        box = mb.fill_box([methane, ethane], n_compounds=[3,3],
+                box=mb.Box([10,10,10]))
+        pybel_mol = box.to_pybel(box=None, residues=['Ethane', 'Methane'])
+        pybel_mol_resnames = {a.name for a in pybel_mol.residues}
+        assert 'Ethane' in pybel_mol_resnames
+        assert 'Methane' in pybel_mol_resnames
+
+
+    @pytest.mark.skipif(not has_openbabel, reason="Pybel is not installed")
+    def test_from_pybel_residues(self):
+       import pybel
+       pybel_mol = list(pybel.readfile('mol2', get_fn('methyl.mol2')))[0]
+       cmpd = mb.Compound()
+       cmpd.from_pybel(pybel_mol)
+       assert 'LIG1' in cmpd.children[0].name
+
+    @pytest.mark.skipif(not has_openbabel, reason="Pybel is not installed")
+    def test_from_pybel_monolayer(self):
+        import pybel
+        monolayer = list(pybel.readfile('pdb', get_fn('monolayer.pdb')))[0]
+        # TODO: Actually store the box information
+        cmpd = mb.Compound()
+        cmpd.from_pybel(monolayer)
+        assert monolayer.OBMol.NumAtoms() == cmpd.n_particles
+        assert monolayer.OBMol.NumBonds() == cmpd.n_bonds
+        first_atom = monolayer.OBMol.GetAtom(1)
+        assert np.allclose(cmpd[0].pos, [first_atom.GetX()/10, first_atom.GetY()/10, first_atom.GetZ()/10])
+        #assert np.allclose(box.lengths,
+        #        [monolayer.unitcell.GetA()/10, monolayer.unitcell.GetB()/10,
+        #            monolayer.unitcell.GetC()/10],
+        #        rtol=1e-3)
+
+    @pytest.mark.skipif(not has_openbabel, reason="Pybel is not installed")
+    def test_get_smiles(self):
+        test_strings = ["CCO", "CCCCCCCC", "c1ccccc1", "CC(=O)Oc1ccccc1C(=O)O"]
+        for test_string in test_strings:
+            my_cmp = mb.load(test_string, smiles=True)
+            assert my_cmp.get_smiles() == test_string
+>>>>>>> upstream/master

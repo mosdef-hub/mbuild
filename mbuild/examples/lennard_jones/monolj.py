@@ -3,7 +3,6 @@
 
 # -- ==monolj== --
 import mbuild as mb
-from mbuild import clone
 
 
 class MonoLJ(mb.Compound):
@@ -15,7 +14,7 @@ class MonoLJ(mb.Compound):
         pattern.scale(5)
         
         for pos in pattern:
-            lj_particle = clone(lj_proto)
+            lj_particle = mb.clone(lj_proto)
             lj_particle.translate(pos)
             self.add(lj_particle)
 

@@ -1,0 +1,28 @@
+syntax = "proto3";
+
+message Vec3 {
+    // A generic 3-tuple, could be used for positions or periodicities
+    float x = 1;
+    float y = 2;
+    float z = 3;
+}
+
+message Vec2 {
+    // A generic 2-tuple, could be used for compound-id pairs
+    int64 id1 = 1;
+    int64 id2 = 2;
+}
+
+message Compound {
+    string name = 1;
+    repeated Compound children = 2;
+    Vec3 pos = 3;
+    Vec3 periodicity = 4;
+    float charge = 5;
+    int64 id = 6; // this is simply a unique number for this compound
+    repeated Vec2 bonds = 7;  // a list of 2-tuples
+
+    // Todo: Maybe need something for port particles
+}
+
+
