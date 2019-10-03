@@ -79,15 +79,15 @@ def load(filename_or_object, relative_to_module=None, compound=None, coords_only
 
     # First check if we are loading from an existing parmed or trajectory structure
     type_dict = {
-        pmd.Structure:compound.from_parmed,
-        md.Trajectory:compound.from_trajectory,
-        pybel.Molecule:compound.from_pybel,
+        pmd.Structure: compound.from_parmed,
+        md.Trajectory: compound.from_trajectory,
+        pybel.Molecule: compound.from_pybel,
     }
     if isinstance(filename_or_object, Compound):
         return filename_or_object
     for type in type_dict:
         if isinstance(filename_or_object, type):
-            type_dict[type](filename_or_object,coords_only=coords_only, **kwargs)
+            type_dict[type](filename_or_object, coords_only=coords_only, **kwargs)
             return compound
     if not isinstance(filename_or_object, str):
         raise ValueError('Input not supported.')
@@ -646,7 +646,7 @@ class Compound(object):
         n_unique_rigid = len(unique_rigid_ids)
         if max_rigid and n_unique_rigid != max_rigid + 1:
             missing_rigid_id = (
-                unique_rigid_ids[-1] * (unique_rigid_ids[-1] + 1)) / 2 - sum(unique_rigid_ids)
+                                       unique_rigid_ids[-1] * (unique_rigid_ids[-1] + 1)) / 2 - sum(unique_rigid_ids)
             for successor in self.successors():
                 if successor.rigid_id is not None:
                     if successor.rigid_id > missing_rigid_id:
@@ -1054,8 +1054,8 @@ class Compound(object):
             self.pos = np.squeeze(arrnx3)
         else:
             for atom, coords in zip(
-                self._particles(
-                    include_ports=False), arrnx3):
+                    self._particles(
+                        include_ports=False), arrnx3):
                 atom.pos = coords
 
     @xyz_with_ports.setter
@@ -1077,8 +1077,8 @@ class Compound(object):
             self.pos = np.squeeze(arrnx3)
         else:
             for atom, coords in zip(
-                self._particles(
-                    include_ports=True), arrnx3):
+                    self._particles(
+                        include_ports=True), arrnx3):
                 atom.pos = coords
 
     @property
@@ -1175,7 +1175,7 @@ class Compound(object):
         return particle_array[idxs]
 
     def visualize(self, show_ports=False,
-            backend='py3dmol', color_scheme={}): # pragma: no cover
+                  backend='py3dmol', color_scheme={}):  # pragma: no cover
         """Visualize the Compound using py3dmol (default) or nglview.
 
         Allows for visualization of a Compound within a Jupyter Notebook.
@@ -1195,16 +1195,15 @@ class Compound(object):
 
         """
         viz_pkg = {'nglview': self._visualize_nglview,
-                'py3dmol': self._visualize_py3dmol}
+                   'py3dmol': self._visualize_py3dmol}
         if run_from_ipython():
             if backend.lower() in viz_pkg:
                 return viz_pkg[backend.lower()](show_ports=show_ports,
-                        color_scheme=color_scheme)
+                                                color_scheme=color_scheme)
             else:
                 raise RuntimeError("Unsupported visualization " +
-                        "backend ({}). ".format(backend) +
-                        "Currently supported backends include nglview and py3dmol")
-
+                                   "backend ({}). ".format(backend) +
+                                   "Currently supported backends include nglview and py3dmol")
         else:
             raise RuntimeError('Visualization is only supported in Jupyter '
                                'Notebooks.')
@@ -1247,17 +1246,17 @@ class Compound(object):
                 particle.name = 'UNK'
         tmp_dir = tempfile.mkdtemp()
         cloned.save(os.path.join(tmp_dir, 'tmp.mol2'),
-                  show_ports=show_ports,
-                  overwrite=True)
+                    show_ports=show_ports,
+                    overwrite=True)
 
         view = py3Dmol.view()
         with open(os.path.join(tmp_dir, 'tmp.mol2'), 'r') as f:
             view.addModel(f.read(), 'mol2', keepH=True)
 
         view.setStyle({'stick': {'radius': 0.2,
-                                'color':'grey'},
-                        'sphere': {'scale': 0.3,
-                                    'colorscheme':modified_color_scheme}})
+                                 'color': 'grey'},
+                       'sphere': {'scale': 0.3,
+                                  'colorscheme': modified_color_scheme}})
         view.zoomTo()
 
         return view
@@ -1275,7 +1274,7 @@ class Compound(object):
         nglview = import_('nglview')
         from mdtraj.geometry.sasa import _ATOMIC_RADII
         remove_digits = lambda x: ''.join(i for i in x if not i.isdigit()
-                                              or i == '_')
+                                          or i == '_')
         for particle in self.particles():
             particle.name = remove_digits(particle.name).upper()
             if not particle.name:
@@ -1292,19 +1291,34 @@ class Compound(object):
         for element in elements:
             try:
                 widget.add_ball_and_stick('_{}'.format(
-                    element.upper()), aspect_ratio=_ATOMIC_RADII[element.title()]**1.5 * scale)
+                    element.upper()), aspect_ratio=_ATOMIC_RADII[element.title()] ** 1.5 * scale)
             except KeyError:
                 ids = [str(i) for i, particle in enumerate(self.particles())
                        if particle.name == element]
                 widget.add_ball_and_stick(
                     '@{}'.format(
                         ','.join(ids)),
-                    aspect_ratio=0.17**1.5 * scale,
+                    aspect_ratio=0.17 ** 1.5 * scale,
                     color='grey')
         if show_ports:
             widget.add_ball_and_stick('_VS',
                                       aspect_ratio=1.0, color='#991f00')
+        self._execute_tooltip_code(widget)
         return widget
+
+    def _execute_tooltip_code(self, widget):
+        """This will execute the tooltip change plugin"""
+        log_tooltip = "console.log(this.stage.tooltip)"
+        tooltip_js = """
+                        this.stage.mouseControls.add('hoverPick', (stage, pickingProxy) => {
+                            let tooltip = this.stage.tooltip;
+                            if(pickingProxy && (pickingProxy.atom || pickingProxy.bond)){
+                                let atom = pickingProxy.atom || pickingProxy.closestBondAtom;
+                                tooltip.innerText = "helloworld";
+                            }
+                        });
+                     """
+        widget._js(tooltip_js)
 
     def update_coordinates(self, filename, update_port_locations=True):
         """Update the coordinates of this Compound from a file.
@@ -1363,7 +1377,7 @@ class Compound(object):
         """
         xyz_init = self.xyz
         for particle in self.particles():
-            particle.pos += (np.random.rand(3,) - 0.5) / 100
+            particle.pos += (np.random.rand(3, ) - 0.5) / 100
         self._update_port_locations(xyz_init)
 
     warning_message = 'Please use Compound.energy_minimize()'
@@ -1570,7 +1584,7 @@ class Compound(object):
         from simtk.openmm.openmm import LangevinIntegrator
         import simtk.unit as u
 
-        system = to_parmed.createSystem() # Create an OpenMM System
+        system = to_parmed.createSystem()  # Create an OpenMM System
         # Create a Langenvin Integrator in OpenMM
         integrator = LangevinIntegrator(298 * u.kelvin, 1 / u.picosecond,
                                         0.002 * u.picoseconds)
@@ -1854,7 +1868,7 @@ class Compound(object):
         if forcefield_name or forcefield_files:
             foyer = import_('foyer')
             ff = foyer.Forcefield(forcefield_files=forcefield_files,
-                            name=forcefield_name, debug=forcefield_debug)
+                                  name=forcefield_name, debug=forcefield_debug)
             if not foyer_kwargs:
                 foyer_kwargs = {}
             structure = ff.apply(structure, **foyer_kwargs)
@@ -1875,7 +1889,7 @@ class Compound(object):
         if saver:  # mBuild supported saver.
             if extension in ['.gsd', '.hoomdxml']:
                 kwargs['rigid_bodies'] = [
-                        p.rigid_id for p in self.particles()]
+                    p.rigid_id for p in self.particles()]
             saver(filename=filename, structure=structure, **kwargs)
         else:  # ParmEd supported saver.
             structure.save(filename, overwrite=overwrite, **kwargs)
@@ -2225,7 +2239,7 @@ class Compound(object):
             self.periodicity = np.array([0., 0., 0.])
 
     def to_parmed(self, box=None, title='', residues=None, show_ports=False,
-            infer_residues=False):
+                  infer_residues=False):
         """Create a ParmEd Structure from a Compound.
 
         Parameters
@@ -2419,8 +2433,8 @@ class Compound(object):
             nodes, edges = child._iterate_children(nodes, edges, names_only=names_only)
         return nodes, edges
 
-    def to_pybel(self, box=None, title='', residues=None, show_ports=False, 
-            infer_residues=False):
+    def to_pybel(self, box=None, title='', residues=None, show_ports=False,
+                 infer_residues=False):
         """ Create a pybel.Molecule from a Compound
 
         Parameters
@@ -2498,11 +2512,10 @@ class Compound(object):
                     temp.SetAtomicNum(AtomicNum[part.name.capitalize()])
                 except KeyError:
                     warn("Could not infer atomic number from "
-                            "{}, setting to 0".format(part.name))
+                         "{}, setting to 0".format(part.name))
                     temp.SetAtomicNum(0)
 
-
-            temp.SetVector(*(part.xyz[0]*10))
+            temp.SetVector(*(part.xyz[0] * 10))
             particle_to_atom_index[part] = i
 
         ucell = openbabel.OBUnitCell()
@@ -2518,20 +2531,20 @@ class Compound(object):
         sing = np.sin(gamma)
         mat_coef_y = (cosa - cosb * cosg) / sing
         mat_coef_z = np.power(sinb, 2, dtype=float) - \
-                    np.power(mat_coef_y, 2, dtype=float)
+                     np.power(mat_coef_y, 2, dtype=float)
 
         if mat_coef_z > 0.:
             mat_coef_z = np.sqrt(mat_coef_z)
         else:
             raise Warning('Non-positive z-vector. Angles {} '
-                                  'do not generate a box with the z-vector in the'
-                                  'positive z direction'.format(box.angles))
+                          'do not generate a box with the z-vector in the'
+                          'positive z direction'.format(box.angles))
 
         box_vec = [[1, 0, 0],
-                    [cosg, sing, 0],
-                    [cosb, mat_coef_y, mat_coef_z]]
+                   [cosg, sing, 0],
+                   [cosb, mat_coef_y, mat_coef_z]]
         box_vec = np.asarray(box_vec)
-        box_mat = (np.array([a,b,c])* box_vec.T).T
+        box_mat = (np.array([a, b, c]) * box_vec.T).T
         first_vector = openbabel.vector3(*box_mat[0])
         second_vector = openbabel.vector3(*box_mat[1])
         third_vector = openbabel.vector3(*box_mat[2])
@@ -2540,9 +2553,9 @@ class Compound(object):
 
         for bond in self.bonds():
             bond_order = 1
-            mol.AddBond(particle_to_atom_index[bond[0]]+1, 
-                    particle_to_atom_index[bond[1]]+1, 
-                    bond_order)
+            mol.AddBond(particle_to_atom_index[bond[0]] + 1,
+                        particle_to_atom_index[bond[1]] + 1,
+                        bond_order)
 
         pybelmol = pybel.Molecule(mol)
         pybelmol.title = title if title else self.name
@@ -2570,26 +2583,26 @@ class Compound(object):
 
         if coords_only:
             raise Warning('coords_only=True not yet implemented for '
-                    'conversion from pybel')
+                          'conversion from pybel')
         # Iterating through pybel_mol for atom/residue information
         # This could just as easily be implemented by 
         # an OBMolAtomIter from the openbabel library, 
         # but this seemed more convenient at time of writing
         # pybel atoms are 1-indexed, coordinates in Angstrom
         for atom in pybel_mol.atoms:
-            xyz = np.array(atom.coords)/10
+            xyz = np.array(atom.coords) / 10
             if use_element:
                 try:
                     temp_name = Element[atom.atomicnum]
                 except KeyError:
                     warn("No element detected for atom at index "
-                            "{} with number {}, type {}".format(
-                                atom.idx, atom.atomicnum, atom.type))
+                         "{} with number {}, type {}".format(
+                        atom.idx, atom.atomicnum, atom.type))
                     temp_name = atom.type
             else:
                 temp_name = atom.type
             temp = Particle(name=temp_name, pos=xyz)
-            if hasattr(atom, 'residue'): # Is there a safer way to check for res?
+            if hasattr(atom, 'residue'):  # Is there a safer way to check for res?
                 if atom.residue.idx not in resindex_to_cmpd:
                     res_cmpd = Compound(name=atom.residue.name)
                     resindex_to_cmpd[atom.residue.idx] = res_cmpd
@@ -2604,26 +2617,26 @@ class Compound(object):
         # so we need to look into the OBMol object,
         # using an iterator from the openbabel library
         for bond in openbabel.OBMolBondIter(pybel_mol.OBMol):
-            self.add_bond([self[bond.GetBeginAtomIdx()-1],
-                            self[bond.GetEndAtomIdx()-1]])
+            self.add_bond([self[bond.GetBeginAtomIdx() - 1],
+                           self[bond.GetEndAtomIdx() - 1]])
 
         if hasattr(pybel_mol, 'unitcell'):
-            box = Box(lengths=[pybel_mol.unitcell.GetA()/10, 
-                                pybel_mol.unitcell.GetB()/10, 
-                                pybel_mol.unitcell.GetC()/10],
-                        angles=[pybel_mol.unitcell.GetAlpha(), 
-                                pybel_mol.unitcell.GetBeta(), 
-                                pybel_mol.unitcell.GetGamma()])
+            box = Box(lengths=[pybel_mol.unitcell.GetA() / 10,
+                               pybel_mol.unitcell.GetB() / 10,
+                               pybel_mol.unitcell.GetC() / 10],
+                      angles=[pybel_mol.unitcell.GetAlpha(),
+                              pybel_mol.unitcell.GetBeta(),
+                              pybel_mol.unitcell.GetGamma()])
             self.periodicity = box.lengths
         else:
             warn("No unitcell detected for pybel.Molecule {}".format(pybel_mol))
             box = None
 
-#       TODO: Decide how to gather PBC information from openbabel. Options may
-#             include storing it in .periodicity or writing a separate function
-#             that returns the box.
+    #       TODO: Decide how to gather PBC information from openbabel. Options may
+    #             include storing it in .periodicity or writing a separate function
+    #             that returns the box.
 
-    def to_intermol(self, molecule_types=None): # pragma: no cover
+    def to_intermol(self, molecule_types=None):  # pragma: no cover
         """Create an InterMol system from a Compound.
 
         Parameters
@@ -2699,7 +2712,7 @@ class Compound(object):
             return list(self.particles())[selection]
         if isinstance(selection, string_types):
             if selection not in self.labels:
-                raise MBuildError('{}[\'{}\'] does not exist.'.format(self.name,selection))
+                raise MBuildError('{}[\'{}\'] does not exist.'.format(self.name, selection))
             return self.labels.get(selection)
 
     def __repr__(self):
