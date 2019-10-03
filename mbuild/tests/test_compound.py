@@ -934,7 +934,6 @@ class TestCompound(BaseTest):
 
         assert all([isinstance(n, str) for n in graph.nodes()])
 
-<<<<<<< HEAD
     def test_from_trajectory(self):
         comp = mb.Compound()
         traj = mdtraj.load(get_fn('spc.pdb'))
@@ -1023,4 +1022,3 @@ class TestCompound(BaseTest):
         for test_string in test_strings:
             my_cmp = mb.load(test_string, smiles=True)
             assert my_cmp.get_smiles() == test_string
->>>>>>> upstream/master
