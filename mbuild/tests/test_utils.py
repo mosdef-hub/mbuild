@@ -6,7 +6,7 @@ import pytest
 from mbuild.tests.base_test import BaseTest
 from mbuild.utils.io import get_fn, import_
 from mbuild.utils.validation import assert_port_exists
-from mbuild.utils.jsutils import nglview_custom_tooltip
+from mbuild.utils.jsutils import overwrite_nglview_default
 
 
 class TestUtils(BaseTest):
@@ -40,12 +40,12 @@ class TestUtils(BaseTest):
     def test_js_utils(self):
         nglview = import_('nglview')
         with pytest.raises(TypeError):
-            nglview_custom_tooltip(object())
+            overwrite_nglview_default(object())
         test_widget = nglview.NGLWidget()
-        nglview_custom_tooltip(test_widget)
+        overwrite_nglview_default(test_widget)
         assert hasattr(test_widget, 'stage')
         assert isinstance(test_widget._ngl_msg_archive, list)
-        assert len(test_widget._ngl_msg_archive) == 1
+        assert len(test_widget._ngl_msg_archive) == 2
         assert isinstance(test_widget._ngl_msg_archive[0], dict)
         message_dict = test_widget._ngl_msg_archive[0]
         assert message_dict['target'] == 'Widget'
@@ -62,4 +62,51 @@ class TestUtils(BaseTest):
                     });
                  """
                 ]
-
+        message_dict = test_widget._ngl_msg_archive[1]
+        assert message_dict['target'] == 'Widget'
+        assert message_dict['type'] == 'call_method'
+        assert message_dict['methodName'] == 'executeCode'
+        assert message_dict['args'] == [
+            """
+                    this.stage.signals.clicked.removeAll();
+                    this.stage.signals.clicked.add((pickingProxy) => {
+                            if(pickingProxy){
+                               let pickingText = null;
+                               this.model.set('picked', {});
+                               this.touch();
+                               let currentPick = {};
+                               if(pickingProxy.atom){
+                                    currentPick.atom1 = pickingProxy.atom.toObject();
+                                    currentPick.atom1.name = pickingProxy.atom.qualifiedName();
+                                    pickingText = "Atom: " + currentPick.atom1.name + ", Index: " 
+                                                  + pickingProxy.atom.index;
+                               }
+                               else if(pickingProxy.bond){
+                                    currentPick.bond = pickingProxy.bond.toObject();
+                                    currentPick.atom1 = pickingProxy.bond.atom1.toObject();
+                                    currentPick.atom1.name = pickingProxy.bond.atom1.qualifiedName();
+                                    currentPick.atom2 = pickingProxy.bond.atom2.toObject();
+                                    currentPick.atom2.name = pickingProxy.bond.atom2.qualifiedName();
+                                    pickingText = "Bond: " + currentPick.atom1.name + 
+                                                    `(${pickingProxy.bond.atom1.index})` +
+                                                    " - " + currentPick.atom2.name    +
+                                                    `(${pickingProxy.bond.atom2.index})`;
+                               }
+                               
+                               if(pickingProxy.instance){
+                                    currentPick.instance = pickingProxy.instance;
+                               }
+                               var nComponents = this.stage.compList.length;
+                               for(let i = 0; i < nComponents; i++){
+                                    let comp = this.stage.compList[i];
+                                    if(comp.uuid == pickingProxy.component.uuid){
+                                        currentPick.component = i;
+                                    }
+                               }
+                               this.model.set('picked', currentPick);
+                               this.touch();
+                               this.$pickingInfo.text(pickingText);
+                            }
+                    });
+                """
+            ]
