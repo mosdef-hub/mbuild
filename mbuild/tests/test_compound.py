@@ -981,6 +981,4 @@ class TestCompound(BaseTest):
         graph2_mat = imread('graph2.png')
         assert graph1_mat.shape == graph2_mat.shape
         # Despite the randomness, the figures should closely resemble each other
-        assert np.allclose(np.sum(graph1_mat[:, :, 0]), np.sum(graph2_mat[:, :, 0]), atol=1000)
-        assert np.allclose(np.sum(graph1_mat[:, :, 1]), np.sum(graph2_mat[:, :, 1]), atol=1000)
-        assert np.allclose(np.sum(graph1_mat[:, :, 2]), np.sum(graph2_mat[:, :, 2]), atol=1000)
+        assert np.allclose(np.sum(graph1_mat), np.sum(graph2_mat), atol=1000)

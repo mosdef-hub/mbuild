@@ -2808,5 +2808,42 @@ class Compound(object):
         else:
             warn('The compound/particle has no bonds...')
 
+    def draw_bond_graph(self, plot=False, **kwargs):
+        """Draw the bond graph as a matplotlib plot if available
+
+        This method gets information about the bond in a compound or particle,
+        then if 'networkx' as well as 'matplotlib' are available, plots the bond
+        structure of the compound/ particle
+
+        Parameters
+        -----------
+        plot: bool, default False, whether or not to show the plot
+        **kwargs: optional, The keyword arguments to the networkx.draw_networkx() method.
+
+        See Also
+        ---------
+        bonds_graph: A networkx like graph used to maintain the bond information in compound
+
+        """
+        plt = import_('matplotlib.pyplot')
+        nx = import_('networkx')
+        bond_graph = nx.Graph()
+        graph_edges = [((edge[0].name, id(edge[0])), (edge[1].name, id(edge[1]))) for edge in self.bonds()]
+
+        if len(graph_edges) > 0:
+            bond_graph.add_edges_from(graph_edges)
+            labels = {node: node[0] for node in bond_graph.nodes()}
+            kwargs['pos'] = kwargs.get('pos', nx.spring_layout(bond_graph, k=.05, scale=.25))
+            kwargs['labels'] = kwargs.get('labels', labels)
+            kwargs['font_color'] = kwargs.get('font_color', 'b')
+            kwargs['font_weight'] = kwargs.get('font_weight', 'bold')
+            kwargs['font_size'] = kwargs.get('font_size', '14')
+            kwargs['node_size'] = kwargs.get('node_size', 500)
+            nx.draw_networkx(bond_graph, **kwargs)
+            if plot:
+                plt.show()
+        else:
+            warn('The compound/particle has no bonds...')
+
 
 Particle = Compound
