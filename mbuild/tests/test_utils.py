@@ -6,6 +6,7 @@ import pytest
 from mbuild.tests.base_test import BaseTest
 from mbuild.utils.io import get_fn, import_
 from mbuild.utils.validation import assert_port_exists
+from mbuild.utils.jsutils import nglview_custom_tooltip
 
 
 class TestUtils(BaseTest):
@@ -35,3 +36,30 @@ class TestUtils(BaseTest):
 
         with pytest.raises(ImportError):
             import_('garbagepackagename')
+
+    def test_js_utils(self):
+        nglview = import_('nglview')
+        with pytest.raises(TypeError):
+            nglview_custom_tooltip(object())
+        test_widget = nglview.NGLWidget()
+        nglview_custom_tooltip(test_widget)
+        assert hasattr(test_widget, 'stage')
+        assert isinstance(test_widget._ngl_msg_archive, list)
+        assert len(test_widget._ngl_msg_archive) == 1
+        assert isinstance(test_widget._ngl_msg_archive[0], dict)
+        message_dict = test_widget._ngl_msg_archive[0]
+        assert message_dict['target'] == 'Widget'
+        assert message_dict['type'] == 'call_method'
+        assert message_dict['methodName'] == 'executeCode'
+        assert message_dict['args'] == [
+                    """
+                    this.stage.mouseControls.add('hoverPick', (stage, pickingProxy) => {
+                        let tooltip = this.stage.tooltip;
+                        if(pickingProxy && pickingProxy.atom && !pickingProxy.bond){
+                            let atom = pickingProxy.atom;
+                            tooltip.innerText = "ATOM: " + atom.qualifiedName() + ", Index: " + atom.index;
+                        }
+                    });
+                 """
+                ]
+

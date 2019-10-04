@@ -5,7 +5,7 @@ libraries by the various notebook visualization libraries used by mbuild.
 from .io import import_
 
 
-def _nglview_custom_tooltip(widget):
+def nglview_custom_tooltip(widget):
     """Change visualization tooltip by adding a mouseControl signal
 
     This method takes in a nglview.NGLWidget and changes the default hover
