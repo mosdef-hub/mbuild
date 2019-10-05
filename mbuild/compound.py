@@ -27,6 +27,7 @@ from mbuild.formats.xyz import read_xyz
 from mbuild.formats.hoomdxml import write_hoomdxml
 from mbuild.formats.lammpsdata import write_lammpsdata
 from mbuild.formats.gsdwriter import write_gsd
+from mbuild.formats.par_writer import write_par
 from mbuild.periodic_kdtree import PeriodicCKDTree
 from mbuild.utils.io import run_from_ipython, import_
 from mbuild.coordinate_transform import _translate, _rotate
@@ -72,6 +73,7 @@ def load(filename_or_object, relative_to_module=None, compound=None, coords_only
     """
     pybel = import_('pybel')
 
+    # If compound doesn't exist, we will initialize one
     if compound is None:
         compound = Compound()
 
@@ -142,6 +144,10 @@ def load(filename_or_object, relative_to_module=None, compound=None, coords_only
                 warn("More than one SMILES string in file, more than one SMILES "
                      "string is not supported, using {}".format(mymol.write("smi")))
 
+        # We create a temporary directory and mol2 file that will created from the smiles string
+        # A ParmEd structure and subsequenc mBuild compound will be created from this mol2 file
+        tmp_dir = tempfile.mkdtemp()
+        temp_file = os.path.join(tmp_dir, 'smiles_to_mol2_intermediate.mol2')
         mymol.make3D()
         compound = Compound()
         compound.from_pybel(mymol)
@@ -1511,7 +1517,7 @@ class Compound(object):
             scale_nonbonded=1):
         """ Perform energy minimization using OpenMM
 
-        Converts an mBuild Compound to a Parmed Structure,
+        Converts an mBuild Compound to a ParmEd Structure,
         applies a forcefield using Foyer, and creates an OpenMM System.
 
         Parameters
@@ -1564,11 +1570,14 @@ class Compound(object):
         from simtk.openmm.openmm import LangevinIntegrator
         import simtk.unit as u
 
-        system = to_parmed.createSystem()
+        system = to_parmed.createSystem() # Create an OpenMM System
+        # Create a Langenvin Integrator in OpenMM
         integrator = LangevinIntegrator(298 * u.kelvin, 1 / u.picosecond,
                                         0.002 * u.picoseconds)
+        # Create Simulation object in OpenMM
         simulation = Simulation(to_parmed.topology, system, integrator)
 
+        # Loop through forces in OpenMM System and set parameters
         for force in system.getForces():
             if type(force).__name__ == "HarmonicBondForce":
                 for bond_index in range(force.getNumBonds()):
@@ -1625,6 +1634,7 @@ class Compound(object):
                         type(force).__name__))
 
         simulation.context.setPositions(to_parmed.positions)
+        # Run energy minimization through OpenMM
         simulation.minimizeEnergy(maxIterations=steps)
         reporter = PDBReporter(os.path.join(tmp_dir, 'minimized.pdb'), 1)
         reporter.report(
@@ -1747,8 +1757,8 @@ class Compound(object):
 
     def save(self, filename, show_ports=False, forcefield_name=None,
              forcefield_files=None, forcefield_debug=False, box=None,
-             overwrite=False, residues=None, references_file=None,
-             combining_rule='lorentz', foyerkwargs={}, **kwargs):
+             overwrite=False, residues=None, combining_rule='lorentz',
+             foyer_kwargs=None, **kwargs):
         """Save the Compound to a file.
 
         Parameters
@@ -1779,20 +1789,22 @@ class Compound(object):
         residues : str of list of str
             Labels of residues in the Compound. Residues are assigned by
             checking against Compound.name.
-        references_file : str, optional, default=None
-            Specify a filename to write references for the forcefield that is
-            to be applied. References are written in BiBTeX format.
         combining_rule : str, optional, default='lorentz'
             Specify the combining rule for nonbonded interactions. Only relevant
             when the `foyer` package is used to apply a forcefield. Valid
             options are 'lorentz' and 'geometric', specifying Lorentz-Berthelot
             and geometric combining rules respectively.
+        foyer_kwargs : dict, optional, default=None
+            Keyword arguments to provide to `foyer.Forcefield.apply`.
+        **kwargs
+            Depending on the file extension these will be passed to either
+            `write_gsd`, `write_hoomdxml`, `write_lammpsdata`, or
+            `parmed.Structure.save`.
+            See https://parmed.github.io/ParmEd/html/structobj/parmed.structure.Structure.html#parmed.structure.Structure.save
 
 
         Other Parameters
         ----------------
-        foyerkwargs : dict, optional
-            Specify keyword arguments when applying the foyer Forcefield
         ref_distance : float, optional, default=1.0
             Normalization factor used when saving to .gsd and .hoomdxml formats
             for converting distance values to reduced units.
@@ -1825,7 +1837,8 @@ class Compound(object):
         savers = {'.hoomdxml': write_hoomdxml,
                   '.gsd': write_gsd,
                   '.lammps': write_lammpsdata,
-                  '.lmp': write_lammpsdata}
+                  '.lmp': write_lammpsdata,
+                  '.par': write_par}
 
         try:
             saver = savers[extension]
@@ -1841,9 +1854,10 @@ class Compound(object):
         if forcefield_name or forcefield_files:
             foyer = import_('foyer')
             ff = foyer.Forcefield(forcefield_files=forcefield_files,
-                                  name=forcefield_name, debug=forcefield_debug)
-            structure = ff.apply(structure, references_file=references_file,
-                    **foyerkwargs)
+                            name=forcefield_name, debug=forcefield_debug)
+            if not foyer_kwargs:
+                foyer_kwargs = {}
+            structure = ff.apply(structure, **foyer_kwargs)
             structure.combining_rule = combining_rule
 
         total_charge = sum([atom.charge for atom in structure])
@@ -2247,6 +2261,7 @@ class Compound(object):
         atom_mapping = {}  # For creating bonds below
         guessed_elements = set()
 
+        # Attempt to grab residue names based on names of children
         if not residues and infer_residues:
             residues = list(set([child.name for child in self.children]))
 
@@ -2260,6 +2275,7 @@ class Compound(object):
         compound_residue_map = dict()
         atom_residue_map = dict()
 
+        # Loop through particles and add initialize ParmEd atoms
         for atom in self.particles(include_ports=show_ports):
             if atom.port_particle:
                 current_residue = port_residue
@@ -2321,8 +2337,10 @@ class Compound(object):
 
             atom_mapping[atom] = pmd_atom
 
+        # "Claim" all of the items it contains and subsequently index all of its items
         structure.residues.claim()
 
+        # Create and add bonds to ParmEd Structure
         for atom1, atom2 in self.bonds():
             bond = pmd.Bond(atom_mapping[atom1], atom_mapping[atom2])
             structure.bonds.append(bond)
@@ -2388,7 +2406,7 @@ class Compound(object):
         return graph
 
     def _iterate_children(self, nodes, edges, names_only=False):
-        """Iterate through the compound hierarchy for building a graph"""
+        """ Create nodes and edges that connect parents and their corresponding children"""
         if not self.children:
             return nodes, edges
         for child in self.children:
@@ -2401,7 +2419,7 @@ class Compound(object):
             nodes, edges = child._iterate_children(nodes, edges, names_only=names_only)
         return nodes, edges
 
-    def to_pybel(self, box=None, title='', residues=None, show_ports=False, 
+    def to_pybel(self, box=None, title='', residues=None, show_ports=False,
             infer_residues=False):
         """ Create a pybel.Molecule from a Compound
 
@@ -2424,7 +2442,7 @@ class Compound(object):
 
         Notes
         -----
-        Most of the mb.Compound is first converted to openbabel.OBMol 
+        Most of the mb.Compound is first converted to openbabel.OBMol
         And then pybel creates a pybel.Molecule from the OBMol
         Bond orders are assumed to be 1
         OBMol atom indexing starts at 1, with spatial dimension Angstrom
@@ -2522,8 +2540,8 @@ class Compound(object):
 
         for bond in self.bonds():
             bond_order = 1
-            mol.AddBond(particle_to_atom_index[bond[0]]+1, 
-                    particle_to_atom_index[bond[1]]+1, 
+            mol.AddBond(particle_to_atom_index[bond[0]]+1,
+                    particle_to_atom_index[bond[1]]+1,
                     bond_order)
 
         pybelmol = pybel.Molecule(mol)
@@ -2533,7 +2551,7 @@ class Compound(object):
 
     def from_pybel(self, pybel_mol, use_element=True, coords_only=False):
         """Create a Compound from a Pybel.Molecule
-        
+
         Parameters
         ---------
         pybel_mol: pybel.Molecule
@@ -2554,8 +2572,8 @@ class Compound(object):
             raise Warning('coords_only=True not yet implemented for '
                     'conversion from pybel')
         # Iterating through pybel_mol for atom/residue information
-        # This could just as easily be implemented by 
-        # an OBMolAtomIter from the openbabel library, 
+        # This could just as easily be implemented by
+        # an OBMolAtomIter from the openbabel library,
         # but this seemed more convenient at time of writing
         # pybel atoms are 1-indexed, coordinates in Angstrom
         for atom in pybel_mol.atoms:
@@ -2590,11 +2608,11 @@ class Compound(object):
                             self[bond.GetEndAtomIdx()-1]])
 
         if hasattr(pybel_mol, 'unitcell'):
-            box = Box(lengths=[pybel_mol.unitcell.GetA()/10, 
-                                pybel_mol.unitcell.GetB()/10, 
+            box = Box(lengths=[pybel_mol.unitcell.GetA()/10,
+                                pybel_mol.unitcell.GetB()/10,
                                 pybel_mol.unitcell.GetC()/10],
-                        angles=[pybel_mol.unitcell.GetAlpha(), 
-                                pybel_mol.unitcell.GetBeta(), 
+                        angles=[pybel_mol.unitcell.GetAlpha(),
+                                pybel_mol.unitcell.GetBeta(),
                                 pybel_mol.unitcell.GetGamma()])
             self.periodicity = box.lengths
         else:
@@ -2655,6 +2673,24 @@ class Compound(object):
             intermol_atom.position = atom.pos * u.nanometers
             last_molecule.add_atom(intermol_atom)
         return intermol_system
+
+    def get_smiles(self):
+        """Get SMILES string for compound
+
+        Bond order is guessed with pybel and may lead to incorrect SMILES
+        strings.
+
+        Returns
+        -------
+        smiles_string: str
+        """
+
+        pybel_cmp = self.to_pybel()
+        pybel_cmp.OBMol.PerceiveBondOrders()
+        # we only need the smiles string
+        smiles = pybel_cmp.write().split()[0]
+        return smiles
+
 
     @staticmethod
     def _add_intermol_molecule_type(intermol_system, parent):  # pragma: no cover
