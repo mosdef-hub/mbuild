@@ -87,7 +87,6 @@ def load(filename_or_object, relative_to_module=None, compound=None, coords_only
     except ImportError:
         pass
 
-    print(type_dict)
     if isinstance(filename_or_object, Compound):
         return filename_or_object
     for type in type_dict:
