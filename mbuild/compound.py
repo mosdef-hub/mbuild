@@ -30,6 +30,7 @@ from mbuild.formats.gsdwriter import write_gsd
 from mbuild.formats.par_writer import write_par
 from mbuild.periodic_kdtree import PeriodicCKDTree
 from mbuild.utils.io import run_from_ipython, import_
+from mbuild.utils.jsutils import overwrite_nglview_default
 from mbuild.coordinate_transform import _translate, _rotate
 
 
@@ -1304,6 +1305,7 @@ class Compound(object):
         if show_ports:
             widget.add_ball_and_stick('_VS',
                                       aspect_ratio=1.0, color='#991f00')
+        overwrite_nglview_default(widget)
         return widget
 
     def update_coordinates(self, filename, update_port_locations=True):
@@ -2419,7 +2421,7 @@ class Compound(object):
             nodes, edges = child._iterate_children(nodes, edges, names_only=names_only)
         return nodes, edges
 
-    def to_pybel(self, box=None, title='', residues=None, show_ports=False, 
+    def to_pybel(self, box=None, title='', residues=None, show_ports=False,
             infer_residues=False):
         """ Create a pybel.Molecule from a Compound
 
@@ -2442,7 +2444,7 @@ class Compound(object):
 
         Notes
         -----
-        Most of the mb.Compound is first converted to openbabel.OBMol 
+        Most of the mb.Compound is first converted to openbabel.OBMol
         And then pybel creates a pybel.Molecule from the OBMol
         Bond orders are assumed to be 1
         OBMol atom indexing starts at 1, with spatial dimension Angstrom
@@ -2540,8 +2542,8 @@ class Compound(object):
 
         for bond in self.bonds():
             bond_order = 1
-            mol.AddBond(particle_to_atom_index[bond[0]]+1, 
-                    particle_to_atom_index[bond[1]]+1, 
+            mol.AddBond(particle_to_atom_index[bond[0]]+1,
+                    particle_to_atom_index[bond[1]]+1,
                     bond_order)
 
         pybelmol = pybel.Molecule(mol)
@@ -2551,7 +2553,7 @@ class Compound(object):
 
     def from_pybel(self, pybel_mol, use_element=True, coords_only=False):
         """Create a Compound from a Pybel.Molecule
-        
+
         Parameters
         ---------
         pybel_mol: pybel.Molecule
@@ -2572,8 +2574,8 @@ class Compound(object):
             raise Warning('coords_only=True not yet implemented for '
                     'conversion from pybel')
         # Iterating through pybel_mol for atom/residue information
-        # This could just as easily be implemented by 
-        # an OBMolAtomIter from the openbabel library, 
+        # This could just as easily be implemented by
+        # an OBMolAtomIter from the openbabel library,
         # but this seemed more convenient at time of writing
         # pybel atoms are 1-indexed, coordinates in Angstrom
         for atom in pybel_mol.atoms:
@@ -2608,11 +2610,11 @@ class Compound(object):
                             self[bond.GetEndAtomIdx()-1]])
 
         if hasattr(pybel_mol, 'unitcell'):
-            box = Box(lengths=[pybel_mol.unitcell.GetA()/10, 
-                                pybel_mol.unitcell.GetB()/10, 
+            box = Box(lengths=[pybel_mol.unitcell.GetA()/10,
+                                pybel_mol.unitcell.GetB()/10,
                                 pybel_mol.unitcell.GetC()/10],
-                        angles=[pybel_mol.unitcell.GetAlpha(), 
-                                pybel_mol.unitcell.GetBeta(), 
+                        angles=[pybel_mol.unitcell.GetAlpha(),
+                                pybel_mol.unitcell.GetBeta(),
                                 pybel_mol.unitcell.GetGamma()])
             self.periodicity = box.lengths
         else:
@@ -2673,6 +2675,24 @@ class Compound(object):
             intermol_atom.position = atom.pos * u.nanometers
             last_molecule.add_atom(intermol_atom)
         return intermol_system
+
+    def get_smiles(self):
+        """Get SMILES string for compound
+
+        Bond order is guessed with pybel and may lead to incorrect SMILES
+        strings.
+
+        Returns
+        -------
+        smiles_string: str
+        """
+
+        pybel_cmp = self.to_pybel()
+        pybel_cmp.OBMol.PerceiveBondOrders()
+        # we only need the smiles string
+        smiles = pybel_cmp.write().split()[0]
+        return smiles
+
 
     @staticmethod
     def _add_intermol_molecule_type(intermol_system, parent):  # pragma: no cover
