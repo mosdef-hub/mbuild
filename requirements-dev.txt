@@ -16,3 +16,5 @@ pytest-cov
 pytest-faulthandler
 codecov
 protobuf
+nbval
+py3Dmol
