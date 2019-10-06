@@ -30,6 +30,7 @@ from mbuild.formats.gsdwriter import write_gsd
 from mbuild.formats.par_writer import write_par
 from mbuild.periodic_kdtree import PeriodicCKDTree
 from mbuild.utils.io import run_from_ipython, import_
+from mbuild.utils.jsutils import overwrite_nglview_default
 from mbuild.coordinate_transform import _translate, _rotate
 
 
@@ -1304,6 +1305,7 @@ class Compound(object):
         if show_ports:
             widget.add_ball_and_stick('_VS',
                                       aspect_ratio=1.0, color='#991f00')
+        overwrite_nglview_default(widget)
         return widget
 
     def update_coordinates(self, filename, update_port_locations=True):
