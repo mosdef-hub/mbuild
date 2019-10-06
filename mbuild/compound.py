@@ -77,19 +77,17 @@ def load(filename_or_object, relative_to_module=None, compound=None, coords_only
         compound = Compound()
 
     # First check if we are loading from an existing parmed or trajectory structure
+    type_dict = {
+        pmd.Structure:compound.from_parmed,
+        md.Trajectory:compound.from_trajectory,
+    }
     try:
         import pybel
-        type_dict = {
-            pmd.Structure:compound.from_parmed,
-            md.Trajectory:compound.from_trajectory,
-            pybel.Molecule:compound.from_pybel,
-        }
+        type_dict.update({pybel.Molecule:compound.from_pybel})
     except ImportError:
-        type_dict = {
-            pmd.Structure:compound.from_parmed,
-            md.Trajectory:compound.from_trajectory,
-        }
+        pass
 
+    print(type_dict)
     if isinstance(filename_or_object, Compound):
         return filename_or_object
     for type in type_dict:
