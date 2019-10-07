@@ -1,6 +1,5 @@
 import json
 from collections import OrderedDict
-from typing import Iterable
 
 import mbuild as mb
 from mbuild.exceptions import MBuildError
