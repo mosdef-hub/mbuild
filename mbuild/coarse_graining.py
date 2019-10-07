@@ -29,7 +29,7 @@ class Proxy(Compound):
         if compound.name == 'G':
             name = 'G'
         else:
-            name = compound.name + ' (proxy) '
+            name = compound.name + '_PROXY'
         super(Proxy, self).__init__(name=name)
 
         self.wrapped = compound
