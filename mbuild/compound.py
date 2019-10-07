@@ -16,7 +16,7 @@ from mdtraj.core.element import get_by_symbol
 import numpy as np
 from oset import oset as OrderedSet
 import parmed as pmd
-from parmed.periodic_table import AtomicNum, element_by_name, Mass
+from parmed.periodic_table import AtomicNum, element_by_name, Mass, Element
 from six import integer_types, string_types
 
 from mbuild.bond_graph import BondGraph
@@ -27,8 +27,10 @@ from mbuild.formats.xyz import read_xyz
 from mbuild.formats.hoomdxml import write_hoomdxml
 from mbuild.formats.lammpsdata import write_lammpsdata
 from mbuild.formats.gsdwriter import write_gsd
+from mbuild.formats.par_writer import write_par
 from mbuild.periodic_kdtree import PeriodicCKDTree
 from mbuild.utils.io import run_from_ipython, import_
+from mbuild.utils.jsutils import overwrite_nglview_default
 from mbuild.coordinate_transform import _translate, _rotate
 
 
@@ -43,7 +45,8 @@ def load(filename_or_object, relative_to_module=None, compound=None, coords_only
 
     Parameters
     ----------
-    filename_or_object : str, mdtraj.Trajectory, parmed.Structure, mbuild.Compound
+    filename_or_object : str, mdtraj.Trajectory, parmed.Structure, mbuild.Compound,
+            pybel.Molecule
         Name of the file or topology from which to load atom and bond information.
     relative_to_module : str, optional, default=None
         Instead of looking in the current working directory, look for the file
@@ -69,12 +72,18 @@ def load(filename_or_object, relative_to_module=None, compound=None, coords_only
     compound : mb.Compound
 
     """
+    pybel = import_('pybel')
 
+    # If compound doesn't exist, we will initialize one
     if compound is None:
         compound = Compound()
 
     # First check if we are loading from an existing parmed or trajectory structure
-    type_dict = {pmd.Structure:compound.from_parmed,md.Trajectory:compound.from_trajectory}
+    type_dict = {
+        pmd.Structure:compound.from_parmed,
+        md.Trajectory:compound.from_trajectory,
+        pybel.Molecule:compound.from_pybel,
+    }
     if isinstance(filename_or_object, Compound):
         return filename_or_object
     for type in type_dict:
@@ -136,12 +145,13 @@ def load(filename_or_object, relative_to_module=None, compound=None, coords_only
                 warn("More than one SMILES string in file, more than one SMILES "
                      "string is not supported, using {}".format(mymol.write("smi")))
 
+        # We create a temporary directory and mol2 file that will created from the smiles string
+        # A ParmEd structure and subsequenc mBuild compound will be created from this mol2 file
         tmp_dir = tempfile.mkdtemp()
         temp_file = os.path.join(tmp_dir, 'smiles_to_mol2_intermediate.mol2')
         mymol.make3D()
-        mymol.write("MOL2", temp_file)
-        structure = pmd.load_file(temp_file, structure=True, **kwargs)
-        compound.from_parmed(structure, coords_only=coords_only)
+        compound = Compound()
+        compound.from_pybel(mymol)
 
     else:
         traj = md.load(filename_or_object, **kwargs)
@@ -1165,7 +1175,7 @@ class Compound(object):
             particle_array = np.array(list(self.particles()))
         return particle_array[idxs]
 
-    def visualize(self, show_ports=False, 
+    def visualize(self, show_ports=False,
             backend='py3dmol', color_scheme={}): # pragma: no cover
         """Visualize the Compound using py3dmol (default) or nglview.
 
@@ -1189,13 +1199,13 @@ class Compound(object):
                 'py3dmol': self._visualize_py3dmol}
         if run_from_ipython():
             if backend.lower() in viz_pkg:
-                return viz_pkg[backend.lower()](show_ports=show_ports, 
+                return viz_pkg[backend.lower()](show_ports=show_ports,
                         color_scheme=color_scheme)
             else:
                 raise RuntimeError("Unsupported visualization " +
                         "backend ({}). ".format(backend) +
                         "Currently supported backends include nglview and py3dmol")
-                        
+
         else:
             raise RuntimeError('Visualization is only supported in Jupyter '
                                'Notebooks.')
@@ -1227,9 +1237,9 @@ class Compound(object):
 
         modified_color_scheme = {}
         for name, color in color_scheme.items():
-            # Py3dmol does some element string conversions, 
+            # Py3dmol does some element string conversions,
             # first character is as-is, rest of the characters are lowercase
-            new_name = name[0] + name[1:].lower() 
+            new_name = name[0] + name[1:].lower()
             modified_color_scheme[new_name] = color
             modified_color_scheme[name] = color
 
@@ -1242,8 +1252,9 @@ class Compound(object):
                   overwrite=True)
 
         view = py3Dmol.view()
-        view.addModel(open(os.path.join(tmp_dir, 'tmp.mol2'), 'r').read(),
-                'mol2', keepH=True)
+        with open(os.path.join(tmp_dir, 'tmp.mol2'), 'r') as f:
+            view.addModel(f.read(), 'mol2', keepH=True)
+
         view.setStyle({'stick': {'radius': 0.2,
                                 'color':'grey'},
                         'sphere': {'scale': 0.3,
@@ -1294,6 +1305,7 @@ class Compound(object):
         if show_ports:
             widget.add_ball_and_stick('_VS',
                                       aspect_ratio=1.0, color='#991f00')
+        overwrite_nglview_default(widget)
         return widget
 
     def update_coordinates(self, filename, update_port_locations=True):
@@ -1365,7 +1377,7 @@ class Compound(object):
     def energy_minimize(self, forcefield='UFF', steps=1000, **kwargs):
         """Perform an energy minimization on a Compound
 
-        Default beahvior utilizes Open Babel (http://openbabel.org/docs/dev/)
+        Default behavior utilizes Open Babel (http://openbabel.org/docs/dev/)
         to perform an energy minimization/geometry optimization on a
         Compound by applying a generic force field
 
@@ -1410,7 +1422,7 @@ class Compound(object):
         scale_torsions : float, optional, default=1
             Scales the torsional force constants (1 is completely on)
             For _energy_minimize_openmm
-            Note: Only Ryckaert-Bellemans style torsions are currently supported 
+            Note: Only Ryckaert-Bellemans style torsions are currently supported
         scale_nonbonded : float, optional, default=1
             Scales epsilon (1 is completely on)
             For _energy_minimize_openmm
@@ -1507,13 +1519,13 @@ class Compound(object):
             scale_nonbonded=1):
         """ Perform energy minimization using OpenMM
 
-        Converts an mBuild Compound to a Parmed Structure,
+        Converts an mBuild Compound to a ParmEd Structure,
         applies a forcefield using Foyer, and creates an OpenMM System.
 
         Parameters
         ----------
         forcefield_files : str or list of str, optional, default=None
-            Forcefield files to load 
+            Forcefield files to load
         forcefield_name : str, optional, default=None
             Apply a named forcefield to the output file using the `foyer`
             package, e.g. 'oplsaa'. Forcefields listed here:
@@ -1560,11 +1572,14 @@ class Compound(object):
         from simtk.openmm.openmm import LangevinIntegrator
         import simtk.unit as u
 
-        system = to_parmed.createSystem()
+        system = to_parmed.createSystem() # Create an OpenMM System
+        # Create a Langenvin Integrator in OpenMM
         integrator = LangevinIntegrator(298 * u.kelvin, 1 / u.picosecond,
                                         0.002 * u.picoseconds)
+        # Create Simulation object in OpenMM
         simulation = Simulation(to_parmed.topology, system, integrator)
 
+        # Loop through forces in OpenMM System and set parameters
         for force in system.getForces():
             if type(force).__name__ == "HarmonicBondForce":
                 for bond_index in range(force.getNumBonds()):
@@ -1621,6 +1636,7 @@ class Compound(object):
                         type(force).__name__))
 
         simulation.context.setPositions(to_parmed.positions)
+        # Run energy minimization through OpenMM
         simulation.minimizeEnergy(maxIterations=steps)
         reporter = PDBReporter(os.path.join(tmp_dir, 'minimized.pdb'), 1)
         reporter.report(
@@ -1743,8 +1759,8 @@ class Compound(object):
 
     def save(self, filename, show_ports=False, forcefield_name=None,
              forcefield_files=None, forcefield_debug=False, box=None,
-             overwrite=False, residues=None, references_file=None,
-             combining_rule='lorentz', foyerkwargs={}, **kwargs):
+             overwrite=False, residues=None, combining_rule='lorentz',
+             foyer_kwargs=None, **kwargs):
         """Save the Compound to a file.
 
         Parameters
@@ -1775,20 +1791,22 @@ class Compound(object):
         residues : str of list of str
             Labels of residues in the Compound. Residues are assigned by
             checking against Compound.name.
-        references_file : str, optional, default=None
-            Specify a filename to write references for the forcefield that is
-            to be applied. References are written in BiBTeX format.
         combining_rule : str, optional, default='lorentz'
             Specify the combining rule for nonbonded interactions. Only relevant
             when the `foyer` package is used to apply a forcefield. Valid
             options are 'lorentz' and 'geometric', specifying Lorentz-Berthelot
             and geometric combining rules respectively.
-        
+        foyer_kwargs : dict, optional, default=None
+            Keyword arguments to provide to `foyer.Forcefield.apply`.
+        **kwargs
+            Depending on the file extension these will be passed to either
+            `write_gsd`, `write_hoomdxml`, `write_lammpsdata`, or
+            `parmed.Structure.save`.
+            See https://parmed.github.io/ParmEd/html/structobj/parmed.structure.Structure.html#parmed.structure.Structure.save
+
 
         Other Parameters
         ----------------
-        foyerkwargs : dict, optional
-            Specify keyword arguments when applying the foyer Forcefield
         ref_distance : float, optional, default=1.0
             Normalization factor used when saving to .gsd and .hoomdxml formats
             for converting distance values to reduced units.
@@ -1821,7 +1839,8 @@ class Compound(object):
         savers = {'.hoomdxml': write_hoomdxml,
                   '.gsd': write_gsd,
                   '.lammps': write_lammpsdata,
-                  '.lmp': write_lammpsdata}
+                  '.lmp': write_lammpsdata,
+                  '.par': write_par}
 
         try:
             saver = savers[extension]
@@ -1837,9 +1856,10 @@ class Compound(object):
         if forcefield_name or forcefield_files:
             foyer = import_('foyer')
             ff = foyer.Forcefield(forcefield_files=forcefield_files,
-                                  name=forcefield_name, debug=forcefield_debug)
-            structure = ff.apply(structure, references_file=references_file,
-                    **foyerkwargs)
+                            name=forcefield_name, debug=forcefield_debug)
+            if not foyer_kwargs:
+                foyer_kwargs = {}
+            structure = ff.apply(structure, **foyer_kwargs)
             structure.combining_rule = combining_rule
 
         total_charge = sum([atom.charge for atom in structure])
@@ -2243,6 +2263,7 @@ class Compound(object):
         atom_mapping = {}  # For creating bonds below
         guessed_elements = set()
 
+        # Attempt to grab residue names based on names of children
         if not residues and infer_residues:
             residues = list(set([child.name for child in self.children]))
 
@@ -2256,6 +2277,7 @@ class Compound(object):
         compound_residue_map = dict()
         atom_residue_map = dict()
 
+        # Loop through particles and add initialize ParmEd atoms
         for atom in self.particles(include_ports=show_ports):
             if atom.port_particle:
                 current_residue = port_residue
@@ -2317,8 +2339,10 @@ class Compound(object):
 
             atom_mapping[atom] = pmd_atom
 
+        # "Claim" all of the items it contains and subsequently index all of its items
         structure.residues.claim()
 
+        # Create and add bonds to ParmEd Structure
         for atom1, atom2 in self.bonds():
             bond = pmd.Bond(atom_mapping[atom1], atom_mapping[atom2])
             structure.bonds.append(bond)
@@ -2361,6 +2385,14 @@ class Compound(object):
         Returns
         -------
         G : networkx.DiGraph
+
+        Notes
+        -----
+        This digraph is not the bondgraph of the compound.
+
+        See Also
+        --------
+        mbuild.bond_graph
         """
         nx = import_('networkx')
 
@@ -2378,6 +2410,7 @@ class Compound(object):
         return graph
 
     def _iterate_children(self, nodes, edges, names_only=False):
+        """ Create nodes and edges that connect parents and their corresponding children"""
         if not self.children:
             return nodes, edges
         for child in self.children:
@@ -2392,6 +2425,210 @@ class Compound(object):
             nodes, edges = child._iterate_children(nodes, edges, names_only=names_only)
         return nodes, edges
 
+    def to_pybel(self, box=None, title='', residues=None, show_ports=False,
+            infer_residues=False):
+        """ Create a pybel.Molecule from a Compound
+
+        Parameters
+        ---------
+        box : mb.Box, def None
+        title : str, optional, default=self.name
+            Title/name of the ParmEd Structure
+        residues : str of list of str
+            Labels of residues in the Compound. Residues are assigned by
+            checking against Compound.name.
+        show_ports : boolean, optional, default=False
+            Include all port atoms when converting to a `Structure`.
+        infer_residues : bool, optional, default=False
+            Attempt to assign residues based on names of children
+
+        Returns
+        ------
+        pybel.Molecule
+
+        Notes
+        -----
+        Most of the mb.Compound is first converted to openbabel.OBMol
+        And then pybel creates a pybel.Molecule from the OBMol
+        Bond orders are assumed to be 1
+        OBMol atom indexing starts at 1, with spatial dimension Angstrom
+        """
+
+        openbabel = import_('openbabel')
+        pybel = import_('pybel')
+
+        mol = openbabel.OBMol()
+        particle_to_atom_index = {}
+
+        if not residues and infer_residues:
+            residues = list(set([child.name for child in self.children]))
+        if isinstance(residues, string_types):
+            residues = [residues]
+        if isinstance(residues, (list, set)):
+            residues = tuple(residues)
+
+        compound_residue_map = dict()
+        atom_residue_map = dict()
+
+        for i, part in enumerate(self.particles(include_ports=show_ports)):
+            if residues and part.name in residues:
+                current_residue = mol.NewResidue()
+                current_residue.SetName(part.name)
+                atom_residue_map[part] = current_residue
+                compound_residue_map[part] = current_residue
+            elif residues:
+                for parent in part.ancestors():
+                    if residues and parent.name in residues:
+                        if parent not in compound_residue_map:
+                            current_residue = mol.NewResidue()
+                            current_residue.SetName(parent.name)
+                            compound_residue_map[parent] = current_residue
+                        atom_residue_map[part] = current_residue
+                        break
+                else:  # Did not find specified residues in ancestors.
+                    current_residue = mol.NewResidue()
+                    current_residue.SetName("RES")
+                    atom_residue_map[part] = current_residue
+            else:
+                current_residue = mol.NewResidue()
+                current_residue.SetName("RES")
+                atom_residue_map[part] = current_residue
+
+            temp = mol.NewAtom()
+            residue = atom_residue_map[part]
+            temp.SetResidue(residue)
+            if part.port_particle:
+                temp.SetAtomicNum(0)
+            else:
+                try:
+                    temp.SetAtomicNum(AtomicNum[part.name.capitalize()])
+                except KeyError:
+                    warn("Could not infer atomic number from "
+                            "{}, setting to 0".format(part.name))
+                    temp.SetAtomicNum(0)
+
+
+            temp.SetVector(*(part.xyz[0]*10))
+            particle_to_atom_index[part] = i
+
+        ucell = openbabel.OBUnitCell()
+        if box is None:
+            box = self.boundingbox
+        a, b, c = 10.0 * box.lengths
+        alpha, beta, gamma = np.radians(box.angles)
+
+        cosa = np.cos(alpha)
+        cosb = np.cos(beta)
+        sinb = np.sin(beta)
+        cosg = np.cos(gamma)
+        sing = np.sin(gamma)
+        mat_coef_y = (cosa - cosb * cosg) / sing
+        mat_coef_z = np.power(sinb, 2, dtype=float) - \
+                    np.power(mat_coef_y, 2, dtype=float)
+
+        if mat_coef_z > 0.:
+            mat_coef_z = np.sqrt(mat_coef_z)
+        else:
+            raise Warning('Non-positive z-vector. Angles {} '
+                                  'do not generate a box with the z-vector in the'
+                                  'positive z direction'.format(box.angles))
+
+        box_vec = [[1, 0, 0],
+                    [cosg, sing, 0],
+                    [cosb, mat_coef_y, mat_coef_z]]
+        box_vec = np.asarray(box_vec)
+        box_mat = (np.array([a,b,c])* box_vec.T).T
+        first_vector = openbabel.vector3(*box_mat[0])
+        second_vector = openbabel.vector3(*box_mat[1])
+        third_vector = openbabel.vector3(*box_mat[2])
+        ucell.SetData(first_vector, second_vector, third_vector)
+        mol.CloneData(ucell)
+
+        for bond in self.bonds():
+            bond_order = 1
+            mol.AddBond(particle_to_atom_index[bond[0]]+1,
+                    particle_to_atom_index[bond[1]]+1,
+                    bond_order)
+
+        pybelmol = pybel.Molecule(mol)
+        pybelmol.title = title if title else self.name
+
+        return pybelmol
+
+    def from_pybel(self, pybel_mol, use_element=True, coords_only=False):
+        """Create a Compound from a Pybel.Molecule
+
+        Parameters
+        ---------
+        pybel_mol: pybel.Molecule
+        use_element : bool, default True
+            If True, construct mb Particles based on the pybel Atom's element.
+            If False, construcs mb Particles based on the pybel Atom's type
+        coords_only : bool, default False
+            Set preexisting atoms in compound to coordinates given by
+            structure.  Note: Not yet implemented, included only for parity
+            with other conversion functions
+
+        """
+        openbabel = import_("openbabel")
+        self.name = pybel_mol.title.split('.')[0]
+        resindex_to_cmpd = {}
+
+        if coords_only:
+            raise Warning('coords_only=True not yet implemented for '
+                    'conversion from pybel')
+        # Iterating through pybel_mol for atom/residue information
+        # This could just as easily be implemented by
+        # an OBMolAtomIter from the openbabel library,
+        # but this seemed more convenient at time of writing
+        # pybel atoms are 1-indexed, coordinates in Angstrom
+        for atom in pybel_mol.atoms:
+            xyz = np.array(atom.coords)/10
+            if use_element:
+                try:
+                    temp_name = Element[atom.atomicnum]
+                except KeyError:
+                    warn("No element detected for atom at index "
+                            "{} with number {}, type {}".format(
+                                atom.idx, atom.atomicnum, atom.type))
+                    temp_name = atom.type
+            else:
+                temp_name = atom.type
+            temp = Particle(name=temp_name, pos=xyz)
+            if hasattr(atom, 'residue'): # Is there a safer way to check for res?
+                if atom.residue.idx not in resindex_to_cmpd:
+                    res_cmpd = Compound(name=atom.residue.name)
+                    resindex_to_cmpd[atom.residue.idx] = res_cmpd
+                    self.add(res_cmpd)
+                resindex_to_cmpd[atom.residue.idx].add(temp)
+            else:
+                self.add(temp)
+
+        # Iterating through pybel_mol.OBMol for bond information
+        # Bonds are 0-indexed, but the atoms are 1-indexed
+        # Bond information doesn't appear stored in pybel_mol,
+        # so we need to look into the OBMol object,
+        # using an iterator from the openbabel library
+        for bond in openbabel.OBMolBondIter(pybel_mol.OBMol):
+            self.add_bond([self[bond.GetBeginAtomIdx()-1],
+                            self[bond.GetEndAtomIdx()-1]])
+
+        if hasattr(pybel_mol, 'unitcell'):
+            box = Box(lengths=[pybel_mol.unitcell.GetA()/10,
+                                pybel_mol.unitcell.GetB()/10,
+                                pybel_mol.unitcell.GetC()/10],
+                        angles=[pybel_mol.unitcell.GetAlpha(),
+                                pybel_mol.unitcell.GetBeta(),
+                                pybel_mol.unitcell.GetGamma()])
+            self.periodicity = box.lengths
+        else:
+            warn("No unitcell detected for pybel.Molecule {}".format(pybel_mol))
+            box = None
+
+#       TODO: Decide how to gather PBC information from openbabel. Options may
+#             include storing it in .periodicity or writing a separate function
+#             that returns the box.
+
     def to_intermol(self, molecule_types=None): # pragma: no cover
         """Create an InterMol system from a Compound.
 
@@ -2402,7 +2639,6 @@ class Compound(object):
         Returns
         -------
         intermol_system : intermol.system.System
-
         """
         from intermol.atom import Atom as InterMolAtom
         from intermol.molecule import Molecule
@@ -2444,9 +2680,31 @@ class Compound(object):
             last_molecule.add_atom(intermol_atom)
         return intermol_system
 
+    def get_smiles(self):
+        """Get SMILES string for compound
+
+        Bond order is guessed with pybel and may lead to incorrect SMILES
+        strings.
+
+        Returns
+        -------
+        smiles_string: str
+        """
+
+        pybel_cmp = self.to_pybel()
+        pybel_cmp.OBMol.PerceiveBondOrders()
+        # we only need the smiles string
+        smiles = pybel_cmp.write().split()[0]
+        return smiles
+
+
     @staticmethod
-    def _add_intermol_molecule_type(intermol_system, parent): # pragma: no cover
-        """Create a molecule type for the parent and add bonds. """
+    def _add_intermol_molecule_type(intermol_system, parent):  # pragma: no cover
+        """Create a molecule type for the parent and add bonds.
+
+        This method takes an intermol system and adds a
+        parent compound, including its particles and bonds, to it.
+        """
         from intermol.moleculetype import MoleculeType
         from intermol.forces.bond import Bond as InterMolBond
 
@@ -2558,6 +2816,7 @@ class Compound(object):
         return newone
 
     def _clone_bonds(self, clone_of=None):
+        """While cloning, clone the bond of the source compound to clone compound"""
         newone = clone_of[self]
         for c1, c2 in self.bonds():
             try:

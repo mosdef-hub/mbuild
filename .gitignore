@@ -60,3 +60,6 @@ mbuild/version.py
 
 #virtual env
 .env/
+
+# protobuf generated py file
+compound_pb2.py
