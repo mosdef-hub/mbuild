@@ -72,8 +72,6 @@ def load(filename_or_object, relative_to_module=None, compound=None, coords_only
     compound : mb.Compound
 
     """
-    pybel = import_('pybel')
-
     # If compound doesn't exist, we will initialize one
     if compound is None:
         compound = Compound()
@@ -82,8 +80,13 @@ def load(filename_or_object, relative_to_module=None, compound=None, coords_only
     type_dict = {
         pmd.Structure:compound.from_parmed,
         md.Trajectory:compound.from_trajectory,
-        pybel.Molecule:compound.from_pybel,
     }
+    try:
+        import pybel
+        type_dict.update({pybel.Molecule:compound.from_pybel})
+    except ImportError:
+        pass
+
     if isinstance(filename_or_object, Compound):
         return filename_or_object
     for type in type_dict:
