@@ -948,7 +948,7 @@ class TestCompound(BaseTest):
 
     @pytest.mark.skipif(not has_openbabel, reason="Pybel is not installed")
     def test_from_pybel(self):
-        import pybel
+        pybel = import_('pybel')
         benzene = list(pybel.readfile('mol2', get_fn('benzene.mol2')))[0]
         cmpd = mb.Compound()
         cmpd.from_pybel(benzene)
@@ -972,7 +972,7 @@ class TestCompound(BaseTest):
 
     @pytest.mark.skipif(not has_openbabel, reason="Pybel is not installed")
     def test_from_pybel_residues(self):
-       import pybel
+       pybel = import_('pybel')
        pybel_mol = list(pybel.readfile('mol2', get_fn('methyl.mol2')))[0]
        cmpd = mb.Compound()
        cmpd.from_pybel(pybel_mol)
@@ -980,7 +980,7 @@ class TestCompound(BaseTest):
 
     @pytest.mark.skipif(not has_openbabel, reason="Pybel is not installed")
     def test_from_pybel_monolayer(self):
-        import pybel
+        pybel = import_('pybel')
         monolayer = list(pybel.readfile('pdb', get_fn('monolayer.pdb')))[0]
         # TODO: Actually store the box information
         cmpd = mb.Compound()

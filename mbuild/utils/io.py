@@ -100,6 +100,15 @@ def import_(module):
     >>> import tables
     >>> tables = import_('tables')
     """
+    if module == 'pybel':
+        try:
+            return importlib.import_module('openbabel.pybel')
+        except ModuleNotFoundError:
+            pass
+        try:
+            return importlib.import_module('pybel')
+        except ModuleNotFoundError:
+            pass
     try:
         return importlib.import_module(module)
     except ImportError as e:
