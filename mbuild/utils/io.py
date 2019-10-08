@@ -23,6 +23,7 @@ import os
 from pkg_resources import resource_filename
 import sys
 import textwrap
+import warnings
 from unittest import SkipTest
 
 
@@ -114,8 +115,9 @@ def import_(module):
             pass
         try:
             pybel = importlib.import_module('pybel')
-            raise DeprecationWarning('openbabel 2.0 detected and will be '
-                    'dropped in a future release. Consider upgrading to 3.x.')
+            msg = ('openbabel 2.0 detected and will be dropped in a future '
+                   'release. Consider upgrading to 3.x.')
+            warnings.warn(msg, DeprecationWarning)
             return pybel
         except ModuleNotFoundError:
             pass
