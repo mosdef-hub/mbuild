@@ -7,7 +7,7 @@ parmed
 mdtraj
 foyer
 gsd
-openbabel
+openbabel<3
 networkx
 pytest >=3.0
 jupyter
