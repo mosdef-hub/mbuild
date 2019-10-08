@@ -102,7 +102,10 @@ def import_(module):
 
     Notes
     -----
-    The pybel/openbabel
+    The pybel/openbabel block is meant to resolve compatibility between
+    openbabel 2.x and 3.0.  There may be other breaking changes but the change
+    in importing them is the major one we are aware of. For details, see
+    https://open-babel.readthedocs.io/en/latest/UseTheLibrary/migration.html#python-module
     """
     if module == 'pybel':
         try:
@@ -110,7 +113,10 @@ def import_(module):
         except ModuleNotFoundError:
             pass
         try:
-            return importlib.import_module('pybel')
+            pybel = importlib.import_module('pybel')
+            raise DeprecationWarning('openbabel 2.0 detected and will be '
+                    'dropped in a future release. Consider upgrading to 3.x.')
+            return pybel
         except ModuleNotFoundError:
             pass
     try:
