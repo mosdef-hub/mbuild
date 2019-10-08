@@ -83,7 +83,7 @@ def load(filename_or_object, relative_to_module=None, compound=None, coords_only
         md.Trajectory:compound.from_trajectory,
     }
     try:
-        import pybel
+        pybel = import_('pybel')
         type_dict.update({pybel.Molecule:compound.from_pybel})
     except ImportError:
         pass
