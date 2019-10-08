@@ -44,7 +44,7 @@ The code at {filename}:{line_number} requires the "nglview" package
 
 nglview can be installed using:
 
-# conda install -c bioconda nglview
+# conda install -c conda-forge nglview
 
 or
 
@@ -56,7 +56,7 @@ The code at {filename}:{line_number} requires the "openbabel" package
 
 openbabel can be installed with conda using:
 
-# conda install -c bioconda openbabel
+# conda install -c conda-forge openbabel
 
 or from source following instructions at:
 
