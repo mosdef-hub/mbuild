@@ -99,6 +99,10 @@ def import_(module):
     >>> # module from, etc) if the import fails
     >>> import tables
     >>> tables = import_('tables')
+
+    Notes
+    -----
+    The pybel/openbabel
     """
     if module == 'pybel':
         try:

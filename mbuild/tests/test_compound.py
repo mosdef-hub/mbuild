@@ -8,7 +8,7 @@ import pytest
 import mbuild as mb
 from mbuild.exceptions import MBuildError
 from mbuild.utils.geometry import calc_dihedral
-from mbuild.utils.io import get_fn, has_foyer, has_intermol, has_openbabel, has_networkx
+from mbuild.utils.io import get_fn, import_, has_foyer, has_intermol, has_openbabel, has_networkx
 from mbuild.tests.base_test import BaseTest
 
 class TestCompound(BaseTest):
