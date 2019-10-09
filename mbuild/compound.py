@@ -2010,7 +2010,6 @@ class Compound(object):
                 for atom in res.atoms:
                     new_atom = Particle(name=str(atom.name),
                                         pos=traj.xyz[frame, atom.index])
-                    #res_compound.add(
                     parent_cmpd.add(
                         new_atom, label='{0}[$]'.format(
                             atom.name))
@@ -2254,7 +2253,6 @@ class Compound(object):
                 for atom in residue.atoms:
                     pos = np.array([atom.xx, atom.xy, atom.xz]) / 10
                     new_atom = Particle(name=str(atom.name), pos=pos)
-                    #residue_compound.add(
                     parent_cmpd.add(
                         new_atom, label='{0}[$]'.format(
                             atom.name))
