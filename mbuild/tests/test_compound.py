@@ -305,7 +305,7 @@ class TestCompound(BaseTest):
         assert ethane.n_bonds == 0
         assert len(ethane.children) == 2
         # Still contains ports
-        assert len(ethane.children[0].children[0].children) == 7  
+        assert len(ethane.children[0].children) == 7  
 
     def test_remove_many(self, ethane):
         ethane.remove([ethane.children[0], ethane.children[1]])
@@ -324,7 +324,7 @@ class TestCompound(BaseTest):
         assert ethane.n_bonds == 3
         assert len(ethane.children) == 1
         # Still contains a port
-        assert len(ethane.children[0].children[0].children) == 5  
+        assert len(ethane.children[0].children) == 5  
 
         methyl = ethane.children[0]
         ethane.remove(methyl)
