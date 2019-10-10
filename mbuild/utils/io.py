@@ -23,6 +23,7 @@ import os
 from pkg_resources import resource_filename
 import sys
 import textwrap
+import warnings
 from unittest import SkipTest
 
 
@@ -44,7 +45,7 @@ The code at {filename}:{line_number} requires the "nglview" package
 
 nglview can be installed using:
 
-# conda install -c bioconda nglview
+# conda install -c conda-forge nglview
 
 or
 
@@ -56,7 +57,7 @@ The code at {filename}:{line_number} requires the "openbabel" package
 
 openbabel can be installed with conda using:
 
-# conda install -c bioconda openbabel
+# conda install -c conda-forge openbabel
 
 or from source following instructions at:
 
@@ -99,7 +100,27 @@ def import_(module):
     >>> # module from, etc) if the import fails
     >>> import tables
     >>> tables = import_('tables')
+
+    Notes
+    -----
+    The pybel/openbabel block is meant to resolve compatibility between
+    openbabel 2.x and 3.0.  There may be other breaking changes but the change
+    in importing them is the major one we are aware of. For details, see
+    https://open-babel.readthedocs.io/en/latest/UseTheLibrary/migration.html#python-module
     """
+    if module == 'pybel':
+        try:
+            return importlib.import_module('openbabel.pybel')
+        except ModuleNotFoundError:
+            pass
+        try:
+            pybel = importlib.import_module('pybel')
+            msg = ('openbabel 2.0 detected and will be dropped in a future '
+                   'release. Consider upgrading to 3.x.')
+            warnings.warn(msg, DeprecationWarning)
+            return pybel
+        except ModuleNotFoundError:
+            pass
     try:
         return importlib.import_module(module)
     except ImportError as e:
