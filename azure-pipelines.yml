@@ -29,10 +29,13 @@ jobs:
           conda config --add channels mosdef
         displayName: Add relavent Channels
 
-      - bash: conda create -n test-environment python=$(python.version) --file requirements-dev.txt
-        displayName: Create Conda env, install dependencies
+      - bash: |
+          conda create -n test-environment python=$(python.version) --file requirements-dev.txt
+          conda activate test-environment
+          pip install -e .
+        displayName: Create Conda env, Activate, Install dependencies, Install Branch
 
-      - script: python -m pytest -v --nbval --nbval-lax --cov=mbuild --cov-report= --pyargs mbuild
+      - bash: python -m pytest -v --nbval --nbval-lax --cov=mbuild --cov-report= --pyargs mbuild
         displayName: Run Tests
 
 
