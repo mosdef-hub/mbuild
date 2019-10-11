@@ -32,12 +32,12 @@ jobs:
       - bash: |
           conda create -n test-environment python=$(python.version) --file requirements-dev.txt
           conda init bash
-          source activate test-environment
+          conda activate test-environment
           pip install -e .
         displayName: Create Conda env, Activate, Install dependencies, Install Branch
 
       - bash: |
-          source activate test-environment
+          conda activate test-environment
           python -m pytest -v --nbval --nbval-lax --cov=mbuild --cov-report= --pyargs mbuild
         displayName: Run Tests
 
@@ -63,5 +63,15 @@ jobs:
           conda config --add channels mosdef
         displayName: Add relavent channels
 
+      - powershell: |
+          conda create -n test-environment python=$(python.version) --file requirements-dev.txt
+          conda init powershell
+          conda activate test-environment
+          pip install -e .
+        displayName: Create Conda env, Activate, Install dependencies, Install Branch
 
+      - powershell:
+          conda activate test-environment
+          python -m pytest -v --nbval --nbval-lax --cov=mbuild --cov-report= --pyargs mbuild
+          displayName: Run Tests
 
