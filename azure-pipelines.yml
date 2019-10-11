@@ -1,19 +1,37 @@
-# Starter pipeline
-# Start with a minimal pipeline that you can customize to build and deploy your code.
-# Add steps that build, run tests, deploy, and more:
-# https://aka.ms/yaml
 
 trigger:
+  - master
   - ci/azp-test
 
-pool:
-  vmImage: 'ubuntu-latest'
+pr:
+  - master
 
-steps:
-- script: echo Hello, world!
-  displayName: 'Run a one-line script'
+jobs:
+  - job: Linux- Without bleeding edge packages
+    pool:
+      vmImage: 'ubuntu-latest'
+    strategy:
+      Python36:
+        python.version: 3.6
+      Python37:
+        python.version: 3.7
 
-- script: |
-    echo Add other tasks to build, test, and deploy your project.
-    echo See https://aka.ms/yaml
-  displayName: 'Run a multi-line script'
+    steps:
+      - bash: echo "##vso[task.prependpath]$CONDA/bin"
+        displayName: Add Conda to path
+
+      - bash: |
+          conda config --set always_yes yes --set changeps1 no
+          conda config --add channels omnia
+          conda config --add channels janschulz
+          conda config --add channels conda-forge
+          conda config --add channels mosdef
+        displayName: Add relavent Channels
+
+      - bash: conda create -n test-environment python=$(python.version) --file requirements-dev.txt
+        displayName: Create Conda env, install dependencies
+
+      - script: python -m pytest -v --nbval --nbval-lax --cov=mbuild --cov-report= --pyargs mbuild
+        displayName: Run Tests
+
+
