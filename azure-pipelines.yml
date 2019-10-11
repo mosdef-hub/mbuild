@@ -33,6 +33,7 @@ jobs:
           conda create -n test-environment python=$(python.version) --file requirements-dev.txt
           conda init bash
           source activate test-environment
+          conda info --envs
           pip install -e .
         displayName: Create Conda env, Activate, Install dependencies, Install Branch
 
