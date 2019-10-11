@@ -7,7 +7,7 @@ pr:
   - master
 
 jobs:
-  - job: Linux- Without bleeding edge packages
+  - job: Linux_no_bleeding
     pool:
       vmImage: 'ubuntu-latest'
     strategy:
