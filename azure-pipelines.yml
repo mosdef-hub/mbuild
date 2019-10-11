@@ -11,10 +11,11 @@ jobs:
     pool:
       vmImage: 'ubuntu-latest'
     strategy:
-      Python36:
-        python.version: 3.6
-      Python37:
-        python.version: 3.7
+      matrix:
+        Python36:
+          python.version: 3.6
+        Python37:
+          python.version: 3.7
 
     steps:
       - bash: echo "##vso[task.prependpath]$CONDA/bin"
