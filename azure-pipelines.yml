@@ -41,4 +41,27 @@ jobs:
           python -m pytest -v --nbval --nbval-lax --cov=mbuild --cov-report= --pyargs mbuild
         displayName: Run Tests
 
+  - job: Windows_no_bleeding
+    pool:
+      vmImage: 'windows-latest'
+    strategy:
+      matrix:
+        Python36:
+          python.version: 3.6
+        Python37:
+          python.version: 3.7
+
+    steps:
+      - powershell: Write-Host "##vso[task.prependpath]$env:CONDA\Scripts"
+        displayName: Add Conda to path
+
+      - powershell: |
+          conda config --set always_yes yes --set changeps1 no
+          conda config --add channels omnia
+          conda config --add channels janschulz
+          conda config --add channels conda-forge
+          conda config --add channels mosdef
+        displayName: Add relavent channels
+
+
 
