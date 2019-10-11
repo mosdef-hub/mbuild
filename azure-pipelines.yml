@@ -37,8 +37,8 @@ jobs:
         displayName: Create Conda env, Activate, Install dependencies, Install Branch
 
       - bash: |
-        source activate test-environment
-        python -m pytest -v --nbval --nbval-lax --cov=mbuild --cov-report= --pyargs mbuild
+          source activate test-environment
+          python -m pytest -v --nbval --nbval-lax --cov=mbuild --cov-report= --pyargs mbuild
         displayName: Run Tests
 
 
