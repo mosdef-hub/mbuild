@@ -31,13 +31,12 @@ jobs:
 
       - bash: |
           conda create -n test-environment python=$(python.version) --file requirements-dev.txt
-          conda init bash
-          conda activate test-environment
+          source activate test-environment
           pip install -e .
         displayName: Create Conda env, Activate, Install dependencies, Install Branch
 
       - bash: |
-          conda activate test-environment
+          source activate test-environment
           python -m pytest -v --nbval --nbval-lax --cov=mbuild --cov-report= --pyargs mbuild
         displayName: Run Tests
 
@@ -66,12 +65,12 @@ jobs:
       - powershell: |
           conda create -n test-environment python=$(python.version) --file requirements-dev.txt
           conda init powershell
-          conda activate test-environment
+          CALL conda activate test-environment
           pip install -e .
         displayName: Create Conda env, Activate, Install dependencies, Install Branch
 
       - powershell: |
-          conda activate test-environment
+          CALL conda activate test-environment
           python -m pytest -v --nbval --nbval-lax --cov=mbuild --cov-report= --pyargs mbuild
         displayName: Run Tests
 
