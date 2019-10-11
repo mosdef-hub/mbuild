@@ -70,8 +70,8 @@ jobs:
           pip install -e .
         displayName: Create Conda env, Activate, Install dependencies, Install Branch
 
-      - powershell:
+      - powershell: |
           conda activate test-environment
           python -m pytest -v --nbval --nbval-lax --cov=mbuild --cov-report= --pyargs mbuild
-          displayName: Run Tests
+        displayName: Run Tests
 
