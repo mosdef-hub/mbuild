@@ -4,7 +4,7 @@
 # https://aka.ms/yaml
 
 trigger:
-- master
+  - ci/azp-test
 
 pool:
   vmImage: 'ubuntu-latest'
