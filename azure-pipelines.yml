@@ -65,12 +65,12 @@ jobs:
       - powershell: |
           conda create -n test-environment python=$(python.version) --file requirements-dev.txt
           conda init powershell
-          CALL conda activate test-environment
+          activate test-environment
           pip install -e .
         displayName: Create Conda env, Activate, Install dependencies, Install Branch
 
       - powershell: |
-          CALL conda activate test-environment
+          activate test-environment
           python -m pytest -v --nbval --nbval-lax --cov=mbuild --cov-report= --pyargs mbuild
         displayName: Run Tests
 
