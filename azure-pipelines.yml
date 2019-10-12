@@ -11,19 +11,20 @@ jobs:
     strategy:
       matrix:
         Python36Ubuntu:
-          imageName: 'ubuntu-16.04'
+          imageName: 'ubuntu-latest'
           python.version: 3.6
         Python37Ubuntu:
-          imageName: 'ubuntu-16.04'
+          imageName: 'ubuntu-latest'
           python.version: 3.7
         Python36macOS:
-          imageName: 'macos-10.13'
+          imageName: 'macOS-latest'
           python.version: 3.6
         Python37macOS:
-          imageName: 'macos-10.13'
+          imageName: 'macOS-latest'
           python.version: 3.7
 
-    pool: $(imageName)
+    pool:
+      vmImage: $(imageName)
 
     steps:
       - bash: echo "##vso[task.prependpath]$CONDA/bin"
