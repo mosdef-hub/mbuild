@@ -31,7 +31,7 @@ jobs:
 
       - bash: sudo chown -R $USER $CONDA
         condition: eq( variables['Agent.OS'], 'Darwin' )
-        dispalyName: Take ownership of conda installation
+        displayName: Take ownership of conda installation
 
       - bash: |
           conda config --set always_yes yes --set changeps1 no
