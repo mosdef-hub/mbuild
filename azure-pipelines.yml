@@ -11,16 +11,16 @@ jobs:
     strategy:
       matrix:
         Python36Ubuntu:
-          imageName: 'ubuntu-latest'
+          imageName: 'ubuntu-16.04'
           python.version: 3.6
         Python37Ubuntu:
-          imageName: 'ubuntu-latest'
+          imageName: 'ubuntu-16.04'
           python.version: 3.7
         Python36macOS:
-          imageName: 'macOS-latest'
+          imageName: 'macos-10.13'
           python.version: 3.6
         Python37macOS:
-          imageName: 'macOS-latest'
+          imageName: 'macos-10.13'
           python.version: 3.7
 
     pool: $(imageName)
@@ -82,6 +82,4 @@ jobs:
       - powershell: |
           conda run -n test-environment python -m pytest -v --nbval --nbval-lax --cov=mbuild --cov-report= --pyargs mbuild
         displayName: Run Tests
-
-  - job: MacOS_no_bleeding
 
