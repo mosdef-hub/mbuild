@@ -7,19 +7,32 @@ pr:
   - master
 
 jobs:
-  - job: Linux_no_bleeding
-    pool:
-      vmImage: 'ubuntu-latest'
+  - job: NoBleeding
     strategy:
       matrix:
-        Python36:
+        Python36Ubuntu:
+          imageName: 'ubuntu-latest'
           python.version: 3.6
-        Python37:
+        Python37Ubuntu:
+          imageName: 'ubuntu-latest'
           python.version: 3.7
+        Python36macOS:
+          imageName: 'macOS-latest'
+          python.version: 3.6
+        Python37macOS:
+          imageName: 'macOS-latest'
+          python.version: 3.7
+
+    pool: $(imageName)
 
     steps:
       - bash: echo "##vso[task.prependpath]$CONDA/bin"
         displayName: Add Conda to path
+
+      - bash: |
+          sudo chown -R $USER $CONDA
+        dispalyName: Take ownership of conda installation
+        condition: eq( variables['Agent.OS'], 'Darwin' )
 
       - bash: |
           conda config --set always_yes yes --set changeps1 no
@@ -70,4 +83,6 @@ jobs:
       - powershell: |
           conda run -n test-environment python -m pytest -v --nbval --nbval-lax --cov=mbuild --cov-report= --pyargs mbuild
         displayName: Run Tests
+
+  - job: MacOS_no_bleeding
 
