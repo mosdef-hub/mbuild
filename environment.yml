@@ -24,3 +24,8 @@ dependencies:
   - protobuf
   - nbval
   - py3Dmol
+  - openmm
+  - six
+  - lark-parser
+  - lxml
+  - requests
