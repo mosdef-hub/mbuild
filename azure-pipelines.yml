@@ -84,7 +84,7 @@ jobs:
           conda run -n test-environment python -m pytest -v --nbval --nbval-lax --cov=mbuild --cov-report= --pyargs mbuild
         displayName: Run Tests
 
-  - job: Linux Bleeding Foyer
+  - job: LinuxBleedingFoyer
     strategy:
       matrix:
         Python36Ubuntu:
