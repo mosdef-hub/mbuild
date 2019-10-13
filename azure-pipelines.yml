@@ -84,3 +84,44 @@ jobs:
           conda run -n test-environment python -m pytest -v --nbval --nbval-lax --cov=mbuild --cov-report= --pyargs mbuild
         displayName: Run Tests
 
+  - job: Linux Bleeding Foyer
+    strategy:
+      matrix:
+        Python36Ubuntu:
+          imageName: 'ubuntu-latest'
+          python.version: 3.6
+        Python37Ubuntu:
+          imageName: 'ubuntu-latest'
+          python.version: 3.7
+
+    pool:
+      vmImage: $(imageName)
+
+    steps:
+      - bash: echo "##vso[task.prependpath]$CONDA/bin"
+        displayName: Add Conda to path
+
+      - bash: |
+          conda config --set always_yes yes --set changeps1 no
+          conda env create -f environment.yml python=$(python.version)
+          source activate bleeding-test-environment
+        displayName: Create and Activate environment from .yml file
+
+      - bash: |
+          source activate bleeding-test-environment
+          git clone git@github.com:mosdef-hub/foyer.git
+          cd foyer
+          pip install -e .
+          cd ..
+          pip install -e .
+        displayName: clone foyer, install foyer, install mbuild
+
+      - bash: |
+          source activate bleeding-test-environment
+          python -m pytest -v --nbval --nbval-lax --cov=mbuild --cov-report= --pyargs mbuild
+        displayName: Run Tests
+
+
+
+
+
