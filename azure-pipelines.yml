@@ -85,17 +85,9 @@ jobs:
         displayName: Run Tests
 
   - job: LinuxBleedingFoyer
-    strategy:
-      matrix:
-        Python36Ubuntu:
-          imageName: 'ubuntu-latest'
-          python.version: 3.6
-        Python37Ubuntu:
-          imageName: 'ubuntu-latest'
-          python.version: 3.7
 
     pool:
-      vmImage: $(imageName)
+      vmImage: 'ubuntu-latest'
 
     steps:
       - bash: echo "##vso[task.prependpath]$CONDA/bin"
@@ -103,7 +95,7 @@ jobs:
 
       - bash: |
           conda config --set always_yes yes --set changeps1 no
-          conda env create -f environment.yml python=$(python.version)
+          conda env create -f environment.yml
           source activate bleeding-test-environment
         displayName: Create and Activate environment from .yml file
 
