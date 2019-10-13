@@ -5,6 +5,9 @@ trigger:
 
 pr:
   - master
+variables:
+  userName: Umesh Timalsina
+  userEmail: umesh.timalsina@vanderbilt.edu
 
 jobs:
   - job: NoBleeding
@@ -101,7 +104,8 @@ jobs:
 
       - bash: |
           source activate bleeding-test-environment
-          git clone git@github.com:mosdef-hub/foyer.git
+          git config
+          git clone https://github.com/mosdef-hub/foyer.git
           cd foyer
           pip install -e .
           cd ..
