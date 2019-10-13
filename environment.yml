@@ -4,6 +4,7 @@ channels:
   - janschulz
   - conda-forge
 dependencies:
+  - python=3.7
   - numpy
   - scipy
   - packmol>=1!18.013
