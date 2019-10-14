@@ -93,12 +93,12 @@ jobs:
 
       - bash: |
           conda config --set always_yes yes --set changeps1 no
-          conda create -n  bleeding-test-environment python=3.7 --file requirements-dev.txt
-          source activate bleeding-test-environment
           conda config --add channels omnia
           conda config --add channels janschulz
           conda config --add channels conda-forge
           conda config --add channels mosdef
+          conda create -n  bleeding-test-environment python=3.7 --file requirements-dev.txt
+          source activate bleeding-test-environment
         displayName: Create a new bleeding test environment
 
       - bash: |
