@@ -93,16 +93,21 @@ jobs:
 
       - bash: |
           conda config --set always_yes yes --set changeps1 no
-          conda env create -f environment.yml
+          conda create -n  bleeding-test-environment python=3.7
           source activate bleeding-test-environment
-        displayName: Create and Activate environment from .yml file
+          conda config --add channels omnia
+          conda config --add channels janschulz
+          conda config --add channels conda-forge
+          conda config --add channels mosdef
+        displayName: Create a new bleeding test environment
 
       - bash: |
           source activate bleeding-test-environment
-          git config
           git clone https://github.com/mosdef-hub/foyer.git
           cd foyer
+          conda install --yes file requirements-dev.txt
           pip install -e .
+          pip uninstall mbuild
           cd ..
           pip install -e .
         displayName: clone foyer, install foyer, install mbuild
