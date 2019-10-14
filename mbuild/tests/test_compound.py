@@ -290,20 +290,27 @@ class TestCompound(BaseTest):
                     for meth in eth.children]) == 2 * n_ethanes
 
     def test_remove(self, ethane):
-        hydrogens = ethane.particles_by_name('H')
-        ethane.remove(hydrogens)
+        ethane1 = mb.clone(ethane)
+        hydrogens = ethane1.particles_by_name('H')
+        ethane1.remove(hydrogens)
 
-        assert ethane.n_particles == 2
-        assert ethane.n_bonds == 1
-        for part in ethane.children:
+        assert ethane1.n_particles == 2
+        assert ethane1.n_bonds == 1
+        for part in ethane1.children:
             assert part.n_bonds == 0
 
-        carbons = ethane.particles_by_name('C')
-        ethane.remove(carbons)
-        assert ethane.n_particles == 0
-        assert ethane.n_bonds == 0
-        assert len(ethane.children) == 2
-        assert len(ethane.children[0].children) == 0 # Nothing left
+        carbons = ethane1.particles_by_name('C')
+        ethane1.remove(carbons)
+        assert ethane1.n_particles == 1 # left with the highest Compound
+        assert ethane1.n_bonds == 0
+        assert len(ethane1.children) == 0 # left with highest Compound
+
+        # Test remove all partcles belong to a single child of an Ethane
+        ethane2 = mb.clone(ethane)
+        CH3 = list(ethane2.children[0].particles())
+        ethane2.remove(CH3)
+        assert len(ethane2.children) == 1
+
 
     def test_remove_many(self, ethane):
         ethane.remove([ethane.children[0], ethane.children[1]])

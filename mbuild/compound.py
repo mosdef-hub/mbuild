@@ -802,16 +802,16 @@ class Compound(object):
             if child.contains_rigid:
                 self.root._reorder_rigid_ids()
 
-        # Remove parent if all children inside it has been removed
-        if self.parent:
-            from mbuild import Port
-            if False not in set(isinstance(child, Port) for child in self.parent.children):
-                self.root.remove(self.parent)
-
         # Remove port of removed part
         for port in self.all_ports():
             if id(port.anchor) not in [id(i) for i in self.particles()]:
                 self.remove(port)
+
+        # Remove empty parent
+        if self.parent:
+            if len(self.parent.children) == 0:
+                self.root.remove(self.parent)
+
 
     def _remove_references(self, removed_part):
         """Remove labels pointing to this part and vice versa. """
