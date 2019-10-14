@@ -107,7 +107,7 @@ jobs:
           cd foyer
           conda install --yes --file requirements-dev.txt
           pip install -e .
-          pip uninstall mbuild
+          pip uninstall mbuild -y
           cd ..
           pip install -e .
         displayName: clone foyer, install foyer, install mbuild
