@@ -810,7 +810,7 @@ class Compound(object):
 
         # Remove port of removed part
         for port in self.all_ports():
-            if id(port.anchor) not in [id(i) for i in self.children]:
+            if id(port.anchor) not in [id(i) for i in self.particles()]:
                 self.remove(port)
 
     def _remove_references(self, removed_part):
