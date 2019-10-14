@@ -1,13 +1,8 @@
-
 trigger:
   - master
-  - ci/azp-test
 
 pr:
   - master
-variables:
-  userName: Umesh Timalsina
-  userEmail: umesh.timalsina@vanderbilt.edu
 
 jobs:
   - job: NoBleeding
