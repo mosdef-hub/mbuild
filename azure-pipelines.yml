@@ -105,10 +105,11 @@ jobs:
           source activate bleeding-test-environment
           git clone https://github.com/mosdef-hub/foyer.git
           cd foyer
-          conda install --yes file requirements-dev.txt
+          conda install --yes --file requirements-dev.txt
           pip install -e .
           pip uninstall mbuild
           cd ..
+          conda install --yes --file requirement-dev.txt
           pip install -e .
         displayName: clone foyer, install foyer, install mbuild
 
