@@ -93,7 +93,7 @@ jobs:
 
       - bash: |
           conda config --set always_yes yes --set changeps1 no
-          conda create -n  bleeding-test-environment python=3.7
+          conda create -n  bleeding-test-environment python=3.7 --file requirements-dev.txt
           source activate bleeding-test-environment
           conda config --add channels omnia
           conda config --add channels janschulz
@@ -109,7 +109,6 @@ jobs:
           pip install -e .
           pip uninstall mbuild
           cd ..
-          conda install --yes --file requirement-dev.txt
           pip install -e .
         displayName: clone foyer, install foyer, install mbuild
 
