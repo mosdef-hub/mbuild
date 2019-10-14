@@ -792,7 +792,13 @@ class Compound(object):
             child.remove(yet_to_remove)
             if child.contains_rigid:
                 self.root._reorder_rigid_ids()
-        
+
+        # Remove parent if all children inside it has been removed
+        if self.parent:
+            from mbuild import Port
+            if False not in set(isinstance(child, Port) for child in self.parent.children):
+                self.root.remove(self.parent)
+
         # Remove port of removed part
         for port in self.all_ports():
             if id(port.anchor) not in [id(i) for i in self.children]:
