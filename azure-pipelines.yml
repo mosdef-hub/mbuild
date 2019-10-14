@@ -1,0 +1,125 @@
+trigger:
+  - master
+
+pr:
+  - master
+
+schedules:
+- cron: "0 0 * * *"
+  displayName: Daily midnight build for master
+  branches:
+    include:
+    - master
+
+jobs:
+  - job: NoBleeding
+    strategy:
+      matrix:
+        Python36Ubuntu:
+          imageName: 'ubuntu-latest'
+          python.version: 3.6
+        Python37Ubuntu:
+          imageName: 'ubuntu-latest'
+          python.version: 3.7
+        Python36macOS:
+          imageName: 'macOS-latest'
+          python.version: 3.6
+        Python37macOS:
+          imageName: 'macOS-latest'
+          python.version: 3.7
+
+    pool:
+      vmImage: $(imageName)
+
+    steps:
+      - bash: echo "##vso[task.prependpath]$CONDA/bin"
+        displayName: Add Conda to path
+
+      - bash: sudo chown -R $USER $CONDA
+        condition: eq( variables['Agent.OS'], 'Darwin' )
+        displayName: Take ownership of conda installation
+
+      - bash: |
+          conda config --set always_yes yes --set changeps1 no
+          conda config --add channels omnia
+          conda config --add channels janschulz
+          conda config --add channels conda-forge
+          conda config --add channels mosdef
+        displayName: Add relavent Channels
+
+      - bash: |
+          conda create -n test-environment python=$(python.version) --file requirements-dev.txt
+          source activate test-environment
+          pip install -e .
+        displayName: Create Conda env, Activate, Install dependencies, Install Branch
+
+      - bash: |
+          source activate test-environment
+          python -m pytest -v --nbval --nbval-lax --cov=mbuild --cov-report= --pyargs mbuild
+        displayName: Run Tests
+
+  - job: Windows_no_bleeding
+    pool:
+      vmImage: 'windows-latest'
+    strategy:
+      matrix:
+        Python36:
+          python.version: 3.6
+        Python37:
+          python.version: 3.7
+
+    steps:
+      - powershell: Write-Host "##vso[task.prependpath]$env:CONDA\Scripts"
+        displayName: Add Conda to path
+
+      - powershell: |
+          conda config --set always_yes yes --set changeps1 no
+          conda config --add channels omnia
+          conda config --add channels janschulz
+          conda config --add channels conda-forge
+          conda config --add channels mosdef
+        displayName: Add relavent channels
+
+      - powershell: |
+          conda create -n test-environment python=$(python.version) --file requirements-dev.txt
+          conda run -n test-environment pip install -e .
+        displayName: Create Conda env, Activate, Install dependencies, Install Branch
+
+      - powershell: |
+          conda run -n test-environment python -m pytest -v --nbval --nbval-lax --cov=mbuild --cov-report= --pyargs mbuild
+        displayName: Run Tests
+
+  - job: LinuxBleedingFoyer
+
+    pool:
+      vmImage: 'ubuntu-latest'
+
+    steps:
+      - bash: echo "##vso[task.prependpath]$CONDA/bin"
+        displayName: Add Conda to path
+
+      - bash: |
+          conda config --set always_yes yes --set changeps1 no
+          conda config --add channels omnia
+          conda config --add channels janschulz
+          conda config --add channels conda-forge
+          conda config --add channels mosdef
+          conda create -n  bleeding-test-environment python=3.7 --file requirements-dev.txt
+          source activate bleeding-test-environment
+        displayName: Create a new bleeding test environment
+
+      - bash: |
+          source activate bleeding-test-environment
+          git clone https://github.com/mosdef-hub/foyer.git
+          cd foyer
+          conda install --yes --file requirements-dev.txt
+          pip install -e .
+          pip uninstall mbuild -y
+          cd ..
+          pip install -e .
+        displayName: clone foyer, install foyer, install mbuild
+
+      - bash: |
+          source activate bleeding-test-environment
+          python -m pytest -v --nbval --nbval-lax --cov=mbuild --cov-report= --pyargs mbuild
+        displayName: Run Tests
