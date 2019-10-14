@@ -8,7 +8,7 @@ import pytest
 import mbuild as mb
 from mbuild.exceptions import MBuildError
 from mbuild.utils.geometry import calc_dihedral
-from mbuild.utils.io import get_fn, has_foyer, has_intermol, has_openbabel, has_networkx
+from mbuild.utils.io import get_fn, import_, has_foyer, has_intermol, has_openbabel, has_networkx
 from mbuild.tests.base_test import BaseTest
 
 class TestCompound(BaseTest):
@@ -69,11 +69,18 @@ class TestCompound(BaseTest):
         ch3.update_coordinates(get_fn("methyl.pdb"))
 
     def test_save_simple(self, ch3):
-        extensions = ['.xyz', '.pdb', '.mol2']
+        extensions = ['.xyz', '.pdb', '.mol2', '.json']
         for ext in extensions:
             outfile = 'methyl_out' + ext
             ch3.save(filename=outfile)
             assert os.path.exists(outfile)
+
+    def test_save_json_loop(self, ethane):
+        ethane.save('ethane.json', show_ports=True)
+        ethane_copy = mb.load('ethane.json')
+        assert ethane.n_particles == ethane_copy.n_particles
+        assert ethane.n_bonds == ethane_copy.n_bonds
+        assert len(ethane.children) == len(ethane_copy.children)
 
     def test_save_box(self, ch3):
         extensions = ['.mol2', '.pdb', '.hoomdxml', '.gro']
@@ -962,7 +969,7 @@ class TestCompound(BaseTest):
 
     @pytest.mark.skipif(not has_openbabel, reason="Pybel is not installed")
     def test_from_pybel(self):
-        import pybel
+        pybel = import_('pybel')
         benzene = list(pybel.readfile('mol2', get_fn('benzene.mol2')))[0]
         cmpd = mb.Compound()
         cmpd.from_pybel(benzene)
@@ -986,7 +993,7 @@ class TestCompound(BaseTest):
 
     @pytest.mark.skipif(not has_openbabel, reason="Pybel is not installed")
     def test_from_pybel_residues(self):
-       import pybel
+       pybel = import_('pybel')
        pybel_mol = list(pybel.readfile('mol2', get_fn('methyl.mol2')))[0]
        cmpd = mb.Compound()
        cmpd.from_pybel(pybel_mol)
@@ -994,7 +1001,7 @@ class TestCompound(BaseTest):
 
     @pytest.mark.skipif(not has_openbabel, reason="Pybel is not installed")
     def test_from_pybel_monolayer(self):
-        import pybel
+        pybel = import_('pybel')
         monolayer = list(pybel.readfile('pdb', get_fn('monolayer.pdb')))[0]
         # TODO: Actually store the box information
         cmpd = mb.Compound()
