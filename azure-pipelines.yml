@@ -123,8 +123,3 @@ jobs:
           source activate bleeding-test-environment
           python -m pytest -v --nbval --nbval-lax --cov=mbuild --cov-report= --pyargs mbuild
         displayName: Run Tests
-
-
-
-
-
