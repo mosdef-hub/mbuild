@@ -44,7 +44,7 @@ test:
   commands:
     - set LNAME=mosdef
     - activate
-    - pytest -v --pyargs mbuild
+    - pytest -v --pyargs mbuild --nbval --nbval-lax
 
 about:
   home: http://mosdef-hub.github.io/mbuild
