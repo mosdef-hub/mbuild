@@ -2,8 +2,7 @@ from __future__ import print_function, division
 
 __all__ = ['load', 'clone', 'Compound', 'Particle']
 
-import collections
-from collections import OrderedDict, defaultdict
+from collections import OrderedDict, defaultdict, Iterable
 from copy import deepcopy
 import itertools
 import os
@@ -694,7 +693,7 @@ class Compound(object):
 
         """
         # Support batch add via lists, tuples and sets.
-        if (isinstance(new_child, collections.Iterable) and
+        if (isinstance(new_child, Iterable) and
                 not isinstance(new_child, string_types)):
             for child in new_child:
                 self.add(child, reset_rigid_ids=reset_rigid_ids)
@@ -2644,8 +2643,6 @@ class Compound(object):
             self.periodicity = box.lengths
         else:
             warn("No unitcell detected for pybel.Molecule {}".format(pybel_mol))
-            box = None
-
 #       TODO: Decide how to gather PBC information from openbabel. Options may
 #             include storing it in .periodicity or writing a separate function
 #             that returns the box.

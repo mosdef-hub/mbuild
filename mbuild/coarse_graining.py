@@ -2,8 +2,7 @@ from collections import OrderedDict
 from oset import oset as OrderedSet
 from copy import deepcopy
 
-from mbuild.compound import Compound
-from mbuild.compound import clone
+from mbuild.compound import Compound, clone
 from mbuild.exceptions import MBuildError
 
 __all__ = ['coarse_grain']
