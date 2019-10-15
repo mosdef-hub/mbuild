@@ -81,13 +81,13 @@ jobs:
           conda config --add channels mosdef
         displayName: Add relavent channels
 
-      - powershell: |
+      - script: |
           conda create -n test-environment python=$(python.version) --file requirements-dev.txt
           call activate test-environment
           pip install -e .
         displayName: Create Conda env, Activate, Install dependencies, Install Branch
 
-      - powershell: |
+      - script: |
           call activate test-environment
           python -m pytest -v --nbval --nbval-lax --cov=mbuild --cov-report= --pyargs mbuild
         displayName: Run Tests
