@@ -56,8 +56,13 @@ jobs:
 
       - bash: |
           source activate test-environment
-          python -m pytest -v --nbval --nbval-lax --cov=mbuild --cov-report= --pyargs mbuild
+          python -m pytest -v --nbval --nbval-lax --cov=mbuild --cov-report xml:./coverage.xml --pyargs mbuild
         displayName: Run Tests
+        
+      - bash: codecov --file ./coverage.xml --token 81ccd641-fa12-4045-82af-893258ee2d14
+        condition: and( eq( variables['Agent.OS'], 'Linux' ), eq( variables['python.version'], '3.7' ) )
+        displayName: Upload Coverage Report
+          
 
   - job: Windows_no_bleeding
     pool:
@@ -125,32 +130,4 @@ jobs:
       - bash: |
           source activate bleeding-test-environment
           python -m pytest -v --nbval --nbval-lax --cov=mbuild --cov-report= --pyargs mbuild
-        displayName: Run Tests
-
-  - job: Coverage
-    pool:
-      vmImage: 'ubuntu-latest'
-
-    steps:
-      - bash: echo "##vso[task.prependpath]$CONDA/bin"
-        displayName: Add Conda to path
-
-      - bash: |
-          conda config --set always_yes yes --set changeps1 no
-          conda config --add channels omnia
-          conda config --add channels janschulz
-          conda config --add channels conda-forge
-          conda config --add channels mosdef
-        displayName: Add relavent Channels
-
-      - bash: |
-          conda create -n test-environment python=$(python.version) --file requirements-dev.txt
-          source activate test-environment
-          pip install -e .
-        displayName: Create Conda env, Activate, Install dependencies, Install Branch
-
-      - bash: |
-          source activate test-environment
-          python -m pytest -v --nbval --nbval-lax --cov=mbuild --cov-report xml:./coverage.xml --pyargs mbuild
-          codecov --file coverage.xml --token 81ccd641-fa12-4045-82af-893258ee2d14
         displayName: Run Tests
