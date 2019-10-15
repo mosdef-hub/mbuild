@@ -807,11 +807,9 @@ class Compound(object):
             if id(port.anchor) not in [id(i) for i in self.particles()]:
                 self.remove(port)
 
-        # Remove empty parent
-        import mbuild as mb
-        if isinstance(self, Compound) and not isinstance(self, mb.Port):
-            if len(self.children) == 0:
-                self.root.remove(self)
+        # Remove empty subcompound
+        if len(self.children) == 0:
+            self.root.remove(self)
 
 
     def _remove_references(self, removed_part):
