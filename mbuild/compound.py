@@ -808,8 +808,11 @@ class Compound(object):
                 self.remove(port)
 
         # Remove empty subcompound
-        if len(self.children) == 0:
-            self.root.remove(self)
+        import mbuild as mb
+        if not isinstance(self, mb.Port) and self.name != 'subport':
+            if len(self.children) == 0:
+                print("Working on {}".format(self))
+                self.root.remove(self)
 
 
     def _remove_references(self, removed_part):
