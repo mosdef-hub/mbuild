@@ -2397,8 +2397,10 @@ class Compound(object):
 
         Parameters
         ----------
-        names_only : bool, optional, default=False Store only the names of the
-            compounds in the graph. When set to False, the default behavior,
+        names_only : bool, optional, default=False
+        Store only the names of the
+            compounds in the graph, appended with their IDs, for distinction even
+            if they have the same name. When set to False, the default behavior,
             the nodes are the compounds themselves.
 
         Returns
@@ -2418,7 +2420,7 @@ class Compound(object):
         nodes = list()
         edges = list()
         if names_only:
-            nodes.append(self.name)
+            nodes.append(self.name + '_' + str(id(self)))
         else:
             nodes.append(self)
         nodes, edges = self._iterate_children(nodes, edges, names_only=names_only)
@@ -2434,8 +2436,10 @@ class Compound(object):
             return nodes, edges
         for child in self.children:
             if names_only:
-                nodes.append(child.name)
-                edges.append([child.parent.name, child.name])
+                unique_name = child.name + '_' + str(id(child))
+                unique_name_parent = child.parent.name + '_' + str((id(child.parent)))
+                nodes.append(unique_name)
+                edges.append([unique_name_parent, unique_name])
             else:
                 nodes.append(child)
                 edges.append([child.parent, child])
