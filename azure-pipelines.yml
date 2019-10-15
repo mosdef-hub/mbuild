@@ -152,5 +152,5 @@ jobs:
       - bash: |
           source activate test-environment
           python -m pytest -v --nbval --nbval-lax --cov=mbuild --cov-report xml:./coverage.xml --pyargs mbuild
-          codecov --file coverage.xml --token $(CODECOV_TOKEN)
+          codecov --file coverage.xml --token 81ccd641-fa12-4045-82af-893258ee2d14
         displayName: Run Tests
