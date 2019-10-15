@@ -10,6 +10,7 @@ schedules:
   branches:
     include:
     - master
+  always: true
 
 jobs:
   - job: NoBleeding
@@ -72,7 +73,7 @@ jobs:
       - powershell: Write-Host "##vso[task.prependpath]$env:CONDA\Scripts"
         displayName: Add Conda to path
 
-      - powershell: |
+      - script: |
           conda config --set always_yes yes --set changeps1 no
           conda config --add channels omnia
           conda config --add channels janschulz
@@ -82,11 +83,13 @@ jobs:
 
       - powershell: |
           conda create -n test-environment python=$(python.version) --file requirements-dev.txt
-          conda run -n test-environment pip install -e .
+          call activate test-environment
+          pip install -e .
         displayName: Create Conda env, Activate, Install dependencies, Install Branch
 
       - powershell: |
-          conda run -n test-environment python -m pytest -v --nbval --nbval-lax --cov=mbuild --cov-report= --pyargs mbuild
+          call activate test-environment
+          python -m pytest -v --nbval --nbval-lax --cov=mbuild --cov-report= --pyargs mbuild
         displayName: Run Tests
 
   - job: LinuxBleedingFoyer
