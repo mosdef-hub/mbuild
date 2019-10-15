@@ -808,9 +808,10 @@ class Compound(object):
                 self.remove(port)
 
         # Remove empty parent
-        if self.parent:
-            if len(self.parent.children) == 0:
-                self.root.remove(self.parent)
+        import mbuild as mb
+        if isinstance(self, Compound) and not isinstance(self, mb.Port):
+            if len(self.children) == 0:
+                self.root.remove(self)
 
 
     def _remove_references(self, removed_part):
