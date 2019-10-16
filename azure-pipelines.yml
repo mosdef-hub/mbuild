@@ -62,7 +62,7 @@ jobs:
       - bash: |
           source activate test-environment
           coverage xml
-          codecov --file ./coverage.xml --token 81ccd641-fa12-4045-82af-893258ee2d14
+          codecov --file ./coverage.xml --token 2b64a140-cfdd-4d0f-b1ba-33d34b8bf522
         condition: and( eq( variables['Agent.OS'], 'Linux' ), eq( variables['python.version'], '3.7' ) )
         displayName: Upload Coverage Report
           
