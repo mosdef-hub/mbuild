@@ -3,13 +3,15 @@ import itertools
 import numpy as np
 
 from mbuild.utils.sorting import natural_sort
+from mbuild.utils.io import import_
+
 from .hoomd_snapshot import to_hoomdsnapshot
 def create_hoomd_simulation(structure, ref_distance=1.0, ref_mass=1.0,
               ref_energy=1.0, mixing_rule='lorentz', r_cut=1.2, 
               snapshot_kwargs={}, 
               pppm_kwargs={'Nx':1, 'Ny':1, 'Nz':1, 'order':4}):
-    import hoomd
-    import hoomd.md
+    hoomd = import_("hoomd")
+    hoomd.md = import_("hoomd.md")
     hoomd.context.initialize("")
 
     snapshot = to_hoomdsnapshot(structure, ref_distance=ref_distance,
@@ -55,7 +57,7 @@ def _init_hoomd_lj(structure, nl, r_cut=1.2, mixing_rule='lorentz',
             atom_type_params[atom.type] = atom.atom_type
 
     # Set the hoomd parameters for self-interactions
-    import hoomd.md.pair
+    hoomd.md.pair = import_("hoomd.md.pair")
     lj = hoomd.md.pair.lj(r_cut, nl)
     for name, atom_type in atom_type_params.items():
         lj.pair_coeff.set(name, name, 
@@ -87,8 +89,8 @@ def _init_hoomd_lj(structure, nl, r_cut=1.2, mixing_rule='lorentz',
     return lj
 
 def _init_hoomd_qq(structure, nl, Nx=1, Ny=1, Nz=1, order=4, r_cut=1.2):
-    import hoomd.group
-    import hoomd.md.charge
+    hoomd.group = import_("hoomd.group")
+    hoomd.md.charge = import_("hoomd.md.charge")
     charged = hoomd.group.charged()
     qq = hoomd.md.charge.pppm(charged, nl)
     qq.set_params(Nx, Ny, Nz, order, r_cut)
@@ -98,7 +100,7 @@ def _init_hoomd_qq(structure, nl, Nx=1, Ny=1, Nz=1, order=4, r_cut=1.2):
 def _init_hoomd_14_pairs(structure, r_cut=1.2, ref_distance=1.0, ref_energy=1.0):
     # Special_pairs to handle 14 scalings
     # Identify unique 14 scalings
-    import hoomd.md.special_pair
+    hoomd.md.special_pair = import_("hoomd.md.special_pair")
     lj_14 = hoomd.md.special_pair.lj()
     qq_14 = hoomd.md.special_pair.coulomb()
     params_14 = {}
@@ -134,7 +136,7 @@ def _init_hoomd_bonds(structure, ref_distance=1.0, ref_energy=1.0):
                 bond_type_params[bond_type] = bond.type
 
     # Set the hoomd parameters
-    import hoomd.md.bond
+    hoomd.md.bond = import_("hoomd.md.bond")
     harmonic_bond = hoomd.md.bond.harmonic()
     for name, bond_type in bond_type_params.items():
         harmonic_bond.bond_coeff.set(name, 
@@ -154,7 +156,7 @@ def _init_hoomd_angles(structure, ref_energy=1.0):
             angle_type_params[angle_type] = angle.type
 
     # set the hoomd parameters
-    import hoomd.md.angle
+    hoomd.md.angle = import_("hoomd.md.angle")
     harmonic_angle = hoomd.md.angle.harmonic()
     for name, angle_type in angle_type_params.items():
         harmonic_angle.angle_coeff.set(name,
@@ -164,7 +166,7 @@ def _init_hoomd_angles(structure, ref_energy=1.0):
     return harmonic_angle
 
 def _init_hoomd_dihedrals(structure, ref_energy=1.0):
-    # Identify the uniqeu dihedral types before setting
+    # Identify the unique dihedral types before setting
     dihedral_type_params = {}
     for dihedral in structure.structure.dihedrals:
         t1, t2 = dihedral.atom1.type, dihedral.atom2.type
@@ -177,7 +179,7 @@ def _init_hoomd_dihedrals(structure, ref_energy=1.0):
             dihedral_type_params[dihedral_type] = dihedral.type
 
     # Set the hoomd parameters
-    import hoomd.md.dihedral
+    hoomd.md.dihedral = import_("hoomd.md.dihedral")
     periodic_torsion = hoomd.md.dihedral.harmonic() # These are periodic torsions
     for name, dihedral_type in dihedral_type_params.items():
         if dihedral_type.phase > 0.0001:
@@ -208,7 +210,7 @@ def _init_hoomd_rb_torsions(structure, ref_energy=1.0):
 
     # Set the hoomd parameter
     from mbuild.utils.conversion import RB_to_OPLS
-    import hoomd.md.dihedral
+    hoomd.md.dihedral = import_("hoomd.md.dihedral")
     rb_torsion = hoomd.md.dihedral.opls()
     for name, dihedral_type in dihedral_type_params.items():
         F_coeffs = RB_to_OPLS(dihedral_type.c0 / ref_energy,

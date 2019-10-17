@@ -2,6 +2,7 @@ import numpy as np
 
 from mbuild.utils.sorting import natural_sort
 from mbuild.utils.geometry import coord_shift
+from mbuild.utils.io import import_
 
 __all__ = ['to_hoomdsnapshot']
 
@@ -9,8 +10,8 @@ def to_hoomdsnapshot(structure,  ref_distance=1.0, ref_mass=1.0,
               ref_energy=1.0, rigid_bodies=None, shift_coords=True,
               write_special_pairs=True):
     """Convert parmed.Structure to hoomd.data.Snapshot"""
-    import hoomd
-    import hoomd.data
+    hoomd = import_("hoomd")
+    hoomd.data = import_("hoomd.data")
 
     if not hoomd.context.current:
         hoomd.context.initialize("")
