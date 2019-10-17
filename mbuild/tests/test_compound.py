@@ -290,6 +290,9 @@ class TestCompound(BaseTest):
                     for meth in eth.children]) == 2 * n_ethanes
 
     def test_remove(self, ethane):
+        # create and remove a subcompound
+
+
         ethane1 = mb.clone(ethane)
         hydrogens = ethane1.particles_by_name('H')
         ethane1.remove(hydrogens)
@@ -298,6 +301,9 @@ class TestCompound(BaseTest):
         assert ethane1.n_bonds == 1
         for part in ethane1.children:
             assert part.n_bonds == 0
+            assert part.n_particles == 1
+            assert len(part.children) == 4
+        assert len(ethane1.children) == 2
 
         carbons = ethane1.particles_by_name('C')
         ethane1.remove(carbons)
@@ -305,11 +311,36 @@ class TestCompound(BaseTest):
         assert ethane1.n_bonds == 0
         assert len(ethane1.children) == 0 # left with highest Compound
 
-        # Test remove all partcles belong to a single child of an Ethane
+        # Test remove all particles belong to a single child of an Ethane
         ethane2 = mb.clone(ethane)
-        CH3 = list(ethane2.children[0].particles())
-        ethane2.remove(CH3)
+        CH3_particles = list(ethane2.children[0].particles())
+        ethane2.remove(CH3_particles)
         assert len(ethane2.children) == 1
+        assert len(ethane2.children[0].children) == 5 # 4 particles + 1 port
+
+        # Test remove a subcompound
+        ethane3 = mb.clone(ethane)
+        ethane3.remove(ethane3.children[0])
+        assert len(ethane3.children) == 1
+        assert len(ethane3.children[0].children) == 5 # 4 particles + 1 port
+
+        # Test remove an entire compound
+        ethane4 = mb.clone(ethane)
+        ethane4.remove(ethane4)
+        assert ethane4.n_particles == 1 # left with the highest Compound
+        assert ethane4.n_bonds == 0
+        assert len(ethane4.children) == 0 # left with highest Compound
+
+        # Test remove one subcompound and part of another
+        ethane5 = mb.clone(ethane)
+        ethane5.remove([particle for particle
+                        in ethane5.children[0].particles()] +
+                        [ethane5.children[1].children[0]])
+        assert ethane5.n_particles == 3 # three hydrogens
+        assert ethane5.n_bonds == 0
+        assert len(ethane5.children[0].children) == 6 # 3 hydrogens + 3 ports
+        assert len(ethane5.children) == 1
+
 
 
     def test_remove_many(self, ethane):
