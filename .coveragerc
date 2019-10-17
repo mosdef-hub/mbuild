@@ -13,3 +13,7 @@ exclude_lines =
     if __name__ == .__main__.:
     def __repr__
     except ImportError
+omit = 
+    mbuild/examples/*
+    mbuild/tests/*
+
