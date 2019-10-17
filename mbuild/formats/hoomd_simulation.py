@@ -144,9 +144,13 @@ def _init_hoomd_lj(structure, nl, r_cut=1.2, mixing_rule='lorentz',
 def _init_hoomd_qq(structure, nl, Nx=1, Ny=1, Nz=1, order=4, r_cut=1.2):
     """ Charge interactions """
     charged = hoomd.group.charged()
-    qq = hoomd.md.charge.pppm(charged, nl)
-    qq.set_params(Nx, Ny, Nz, order, r_cut)
-    return qq
+    if len(charged) == 0:
+        print("No charged groups found, ignoring electrostatics")
+        return None
+    else:
+        qq = hoomd.md.charge.pppm(charged, nl)
+        qq.set_params(Nx, Ny, Nz, order, r_cut)
+        return qq
 
 
 def _init_hoomd_14_pairs(structure, nl, r_cut=1.2, ref_distance=1.0, ref_energy=1.0):
