@@ -791,7 +791,7 @@ class Compound(object):
         # Get particles to remove
         particles_to_remove = set([particle for obj in objs_to_remove
                                             for particle in obj.particles()])
-        
+
         # Recursively get container compounds to remove
         to_remove = list()
 
@@ -806,20 +806,20 @@ class Compound(object):
                     warn("This will remove all particles in "
                             "compound {}".format(self))
             return
-        
+
         for particle in particles_to_remove:
             _check_if_empty(particle)
-        
+
         # Fix rigid_ids and remove obj from bondgraph
         for removed_part in to_remove:
             self._remove(removed_part)
-        
+
         # Remove references to object
         for removed_part in to_remove:
             if removed_part.parent is not None:
                 removed_part.parent.children.remove(removed_part)
             self._remove_references(removed_part)
-        
+
         # Remove ghost ports
         for port in self.all_ports():
             if id(port.anchor) not in [id(i) for i in self.particles()]:
@@ -836,7 +836,7 @@ class Compound(object):
                     removed_part):
                 self.root.remove_bond((removed_part, neighbor))
             self.root.bond_graph.remove_node(removed_part)
-        
+
     def _remove_references(self, removed_part):
         """Remove labels pointing to this part and vice versa. """
         removed_part.parent = None
