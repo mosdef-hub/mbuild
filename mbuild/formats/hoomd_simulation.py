@@ -2,6 +2,7 @@ import warnings
 import itertools
 import numpy as np
 
+import mbuild as mb
 from mbuild.utils.sorting import natural_sort
 from mbuild.utils.io import import_
 from mbuild.utils.conversion import RB_to_OPLS
@@ -23,6 +24,46 @@ def create_hoomd_simulation(structure, ref_distance=1.0, ref_mass=1.0,
               ref_energy=1.0, mixing_rule='lorentz', r_cut=1.2, 
               snapshot_kwargs={}, 
               pppm_kwargs={'Nx':1, 'Ny':1, 'Nz':1, 'order':4}):
+    """ Convert a parametrized pmd.Structure to hoomd.SimulationContext
+
+    Parameters
+    ----------
+    structure : parmed.Structure
+        ParmEd Structure object
+    ref_distance : float, optional, default=1.0
+        Reference distance for conversion to reduced units
+    ref_mass : float, optional, default=1.0
+        Reference mass for conversion to reduced units
+    ref_energy : float, optional, default=1.0
+        Reference energy for conversion to reduced units
+    mixing_rule : str, optional, default 'lorentz'
+        Specify a mixing rule to identify LJ cross-interactions
+    r_cut : float, optional, default 1.2
+        Cutoff radius, in reduced units
+    snapshot_kwargs : dict
+        Kwargs to pass to to_hoomdsnapshot
+    pppm_kwargs : dict
+        Kwargs to pass to hoomd's pppm function
+
+    Notes
+    -----
+    While nothing is returned, the hoomd.SimulationContext is accessible via
+    `hoomd.context.current`.
+    If you pass a non-parametrized pmd.Structure, you will not have
+    angle, dihedral, or force field information. You may be better off
+    creating a hoomd.Snapshot"""
+
+    if isinstance(structure, mb.Compound):
+        raise ValueError("You passed mb.Compound to create_hoomd_simulation, " +
+                "there will be no angles, dihedrals, or force field parameters. " +
+                "Please use " + 
+                "hoomd_snapshot.to_hoomdsnapshot to create a hoomd.Snapshot, " +
+                "then create your own hoomd context " +
+                "and pass your hoomd.Snapshot " +
+                "to hoomd.init.read_snapshot()")
+    elif not isinstance(structure. pmd.Structure):
+        raise ValueError("Please pass a parmed.Structure to " + 
+                    "create_hoomd_simulation")
     hoomd.context.initialize("")
 
     snapshot = to_hoomdsnapshot(structure, ref_distance=ref_distance,
@@ -134,10 +175,10 @@ def _init_hoomd_14_pairs(structure, nl, r_cut=1.2, ref_distance=1.0, ref_energy=
                 epsilon=adjust_type.epsilon/ref_energy, 
                 # Do NOT use hoomd's alpha to modify any LJ terms
                 alpha=1,
-                r_cut=r_cut/ref_distance)
+                r_cut=r_cut)
         qq_14.pair_coeff.set(name,
                 alpha=adjust_type.chgscale,
-                r_cut=r_cut/ref_distance)
+                r_cut=r_cut)
 
     return lj_14, qq_14
 
