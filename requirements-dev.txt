@@ -14,7 +14,6 @@ jupyter
 nbformat
 pytest-cov
 pytest-faulthandler
-pytest-azurepipelines
 codecov
 protobuf
 nbval
