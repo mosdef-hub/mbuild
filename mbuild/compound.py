@@ -759,7 +759,7 @@ class Compound(object):
             self.periodicity = new_child.periodicity
 
     def remove(self, objs_to_remove):
-        """Remove children from the Compound.
+        """ Cleanly remove children from the Compound.
 
         Parameters
         ----------
@@ -767,9 +767,25 @@ class Compound(object):
             The Compound(s) to be removed from self
 
         """
+        import mbuild as mb
+
+        self._remove(objs_to_remove)
+        if not False in [isinstance(obj, mb.Port) for obj in
+                        objs_to_remove]:
+            self._remove_empty_container()
+            self._clean_port()
+
+
+    def _remove(self, objs_to_remove):
+        """ Cleanly remove children from the Compound.
+
+        Parameters
+        ----------
+        objs_to_remove : mb.Compound or list of mb.Compound
+        The Compound(s) to be removed from self
         if not self.children:
             return
-
+        """
         if not hasattr(objs_to_remove, '__iter__'):
             objs_to_remove = [objs_to_remove]
         objs_to_remove = set(objs_to_remove)
@@ -783,7 +799,7 @@ class Compound(object):
 
         for removed in remove_from_here:
             for child in removed.children:
-                removed.remove(child)
+                removed._remove(child)
 
         for removed_part in remove_from_here:
             if removed_part.rigid_id is not None:
@@ -798,21 +814,29 @@ class Compound(object):
 
         # Remove the part recursively from sub-compounds.
         for child in self.children:
-            child.remove(yet_to_remove)
+            child._remove(yet_to_remove)
             if child.contains_rigid:
                 self.root._reorder_rigid_ids()
 
+
+    def _clean_port(self):
         # Remove port of removed part
         for port in self.all_ports():
             if id(port.anchor) not in [id(i) for i in self.particles()]:
-                self.remove(port)
+                self._remove(port)
 
-        # Remove empty subcompound
+    def _remove_empty_container(self):
+        # Remove empty container
         import mbuild as mb
-        if not isinstance(self, mb.Port) and self.name != 'subport':
-            if len(self.children) == 0:
-                print("Working on {}".format(self))
-                self.root.remove(self)
+        if not self.children:
+            return
+        for child in [compound for compound in self.children
+                                if compound not in self.particles()]:
+            if child.children and not list(child.particles()):
+                if not isinstance(child, mb.Port):
+                    self._remove(child)
+            else:
+                child._remove_empty_container()
 
 
     def _remove_references(self, removed_part):
