@@ -1,17 +1,27 @@
 import numpy as np
+import parmed as pmd
 
+import mbuild as mb
 from mbuild.utils.sorting import natural_sort
 from mbuild.utils.geometry import coord_shift
 from mbuild.utils.io import import_
+
+hoomd = import_("hoomd")
+hoomd.data = import_("hoomd.data")
 
 __all__ = ['to_hoomdsnapshot']
 
 def to_hoomdsnapshot(structure,  ref_distance=1.0, ref_mass=1.0,
               ref_energy=1.0, rigid_bodies=None, shift_coords=True,
-              write_special_pairs=True):
-    """Convert parmed.Structure to hoomd.data.Snapshot"""
-    hoomd = import_("hoomd")
-    hoomd.data = import_("hoomd.data")
+              write_special_pairs=True, parmed_kwargs={}):
+    """Convert mb.Compound or parmed.Structure to hoomd.data.Snapshot"""
+    if not isinstance(structure, (mb.Compound, pmd.Structure)):
+        raise ValueError("You are trying to create a hoomd.Snapshot from " +
+                "{} ".format(type(structure)) + 
+                "please pass mb.Compound or pmd.Structure")
+    elif isinstance(structure, mb.Compound):
+        structure = structure.to_parmed(**parmed_kwargs)
+
 
     if not hoomd.context.current:
         hoomd.context.initialize("")
