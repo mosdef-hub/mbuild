@@ -5,30 +5,80 @@ import xml.etree.ElementTree
 import mbuild as mb
 from mbuild.tests.base_test import BaseTest
 from mbuild.utils.io import has_foyer, has_hoomd, import_
-from mbuild.formats.hoomd_snapshot import to_hoomdsnapshot
 
 @pytest.mark.skipif(not has_hoomd, reason="HOOMD is not installed")
 class TestHoomd(BaseTest):
     def test_compound_to_snapshot(self, ethane):
+        hoomd_snapshot = import_("mbuild.formats.hoomd_snapshot")
+        snap = hoomd_snapshot.to_hoomdsnapshot(ethane)
+
+        assert snap.particles.N == 8
+        assert snap.bonds.N == 7
+        assert snap.angles.N == 0
+
+    def test_bad_input_to_snapshot(self):
+        hoomd_snapshot = import_("mbuild.formats.hoomd_snapshot")
+        with pytest.raises(ValueError):
+            snap = hoomd_snapshot.to_hoomdsnapshot('fake_object')
+
+    def test_non_param_struc_to_snapshot(self, ethane):
+        hoomd_snapshot = import_("mbuild.formats.hoomd_snapshot")
         structure = ethane.to_parmed()
-        snap = to_hoomdsnapshot(structure)
+        snap = hoomd_snapshot.to_hoomdsnapshot(structure)
 
         assert snap.particles.N == 8
         assert snap.bonds.N == 7
         assert snap.angles.N == 0
 
     @pytest.mark.skipif(not has_foyer, reason="Foyer is not installed")
-    def test_structure_to_snapshot(self, ethane):
+    def test_param_structure_to_snapshot(self, ethane):
+        hoomd_snapshot = import_("mbuild.formats.hoomd_snapshot")
         forcefield = import_("foyer.forcefield")
         ff = forcefield.Forcefield(name='oplsaa')
         structure = ff.apply(ethane)
-        snap = to_hoomdsnapshot(structure)
+        snap = hoomd_snapshot.to_hoomdsnapshot(structure)
 
         assert snap.particles.N == 8
         assert snap.bonds.N == 7
         assert snap.angles.N == 12
         assert snap.dihedrals.N == 9
         assert snap.pairs.N == 9
+
+    def test_bad_input_to_hoomdsimulation(self):
+        hoomd_simulation = import_("mbuild.formats.hoomd_simulation")
+        with pytest.raises(ValueError):
+            hoomd_simulation.create_hoomd_simulation('fake_object')
+
+    def test_compound_to_hoomdsimulation(self, ethane):
+        hoomd_simulation = import_("mbuild.formats.hoomd_simulation")
+        with pytest.raises(ValueError):
+            hoomd_simulation.create_hoomd_simulation(ethane)
+
+    @pytest.mark.skipif(not has_foyer, reason="Foyer is not installed")
+    def test_structure_to_hoomdsimulation(self, ethane):
+        forcefield = import_("foyer.forcefield")
+        hoomd = import_("hoomd")
+        hoomd_simulation = import_("mbuild.formats.hoomd_simulation")
+        ff = forcefield.Forcefield(name='oplsaa')
+        structure = ff.apply(ethane)
+        hoomd_simulation.create_hoomd_simulation(structure)
+
+        sim_forces = hoomd.context.current.forces
+        pair_force = import_("hoomd.md.pair")
+        charge_force = import_("hoomd.md.charge")
+        special_pair_force = import_("hoomd.md.special_pair")
+        bond_force = import_("hoomd.md.bond")
+        angle_force = import_("hoomd.md.angle")
+        dihedral_force = import_("hoomd.md.dihedral")
+
+        assert isinstance(sim_forces[0], pair_force.lj)
+        assert isinstance(sim_forces[1], charge_force.pppm)
+        assert isinstance(sim_forces[2], pair_force.ewald)
+        assert isinstance(sim_forces[3], special_pair_force.lj)
+        assert isinstance(sim_forces[4], special_pair_force.coulomb)
+        assert isinstance(sim_forces[5], bond_force.harmonic)
+        assert isinstance(sim_forces[6], angle_force.harmonic)
+        assert isinstance(sim_forces[7], dihedral_force.opls)
 
 
 class TestHoomdXML(BaseTest):
