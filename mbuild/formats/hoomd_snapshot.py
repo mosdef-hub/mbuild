@@ -14,7 +14,35 @@ __all__ = ['to_hoomdsnapshot']
 def to_hoomdsnapshot(structure,  ref_distance=1.0, ref_mass=1.0,
               ref_energy=1.0, rigid_bodies=None, shift_coords=True,
               write_special_pairs=True, parmed_kwargs={}):
-    """Convert mb.Compound or parmed.Structure to hoomd.data.Snapshot"""
+    """Convert mb.Compound or parmed.Structure to hoomd.data.Snapshot
+
+    Parameters
+    ----------
+    structure : parmed.Structure
+        ParmEd Structure object
+    ref_distance : float, optional, default=1.0
+        Reference distance for conversion to reduced units
+    ref_mass : float, optional, default=1.0
+        Reference mass for conversion to reduced units
+    ref_energy : float, optional, default=1.0
+        Reference energy for conversion to reduced units
+    rigid_bodies : list of int, optional, default=None
+        List of rigid body information. An integer value is required for
+        each atom corresponding to the index of the rigid body the particle
+        is to be associated with. A value of None indicates the atom is not
+        part of a rigid body.
+    shift_coords : bool, optional, default=True
+        Shift coordinates from (0, L) to (-L/2, L/2) if necessary.
+    write_special_pairs : bool, optional, default=True
+        Writes out special pair information necessary to correctly use 
+        the OPLS fudged 1,4 interactions in HOOMD.
+
+    Notes
+    -----
+    Force field parameters are not written to the hoomd_snapshot 
+
+    """
+"""
     if not isinstance(structure, (mb.Compound, pmd.Structure)):
         raise ValueError("You are trying to create a hoomd.Snapshot from " +
                 "{} ".format(type(structure)) + 
