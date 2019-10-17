@@ -42,7 +42,6 @@ def to_hoomdsnapshot(structure,  ref_distance=1.0, ref_mass=1.0,
     Force field parameters are not written to the hoomd_snapshot 
 
     """
-"""
     if not isinstance(structure, (mb.Compound, pmd.Structure)):
         raise ValueError("You are trying to create a hoomd.Snapshot from " +
                 "{} ".format(type(structure)) + 
