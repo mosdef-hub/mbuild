@@ -2,6 +2,7 @@ import warnings
 import itertools
 import numpy as np
 
+import parmed as pmd
 import mbuild as mb
 from mbuild.utils.sorting import natural_sort
 from mbuild.utils.io import import_
@@ -61,7 +62,7 @@ def create_hoomd_simulation(structure, ref_distance=1.0, ref_mass=1.0,
                 "then create your own hoomd context " +
                 "and pass your hoomd.Snapshot " +
                 "to hoomd.init.read_snapshot()")
-    elif not isinstance(structure. pmd.Structure):
+    elif not isinstance(structure, pmd.Structure):
         raise ValueError("Please pass a parmed.Structure to " + 
                     "create_hoomd_simulation")
     hoomd.context.initialize("")
