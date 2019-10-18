@@ -826,9 +826,10 @@ class Compound(object):
             if port.anchor not in [i for i in self.particles()]:
                 port.parent.children.remove(port)
 
-        # Check and reset rigid_id
-        if self.contains_rigid:
-            self.root._reorder_rigid_ids()
+        # Check and reorder rigid id
+        for _ in particles_to_remove:
+            if self.contains_rigid:
+                self.root._reorder_rigid_ids()
 
 
     def _remove(self, removed_part):
@@ -842,6 +843,7 @@ class Compound(object):
                     removed_part):
                 self.root.remove_bond((removed_part, neighbor))
             self.root.bond_graph.remove_node(removed_part)
+
 
     def _remove_references(self, removed_part):
         """Remove labels pointing to this part and vice versa. """
