@@ -825,6 +825,11 @@ class Compound(object):
             if id(port.anchor) not in [id(i) for i in self.particles()]:
                 port.parent.children.remove(port)
 
+        # Check and reset rigid_id
+        if self.contains_rigid:
+            self.root._reorder_rigid_ids()
+
+
     def _remove(self, removed_part):
         """Worker for remove(). Fixes rigid IDs and removes bonds"""
         if removed_part.rigid_id is not None:
