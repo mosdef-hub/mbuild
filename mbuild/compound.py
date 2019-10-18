@@ -821,8 +821,9 @@ class Compound(object):
             self._remove_references(removed_part)
 
         # Remove ghost ports
-        for port in self.all_ports():
-            if id(port.anchor) not in [id(i) for i in self.particles()]:
+        all_ports_list = list(self.all_ports())
+        for port in all_ports_list:
+            if port.anchor not in [i for i in self.particles()]:
                 port.parent.children.remove(port)
 
         # Check and reset rigid_id
