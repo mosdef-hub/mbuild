@@ -6,7 +6,8 @@ class CH2(mb.Compound):
     def __init__(self):
         super(CH2, self).__init__()
 
-        mb.load('ch2.pdb', compound=self, relative_to_module=self.__module__)
+        mb.load('ch2.pdb', compound=self, relative_to_module=self.__module__,
+                infer_hierarchy=False)
         self.translate(-self[0].pos)  # Move carbon to origin.
 
         self.add(mb.Port(anchor=self[0]), 'up')
