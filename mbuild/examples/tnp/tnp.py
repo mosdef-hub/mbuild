@@ -46,5 +46,5 @@ class Tnp(mb.Compound):
                             sqrt(4 * ball_radius**2 * pi / n) + 0.5)
         self.generate_bonds('np', 't', 0.1, 0.3)
         self.generate_bonds('t', 'np', 0.1, 0.3)
-
+        print('yahoo')
 # -- ==tnp== --
