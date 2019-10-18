@@ -3,6 +3,7 @@ import time
 
 import numpy as np
 import parmed as pmd
+import mdtraj
 import pytest
 
 import mbuild as mb
@@ -341,6 +342,13 @@ class TestCompound(BaseTest):
         assert len(ethane5.children[0].children) == 6 # 3 hydrogens + 3 ports
         assert len(ethane5.children) == 1
 
+        carbons = ethane.particles_by_name('C')
+        ethane.remove(carbons)
+        assert ethane.n_particles == 0
+        assert ethane.n_bonds == 0
+        assert len(ethane.children) == 2
+        # Still contains ports
+        assert len(ethane.children[0].children) == 7  
 
 
     def test_remove_many(self, ethane):
@@ -359,7 +367,8 @@ class TestCompound(BaseTest):
         assert ethane.n_particles == 4
         assert ethane.n_bonds == 3
         assert len(ethane.children) == 1
-        assert len(ethane.children[0].children) == 5  # Still contains a port
+        # Still contains a port
+        assert len(ethane.children[0].children) == 5  
 
         methyl = ethane.children[0]
         ethane.remove(methyl)
@@ -967,6 +976,53 @@ class TestCompound(BaseTest):
             for m in range(3):
                 child_child = mb.Compound()
                 child_child.name = 'c_{0}_{1}'.format(m, n)
+                child.add(child_child)
+
+        graph = comp.to_networkx(names_only=True)
+
+        assert graph.number_of_edges() == 8
+        assert graph.number_of_nodes() == 9
+
+        assert all([isinstance(n, str) for n in graph.nodes()])
+
+    def test_from_trajectory(self):
+        comp = mb.Compound()
+        traj = mdtraj.load(get_fn('spc.pdb'))
+        comp.from_trajectory(traj)
+        assert comp.children[0].name == 'SPC'
+
+    def test_from_parmed(self):
+        comp = mb.Compound()
+        struc = pmd.load_file(get_fn('spc.pdb'))
+        comp.from_parmed(struc)
+        assert comp.children[0].name == 'SPC'
+
+    def test_complex_from_trajectory(self):
+        comp = mb.Compound()
+        traj = mdtraj.load(get_fn('pro_but.pdb'))
+        comp.from_trajectory(traj)
+        assert comp.children[0].children[0].name == 'pro'
+        assert comp.children[1].children[0].name == 'but'
+
+    def test_complex_from_parmed(self):
+        comp = mb.Compound()
+        struc = pmd.load_file(get_fn('pro_but.pdb'))
+        comp.from_parmed(struc)
+        assert comp.children[0].name == 'pro'
+        assert comp.children[1].name == 'but'
+
+    @pytest.mark.skipif(not has_networkx, reason="NetworkX is not installed")
+    def test_to_networkx_names_only_with_same_names(self):
+        comp = mb.Compound()
+        comp.name = 'compound'
+
+        for n in range(2):
+            child = mb.Compound()
+            child.name = 'sub_compound'
+            comp.add(child)
+            for m in range(3):
+                child_child = mb.Compound()
+                child_child.name = 'sub_sub_compound'
                 child.add(child_child)
 
         graph = comp.to_networkx(names_only=True)
