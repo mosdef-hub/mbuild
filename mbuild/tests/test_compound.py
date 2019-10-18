@@ -342,14 +342,6 @@ class TestCompound(BaseTest):
         assert len(ethane5.children[0].children) == 6 # 3 hydrogens + 3 ports
         assert len(ethane5.children) == 1
 
-        carbons = ethane.particles_by_name('C')
-        ethane.remove(carbons)
-        assert ethane.n_particles == 0
-        assert ethane.n_bonds == 0
-        assert len(ethane.children) == 2
-        # Still contains ports
-        assert len(ethane.children[0].children) == 7  
-
 
     def test_remove_many(self, ethane):
         ethane.remove([ethane.children[0], ethane.children[1]])
