@@ -19,9 +19,10 @@ class TestXYZ(BaseTest):
         ethane.save(filename='ethane.xyz')
         ethane.save(filename='ethane.mol2')
         ethane_in = mb.load('ethane.xyz', top='ethane.mol2')
-        assert len(ethane_in.children) == 8
+        assert len(ethane_in.children[0].children) == 8
         assert ethane_in.n_bonds == 7
-        assert set([child.name for child in ethane_in.children]) == {'C', 'H'}
+        assert (set([child.name for child in ethane_in.children[0].children]) 
+                == {'C', 'H'})
 
     def test_wrong_n_atoms(self):
         with pytest.raises(MBuildError):
