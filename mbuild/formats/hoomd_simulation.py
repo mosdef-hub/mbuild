@@ -52,7 +52,11 @@ def create_hoomd_simulation(structure, ref_distance=1.0, ref_mass=1.0,
     `hoomd.context.current`.
     If you pass a non-parametrized pmd.Structure, you will not have
     angle, dihedral, or force field information. You may be better off
-    creating a hoomd.Snapshot"""
+    creating a hoomd.Snapshot
+    Reference units should be expected to convert parmed Structure units 
+        angstroms, kcal/mol, and daltons
+    
+    """
 
     if isinstance(structure, mb.Compound):
         raise ValueError("You passed mb.Compound to create_hoomd_simulation, " +
