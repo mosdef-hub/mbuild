@@ -1,8 +1,8 @@
 trigger:
-  - master
+  - "*"
 
 pr:
-  - master
+  - "*"
 
 schedules:
 - cron: "0 0 * * *"
