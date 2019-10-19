@@ -35,7 +35,8 @@ from mbuild.coordinate_transform import _translate, _rotate
 
 
 def load(filename_or_object, relative_to_module=None, compound=None, coords_only=False,
-         rigid=False, use_parmed=False, smiles=False, **kwargs):
+         rigid=False, use_parmed=False, smiles=False, 
+         infer_hierarchy=True, **kwargs):
     """Load a file or an existing topology into an mbuild compound.
 
     Files are read using the MDTraj package unless the `use_parmed` argument is
@@ -64,6 +65,8 @@ def load(filename_or_object, relative_to_module=None, compound=None, coords_only
     smiles: bool, optional, default=False
         Use Open Babel to parse filename as a SMILES string
         or file containing a SMILES string.
+    infer_hierarchy : bool, optional, default=True
+        If True, infer hierarchy from chains and residues
     **kwargs : keyword arguments
         Key word arguments passed to mdTraj for loading.
 
@@ -91,7 +94,8 @@ def load(filename_or_object, relative_to_module=None, compound=None, coords_only
         return filename_or_object
     for type in type_dict:
         if isinstance(filename_or_object, type):
-            type_dict[type](filename_or_object,coords_only=coords_only, **kwargs)
+            type_dict[type](filename_or_object,coords_only=coords_only, 
+                    infer_hierarchy=infer_hierarchy, **kwargs)
             return compound
     if not isinstance(filename_or_object, str):
         raise ValueError('Input not supported.')
@@ -130,7 +134,8 @@ def load(filename_or_object, relative_to_module=None, compound=None, coords_only
             "use_parmed set to True.  Bonds may be inferred from inter-particle "
             "distances and standard residue templates!")
         structure = pmd.load_file(filename_or_object, structure=True, **kwargs)
-        compound.from_parmed(structure, coords_only=coords_only)
+        compound.from_parmed(structure, coords_only=coords_only, 
+                infer_hierarchy=infer_hierarchy)
 
     elif smiles:
         pybel = import_('pybel')
@@ -158,11 +163,12 @@ def load(filename_or_object, relative_to_module=None, compound=None, coords_only
         temp_file = os.path.join(tmp_dir, 'smiles_to_mol2_intermediate.mol2')
         mymol.make3D()
         compound = Compound()
-        compound.from_pybel(mymol)
+        compound.from_pybel(mymol, infer_hierarchy=infer_hierarchy)
 
     else:
         traj = md.load(filename_or_object, **kwargs)
-        compound.from_trajectory(traj, frame=-1, coords_only=coords_only)
+        compound.from_trajectory(traj, frame=-1, coords_only=coords_only,
+                infer_hierarchy=infer_hierarchy)
 
     if rigid:
         compound.label_rigid_bodies()
@@ -1956,7 +1962,8 @@ class Compound(object):
 
     # Interface to Trajectory for reading/writing .pdb and .mol2 files.
     # -----------------------------------------------------------------
-    def from_trajectory(self, traj, frame=-1, coords_only=False):
+    def from_trajectory(self, traj, frame=-1, coords_only=False,
+            infer_hierarchy=True):
         """Extract atoms and bonds from a md.Trajectory.
 
         Will create sub-compounds for every chain if there is more than one
@@ -1970,7 +1977,8 @@ class Compound(object):
             The frame to take coordinates from.
         coords_only : bool, optional, default=False
             Only read coordinate information
-
+        infer_hierarchy : bool, optional, default=True
+            If True, infer compound hierarchy from chains and residues
         """
         if coords_only:
             if traj.n_atoms != self.n_particles:
@@ -1992,10 +2000,16 @@ class Compound(object):
             else:
                 chain_compound = self
             for res in chain.residues:
+                if infer_hierarchy:
+                    res_compound = Compound(name=res.name)
+                    chain_compound.add(res_compound)
+                    parent_cmpd = res_compound
+                else:
+                    parent_cmpd = chain_compound
                 for atom in res.atoms:
                     new_atom = Particle(name=str(atom.name),
                                         pos=traj.xyz[frame, atom.index])
-                    chain_compound.add(
+                    parent_cmpd.add(
                         new_atom, label='{0}[$]'.format(
                             atom.name))
                     atom_mapping[atom] = new_atom
@@ -2184,7 +2198,8 @@ class Compound(object):
                 top.add_bond(atom_mapping[atom1], atom_mapping[atom2])
         return top
 
-    def from_parmed(self, structure, coords_only=False):
+    def from_parmed(self, structure, coords_only=False,
+            infer_hierarchy=True):
         """Extract atoms and bonds from a pmd.Structure.
 
         Will create sub-compounds for every chain if there is more than one
@@ -2196,7 +2211,8 @@ class Compound(object):
             The structure to load.
         coords_only : bool
             Set preexisting atoms in compound to coordinates given by structure.
-
+        infer_hierarchy : bool, optional, default=True
+            If true, infer compound hierarchy from chains and residues
         """
         if coords_only:
             if len(structure.atoms) != self.n_particles:
@@ -2227,10 +2243,16 @@ class Compound(object):
             else:
                 chain_compound = self
             for residue in residues:
+                if infer_hierarchy:
+                    residue_compound = Compound(name=residue.name)
+                    chain_compound.add(residue_compound)
+                    parent_cmpd = residue_compound
+                else:
+                    parent_cmpd = chain_compound
                 for atom in residue.atoms:
                     pos = np.array([atom.xx, atom.xy, atom.xz]) / 10
                     new_atom = Particle(name=str(atom.name), pos=pos)
-                    chain_compound.add(
+                    parent_cmpd.add(
                         new_atom, label='{0}[$]'.format(
                             atom.name))
                     atom_mapping[atom] = new_atom
@@ -2575,7 +2597,8 @@ class Compound(object):
 
         return pybelmol
 
-    def from_pybel(self, pybel_mol, use_element=True, coords_only=False):
+    def from_pybel(self, pybel_mol, use_element=True, coords_only=False,
+            infer_hierarchy=True):
         """Create a Compound from a Pybel.Molecule
 
         Parameters
@@ -2588,6 +2611,8 @@ class Compound(object):
             Set preexisting atoms in compound to coordinates given by
             structure.  Note: Not yet implemented, included only for parity
             with other conversion functions
+        infer_hierarchy : bool, optional, default=True
+            If True, infer hierarchy from residues
 
         """
         openbabel = import_("openbabel")
@@ -2615,7 +2640,8 @@ class Compound(object):
             else:
                 temp_name = atom.type
             temp = Particle(name=temp_name, pos=xyz)
-            if hasattr(atom, 'residue'): # Is there a safer way to check for res?
+            if infer_hierarchy and hasattr(atom, 'residue'): 
+                # Is there a safer way to check for res?
                 if atom.residue.idx not in resindex_to_cmpd:
                     res_cmpd = Compound(name=atom.residue.name)
                     resindex_to_cmpd[atom.residue.idx] = res_cmpd

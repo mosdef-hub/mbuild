@@ -3,6 +3,7 @@ import time
 
 import numpy as np
 import parmed as pmd
+import mdtraj
 import pytest
 
 import mbuild as mb
@@ -303,7 +304,8 @@ class TestCompound(BaseTest):
         assert ethane.n_particles == 0
         assert ethane.n_bonds == 0
         assert len(ethane.children) == 2
-        assert len(ethane.children[0].children) == 7  # Still contains ports
+        # Still contains ports
+        assert len(ethane.children[0].children) == 7  
 
     def test_remove_many(self, ethane):
         ethane.remove([ethane.children[0], ethane.children[1]])
@@ -321,7 +323,8 @@ class TestCompound(BaseTest):
         assert ethane.n_particles == 4
         assert ethane.n_bonds == 3
         assert len(ethane.children) == 1
-        assert len(ethane.children[0].children) == 5  # Still contains a port
+        # Still contains a port
+        assert len(ethane.children[0].children) == 5  
 
         methyl = ethane.children[0]
         ethane.remove(methyl)
@@ -937,6 +940,32 @@ class TestCompound(BaseTest):
         assert graph.number_of_nodes() == 9
 
         assert all([isinstance(n, str) for n in graph.nodes()])
+
+    def test_from_trajectory(self):
+        comp = mb.Compound()
+        traj = mdtraj.load(get_fn('spc.pdb'))
+        comp.from_trajectory(traj)
+        assert comp.children[0].name == 'SPC'
+
+    def test_from_parmed(self):
+        comp = mb.Compound()
+        struc = pmd.load_file(get_fn('spc.pdb'))
+        comp.from_parmed(struc)
+        assert comp.children[0].name == 'SPC'
+
+    def test_complex_from_trajectory(self):
+        comp = mb.Compound()
+        traj = mdtraj.load(get_fn('pro_but.pdb'))
+        comp.from_trajectory(traj)
+        assert comp.children[0].children[0].name == 'pro'
+        assert comp.children[1].children[0].name == 'but'
+
+    def test_complex_from_parmed(self):
+        comp = mb.Compound()
+        struc = pmd.load_file(get_fn('pro_but.pdb'))
+        comp.from_parmed(struc)
+        assert comp.children[0].name == 'pro'
+        assert comp.children[1].name == 'but'
 
     @pytest.mark.skipif(not has_networkx, reason="NetworkX is not installed")
     def test_to_networkx_names_only_with_same_names(self):
