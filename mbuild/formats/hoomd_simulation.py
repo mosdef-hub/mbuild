@@ -236,7 +236,7 @@ def _init_hoomd_dihedrals(structure, ref_energy=1.0):
     """ Periodic dihedrals (dubbed harmonic dihedrals in HOOMD) """
     # Identify the unique dihedral types before setting
     dihedral_type_params = {}
-    for dihedral in structure.structure.dihedrals:
+    for dihedral in structure.dihedrals:
         t1, t2 = dihedral.atom1.type, dihedral.atom2.type
         t3, t4 = dihedral.atom3.type, dihedral.atom4.type
         if [t2, t3] == sorted([t2, t3], key=natural_sort):
@@ -251,7 +251,7 @@ def _init_hoomd_dihedrals(structure, ref_energy=1.0):
     for name, dihedral_type in dihedral_type_params.items():
         if dihedral_type.phase > 0.0001:
             warnings.warn("Dihedral type {} detected with " + 
-                    "non-zero phase shift {} ".format(dihedral_type.phae) + 
+                    "non-zero phase shift {} ".format(dihedral_type.phase) + 
                     "this is not currently supported in HOOMD, " +
                     "will ignore")
         else:
