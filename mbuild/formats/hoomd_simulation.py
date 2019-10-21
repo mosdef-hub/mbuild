@@ -24,7 +24,7 @@ hoomd.group = import_("hoomd.group")
 def create_hoomd_simulation(structure, ref_distance=1.0, ref_mass=1.0,
               ref_energy=1.0, mixing_rule='lorentz', r_cut=1.2, 
               snapshot_kwargs={}, 
-              pppm_kwargs={'Nx':1, 'Ny':1, 'Nz':1, 'order':4}):
+              pppm_kwargs={'Nx':8, 'Ny':8, 'Nz':8, 'order':4}):
     """ Convert a parametrized pmd.Structure to hoomd.SimulationContext
 
     Parameters
