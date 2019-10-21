@@ -206,7 +206,14 @@ def _init_hoomd_bonds(structure, ref_distance=1.0, ref_energy=1.0):
     # Set the hoomd parameters
     harmonic_bond = hoomd.md.bond.harmonic()
     for name, bond_type in bond_type_params.items():
-        harmonic_bond.bond_coeff.set(name, 
+        # A (paramerized) parmed structure with no bondtype 
+        # is because of constraints
+        if bond_type is None:
+            print("Bond with no bondtype detected, setting coefficients to 0")
+            harmonic_bond.bond_coeff.set(name,
+                    k=0, r0=0)
+        else:
+            harmonic_bond.bond_coeff.set(name, 
                 k=2 * bond_type.k * ref_distance**2 / ref_energy,
                 r0=bond_type.req / ref_distance)
 
