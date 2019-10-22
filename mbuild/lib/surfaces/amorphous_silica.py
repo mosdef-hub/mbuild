@@ -3,10 +3,10 @@ import numpy as np
 import mbuild as mb
 
 
-class AmorphousSilica(mb.Compound):
+class AmorphousSilicaSurface(mb.Compound):
     """ """
     def __init__(self, surface_roughness=1.0):
-        super(AmorphousSilica, self).__init__()
+        super(AmorphousSilicaSurface, self).__init__()
 
         if surface_roughness == 1.0:
             # TODO: description of how this surface was generated/citation
@@ -27,6 +27,6 @@ class AmorphousSilica(mb.Compound):
                 self.add(port, 'port_{}'.format(count))
 
 if __name__ == "__main__":
-    single = AmorphousSilica()
+    single = AmorphousSilicaSurface()
     multiple = mb.TiledCompound(single, n_tiles=(2, 1, 1), name="tiled")
-    multiple.save('amorphous_silica.mol2')
+    multiple.save('amorphous_silica_surface.mol2')
