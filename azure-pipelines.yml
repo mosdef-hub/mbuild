@@ -49,8 +49,12 @@ jobs:
         displayName: Add relavent Channels
 
       - bash: |
-          conda create -n test-environment python=$(python.version) --file requirements-dev.txt
+          conda update -c defaults conda
+          conda update --all
+          conda create -n test-environment
           source activate test-environment
+          conda install --yes python=$(python.version) --file requirements-dev.txt
+          conda install --yes python=$(python.version) --file requirements-dev.txt
           pip install -e .
         displayName: Create Conda env, Activate, Install dependencies, Install Branch
 
