@@ -14,16 +14,11 @@ class Sphere(mb.Compound):
             port_distance_from_surface (float): Distance of Ports from Sphere.
         """
         super(Sphere, self).__init__()
-        particle = mb.Particle(name='np')
-        particle.add(mb.Port(anchor=particle), label='out')
 
         # Generate 65 points on the surface of a unit sphere.
         pattern = mb.SpherePattern(n)
         # Magnify the unit sphere by the provided radius.
         pattern.scale(radius)
-
-        particles = pattern.apply(particle, orientation='normal', compound_port='out')
-        self.add(particles, label='np_[$]')
 
         # Create particles and Ports at pattern positions.
         for i, pos in enumerate(pattern.points):

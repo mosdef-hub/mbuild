@@ -764,7 +764,7 @@ class Compound(object):
             self.periodicity = new_child.periodicity
 
     def remove(self, objs_to_remove):
-        """Remove children from the Compound.
+        """ Cleanly remove children from the Compound.
 
         Parameters
         ----------
@@ -772,40 +772,83 @@ class Compound(object):
             The Compound(s) to be removed from self
 
         """
-        if not self.children:
-            return
-
+        # Preprocessing and validating input type
+        from mbuild.port import Port
         if not hasattr(objs_to_remove, '__iter__'):
             objs_to_remove = [objs_to_remove]
         objs_to_remove = set(objs_to_remove)
 
+        # If nothing is to be remove, do nothing
         if len(objs_to_remove) == 0:
             return
 
-        remove_from_here = objs_to_remove.intersection(self.children)
-        self.children -= remove_from_here
-        yet_to_remove = objs_to_remove - remove_from_here
+        # Remove Port objects separately
+        ports_removed = set()
+        for obj in objs_to_remove:
+            if isinstance(obj, Port):
+                ports_removed.add(obj)
+                self._remove(obj)
+                obj.parent.children.remove(obj)
+                self._remove_references(obj)
 
-        for removed in remove_from_here:
-            for child in removed.children:
-                removed.remove(child)
+        objs_to_remove = objs_to_remove - ports_removed
 
-        for removed_part in remove_from_here:
-            if removed_part.rigid_id is not None:
-                for ancestor in removed_part.ancestors():
-                    ancestor._check_if_contains_rigid_bodies = True
-            if self.root.bond_graph and self.root.bond_graph.has_node(
-                    removed_part):
-                for neighbor in self.root.bond_graph.neighbors(removed_part):
-                    self.root.remove_bond((removed_part, neighbor))
-                self.root.bond_graph.remove_node(removed_part)
+        # Get particles to remove
+        particles_to_remove = set([particle for obj in objs_to_remove
+                                            for particle in obj.particles()])
+
+        # Recursively get container compounds to remove
+        to_remove = list()
+
+        def _check_if_empty(child):
+            if child in to_remove:
+                return
+            if set(child.particles()).issubset(particles_to_remove):
+                if child.parent:
+                    to_remove.append(child)
+                    _check_if_empty(child.parent)
+                else:
+                    warn("This will remove all particles in "
+                            "compound {}".format(self))
+            return
+
+        for particle in particles_to_remove:
+            _check_if_empty(particle)
+
+        # Fix rigid_ids and remove obj from bondgraph
+        for removed_part in to_remove:
+            self._remove(removed_part)
+
+        # Remove references to object
+        for removed_part in to_remove:
+            if removed_part.parent is not None:
+                removed_part.parent.children.remove(removed_part)
             self._remove_references(removed_part)
 
-        # Remove the part recursively from sub-compounds.
-        for child in self.children:
-            child.remove(yet_to_remove)
-            if child.contains_rigid:
+        # Remove ghost ports
+        all_ports_list = list(self.all_ports())
+        for port in all_ports_list:
+            if port.anchor not in [i for i in self.particles()]:
+                port.parent.children.remove(port)
+
+        # Check and reorder rigid id
+        for _ in particles_to_remove:
+            if self.contains_rigid:
                 self.root._reorder_rigid_ids()
+
+
+    def _remove(self, removed_part):
+        """Worker for remove(). Fixes rigid IDs and removes bonds"""
+        if removed_part.rigid_id is not None:
+            for ancestor in removed_part.ancestors():
+                ancestor._check_if_contains_rigid_bodies = True
+        if self.root.bond_graph and self.root.bond_graph.has_node(
+                removed_part):
+            for neighbor in self.root.bond_graph.neighbors(
+                    removed_part):
+                self.root.remove_bond((removed_part, neighbor))
+            self.root.bond_graph.remove_node(removed_part)
+
 
     def _remove_references(self, removed_part):
         """Remove labels pointing to this part and vice versa. """

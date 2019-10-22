@@ -16,9 +16,9 @@ class TestSilicaInterface(BaseTest):
         thickness = 0.6
 
         interface = SilicaInterface(bulk_silica=AmorphousSilica(),
-                                                  tile_x=tile_x,
-                                                  tile_y=tile_y,
-                                                  thickness=thickness)
+                                    tile_x=tile_x,
+                                    tile_y=tile_y,
+                                    thickness=thickness)
 
         thickness_tolerance = 0.05
         z = [atom.pos[2] for atom in interface.particles()
