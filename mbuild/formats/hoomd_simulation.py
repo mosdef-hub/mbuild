@@ -167,6 +167,10 @@ def _init_hoomd_14_pairs(structure, nl, r_cut=1.2, ref_distance=1.0, ref_energy=
     # but impose a special_pair force to handle these pairs
     nl.reset_exclusions(exclusions=['1-2', '1-3', '1-4']) 
 
+    if hoomd.context.current.system_definition.getPairData().getN() == 0:
+        print("No 1,4 pairs found in hoomd snapshot")
+        return None, None
+
     lj_14 = hoomd.md.special_pair.lj()
     qq_14 = hoomd.md.special_pair.coulomb()
     params_14 = {}
@@ -251,7 +255,14 @@ def _init_hoomd_dihedrals(structure, ref_energy=1.0):
         else:
             dihedral_type = ('-'.join((t4, t3, t2, t1)))
         if dihedral_type not in dihedral_type_params:
-            dihedral_type_params[dihedral_type] = dihedral.type
+            if isinstance(dihedral.type, pmd.DihedralType):
+                dihedral_type_params[dihedral_type] = dihedral.type
+            elif isinstance(dihedral.type, pmd.DihedralTypeList):
+                if len(dihedral.type) > 1:
+                    warnings.warn("Multiple dihedral types detected" +
+                            " for single dihedral, will ignore all except " +
+                            " first diheral type")
+                dihedral_type_params[dihedral_type] = dihedral.type[0]
 
     # Set the hoomd parameters
     periodic_torsion = hoomd.md.dihedral.harmonic() # These are periodic torsions
