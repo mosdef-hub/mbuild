@@ -92,9 +92,13 @@ jobs:
           call activate test-environment
           conda install --yes python=$(python.version) --file requirements-dev.txt
           conda install --yes python=$(python.version) --file requirements-dev.txt
+        displayName: Create Conda env, Activate, Install dependencies
+        
+      - script: |
+          call activate test-environment
           python -m pip --version
           python -m pip --verbose install -e .
-        displayName: Create Conda env, Activate, Install dependencies, Install Branch
+        displayName: Install mBuild
 
       - script: |
           call activate test-environment
