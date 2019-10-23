@@ -3,7 +3,7 @@ from __future__ import division
 import numpy as np
 
 import mbuild as mb
-from mbuild.lib.bulk_materials import AmorphousSilica
+from mbuild.lib.bulk_materials import AmorphousSilicaBulk
 from mbuild.lib.recipes import SilicaInterface
 from mbuild.tests.base_test import BaseTest
 
@@ -15,7 +15,7 @@ class TestSilicaInterface(BaseTest):
         tile_y = 1
         thickness = 0.6
 
-        interface = SilicaInterface(bulk_silica=AmorphousSilica(),
+        interface = SilicaInterface(bulk_silica=AmorphousSilicaBulk(),
                                     tile_x=tile_x,
                                     tile_y=tile_y,
                                     thickness=thickness)
@@ -36,14 +36,14 @@ class TestSilicaInterface(BaseTest):
         thickness = 0.6
         seed = 12345
 
-        interface1 = SilicaInterface(bulk_silica=AmorphousSilica(),
+        interface1 = SilicaInterface(bulk_silica=AmorphousSilicaBulk(),
                                         tile_x=tile_x,
                                         tile_y=tile_y,
                                         thickness=thickness,
                                         seed=seed)
         atom_names1 = np.array([atom.name for atom in interface1.particles()])
 
-        interface2 = mb.recipes.SilicaInterface(bulk_silica=AmorphousSilica(),
+        interface2 = mb.recipes.SilicaInterface(bulk_silica=AmorphousSilicaBulk(),
                                         tile_x=tile_x,
                                         tile_y=tile_y,
                                         thickness=thickness,
