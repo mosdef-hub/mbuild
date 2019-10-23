@@ -1,1 +1,1 @@
-from mbuild.lib.bulk_materials.amorphous_silica import AmorphousSilicaBulk
+from mbuild.lib.bulk_materials.amorphous_silica_bulk import AmorphousSilicaBulk

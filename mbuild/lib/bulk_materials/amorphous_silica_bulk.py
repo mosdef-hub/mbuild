@@ -7,7 +7,7 @@ class AmorphousSilicaBulk(mb.Compound):
     def __init__(self):
         super(AmorphousSilicaBulk, self).__init__()
 
-        mb.load('amorphous_silica.pdb', compound=self,
+        mb.load('amorphous_silica_bulk.pdb', compound=self,
                 relative_to_module=self.__module__)
         self.periodicity = np.array([5, 5, 5])
 
