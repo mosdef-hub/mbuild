@@ -1,8 +1,11 @@
 trigger:
-  - "*"
+  - master
 
 pr:
-  - "*"
+  autoCancel: true
+  branches:
+    include:
+      - master
 
 schedules:
 - cron: "0 0 * * *"
