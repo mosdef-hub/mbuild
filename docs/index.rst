@@ -66,6 +66,11 @@ different licenses. See those files for their specific terms.
 .. toctree::
    :hidden:
 
+   recipe_development
+
+.. toctree::
+   :hidden:
+
    recipes
 
 .. toctree::
