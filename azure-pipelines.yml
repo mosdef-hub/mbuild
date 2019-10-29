@@ -49,8 +49,12 @@ jobs:
         displayName: Add relavent Channels
 
       - bash: |
-          conda create -n test-environment python=$(python.version) --file requirements-dev.txt
+          conda update -c defaults conda
+          conda update --all
+          conda create -n test-environment
           source activate test-environment
+          conda install --yes python=$(python.version) --file requirements-dev.txt
+          conda install --yes python=$(python.version) --file requirements-dev.txt
           pip install -e .
         displayName: Create Conda env, Activate, Install dependencies, Install Branch
 
@@ -82,10 +86,19 @@ jobs:
         displayName: Add relavent channels
 
       - script: |
-          conda create -n test-environment python=$(python.version) --file requirements-dev.txt
+          conda update -c defaults conda
+          conda update --all
+          conda create -n test-environment
           call activate test-environment
-          pip install -e .
-        displayName: Create Conda env, Activate, Install dependencies, Install Branch
+          conda install --yes python=$(python.version) --file requirements-dev.txt
+          conda install --yes python=$(python.version) --file requirements-dev.txt
+        displayName: Create Conda env, Activate, Install dependencies
+        
+      - script: |
+          call activate test-environment
+          python -m pip --version
+          python -m pip --verbose install -e .
+        displayName: Install mBuild
 
       - script: |
           call activate test-environment
@@ -107,14 +120,19 @@ jobs:
           conda config --add channels janschulz
           conda config --add channels conda-forge
           conda config --add channels mosdef
-          conda create -n  bleeding-test-environment python=3.7 --file requirements-dev.txt
+          conda update -c defaults conda
+          conda update --all
+          conda create -n  bleeding-test-environment
           source activate bleeding-test-environment
+          conda install --yes python=3.7 --file requirements-dev.txt
+          conda install --yes python=3.7 --file requirements-dev.txt
         displayName: Create a new bleeding test environment
 
       - bash: |
           source activate bleeding-test-environment
           git clone https://github.com/mosdef-hub/foyer.git
           cd foyer
+          conda install --yes --file requirements-dev.txt
           conda install --yes --file requirements-dev.txt
           pip install -e .
           pip uninstall mbuild -y
