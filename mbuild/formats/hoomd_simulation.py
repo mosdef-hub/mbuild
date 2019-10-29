@@ -276,7 +276,8 @@ def _init_hoomd_dihedrals(structure, ref_energy=1.0):
             periodic_torsion.dihedral_coeff.set(name,
                     k=2*dihedral_type.phi_k / ref_energy,
                     d=1,
-                    n=dihedral_type.per)
+                    n=dihedral_type.per,
+                    phi_0=np.deg2rad(dihedral_type.phase))
 
     return periodic_torsion
 
