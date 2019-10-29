@@ -3,13 +3,103 @@
 All big and breaking changes for [mBuild](https://mosdef-hub.github.io/mbuild/) will be recorded here.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## 0.9.1 (unreleased)
-### Breaking Changes
-### Features
-### Maintenance
-### Bugfixes
+## 0.10.1 (2019-10-9)
+This is a bugfix release to resolve a potential issue with a foyer dependency with mBuild 0.10.0.
 
-## 0.8.3 (2018-2-23)
+### Bugfixes
+* Remove a `foyer` import that was producing a circular dependency (#610)
+
+## 0.10.0 (2019-10-8)
+### Breaking Change
+- Officially drop Python 2.7 (#573)
+
+### Features
+- Load mBuild compounds from existing ParmEd and MDTraj objects (#561)
+- Convert mBuild compound to and from JSON format (#581)
+- Include testing of notebooks in CI (#590)
+- Add NGLView tooltip (#600)
+- Initialize mBuild Compounds from SMILES strings (#598)
+- Write out parameterized structures to a CHARMM `.par` file (#508)
+- Add method to convert to and from Pybel (#555)
+- Add POSCAR file writer in an effort to incorporate VASP into mBuild (#468)
+
+### Bug Fixes
+- Remove unnecessary Pybel import statement in `mb.load` (#604)
+- Change how proxy compounds are named so that `MOL2` files are in the correct format (#605)
+- Rename atom names in silica interface example to be compatible with recent mBuild release (#594)
+- Improve error handling for Box class (#576)
+- Add a `with open` block to manage file open (#585)
+- Add `_clone()` function to the Proxy class to properly clone an instance of Proxy (#592)
+
+### Miscellaneous
+- Add `compound_pb2.py` file generated from `protoc` compiler to gitignore (#602)
+- Improve documentation of various mBuild classes and functions (#577, #578, #579, #580)
+- Add additional testing for `foyer_kwargs` (#428)
+
+## 0.9.3 (2019-8-5)
+### Breaking Changes
+* This is the last release supporting Python 2.7
+
+### Features
+* A more descriptive exception is raised when attempting to access a non-existent Port (#544)
+* Element capitalization is better enforced in ParmEd conversions (#550)
+* The XYZ reader can now act on a passed compound (#567)
+* The LAMMPS writer now accurately prints residue IDs (#569)
+
+### Bugfixes
+* Visualizing compounds in notebooks no longer returns a duplicate widget (#545)
+* Names of custom elements are no longer clobbered during visualization (#563)
+
+### Maintenance
+* The image in our gitter link has been updated (#543)
+* Some links in tutorials have been corrected (#548)
+* Installation documentation has been updated to reflect changes in conda configurations (#558)
+* Some other documentation has been refreshed (#560)
+* The GSD version is pinned to 1.7 in order to continue Python 2.7 support (#572)
+
+## 0.9.2 (2019-5-27)
+### Breaking Changes
+* Python 3.5 is no longer officially supported or tested on as part of the development process.
+
+### Features
+* mBuild is now tested and packaged on Python 3.7 (#542)
+
+### Maintenance
+* MDTraj is no longer pinned to an old version (#542)
+* Coveralls is dropped; we have been using codecov for a few months (#542)
+
+## 0.9.1 (2019-5-26)
+### Breaking Changes
+This is the last release including official support for Python 3.5. It will likely work for some time but mBuild will not be tested on Python 3.5 during development.
+
+### Features
+* Residue names can optionally be inferred from compound names in conversion to ParmEd (#475)
+* Custom cross-interactions (NBFIXES in ParmEd jargon) can now be written to LAMMPS data files (#456)
+* The LAMMPS writer now prints helpful comments to more verbosely describe which atom types are associated with each potential (#535)
+
+### Maintenance
+* Some stylistic changes were made as suggested by various linters (#522)
+* Appveyor now tests on Python 3.6 (#520)
+
+### Documentation
+* Installation docs were updated to explicitly list supported Python versions (#532)
+* A comment pointing to the `glozter` Anaconda channel has been updated to point to `conda-forge` (#534)
+
+### Miscellaneous
+* Some tests depending on `foyer` are now properly skipped when it it not installed (#521)
+* Some examples were updated in accordance with their new structure as internal recipes (#536, #538)
+
+## 0.9.0 (2019-4-11)
+### Features
+* A plugin or "recipe" architecture has been added to allow external modules to be imported inside of mBuild (#501)
+* Python 3.6 is now explicitly supported and tested (#518)
+
+### Maintenance
+* A contributor's guide (#500) and `.github` issue & pull request templates (#498) have been added
+* A redundant and unused block of code was removed (#515)
+* The `glotzer` and `bioconda` channels, which are now obsolete in this scope, have been dropped (#516)
+
+## 0.8.3 (2019-2-23)
 ### Breaking Changes
 * When writing hoomdxml files, units will now be in kJ/mol & nm instead of kcal/mol & ang, so particle positions will differ by a factor of 10.
 
@@ -26,7 +116,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 * `update_coordinates` now behaves well when passed an XYZ file or operating on simple hierarchies (#496)
 * Internal conversion from ParmEd structures to HOOMDXML files was improved (#463, see above)
 
-## 0.8.2 (2018-1-8)
+## 0.8.2 (2019-1-8)
 ### Features
 * Special Pair Support (1-4 pair information) to GSD writers (#473)
     * GSD files now include 1-4 special pairs for use in OPLS
