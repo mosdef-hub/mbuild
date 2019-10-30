@@ -73,7 +73,9 @@ def create_hoomd_simulation(structure, ref_distance=1.0, ref_mass=1.0,
         raise ValueError("Please pass a parmed.Structure to " + 
                     "create_hoomd_simulation")
     hoomd_objects = [] # Potential adaptation for Hoomd v3 API
-    hoomd.context.initialize("")
+
+    if not hoomd.context.current:
+        hoomd.context.initialize("")
     snapshot = to_hoomdsnapshot(structure, ref_distance=ref_distance,
             ref_mass=ref_mass, ref_energy=ref_energy, **snapshot_kwargs)
     hoomd_objects.append(snapshot)
