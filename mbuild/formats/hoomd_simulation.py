@@ -22,7 +22,7 @@ hoomd.group = import_("hoomd.group")
 
 
 def create_hoomd_simulation(structure, ref_distance=1.0, ref_mass=1.0,
-              ref_energy=1.0, mixing_rule='lorentz', r_cut=1.2, 
+              ref_energy=1.0, r_cut=1.2, 
               snapshot_kwargs={}, 
               pppm_kwargs={'Nx':8, 'Ny':8, 'Nz':8, 'order':4}):
     """ Convert a parametrized pmd.Structure to hoomd.SimulationContext
@@ -37,8 +37,6 @@ def create_hoomd_simulation(structure, ref_distance=1.0, ref_mass=1.0,
         Reference mass for conversion to reduced units
     ref_energy : float, optional, default=1.0
         Reference energy for conversion to reduced units
-    mixing_rule : str, optional, default 'lorentz'
-        Specify a mixing rule to identify LJ cross-interactions
     r_cut : float, optional, default 1.2
         Cutoff radius, in reduced units
     snapshot_kwargs : dict
@@ -87,7 +85,7 @@ def create_hoomd_simulation(structure, ref_distance=1.0, ref_mass=1.0,
 
     if structure.atoms[0].type != '':
         print("Processing LJ and QQ")
-        lj = _init_hoomd_lj(structure, nl, r_cut=r_cut, mixing_rule='lorentz',
+        lj = _init_hoomd_lj(structure, nl, r_cut=r_cut, 
                 ref_distance=ref_distance, ref_energy=ref_energy)
         qq = _init_hoomd_qq(structure, nl, r_cut=r_cut, **pppm_kwargs)
         hoomd_objects.append(lj)
@@ -121,7 +119,7 @@ def create_hoomd_simulation(structure, ref_distance=1.0, ref_mass=1.0,
     print("HOOMD SimulationContext updated from ParmEd Structure")
     return hoomd_objects
 
-def _init_hoomd_lj(structure, nl, r_cut=1.2, mixing_rule='lorentz',
+def _init_hoomd_lj(structure, nl, r_cut=1.2, 
         ref_distance=1.0, ref_energy=1.0):
     """ LJ parameters """
     # Identify the unique atom types before setting
@@ -144,14 +142,22 @@ def _init_hoomd_lj(structure, nl, r_cut=1.2, mixing_rule='lorentz',
         # nb_fix_info = (rmin, eps, rmin14, eps14)
         if nb_fix_info is None:
             # No nbfix means use mixing rule to find cross-interaction
-            if mixing_rule.lower() == 'lorentz':
+            if structure.combining_rule  == 'lorentz':
                 sigma = ((atom_type_params[a1].sigma + atom_type_params[a2].sigma) 
                         / (2 * ref_distance))
                 epsilon = ((atom_type_params[a1].epsilon * 
                         atom_type_params[a2].epsilon) / 
-                        ref_energy**2)
+                        ref_energy**2)**0.5
+            elif structure.combining_rule == 'geometric':
+                sigma = ((atom_type_params[a1].sigma * 
+                        atom_type_params[a2].sigma) /
+                        ref_distance**2)**0.5
+                epsilon = ((atom_type_params[a1].epsilon * 
+                        atom_type_params[a2].epsilon) / 
+                        ref_energy**2)**0.5
             else:
-                raise ValueError("Mixing rule {} ".format(mixing_rule) + 
+                raise ValueError(
+                        "Mixing rule {} ".format(structure.combining_rule) + 
                                 "not supported, use lorentz")
         else:
             # If we have nbfix info, use it
