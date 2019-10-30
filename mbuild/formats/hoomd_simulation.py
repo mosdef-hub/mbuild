@@ -246,6 +246,9 @@ def _init_hoomd_angles(structure, ref_energy=1.0):
 def _init_hoomd_dihedrals(structure, ref_energy=1.0):
     """ Periodic dihedrals (dubbed harmonic dihedrals in HOOMD) """
     # Identify the unique dihedral types before setting
+    # need Hoomd 2.8.0 to use proper dihedral implemtnation
+    # from this PR https://github.com/glotzerlab/hoomd-blue/pull/492
+    _check_hoomd_version() 
     dihedral_type_params = {}
     for dihedral in structure.dihedrals:
         t1, t2 = dihedral.atom1.type, dihedral.atom2.type
@@ -267,17 +270,11 @@ def _init_hoomd_dihedrals(structure, ref_energy=1.0):
     # Set the hoomd parameters
     periodic_torsion = hoomd.md.dihedral.harmonic() # These are periodic torsions
     for name, dihedral_type in dihedral_type_params.items():
-        if dihedral_type.phase > 0.0001:
-            warnings.warn("Dihedral type {} detected with " + 
-                    "non-zero phase shift {} ".format(dihedral_type.phase) + 
-                    "this is not currently supported in HOOMD, " +
-                    "will ignore")
-        else:
-            periodic_torsion.dihedral_coeff.set(name,
-                    k=2*dihedral_type.phi_k / ref_energy,
-                    d=1,
-                    n=dihedral_type.per,
-                    phi_0=np.deg2rad(dihedral_type.phase))
+        periodic_torsion.dihedral_coeff.set(name,
+                k=2*dihedral_type.phi_k / ref_energy,
+                d=1,
+                n=dihedral_type.per,
+                phi_0=np.deg2rad(dihedral_type.phase))
 
     return periodic_torsion
 
@@ -308,3 +305,13 @@ def _init_hoomd_rb_torsions(structure, ref_energy=1.0):
                 k2=F_coeffs[1], k3=F_coeffs[2], k4=F_coeffs[3])
 
     return rb_torsion
+
+
+def _check_hoomd_version():
+    version = hoomd.__version__ 
+    version_numbers = version.split('.')
+    if float(version_numbers[0]) < 2 or float(version_numbers[1]) < 8:
+        from mbuild.exceptions import MBuildError
+        raise MBuildError("Using HOOMD version {}".format(version) + 
+                ", please upgrade to at least 2.8.0")
+
