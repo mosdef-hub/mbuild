@@ -46,14 +46,19 @@ def create_hoomd_simulation(structure, ref_distance=1.0, ref_mass=1.0,
     pppm_kwargs : dict
         Kwargs to pass to hoomd's pppm function
 
+    Returns
+    ------
+    hoomd_objects : list
+        List of hoomd objects created during conversion
+
     Notes
     -----
-    While nothing is returned, the hoomd.SimulationContext is accessible via
-    `hoomd.context.current`.
+    While the hoomd objects are returned, the 
+    hoomd.SimulationContext is accessible via `hoomd.context.current`.
     If you pass a non-parametrized pmd.Structure, you will not have
     angle, dihedral, or force field information. You may be better off
     creating a hoomd.Snapshot
-    Reference units should be expected to convert parmed Structure units 
+    Reference units should be expected to convert parmed Structure units :
         angstroms, kcal/mol, and daltons
     
     """
@@ -69,41 +74,52 @@ def create_hoomd_simulation(structure, ref_distance=1.0, ref_mass=1.0,
     elif not isinstance(structure, pmd.Structure):
         raise ValueError("Please pass a parmed.Structure to " + 
                     "create_hoomd_simulation")
+    hoomd_objects = [] # Potential adaptation for Hoomd v3 API
     hoomd.context.initialize("")
-
     snapshot = to_hoomdsnapshot(structure, ref_distance=ref_distance,
             ref_mass=ref_mass, ref_energy=ref_energy, **snapshot_kwargs)
+    hoomd_objects.append(snapshot)
     hoomd.init.read_snapshot(snapshot)
 
     nl = hoomd.md.nlist.cell()
     nl.reset_exclusions(exclusions=['1-2', '1-3'])
+    hoomd_objects.append(nl)
 
     if structure.atoms[0].type != '':
         print("Processing LJ and QQ")
         lj = _init_hoomd_lj(structure, nl, r_cut=r_cut, mixing_rule='lorentz',
                 ref_distance=ref_distance, ref_energy=ref_energy)
         qq = _init_hoomd_qq(structure, nl, r_cut=r_cut, **pppm_kwargs)
+        hoomd_objects.append(lj)
+        hoomd_objects.append(qq)
     if structure.adjusts:
         print("Processing 1-4 interactions, adjusting neighborlist exclusions")
         lj_14, qq_14 =  _init_hoomd_14_pairs(structure, nl,
                 ref_distance=ref_distance, ref_energy=ref_energy)
+        hoomd_objects.append(lj_14)
+        hoomd_objects.append(qq_14)
     if structure.bond_types:
         print("Processing harmonic bonds")
         harmonic_bond = _init_hoomd_bonds(structure,
                 ref_distance=ref_distance, ref_energy=ref_energy)
+        hoomd_objects.append(harmonic_bond)
     if structure.angle_types:
         print("Processing harmonic angles")
         harmonic_angle = _init_hoomd_angles(structure,
                 ref_energy=ref_energy)
+        hoomd_objects.append(harmonic_angle)
     if structure.dihedral_types:
         print("Processing periodic torsions")
         periodic_torsions = _init_hoomd_dihedrals(structure,
                 ref_energy=ref_energy)
+        hoomd_objects.append(periodic_torsions)
     if structure.rb_torsion_types:
         print("Processing RB torsions")
         rb_torsions = _init_hoomd_rb_torsions(structure,
                 ref_energy=ref_energy)
+        hoomd_objects.append(rb_torsions)
     print("HOOMD SimulationContext updated from ParmEd Structure")
+    return hoomd_objects
 
 def _init_hoomd_lj(structure, nl, r_cut=1.2, mixing_rule='lorentz',
         ref_distance=1.0, ref_energy=1.0):
