@@ -22,7 +22,7 @@ hoomd.group = import_("hoomd.group")
 
 
 def create_hoomd_simulation(structure, ref_distance=1.0, ref_mass=1.0,
-              ref_energy=1.0, r_cut=1.2, 
+              ref_energy=1.0, r_cut=1.2, auto_scale=False,
               snapshot_kwargs={}, 
               pppm_kwargs={'Nx':8, 'Ny':8, 'Nz':8, 'order':4}):
     """ Convert a parametrized pmd.Structure to hoomd.SimulationContext
@@ -39,6 +39,11 @@ def create_hoomd_simulation(structure, ref_distance=1.0, ref_mass=1.0,
         Reference energy for conversion to reduced units
     r_cut : float, optional, default 1.2
         Cutoff radius, in reduced units
+    auto_scale : bool, optional, default=False
+        Automatically use largest sigma value as ref_distance,
+        largest mass value as ref_mass
+        and largest epsilon value as ref_energy
+
     snapshot_kwargs : dict
         Kwargs to pass to to_hoomdsnapshot
     pppm_kwargs : dict
@@ -73,6 +78,15 @@ def create_hoomd_simulation(structure, ref_distance=1.0, ref_mass=1.0,
         raise ValueError("Please pass a parmed.Structure to " + 
                     "create_hoomd_simulation")
     hoomd_objects = [] # Potential adaptation for Hoomd v3 API
+
+    if auto_scale:
+        ref_mass = max([atom.mass for atom in structure.atoms])
+        pair_coeffs = list(set((atom.type,
+                                atom.epsilon,
+                                atom.sigma) for atom in structure.atoms))
+        ref_energy = max(pair_coeffs, key=operator.itemgetter(1))[1]
+        ref_distance = max(pair_coeffs, key=operator.itemgetter(2))[2]
+
 
     if not hoomd.context.current:
         hoomd.context.initialize("")

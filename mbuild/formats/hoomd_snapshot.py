@@ -13,7 +13,7 @@ __all__ = ['to_hoomdsnapshot']
 
 def to_hoomdsnapshot(structure,  ref_distance=1.0, ref_mass=1.0,
               ref_energy=1.0, rigid_bodies=None, shift_coords=True,
-              write_special_pairs=True, parmed_kwargs={}):
+              write_special_pairs=True, autoscale=False, parmed_kwargs={}):
     """Convert mb.Compound or parmed.Structure to hoomd.data.Snapshot
 
     Parameters
@@ -33,6 +33,10 @@ def to_hoomdsnapshot(structure,  ref_distance=1.0, ref_mass=1.0,
         part of a rigid body.
     shift_coords : bool, optional, default=True
         Shift coordinates from (0, L) to (-L/2, L/2) if necessary.
+    auto_scale : bool, optional, default=False
+        Automatically use largest sigma value as ref_distance,
+        largest mass value as ref_mass
+        and largest epsilon value as ref_energy
     write_special_pairs : bool, optional, default=True
         Writes out special pair information necessary to correctly use 
         the OPLS fudged 1,4 interactions in HOOMD.
@@ -52,6 +56,14 @@ def to_hoomdsnapshot(structure,  ref_distance=1.0, ref_mass=1.0,
 
     if not hoomd.context.current:
         hoomd.context.initialize("")
+
+    if auto_scale:
+        ref_mass = max([atom.mass for atom in structure.atoms])
+        pair_coeffs = list(set((atom.type,
+                                atom.epsilon,
+                                atom.sigma) for atom in structure.atoms))
+        ref_energy = max(pair_coeffs, key=operator.itemgetter(1))[1]
+        ref_distance = max(pair_coeffs, key=operator.itemgetter(2))[2]
 
     xyz = np.array([[atom.xx, atom.xy, atom.xz] for atom in structure.atoms])
     if shift_coords:
