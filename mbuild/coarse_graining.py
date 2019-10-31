@@ -2,8 +2,7 @@ from collections import OrderedDict
 from oset import oset as OrderedSet
 from copy import deepcopy
 
-from mbuild.compound import Compound
-from mbuild.compound import clone
+from mbuild.compound import Compound, clone
 from mbuild.exceptions import MBuildError
 
 __all__ = ['coarse_grain']
@@ -29,7 +28,7 @@ class Proxy(Compound):
         if compound.name == 'G':
             name = 'G'
         else:
-            name = compound.name + ' (proxy) '
+            name = compound.name + '_PROXY'
         super(Proxy, self).__init__(name=name)
 
         self.wrapped = compound

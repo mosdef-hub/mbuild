@@ -2,8 +2,7 @@ from __future__ import print_function, division
 
 __all__ = ['load', 'clone', 'Compound', 'Particle']
 
-import collections
-from collections import OrderedDict, defaultdict
+from collections import OrderedDict, defaultdict, Iterable
 from copy import deepcopy
 import itertools
 import os
@@ -24,6 +23,7 @@ from mbuild.box import Box
 from mbuild.exceptions import MBuildError
 from mbuild.utils.decorators import deprecated
 from mbuild.formats.xyz import read_xyz
+from mbuild.formats.json_formats import compound_to_json, compound_from_json
 from mbuild.formats.hoomdxml import write_hoomdxml
 from mbuild.formats.lammpsdata import write_lammpsdata
 from mbuild.formats.gsdwriter import write_gsd
@@ -31,11 +31,13 @@ from mbuild.formats.par_writer import write_par
 from mbuild.formats.cassandramcf import write_cassandramcf
 from mbuild.periodic_kdtree import PeriodicCKDTree
 from mbuild.utils.io import run_from_ipython, import_
+from mbuild.utils.jsutils import overwrite_nglview_default
 from mbuild.coordinate_transform import _translate, _rotate
 
 
 def load(filename_or_object, relative_to_module=None, compound=None, coords_only=False,
-         rigid=False, use_parmed=False, smiles=False, **kwargs):
+         rigid=False, use_parmed=False, smiles=False, 
+         infer_hierarchy=True, **kwargs):
     """Load a file or an existing topology into an mbuild compound.
 
     Files are read using the MDTraj package unless the `use_parmed` argument is
@@ -56,7 +58,7 @@ def load(filename_or_object, relative_to_module=None, compound=None, coords_only
     compound : mb.Compound, optional, default=None
         Existing compound to load atom and bond information into.
     coords_only : bool, optional, default=False
-        Only load the coordinates into an existing compoint.
+        Only load the coordinates into an existing compound.
     rigid : bool, optional, default=False
         Treat the compound as a rigid body
     use_parmed : bool, optional, default=False
@@ -64,6 +66,8 @@ def load(filename_or_object, relative_to_module=None, compound=None, coords_only
     smiles: bool, optional, default=False
         Use Open Babel to parse filename as a SMILES string
         or file containing a SMILES string.
+    infer_hierarchy : bool, optional, default=True
+        If True, infer hierarchy from chains and residues
     **kwargs : keyword arguments
         Key word arguments passed to mdTraj for loading.
 
@@ -72,8 +76,6 @@ def load(filename_or_object, relative_to_module=None, compound=None, coords_only
     compound : mb.Compound
 
     """
-    pybel = import_('pybel')
-
     # If compound doesn't exist, we will initialize one
     if compound is None:
         compound = Compound()
@@ -82,13 +84,19 @@ def load(filename_or_object, relative_to_module=None, compound=None, coords_only
     type_dict = {
         pmd.Structure:compound.from_parmed,
         md.Trajectory:compound.from_trajectory,
-        pybel.Molecule:compound.from_pybel,
     }
+    try:
+        pybel = import_('pybel')
+        type_dict.update({pybel.Molecule:compound.from_pybel})
+    except ImportError:
+        pass
+
     if isinstance(filename_or_object, Compound):
         return filename_or_object
     for type in type_dict:
         if isinstance(filename_or_object, type):
-            type_dict[type](filename_or_object,coords_only=coords_only, **kwargs)
+            type_dict[type](filename_or_object,coords_only=coords_only, 
+                    infer_hierarchy=infer_hierarchy, **kwargs)
             return compound
     if not isinstance(filename_or_object, str):
         raise ValueError('Input not supported.')
@@ -102,8 +110,12 @@ def load(filename_or_object, relative_to_module=None, compound=None, coords_only
         file_dir = os.path.dirname(script_path)
         filename_or_object = os.path.join(file_dir, filename_or_object)
 
-    # Handle the case of a xyz file, which must use an internal reader
+    # Handle the case of a xyz and json file, which must use an internal reader
     extension = os.path.splitext(filename_or_object)[-1]
+    if extension == '.json':
+        compound = compound_from_json(filename_or_object)
+        return compound
+
     if extension == '.xyz' and not 'top' in kwargs:
         if coords_only:
             tmp = read_xyz(filename_or_object)
@@ -123,7 +135,8 @@ def load(filename_or_object, relative_to_module=None, compound=None, coords_only
             "use_parmed set to True.  Bonds may be inferred from inter-particle "
             "distances and standard residue templates!")
         structure = pmd.load_file(filename_or_object, structure=True, **kwargs)
-        compound.from_parmed(structure, coords_only=coords_only)
+        compound.from_parmed(structure, coords_only=coords_only, 
+                infer_hierarchy=infer_hierarchy)
 
     elif smiles:
         pybel = import_('pybel')
@@ -151,11 +164,12 @@ def load(filename_or_object, relative_to_module=None, compound=None, coords_only
         temp_file = os.path.join(tmp_dir, 'smiles_to_mol2_intermediate.mol2')
         mymol.make3D()
         compound = Compound()
-        compound.from_pybel(mymol)
+        compound.from_pybel(mymol, infer_hierarchy=infer_hierarchy)
 
     else:
         traj = md.load(filename_or_object, **kwargs)
-        compound.from_trajectory(traj, frame=-1, coords_only=coords_only)
+        compound.from_trajectory(traj, frame=-1, coords_only=coords_only,
+                infer_hierarchy=infer_hierarchy)
 
     if rigid:
         compound.label_rigid_bodies()
@@ -686,7 +700,7 @@ class Compound(object):
 
         """
         # Support batch add via lists, tuples and sets.
-        if (isinstance(new_child, collections.Iterable) and
+        if (isinstance(new_child, Iterable) and
                 not isinstance(new_child, string_types)):
             for child in new_child:
                 self.add(child, reset_rigid_ids=reset_rigid_ids)
@@ -751,7 +765,7 @@ class Compound(object):
             self.periodicity = new_child.periodicity
 
     def remove(self, objs_to_remove):
-        """Remove children from the Compound.
+        """ Cleanly remove children from the Compound.
 
         Parameters
         ----------
@@ -759,40 +773,83 @@ class Compound(object):
             The Compound(s) to be removed from self
 
         """
-        if not self.children:
-            return
-
+        # Preprocessing and validating input type
+        from mbuild.port import Port
         if not hasattr(objs_to_remove, '__iter__'):
             objs_to_remove = [objs_to_remove]
         objs_to_remove = set(objs_to_remove)
 
+        # If nothing is to be remove, do nothing
         if len(objs_to_remove) == 0:
             return
 
-        remove_from_here = objs_to_remove.intersection(self.children)
-        self.children -= remove_from_here
-        yet_to_remove = objs_to_remove - remove_from_here
+        # Remove Port objects separately
+        ports_removed = set()
+        for obj in objs_to_remove:
+            if isinstance(obj, Port):
+                ports_removed.add(obj)
+                self._remove(obj)
+                obj.parent.children.remove(obj)
+                self._remove_references(obj)
 
-        for removed in remove_from_here:
-            for child in removed.children:
-                removed.remove(child)
+        objs_to_remove = objs_to_remove - ports_removed
 
-        for removed_part in remove_from_here:
-            if removed_part.rigid_id is not None:
-                for ancestor in removed_part.ancestors():
-                    ancestor._check_if_contains_rigid_bodies = True
-            if self.root.bond_graph and self.root.bond_graph.has_node(
-                    removed_part):
-                for neighbor in self.root.bond_graph.neighbors(removed_part):
-                    self.root.remove_bond((removed_part, neighbor))
-                self.root.bond_graph.remove_node(removed_part)
+        # Get particles to remove
+        particles_to_remove = set([particle for obj in objs_to_remove
+                                            for particle in obj.particles()])
+
+        # Recursively get container compounds to remove
+        to_remove = list()
+
+        def _check_if_empty(child):
+            if child in to_remove:
+                return
+            if set(child.particles()).issubset(particles_to_remove):
+                if child.parent:
+                    to_remove.append(child)
+                    _check_if_empty(child.parent)
+                else:
+                    warn("This will remove all particles in "
+                            "compound {}".format(self))
+            return
+
+        for particle in particles_to_remove:
+            _check_if_empty(particle)
+
+        # Fix rigid_ids and remove obj from bondgraph
+        for removed_part in to_remove:
+            self._remove(removed_part)
+
+        # Remove references to object
+        for removed_part in to_remove:
+            if removed_part.parent is not None:
+                removed_part.parent.children.remove(removed_part)
             self._remove_references(removed_part)
 
-        # Remove the part recursively from sub-compounds.
-        for child in self.children:
-            child.remove(yet_to_remove)
-            if child.contains_rigid:
+        # Remove ghost ports
+        all_ports_list = list(self.all_ports())
+        for port in all_ports_list:
+            if port.anchor not in [i for i in self.particles()]:
+                port.parent.children.remove(port)
+
+        # Check and reorder rigid id
+        for _ in particles_to_remove:
+            if self.contains_rigid:
                 self.root._reorder_rigid_ids()
+
+
+    def _remove(self, removed_part):
+        """Worker for remove(). Fixes rigid IDs and removes bonds"""
+        if removed_part.rigid_id is not None:
+            for ancestor in removed_part.ancestors():
+                ancestor._check_if_contains_rigid_bodies = True
+        if self.root.bond_graph and self.root.bond_graph.has_node(
+                removed_part):
+            for neighbor in self.root.bond_graph.neighbors(
+                    removed_part):
+                self.root.remove_bond((removed_part, neighbor))
+            self.root.bond_graph.remove_node(removed_part)
+
 
     def _remove_references(self, removed_part):
         """Remove labels pointing to this part and vice versa. """
@@ -1305,6 +1362,7 @@ class Compound(object):
         if show_ports:
             widget.add_ball_and_stick('_VS',
                                       aspect_ratio=1.0, color='#991f00')
+        overwrite_nglview_default(widget)
         return widget
 
     def update_coordinates(self, filename, update_port_locations=True):
@@ -1822,18 +1880,31 @@ class Compound(object):
             see http://lammps.sandia.gov/doc/atom_style.html for more
             information on atom styles.
 
+        Notes
+        ------
+        When saving the compound as a json, only the following arguments are used:
+            - filename
+            - show_ports
+
         See Also
         --------
         formats.gsdwrite.write_gsd : Write to GSD format
         formats.hoomdxml.write_hoomdxml : Write to Hoomd XML format
         formats.lammpsdata.write_lammpsdata : Write to LAMMPS data format
         formats.cassandramcf.write_cassandramcf : Write to Cassandra MCF format
+        formats.json_formats.compound_to_json : Write to a json file
 
         """
         extension = os.path.splitext(filename)[-1]
         if extension == '.xyz':
             traj = self.to_trajectory(show_ports=show_ports)
             traj.save(filename)
+            return
+
+        if extension == '.json':
+            compound_to_json(self,
+                             file_path=filename,
+                             include_ports=show_ports)
             return
 
         # Savers supported by mbuild.formats
@@ -1938,7 +2009,8 @@ class Compound(object):
 
     # Interface to Trajectory for reading/writing .pdb and .mol2 files.
     # -----------------------------------------------------------------
-    def from_trajectory(self, traj, frame=-1, coords_only=False):
+    def from_trajectory(self, traj, frame=-1, coords_only=False,
+            infer_hierarchy=True):
         """Extract atoms and bonds from a md.Trajectory.
 
         Will create sub-compounds for every chain if there is more than one
@@ -1952,7 +2024,8 @@ class Compound(object):
             The frame to take coordinates from.
         coords_only : bool, optional, default=False
             Only read coordinate information
-
+        infer_hierarchy : bool, optional, default=True
+            If True, infer compound hierarchy from chains and residues
         """
         if coords_only:
             if traj.n_atoms != self.n_particles:
@@ -1974,10 +2047,16 @@ class Compound(object):
             else:
                 chain_compound = self
             for res in chain.residues:
+                if infer_hierarchy:
+                    res_compound = Compound(name=res.name)
+                    chain_compound.add(res_compound)
+                    parent_cmpd = res_compound
+                else:
+                    parent_cmpd = chain_compound
                 for atom in res.atoms:
                     new_atom = Particle(name=str(atom.name),
                                         pos=traj.xyz[frame, atom.index])
-                    chain_compound.add(
+                    parent_cmpd.add(
                         new_atom, label='{0}[$]'.format(
                             atom.name))
                     atom_mapping[atom] = new_atom
@@ -2166,7 +2245,8 @@ class Compound(object):
                 top.add_bond(atom_mapping[atom1], atom_mapping[atom2])
         return top
 
-    def from_parmed(self, structure, coords_only=False):
+    def from_parmed(self, structure, coords_only=False,
+            infer_hierarchy=True):
         """Extract atoms and bonds from a pmd.Structure.
 
         Will create sub-compounds for every chain if there is more than one
@@ -2178,7 +2258,8 @@ class Compound(object):
             The structure to load.
         coords_only : bool
             Set preexisting atoms in compound to coordinates given by structure.
-
+        infer_hierarchy : bool, optional, default=True
+            If true, infer compound hierarchy from chains and residues
         """
         if coords_only:
             if len(structure.atoms) != self.n_particles:
@@ -2209,10 +2290,16 @@ class Compound(object):
             else:
                 chain_compound = self
             for residue in residues:
+                if infer_hierarchy:
+                    residue_compound = Compound(name=residue.name)
+                    chain_compound.add(residue_compound)
+                    parent_cmpd = residue_compound
+                else:
+                    parent_cmpd = chain_compound
                 for atom in residue.atoms:
                     pos = np.array([atom.xx, atom.xy, atom.xz]) / 10
                     new_atom = Particle(name=str(atom.name), pos=pos)
-                    chain_compound.add(
+                    parent_cmpd.add(
                         new_atom, label='{0}[$]'.format(
                             atom.name))
                     atom_mapping[atom] = new_atom
@@ -2378,8 +2465,10 @@ class Compound(object):
 
         Parameters
         ----------
-        names_only : bool, optional, default=False Store only the names of the
-            compounds in the graph. When set to False, the default behavior,
+        names_only : bool, optional, default=False
+        Store only the names of the
+            compounds in the graph, appended with their IDs, for distinction even
+            if they have the same name. When set to False, the default behavior,
             the nodes are the compounds themselves.
 
         Returns
@@ -2399,7 +2488,7 @@ class Compound(object):
         nodes = list()
         edges = list()
         if names_only:
-            nodes.append(self.name)
+            nodes.append(self.name + '_' + str(id(self)))
         else:
             nodes.append(self)
         nodes, edges = self._iterate_children(nodes, edges, names_only=names_only)
@@ -2415,8 +2504,10 @@ class Compound(object):
             return nodes, edges
         for child in self.children:
             if names_only:
-                nodes.append(child.name)
-                edges.append([child.parent.name, child.name])
+                unique_name = child.name + '_' + str(id(child))
+                unique_name_parent = child.parent.name + '_' + str((id(child.parent)))
+                nodes.append(unique_name)
+                edges.append([unique_name_parent, unique_name])
             else:
                 nodes.append(child)
                 edges.append([child.parent, child])
@@ -2553,7 +2644,8 @@ class Compound(object):
 
         return pybelmol
 
-    def from_pybel(self, pybel_mol, use_element=True, coords_only=False):
+    def from_pybel(self, pybel_mol, use_element=True, coords_only=False,
+            infer_hierarchy=True):
         """Create a Compound from a Pybel.Molecule
 
         Parameters
@@ -2566,6 +2658,8 @@ class Compound(object):
             Set preexisting atoms in compound to coordinates given by
             structure.  Note: Not yet implemented, included only for parity
             with other conversion functions
+        infer_hierarchy : bool, optional, default=True
+            If True, infer hierarchy from residues
 
         """
         openbabel = import_("openbabel")
@@ -2593,7 +2687,8 @@ class Compound(object):
             else:
                 temp_name = atom.type
             temp = Particle(name=temp_name, pos=xyz)
-            if hasattr(atom, 'residue'): # Is there a safer way to check for res?
+            if infer_hierarchy and hasattr(atom, 'residue'): 
+                # Is there a safer way to check for res?
                 if atom.residue.idx not in resindex_to_cmpd:
                     res_cmpd = Compound(name=atom.residue.name)
                     resindex_to_cmpd[atom.residue.idx] = res_cmpd
@@ -2621,8 +2716,6 @@ class Compound(object):
             self.periodicity = box.lengths
         else:
             warn("No unitcell detected for pybel.Molecule {}".format(pybel_mol))
-            box = None
-
 #       TODO: Decide how to gather PBC information from openbabel. Options may
 #             include storing it in .periodicity or writing a separate function
 #             that returns the box.

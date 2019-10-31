@@ -1,0 +1,170 @@
+trigger:
+  - master
+
+pr:
+  autoCancel: true
+  branches:
+    include:
+      - master
+
+schedules:
+- cron: "0 0 * * *"
+  displayName: Daily midnight build for master
+  branches:
+    include:
+    - master
+  always: true
+
+jobs:
+  - job: NoBleeding
+    strategy:
+      matrix:
+        Python36Ubuntu:
+          imageName: 'ubuntu-latest'
+          python.version: 3.6
+        Python37Ubuntu:
+          imageName: 'ubuntu-latest'
+          python.version: 3.7
+        Python36macOS:
+          imageName: 'macOS-latest'
+          python.version: 3.6
+        Python37macOS:
+          imageName: 'macOS-latest'
+          python.version: 3.7
+
+    pool:
+      vmImage: $(imageName)
+
+    steps:
+      - bash: echo "##vso[task.prependpath]$CONDA/bin"
+        displayName: Add Conda to path
+
+      - bash: sudo chown -R $USER $CONDA
+        condition: eq( variables['Agent.OS'], 'Darwin' )
+        displayName: Take ownership of conda installation
+
+      - bash: |
+          conda config --set always_yes yes --set changeps1 no
+          conda config --add channels omnia
+          conda config --add channels janschulz
+          conda config --add channels conda-forge
+          conda config --add channels mosdef
+        displayName: Add relavent Channels
+
+      - bash: |
+          conda update -c defaults conda
+          conda update --all
+          conda create -n test-environment
+          source activate test-environment
+          conda install --yes python=$(python.version) --file requirements-dev.txt
+          conda install --yes python=$(python.version) --file requirements-dev.txt
+          pip install -e .
+        displayName: Create Conda env, Activate, Install dependencies, Install Branch
+
+      - bash: |
+          source activate test-environment
+          conda install pytest-azurepipelines
+          python -m pytest -v --nbval --nbval-lax --pyargs mbuild --cov=mbuild --no-coverage-upload
+        displayName: Run Tests
+        
+      - bash: |
+          source activate test-environment
+          coverage xml
+          codecov --file ./coverage.xml --token 2b64a140-cfdd-4d0f-b1ba-33d34b8bf522
+          coverage html
+        condition: and( eq( variables['Agent.OS'], 'Linux' ), eq( variables['python.version'], '3.7' ) )
+        displayName: Upload Coverage Report
+      
+      - task: PublishCodeCoverageResults@1
+        inputs: 
+          codeCoverageTool: Cobertura
+          summaryFileLocation: '$(System.DefaultWorkingDirectory)/**/coverage.xml'
+          reportDirectory: '$(System.DefaultWorkingDirectory)/**/htmlcov'
+        condition: and( eq( variables['Agent.OS'], 'Linux' ), eq( variables['python.version'], '3.7' ) )
+        displayName: Publish Coverage Report
+
+          
+
+  - job: Windows_no_bleeding
+    pool:
+      vmImage: 'windows-latest'
+    strategy:
+      matrix:
+        Python36:
+          python.version: 3.6
+        Python37:
+          python.version: 3.7
+
+    steps:
+      - powershell: Write-Host "##vso[task.prependpath]$env:CONDA\Scripts"
+        displayName: Add Conda to path
+
+      - script: |
+          conda config --set always_yes yes --set changeps1 no
+          conda config --add channels omnia
+          conda config --add channels janschulz
+          conda config --add channels conda-forge
+          conda config --add channels mosdef
+        displayName: Add relavent channels
+
+      - script: |
+          conda update -c defaults conda
+          conda update --all
+          conda create -n test-environment
+          call activate test-environment
+          conda install --yes python=$(python.version) --file requirements-dev.txt
+          conda install --yes python=$(python.version) --file requirements-dev.txt
+        displayName: Create Conda env, Activate, Install dependencies
+        
+      - script: |
+          call activate test-environment
+          python -m pip --version
+          python -m pip --verbose install -e .
+        displayName: Install mBuild
+
+      - script: |
+          call activate test-environment
+          conda install pytest-azurepipelines
+          python -m pytest -v --nbval --nbval-lax --cov=mbuild --cov-report=html --pyargs mbuild --no-coverage-upload
+        displayName: Run Tests
+
+  - job: LinuxBleedingFoyer
+
+    pool:
+      vmImage: 'ubuntu-latest'
+
+    steps:
+      - bash: echo "##vso[task.prependpath]$CONDA/bin"
+        displayName: Add Conda to path
+
+      - bash: |
+          conda config --set always_yes yes --set changeps1 no
+          conda config --add channels omnia
+          conda config --add channels janschulz
+          conda config --add channels conda-forge
+          conda config --add channels mosdef
+          conda update -c defaults conda
+          conda update --all
+          conda create -n  bleeding-test-environment
+          source activate bleeding-test-environment
+          conda install --yes python=3.7 --file requirements-dev.txt
+          conda install --yes python=3.7 --file requirements-dev.txt
+        displayName: Create a new bleeding test environment
+
+      - bash: |
+          source activate bleeding-test-environment
+          git clone https://github.com/mosdef-hub/foyer.git
+          cd foyer
+          conda install --yes --file requirements-dev.txt
+          conda install --yes --file requirements-dev.txt
+          pip install -e .
+          pip uninstall mbuild -y
+          cd ..
+          pip install -e .
+        displayName: clone foyer, install foyer, install mbuild
+
+      - bash: |
+          source activate bleeding-test-environment
+          conda install pytest-azurepipelines
+          python -m pytest -v --nbval --nbval-lax --cov=mbuild --cov-report= --pyargs mbuild --no-coverage-upload
+        displayName: Run Tests

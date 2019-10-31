@@ -3,12 +3,13 @@ import time
 
 import numpy as np
 import parmed as pmd
+import mdtraj
 import pytest
 
 import mbuild as mb
 from mbuild.exceptions import MBuildError
 from mbuild.utils.geometry import calc_dihedral
-from mbuild.utils.io import get_fn, has_foyer, has_intermol, has_openbabel, has_networkx
+from mbuild.utils.io import get_fn, import_, has_foyer, has_intermol, has_openbabel, has_networkx
 from mbuild.tests.base_test import BaseTest
 
 class TestCompound(BaseTest):
@@ -69,11 +70,18 @@ class TestCompound(BaseTest):
         ch3.update_coordinates(get_fn("methyl.pdb"))
 
     def test_save_simple(self, ch3):
-        extensions = ['.xyz', '.pdb', '.mol2']
+        extensions = ['.xyz', '.pdb', '.mol2', '.json']
         for ext in extensions:
             outfile = 'methyl_out' + ext
             ch3.save(filename=outfile)
             assert os.path.exists(outfile)
+
+    def test_save_json_loop(self, ethane):
+        ethane.save('ethane.json', show_ports=True)
+        ethane_copy = mb.load('ethane.json')
+        assert ethane.n_particles == ethane_copy.n_particles
+        assert ethane.n_bonds == ethane_copy.n_bonds
+        assert len(ethane.children) == len(ethane_copy.children)
 
     def test_save_box(self, ch3):
         extensions = ['.mol2', '.pdb', '.hoomdxml', '.gro']
@@ -283,20 +291,57 @@ class TestCompound(BaseTest):
                     for meth in eth.children]) == 2 * n_ethanes
 
     def test_remove(self, ethane):
-        hydrogens = ethane.particles_by_name('H')
-        ethane.remove(hydrogens)
+        # create and remove a subcompound
 
-        assert ethane.n_particles == 2
-        assert ethane.n_bonds == 1
-        for part in ethane.children:
+
+        ethane1 = mb.clone(ethane)
+        hydrogens = ethane1.particles_by_name('H')
+        ethane1.remove(hydrogens)
+
+        assert ethane1.n_particles == 2
+        assert ethane1.n_bonds == 1
+        for part in ethane1.children:
             assert part.n_bonds == 0
+            assert part.n_particles == 1
+            assert len(part.children) == 4
+        assert len(ethane1.children) == 2
 
-        carbons = ethane.particles_by_name('C')
-        ethane.remove(carbons)
-        assert ethane.n_particles == 0
-        assert ethane.n_bonds == 0
-        assert len(ethane.children) == 2
-        assert len(ethane.children[0].children) == 7  # Still contains ports
+        carbons = ethane1.particles_by_name('C')
+        ethane1.remove(carbons)
+        assert ethane1.n_particles == 1 # left with the highest Compound
+        assert ethane1.n_bonds == 0
+        assert len(ethane1.children) == 0 # left with highest Compound
+
+        # Test remove all particles belong to a single child of an Ethane
+        ethane2 = mb.clone(ethane)
+        CH3_particles = list(ethane2.children[0].particles())
+        ethane2.remove(CH3_particles)
+        assert len(ethane2.children) == 1
+        assert len(ethane2.children[0].children) == 5 # 4 particles + 1 port
+
+        # Test remove a subcompound
+        ethane3 = mb.clone(ethane)
+        ethane3.remove(ethane3.children[0])
+        assert len(ethane3.children) == 1
+        assert len(ethane3.children[0].children) == 5 # 4 particles + 1 port
+
+        # Test remove an entire compound
+        ethane4 = mb.clone(ethane)
+        ethane4.remove(ethane4)
+        assert ethane4.n_particles == 1 # left with the highest Compound
+        assert ethane4.n_bonds == 0
+        assert len(ethane4.children) == 0 # left with highest Compound
+
+        # Test remove one subcompound and part of another
+        ethane5 = mb.clone(ethane)
+        ethane5.remove([particle for particle
+                        in ethane5.children[0].particles()] +
+                        [ethane5.children[1].children[0]])
+        assert ethane5.n_particles == 3 # three hydrogens
+        assert ethane5.n_bonds == 0
+        assert len(ethane5.children[0].children) == 6 # 3 hydrogens + 3 ports
+        assert len(ethane5.children) == 1
+
 
     def test_remove_many(self, ethane):
         ethane.remove([ethane.children[0], ethane.children[1]])
@@ -314,7 +359,8 @@ class TestCompound(BaseTest):
         assert ethane.n_particles == 4
         assert ethane.n_bonds == 3
         assert len(ethane.children) == 1
-        assert len(ethane.children[0].children) == 5  # Still contains a port
+        # Still contains a port
+        assert len(ethane.children[0].children) == 5  
 
         methyl = ethane.children[0]
         ethane.remove(methyl)
@@ -931,6 +977,53 @@ class TestCompound(BaseTest):
 
         assert all([isinstance(n, str) for n in graph.nodes()])
 
+    def test_from_trajectory(self):
+        comp = mb.Compound()
+        traj = mdtraj.load(get_fn('spc.pdb'))
+        comp.from_trajectory(traj)
+        assert comp.children[0].name == 'SPC'
+
+    def test_from_parmed(self):
+        comp = mb.Compound()
+        struc = pmd.load_file(get_fn('spc.pdb'))
+        comp.from_parmed(struc)
+        assert comp.children[0].name == 'SPC'
+
+    def test_complex_from_trajectory(self):
+        comp = mb.Compound()
+        traj = mdtraj.load(get_fn('pro_but.pdb'))
+        comp.from_trajectory(traj)
+        assert comp.children[0].children[0].name == 'pro'
+        assert comp.children[1].children[0].name == 'but'
+
+    def test_complex_from_parmed(self):
+        comp = mb.Compound()
+        struc = pmd.load_file(get_fn('pro_but.pdb'))
+        comp.from_parmed(struc)
+        assert comp.children[0].name == 'pro'
+        assert comp.children[1].name == 'but'
+
+    @pytest.mark.skipif(not has_networkx, reason="NetworkX is not installed")
+    def test_to_networkx_names_only_with_same_names(self):
+        comp = mb.Compound()
+        comp.name = 'compound'
+
+        for n in range(2):
+            child = mb.Compound()
+            child.name = 'sub_compound'
+            comp.add(child)
+            for m in range(3):
+                child_child = mb.Compound()
+                child_child.name = 'sub_sub_compound'
+                child.add(child_child)
+
+        graph = comp.to_networkx(names_only=True)
+
+        assert graph.number_of_edges() == 8
+        assert graph.number_of_nodes() == 9
+
+        assert all([isinstance(n, str) for n in graph.nodes()])
+
     @pytest.mark.skipif(not has_openbabel, reason="Pybel is not installed")
     def test_to_pybel(self, ethane):
         pybel_mol = ethane.to_pybel(box=None)
@@ -941,7 +1034,7 @@ class TestCompound(BaseTest):
 
     @pytest.mark.skipif(not has_openbabel, reason="Pybel is not installed")
     def test_from_pybel(self):
-        import pybel
+        pybel = import_('pybel')
         benzene = list(pybel.readfile('mol2', get_fn('benzene.mol2')))[0]
         cmpd = mb.Compound()
         cmpd.from_pybel(benzene)
@@ -965,7 +1058,7 @@ class TestCompound(BaseTest):
 
     @pytest.mark.skipif(not has_openbabel, reason="Pybel is not installed")
     def test_from_pybel_residues(self):
-       import pybel
+       pybel = import_('pybel')
        pybel_mol = list(pybel.readfile('mol2', get_fn('methyl.mol2')))[0]
        cmpd = mb.Compound()
        cmpd.from_pybel(pybel_mol)
@@ -973,7 +1066,7 @@ class TestCompound(BaseTest):
 
     @pytest.mark.skipif(not has_openbabel, reason="Pybel is not installed")
     def test_from_pybel_monolayer(self):
-        import pybel
+        pybel = import_('pybel')
         monolayer = list(pybel.readfile('pdb', get_fn('monolayer.pdb')))[0]
         # TODO: Actually store the box information
         cmpd = mb.Compound()

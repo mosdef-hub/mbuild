@@ -1,6 +1,5 @@
 import numpy as np
 
-from mbuild import Box
 
 __all__ = ['write_poscar']
 
