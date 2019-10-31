@@ -13,7 +13,7 @@ __all__ = ['to_hoomdsnapshot']
 
 def to_hoomdsnapshot(structure,  ref_distance=1.0, ref_mass=1.0,
               ref_energy=1.0, rigid_bodies=None, shift_coords=True,
-              write_special_pairs=True, autoscale=False, parmed_kwargs={}):
+              write_special_pairs=True, auto_scale=False, parmed_kwargs={}):
     """Convert mb.Compound or parmed.Structure to hoomd.data.Snapshot
 
     Parameters
