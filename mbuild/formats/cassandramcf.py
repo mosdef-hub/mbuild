@@ -4,11 +4,12 @@ from warnings import warn
 
 import numpy as np
 import networkx as nx
+import parmed as pmd
 
-__all__ = ['write_cassandramcf']
+__all__ = ['write_mcf']
 
 
-def write_cassandramcf(structure, filename, angle_style, 
+def write_mcf(structure, filename, angle_style, 
                       dihedral_style,lj14=1.0,coul14=1.0):
     """Output a Cassandra molecular connectivity file (MCF).
     
@@ -36,9 +37,10 @@ def write_cassandramcf(structure, filename, angle_style,
 
     """
 
-    forcefield = True
+    if not isinstance(structure,pmd.Structure):
+        raise ValueError("MCF writer requires parmed structure.")
     if structure[0].type == '':
-        forcefield = False
+        raise ValueError("MCF writing not supported without parameterized forcefield.")
 
     # Conversion factors
     IG_CONSTANT_KCAL = 0.00198720425864083 # kcal/mol*K
@@ -65,10 +67,6 @@ def write_cassandramcf(structure, filename, angle_style,
         if len(structure.rb_torsions) > 0 and len(structure.dihedrals) > 0:
             raise ValueError("Multiple dihedral styles detected, check your "
                              "Forcefield XML and structure")
-    for dihedral in structure.dihedrals:
-        if dihedral.improper:
-            raise ValueError("Amber-style impropers are currently not supported")
-
 
     # Identify atoms in rings and Cassandra 'fragments'
     in_ring,frag_list,frag_conn = _id_rings_fragments(structure)
@@ -83,7 +81,7 @@ def write_cassandramcf(structure, filename, angle_style,
                   '****************************************\n')
         mcf_file.write('!'+filename+' - created by mBuild\n\n')
 
-        _write_atom_information(mcf_file,structure,in_ring,forcefield,IG_CONSTANT_KCAL)
+        _write_atom_information(mcf_file,structure,in_ring,IG_CONSTANT_KCAL)
         _write_bond_information(mcf_file,structure)
         _write_angle_information(mcf_file,structure,angle_style,IG_CONSTANT_KCAL)
         _write_dihedral_information(mcf_file,structure,dihedral_style,KCAL_TO_KJ)
@@ -113,31 +111,46 @@ def _id_rings_fragments(structure):
         Fragment ids of connected fragments
 
     """
-
+    
     # Identify atoms in rings
     bond_graph = nx.Graph()
     bond_graph.add_edges_from([ [bond.atom1.idx,bond.atom2.idx] for bond in structure.bonds ])
-
+    
     # Check if entire molecule is connected. Warn if not.
     if nx.is_connected(bond_graph) == False:
         raise ValueError("Not all components of the molecule are connected. MCF files "
                          "are for a single molecule and thus everything should be "
                          "connected through bonds.")
-
+    
     all_rings = nx.cycle_basis(bond_graph)  
     in_ring = [False]*bond_graph.number_of_nodes()
     adj_to_ring = [False]*bond_graph.number_of_nodes()
     for ring in all_rings:
         for idx in ring:
             in_ring[idx] = True
-
+    
     # Identify fragments
     # See Shah and Maginn, JCP, 135, 134121, 2011, doi:10.1063/1.3644939
     frag_list = []
     frag_conn = []
-
+    
     # First create a neighbor list for each atom
     neigh_dict = {i:list(bond_graph.neighbors(i)) for i in range(bond_graph.number_of_nodes())}
+    # First ID fused rings
+    fused_rings = []
+    rings_to_remove = []
+    for i in range(len(all_rings)):
+        ring1 = all_rings[i]
+        for j in range(i+1,len(all_rings)):
+            ring2 = all_rings[j]
+            shared_atoms = list(set(ring1) & set(ring2))
+            if len(shared_atoms) == 2:
+                fused_rings.append(list(set(ring1+ring2)))
+                rings_to_remove.append(ring1)
+                rings_to_remove.append(ring2)
+    for ring in rings_to_remove:
+        all_rings.remove(ring)
+    all_rings = all_rings + fused_rings
     # ID fragments which contain a ring
     for ring in all_rings:
         adjacentatoms = []
@@ -169,17 +182,18 @@ def _id_rings_fragments(structure):
                 print(frag1)
                 print('Fragment 2 atoms:')
                 print(frag2)
-                raise ValueError('Fragments share more than two atoms...'
-                        'something may be going awry. See above for details.')
-
+                print('Fragments share more than two atoms...'
+                      'something may be going awry unless there are'
+                      'fused rings in your system. See above for details.')
+    
     # Add atoms adjacent to rings to be marked as 'in ring' for MCF file
     for idx,ring_status in enumerate(adj_to_ring):
         if ring_status:
             in_ring[idx] = True
-
+    
     return in_ring, frag_list, frag_conn
 
-def _write_atom_information(mcf_file,structure,in_ring,forcefield,IG_CONSTANT_KCAL):
+def _write_atom_information(mcf_file,structure,in_ring,IG_CONSTANT_KCAL):
     """Write the atoms in the system.
     
     Parameters
@@ -190,18 +204,13 @@ def _write_atom_information(mcf_file,structure,in_ring,forcefield,IG_CONSTANT_KC
         Parmed structure object
     in_ring : list
         Boolean for each atom idx True if atom belongs to a ring
-    forcefield : Boolean
-        Does forcefield info exist?
     IG_CONSTANT_KCAL : float
         Ideal gas constant in kcal/mol K
 
     """
 
     names = [atom.name for atom in structure.atoms]
-    if forcefield:
-        types = [atom.type for atom in structure.atoms]
-    else:
-        types = [atom.name for atom in structure.atoms]
+    types = [atom.type for atom in structure.atoms]
     masses = [atom.mass for atom in structure.atoms]
     charges = [atom.charge for atom in structure.atoms]
     # Convert energy to units of K
@@ -281,11 +290,11 @@ def _write_angle_information(mcf_file,structure,angle_style,IG_CONSTANT_KCAL):
 
 
 
-    mcf_file.write('\n!angle format\n')
+    mcf_file.write('\n!Angle Format\n')
     mcf_file.write('!index i j k type parameters\n' +
               '!type="fixed", parms=equilibrium_angle\n' + 
               '!type="harmonic", parms=force_constant equilibrium_angle\n')
-    mcf_file.write('\n# angle_info\n')
+    mcf_file.write('\n# Angle_Info\n')
     mcf_file.write('{:d}\n'.format(len(structure.angles)))
 
     for i,angle in enumerate(structure.angles):
@@ -394,7 +403,7 @@ def _write_improper_information(mcf_file,structure,KCAL_TO_KJ):
         mcf_file.write('{:<4d}  {:<4d}  {:<4d}  {:<4d}  {:<4d}  {:s}  {:8.3f}  {:8.3f}\n'.format(
             i+1,improper.atom1.idx+1,improper.atom2.idx+1,
             improper.atom3.idx+1,improper.atom4.idx+1,
-            improper_type,improper.type.psi_k/KCAL_TO_KJ,
+            improper_type,improper.type.psi_k*KCAL_TO_KJ,
             improper.type.psi_eq))
 
 def _write_fragment_information(mcf_file,structure,frag_list,frag_conn):

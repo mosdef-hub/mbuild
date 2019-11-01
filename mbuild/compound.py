@@ -28,7 +28,7 @@ from mbuild.formats.hoomdxml import write_hoomdxml
 from mbuild.formats.lammpsdata import write_lammpsdata
 from mbuild.formats.gsdwriter import write_gsd
 from mbuild.formats.par_writer import write_par
-from mbuild.formats.cassandramcf import write_cassandramcf
+from mbuild.formats.cassandramcf import write_mcf
 from mbuild.periodic_kdtree import PeriodicCKDTree
 from mbuild.utils.io import run_from_ipython, import_
 from mbuild.utils.jsutils import overwrite_nglview_default
@@ -1859,7 +1859,7 @@ class Compound(object):
         **kwargs
             Depending on the file extension these will be passed to either
             `write_gsd`, `write_hoomdxml`, `write_lammpsdata`, 
-            `write_cassandramcf` or `parmed.Structure.save`.
+            `write_mcf`, or `parmed.Structure.save`.
             See https://parmed.github.io/ParmEd/html/structobj/parmed.structure.Structure.html#parmed.structure.Structure.save
 
 
@@ -1891,7 +1891,7 @@ class Compound(object):
         formats.gsdwrite.write_gsd : Write to GSD format
         formats.hoomdxml.write_hoomdxml : Write to Hoomd XML format
         formats.lammpsdata.write_lammpsdata : Write to LAMMPS data format
-        formats.cassandramcf.write_cassandramcf : Write to Cassandra MCF format
+        formats.cassandramcf.write_mcf : Write to Cassandra MCF format
         formats.json_formats.compound_to_json : Write to a json file
 
         """
@@ -1913,7 +1913,7 @@ class Compound(object):
                   '.lammps': write_lammpsdata,
                   '.lmp': write_lammpsdata,
                   '.par': write_par,
-                  '.mcf': write_cassandramcf}
+                  '.mcf': write_mcf}
 
         try:
             saver = savers[extension]
