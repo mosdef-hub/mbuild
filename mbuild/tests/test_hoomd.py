@@ -6,6 +6,7 @@ import mbuild as mb
 from mbuild.tests.base_test import BaseTest
 from mbuild.utils.io import has_foyer, has_hoomd, import_
 
+
 @pytest.mark.skipif(not has_hoomd, reason="HOOMD is not installed")
 class TestHoomd(BaseTest):
     def test_compound_to_snapshot(self, ethane):
@@ -19,7 +20,7 @@ class TestHoomd(BaseTest):
     def test_bad_input_to_snapshot(self):
         hoomd_snapshot = import_("mbuild.formats.hoomd_snapshot")
         with pytest.raises(ValueError):
-            snap = hoomd_snapshot.to_hoomdsnapshot('fake_object')
+            hoomd_snapshot.to_hoomdsnapshot('fake_object')
 
     def test_non_param_struc_to_snapshot(self, ethane):
         hoomd_snapshot = import_("mbuild.formats.hoomd_snapshot")
