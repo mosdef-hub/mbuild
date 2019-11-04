@@ -75,7 +75,7 @@ The first is the import statement ``import mbuild``.
 We must make sure that mbuild is installed since we are inheriting from ``mbuild.Compound``. When you decide to distribute your plug-in,
 the dependencies must be listed.
 
-The second is the name of the plug-in itself. It is in general good practice to name it the name of your ``class``.
+The second is the name of the plug-in itself. It is considered good practice to name it the name of your ``class``.
 In this case, the name of the plug-in would be ``FCC``.
 
 The last step is to edit the ``setup.py`` file such that the plug-in can be registered under the entry_point group ``mbuild.plugins``.
@@ -97,10 +97,11 @@ The last step is to edit the ``setup.py`` file such that the plug-in can be regi
 
 This is once again, a very minimal setup file, a more thoroughly tested and developed package will have more information contained within.
 
-The important section is the ``entry_points`` argument. Here we define the entry_point group we want to plug in to ``"mbuild.plugins"``.
-Finally, we tell python what name we want to have our plug-in be discoverable by, in this case we call it ``FCC`` as denoted by the name before the assignment operator ``FCC =``.
-Next, we pass the "path" from this ``setup.py`` file to the python file that contains the class we want to register as a plug-in: ``mbuild_fcc.mbuild_fcc``.
-Then, we provide the name of the class within that python file we want to make discoverable ``:FCC``.
+The important section is the ``entry_points`` argument. Here we define the entry_point group we want to register with: ``"mbuild.plugins"``.
+Finally, we tell python what name to use when accessing this plug-in, in this case we call it ``FCC`` as denoted by the name before the assignment operator ``FCC =``.
+Next, we pass the "path" from the location of the ``setup.py`` file to the python file that contains the class we want to register as a plug-in: ``mbuild_fcc.mbuild_fcc``. Then, we provide the name of the class within that python file we want to make discoverable ``:FCC``.
+
+Since the ``setup.py`` file is located in the top folder of the python project, the first ``mbuild_fcc`` is the name of the folder, and the second is the name of the python file. The colon (:) is used when accessing the class from the python file itself.
 
 
 Putting it all together
@@ -108,7 +109,7 @@ ________
 
 Finally, we have ``FCC = mbuild_fcc.mbuild_fcc:FCC``.
 
-Make sure you have mBuild installed, then install your plug-in project in the same location as the ``setup.py`` file.
+Make sure you have mBuild installed, then run the command below in the directory where the ``setup.py`` file is located.
 
 ``pip install -e .``
 
@@ -122,7 +123,7 @@ To test that you set up your plug-in correctly, try importing mBuild!
 
 ``import mbuild``
 
-If you received no error messages, your recipe should be discoverable!
+If you do not receive error messages, your recipe should be discoverable!
 
 ``help(mbuild.recipes.FCC)``
 
