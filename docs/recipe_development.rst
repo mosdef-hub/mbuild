@@ -81,6 +81,7 @@ In this case, the name of the plug-in would be ``FCC``.
 The last step is to edit the ``setup.py`` file such that the plug-in can be registered under the entry_point group ``mbuild.plugins``.
 
 ::
+
     from setuptools import setup
 
     setup(
