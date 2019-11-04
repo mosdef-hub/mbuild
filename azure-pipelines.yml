@@ -1,8 +1,11 @@
 trigger:
-  - "*"
+  - master
 
 pr:
-  - "*"
+  autoCancel: true
+  branches:
+    include:
+      - master
 
 schedules:
 - cron: "0 0 * * *"
@@ -60,8 +63,27 @@ jobs:
 
       - bash: |
           source activate test-environment
-          python -m pytest -v --nbval --nbval-lax --cov=mbuild --cov-report= --pyargs mbuild
+          conda install pytest-azurepipelines
+          python -m pytest -v --nbval --nbval-lax --pyargs mbuild --cov=mbuild --no-coverage-upload
         displayName: Run Tests
+        
+      - bash: |
+          source activate test-environment
+          coverage xml
+          codecov --file ./coverage.xml --token 2b64a140-cfdd-4d0f-b1ba-33d34b8bf522
+          coverage html
+        condition: and( eq( variables['Agent.OS'], 'Linux' ), eq( variables['python.version'], '3.7' ) )
+        displayName: Upload Coverage Report
+      
+      - task: PublishCodeCoverageResults@1
+        inputs: 
+          codeCoverageTool: Cobertura
+          summaryFileLocation: '$(System.DefaultWorkingDirectory)/**/coverage.xml'
+          reportDirectory: '$(System.DefaultWorkingDirectory)/**/htmlcov'
+        condition: and( eq( variables['Agent.OS'], 'Linux' ), eq( variables['python.version'], '3.7' ) )
+        displayName: Publish Coverage Report
+
+          
 
   - job: Windows_no_bleeding
     pool:
@@ -102,7 +124,8 @@ jobs:
 
       - script: |
           call activate test-environment
-          python -m pytest -v --nbval --nbval-lax --cov=mbuild --cov-report= --pyargs mbuild
+          conda install pytest-azurepipelines
+          python -m pytest -v --nbval --nbval-lax --cov=mbuild --cov-report=html --pyargs mbuild --no-coverage-upload
         displayName: Run Tests
 
   - job: LinuxBleedingFoyer
@@ -142,5 +165,6 @@ jobs:
 
       - bash: |
           source activate bleeding-test-environment
-          python -m pytest -v --nbval --nbval-lax --cov=mbuild --cov-report= --pyargs mbuild
+          conda install pytest-azurepipelines
+          python -m pytest -v --nbval --nbval-lax --cov=mbuild --cov-report= --pyargs mbuild --no-coverage-upload
         displayName: Run Tests
