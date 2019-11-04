@@ -1,6 +1,7 @@
-import warnings 
+import warnings
 import itertools
 import numpy as np
+import operator
 
 import parmed as pmd
 import mbuild as mb
@@ -23,7 +24,7 @@ hoomd.group = import_("hoomd.group")
 
 def create_hoomd_simulation(structure, ref_distance=1.0, ref_mass=1.0,
               ref_energy=1.0, r_cut=1.2, auto_scale=False,
-              snapshot_kwargs={}, 
+              snapshot_kwargs={},
               pppm_kwargs={'Nx':8, 'Ny':8, 'Nz':8, 'order':4}):
     """ Convert a parametrized pmd.Structure to hoomd.SimulationContext
 
@@ -56,26 +57,26 @@ def create_hoomd_simulation(structure, ref_distance=1.0, ref_mass=1.0,
 
     Notes
     -----
-    While the hoomd objects are returned, the 
+    While the hoomd objects are returned, the
     hoomd.SimulationContext is accessible via `hoomd.context.current`.
     If you pass a non-parametrized pmd.Structure, you will not have
     angle, dihedral, or force field information. You may be better off
     creating a hoomd.Snapshot
     Reference units should be expected to convert parmed Structure units :
         angstroms, kcal/mol, and daltons
-    
+
     """
 
     if isinstance(structure, mb.Compound):
         raise ValueError("You passed mb.Compound to create_hoomd_simulation, " +
                 "there will be no angles, dihedrals, or force field parameters. " +
-                "Please use " + 
+                "Please use " +
                 "hoomd_snapshot.to_hoomdsnapshot to create a hoomd.Snapshot, " +
                 "then create your own hoomd context " +
                 "and pass your hoomd.Snapshot " +
                 "to hoomd.init.read_snapshot()")
     elif not isinstance(structure, pmd.Structure):
-        raise ValueError("Please pass a parmed.Structure to " + 
+        raise ValueError("Please pass a parmed.Structure to " +
                     "create_hoomd_simulation")
     hoomd_objects = [] # Potential adaptation for Hoomd v3 API
 
@@ -101,7 +102,7 @@ def create_hoomd_simulation(structure, ref_distance=1.0, ref_mass=1.0,
 
     if structure.atoms[0].type != '':
         print("Processing LJ and QQ")
-        lj = _init_hoomd_lj(structure, nl, r_cut=r_cut, 
+        lj = _init_hoomd_lj(structure, nl, r_cut=r_cut,
                 ref_distance=ref_distance, ref_energy=ref_energy)
         qq = _init_hoomd_qq(structure, nl, r_cut=r_cut, **pppm_kwargs)
         hoomd_objects.append(lj)
@@ -135,7 +136,7 @@ def create_hoomd_simulation(structure, ref_distance=1.0, ref_mass=1.0,
     print("HOOMD SimulationContext updated from ParmEd Structure")
     return hoomd_objects
 
-def _init_hoomd_lj(structure, nl, r_cut=1.2, 
+def _init_hoomd_lj(structure, nl, r_cut=1.2,
         ref_distance=1.0, ref_energy=1.0):
     """ LJ parameters """
     # Identify the unique atom types before setting
@@ -147,7 +148,7 @@ def _init_hoomd_lj(structure, nl, r_cut=1.2,
     # Set the hoomd parameters for self-interactions
     lj = hoomd.md.pair.lj(r_cut, nl)
     for name, atom_type in atom_type_params.items():
-        lj.pair_coeff.set(name, name, 
+        lj.pair_coeff.set(name, name,
                 sigma=atom_type.sigma/ref_distance,
                 epsilon=atom_type.epsilon/ref_energy)
 
@@ -159,21 +160,21 @@ def _init_hoomd_lj(structure, nl, r_cut=1.2,
         if nb_fix_info is None:
             # No nbfix means use mixing rule to find cross-interaction
             if structure.combining_rule  == 'lorentz':
-                sigma = ((atom_type_params[a1].sigma + atom_type_params[a2].sigma) 
+                sigma = ((atom_type_params[a1].sigma + atom_type_params[a2].sigma)
                         / (2 * ref_distance))
-                epsilon = ((atom_type_params[a1].epsilon * 
-                        atom_type_params[a2].epsilon) / 
+                epsilon = ((atom_type_params[a1].epsilon *
+                        atom_type_params[a2].epsilon) /
                         ref_energy**2)**0.5
             elif structure.combining_rule == 'geometric':
-                sigma = ((atom_type_params[a1].sigma * 
+                sigma = ((atom_type_params[a1].sigma *
                         atom_type_params[a2].sigma) /
                         ref_distance**2)**0.5
-                epsilon = ((atom_type_params[a1].epsilon * 
-                        atom_type_params[a2].epsilon) / 
+                epsilon = ((atom_type_params[a1].epsilon *
+                        atom_type_params[a2].epsilon) /
                         ref_energy**2)**0.5
             else:
                 raise ValueError(
-                        "Mixing rule {} ".format(structure.combining_rule) + 
+                        "Mixing rule {} ".format(structure.combining_rule) +
                                 "not supported, use lorentz")
         else:
             # If we have nbfix info, use it
@@ -197,13 +198,13 @@ def _init_hoomd_qq(structure, nl, Nx=1, Ny=1, Nz=1, order=4, r_cut=1.2):
 
 def _init_hoomd_14_pairs(structure, nl, r_cut=1.2, ref_distance=1.0, ref_energy=1.0):
     """Special_pairs to handle 14 scalings
-    
+
     See discussion: https://groups.google.com/forum/
     #!topic/hoomd-users/iZ9WCpHczg0 """
 
-    # Update neighborlist to exclude 1-4 interactions, 
+    # Update neighborlist to exclude 1-4 interactions,
     # but impose a special_pair force to handle these pairs
-    nl.reset_exclusions(exclusions=['1-2', '1-3', '1-4']) 
+    nl.reset_exclusions(exclusions=['1-2', '1-3', '1-4'])
 
     if hoomd.context.current.system_definition.getPairData().getN() == 0:
         print("No 1,4 pairs found in hoomd snapshot")
@@ -220,10 +221,10 @@ def _init_hoomd_14_pairs(structure, nl, r_cut=1.2, ref_distance=1.0, ref_energy=
         if ps not in params_14:
             params_14[ps] = adjust.type
     for name, adjust_type in params_14.items():
-        lj_14.pair_coeff.set(name, 
+        lj_14.pair_coeff.set(name,
                 sigma=adjust_type.sigma/ref_distance,
                 # The adjust epsilon alreayd carries the scaling
-                epsilon=adjust_type.epsilon/ref_energy, 
+                epsilon=adjust_type.epsilon/ref_energy,
                 # Do NOT use hoomd's alpha to modify any LJ terms
                 alpha=1,
                 r_cut=r_cut)
@@ -248,14 +249,14 @@ def _init_hoomd_bonds(structure, ref_distance=1.0, ref_energy=1.0):
     # Set the hoomd parameters
     harmonic_bond = hoomd.md.bond.harmonic()
     for name, bond_type in bond_type_params.items():
-        # A (paramerized) parmed structure with no bondtype 
+        # A (paramerized) parmed structure with no bondtype
         # is because of constraints
         if bond_type is None:
             print("Bond with no bondtype detected, setting coefficients to 0")
             harmonic_bond.bond_coeff.set(name,
                     k=0, r0=0)
         else:
-            harmonic_bond.bond_coeff.set(name, 
+            harmonic_bond.bond_coeff.set(name,
                 k=2 * bond_type.k * ref_distance**2 / ref_energy,
                 r0=bond_type.req / ref_distance)
 
@@ -286,7 +287,7 @@ def _init_hoomd_dihedrals(structure, ref_energy=1.0):
     # Identify the unique dihedral types before setting
     # need Hoomd 2.8.0 to use proper dihedral implemtnation
     # from this PR https://github.com/glotzerlab/hoomd-blue/pull/492
-    _check_hoomd_version() 
+    _check_hoomd_version()
     dihedral_type_params = {}
     for dihedral in structure.dihedrals:
         t1, t2 = dihedral.atom1.type, dihedral.atom2.type
@@ -346,10 +347,10 @@ def _init_hoomd_rb_torsions(structure, ref_energy=1.0):
 
 
 def _check_hoomd_version():
-    version = hoomd.__version__ 
+    version = hoomd.__version__
     version_numbers = version.split('.')
     if float(version_numbers[0]) < 2 or float(version_numbers[1]) < 8:
         from mbuild.exceptions import MBuildError
-        raise MBuildError("Using HOOMD version {}".format(version) + 
+        raise MBuildError("Using HOOMD version {}".format(version) +
                 ", please upgrade to at least 2.8.0")
 
