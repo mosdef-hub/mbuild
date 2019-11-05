@@ -1,0 +1,9 @@
+channels:
+  - conda-forge
+dependencies:
+  - python==3.7
+  - sphinx==1.8.5
+  - sphinx_rtd_theme
+  - numpydoc
+  - widgetsnbextension
+  - ipywidgets
