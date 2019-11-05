@@ -1,3 +1,4 @@
+from collections import namedtuple
 import numpy as np
 import parmed as pmd
 

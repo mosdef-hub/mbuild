@@ -2,6 +2,7 @@ import warnings
 import itertools
 import numpy as np
 import operator
+from collections import namedtuple
 
 import parmed as pmd
 import mbuild as mb
@@ -85,9 +86,10 @@ def create_hoomd_simulation(structure, ref_distance=1.0, ref_mass=1.0,
     _check_hoomd_version()
     version_numbers = _check_hoomd_version()
     if float(version_numbers[0]) >= 3:
-        warnings.warn("Warning when using Hoomd 3, potential API change where the" + 
-                " hoomd context is not updated upon creation of forces - utilize " + 
-                "the returned hoomd_objects") 
+        warnings.warn("Warning when using Hoomd 3, potential API change " +
+                "where the hoomd context is not updated upon " +
+                "creation of forces - utilize " + 
+                "the returned `hoomd_objects`") 
 
     hoomd_objects = [] # Potential adaptation for Hoomd v3 API
 
@@ -110,7 +112,10 @@ def create_hoomd_simulation(structure, ref_distance=1.0, ref_mass=1.0,
     hoomd.init.read_snapshot(snapshot)
 
     nl = hoomd.md.nlist.cell()
-    nl.reset_exclusions(exclusions=['1-2', '1-3'])
+    if any([-1 not in snapshot.particles.body]):
+        nl.reset_exclusions(exclusions=['1-2', '1-3', 'body'])
+    else:
+        nl.reset_exclusions(exclusions=['1-2', '1-3'])
     hoomd_objects.append(nl)
 
     if structure.atoms[0].type != '':
@@ -218,7 +223,7 @@ def _init_hoomd_14_pairs(structure, nl, r_cut=1.2, ref_distance=1.0, ref_energy=
 
     # Update neighborlist to exclude 1-4 interactions,
     # but impose a special_pair force to handle these pairs
-    nl.reset_exclusions(exclusions=['1-2', '1-3', '1-4'])
+    nl.exclusions.append('1-4')
 
     if hoomd.context.current.system_definition.getPairData().getN() == 0:
         print("No 1,4 pairs found in hoomd snapshot")
