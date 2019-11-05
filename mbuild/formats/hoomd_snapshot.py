@@ -65,6 +65,9 @@ def to_hoomdsnapshot(structure,  ref_distance=1.0, ref_mass=1.0,
         ref_energy = max(pair_coeffs, key=operator.itemgetter(1))[1]
         ref_distance = max(pair_coeffs, key=operator.itemgetter(2))[2]
 
+    ReferenceValues = namedtuple("ref_values", ["distance", "mass", "energy"])
+    ref_values = ReferenceValues(ref_distance, ref_mass, ref_energy)
+
     xyz = np.array([[atom.xx, atom.xy, atom.xz] for atom in structure.atoms])
     if shift_coords:
         xyz = coord_shift(xyz, structure.box[:3])
@@ -131,7 +134,7 @@ def to_hoomdsnapshot(structure,  ref_distance=1.0, ref_mass=1.0,
     hoomd_snapshot.pairs.typeid[:] = pair_typeid
     hoomd_snapshot.pairs.group[:] = np.reshape(pairs, (-1,2))
 
-    return hoomd_snapshot
+    return hoomd_snapshot, ref_values
 
 def _parse_particle_information(structure, xyz, ref_distance,
         ref_mass, ref_energy, rigid_bodies):

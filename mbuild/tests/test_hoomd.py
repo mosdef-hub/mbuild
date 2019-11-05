@@ -11,7 +11,7 @@ from mbuild.utils.io import has_foyer, has_hoomd, import_
 class TestHoomd(BaseTest):
     def test_compound_to_snapshot(self, ethane):
         hoomd_snapshot = import_("mbuild.formats.hoomd_snapshot")
-        snap = hoomd_snapshot.to_hoomdsnapshot(ethane)
+        snap, _ = hoomd_snapshot.to_hoomdsnapshot(ethane)
 
         assert snap.particles.N == 8
         assert snap.bonds.N == 7
@@ -25,7 +25,7 @@ class TestHoomd(BaseTest):
     def test_non_param_struc_to_snapshot(self, ethane):
         hoomd_snapshot = import_("mbuild.formats.hoomd_snapshot")
         structure = ethane.to_parmed()
-        snap = hoomd_snapshot.to_hoomdsnapshot(structure)
+        snap,_ = hoomd_snapshot.to_hoomdsnapshot(structure)
 
         assert snap.particles.N == 8
         assert snap.bonds.N == 7
@@ -37,7 +37,7 @@ class TestHoomd(BaseTest):
         forcefield = import_("foyer.forcefield")
         ff = forcefield.Forcefield(name='oplsaa')
         structure = ff.apply(ethane)
-        snap = hoomd_snapshot.to_hoomdsnapshot(structure)
+        snap,_ = hoomd_snapshot.to_hoomdsnapshot(structure)
 
         assert snap.particles.N == 8
         assert snap.bonds.N == 7

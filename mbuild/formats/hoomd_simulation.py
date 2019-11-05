@@ -88,10 +88,12 @@ def create_hoomd_simulation(structure, ref_distance=1.0, ref_mass=1.0,
         ref_energy = max(pair_coeffs, key=operator.itemgetter(1))[1]
         ref_distance = max(pair_coeffs, key=operator.itemgetter(2))[2]
 
+    ReferenceValues = namedtuple("ref_values", ["distance", "mass", "energy"])
+    ref_values = ReferenceValues(ref_distance, ref_mass, ref_energy)
 
     if not hoomd.context.current:
         hoomd.context.initialize("")
-    snapshot = to_hoomdsnapshot(structure, ref_distance=ref_distance,
+    snapshot,_ = to_hoomdsnapshot(structure, ref_distance=ref_distance,
             ref_mass=ref_mass, ref_energy=ref_energy, **snapshot_kwargs)
     hoomd_objects.append(snapshot)
     hoomd.init.read_snapshot(snapshot)
@@ -134,7 +136,7 @@ def create_hoomd_simulation(structure, ref_distance=1.0, ref_mass=1.0,
                 ref_energy=ref_energy)
         hoomd_objects.append(rb_torsions)
     print("HOOMD SimulationContext updated from ParmEd Structure")
-    return hoomd_objects
+    return hoomd_objects, ref_values
 
 def _init_hoomd_lj(structure, nl, r_cut=1.2,
         ref_distance=1.0, ref_energy=1.0):
