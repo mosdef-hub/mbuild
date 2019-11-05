@@ -2,11 +2,11 @@
 Recipe Development
 ==============
 
-mBuild, owing to its object-oriented-design, encourages users to subclass ``Compound`` to disseminate reproducible scripts for building their systems of interest.
-Sharing a script to reproduce the initial configuration and force field parameters (if applicable) of a system is a great step towards increasing the ability of others to reproduce another's work.
+mBuild encourages users to subclass ``Compound`` to disseminate reproducible scripts used for building their systems.
+Sharing the script used to construct the initial configuration and apply force field parameters (if applicable) is a great step towards increasing the reproducibility of the system initialization step.
 
-However, there might be some cases where those subclasses and scripts can be generalized to support even more systems than initially realized.
-These subclasses would be a valuable resource for many and might justify development of a new Python package to distribute this work to the community.
+However, there may be cases where those subclasses and/or scripts can be generalized to support a broad range of systems.
+Such subclasses would be a valuable resource for many researchers, and might justify development of a Python package that could be distributed to the community.
 
 
 mBuild has been developed with this in mind, in the form of a plug-in recipe system.
@@ -19,13 +19,16 @@ The basis of the recipe system in mBuild relies on `setuptools.entry_points <htt
 This allows other packages to register themselves with the ``entry_point`` group we defined in mBuild, so they are accessible through the ``mbuild.recipes.my_recipe_foo`` location.
 In this case, ``my_recipe_foo`` would be the recipe you want to share.
 You can install many mBuild recipes, and only have to import mBuild to have access to them all!
-It is not necessary to use calls like this: ``from my_foo_project import my_recipe_foo``, the call ``import mbuild`` discovers all recipes that fit the ``entry_point`` group specification and will then make them available under ``mbuild.recipes``. 
+It is not necessary to use calls like this: ``from my_foo_project import my_recipe_foo``.
+The call ``import mbuild`` discovers all recipes that fit the ``entry_point`` group specification and makes them available under ``mbuild.recipes``. 
 
 Registering a Recipe
 ________
 
 
 In the case that a user already has a Python project set up with a structure similar to the layout below:
+
+This project can be found `here <https://github.com/justinGilmer/mbuild-fcc>`_.
 
 ::
 
