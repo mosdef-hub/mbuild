@@ -81,6 +81,14 @@ def create_hoomd_simulation(structure, ref_distance=1.0, ref_mass=1.0,
     elif not isinstance(structure, pmd.Structure):
         raise ValueError("Please pass a parmed.Structure to " +
                     "create_hoomd_simulation")
+
+    _check_hoomd_version()
+    version_numbers = _check_hoomd_version()
+    if float(version_numbers[0]) >= 3:
+        warnings.warn("Warning when using Hoomd 3, potential API change where the" + 
+                " hoomd context is not updated upon creation of forces - utilize " + 
+                "the returned hoomd_objects") 
+
     hoomd_objects = [] # Potential adaptation for Hoomd v3 API
 
     if auto_scale:
@@ -139,6 +147,7 @@ def create_hoomd_simulation(structure, ref_distance=1.0, ref_mass=1.0,
                 ref_energy=ref_energy)
         hoomd_objects.append(rb_torsions)
     print("HOOMD SimulationContext updated from ParmEd Structure")
+
     return hoomd_objects, ref_values
 
 def _init_hoomd_lj(structure, nl, r_cut=1.2,
@@ -292,7 +301,11 @@ def _init_hoomd_dihedrals(structure, ref_energy=1.0):
     # Identify the unique dihedral types before setting
     # need Hoomd 2.8.0 to use proper dihedral implemtnation
     # from this PR https://github.com/glotzerlab/hoomd-blue/pull/492
-    _check_hoomd_version()
+    version_numbers = _check_hoomd_version()
+    if float(version_numbers[0]) < 2 or float(version_numbers[1]) < 8:
+        from mbuild.exceptions import MBuildError
+        raise MBuildError("Please upgrade Hoomd to at least 2.8.0")
+
     dihedral_type_params = {}
     for dihedral in structure.dihedrals:
         t1, t2 = dihedral.atom1.type, dihedral.atom2.type
@@ -354,8 +367,5 @@ def _init_hoomd_rb_torsions(structure, ref_energy=1.0):
 def _check_hoomd_version():
     version = hoomd.__version__
     version_numbers = version.split('.')
-    if float(version_numbers[0]) < 2 or float(version_numbers[1]) < 8:
-        from mbuild.exceptions import MBuildError
-        raise MBuildError("Using HOOMD version {}".format(version) +
-                ", please upgrade to at least 2.8.0")
+    return version_numbers
 
