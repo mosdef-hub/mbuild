@@ -54,6 +54,9 @@ def create_hoomd_simulation(structure, ref_distance=1.0, ref_mass=1.0,
     ------
     hoomd_objects : list
         List of hoomd objects created during conversion
+    ReferenceValues : namedtuple
+        Values used in scaling
+
 
     Notes
     -----

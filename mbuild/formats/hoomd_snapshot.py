@@ -41,6 +41,13 @@ def to_hoomdsnapshot(structure,  ref_distance=1.0, ref_mass=1.0,
         Writes out special pair information necessary to correctly use 
         the OPLS fudged 1,4 interactions in HOOMD.
 
+    Returns
+    -------
+    hoomd_snapshot : hoomd.data.Snapshot
+    ReferenceValues : namedtuple
+        Values used in scaling
+
+
     Notes
     -----
     Force field parameters are not written to the hoomd_snapshot 
