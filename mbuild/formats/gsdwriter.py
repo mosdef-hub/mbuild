@@ -40,9 +40,7 @@ def write_gsd(structure, filename, ref_distance=1.0, ref_mass=1.0,
     Notes
     -----
     Force field parameters are not written to the GSD file and must be included
-    manually into a HOOMD input script. Work on a HOOMD plugin is underway to
-    read force field parameters from a Foyer XML file.
-
+    manually into a HOOMD input script. 
     """
 
     import_('gsd')
