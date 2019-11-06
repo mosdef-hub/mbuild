@@ -112,10 +112,7 @@ def create_hoomd_simulation(structure, ref_distance=1.0, ref_mass=1.0,
     hoomd.init.read_snapshot(snapshot)
 
     nl = hoomd.md.nlist.cell()
-    if any([-1 not in snapshot.particles.body]):
-        nl.reset_exclusions(exclusions=['1-2', '1-3', 'body'])
-    else:
-        nl.reset_exclusions(exclusions=['1-2', '1-3'])
+    nl.reset_exclusions(exclusions=['1-2', '1-3'])
     hoomd_objects.append(nl)
 
     if structure.atoms[0].type != '':
