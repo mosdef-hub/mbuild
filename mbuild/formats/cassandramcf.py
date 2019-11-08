@@ -4,7 +4,6 @@ import warnings
 
 from math import sqrt
 
-import numpy as np
 import networkx as nx
 import parmed as pmd
 
@@ -84,8 +83,6 @@ def write_mcf(structure, filename, angle_style,
                     'factor. Setting to 1.0')
     if lj14 is None:
         if len(structure.adjusts) > 0:
-            type1 = structure.adjusts[0].atom1.type
-            type2 = structure.adjusts[0].atom2.type
             type1_eps = structure.adjusts[0].atom1.epsilon
             type2_eps = structure.adjusts[0].atom2.epsilon
             scaled_eps = structure.adjusts[0].type.epsilon
@@ -299,10 +296,7 @@ def _write_bond_information(mcf_file,structure):
 
     """
 
-    try:
-        bond_parms = [ str('{:8.3f}'.format(bond.type.req)) for bond in structure.bonds ]
-    except AttributeError:
-        bond_parms = [ 'REQ' for bond in structure.bonds ]
+    bond_parms = [ str('{:8.3f}'.format(bond.type.req)) for bond in structure.bonds ]
 
     mcf_file.write('\n!Bond Format\n')
     mcf_file.write('!index i j type parameters\n' +
@@ -329,19 +323,13 @@ def _write_angle_information(mcf_file,structure,angle_style,IG_CONSTANT_KCAL):
 
     """
 
-    try:
-        if angle_style.casefold() == 'fixed':
-            angle_parms = [ str('{:8.2f}'.format(angle.type.theteq)) for angle in structure.angles ]
-        elif angle_style.casefold() == 'harmonic':
-            # Convert energies to units of K
-            angle_parms = [ str('{:8.1f}'.format(angle.type.k/IG_CONSTANT_KCAL)) + '  ' + str('{:8.2f}'.format(angle.type.theteq)) for angle in structure.angles ]
-        else:
-            raise ValueError("Only 'fixed' and 'harmonic' angle styles are supported by Cassandra")
-    except AttributeError:
-        nangles = 0
-        bond_parms = [ 'REQ' for bond in structure.bonds ]
-
-
+    if angle_style.casefold() == 'fixed':
+        angle_parms = [ str('{:8.2f}'.format(angle.type.theteq)) for angle in structure.angles ]
+    elif angle_style.casefold() == 'harmonic':
+        # Convert energies to units of K
+        angle_parms = [ str('{:8.1f}'.format(angle.type.k/IG_CONSTANT_KCAL)) + '  ' + str('{:8.2f}'.format(angle.type.theteq)) for angle in structure.angles ]
+    else:
+        raise ValueError("Only 'fixed' and 'harmonic' angle styles are supported by Cassandra")
 
     mcf_file.write('\n!Angle Format\n')
     mcf_file.write('!index i j k type parameters\n' +
