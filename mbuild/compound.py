@@ -1825,7 +1825,7 @@ class Compound(object):
         filename : str
             Filesystem path in which to save the trajectory. The extension or
             prefix will be parsed and control the format. Supported
-            extensions are: 'hoomdxml', 'gsd', 'gro', 'top', 
+            extensions are: 'hoomdxml', 'gsd', 'gro', 'top',
             'lammps', 'lmp', 'mcf'
         show_ports : bool, optional, default=False
             Save ports contained within the compound.
@@ -1858,7 +1858,7 @@ class Compound(object):
             Keyword arguments to provide to `foyer.Forcefield.apply`.
         **kwargs
             Depending on the file extension these will be passed to either
-            `write_gsd`, `write_hoomdxml`, `write_lammpsdata`, 
+            `write_gsd`, `write_hoomdxml`, `write_lammpsdata`,
             `write_mcf`, or `parmed.Structure.save`.
             See https://parmed.github.io/ParmEd/html/structobj/parmed.structure.Structure.html#parmed.structure.Structure.save
 
