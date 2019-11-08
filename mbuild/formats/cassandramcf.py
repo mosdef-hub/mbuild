@@ -79,25 +79,29 @@ def write_mcf(structure, filename, angle_style,
             coul14 = structure.adjusts[0].type.chgscale
         else:
             coul14 = 1.0
-            warnings.warn('Unable to infer coulombic 1-4 scaling'
-                    'factor. Setting to 1.0')
+            if len(structure.dihedrals) > 0 or \
+               len(structure.rb_torsions) > 0:
+                    warnings.warn('Unable to infer coulombic 1-4 scaling'
+                        'factor. Setting to 1.0')
     if lj14 is None:
         if len(structure.adjusts) > 0:
             type1_eps = structure.adjusts[0].atom1.epsilon
             type2_eps = structure.adjusts[0].atom2.epsilon
             scaled_eps = structure.adjusts[0].type.epsilon
             if structure.combining_rule == 'geometric' or \
-                structure.combining_rule == 'lorentz-berthelot':
+                structure.combining_rule == 'lorentz':
                    combined_eps = sqrt(type1_eps*type2_eps)
                    lj14 = scaled_eps/combined_eps
             else:
-                lj14 = 0.5
+                lj14 = 1.0
                 warnings.warn('Unable to infer LJ 1-4 scaling'
-                       'factor. Setting to 0.5')
+                    'factor. Setting to 1.0')
         else:
-            lj14 = 0.5
-            warnings.warn('Unable to infer LJ 1-4 scaling'
-                    'factor. Setting to 0.5')
+            lj14 = 1.0
+            if len(structure.dihedrals) > 0 or \
+               len(structure.rb_torsions) > 0:
+                warnings.warn('Unable to infer LJ 1-4 scaling'
+                    'factor. Setting to 1.0')
 
     if coul14 < 0.0 or coul14 > 1.0:
         raise ValueError("Unreasonable value {} for coul14 scaling.".format(coul14))

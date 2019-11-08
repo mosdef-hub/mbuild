@@ -27,7 +27,41 @@ class TestCassandraMCF(BaseTest):
         with pytest.raises(ValueError,match=r'Invalid selection for dihedral_style'):
             ethane.save(filename='ethane-opls.mcf', forcefield_name='oplsaa', 
                     angle_style='harmonic', dihedral_style='op')
-    
+ 
+    @pytest.mark.skipif(not has_foyer, reason="Foyer package not installed")
+    def test_dihedral_style_none(self, ethane):
+        ethane.save(filename='ethane-opls.mcf', forcefield_name='oplsaa', 
+                angle_style='harmonic', dihedral_style='none')
+
+        mcf_data = []
+        with open('ethane-opls.mcf') as f:
+            for line in f:
+                mcf_data.append(line.strip().split())
+
+        for idx,line in enumerate(mcf_data):
+            if len(line) > 1:
+                if line[1] == 'Dihedral_Info':
+                    dihedral_section_start = idx
+            
+        assert mcf_data[dihedral_section_start+2][5] == 'none'
+
+    @pytest.mark.skipif(not has_foyer, reason="Foyer package not installed")
+    def test_no_dihedrals(self,methane):
+        methane.save(filename='methane-opls.mcf', forcefield_name='oplsaa', 
+                angle_style='harmonic', dihedral_style='none')
+
+        mcf_data = []
+        with open('methane-opls.mcf') as f:
+            for line in f:
+                mcf_data.append(line.strip().split())
+
+        for idx,line in enumerate(mcf_data):
+            if len(line) > 1:
+                if line[1] == 'Dihedral_Info':
+                    dihedral_section_start = idx
+            
+        assert mcf_data[dihedral_section_start+1][0] == '0'
+
     @pytest.mark.skipif(not has_foyer, reason="Foyer package not installed")
     def test_unmatched_dihedral_style(self,ethane):
         with pytest.raises(ValueError,match=r'but RB torsions found'):
@@ -37,7 +71,8 @@ class TestCassandraMCF(BaseTest):
     @pytest.mark.skipif(not has_foyer, reason="Foyer package not installed")
     def test_unreasonable_lj14(self,ethane):
         import foyer
-        ethane = foyer.forcefields.load_OPLSAA().apply(ethane)
+        oplsaa = foyer.Forcefield(name='oplsaa')
+        ethane = oplsaa.apply(ethane)
         with pytest.raises(ValueError,match=r'Unreasonable value'):
             mb.formats.cassandramcf.write_mcf(ethane,'ethane.mcf',
                     angle_style='harmonic',dihedral_style='opls',lj14=2.0)
@@ -45,7 +80,8 @@ class TestCassandraMCF(BaseTest):
     @pytest.mark.skipif(not has_foyer, reason="Foyer package not installed")
     def test_unreasonable_coul14(self,ethane):
         import foyer
-        ethane = foyer.forcefields.load_OPLSAA().apply(ethane)
+        oplsaa = foyer.Forcefield(name='oplsaa')
+        ethane = oplsaa.apply(ethane)
         with pytest.raises(ValueError,match=r'Unreasonable value'):
             mb.formats.cassandramcf.write_mcf(ethane,'ethane.mcf',
                     angle_style='harmonic',dihedral_style='opls',coul14=-1.0)
@@ -98,22 +134,47 @@ class TestCassandraMCF(BaseTest):
 
         # Bond info
         assert mcf_data[bond_section_start+1][0] == '7'
-        assert mcf_data[bond_section_start+2][3] == 'fixed'
-        assert mcf_data[bond_section_start+2][4] == '1.090'
-
+        passed_test = False
+        for line in mcf_data[bond_section_start+2:angle_section_start-6]:
+            a1 = line[1]
+            a2 = line[2]
+            if (a1 == '1' and a2 == '2') or (a2 == '1' and a1 == '2'):
+                assert line[3] == 'fixed'
+                assert line[4] == '1.090'
+                passed_test = True
+                break
+        assert passed_test
+ 
         # Angle info
         assert mcf_data[angle_section_start+1][0] == '12'
-        assert mcf_data[angle_section_start+2][4] == 'harmonic'
-        assert mcf_data[angle_section_start+2][5] == '18870.7'
-        assert mcf_data[angle_section_start+2][6] == '110.70'
+        passed_test = False
+        for line in mcf_data[angle_section_start+2:dihedral_section_start-8]:
+            if line[2] == '5':
+                a1 = line[1]
+                a3 = line[3]
+                if (a1 == '1' and a3 == '6') or (a3 == '1' and a1 == '6'):
+                    assert line[4] == 'harmonic'
+                    assert line[5] == '18870.7'
+                    assert line[6] == '110.70'
+                    passed_test = True
+                    break
+        assert passed_test
 
         # Dihedral info
         assert mcf_data[dihedral_section_start+1][0] == '9'
-        assert mcf_data[dihedral_section_start+2][5] == 'OPLS'
-        assert mcf_data[dihedral_section_start+2][6] == '0.000'
-        assert mcf_data[dihedral_section_start+2][7] == '0.000'
-        assert mcf_data[dihedral_section_start+2][8] == '-0.000'
-        assert mcf_data[dihedral_section_start+2][9] == '0.628'
+        passed_test = False
+        for line in mcf_data[dihedral_section_start+2:improper_section_start-5]:
+            a1 = line[1]
+            a2 = line[2]
+            a3 = line[3]
+            a4 = line[4]
+            if (a1 == '2' and a2 == '1' and a3 == '5' and a4 == '6' ) or \
+               (a4 == '2' and a3 == '1' and a2 == '5' and a1 == '6'):
+                   assert line[5] == 'OPLS'
+                   assert line[6] == '0.000'
+                   assert line[7] == '0.000'
+                   assert line[8] == '-0.000'
+                   assert line[9] == '0.628'
 
         assert mcf_data[improper_section_start+1][0] == '0'
         assert mcf_data[fragment_section_start+1][0] == '2'
@@ -162,21 +223,46 @@ class TestCassandraMCF(BaseTest):
 
         # Bond info
         assert mcf_data[bond_section_start+1][0] == '12'
-        assert mcf_data[bond_section_start+2][3] == 'fixed'
-        assert mcf_data[bond_section_start+2][4] == '1.400'
-
+        passed_test = False
+        for line in mcf_data[bond_section_start+2:angle_section_start-6]:
+            a1 = line[1]
+            a2 = line[2]
+            if (a1 == '1' and a2 == '2') or (a2 == '1' and a1 == '2'):
+                assert line[3] == 'fixed'
+                assert line[4] == '1.400'
+                passed_test = True
+                break
+        assert passed_test
+        
         # Angle info
         assert mcf_data[angle_section_start+1][0] == '18'
-        assert mcf_data[angle_section_start+2][4] == 'fixed'
-        assert mcf_data[angle_section_start+2][5] == '120.00'
-    
+        passed_test = False
+        for line in mcf_data[angle_section_start+2:dihedral_section_start-8]:
+            if line[2] == '2':
+                a1 = line[1]
+                a3 = line[3]
+                if (a1 == '1' and a3 == '3') or (a3 == '1' and a1 == '3'):
+                    assert line[4] == 'fixed'
+                    assert line[5] == '120.00'
+                    passed_test = True
+                    break
+        assert passed_test
+
         # Dihedral info
         assert mcf_data[dihedral_section_start+1][0] == '24'
-        assert mcf_data[dihedral_section_start+2][5] == 'OPLS'
-        assert mcf_data[dihedral_section_start+2][6] == '0.000'
-        assert mcf_data[dihedral_section_start+2][7] == '-0.000'
-        assert mcf_data[dihedral_section_start+2][8] == '15.167'
-        assert mcf_data[dihedral_section_start+2][9] == '-0.000'
+        passed_test = False
+        for line in mcf_data[dihedral_section_start+2:improper_section_start-5]:
+            a1 = line[1]
+            a2 = line[2]
+            a3 = line[3]
+            a4 = line[4]
+            if (a1 == '1' and a2 == '2' and a3 == '3' and a4 == '4' ) or \
+               (a4 == '1' and a3 == '2' and a2 == '3' and a1 == '4'):
+                   assert line[5] == 'OPLS'
+                   assert line[6] == '0.000'
+                   assert line[7] == '-0.000'
+                   assert line[8] == '15.167'
+                   assert line[9] == '-0.000'
 
         assert mcf_data[improper_section_start+1][0] == '0'
         assert mcf_data[fragment_section_start+1][0] == '1'
