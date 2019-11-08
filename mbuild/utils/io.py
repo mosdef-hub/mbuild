@@ -180,6 +180,13 @@ try:
 except ImportError:
     has_networkx = False
 
+try:
+    import hoomd
+    has_hoomd = True
+    del hoomd
+except ImportError:
+    has_hoomd  = False
+
 def get_fn(name):
     """Get the full path to one of the reference files shipped for utils.
 
