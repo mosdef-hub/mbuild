@@ -5,6 +5,7 @@ from mbuild.tests.base_test import BaseTest
 from mbuild.utils.io import has_foyer
 
 
+@pytest.mark.skipif(not has_foyer, reason="Foyer package not installed")
 class TestCassandraMCF(BaseTest):
 
     def test_not_parameterized(self, ethane):
@@ -16,21 +17,18 @@ class TestCassandraMCF(BaseTest):
             mb.formats.cassandramcf.write_mcf(ethane,'ethane.mcf',
                     angle_style='harmonic',dihedral_style='opls')
 
-    @pytest.mark.skipif(not has_foyer, reason="Foyer package not installed")
     def test_invalid_angle_style(self, ethane):
         with pytest.raises(ValueError,match=r'Invalid selection for angle_style'):
-            ethane.save(filename='ethane-opls.mcf', forcefield_name='oplsaa', 
+            ethane.save(filename='ethane-opls.mcf', forcefield_name='oplsaa',
                     angle_style='harm', dihedral_style='opls')
 
-    @pytest.mark.skipif(not has_foyer, reason="Foyer package not installed")
     def test_invalid_dihedral_style(self, ethane):
         with pytest.raises(ValueError,match=r'Invalid selection for dihedral_style'):
-            ethane.save(filename='ethane-opls.mcf', forcefield_name='oplsaa', 
+            ethane.save(filename='ethane-opls.mcf', forcefield_name='oplsaa',
                     angle_style='harmonic', dihedral_style='op')
- 
-    @pytest.mark.skipif(not has_foyer, reason="Foyer package not installed")
+
     def test_dihedral_style_none(self, ethane):
-        ethane.save(filename='ethane-opls.mcf', forcefield_name='oplsaa', 
+        ethane.save(filename='ethane-opls.mcf', forcefield_name='oplsaa',
                 angle_style='harmonic', dihedral_style='none')
 
         mcf_data = []
@@ -42,12 +40,11 @@ class TestCassandraMCF(BaseTest):
             if len(line) > 1:
                 if line[1] == 'Dihedral_Info':
                     dihedral_section_start = idx
-            
+
         assert mcf_data[dihedral_section_start+2][5] == 'none'
 
-    @pytest.mark.skipif(not has_foyer, reason="Foyer package not installed")
     def test_no_dihedrals(self,methane):
-        methane.save(filename='methane-opls.mcf', forcefield_name='oplsaa', 
+        methane.save(filename='methane-opls.mcf', forcefield_name='oplsaa',
                 angle_style='harmonic', dihedral_style='none')
 
         mcf_data = []
@@ -59,16 +56,14 @@ class TestCassandraMCF(BaseTest):
             if len(line) > 1:
                 if line[1] == 'Dihedral_Info':
                     dihedral_section_start = idx
-            
+
         assert mcf_data[dihedral_section_start+1][0] == '0'
 
-    @pytest.mark.skipif(not has_foyer, reason="Foyer package not installed")
     def test_unmatched_dihedral_style(self,ethane):
         with pytest.raises(ValueError,match=r'but RB torsions found'):
-            ethane.save(filename='ethane-opls.mcf', forcefield_name='oplsaa', 
+            ethane.save(filename='ethane-opls.mcf', forcefield_name='oplsaa',
                     angle_style='harmonic', dihedral_style='charmm')
 
-    @pytest.mark.skipif(not has_foyer, reason="Foyer package not installed")
     def test_unreasonable_lj14(self,ethane):
         import foyer
         oplsaa = foyer.Forcefield(name='oplsaa')
@@ -77,7 +72,6 @@ class TestCassandraMCF(BaseTest):
             mb.formats.cassandramcf.write_mcf(ethane,'ethane.mcf',
                     angle_style='harmonic',dihedral_style='opls',lj14=2.0)
 
-    @pytest.mark.skipif(not has_foyer, reason="Foyer package not installed")
     def test_unreasonable_coul14(self,ethane):
         import foyer
         oplsaa = foyer.Forcefield(name='oplsaa')
@@ -86,18 +80,16 @@ class TestCassandraMCF(BaseTest):
             mb.formats.cassandramcf.write_mcf(ethane,'ethane.mcf',
                     angle_style='harmonic',dihedral_style='opls',coul14=-1.0)
 
-    @pytest.mark.skipif(not has_foyer, reason="Foyer package not installed")
     def test_multiple_molecules(self, ethane):
         n_ethane = 2
         ethane.name = 'Ethane'
         filled = mb.fill_box(ethane,n_compounds=n_ethane,box=[0,0,0,4,4,4])
         with pytest.raises(ValueError,match=r'Not all components of the molecule'):
-            filled.save(filename='box-ethane-opls.mcf', forcefield_name='oplsaa', 
+            filled.save(filename='box-ethane-opls.mcf', forcefield_name='oplsaa',
                     angle_style='harmonic', dihedral_style='opls')
 
-    @pytest.mark.skipif(not has_foyer, reason="Foyer package not installed")
     def test_save_forcefield(self, ethane):
-        ethane.save(filename='ethane-opls.mcf', forcefield_name='oplsaa', 
+        ethane.save(filename='ethane-opls.mcf', forcefield_name='oplsaa',
                 angle_style='harmonic', dihedral_style='opls')
 
 
@@ -144,7 +136,7 @@ class TestCassandraMCF(BaseTest):
                 passed_test = True
                 break
         assert passed_test
- 
+
         # Angle info
         assert mcf_data[angle_section_start+1][0] == '12'
         passed_test = False
@@ -233,7 +225,7 @@ class TestCassandraMCF(BaseTest):
                 passed_test = True
                 break
         assert passed_test
-        
+
         # Angle info
         assert mcf_data[angle_section_start+1][0] == '18'
         passed_test = False
