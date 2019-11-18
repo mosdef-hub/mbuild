@@ -1,7 +1,3 @@
-# -*- coding: utf-8 -*-
-
-
-# -- ==methane== --
 import mbuild as mb
 
 
@@ -23,5 +19,3 @@ class Methane(mb.Compound):
         self.add_bond((self[0], self[2]))
         self.add_bond((self[0], self[3]))
         self.add_bond((self[0], self[4]))
-
-# -- ==methane== --

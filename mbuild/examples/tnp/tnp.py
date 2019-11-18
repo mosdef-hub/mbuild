@@ -1,7 +1,3 @@
-# -*- coding: utf-8 -*-
-
-
-# -- ==tnp== --
 from numpy import sqrt, pi
 
 import mbuild as mb
@@ -46,5 +42,3 @@ class Tnp(mb.Compound):
                             sqrt(4 * ball_radius**2 * pi / n) + 0.5)
         self.generate_bonds('np', 't', 0.1, 0.3)
         self.generate_bonds('t', 'np', 0.1, 0.3)
-
-# -- ==tnp== --

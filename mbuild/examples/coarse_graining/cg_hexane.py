@@ -1,7 +1,3 @@
-# -*- coding: utf-8 -*-
-
-
-# -- ==cg_hexane== --
 import mbuild as mb
 
 from mbuild.examples.alkane.alkane import Alkane
@@ -26,5 +22,3 @@ class Hexane(mb.Compound):
         mb.force_overlap(self['propane1'], 
                          self['propane1']['down'], 
                          self['propane2']['down'])
-
-# -- ==cg_hexane== --

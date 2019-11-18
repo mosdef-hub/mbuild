@@ -1,9 +1,3 @@
-# -*- coding: utf-8 -*-
-
-
-# -- ==pmpc_brush_layer== --
-from __future__ import division
-
 from numpy import pi
 
 import mbuild as mb

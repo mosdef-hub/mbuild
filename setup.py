@@ -9,8 +9,6 @@ worry about manually defining bonds when constructing chemically bonded
 structures from smaller components.
 """
 
-from __future__ import print_function
-
 import os
 import subprocess
 from setuptools import setup, find_packages
