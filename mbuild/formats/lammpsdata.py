@@ -125,8 +125,7 @@ def write_lammpsdata(structure, filename, atom_style='full',
 
     # Convert coordinates to LJ units
     if unit_style == 'lj':
-        # Get sigma and epsilon by finding maximum of each
-        # TODO: Write out these conversion factors to lammps data file
+        # Get sigma, mass, and epsilon conversions by finding maximum of each
         sigma_conversion_factor = np.max([atom.sigma for atom in structure.atoms])
         epsilon_conversion_factor = np.max([atom.epsilon for atom in structure.atoms])
         mass_conversion_factor = np.max([atom.mass for atom in structure.atoms])
@@ -203,8 +202,9 @@ def write_lammpsdata(structure, filename, atom_style='full',
 
     if bonds :
         #TODO: VERIFY THIS IS RIGHT
+        # Bond Fx units are kcal/mol/angstrom^2
         for bond in structure.bonds:
-            bond.type.k = bond.type.k * (sigma_conversion_factor) / epsilon_conversion_factor
+            bond.type.k = bond.type.k * (sigma_conversion_factor**2) / epsilon_conversion_factor
             bond.type.req /= sigma_conversion_factor
         if len(structure.bond_types) == 0:
             bond_types = np.ones(len(bonds),dtype=int)
@@ -236,7 +236,8 @@ def write_lammpsdata(structure, filename, atom_style='full',
     
 
     with open(filename, 'w') as data:
-        data.write(filename+' - created by mBuild\n\n')
+        data.write(filename+' - created by mBuild; units = {}\n\n'.format(
+            unit_style))
         data.write('{:d} atoms\n'.format(len(structure.atoms)))
         if atom_style in ['full', 'molecular']:
             data.write('{:d} bonds\n'.format(len(bonds)))
@@ -388,7 +389,7 @@ def write_lammpsdata(structure, filename, atom_style='full',
                 if unit_style == 'real':
                     data.write('#\tk(kcal/mol/angstrom^2)\t\treq(angstrom)\n')
                 elif unit_style == 'lj':
-                    data.write('#\tk(eps/mol/sigma^2)\t\treq(sigma)\n')
+                    data.write('#\treduced_k\t\treduced_req\n')
                 for params,idx in unique_bond_types.items():
                     data.write('{}\t{}\t\t{}\t\t# {}\t{}\n'.format(idx,params[0],params[1],params[2][0],params[2][1]))
 
@@ -402,7 +403,7 @@ def write_lammpsdata(structure, filename, atom_style='full',
 
                 else:
                     data.write('\nAngle Coeffs # harmonic\n')
-                    data.write('#\tk(kcal/mol/rad^2)\t\ttheteq(deg)\n')
+                    data.write('#\treduced_k\t\ttheteq(deg)\n')
                     for params,idx in unique_angle_types.items():
                         data.write('{}\t{}\t\t{:.5f}\t# {}\t{}\t{}\n'.format(idx,params[0],params[1],
                                                                              params[3][0],params[2],params[3][1]))
@@ -414,7 +415,7 @@ def write_lammpsdata(structure, filename, atom_style='full',
                     if unit_style == 'real':
                         data.write('#\tf1(kcal/mol)\tf2(kcal/mol)\tf3(kcal/mol)\tf4(kcal/mol)\n')
                     elif unit_style == 'lj':
-                        data.write('#\tf1(1/mol)\tf2(1/mol)\tf3(1/mol)\tf4(1/mol)\n')
+                        data.write('#\tf1\tf2\tf3\tf4 (all lj reduced units)\n')
                     for params,idx in unique_dihedral_types.items():
                         opls_coeffs = RB_to_OPLS(params[0],
                                                  params[1],
@@ -440,7 +441,7 @@ def write_lammpsdata(structure, filename, atom_style='full',
             # Improper coefficients
             if impropers:
                 data.write('\nImproper Coeffs # harmonic\n')
-                data.write('#k, psi\n')
+                data.write('#k, phi\n')
                 for params,idx in unique_improper_types.items():
                     data.write('{}\t{:.5f}\t{:.5f}\t# {}\t{}\t{}\t{}\n'.format(idx, params[0],
                                                                                 params[1], params[2],
