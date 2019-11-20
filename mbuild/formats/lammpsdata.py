@@ -121,7 +121,7 @@ def write_lammpsdata(structure, filename, atom_style='full',
     unique_types = list(set(types))
     unique_types.sort(key=natural_sort)
 
-    charges = [atom.charge for atom in structure.atoms]
+    charges = np.array([atom.charge for atom in structure.atoms])
 
     # Convert coordinates to LJ units
     if unit_style == 'lj':
@@ -131,8 +131,8 @@ def write_lammpsdata(structure, filename, atom_style='full',
         mass_conversion_factor = np.max([atom.mass for atom in structure.atoms])
 
         xyz = xyz / sigma_conversion_factor
-        #charges = charges / np.sqrt(4*np.pi*sigmas*epsilons*epsilon_0)
-        charges = charges / np.sqrt(4*np.pi*sigma_conversion_factor*epsilon_conversion_factor*epsilon_0)
+        charges = (charges*1.6021e-19) / np.sqrt(4*np.pi*(sigma_conversion_factor*1e-10)*
+          (epsilon_conversion_factor*4184)*epsilon_0)
         charges[np.isinf(charges)] = 0 
         # TODO: FIX CHARGE UNIT CONVERSION
     else:
@@ -453,11 +453,17 @@ def write_lammpsdata(structure, filename, atom_style='full',
         if atom_style == 'atomic':
             atom_line = '{index:d}\t{type_index:d}\t{x:.6f}\t{y:.6f}\t{z:.6f}\n'
         elif atom_style == 'charge':
-            atom_line = '{index:d}\t{type_index:d}\t{charge:.6f}\t{x:.6f}\t{y:.6f}\t{z:.6f}\n'
+            if unit_style == 'real':
+                atom_line = '{index:d}\t{type_index:d}\t{charge:.6f}\t{x:.6f}\t{y:.6f}\t{z:.6f}\n'
+            elif unit_style == 'lj':
+                atom_line = '{index:d}\t{type_index:d}\t{charge:.4ef}\t{x:.6f}\t{y:.6f}\t{z:.6f}\n'
         elif atom_style == 'molecular':
             atom_line = '{index:d}\t{zero:d}\t{type_index:d}\t{x:.6f}\t{y:.6f}\t{z:.6f}\n'
         elif atom_style == 'full':
-            atom_line ='{index:d}\t{zero:d}\t{type_index:d}\t{charge:.6f}\t{x:.6f}\t{y:.6f}\t{z:.6f}\n'
+            if unit_style == 'real':
+                atom_line ='{index:d}\t{zero:d}\t{type_index:d}\t{charge:.6f}\t{x:.6f}\t{y:.6f}\t{z:.6f}\n'
+            elif unit_style == 'lj':
+                atom_line ='{index:d}\t{zero:d}\t{type_index:d}\t{charge:.4e}\t{x:.6f}\t{y:.6f}\t{z:.6f}\n'
 
         for i,coords in enumerate(xyz):
             data.write(atom_line.format(
