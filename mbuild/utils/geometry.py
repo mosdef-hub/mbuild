@@ -55,3 +55,28 @@ def coord_shift(xyz, box):
         xyz += box_max
 
     return xyz
+
+def wrap_coords(xyz, box):
+    """ Wrap coordinates inside box
+
+    Parameters
+    ---------
+    xyz : numpy.array of points with shape N x 3
+    box : numpy.array specifing the size of box ie [Lx, Ly, Lz]
+
+    Returns
+    -------
+    xyz : numpy.array of points with shape N x 3
+
+    Notes
+    -----
+    Assumes we are wrapping inside the positive octant
+    """
+    for atom_xyz in xyz:
+        if atom_xyz[0] < 0: atom_xyz[0]+= box[0]
+        if atom_xyz[1] < 0: atom_xyz[1]+= box[1]
+        if atom_xyz[2] < 0: atom_xyz[2]+= box[2]
+        if atom_xyz[0] > box[0]: atom_xyz[0]-= box[0]
+        if atom_xyz[1] > box[1]: atom_xyz[1]-= box[1]
+        if atom_xyz[2] > box[2]: atom_xyz[2]-= box[2]
+    return xyz
