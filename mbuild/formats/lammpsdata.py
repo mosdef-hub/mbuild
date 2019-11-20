@@ -81,9 +81,6 @@ def write_lammpsdata(structure, filename, atom_style='full',
     if structure[0].type == '':
         forcefield = False
 
-    # Internally use nm
-    box = Box(lengths=np.array([0.1 * val for val in structure.box[0:3]]),
-              angles=structure.box[3:6])
     """
     Note:
     -----
@@ -96,7 +93,7 @@ def write_lammpsdata(structure, filename, atom_style='full',
             req : bond.type.req
             atomtypes : sorted((bond.atom1.type, bond.atom2.type))
     unique_angle_types: an enumerated OrderedDict of unique angle types for all angles in the structure.
-        Defined by angle parameteres amd component atomtypes, in order:
+        Defined by angle parameters and component atomtypes, in order:
             k : angle.type.k
             theteq : angle.type.theteq
             vertex atomtype: angle.atom2.type
@@ -127,13 +124,29 @@ def write_lammpsdata(structure, filename, atom_style='full',
     charges = [atom.charge for atom in structure.atoms]
 
     # Convert coordinates to LJ units
-    sigmas = np.array([atom.sigma for atom in structure.atoms]) * 1e10 # Convert to meters
-    epsilons = np.array([atom.epsilon for atom in structure.atoms]) * 4.184 * 1000 # Convert to Joules
     if unit_style == 'lj':
-        xyz = np.array([(coord/atom.sigma) for coord,atom in zip(xyz,structure.atoms)])
-        charges = charges / np.sqrt(4*np.pi*sigmas*epsilons*epsilon_0)
+        # Get sigma and epsilon by finding maximum of each
+        # TODO: Write out these conversion factors to lammps data file
+        sigma_conversion_factor = np.max([atom.sigma for atom in structure.atoms])
+        epsilon_conversion_factor = np.max([atom.epsilon for atom in structure.atoms])
+        mass_conversion_factor = np.max([atom.mass for atom in structure.atoms])
+
+        xyz = xyz / sigma_conversion_factor
+        #charges = charges / np.sqrt(4*np.pi*sigmas*epsilons*epsilon_0)
+        charges = charges / np.sqrt(4*np.pi*sigma_conversion_factor*epsilon_conversion_factor*epsilon_0)
         charges[np.isinf(charges)] = 0 
         # TODO: FIX CHARGE UNIT CONVERSION
+    else:
+        sigma_conversion_factor = 1
+        epsilon_conversion_factor = 1
+        mass_conversion_factor = 1
+
+    # Internally use nm
+    box = Box(lengths=np.array([0.1 * val for val in structure.box[0:3]]),
+              angles=structure.box[3:6])
+    # Divide by conversion factor
+    box.lengths /= sigma_conversion_factor
+    box.maxs /= sigma_conversion_factor
     
     # Lammps syntax depends on the functional form
     # Infer functional form based on the properties of the structure
@@ -188,22 +201,40 @@ def write_lammpsdata(structure, filename, atom_style='full',
                   improper.atom4.idx+1] for improper in structure.impropers]
 
 
-
-    if bonds:
+    if bonds :
+        #TODO: VERIFY THIS IS RIGHT
+        for bond in structure.bonds:
+            bond.type.k = bond.type.k * (sigma_conversion_factor) / epsilon_conversion_factor
+            bond.type.req /= sigma_conversion_factor
         if len(structure.bond_types) == 0:
             bond_types = np.ones(len(bonds),dtype=int)
         else:
             bond_types, unique_bond_types = _get_bond_types(structure, bonds)
 
     if angles:
+        #TODO: VERIFY THIS IS RIGHT
+        for angle in structure.angles:
+            angle.type.k *= (sigma_conversion_factor/epsilon_conversion_factor)
         angle_types, unique_angle_types = _get_angle_types(structure, use_urey_bradleys)
 
     if dihedrals:
+        if use_rb_torsions:
+            for dihedral in structure.dihedrals:
+                dihedral.type.c1 *= (sigma_conversion_factor/epsilon_conversion_factor) 
+                dihedral.type.c2 *= (sigma_conversion_factor/epsilon_conversion_factor) 
+                dihedral.type.c3 *= (sigma_conversion_factor/epsilon_conversion_factor) 
+                dihedral.type.c4 *= (sigma_conversion_factor/epsilon_conversion_factor) 
+                dihedral.type.c5 *= (sigma_conversion_factor/epsilon_conversion_factor) 
+        # TODO: Look at other dihedrals
         dihedral_types, unique_dihedral_types = _get_dihedral_types(structure, use_rb_torsions, use_dihedrals)
             
     if impropers:
+        for dihedral in structure.dihedrals:
+            if dihedral.improper:
+                dihedral.improper.type.phi_k *= (sigma_conversion_factor/epsilon_conversion_factor)
         improper_types, unique_improper_types = _get_impropers(structure)
-        
+    
+
     with open(filename, 'w') as data:
         data.write(filename+' - created by mBuild\n\n')
         data.write('{:d} atoms\n'.format(len(structure.atoms)))
@@ -266,7 +297,7 @@ def write_lammpsdata(structure, filename, atom_style='full',
                 xy, xz, yz))
 
         # Mass data
-        masses = [atom.mass for atom in structure.atoms]
+        masses = [atom.mass for atom in structure.atoms] / mass_conversion_factor
         mass_dict = dict([(unique_types.index(atom_type)+1,mass) for atom_type,mass in zip(types,masses)])
 
         data.write('\nMasses\n\n')
@@ -275,8 +306,8 @@ def write_lammpsdata(structure, filename, atom_style='full',
 
         if forcefield:
         
-            epsilons = [atom.epsilon for atom in structure.atoms]
-            sigmas = [atom.sigma for atom in structure.atoms]
+            epsilons = [atom.epsilon for atom in structure.atoms] / epsilon_conversion_factor
+            sigmas = [atom.sigma for atom in structure.atoms] / sigma_conversion_factor
             forcefields = [atom.type for atom in structure.atoms]
             epsilon_dict = dict([(unique_types.index(atom_type)+1,epsilon) for atom_type,epsilon in zip(types,epsilons)])
             sigma_dict = dict([(unique_types.index(atom_type)+1,sigma) for atom_type,sigma in zip(types,sigmas)])
@@ -305,8 +336,8 @@ def write_lammpsdata(structure, filename, atom_style='full',
                     if combo in params.nbfix_types:
                         type1 = unique_types.index(combo[0])+1
                         type2 = unique_types.index(combo[1])+1
-                        rmin = params.nbfix_types[combo][0] # Angstrom
-                        epsilon = params.nbfix_types[combo][1] # kcal
+                        rmin = params.nbfix_types[combo][0] # Angstrom OR lj units
+                        epsilon = params.nbfix_types[combo][1] # kcal OR lj units
                         sigma = rmin/2**(1/6)
                         coeffs[(type1, type2)] = (round(sigma, 8), round(epsilon, 8))
                     else:
@@ -344,14 +375,20 @@ def write_lammpsdata(structure, filename, atom_style='full',
             # Pair coefficients
             else:
                 data.write('\nPair Coeffs # lj \n')
-                data.write('#\tepsilon (kcal/mol)\t\tsigma (Angstrom)\n')
+                if unit_style == 'real':
+                    data.write('#\tepsilon (kcal/mol)\t\tsigma (Angstrom)\n')
+                elif unit_style == 'lj':
+                    data.write('#\treduced_epsilon \t\treduced_sigma \n')
                 for idx,epsilon in epsilon_dict.items():
                     data.write('{}\t{:.5f}\t\t{:.5f}\t\t# {}\n'.format(idx,epsilon,sigma_dict[idx],forcefield_dict[idx]))
 
             # Bond coefficients
             if bonds:
                 data.write('\nBond Coeffs # harmonic\n')
-                data.write('#\tk(kcal/mol/angstrom^2)\t\treq(angstrom)\n')
+                if unit_style == 'real':
+                    data.write('#\tk(kcal/mol/angstrom^2)\t\treq(angstrom)\n')
+                elif unit_style == 'lj':
+                    data.write('#\tk(eps/mol/sigma^2)\t\treq(sigma)\n')
                 for params,idx in unique_bond_types.items():
                     data.write('{}\t{}\t\t{}\t\t# {}\t{}\n'.format(idx,params[0],params[1],params[2][0],params[2][1]))
 
@@ -374,7 +411,10 @@ def write_lammpsdata(structure, filename, atom_style='full',
             if dihedrals:
                 if use_rb_torsions:
                     data.write('\nDihedral Coeffs # opls\n')
-                    data.write('#\tf1(kcal/mol)\tf2(kcal/mol)\tf3(kcal/mol)\tf4(kcal/mol)\n')
+                    if unit_style == 'real':
+                        data.write('#\tf1(kcal/mol)\tf2(kcal/mol)\tf3(kcal/mol)\tf4(kcal/mol)\n')
+                    elif unit_style == 'lj':
+                        data.write('#\tf1(1/mol)\tf2(1/mol)\tf3(1/mol)\tf4(1/mol)\n')
                     for params,idx in unique_dihedral_types.items():
                         opls_coeffs = RB_to_OPLS(params[0],
                                                  params[1],
