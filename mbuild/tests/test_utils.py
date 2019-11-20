@@ -117,5 +117,5 @@ class TestUtils(BaseTest):
                         [1, 1, 0]])
         box = [2,2,2]
         new_xyz = wrap_coords(xyz, box)
-        (xyz[1,:] == new_xyz[1,:]).all()
-        (new_xyz == np.array([1,1,1])).all()
+        assert (new_xyz[1,:] == xyz[1,:]).all()
+        assert (new_xyz[0,:] == np.array([1,1,1])).all()
