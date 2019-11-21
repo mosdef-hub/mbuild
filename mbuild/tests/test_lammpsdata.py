@@ -14,8 +14,10 @@ class TestLammpsData(BaseTest):
     def test_save(self, ethane):
         ethane.save(filename='ethane.lammps')
 
-    def test_save_forcefield(self, ethane):
-        ethane.save(filename='ethane-opls.lammps', forcefield_name='oplsaa')
+    @pytest.mark.parametrize('unit_style',['real', 'lj'])
+    def test_save_forcefield(self, ethane, unit_style):
+        ethane.save(filename='ethane-opls.lammps',
+                forcefield_name='oplsaa', unit_style=unit_style)
 
     @pytest.mark.skipif(not has_foyer, reason="Foyer package not installed")
     def test_save_charmm(self):
@@ -46,9 +48,12 @@ class TestLammpsData(BaseTest):
                 pass
 
     @pytest.mark.skipif(not has_foyer, reason="Foyer package not installed")
-    def test_save_box(self, ethane):
+    @pytest.mark.parametrize('unit_style', ['real', 'lj'])
+    def test_save_box(self, ethane, unit_style):
         box = mb.Box(lengths=np.array([2.0, 2.0, 2.0]))
-        ethane.save(filename='ethane-box.lammps', forcefield_name='oplsaa', box=box)
+        ethane.save(filename='ethane-box.lammps',
+                forcefield_name='oplsaa', box=box,
+                unit_style=unit_style)
 
     def test_nbfix(self, ethane):
         from foyer import Forcefield
@@ -118,3 +123,43 @@ class TestLammpsData(BaseTest):
             res_list.append(line.rstrip().split()[1])
 
         assert set(res_list) == set(['1', '0'])
+
+    def test_lj_units(self, ethane):
+        from foyer import Forcefield
+
+        OPLSAA = Forcefield(name='oplsaa')
+        structure = OPLSAA.apply(ethane)
+        write_lammpsdata(filename='lj.lammps', structure=structure,
+                unit_style='lj')
+
+        checked_section = False
+        with open('lj.lammps', 'r') as fi:
+            while not checked_section:
+                line = fi.readline()
+                if 'dihedral types' in line:
+                    fi.readline()
+                    line = float(fi.readline().split()[1])
+                    assert np.isclose(line, 2.04)
+                    line = float(fi.readline().split()[1])
+                    assert np.isclose(line, 2.268)
+                    line = float(fi.readline().split()[1])
+                    assert np.isclose(line, 1.898857)
+
+                elif 'Masses' in line:
+                    fi.readline()
+                    line = float(fi.readline().split()[1])
+                    assert np.isclose(line, 1.00)
+
+                elif 'Pair Coeffs' in line:
+                    fi.readline()
+                    line = fi.readline().split()
+                    epsilon = float(line[1])
+                    sigma = float(line[2])
+                    assert np.isclose(epsilon, 1.00)
+                    assert np.isclose(sigma, 1.00)
+
+                # TODO: Check bonds, angles and dihedrals
+                #elif 'Bond Coeffs' in line:
+                #    fi.readline()
+                #    line = fi.readline().split()
+                #    import pdb; pdb.set_trace()
