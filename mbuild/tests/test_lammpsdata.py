@@ -124,7 +124,29 @@ class TestLammpsData(BaseTest):
 
         assert set(res_list) == set(['1', '0'])
 
-    def test_lj_units(self, ethane):
+    def test_lj_box(self, ethane):
+        from foyer import Forcefield
+
+        OPLSAA = Forcefield(name='oplsaa')
+        structure = OPLSAA.apply(ethane)
+        write_lammpsdata(filename='lj.lammps', structure=structure,
+                unit_style='lj')
+
+        checked_section = False
+        with open('lj.lammps', 'r') as fi:
+            while not checked_section: 
+                line = fi.readline()
+                if 'dihedral types' in line:
+                    fi.readline()
+                    line = float(fi.readline().split()[1])
+                    assert np.isclose(line, 2.04)
+                    line = float(fi.readline().split()[1])
+                    assert np.isclose(line, 2.268)
+                    line = float(fi.readline().split()[1])
+                    assert np.isclose(line, 1.898857)
+                    checked_section = True
+
+    def test_lj_masses(self, ethane):
         from foyer import Forcefield
 
         OPLSAA = Forcefield(name='oplsaa')
@@ -136,46 +158,88 @@ class TestLammpsData(BaseTest):
         with open('lj.lammps', 'r') as fi:
             while not checked_section:
                 line = fi.readline()
-                if 'dihedral types' in line:
-                    fi.readline()
-                    line = float(fi.readline().split()[1])
-                    assert np.isclose(line, 2.04)
-                    line = float(fi.readline().split()[1])
-                    assert np.isclose(line, 2.268)
-                    line = float(fi.readline().split()[1])
-                    assert np.isclose(line, 1.898857)
-
-                elif 'Masses' in line:
+                if 'Masses' in line:
                     fi.readline()
                     line = float(fi.readline().split()[1])
                     assert np.isclose(line, 1.00)
+                    checked_section = True
 
-                elif 'Pair Coeffs' in line:
+    def test_lj_pairs(self, ethane):
+        from foyer import Forcefield
+
+        OPLSAA = Forcefield(name='oplsaa')
+        structure = OPLSAA.apply(ethane)
+        write_lammpsdata(filename='lj.lammps', structure=structure,
+                unit_style='lj')
+
+        checked_section = False
+        with open('lj.lammps', 'r') as fi:
+            while not checked_section:
+                line = fi.readline()
+                if 'Pair Coeffs' in line:
                     fi.readline()
                     line = fi.readline().split()
                     epsilon = float(line[1])
                     sigma = float(line[2])
                     assert np.isclose(epsilon, 1.00)
                     assert np.isclose(sigma, 1.00)
+                    checked_section = True
 
-                elif 'Bond Coeffs' in line:
+    def test_lj_bonds(self, ethane):
+        from foyer import Forcefield
+
+        OPLSAA = Forcefield(name='oplsaa')
+        structure = OPLSAA.apply(ethane)
+        write_lammpsdata(filename='lj.lammps', structure=structure,
+                unit_style='lj')
+
+        checked_section = False
+        with open('lj.lammps', 'r') as fi:
+            while not checked_section:
+                line = fi.readline()
+                if 'Bond Coeffs' in line:
                     fi.readline()
                     bonds = list()
                     bonds.append(float(fi.readline().split()[1]))
                     bonds.append(float(fi.readline().split()[1]))
                     assert np.allclose(sorted(bonds), [49742.424, 63106.06])
+                    checked_section = True
 
-                elif 'Angle Coeffs' in line:
+    def test_lj_angles(self, ethane):
+        from foyer import Forcefield
+
+        OPLSAA = Forcefield(name='oplsaa')
+        structure = OPLSAA.apply(ethane)
+        write_lammpsdata(filename='lj.lammps', structure=structure,
+                unit_style='lj')
+
+        checked_section = False
+        with open('lj.lammps', 'r') as fi:
+            while not checked_section:
+                line = fi.readline()
+                if 'Angle Coeffs' in line:
                     fi.readline()
                     angles = list()
                     angles.append(float(fi.readline().split()[1]))
                     angles.append(float(fi.readline().split()[1]))
                     assert np.allclose(sorted(angles), [1750.0, 1988.636])
+                    checked_section = True
 
-                elif 'Dihedral Coeffs' in line:
+    def test_lj_dihedrals(self, ethane):
+        from foyer import Forcefield
+
+        OPLSAA = Forcefield(name='oplsaa')
+        structure = OPLSAA.apply(ethane)
+        write_lammpsdata(filename='lj.lammps', structure=structure,
+                unit_style='lj')
+
+        checked_section = False
+        with open('lj.lammps', 'r') as fi:
+            while not checked_section:
+                line = fi.readline()
+                if 'Dihedral Coeffs' in line:
                     fi.readline()
                     dihedrals = fi.readline().split()[1:5]
                     dihedrals = [float(i) for i in dihedrals]
                     assert np.allclose(dihedrals, [-0.001, 0.001, 15.909, -0.0])
-
                     checked_section=True
