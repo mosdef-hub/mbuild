@@ -158,8 +158,11 @@ class TestLammpsData(BaseTest):
                     assert np.isclose(epsilon, 1.00)
                     assert np.isclose(sigma, 1.00)
 
-                # TODO: Check bonds, angles and dihedrals
-                #elif 'Bond Coeffs' in line:
-                #    fi.readline()
-                #    line = fi.readline().split()
-                #    import pdb; pdb.set_trace()
+                elif 'Bond Coeffs' in line:
+                    fi.readline()
+                    bonds = list()
+                    bonds.append(float(fi.readline().split()[1]))
+                    bonds.append(float(fi.readline().split()[1]))
+                    assert np.allclose(sorted(bonds), [49742.424, 63106.06])
+
+                    checked_section=True
