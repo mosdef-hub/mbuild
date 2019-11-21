@@ -165,4 +165,17 @@ class TestLammpsData(BaseTest):
                     bonds.append(float(fi.readline().split()[1]))
                     assert np.allclose(sorted(bonds), [49742.424, 63106.06])
 
+                elif 'Angle Coeffs' in line:
+                    fi.readline()
+                    angles = list()
+                    angles.append(float(fi.readline().split()[1]))
+                    angles.append(float(fi.readline().split()[1]))
+                    assert np.allclose(sorted(angles), [1750.0, 1988.636])
+
+                elif 'Dihedral Coeffs' in line:
+                    fi.readline()
+                    dihedrals = fi.readline().split()[1:5]
+                    dihedrals = [float(i) for i in dihedrals]
+                    assert np.allclose(dihedrals, [-0.001, 0.001, 15.909, -0.0])
+
                     checked_section=True
