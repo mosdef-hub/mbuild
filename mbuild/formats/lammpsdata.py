@@ -72,7 +72,7 @@ def write_lammpsdata(structure, filename, atom_style='full',
 
     # Check if structure is paramterized
     if unit_style == 'lj':
-        if any([atom.sigma for atom in structure.atoms]) == None:
+        if any([atom.sigma for atom in structure.atoms]) is None:
            raise ValueError('LJ units specified but one or more atoms has undefined LJ paramters.') 
 
     xyz = np.array([[atom.xx,atom.xy,atom.xz] for atom in structure.atoms])
@@ -219,10 +219,8 @@ def write_lammpsdata(structure, filename, atom_style='full',
                 sigma_conversion_factor, epsilon_conversion_factor)
             
     if impropers:
-        for dihedral in structure.dihedrals:
-            if dihedral.improper:
-                dihedral.improper.type.phi_k *= (sigma_conversion_factor/epsilon_conversion_factor)
-        improper_types, unique_improper_types = _get_impropers(structure)
+        improper_types, unique_improper_types = _get_impropers(structure,
+                sigma_conversion_factor, epsilon_conversion_factor)
     
 
     with open(filename, 'w') as data:
