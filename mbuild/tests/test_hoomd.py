@@ -17,6 +17,17 @@ class TestHoomd(BaseTest):
         assert snap.bonds.N == 7
         assert snap.angles.N == 0
 
+    def test_particles_to_snapshot(self):
+        hoomd_snapshot = import_("mbuild.formats.hoomd_snapshot")
+        part = mb.Compound(name='Ar')
+        box = mb.fill_box(part, n_compounds=10, box=mb.Box([5,5,5]))
+        snap, _ = hoomd_snapshot.to_hoomdsnapshot(box)
+
+        assert snap.particles.N == 10
+        assert snap.bonds.N == 0
+        assert snap.angles.N == 0
+
+
     def test_bad_input_to_snapshot(self):
         hoomd_snapshot = import_("mbuild.formats.hoomd_snapshot")
         with pytest.raises(ValueError):
