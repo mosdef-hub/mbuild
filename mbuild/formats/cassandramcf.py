@@ -51,8 +51,8 @@ def write_mcf(structure, filename, angle_style,
 
     # Check some things before we start writing the MCF
     # Only will write MCF for Cassandra-supported options
-    if angle_style.casefold() != 'fixed' and \
-            angle_style.casefold() != 'harmonic':
+    if (angle_style.casefold() != 'fixed' and
+            angle_style.casefold() != 'harmonic'):
         raise ValueError("Invalid selection for angle_style. "
                 "Please choose 'fixed' or 'harmonic'")
 
@@ -60,25 +60,25 @@ def write_mcf(structure, filename, angle_style,
         raise ValueError("Urey bradley terms detected. Cassandra only "
                         "currently supports fixed or harmonic angles.")
 
-    if dihedral_style.casefold() != 'opls' and \
-       dihedral_style.casefold() != 'charmm' and \
-       dihedral_style.casefold() != 'none':
+    if (dihedral_style.casefold() != 'opls' and
+            dihedral_style.casefold() != 'charmm' and
+            dihedral_style.casefold() != 'none'):
         raise ValueError("Invalid selection for dihedral_style. "
                 "Please choose 'OPLS', 'CHARMM', or 'none'")
 
     if dihedral_style.casefold() != 'none':
-        if len(structure.rb_torsions) > 0 and \
-           dihedral_style.casefold() != 'opls':
+        if (len(structure.rb_torsions) > 0 and
+                dihedral_style.casefold() != 'opls'):
             raise ValueError("Dihedral style declared as {} but "
                 "RB torsions found.".format(dihedral_style))
 
-        if len(structure.dihedrals) > 0 and \
-           dihedral_style.casefold() != 'charmm':
+        if (len(structure.dihedrals) > 0 and
+                dihedral_style.casefold() != 'charmm'):
             raise ValueError("Dihedral style declared as {} but "
                 "charmm-style dihedrals found.".format(dihedral_style))
 
-        if len(structure.rb_torsions) > 0 and \
-           len(structure.dihedrals) > 0:
+        if (len(structure.rb_torsions) > 0 and
+                len(structure.dihedrals) > 0):
             raise ValueError("Multiple dihedral styles detected, check your "
                              "Forcefield XML and structure")
 
@@ -92,27 +92,27 @@ def write_mcf(structure, filename, angle_style,
             coul14 = structure.adjusts[0].type.chgscale
         else:
             coul14 = 1.0
-            if len(structure.dihedrals) > 0 or \
-               len(structure.rb_torsions) > 0:
-                    warnings.warn('Unable to infer coulombic 1-4 '
+            if (len(structure.dihedrals) > 0 or
+                    len(structure.rb_torsions) > 0):
+                warnings.warn('Unable to infer coulombic 1-4 '
                         'scaling factor. Setting to 1.0')
     if lj14 is None:
         if len(structure.adjusts) > 0:
             type1_eps = structure.adjusts[0].atom1.epsilon
             type2_eps = structure.adjusts[0].atom2.epsilon
             scaled_eps = structure.adjusts[0].type.epsilon
-            if structure.combining_rule == 'geometric' or \
-                structure.combining_rule == 'lorentz':
-                   combined_eps = sqrt(type1_eps*type2_eps)
-                   lj14 = scaled_eps/combined_eps
+            if (structure.combining_rule == 'geometric' or
+                    structure.combining_rule == 'lorentz'):
+                combined_eps = sqrt(type1_eps*type2_eps)
+                lj14 = scaled_eps/combined_eps
             else:
                 lj14 = 1.0
                 warnings.warn('Unable to infer LJ 1-4 scaling'
                     'factor. Setting to 1.0')
         else:
             lj14 = 1.0
-            if len(structure.dihedrals) > 0 or \
-               len(structure.rb_torsions) > 0:
+            if (len(structure.dihedrals) > 0 or
+                    len(structure.rb_torsions) > 0):
                 warnings.warn('Unable to infer LJ 1-4 scaling'
                     'factor. Setting to 1.0')
 
@@ -426,8 +426,8 @@ def _write_dihedral_information(mcf_file, structure, dihedral_style,
             #  (2) convert units from kcal/mol to kJ/mol
             dihedral_parms = []
             for dihedral in dihedrals:
-                a0 = dihedral.type.c0 + dihedral.type.c1 + \
-                        dihedral.type.c2 + dihedral.type.c3
+                a0 = ( dihedral.type.c0 + dihedral.type.c1 +
+                        dihedral.type.c2 + dihedral.type.c3 )
                 a1 = -dihedral.type.c1 - (3./4.)*dihedral.type.c3
                 a2 = (-1./2.)*dihedral.type.c2
                 a3 = (-1./4.)*dihedral.type.c3

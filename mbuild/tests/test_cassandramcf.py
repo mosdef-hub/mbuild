@@ -9,8 +9,10 @@ from mbuild.utils.io import has_foyer
 class TestCassandraMCF(BaseTest):
 
     def test_not_parameterized(self, ethane):
-        with pytest.raises(ValueError,match=r'MCF writing not supported without'):
-            ethane.save(filename='ethane.mcf',angle_style='harmonic',dihedral_style='opls')
+        with pytest.raises(ValueError,
+                match=r'MCF writing not supported without'):
+            ethane.save(filename='ethane.mcf',
+                    angle_style='harmonic',dihedral_style='opls')
 
     def test_invalid_structure(self,ethane):
         with pytest.raises(ValueError,match=r'requires parmed structure'):
@@ -18,12 +20,14 @@ class TestCassandraMCF(BaseTest):
                     angle_style='harmonic',dihedral_style='opls')
 
     def test_invalid_angle_style(self, ethane):
-        with pytest.raises(ValueError,match=r'Invalid selection for angle_style'):
+        with pytest.raises(ValueError,
+                match=r'Invalid selection for angle_style'):
             ethane.save(filename='ethane-opls.mcf', forcefield_name='oplsaa',
                     angle_style='harm', dihedral_style='opls')
 
     def test_invalid_dihedral_style(self, ethane):
-        with pytest.raises(ValueError,match=r'Invalid selection for dihedral_style'):
+        with pytest.raises(ValueError,
+                match=r'Invalid selection for dihedral_style'):
             ethane.save(filename='ethane-opls.mcf', forcefield_name='oplsaa',
                     angle_style='harmonic', dihedral_style='op')
 
@@ -84,9 +88,11 @@ class TestCassandraMCF(BaseTest):
         n_ethane = 2
         ethane.name = 'Ethane'
         filled = mb.fill_box(ethane,n_compounds=n_ethane,box=[0,0,0,4,4,4])
-        with pytest.raises(ValueError,match=r'Not all components of the molecule'):
-            filled.save(filename='box-ethane-opls.mcf', forcefield_name='oplsaa',
-                    angle_style='harmonic', dihedral_style='opls')
+        with pytest.raises(ValueError,
+                match=r'Not all components of the molecule'):
+            filled.save(filename='box-ethane-opls.mcf',
+                forcefield_name='oplsaa',angle_style='harmonic',
+                dihedral_style='opls')
 
     def test_save_forcefield(self, ethane):
         ethane.save(filename='ethane-opls.mcf', forcefield_name='oplsaa',
@@ -160,13 +166,13 @@ class TestCassandraMCF(BaseTest):
             a2 = line[2]
             a3 = line[3]
             a4 = line[4]
-            if (a1 == '2' and a2 == '1' and a3 == '5' and a4 == '6' ) or \
-               (a4 == '2' and a3 == '1' and a2 == '5' and a1 == '6'):
-                   assert line[5] == 'OPLS'
-                   assert line[6] == '0.000'
-                   assert line[7] == '0.000'
-                   assert line[8] == '-0.000'
-                   assert line[9] == '0.628'
+            if ( (a1 == '2' and a2 == '1' and a3 == '5' and a4 == '6' ) or
+                 (a4 == '2' and a3 == '1' and a2 == '5' and a1 == '6') ):
+               assert line[5] == 'OPLS'
+               assert line[6] == '0.000'
+               assert line[7] == '0.000'
+               assert line[8] == '-0.000'
+               assert line[9] == '0.628'
 
         assert mcf_data[improper_section_start+1][0] == '0'
         assert mcf_data[fragment_section_start+1][0] == '2'
@@ -179,7 +185,8 @@ class TestCassandraMCF(BaseTest):
 
 
     def test_save_ring_forcefield(self,benzene):
-        benzene.save(filename='benzene-opls.mcf', forcefield_name='oplsaa', angle_style='fixed', dihedral_style='opls')
+        benzene.save(filename='benzene-opls.mcf', forcefield_name='oplsaa',
+                angle_style='fixed', dihedral_style='opls')
 
         mcf_data = []
         with open('benzene-opls.mcf') as f:
@@ -248,13 +255,13 @@ class TestCassandraMCF(BaseTest):
             a2 = line[2]
             a3 = line[3]
             a4 = line[4]
-            if (a1 == '1' and a2 == '2' and a3 == '3' and a4 == '4' ) or \
-               (a4 == '1' and a3 == '2' and a2 == '3' and a1 == '4'):
-                   assert line[5] == 'OPLS'
-                   assert line[6] == '0.000'
-                   assert line[7] == '-0.000'
-                   assert line[8] == '15.167'
-                   assert line[9] == '-0.000'
+            if ( (a1 == '1' and a2 == '2' and a3 == '3' and a4 == '4' ) or
+                 (a4 == '1' and a3 == '2' and a2 == '3' and a1 == '4') ):
+                assert line[5] == 'OPLS'
+                assert line[6] == '0.000'
+                assert line[7] == '-0.000'
+                assert line[8] == '15.167'
+                assert line[9] == '-0.000'
 
         assert mcf_data[improper_section_start+1][0] == '0'
         assert mcf_data[fragment_section_start+1][0] == '1'
