@@ -66,17 +66,17 @@ def wrap_coords(xyz, box):
 
     Returns
     -------
-    xyz : numpy.array of points with shape N x 3
+    wrap_xyz : numpy.array of points with shape N x 3
 
     Notes
     -----
     Assumes we are wrapping inside the positive octant
+    Currently only supports orthorhombic boxes
     """
-    for atom_xyz in xyz:
-        if atom_xyz[0] < 0: atom_xyz[0]+= box[0]
-        if atom_xyz[1] < 0: atom_xyz[1]+= box[1]
-        if atom_xyz[2] < 0: atom_xyz[2]+= box[2]
-        if atom_xyz[0] > box[0]: atom_xyz[0]-= box[0]
-        if atom_xyz[1] > box[1]: atom_xyz[1]-= box[1]
-        if atom_xyz[2] > box[2]: atom_xyz[2]-= box[2]
-    return xyz
+    box_arr = np.asarray(box)
+    assert box_arr.shape == (3,)
+
+    wrap_xyz = np.array([coord + -1 * np.floor_divide(coord, box_arr) * box_arr
+        for coord in xyz]) 
+
+    return wrap_xyz
