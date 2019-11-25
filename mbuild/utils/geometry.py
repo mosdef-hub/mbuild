@@ -76,7 +76,6 @@ def wrap_coords(xyz, box):
     box_arr = np.asarray(box)
     assert box_arr.shape == (3,)
 
-    wrap_xyz = np.array([coord + -1 * np.floor_divide(coord, box_arr) * box_arr
-        for coord in xyz]) 
+    wrap_xyz = xyz - 1*np.floor_divide(xyz, box_arr) * box_arr
 
     return wrap_xyz
