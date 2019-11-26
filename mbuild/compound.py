@@ -28,6 +28,7 @@ from mbuild.formats.hoomdxml import write_hoomdxml
 from mbuild.formats.lammpsdata import write_lammpsdata
 from mbuild.formats.gsdwriter import write_gsd
 from mbuild.formats.par_writer import write_par
+from mbuild.formats.cassandramcf import write_mcf
 from mbuild.periodic_kdtree import PeriodicCKDTree
 from mbuild.utils.io import run_from_ipython, import_
 from mbuild.utils.jsutils import overwrite_nglview_default
@@ -1824,7 +1825,8 @@ class Compound(object):
         filename : str
             Filesystem path in which to save the trajectory. The extension or
             prefix will be parsed and control the format. Supported
-            extensions are: 'hoomdxml', 'gsd', 'gro', 'top', 'lammps', 'lmp', 'json'
+            extensions are: 'hoomdxml', 'gsd', 'gro', 'top',
+            'lammps', 'lmp', 'mcf'
         show_ports : bool, optional, default=False
             Save ports contained within the compound.
         forcefield_files : str, optional, default=None
@@ -1856,8 +1858,8 @@ class Compound(object):
             Keyword arguments to provide to `foyer.Forcefield.apply`.
         **kwargs
             Depending on the file extension these will be passed to either
-            `write_gsd`, `write_hoomdxml`, `write_lammpsdata`, or
-            `parmed.Structure.save`.
+            `write_gsd`, `write_hoomdxml`, `write_lammpsdata`,
+            `write_mcf`, or `parmed.Structure.save`.
             See https://parmed.github.io/ParmEd/html/structobj/parmed.structure.Structure.html#parmed.structure.Structure.save
 
 
@@ -1894,6 +1896,7 @@ class Compound(object):
         formats.gsdwrite.write_gsd : Write to GSD format
         formats.hoomdxml.write_hoomdxml : Write to Hoomd XML format
         formats.lammpsdata.write_lammpsdata : Write to LAMMPS data format
+        formats.cassandramcf.write_mcf : Write to Cassandra MCF format
         formats.json_formats.compound_to_json : Write to a json file
 
         """
@@ -1914,7 +1917,8 @@ class Compound(object):
                   '.gsd': write_gsd,
                   '.lammps': write_lammpsdata,
                   '.lmp': write_lammpsdata,
-                  '.par': write_par}
+                  '.par': write_par,
+                  '.mcf': write_mcf}
 
         try:
             saver = savers[extension]
