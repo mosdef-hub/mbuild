@@ -17,7 +17,7 @@ from setuptools import setup, find_packages
 from distutils.spawn import find_executable
 
 #####################################
-VERSION = "0.10.3"
+VERSION = "0.10.2"
 ISRELEASED = True
 if ISRELEASED:
     __version__ = VERSION
