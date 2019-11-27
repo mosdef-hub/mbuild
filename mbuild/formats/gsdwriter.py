@@ -11,7 +11,7 @@ __all__ = ['write_gsd']
 
 def write_gsd(structure, filename, ref_distance=1.0, ref_mass=1.0,
               ref_energy=1.0, rigid_bodies=None, shift_coords=True,
-              write_special_pairs=True):
+              write_special_pairs=True, **kwargs):
     """Output a GSD file (HOOMD v2 default data format).
 
     Parameters
