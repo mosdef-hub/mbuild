@@ -37,6 +37,7 @@ test:
     - ipykernel
     - foyer
     - networkx
+    - nbval
 
   source_files:
     - mbuild/examples/*
