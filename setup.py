@@ -131,6 +131,7 @@ setup(
                              ]},
     entry_points={
         'mbuild.plugins':[
+            "Alkane = mbuild.lib.recipes.alkane:Alkane",
             "Monolayer = mbuild.lib.recipes.monolayer:Monolayer",
             "Polymer = mbuild.lib.recipes.polymer:Polymer",
             "SilicaInterface = mbuild.lib.recipes.silica_interface:SilicaInterface",

@@ -64,7 +64,7 @@ class BaseTest:
 
     @pytest.fixture
     def propyl(self):
-        from mbuild.examples import Alkane
+        from mbuild.lib.recipes import Alkane
         return Alkane(3, cap_front=True, cap_end=False)
 
     @pytest.fixture
@@ -83,7 +83,7 @@ class BaseTest:
 
     @pytest.fixture
     def octane(self):
-        from mbuild.examples import Alkane
+        from mbuild.lib.recipes import Alkane
         return Alkane(8, cap_front=True, cap_end=True)
 
     @pytest.fixture
