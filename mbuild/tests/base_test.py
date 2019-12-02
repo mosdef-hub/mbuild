@@ -206,12 +206,6 @@ class BaseTest:
             return fccf_dihedral_init, fccf_dihedral_final
         return _connect_and_reconnect
 
-    @pytest.fixture
-    def alkane_monolayer(self):
-        from mbuild.examples import AlkaneMonolayer
-        pattern = mb.Random2DPattern(50, seed=1)
-        monolayer = AlkaneMonolayer(pattern=pattern)
-        return monolayer
 
     @pytest.fixture
     def copper_cell(self):

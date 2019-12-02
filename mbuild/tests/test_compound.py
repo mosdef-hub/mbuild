@@ -439,27 +439,23 @@ class TestCompound(BaseTest):
         assert len(list(parent.ancestors())) == 0
         assert next(parent.particles_by_name('A')) == part
 
+    @pytest.mark.skipif(not has_openbabel, reason="Open Babel package not installed")
     def test_reload(self):
-        from mbuild.examples.pmpc.brush import Brush
-        from numpy import pi
         # Create a compound and write it to file.
-        brush1 = Brush()
-        brush1.save("brush1.pdb")
+        p3ht1= mb.load('CCCCCCC1=C(SC(=C1)C)C', smiles=True)
+        p3ht1.save("p3ht1.pdb")
 
         # Create another compound, rotate it and write it to file.
-        brush2 = Brush()
-        mb.rotate(brush2, pi/2, [0, 0, 1])
-        brush2.save("brush2.pdb")
+        p3ht2 = mb.load('CCCCCCC1=C(SC(=C1)C)C', smiles=True)
+        mb.rotate(p3ht2, np.pi / 2, [0, 0, 1])
+        p3ht2.save("p3ht2.pdb")
 
-        # Load brush2.pdb into brush1, modifying the atom positions of brush1.
-        brush1.update_coordinates("brush2.pdb")
-        brush1.save("modified_brush1.pdb")
+        # Load p3ht2.pdb into p3ht1, modifying the atom positions of p3ht1.
+        p3ht1.update_coordinates("p3ht2.pdb")
+        p3ht1.save("modified_p3ht1.pdb")
 
-        assert brush1['pmpc'].n_particles == 164
-        assert brush1['pmpc'].n_bonds == 163
-        assert len(brush1['pmpc']['monomer']) == 4
-        assert brush1['pmpc']['monomer'][0].n_particles == 41
-        assert brush1['pmpc']['monomer'][0].n_bonds == 40
+        assert p3ht1.n_particles == 33
+        assert p3ht1.n_bonds == 33
 
     @pytest.mark.parametrize('extension', [('.xyz'), ('.pdb'), ('.mol2'), ('.gro')])
     def test_update_coordinates(self, ethane, extension):
