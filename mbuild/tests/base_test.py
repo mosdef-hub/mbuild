@@ -14,12 +14,12 @@ class BaseTest:
 
     @pytest.fixture
     def ethane(self):
-        from mbuild.examples import Ethane
+        from mbuild.lib.molecules import Ethane
         return Ethane()
 
     @pytest.fixture
     def methane(self):
-        from mbuild.examples import Methane
+        from mbuild.lib.molecules import Methane
         return Methane()
 
     @pytest.fixture
