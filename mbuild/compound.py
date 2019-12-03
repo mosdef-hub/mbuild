@@ -28,9 +28,8 @@ from mbuild.formats.hoomdxml import write_hoomdxml
 from mbuild.formats.lammpsdata import write_lammpsdata
 from mbuild.formats.gsdwriter import write_gsd
 from mbuild.formats.par_writer import write_par
-from mbuild.formats.cassandramcf import write_mcf
 from mbuild.periodic_kdtree import PeriodicCKDTree
-from mbuild.utils.io import run_from_ipython, import_
+from mbuild.utils.io import run_from_ipython, import_, has_networkx
 from mbuild.utils.jsutils import overwrite_nglview_default
 from mbuild.coordinate_transform import _translate, _rotate
 
@@ -1917,8 +1916,10 @@ class Compound(object):
                   '.gsd': write_gsd,
                   '.lammps': write_lammpsdata,
                   '.lmp': write_lammpsdata,
-                  '.par': write_par,
-                  '.mcf': write_mcf}
+                  '.par': write_par,}
+        if has_networkx:
+            from mbuild.formats.cassandramcf import write_mcf
+            savers.update({'.mcf': write_mcf})
 
         try:
             saver = savers[extension]
