@@ -222,7 +222,7 @@ class TestLammpsData(BaseTest):
                     angles = list()
                     angles.append(float(fi.readline().split()[1]))
                     angles.append(float(fi.readline().split()[1]))
-                    assert np.allclose(sorted(angles), [1750.0, 1988.636])
+                    assert np.allclose(sorted(angles), [500.0, 568.182])
                     checked_section = True
 
     def test_lj_dihedrals(self, ethane):
@@ -241,5 +241,5 @@ class TestLammpsData(BaseTest):
                     fi.readline()
                     dihedrals = fi.readline().split()[1:5]
                     dihedrals = [float(i) for i in dihedrals]
-                    assert np.allclose(dihedrals, [-0.001, 0.001, 15.909, -0.0])
+                    assert np.allclose(dihedrals, [0.0005, 0.0, 4.5455, -0.0])
                     checked_section=True
