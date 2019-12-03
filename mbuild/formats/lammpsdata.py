@@ -10,7 +10,7 @@ from parmed.parameters import ParameterSet
 from mbuild import Box
 from mbuild.utils.conversion import RB_to_OPLS
 from mbuild.utils.sorting import natural_sort
-from scipy.constants import epsilon_0 # Is this okay to import?
+from scipy.constants import epsilon_0
 
 __all__ = ['write_lammpsdata']
 
