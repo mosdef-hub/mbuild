@@ -18,10 +18,10 @@ class TestUtils(BaseTest):
 
     def test_structure_reproducibility(self):
         from mbuild.lib.recipes import Alkane
-        filename = 'decane-tmp.pdb'
+        filename = 'decane-tmp.xyz'
         decane = Alkane(10)
         decane.save(filename)
-        with open(get_fn('decane.pdb')) as file1:
+        with open(get_fn('decane.xyz')) as file1:
             with open(filename) as file2:
                 diff = difflib.ndiff(file1.readlines(), file2.readlines())
         changes = [l for l in diff if l.startswith('+ ') or l.startswith('- ')]
