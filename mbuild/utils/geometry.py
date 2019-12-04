@@ -63,8 +63,10 @@ def wrap_coords(xyz, box):
     Parameters
     ---------
     xyz : numpy.array of points with shape N x 3
-    box : numpy.array specifing the size of box ie [Lx, Ly, Lz] or
-        mb.Box
+    box : numpy.array or list or mb.Box
+        array or list should have shape (3,) corresponding to box lengths.
+        If array or list is passed, box is assumed to be positive octant
+        If mb.box is passed, box can be arbitrarily centered
 
     Returns
     -------
@@ -72,7 +74,6 @@ def wrap_coords(xyz, box):
 
     Notes
     -----
-    Assumes we are wrapping inside the positive octant
     Currently only supports orthorhombic boxes
     """
     if not isinstance(box, mb.Box):
