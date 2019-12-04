@@ -1,7 +1,3 @@
-# -*- coding: utf-8 -*-
-
-
-# -- ==alkane_monolayer== --
 import mbuild as mb
 
 from mbuild.lib.surfaces import Betacristobalite
@@ -33,5 +29,3 @@ class AlkaneMonolayer(mb.lib.recipes.Monolayer):
         super(AlkaneMonolayer, self).__init__(surface, alkylsilane, backfill=hydrogen,
                                               pattern=pattern, tile_x=tile_x,
                                               tile_y=tile_y)
-
-# -- ==alkane_monolayer== --

@@ -1,4 +1,3 @@
-from __future__ import division
 from math import radians
 from collections import namedtuple
 
