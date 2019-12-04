@@ -1,5 +1,6 @@
 import numpy as np
 
+import mbuild as mb
 from mbuild.coordinate_transform import angle
 
 
@@ -62,7 +63,8 @@ def wrap_coords(xyz, box):
     Parameters
     ---------
     xyz : numpy.array of points with shape N x 3
-    box : numpy.array specifing the size of box ie [Lx, Ly, Lz]
+    box : numpy.array specifing the size of box ie [Lx, Ly, Lz] or
+        mb.Box
 
     Returns
     -------
@@ -73,9 +75,15 @@ def wrap_coords(xyz, box):
     Assumes we are wrapping inside the positive octant
     Currently only supports orthorhombic boxes
     """
-    box_arr = np.asarray(box)
-    assert box_arr.shape == (3,)
+    if not isinstance(box, mb.Box):
+        box_arr = np.asarray(box)
+        assert box_arr.shape == (3,)
 
-    wrap_xyz = xyz - 1*np.floor_divide(xyz, box_arr) * box_arr
+        wrap_xyz = xyz - 1*np.floor_divide(xyz, box_arr) * box_arr
+    else:
+        xyz = xyz - box.mins  
+        wrap_xyz = (xyz 
+                - (1*np.floor_divide(xyz, box.lengths) * box.lengths)
+                + box.mins)
 
     return wrap_xyz
