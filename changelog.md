@@ -3,6 +3,30 @@
 All big and breaking changes for [mBuild](https://mosdef-hub.github.io/mbuild/) will be recorded here.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## 0.10.3 (2019-10-27)
+
+### Feature
+- Add Cassandra MCF writer (#636)
+- Add HOOMD snapshot converter (#622)
+- Generate `mb.Compound` from Parmed or MDTraj residues (#526)
+- Add `**kwargs` for `write_gsd` (#653)
+
+### Bug Fixes
+- Fix unique naming problem in `to_networkx` (#583)
+- Default the mBuild PAR-writer to use `IMPROPER` (#648)
+- Fix ghost ports attached to removed compound (#593)
+- Remove duplicate NP particles in TNP example (#625)
+- Only import MCF writer if `networkx` is installed (#654)
+
+### Maintenance
+- Add LGTM (#616)
+- Add Azure CI testing (#615, #617, #618, #630, #637, #638)
+- Update Travis CI (#649)
+- Update conda recipe to include nbval (#611, #656)
+- Pin `nglview` to 2.7+ (#651, #655)
+- Reduce length of some unit tests (#621)
+- Rename `AmorphousSilica` to be more descriptive (#630)
+
 ## 0.10.1 (2019-10-9)
 This is a bugfix release to resolve a potential issue with a foyer dependency with mBuild 0.10.0.
 
