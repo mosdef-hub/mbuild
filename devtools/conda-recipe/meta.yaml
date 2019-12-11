@@ -23,7 +23,7 @@ requirements:
     - numpy
     - scipy
     - packmol >=1!18.013
-    - nglview >=0.6
+    - nglview >=2.7
     - oset
     - parmed
     - protobuf
@@ -37,6 +37,7 @@ test:
     - ipykernel
     - foyer
     - networkx
+    - nbval
 
   source_files:
     - mbuild/examples/*

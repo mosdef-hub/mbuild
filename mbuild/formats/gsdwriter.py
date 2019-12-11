@@ -1,5 +1,3 @@
-from __future__ import division
-
 import numpy as np
 
 from mbuild.utils.io import import_
@@ -11,7 +9,7 @@ __all__ = ['write_gsd']
 
 def write_gsd(structure, filename, ref_distance=1.0, ref_mass=1.0,
               ref_energy=1.0, rigid_bodies=None, shift_coords=True,
-              write_special_pairs=True):
+              write_special_pairs=True, **kwargs):
     """Output a GSD file (HOOMD v2 default data format).
 
     Parameters
@@ -40,9 +38,7 @@ def write_gsd(structure, filename, ref_distance=1.0, ref_mass=1.0,
     Notes
     -----
     Force field parameters are not written to the GSD file and must be included
-    manually into a HOOMD input script. Work on a HOOMD plugin is underway to
-    read force field parameters from a Foyer XML file.
-
+    manually into a HOOMD input script. 
     """
 
     import_('gsd')

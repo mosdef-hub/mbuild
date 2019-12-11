@@ -1,7 +1,7 @@
 numpy
 scipy
 packmol>=1!18.013
-nglview>=0.6.2.3
+nglview>=2.7
 oset
 parmed
 mdtraj

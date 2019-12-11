@@ -1,5 +1,3 @@
-from __future__ import print_function, division
-
 __all__ = ['load', 'clone', 'Compound', 'Particle']
 
 from collections import OrderedDict, defaultdict, Iterable
@@ -16,7 +14,6 @@ import numpy as np
 from oset import oset as OrderedSet
 import parmed as pmd
 from parmed.periodic_table import AtomicNum, element_by_name, Mass, Element
-from six import integer_types, string_types
 
 from mbuild.bond_graph import BondGraph
 from mbuild.box import Box
@@ -29,7 +26,7 @@ from mbuild.formats.lammpsdata import write_lammpsdata
 from mbuild.formats.gsdwriter import write_gsd
 from mbuild.formats.par_writer import write_par
 from mbuild.periodic_kdtree import PeriodicCKDTree
-from mbuild.utils.io import run_from_ipython, import_
+from mbuild.utils.io import run_from_ipython, import_, has_networkx
 from mbuild.utils.jsutils import overwrite_nglview_default
 from mbuild.coordinate_transform import _translate, _rotate
 
@@ -274,7 +271,7 @@ class Compound(object):
         super(Compound, self).__init__()
 
         if name:
-            if not isinstance(name, string_types):
+            if not isinstance(name, str):
                 raise ValueError(
                     'Compound.name should be a string. You passed '
                     '{}'.format(name))
@@ -606,10 +603,10 @@ class Compound(object):
 
         """
         if discrete_bodies is not None:
-            if isinstance(discrete_bodies, string_types):
+            if isinstance(discrete_bodies, str):
                 discrete_bodies = [discrete_bodies]
         if rigid_particles is not None:
-            if isinstance(rigid_particles, string_types):
+            if isinstance(rigid_particles, str):
                 rigid_particles = [rigid_particles]
 
         if self.root.max_rigid_id is not None:
@@ -700,7 +697,7 @@ class Compound(object):
         """
         # Support batch add via lists, tuples and sets.
         if (isinstance(new_child, Iterable) and
-                not isinstance(new_child, string_types)):
+                not isinstance(new_child, str)):
             for child in new_child:
                 self.add(child, reset_rigid_ids=reset_rigid_ids)
             return
@@ -1824,7 +1821,8 @@ class Compound(object):
         filename : str
             Filesystem path in which to save the trajectory. The extension or
             prefix will be parsed and control the format. Supported
-            extensions are: 'hoomdxml', 'gsd', 'gro', 'top', 'lammps', 'lmp', 'json'
+            extensions are: 'hoomdxml', 'gsd', 'gro', 'top',
+            'lammps', 'lmp', 'mcf'
         show_ports : bool, optional, default=False
             Save ports contained within the compound.
         forcefield_files : str, optional, default=None
@@ -1856,8 +1854,8 @@ class Compound(object):
             Keyword arguments to provide to `foyer.Forcefield.apply`.
         **kwargs
             Depending on the file extension these will be passed to either
-            `write_gsd`, `write_hoomdxml`, `write_lammpsdata`, or
-            `parmed.Structure.save`.
+            `write_gsd`, `write_hoomdxml`, `write_lammpsdata`,
+            `write_mcf`, or `parmed.Structure.save`.
             See https://parmed.github.io/ParmEd/html/structobj/parmed.structure.Structure.html#parmed.structure.Structure.save
 
 
@@ -1889,6 +1887,7 @@ class Compound(object):
         formats.gsdwrite.write_gsd : Write to GSD format
         formats.hoomdxml.write_hoomdxml : Write to Hoomd XML format
         formats.lammpsdata.write_lammpsdata : Write to LAMMPS data format
+        formats.cassandramcf.write_mcf : Write to Cassandra MCF format
         formats.json_formats.compound_to_json : Write to a json file
 
         """
@@ -1909,7 +1908,10 @@ class Compound(object):
                   '.gsd': write_gsd,
                   '.lammps': write_lammpsdata,
                   '.lmp': write_lammpsdata,
-                  '.par': write_par}
+                  '.par': write_par,}
+        if has_networkx:
+            from mbuild.formats.cassandramcf import write_mcf
+            savers.update({'.mcf': write_mcf})
 
         try:
             saver = savers[extension]
@@ -2145,12 +2147,12 @@ class Compound(object):
         """
         from mdtraj.core.topology import Topology
 
-        if isinstance(chains, string_types):
+        if isinstance(chains, str):
             chains = [chains]
         if isinstance(chains, (list, set)):
             chains = tuple(chains)
 
-        if isinstance(residues, string_types):
+        if isinstance(residues, str):
             residues = [residues]
         if isinstance(residues, (list, set)):
             residues = tuple(residues)
@@ -2352,7 +2354,7 @@ class Compound(object):
         if not residues and infer_residues:
             residues = list(set([child.name for child in self.children]))
 
-        if isinstance(residues, string_types):
+        if isinstance(residues, str):
             residues = [residues]
         if isinstance(residues, (list, set)):
             residues = tuple(residues)
@@ -2547,7 +2549,7 @@ class Compound(object):
 
         if not residues and infer_residues:
             residues = list(set([child.name for child in self.children]))
-        if isinstance(residues, string_types):
+        if isinstance(residues, str):
             residues = [residues]
         if isinstance(residues, (list, set)):
             residues = tuple(residues)
@@ -2806,9 +2808,9 @@ class Compound(object):
             molecule_type.bonds.add(intermol_bond)
 
     def __getitem__(self, selection):
-        if isinstance(selection, integer_types):
+        if isinstance(selection, int):
             return list(self.particles())[selection]
-        if isinstance(selection, string_types):
+        if isinstance(selection, str):
             if selection not in self.labels:
                 raise MBuildError('{}[\'{}\'] does not exist.'.format(self.name,selection))
             return self.labels.get(selection)

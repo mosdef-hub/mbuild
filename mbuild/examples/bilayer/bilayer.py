@@ -1,7 +1,3 @@
-# -*- coding: utf-8 -*-
-
-
-# -- ==bilayer== --
 from random import seed, shuffle
 
 import numpy as np
@@ -205,5 +201,3 @@ class Bilayer(mb.Compound):
                                               0.5*np.sqrt(self.apl),
                                               0.5*np.sqrt(self.apl)])
             return self._lipid_box
-
-# -- ==bilayer== --

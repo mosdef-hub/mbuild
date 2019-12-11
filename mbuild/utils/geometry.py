@@ -1,5 +1,6 @@
 import numpy as np
 
+import mbuild as mb
 from mbuild.coordinate_transform import angle
 
 
@@ -55,3 +56,35 @@ def coord_shift(xyz, box):
         xyz += box_max
 
     return xyz
+
+def wrap_coords(xyz, box):
+    """ Wrap coordinates inside box
+
+    Parameters
+    ---------
+    xyz : numpy.array of points with shape N x 3
+    box : numpy.array or list or mb.Box
+        array or list should have shape (3,) corresponding to box lengths.
+        If array or list is passed, box is assumed to be positive octant
+        If mb.box is passed, box can be arbitrarily centered
+
+    Returns
+    -------
+    wrap_xyz : numpy.array of points with shape N x 3
+
+    Notes
+    -----
+    Currently only supports orthorhombic boxes
+    """
+    if not isinstance(box, mb.Box):
+        box_arr = np.asarray(box)
+        assert box_arr.shape == (3,)
+
+        wrap_xyz = xyz - 1*np.floor_divide(xyz, box_arr) * box_arr
+    else:
+        xyz = xyz - box.mins  
+        wrap_xyz = (xyz 
+                - (1*np.floor_divide(xyz, box.lengths) * box.lengths)
+                + box.mins)
+
+    return wrap_xyz

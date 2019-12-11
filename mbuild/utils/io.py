@@ -15,8 +15,6 @@
 # You should have received a copy of the GNU Lesser General Public
 # License along with MDTraj. If not, see <http://www.gnu.org/licenses/>.
 ##############################################################################
-from __future__ import division, print_function
-
 import inspect
 import importlib
 import os
@@ -179,6 +177,13 @@ try:
     del networkx
 except ImportError:
     has_networkx = False
+
+try:
+    import hoomd
+    has_hoomd = True
+    del hoomd
+except ImportError:
+    has_hoomd  = False
 
 def get_fn(name):
     """Get the full path to one of the reference files shipped for utils.

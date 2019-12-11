@@ -9,15 +9,13 @@ worry about manually defining bonds when constructing chemically bonded
 structures from smaller components.
 """
 
-from __future__ import print_function
-
 import os
 import subprocess
 from setuptools import setup, find_packages
 from distutils.spawn import find_executable
 
 #####################################
-VERSION = "0.10.1"
+VERSION = "0.10.3"
 ISRELEASED = True
 if ISRELEASED:
     __version__ = VERSION
