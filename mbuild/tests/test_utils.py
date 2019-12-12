@@ -18,6 +18,7 @@ class TestUtils(BaseTest):
         with pytest.raises(ValueError):
             assert_port_exists('dog', ch2)
 
+    @pytest.mark.xfail(strict=False)
     def test_structure_reproducibility(self):
         from mbuild.lib.recipes import Alkane
         filename = 'decane-tmp.xyz'
