@@ -39,9 +39,6 @@ test:
     - networkx
     - nbval
 
-  source_files:
-    - mbuild/examples/*
-
   commands:
     - set LNAME=mosdef
     - activate
