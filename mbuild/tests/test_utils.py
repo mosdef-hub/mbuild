@@ -3,10 +3,12 @@ import difflib
 import numpy as np
 import pytest
 
+import mbuild as mb
 from mbuild.tests.base_test import BaseTest
 from mbuild.utils.io import get_fn, import_
 from mbuild.utils.validation import assert_port_exists
 from mbuild.utils.jsutils import overwrite_nglview_default
+from mbuild.utils.geometry import wrap_coords
 
 
 class TestUtils(BaseTest):
@@ -112,3 +114,22 @@ class TestUtils(BaseTest):
                     });
                 """
             ]
+
+    def test_coord_wrap(self):
+        xyz = np.array([[3, 3, 1],
+                        [1, 1, 0]])
+        box = [2,2,2]
+        new_xyz = wrap_coords(xyz, box)
+        assert (new_xyz[1,:] == xyz[1,:]).all()
+        assert (new_xyz[0,:] == np.array([1,1,1])).all()
+
+    def test_coord_wrap_box(self):
+        xyz = np.array([[3, 3, 1],
+                        [1, 1, 0]])
+
+        box = mb.Box(mins=[-2.0,-2.0,-2.0], maxs=[2.0,2.0,2.0])
+
+        new_xyz = wrap_coords(xyz, box)
+
+        assert (new_xyz[0,:] == np.array([-1,-1,1])).all()
+        assert (new_xyz[1,:] == xyz[1,:]).all()

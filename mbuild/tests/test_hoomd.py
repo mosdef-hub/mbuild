@@ -4,7 +4,7 @@ import xml.etree.ElementTree
 
 import mbuild as mb
 from mbuild.tests.base_test import BaseTest
-from mbuild.utils.io import has_foyer, has_hoomd, import_
+from mbuild.utils.io import get_fn, has_foyer, has_hoomd, import_
 
 
 @pytest.mark.skipif(not has_hoomd, reason="HOOMD is not installed")
@@ -16,6 +16,17 @@ class TestHoomd(BaseTest):
         assert snap.particles.N == 8
         assert snap.bonds.N == 7
         assert snap.angles.N == 0
+
+    def test_particles_to_snapshot(self):
+        hoomd_snapshot = import_("mbuild.formats.hoomd_snapshot")
+        part = mb.Compound(name='Ar')
+        box = mb.fill_box(part, n_compounds=10, box=mb.Box([5,5,5]))
+        snap, _ = hoomd_snapshot.to_hoomdsnapshot(box)
+
+        assert snap.particles.N == 10
+        assert snap.bonds.N == 0
+        assert snap.angles.N == 0
+
 
     def test_bad_input_to_snapshot(self):
         hoomd_snapshot = import_("mbuild.formats.hoomd_snapshot")
@@ -80,6 +91,23 @@ class TestHoomd(BaseTest):
         assert isinstance(sim_forces[5], bond_force.harmonic)
         assert isinstance(sim_forces[6], angle_force.harmonic)
         assert isinstance(sim_forces[7], dihedral_force.opls)
+
+    @pytest.mark.skipif(not has_foyer, reason="Foyer is not installed")
+    def test_lj_to_hoomdsimulation(self):
+        hoomd = import_("hoomd")
+        hoomd_simulation = import_("mbuild.formats.hoomd_simulation")
+        forcefield = import_("foyer.forcefield")
+        box = mb.Compound()
+        box.add(mb.Compound(name='Ar', pos=[1,1,1]))
+        box.add(mb.Compound(name='Ar', pos=[1,1,1]))
+        ff = forcefield.Forcefield(forcefield_files=get_fn('lj.xml'))
+        structure = ff.apply(box)
+        structure.box = [10, 10, 10, 90, 90, 90]
+        hoomd_simulation.create_hoomd_simulation(structure)
+        sim_forces = hoomd.context.current.forces
+        pair_force = import_("hoomd.md.pair")
+
+        assert isinstance(sim_forces[0], pair_force.lj)
 
 
 class TestHoomdXML(BaseTest):
