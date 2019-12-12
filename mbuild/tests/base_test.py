@@ -14,12 +14,12 @@ class BaseTest:
 
     @pytest.fixture
     def ethane(self):
-        from mbuild.examples import Ethane
+        from mbuild.lib.molecules import Ethane
         return Ethane()
 
     @pytest.fixture
     def methane(self):
-        from mbuild.examples import Methane
+        from mbuild.lib.molecules import Methane
         return Methane()
 
     @pytest.fixture
@@ -64,7 +64,7 @@ class BaseTest:
 
     @pytest.fixture
     def propyl(self):
-        from mbuild.examples import Alkane
+        from mbuild.lib.recipes import Alkane
         return Alkane(3, cap_front=True, cap_end=False)
 
     @pytest.fixture
@@ -83,7 +83,7 @@ class BaseTest:
 
     @pytest.fixture
     def octane(self):
-        from mbuild.examples import Alkane
+        from mbuild.lib.recipes import Alkane
         return Alkane(8, cap_front=True, cap_end=True)
 
     @pytest.fixture
@@ -206,12 +206,6 @@ class BaseTest:
             return fccf_dihedral_init, fccf_dihedral_final
         return _connect_and_reconnect
 
-    @pytest.fixture
-    def alkane_monolayer(self):
-        from mbuild.examples import AlkaneMonolayer
-        pattern = mb.Random2DPattern(50, seed=1)
-        monolayer = AlkaneMonolayer(pattern=pattern)
-        return monolayer
 
     @pytest.fixture
     def copper_cell(self):

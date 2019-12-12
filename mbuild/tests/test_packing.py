@@ -218,7 +218,7 @@ class TestPacking(BaseTest):
         assert np.isclose(w0, w1).all() is not True
 
     def test_remove_port(self):
-        from mbuild.examples import Alkane
+        from mbuild.lib.recipes import Alkane
 
         butane = Alkane(n=4)
         butane.remove(butane[-1])
