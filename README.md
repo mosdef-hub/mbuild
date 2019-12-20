@@ -61,6 +61,12 @@ pmpc_layer = PMPCLayer(chain_length=20, pattern=pattern, tile_x=3, tile_y=2)
 
 ![Zwitterionic brushes on beta-cristobalite substrate](docs/images/pmpc.png)
 
+Use case-specific systems can be generated via mBuild recipes.
+Some users have graciously contributed recipes for particular systems, including:
+
+* [Graphene slit pores](https://github.com/rmatsum836/Pore-Builder)
+* [Nanodroplets on graphene](https://github.com/ftiet/droplet-builder)
+* [Coarse-grained DNA](https://github.com/zijiewu3/mbuild_ONA)
 
 #### [![License](https://img.shields.io/badge/license-MIT-blue.svg)](http://opensource.org/licenses/MIT)
 
