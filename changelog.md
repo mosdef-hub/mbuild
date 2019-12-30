@@ -3,9 +3,24 @@
 All big and breaking changes for [mBuild](https://mosdef-hub.github.io/mbuild/) will be recorded here.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## 0.10.4 (2019-12-28)
+
+### Features
+- Add `wrap_coords` function for wrapping particles into a box (#643)
+
+### Bug Fixes
+- Don't populate empty lists for hoomd snapshot (#647)
+
+### Maintenance
+- Add `nbval` as requirement for tests in conda recpe (#656)
+- Remove `six` and some Python 2 legacy code (#641)
+- Remove examples (from this repository) (#658)
+- Fix travis by not installing md5sha1sum (#660)
+- Add CHANGELOG (#632)
+
 ## 0.10.3 (2019-10-27)
 
-### Feature
+### Features
 - Add Cassandra MCF writer (#636)
 - Add HOOMD snapshot converter (#622)
 - Generate `mb.Compound` from Parmed or MDTraj residues (#526)
