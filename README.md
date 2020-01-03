@@ -67,6 +67,7 @@ Some users have graciously contributed recipes for particular systems, including
 * [Graphene slit pores](https://github.com/rmatsum836/Pore-Builder)
 * [Nanodroplets on graphene](https://github.com/ftiet/droplet-builder)
 * [Coarse-grained DNA](https://github.com/zijiewu3/mbuild_ONA)
+* [Lipid bilayers](https://github.com/uppittu11/mbuild_bilayer)
 
 #### [![License](https://img.shields.io/badge/license-MIT-blue.svg)](http://opensource.org/licenses/MIT)
 
