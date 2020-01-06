@@ -14,6 +14,7 @@
 
 import os
 import pip
+import pathlib
 import sys
 import mock
 
@@ -38,7 +39,8 @@ for mod_name in MOCK_MODULES:
 sys.path.insert(0, os.path.abspath('..'))
 sys.path.insert(0, os.path.abspath('sphinxext'))
 # Necessary when running from Read the docs
-os.system('python {} --name'.format(os.path.abspath(os.path.join('..', 'setup.py'))))
+base_path = pathlib.Path(__file__).parent
+os.system('python {} --name'.format((base_path / '../setup.py').resolve()))
 
 import mbuild
 
