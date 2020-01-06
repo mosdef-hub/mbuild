@@ -591,3 +591,31 @@ class Lattice(object):
 
         return ret_lattice
 
+    def get_populated_box(self, x=1, y=1, z=1):
+        """
+        Return a mbuild.Box representing the periodic boundaries of a
+        populated mbuild.Lattice. This is meant to be called in parallel
+        with, and using the same arguments of, a call to
+        mb.Lattice.populate().
+
+        Parameters
+        ----------
+        x : int, optional, default=1
+            How many iterations in the x direction.
+        y : int, optional, default=1
+            How many iterations in the y direction.
+        z : int, optional, default=1
+            How many iterations in the z direction.
+
+        """
+
+        x, y, z = self._sanitize_populate_args(x, y, z)
+
+        [a, b, c] = self.lattice_spacing
+
+        if any(self.angles != [90, 90, 90]):
+            warn('Periodicity of non-rectangular lattices are not valid with '
+                 'default boxes. Only rectangular lattices are valid '
+                 'at this time.')
+
+        return mb.Box(lengths=np.asarray([a * x, b * y, c * z], dtype=np.float64))

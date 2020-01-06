@@ -217,3 +217,16 @@ class TestLattice(BaseTest):
         replication=[2, 5, 9]
         np.testing.assert_allclose(compound_test.periodicity,
                                    np.asarray([x*y for x,y in zip(replication, lattice.lattice_spacing)]))
+
+    def test_get_box(self):
+        lattice = mb.Lattice(lattice_spacing=[1, 1, 1], angles=[90, 90, 90],
+                             lattice_points={'A' : [[0, 0, 0]]})
+        replication=[5, 4, 3]
+
+        expected_lengths = [x*y for x,y in zip(replication, lattice.lattice_spacing)]
+
+        mybox = lattice.get_populated_box(x=5, y=4, z=3)
+
+        assert isinstance(mybox, mb.Box)
+        np.testing.assert_allclose([90, 90, 90], mybox.angles)
+        np.testing.assert_allclose(expected_lengths, mybox.lengths)
