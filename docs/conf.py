@@ -38,11 +38,11 @@ for mod_name in MOCK_MODULES:
 
 sys.path.insert(0, os.path.abspath('..'))
 sys.path.insert(0, os.path.abspath('sphinxext'))
-try:
-    import mbuild
-except ImportError:  # Necessary when building from read the docs
-    os.system('python {} --name'.format(os.path.abspath(os.path.join('..', 'setup.py'))))
-    import mbuild
+# Necessary when running from Read the docs
+os.system('python {} --name'.format(os.path.abspath('setup.py')))
+
+import mbuild
+
 # -- General configuration ------git ------------------------------------------
 
 # If your documentation needs a minimal Sphinx version, state it here.
