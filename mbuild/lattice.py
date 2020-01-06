@@ -452,6 +452,34 @@ class Lattice(object):
 
         return np.asarray([alpha, beta, gamma], dtype=np.float64)
 
+    def _sanitize_populate_args(self, x, y, z):
+
+        error_dict = {0: 'X', 1: 'Y', 2: 'Z'}
+
+        # Make sure neither x, y, z input is None
+        if None in [x, y, z]:
+            raise ValueError('Attempt to replicate None times. '
+                             'None is not an acceptable replication '
+                             'amount, 1 is the default.')
+
+        # Try to convert x, y, and z to int, raise a ValueError if fail
+        try:
+            x = int(x)
+            y = int(y)
+            z = int(z)
+        except (ValueError, TypeError):
+            raise ValueError('Cannot convert replication amounts into '
+                             'integers. x= {}, y= {}, z= {} needs to '
+                             'be an int.'.format(x, y, z))
+
+        for replication_amount, index in zip([x, y, z], range(3)):
+            if replication_amount < 1:
+                raise ValueError('Incorrect populate value: {} : {} is < 1. '
+                                 .format(error_dict[index],
+                                         replication_amount))
+
+        return x, y, z
+
     def populate(self, compound_dict=None, x=1, y=1, z=1):
         """Expand lattice and create compound from lattice.
 
@@ -484,29 +512,7 @@ class Lattice(object):
 
         """
 
-        error_dict = {0: 'X', 1: 'Y', 2: 'Z'}
-
-        # Make sure neither x, y, z input is None
-        if None in [x, y, z]:
-            raise ValueError('Attempt to replicate None times. '
-                             'None is not an acceptable replication '
-                             'amount, 1 is the default.')
-
-        # Try to convert x, y, and z to int, raise a ValueError if fail
-        try:
-            x = int(x)
-            y = int(y)
-            z = int(z)
-        except (ValueError, TypeError):
-            raise ValueError('Cannot convert replication amounts into '
-                             'integers. x= {}, y= {}, z= {} needs to '
-                             'be an int.'.format(x, y, z))
-
-        for replication_amount, index in zip([x, y, z], range(3)):
-            if replication_amount < 1:
-                raise ValueError('Incorrect populate value: {} : {} is < 1. '
-                                 .format(error_dict[index],
-                                         replication_amount))
+        x, y, z = self._sanitize_populate_args(x=x, y=y, z=z)
 
         if ((isinstance(compound_dict, dict)) or (compound_dict is None)):
             pass
