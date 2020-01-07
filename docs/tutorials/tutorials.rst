@@ -1,7 +1,8 @@
 -----------------------
 Tutorials
 -----------------------
-The following tutorials are available either as html or interactive jupyter notebooks.
+.. only:: html
+    The following tutorials are available either as html or interactive jupyter notebooks.
 
 
 .. toctree::

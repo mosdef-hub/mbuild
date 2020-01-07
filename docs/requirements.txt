@@ -3,5 +3,7 @@ sphinx
 sphinx_rtd_theme
 widgetsnbextension
 ipywidgets
+sphinxcontrib-bibtex
+sphinxcontrib-svg2pdfconverter
 nbsphinx
-mock
+ipykernel
