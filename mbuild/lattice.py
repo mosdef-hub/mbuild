@@ -613,9 +613,7 @@ class Lattice(object):
 
         [a, b, c] = self.lattice_spacing
 
-        if any(self.angles != [90, 90, 90]):
-            warn('Periodicity of non-rectangular lattices are not valid with '
-                 'default boxes. Only rectangular lattices are valid '
-                 'at this time.')
-
-        return mb.Box(lengths=np.asarray([a * x, b * y, c * z], dtype=np.float64))
+        return mb.Box(
+            lengths=np.asarray([a * x, b * y, c * z], dtype=np.float64),
+            angles=np.asarray(self.angles)
+        )
