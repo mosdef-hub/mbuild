@@ -15,9 +15,25 @@
 import os
 import sys
 
+import mock
+
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
+
+MOCK_MODULES = ['numpy',
+                'mdtraj',
+                'mdtraj.core.element',
+                'nglview',
+                'oset',
+                'parmed',
+                'parmed.parameters',
+                'parmed.periodic_table',
+                'scipy',
+                'scipy.spatial',
+                'numpy.linalg']
+for mod_name in MOCK_MODULES:
+    sys.modules[mod_name] = mock.Mock()
 
 sys.path.insert(0, os.path.abspath('..'))
 sys.path.insert(0, os.path.abspath('sphinxext'))
