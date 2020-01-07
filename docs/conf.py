@@ -53,18 +53,21 @@ import mbuild
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
-    # 'nbsphinx',
+    'nbsphinx',
     'sphinx.ext.mathjax',
     'sphinx.ext.autodoc',
     'sphinx.ext.viewcode',
     'sphinx.ext.intersphinx',
     'sphinx.ext.viewcode',
     'sphinx.ext.autosummary',
-    'notebook_sphinxext',
     'numpydoc'
 ]
 
-nbsphinx_execute = 'always'
+# nbsphinx specific configuration
+nbsphinx_execute = 'never'
+html_scaled_image_link = False
+nbsphinx_allow_errors = False
+
 
 autosummary_generate = True
 autodoc_default_flags = ['members', ]

@@ -44,31 +44,12 @@ different licenses. See those files for their specific terms.
 
 
 .. toctree::
-   :hidden:
+    :maxdepth: 4
+    :glob:
 
    installation
-
-.. toctree::
-   :hidden:
-
    tutorials/tutorials
-
-.. toctree::
-   :hidden:
-
    data_structures
-
-.. toctree::
-   :hidden:
-
    coordinate_transforms
-
-.. toctree::
-   :hidden:
-
    recipes
-
-.. toctree::
-   :hidden:
-
    citing_mbuild
