@@ -49,7 +49,6 @@ sys.path.insert(0, os.path.abspath('sphinxext'))
 extensions = [
     'nbsphinx',
     'sphinx.ext.mathjax',
-    'sphinxcontrib.inkscapeconverter',
     'sphinx.ext.autodoc',
     'sphinx.ext.viewcode',
     'sphinx.ext.intersphinx',
@@ -60,7 +59,7 @@ extensions = [
 # nbsphinx specific configuration
 nbsphinx_execute = 'never'
 nbsphinx_input_prompt = '%s'
-nbsphinx_prompt_width = 1.2
+nbsphinx_prompt_width = 1.1
 html_scaled_image_link = False
 nbsphinx_allow_errors = False
 
