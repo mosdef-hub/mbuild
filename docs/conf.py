@@ -14,6 +14,7 @@
 
 import os
 import sys
+import pathlib
 
 import mock
 
@@ -36,7 +37,10 @@ for mod_name in MOCK_MODULES:
     sys.modules[mod_name] = mock.Mock()
 
 sys.path.insert(0, os.path.abspath('..'))
-sys.path.insert(0, os.path.abspath('sphinxext'))
+# sys.path.insert(0, os.path.abspath('sphinxext'))
+
+base_path = pathlib.Path(__file__).parent
+os.system('python {} --name'.format((base_path / '../setup.py').resolve()))
 
 # -- General configuration ------git ------------------------------------------
 
