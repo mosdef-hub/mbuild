@@ -63,6 +63,40 @@ class TestCassandraMCF(BaseTest):
 
         assert mcf_data[dihedral_section_start+1][0] == '0'
 
+    def test_no_14(self,methane):
+        methane.save(filename='methane-opls.mcf', forcefield_name='oplsaa',
+                angle_style='harmonic', dihedral_style='none')
+
+        mcf_data = []
+        with open('methane-opls.mcf') as f:
+            for line in f:
+                mcf_data.append(line.strip().split())
+
+        for idx,line in enumerate(mcf_data):
+            if len(line) > 1:
+                if line[1] == 'Intra_Scaling':
+                    intrascaling_section_start = idx
+
+        assert mcf_data[intrascaling_section_start+1][2] == '0.0000'
+        assert mcf_data[intrascaling_section_start+2][2] == '0.0000'
+
+    def test_infer_14(self,ethane):
+        ethane.save(filename='ethane-opls.mcf', forcefield_name='oplsaa',
+                angle_style='harmonic', dihedral_style='none')
+
+        mcf_data = []
+        with open('ethane-opls.mcf') as f:
+            for line in f:
+                mcf_data.append(line.strip().split())
+
+        for idx,line in enumerate(mcf_data):
+            if len(line) > 1:
+                if line[1] == 'Intra_Scaling':
+                    intrascaling_section_start = idx
+
+        assert mcf_data[intrascaling_section_start+1][2] == '0.5000'
+        assert mcf_data[intrascaling_section_start+2][2] == '0.5000'
+
     def test_unmatched_dihedral_style(self,ethane):
         with pytest.raises(ValueError,match=r'but RB torsions found'):
             ethane.save(filename='ethane-opls.mcf', forcefield_name='oplsaa',
