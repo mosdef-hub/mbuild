@@ -73,7 +73,7 @@ def write_lammpsdata(structure, filename, atom_style='full',
     # Check if structure is paramterized
     if unit_style == 'lj':
         if any([atom.sigma for atom in structure.atoms]) is None:
-           raise ValueError('LJ units specified but one or more atoms has undefined LJ paramters.') 
+           raise ValueError('LJ units specified but one or more atoms has undefined LJ parameters.') 
 
     xyz = np.array([[atom.xx,atom.xy,atom.xz] for atom in structure.atoms])
 
