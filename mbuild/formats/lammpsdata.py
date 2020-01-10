@@ -294,7 +294,6 @@ def write_lammpsdata(structure, filename, atom_style='full',
             data.write('{:d}\t{:.6f}\t# {}\n'.format(atom_type,mass,unique_types[atom_type-1]))
 
         if forcefield:
-        
             epsilons = np.array([atom.epsilon for atom in structure.atoms]) / epsilon_conversion_factor
             sigmas = np.array([atom.sigma for atom in structure.atoms]) / sigma_conversion_factor
             forcefields = [atom.type for atom in structure.atoms]
@@ -515,8 +514,8 @@ def _get_angle_types(structure, use_urey_bradleys,
                 if (angle.atom1, angle.atom3) == (ub.atom1, ub.atom2):
                     ub_k = ub.type.k
                     ub_req = ub.type.req
-            charmm_angle_types.append((round(angle.type.k/
-                epsilon_conversion_factor,3), 
+            charmm_angle_types.append((round(angle.type.k*(
+                sigma_conversion_factor**2/epsilon_conversion_factor),3), 
                                        round(angle.type.theteq,3),
                                        round(ub_k/epsilon_conversion_factor, 3),
                                        round(ub_req, 3),
@@ -527,15 +526,15 @@ def _get_angle_types(structure, use_urey_bradleys,
         angle_types = [unique_angle_types[ub_info] for ub_info in charmm_angle_types]
 
     else:
-        unique_angle_types = dict(enumerate(set([(round(angle.type.k/
-            epsilon_conversion_factor,3),
+        unique_angle_types = dict(enumerate(set([(round(angle.type.k*(
+            sigma_conversion_factor**2/epsilon_conversion_factor),3),
                                                   round(angle.type.theteq,3),
                                                   angle.atom2.type,
                                                   tuple(sorted((angle.atom1.type,angle.atom3.type)))
                                                   ) for angle in structure.angles])))
         unique_angle_types = OrderedDict([(y,x+1) for x,y in unique_angle_types.items()])
-        angle_types = [unique_angle_types[(round(angle.type.k/
-            epsilon_conversion_factor,3),
+        angle_types = [unique_angle_types[(round(angle.type.k*(
+            sigma_conversion_factor**2/epsilon_conversion_factor),3),
                                            round(angle.type.theteq,3),
                                            angle.atom2.type,
                                            tuple(sorted((angle.atom1.type,angle.atom3.type)))
@@ -570,7 +569,6 @@ def _get_dihedral_types(structure, use_rb_torsions, use_dihedrals,
                                                  dihedral.atom1.type, dihedral.atom2.type,
                                                  dihedral.atom3.type, dihedral.atom4.type
                                                  )] for dihedral in structure.rb_torsions]
-        
     elif use_dihedrals:
         charmm_dihedrals = []
         structure.join_dihedrals()
