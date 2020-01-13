@@ -50,3 +50,4 @@ different licenses. See those files for their specific terms.
     coordinate_transforms
     recipes
     citing_mbuild
+    older_documentation
