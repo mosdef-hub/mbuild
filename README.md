@@ -60,7 +60,7 @@ pmpc_layer = PMPCLayer(chain_length=20, pattern=pattern, tile_x=3, tile_y=2)
 ```
 
 ![Zwitterionic brushes on beta-cristobalite substrate](docs/images/pmpc.png)
-
+#### Community Recipes
 Use case-specific systems can be generated via mBuild recipes.
 Some users have graciously contributed recipes for particular systems, including:
 
