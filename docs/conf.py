@@ -84,7 +84,7 @@ nbsphinx_prolog = r"""
       This page was generated from `{{ docname }}`__.
 
     __ https://github.com/mosdef-hub/mbuild/blob/{{ env.config.release }}/{{ docname }}
-    
+
 .. raw:: latex
 
     \nbsphinxstartnotebook{\scriptsize\noindent\strut
@@ -112,7 +112,7 @@ numpydoc_class_members_toctree = False
 numpydoc_show_class_members = False
 numpydoc_show_inherited_class_members = False
 
-_python_doc_base = 'http://docs.python.org/3.4'
+_python_doc_base = 'http://docs.python.org/3.7'
 
 intersphinx_mapping = {
     _python_doc_base: None,
