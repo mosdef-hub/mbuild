@@ -17,7 +17,8 @@ set -ev
 # we assume that we're running in a virtualenv with all mbuild already installed and tested
 
 # install additional packages required for doc generation
-conda install --yes sphinx==1.8.5 numpydoc sphinx sphinx_rtd_theme widgetsnbextension ipywidgets scipy
+conda install --yes sphinx==1.8.5 numpydoc sphinx sphinx_rtd_theme widgetsnbextension ipywidgets
+pip install scipy
 pip install mock
 
 pushd $DIR/../..
