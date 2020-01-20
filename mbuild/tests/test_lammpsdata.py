@@ -242,6 +242,5 @@ class TestLammpsData(BaseTest):
                     fi.readline()
                     dihedrals = fi.readline().split()[1:5]
                     dihedrals = [float(i) for i in dihedrals]
-                    import pdb; pdb.set_trace()
                     assert np.allclose(dihedrals, [0.0005, 0.0, 4.5455, -0.0])
                     checked_section=True
