@@ -32,7 +32,6 @@ requirements:
 test:
   requires:
     - pytest >=3.0
-    - scipy
     - jupyter
     - nbformat
     - ipykernel
