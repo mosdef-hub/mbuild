@@ -117,30 +117,35 @@ def to_hoomdsnapshot(structure,  ref_distance=1.0, ref_mass=1.0,
     hoomd_snapshot.particles.charge[:] = scaled_charges
     hoomd_snapshot.particles.body[:] = rigid_bodies
 
-    hoomd_snapshot.bonds.resize(n_bonds)
-    hoomd_snapshot.bonds.types[:] = unique_bond_types
-    hoomd_snapshot.bonds.typeid[:] = bond_typeids
-    hoomd_snapshot.bonds.group[:] = bond_groups
+    if n_bonds > 0:
+        hoomd_snapshot.bonds.resize(n_bonds)
+        hoomd_snapshot.bonds.types[:] = unique_bond_types
+        hoomd_snapshot.bonds.typeid[:] = bond_typeids
+        hoomd_snapshot.bonds.group[:] = bond_groups
 
-    hoomd_snapshot.angles.resize(n_angles)
-    hoomd_snapshot.angles.types[:] = unique_angle_types
-    hoomd_snapshot.angles.typeid[:] = angle_typeids
-    hoomd_snapshot.angles.group[:] = np.reshape(angle_groups, (-1, 3))
+    if n_angles > 0:
+        hoomd_snapshot.angles.resize(n_angles)
+        hoomd_snapshot.angles.types[:] = unique_angle_types
+        hoomd_snapshot.angles.typeid[:] = angle_typeids
+        hoomd_snapshot.angles.group[:] = np.reshape(angle_groups, (-1, 3))
 
-    hoomd_snapshot.dihedrals.resize(n_dihedrals)
-    hoomd_snapshot.dihedrals.types[:] = unique_dihedral_types
-    hoomd_snapshot.dihedrals.typeid[:] = dihedral_typeids
-    hoomd_snapshot.dihedrals.group[:] = np.reshape(dihedral_groups, (-1,4))
+    if n_dihedrals > 0:
+        hoomd_snapshot.dihedrals.resize(n_dihedrals)
+        hoomd_snapshot.dihedrals.types[:] = unique_dihedral_types
+        hoomd_snapshot.dihedrals.typeid[:] = dihedral_typeids
+        hoomd_snapshot.dihedrals.group[:] = np.reshape(dihedral_groups, (-1,4))
 
-    hoomd_snapshot.impropers.resize(n_impropers)
-    hoomd_snapshot.impropers.types[:] = unique_improper_types
-    hoomd_snapshot.impropers.typeid[:] = improper_typeids
-    hoomd_snapshot.impropers.group[:] = np.reshape(improper_groups, (-1,4))
+    if n_impropers > 0:
+        hoomd_snapshot.impropers.resize(n_impropers)
+        hoomd_snapshot.impropers.types[:] = unique_improper_types
+        hoomd_snapshot.impropers.typeid[:] = improper_typeids
+        hoomd_snapshot.impropers.group[:] = np.reshape(improper_groups, (-1,4))
 
-    hoomd_snapshot.pairs.resize(n_pairs)
-    hoomd_snapshot.pairs.types[:] = pair_types
-    hoomd_snapshot.pairs.typeid[:] = pair_typeid
-    hoomd_snapshot.pairs.group[:] = np.reshape(pairs, (-1,2))
+    if n_pairs > 0:
+        hoomd_snapshot.pairs.resize(n_pairs)
+        hoomd_snapshot.pairs.types[:] = pair_types
+        hoomd_snapshot.pairs.typeid[:] = pair_typeid
+        hoomd_snapshot.pairs.group[:] = np.reshape(pairs, (-1,2))
 
     return hoomd_snapshot, ref_values
 

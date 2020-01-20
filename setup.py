@@ -9,15 +9,13 @@ worry about manually defining bonds when constructing chemically bonded
 structures from smaller components.
 """
 
-from __future__ import print_function
-
 import os
 import subprocess
 from setuptools import setup, find_packages
 from distutils.spawn import find_executable
 
 #####################################
-VERSION = "0.10.3"
+VERSION = "0.10.4"
 ISRELEASED = True
 if ISRELEASED:
     __version__ = VERSION
@@ -131,6 +129,7 @@ setup(
                              ]},
     entry_points={
         'mbuild.plugins':[
+            "Alkane = mbuild.lib.recipes.alkane:Alkane",
             "Monolayer = mbuild.lib.recipes.monolayer:Monolayer",
             "Polymer = mbuild.lib.recipes.polymer:Polymer",
             "SilicaInterface = mbuild.lib.recipes.silica_interface:SilicaInterface",

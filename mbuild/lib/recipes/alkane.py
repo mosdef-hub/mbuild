@@ -1,4 +1,3 @@
-# -- ==alkane== --
 import mbuild as mb
 
 from mbuild.lib.moieties import CH2
@@ -42,5 +41,3 @@ class Alkane(mb.Compound):
         else:
             # Hoist port label to Alkane level.
             self.add(chain['down'], 'down', containment=False)
-
-# -- ==alkane== --
