@@ -1875,6 +1875,11 @@ class Compound(object):
             styles are currently supported: 'full', 'atomic', 'charge', 'molecular'
             see http://lammps.sandia.gov/doc/atom_style.html for more
             information on atom styles.
+        unit_style: str, default='real'
+            Defines to unit style to be save in a LAMMPS data file.  Defaults to 'real' units.
+            Current styles are supported: 'real', 'lj'
+            see https://lammps.sandia.gov/doc/99/units.html for more information
+            on unit styles
 
         Notes
         ------
