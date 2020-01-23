@@ -30,4 +30,4 @@ class TestXYZ(BaseTest):
     def test_coordinates(self, ethane):
         ethane.save(filename='ethane.xyz')
         ethane_in = mb.load('ethane.xyz')
-        assert (ethane.xyz == ethane_in.xyz).all()
+        assert np.allclose(ethane.xyz, ethane_in.xyz, atol=1e-3)

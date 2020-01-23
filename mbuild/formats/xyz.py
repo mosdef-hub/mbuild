@@ -1,3 +1,5 @@
+import warnings
+
 import numpy as np
 
 import mbuild as mb
@@ -83,7 +85,12 @@ def write_xyz(structure, filename):
 
     """
 
-    xyz = np.array([[10.0*atom.xx, 10.0*atom.xy, 10.0*atom.xz] for atom in structure.atoms])
+    if isinstance(structure, mb.Compound):
+        raise ValueError(
+            'Expected a ParmEd structure, got an mbuild.Compound'
+        )
+
+    xyz = np.array([[atom.xx, atom.xy, atom.xz] for atom in structure.atoms])
     types = [atom.name for atom in structure.atoms]
 
     with open(filename, 'w') as xyz_file:
