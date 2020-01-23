@@ -26,3 +26,8 @@ class TestXYZ(BaseTest):
         ethane_in = mb.load('ethane.xyz')
         assert len(ethane_in.children) == 8
         assert set([child.name for child in ethane_in.children]) == {'C', 'H'}
+
+    def test_coordinates(self, ethane):
+        ethane.save(filename='ethane.xyz')
+        ethane_in = mb.load('ethane.xyz')
+        assert (ethane.xyz == ethane_in.xyz).all()
