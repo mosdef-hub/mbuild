@@ -1,2 +1,2 @@
-from mbuild.lib.surfaces.amorphous_silica import AmorphousSilica
+from mbuild.lib.surfaces.amorphous_silica_surface import AmorphousSilicaSurface
 from mbuild.lib.surfaces.betacristobalite import Betacristobalite

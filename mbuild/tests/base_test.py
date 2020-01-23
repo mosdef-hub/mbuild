@@ -14,12 +14,12 @@ class BaseTest:
 
     @pytest.fixture
     def ethane(self):
-        from mbuild.examples import Ethane
+        from mbuild.lib.molecules import Ethane
         return Ethane()
 
     @pytest.fixture
     def methane(self):
-        from mbuild.examples import Methane
+        from mbuild.lib.molecules import Methane
         return Methane()
 
     @pytest.fixture
@@ -64,7 +64,7 @@ class BaseTest:
 
     @pytest.fixture
     def propyl(self):
-        from mbuild.examples import Alkane
+        from mbuild.lib.recipes import Alkane
         return Alkane(3, cap_front=True, cap_end=False)
 
     @pytest.fixture
@@ -83,7 +83,7 @@ class BaseTest:
 
     @pytest.fixture
     def octane(self):
-        from mbuild.examples import Alkane
+        from mbuild.lib.recipes import Alkane
         return Alkane(8, cap_front=True, cap_end=True)
 
     @pytest.fixture
@@ -206,9 +206,46 @@ class BaseTest:
             return fccf_dihedral_init, fccf_dihedral_final
         return _connect_and_reconnect
 
+
     @pytest.fixture
-    def alkane_monolayer(self):
-        from mbuild.examples import AlkaneMonolayer
-        pattern = mb.Random2DPattern(50, seed=1)
-        monolayer = AlkaneMonolayer(pattern=pattern)
-        return monolayer
+    def copper_cell(self):
+        copper = mb.Compound(name='Cu')
+        lattice_vector = [[1, 0, 0], [0, 1, 0], [0, 0, 1]]
+        spacing = [.36149, .36149, .36149]
+        copper_locations = [[0., 0., 0.], [.5, .5, 0.],
+                [.5, 0., .5], [0., .5, .5]]
+        basis =  {'Cu' : copper_locations}
+        copper_lattice = mb.Lattice(lattice_spacing = spacing,
+                lattice_vectors=lattice_vector,
+                lattice_points=basis)
+        copper_dict = {'Cu': copper}
+        copper_pillar = copper_lattice.populate(x=3, y=3, z=1,
+                compound_dict=copper_dict)
+        return copper_pillar
+
+    @pytest.fixture
+    def graphene(self):
+        carbon = mb.Compound(name='C')
+        angles = [90, 90, 120]
+        carbon_locations = [[0, 0, 0], [2/3, 1/3, 0]]
+        basis = {'C' : carbon_locations}
+        graphene = mb.Lattice(lattice_spacing=[.2456, .2456, 0],
+                               angles=angles, lattice_points=basis)
+        carbon_dict = {'C' : carbon}
+        graphene_cell = graphene.populate(compound_dict=carbon_dict,
+                                          x=3, y=3, z=1)
+        return graphene_cell
+
+    @pytest.fixture
+    def cscl_crystal(self):
+        cesium = mb.Compound(name='Cs')
+        chlorine = mb.Compound(name='Cl')
+        spacing = [.4123, .4123, .4123]
+        basis = {'Cs' : [[0.5, 0.5, 0.5]], 'Cl' : [[0, 0, 0]]}
+        cscl_lattice = mb.Lattice(spacing, lattice_points=basis)
+        
+        
+        cscl_dict = {'Cs' : cesium, 'Cl' : chlorine}
+        cscl_compound = cscl_lattice.populate(x=3, y=3, z=1,
+                                              compound_dict=cscl_dict)
+        return cscl_compound

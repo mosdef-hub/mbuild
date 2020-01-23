@@ -1,6 +1,9 @@
 from collections import OrderedDict
+from oset import oset as OrderedSet
+from copy import deepcopy
 
-from mbuild.compound import Compound
+from mbuild.compound import Compound, clone
+from mbuild.exceptions import MBuildError
 
 __all__ = ['coarse_grain']
 
@@ -25,7 +28,7 @@ class Proxy(Compound):
         if compound.name == 'G':
             name = 'G'
         else:
-            name = compound.name + ' (proxy) '
+            name = compound.name + '_PROXY'
         super(Proxy, self).__init__(name=name)
 
         self.wrapped = compound
@@ -53,6 +56,80 @@ class Proxy(Compound):
     def __getattr__(self, attr):
         return getattr(self.wrapped, attr)
 
+    def _clone(self, clone_of=None, root_container=None):
+        """A faster alternative to deepcopying.
+
+        Does not resolve circular dependencies. This should be safe provided
+        you never try to add the top of a Compound hierarchy to a
+        sub-Compound. Clones compound hierarchy only, not the bonds.
+        """
+        if root_container is None:
+            root_container = self
+        if clone_of is None:
+            clone_of = dict()
+
+        # If this compound has already been cloned, return that.
+        if self in clone_of:
+            return clone_of[self]
+
+        # Otherwise we make a new clone.
+        cls = self.__class__
+        newone = cls.__new__(cls)
+
+        # Remember that we're cloning the new one of self.
+        clone_of[self] = newone
+
+        newone.name = deepcopy(self.name)
+        newone.wrapped = clone(self.wrapped)
+
+        if hasattr(self, 'index'):
+            newone.index = deepcopy(self.index)
+
+        if self.children is None:
+            newone.children = None
+        else:
+            newone.children = OrderedSet()
+        # Parent should be None initially.
+        newone.parent = None
+        newone.labels = OrderedDict()
+        newone.referrers = set()
+        newone.bond_graph = None
+
+        # Add children to clone.
+        if self.children:
+            for child in self.children:
+                newchild = child._clone(clone_of, root_container)
+                newone.children.add(newchild)
+                newchild.parent = newone
+
+        # Copy labels, except bonds with atoms outside the hierarchy.
+        if self.labels:
+            for label, compound in self.labels.items():
+                if not isinstance(compound, list):
+                    newone.labels[label] = compound._clone(
+                        clone_of, root_container)
+                    compound.referrers.add(clone_of[compound])
+                else:
+                    # compound is a list of compounds, so we create an empty
+                    # list, and add the clones of the original list elements.
+                    newone.labels[label] = []
+                    for subpart in compound:
+                        newone.labels[label].append(
+                            subpart._clone(clone_of, root_container))
+                        # Referrers must have been handled already, or the will
+                        # be handled
+
+        return newone
+
+    def _clone_bonds(self, clone_of=None):
+        newone = clone_of[self]
+        for c1, c2 in self.bonds():
+            try:
+                newone.add_bond((clone_of[c1], clone_of[c2]))
+            except KeyError:
+                raise MBuildError(
+                    "Cloning failed. Compound contains bonds to "
+                    "Particles outside of its containment hierarchy.")
 
 def is_leaf(what):
     return hasattr(what, 'parts') and not what.children

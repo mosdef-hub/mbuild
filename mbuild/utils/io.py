@@ -15,14 +15,13 @@
 # You should have received a copy of the GNU Lesser General Public
 # License along with MDTraj. If not, see <http://www.gnu.org/licenses/>.
 ##############################################################################
-from __future__ import division, print_function
-
 import inspect
 import importlib
 import os
 from pkg_resources import resource_filename
 import sys
 import textwrap
+import warnings
 from unittest import SkipTest
 
 
@@ -36,7 +35,7 @@ The code at {filename}:{line_number} requires the "gsd" package
 
 gsd can be installed with conda using:
 
-# conda install -c glotzer gsd
+# conda install -c conda-forge gsd
 '''
 
 MESSAGES['nglview'] = '''
@@ -44,7 +43,7 @@ The code at {filename}:{line_number} requires the "nglview" package
 
 nglview can be installed using:
 
-# conda install -c bioconda nglview
+# conda install -c conda-forge nglview
 
 or
 
@@ -56,11 +55,25 @@ The code at {filename}:{line_number} requires the "openbabel" package
 
 openbabel can be installed with conda using:
 
-# conda install -c bioconda openbabel
+# conda install -c conda-forge openbabel
 
 or from source following instructions at:
 
 # http://openbabel.org/docs/current/UseTheLibrary/PythonInstall.html
+'''
+
+MESSAGES['pybel'] = MESSAGES['openbabel']
+
+MESSAGES['foyer'] = '''
+The code at {filename}:{line_number} requires the "foyer" package
+
+foyer can be installed using:
+
+# conda install -c mosdef foyer
+
+or
+
+# pip install foyer
 '''
 
 
@@ -85,7 +98,27 @@ def import_(module):
     >>> # module from, etc) if the import fails
     >>> import tables
     >>> tables = import_('tables')
+
+    Notes
+    -----
+    The pybel/openbabel block is meant to resolve compatibility between
+    openbabel 2.x and 3.0.  There may be other breaking changes but the change
+    in importing them is the major one we are aware of. For details, see
+    https://open-babel.readthedocs.io/en/latest/UseTheLibrary/migration.html#python-module
     """
+    if module == 'pybel':
+        try:
+            return importlib.import_module('openbabel.pybel')
+        except ModuleNotFoundError:
+            pass
+        try:
+            pybel = importlib.import_module('pybel')
+            msg = ('openbabel 2.0 detected and will be dropped in a future '
+                   'release. Consider upgrading to 3.x.')
+            warnings.warn(msg, DeprecationWarning)
+            return pybel
+        except ModuleNotFoundError:
+            pass
     try:
         return importlib.import_module(module)
     except ImportError as e:
@@ -127,9 +160,30 @@ except ImportError:
 try:
     import openbabel
     has_openbabel = True
+    del openbabel
 except ImportError:
     has_openbabel = False
 
+try:
+    import foyer
+    has_foyer = True
+    del foyer
+except ImportError:
+    has_foyer = False
+
+try:
+    import networkx
+    has_networkx = True
+    del networkx
+except ImportError:
+    has_networkx = False
+
+try:
+    import hoomd
+    has_hoomd = True
+    del hoomd
+except ImportError:
+    has_hoomd  = False
 
 def get_fn(name):
     """Get the full path to one of the reference files shipped for utils.

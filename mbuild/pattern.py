@@ -1,5 +1,3 @@
-from __future__ import division
-
 from itertools import product
 
 import numpy as np
@@ -13,6 +11,23 @@ __all__ = ['Pattern', 'DiskPattern', 'SpherePattern', 'Random2DPattern',
 
 
 class Pattern(object):
+    """A superclass for molecules spatial Patterns.
+
+    Patterns refer to how molecules are arranged either in a box (volume) or 2-D
+    surface. This class could serve as a superclass for different molecules
+    patterns
+
+    Attributes
+    ----------
+    points : array or np.array
+         Positions of molecules in surface or space
+    orientations : dict, optional, default=None
+         Orientations of ports
+    scale : float, optional, default=None
+         Scaling factor for the original pattern
+
+    """
+
     def __init__(self, points, orientations=None, scale=None, **kwargs):
         self.points = points
         if orientations is None:
@@ -34,12 +49,16 @@ class Pattern(object):
         ----------
         by : float or np.ndarray, shape=(3,)
             The factor to scale by. If a scalar, scale all directions isotropically.
-            If np.ndarray, scale each direction independently.
+            If np.ndarray, scale each direction independently
+
         """
+
         self.points *= np.asarray([by])
         self._adjust_ports()
 
     def _adjust_ports(self):
+        """Adjust ports according to the provided orientations"""
+
         for orientation, ports in self.orientations.items():
             for port, point in zip(ports, self.points):
                 port.translate(point)
@@ -49,13 +68,20 @@ class Pattern(object):
 
         Parameters
         ----------
-        compound
-        orientation
+        compound : mb.Compound
+            mb.Compound to be applied new pattern
+        orientation : dict, optional, default=''
+            New orientations for ports in compound
+        compound_port : list, optional, default=None
+            Ports to be applied new orientations
 
         Returns
         -------
+        compound : mb.Compound
+            mb.Compound with applied pattern
 
         """
+
         compounds = list()
         if self.orientations.get(orientation):
             for port in self.orientations[orientation]:
@@ -96,8 +122,13 @@ class Pattern(object):
 
         Returns
         -------
+        guests : list of mb.Compound
+            List of inserted guest compounds on host compound
+        backfills : list of mb.Compound
+            List of inserted backfill compounds on host compound
 
         """
+
         n_ports = len(host.available_ports())
         assert n_ports >= self.points.shape[0], "Not enough ports for pattern."
         assert_port_exists(guest_port_name, guest)
@@ -162,8 +193,7 @@ class Random2DPattern(Pattern):
 
 
 class Random3DPattern(Pattern):
-    def __init__(self, n, seed=None, **kwargs):
-        """ Generate n random points on a 3D grid 
+    """ Generate n random points on a 3D grid
 
         Attributes
         ----------
@@ -174,6 +204,7 @@ class Random3DPattern(Pattern):
 
         """
 
+    def __init__(self, n, seed=None, **kwargs):
         if seed:
             np.random.seed(seed)
         points = np.random.random((n, 3))
@@ -181,8 +212,7 @@ class Random3DPattern(Pattern):
 
 
 class Grid2DPattern(Pattern):
-    def __init__(self, n, m, **kwargs):
-        """ Generate a 2D grid (n x m) of points along z = 0
+    """ Generate a 2D grid (n x m) of points along z = 0
 
         Notes
         -----
@@ -197,6 +227,8 @@ class Grid2DPattern(Pattern):
 
         """
 
+    def __init__(self, n, m, **kwargs):
+
         points = np.zeros(shape=(n*m, 3), dtype=float)
         for i, j in product(range(n), range(m)):
             points[i*m + j, 0] = i / n
@@ -205,8 +237,7 @@ class Grid2DPattern(Pattern):
 
 
 class Grid3DPattern(Pattern):
-    def __init__(self, n, m, l, **kwargs):
-        """ Generate a 3D grid (n x m x l) of points
+    """ Generate a 3D grid (n x m x l) of points
 
         Notes
         -----
@@ -223,6 +254,7 @@ class Grid3DPattern(Pattern):
 
         """
 
+    def __init__(self, n, m, l, **kwargs):
         points = np.zeros(shape=(n*m*l, 3), dtype=float)
         for i, j, k in product(range(n), range(m), range(l)):
             points[i*m*l + j*l + k, 0] = i / n
@@ -240,6 +272,7 @@ class SpherePattern(Pattern):
     http://mail.scipy.org/pipermail/numpy-discussion/2009-July/043811.html
 
     """
+
     def __init__(self, n, **kwargs):
         phi = (1 + np.sqrt(5)) / 2   # the golden ratio
         long_incr = 2*np.pi / phi    # how much to increment the longitude

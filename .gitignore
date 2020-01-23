@@ -27,6 +27,7 @@ pip-log.txt
 nosetests.xml
 htmlcov
 .cache
+.pytest_cache/
 
 # Translations
 *.mo
@@ -42,6 +43,10 @@ docs/_build
 .idea
 .idea/*
 
+# VSCode
+.vscode
+.vscode/*
+
 # Vagrant
 .vagrant
 Vagrantfile
@@ -55,3 +60,6 @@ mbuild/version.py
 
 #virtual env
 .env/
+
+# protobuf generated py file
+compound_pb2.py
