@@ -1893,10 +1893,6 @@ class Compound(object):
 
         """
         extension = os.path.splitext(filename)[-1]
-        if extension == '.xyz':
-            traj = self.to_trajectory(show_ports=show_ports)
-            traj.save(filename)
-            return
 
         if extension == '.json':
             compound_to_json(self,
