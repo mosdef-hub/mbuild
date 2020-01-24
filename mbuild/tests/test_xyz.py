@@ -2,6 +2,7 @@ import numpy as np
 import pytest
 
 import mbuild as mb
+from mbuild.formats.xyz import write_xyz
 from mbuild.utils.io import get_fn
 from mbuild.tests.base_test import BaseTest
 from mbuild.exceptions import MBuildError
@@ -20,6 +21,11 @@ class TestXYZ(BaseTest):
             mb.load(get_fn('too_few_atoms.xyz'))
         with pytest.raises(MBuildError):
             mb.load(get_fn('too_many_atoms.xyz'))
+
+    def test_bad_input(self, ethane):
+        with pytest.raises(ValueError):
+            assert isinstance(ethane, mb.Compound)
+            write_xyz(ethane, 'compound.xyz')
 
     def test_save(self, ethane):
         ethane.save(filename='ethane.xyz')
