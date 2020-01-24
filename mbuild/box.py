@@ -43,8 +43,14 @@ class Box(object):
             angles = np.array(angles, dtype=np.float)
         self._angles = angles
 
+        self._mins.setflags(write=False)
+        self._maxs.setflags(write=False)
+        self._lengths.setflags(write=False)
+
+
     @property
     def mins(self):
+        print(self._mins)
         return self._mins
 
     @property
