@@ -50,7 +50,6 @@ class Box(object):
 
     @property
     def mins(self):
-        print(self._mins)
         return self._mins
 
     @property
