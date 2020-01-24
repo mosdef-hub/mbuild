@@ -83,11 +83,11 @@ def write_xyz(structure, filename):
 
     """
 
-    xyz = np.array([[10.0*atom.xx, 10.0*atom.xy, 10.0*atom.xz] for atom in structure.atoms])
+    xyz = np.array([[atom.xx, atom.xy, atom.xz] for atom in structure.atoms])
     types = [atom.name for atom in structure.atoms]
 
     with open(filename, 'w') as xyz_file:
         xyz_file.write(str(len(structure.atoms)))
         xyz_file.write('\n' + filename+' - created by mBuild\n')
-        for type, coords in zip(types, xyz):
-            xyz_file.write('{:s}\t{:.3}\t{:.3f}\t{:.3f}\n'.format(type, *coords))
+        for typ, coords in zip(types, xyz):
+            xyz_file.write('{:s} {:8.3f} {:8.3f} {:8.3f}\n'.format(typ, *coords))
