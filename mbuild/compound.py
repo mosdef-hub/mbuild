@@ -126,6 +126,14 @@ def load(filename_or_object, relative_to_module=None, compound=None, coords_only
             compound = read_xyz(filename_or_object, compound=compound)
         return compound
 
+    if extension == '.sdf':
+        pybel = import_('pybel')
+        pybel_mol = pybel.readfile('sdf', filename_or_object)
+        # Currently only reading in single molecules
+        single_mol = [i for i in pybel_mol][0]
+        compound.from_pybel(single_mol)
+        return compound
+
     if use_parmed:
         warn(
             "use_parmed set to True.  Bonds may be inferred from inter-particle "
@@ -1958,11 +1966,15 @@ class Compound(object):
 
         elif extension == '.sdf':
             pybel = import_('pybel')
-            structure.save('intermediate.mol2', overwrite=overwrite, **kwargs)
-            mol2_file = pybel.readfile("mol2", "intermediate.mol2")
-            output_sdf = pybel.Outputfile("sdf", filename)
-            for i in mol2_file:
-                output_sdf.write(i)
+            new_compound = Compound()
+            # Convert pmd.Structure to mb.Compound
+            new_compound.from_parmed(structure)
+            # Convert mb.Compound to pybel molecule
+            pybel_molecule = new_compound.to_pybel()
+            # Write out pybel molecule to SDF file
+            output_sdf = pybel.Outputfile("sdf", filename,
+                    overwrite=overwrite)
+            output_sdf.write(pybel_molecule)
             output_sdf.close()
 
         else:  # ParmEd supported saver.
