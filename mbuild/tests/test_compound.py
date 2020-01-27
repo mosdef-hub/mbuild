@@ -70,7 +70,7 @@ class TestCompound(BaseTest):
         ch3.update_coordinates(get_fn("methyl.pdb"))
 
     def test_save_simple(self, ch3):
-        extensions = ['.xyz', '.pdb', '.mol2', '.json']
+        extensions = ['.xyz', '.pdb', '.mol2', '.json', '.sdf']
         for ext in extensions:
             outfile = 'methyl_out' + ext
             ch3.save(filename=outfile)
@@ -1060,10 +1060,11 @@ class TestCompound(BaseTest):
        cmpd.from_pybel(pybel_mol)
        assert 'LIG1' in cmpd.children[0].name
 
+    @pytest.mark.parametrize('extension', ['pdb', 'sdf'])
     @pytest.mark.skipif(not has_openbabel, reason="Pybel is not installed")
-    def test_from_pybel_molecule(self):
+    def test_from_pybel_molecule(self, extension):
         pybel = import_('pybel')
-        chol = list(pybel.readfile('pdb', get_fn('cholesterol.pdb')))[0]
+        chol = list(pybel.readfile(extension, get_fn(f'cholesterol.{extension}')))[0]
         # TODO: Actually store the box information
         cmpd = mb.Compound()
         cmpd.from_pybel(chol)
