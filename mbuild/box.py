@@ -24,9 +24,9 @@ class Box(object):
                     "You provided: "
                     "lengths={} mins={} maxs={}".format(lengths, mins, maxs)
                 )
-            self._mins = np.array(mins, dtype=np.float)
-            self._maxs = np.array(maxs, dtype=np.float)
-            self._lengths = self.maxs - self.mins
+            self._mins = tuple(mins)
+            self._maxs = tuple(maxs)
+            self._lengths = tuple(self.maxs - self.mins)
         else:
             if mins is not None or maxs is not None:
                 warn(
@@ -34,31 +34,26 @@ class Box(object):
                     "is being used. You provided: "
                     "lengths={} mins={} maxs={}".format(lengths, mins, maxs)
                 )
-            self._mins = np.array([0.0, 0.0, 0.0])
-            self._maxs = np.array(lengths, dtype=np.float)
-            self._lengths = np.array(lengths, dtype=np.float)
+            self._mins = (0.0, 0.0, 0.0)
+            self._maxs = tuple(lengths)
+            self._lengths = tuple(lengths)
         if angles is None:
             angles = np.array([90.0, 90.0, 90.0])
         elif isinstance(angles, (list, np.ndarray)):
             angles = np.array(angles, dtype=np.float)
         self._angles = angles
 
-        self._mins.setflags(write=False)
-        self._maxs.setflags(write=False)
-        self._lengths.setflags(write=False)
-
-
     @property
     def mins(self):
-        return self._mins
+        return np.array(self._mins, dtype=np.float)
 
     @property
     def maxs(self):
-        return self._maxs
+        return np.array(self._maxs, dtype=np.float)
 
     @property
     def lengths(self):
-        return self._lengths
+        return np.array(self._lengths, dtype=np.float)
 
     @property
     def angles(self):
@@ -69,38 +64,26 @@ class Box(object):
         if isinstance(mins, list):
             mins = np.array(mins, dtype=np.float)
         assert mins.shape == (3, )
-        self._mins = mins
-        self._lengths = self.maxs - self.mins
-
-        self._lengths.setflags(write=False)
-        self._mins.setflags(write=False)
+        self._mins = tuple(mins)
+        self._lengths = tuple(self.maxs - self.mins)
 
     @maxs.setter
     def maxs(self, maxes):
         if isinstance(maxes, list):
             maxes = np.array(maxes, dtype=np.float)
         assert maxes.shape == (3, )
-        self._maxs = maxes
-        self._lengths = self.maxs - self.mins
-
-        self._lengths.setflags(write=False)
-        self._maxs.setflags(write=False)
+        self._maxs = tuple(maxes)
+        self._lengths = tuple(self.maxs - self.mins)
 
     @lengths.setter
     def lengths(self, lengths):
         if isinstance(lengths, list):
-            lengths = np.array(lengths, dtype=np.float)
+            lengths = np.array(lengths, dtype=float)
         assert lengths.shape == (3, )
-        self._maxs.setflags(write=True)
-        self._mins.setflags(write=True)
         
-        self._maxs += 0.5*lengths - 0.5*self.lengths
-        self._mins -= 0.5*lengths - 0.5*self.lengths
+        self._maxs = tuple(self.maxs + 0.5*lengths - 0.5*self.lengths)
+        self._mins = tuple(self.mins - (0.5*lengths - 0.5*self.lengths))
         self._lengths = lengths
-
-        self._maxs.setflags(write=False)
-        self._mins.setflags(write=False)
-        self._lengths.setflags(write=False)
 
     @angles.setter
     def angles(self, angles):
