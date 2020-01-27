@@ -1955,6 +1955,16 @@ class Compound(object):
                 kwargs['rigid_bodies'] = [
                         p.rigid_id for p in self.particles()]
             saver(filename=filename, structure=structure, **kwargs)
+
+        elif extension == '.sdf':
+            pybel = import_('pybel')
+            structure.save('intermediate.mol2', overwrite=overwrite, **kwargs)
+            mol2_file = pybel.readfile("mol2", "intermediate.mol2")
+            output_sdf = pybel.Outputfile("sdf", filename)
+            for i in mol2_file:
+                output_sdf.write(i)
+            output_sdf.close()
+
         else:  # ParmEd supported saver.
             structure.save(filename, overwrite=overwrite, **kwargs)
 
