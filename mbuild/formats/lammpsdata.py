@@ -142,7 +142,6 @@ def write_lammpsdata(structure, filename, atom_style='full',
     box = Box(lengths=np.array([0.1 * val for val in structure.box[0:3]]),
               angles=structure.box[3:6])
     # Divide by conversion factor
-    box.lengths /= sigma_conversion_factor
     box.maxs /= sigma_conversion_factor
     
     # Lammps syntax depends on the functional form
