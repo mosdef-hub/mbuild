@@ -78,7 +78,7 @@ class Box(object):
     @lengths.setter
     def lengths(self, lengths):
         if isinstance(lengths, list):
-            lengths = np.array(lengths, dtype=float)
+            lengths = np.array(lengths, dtype=np.float)
         assert lengths.shape == (3, )
         
         self._maxs = tuple(self.maxs + 0.5*lengths - 0.5*self.lengths)
