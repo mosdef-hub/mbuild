@@ -72,6 +72,9 @@ class Box(object):
         self._mins = mins
         self._lengths = self.maxs - self.mins
 
+        self._lengths.setflags(write=False)
+        self._mins.setflags(write=False)
+
     @maxs.setter
     def maxs(self, maxes):
         if isinstance(maxes, list):
@@ -80,14 +83,24 @@ class Box(object):
         self._maxs = maxes
         self._lengths = self.maxs - self.mins
 
+        self._lengths.setflags(write=False)
+        self._maxs.setflags(write=False)
+
     @lengths.setter
     def lengths(self, lengths):
         if isinstance(lengths, list):
             lengths = np.array(lengths, dtype=np.float)
         assert lengths.shape == (3, )
+        self._maxs.setflags(write=True)
+        self._mins.setflags(write=True)
+        
         self._maxs += 0.5*lengths - 0.5*self.lengths
         self._mins -= 0.5*lengths - 0.5*self.lengths
         self._lengths = lengths
+
+        self._maxs.setflags(write=False)
+        self._mins.setflags(write=False)
+        self._lengths.setflags(write=False)
 
     @angles.setter
     def angles(self, angles):
