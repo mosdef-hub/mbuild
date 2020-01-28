@@ -1064,7 +1064,8 @@ class TestCompound(BaseTest):
     @pytest.mark.skipif(not has_openbabel, reason="Pybel is not installed")
     def test_from_pybel_molecule(self, extension):
         pybel = import_('pybel')
-        chol = list(pybel.readfile(extension, get_fn(f'cholesterol.{extension}')))[0]
+        chol = list(pybel.readfile(extension,
+            get_fn('cholesterol.{}'.format(extension))))[0]
         # TODO: Actually store the box information
         cmpd = mb.Compound()
         cmpd.from_pybel(chol)
