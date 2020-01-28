@@ -1084,3 +1084,10 @@ class TestCompound(BaseTest):
         for test_string in test_strings:
             my_cmp = mb.load(test_string, smiles=True)
             assert my_cmp.get_smiles() == test_string
+
+    def test_sdf(self):
+        test_string = mb.load('CCCCC', smiles=True)
+        test_string.save('pentane.sdf')
+        sdf_string = mb.load('pentane.sdf')
+
+        assert np.allclose(test_string.xyz, sdf_string.xyz, atol=1e-5)
