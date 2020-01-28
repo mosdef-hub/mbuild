@@ -84,7 +84,7 @@ class TestCompound(BaseTest):
         assert len(ethane.children) == len(ethane_copy.children)
 
     def test_save_box(self, ch3):
-        extensions = ['.mol2', '.pdb', '.hoomdxml', '.gro']
+        extensions = ['.mol2', '.pdb', '.hoomdxml', '.gro', '.sdf']
         box_attributes = ['mins', 'maxs', 'lengths']
         custom_box = mb.Box([.8, .8, .8])
         for ext in extensions:
@@ -111,7 +111,7 @@ class TestCompound(BaseTest):
     @pytest.mark.skipif(not has_foyer, reason="Foyer is not installed")
     def test_save_forcefield(self, methane):
         exts = ['.gsd', '.hoomdxml', '.lammps', '.lmp', '.top', '.gro',
-                '.mol2', '.pdb', '.xyz']
+                '.mol2', '.pdb', '.xyz', '.sdf']
         for ext in exts:
             methane.save('lythem' + ext,
                          forcefield_name='oplsaa',
@@ -120,7 +120,7 @@ class TestCompound(BaseTest):
     @pytest.mark.skipif(not has_foyer, reason="Foyer is not installed")
     def test_save_forcefield_with_file(self, methane):
         exts = ['.gsd', '.hoomdxml', '.lammps', '.lmp', '.top', '.gro',
-                '.mol2', '.pdb', '.xyz']
+                '.mol2', '.pdb', '.xyz', '.sdf']
         for ext in exts:
             methane.save('lythem' + ext,
                          forcefield_files=get_fn('methane_oplssaa.xml'),
