@@ -1085,9 +1085,15 @@ class TestCompound(BaseTest):
             my_cmp = mb.load(test_string, smiles=True)
             assert my_cmp.get_smiles() == test_string
 
-    def test_sdf(self):
-        test_string = mb.load('CCCCC', smiles=True)
-        test_string.save('pentane.sdf')
-        sdf_string = mb.load('pentane.sdf')
+    def test_sdf(self, methane):
+        methane.save('methane.sdf')
+        sdf_string = mb.load('methane.sdf')
 
-        assert np.allclose(test_string.xyz, sdf_string.xyz, atol=1e-5)
+        assert np.allclose(methane.xyz, sdf_string.xyz, atol=1e-5)
+
+    def test_multiple_sdf(self, methane):
+        filled = mb.fill_box(methane, n_compounds=10, box=[0, 0, 0, 4, 4, 4])
+        filled.save('methane.sdf')
+        sdf_string = mb.load('methane.sdf')
+
+        assert np.allclose(filled.xyz, sdf_string.xyz, atol=1e-5)
