@@ -72,3 +72,18 @@ class TestBox(BaseTest):
         assert (box.maxs - box.mins == 4 * np.ones(3)).all()
         box.angles = [90, 90, 120]
         assert (box.angles == np.array([90, 90, 120])).all()
+
+    def test_single_dimension_setter(self):
+        box = mb.Box(mins=np.zeros(3), maxs=4*np.ones(3))
+        assert (box.lengths == 4*np.ones(3)).all()
+        
+        box.maxs[0] = 5
+        box.mins[2] = 1
+        assert (box.mins == np.array([0, 0, 1], dtype=np.float)).all()
+        assert (box.maxs == np.array([5, 4, 4], dtype=np.float)).all()
+        assert (box.lengths == np.array([5, 4, 3], dtype=np.float)).all()
+
+        box.lengths[1] = 6
+        assert (box.mins == np.array([0, -1, 1], dtype=np.float)).all()
+        assert (box.maxs == np.array([5, 5, 4], dtype=np.float)).all()
+        assert (box.lengths == np.array([5, 6, 3], dtype=np.float)).all()

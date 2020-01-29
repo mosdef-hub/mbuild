@@ -77,8 +77,7 @@ class Box(object):
     def lengths(self, lengths):
         lengths = np.array(lengths, dtype=np.float)
         assert lengths.shape == (3, )
-        print(type(lengths), lengths) 
-        self._maxs = boxArray(array=(self.maxs + 0.5*lengths - 0.5*self.lengths), var="maxs", box=self)
+        self._maxs = boxArray(array=(self.maxs + (0.5*lengths - 0.5*self.lengths)), var="maxs", box=self)
         self._mins = boxArray(array=(self.mins - (0.5*lengths - 0.5*self.lengths)), var="mins", box=self)
         self._lengths = boxArray(array=lengths, var="lengths", box=self, dtype=np.float)
 
@@ -109,6 +108,6 @@ class boxArray(np.ndarray):
         elif self.var == "mins":
             self.box.mins = array
         elif self.var == "lengths":
-            self.lengths = array
+            self.box.lengths = array
         else:
             self.angles = array
