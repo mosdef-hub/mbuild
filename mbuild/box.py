@@ -24,9 +24,9 @@ class Box(object):
                     "You provided: "
                     "lengths={} mins={} maxs={}".format(lengths, mins, maxs)
                 )
-            self._mins = tuple(mins)
-            self._maxs = tuple(maxs)
-            self._lengths = tuple(self.maxs - self.mins)
+            self._mins = boxArray(array=mins, var="mins", box=self)
+            self._maxs = boxArray(array=maxs, var="maxs", box=self)
+            self._lengths = boxArray(array=(self.maxs - self.mins), var="lengths", box=self)
         else:
             if mins is not None or maxs is not None:
                 warn(
@@ -34,26 +34,26 @@ class Box(object):
                     "is being used. You provided: "
                     "lengths={} mins={} maxs={}".format(lengths, mins, maxs)
                 )
-            self._mins = (0.0, 0.0, 0.0)
-            self._maxs = tuple(lengths)
-            self._lengths = tuple(lengths)
+            self._mins = boxArray(array=(0,0,0), var="mins", box=self)
+            self._maxs = boxArray(array=lengths, var="maxs", box=self)
+            self._lengths = boxArray(array=lengths, var="lenghts", box=self)
         if angles is None:
-            angles = np.array([90.0, 90.0, 90.0])
+            angles = boxArray(array=(90.0, 90.0, 90.0), var="angles", box=self)
         elif isinstance(angles, (list, np.ndarray)):
-            angles = np.array(angles, dtype=np.float)
+            angles = boxArray(array=angles, var="anglese", box=self)
         self._angles = angles
 
     @property
-    def mins(self):
-        return np.array(self._mins, dtype=np.float)
+    def mins(self): 
+        return self._mins
 
     @property
     def maxs(self):
-        return np.array(self._maxs, dtype=np.float)
+        return self._maxs
 
     @property
     def lengths(self):
-        return np.array(self._lengths, dtype=np.float)
+        return self._lengths
 
     @property
     def angles(self):
@@ -63,24 +63,24 @@ class Box(object):
     def mins(self, mins):
         mins = np.array(mins, dtype=np.float)
         assert mins.shape == (3, )
-        self._mins = tuple(mins)
-        self._lengths = tuple(self.maxs - self.mins)
+        self._mins = boxArray(array=mins, var="mins", box=self)
+        self._lengths = boxArray(array=(self.maxs - self.mins), var="lengths", box=self)
 
     @maxs.setter
-    def maxs(self, maxes):
-        maxes = np.array(maxes, dtype=np.float)
-        assert maxes.shape == (3, )
-        self._maxs = tuple(maxes)
-        self._lengths = tuple(self.maxs - self.mins)
+    def maxs(self, maxs):
+        maxs = np.array(maxs, dtype=np.float)
+        assert maxs.shape == (3, )
+        self._maxs = boxArray(array=maxs, var="maxs", box=self)
+        self._lengths = boxArray(array= (self.maxs - self.mins), var="lengths", box=self)
 
     @lengths.setter
     def lengths(self, lengths):
         lengths = np.array(lengths, dtype=np.float)
         assert lengths.shape == (3, )
-        
-        self._maxs = tuple(self.maxs + 0.5*lengths - 0.5*self.lengths)
-        self._mins = tuple(self.mins - (0.5*lengths - 0.5*self.lengths))
-        self._lengths = lengths
+        print(type(lengths), lengths) 
+        self._maxs = boxArray(array=(self.maxs + 0.5*lengths - 0.5*self.lengths), var="maxs", box=self)
+        self._mins = boxArray(array=(self.mins - (0.5*lengths - 0.5*self.lengths)), var="mins", box=self)
+        self._lengths = boxArray(array=lengths, var="lengths", box=self, dtype=np.float)
 
     @angles.setter
     def angles(self, angles):
@@ -90,3 +90,25 @@ class Box(object):
 
     def __repr__(self):
         return "Box(mins={}, maxs={}, angles={})".format(self.mins, self.maxs, self.angles)
+
+class boxArray(np.ndarray):
+    """Subclass of np.ndarry specifically for mb.Box
+
+    """
+    def __new__(cls, array, var=None, box=None, dtype=np.float):
+        _array = np.asarray(array, dtype).view(cls)
+        _array.var = var
+        _array.box = box
+        return _array
+
+    def __setitem__(self, key, val):
+        array = list(self)
+        array[key] = val
+        if self.var == "maxs":
+            self.box.maxs = array
+        elif self.var == "mins":
+            self.box.mins = array
+        elif self.var == "lengths":
+            self.lengths = array
+        else:
+            self.angles = array
