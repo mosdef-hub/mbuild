@@ -130,13 +130,13 @@ def load(filename_or_object, relative_to_module=None, compound=None, coords_only
         pybel = import_('pybel')
         pybel_mol = pybel.readfile('sdf', filename_or_object)
         # pybel returns a generator, so we grab the first molecule of a list of len 1
-        # Warn user if there are more molecules
+        # Raise ValueError user if there are more molecules
         pybel_mol = [i for i in pybel_mol]
         if len(pybel_mol) == 1:
             compound.from_pybel(pybel_mol[0])
         else:
             compound.from_pybel(pybel_mol[0])
-            warn("More than one pybel molecule in file, more than one pybel "
+            raise ValueError("More than one pybel molecule in file, more than one pybel "
                  "molecule is not supported, using {}".format(filename_or_object))
         return compound
 
