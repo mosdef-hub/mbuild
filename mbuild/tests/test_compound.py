@@ -70,7 +70,7 @@ class TestCompound(BaseTest):
         ch3.update_coordinates(get_fn("methyl.pdb"))
 
     def test_save_simple(self, ch3):
-        extensions = ['.xyz', '.pdb', '.mol2', '.json']
+        extensions = ['.xyz', '.pdb', '.mol2', '.json', '.sdf']
         for ext in extensions:
             outfile = 'methyl_out' + ext
             ch3.save(filename=outfile)
@@ -84,7 +84,7 @@ class TestCompound(BaseTest):
         assert len(ethane.children) == len(ethane_copy.children)
 
     def test_save_box(self, ch3):
-        extensions = ['.mol2', '.pdb', '.hoomdxml', '.gro']
+        extensions = ['.mol2', '.pdb', '.hoomdxml', '.gro', '.sdf']
         box_attributes = ['mins', 'maxs', 'lengths']
         custom_box = mb.Box([.8, .8, .8])
         for ext in extensions:
@@ -111,7 +111,7 @@ class TestCompound(BaseTest):
     @pytest.mark.skipif(not has_foyer, reason="Foyer is not installed")
     def test_save_forcefield(self, methane):
         exts = ['.gsd', '.hoomdxml', '.lammps', '.lmp', '.top', '.gro',
-                '.mol2', '.pdb', '.xyz']
+                '.mol2', '.pdb', '.xyz', '.sdf']
         for ext in exts:
             methane.save('lythem' + ext,
                          forcefield_name='oplsaa',
@@ -120,7 +120,7 @@ class TestCompound(BaseTest):
     @pytest.mark.skipif(not has_foyer, reason="Foyer is not installed")
     def test_save_forcefield_with_file(self, methane):
         exts = ['.gsd', '.hoomdxml', '.lammps', '.lmp', '.top', '.gro',
-                '.mol2', '.pdb', '.xyz']
+                '.mol2', '.pdb', '.xyz', '.sdf']
         for ext in exts:
             methane.save('lythem' + ext,
                          forcefield_files=get_fn('methane_oplssaa.xml'),
@@ -1060,10 +1060,12 @@ class TestCompound(BaseTest):
        cmpd.from_pybel(pybel_mol)
        assert 'LIG1' in cmpd.children[0].name
 
+    @pytest.mark.parametrize('extension', ['pdb', 'sdf'])
     @pytest.mark.skipif(not has_openbabel, reason="Pybel is not installed")
-    def test_from_pybel_molecule(self):
+    def test_from_pybel_molecule(self, extension):
         pybel = import_('pybel')
-        chol = list(pybel.readfile('pdb', get_fn('cholesterol.pdb')))[0]
+        chol = list(pybel.readfile(extension,
+            get_fn('cholesterol.{}'.format(extension))))[0]
         # TODO: Actually store the box information
         cmpd = mb.Compound()
         cmpd.from_pybel(chol)
@@ -1082,3 +1084,19 @@ class TestCompound(BaseTest):
         for test_string in test_strings:
             my_cmp = mb.load(test_string, smiles=True)
             assert my_cmp.get_smiles() == test_string
+
+    def test_sdf(self, methane):
+        methane.save('methane.sdf')
+        sdf_string = mb.load('methane.sdf')
+        assert np.allclose(methane.xyz, sdf_string.xyz, atol=1e-5)
+
+    def test_load_multiple_sdf(self, methane):
+        filled = mb.fill_box(methane, n_compounds=10, box=[0, 0, 0, 4, 4, 4])
+        filled.save('methane.sdf')
+        sdf_string = mb.load('methane.sdf')
+
+    def test_save_multiple_sdf(self, methane):
+        filled = mb.fill_box(methane, n_compounds=10, box=[0, 0, 0, 4, 4, 4])
+        filled.save('methane.sdf')
+        sdf_string = mb.load('methane.sdf')
+        assert np.allclose(filled.xyz, sdf_string.xyz, atol=1e-5)
