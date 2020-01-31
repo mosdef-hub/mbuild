@@ -1088,7 +1088,6 @@ class TestCompound(BaseTest):
     def test_sdf(self, methane):
         methane.save('methane.sdf')
         sdf_string = mb.load('methane.sdf')
-
         assert np.allclose(methane.xyz, sdf_string.xyz, atol=1e-5)
 
     def test_load_multiple_sdf(self, methane):
@@ -1100,5 +1099,4 @@ class TestCompound(BaseTest):
         filled = mb.fill_box(methane, n_compounds=10, box=[0, 0, 0, 4, 4, 4])
         filled.save('methane.sdf')
         sdf_string = mb.load('methane.sdf')
-
         assert np.allclose(filled.xyz, sdf_string.xyz, atol=1e-5)
