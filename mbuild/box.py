@@ -93,6 +93,19 @@ class Box(object):
 class BoxArray(np.ndarray):
     """Subclass of np.ndarry specifically for mb.Box
 
+    This subclass is meant to be used internally to store Box attribute array.
+    This subclass is modified so that its __setitem__ method is reroute to the
+    corresponding setter method.
+
+    Parameters
+    ----------
+    array : array-like object
+        This can be tuple, list, or any array-like object that can be usually
+        passed to np.array
+    var : str
+        Corresponding Box's attributes like "maxs", "mins", "lengths", "angles"
+    box : mb.Box
+        This is the Box contains this attribute (one level up of this array)
     """
     def __new__(cls, array, var=None, box=None, dtype=np.float):
         _array = np.asarray(array, dtype).view(cls)
