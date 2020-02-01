@@ -40,6 +40,8 @@ class Box(object):
                 )
             if isinstance(lengths, int) or isinstance(lengths, float):
                 lengths = np.array(lengths*np.ones(3), dtype=np.float)
+            else:
+                lengths = np.array(lengths, dtype=np.float)
             assert lengths.shape == (3, )
             self._mins = BoxArray(array=(0,0,0), var="mins", box=self)
             self._maxs = BoxArray(array=lengths, var="maxs", box=self)
