@@ -24,6 +24,10 @@ class Box(object):
                     "You provided: "
                     "lengths={} mins={} maxs={}".format(lengths, mins, maxs)
                 )
+            mins = np.array(mins, dtype=np.float)
+            maxs = np.array(maxs, dtype=np.float)
+            assert mins.shape == (3, ), "Given mins have wrong dimensions"
+            assert maxs.shape == (3, ), "Given maxs have wrong dimensions"
             self._mins = BoxArray(array=mins, var="mins", box=self)
             self._maxs = BoxArray(array=maxs, var="maxs", box=self)
             self._lengths = BoxArray(array=(self.maxs - self.mins), var="lengths", box=self)
@@ -34,6 +38,9 @@ class Box(object):
                     "is being used. You provided: "
                     "lengths={} mins={} maxs={}".format(lengths, mins, maxs)
                 )
+            if isinstance(lengths, int) or isinstance(lengths, float):
+                lengths = np.array(lengths*np.ones(3), dtype=np.float)
+            assert lengths.shape == (3, )
             self._mins = BoxArray(array=(0,0,0), var="mins", box=self)
             self._maxs = BoxArray(array=lengths, var="maxs", box=self)
             self._lengths = BoxArray(array=lengths, var="lenghts", box=self)
