@@ -2,7 +2,7 @@ from warnings import warn
 
 import numpy as np
 
-__all__ = ['__BoxArray']
+__all__ = ['_BoxArray']
 
 class Box(object):
     """A box representing the bounds of the system.
@@ -89,7 +89,10 @@ class Box(object):
 
     @lengths.setter
     def lengths(self, lengths):
-        lengths = np.array(lengths, dtype=np.float)
+        if isinstance(lengths, int) or isinstance(lengths, float):
+            lengths = np.array(lengths*np.ones(3), dtype=np.float)
+        else:
+            lengths = np.array(lengths, dtype=np.float)
         assert lengths.shape == (3, )
         assert all(lengths >= 0), "Given lengths are negative" 
         self._maxs = _BoxArray(array=(self.maxs + (0.5*lengths - 0.5*self.lengths)), var="maxs", box=self)

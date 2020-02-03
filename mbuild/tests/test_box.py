@@ -87,3 +87,29 @@ class TestBox(BaseTest):
         assert np.allclose(box.mins, np.array([0, -1, 1], dtype=np.float))
         assert np.allclose(box.maxs, np.array([5, 5, 4], dtype=np.float))
         assert np.allclose(box.lengths, np.array([5, 6, 3], dtype=np.float))
+
+        new_box = mb.Box(5)
+        assert np.allclose(new_box.lengths, np.array([5, 5, 5], dtype=np.float))
+        assert np.allclose(new_box.mins, np.array([0, 0, 0], dtype=np.float))
+        assert np.allclose(new_box.maxs, np.array([5, 5, 5], dtype=np.float))
+
+        new_box.lengths = 4
+        assert np.allclose(new_box.lengths, np.array([4, 4, 4], dtype=np.float))
+        assert np.allclose(new_box.mins, np.array([0.5, 0.5, 0.5], dtype=np.float))
+        assert np.allclose(new_box.maxs, np.array([4.5, 4.5, 4.5], dtype=np.float))
+
+    def test_sanity_checks(self):
+        # Initialization step
+        with pytest.raises(AssertionError):
+            box = mb.Box(mins=[3,3,3], maxs=[1,1,1])
+        with pytest.raises(AssertionError):
+            box = mb.Box(lengths=-1)
+        
+        # Modifying step
+        box = mb.Box(mins=[2,2,2], maxs=[4,4,4])
+        with pytest.raises(AssertionError):
+            box.mins[1] = box.maxs[1] + 1
+        with pytest.raises(AssertionError): 
+            box.maxs[1] = box.mins[1] - 1
+        with pytest.raises(AssertionError):
+            box.lengths = -1
