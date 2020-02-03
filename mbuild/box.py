@@ -2,7 +2,7 @@ from warnings import warn
 
 import numpy as np
 
-__all__ = ['_BoxArray']
+__all__ = ['Box', '_BoxArray']
 
 class Box(object):
     """A box representing the bounds of the system.
