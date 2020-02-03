@@ -95,4 +95,4 @@ def write_xyz(structure, filename):
         xyz_file.write(str(len(structure.atoms)))
         xyz_file.write('\n' + filename+' - created by mBuild\n')
         for typ, coords in zip(types, xyz):
-            xyz_file.write('{:s} {:8.3f} {:8.3f} {:8.3f}\n'.format(typ, *coords))
+            xyz_file.write('{:s} {:11.6f} {:11.6f} {:11.6f}\n'.format(typ, *coords))

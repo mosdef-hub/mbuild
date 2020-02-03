@@ -126,6 +126,20 @@ def load(filename_or_object, relative_to_module=None, compound=None, coords_only
             compound = read_xyz(filename_or_object, compound=compound)
         return compound
 
+    if extension == '.sdf':
+        pybel = import_('pybel')
+        pybel_mol = pybel.readfile('sdf', filename_or_object)
+        # pybel returns a generator, so we grab the first molecule of a list of len 1
+        # Raise ValueError user if there are more molecules
+        pybel_mol = [i for i in pybel_mol]
+        if len(pybel_mol) == 1:
+            compound.from_pybel(pybel_mol[0])
+        else:
+            compound.from_pybel(pybel_mol[0])
+            raise ValueError("More than one pybel molecule in file, more than one pybel "
+                 "molecule is not supported, using {}".format(filename_or_object))
+        return compound
+
     if use_parmed:
         warn(
             "use_parmed set to True.  Bonds may be inferred from inter-particle "
@@ -1875,6 +1889,11 @@ class Compound(object):
             styles are currently supported: 'full', 'atomic', 'charge', 'molecular'
             see http://lammps.sandia.gov/doc/atom_style.html for more
             information on atom styles.
+        unit_style: str, default='real'
+            Defines to unit style to be save in a LAMMPS data file.  Defaults to 'real' units.
+            Current styles are supported: 'real', 'lj'
+            see https://lammps.sandia.gov/doc/99/units.html for more information
+            on unit styles
 
         Notes
         ------
@@ -1948,6 +1967,20 @@ class Compound(object):
                 kwargs['rigid_bodies'] = [
                         p.rigid_id for p in self.particles()]
             saver(filename=filename, structure=structure, **kwargs)
+
+        elif extension == '.sdf':
+            pybel = import_('pybel')
+            new_compound = Compound()
+            # Convert pmd.Structure to mb.Compound
+            new_compound.from_parmed(structure)
+            # Convert mb.Compound to pybel molecule
+            pybel_molecule = new_compound.to_pybel()
+            # Write out pybel molecule to SDF file
+            output_sdf = pybel.Outputfile("sdf", filename,
+                    overwrite=overwrite)
+            output_sdf.write(pybel_molecule)
+            output_sdf.close()
+
         else:  # ParmEd supported saver.
             structure.save(filename, overwrite=overwrite, **kwargs)
 

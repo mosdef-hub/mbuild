@@ -76,6 +76,17 @@ or
 # pip install foyer
 '''
 
+MESSAGES['protobuf'] = ''' 
+The code at {filename}:{line_number} requires the "protobuf" package
+
+protobuf can be installed using:
+
+# conda install -c anaconda protobuf
+
+or 
+
+# pip install protobuf
+'''
 
 def import_(module):
     """Import a module, and issue a nice message to stderr if the module isn't installed.
