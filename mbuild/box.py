@@ -2,7 +2,7 @@ from warnings import warn
 
 import numpy as np
 
-__all__ = ['Box', '_BoxArray']
+__all__ = ['Box']
 
 class Box(object):
     """A box representing the bounds of the system.
@@ -103,7 +103,7 @@ class Box(object):
     def angles(self, angles):
         angles = np.array(angles, dtype=np.float)
         assert angles.shape == (3, )
-        self._angles = angles
+        self._angles = _BoxArray(array=angles, var="angles", box=self, dtype=np.float)
 
     def __repr__(self):
         return "Box(mins={}, maxs={}, angles={})".format(self.mins, self.maxs, self.angles)
