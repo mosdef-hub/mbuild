@@ -2,6 +2,7 @@ from warnings import warn
 
 import numpy as np
 
+__all__ = ['__BoxArray']
 
 class Box(object):
     """A box representing the bounds of the system.
@@ -28,9 +29,10 @@ class Box(object):
             maxs = np.array(maxs, dtype=np.float)
             assert mins.shape == (3, ), "Given mins have wrong dimensions"
             assert maxs.shape == (3, ), "Given maxs have wrong dimensions"
-            self._mins = BoxArray(array=mins, var="mins", box=self)
-            self._maxs = BoxArray(array=maxs, var="maxs", box=self)
-            self._lengths = BoxArray(array=(self.maxs - self.mins), var="lengths", box=self)
+            assert all(mins <= maxs), "Given mins are greater than maxs"
+            self._mins = _BoxArray(array=mins, var="mins", box=self)
+            self._maxs = _BoxArray(array=maxs, var="maxs", box=self)
+            self._lengths = _BoxArray(array=(self.maxs - self.mins), var="lengths", box=self)
         else:
             if mins is not None or maxs is not None:
                 warn(
@@ -43,13 +45,14 @@ class Box(object):
             else:
                 lengths = np.array(lengths, dtype=np.float)
             assert lengths.shape == (3, )
-            self._mins = BoxArray(array=(0,0,0), var="mins", box=self)
-            self._maxs = BoxArray(array=lengths, var="maxs", box=self)
-            self._lengths = BoxArray(array=lengths, var="lenghts", box=self)
+            assert all(lengths >= 0), "Given lengths are negative"
+            self._mins = _BoxArray(array=(0,0,0), var="mins", box=self)
+            self._maxs = _BoxArray(array=lengths, var="maxs", box=self)
+            self._lengths = _BoxArray(array=lengths, var="lengths", box=self)
         if angles is None:
-            angles = BoxArray(array=(90.0, 90.0, 90.0), var="angles", box=self)
+            angles = _BoxArray(array=(90.0, 90.0, 90.0), var="angles", box=self)
         elif isinstance(angles, (list, np.ndarray)):
-            angles = BoxArray(array=angles, var="anglese", box=self)
+            angles = _BoxArray(array=angles, var="angles", box=self)
         self._angles = angles
 
     @property
@@ -72,23 +75,26 @@ class Box(object):
     def mins(self, mins):
         mins = np.array(mins, dtype=np.float)
         assert mins.shape == (3, )
-        self._mins = BoxArray(array=mins, var="mins", box=self)
-        self._lengths = BoxArray(array=(self.maxs - self.mins), var="lengths", box=self)
+        assert all(mins <= self.maxs), "Given mins is greater than maxs"
+        self._mins = _BoxArray(array=mins, var="mins", box=self)
+        self._lengths = _BoxArray(array=(self.maxs - self.mins), var="lengths", box=self)
 
     @maxs.setter
     def maxs(self, maxs):
         maxs = np.array(maxs, dtype=np.float)
         assert maxs.shape == (3, )
-        self._maxs = BoxArray(array=maxs, var="maxs", box=self)
-        self._lengths = BoxArray(array= (self.maxs - self.mins), var="lengths", box=self)
+        assert all(maxs >= self.mins), "Given maxs is less than mins"
+        self._maxs = _BoxArray(array=maxs, var="maxs", box=self)
+        self._lengths = _BoxArray(array= (self.maxs - self.mins), var="lengths", box=self)
 
     @lengths.setter
     def lengths(self, lengths):
         lengths = np.array(lengths, dtype=np.float)
         assert lengths.shape == (3, )
-        self._maxs = BoxArray(array=(self.maxs + (0.5*lengths - 0.5*self.lengths)), var="maxs", box=self)
-        self._mins = BoxArray(array=(self.mins - (0.5*lengths - 0.5*self.lengths)), var="mins", box=self)
-        self._lengths = BoxArray(array=lengths, var="lengths", box=self, dtype=np.float)
+        assert all(lengths >= 0), "Given lengths are negative" 
+        self._maxs = _BoxArray(array=(self.maxs + (0.5*lengths - 0.5*self.lengths)), var="maxs", box=self)
+        self._mins = _BoxArray(array=(self.mins - (0.5*lengths - 0.5*self.lengths)), var="mins", box=self)
+        self._lengths = _BoxArray(array=lengths, var="lengths", box=self, dtype=np.float)
 
     @angles.setter
     def angles(self, angles):
@@ -99,7 +105,7 @@ class Box(object):
     def __repr__(self):
         return "Box(mins={}, maxs={}, angles={})".format(self.mins, self.maxs, self.angles)
 
-class BoxArray(np.ndarray):
+class _BoxArray(np.ndarray):
     """Subclass of np.ndarry specifically for mb.Box
 
     This subclass is meant to be used internally to store Box attribute array.
@@ -126,10 +132,16 @@ class BoxArray(np.ndarray):
         array = list(self)
         array[key] = val
         if self.var == "maxs":
+            msg = "Given max value is less than box's min value" 
+            assert val >= self.box.mins[key], msg
             self.box.maxs = array
         elif self.var == "mins":
+            msg = "Given min value is more than box's max value"
+            assert val <= self.box.maxs[key], msg
             self.box.mins = array
         elif self.var == "lengths":
+            msg = "Given length value is negative"
+            assert val >= 0, msg
             self.box.lengths = array
         else:
-            self.angles = array
+            self.box.angles = array
