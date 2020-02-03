@@ -19,7 +19,7 @@ from mbuild.bond_graph import BondGraph
 from mbuild.box import Box
 from mbuild.exceptions import MBuildError
 from mbuild.utils.decorators import deprecated
-from mbuild.formats.xyz import read_xyz
+from mbuild.formats.xyz import read_xyz, write_xyz
 from mbuild.formats.json_formats import compound_to_json, compound_from_json
 from mbuild.formats.hoomdxml import write_hoomdxml
 from mbuild.formats.lammpsdata import write_lammpsdata
@@ -1905,16 +1905,13 @@ class Compound(object):
         --------
         formats.gsdwrite.write_gsd : Write to GSD format
         formats.hoomdxml.write_hoomdxml : Write to Hoomd XML format
+        formats.xyzwriter.write_xyz : Write to XYZ format
         formats.lammpsdata.write_lammpsdata : Write to LAMMPS data format
         formats.cassandramcf.write_mcf : Write to Cassandra MCF format
         formats.json_formats.compound_to_json : Write to a json file
 
         """
         extension = os.path.splitext(filename)[-1]
-        if extension == '.xyz':
-            traj = self.to_trajectory(show_ports=show_ports)
-            traj.save(filename)
-            return
 
         if extension == '.json':
             compound_to_json(self,
@@ -1925,6 +1922,7 @@ class Compound(object):
         # Savers supported by mbuild.formats
         savers = {'.hoomdxml': write_hoomdxml,
                   '.gsd': write_gsd,
+                  '.xyz': write_xyz,
                   '.lammps': write_lammpsdata,
                   '.lmp': write_lammpsdata,
                   '.par': write_par,}
