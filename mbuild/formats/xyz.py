@@ -25,7 +25,7 @@ def read_xyz(filename, compound=None):
 
     Notes
     -----
-    The XYZ file format neglects many important details, notably as bonds,
+    The XYZ file format neglects many important details, including bonds,
     residues, and box information.
 
     There are some other flavors of the XYZ file format and not all are

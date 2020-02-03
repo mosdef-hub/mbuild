@@ -31,6 +31,7 @@ class TestXYZ(BaseTest):
         ethane.save(filename='ethane.xyz')
         ethane_in = mb.load('ethane.xyz')
         assert len(ethane_in.children) == 8
+        assert ethane_in.n_bonds == 0
         assert set([child.name for child in ethane_in.children]) == {'C', 'H'}
 
     def test_coordinates(self, ethane):
