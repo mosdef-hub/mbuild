@@ -80,9 +80,9 @@ def write_gsd(structure, filename, ref_distance=1.0, ref_mass=1.0,
         _write_angle_information(gsd_file, structure)
     if structure.rb_torsions:
         _write_dihedral_information(gsd_file, structure)
-
-
-    gsd.hoomd.create(filename, gsd_file)
+    
+    with gsd.hoomd.open(filename, mode='wb') as fp:
+        fp.append(gsd_file)
 
 def _write_particle_information(gsd_file, structure, xyz, ref_distance,
         ref_mass, ref_energy, rigid_bodies):
