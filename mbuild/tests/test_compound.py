@@ -3,13 +3,13 @@ import time
 
 import numpy as np
 import parmed as pmd
-import mdtraj
 import pytest
 
 import mbuild as mb
 from mbuild.exceptions import MBuildError
 from mbuild.utils.geometry import calc_dihedral
-from mbuild.utils.io import get_fn, import_, has_foyer, has_intermol, has_openbabel, has_networkx
+from mbuild.utils.io import (import_, get_fn, has_mdtraj, has_foyer,
+                             has_intermol, has_openbabel, has_networkx)
 from mbuild.tests.base_test import BaseTest
 
 class TestCompound(BaseTest):
@@ -526,6 +526,8 @@ class TestCompound(BaseTest):
         assert traj.n_chains == 1
         assert traj.n_residues == 1
 
+    
+    @pytest.mark.skipif(not has_mdtraj, reason="MDTraj is not installed")
     def test_box_mdtraj(self, ethane):
         assert np.allclose(ethane.periodicity, np.zeros(3))
         traj_boundingbox = ethane.to_trajectory()
@@ -549,6 +551,7 @@ class TestCompound(BaseTest):
             box.lengths
         )
 
+    @pytest.mark.skipif(not has_mdtraj, reason="MDTraj is not installed")
     def test_resnames_mdtraj(self, h2o, ethane):
         system = mb.Compound([h2o, mb.clone(h2o), ethane])
         traj = system.to_trajectory(residues=['Ethane', 'H2O'])
@@ -575,6 +578,7 @@ class TestCompound(BaseTest):
         assert traj.n_residues == 1
         assert residues[0].name == 'RES'
 
+    @pytest.mark.skipif(not has_mdtraj, reason="MDTraj is not installed")
     def test_chainnames_mdtraj(self, h2o, ethane):
         system = mb.Compound([h2o, mb.clone(h2o), ethane])
         traj = system.to_trajectory(chains=['Ethane', 'H2O'])
@@ -589,6 +593,7 @@ class TestCompound(BaseTest):
         traj = system.to_trajectory()
         assert traj.n_chains == 1
 
+    @pytest.mark.skipif(not has_mdtraj, reason="MDTraj is not installed")
     def test_mdtraj_box(self, h2o):
         compound = mb.Compound()
         compound.add(h2o)
@@ -857,6 +862,7 @@ class TestCompound(BaseTest):
         with pytest.raises(MBuildError):
             ch3_clone = mb.clone(ch3)
 
+    @pytest.mark.skipif(not has_mdtraj, reason="MDTraj is not installed")
     def test_load_mol2_mdtraj(self):
         with pytest.raises(KeyError):
             mb.load(get_fn('benzene-nonelement.mol2'))
@@ -973,6 +979,7 @@ class TestCompound(BaseTest):
 
         assert all([isinstance(n, str) for n in graph.nodes()])
 
+    @pytest.mark.skipif(not has_mdtraj, reason="MDTraj is not installed")
     def test_from_trajectory(self):
         comp = mb.Compound()
         traj = mdtraj.load(get_fn('spc.pdb'))
@@ -985,6 +992,7 @@ class TestCompound(BaseTest):
         comp.from_parmed(struc)
         assert comp.children[0].name == 'SPC'
 
+    @pytest.mark.skipif(not has_mdtraj, reason="MDTraj is not installed")
     def test_complex_from_trajectory(self):
         comp = mb.Compound()
         traj = mdtraj.load(get_fn('pro_but.pdb'))

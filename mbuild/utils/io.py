@@ -88,6 +88,19 @@ or
 # pip install protobuf
 '''
 
+MESSAGES['mdtraj'] = '''
+The code at {filename}:{line_number} requires the "mdtraj" package
+
+protobuf can be installed using:
+
+# conda install -c conda-forge mdtraj
+
+or 
+
+# pip install mdtraj
+'''
+
+
 def import_(module):
     """Import a module, and issue a nice message to stderr if the module isn't installed.
 
@@ -195,6 +208,13 @@ try:
     del hoomd
 except ImportError:
     has_hoomd  = False
+
+try:
+    import mdtraj
+    has_mdtraj = True
+    del mdtraj 
+except ImportError:
+    has_mdtraj = False
 
 def get_fn(name):
     """Get the full path to one of the reference files shipped for utils.

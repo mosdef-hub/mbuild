@@ -8,8 +8,6 @@ import sys
 import tempfile
 from warnings import warn
 
-import mdtraj as md
-from mdtraj.core.element import get_by_symbol
 import numpy as np
 from oset import oset as OrderedSet
 import parmed as pmd
@@ -26,13 +24,13 @@ from mbuild.formats.lammpsdata import write_lammpsdata
 from mbuild.formats.gsdwriter import write_gsd
 from mbuild.formats.par_writer import write_par
 from mbuild.periodic_kdtree import PeriodicCKDTree
-from mbuild.utils.io import run_from_ipython, import_, has_networkx
+from mbuild.utils.io import run_from_ipython, import_, has_networkx, has_mdtraj
 from mbuild.utils.jsutils import overwrite_nglview_default
 from mbuild.coordinate_transform import _translate, _rotate
 
 
 def load(filename_or_object, relative_to_module=None, compound=None, coords_only=False,
-         rigid=False, use_parmed=False, smiles=False, 
+         rigid=False, use_parmed=True, smiles=False, 
          infer_hierarchy=True, **kwargs):
     """Load a file or an existing topology into an mbuild compound.
 
@@ -79,11 +77,15 @@ def load(filename_or_object, relative_to_module=None, compound=None, coords_only
     # First check if we are loading from an existing parmed or trajectory structure
     type_dict = {
         pmd.Structure:compound.from_parmed,
-        md.Trajectory:compound.from_trajectory,
     }
     try:
         pybel = import_('pybel')
         type_dict.update({pybel.Molecule:compound.from_pybel})
+    except ImportError:
+        pass
+    try:
+        mdtraj = import_('mdtraj')
+        type_dict.update({mdtraj.Trajectory:compound.from_trajectory})
     except ImportError:
         pass
 
@@ -177,7 +179,8 @@ def load(filename_or_object, relative_to_module=None, compound=None, coords_only
         compound.from_pybel(mymol, infer_hierarchy=infer_hierarchy)
 
     else:
-        traj = md.load(filename_or_object, **kwargs)
+        mdtraj = import_('mdtraj')
+        traj = mdtraj.load(filename_or_object, **kwargs)
         compound.from_trajectory(traj, frame=-1, coords_only=coords_only,
                 infer_hierarchy=infer_hierarchy)
 
@@ -1341,6 +1344,7 @@ class Compound(object):
             Visualize Ports in addition to Particles
             """
         nglview = import_('nglview')
+        mdtraj = import_('mdtraj')
         from mdtraj.geometry.sasa import _ATOMIC_RADII
         remove_digits = lambda x: ''.join(i for i in x if not i.isdigit()
                                               or i == '_')
@@ -1785,6 +1789,7 @@ class Compound(object):
         """
 
         openbabel = import_('openbabel')
+        mdtraj = import_('mdtraj')
 
         for particle in self.particles():
             try:
@@ -2129,6 +2134,8 @@ class Compound(object):
         _to_topology
 
         """
+        mdtraj = import_('mdtraj')
+
         atom_list = [particle for particle in self.particles(show_ports)]
 
         top = self._to_topology(atom_list, chains, residues)
@@ -2151,8 +2158,8 @@ class Compound(object):
             unitcell_lengths = box.lengths
             unitcell_angles = box.angles
 
-        return md.Trajectory(xyz, top, unitcell_lengths=unitcell_lengths,
-                             unitcell_angles=unitcell_angles)
+        return mdtraj.Trajectory(xyz, top, unitcell_lengths=unitcell_lengths,
+                                 unitcell_angles=unitcell_angles)
 
     def _to_topology(self, atom_list, chains=None, residues=None):
         """Create a mdtraj.Topology from a Compound.
@@ -2176,7 +2183,7 @@ class Compound(object):
         mdtraj.Topology : Details on the mdtraj Topology object
 
         """
-        from mdtraj.core.topology import Topology
+        mdtraj = import_('mdtraj')
 
         if isinstance(chains, str):
             chains = [chains]
@@ -2187,7 +2194,7 @@ class Compound(object):
             residues = [residues]
         if isinstance(residues, (list, set)):
             residues = tuple(residues)
-        top = Topology()
+        top = mdtraj.core.topology.Topology()
         atom_mapping = {}
 
         default_chain = top.add_chain()
