@@ -82,8 +82,8 @@ def write_gsd(structure, filename, ref_distance=1.0, ref_mass=1.0,
         _write_dihedral_information(gsd_snapshot, structure)
 
 
-    gsd_file = gsd.hoomd.open(filename, mode='wb')
-    gsd_file.append(gsd_snapshot)
+    with gsd.hoomd.open(filename, mode='wb') as gsd_file:
+        gsd_file.append(gsd_snapshot)
 
 
 def _write_particle_information(gsd_snapshot, structure, xyz, ref_distance,
