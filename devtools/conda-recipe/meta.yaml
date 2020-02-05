@@ -23,26 +23,21 @@ requirements:
     - numpy
     - scipy
     - packmol >=1!18.013
-    - nglview >=2.7
     - oset
     - parmed
     - protobuf
-    - mdtraj
 
 test:
   requires:
     - pytest >=3.0
-    - jupyter
-    - nbformat
-    - ipykernel
     - foyer
     - networkx
-    - nbval
+    - mdtraj
 
   commands:
     - set LNAME=mosdef
     - activate
-    - pytest -v --pyargs mbuild --nbval --nbval-lax
+    - pytest -v --pyargs mbuild
 
 about:
   home: http://mosdef-hub.github.io/mbuild
