@@ -48,14 +48,14 @@ def write_gsd(structure, filename, ref_distance=1.0, ref_mass=1.0,
     if shift_coords:
         xyz = coord_shift(xyz, structure.box[:3])
 
-    gsd_file = gsd.hoomd.Snapshot()
+    gsd_snapshot = gsd.hoomd.Snapshot()
 
-    gsd_file.configuration.step = 0
-    gsd_file.configuration.dimensions = 3
+    gsd_snapshot.configuration.step = 0
+    gsd_snapshot.configuration.dimensions = 3
 
     # Write box information
     if np.allclose(structure.box[3:6], np.array([90, 90, 90])):
-        gsd_file.configuration.box = np.hstack((structure.box[:3] / ref_distance,
+        gsd_snapshot.configuration.box = np.hstack((structure.box[:3] / ref_distance,
                                                 np.zeros(3)))
     else:
         a, b, c = structure.box[0:3] / ref_distance
@@ -68,44 +68,46 @@ def write_gsd(structure, filename, ref_distance=1.0, ref_mass=1.0,
         yz = (b*c*np.cos(alpha) - xy*xz) / ly
         lz = np.sqrt(c**2 - xz**2 - yz**2)
 
-        gsd_file.configuration.box = np.array([lx, ly, lz, xy, xz, yz])
+        gsd_snapshot.configuration.box = np.array([lx, ly, lz, xy, xz, yz])
 
-    _write_particle_information(gsd_file, structure, xyz, ref_distance,
+    _write_particle_information(gsd_snapshot, structure, xyz, ref_distance,
             ref_mass, ref_energy, rigid_bodies)
     if write_special_pairs:
-        _write_pair_information(gsd_file, structure)
+        _write_pair_information(gsd_snapshot, structure)
     if structure.bonds:
-        _write_bond_information(gsd_file, structure)
+        _write_bond_information(gsd_snapshot, structure)
     if structure.angles:
-        _write_angle_information(gsd_file, structure)
+        _write_angle_information(gsd_snapshot, structure)
     if structure.rb_torsions:
-        _write_dihedral_information(gsd_file, structure)
+        _write_dihedral_information(gsd_snapshot, structure)
 
 
-    gsd.hoomd.create(filename, gsd_file)
+    with gsd.hoomd.open(filename, mode='wb') as gsd_file:
+        gsd_file.append(gsd_snapshot)
 
-def _write_particle_information(gsd_file, structure, xyz, ref_distance,
+
+def _write_particle_information(gsd_snapshot, structure, xyz, ref_distance,
         ref_mass, ref_energy, rigid_bodies):
     """Write out the particle information.
 
     """
 
-    gsd_file.particles.N = len(structure.atoms)
-    gsd_file.particles.position = xyz / ref_distance
+    gsd_snapshot.particles.N = len(structure.atoms)
+    gsd_snapshot.particles.position = xyz / ref_distance
 
     types = [atom.name if atom.type == '' else atom.type
              for atom in structure.atoms]
 
     unique_types = list(set(types))
     unique_types.sort(key=natural_sort)
-    gsd_file.particles.types = unique_types
+    gsd_snapshot.particles.types = unique_types
 
     typeids = np.array([unique_types.index(t) for t in types])
-    gsd_file.particles.typeid = typeids
+    gsd_snapshot.particles.typeid = typeids
 
     masses = np.array([atom.mass for atom in structure.atoms])
     masses[masses==0] = 1.0
-    gsd_file.particles.mass = masses / ref_mass
+    gsd_snapshot.particles.mass = masses / ref_mass
 
     charges = np.array([atom.charge for atom in structure.atoms])
     e0 = 2.39725e-4
@@ -114,18 +116,18 @@ def _write_particle_information(gsd_file, structure, xyz, ref_distance,
     where e is the elementary charge
     '''
     charge_factor = (4.0*np.pi*e0*ref_distance*ref_energy)**0.5
-    gsd_file.particles.charge = charges / charge_factor
+    gsd_snapshot.particles.charge = charges / charge_factor
 
     if rigid_bodies:
         rigid_bodies = [-1 if body is None else body for body in rigid_bodies]
-    gsd_file.particles.body = rigid_bodies
+    gsd_snapshot.particles.body = rigid_bodies
 
-def _write_pair_information(gsd_file, structure):
+def _write_pair_information(gsd_snapshot, structure):
     """Write the special pairs in the system.
 
         Parameters
     ----------
-    gsd_file :
+    gsd_snapshot :
         The file object of the GSD file being written
     structure : parmed.Structure
         Parmed structure object holding system information
@@ -142,24 +144,24 @@ def _write_pair_information(gsd_file, structure):
                     pair_types.append(ps)
                 pair_typeid.append(pair_types.index(ps))
                 pairs.append((ai.idx, aj.idx))
-    gsd_file.pairs.types = pair_types
-    gsd_file.pairs.typeid = pair_typeid
-    gsd_file.pairs.group = pairs
-    gsd_file.pairs.N = len(pairs)
+    gsd_snapshot.pairs.types = pair_types
+    gsd_snapshot.pairs.typeid = pair_typeid
+    gsd_snapshot.pairs.group = pairs
+    gsd_snapshot.pairs.N = len(pairs)
 
-def _write_bond_information(gsd_file, structure):
+def _write_bond_information(gsd_snapshot, structure):
     """Write the bonds in the system.
 
     Parameters
     ----------
-    gsd_file :
+    gsd_snapshot :
         The file object of the GSD file being written
     structure : parmed.Structure
         Parmed structure object holding system information
 
     """
 
-    gsd_file.bonds.N = len(structure.bonds)
+    gsd_snapshot.bonds.N = len(structure.bonds)
 
     unique_bond_types = set()
     for bond in structure.bonds:
@@ -173,7 +175,7 @@ def _write_bond_information(gsd_file, structure):
             bond_type = ('-'.join((t1, t2)), 0.0, 0.0)
         unique_bond_types.add(bond_type)
     unique_bond_types = sorted(list(unique_bond_types), key=natural_sort)
-    gsd_file.bonds.types = unique_bond_types
+    gsd_snapshot.bonds.types = unique_bond_types
 
     bond_typeids = []
     bond_groups = []
@@ -189,22 +191,22 @@ def _write_bond_information(gsd_file, structure):
         bond_typeids.append(unique_bond_types.index(bond_type))
         bond_groups.append((bond.atom1.idx, bond.atom2.idx))
 
-    gsd_file.bonds.typeid = bond_typeids
-    gsd_file.bonds.group = bond_groups
+    gsd_snapshot.bonds.typeid = bond_typeids
+    gsd_snapshot.bonds.group = bond_groups
 
-def _write_angle_information(gsd_file, structure):
+def _write_angle_information(gsd_snapshot, structure):
     """Write the angles in the system.
 
     Parameters
     ----------
-    gsd_file :
+    gsd_snapshot :
         The file object of the GSD file being written
     structure : parmed.Structure
         Parmed structure object holding system information
 
     """
 
-    gsd_file.angles.N = len(structure.angles)
+    gsd_snapshot.angles.N = len(structure.angles)
 
     unique_angle_types = set()
     for angle in structure.angles:
@@ -213,7 +215,7 @@ def _write_angle_information(gsd_file, structure):
         angle_type = ('-'.join((t1, t2, t3)))
         unique_angle_types.add(angle_type)
     unique_angle_types = sorted(list(unique_angle_types), key=natural_sort)
-    gsd_file.angles.types = unique_angle_types
+    gsd_snapshot.angles.types = unique_angle_types
 
     angle_typeids = []
     angle_groups = []
@@ -225,22 +227,22 @@ def _write_angle_information(gsd_file, structure):
         angle_groups.append((angle.atom1.idx, angle.atom2.idx,
                              angle.atom3.idx))
 
-    gsd_file.angles.typeid = angle_typeids
-    gsd_file.angles.group = angle_groups
+    gsd_snapshot.angles.typeid = angle_typeids
+    gsd_snapshot.angles.group = angle_groups
 
-def _write_dihedral_information(gsd_file, structure):
+def _write_dihedral_information(gsd_snapshot, structure):
     """Write the dihedrals in the system.
 
     Parameters
     ----------
-    gsd_file :
+    gsd_snapshot :
         The file object of the GSD file being written
     structure : parmed.Structure
         Parmed structure object holding system information
 
     """
 
-    gsd_file.dihedrals.N = len(structure.rb_torsions)
+    gsd_snapshot.dihedrals.N = len(structure.rb_torsions)
 
     unique_dihedral_types = set()
     for dihedral in structure.rb_torsions:
@@ -252,7 +254,7 @@ def _write_dihedral_information(gsd_file, structure):
             dihedral_type = ('-'.join((t4, t3, t2, t1)))
         unique_dihedral_types.add(dihedral_type)
     unique_dihedral_types = sorted(list(unique_dihedral_types), key=natural_sort)
-    gsd_file.dihedrals.types = unique_dihedral_types
+    gsd_snapshot.dihedrals.types = unique_dihedral_types
 
     dihedral_typeids = []
     dihedral_groups = []
@@ -267,5 +269,5 @@ def _write_dihedral_information(gsd_file, structure):
         dihedral_groups.append((dihedral.atom1.idx, dihedral.atom2.idx,
                                 dihedral.atom3.idx, dihedral.atom4.idx))
 
-    gsd_file.dihedrals.typeid = dihedral_typeids
-    gsd_file.dihedrals.group = dihedral_groups
+    gsd_snapshot.dihedrals.typeid = dihedral_typeids
+    gsd_snapshot.dihedrals.group = dihedral_groups
