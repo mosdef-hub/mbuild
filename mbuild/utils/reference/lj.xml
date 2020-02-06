@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ForceField >
+  <!--XML units: kJ/mol for energies, nm for lengths, and radians for angles.-->
+  <AtomTypes>
+    <Type name="Ar" class="Ar" element="Ar" mass="39.948" def="[Ar]" desc="LJ Argon"/>
+  </AtomTypes>
+  <HarmonicBondForce>
+  </HarmonicBondForce>
+  <HarmonicAngleForce/>
+  <RBTorsionForce>
+  </RBTorsionForce>
+  <NonbondedForce coulomb14scale="0.0" lj14scale="0.0">
+    <Atom type="Ar" charge="0" sigma="0.34" epsilon="1.00"/>
+  </NonbondedForce>
+</ForceField>

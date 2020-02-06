@@ -3,10 +3,12 @@ import difflib
 import numpy as np
 import pytest
 
+import mbuild as mb
 from mbuild.tests.base_test import BaseTest
 from mbuild.utils.io import get_fn, import_
 from mbuild.utils.validation import assert_port_exists
 from mbuild.utils.jsutils import overwrite_nglview_default
+from mbuild.utils.geometry import wrap_coords
 
 
 class TestUtils(BaseTest):
@@ -16,11 +18,14 @@ class TestUtils(BaseTest):
         with pytest.raises(ValueError):
             assert_port_exists('dog', ch2)
 
-    def test_structure_reproducibility(self, alkane_monolayer):
-        filename = 'monolayer-tmp.pdb'
-        alkane_monolayer.save(filename)
-        with open(get_fn('monolayer.pdb')) as file1:
-            with open('monolayer-tmp.pdb') as file2:
+    @pytest.mark.xfail(strict=False)
+    def test_structure_reproducibility(self):
+        from mbuild.lib.recipes import Alkane
+        filename = 'decane-tmp.xyz'
+        decane = Alkane(10)
+        decane.save(filename)
+        with open(get_fn('decane.xyz')) as file1:
+            with open(filename) as file2:
                 diff = difflib.ndiff(file1.readlines(), file2.readlines())
         changes = [l for l in diff if l.startswith('+ ') or l.startswith('- ')]
         assert not changes
@@ -110,3 +115,22 @@ class TestUtils(BaseTest):
                     });
                 """
             ]
+
+    def test_coord_wrap(self):
+        xyz = np.array([[3, 3, 1],
+                        [1, 1, 0]])
+        box = [2,2,2]
+        new_xyz = wrap_coords(xyz, box)
+        assert (new_xyz[1,:] == xyz[1,:]).all()
+        assert (new_xyz[0,:] == np.array([1,1,1])).all()
+
+    def test_coord_wrap_box(self):
+        xyz = np.array([[3, 3, 1],
+                        [1, 1, 0]])
+
+        box = mb.Box(mins=[-2.0,-2.0,-2.0], maxs=[2.0,2.0,2.0])
+
+        new_xyz = wrap_coords(xyz, box)
+
+        assert (new_xyz[0,:] == np.array([-1,-1,1])).all()
+        assert (new_xyz[1,:] == xyz[1,:]).all()

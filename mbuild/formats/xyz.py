@@ -3,7 +3,7 @@ import numpy as np
 import mbuild as mb
 from mbuild.exceptions import MBuildError
 
-__all__ = ['read_xyz']
+__all__ = ['read_xyz', 'write_xyz']
 
 
 def read_xyz(filename, compound=None):
@@ -25,7 +25,7 @@ def read_xyz(filename, compound=None):
 
     Notes
     -----
-    The XYZ file format neglects many important details, notably as bonds,
+    The XYZ file format neglects many important details, including bonds,
     residues, and box information.
 
     There are some other flavors of the XYZ file format and not all are
@@ -61,3 +61,38 @@ def read_xyz(filename, compound=None):
             raise MBuildError(msg.format(n_atoms))
 
     return compound
+
+
+def write_xyz(structure, filename):
+    """Output an XYZ file.
+
+    Parameters
+    ----------
+    structure : parmed.Structure
+        ParmEd structure object
+    filename : str
+        Path of the output file
+
+    Notes
+    -----
+    Coordatates are written in Angstroms. This follows the convention for the
+    XYZ file format.
+
+    The XYZ file format neglects many important details, notably as bonds,
+    residues, and box information.
+
+    """
+
+    if isinstance(structure, mb.Compound):
+        raise ValueError(
+            'Expected a ParmEd structure, got an mbuild.Compound'
+        )
+
+    xyz = np.array([[atom.xx, atom.xy, atom.xz] for atom in structure.atoms])
+    types = [atom.name for atom in structure.atoms]
+
+    with open(filename, 'w') as xyz_file:
+        xyz_file.write(str(len(structure.atoms)))
+        xyz_file.write('\n' + filename+' - created by mBuild\n')
+        for typ, coords in zip(types, xyz):
+            xyz_file.write('{:s} {:11.6f} {:11.6f} {:11.6f}\n'.format(typ, *coords))

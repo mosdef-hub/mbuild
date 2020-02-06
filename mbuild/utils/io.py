@@ -15,8 +15,6 @@
 # You should have received a copy of the GNU Lesser General Public
 # License along with MDTraj. If not, see <http://www.gnu.org/licenses/>.
 ##############################################################################
-from __future__ import division, print_function
-
 import inspect
 import importlib
 import os
@@ -78,6 +76,17 @@ or
 # pip install foyer
 '''
 
+MESSAGES['protobuf'] = ''' 
+The code at {filename}:{line_number} requires the "protobuf" package
+
+protobuf can be installed using:
+
+# conda install -c anaconda protobuf
+
+or 
+
+# pip install protobuf
+'''
 
 def import_(module):
     """Import a module, and issue a nice message to stderr if the module isn't installed.
