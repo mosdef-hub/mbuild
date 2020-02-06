@@ -64,7 +64,7 @@ jobs:
       - bash: |
           source activate test-environment
           pip install pytest-azurepipelines
-          python -m pytest -v --nbval --nbval-lax --pyargs mbuild --cov=mbuild --no-coverage-upload
+          python -m pytest -v --pyargs mbuild --cov=mbuild --no-coverage-upload
         displayName: Run Tests
         
       - bash: |
@@ -125,7 +125,7 @@ jobs:
       - script: |
           call activate test-environment
           python -m pip install pytest-azurepipelines
-          python -m pytest -v --nbval --nbval-lax --cov=mbuild --cov-report=html --pyargs mbuild --no-coverage-upload
+          python -m pytest -v --cov=mbuild --cov-report=html --pyargs mbuild --no-coverage-upload
         displayName: Run Tests
 
   - job: LinuxBleedingFoyer
@@ -166,5 +166,5 @@ jobs:
       - bash: |
           source activate bleeding-test-environment
           pip install pytest-azurepipelines
-          python -m pytest -v --nbval --nbval-lax --cov=mbuild --cov-report= --pyargs mbuild --no-coverage-upload
+          python -m pytest -v --cov=mbuild --cov-report= --pyargs mbuild --no-coverage-upload
         displayName: Run Tests
