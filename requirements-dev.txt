@@ -10,7 +10,5 @@ openbabel
 networkx
 pytest >=3.0
 pytest-cov
-pytest-faulthandler
 codecov
 protobuf
-py3Dmol
