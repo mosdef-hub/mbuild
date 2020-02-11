@@ -1,14 +1,63 @@
-from collections import defaultdict
 import itertools as it
+import pathlib
+from collections import defaultdict
 from warnings import warn
 
+import CifFile
 import numpy as np
-
 
 import mbuild as mb
 
-__all__ = ['Lattice']
+__all__ = ['load_cif','Lattice']
 
+
+def load_cif(file_or_path=None):
+    """Load a CifFile object into memory, return an mbuild.Lattice.
+    """
+
+    assert isinstance(file_or_path, str) or isinstance(file_or_path, pathlib.Path)
+    cif_location = pathlib.Path(file_or_path)
+
+    my_cif = CifFile.ReadCif(filename=str(cif_location.absolute()))
+    lattice_spacing = _get_lattice_spacing(cif_object=my_cif)
+    angles = _get_bravais_angles(cif_object=my_cif)
+    lattice_points = _get_lattice_points(cif_object=my_cif)
+    return Lattice(lattice_spacing=lattice_spacing, angles=angles, lattice_points=lattice_points)
+
+
+def _get_lattice_spacing(cif_object=None):
+    assert isinstance(cif_object, CifFile.CifFile)
+    spacing_keys = ['_cell_length_a', '_cell_length_b', '_cell_length_c']
+    spacings = list()
+
+    for my_spacing in spacing_keys:
+        spacings.append(cif_object['global'][my_spacing])
+
+    return np.asarray(spacings, dtype=np.float)
+
+
+def _get_bravais_angles(cif_object=None):
+    assert isinstance(cif_object, CifFile.CifFile)
+    angle_keys = ['_cell_angle_alpha', '_cell_angle_beta', '_cell_angle_gamma']
+    angles = list()
+
+    for my_angle in angle_keys:
+        angles.append(cif_object['global'][my_angle])
+
+    return np.asarray(angles, dtype=np.float)
+
+def _get_lattice_points(cif_object=None):
+    assert isinstance(cif_object, CifFile.CifFile)
+
+    atom_site_label = cif_object['global']['_atom_site_label']
+    fract_x_pos = cif_object['global']['_atom_site_fract_x']
+    fract_y_pos = cif_object['global']['_atom_site_fract_y']
+    fract_z_pos = cif_object['global']['_atom_site_fract_z']
+    lattice_points = dict()
+    for label, x_pos, y_pos, z_pos in zip(atom_site_label, fract_x_pos, fract_y_pos, fract_z_pos):
+        lattice_points[label] = [[float(x_pos), float(y_pos), float(z_pos)]]
+
+    return lattice_points
 
 class Lattice(object):
     """Develop crystal structure from user defined inputs.

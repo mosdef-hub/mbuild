@@ -76,6 +76,14 @@ or
 # pip install foyer
 '''
 
+MESSAGES['CifFile'] = '''
+The code at {filename}:{line_number} requires the "pycifrw" package
+
+pycifrw can be installed with conda using:
+
+# conda install -c conda-forge pycifrw
+'''
+
 
 def import_(module):
     """Import a module, and issue a nice message to stderr if the module isn't installed.
@@ -184,6 +192,13 @@ try:
     del hoomd
 except ImportError:
     has_hoomd  = False
+
+try:
+    import CifFile
+    has_pycifrw = True
+    del CifFile
+except ImportError:
+    has_pycifrw = False
 
 def get_fn(name):
     """Get the full path to one of the reference files shipped for utils.
