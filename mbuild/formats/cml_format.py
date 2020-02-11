@@ -55,27 +55,29 @@ def compound_to_cml(cmpd, file_path, include_ports=False):
     file_path: str, path to save the cml file
 
     """
+    root = ET.Element("molecules", nsmap={None:"http://www.xml-cml.org/schema",
+                                          "cml":"http://www.xml-cml.org/dict/cml",
+                                          "units":"http://www.xml-cml.org/units/units",
+                                          "xsd":"http://www.w3c.org/2001/XMLSchema",
+                                          "iupac":"http://www.iupac.org"})
     root = ET.Element('molecule')
     _write_atoms(cmpd, root, cmpd.particles())
     _write_bonds(cmpd, root, cmpd.bonds())
 
-def _write_atoms(cmpd, root, atoms):
+def _write_atoms(self, root, atoms):
     atomArray = ET.SubElement(root, 'atomArray')
-    atom_attrs = collections.OrderedDict([
-        ('id', 'id(atom)'),
-        ('elementType', 'atom.name'),
-        ('x3', 'atom.xyz[0]'),
-        ('y3', 'atom.xyz[1]'),
-        ('z3', 'atom.xyz[2]')
-    ])
     for atom in atoms:
-        _atom = ET.SubElement(atomArray, 'atom')
-        for key, val in atom_attrs.items():
-            
-            
+        atom_cml = ET.SubElement(atom, 'atom')
+        atom_cml.set('id', str(id(atom)))
+        atom_cml.set('elementType', atom.name)
+        atom_cml.set('x3', str(round(atom.xyz[0][0],5)))
+        atom_cml.set('y3', str(round(atom.xyz[0][1],5)))
+        atom_cml.set('z3', str(round(atom.xyz[0][2],5)))
+
 
 def _write_bonds(self, root, bonds):
     bondArray = ET.SubElement(root, 'bondArray')
-    bondArray_attrs = collections.OrderedDict([
-        ('atomRefs2', compound_id)]
-        ('order', bond_order)]
+    for bond in bonds:
+        bond_cml = ET.SubElement(bond, 'bond')
+        bond_cml.set('atomRefs2', (str(id(bond[0]))+' '+str(id(bond[1]))))
+        bond_cml.set('order', 'None')
