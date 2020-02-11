@@ -31,6 +31,7 @@ MOCK_MODULES = ['numpy',
                 'parmed.periodic_table',
                 'scipy',
                 'scipy.spatial',
+                'scipy.constants',
                 'numpy.linalg']
 for mod_name in MOCK_MODULES:
     sys.modules[mod_name] = mock.Mock()

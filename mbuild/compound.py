@@ -19,7 +19,7 @@ from mbuild.bond_graph import BondGraph
 from mbuild.box import Box
 from mbuild.exceptions import MBuildError
 from mbuild.utils.decorators import deprecated
-from mbuild.formats.xyz import read_xyz
+from mbuild.formats.xyz import read_xyz, write_xyz
 from mbuild.formats.json_formats import compound_to_json, compound_from_json
 from mbuild.formats.hoomdxml import write_hoomdxml
 from mbuild.formats.lammpsdata import write_lammpsdata
@@ -124,6 +124,20 @@ def load(filename_or_object, relative_to_module=None, compound=None, coords_only
                 particle.pos = ref_particle.pos
         else:
             compound = read_xyz(filename_or_object, compound=compound)
+        return compound
+
+    if extension == '.sdf':
+        pybel = import_('pybel')
+        pybel_mol = pybel.readfile('sdf', filename_or_object)
+        # pybel returns a generator, so we grab the first molecule of a list of len 1
+        # Raise ValueError user if there are more molecules
+        pybel_mol = [i for i in pybel_mol]
+        if len(pybel_mol) == 1:
+            compound.from_pybel(pybel_mol[0])
+        else:
+            compound.from_pybel(pybel_mol[0])
+            raise ValueError("More than one pybel molecule in file, more than one pybel "
+                 "molecule is not supported, using {}".format(filename_or_object))
         return compound
 
     if use_parmed:
@@ -1875,6 +1889,11 @@ class Compound(object):
             styles are currently supported: 'full', 'atomic', 'charge', 'molecular'
             see http://lammps.sandia.gov/doc/atom_style.html for more
             information on atom styles.
+        unit_style: str, default='real'
+            Defines to unit style to be save in a LAMMPS data file.  Defaults to 'real' units.
+            Current styles are supported: 'real', 'lj'
+            see https://lammps.sandia.gov/doc/99/units.html for more information
+            on unit styles
 
         Notes
         ------
@@ -1886,16 +1905,13 @@ class Compound(object):
         --------
         formats.gsdwrite.write_gsd : Write to GSD format
         formats.hoomdxml.write_hoomdxml : Write to Hoomd XML format
+        formats.xyzwriter.write_xyz : Write to XYZ format
         formats.lammpsdata.write_lammpsdata : Write to LAMMPS data format
         formats.cassandramcf.write_mcf : Write to Cassandra MCF format
         formats.json_formats.compound_to_json : Write to a json file
 
         """
         extension = os.path.splitext(filename)[-1]
-        if extension == '.xyz':
-            traj = self.to_trajectory(show_ports=show_ports)
-            traj.save(filename)
-            return
 
         if extension == '.json':
             compound_to_json(self,
@@ -1906,6 +1922,7 @@ class Compound(object):
         # Savers supported by mbuild.formats
         savers = {'.hoomdxml': write_hoomdxml,
                   '.gsd': write_gsd,
+                  '.xyz': write_xyz,
                   '.lammps': write_lammpsdata,
                   '.lmp': write_lammpsdata,
                   '.par': write_par,}
@@ -1950,6 +1967,20 @@ class Compound(object):
                 kwargs['rigid_bodies'] = [
                         p.rigid_id for p in self.particles()]
             saver(filename=filename, structure=structure, **kwargs)
+
+        elif extension == '.sdf':
+            pybel = import_('pybel')
+            new_compound = Compound()
+            # Convert pmd.Structure to mb.Compound
+            new_compound.from_parmed(structure)
+            # Convert mb.Compound to pybel molecule
+            pybel_molecule = new_compound.to_pybel()
+            # Write out pybel molecule to SDF file
+            output_sdf = pybel.Outputfile("sdf", filename,
+                    overwrite=overwrite)
+            output_sdf.write(pybel_molecule)
+            output_sdf.close()
+
         else:  # ParmEd supported saver.
             structure.save(filename, overwrite=overwrite, **kwargs)
 
@@ -2445,8 +2476,10 @@ class Compound(object):
                 if not val:
                     box_vec_max[dim] += 0.25
                     box_vec_min[dim] -= 0.25
-            box.mins = np.asarray(box_vec_min)
+            # In rare cases `AssertionError` will be raised if `mins` is set before `maxs`
+            # As a result, set `maxs` before `mins`
             box.maxs = np.asarray(box_vec_max)
+            box.mins = np.asarray(box_vec_min)
 
         box_vector = np.empty(6)
         if box.angles is not None:
