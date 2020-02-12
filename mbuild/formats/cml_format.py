@@ -1,5 +1,4 @@
 from lxml import etree as ET
-import collection
 
 import mbuild as mb
 from mbuild.exceptions import MBuildError 
@@ -29,22 +28,25 @@ def compound_from_cml(cml_file):
     # either do some type scanning or do partial string matching. 
     compound_tree = ET.parse(cml_file)
     compound_root = compound_tree.getroot()
-    moleculeArray = tree.find("{http://www.xml-cml.org/schema}atomArray")
-    bondArray = tree.find("{http://www.xml-cml.org/schema}bondArray")
+    moleculeArray = compound_tree.find("{http://www.xml-cml.org/schema}atomArray")
+    bondArray = compound_tree.find("{http://www.xml-cml.org/schema}bondArray")
 
     compound = mb.Compound()
     particles_dict = {}
     for molecule in moleculeArray:
-        xyz = [child.attrib['x3'], child.attrib['y3'], child.attrib['z3']]
-        particle = mb.Particle(name=child.attrib['elementType'], pos=xyz)
-        particles_dict[child.attrib['id']] = particle
+        xyz = [molecule.attrib['x3'], molecule.attrib['y3'], molecule.attrib['z3']]
+        particle = mb.Particle(name=molecule.attrib['elementType'], pos=xyz)
+        particles_dict[molecule.attrib['id']] = particle
         compound.add(particle)
 
     for bond in bondArray:
-        atom1, atom2 = child.attrib['atomRefs2'].split()
+        atom1, atom2 = bond.attrib['atomRefs2'].split()
         compound.add_bond((particles_dict[atom1], particles_dict[atom2]))
-        
-def compound_to_cml(cmpd, file_path, include_ports=False):
+       
+    return compound
+
+ 
+def compound_to_cml(cmpd, file_path):
     """Convert the mb.Compound into equivelent json representation
 
     This method takes in the mb.Compound and tries to save the
@@ -60,14 +62,17 @@ def compound_to_cml(cmpd, file_path, include_ports=False):
                                           "units":"http://www.xml-cml.org/units/units",
                                           "xsd":"http://www.w3c.org/2001/XMLSchema",
                                           "iupac":"http://www.iupac.org"})
-    root = ET.Element('molecule')
     _write_atoms(cmpd, root, cmpd.particles())
     _write_bonds(cmpd, root, cmpd.bonds())
+
+    tree = ET.ElementTree(root)
+    tree.write(file_path, pretty_print=True, xml_declaration=True, encoding="utf-8")
+
 
 def _write_atoms(self, root, atoms):
     atomArray = ET.SubElement(root, 'atomArray')
     for atom in atoms:
-        atom_cml = ET.SubElement(atom, 'atom')
+        atom_cml = ET.SubElement(atomArray, 'atom')
         atom_cml.set('id', str(id(atom)))
         atom_cml.set('elementType', atom.name)
         atom_cml.set('x3', str(round(atom.xyz[0][0],5)))
@@ -78,6 +83,6 @@ def _write_atoms(self, root, atoms):
 def _write_bonds(self, root, bonds):
     bondArray = ET.SubElement(root, 'bondArray')
     for bond in bonds:
-        bond_cml = ET.SubElement(bond, 'bond')
+        bond_cml = ET.SubElement(bondArray, 'bond')
         bond_cml.set('atomRefs2', (str(id(bond[0]))+' '+str(id(bond[1]))))
         bond_cml.set('order', 'None')
