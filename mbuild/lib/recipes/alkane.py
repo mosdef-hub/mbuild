@@ -14,7 +14,7 @@ class Alkane(mb.Compound):
             cap_front: Add methyl group to beginning of chain ('down' port).
             cap_end: Add methyl group to end of chain ('up' port).
         """
-        if n < 2:
+        if n < 1:
             raise ValueError('n must be 1 or more')
         super(Alkane, self).__init__()
 
