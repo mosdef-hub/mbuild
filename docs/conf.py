@@ -76,16 +76,15 @@ nbsphinx_allow_errors = False
 
 nbsphinx_prolog = r"""
 {% set docname = 'docs/' + env.doc2path(env.docname, base=None) %}
+.. raw:: html
 
-.. only:: html
-    .. role:: raw-html(raw)
-         :format: html
-
-    .. nbinfo::
-
-      This page was generated from `{{ docname }}`__.
-
-    __ https://github.com/mosdef-hub/mbuild/blob/{{ env.config.release }}/{{ docname }}
+  <div class="admonition note">
+      <p>This page was generated from
+        <a class="reference external" href="https://github.com/mosdef-hub/mbuild/blob/{{ env.config.release|e }}/{{ docname|e }}">{{ docname|e }}</a>.
+        <br>Interactive online version:
+        <a href="https://mybinder.org/v2/gh/mosdef-hub/mbuild_tutorials/master?filepath={{ docname|e }}"><img alt="Binder badge" src="https://mybinder.org/badge_logo.svg" style="vertical-align:text-bottom"></a>.
+      </p>
+    </div>
 
 .. raw:: latex
 
