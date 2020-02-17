@@ -1,5 +1,5 @@
 mBuild
-======
+=======
 *A hierarchical, component based molecule builder*
 
 With just a few lines of mBuild code, you can assemble reusable components into
@@ -13,8 +13,9 @@ complex molecular systems for molecular simulations.
   worry about manually defining bonds when constructing chemically bonded
   structures from smaller components.
 
+
 Example system
---------------
+---------------
 
 Components in dashed boxes are drawn by hand using, e.g.,
 `Avogadro <http://avogadro.cc>`_ or generated elsewhere. Each
@@ -33,7 +34,6 @@ by adjusting a variable::
 
 .. image:: images/pmpc.png
     :align: center
-    :scale: 50%
     :alt: Zwitterionic brushes on beta-cristobalite substrate
 
 .. image:: https://img.shields.io/badge/license-MIT-blue.svg
@@ -44,31 +44,10 @@ different licenses. See those files for their specific terms.
 
 
 .. toctree::
-   :hidden:
-
-   installation
-
-.. toctree::
-   :hidden:
-
-   tutorials/tutorials
-
-.. toctree::
-   :hidden:
-
-   data_structures
-
-.. toctree::
-   :hidden:
-
-   coordinate_transforms
-
-.. toctree::
-   :hidden:
-
-   recipes
-
-.. toctree::
-   :hidden:
-
-   citing_mbuild
+    installation
+    tutorials/tutorials
+    data_structures
+    coordinate_transforms
+    recipes
+    citing_mbuild
+    older_documentation
