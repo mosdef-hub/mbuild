@@ -1,6 +1,7 @@
 ==========================
 Coordinate transformations
 ==========================
+The following utility functions provide mechanisms for spatial transformations for mbuild compounds:
 
 .. autofunction:: mbuild.coordinate_transform.force_overlap
 
