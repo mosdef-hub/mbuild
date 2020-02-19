@@ -1,6 +1,6 @@
-==============
-Data Structure
-==============
+===============
+Data Structures
+===============
 
 The primary building blocks in an mBuild hierarchy inherit from the
 ``Compound`` class.  ``Compounds`` maintain an ordered set of ``children``
