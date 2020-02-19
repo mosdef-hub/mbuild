@@ -17,6 +17,11 @@ after which you can simply install without specifying the channels::
     $ conda install mbuild
 
 .. note::
+    The order in which channels are added matters: ``conda-forge`` should
+    be the highest priority as a result of being added last. In your ``.condarc``
+    file, it should be listed first.
+
+.. note::
     The `MDTraj website <http://mdtraj.org/latest/new_to_python.html>`_ makes a
     nice case for using Python and in particular the
     `Anaconda scientific python distribution <http://continuum.io/downloads>`_
