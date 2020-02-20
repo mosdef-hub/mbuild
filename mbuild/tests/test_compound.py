@@ -70,7 +70,7 @@ class TestCompound(BaseTest):
         ch3.update_coordinates(get_fn("methyl.pdb"))
 
     def test_save_simple(self, ch3):
-        extensions = ['.xyz', '.pdb', '.mol2', '.json']
+        extensions = ['.xyz', '.pdb', '.mol2', '.json', '.sdf']
         for ext in extensions:
             outfile = 'methyl_out' + ext
             ch3.save(filename=outfile)
@@ -84,7 +84,7 @@ class TestCompound(BaseTest):
         assert len(ethane.children) == len(ethane_copy.children)
 
     def test_save_box(self, ch3):
-        extensions = ['.mol2', '.pdb', '.hoomdxml', '.gro']
+        extensions = ['.mol2', '.pdb', '.hoomdxml', '.gro', '.sdf']
         box_attributes = ['mins', 'maxs', 'lengths']
         custom_box = mb.Box([.8, .8, .8])
         for ext in extensions:
@@ -111,7 +111,7 @@ class TestCompound(BaseTest):
     @pytest.mark.skipif(not has_foyer, reason="Foyer is not installed")
     def test_save_forcefield(self, methane):
         exts = ['.gsd', '.hoomdxml', '.lammps', '.lmp', '.top', '.gro',
-                '.mol2', '.pdb', '.xyz']
+                '.mol2', '.pdb', '.xyz', '.sdf']
         for ext in exts:
             methane.save('lythem' + ext,
                          forcefield_name='oplsaa',
@@ -120,7 +120,7 @@ class TestCompound(BaseTest):
     @pytest.mark.skipif(not has_foyer, reason="Foyer is not installed")
     def test_save_forcefield_with_file(self, methane):
         exts = ['.gsd', '.hoomdxml', '.lammps', '.lmp', '.top', '.gro',
-                '.mol2', '.pdb', '.xyz']
+                '.mol2', '.pdb', '.xyz', '.sdf']
         for ext in exts:
             methane.save('lythem' + ext,
                          forcefield_files=get_fn('methane_oplssaa.xml'),
@@ -167,7 +167,7 @@ class TestCompound(BaseTest):
         assert struct.residues[1].number ==  2
 
     def test_save_residue_map(self, methane):
-        filled = mb.fill_box(methane, n_compounds=100, box=[0, 0, 0, 4, 4, 4])
+        filled = mb.fill_box(methane, n_compounds=10, box=[0, 0, 0, 4, 4, 4])
         t0 = time.time()
         filled.save('filled.mol2', forcefield_name='oplsaa', residues='Methane')
         t1 = time.time()
@@ -439,27 +439,23 @@ class TestCompound(BaseTest):
         assert len(list(parent.ancestors())) == 0
         assert next(parent.particles_by_name('A')) == part
 
+    @pytest.mark.skipif(not has_openbabel, reason="Open Babel package not installed")
     def test_reload(self):
-        from mbuild.examples.pmpc.brush import Brush
-        from numpy import pi
         # Create a compound and write it to file.
-        brush1 = Brush()
-        brush1.save("brush1.pdb")
+        p3ht1= mb.load('CCCCCCC1=C(SC(=C1)C)C', smiles=True)
+        p3ht1.save("p3ht1.pdb")
 
         # Create another compound, rotate it and write it to file.
-        brush2 = Brush()
-        mb.rotate(brush2, pi/2, [0, 0, 1])
-        brush2.save("brush2.pdb")
+        p3ht2 = mb.load('CCCCCCC1=C(SC(=C1)C)C', smiles=True)
+        mb.rotate(p3ht2, np.pi / 2, [0, 0, 1])
+        p3ht2.save("p3ht2.pdb")
 
-        # Load brush2.pdb into brush1, modifying the atom positions of brush1.
-        brush1.update_coordinates("brush2.pdb")
-        brush1.save("modified_brush1.pdb")
+        # Load p3ht2.pdb into p3ht1, modifying the atom positions of p3ht1.
+        p3ht1.update_coordinates("p3ht2.pdb")
+        p3ht1.save("modified_p3ht1.pdb")
 
-        assert brush1['pmpc'].n_particles == 164
-        assert brush1['pmpc'].n_bonds == 163
-        assert len(brush1['pmpc']['monomer']) == 4
-        assert brush1['pmpc']['monomer'][0].n_particles == 41
-        assert brush1['pmpc']['monomer'][0].n_bonds == 40
+        assert p3ht1.n_particles == 33
+        assert p3ht1.n_bonds == 33
 
     @pytest.mark.parametrize('extension', [('.xyz'), ('.pdb'), ('.mol2'), ('.gro')])
     def test_update_coordinates(self, ethane, extension):
@@ -1064,20 +1060,22 @@ class TestCompound(BaseTest):
        cmpd.from_pybel(pybel_mol)
        assert 'LIG1' in cmpd.children[0].name
 
+    @pytest.mark.parametrize('extension', ['pdb', 'sdf'])
     @pytest.mark.skipif(not has_openbabel, reason="Pybel is not installed")
-    def test_from_pybel_monolayer(self):
+    def test_from_pybel_molecule(self, extension):
         pybel = import_('pybel')
-        monolayer = list(pybel.readfile('pdb', get_fn('monolayer.pdb')))[0]
+        chol = list(pybel.readfile(extension,
+            get_fn('cholesterol.{}'.format(extension))))[0]
         # TODO: Actually store the box information
         cmpd = mb.Compound()
-        cmpd.from_pybel(monolayer)
-        assert monolayer.OBMol.NumAtoms() == cmpd.n_particles
-        assert monolayer.OBMol.NumBonds() == cmpd.n_bonds
-        first_atom = monolayer.OBMol.GetAtom(1)
+        cmpd.from_pybel(chol)
+        assert chol.OBMol.NumAtoms() == cmpd.n_particles
+        assert chol.OBMol.NumBonds() == cmpd.n_bonds
+        first_atom = chol.OBMol.GetAtom(1)
         assert np.allclose(cmpd[0].pos, [first_atom.GetX()/10, first_atom.GetY()/10, first_atom.GetZ()/10])
         #assert np.allclose(box.lengths,
-        #        [monolayer.unitcell.GetA()/10, monolayer.unitcell.GetB()/10,
-        #            monolayer.unitcell.GetC()/10],
+        #        [chol.unitcell.GetA()/10, chol.unitcell.GetB()/10,
+        #            chol.unitcell.GetC()/10],
         #        rtol=1e-3)
 
     @pytest.mark.skipif(not has_openbabel, reason="Pybel is not installed")
@@ -1086,3 +1084,19 @@ class TestCompound(BaseTest):
         for test_string in test_strings:
             my_cmp = mb.load(test_string, smiles=True)
             assert my_cmp.get_smiles() == test_string
+
+    def test_sdf(self, methane):
+        methane.save('methane.sdf')
+        sdf_string = mb.load('methane.sdf')
+        assert np.allclose(methane.xyz, sdf_string.xyz, atol=1e-5)
+
+    def test_load_multiple_sdf(self, methane):
+        filled = mb.fill_box(methane, n_compounds=10, box=[0, 0, 0, 4, 4, 4])
+        filled.save('methane.sdf')
+        sdf_string = mb.load('methane.sdf')
+
+    def test_save_multiple_sdf(self, methane):
+        filled = mb.fill_box(methane, n_compounds=10, box=[0, 0, 0, 4, 4, 4])
+        filled.save('methane.sdf')
+        sdf_string = mb.load('methane.sdf')
+        assert np.allclose(filled.xyz, sdf_string.xyz, atol=1e-5)

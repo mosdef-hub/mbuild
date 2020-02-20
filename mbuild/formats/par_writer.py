@@ -88,7 +88,7 @@ def write_par(structure, filename):
                 dihedral[0], dihedral[1], dihedral[2], dihedral[3],
                 dihedral[4].phi_k, dihedral[4].per, dihedral[4].phase))
 
-        f.write("\nIMPROPERS\n")
+        f.write("\nIMPROPER\n")
         unique_impropers = set()
         for improper in structure.impropers:
             unique_impropers.add(

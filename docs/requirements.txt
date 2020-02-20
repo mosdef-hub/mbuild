@@ -1,0 +1,9 @@
+numpydoc
+sphinx
+sphinx_rtd_theme
+widgetsnbextension
+ipywidgets
+sphinxcontrib-svg2pdfconverter
+ipykernel
+nbsphinx
+mock

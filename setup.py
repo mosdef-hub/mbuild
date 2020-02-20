@@ -9,15 +9,15 @@ worry about manually defining bonds when constructing chemically bonded
 structures from smaller components.
 """
 
-from __future__ import print_function
-
 import os
 import subprocess
+from pathlib import Path
 from setuptools import setup, find_packages
 from distutils.spawn import find_executable
 
 #####################################
-VERSION = "0.10.1"
+NAME = 'mbuild'
+VERSION = "0.10.5"
 ISRELEASED = True
 if ISRELEASED:
     __version__ = VERSION
@@ -62,6 +62,8 @@ full_version = '{full_version}'
 git_revision = '{git_revision}'
 release = {release}
 """
+    base_path = Path(__file__).parent
+    file_path = (base_path / filename)
     # git_revision
     if os.path.exists('.git'):
         git_revision = git_version()
@@ -77,7 +79,7 @@ release = {release}
                         .format(version=version, git_revision=git_revision))
         short_version = version
 
-    with open(filename, 'w') as f:
+    with file_path.open('w') as f:
         f.write(cnt.format(version=version,
                            short_version=short_version,
                            full_version=full_version,
@@ -106,55 +108,59 @@ def proto_procedure():
     if protoc is not None:
         compile_proto(protoc)
 
+
 def compile_proto(protoc):
     protoc_command = [protoc, '-I=mbuild/formats/', 
             '--python_out=mbuild/formats/', 'compound.proto']
     subprocess.call(protoc_command)
 
 
-write_version_py(VERSION, ISRELEASED, 'mbuild/version.py')
+if __name__ == '__main__':
 
-proto_procedure()
+    write_version_py(VERSION, ISRELEASED, 'mbuild/version.py')
 
-setup(
-    name='mbuild',
-    version=__version__,
-    description=__doc__.split('\n'),
-    long_description=__doc__,
-    author='Janos Sallai, Christoph Klein',
-    author_email='janos.sallai@vanderbilt.edu, christoph.klein@vanderbilt.edu',
-    url='https://github.com/mosdef-hub/mbuild',
-    download_url='https://github.com/mosdef-hub/mbuild/tarball/{}'.format(__version__),
-    packages=find_packages(),
-    package_data={'mbuild': ['utils/reference/*.{pdb,mol2}',
-                             'lib/*.{pdb,mol2}',
-                             ]},
-    entry_points={
-        'mbuild.plugins':[
-            "Monolayer = mbuild.lib.recipes.monolayer:Monolayer",
-            "Polymer = mbuild.lib.recipes.polymer:Polymer",
-            "SilicaInterface = mbuild.lib.recipes.silica_interface:SilicaInterface",
-            "TiledCompound = mbuild.lib.recipes.tiled_compound:TiledCompound",
-        ]
-    },
-    package_dir={'mbuild': 'mbuild'},
-    include_package_data=True,
-    license="MIT",
-    zip_safe=False,
-    keywords='mbuild',
-    classifiers=[
-        'Development Status :: 4 - Beta',
-        'Intended Audience :: Science/Research',
-        'Intended Audience :: Developers',
-        'License :: OSI Approved :: MIT License',
-        'Natural Language :: English',
-        'Programming Language :: Python',
-        'Programming Language :: Python :: 3',
-        'Topic :: Scientific/Engineering :: Chemistry',
-        'Operating System :: Microsoft :: Windows',
-        'Operating System :: POSIX',
-        'Operating System :: Unix',
-        'Operating System :: MacOS',
-    ],
-)
+    proto_procedure()
+
+    setup(
+        name=NAME,
+        version=__version__,
+        description=__doc__.split('\n'),
+        long_description=__doc__,
+        author='Janos Sallai, Christoph Klein',
+        author_email='janos.sallai@vanderbilt.edu, christoph.klein@vanderbilt.edu',
+        url='https://github.com/mosdef-hub/mbuild',
+        download_url='https://github.com/mosdef-hub/mbuild/tarball/{}'.format(__version__),
+        packages=find_packages(),
+        package_data={'mbuild': ['utils/reference/*.{pdb,mol2}',
+                                 'lib/*.{pdb,mol2}',
+                                 ]},
+        entry_points={
+            'mbuild.plugins':[
+                "Alkane = mbuild.lib.recipes.alkane:Alkane",
+                "Monolayer = mbuild.lib.recipes.monolayer:Monolayer",
+                "Polymer = mbuild.lib.recipes.polymer:Polymer",
+                "SilicaInterface = mbuild.lib.recipes.silica_interface:SilicaInterface",
+                "TiledCompound = mbuild.lib.recipes.tiled_compound:TiledCompound",
+            ]
+        },
+        package_dir={'mbuild': 'mbuild'},
+        include_package_data=True,
+        license="MIT",
+        zip_safe=False,
+        keywords='mbuild',
+        classifiers=[
+            'Development Status :: 4 - Beta',
+            'Intended Audience :: Science/Research',
+            'Intended Audience :: Developers',
+            'License :: OSI Approved :: MIT License',
+            'Natural Language :: English',
+            'Programming Language :: Python',
+            'Programming Language :: Python :: 3',
+            'Topic :: Scientific/Engineering :: Chemistry',
+            'Operating System :: Microsoft :: Windows',
+            'Operating System :: POSIX',
+            'Operating System :: Unix',
+            'Operating System :: MacOS',
+        ],
+    )
 

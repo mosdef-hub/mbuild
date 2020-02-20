@@ -1,5 +1,3 @@
-from __future__ import print_function, division
-
 __all__ = ['load', 'clone', 'Compound', 'Particle']
 
 from collections import OrderedDict, defaultdict, Iterable
@@ -16,20 +14,19 @@ import numpy as np
 from oset import oset as OrderedSet
 import parmed as pmd
 from parmed.periodic_table import AtomicNum, element_by_name, Mass, Element
-from six import integer_types, string_types
 
 from mbuild.bond_graph import BondGraph
 from mbuild.box import Box
 from mbuild.exceptions import MBuildError
 from mbuild.utils.decorators import deprecated
-from mbuild.formats.xyz import read_xyz
+from mbuild.formats.xyz import read_xyz, write_xyz
 from mbuild.formats.json_formats import compound_to_json, compound_from_json
 from mbuild.formats.hoomdxml import write_hoomdxml
 from mbuild.formats.lammpsdata import write_lammpsdata
 from mbuild.formats.gsdwriter import write_gsd
 from mbuild.formats.par_writer import write_par
 from mbuild.periodic_kdtree import PeriodicCKDTree
-from mbuild.utils.io import run_from_ipython, import_
+from mbuild.utils.io import run_from_ipython, import_, has_networkx
 from mbuild.utils.jsutils import overwrite_nglview_default
 from mbuild.coordinate_transform import _translate, _rotate
 
@@ -127,6 +124,20 @@ def load(filename_or_object, relative_to_module=None, compound=None, coords_only
                 particle.pos = ref_particle.pos
         else:
             compound = read_xyz(filename_or_object, compound=compound)
+        return compound
+
+    if extension == '.sdf':
+        pybel = import_('pybel')
+        pybel_mol = pybel.readfile('sdf', filename_or_object)
+        # pybel returns a generator, so we grab the first molecule of a list of len 1
+        # Raise ValueError user if there are more molecules
+        pybel_mol = [i for i in pybel_mol]
+        if len(pybel_mol) == 1:
+            compound.from_pybel(pybel_mol[0])
+        else:
+            compound.from_pybel(pybel_mol[0])
+            raise ValueError("More than one pybel molecule in file, more than one pybel "
+                 "molecule is not supported, using {}".format(filename_or_object))
         return compound
 
     if use_parmed:
@@ -274,7 +285,7 @@ class Compound(object):
         super(Compound, self).__init__()
 
         if name:
-            if not isinstance(name, string_types):
+            if not isinstance(name, str):
                 raise ValueError(
                     'Compound.name should be a string. You passed '
                     '{}'.format(name))
@@ -606,10 +617,10 @@ class Compound(object):
 
         """
         if discrete_bodies is not None:
-            if isinstance(discrete_bodies, string_types):
+            if isinstance(discrete_bodies, str):
                 discrete_bodies = [discrete_bodies]
         if rigid_particles is not None:
-            if isinstance(rigid_particles, string_types):
+            if isinstance(rigid_particles, str):
                 rigid_particles = [rigid_particles]
 
         if self.root.max_rigid_id is not None:
@@ -700,7 +711,7 @@ class Compound(object):
         """
         # Support batch add via lists, tuples and sets.
         if (isinstance(new_child, Iterable) and
-                not isinstance(new_child, string_types)):
+                not isinstance(new_child, str)):
             for child in new_child:
                 self.add(child, reset_rigid_ids=reset_rigid_ids)
             return
@@ -1824,7 +1835,8 @@ class Compound(object):
         filename : str
             Filesystem path in which to save the trajectory. The extension or
             prefix will be parsed and control the format. Supported
-            extensions are: 'hoomdxml', 'gsd', 'gro', 'top', 'lammps', 'lmp', 'json'
+            extensions are: 'hoomdxml', 'gsd', 'gro', 'top',
+            'lammps', 'lmp', 'mcf'
         show_ports : bool, optional, default=False
             Save ports contained within the compound.
         forcefield_files : str, optional, default=None
@@ -1856,8 +1868,8 @@ class Compound(object):
             Keyword arguments to provide to `foyer.Forcefield.apply`.
         **kwargs
             Depending on the file extension these will be passed to either
-            `write_gsd`, `write_hoomdxml`, `write_lammpsdata`, or
-            `parmed.Structure.save`.
+            `write_gsd`, `write_hoomdxml`, `write_lammpsdata`,
+            `write_mcf`, or `parmed.Structure.save`.
             See https://parmed.github.io/ParmEd/html/structobj/parmed.structure.Structure.html#parmed.structure.Structure.save
 
 
@@ -1877,6 +1889,11 @@ class Compound(object):
             styles are currently supported: 'full', 'atomic', 'charge', 'molecular'
             see http://lammps.sandia.gov/doc/atom_style.html for more
             information on atom styles.
+        unit_style: str, default='real'
+            Defines to unit style to be save in a LAMMPS data file.  Defaults to 'real' units.
+            Current styles are supported: 'real', 'lj'
+            see https://lammps.sandia.gov/doc/99/units.html for more information
+            on unit styles
 
         Notes
         ------
@@ -1888,15 +1905,13 @@ class Compound(object):
         --------
         formats.gsdwrite.write_gsd : Write to GSD format
         formats.hoomdxml.write_hoomdxml : Write to Hoomd XML format
+        formats.xyzwriter.write_xyz : Write to XYZ format
         formats.lammpsdata.write_lammpsdata : Write to LAMMPS data format
+        formats.cassandramcf.write_mcf : Write to Cassandra MCF format
         formats.json_formats.compound_to_json : Write to a json file
 
         """
         extension = os.path.splitext(filename)[-1]
-        if extension == '.xyz':
-            traj = self.to_trajectory(show_ports=show_ports)
-            traj.save(filename)
-            return
 
         if extension == '.json':
             compound_to_json(self,
@@ -1907,9 +1922,13 @@ class Compound(object):
         # Savers supported by mbuild.formats
         savers = {'.hoomdxml': write_hoomdxml,
                   '.gsd': write_gsd,
+                  '.xyz': write_xyz,
                   '.lammps': write_lammpsdata,
                   '.lmp': write_lammpsdata,
-                  '.par': write_par}
+                  '.par': write_par,}
+        if has_networkx:
+            from mbuild.formats.cassandramcf import write_mcf
+            savers.update({'.mcf': write_mcf})
 
         try:
             saver = savers[extension]
@@ -1948,6 +1967,20 @@ class Compound(object):
                 kwargs['rigid_bodies'] = [
                         p.rigid_id for p in self.particles()]
             saver(filename=filename, structure=structure, **kwargs)
+
+        elif extension == '.sdf':
+            pybel = import_('pybel')
+            new_compound = Compound()
+            # Convert pmd.Structure to mb.Compound
+            new_compound.from_parmed(structure)
+            # Convert mb.Compound to pybel molecule
+            pybel_molecule = new_compound.to_pybel()
+            # Write out pybel molecule to SDF file
+            output_sdf = pybel.Outputfile("sdf", filename,
+                    overwrite=overwrite)
+            output_sdf.write(pybel_molecule)
+            output_sdf.close()
+
         else:  # ParmEd supported saver.
             structure.save(filename, overwrite=overwrite, **kwargs)
 
@@ -2145,12 +2178,12 @@ class Compound(object):
         """
         from mdtraj.core.topology import Topology
 
-        if isinstance(chains, string_types):
+        if isinstance(chains, str):
             chains = [chains]
         if isinstance(chains, (list, set)):
             chains = tuple(chains)
 
-        if isinstance(residues, string_types):
+        if isinstance(residues, str):
             residues = [residues]
         if isinstance(residues, (list, set)):
             residues = tuple(residues)
@@ -2352,7 +2385,7 @@ class Compound(object):
         if not residues and infer_residues:
             residues = list(set([child.name for child in self.children]))
 
-        if isinstance(residues, string_types):
+        if isinstance(residues, str):
             residues = [residues]
         if isinstance(residues, (list, set)):
             residues = tuple(residues)
@@ -2443,8 +2476,10 @@ class Compound(object):
                 if not val:
                     box_vec_max[dim] += 0.25
                     box_vec_min[dim] -= 0.25
-            box.mins = np.asarray(box_vec_min)
+            # In rare cases `AssertionError` will be raised if `mins` is set before `maxs`
+            # As a result, set `maxs` before `mins`
             box.maxs = np.asarray(box_vec_max)
+            box.mins = np.asarray(box_vec_min)
 
         box_vector = np.empty(6)
         if box.angles is not None:
@@ -2547,7 +2582,7 @@ class Compound(object):
 
         if not residues and infer_residues:
             residues = list(set([child.name for child in self.children]))
-        if isinstance(residues, string_types):
+        if isinstance(residues, str):
             residues = [residues]
         if isinstance(residues, (list, set)):
             residues = tuple(residues)
@@ -2806,9 +2841,9 @@ class Compound(object):
             molecule_type.bonds.add(intermol_bond)
 
     def __getitem__(self, selection):
-        if isinstance(selection, integer_types):
+        if isinstance(selection, int):
             return list(self.particles())[selection]
-        if isinstance(selection, string_types):
+        if isinstance(selection, str):
             if selection not in self.labels:
                 raise MBuildError('{}[\'{}\'] does not exist.'.format(self.name,selection))
             return self.labels.get(selection)

@@ -1,12 +1,12 @@
 numpy
 scipy
 packmol>=1!18.013
-nglview>=0.6.2.3
+nglview>=2.7
 oset
 parmed
 mdtraj
 foyer
-gsd
+gsd>=1.2
 openbabel
 networkx
 pytest >=3.0
