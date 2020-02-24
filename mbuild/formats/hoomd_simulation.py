@@ -53,8 +53,10 @@ def create_hoomd_simulation(structure, ref_distance=1.0, ref_mass=1.0,
 
     Returns
     ------
-    hoomd_objects : list
-        List of hoomd objects created during conversion
+    hoomd_snapshot : snapshot
+        HOOMD snapshot object to initialize the simulation
+    hoomd_forcefield : list
+        List of hoomd force computes created during conversion
     ReferenceValues : namedtuple
         Values used in scaling
 
@@ -85,11 +87,10 @@ def create_hoomd_simulation(structure, ref_distance=1.0, ref_mass=1.0,
 
     _check_hoomd_version()
     version_numbers = _check_hoomd_version()
-    if float(version_numbers[0]) >= 3:
-        warnings.warn("Warning when using Hoomd 3, potential API change " +
-                "where the hoomd context is not updated upon " +
-                "creation of forces - utilize " + 
-                "the returned `hoomd_objects`") 
+    if float(version_numbers[0]) < 2:
+        warnings.warn("HOOMD <= 2 is not supported")
+    if float(version_numbers[0]) >= 4:
+        warnings.warn("HOOMD >= 4 is not supported")
 
     hoomd_objects = [] # Potential adaptation for Hoomd v3 API
 
@@ -104,53 +105,47 @@ def create_hoomd_simulation(structure, ref_distance=1.0, ref_mass=1.0,
     ReferenceValues = namedtuple("ref_values", ["distance", "mass", "energy"])
     ref_values = ReferenceValues(ref_distance, ref_mass, ref_energy)
 
-    if not hoomd.context.current:
-        hoomd.context.initialize("")
-    snapshot,_ = to_hoomdsnapshot(structure, ref_distance=ref_distance,
+    hoomd_snapshot,_ = to_hoomdsnapshot(structure, ref_distance=ref_distance,
             ref_mass=ref_mass, ref_energy=ref_energy, **snapshot_kwargs)
-    hoomd_objects.append(snapshot)
-    hoomd.init.read_snapshot(snapshot)
 
-    nl = hoomd.md.nlist.cell()
-    nl.reset_exclusions(exclusions=['1-2', '1-3'])
-    hoomd_objects.append(nl)
+    nl = hoomd.md.nlist.Cell(exclusions=['bond', '1-3'])
 
     if structure.atoms[0].type != '':
         print("Processing LJ and QQ")
         lj = _init_hoomd_lj(structure, nl, r_cut=r_cut,
                 ref_distance=ref_distance, ref_energy=ref_energy)
-        qq = _init_hoomd_qq(structure, nl, r_cut=r_cut, **pppm_kwargs)
+        # qq = _init_hoomd_qq(structure, nl, r_cut=r_cut, **pppm_kwargs)
         hoomd_objects.append(lj)
-        hoomd_objects.append(qq)
-    if structure.adjusts:
-        print("Processing 1-4 interactions, adjusting neighborlist exclusions")
-        lj_14, qq_14 =  _init_hoomd_14_pairs(structure, nl,
-                ref_distance=ref_distance, ref_energy=ref_energy)
-        hoomd_objects.append(lj_14)
-        hoomd_objects.append(qq_14)
+        # hoomd_objects.append(qq)
+    # if structure.adjusts:
+    #     print("Processing 1-4 interactions, adjusting neighborlist exclusions")
+    #     lj_14, qq_14 =  _init_hoomd_14_pairs(structure, nl,
+    #             ref_distance=ref_distance, ref_energy=ref_energy)
+    #     hoomd_objects.append(lj_14)
+    #     hoomd_objects.append(qq_14)
     if structure.bond_types:
         print("Processing harmonic bonds")
         harmonic_bond = _init_hoomd_bonds(structure,
                 ref_distance=ref_distance, ref_energy=ref_energy)
         hoomd_objects.append(harmonic_bond)
-    if structure.angle_types:
-        print("Processing harmonic angles")
-        harmonic_angle = _init_hoomd_angles(structure,
-                ref_energy=ref_energy)
-        hoomd_objects.append(harmonic_angle)
-    if structure.dihedral_types:
-        print("Processing periodic torsions")
-        periodic_torsions = _init_hoomd_dihedrals(structure,
-                ref_energy=ref_energy)
-        hoomd_objects.append(periodic_torsions)
-    if structure.rb_torsion_types:
-        print("Processing RB torsions")
-        rb_torsions = _init_hoomd_rb_torsions(structure,
-                ref_energy=ref_energy)
-        hoomd_objects.append(rb_torsions)
+    # if structure.angle_types:
+    #     print("Processing harmonic angles")
+    #     harmonic_angle = _init_hoomd_angles(structure,
+    #             ref_energy=ref_energy)
+    #     hoomd_objects.append(harmonic_angle)
+    # if structure.dihedral_types:
+    #     print("Processing periodic torsions")
+    #     periodic_torsions = _init_hoomd_dihedrals(structure,
+    #             ref_energy=ref_energy)
+    #     hoomd_objects.append(periodic_torsions)
+    # if structure.rb_torsion_types:
+    #     print("Processing RB torsions")
+    #     rb_torsions = _init_hoomd_rb_torsions(structure,
+    #             ref_energy=ref_energy)
+    #     hoomd_objects.append(rb_torsions)
     print("HOOMD SimulationContext updated from ParmEd Structure")
 
-    return hoomd_objects, ref_values
+    return hoomd_snapshot, hoomd_objects, ref_values
 
 def _init_hoomd_lj(structure, nl, r_cut=1.2,
         ref_distance=1.0, ref_energy=1.0):
@@ -162,9 +157,9 @@ def _init_hoomd_lj(structure, nl, r_cut=1.2,
             atom_type_params[atom.type] = atom.atom_type
 
     # Set the hoomd parameters for self-interactions
-    lj = hoomd.md.pair.lj(r_cut, nl)
+    lj = hoomd.md.pair.LJ(nlist=nl, r_cut=r_cut)
     for name, atom_type in atom_type_params.items():
-        lj.pair_coeff.set(name, name,
+        lj.params[(name, name)] = dict(
                 sigma=atom_type.sigma/ref_distance,
                 epsilon=atom_type.epsilon/ref_energy)
 
@@ -196,7 +191,7 @@ def _init_hoomd_lj(structure, nl, r_cut=1.2,
             # If we have nbfix info, use it
             sigma = nb_fix_info[0] / (ref_distance*(2 ** (1/6)))
             epsilon = nb_fix_info[1] / ref_energy
-        lj.pair_coeff.set(a1, a2, sigma=sigma, epsilon=epsilon)
+        lj.params[(a1, a2)] = dict(sigma=sigma, epsilon=epsilon)
 
     return lj
 
@@ -263,16 +258,15 @@ def _init_hoomd_bonds(structure, ref_distance=1.0, ref_energy=1.0):
                 bond_type_params[bond_type] = bond.type
 
     # Set the hoomd parameters
-    harmonic_bond = hoomd.md.bond.harmonic()
+    harmonic_bond = hoomd.md.bond.Harmonic()
     for name, bond_type in bond_type_params.items():
         # A (paramerized) parmed structure with no bondtype
         # is because of constraints
         if bond_type is None:
             print("Bond with no bondtype detected, setting coefficients to 0")
-            harmonic_bond.bond_coeff.set(name,
-                    k=0, r0=0)
+            harmonic_bond.params[name] = dict(k=0, r0=0)
         else:
-            harmonic_bond.bond_coeff.set(name,
+            harmonic_bond.params[name] = dict(
                 k=2 * bond_type.k * ref_distance**2 / ref_energy,
                 r0=bond_type.req / ref_distance)
 
