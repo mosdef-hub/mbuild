@@ -174,6 +174,14 @@ def _id_rings_fragments(structure):
     bond_graph.add_edges_from([ [bond.atom1.idx, bond.atom2.idx]
                                  for bond in structure.bonds ])
 
+    if len(structure.bonds) == 0:
+        warnings.warn("No bonds found. Cassandra will interpet "
+                "this as a rigid species")
+        in_ring = [ False ] * len(structure.atoms)
+        frag_list = []
+        frag_conn = []
+        return in_ring, frag_list, frag_conn
+
     # Check if entire molecule is connected. Warn if not.
     if nx.is_connected(bond_graph) == False:
         raise ValueError("Not all components of the molecule are connected. "
