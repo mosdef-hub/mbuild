@@ -117,7 +117,8 @@ def create_hoomd_simulation(structure, ref_distance=1.0, ref_mass=1.0,
         # qq = _init_hoomd_qq(structure, nl, r_cut=r_cut, **pppm_kwargs)
         hoomd_objects.append(lj)
         # hoomd_objects.append(qq)
-    # if structure.adjusts:
+    if structure.adjusts:
+        warnings.warn("Special pairs not yet implemented")
     #     print("Processing 1-4 interactions, adjusting neighborlist exclusions")
     #     lj_14, qq_14 =  _init_hoomd_14_pairs(structure, nl,
     #             ref_distance=ref_distance, ref_energy=ref_energy)
@@ -128,21 +129,21 @@ def create_hoomd_simulation(structure, ref_distance=1.0, ref_mass=1.0,
         harmonic_bond = _init_hoomd_bonds(structure,
                 ref_distance=ref_distance, ref_energy=ref_energy)
         hoomd_objects.append(harmonic_bond)
-    # if structure.angle_types:
-    #     print("Processing harmonic angles")
-    #     harmonic_angle = _init_hoomd_angles(structure,
-    #             ref_energy=ref_energy)
-    #     hoomd_objects.append(harmonic_angle)
-    # if structure.dihedral_types:
-    #     print("Processing periodic torsions")
-    #     periodic_torsions = _init_hoomd_dihedrals(structure,
-    #             ref_energy=ref_energy)
-    #     hoomd_objects.append(periodic_torsions)
-    # if structure.rb_torsion_types:
-    #     print("Processing RB torsions")
-    #     rb_torsions = _init_hoomd_rb_torsions(structure,
-    #             ref_energy=ref_energy)
-    #     hoomd_objects.append(rb_torsions)
+    if structure.angle_types:
+        print("Processing harmonic angles")
+        harmonic_angle = _init_hoomd_angles(structure,
+                ref_energy=ref_energy)
+        hoomd_objects.append(harmonic_angle)
+    if structure.dihedral_types:
+        print("Processing periodic torsions")
+        periodic_torsions = _init_hoomd_dihedrals(structure,
+                ref_energy=ref_energy)
+        hoomd_objects.append(periodic_torsions)
+    if structure.rb_torsion_types:
+        print("Processing RB torsions")
+        rb_torsions = _init_hoomd_rb_torsions(structure,
+                ref_energy=ref_energy)
+        hoomd_objects.append(rb_torsions)
     print("HOOMD SimulationContext updated from ParmEd Structure")
 
     return hoomd_snapshot, hoomd_objects, ref_values
@@ -284,9 +285,9 @@ def _init_hoomd_angles(structure, ref_energy=1.0):
             angle_type_params[angle_type] = angle.type
 
     # set the hoomd parameters
-    harmonic_angle = hoomd.md.angle.harmonic()
+    harmonic_angle = hoomd.md.angle.Harmonic()
     for name, angle_type in angle_type_params.items():
-        harmonic_angle.angle_coeff.set(name,
+        harmonic_angle.params[name] = dict(
                 t0=np.deg2rad(angle_type.theteq),
                 k=2 * angle_type.k / ref_energy)
 
@@ -321,13 +322,13 @@ def _init_hoomd_dihedrals(structure, ref_energy=1.0):
                 dihedral_type_params[dihedral_type] = dihedral.type[0]
 
     # Set the hoomd parameters
-    periodic_torsion = hoomd.md.dihedral.harmonic() # These are periodic torsions
+    periodic_torsion = hoomd.md.dihedral.Harmonic() # These are periodic torsions
     for name, dihedral_type in dihedral_type_params.items():
-        periodic_torsion.dihedral_coeff.set(name,
+        periodic_torsion.params[name] = dict(
                 k=2*dihedral_type.phi_k / ref_energy,
                 d=1,
                 n=dihedral_type.per,
-                phi_0=np.deg2rad(dihedral_type.phase))
+                phi0=np.deg2rad(dihedral_type.phase))
 
     return periodic_torsion
 
@@ -346,7 +347,7 @@ def _init_hoomd_rb_torsions(structure, ref_energy=1.0):
             dihedral_type_params[dihedral_type] = dihedral.type
 
     # Set the hoomd parameter
-    rb_torsion = hoomd.md.dihedral.opls()
+    rb_torsion = hoomd.md.dihedral.OPLS()
     for name, dihedral_type in dihedral_type_params.items():
         F_coeffs = RB_to_OPLS(dihedral_type.c0 / ref_energy,
                             dihedral_type.c1 / ref_energy,
@@ -354,7 +355,7 @@ def _init_hoomd_rb_torsions(structure, ref_energy=1.0):
                             dihedral_type.c3 / ref_energy,
                             dihedral_type.c4 / ref_energy,
                             dihedral_type.c5 / ref_energy)
-        rb_torsion.dihedral_coeff.set(name, k1=F_coeffs[0],
+        rb_torsion.params[name] = dict(k1=F_coeffs[0],
                 k2=F_coeffs[1], k3=F_coeffs[2], k4=F_coeffs[3])
 
     return rb_torsion
