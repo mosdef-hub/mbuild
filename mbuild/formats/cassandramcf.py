@@ -95,7 +95,7 @@ def write_mcf(structure, filename, angle_style,
             if (len(structure.dihedrals) > 0 or
                     len(structure.rb_torsions) > 0):
                 warnings.warn('Unable to infer coulombic 1-4 '
-                        'scaling factor. Setting to 0.0')
+                        'scaling factor. Setting to {:.1f}'.format(coul14))
     if lj14 is None:
         if len(structure.adjusts) > 0:
             type1_eps = structure.adjusts[0].atom1.epsilon
@@ -108,13 +108,13 @@ def write_mcf(structure, filename, angle_style,
             else:
                 lj14 = 0.0
                 warnings.warn('Unable to infer LJ 1-4 scaling'
-                    'factor. Setting to 0.0')
+                        'factor. Setting to {:.1f}'.format(lj14))
         else:
             lj14 = 0.0
             if (len(structure.dihedrals) > 0 or
                     len(structure.rb_torsions) > 0):
                 warnings.warn('Unable to infer LJ 1-4 scaling'
-                    'factor. Setting to 0.0')
+                        'factor. Setting to {:.1f}'.format(lj14))
 
     if coul14 < 0.0 or coul14 > 1.0:
         raise ValueError("Unreasonable value {} for "
