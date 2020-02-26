@@ -118,12 +118,11 @@ def create_hoomd_simulation(structure, ref_distance=1.0, ref_mass=1.0,
         hoomd_objects.append(lj)
         # hoomd_objects.append(qq)
     if structure.adjusts:
-        warnings.warn("Special pairs not yet implemented")
-    #     print("Processing 1-4 interactions, adjusting neighborlist exclusions")
-    #     lj_14, qq_14 =  _init_hoomd_14_pairs(structure, nl,
-    #             ref_distance=ref_distance, ref_energy=ref_energy)
-    #     hoomd_objects.append(lj_14)
-    #     hoomd_objects.append(qq_14)
+        print("Processing 1-4 interactions, adjusting neighborlist exclusions")
+        lj_14, qq_14 =  _init_hoomd_14_pairs(structure, nl, hoomd_snapshot,
+                ref_distance=ref_distance, ref_energy=ref_energy)
+        hoomd_objects.append(lj_14)
+        hoomd_objects.append(qq_14)
     if structure.bond_types:
         print("Processing harmonic bonds")
         harmonic_bond = _init_hoomd_bonds(structure,
@@ -208,7 +207,7 @@ def _init_hoomd_qq(structure, nl, Nx=1, Ny=1, Nz=1, order=4, r_cut=1.2):
         return qq
 
 
-def _init_hoomd_14_pairs(structure, nl, r_cut=1.2, ref_distance=1.0, ref_energy=1.0):
+def _init_hoomd_14_pairs(structure, nl, snapshot, r_cut=1.2, ref_distance=1.0, ref_energy=1.0):
     """Special_pairs to handle 14 scalings
 
     See discussion: https://groups.google.com/forum/
@@ -216,14 +215,14 @@ def _init_hoomd_14_pairs(structure, nl, r_cut=1.2, ref_distance=1.0, ref_energy=
 
     # Update neighborlist to exclude 1-4 interactions,
     # but impose a special_pair force to handle these pairs
-    nl.exclusions.append('1-4')
+    nl.exclusions = nl.exclusions + ('1-4', )
 
-    if hoomd.context.current.system_definition.getPairData().getN() == 0:
+    if snapshot.pairs.N == 0:
         print("No 1,4 pairs found in hoomd snapshot")
         return None, None
 
-    lj_14 = hoomd.md.special_pair.lj()
-    qq_14 = hoomd.md.special_pair.coulomb()
+    lj_14 = hoomd.md.special_pair.LJ()
+    qq_14 = hoomd.md.special_pair.Coulomb()
     params_14 = {}
     # Identify unique 14 scalings
     for adjust in structure.adjusts:
@@ -233,16 +232,14 @@ def _init_hoomd_14_pairs(structure, nl, r_cut=1.2, ref_distance=1.0, ref_energy=
         if ps not in params_14:
             params_14[ps] = adjust.type
     for name, adjust_type in params_14.items():
-        lj_14.pair_coeff.set(name,
+        lj_14.params[name] = dict(
                 sigma=adjust_type.sigma/ref_distance,
                 # The adjust epsilon alreayd carries the scaling
-                epsilon=adjust_type.epsilon/ref_energy,
-                # Do NOT use hoomd's alpha to modify any LJ terms
-                alpha=1,
-                r_cut=r_cut)
-        qq_14.pair_coeff.set(name,
-                alpha=adjust_type.chgscale,
-                r_cut=r_cut)
+                epsilon=adjust_type.epsilon/ref_energy)
+        lj_14.r_cut[name] = r_cut
+        qq_14.params[name] = dict(
+                alpha=adjust_type.chgscale)
+        qq_14.r_cut[name] = r_cut
 
     return lj_14, qq_14
 
