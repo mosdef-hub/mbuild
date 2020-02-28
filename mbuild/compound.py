@@ -2476,10 +2476,7 @@ class Compound(object):
                 if not val:
                     box_vec_max[dim] += 0.25
                     box_vec_min[dim] -= 0.25
-            # In rare cases `AssertionError` will be raised if `mins` is set before `maxs`
-            # As a result, set `maxs` before `mins`
-            box.maxs = np.asarray(box_vec_max)
-            box.mins = np.asarray(box_vec_min)
+            box = Box(mins=box_vec_min, maxs=box_vec_max)
 
         box_vector = np.empty(6)
         if box.angles is not None:
