@@ -6,7 +6,7 @@ Install with `conda <http://continuum.io/downloads>`_
 -----------------------------------------------------
 ::
 
-    $ conda install -c omnia -c mosdef -c conda-forge mbuild
+    $ conda install -c conda-forge -c mosdef -c omnia mbuild
 
 Alternatively you can add all the required channels to your ``.condarc``
 after which you can simply install without specifying the channels::
