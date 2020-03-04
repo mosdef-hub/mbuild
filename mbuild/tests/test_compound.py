@@ -667,6 +667,18 @@ class TestCompound(BaseTest):
 
         assert np.allclose(compound2.xyz, compound3.xyz)
 
+    def test_fillbox_then_parmed(self):
+        # This test would fail with the old to_parmed code (pre PR #699)
+
+        bead = mb.Compound(name="Bead")
+        box = mb.Box(mins=(2,2,2), maxs=(3,3,3))
+        bead_box = mb.fill_box(bead, 100, box)
+        bead_box_in_pmd = bead_box.to_parmed()
+
+        assert isinstance(bead_box_in_pmd, pmd.Structure)
+        assert len(bead_box_in_pmd.atoms) == 100
+        assert (bead_box_in_pmd.box == np.array([10., 10.,10. ,90., 90., 90.])).all()
+
     def test_resnames_parmed(self, h2o, ethane):
         system = mb.Compound([h2o, mb.clone(h2o), ethane])
         struct = system.to_parmed(residues=['Ethane', 'H2O'])
