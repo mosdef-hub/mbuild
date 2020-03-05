@@ -33,3 +33,14 @@ Port
 .. autoclass:: mbuild.port.Port
     :members:
 
+Box
+----
+
+.. autoclass:: mbuild.box.Box
+    :members:
+
+Lattice
+----
+
+.. autoclass:: mbuild.lattice.Lattice
+    :members:

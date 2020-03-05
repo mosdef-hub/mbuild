@@ -25,13 +25,6 @@ Silica Interface
 .. autoclass:: mbuild.lib.recipes.silica_interface.SilicaInterface
     :members:
 
-Lattice
--------
-
-.. autoclass:: mbuild.lattice.Lattice
-    :members:
-
-
 Packing
 -------
 .. automodule:: mbuild.packing
