@@ -50,6 +50,18 @@ or
 # pip install nglview
 '''
 
+MESSAGES['py3Dmol'] = '''
+The code at {filename}:{line_number} requires the "py3Dmol" package
+
+py3Dmol can be installed using:
+
+# conda install -c conda-forge py3Dmol
+
+or
+
+# pip install py3Dmol
+'''
+
 MESSAGES['openbabel'] = '''
 The code at {filename}:{line_number} requires the "openbabel" package
 
@@ -76,14 +88,14 @@ or
 # pip install foyer
 '''
 
-MESSAGES['protobuf'] = ''' 
+MESSAGES['protobuf'] = '''
 The code at {filename}:{line_number} requires the "protobuf" package
 
 protobuf can be installed using:
 
 # conda install -c anaconda protobuf
 
-or 
+or
 
 # pip install protobuf
 '''
@@ -195,6 +207,20 @@ try:
     del hoomd
 except ImportError:
     has_hoomd  = False
+
+try:
+    import nglview
+    has_nglview = True
+    del nglview
+except ImportError:
+    has_nglview  = False
+
+try:
+    import py3Dmol
+    has_py3Dmol = True
+    del py3Dmol
+except ImportError:
+    has_py3Dmol  = False
 
 def get_fn(name):
     """Get the full path to one of the reference files shipped for utils.
