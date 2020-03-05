@@ -119,8 +119,8 @@ def write_par(structure, filename):
         for atype in unique_atypes:
             # atype, 0.0, epsilon, rmin/2, 0.0, epsilon(1-4), rmin/2 (1-4)
             f.write('{:8s} {:8.3f} {:8.3f} {:8.3f} {:8.3f} {:8.3f} {:8.3f}\n'.
-                    format(atype.name, 0.0, -1 * atype.epsilon, atype.rmin / 2,
-                           0.0, -1 * sc_nb * atype.epsilon, atype.rmin / 2))
+                    format(atype.name, 0.0, -1 * atype.epsilon, atype.rmin,
+                           0.0, -1 * sc_nb * atype.epsilon, atype.rmin ))
 
         if structure.has_NBFIX():
             warnings.warn("NBFixes detected but unsupported in par writer")
