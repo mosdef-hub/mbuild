@@ -1,4 +1,4 @@
-FOOOOD## mBuild: a hierarchical, component based molecule builder
+FOOOOFOOOO## mBuild: a hierarchical, component based molecule builder
 
 [![Gitter chat](https://badges.gitter.im/mosdef-hub/gitter.svg)](https://gitter.im/mosdef-hub/Lobby)
 [![Travis Build Status](https://travis-ci.org/mosdef-hub/mbuild.svg?branch=master)](https://travis-ci.org/mosdef-hub/mbuild)
