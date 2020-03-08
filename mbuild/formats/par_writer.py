@@ -13,6 +13,8 @@ def write_par(structure, filename):
     node25.html)
     Furthermore, ParmEd should support writing CHARMM par, rtf, str files
     by converting the parmed.Structure into parmed.CharmmParameterSet
+
+    Parmed stores rmin/2 in "rmin"
     """
 
     # ATOMS
