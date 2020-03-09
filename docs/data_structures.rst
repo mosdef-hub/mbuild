@@ -34,7 +34,7 @@ Port
     :members:
 
 Box
-----
+---
 
 .. autoclass:: mbuild.box.Box
     :members:
