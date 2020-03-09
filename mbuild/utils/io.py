@@ -93,7 +93,7 @@ The code at {filename}:{line_number} requires the "protobuf" package
 
 protobuf can be installed using:
 
-# conda install -c anaconda protobuf
+# conda install -c conda-forge protobuf
 
 or
 
