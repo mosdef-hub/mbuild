@@ -213,7 +213,7 @@ try:
     has_nglview = True
     del nglview
 except ImportError:
-    has_nglview  = False
+    has_nglview = False
 
 try:
     import py3Dmol
