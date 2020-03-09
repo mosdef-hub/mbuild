@@ -220,7 +220,7 @@ try:
     has_py3Dmol = True
     del py3Dmol
 except ImportError:
-    has_py3Dmol  = False
+    has_py3Dmol = False
 
 def get_fn(name):
     """Get the full path to one of the reference files shipped for utils.
