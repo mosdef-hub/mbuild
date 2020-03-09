@@ -206,7 +206,7 @@ try:
     has_hoomd = True
     del hoomd
 except ImportError:
-    has_hoomd  = False
+    has_hoomd = False
 
 try:
     import nglview
