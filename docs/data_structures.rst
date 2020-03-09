@@ -40,7 +40,7 @@ Box
     :members:
 
 Lattice
-----
+-------
 
 .. autoclass:: mbuild.lattice.Lattice
     :members:
