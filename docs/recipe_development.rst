@@ -1,6 +1,6 @@
-==============
+==================
 Recipe Development
-==============
+==================
 
 There may be cases where your ``Compounds`` and/or building scripts can be generalized to support a broad range of systems.
 Such objects would be a valuable resource for many researchers, and might justify development of a Python package that could be distributed to the community.
