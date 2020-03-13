@@ -1,6 +1,6 @@
-==============
-Data Structure
-==============
+===============
+Data Structures
+===============
 
 The primary building blocks in an mBuild hierarchy inherit from the
 ``Compound`` class.  ``Compounds`` maintain an ordered set of ``children``
@@ -33,3 +33,14 @@ Port
 .. autoclass:: mbuild.port.Port
     :members:
 
+Box
+---
+
+.. autoclass:: mbuild.box.Box
+    :members:
+
+Lattice
+-------
+
+.. autoclass:: mbuild.lattice.Lattice
+    :members:
