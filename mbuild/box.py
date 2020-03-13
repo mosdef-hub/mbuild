@@ -114,7 +114,7 @@ class _BoxArray(np.ndarray):
     """Subclass of np.ndarry specifically for mb.Box
 
     This subclass is meant to be used internally to store Box attribute array.
-    This subclass is modified so that its __setitem__ method is reroute to the
+    This subclass is modified so that its __setitem__ method is rerouted to the
     corresponding setter method.
 
     Parameters
