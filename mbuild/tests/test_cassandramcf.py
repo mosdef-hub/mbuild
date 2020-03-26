@@ -157,7 +157,7 @@ class TestCassandraMCF(BaseTest):
 
         # Check a some atom info
         assert mcf_data[atom_section_start+1][0] == '8'
-        assert mcf_data[atom_section_start+2][1] == 'ls_135'
+        assert mcf_data[atom_section_start+2][1] == 'opls_135'
         assert mcf_data[atom_section_start+2][3] == '12.011'
         assert mcf_data[atom_section_start+2][4] == '-0.180'
         assert mcf_data[atom_section_start+2][5] == 'LJ'
@@ -246,7 +246,7 @@ class TestCassandraMCF(BaseTest):
 
         # Check a some atom info
         assert mcf_data[atom_section_start+1][0] == '12'
-        assert mcf_data[atom_section_start+2][1] == 'ls_145'
+        assert mcf_data[atom_section_start+2][1] == 'opls_145'
         assert mcf_data[atom_section_start+2][3] == '12.011'
         assert mcf_data[atom_section_start+2][4] == '-0.115'
         assert mcf_data[atom_section_start+2][5] == 'LJ'
