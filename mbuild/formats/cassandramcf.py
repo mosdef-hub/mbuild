@@ -280,31 +280,29 @@ def _write_atom_information(mcf_file, structure, in_ring, IG_CONSTANT_KCAL):
     sigmas = [atom.sigma for atom in structure.atoms]
 
     # Check constraints on atom type length and element name length
-    # TODO: Update these following Cassandra release
-    # to be more reasonable values
     n_unique_elements = len(set(elements))
     for element in elements:
-        if len(element) > 2:
+        if len(element) > 6:
             warnings.warn("Warning, element name {} will be shortened "
-                 "to two characters. Please confirm your final "
+                 "to six characters. Please confirm your final "
                  "MCF.".format(element))
 
-    elements = [ element[:2] for element in elements ]
+    elements = [ element[:6] for element in elements ]
     if len(set(elements)) < n_unique_elements:
         warnings.warn("Warning, the number of unique elements has been "
-              "reduced due to shortening the element name to two "
+              "reduced due to shortening the element name to six "
               "characters.")
 
     n_unique_types = len(set(types))
     for itype in types:
-        if len(itype) > 6:
-            warnings.warn("Warning, type name {} will be shortened to six "
+        if len(itype) > 20:
+            warnings.warn("Warning, type name {} will be shortened to twenty "
                       "characters as {}. Please confirm your final "
                       "MCF.".format(itype,itype[-6:]))
-        types = [ itype[-6:] for itype in types ]
+        types = [ itype[-20:] for itype in types ]
     if len(set(types)) < n_unique_types:
         warnings.warn("Warning, the number of unique atomtypes has been "
-              "reduced due to shortening the atomtype name to six "
+              "reduced due to shortening the atomtype name to twenty "
               "characters.")
 
     vdw_type = 'LJ'
