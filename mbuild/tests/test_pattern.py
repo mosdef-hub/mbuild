@@ -57,6 +57,11 @@ class TestPattern(BaseTest):
         pattern = mb.SpherePattern(100)
         assert len(pattern) == 100
 
+    def test_sphere_float(self):
+        pattern = mb.SpherePattern(n=100.2)
+        assert len(pattern) == 100
+        assert not np.any(np.isnan(pattern.points))
+
     def test_disk(self):
         pattern = mb.DiskPattern(100)
         assert len(pattern) == 100
