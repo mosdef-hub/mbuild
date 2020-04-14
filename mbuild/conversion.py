@@ -68,17 +68,30 @@ def load(filename_or_object, relative_to_module=None,
     """
     # First check if we are loading from an object)
     if not isinstance(filename_or_object, str):
-        return load_object(filename_or_object, compound,
-                    coords_only, infer_hierarchy, **kwargs)
+        return load_object(
+                        object=filename_or_object,
+                        compound=compound,
+                        coords_only=coords_only,
+                        rigid=rigid,
+                        infer_hierarchy=infer_hierarchy,
+                        **kwargs)
     # Second check if we are loading SMILES strings
     elif smiles:
-        return load_smiles(filename_or_object, compound,
-                            infer_hierarchy)
+        return load_smiles(
+                        smiles_or_filename=filename_or_object,
+                        compound=compound,
+                        infer_hierarchy=infer_hierarchy)
     # Last, if none of the above, load from file
     else:
-        return load_file(filename_or_object,
-                relative_to_module,compound,
-                coords_only, rigid, backend, **kwargs)
+        return load_file(
+                        filename=filename_or_object,
+                        relative_to_module=relative_to_module,
+                        compound=compound,
+                        coords_only=coords_only,
+                        rigid=rigid,
+                        backend=backend,
+                        infer_hierarchy=infer_hierarchy,
+                        **kwargs)
     # If none of the above return error out
     raise ValueError('Input not supported')
 
@@ -125,8 +138,12 @@ def load_object(object, compound=None, coords_only=False,
 
     for type in type_dict:
         if isinstance(object, type):
-            return type_dict[type](object, compound,
-                    coords_only, infer_hierarchy, **kwargs)
+            return type_dict[type](
+                            object,
+                            compound,
+                            coords_only=coords_only,
+                            infer_hierarchy=infer_hierarchy,
+                            **kwargs)
 
 def load_smiles(smiles_or_filename, compound=None,
                 infer_hierarchy=True):
@@ -180,7 +197,8 @@ def load_smiles(smiles_or_filename, compound=None,
     mymol.make3D()
 
 
-    return from_pybel(mymol, compound,
+    return from_pybel(pybel_mol=mymol,
+                      compound=compound,
                       infer_hierarchy=infer_hierarchy)
 
 def load_file(filename,relative_to_module=None,compound=None,
@@ -287,7 +305,11 @@ def load_file(filename,relative_to_module=None,compound=None,
             # Raise ValueError if there are more molecules
             pybel_mol = [i for i in pybel_mol]
             if len(pybel_mol) == 1:
-                compound = from_pybel(pybel_mol[0], compound)
+                compound = from_pybel(
+                            pybel_mol=pybel_mol[0],
+                            compound=compound,
+                            coords_only=coords_only,
+                            infer_hierarchy=infer_hierarchy)
             else:
                 raise ValueError('More tahn one pybel molecule in file,'
                             'more than one pybel molecule is not supported')
@@ -302,14 +324,21 @@ def load_file(filename,relative_to_module=None,compound=None,
              'from inter-particle distances and standard '
              'residue templates')
         structure = pmd.load_file(filename, structure=True, **kwargs)
-        compound = from_parmed(structure, compound,
-                            coords_only, infer_hierarchy)
+        compound = from_parmed(
+                            structure=structure,
+                            compound=compound,
+                            coords_only=coords_only,
+                            infer_hierarchy=infer_hierarchy)
 
     # Then mdtraj reader
     elif backend == 'mdtraj':
         traj = md.load(filename, **kwargs)
-        compound = from_trajectory(traj, compound, -1,
-                            coords_only, infer_hierarchy)
+        compound = from_trajectory(
+                            traj=traj,
+                            compound=compound,
+                            frame=-1,
+                            coords_only=coords_only,
+                            infer_hierarchy=infer_hierarchy)
 
     if rigid:
         compound.label_rigid_bodies()
@@ -426,7 +455,9 @@ def from_parmed(structure, compound=None, coords_only=False,
                                 atom.xz]) / 10
                 new_atom = mb.Particle(name=str(atom.name),
                                     pos=pos)
-                parent_compound.add(new_atom, label='{0}[{$}]'.format(atom.name))
+                parent_compound.add(new_atom, label='{0}[$]'.format(atom.name))
+                atom_mapping[atom] = new_atom
+
     # Infer bonds information
     for bond in structure.bonds:
         atom1 = atom_mapping[bond.atom1]
@@ -478,8 +509,8 @@ def from_trajectory(traj, compound=None, frame=-1,
         for mdtraj_atom, particle in atoms_particles:
             particle.pos = traj.xyz[frame, mdtraj_atom.index]
         return compound
-    elif not compound and coords_only:
-        raise MbuildError('coords_only=True but'
+    elif coords_only and not compound:
+        raise MBuildError('coords_only=True but'
                  'host compound is not provided')
 
     # Initialize a compound if none is provided
