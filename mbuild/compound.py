@@ -1,32 +1,22 @@
 __all__ = ['clone', 'Compound', 'Particle']
 
-from collections import OrderedDict, defaultdict, Iterable
+from collections import OrderedDict, Iterable
 from copy import deepcopy
 import itertools
 import os
-import sys
 import tempfile
 from warnings import warn
 
-import mdtraj as md
 from mdtraj.core.element import get_by_symbol
 import numpy as np
 from oset import oset as OrderedSet
-import parmed as pmd
-from parmed.periodic_table import AtomicNum, element_by_name, Mass, Element
 
 from mbuild.bond_graph import BondGraph
 from mbuild.box import Box
 from mbuild.exceptions import MBuildError
 from mbuild.utils.decorators import deprecated
-from mbuild.formats.xyz import read_xyz, write_xyz
-from mbuild.formats.json_formats import compound_to_json, compound_from_json
-from mbuild.formats.hoomdxml import write_hoomdxml
-from mbuild.formats.lammpsdata import write_lammpsdata
-from mbuild.formats.gsdwriter import write_gsd
-from mbuild.formats.par_writer import write_par
 from mbuild.periodic_kdtree import PeriodicCKDTree
-from mbuild.utils.io import run_from_ipython, import_, has_networkx
+from mbuild.utils.io import run_from_ipython, import_
 from mbuild.utils.jsutils import overwrite_nglview_default
 from mbuild.coordinate_transform import _translate, _rotate
 from mbuild import conversion
@@ -1719,7 +1709,6 @@ class Compound(object):
             `write_mcf`, or `parmed.Structure.save`.
             See https://parmed.github.io/ParmEd/html/structobj/parmed.structure.Structure.html#parmed.structure.Structure.save
 
-
         Other Parameters
         ----------------
         ref_distance : float, optional, default=1.0
@@ -1750,6 +1739,7 @@ class Compound(object):
 
         See Also
         --------
+        conversion.save : Main saver logic
         formats.gsdwrite.write_gsd : Write to GSD format
         formats.hoomdxml.write_hoomdxml : Write to Hoomd XML format
         formats.xyzwriter.write_xyz : Write to XYZ format
@@ -1758,78 +1748,10 @@ class Compound(object):
         formats.json_formats.compound_to_json : Write to a json file
 
         """
-        extension = os.path.splitext(filename)[-1]
+        conversion.save(self, filename, show_ports, forcefield_name,
+             forcefield_files, forcefield_debug, box,
+             overwrite, residues, combining_rule, foyer_kwargs, **kwargs)
 
-        if extension == '.json':
-            compound_to_json(self,
-                             file_path=filename,
-                             include_ports=show_ports)
-            return
-
-        # Savers supported by mbuild.formats
-        savers = {'.hoomdxml': write_hoomdxml,
-                  '.gsd': write_gsd,
-                  '.xyz': write_xyz,
-                  '.lammps': write_lammpsdata,
-                  '.lmp': write_lammpsdata,
-                  '.par': write_par,}
-        if has_networkx:
-            from mbuild.formats.cassandramcf import write_mcf
-            savers.update({'.mcf': write_mcf})
-
-        try:
-            saver = savers[extension]
-        except KeyError:
-            saver = None
-
-        if os.path.exists(filename) and not overwrite:
-            raise IOError('{0} exists; not overwriting'.format(filename))
-
-        structure = self.to_parmed(box=box, residues=residues,
-                                   show_ports=show_ports)
-        # Apply a force field with foyer if specified
-        if forcefield_name or forcefield_files:
-            foyer = import_('foyer')
-            ff = foyer.Forcefield(forcefield_files=forcefield_files,
-                            name=forcefield_name, debug=forcefield_debug)
-            if not foyer_kwargs:
-                foyer_kwargs = {}
-            structure = ff.apply(structure, **foyer_kwargs)
-            structure.combining_rule = combining_rule
-
-        total_charge = sum([atom.charge for atom in structure])
-        if round(total_charge, 4) != 0.0:
-            warn('System is not charge neutral. Total charge is {}.'
-                 ''.format(total_charge))
-
-        # Provide a warning if rigid_ids are not sequential from 0
-        if self.contains_rigid:
-            unique_rigid_ids = sorted(set([
-                p.rigid_id for p in self.rigid_particles()]))
-            if max(unique_rigid_ids) != len(unique_rigid_ids) - 1:
-                warn("Unique rigid body IDs are not sequential starting from zero.")
-
-        if saver:  # mBuild supported saver.
-            if extension in ['.gsd', '.hoomdxml']:
-                kwargs['rigid_bodies'] = [
-                        p.rigid_id for p in self.particles()]
-            saver(filename=filename, structure=structure, **kwargs)
-
-        elif extension == '.sdf':
-            pybel = import_('pybel')
-            new_compound = Compound()
-            # Convert pmd.Structure to mb.Compound
-            new_compound.from_parmed(structure)
-            # Convert mb.Compound to pybel molecule
-            pybel_molecule = new_compound.to_pybel()
-            # Write out pybel molecule to SDF file
-            output_sdf = pybel.Outputfile("sdf", filename,
-                    overwrite=overwrite)
-            output_sdf.write(pybel_molecule)
-            output_sdf.close()
-
-        else:  # ParmEd supported saver.
-            structure.save(filename, overwrite=overwrite, **kwargs)
 
     def translate(self, by):
         """Translate the Compound by a vector
