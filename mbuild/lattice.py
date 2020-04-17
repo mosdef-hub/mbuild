@@ -30,7 +30,7 @@ def load_cif(file_or_path=None):
 
         # create lattice_points dictionary
         position_dict = defaultdict(list)
-        for elem_id, coords in zip(frane.typeid, frame.cif_coordinates):
+        for elem_id, coords in zip(frame.typeid, frame.cif_coordinates):
             position_dict[frame.types[elem_id]].append(list(coords))
         box_vectors = frame.box.get_box_matrix()
         return Lattice(lattice_spacing=lattice_spacing,
