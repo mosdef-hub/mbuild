@@ -18,4 +18,4 @@ codecov
 protobuf
 nbval
 py3Dmol
-pycifrw
+garnett

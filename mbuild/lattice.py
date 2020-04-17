@@ -3,7 +3,7 @@ import pathlib
 from collections import defaultdict
 from warnings import warn
 
-import CifFile
+import garnett
 import numpy as np
 
 import mbuild as mb
@@ -18,11 +18,24 @@ def load_cif(file_or_path=None):
     assert isinstance(file_or_path, str) or isinstance(file_or_path, pathlib.Path)
     cif_location = pathlib.Path(file_or_path)
 
-    my_cif = CifFile.ReadCif(filename=str(cif_location.absolute()))
-    lattice_spacing = _get_lattice_spacing(cif_object=my_cif)
-    angles = _get_bravais_angles(cif_object=my_cif)
-    lattice_points = _get_lattice_points(cif_object=my_cif)
-    return Lattice(lattice_spacing=lattice_spacing, angles=angles, lattice_points=lattice_points)
+    reader = garnett.ciffilereader.CifFileReader()
+    with open(cif_location.absolute(), 'r') as fp:
+        my_cif = reader.read(fp)
+
+        # only need the first frame, not used as a trajectory
+        frame = my_cif[0]
+
+        # convert angstroms to nanometers
+        lattice_spacing = [frame.Lx, frame.Ly, frame.Lz] / 10
+
+        # create lattice_points dictionary
+        position_dict = defaultdict(list)
+        for elem_id, coords in zip(frane.typeid, frame.cif_coordinates):
+            position_dict[frame.types[elem_id]].append(list(coords))
+        box_vectors = frame.box.get_box_matrix()
+        return Lattice(lattice_spacing=lattice_spacing,
+                       lattice_vectors=box_vectors,
+                       lattice_points=lattice_points)
 
 
 def _get_lattice_spacing(cif_object=None):
