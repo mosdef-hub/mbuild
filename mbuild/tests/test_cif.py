@@ -4,10 +4,9 @@ import pytest
 import mbuild as mb
 from mbuild.tests.base_test import BaseTest
 from mbuild.lattice import load_cif
-from CifFile import StarError
 from mbuild.utils.io import get_fn
 
-#TODO: use the has_pycifrw importer
+#TODO: use the has_garnett importer
 
 class TestCif(BaseTest):
     """
@@ -15,7 +14,7 @@ class TestCif(BaseTest):
     """
 
     def test_malformed_cif(self):
-        with pytest.raises(StarError):
+        with pytest.raises(Exception):
             load_cif(file_or_path=get_fn("extra_blank_field.cif"))
 
     def test_has_spacings(self):

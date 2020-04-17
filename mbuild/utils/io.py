@@ -77,11 +77,11 @@ or
 '''
 
 MESSAGES['CifFile'] = '''
-The code at {filename}:{line_number} requires the "pycifrw" package
+The code at {filename}:{line_number} garnett the "garnett" package
 
-pycifrw can be installed with conda using:
+garnett can be installed with conda using:
 
-# conda install -c conda-forge pycifrw
+# conda install -c conda-forge garnett
 '''
 
 MESSAGES['protobuf'] = ''' 
@@ -205,11 +205,11 @@ except ImportError:
     has_hoomd  = False
 
 try:
-    import CifFile
-    has_pycifrw = True
-    del CifFile
+    import garnett
+    has_garnett = True
+    del garnett
 except ImportError:
-    has_pycifrw = False
+    has_garnett = False
 
 def get_fn(name):
     """Get the full path to one of the reference files shipped for utils.
