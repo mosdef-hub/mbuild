@@ -77,7 +77,7 @@ or
 '''
 
 MESSAGES['CifFile'] = '''
-The code at {filename}:{line_number} garnett the "garnett" package
+The code at {filename}:{line_number} requires the "garnett" package
 
 garnett can be installed with conda using:
 
