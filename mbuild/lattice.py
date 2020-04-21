@@ -26,7 +26,7 @@ def load_cif(file_or_path=None):
         frame = my_cif[0]
 
         # convert angstroms to nanometers
-        lattice_spacing = [frame.Lx, frame.Ly, frame.Lz] / 10
+        lattice_spacing = [frame.box.Lx/10, frame.box.Ly/10, frame.box.Lz/10]
 
         # create lattice_points dictionary
         position_dict = defaultdict(list)
@@ -35,7 +35,7 @@ def load_cif(file_or_path=None):
         box_vectors = frame.box.get_box_matrix()
         return Lattice(lattice_spacing=lattice_spacing,
                        lattice_vectors=box_vectors,
-                       lattice_points=lattice_points)
+                       lattice_points=position_dict)
 
 
 def _get_lattice_spacing(cif_object=None):
