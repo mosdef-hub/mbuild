@@ -304,3 +304,25 @@ class TestCassandraMCF(BaseTest):
         assert mcf_data[fragment_conn_start+1][0] == '0'
 
 
+    def test_shorten_atomname(self, ethane):
+        from mbuild.formats.cassandramcf import write_mcf
+        import foyer
+
+        typed_ethane = foyer.forcefields.load_OPLSAA().apply(ethane)
+        typed_ethane[0].type == "C_very_very_very_extended"
+        with pytest.raises(UserWarning,
+                match=r'Warning, type name C_very_very_very_extended will be shortened'):
+            write_mcf(typed_ethane, 'ethane-opls.mcf', angle_style='harmonic',
+                    dihedral_style='opls')
+
+        mcf_data = []
+        with open('ethane-opls.mcf') as f:
+            for line in f:
+                mcf_data.append(line.strip().split())
+
+        for idx,line in enumerate(mcf_data):
+            if len(line) > 1:
+                if line[1] == 'Atom_Info':
+                    atom_section_start = idx
+
+        assert mcf_data[atom_section_start+2][1] == "C_very_very_very_ex"
