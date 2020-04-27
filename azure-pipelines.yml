@@ -187,6 +187,8 @@ stages:
 
           - task: Docker@2
             displayName: Build and Push
-            repository: tumesh/mbuild
-            tags: demo
+            inputs:
+              command: buildAndPush
+              repository: tumesh/mbuild
+              tags: demo
             condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/727-docker-build-action'))
