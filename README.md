@@ -35,17 +35,18 @@ If you use this package, please cite [our paper](http://dx.doi.org/10.1007/978-9
 #### Quick Start with Docker
 To use `mbuild` in a jupyter-notebook that runs from a docker container with all the dependencies installed use the following command:
 
-```bash
+```sh
 $ docker pull mosdef/mbuild:latest
-$ docker run -it --name mbuild -p 8888:8888  mosdef/mbuild:latest jupyter notebook --ip="*" --allow-root
+$ docker run -it --name mbuild -p 8888:8888 mosdef/mbuild:latest\
+  /opt/conda/envs/mbuild-docker/bin/jupyter notebook --ip="*"
 ```
 
-Alternatively, you can also start a bash shell directly:
-```bash
+Alternatively, you can also start a Bourne shell directly:
+```sh
 $ docker run -it --name mbuild mosdef/mbuild:latest
 ```
 
-Note: Instead of using `latest`, you can use the image `mosdef/mbuild:stable` for stable released version of `mbuild`.
+Note: Instead of using `latest`, you can use the image `mosdef/mbuild:stable` for most recent stable release of `mbuild`.
 
 #### Tutorials
 

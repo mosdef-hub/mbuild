@@ -24,7 +24,7 @@ RUN conda update conda -yq && \
 	conda activate mbuild-docker && \
 	conda install python=$PY_VERSION nomkl --file requirements-dev.txt && \
         python setup.py install && \
-	echo "conda activate mbuild-docker" >> \
+	echo "source activate mbuild-docker" >> \
 	/home/anaconda/.profile && \
 	conda clean -afy && \
 	chown -R anaconda:anaconda /mbuild && \
@@ -33,6 +33,6 @@ RUN conda update conda -yq && \
 
 USER anaconda
 
-WORKDIR /scratch
+WORKDIR /home/anaconda
 
-CMD [ "/bin/sh", "--login -i" ]
+CMD /bin/sh --login -i
