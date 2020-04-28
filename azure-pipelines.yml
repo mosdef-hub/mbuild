@@ -1,5 +1,6 @@
 trigger:
   - master
+  - 727-docker-build-action
 
 pr:
   autoCancel: true
