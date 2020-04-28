@@ -1,5 +1,6 @@
 trigger:
   - master
+  - 727-docker-build-action
 
 pr:
   autoCancel: true
@@ -190,7 +191,7 @@ stages:
             inputs:
               command: buildAndPush
               repository: mosdef/mbuild
-              tags: latest
+              tags: latest-demo
 
           - task: Docker@2
             displayName: Logout
