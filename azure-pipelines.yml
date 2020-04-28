@@ -1,6 +1,5 @@
 trigger:
   - master
-  - 727-docker-build-action
 
 pr:
   autoCancel: true
@@ -174,7 +173,7 @@ stages:
 
   - stage: Docker
     dependsOn: Test
-    condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/727-docker-build-action'))
+    condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'), ne(variables['Build.Reason'], 'Schedule'))
     pool:
       vmImage: 'ubuntu-latest'
     jobs:
@@ -191,7 +190,7 @@ stages:
             inputs:
               command: buildAndPush
               repository: mosdef/mbuild
-              tags: latest-demo
+              tags: latest
 
           - task: Docker@2
             displayName: Logout
