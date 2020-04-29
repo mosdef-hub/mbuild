@@ -309,11 +309,9 @@ class TestCassandraMCF(BaseTest):
         import foyer
 
         typed_ethane = foyer.forcefields.load_OPLSAA().apply(ethane)
-        typed_ethane[0].type == "C_very_very_very_extended"
-        with pytest.raises(UserWarning,
-                match=r'Warning, type name C_very_very_very_extended will be shortened'):
-            write_mcf(typed_ethane, 'ethane-opls.mcf', angle_style='harmonic',
-                    dihedral_style='opls')
+        typed_ethane[0].type = "C_very_very_very_extended"
+        write_mcf(typed_ethane, 'ethane-opls.mcf', angle_style='harmonic',
+                dihedral_style='opls')
 
         mcf_data = []
         with open('ethane-opls.mcf') as f:
@@ -325,4 +323,4 @@ class TestCassandraMCF(BaseTest):
                 if line[1] == 'Atom_Info':
                     atom_section_start = idx
 
-        assert mcf_data[atom_section_start+2][1] == "C_very_very_very_ex"
+        assert mcf_data[atom_section_start+2][1] == "y_very_very_extended"
