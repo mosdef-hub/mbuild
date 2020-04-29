@@ -61,8 +61,8 @@ def load(filename_or_object, relative_to_module=None,
     **kwargs : keyword arguments
         Key word arguments passed to mdTraj for loading.
 
-    Return
-    ------
+    Returns
+    -------
     compound : mb.Compound
 
     """
@@ -117,8 +117,8 @@ def load_object(object, compound=None, coords_only=False,
     **kwargs : keyword arguments
         Key wordd arguments passed to mdTraj for loading
 
-    Return
-    ------
+    Returns
+    -------
     mb.Compound
 
     """
@@ -134,9 +134,9 @@ def load_object(object, compound=None, coords_only=False,
     except ImportError:
         pass
 
-    for type in type_dict:
-        if isinstance(object, type):
-            return type_dict[type](
+    for type_ in type_dict:
+        if isinstance(object, type_):
+            return type_dict[type_](
                             object,
                             compound,
                             coords_only=coords_only,
@@ -161,8 +161,8 @@ def load_smiles(smiles_or_filename, compound=None,
         The host mbuild Compound
     infer_hierarchy : bool, optional, default=True
 
-    Return
-    ------
+    Returns
+    -------
     compound : mb.Compound
 
     """
@@ -236,8 +236,8 @@ def load_file(filename,relative_to_module=None,compound=None,
     **kwargs : keyword arguments
         Keyword arguments passed to mdTraj for loading
 
-    Return
-    ------
+    Returns
+    -------
     compound : mb.Compound
 
     """
@@ -246,7 +246,7 @@ def load_file(filename,relative_to_module=None,compound=None,
         compound = mb.Compound()
 
     # Need to come up with a different dict structure
-    default_backend = {
+    default_backends = {
                         '.json':'internal',
                         '.xyz':'internal',
                         '.sdf':'pybel',
@@ -268,7 +268,7 @@ def load_file(filename,relative_to_module=None,compound=None,
     if not backend:
         try:
             # Try matching backend based on extension
-            backend = default_backend[extension]
+            backend = default_backends[extension]
         except KeyError:
             # Else use default backend
             backend = 'mdtraj'
@@ -348,12 +348,12 @@ def load_file(filename,relative_to_module=None,compound=None,
     # by the corresponding backend
     return compound
 
-def from_mbuild(cmpd, compound=None, coords_only=False,
-                infer_hierarchy=False):
+def from_mbuild(cmpd, compound=None, **kwargs):
     """ Backend-specific loading function - mbuild
 
     This act as a fail-safe measure, so that when an mbuild
-    Compound is passed in to mb.load(), no error is raised.
+    Compound is passed in to mb.load(), no error is raised. Please note that all the **kwargs will
+    be ignored.
 
     Parameters
     ----------
@@ -361,21 +361,19 @@ def from_mbuild(cmpd, compound=None, coords_only=False,
         New object to be loaded.
     compound : mb.Compound, optional, default = None
         mb.Compound that we are loading to.
-    coords_only : bool, optional, default=False
-        Raise a warning if set to True.
-    infer_hierarchy : bool, optional, default=False
-        Raise a warning if set to True.
 
-    Return
-    ------
+    Returns
+    -------
     compound : mb.Compound
 
     """
     msg = 'Object is not an mb.Compound'
     assert isinstance(cmpd, mb.Compound), msg
 
-    if coords_only:
-        warn('from_mbuild method does not support coords_only ')
+    warn('from_mbuild method can only return \
+    either the given cmpd, or add the given cmpd \
+    as a children to the host compound. All the \
+    extra kwargs will be ignored.')
 
     if not compound:
         return cmpd
@@ -400,8 +398,8 @@ def from_parmed(structure, compound=None, coords_only=False,
         If True, infer compound hierarchy from chain
         and reisdues
 
-    Return
-    ------
+    Returns
+    -------
     compound : mb.Compound
 
     """
@@ -495,8 +493,8 @@ def from_trajectory(traj, compound=None, frame=-1,
     infer_hierarchy : bool, optional, default=True
         If True, infer compound hierarchy from chains and residues
 
-    Return
-    ------
+    Returns
+    -------
     compound : mb.Compound
 
     """
@@ -826,8 +824,8 @@ def to_parmed(compound, box=None, title='', residues=None,
     infer_residues : bool, optional, default=False
         Attempt to assign residues based on names of children.
 
-    Return
-    ------
+    Returns
+    -------
     parmed.structure.Structure
         ParmEd Structure object converted from compound
 
@@ -968,8 +966,8 @@ def to_trajectory(compound, show_ports=False, chains=None,
         is not None, in which case those values are used for the
         box lengths.
 
-    Return
-    ------
+    Returns
+    -------
     trajectory : md.Trajectory
 
     See also
@@ -1016,8 +1014,8 @@ def _to_topology(compound, atom_list, chains=None, residues=None):
         Labels of residues in the Compound. Residues are assigned by
         checking against Compound.name.
 
-    Return
-    ------
+    Returns
+    -------
     top : mdtraj.Topology
 
     See Also
@@ -1142,8 +1140,8 @@ def to_pybel(compound, box=None, title='', residues=None,
     infer_residues : bool, optional, default=False
         Attempt to assign residues based on names of children
 
-    Return
-    ------
+    Returns
+    -------
     pybelmol : pybel.Molecule
 
     Notes
@@ -1268,8 +1266,8 @@ def to_networkx(compound, names_only=False):
         have the same name. When set to False, the default
         behavior, the nodes are the compounds themselves.
 
-    Return
-    ------
+    Returns
+    -------
     G : networkx.DiGraph
 
     Notes
@@ -1324,8 +1322,8 @@ def to_intermol(compound, molecule_types=None): # pragma: no cover
         The mbuild Compound that need to be converted.
     molecule_types : list or tuple of subclasses of Compound
 
-    Return
-    ------
+    Returns
+    -------
     intermol_system : intermol.system.System
     """
     from intermol.atom import Atom as InterMolAtom
