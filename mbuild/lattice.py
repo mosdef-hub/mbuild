@@ -67,13 +67,13 @@ class Lattice(object):
     >>> cholesterol_lattice = mb.Lattice(spacing,
     ...                                  angles=angle_values,
     ...                                  lattice_points=basis)
-
+    >>>
     >>> # The lattice based on the bravais lattice parameters of crystalline
     >>> # cholesterol was generated.
-
+    >>>
     >>> # Replicating the triclinic unit cell out 3 replications
     >>> # in x,y,z directions.
-
+    >>>
     >>> cholesterol_unit = mb.Compound()
     >>> cholesterol_unit = mb.load(get_fn('cholesterol.pdb'))
     >>> # associate basis vector with id 'cholesterol' to cholesterol Compound
@@ -96,9 +96,9 @@ class Lattice(object):
     >>> spacing = [.4123, .4123, .4123]
     >>> basis = {'Cl' : [[0., 0., 0.]], 'Cs' : [[.5, .5, .5]]}
     >>> cscl_lattice = mb.Lattice(spacing, lattice_points=basis)
-
+    >>>
     >>> # Now associate id with Compounds for lattice points and replicate 3x
-
+    >>>
     >>> cscl_dict = {'Cl' : chlorine, 'Cs' : cesium}
     >>> cscl_compound = cscl_lattice.populate(x=3, y=3, z=3,
     ...                                       compound_dict=cscl_dict)
