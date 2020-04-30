@@ -38,7 +38,7 @@ To use `mbuild` in a jupyter-notebook that runs from a docker container with all
 ```sh
 $ docker pull mosdef/mbuild:latest
 $ docker run -it --name mbuild -p 8888:8888 mosdef/mbuild:latest\
-  /opt/conda/envs/mbuild-docker/bin/jupyter notebook --ip="*"
+  /opt/conda/envs/mbuild-docker/bin/jupyter notebook --no-browser --ip="0.0.0.0"
 ```
 
 Alternatively, you can also start a Bourne shell directly:
