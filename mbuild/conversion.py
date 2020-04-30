@@ -19,7 +19,7 @@ from mbuild.formats.hoomdxml import write_hoomdxml
 from mbuild.formats.lammpsdata import write_lammpsdata
 from mbuild.formats.gsdwriter import write_gsd
 from mbuild.formats.par_writer import write_par
-from mbuild.utils.io import import_, has_networkx
+from mbuild.utils.io import import_, has_networkx, has_openbabel
 
 
 def load(filename_or_object, relative_to_module=None,
@@ -128,11 +128,9 @@ def load_object(object, compound=None, coords_only=False,
         pmd.Structure:from_parmed,
         md.Trajectory:from_trajectory
                 }
-    try:
+    if has_openbabel:
         pybel = import_('pybel')
         type_dict.update({pybel.Molecule:from_pybel})
-    except ImportError:
-        pass
 
     for type_ in type_dict:
         if isinstance(object, type_):
