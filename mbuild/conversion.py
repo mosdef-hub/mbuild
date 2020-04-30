@@ -124,13 +124,25 @@ def load_object(object, compound=None, coords_only=False,
     """
     # Create type_dict type -> loading method
     type_dict = {
-        mb.Compound:from_mbuild,
         pmd.Structure:from_parmed,
         md.Trajectory:from_trajectory
+        #Will need to add a gmso method soon
                 }
     if has_openbabel:
         pybel = import_('pybel')
         type_dict.update({pybel.Molecule:from_pybel})
+
+    # Check if the given object is an mb.Compound
+    if isinstance(object, mb.Compound):
+        if not compound:
+            warn('Given object is an mb.Compound, \
+                do nothing and return the object.')
+            return object
+        else:
+            warn('Given object is an mb.Compound, \
+                adding object to the host compound.')
+            compound.add(object)
+            return compound
 
     for type_ in type_dict:
         if isinstance(object, type_):
@@ -200,9 +212,9 @@ def load_smiles(smiles_or_filename, compound=None,
                       compound=compound,
                       infer_hierarchy=infer_hierarchy)
 
-def load_file(filename,relative_to_module=None,compound=None,
-              coords_only=False,rigid=False,backend=None,
-              infer_hierarchy=True,**kwargs):
+def load_file( filename,relative_to_module=None,compound=None,
+    coords_only=False,rigid=False,backend=None,
+    infer_hierarchy=True,**kwargs):
     """ Helper function to load from files
 
     Loading and converting a topology to mb.Compound from file. User can specify
@@ -346,38 +358,6 @@ def load_file(filename,relative_to_module=None,compound=None,
     # by the corresponding backend
     return compound
 
-def from_mbuild(cmpd, compound=None, **kwargs):
-    """ Backend-specific loading function - mbuild
-
-    This act as a fail-safe measure, so that when an mbuild
-    Compound is passed in to mb.load(), no error is raised. Please note that all the **kwargs will
-    be ignored.
-
-    Parameters
-    ----------
-    cmpd : mb.Compound
-        New object to be loaded.
-    compound : mb.Compound, optional, default = None
-        mb.Compound that we are loading to.
-
-    Returns
-    -------
-    compound : mb.Compound
-
-    """
-    msg = 'Object is not an mb.Compound'
-    assert isinstance(cmpd, mb.Compound), msg
-
-    warn('from_mbuild method can only return \
-    either the given cmpd, or add the given cmpd \
-    as a children to the host compound. All the \
-    extra kwargs will be ignored.')
-
-    if not compound:
-        return cmpd
-    else:
-        compound.add(cmpd)
-        return compound
 
 def from_parmed(structure, compound=None, coords_only=False,
                 infer_hierarchy=True):
