@@ -37,8 +37,9 @@ To use `mbuild` in a jupyter-notebook that runs from a docker container with all
 
 ```sh
 $ docker pull mosdef/mbuild:latest
-$ docker run -it --name mbuild -p 8888:8888 mosdef/mbuild:latest\
-  /opt/conda/envs/mbuild-docker/bin/jupyter notebook --no-browser --ip="0.0.0.0"
+$ docker run -it --name mbuild -p 8888:8888 mosdef/mbuild:latest su anaconda -s\
+      /bin/sh -l -c "jupyter-notebook --no-browser --ip="0.0.0.0" --notebook-dir\
+      /home/anaconda/mbuild-notebooks
 ```
 
 Alternatively, you can also start a Bourne shell directly:
@@ -46,7 +47,7 @@ Alternatively, you can also start a Bourne shell directly:
 $ docker run -it --name mbuild mosdef/mbuild:latest
 ```
 
-Note: Instead of using `latest`, you can use the image `mosdef/mbuild:stable` for most recent stable release of `mbuild`.
+To learn more about using `mBuild` with docker, please refer to the documentation [here](https://mbuild.mosdef.org/en/stable/docker.html).
 
 #### Tutorials
 

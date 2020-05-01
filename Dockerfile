@@ -19,20 +19,19 @@ RUN conda update conda -yq && \
 	conda config --add channels omnia && \
 	conda config --add channels conda-forge && \
 	conda config --add channels mosdef && \
-	conda create -n mbuild-docker python=$PY_VERSION && \
 	. /opt/conda/etc/profile.d/conda.sh && \
+	conda create -n mbuild-docker python=$PY_VERSION nomkl --file requirements-dev.txt && \
 	conda activate mbuild-docker && \
-	conda install python=$PY_VERSION nomkl --file requirements-dev.txt && \
         python setup.py install && \
 	echo "source activate mbuild-docker" >> \
 	/home/anaconda/.profile && \
 	conda clean -afy && \
+	mkdir /home/anaconda/mbuild-notebooks && \
 	chown -R anaconda:anaconda /mbuild && \
 	chown -R anaconda:anaconda /opt && \
 	chown -R anaconda:anaconda /home/anaconda
 
-USER anaconda
 
 WORKDIR /home/anaconda
 
-CMD /bin/sh --login -i
+CMD /bin/su anaconda -s /bin/sh -l
