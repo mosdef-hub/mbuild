@@ -47,7 +47,7 @@ Alternatively, you can also start a Bourne shell directly:
 $ docker run -it --name mbuild mosdef/mbuild:latest
 ```
 
-To learn more about using `mBuild` with docker, please refer to the documentation [here](https://mbuild.mosdef.org/en/stable/docker.html).
+To learn more about using `mBuild` with docker, please refer to the documentation [here](https://mbuild.mosdef.org/en/latest/docker.html).
 
 #### Tutorials
 
