@@ -280,32 +280,35 @@ def _write_atom_information(mcf_file, structure, in_ring, IG_CONSTANT_KCAL):
     sigmas = [atom.sigma for atom in structure.atoms]
 
     # Check constraints on atom type length and element name length
-    # TODO: Update these following Cassandra release
-    # to be more reasonable values
+    max_element_length = 6
+    max_atomtype_length = 20
     n_unique_elements = len(set(elements))
     for element in elements:
-        if len(element) > 2:
+        if len(element) > max_element_length:
             warnings.warn("Warning, element name {} will be shortened "
-                 "to two characters. Please confirm your final "
-                 "MCF.".format(element))
+                 "to {} characters. Please confirm your final "
+                 "MCF.".format(element, max_element_length))
 
-    elements = [ element[:2] for element in elements ]
+    elements = [ element[:max_element_length] for element in elements ]
     if len(set(elements)) < n_unique_elements:
         warnings.warn("Warning, the number of unique elements has been "
-              "reduced due to shortening the element name to two "
-              "characters.")
+              "reduced due to shortening the element name to {} "
+              "characters.".format(max_element_length))
 
     n_unique_types = len(set(types))
     for itype in types:
-        if len(itype) > 6:
-            warnings.warn("Warning, type name {} will be shortened to six "
+        if len(itype) > max_atomtype_length:
+            warnings.warn("Warning, type name {} will be shortened to {} "
                       "characters as {}. Please confirm your final "
-                      "MCF.".format(itype,itype[-6:]))
-        types = [ itype[-6:] for itype in types ]
+                      "MCF.".format(
+                          itype,
+                          max_atomtype_length,
+                          itype[-max_atomtype_length:]))
+        types = [ itype[-max_atomtype_length:] for itype in types ]
     if len(set(types)) < n_unique_types:
         warnings.warn("Warning, the number of unique atomtypes has been "
-              "reduced due to shortening the atomtype name to six "
-              "characters.")
+              "reduced due to shortening the atomtype name to {} "
+              "characters.".format(max_atomtype_length))
 
     vdw_type = 'LJ'
     header = ('!Atom Format\n'
