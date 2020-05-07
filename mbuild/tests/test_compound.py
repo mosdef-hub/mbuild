@@ -69,6 +69,30 @@ class TestCompound(BaseTest):
     def test_update_from_file(self, ch3):
         ch3.update_coordinates(get_fn("methyl.pdb"))
 
+    def test_load_protein(self):
+        # Testing the loading function with complicated protein,
+        # The protein file is taken from RCSB protein data bank
+        # https://www.rcsb.org/structure/6M03
+        protein = mb.load(get_fn('6m03.pdb'))
+
+        # Asserting the protein having correct number of chains
+        assert len(protein.children) == 2
+
+        chain1 = protein.children[0]
+        chain2 = protein.children[1] # Guess what this is: CG Water
+
+        # Assrting the main chains having the correct number of residues
+        # as well number of atoms and bonds
+        # Main protein chain
+        assert len(chain1.children) == 306
+        assert chain1.n_particles == 2367
+        assert chain1.n_bonds == 2420
+
+        # CG Water
+        assert len(chain2.children) == 87
+        assert chain2.n_particles == 87
+        assert chain2.n_bonds == 0
+
     def test_save_simple(self, ch3):
         extensions = ['.xyz', '.pdb', '.mol2', '.json', '.sdf']
         for ext in extensions:

@@ -218,7 +218,8 @@ def load_file( filename,relative_to_module=None,compound=None,
     """ Helper function to load from files
 
     Loading and converting a topology to mb.Compound from file. User can specify
-    prefered backend, or else it will be handle by default prefered backend.
+    a prefered backend, or else it will be handled by a default backend based on
+    the file extension.
 
     Parameters
     ----------
@@ -322,10 +323,12 @@ def load_file( filename,relative_to_module=None,compound=None,
                             coords_only=coords_only,
                             infer_hierarchy=infer_hierarchy)
             else:
-                raise ValueError('More tahn one pybel molecule in file,'
+                raise ValueError('More than one pybel molecule in file,'
                             'more than one pybel molecule is not supported')
+
         # text file detected, asssume contain smiles string
         elif extension == '.txt':
+            warn('.txt file detected, loading as a SMILES string')
             # Fail-safe measure
             compound = load_smiles(filename, compound)
 
@@ -333,7 +336,8 @@ def load_file( filename,relative_to_module=None,compound=None,
     elif backend == 'parmed':
         warn('Using parmed reader. Bonds may be inferred '
              'from inter-particle distances and standard '
-             'residue templates')
+             'residue templates. Please check that the bonds'
+             'in mb.Compound are accurate')
         structure = pmd.load_file(filename, structure=True, **kwargs)
         compound = from_parmed(
                             structure=structure,
