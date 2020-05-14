@@ -449,8 +449,10 @@ def from_parmed(structure, compound=None, coords_only=False,
 
     # Convert box information
     if structure.box is not None:
+        warn('All angles is assumed to be 90 degree')
         compound.periodicity = structure.box[0:3] / 10
     else:
+        warn('No box information detected, periodicity is set to [0, 0, 0]')
         compound.periodicity = np.array([0., 0., 0.])
 
     return compound
