@@ -45,6 +45,17 @@ end structure
 """
 
 def packmol_constrain(fix_orientation):
+    """
+    Provides information to PACKMOL of which axes to constrain rotation about.
+    fix_orientation is generated within the `fill_box` function
+    
+    fix_orientation : tuple of booleans
+    
+    Returns
+    --------
+    None if fix_orientation = (False, False, False)
+    str to be added to PACKMOL input text if fix_orientation contains True
+    """
     
     constraints = ['constrain_rotation x 0. 0.',
                    'constrain_rotation y 0. 0.',
@@ -65,19 +76,10 @@ def packmol_constrain(fix_orientation):
         if fix_orientation[0] and fix_orientation[1]: # Only x and y are fixed
             PACKMOL_CONSTRAIN = CONSTRAIN.format(constraints[0], constraints[1], "")
         if fix_orientation[0] and fix_orientation[2]: # Only x and z are fixed
-            PACKMOL_CONSTRAIN = CONSTRAIN.format(constraints[0], "", constraints[2])
+            PACKMOL_CONSTRAIN = CONSTRAIN.format(constraints[0], constraints[2], "")
         if fix_orientation[1] and fix_orientation[2]: # Only y and z are fixed
-            PACKMOL_CONSTRAIN = CONSTRAIN.format("", constraints[1], constraints[2])
+            PACKMOL_CONSTRAIN = CONSTRAIN.format(constraints[1], constraints[2], "")
     return PACKMOL_CONSTRAIN
-
-# Original value for PACKMOL_CONSTRAIN
-#PACKMOL_CONSTRAIN = """
-#constrain_rotation x 0. 0.
-#constrain_rotation y 0. 0.
-#constrain_rotation z 0. 0.
-#"""
-
-
 
 
 def fill_box(compound, n_compounds=None, box=None, density=None, overlap=0.2,
@@ -149,8 +151,6 @@ def fill_box(compound, n_compounds=None, box=None, density=None, overlap=0.2,
     """
     # check that the user has the PACKMOL binary on their PATH
     _check_packmol(PACKMOL)
-    print(fix_orientation)
-
     arg_count = 3 - [n_compounds, box, density].count(None)
     if arg_count != 2:
         msg = ("Exactly 2 of `n_compounds`, `box`, and `density` "
