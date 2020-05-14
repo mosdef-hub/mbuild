@@ -44,16 +44,45 @@ structure {0}
 end structure
 """
 
-PACKMOL_CONSTRAIN = """
-constrain_rotation x 0. 0.
-constrain_rotation y 0. 0.
-constrain_rotation z 0. 0.
-"""
+def packmol_constrain(fix_orientation):
+    
+    constraints = ['constrain_rotation x 0. 0.',
+                   'constrain_rotation y 0. 0.',
+                   'constrain_rotation z 0. 0.']
+
+    CONSTRAIN = """
+    {}
+    {}
+    {}
+    """
+    if not any(fix_orientation): # No directions fixed
+        return None
+    if all(fix_orientation): # All directions fixed
+        PACKMOL_CONSTRAIN = CONSTRAIN.format(constraints[0], constraints[1], constraints[2])
+    elif fix_orientation.count(True) == 1: # Only 1 direction fixed
+        PACKMOL_CONSTRAIN = CONSTRAIN.format(constraints[fix_orientation.index(True)],"","")
+    else: # 2 directions are fixed
+        if fix_orientation[0] and fix_orientation[1]: # Only x and y are fixed
+            PACKMOL_CONSTRAIN = CONSTRAIN.format(constraints[0], constraints[1], "")
+        if fix_orientation[0] and fix_orientation[2]: # Only x and z are fixed
+            PACKMOL_CONSTRAIN = CONSTRAIN.format(constraints[0], "", constraints[2])
+        if fix_orientation[1] and fix_orientation[2]: # Only y and z are fixed
+            PACKMOL_CONSTRAIN = CONSTRAIN.format("", constraints[1], constraints[2])
+    return PACKMOL_CONSTRAIN
+
+# Original value for PACKMOL_CONSTRAIN
+#PACKMOL_CONSTRAIN = """
+#constrain_rotation x 0. 0.
+#constrain_rotation y 0. 0.
+#constrain_rotation z 0. 0.
+#"""
+
+
 
 
 def fill_box(compound, n_compounds=None, box=None, density=None, overlap=0.2,
              seed=12345, edge=0.2, compound_ratio=None,
-             aspect_ratio=None, fix_orientation=False, temp_file=None,
+             aspect_ratio=None, fix_orientation=(False, False, False), temp_file=None,
              update_port_locations=False):
     """Fill a box with a `mbuild.compound` or `Compound`s using PACKMOL.
 
@@ -120,6 +149,7 @@ def fill_box(compound, n_compounds=None, box=None, density=None, overlap=0.2,
     """
     # check that the user has the PACKMOL binary on their PATH
     _check_packmol(PACKMOL)
+    print(fix_orientation)
 
     arg_count = 3 - [n_compounds, box, density].count(None)
     if arg_count != 2:
@@ -205,11 +235,12 @@ def fill_box(compound, n_compounds=None, box=None, density=None, overlap=0.2,
             compound_xyz_list.append(compound_xyz)
 
             comp.save(compound_xyz.name, overwrite=True)
+            PACKMOL_CONSTRAIN = packmol_constrain(rotate) 
             input_text += PACKMOL_BOX.format(compound_xyz.name, m_compounds,
                                              box_mins[0], box_mins[1],
                                              box_mins[2], box_maxs[0],
                                              box_maxs[1], box_maxs[2],
-                                             PACKMOL_CONSTRAIN if rotate else "")
+                                             PACKMOL_CONSTRAIN if PACKMOL_CONSTRAIN else "")
 
         _run_packmol(input_text, filled_xyz, temp_file)
         # Create the topology and update the coordinates.
