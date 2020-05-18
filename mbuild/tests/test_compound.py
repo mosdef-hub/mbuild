@@ -873,6 +873,12 @@ class TestCompound(BaseTest):
         mb.load(get_fn('benzene-nonelement.mol2'))
         mb.load(get_fn('benzene-nonelement.mol2'), use_parmed=True)
 
+    def test_load_nonatom_mdtraj_mol2(self):
+        # First atom name and element are incorrect
+        # Loading with MDTraj should raise an error
+        with pytest.raises(KeyError):
+            mb.load(get_fn('benzene-nonatom-nonelement.mol2'))
+
     def test_siliane_bond_number(self, silane):
         assert silane.n_bonds == 4
 
