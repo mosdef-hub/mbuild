@@ -46,15 +46,18 @@ end structure
 
 def packmol_constrain(fix_orientation):
     """
-    Provides information to PACKMOL of which axes to constrain rotation about.
+    Provides information to PACKMOL about which axes to constrain rotation.
     fix_orientation is generated within the `fill_box` function
-    
-    fix_orientation : tuple of booleans
-    
+    Parameters
+    ----------
+    fix_orientation : iterable of booleans, directions (x, y, z) about
+                      which to constrain rotation. If True, no rotation
+                      in that direction
     Returns
-    --------
+    -------
     None if fix_orientation = (False, False, False)
-    str to be added to PACKMOL input text if fix_orientation contains True
+    string
+        rotation constraints to be added to PACKMOL input text
     """
     
     constraints = ['constrain_rotation x 0. 0.',
