@@ -243,11 +243,11 @@ class Compound(object):
         The position of the Compound in Cartestian space
     charge : float, optional, default=0.0
         Currently not used. Likely removed in next release.
-    periodicity : np.ndarray, shape=(3,), dtype=float, optional, default=[0, 0, 0]
-        The periodic lengths of the Compound in the x, y and z directions.
-        Defaults to zeros which is treated as non-periodic.
     port_particle : bool, optional, default=False
         Whether or not this Compound is part of a Port
+    box : mb.Box, optional
+        The simulation box containing the compound. Also accounts for the
+        periodicity. Defaults to None which is treated as non-periodic.
 
     Attributes
     ----------
@@ -268,7 +268,8 @@ class Compound(object):
         (the bottom of the containment hierarchy) can have integer values for
         `rigid_id`. Compounds containing rigid particles will always have
         `rigid_id == None`. See also `contains_rigid`.
-    boundingbox
+    boundingbox : mb.Box
+        The bounds (xmin, xmax, ymin, ymax, zmin, zmax) of particles in Compound
     center
     contains_rigid
     max_rigid_id
@@ -281,7 +282,7 @@ class Compound(object):
     """
 
     def __init__(self, subcompounds=None, name=None, pos=None, charge=0.0,
-                 periodicity=None, port_particle=False):
+                 box=None, port_particle=False):
         super(Compound, self).__init__()
 
         if name:
@@ -293,17 +294,13 @@ class Compound(object):
         else:
             self.name = self.__class__.__name__
 
-        # A periodicity of zero in any direction is treated as non-periodic.
-        if periodicity is None:
-            self._periodicity = np.array([0.0, 0.0, 0.0])
-        else:
-            self._periodicity = np.asarray(periodicity)
 
         if pos is not None:
             self._pos = np.asarray(pos, dtype=float)
         else:
             self._pos = np.zeros(3)
 
+        self.box = box
         self.parent = None
         self.children = OrderedSet()
         self.labels = OrderedDict()
@@ -681,7 +678,7 @@ class Compound(object):
                     self.rigid_id -= 1
 
     def add(self, new_child, label=None, containment=True, replace=False,
-            inherit_periodicity=True, reset_rigid_ids=True):
+            inherit_box=False, reset_rigid_ids=True):
         """Add a part to the Compound.
 
         Note:
@@ -699,9 +696,8 @@ class Compound(object):
             Add the part to self.children.
         replace : bool, optional, default=True
             Replace the label if it already exists.
-        inherit_periodicity : bool, optional, default=True
-            Replace the periodicity of self with the periodicity of the
-            Compound being added
+        inherit_box: bool, optional, default=False
+            Replace the box of self with the box of the Compound being added
         reset_rigid_ids : bool, optional, default=True
             If the Compound to be added contains rigid bodies, reset the
             rigid_ids such that values remain distinct from rigid_ids
@@ -770,9 +766,32 @@ class Compound(object):
             self.labels[label] = new_child
         new_child.referrers.add(self)
 
-        if (inherit_periodicity and isinstance(new_child, Compound) and
-                new_child.periodicity.any()):
-            self.periodicity = new_child.periodicity
+
+        # If parent has no box --> inherit child box
+        # If parent has box --> keep unless inherit_box == True
+        # If inherit_box == True, parent box != None, child_box == None,
+        # keep parent box anyway and warn
+        if self.box is None:
+            if new_child.box is not None:
+                self.box = new_child.box
+        else:
+            if inherit_box:
+                if new_child.box is None:
+                    warn(
+                        "The Compound you are adding has no box but "
+                        "inherit_box=True. The box of the original "
+                        "Compound will remain unchanged."
+                    )
+                else:
+                    self.box = new_child.box
+            else:
+                if new_child.box is not None:
+                    warn(
+                        "The Compound you are adding has a box. "
+                        "The box of the parent compound will be used. Use "
+                        "inherit_box = True if you wish to replace the parent "
+                        "compound box with that of Compound being added."
+                    )
 
     def remove(self, objs_to_remove):
         """ Cleanly remove children from the Compound.
@@ -994,8 +1013,10 @@ class Compound(object):
             The maximum distance between Particles for considering a bond
 
         """
+        if self.box is None:
+            bounds = None
         particle_kdtree = PeriodicCKDTree(
-            data=self.xyz, bounds=self.periodicity)
+            data=self.xyz, box=self.box)
         particle_array = np.array(list(self.particles()))
         added_bonds = list()
         for p1 in self.particles_by_name(name_a):
@@ -1057,12 +1078,14 @@ class Compound(object):
                               ' children.')
 
     @property
-    def periodicity(self):
-        return self._periodicity
+    def box(self):
+        return self._box
 
-    @periodicity.setter
-    def periodicity(self, periods):
-        self._periodicity = np.array(periods)
+    @box.setter
+    def box(self, box):
+        if box is not None and type(box) != Box:
+            raise TypeError("box must be specified as an mbuild.Box")
+        self._box = box
 
     @property
     def xyz(self):
@@ -1179,6 +1202,8 @@ class Compound(object):
     def min_periodic_distance(self, xyz0, xyz1):
         """Vectorized distance calculation considering minimum image.
 
+        Only implemented for orthorhombic simulation boxes.
+
         Parameters
         ----------
         xyz0 : np.ndarray, shape=(3,), dtype=float
@@ -1194,7 +1219,14 @@ class Compound(object):
 
         """
         d = np.abs(xyz0 - xyz1)
-        d = np.where(d > 0.5 * self.periodicity, self.periodicity - d, d)
+        if self.box is not None:
+            if np.allclose(self.box.angles, 90.0):
+                d = np.where(d > 0.5 * self.box.lengths, self.box.lengths - d, d)
+            else:
+                raise NotImplementedError(
+                    "Periodic distance calculation is not implemented "
+                    "for non-orthorhombic boxes"
+                )
         return np.sqrt((d ** 2).sum(axis=-1))
 
     def particles_in_range(
@@ -1234,7 +1266,7 @@ class Compound(object):
         """
         if particle_kdtree is None:
             particle_kdtree = PeriodicCKDTree(
-                data=self.xyz, bounds=self.periodicity)
+                data=self.xyz, box=self.box)
         _, idxs = particle_kdtree.query(
             compound.pos, k=max_particles, distance_upper_bound=dmax)
         idxs = idxs[idxs != self.n_particles]
@@ -2095,10 +2127,17 @@ class Compound(object):
             atom2 = atom_mapping[mdtraj_atom2]
             self.add_bond((atom1, atom2))
 
-        if np.any(traj.unitcell_lengths) and np.any(traj.unitcell_lengths[0]):
-            self.periodicity = traj.unitcell_lengths[0]
+        if np.any(traj.unitcell_lengths) and np.any(traj.unitcell_lengths[frame]):
+            self.box = Box(
+                lengths=traj.unitcell_lengths[frame],
+                angles=traj.unitcell_angles[frame]
+            )
         else:
-            self.periodicity = np.array([0., 0., 0.])
+            self.box = None
+            warn(
+                "No simulation box detected for "
+                "mdtraj.Trajectory {}".format(traj)
+            )
 
     def to_trajectory(self, show_ports=False, chains=None,
                       residues=None, box=None):
@@ -2115,10 +2154,9 @@ class Compound(object):
             checking against Compound.name.
         box : mb.Box, optional, default=self.boundingbox (with buffer)
             Box information to be used when converting to a `Trajectory`.
-            If 'None', a bounding box is used with a 0.5nm buffer in each
-            dimension. to avoid overlapping atoms, unless `self.periodicity`
-            is not None, in which case those values are used for the
-            box lengths.
+            If 'None', self.box is used. If self.box is None,
+            a bounding box is used with a 0.5 nm buffer in each
+            dimension to avoid overlapping atoms.
 
         Returns
         -------
@@ -2138,18 +2176,23 @@ class Compound(object):
         for idx, atom in enumerate(atom_list):
             xyz[0, idx] = atom.pos
 
-        # Unitcell information.
-        unitcell_angles = [90.0, 90.0, 90.0]
-        if box is None:
-            unitcell_lengths = np.empty(3)
-            for dim, val in enumerate(self.periodicity):
-                if val:
-                    unitcell_lengths[dim] = val
-                else:
-                    unitcell_lengths[dim] = self.boundingbox.lengths[dim] + 0.5
-        else:
+        # Priority for box: (1) Provided to function,
+        # (2) self.box, (3) self.boundingbox + buffer
+        if box is not None:
             unitcell_lengths = box.lengths
             unitcell_angles = box.angles
+        else:
+            if self.box is not None:
+                unitcell_lengths = self.box.lengths
+                unitcell_angles = self.box.angles
+            else:
+                unitcell_lengths = self.boundingbox.lengths + 0.5
+                unitcell_angles = [90.,90.,90.]
+                warn(
+                    "No box specified and no Compound.box detected. "
+                    "Using Compound.boundingbox + 0.5 nm buffer. "
+                    "Setting all box angles to 90 degrees."
+                )
 
         return md.Trajectory(xyz, top, unitcell_lengths=unitcell_lengths,
                              unitcell_angles=unitcell_angles)
@@ -2339,10 +2382,13 @@ class Compound(object):
             self.add_bond((atom1, atom2))
 
         if structure.box is not None:
-            # Convert from A to nm
-            self.periodicity = 0.1 * structure.box[0:3]
+            self.box = Box(
+                # Convert from Ang to nm
+                lengths= 0.1 * structure.box[0:3],
+                angles = structure.box[3:6]
+            )
         else:
-            self.periodicity = np.array([0., 0., 0.])
+            self.box = None
 
     def to_parmed(self, box=None, title='', residues=None, show_ports=False,
             infer_residues=False):
@@ -2352,10 +2398,9 @@ class Compound(object):
         ----------
         box : mb.Box, optional, default=self.boundingbox (with buffer)
             Box information to be used when converting to a `Structure`.
-            If 'None', a bounding box is used with 0.25nm buffers at
-            each face to avoid overlapping atoms, unless `self.periodicity`
-            is not None, in which case those values are used for the
-            box lengths.
+            If 'None', self.box is used. If self.box is None,
+            a bounding box is used with 0.5 nm buffer in each dimension
+            to avoid overlapping atoms.
         title : str, optional, default=self.name
             Title/name of the ParmEd Structure
         residues : str of list of str
@@ -2464,28 +2509,30 @@ class Compound(object):
         for atom1, atom2 in self.bonds():
             bond = pmd.Bond(atom_mapping[atom1], atom_mapping[atom2])
             structure.bonds.append(bond)
-        # pad box with .25nm buffers
-        if box is None:
-            box = self.boundingbox
-            box_vec_max = box.maxs.tolist()
-            box_vec_min = box.mins.tolist()
-            for dim, val in enumerate(self.periodicity):
-                if val:
-                    box_vec_max[dim] = val
-                    box_vec_min[dim] = 0.0
-                if not val:
-                    box_vec_max[dim] += 0.25
-                    box_vec_min[dim] -= 0.25
-            box = Box(mins=box_vec_min, maxs=box_vec_max)
 
-        box_vector = np.empty(6)
-        if box.angles is not None:
-            box_vector[3:6] = box.angles
+        # Priority for box: (1) Provided to function,
+        # (2) self.box, (3) self.boundingbox + buffer
+        pmd_box = np.zeros(6)
+        if box is not None:
+            pmd_box[0:3] = box.lengths
+            pmd_box[3:6] = box.angles
         else:
-            box_vector[3] = box_vector[4] = box_vector[5] = 90.0
-        for dim in range(3):
-            box_vector[dim] = box.lengths[dim] * 10
-        structure.box = box_vector
+            if self.box is not None:
+                pmd_box[0:3] = self.box.lengths
+                pmd_box[3:6] = self.box.angles
+            else:
+                pmd_box[0:3] = self.boundingbox.lengths + 0.5
+                pmd_box[3:6] = [90., 90., 90.]
+                warn(
+                    "No box specified and no Compound.box detected. "
+                    "Using Compound.boundingbox + 0.5 nm buffer. "
+                    "Setting all box angles to 90 degrees."
+                )
+
+        # Convert nm to Ang and save to structure
+        pmd_box[0:3] = 10.0 * pmd_box[0:3]
+        structure.box = pmd_box
+
         return structure
 
     def to_networkx(self, names_only=False):
@@ -2735,18 +2782,18 @@ class Compound(object):
                             self[bond.GetEndAtomIdx()-1]])
 
         if hasattr(pybel_mol, 'unitcell'):
-            box = Box(lengths=[pybel_mol.unitcell.GetA()/10,
-                                pybel_mol.unitcell.GetB()/10,
-                                pybel_mol.unitcell.GetC()/10],
-                        angles=[pybel_mol.unitcell.GetAlpha(),
-                                pybel_mol.unitcell.GetBeta(),
-                                pybel_mol.unitcell.GetGamma()])
-            self.periodicity = box.lengths
+            self.box = Box(
+                lengths=[pybel_mol.unitcell.GetA()/10,
+                         pybel_mol.unitcell.GetB()/10,
+                         pybel_mol.unitcell.GetC()/10],
+                angles=[pybel_mol.unitcell.GetAlpha(),
+                        pybel_mol.unitcell.GetBeta(),
+                        pybel_mol.unitcell.GetGamma()]
+                )
         else:
+            self.box = None
             warn("No unitcell detected for pybel.Molecule {}".format(pybel_mol))
-#       TODO: Decide how to gather PBC information from openbabel. Options may
-#             include storing it in .periodicity or writing a separate function
-#             that returns the box.
+
 
     def to_intermol(self, molecule_types=None): # pragma: no cover
         """Create an InterMol system from a Compound.
@@ -2851,8 +2898,8 @@ class Compound(object):
 
         if self.children:
             descr.append('{:d} particles, '.format(self.n_particles))
-            if any(self.periodicity):
-                descr.append('periodicity: {}, '.format(self.periodicity))
+            if self.box is not None:
+                descr.append('System box: {}, '.format(self.box))
             else:
                 descr.append('non-periodic, ')
         else:
@@ -2887,7 +2934,7 @@ class Compound(object):
         clone_of[self] = newone
 
         newone.name = deepcopy(self.name)
-        newone.periodicity = deepcopy(self.periodicity)
+        newone.box = deepcopy(self.box)
         newone._pos = deepcopy(self._pos)
         newone.port_particle = deepcopy(self.port_particle)
         newone._check_if_contains_rigid_bodies = deepcopy(
