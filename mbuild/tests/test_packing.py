@@ -223,3 +223,51 @@ class TestPacking(BaseTest):
         butane = Alkane(n=4)
         butane.remove(butane[-1])
         box = mb.fill_box(butane, n_compounds=10, density=1)
+
+    def test_validate_inputs(self, h2o):
+        with pytest.raises(TypeError, match=r"must be an mbuild.Compound"):
+            filled = mb.fill_box('h2o', n_compounds = 10, box=[1,1,1])
+        with pytest.raises(TypeError, match=r"must be an int or"):
+            filled = mb.fill_box(h2o, n_compounds = 10.2, box=[1,1,1])
+        with pytest.raises(TypeError, match=r"must be a bool or"):
+            filled = mb.fill_box(h2o, n_compounds = 10, box=[1,1,1], fix_orientation=2)
+        with pytest.raises(TypeError, match=r"must be a list with"):
+            filled = mb.fill_box([h2o, h2o], n_compounds = [10,2], box=[1,1,1], compound_ratio=1)
+        with pytest.raises(TypeError, match=r"must be a float or"):
+            filled = mb.fill_box(h2o, n_compounds = 10, box=[1,1,1], compound_mass='5')
+        with pytest.raises(ValueError, match=r"must be of equal"):
+            filled = mb.fill_box([h2o, h2o], n_compounds = 10, box=[1,1,1])
+        with pytest.raises(ValueError, match=r"must be of equal"):
+            filled = mb.fill_box([h2o, h2o], n_compounds = [10,10], box=[1,1,1], fix_orientation=[True])
+        with pytest.raises(ValueError, match=r"must be of equal"):
+            filled = mb.fill_box([h2o, h2o], n_compounds = [10,10], box=[1,1,1], compound_mass=1)
+
+    def test_specify_mass(self):
+        compound1 = mb.Compound(name="A")
+        compound2 = mb.Compound(name="B")
+        filled = mb.fill_box(compound1, box=[1,1,1], density=1000, compound_mass=18)
+        assert filled.n_particles == 33
+        filled = mb.fill_box([compound1,compound2], box=[1,1,1],
+                density=1000, compound_mass=[18,18], compound_ratio=[1,1])
+        assert filled.n_particles == 32
+
+    def test_no_mass(self):
+        compound = mb.Compound(name="A")
+        with pytest.raises(MBuildError, match=r"Total mass of compound"):
+            filled = mb.fill_box(compound, box=[1,1,1], density=1000)
+        with pytest.raises(MBuildError, match=r"Total mass of compound"):
+            filled = mb.fill_box(compound, n_compounds=100, density=1000)
+        with pytest.raises(MBuildError, match=r"Total mass of compound"):
+            filled = mb.fill_box([compound, compound], box=[1,1,1],
+                    density=1000, compound_ratio=[1,2])
+        with pytest.raises(MBuildError, match=r"Total mass of compound"):
+            filled = mb.fill_sphere(compound, sphere=[3, 3, 3, 1.5],
+                    density=50)
+        with pytest.raises(MBuildError, match=r"Total mass of compound"):
+            filled = mb.fill_sphere([compound, compound], sphere=[3, 3, 3, 1.5],
+                    density=50, compound_ratio=[1,2])
+
+
+        filled = mb.fill_box(compound, box=[1,1,1], n_compounds=10)
+        filled = mb.fill_sphere(compound, sphere=[3, 3, 3, 1.5], n_compounds=10)
+ 

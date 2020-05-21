@@ -54,7 +54,7 @@ constrain_rotation z 0. 0.
 def fill_box(compound, n_compounds=None, box=None, density=None, overlap=0.2,
              seed=12345, edge=0.2, compound_ratio=None,
              aspect_ratio=None, fix_orientation=False, temp_file=None,
-             update_port_locations=False):
+             update_port_locations=False, compound_mass=None):
     """Fill a box with a `mbuild.compound` or `Compound`s using PACKMOL.
 
    `fill_box` takes a single `mbuild.Compound` or a
@@ -112,6 +112,9 @@ def fill_box(compound, n_compounds=None, box=None, density=None, overlap=0.2,
     update_port_locations : bool, default=False
         After packing, port locations can be updated, but since compounds
         can be rotated, port orientation may be incorrect.
+    compound_mass : float or list of floats, default=None
+        Mass of each compound in amu
+
 
     Returns
     -------
@@ -127,30 +130,34 @@ def fill_box(compound, n_compounds=None, box=None, density=None, overlap=0.2,
                "must be specified. {} were given.".format(arg_count))
         raise ValueError(msg)
 
+    # Check other args
+    (compound, n_compounds, compound_ratio, fix_orientation,
+        compound_mass ) = _validate_packing_inputs(
+                                compound,
+                                n_compounds,
+                                compound_ratio,
+                                fix_orientation,
+                                compound_mass
+                            )
+
     if box is not None:
         box = _validate_box(box)
-    if not isinstance(compound, (list, set)):
-        compound = [compound]
-    if n_compounds is not None and not isinstance(n_compounds, (list, set)):
-        n_compounds = [n_compounds]
-    if not isinstance(fix_orientation, (list, set)):
-        fix_orientation = [fix_orientation]*len(compound)
-
-    if compound is not None and n_compounds is not None:
-        if len(compound) != len(n_compounds):
-            msg = ("`compound` and `n_compounds` must be of equal length.")
-            raise ValueError(msg)
-
-    if compound is not None:
-        if len(compound) != len(fix_orientation):
-            msg = ("`compound`, `n_compounds`, and `fix_orientation` "
-                   "must be of equal length.")
-            raise ValueError(msg)
 
     if density is not None:
         if box is None and n_compounds is not None:
-            total_mass = np.sum([n*np.sum([a.mass for a in c.to_parmed().atoms])
+            if compound_mass is None:
+                total_mass = np.sum([n*np.sum([a.mass for a in c.to_parmed().atoms])
                                 for c, n in zip(compound, n_compounds)])
+                if total_mass == 0.0:
+                    raise MBuildError(
+                        "Total mass of compound(s) is zero. This likely means "
+                        "that one or more of your particle names are not "
+                        "two-letter element codes. You may specify the mass "
+                        "of non-atomistic compounds with the `compound_mass` "
+                        "argument."
+                    )
+            else:
+                total_mass = np.sum(compound_mass)
             # Conversion from (amu/(kg/m^3))**(1/3) to nm
             L = (total_mass/density)**(1/3)*1.1841763
             if aspect_ratio is None:
@@ -160,23 +167,43 @@ def fill_box(compound, n_compounds=None, box=None, density=None, overlap=0.2,
                 box = _validate_box(Box([val*L for val in aspect_ratio]))
         if n_compounds is None and box is not None:
             if len(compound) == 1:
-                compound_mass = np.sum([a.mass for a in compound[0].to_parmed().atoms])
+                if compound_mass is None:
+                    mass = np.sum([a.mass for a in compound[0].to_parmed().atoms])
+                    if mass == 0.0:
+                        raise MBuildError(
+                            "Total mass of compound(s) is zero. This likely means "
+                            "that one or more of your particle names are not "
+                            "two-letter element codes. You may specify the mass "
+                            "of non-atomistic compounds with the `compound_mass` "
+                            "argument."
+                        )
+                else:
+                    mass = compound_mass[0]
                 # Conversion from kg/m^3 / amu * nm^3 to dimensionless units
                 n_compounds = [
-                    int(density/compound_mass*np.prod(box.lengths)*0.60224)]
+                    int(density/mass*np.prod(box.lengths)*0.60224)]
             else:
                 if compound_ratio is None:
                     msg = ("Determing `n_compounds` from `density` and `box` "
                            "for systems with more than one compound type "
                            "requires `compound_ratio`")
                     raise ValueError(msg)
-                if len(compound) != len(compound_ratio):
-                    msg = ("Length of `compound_ratio` must equal length of "
-                           "`compound`")
-                    raise ValueError(msg)
+
                 prototype_mass = 0
-                for c, r in zip(compound, compound_ratio):
-                    prototype_mass += r * np.sum([a.mass for a in c.to_parmed().atoms])
+                if compound_mass is None:
+                    for c, r in zip(compound, compound_ratio):
+                        prototype_mass += r * np.sum([a.mass for a in c.to_parmed().atoms])
+                    if prototype_mass == 0.0:
+                        raise MBuildError(
+                            "Total mass of compound(s) is zero. This likely means "
+                            "that one or more of your particle names are not "
+                            "two-letter element codes. You may specify the mass "
+                            "of non-atomistic compounds with the `compound_mass` "
+                            "argument."
+                        )
+                else:
+                    for m, r in zip(compound_mass, compound_ratio):
+                        prototype_mass += r * m
                 # Conversion from kg/m^3 / amu * nm^3 to dimensionless units
                 n_prototypes = int(density/prototype_mass*np.prod(box.lengths)*0.60224)
                 n_compounds = list()
@@ -270,28 +297,22 @@ def fill_region(compound, n_compounds, region, overlap=0.2,
     # check that the user has the PACKMOL binary on their PATH
     _check_packmol(PACKMOL)
 
-    if not isinstance(compound, (list, set)):
-        compound = [compound]
-    if not isinstance(n_compounds, (list, set)):
-        n_compounds = [n_compounds]
-    if not isinstance(fix_orientation, (list, set)):
-        fix_orientation = [fix_orientation]*len(compound)
-
-    if compound is not None and n_compounds is not None:
-        if len(compound) != len(n_compounds):
-            msg = ("`compound` and `n_compounds` must be of equal length.")
-            raise ValueError(msg)
-    if compound is not None:
-        if len(compound) != len(fix_orientation):
-            msg = ("`compound`, `n_compounds`, and `fix_orientation` must be of equal length.")
-            raise ValueError(msg)
-
     # See if region is a single region or list
     if isinstance(region, Box):  # Cannot iterate over boxes
         region = [region]
     elif not any(isinstance(reg, (list, set, Box)) for reg in region):
         region = [region]
     region = [_validate_box(reg) for reg in region]
+
+    # Check other args
+    (compound, n_compounds, compound_ratio, fix_orientation,
+        compound_mass ) = _validate_packing_inputs(
+                                compound,
+                                n_compounds,
+                                None,
+                                fix_orientation,
+                                None
+                            )
 
     # In angstroms for packmol.
     overlap *= 10
@@ -337,7 +358,8 @@ def fill_region(compound, n_compounds, region, overlap=0.2,
 
 def fill_sphere(compound, sphere, n_compounds=None, density=None, overlap=0.2,
                 seed=12345, edge=0.2, compound_ratio=None,
-                fix_orientation=False, temp_file=None, update_port_locations=False):
+                fix_orientation=False, temp_file=None, update_port_locations=False,
+                compound_mass=None):
     """Fill a sphere with a compound using packmol.
 
     One argument of `n_compounds and density` must be specified.
@@ -378,6 +400,9 @@ def fill_sphere(compound, sphere, n_compounds=None, density=None, overlap=0.2,
     update_port_locations : bool, default=False
         After packing, port locations can be updated, but since compounds
         can be rotated, port orientation may be incorrect.
+    compound_mass : float or list of floats, default=None
+        Mass of each compound in amu
+
 
     Returns
     -------
@@ -399,23 +424,6 @@ def fill_sphere(compound, sphere, n_compounds=None, density=None, overlap=0.2,
         msg = ("`sphere` must be a list")
         raise ValueError(msg)
 
-    if not isinstance(compound, (list, set)):
-        compound = [compound]
-    if n_compounds is not None and not isinstance(n_compounds, (list, set)):
-        n_compounds = [n_compounds]
-    if not isinstance(fix_orientation, (list, set)):
-        fix_orientation = [fix_orientation]*len(compound)
-
-    if compound is not None and n_compounds is not None:
-        if len(compound) != len(n_compounds):
-            msg = ("`compound` and `n_compounds` must be of equal length.")
-            raise ValueError(msg)
-
-    if compound is not None:
-        if len(compound) != len(fix_orientation):
-            msg = ("`compound`, `n_compounds`, and `fix_orientation` must be of equal length.")
-            raise ValueError(msg)
-
     for coord in sphere[:3]:
         if coord < sphere[3]:
             msg = ("`sphere` center coordinates must be greater than radius.")
@@ -424,25 +432,54 @@ def fill_sphere(compound, sphere, n_compounds=None, density=None, overlap=0.2,
     # Apply edge buffer
     radius = sphere[3] - edge
 
+    # Check other args
+    (compound, n_compounds, compound_ratio, fix_orientation,
+        compound_mass ) = _validate_packing_inputs(
+                                compound,
+                                n_compounds,
+                                compound_ratio,
+                                fix_orientation,
+                                compound_mass
+                            )
+
     if density is not None:
         if n_compounds is None:
             if len(compound) == 1:
-                compound_mass = np.sum([a.mass for a in compound[0].to_parmed().atoms])
+                if compound_mass is None:
+                    mass = np.sum([a.mass for a in compound[0].to_parmed().atoms])
+                    if mass == 0.0:
+                        raise MBuildError(
+                            "Total mass of compound(s) is zero. This likely means "
+                            "that one or more of your particle names are not "
+                            "two-letter element codes. You may specify the mass "
+                            "of non-atomistic compounds with the `compound_mass` "
+                            "argument."
+                        )
+                else:
+                    mass = compound_mass[0]
                 # Conversion from kg/m^3 / amu * nm^3 to dimensionless units
-                n_compounds = [int(density/compound_mass*(4/3*np.pi*radius**3)*.60224)]
+                n_compounds = [int(density/mass*(4/3*np.pi*radius**3)*.60224)]
             else:
                 if compound_ratio is None:
                     msg = ("Determing `n_compounds` from `density` "
                            "for systems with more than one compound type requires"
                            "`compound_ratio`")
                     raise ValueError(msg)
-                if len(compound) != len(compound_ratio):
-                    msg = ("Length of `compound_ratio` must equal length of "
-                           "`compound`")
-                    raise ValueError(msg)
                 prototype_mass = 0
-                for c, r in zip(compound, compound_ratio):
-                    prototype_mass += r * np.sum([a.mass for a in c.to_parmed().atoms])
+                if compound_mass is None:
+                    for c, r in zip(compound, compound_ratio):
+                        prototype_mass += r * np.sum([a.mass for a in c.to_parmed().atoms])
+                    if prototype_mass == 0.0:
+                        raise MBuildError(
+                            "Total mass of compound(s) is zero. This likely means "
+                            "that one or more of your particle names are not "
+                            "two-letter element codes. You may specify the mass "
+                            "of non-atomistic compounds with the `compound_mass` "
+                            "argument."
+                        )
+                else:
+                    for m, r in zip(compound_mass, compound_ratio):
+                        prototype_mass += r * m
                 # Conversion from kg/m^3 / amu * nm^3 to dimensionless units
                 n_prototypes = int(density/prototype_mass*(4/3*np.pi*radius**3)*.60224)
                 n_compounds = list()
@@ -589,6 +626,72 @@ def solvate(solute, solvent, n_solvent, box, overlap=0.2,
         os.unlink(solvated_xyz.name)
         os.unlink(solute_xyz.name)
     return solvated
+
+def _validate_packing_inputs(
+    compound, n_compounds, compound_ratio, fix_orientation, compound_mass
+):
+    """Ensure that arguments are the correct types and mutually compatible"""
+
+    if not isinstance(compound, (list, set)):
+        compound = [compound]
+    for c in compound:
+        if not isinstance(c, Compound):
+            raise TypeError(
+                "`compound` must be an mbuild.Compound "
+                "or list of mbuild.Compounds"
+            )
+
+    if n_compounds is not None:
+        if not isinstance(n_compounds, (list, set)):
+            n_compounds = [n_compounds]
+        for n in n_compounds:
+            if not isinstance(n, int):
+                raise TypeError(
+                    "`n_compounds` must be an int or list of ints"
+                )
+        if len(compound) != len(n_compounds):
+            raise ValueError(
+                "`compound` and `n_compounds` must be of equal length."
+            )
+
+    if fix_orientation is not None:
+        if not isinstance(fix_orientation, (list, set)):
+            fix_orientation = [fix_orientation]*len(compound)
+        for fix in fix_orientation:
+            if not isinstance(fix, bool):
+                raise TypeError(
+                    "`fix_orientation` must be a bool or list of bools"
+                )
+        if len(compound) != len(fix_orientation):
+            raise ValueError(
+                "`compound` and `fix_orientation` must be of equal length."
+            )
+
+    if compound_ratio is not None:
+        if not isinstance(compound_ratio, (list, set)):
+            raise TypeError(
+                "`compound_ratio` must be a list with "
+                "length == len(compound)"
+            )
+        if len(compound_ratio) != len(compound):
+            raise ValueError(
+                "`compound` and `compound_ratio` must be of equal length"
+            )
+
+    if compound_mass is not None:
+        if not isinstance(compound_mass, (list, set)):
+            compound_mass = [compound_mass]
+        for mass in compound_mass:
+            if not isinstance(mass, (float, int)):
+                raise TypeError(
+                    "`compound_mass` must be a float or list of floats"
+                )
+        if len(compound_mass) != len(compound):
+            raise ValueError(
+                "`compound` and `compound_mass` must be of equal length"
+            )
+
+    return compound, n_compounds, compound_ratio, fix_orientation, compound_mass
 
 
 def _validate_box(box):
