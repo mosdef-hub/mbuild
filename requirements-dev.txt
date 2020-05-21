@@ -4,7 +4,7 @@ packmol>=1!18.013
 nglview>=2.7
 oset
 parmed
-mdtraj<=1.9.3
+mdtraj
 foyer
 gsd>=1.2
 openbabel
