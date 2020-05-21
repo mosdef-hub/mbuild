@@ -2436,11 +2436,13 @@ class Compound(object):
                 try:
                     atomic_number = AtomicNum[atom.name.capitalize()]
                 except KeyError:
-                    element = element_by_name(atom.name.capitalize())
                     if name not in guessed_elements:
                         warn(
-                            'Guessing that "{}" is element: "{}"'.format(
-                                atom, element))
+                            'Cannot infer mass of "{}" since its name does '
+                            'not match the two-letter code of any known '
+                            'elements. Setting mass to 0.0'.format(atom)
+                        )
+                        element = "EP"
                         guessed_elements.add(name)
                 else:
                     element = atom.name.capitalize()

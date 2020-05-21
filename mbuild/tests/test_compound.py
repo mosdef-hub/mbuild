@@ -1117,3 +1117,8 @@ class TestCompound(BaseTest):
         filled.save('methane.sdf')
         sdf_string = mb.load('methane.sdf')
         assert np.allclose(filled.xyz, sdf_string.xyz, atol=1e-5)
+
+    def test_parmed_mass(self):
+        compound = mb.Compound()
+        pmd = compound.to_parmed()
+        assert pmd.atoms[0].mass == 0.0
