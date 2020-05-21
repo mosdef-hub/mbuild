@@ -142,6 +142,19 @@ def import_(module):
             return pybel
         except ModuleNotFoundError:
             pass
+    if module == 'openbabel':
+        try:
+            return importlib.import_module('openbabel.openbabel')
+        except ModuleNotFoundError:
+            pass
+        try:
+            openbabel = importlib.import_module('openbabel')
+            msg = ('openbabel 2.0 detected and will be dropped in a future '
+                   'release. Consider upgrading to 3.x.')
+            warnings.warn(msg, DeprecationWarning)
+            return pybel
+        except ModuleNotFoundError:
+            pass
     try:
         return importlib.import_module(module)
     except ImportError as e:
@@ -181,7 +194,7 @@ except ImportError:
     has_gsd = False
 
 try:
-    import openbabel
+    from openbabel import openbabel
     has_openbabel = True
     del openbabel
 except ImportError:
