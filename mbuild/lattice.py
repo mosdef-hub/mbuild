@@ -8,19 +8,24 @@ import numpy as np
 
 import mbuild as mb
 
-__all__ = ['load_cif','Lattice']
+__all__ = ['load_cif', 'Lattice']
 
 
-def load_cif(file_or_path=None):
+def load_cif(file_or_path=None, wrap_coords=False):
     """Load a CifFile object into memory, return an mbuild.Lattice.
+
+    Parameters
+    ----------
+    wrap_coords : bool, False
+        Wrap the lattice points back into the 0-1 acceptable coordinates.
     """
 
-    assert isinstance(file_or_path, str) or isinstance(file_or_path, pathlib.Path)
+    assert isinstance(file_or_path, (str, pathlib.Path))
     cif_location = pathlib.Path(file_or_path)
 
     reader = garnett.ciffilereader.CifFileReader()
-    with open(cif_location.absolute(), 'r') as fp:
-        my_cif = reader.read(fp)
+    with open(cif_location.absolute(), 'r') as cif_file:
+        my_cif = reader.read(cif_file)
 
         # only need the first frame, not used as a trajectory
         frame = my_cif[0]
@@ -30,47 +35,21 @@ def load_cif(file_or_path=None):
 
         # create lattice_points dictionary
         position_dict = defaultdict(list)
-        for elem_id, coords in zip(frame.typeid, frame.cif_coordinates):
+        for elem_id, coords in zip(frame.typeid, frame.cif_coordinates.tolist()):
+            if wrap_coords:
+                for i, pos in enumerate(coords):
+                    if pos < 0 and pos > -1:
+                        coords[i] = coords[i] + 1
+                    elif pos > 1 and pos < 2:
+                        coords[i] = coords[i] - 1
+                    else:
+                        pass
             position_dict[frame.types[elem_id]].append(list(coords))
         box_vectors = frame.box.get_box_matrix()
         return Lattice(lattice_spacing=lattice_spacing,
                        lattice_vectors=box_vectors,
                        lattice_points=position_dict)
 
-
-def _get_lattice_spacing(cif_object=None):
-    assert isinstance(cif_object, CifFile.CifFile)
-    spacing_keys = ['_cell_length_a', '_cell_length_b', '_cell_length_c']
-    spacings = list()
-
-    for my_spacing in spacing_keys:
-        spacings.append(cif_object['global'][my_spacing])
-
-    return np.asarray(spacings, dtype=np.float)
-
-
-def _get_bravais_angles(cif_object=None):
-    assert isinstance(cif_object, CifFile.CifFile)
-    angle_keys = ['_cell_angle_alpha', '_cell_angle_beta', '_cell_angle_gamma']
-    angles = list()
-
-    for my_angle in angle_keys:
-        angles.append(cif_object['global'][my_angle])
-
-    return np.asarray(angles, dtype=np.float)
-
-def _get_lattice_points(cif_object=None):
-    assert isinstance(cif_object, CifFile.CifFile)
-
-    atom_site_label = cif_object['global']['_atom_site_label']
-    fract_x_pos = cif_object['global']['_atom_site_fract_x']
-    fract_y_pos = cif_object['global']['_atom_site_fract_y']
-    fract_z_pos = cif_object['global']['_atom_site_fract_z']
-    lattice_points = dict()
-    for label, x_pos, y_pos, z_pos in zip(atom_site_label, fract_x_pos, fract_y_pos, fract_z_pos):
-        lattice_points[label] = [[float(x_pos), float(y_pos), float(z_pos)]]
-
-    return lattice_points
 
 class Lattice(object):
     """Develop crystal structure from user defined inputs.
@@ -644,8 +623,8 @@ class Lattice(object):
         # set periodicity
         ret_lattice.periodicity = np.asarray([a * x, b * y, c * z], dtype=np.float64)
         warn('Periodicity of non-rectangular lattices are not valid with '
-                    'default boxes. Only rectangular lattices are valid '
-                    'at this time.')
+             'default boxes. Only rectangular lattices are valid '
+             'at this time.')
 
         # if coordinates are below a certain threshold, set to 0
         tolerance = 1e-12

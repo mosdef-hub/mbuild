@@ -4,7 +4,7 @@ import pytest
 import mbuild as mb
 from mbuild.tests.base_test import BaseTest
 from mbuild.lattice import load_cif
-from mbuild.utils.io import get_fn
+from mbuild.utils.io import get_fn, has_garnett
 
 #TODO: use the has_garnett importer
 
@@ -12,26 +12,16 @@ class TestCif(BaseTest):
     """
     Unit tests for CIF file loading and Lattice generation.
     """
-
+    @pytest.mark.skipif(not has_garnett, reason="Garnett package not installed")
     def test_malformed_cif(self):
         with pytest.raises(Exception):
             load_cif(file_or_path=get_fn("extra_blank_field.cif"))
 
-    def test_has_spacings(self):
-        pass
+    @pytest.mark.skipif(not has_garnett, reason="Garnett package not installed")
+    def test_wrap_false(self):
+        with pytest.raises(ValueError):
+            load_cif(file_or_path=get_fn("needs_to_be_wrapped.cif"), wrap_coords=False)
 
-    def test_has_atomsites(self):
-        #TODO Make sure that a cif file has atomsites
-        pass
-    
-    def test_has_xyz_pos(self):
-        #TODO Check that a cif file has positions for each atomsite
-        pass
-    
-    def test_occupation_probability(self):
-        #TODO Make sure the user is warned if a cif file has atomsites with probability distributions
-        pass
-
-    def test_infer_compounds(self):
-        #TODO attempt to make compounds from atom_site_label
-        pass
+    @pytest.mark.skipif(not has_garnett, reason="Garnett package not installed")
+    def test_wrap_true(self):
+        assert load_cif(file_or_path=get_fn("needs_to_be_wrapped.cif"), wrap_coords=True)
