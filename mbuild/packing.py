@@ -67,6 +67,12 @@ def packmol_constrain(fix_orientation):
     {}
     {}
     """
+    # Handles instances that are not iterable; defaults to True/Fales for all axes
+    if fix_orientation == True:
+        fix_orientation=(True, True, True)
+    if fix_orientation == False:
+        fix_orientation=(False, False, False)
+
     if not any(fix_orientation):
         return None
     final_constraints = list()
@@ -160,8 +166,17 @@ def fill_box(compound, n_compounds=None, box=None, density=None, overlap=0.2,
         compound = [compound]
     if n_compounds is not None and not isinstance(n_compounds, (list, set)):
         n_compounds = [n_compounds]
+
     if not isinstance(fix_orientation, (list, set)):
         fix_orientation = [fix_orientation]*len(compound)
+    try:
+        iter(fix_orientation[0])
+    except:
+        warn('fix_orientation can be given as an iterable of True/False values
+             for each compound to fix rotations about each x,y,z axis individually.
+             Using a single instance of True/False defaults to (True,True,True)
+             and (Fale,False,False) respectively')
+
     if compound is not None and n_compounds is not None:
         if len(compound) != len(n_compounds):
             msg = ("`compound` and `n_compounds` must be of equal length.")
