@@ -59,30 +59,23 @@ def packmol_constrain(fix_orientation):
     string
         rotation constraints to be added to PACKMOL input text
     """
-    
     constraints = ['constrain_rotation x 0. 0.',
                    'constrain_rotation y 0. 0.',
                    'constrain_rotation z 0. 0.']
-
     CONSTRAIN = """
     {}
     {}
     {}
     """
-    if not any(fix_orientation): # No directions fixed
+    if not any(fix_orientation):
         return None
-    if all(fix_orientation): # All directions fixed
-        PACKMOL_CONSTRAIN = CONSTRAIN.format(constraints[0], constraints[1], constraints[2])
-    elif fix_orientation.count(True) == 1: # Only 1 direction fixed
-        PACKMOL_CONSTRAIN = CONSTRAIN.format(constraints[fix_orientation.index(True)],"","")
-    else: # 2 directions are fixed
-        if fix_orientation[0] and fix_orientation[1]: # Only x and y are fixed
-            PACKMOL_CONSTRAIN = CONSTRAIN.format(constraints[0], constraints[1], "")
-        if fix_orientation[0] and fix_orientation[2]: # Only x and z are fixed
-            PACKMOL_CONSTRAIN = CONSTRAIN.format(constraints[0], constraints[2], "")
-        if fix_orientation[1] and fix_orientation[2]: # Only y and z are fixed
-            PACKMOL_CONSTRAIN = CONSTRAIN.format(constraints[1], constraints[2], "")
-    return PACKMOL_CONSTRAIN
+    final_constraints = list()
+    for i, val in enumerate(fix_orientation):
+        if val:
+            final_constraints.append(constraints[i])
+        else:
+            final_constraints.append("")
+    return CONSTRAIN.format(*final_constraints)
 
 
 def fill_box(compound, n_compounds=None, box=None, density=None, overlap=0.2,
@@ -138,9 +131,10 @@ def fill_box(compound, n_compounds=None, box=None, density=None, overlap=0.2,
     aspect_ratio : list of float
         If a non-cubic box is desired, the ratio of box lengths in the x, y,
         and z directions.
-    fix_orientation : bool or list of bools
+    fix_orientation : iterable of booleans or list of iterables
         Specify that compounds should not be rotated when filling the box,
-        default=False.
+        Rotation contraints are specified for each individual axis (x, y, z)
+        default=(False, False, False)
     temp_file : str, default=None
         File name to write PACKMOL's raw output to.
     update_port_locations : bool, default=False
@@ -168,7 +162,6 @@ def fill_box(compound, n_compounds=None, box=None, density=None, overlap=0.2,
         n_compounds = [n_compounds]
     if not isinstance(fix_orientation, (list, set)):
         fix_orientation = [fix_orientation]*len(compound)
-
     if compound is not None and n_compounds is not None:
         if len(compound) != len(n_compounds):
             msg = ("`compound` and `n_compounds` must be of equal length.")
