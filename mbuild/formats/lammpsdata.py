@@ -14,6 +14,8 @@ __all__ = ['write_lammpsdata']
 
 def write_lammpsdata(structure, filename, atom_style='full', 
                     unit_style='real',
+                    mins=None,
+                    maxs=None,
                     detect_forcefield_style=True, nbfix_in_data_file=True,
                     use_urey_bradleys=False,
                     use_rb_torsions=True, use_dihedrals=False):
@@ -39,6 +41,10 @@ def write_lammpsdata(structure, filename, atom_style='full',
         Current styles are supported: 'real', 'lj'
         see https://lammps.sandia.gov/doc/99/units.html for more information
         on unit styles
+    mins : list
+        minimum box dimension in x, y, z directions
+    maxs : list
+        maximum box dimension in x, y, z directions
     detect_forcefield_style: boolean
         If True, format lammpsdata parameters based on the contents of 
         the parmed Structure
@@ -137,10 +143,15 @@ def write_lammpsdata(structure, filename, atom_style='full',
         sigma_conversion_factor = 1
         epsilon_conversion_factor = 1
         mass_conversion_factor = 1
-
-    # Internally use nm
-    box = Box(lengths=np.array([0.1 * val for val in structure.box[0:3]]),
-              angles=structure.box[3:6])
+    # lammps does not require the box to be centered at any a specific origin
+    # min and max dimensions are therefore needed to write the file in a consistent way
+    # the parmed structure only stores the box length
+    if mins:
+        box = Box(mins=mins, maxs=maxs, angles=structure.box[3:6])
+    else:
+        # Internally use nm
+        box = Box(lengths=np.array([0.1 * val for val in structure.box[0:3]]),
+                  angles=structure.box[3:6])
     # Divide by conversion factor
     box.maxs /= sigma_conversion_factor
     
@@ -169,6 +180,9 @@ def write_lammpsdata(structure, filename, atom_style='full',
     if use_rb_torsions and use_dihedrals:
         raise ValueError("Multiple dihedral styles detected, check your "
                          "Forcefield XML and structure")
+    if mins == None:
+        print("Box information was not passed to the save function,\n"
+              "writing box info such that min = 0 and max = length")
 
     # Check impropers
     for dihedral in structure.dihedrals:

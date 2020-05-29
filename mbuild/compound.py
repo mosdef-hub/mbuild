@@ -1966,6 +1966,13 @@ class Compound(object):
             if extension in ['.gsd', '.hoomdxml']:
                 kwargs['rigid_bodies'] = [
                         p.rigid_id for p in self.particles()]
+            # lammps does not require the box to be centered at any a specific origin
+            # min and max dimensions are therefore needed to write the file in a consistent way
+            # the parmed structure only stores the box length
+            if extension in ['.lammps', '.lmp']:
+                if box:
+                    kwargs['mins'] = [m for m in box.mins]
+                    kwargs['maxs'] = [m for m in box.maxs]
             saver(filename=filename, structure=structure, **kwargs)
 
         elif extension == '.sdf':
