@@ -20,8 +20,7 @@ def _check_minsmaxs(mins, maxs):
             if len(mins) == 3 & len(maxs) == 3:
                 return True
             else:
-                warn('mins and maxs passed to write_lammpsdata, but list size is incorrect.',
-                     'mins and maxs will be ignored.')
+                warn('mins and maxs passed to write_lammpsdata, but list size is incorrect. mins and maxs will be ignored.')
                 return False
         else:
             return False
