@@ -12,6 +12,22 @@ from scipy.constants import epsilon_0
 
 __all__ = ['write_lammpsdata']
 
+# returns True if both mins and maxs have been defined, and each have length 3
+# otherwise returns False
+def _check_minsmaxs(mins, maxs):
+    if mins:
+        if maxs:
+            if len(mins) == 3 & len(maxs) == 3:
+                return True
+            else:
+                warn('mins and maxs passed to write_lammpsdata, but list size is incorrect.',
+                     'mins and maxs will be ignored.')
+                return False
+        else:
+            return False
+    else:
+        return False
+
 def write_lammpsdata(structure, filename, atom_style='full', 
                     unit_style='real',
                     mins=None,
@@ -145,13 +161,17 @@ def write_lammpsdata(structure, filename, atom_style='full',
         mass_conversion_factor = 1
     # lammps does not require the box to be centered at any a specific origin
     # min and max dimensions are therefore needed to write the file in a consistent way
-    # the parmed structure only stores the box length
-    if mins:
+    # the parmed structure only stores the box length.  It is not rigorous to assume bounds
+    # are 0 to L or -L/2 to L/2
+
+    if _check_minsmaxs(mins,maxs):
         box = Box(mins=mins, maxs=maxs, angles=structure.box[3:6])
     else:
         # Internally use nm
         box = Box(lengths=np.array([0.1 * val for val in structure.box[0:3]]),
                   angles=structure.box[3:6])
+
+        warn('Explicit box bounds (i.e., mins and maxs) were not provided. Box bounds are assumed to be min = 0 and max = length in each direction. This may not produce a system with the expected spatial location and may cause non-periodic systems to fail. Bounds can be defined explicitly by passing the them to the write_lammpsdata function or by passing box info to the save function.')
     # Divide by conversion factor
     box.maxs /= sigma_conversion_factor
     
@@ -180,9 +200,7 @@ def write_lammpsdata(structure, filename, atom_style='full',
     if use_rb_torsions and use_dihedrals:
         raise ValueError("Multiple dihedral styles detected, check your "
                          "Forcefield XML and structure")
-    if mins == None:
-        print("Box information was not passed to the save function,\n"
-              "writing box info such that min = 0 and max = length")
+
 
     # Check impropers
     for dihedral in structure.dihedrals:
