@@ -15,14 +15,11 @@ __all__ = ['write_lammpsdata']
 # returns True if both mins and maxs have been defined, and each have length 3
 # otherwise returns False
 def _check_minsmaxs(mins, maxs):
-    if mins:
-        if maxs:
-            if len(mins) == 3 & len(maxs) == 3:
-                return True
-            else:
-                warn('mins and maxs passed to write_lammpsdata, but list size is incorrect. mins and maxs will be ignored.')
-                return False
+    if mins and maxs:
+        if len(mins) == 3 and len(maxs) == 3:
+            return True
         else:
+            warn('mins and maxs passed to write_lammpsdata, but list size is incorrect. mins and maxs will be ignored.')
             return False
     else:
         return False
