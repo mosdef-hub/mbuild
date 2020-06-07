@@ -1,6 +1,7 @@
 import pytest
 
 import mbuild as mb
+from numpy import isclose
 from mbuild.tests.base_test import BaseTest
 from mbuild.utils.io import has_foyer
 
@@ -77,8 +78,8 @@ class TestCassandraMCF(BaseTest):
                 if line[1] == 'Intra_Scaling':
                     intrascaling_section_start = idx
 
-        assert mcf_data[intrascaling_section_start+1][2] == '0.0000'
-        assert mcf_data[intrascaling_section_start+2][2] == '0.0000'
+        assert isclose(float(mcf_data[intrascaling_section_start+1][2]), 0.0)
+        assert isclose(float(mcf_data[intrascaling_section_start+2][2]), 0.0)
 
     def test_infer_14(self,ethane):
         ethane.save(filename='ethane-opls.mcf', forcefield_name='oplsaa',
@@ -94,8 +95,8 @@ class TestCassandraMCF(BaseTest):
                 if line[1] == 'Intra_Scaling':
                     intrascaling_section_start = idx
 
-        assert mcf_data[intrascaling_section_start+1][2] == '0.5000'
-        assert mcf_data[intrascaling_section_start+2][2] == '0.5000'
+        assert isclose(float(mcf_data[intrascaling_section_start+1][2]), 0.5)
+        assert isclose(float(mcf_data[intrascaling_section_start+2][2]), 0.5)
 
     def test_unmatched_dihedral_style(self,ethane):
         with pytest.raises(ValueError,match=r'but RB torsions found'):
@@ -158,11 +159,11 @@ class TestCassandraMCF(BaseTest):
         # Check a some atom info
         assert mcf_data[atom_section_start+1][0] == '8'
         assert mcf_data[atom_section_start+2][1] == 'opls_135'
-        assert mcf_data[atom_section_start+2][3] == '12.011'
-        assert mcf_data[atom_section_start+2][4] == '-0.180'
+        assert isclose(float(mcf_data[atom_section_start+2][3]), 12.011)
+        assert isclose(float(mcf_data[atom_section_start+2][4]), -0.18)
         assert mcf_data[atom_section_start+2][5] == 'LJ'
-        assert mcf_data[atom_section_start+2][6] == '33.212'
-        assert mcf_data[atom_section_start+2][7] == '3.500'
+        assert isclose(float(mcf_data[atom_section_start+2][6]), 33.212)
+        assert isclose(float(mcf_data[atom_section_start+2][7]), 3.500)
 
         # Bond info
         assert mcf_data[bond_section_start+1][0] == '7'
@@ -172,7 +173,7 @@ class TestCassandraMCF(BaseTest):
             a2 = line[2]
             if (a1 == '1' and a2 == '2') or (a2 == '1' and a1 == '2'):
                 assert line[3] == 'fixed'
-                assert line[4] == '1.090'
+                assert isclose(float(line[4]), 1.090)
                 passed_test = True
                 break
         assert passed_test
@@ -186,8 +187,8 @@ class TestCassandraMCF(BaseTest):
                 a3 = line[3]
                 if (a1 == '1' and a3 == '6') or (a3 == '1' and a1 == '6'):
                     assert line[4] == 'harmonic'
-                    assert line[5] == '18870.7'
-                    assert line[6] == '110.70'
+                    assert isclose(float(line[5]), 18870.7)
+                    assert isclose(float(line[6]), 110.7)
                     passed_test = True
                     break
         assert passed_test
@@ -203,10 +204,10 @@ class TestCassandraMCF(BaseTest):
             if ( (a1 == '2' and a2 == '1' and a3 == '5' and a4 == '6' ) or
                  (a4 == '2' and a3 == '1' and a2 == '5' and a1 == '6') ):
                assert line[5] == 'OPLS'
-               assert line[6] == '0.000'
-               assert line[7] == '0.000'
-               assert line[8] == '-0.000'
-               assert line[9] == '0.628'
+               assert isclose(float(line[6]), 0.000)
+               assert isclose(float(line[7]), 0.000)
+               assert isclose(float(line[8]), 0.000)
+               assert isclose(float(line[9]), 0.628)
 
         assert mcf_data[improper_section_start+1][0] == '0'
         assert mcf_data[fragment_section_start+1][0] == '2'
@@ -247,11 +248,11 @@ class TestCassandraMCF(BaseTest):
         # Check a some atom info
         assert mcf_data[atom_section_start+1][0] == '12'
         assert mcf_data[atom_section_start+2][1] == 'opls_145'
-        assert mcf_data[atom_section_start+2][3] == '12.011'
-        assert mcf_data[atom_section_start+2][4] == '-0.115'
+        assert isclose(float(mcf_data[atom_section_start+2][3]), 12.011)
+        assert isclose(float(mcf_data[atom_section_start+2][4]), -0.115)
         assert mcf_data[atom_section_start+2][5] == 'LJ'
-        assert mcf_data[atom_section_start+2][6] == '35.225'
-        assert mcf_data[atom_section_start+2][7] == '3.550'
+        assert isclose(float(mcf_data[atom_section_start+2][6]), 35.225)
+        assert isclose(float(mcf_data[atom_section_start+2][7]), 3.550)
         assert mcf_data[atom_section_start+2][8] == 'ring'
 
         # Bond info
@@ -262,7 +263,7 @@ class TestCassandraMCF(BaseTest):
             a2 = line[2]
             if (a1 == '1' and a2 == '2') or (a2 == '1' and a1 == '2'):
                 assert line[3] == 'fixed'
-                assert line[4] == '1.400'
+                assert isclose(float(line[4]), 1.400)
                 passed_test = True
                 break
         assert passed_test
@@ -276,7 +277,7 @@ class TestCassandraMCF(BaseTest):
                 a3 = line[3]
                 if (a1 == '1' and a3 == '3') or (a3 == '1' and a1 == '3'):
                     assert line[4] == 'fixed'
-                    assert line[5] == '120.00'
+                    assert isclose(float(line[5]), 120.00)
                     passed_test = True
                     break
         assert passed_test
@@ -292,10 +293,10 @@ class TestCassandraMCF(BaseTest):
             if ( (a1 == '1' and a2 == '2' and a3 == '3' and a4 == '4' ) or
                  (a4 == '1' and a3 == '2' and a2 == '3' and a1 == '4') ):
                 assert line[5] == 'OPLS'
-                assert line[6] == '0.000'
-                assert line[7] == '-0.000'
-                assert line[8] == '15.167'
-                assert line[9] == '-0.000'
+                assert isclose(float(line[6]), 0.000)
+                assert isclose(float(line[7]), -0.000)
+                assert isclose(float(line[8]), 15.167)
+                assert isclose(float(line[9]), -0.000)
 
         assert mcf_data[improper_section_start+1][0] == '0'
         assert mcf_data[fragment_section_start+1][0] == '1'
