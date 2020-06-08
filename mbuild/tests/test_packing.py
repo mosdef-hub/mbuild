@@ -218,14 +218,20 @@ class TestPacking(BaseTest):
         assert np.isclose(w0, w1).all() is not True
         
     def specify_axis(self):
-        arguments = [(True, False, False), (False, True, True),
-                (False, True, False), (False, False, True)]
-        constraints = ["constrain_rotation x",
-                    "constrain_rotation y" and "constrain_rotation z",
-                    "constrain_rotation y",
-                    "constrain_rotation z"]      
+        arguments = [(True, False, False),
+                    (False, True, False),
+                    (False, False, True),
+                    (True, True, False),
+                    (False, True, True),
+                    (True, False, True)]
+        constraints = [["constrain_rotation x"],
+                    ["constrain_rotation y"],
+                    ["constrain_rotation z"],
+                    ["constrain_rotation x", "constrain_rotation y"],
+                    ["constrain_rotation y", "constrain_rotation z"],
+                    ["constrain_rotation x", "constrain_rotation z"]]        
         for i, arg in enumerate(arguments):
-            assert constraints[i] in mb.packing.packmol_constrain(arg)
+            assert all(c in mb.packing.packmol_constrain(arg) for c in constraints[i])
 
     def test_remove_port(self):
         from mbuild.lib.recipes import Alkane
