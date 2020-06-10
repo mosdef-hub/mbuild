@@ -230,23 +230,6 @@ class TestPacking(BaseTest):
     def test_specify_axis(self, orientations, constraints):
         for i in constraints:
             assert i in mb.packing.packmol_constrain(orientations)
-        
-    @pytest.mark.parametrize
-    def test_specify_axis(self):
-        arguments = [(True, False, False),
-                    (False, True, False),
-                    (False, False, True),
-                    (True, True, False),
-                    (False, True, True),
-                    (True, False, True)]
-        constraints = [["constrain_rotation x"],
-                    ["constrain_rotation y"],
-                    ["constrain_rotation z"],
-                    ["constrain_rotation x", "constrain_rotation y"],
-                    ["constrain_rotation y", "constrain_rotation z"],
-                    ["constrain_rotation x", "constrain_rotation z"]]        
-        for i, arg in enumerate(arguments):
-            assert all(c in mb.packing.packmol_constrain(arg) for c in constraints[i])
 
     def test_remove_port(self):
         from mbuild.lib.recipes import Alkane
