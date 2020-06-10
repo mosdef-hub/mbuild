@@ -1132,3 +1132,26 @@ class TestCompound(BaseTest):
         assert port.box == None
         with pytest.raises(ValueError, match=r"cannot have"):
             port.box = mb.Box([3.,3.,3.])
+
+        compound = mb.Compound()
+        subcomp = mb.Compound(box=mb.Box([3.,3.,3.]))
+        compound.add(subcomp)
+        assert np.allclose(compound.box.lengths, [3.,3.,3.])
+        assert np.allclose(compound.box.angles, [90.,90.,90.])
+        compound = mb.Compound(box=mb.Box([3.,3.,3.]))
+        subcomp = mb.Compound(box=mb.Box(lengths=[6.,6.,6.], angles=[60.,60.,120.]))
+        with pytest.warns(UserWarning):
+            compound.add(subcomp)
+        assert np.allclose(compound.box.lengths, [3.,3.,3.])
+        assert np.allclose(compound.box.angles, [90.,90.,90.])
+        compound = mb.Compound(box=mb.Box([3.,3.,3.]))
+        subcomp = mb.Compound(box=mb.Box(lengths=[6.,6.,6.], angles=[60.,60.,120.]))
+        compound.add(subcomp, inherit_box=True)
+        assert np.allclose(compound.box.lengths, [6.,6.,6.])
+        assert np.allclose(compound.box.angles, [60.,60.,120.])
+        compound = mb.Compound(box=mb.Box([3.,3.,3.]))
+        subcomp = mb.Compound()
+        with pytest.warns(UserWarning):
+            compound.add(subcomp, inherit_box=True)
+        assert np.allclose(compound.box.lengths, [3.,3.,3.])
+        assert np.allclose(compound.box.angles, [90.,90.,90.])
