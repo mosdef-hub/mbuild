@@ -248,6 +248,9 @@ class Compound(object):
         Defaults to zeros which is treated as non-periodic.
     port_particle : bool, optional, default=False
         Whether or not this Compound is part of a Port
+    box : mb.Box, optional
+        The simulation box containing the compound. Also accounts for the
+        periodicity. Defaults to None which is treated as non-periodic.
 
     Attributes
     ----------
@@ -268,7 +271,8 @@ class Compound(object):
         (the bottom of the containment hierarchy) can have integer values for
         `rigid_id`. Compounds containing rigid particles will always have
         `rigid_id == None`. See also `contains_rigid`.
-    boundingbox
+    boundingbox : mb.Box
+        The bounds (xmin, xmax, ymin, ymax, zmin, zmax) of particles in Compound
     center
     contains_rigid
     max_rigid_id
@@ -281,7 +285,7 @@ class Compound(object):
     """
 
     def __init__(self, subcompounds=None, name=None, pos=None, charge=0.0,
-                 periodicity=None, port_particle=False):
+                 periodicity=None, box=None, port_particle=False):
         super(Compound, self).__init__()
 
         if name:
@@ -304,6 +308,7 @@ class Compound(object):
         else:
             self._pos = np.zeros(3)
 
+        self.box = box
         self.parent = None
         self.children = OrderedSet()
         self.labels = OrderedDict()
@@ -681,7 +686,7 @@ class Compound(object):
                     self.rigid_id -= 1
 
     def add(self, new_child, label=None, containment=True, replace=False,
-            inherit_periodicity=True, reset_rigid_ids=True):
+            inherit_periodicity=True, inherit_box=False, reset_rigid_ids=True):
         """Add a part to the Compound.
 
         Note:
@@ -702,6 +707,8 @@ class Compound(object):
         inherit_periodicity : bool, optional, default=True
             Replace the periodicity of self with the periodicity of the
             Compound being added
+        inherit_box: bool, optional, default=False
+            Replace the box of self with the box of the Compound being added
         reset_rigid_ids : bool, optional, default=True
             If the Compound to be added contains rigid bodies, reset the
             rigid_ids such that values remain distinct from rigid_ids
@@ -773,6 +780,33 @@ class Compound(object):
         if (inherit_periodicity and isinstance(new_child, Compound) and
                 new_child.periodicity.any()):
             self.periodicity = new_child.periodicity
+
+        # If parent has no box --> inherit child box
+        # If parent has box --> keep unless inherit_box == True
+        # If inherit_box == True, parent box != None, child_box == None,
+        # keep parent box anyway and warn
+        if self.box is None:
+            if new_child.box is not None:
+                self.box = new_child.box
+        else:
+            if inherit_box:
+                if new_child.box is None:
+                    warn(
+                        "The Compound you are adding has no box but "
+                        "inherit_box=True. The box of the original "
+                        "Compound will remain unchanged."
+                    )
+                else:
+                    self.box = new_child.box
+            else:
+                if new_child.box is not None:
+                    warn(
+                        "The Compound you are adding has a box. "
+                        "The box of the parent compound will be used. Use "
+                        "inherit_box = True if you wish to replace the parent "
+                        "compound box with that of Compound being added."
+                    )
+
 
     def remove(self, objs_to_remove):
         """ Cleanly remove children from the Compound.
@@ -1063,6 +1097,16 @@ class Compound(object):
     @periodicity.setter
     def periodicity(self, periods):
         self._periodicity = np.array(periods)
+
+    @property
+    def box(self):
+        return self._box
+
+    @box.setter
+    def box(self, box):
+        if box is not None and type(box) != Box:
+            raise TypeError("box must be specified as an mbuild.Box")
+        self._box = box
 
     @property
     def xyz(self):
