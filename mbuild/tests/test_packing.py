@@ -216,8 +216,23 @@ class TestPacking(BaseTest):
         w0 -= w0.sum(0) / len(w0)
         w1 -= w1.sum(0) / len(w1)
         assert np.isclose(w0, w1).all() is not True
+
+    @pytest.mark.parametrize('orientations,constraints',
+               [((True, False, False),["constrain_rotation x"]),
+                ((False, True, False),["constrain_rotation y"]),
+                ((False, False, True),["constrain_rotation z"]),
+                ((True, True, False),["constrain_rotation x",
+                    "constrain_rotation y"]),
+                ((False, True, True),["constrain_rotation y",
+                    "constrain_rotation z"]),
+                ((True, False, True),["constrain_rotation x",
+                    "constrain_rotation z"])])
+    def test_specify_axis(self, orientations, constraints):
+        for i in constraints:
+            assert i in mb.packing.packmol_constrain(orientations)
         
-    def specify_axis(self):
+    @pytest.mark.parametrize
+    def test_specify_axis(self):
         arguments = [(True, False, False),
                     (False, True, False),
                     (False, False, True),
