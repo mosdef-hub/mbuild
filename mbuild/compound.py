@@ -308,7 +308,6 @@ class Compound(object):
         else:
             self._pos = np.zeros(3)
 
-        self.box = box
         self.parent = None
         self.children = OrderedSet()
         self.labels = OrderedDict()
@@ -320,6 +319,8 @@ class Compound(object):
         self._rigid_id = None
         self._contains_rigid = False
         self._check_if_contains_rigid_bodies = False
+
+        self.box = box
 
         # self.add() must be called after labels and children are initialized.
         if subcompounds:
@@ -1106,6 +1107,8 @@ class Compound(object):
     def box(self, box):
         if box is not None and type(box) != Box:
             raise TypeError("box must be specified as an mbuild.Box")
+        if self.port_particle and box is not None:
+            raise ValueError("Ports cannot have a box")
         self._box = box
 
     @property
@@ -2943,6 +2946,7 @@ class Compound(object):
         newone.periodicity = deepcopy(self.periodicity)
         newone._pos = deepcopy(self._pos)
         newone.port_particle = deepcopy(self.port_particle)
+        newone.box = deepcopy(self.box)
         newone._check_if_contains_rigid_bodies = deepcopy(
             self._check_if_contains_rigid_bodies)
         newone._contains_rigid = deepcopy(self._contains_rigid)

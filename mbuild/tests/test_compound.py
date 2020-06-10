@@ -1117,3 +1117,18 @@ class TestCompound(BaseTest):
         filled.save('methane.sdf')
         sdf_string = mb.load('methane.sdf')
         assert np.allclose(filled.xyz, sdf_string.xyz, atol=1e-5)
+
+    def test_box(self):
+        compound = mb.Compound()
+        assert compound.box == None
+        compound.box = mb.Box([3.,3.,3.])
+        assert np.allclose(compound.box.lengths, [3.,3.,3.])
+        assert np.allclose(compound.box.angles, [90.,90.,90])
+        with pytest.raises(TypeError, match=r"specified as an mbuild.Box"):
+            compound.box = "Hello, world"
+        with pytest.raises(TypeError, match=r"specified as an mbuild.Box"):
+            compound.box = [3.,3.,3.]
+        port = mb.Port()
+        assert port.box == None
+        with pytest.raises(ValueError, match=r"cannot have"):
+            port.box = mb.Box([3.,3.,3.])
