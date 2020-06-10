@@ -125,8 +125,6 @@ class TestBox(BaseTest):
                    [0.474, 0.0049, -0.7277],
                    [0.518, 0.0312, -0.8946],
                    [0.488, 0.1676, -0.7896]])
-        # Set periodicity
-        ethane.periodicity = np.array([0.767, 0.703, 0.710])
         # Convert compound to pmd.structure to set Box info
         # Conversion should happen without error
         ethane.to_parmed()

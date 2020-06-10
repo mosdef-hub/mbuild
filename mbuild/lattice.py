@@ -579,12 +579,10 @@ class Lattice(object):
                                     'dictionary. For key {}, type: {} was '
                                     'provided, not mbuild.Compound.'
                                     .format(key_id, err_type))
-        # set periodicity
-        ret_lattice.periodicity = np.asarray([a * x, b * y, c * z], dtype=np.float64)
-        warn('Periodicity of non-rectangular lattices are not valid with '
-                    'default boxes. Only rectangular lattices are valid '
-                    'at this time.')
-
+        
+        # Create mbuild.box
+        ret_lattice.box = mb.Box(lengths=[a*x, b*y, c*z], angles=self.angles)
+        
         # if coordinates are below a certain threshold, set to 0
         tolerance = 1e-12
         ret_lattice.xyz_with_ports[ret_lattice.xyz_with_ports <= tolerance] = 0.
@@ -593,6 +591,8 @@ class Lattice(object):
 
     def get_populated_box(self, x=1, y=1, z=1):
         """
+        Deprecated. Will be removed in version 0.11. Use Compound.box instead.
+
         Return a mbuild.Box representing the periodic boundaries of a
         populated mbuild.Lattice. This is meant to be called in parallel
         with, and using the same arguments of, a call to

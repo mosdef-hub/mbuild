@@ -207,7 +207,7 @@ class TestLattice(BaseTest):
 
         assert len(is_true) == len(values_to_check)
 
-    def test_set_periodicity(self):
+    def test_box(self):
         lattice = mb.Lattice(lattice_spacing=[1, 1, 1], angles=[90, 90, 90],
                              lattice_points={'A' : [[0, 0, 0]]})
 
@@ -215,8 +215,29 @@ class TestLattice(BaseTest):
                                          x=2, y=5, z=9)
 
         replication=[2, 5, 9]
-        np.testing.assert_allclose(compound_test.periodicity,
-                                   np.asarray([x*y for x,y in zip(replication, lattice.lattice_spacing)]))
+        np.testing.assert_allclose(
+            compound_test.box.lengths,
+            np.asarray([x*y for x,y in zip(replication, lattice.lattice_spacing)])
+        )
+        np.testing.assert_allclose(
+            compound_test.box.angles,
+            np.asarray([90.,90.,90.])
+        )
+
+    def test_box_non_rectangular(self):
+        lattice = mb.Lattice(lattice_spacing=[0.5, 0.5, 1], angles=[90, 90, 120],
+                             lattice_points={'A' : [[0, 0, 0]]})
+        compound_test = lattice.populate(compound_dict={'A' : mb.Compound()},
+                                         x=2, y=2, z=1)
+        replication=[2, 2, 1]
+        np.testing.assert_allclose(
+            compound_test.box.lengths,
+            np.asarray([x*y for x,y in zip(replication, lattice.lattice_spacing)])
+        )
+        np.testing.assert_allclose(
+            compound_test.box.angles,
+            np.asarray([90.,90.,120.])
+        )
 
     def test_get_box(self):
         lattice = mb.Lattice(lattice_spacing=[1, 1, 1], angles=[90, 90, 90],

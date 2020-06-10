@@ -527,26 +527,33 @@ class TestCompound(BaseTest):
         assert traj.n_residues == 1
 
     def test_box_mdtraj(self, ethane):
-        assert np.allclose(ethane.periodicity, np.zeros(3))
-        traj_boundingbox = ethane.to_trajectory()
+        box = mb.Box(lengths=[4.0, 5.0, 6.0])
+        assert ethane.box is None
+        # (1) Specify box
+        traj = ethane.to_trajectory(box=box)
         assert np.allclose(
-            traj_boundingbox.unitcell_lengths,
+            # Comparison in nm
+            traj.unitcell_lengths,
+            box.lengths
+        )
+        
+        # (2) Extract from bounding box
+        assert ethane.box is None
+        traj = ethane.to_trajectory()
+        assert np.allclose(
+            # Comparison in nm
+            traj.unitcell_lengths,
             ethane.boundingbox.lengths + 0.5
         )
-
-        ethane.periodicity = [4.0, 5.0, 6.0]
-        assert ethane.periodicity is not None
-        traj_periodicity = ethane.to_trajectory()
+ 
+        # (3) Extract from self.box
+        ethane.box = box
+        assert ethane.box is not None
+        traj = ethane.to_trajectory()
         assert np.allclose(
-            traj_periodicity.unitcell_lengths,
-            ethane.periodicity
-        )
-
-        box = mb.Box(mins=np.zeros(3), maxs=8.0*np.zeros(3))
-        traj_box = ethane.to_trajectory(box=box)
-        assert np.allclose(
-            traj_box.unitcell_lengths,
-            box.lengths
+            # Comparison in nm
+            traj.unitcell_lengths,
+            ethane.box.lengths
         )
 
     def test_resnames_mdtraj(self, h2o, ethane):
@@ -667,6 +674,36 @@ class TestCompound(BaseTest):
 
         assert np.allclose(compound2.xyz, compound3.xyz)
 
+    def test_box_parmed(self, ethane):
+        box = mb.Box(lengths=[4.0, 5.0, 6.0])
+        assert ethane.box is None
+        # (1) Specify box
+        pmd = ethane.to_parmed(box=box)
+        assert np.allclose(
+            # Comparison in nm
+            0.1 * pmd.box[0:3],
+            box.lengths
+        )
+        
+        # (2) Extract from bounding box
+        assert ethane.box is None
+        pmd = ethane.to_parmed()
+        assert np.allclose(
+            # Comparison in nm
+            0.1 * pmd.box[0:3],
+            ethane.boundingbox.lengths + 0.5
+        )
+ 
+        # (3) Extract from self.box
+        ethane.box = box
+        pmd = ethane.to_parmed()
+        assert ethane.box is not None
+        assert np.allclose(
+            # Comparison in nm
+            0.1 * pmd.box[0:3],
+            ethane.box.lengths
+        )
+
     def test_fillbox_then_parmed(self):
         # This test would fail with the old to_parmed code (pre PR #699)
 
@@ -677,6 +714,7 @@ class TestCompound(BaseTest):
 
         assert isinstance(bead_box_in_pmd, pmd.Structure)
         assert len(bead_box_in_pmd.atoms) == 100
+        # parmed units = Angstrom --> compare in those units
         assert (bead_box_in_pmd.box == np.array([10., 10.,10. ,90., 90., 90.])).all()
 
     def test_resnames_parmed(self, h2o, ethane):
@@ -720,13 +758,14 @@ class TestCompound(BaseTest):
         compound.add(h2o)
         tilted_box = mb.Box(lengths=[2.0, 2.0, 2.0], angles=[60.0, 80.0, 100.0])
         structure = compound.to_parmed(box=tilted_box)
+        # parmed units = Angstrom --> compare in those units
         assert all(structure.box == [20.0, 20.0, 20.0, 60.0, 80.0, 100.0])
 
     def test_min_periodic_dist(self, ethane):
         compound = mb.Compound(ethane)
         C_pos = np.array([atom.pos for atom in list(compound.particles_by_name('C'))])
         assert round(compound.min_periodic_distance(C_pos[0], C_pos[1]), 2) == 0.14
-        compound.periodicity = np.array([0.2, 0.2, 0.2])
+        compound.box = mb.Box(lengths=[0.2, 0.2, 0.2])
         assert round(compound.min_periodic_distance(C_pos[0], C_pos[1]), 2) == 0.06
 
     def test_bond_graph(self, ch3):
