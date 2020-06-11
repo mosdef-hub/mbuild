@@ -1,7 +1,11 @@
+from itertools import chain
+
+import mbuild as mb
 import numpy as np
+from numpy.linalg import norm
 
 
-__all__ = ['write_poscar']
+__all__ = ['write_poscar', 'read_poscar']
 
 def write_poscar(compound, filename, lattice_constant, bravais=[[1,0,0],
     [0,1,0],[0,0,1]], sel_dev=False,coord='cartesian'):
@@ -40,7 +44,7 @@ def write_poscar(compound, filename, lattice_constant, bravais=[[1,0,0],
             atom.xx = atom.xx / lattice_constant
             atom.xy = atom.xy / lattice_constant
             atom.xz = atom.xz / lattice_constant
-   
+
     for atom_name in atom_names:
         atom_count = np.array([atom.name for atom in
             structure.atoms].count(atom_name))
@@ -49,7 +53,7 @@ def write_poscar(compound, filename, lattice_constant, bravais=[[1,0,0],
             structure.atoms if atom.name == atom_name])
         xyz = xyz / 10 # unit conversion from angstroms to nm
         xyz_list.append(xyz)
-    
+
     with open(filename, 'w') as data:
         data.write(filename+' - created by mBuild\n')
         data.write('     {0:.15f}\n'.format(lattice_constant))
@@ -74,3 +78,78 @@ def write_poscar(compound, filename, lattice_constant, bravais=[[1,0,0],
             for pos in xyz:
                 data.write('{0:.15f} {1:.15f} {2:.15f}\n'.format(
                     pos[0],pos[1],pos[2]))
+
+def read_poscar(filename, conversion=0.1):
+    """
+    Reads in a VASP POSCAR file and returns an mbuild Compound.
+
+    Parameters
+    ----------
+    filename : str,
+               path to the POSCAR file
+    conversion : float,
+                 conversion factor multiplied to coordinates when
+                 converting between VASP units (angstroems)
+                 and mbuild units (nm) (default = 0.1)
+
+    Returns
+    -------
+    mbuild.Compound
+    """
+
+    comp = mb.Compound()
+
+    with open(filename, "r") as f:
+        data = f.readlines()
+
+    title = data.pop(0)
+    scale = float(data.pop(0).strip())
+
+    a = np.fromiter(data.pop(0).split(), dtype="float64")
+    b = np.fromiter(data.pop(0).split(), dtype="float64")
+    c = np.fromiter(data.pop(0).split(), dtype="float64")
+
+    lattice_vectors = np.stack((a,b,c))
+
+    # POSCAR files do not require atom types to be specified
+    # this block handles unspecified types
+    line = data.pop(0).split()
+    try:
+        n_types = np.fromiter(line, dtype="int")
+        types = ["_"+chr(i+64) for i in range(1,len(n_types)+1)]
+        # if no types exist, assign placeholder types "_A", "_B", "_C", etc
+    except ValueError:
+        types = line
+        n_types = np.fromiter(data.pop(0).split(), dtype="int")
+
+    all_types = list(chain.from_iterable([[itype] * n for itype, n in zip(types,n_types)]))
+
+    # handle optional argument "Selective dynamics"
+    # and required arguments "Cartesian" or "Direct"
+    switch = data.pop(0)[0].upper()
+    selective_dynamics = False # don't know if this is necessary
+    if switch == "S":
+        selective_dynamics = True
+        switch = data.pop(0)[0].upper()
+
+    if switch == "C":
+        cartesian = True
+    else:
+        cartesian = False
+
+    coords = np.stack([np.fromiter(line.split()[:3], dtype="float64") for line in data])
+
+    if cartesian:
+        coords = coords * scale
+    else:
+        coords = coords.dot(lattice_vectors) * scale
+
+    alpha = np.rad2deg(np.arccos(b.dot(c)/(norm(b) * norm(c))))
+    beta = np.rad2deg(np.arccos(a.dot(c)/(norm(a) * norm(c))))
+    gamma = np.rad2deg(np.arccos(a.dot(b)/(norm(a) * norm(b))))
+
+    comp.box = mb.Box(lengths = norm(lattice_vectors, axis=1), angles = [alpha, beta, gamma])
+    for i,xyz in enumerate(coords):
+        comp.add(mb.Particle(name=all_types[i], pos=xyz*conversion))
+
+    return comp
