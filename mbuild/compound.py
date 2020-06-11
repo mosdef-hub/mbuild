@@ -13,7 +13,7 @@ from mdtraj.core.element import get_by_symbol
 import numpy as np
 from oset import oset as OrderedSet
 import parmed as pmd
-from parmed.periodic_table import AtomicNum, element_by_name, Mass, Element
+from parmed.periodic_table import AtomicNum, Mass, Element
 
 from mbuild.bond_graph import BondGraph
 from mbuild.box import Box
