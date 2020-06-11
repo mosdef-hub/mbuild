@@ -18,7 +18,7 @@ from parmed.periodic_table import AtomicNum, element_by_name, Mass, Element
 from mbuild.bond_graph import BondGraph
 from mbuild.box import Box
 from mbuild.exceptions import MBuildError
-from mbuild.utils.decorators import deprecated
+from mbuild.utils.decorators import deprecated, deprecated_property
 from mbuild.formats.xyz import read_xyz, write_xyz
 from mbuild.formats.json_formats import compound_to_json, compound_from_json
 from mbuild.formats.hoomdxml import write_hoomdxml
@@ -1099,13 +1099,13 @@ class Compound(object):
             raise MBuildError('Cannot set position on a Compound that has'
                               ' children.')
 
+    warning_message = (
+        "Compound.periodicity will be removed in version 0.11. "
+        "Please use Compound.box instead."
+    )
 
-    @property
+    @deprecated_property(warning_message)
     def periodicity(self):
-        warn(
-            "Compound.periodicity will be removed in version 0.11. "
-            "Please use Compound.box instead."
-        )
         if self.box is None:
             return np.array([0.,0.,0.])
         else:
@@ -1113,11 +1113,6 @@ class Compound(object):
 
     @periodicity.setter
     def periodicity(self, periods):
-        warn(
-            "Compound.periodicity will be removed in version 0.11. "  
-            "Please use Compound.box instead."
-        )
-
         if self.box is None:
             self.box = Box(lengths=periods)
         else:
