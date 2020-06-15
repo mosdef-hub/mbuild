@@ -122,6 +122,7 @@ def read_poscar(filename, conversion=0.1):
         types = line
         n_types = np.fromiter(data.pop(0).split(), dtype="int")
 
+    total_atoms = np.sum(n_types)
     all_types = list(chain.from_iterable([[itype] * n for itype, n in zip(types,n_types)]))
 
     # handle optional argument "Selective dynamics"
@@ -137,7 +138,7 @@ def read_poscar(filename, conversion=0.1):
     else:
         cartesian = False
 
-    coords = np.stack([np.fromiter(line.split()[:3], dtype="float64") for line in data])
+    coords = np.stack([np.fromiter(line.split()[:3], dtype="float64") for line in data[:total_atoms]])
 
     if cartesian:
         coords = coords * scale
