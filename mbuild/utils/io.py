@@ -76,12 +76,20 @@ or
 # pip install foyer
 '''
 
-MESSAGES['CifFile'] = '''
+MESSAGES['garnett'] = '''
 The code at {filename}:{line_number} requires the "garnett" package
 
 garnett can be installed with conda using:
 
 # conda install -c conda-forge garnett
+'''
+
+MESSAGES['pycifrw'] = '''
+The code at {filename}:{line_number} requires the "pycifrw" package
+
+pycifrw can be installed with conda using:
+
+# conda install -c conda-forge pycifrw
 '''
 
 MESSAGES['protobuf'] = ''' 

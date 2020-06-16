@@ -620,11 +620,12 @@ class Lattice(object):
                                     'dictionary. For key {}, type: {} was '
                                     'provided, not mbuild.Compound.'
                                     .format(key_id, err_type))
-        # set periodicity
+        # set periodicity, currently assuming rectangular system
+        if not np.all(np.allclose(self.angles, [90.0, 90.0, 90.0])):
+            warn('Periodicity of non-rectangular lattices are not valid with '
+                 'default boxes. Only rectangular lattices are valid '
+                 'at this time.')
         ret_lattice.periodicity = np.asarray([a * x, b * y, c * z], dtype=np.float64)
-        warn('Periodicity of non-rectangular lattices are not valid with '
-             'default boxes. Only rectangular lattices are valid '
-             'at this time.')
 
         # if coordinates are below a certain threshold, set to 0
         tolerance = 1e-12

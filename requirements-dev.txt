@@ -19,3 +19,4 @@ protobuf
 nbval
 py3Dmol
 garnett >=0.7.1
+pycifrw
