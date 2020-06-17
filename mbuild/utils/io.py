@@ -219,6 +219,13 @@ try:
 except ImportError:
     has_garnett = False
 
+try:
+    import pycifrw
+    has_pycifrw = True
+    del pycifrw
+except ImportError:
+    has_pycifrw = False
+
 def get_fn(name):
     """Get the full path to one of the reference files shipped for utils.
 

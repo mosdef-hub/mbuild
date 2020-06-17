@@ -3,10 +3,10 @@ import pathlib
 from collections import defaultdict
 from warnings import warn
 
-import garnett
 import numpy as np
 
 import mbuild as mb
+from mbuild.utils.io import import_
 
 __all__ = ['load_cif', 'Lattice']
 
@@ -19,6 +19,9 @@ def load_cif(file_or_path=None, wrap_coords=False):
     wrap_coords : bool, False
         Wrap the lattice points back into the 0-1 acceptable coordinates.
     """
+
+    garnett = import_('Garnett')
+    pycifrw = import_('pycifrw')
 
     assert isinstance(file_or_path, (str, pathlib.Path))
     cif_location = pathlib.Path(file_or_path)
