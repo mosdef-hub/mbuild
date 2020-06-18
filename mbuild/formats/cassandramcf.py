@@ -91,11 +91,11 @@ def write_mcf(structure, filename, angle_style,
         if len(structure.adjusts) > 0:
             coul14 = structure.adjusts[0].type.chgscale
         else:
-            coul14 = 1.0
+            coul14 = 0.0
             if (len(structure.dihedrals) > 0 or
                     len(structure.rb_torsions) > 0):
                 warnings.warn('Unable to infer coulombic 1-4 '
-                        'scaling factor. Setting to 1.0')
+                        'scaling factor. Setting to {:.1f}'.format(coul14))
     if lj14 is None:
         if len(structure.adjusts) > 0:
             type1_eps = structure.adjusts[0].atom1.epsilon
@@ -106,15 +106,15 @@ def write_mcf(structure, filename, angle_style,
                 combined_eps = sqrt(type1_eps*type2_eps)
                 lj14 = scaled_eps/combined_eps
             else:
-                lj14 = 1.0
+                lj14 = 0.0
                 warnings.warn('Unable to infer LJ 1-4 scaling'
-                    'factor. Setting to 1.0')
+                        'factor. Setting to {:.1f}'.format(lj14))
         else:
-            lj14 = 1.0
+            lj14 = 0.0
             if (len(structure.dihedrals) > 0 or
                     len(structure.rb_torsions) > 0):
                 warnings.warn('Unable to infer LJ 1-4 scaling'
-                    'factor. Setting to 1.0')
+                        'factor. Setting to {:.1f}'.format(lj14))
 
     if coul14 < 0.0 or coul14 > 1.0:
         raise ValueError("Unreasonable value {} for "
@@ -280,32 +280,35 @@ def _write_atom_information(mcf_file, structure, in_ring, IG_CONSTANT_KCAL):
     sigmas = [atom.sigma for atom in structure.atoms]
 
     # Check constraints on atom type length and element name length
-    # TODO: Update these following Cassandra release
-    # to be more reasonable values
+    max_element_length = 6
+    max_atomtype_length = 20
     n_unique_elements = len(set(elements))
     for element in elements:
-        if len(element) > 2:
+        if len(element) > max_element_length:
             warnings.warn("Warning, element name {} will be shortened "
-                 "to two characters. Please confirm your final "
-                 "MCF.".format(element))
+                 "to {} characters. Please confirm your final "
+                 "MCF.".format(element, max_element_length))
 
-    elements = [ element[:2] for element in elements ]
+    elements = [ element[:max_element_length] for element in elements ]
     if len(set(elements)) < n_unique_elements:
         warnings.warn("Warning, the number of unique elements has been "
-              "reduced due to shortening the element name to two "
-              "characters.")
+              "reduced due to shortening the element name to {} "
+              "characters.".format(max_element_length))
 
     n_unique_types = len(set(types))
     for itype in types:
-        if len(itype) > 6:
-            warnings.warn("Warning, type name {} will be shortened to six "
+        if len(itype) > max_atomtype_length:
+            warnings.warn("Warning, type name {} will be shortened to {} "
                       "characters as {}. Please confirm your final "
-                      "MCF.".format(itype,itype[-6:]))
-        types = [ itype[-6:] for itype in types ]
+                      "MCF.".format(
+                          itype,
+                          max_atomtype_length,
+                          itype[-max_atomtype_length:]))
+        types = [ itype[-max_atomtype_length:] for itype in types ]
     if len(set(types)) < n_unique_types:
         warnings.warn("Warning, the number of unique atomtypes has been "
-              "reduced due to shortening the atomtype name to six "
-              "characters.")
+              "reduced due to shortening the atomtype name to {} "
+              "characters.".format(max_atomtype_length))
 
     vdw_type = 'LJ'
     header = ('!Atom Format\n'
@@ -319,7 +322,7 @@ def _write_atom_information(mcf_file, structure, in_ring, IG_CONSTANT_KCAL):
     mcf_file.write(header)
     mcf_file.write('{:d}\n'.format(len(structure.atoms)))
     for i in range(len(structure.atoms)):
-        mcf_file.write('{:<4d}  {:<6s}  {:<2s}  {:7.3f}  {:7.3f}  '
+        mcf_file.write('{:<4d}  {:<6s}  {:<2s}  {:7.3f}  {:12.8f}  '
                 '{:3s}  {:8.3f}  {:8.3f}'.format(
             i+1, types[i], elements[i], masses[i], charges[i],
             vdw_type, epsilons[i], sigmas[i]))

@@ -50,6 +50,18 @@ or
 # pip install nglview
 '''
 
+MESSAGES['py3Dmol'] = '''
+The code at {filename}:{line_number} requires the "py3Dmol" package
+
+py3Dmol can be installed using:
+
+# conda install -c conda-forge py3Dmol
+
+or
+
+# pip install py3Dmol
+'''
+
 MESSAGES['openbabel'] = '''
 The code at {filename}:{line_number} requires the "openbabel" package
 
@@ -92,14 +104,14 @@ pycifrw can be installed with conda using:
 # conda install -c conda-forge pycifrw
 '''
 
-MESSAGES['protobuf'] = ''' 
+MESSAGES['protobuf'] = '''
 The code at {filename}:{line_number} requires the "protobuf" package
 
 protobuf can be installed using:
 
-# conda install -c anaconda protobuf
+# conda install -c conda-forge protobuf
 
-or 
+or
 
 # pip install protobuf
 '''
@@ -146,6 +158,19 @@ def import_(module):
             return pybel
         except ModuleNotFoundError:
             pass
+    if module == 'openbabel':
+        try:
+            return importlib.import_module('openbabel.openbabel')
+        except ModuleNotFoundError:
+            pass
+        try:
+            openbabel = importlib.import_module('openbabel')
+            msg = ('openbabel 2.0 detected and will be dropped in a future '
+                   'release. Consider upgrading to 3.x.')
+            warnings.warn(msg, DeprecationWarning)
+            return pybel
+        except ModuleNotFoundError:
+            pass
     try:
         return importlib.import_module(module)
     except ImportError as e:
@@ -185,7 +210,7 @@ except ImportError:
     has_gsd = False
 
 try:
-    import openbabel
+    from openbabel import openbabel
     has_openbabel = True
     del openbabel
 except ImportError:
@@ -210,7 +235,29 @@ try:
     has_hoomd = True
     del hoomd
 except ImportError:
-    has_hoomd  = False
+    has_hoomd = False
+
+try:
+    import nglview
+    has_nglview = True
+    del nglview
+except ImportError:
+    has_nglview = False
+
+try:
+    import py3Dmol
+    has_py3Dmol = True
+    del py3Dmol
+except ImportError:
+    has_py3Dmol = False
+
+try:
+    from google import protobuf
+    has_protobuf = True
+    del protobuf
+except ImportError:
+    has_protobuf = False
+
 
 try:
     import garnett

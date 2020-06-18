@@ -5,7 +5,7 @@ import pytest
 
 import mbuild as mb
 from mbuild.tests.base_test import BaseTest
-from mbuild.utils.io import get_fn, import_
+from mbuild.utils.io import get_fn, import_, run_from_ipython
 from mbuild.utils.validation import assert_port_exists
 from mbuild.utils.jsutils import overwrite_nglview_default
 from mbuild.utils.geometry import wrap_coords
@@ -134,3 +134,8 @@ class TestUtils(BaseTest):
 
         assert (new_xyz[0,:] == np.array([-1,-1,1])).all()
         assert (new_xyz[1,:] == xyz[1,:]).all()
+
+    def test_has_ipython(self):
+        __IPYTHON__ = None
+        assert run_from_ipython() is False
+

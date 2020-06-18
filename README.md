@@ -1,11 +1,10 @@
 ## mBuild: a hierarchical, component based molecule builder
 
 [![Gitter chat](https://badges.gitter.im/mosdef-hub/gitter.svg)](https://gitter.im/mosdef-hub/Lobby)
-[![Linux Build Status](https://travis-ci.org/mosdef-hub/mbuild.svg?branch=master)](https://travis-ci.org/mosdef-hub/mbuild)
-[![Build Status](https://dev.azure.com/mosdef/mbuild/_apis/build/status/mosdef-hub.mbuild?branchName=master)](https://dev.azure.com/mosdef/mbuild/_build/latest?definitionId=1&branchName=master)
-[![Windows Build status](https://ci.appveyor.com/api/projects/status/x4aiyeio2c1xf3vx/branch/master?svg=true)](https://ci.appveyor.com/project/ctk3b/mbuild-o0viu/branch/master)
+[![Travis Build Status](https://travis-ci.org/mosdef-hub/mbuild.svg?branch=master)](https://travis-ci.org/mosdef-hub/mbuild)
+[![AZP Build Status](https://dev.azure.com/mosdef/mbuild/_apis/build/status/mosdef-hub.mbuild?branchName=master)](https://dev.azure.com/mosdef/mbuild/_build/latest?definitionId=1&branchName=master)
 [![PyPI Version](https://badge.fury.io/py/mbuild.svg)](https://pypi.python.org/pypi/mbuild)
-[![Binstar Badge](https://anaconda.org/mosdef/mbuild/badges/version.svg)](https://anaconda.org/mosdef/mbuild)
+[![Anaconda Badge](https://anaconda.org/conda-forge/mbuild/badges/version.svg)](https://anaconda.org/conda-forge/mbuild)
 [![codecov](https://codecov.io/gh/mosdef-hub/mbuild/branch/master/graph/badge.svg)](https://codecov.io/gh/mosdef-hub/mbuild)
 
 With just a few lines of mBuild code, you can assemble reusable components into
@@ -32,6 +31,23 @@ If you use this package, please cite [our paper](http://dx.doi.org/10.1007/978-9
       doi = "http://dx.doi.org/10.1007/978-981-10-1128-3_5" 
 }
 ```
+
+#### Quick Start with Docker
+To use `mbuild` in a jupyter-notebook that runs from a docker container with all the dependencies installed use the following command:
+
+```sh
+$ docker pull mosdef/mbuild:latest
+$ docker run -it --name mbuild -p 8888:8888 mosdef/mbuild:latest su anaconda -s\
+      /bin/sh -l -c "jupyter-notebook --no-browser --ip="0.0.0.0" --notebook-dir\
+      /home/anaconda/mbuild-notebooks
+```
+
+Alternatively, you can also start a Bourne shell directly:
+```sh
+$ docker run -it --name mbuild mosdef/mbuild:latest
+```
+
+To learn more about using `mBuild` with docker, please refer to the documentation [here](https://mbuild.mosdef.org/en/latest/docker.html).
 
 #### Tutorials
 
