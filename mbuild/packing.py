@@ -172,8 +172,8 @@ def fill_box(compound, n_compounds=None, box=None, density=None, overlap=0.2,
     try:
         iter(fix_orientation[0])
     except:
-        warnings.warn("fix_orientation can be given as an iterable of True/False values "
-             "for each compound to fix rotations about each x,y,z axis individually. "
+        warnings.warn("fix_orientation can now be passed as a tuple or list with True/False "
+             "values specified for each x,y,z axis individually. "
              "Using a single instance of True/False defaults to (True,True,True) "
              "and (Fale,False,False) respectively")
 
