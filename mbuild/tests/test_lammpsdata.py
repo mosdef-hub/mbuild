@@ -124,6 +124,68 @@ class TestLammpsData(BaseTest):
 
         assert set(res_list) == set(['1', '0'])
 
+    def test_box_bounds(self, ethane):
+        from foyer import Forcefield
+        
+        OPLSAA = Forcefield(name='oplsaa')
+        structure = OPLSAA.apply(ethane)
+        box = mb.Box(mins=np.array([-1.0, -2.0, -3.0]), maxs=np.array([3.0, 2.0, 1.0]))
+
+        write_lammpsdata(filename='box.lammps', structure=structure,
+                         unit_style='real', mins=[m for m in box.mins],
+                         maxs=[m for m in box.maxs])
+                         
+        checked_section = False
+        with open('box.lammps', 'r') as fi:
+            while not checked_section:
+                line = fi.readline()
+                if 'xlo' in line:
+                    xlo = float(line.split()[0])
+                    xhi = float(line.split()[1])
+                    assert np.isclose(xlo, -10.0)
+                    assert np.isclose(xhi, 30.0)
+                    
+                    line = fi.readline()
+                    ylo = float(line.split()[0])
+                    yhi = float(line.split()[1])
+                    assert np.isclose(ylo, -20.0)
+                    assert np.isclose(yhi, 20.0)
+                    
+                    line = fi.readline()
+                    zlo = float(line.split()[0])
+                    zhi = float(line.split()[1])
+                    assert np.isclose(zlo, -30.0)
+                    assert np.isclose(zhi, 10.0)
+                    
+                    checked_section = True
+
+        write_lammpsdata(filename='box.lammps', structure=structure,
+                         unit_style='real')
+                         
+        checked_section = False
+        with open('box.lammps', 'r') as fi:
+            while not checked_section:
+                line = fi.readline()
+                if 'xlo' in line:
+                    xlo = float(line.split()[0])
+                    xhi = float(line.split()[1])
+                    assert np.isclose(xlo, 0.0)
+                    assert np.isclose(xhi, 7.13999987)
+                    
+                    line = fi.readline()
+                    ylo = float(line.split()[0])
+                    yhi = float(line.split()[1])
+                    assert np.isclose(ylo, 0.0)
+                    assert np.isclose(yhi, 7.93800011)
+                    
+                    line = fi.readline()
+                    zlo = float(line.split()[0])
+                    zhi = float(line.split()[1])
+                    assert np.isclose(zlo, 0.0)
+                    assert np.isclose(zhi, 6.646)
+                    
+                    checked_section = True
+
     def test_lj_box(self, ethane):
         from foyer import Forcefield
 

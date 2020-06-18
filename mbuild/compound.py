@@ -174,7 +174,7 @@ def load(filename_or_object, relative_to_module=None, compound=None, coords_only
         temp_file = os.path.join(tmp_dir, 'smiles_to_mol2_intermediate.mol2')
         mymol.make3D()
         compound = Compound()
-        compound.from_pybel(mymol, infer_hierarchy=infer_hierarchy)
+        compound.from_pybel(mymol, infer_hierarchy=infer_hierarchy, ignore_box_warn=True)
 
     else:
         traj = md.load(filename_or_object, **kwargs)
@@ -1966,6 +1966,13 @@ class Compound(object):
             if extension in ['.gsd', '.hoomdxml']:
                 kwargs['rigid_bodies'] = [
                         p.rigid_id for p in self.particles()]
+            # lammps does not require the box to be centered at any a specific origin
+            # min and max dimensions are therefore needed to write the file in a consistent way
+            # the parmed structure only has the box length
+            if extension in ['.lammps', '.lmp']:
+                if box:
+                    kwargs['mins'] = [m for m in box.mins]
+                    kwargs['maxs'] = [m for m in box.maxs]
             saver(filename=filename, structure=structure, **kwargs)
 
         elif extension == '.sdf':
@@ -2673,7 +2680,7 @@ class Compound(object):
         return pybelmol
 
     def from_pybel(self, pybel_mol, use_element=True, coords_only=False,
-            infer_hierarchy=True):
+            infer_hierarchy=True, ignore_box_warn=False):
         """Create a Compound from a Pybel.Molecule
 
         Parameters
@@ -2688,7 +2695,8 @@ class Compound(object):
             with other conversion functions
         infer_hierarchy : bool, optional, default=True
             If True, infer hierarchy from residues
-
+        ignore_box_warn : bool, optional, default=False
+            If True, ignore warning if no box is present.
         """
         openbabel = import_("openbabel")
         self.name = pybel_mol.title.split('.')[0]
@@ -2743,7 +2751,8 @@ class Compound(object):
                                 pybel_mol.unitcell.GetGamma()])
             self.periodicity = box.lengths
         else:
-            warn("No unitcell detected for pybel.Molecule {}".format(pybel_mol))
+            if not ignore_box_warn:
+                warn("No unitcell detected for pybel.Molecule {}".format(pybel_mol))
 #       TODO: Decide how to gather PBC information from openbabel. Options may
 #             include storing it in .periodicity or writing a separate function
 #             that returns the box.
