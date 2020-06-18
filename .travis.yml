@@ -20,7 +20,6 @@ install:
   - source devtools/travis-ci/install.sh
   - conda config --set always_yes yes --set changeps1 no
   - conda config --add channels omnia
-  - conda config --add channels janschulz
   - conda config --add channels conda-forge
   - conda config --add channels mosdef
   - conda create -n test-environment python=$PYTHON_VERSION --file requirements-dev.txt
@@ -28,4 +27,4 @@ install:
   - pip install -e .
 
 script:
-  - python -m pytest -v --nbval --nbval-lax --cov=mbuild --cov-report= --pyargs mbuild
+  - python -m pytest -v --cov=mbuild --cov-report= --pyargs mbuild
