@@ -138,7 +138,7 @@ def fill_box(compound, n_compounds=None, box=None, density=None, overlap=0.2,
         If a non-cubic box is desired, the ratio of box lengths in the x, y,
         and z directions.
     fix_orientation : iterable of booleans or list of iterables
-        Specify that compounds should not be rotated when filling the box,
+        If True, specifies that compounds should not be rotated when filling the box.
         Rotation contraints are specified for each individual axis (x, y, z)
         default=(False, False, False)
     temp_file : str, default=None
@@ -292,7 +292,7 @@ def fill_region(compound, n_compounds, region, overlap=0.2,
         necessary in some systems because PACKMOL does not account for
         periodic boundary conditions in its optimization.
     fix_orientation : iterable of booleans or list of iterables
-        Specify that compounds should not be rotated when filling the box,
+        If True, specifies that compounds should not be rotated when filling the box.
         Rotation contraints are specified for each individual axis (x, y, z)
         default=(False, False, False)
     temp_file : str, default=None
@@ -422,7 +422,7 @@ def fill_sphere(compound, sphere, n_compounds=None, density=None, overlap=0.2,
         case of `density` having been specified, `n_compounds` not specified,
         and more than one `compound`.
     fix_orientation : iterable of booleans or list of iterables
-        Specify that compounds should not be rotated when filling the box,
+        If True, specifies that compounds should not be rotated when filling the sphere.
         Rotation contraints are specified for each individual axis (x, y, z)
         default=(False, False, False)
     temp_file : str, default=None
@@ -572,7 +572,7 @@ def solvate(solute, solvent, n_solvent, box, overlap=0.2,
         in some systems because PACKMOL does not account for periodic boundary
         conditions in its optimization.
     fix_orientation : iterable of booleans or list of iterables
-        Specify that compounds should not be rotated when filling the box,
+        If True, specifies that compounds should not be rotated when filling the box.
         Rotation contraints are specified for each individual axis (x, y, z)
         default=(False, False, False)
     temp_file : str, default=None
