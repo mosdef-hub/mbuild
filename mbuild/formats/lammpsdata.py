@@ -313,9 +313,8 @@ def write_lammpsdata(structure, filename, atom_style='full',
         # Mass data
         masses = np.array([atom.mass for atom in structure.atoms]) / mass_conversion_factor
         mass_dict = dict([(unique_types.index(atom_type)+1,mass) for atom_type,mass in zip(types,masses)])
-
         data.write('\nMasses\n\n')
-        for atom_type,mass in mass_dict.items():
+        for atom_type,mass in sorted(mass_dict.items()):
             data.write('{:d}\t{:.6f}\t# {}\n'.format(atom_type,mass,unique_types[atom_type-1]))
 
         if forcefield:
@@ -377,7 +376,7 @@ def write_lammpsdata(structure, filename, atom_style='full',
                             type1, type2, epsilon, sigma, forcefield_dict[type1], forcefield_dict[type2]))
                 else:
                     data.write('\nPair Coeffs # lj\n\n')
-                    for idx,epsilon in epsilon_dict.items():
+                    for idx,epsilon in sorted(epsilon_dict.items()):
                         data.write('{}\t{:.5f}\t{:.5f}\n'.format(idx,epsilon,sigma_dict[idx]))
                     print('Copy these commands into your input script:\n')
                     print('# type1 type2 \tepsilon (kcal/mol) \tsigma (Angstrom)\n')
@@ -392,7 +391,7 @@ def write_lammpsdata(structure, filename, atom_style='full',
                     data.write('#\tepsilon (kcal/mol)\t\tsigma (Angstrom)\n')
                 elif unit_style == 'lj':
                     data.write('#\treduced_epsilon \t\treduced_sigma \n')
-                for idx,epsilon in epsilon_dict.items():
+                for idx,epsilon in sorted(epsilon_dict.items()):
                     data.write('{}\t{:.5f}\t\t{:.5f}\t\t# {}\n'.format(idx,epsilon,sigma_dict[idx],forcefield_dict[idx]))
 
             # Bond coefficients
@@ -402,33 +401,36 @@ def write_lammpsdata(structure, filename, atom_style='full',
                     data.write('#\tk(kcal/mol/angstrom^2)\t\treq(angstrom)\n')
                 elif unit_style == 'lj':
                     data.write('#\treduced_k\t\treduced_req\n')
-                for params,idx in unique_bond_types.items():
+                sorted_bond_types = {k: v for k, v in sorted(unique_bond_types.items(),key=lambda item: item[1])}
+                for params,idx in sorted_bond_types.items():
                     data.write('{}\t{}\t\t{}\t\t# {}\t{}\n'.format(idx,params[0],params[1],params[2][0],params[2][1]))
 
             # Angle coefficients
             if angles:
+                sorted_angle_types = {k: v for k, v in sorted(unique_angle_types.items(),key=lambda item: item[1])}
                 if use_urey_bradleys:
                     data.write('\nAngle Coeffs # charmm\n')
                     data.write('#\tk(kcal/mol/rad^2)\t\ttheteq(deg)\tk(kcal/mol/angstrom^2)\treq(angstrom)\n')
-                    for params,idx in unique_angle_types.items():
+                    for params,idx in sorted_angle_types.items():
                         data.write('{}\t{}\t{:.5f}\t{:.5f}\t{:.5f}\n'.format(idx,*params))
 
                 else:
                     data.write('\nAngle Coeffs # harmonic\n')
                     data.write('#\treduced_k\t\ttheteq(deg)\n')
-                    for params,idx in unique_angle_types.items():
+                    for params,idx in sorted_angle_types.items():
                         data.write('{}\t{}\t\t{:.5f}\t# {}\t{}\t{}\n'.format(idx,params[0],params[1],
                                                                              params[3][0],params[2],params[3][1]))
 
             # Dihedral coefficients
             if dihedrals:
+                sorted_dihedral_types = {k: v for k, v in sorted(unique_dihedral_types.items(),key=lambda item: item[1])}
                 if use_rb_torsions:
                     data.write('\nDihedral Coeffs # opls\n')
                     if unit_style == 'real':
                         data.write('#\tf1(kcal/mol)\tf2(kcal/mol)\tf3(kcal/mol)\tf4(kcal/mol)\n')
                     elif unit_style == 'lj':
                         data.write('#\tf1\tf2\tf3\tf4 (all lj reduced units)\n')
-                    for params,idx in unique_dihedral_types.items():
+                    for params,idx in sorted_dihedral_types.items():
                         opls_coeffs = RB_to_OPLS(params[0],
                                                  params[1],
                                                  params[2],
@@ -444,7 +446,7 @@ def write_lammpsdata(structure, filename, atom_style='full',
                 elif use_dihedrals:
                     data.write('\nDihedral Coeffs # charmm\n')
                     data.write('#k, n, phi, weight\n')
-                    for params, idx in unique_dihedral_types.items():
+                    for params,idx in sorted_dihedral_types.items():
                         data.write('{}\t{:.5f}\t{:d}\t{:d}\t{:.5f}\t# {}\t{}\t{}\t{}\n'.format(idx, params[0],
                                                                                                 params[1], params[2],
                                                                                                 params[3], params[6],
@@ -452,9 +454,10 @@ def write_lammpsdata(structure, filename, atom_style='full',
 
             # Improper coefficients
             if impropers:
+                sorted_improper_types = {k: v for k, v in sorted(unique_improper_types.items(),key=lambda item: item[1])}
                 data.write('\nImproper Coeffs # harmonic\n')
                 data.write('#k, phi\n')
-                for params,idx in unique_improper_types.items():
+                for params,idx in sorted_improper_types.items():
                     data.write('{}\t{:.5f}\t{:.5f}\t# {}\t{}\t{}\t{}\n'.format(idx, params[0],
                                                                                 params[1], params[2],
                                                                                 params[3], params[4],
@@ -513,7 +516,7 @@ def write_lammpsdata(structure, filename, atom_style='full',
                         i+1,improper_types[i],improper[2],
                         improper[1],improper[0],improper[3]))
 
-def _get_bond_types(structure, bonds, sigma_conversion_factor, 
+def _get_bond_types(structure, bonds, sigma_conversion_factor,
         epsilon_conversion_factor):
     unique_bond_types = dict(enumerate(set([(round(bond.type.k*(
         sigma_conversion_factor**2/epsilon_conversion_factor),3),
@@ -620,12 +623,12 @@ def _get_impropers(structure, epsilon_conversion_factor):
     lj_unit = 1 / epsilon_conversion_factor
     unique_improper_types = dict(enumerate(set([(round(improper.type.psi_k*lj_unit,3),
                                                  round(improper.type.psi_eq,3),
-                                                 improper.atom1.type, improper.atom2.type,
-                                                 improper.atom3.type, improper.atom4.type) for improper in structure.impropers])))
+                                                 improper.atom3.type, improper.atom2.type,
+                                                 improper.atom1.type, improper.atom4.type) for improper in structure.impropers])))
     unique_improper_types = OrderedDict([(y,x+1) for x,y in unique_improper_types.items()])
     improper_types = [unique_improper_types[(round(improper.type.psi_k*lj_unit,3),
                                              round(improper.type.psi_eq,3),
-                                             improper.atom1.type, improper.atom2.type,
-                                             improper.atom3.type, improper.atom4.type)] for improper in structure.impropers]
+                                             improper.atom3.type, improper.atom2.type,
+                                             improper.atom1.type, improper.atom4.type)] for improper in structure.impropers]
 
     return improper_types, unique_improper_types
