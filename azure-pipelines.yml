@@ -166,7 +166,7 @@ stages:
           - bash: |
               source activate bleeding-test-environment
               pip install pytest-azurepipelines
-              python -m pytest -v assert_dihedral_params=True --cov=mbuild --cov-report= --pyargs mbuild --no-coverage-upload
+              python -m pytest -v --cov=mbuild --cov-report= --pyargs mbuild --no-coverage-upload
             displayName: Run Tests
 
   - stage: Docker
