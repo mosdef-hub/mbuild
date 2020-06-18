@@ -1155,3 +1155,14 @@ class TestCompound(BaseTest):
             compound.add(subcomp, inherit_box=True)
         assert np.allclose(compound.box.lengths, [3.,3.,3.])
         assert np.allclose(compound.box.angles, [90.,90.,90.])
+
+        compound = mb.Compound()
+        carbon = mb.Compound(name="C")
+        compound.add(carbon)
+        compound.box = mb.Box([3.,3.,3.])
+        nitrogen = mb.Compound(name="N", pos=[4,3,3,])
+        with pytest.warns(UserWarning):
+            compound.add(nitrogen)
+        compound.box = mb.Box([5.,4.,4.])
+        with pytest.warns(UserWarning):
+            compound.box = mb.Box([5.,4.,2.])

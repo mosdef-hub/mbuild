@@ -786,6 +786,7 @@ class Compound(object):
         # If parent has box --> keep unless inherit_box == True
         # If inherit_box == True, parent box != None, child_box == None,
         # keep parent box anyway and warn
+        # If inherit_box == False, child.box != None, warn
         if self.box is None:
             if new_child.box is not None:
                 self.box = new_child.box
@@ -807,6 +808,15 @@ class Compound(object):
                         "inherit_box = True if you wish to replace the parent "
                         "compound box with that of Compound being added."
                     )
+
+        # Check that bounding box is within box after adding compound
+        if self.box:
+            if (self.box.lengths < self.boundingbox.lengths).any():
+                warn(
+                    "After adding new Compound, Compound.box.lengths < "
+                    "Compound.boundingbox.lengths. There may be particles "
+                    "outside of the defined simulation box"
+                )
 
 
     def remove(self, objs_to_remove):
@@ -1109,6 +1119,15 @@ class Compound(object):
             raise TypeError("box must be specified as an mbuild.Box")
         if self.port_particle and box is not None:
             raise ValueError("Ports cannot have a box")
+        # TODO: Fix this for non-orthogonal boxes
+        # Make sure the box is bigger than the bounding box
+        if box is not None:
+            if (box.lengths < self.boundingbox.lengths).any():
+                warn(
+                    "Compound.box.lengths < Compound.boundingbox.lengths. "
+                    "There may be particles outside of the defined "
+                    "simulation box."
+                )
         self._box = box
 
     @property
