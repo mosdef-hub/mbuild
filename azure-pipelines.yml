@@ -15,6 +15,7 @@ schedules:
     - master
   always: true
 
+
 stages:
   - stage: Test
     jobs:
@@ -48,7 +49,6 @@ stages:
           - bash: |
               conda config --set always_yes yes --set changeps1 no
               conda config --add channels omnia
-              conda config --add channels janschulz
               conda config --add channels conda-forge
               conda config --add channels mosdef
             displayName: Add relavent Channels
@@ -66,7 +66,7 @@ stages:
           - bash: |
               source activate test-environment
               pip install pytest-azurepipelines
-              python -m pytest -v --nbval --nbval-lax --pyargs mbuild --cov=mbuild --no-coverage-upload
+              python -m pytest -v --pyargs mbuild --cov=mbuild --no-coverage-upload
             displayName: Run Tests
 
           - bash: |
@@ -104,7 +104,6 @@ stages:
           - script: |
               conda config --set always_yes yes --set changeps1 no
               conda config --add channels omnia
-              conda config --add channels janschulz
               conda config --add channels conda-forge
               conda config --add channels mosdef
             displayName: Add relavent channels
@@ -127,7 +126,7 @@ stages:
           - script: |
               call activate test-environment
               python -m pip install pytest-azurepipelines
-              python -m pytest -v --nbval --nbval-lax --cov=mbuild --cov-report=html --pyargs mbuild --no-coverage-upload
+              python -m pytest -v --cov=mbuild --cov-report=html --pyargs mbuild --no-coverage-upload
             displayName: Run Tests
 
       - job: LinuxBleedingFoyer
@@ -142,7 +141,6 @@ stages:
           - bash: |
               conda config --set always_yes yes --set changeps1 no
               conda config --add channels omnia
-              conda config --add channels janschulz
               conda config --add channels conda-forge
               conda config --add channels mosdef
               conda update -c defaults conda
@@ -168,7 +166,7 @@ stages:
           - bash: |
               source activate bleeding-test-environment
               pip install pytest-azurepipelines
-              python -m pytest -v --nbval --nbval-lax --cov=mbuild --cov-report= --pyargs mbuild --no-coverage-upload
+              python -m pytest -v --cov=mbuild --cov-report= --pyargs mbuild --no-coverage-upload
             displayName: Run Tests
 
   - stage: Docker
