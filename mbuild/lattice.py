@@ -1,13 +1,57 @@
-from collections import defaultdict
 import itertools as it
+import pathlib
+from collections import defaultdict
 from warnings import warn
 
 import numpy as np
 
-
 import mbuild as mb
+from mbuild.utils.io import import_
 
-__all__ = ['Lattice']
+__all__ = ['load_cif', 'Lattice']
+
+
+def load_cif(file_or_path=None, wrap_coords=False):
+    """Load a CifFile object into memory, return an mbuild.Lattice.
+
+    Parameters
+    ----------
+    wrap_coords : bool, False
+        Wrap the lattice points back into the 0-1 acceptable coordinates.
+    """
+
+    garnett = import_('Garnett')
+    pycifrw = import_('pycifrw')
+
+    assert isinstance(file_or_path, (str, pathlib.Path))
+    cif_location = pathlib.Path(file_or_path)
+
+    reader = garnett.ciffilereader.CifFileReader()
+    with open(cif_location.absolute(), 'r') as cif_file:
+        my_cif = reader.read(cif_file)
+
+        # only need the first frame, not used as a trajectory
+        frame = my_cif[0]
+
+        # convert angstroms to nanometers
+        lattice_spacing = [frame.box.Lx/10, frame.box.Ly/10, frame.box.Lz/10]
+
+        # create lattice_points dictionary
+        position_dict = defaultdict(list)
+        for elem_id, coords in zip(frame.typeid, frame.cif_coordinates.tolist()):
+            if wrap_coords:
+                for i, pos in enumerate(coords):
+                    if pos < 0 and pos > -1:
+                        coords[i] = coords[i] + 1
+                    elif pos > 1 and pos < 2:
+                        coords[i] = coords[i] - 1
+                    else:
+                        pass
+            position_dict[frame.types[elem_id]].append(list(coords))
+        box_vectors = frame.box.get_box_matrix()
+        return Lattice(lattice_spacing=lattice_spacing,
+                       lattice_vectors=box_vectors,
+                       lattice_points=position_dict)
 
 
 class Lattice(object):
@@ -579,11 +623,12 @@ class Lattice(object):
                                     'dictionary. For key {}, type: {} was '
                                     'provided, not mbuild.Compound.'
                                     .format(key_id, err_type))
-        # set periodicity
+        # set periodicity, currently assuming rectangular system
+        if not np.all(np.allclose(self.angles, [90.0, 90.0, 90.0])):
+            warn('Periodicity of non-rectangular lattices are not valid with '
+                 'default boxes. Only rectangular lattices are valid '
+                 'at this time.')
         ret_lattice.periodicity = np.asarray([a * x, b * y, c * z], dtype=np.float64)
-        warn('Periodicity of non-rectangular lattices are not valid with '
-                    'default boxes. Only rectangular lattices are valid '
-                    'at this time.')
 
         # if coordinates are below a certain threshold, set to 0
         tolerance = 1e-12

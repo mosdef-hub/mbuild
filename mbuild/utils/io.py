@@ -88,6 +88,22 @@ or
 # pip install foyer
 '''
 
+MESSAGES['garnett'] = '''
+The code at {filename}:{line_number} requires the "garnett" package
+
+garnett can be installed with conda using:
+
+# conda install -c conda-forge garnett
+'''
+
+MESSAGES['pycifrw'] = '''
+The code at {filename}:{line_number} requires the "pycifrw" package
+
+pycifrw can be installed with conda using:
+
+# conda install -c conda-forge pycifrw
+'''
+
 MESSAGES['protobuf'] = '''
 The code at {filename}:{line_number} requires the "protobuf" package
 
@@ -242,6 +258,20 @@ try:
 except ImportError:
     has_protobuf = False
 
+
+try:
+    import garnett
+    has_garnett = True
+    del garnett
+except ImportError:
+    has_garnett = False
+
+try:
+    import pycifrw
+    has_pycifrw = True
+    del pycifrw
+except ImportError:
+    has_pycifrw = False
 
 def get_fn(name):
     """Get the full path to one of the reference files shipped for utils.

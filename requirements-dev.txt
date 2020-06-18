@@ -12,3 +12,5 @@ pytest >=3.0
 pytest-cov
 codecov
 protobuf
+garnett >=0.7.1
+pycifrw
