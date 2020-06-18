@@ -203,21 +203,24 @@ def _id_rings_fragments(structure):
     # First create a neighbor list for each atom
     neigh_dict = {i:list(bond_graph.neighbors(i))
                   for i in range(bond_graph.number_of_nodes())}
-    # First ID fused rings
-    fused_rings = []
-    rings_to_remove = []
-    for i in range(len(all_rings)):
-        ring1 = all_rings[i]
-        for j in range(i+1, len(all_rings)):
-            ring2 = all_rings[j]
-            shared_atoms = list(set(ring1) & set(ring2))
-            if len(shared_atoms) == 2:
-                fused_rings.append(list(set(ring1+ring2)))
-                rings_to_remove.append(ring1)
-                rings_to_remove.append(ring2)
-    for ring in rings_to_remove:
-        all_rings.remove(ring)
-    all_rings = all_rings + fused_rings
+
+    # Handle fused/adjoining rings
+    rings_changed = True
+    while rings_changed:
+        rings_changed = False
+        for ring1 in all_rings:
+            if rings_changed:
+                break
+            for ring2 in all_rings:
+                if ring1 == ring2:
+                    continue
+                if len(set(ring1) & set(ring2)) > 0:
+                    all_rings.remove(ring1)
+                    all_rings.remove(ring2)
+                    all_rings.append(list(set(ring1+ring2)))
+                    rings_changed=True
+                    break
+
     # ID fragments which contain a ring
     for ring in all_rings:
         adjacentatoms = []
