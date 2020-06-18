@@ -1117,3 +1117,52 @@ class TestCompound(BaseTest):
         filled.save('methane.sdf')
         sdf_string = mb.load('methane.sdf')
         assert np.allclose(filled.xyz, sdf_string.xyz, atol=1e-5)
+
+    def test_box(self):
+        compound = mb.Compound()
+        assert compound.box == None
+        compound.box = mb.Box([3.,3.,3.])
+        assert np.allclose(compound.box.lengths, [3.,3.,3.])
+        assert np.allclose(compound.box.angles, [90.,90.,90])
+        with pytest.raises(TypeError, match=r"specified as an mbuild.Box"):
+            compound.box = "Hello, world"
+        with pytest.raises(TypeError, match=r"specified as an mbuild.Box"):
+            compound.box = [3.,3.,3.]
+        port = mb.Port()
+        assert port.box == None
+        with pytest.raises(ValueError, match=r"cannot have"):
+            port.box = mb.Box([3.,3.,3.])
+
+        compound = mb.Compound()
+        subcomp = mb.Compound(box=mb.Box([3.,3.,3.]))
+        compound.add(subcomp)
+        assert np.allclose(compound.box.lengths, [3.,3.,3.])
+        assert np.allclose(compound.box.angles, [90.,90.,90.])
+        compound = mb.Compound(box=mb.Box([3.,3.,3.]))
+        subcomp = mb.Compound(box=mb.Box(lengths=[6.,6.,6.], angles=[60.,60.,120.]))
+        with pytest.warns(UserWarning):
+            compound.add(subcomp)
+        assert np.allclose(compound.box.lengths, [3.,3.,3.])
+        assert np.allclose(compound.box.angles, [90.,90.,90.])
+        compound = mb.Compound(box=mb.Box([3.,3.,3.]))
+        subcomp = mb.Compound(box=mb.Box(lengths=[6.,6.,6.], angles=[60.,60.,120.]))
+        compound.add(subcomp, inherit_box=True)
+        assert np.allclose(compound.box.lengths, [6.,6.,6.])
+        assert np.allclose(compound.box.angles, [60.,60.,120.])
+        compound = mb.Compound(box=mb.Box([3.,3.,3.]))
+        subcomp = mb.Compound()
+        with pytest.warns(UserWarning):
+            compound.add(subcomp, inherit_box=True)
+        assert np.allclose(compound.box.lengths, [3.,3.,3.])
+        assert np.allclose(compound.box.angles, [90.,90.,90.])
+
+        compound = mb.Compound()
+        carbon = mb.Compound(name="C")
+        compound.add(carbon)
+        compound.box = mb.Box([3.,3.,3.])
+        nitrogen = mb.Compound(name="N", pos=[4,3,3,])
+        with pytest.warns(UserWarning):
+            compound.add(nitrogen)
+        compound.box = mb.Box([5.,4.,4.])
+        with pytest.warns(UserWarning):
+            compound.box = mb.Box([5.,4.,2.])
