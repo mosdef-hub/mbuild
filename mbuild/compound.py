@@ -32,7 +32,7 @@ from mbuild.coordinate_transform import _translate, _rotate
 
 
 def load(filename_or_object, relative_to_module=None, compound=None, coords_only=False,
-         rigid=False, use_parmed=False, smiles=False, 
+         rigid=False, use_parmed=False, smiles=False,
          infer_hierarchy=True, **kwargs):
     """Load a file or an existing topology into an mbuild compound.
 
@@ -91,7 +91,7 @@ def load(filename_or_object, relative_to_module=None, compound=None, coords_only
         return filename_or_object
     for type in type_dict:
         if isinstance(filename_or_object, type):
-            type_dict[type](filename_or_object,coords_only=coords_only, 
+            type_dict[type](filename_or_object,coords_only=coords_only,
                     infer_hierarchy=infer_hierarchy, **kwargs)
             return compound
     if not isinstance(filename_or_object, str):
@@ -145,7 +145,7 @@ def load(filename_or_object, relative_to_module=None, compound=None, coords_only
             "use_parmed set to True.  Bonds may be inferred from inter-particle "
             "distances and standard residue templates!")
         structure = pmd.load_file(filename_or_object, structure=True, **kwargs)
-        compound.from_parmed(structure, coords_only=coords_only, 
+        compound.from_parmed(structure, coords_only=coords_only,
                 infer_hierarchy=infer_hierarchy)
 
     elif smiles:
@@ -2789,7 +2789,7 @@ class Compound(object):
             else:
                 temp_name = atom.type
             temp = Particle(name=temp_name, pos=xyz)
-            if infer_hierarchy and hasattr(atom, 'residue'): 
+            if infer_hierarchy and hasattr(atom, 'residue'):
                 # Is there a safer way to check for res?
                 if atom.residue.idx not in resindex_to_cmpd:
                     res_cmpd = Compound(name=atom.residue.name)
@@ -2965,7 +2965,6 @@ class Compound(object):
         newone.periodicity = deepcopy(self.periodicity)
         newone._pos = deepcopy(self._pos)
         newone.port_particle = deepcopy(self.port_particle)
-        newone.box = deepcopy(self.box)
         newone._check_if_contains_rigid_bodies = deepcopy(
             self._check_if_contains_rigid_bodies)
         newone._contains_rigid = deepcopy(self._contains_rigid)
@@ -3008,6 +3007,7 @@ class Compound(object):
                         # Referrers must have been handled already, or the will
                         # be handled
 
+        newone.box = deepcopy(self.box)
         return newone
 
     def _clone_bonds(self, clone_of=None):
