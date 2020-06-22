@@ -14,3 +14,5 @@ codecov
 protobuf
 garnett >=0.7.1
 pycifrw
+py3Dmol
+nglview>=2.7
