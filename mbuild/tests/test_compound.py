@@ -207,6 +207,10 @@ class TestCompound(BaseTest):
     def test_clone_with_box(self, ethane):
         ethane.box = ethane.boundingbox
         ethane_clone = mb.clone(ethane)
+        assert np.all(ethane.xyz == ethane_clone.xyz)
+        assert np.all([p.name for p in ethane.particles()] ==
+                      [p.name for p in ethane_clone.particles()])
+        assert len(ethane.children) == len(ethane_clone.children)
 
     def test_batch_add(self, ethane, h2o):
         compound = mb.Compound()
