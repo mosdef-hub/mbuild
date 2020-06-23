@@ -9,7 +9,14 @@ import pytest
 import mbuild as mb
 from mbuild.exceptions import MBuildError
 from mbuild.utils.geometry import calc_dihedral
-from mbuild.utils.io import get_fn, import_, has_foyer, has_intermol, has_openbabel, has_networkx
+from mbuild.utils.io import (get_fn,
+                             import_,
+                             has_foyer,
+                             has_intermol,
+                             has_openbabel,
+                             has_networkx,
+                             has_py3Dmol,
+                             has_nglview)
 from mbuild.tests.base_test import BaseTest
 
 class TestCompound(BaseTest):
@@ -197,6 +204,14 @@ class TestCompound(BaseTest):
                         gmx_rule = int(line.split()[1])
                         assert gmx_rule == gmx_rules[combining_rule]
 
+    def test_clone_with_box(self, ethane):
+        ethane.box = ethane.boundingbox
+        ethane_clone = mb.clone(ethane)
+        assert np.all(ethane.xyz == ethane_clone.xyz)
+        assert np.all([p.name for p in ethane.particles()] ==
+                      [p.name for p in ethane_clone.particles()])
+        assert len(ethane.children) == len(ethane_clone.children)
+
     def test_batch_add(self, ethane, h2o):
         compound = mb.Compound()
         compound.add([ethane, h2o])
@@ -360,7 +375,7 @@ class TestCompound(BaseTest):
         assert ethane.n_bonds == 3
         assert len(ethane.children) == 1
         # Still contains a port
-        assert len(ethane.children[0].children) == 5  
+        assert len(ethane.children[0].children) == 5
 
         methyl = ethane.children[0]
         ethane.remove(methyl)
@@ -1166,3 +1181,15 @@ class TestCompound(BaseTest):
         compound.box = mb.Box([5.,4.,4.])
         with pytest.warns(UserWarning):
             compound.box = mb.Box([5.,4.,2.])
+
+    @pytest.mark.skipif(not has_py3Dmol, reason="Py3Dmol is not installed")
+    def test_visualize_py3dmol(self, ethane):
+        py3Dmol = import_("py3Dmol")
+        vis_object = ethane._visualize_py3dmol()
+        assert isinstance(vis_object, py3Dmol.view)
+
+    @pytest.mark.skipif(not has_nglview, reason="NGLView is not installed")
+    def test_visualize_nglview(self, ethane):
+        nglview = import_("nglview")
+        vis_object = ethane._visualize_nglview()
+        assert isinstance(vis_object.component_0, nglview.component.ComponentViewer)
