@@ -8,6 +8,7 @@ source:
 build:
   noarch: python
   number: {{ environ.get('GIT_DESCRIBE_NUMBER', 0)}}
+  preserve_egg_dir: True
   script_env:
     - CONDA_PY
   script: activate
@@ -16,6 +17,7 @@ build:
 requirements:
   build:
     - python
+    - setuptools
     - protobuf
 
   run:
@@ -27,6 +29,7 @@ requirements:
     - parmed
     - protobuf
     - mdtraj
+    - setuptools
 
 test:
   requires:
