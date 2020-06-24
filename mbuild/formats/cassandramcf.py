@@ -203,21 +203,24 @@ def _id_rings_fragments(structure):
     # First create a neighbor list for each atom
     neigh_dict = {i:list(bond_graph.neighbors(i))
                   for i in range(bond_graph.number_of_nodes())}
-    # First ID fused rings
-    fused_rings = []
-    rings_to_remove = []
-    for i in range(len(all_rings)):
-        ring1 = all_rings[i]
-        for j in range(i+1, len(all_rings)):
-            ring2 = all_rings[j]
-            shared_atoms = list(set(ring1) & set(ring2))
-            if len(shared_atoms) == 2:
-                fused_rings.append(list(set(ring1+ring2)))
-                rings_to_remove.append(ring1)
-                rings_to_remove.append(ring2)
-    for ring in rings_to_remove:
-        all_rings.remove(ring)
-    all_rings = all_rings + fused_rings
+
+    # Handle fused/adjoining rings
+    rings_changed = True
+    while rings_changed:
+        rings_changed = False
+        for ring1 in all_rings:
+            if rings_changed:
+                break
+            for ring2 in all_rings:
+                if ring1 == ring2:
+                    continue
+                if len(set(ring1) & set(ring2)) > 0:
+                    all_rings.remove(ring1)
+                    all_rings.remove(ring2)
+                    all_rings.append(list(set(ring1+ring2)))
+                    rings_changed=True
+                    break
+
     # ID fragments which contain a ring
     for ring in all_rings:
         adjacentatoms = []
@@ -280,32 +283,35 @@ def _write_atom_information(mcf_file, structure, in_ring, IG_CONSTANT_KCAL):
     sigmas = [atom.sigma for atom in structure.atoms]
 
     # Check constraints on atom type length and element name length
-    # TODO: Update these following Cassandra release
-    # to be more reasonable values
+    max_element_length = 6
+    max_atomtype_length = 20
     n_unique_elements = len(set(elements))
     for element in elements:
-        if len(element) > 2:
+        if len(element) > max_element_length:
             warnings.warn("Warning, element name {} will be shortened "
-                 "to two characters. Please confirm your final "
-                 "MCF.".format(element))
+                 "to {} characters. Please confirm your final "
+                 "MCF.".format(element, max_element_length))
 
-    elements = [ element[:2] for element in elements ]
+    elements = [ element[:max_element_length] for element in elements ]
     if len(set(elements)) < n_unique_elements:
         warnings.warn("Warning, the number of unique elements has been "
-              "reduced due to shortening the element name to two "
-              "characters.")
+              "reduced due to shortening the element name to {} "
+              "characters.".format(max_element_length))
 
     n_unique_types = len(set(types))
     for itype in types:
-        if len(itype) > 6:
-            warnings.warn("Warning, type name {} will be shortened to six "
+        if len(itype) > max_atomtype_length:
+            warnings.warn("Warning, type name {} will be shortened to {} "
                       "characters as {}. Please confirm your final "
-                      "MCF.".format(itype,itype[-6:]))
-        types = [ itype[-6:] for itype in types ]
+                      "MCF.".format(
+                          itype,
+                          max_atomtype_length,
+                          itype[-max_atomtype_length:]))
+        types = [ itype[-max_atomtype_length:] for itype in types ]
     if len(set(types)) < n_unique_types:
         warnings.warn("Warning, the number of unique atomtypes has been "
-              "reduced due to shortening the atomtype name to six "
-              "characters.")
+              "reduced due to shortening the atomtype name to {} "
+              "characters.".format(max_atomtype_length))
 
     vdw_type = 'LJ'
     header = ('!Atom Format\n'
@@ -319,7 +325,7 @@ def _write_atom_information(mcf_file, structure, in_ring, IG_CONSTANT_KCAL):
     mcf_file.write(header)
     mcf_file.write('{:d}\n'.format(len(structure.atoms)))
     for i in range(len(structure.atoms)):
-        mcf_file.write('{:<4d}  {:<6s}  {:<2s}  {:7.3f}  {:7.3f}  '
+        mcf_file.write('{:<4d}  {:<6s}  {:<2s}  {:7.3f}  {:12.8f}  '
                 '{:3s}  {:8.3f}  {:8.3f}'.format(
             i+1, types[i], elements[i], masses[i], charges[i],
             vdw_type, epsilons[i], sigmas[i]))

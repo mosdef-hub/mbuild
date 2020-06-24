@@ -25,7 +25,7 @@ from mbuild.utils.io import import_, has_networkx, has_openbabel
 def load(filename_or_object, relative_to_module=None,
          compound=None, coords_only=False, rigid=False,
          smiles=False, infer_hierarchy=True, backend=None,
-         **kwargs):
+         ignore_box_warn=False, **kwargs):
     """Load a file or an existing topology into an mbuild compound.
 
     Files are read using the MDTraj package unless the `use_parmed` argument is
@@ -58,6 +58,8 @@ def load(filename_or_object, relative_to_module=None,
         or file containing a SMILES string.
     infer_hierarchy : bool, optional, default=True
         If True, infer hierarchy from chains and residues
+    ignore_box_warn : bool, optional, default=False
+        If True, ignore warning if no box is present.
     **kwargs : keyword arguments
         Key word arguments passed to mdTraj for loading.
 
@@ -80,7 +82,8 @@ def load(filename_or_object, relative_to_module=None,
         return load_smiles(
                         smiles_or_filename=filename_or_object,
                         compound=compound,
-                        infer_hierarchy=infer_hierarchy)
+                        infer_hierarchy=infer_hierarchy,
+                        ignore_box_warn)
     # Last, if none of the above, load from file
     else:
         return load_file(
@@ -157,7 +160,7 @@ def load_object(object, compound=None, coords_only=False,
     raise ValueError('Input not supported')
 
 def load_smiles(smiles_or_filename, compound=None,
-                infer_hierarchy=True):
+                infer_hierarchy=True, ignore_box_warn=False):
     """ Helper function to load a SMILES string
 
     Loading SMILES string from a string, a list, or a file using pybel.
@@ -170,13 +173,15 @@ def load_smiles(smiles_or_filename, compound=None,
     compound : mb.Compound
         The host mbuild Compound
     infer_hierarchy : bool, optional, default=True
+    ignore_box_warn : bool, optional, default=False
+        If True, ignore warning if no box is present.
 
     Returns
     -------
     compound : mb.Compound
 
     """
-    # WIll try to support list of smiles string in the future
+    # Will try to support list of smiles string in the future
     pybel = import_('pybel')
 
     # Initialize an mb.Compound if none is provided
@@ -210,7 +215,8 @@ def load_smiles(smiles_or_filename, compound=None,
 
     return from_pybel(pybel_mol=mymol,
                       compound=compound,
-                      infer_hierarchy=infer_hierarchy)
+                      infer_hierarchy=infer_hierarchy,
+                      ignore_box_warn=ignore_box_warn)
 
 def load_file( filename,relative_to_module=None,compound=None,
     coords_only=False,rigid=False,backend=None,
@@ -262,6 +268,7 @@ def load_file( filename,relative_to_module=None,compound=None,
                         '.xyz':'internal',
                         '.sdf':'pybel',
                         '.pdb':'mdtraj',
+                        '.mol2':'parmed'
                         }
 
     # Handle mbuild *.py files containing a class that wraps a structure file
@@ -537,7 +544,8 @@ def from_trajectory(traj, compound=None, frame=-1,
     return compound
 
 def from_pybel(pybel_mol, compound=None, use_element=True,
-               coords_only=False, infer_hierarchy=True):
+               coords_only=False, infer_hierarchy=True,
+               ignore_box_warn=False):
     """Create a Compound from a Pybel.Molecule
 
     Parameters
@@ -553,9 +561,12 @@ def from_pybel(pybel_mol, compound=None, use_element=True,
         Set preexisting atoms in compound to coordinates given
         by structure. Note: Not yet implemented, included only
         for parity with other conversion functions
-    infer_hierarchy : bool, optional, default=True
+    infer_hierarchy : bool, optional, default=False
         If True, infer hierarchy from residues
 
+    Return
+    ------
+    compound : mb.Compound
     """
     # Initialize a compound if none is provided
     if not compound:
@@ -615,7 +626,8 @@ def from_pybel(pybel_mol, compound=None, use_element=True,
                             pybel_mol.unitcell.GetGamma()])
         compound.periodicity = box.lengths
     else:
-        warn("No unitcell detected for pybel.Molecule {}".format(pybel_mol))
+        if not ignore_box_warn:
+            warn("No unitcell detected for pybel.Molecule {}".format(pybel_mol))
 #       TODO: Decide how to gather PBC information from openbabel. Options may
 #             include storing it in .periodicity or writing a separate function
 #             that returns the box.

@@ -19,6 +19,7 @@ from mbuild.periodic_kdtree import PeriodicCKDTree
 from mbuild.utils.io import run_from_ipython, import_
 from mbuild.utils.jsutils import overwrite_nglview_default
 from mbuild.coordinate_transform import _translate, _rotate
+<<<<<<< HEAD
 from mbuild import conversion
 from mbuild.conversion import load
 
@@ -85,6 +86,9 @@ class Compound(object):
         Defaults to zeros which is treated as non-periodic.
     port_particle : bool, optional, default=False
         Whether or not this Compound is part of a Port
+    box : mb.Box, optional
+        The simulation box containing the compound. Also accounts for the
+        periodicity. Defaults to None which is treated as non-periodic.
 
     Attributes
     ----------
@@ -105,7 +109,8 @@ class Compound(object):
         (the bottom of the containment hierarchy) can have integer values for
         `rigid_id`. Compounds containing rigid particles will always have
         `rigid_id == None`. See also `contains_rigid`.
-    boundingbox
+    boundingbox : mb.Box
+        The bounds (xmin, xmax, ymin, ymax, zmin, zmax) of particles in Compound
     center
     contains_rigid
     max_rigid_id
@@ -118,7 +123,7 @@ class Compound(object):
     """
 
     def __init__(self, subcompounds=None, name=None, pos=None, charge=0.0,
-                 periodicity=None, port_particle=False):
+                 periodicity=None, box=None, port_particle=False):
         super(Compound, self).__init__()
 
         if name:
@@ -152,6 +157,8 @@ class Compound(object):
         self._rigid_id = None
         self._contains_rigid = False
         self._check_if_contains_rigid_bodies = False
+
+        self.box = box
 
         # self.add() must be called after labels and children are initialized.
         if subcompounds:
@@ -518,7 +525,7 @@ class Compound(object):
                     self.rigid_id -= 1
 
     def add(self, new_child, label=None, containment=True, replace=False,
-            inherit_periodicity=True, reset_rigid_ids=True):
+            inherit_periodicity=True, inherit_box=False, reset_rigid_ids=True):
         """Add a part to the Compound.
 
         Note:
@@ -539,6 +546,8 @@ class Compound(object):
         inherit_periodicity : bool, optional, default=True
             Replace the periodicity of self with the periodicity of the
             Compound being added
+        inherit_box: bool, optional, default=False
+            Replace the box of self with the box of the Compound being added
         reset_rigid_ids : bool, optional, default=True
             If the Compound to be added contains rigid bodies, reset the
             rigid_ids such that values remain distinct from rigid_ids
@@ -610,6 +619,43 @@ class Compound(object):
         if (inherit_periodicity and isinstance(new_child, Compound) and
                 new_child.periodicity.any()):
             self.periodicity = new_child.periodicity
+
+        # If parent has no box --> inherit child box
+        # If parent has box --> keep unless inherit_box == True
+        # If inherit_box == True, parent box != None, child_box == None,
+        # keep parent box anyway and warn
+        # If inherit_box == False, child.box != None, warn
+        if self.box is None:
+            if new_child.box is not None:
+                self.box = new_child.box
+        else:
+            if inherit_box:
+                if new_child.box is None:
+                    warn(
+                        "The Compound you are adding has no box but "
+                        "inherit_box=True. The box of the original "
+                        "Compound will remain unchanged."
+                    )
+                else:
+                    self.box = new_child.box
+            else:
+                if new_child.box is not None:
+                    warn(
+                        "The Compound you are adding has a box. "
+                        "The box of the parent compound will be used. Use "
+                        "inherit_box = True if you wish to replace the parent "
+                        "compound box with that of Compound being added."
+                    )
+
+        # Check that bounding box is within box after adding compound
+        if self.box:
+            if (self.box.lengths < self.boundingbox.lengths).any():
+                warn(
+                    "After adding new Compound, Compound.box.lengths < "
+                    "Compound.boundingbox.lengths. There may be particles "
+                    "outside of the defined simulation box"
+                )
+
 
     def remove(self, objs_to_remove):
         """ Cleanly remove children from the Compound.
@@ -900,6 +946,27 @@ class Compound(object):
     @periodicity.setter
     def periodicity(self, periods):
         self._periodicity = np.array(periods)
+
+    @property
+    def box(self):
+        return self._box
+
+    @box.setter
+    def box(self, box):
+        if box is not None and type(box) != Box:
+            raise TypeError("box must be specified as an mbuild.Box")
+        if self.port_particle and box is not None:
+            raise ValueError("Ports cannot have a box")
+        # TODO: Fix this for non-orthogonal boxes
+        # Make sure the box is bigger than the bounding box
+        if box is not None:
+            if (box.lengths < self.boundingbox.lengths).any():
+                warn(
+                    "Compound.box.lengths < Compound.boundingbox.lengths. "
+                    "There may be particles outside of the defined "
+                    "simulation box."
+                )
+        self._box = box
 
     @property
     def xyz(self):
@@ -1982,7 +2049,7 @@ class Compound(object):
             residues=residues, show_ports=show_ports)
 
     def from_pybel(self, pybel_mol, use_element=True, coords_only=False,
-            infer_hierarchy=True):
+            infer_hierarchy=True, ignore_box_warn=False):
         """Create a Compound from a Pybel.Molecule
 
         Parameters
@@ -1997,6 +2064,8 @@ class Compound(object):
             with other conversion functions
         infer_hierarchy : bool, optional, default=True
             If True, infer hierarchy from residues
+        ignore_box_warn : bool, optional, default=False
+            If True, ignore warning if no box is present.
 
         See also
         --------
@@ -2004,7 +2073,8 @@ class Compound(object):
 
         """
         conversion.from_pybel(pybel_mol=pybel_mol, compound=self,
-            use_element=use_element, coords_only=coords_only)
+            use_element=use_element, coords_only=coords_only,
+            ignore_box_warn=ignore_box_warn)
 
     def to_intermol(self, molecule_types=None): # pragma: no cover
         """Create an InterMol system from a Compound.
@@ -2136,6 +2206,7 @@ class Compound(object):
                         # Referrers must have been handled already, or the will
                         # be handled
 
+        newone.box = deepcopy(self.box)
         return newone
 
     def _clone_bonds(self, clone_of=None):

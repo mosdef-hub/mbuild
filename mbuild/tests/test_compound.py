@@ -9,7 +9,14 @@ import pytest
 import mbuild as mb
 from mbuild.exceptions import MBuildError
 from mbuild.utils.geometry import calc_dihedral
-from mbuild.utils.io import get_fn, import_, has_foyer, has_intermol, has_openbabel, has_networkx
+from mbuild.utils.io import (get_fn,
+                             import_,
+                             has_foyer,
+                             has_intermol,
+                             has_openbabel,
+                             has_networkx,
+                             has_py3Dmol,
+                             has_nglview)
 from mbuild.tests.base_test import BaseTest
 
 class TestCompound(BaseTest):
@@ -221,6 +228,14 @@ class TestCompound(BaseTest):
                         gmx_rule = int(line.split()[1])
                         assert gmx_rule == gmx_rules[combining_rule]
 
+    def test_clone_with_box(self, ethane):
+        ethane.box = ethane.boundingbox
+        ethane_clone = mb.clone(ethane)
+        assert np.all(ethane.xyz == ethane_clone.xyz)
+        assert np.all([p.name for p in ethane.particles()] ==
+                      [p.name for p in ethane_clone.particles()])
+        assert len(ethane.children) == len(ethane_clone.children)
+
     def test_batch_add(self, ethane, h2o):
         compound = mb.Compound()
         compound.add([ethane, h2o])
@@ -384,7 +399,7 @@ class TestCompound(BaseTest):
         assert ethane.n_bonds == 3
         assert len(ethane.children) == 1
         # Still contains a port
-        assert len(ethane.children[0].children) == 5  
+        assert len(ethane.children[0].children) == 5
 
         methyl = ethane.children[0]
         ethane.remove(methyl)
@@ -893,10 +908,15 @@ class TestCompound(BaseTest):
         with pytest.raises(MBuildError):
             ch3_clone = mb.clone(ch3)
 
-    def test_load_mol2_mdtraj(self):
-        with pytest.raises(KeyError):
-            mb.load(get_fn('benzene-nonelement.mol2'))
+    def test_load_nonelement_mol2(self):
+        mb.load(get_fn('benzene-nonelement.mol2'), backend='mdtraj')
         mb.load(get_fn('benzene-nonelement.mol2'), backend='parmed')
+
+    def test_load_nonatom_mdtraj_mol2(self):
+        # First atom name and element are incorrect
+        # Loading with MDTraj should raise an error
+        with pytest.raises(KeyError):
+            mb.load(get_fn('benzene-nonatom-nonelement.mol2'))
 
     def test_siliane_bond_number(self, silane):
         assert silane.n_bonds == 4
@@ -1136,3 +1156,64 @@ class TestCompound(BaseTest):
         filled.save('methane.sdf')
         sdf_string = mb.load('methane.sdf')
         assert np.allclose(filled.xyz, sdf_string.xyz, atol=1e-5)
+
+    def test_box(self):
+        compound = mb.Compound()
+        assert compound.box == None
+        compound.box = mb.Box([3.,3.,3.])
+        assert np.allclose(compound.box.lengths, [3.,3.,3.])
+        assert np.allclose(compound.box.angles, [90.,90.,90])
+        with pytest.raises(TypeError, match=r"specified as an mbuild.Box"):
+            compound.box = "Hello, world"
+        with pytest.raises(TypeError, match=r"specified as an mbuild.Box"):
+            compound.box = [3.,3.,3.]
+        port = mb.Port()
+        assert port.box == None
+        with pytest.raises(ValueError, match=r"cannot have"):
+            port.box = mb.Box([3.,3.,3.])
+
+        compound = mb.Compound()
+        subcomp = mb.Compound(box=mb.Box([3.,3.,3.]))
+        compound.add(subcomp)
+        assert np.allclose(compound.box.lengths, [3.,3.,3.])
+        assert np.allclose(compound.box.angles, [90.,90.,90.])
+        compound = mb.Compound(box=mb.Box([3.,3.,3.]))
+        subcomp = mb.Compound(box=mb.Box(lengths=[6.,6.,6.], angles=[60.,60.,120.]))
+        with pytest.warns(UserWarning):
+            compound.add(subcomp)
+        assert np.allclose(compound.box.lengths, [3.,3.,3.])
+        assert np.allclose(compound.box.angles, [90.,90.,90.])
+        compound = mb.Compound(box=mb.Box([3.,3.,3.]))
+        subcomp = mb.Compound(box=mb.Box(lengths=[6.,6.,6.], angles=[60.,60.,120.]))
+        compound.add(subcomp, inherit_box=True)
+        assert np.allclose(compound.box.lengths, [6.,6.,6.])
+        assert np.allclose(compound.box.angles, [60.,60.,120.])
+        compound = mb.Compound(box=mb.Box([3.,3.,3.]))
+        subcomp = mb.Compound()
+        with pytest.warns(UserWarning):
+            compound.add(subcomp, inherit_box=True)
+        assert np.allclose(compound.box.lengths, [3.,3.,3.])
+        assert np.allclose(compound.box.angles, [90.,90.,90.])
+
+        compound = mb.Compound()
+        carbon = mb.Compound(name="C")
+        compound.add(carbon)
+        compound.box = mb.Box([3.,3.,3.])
+        nitrogen = mb.Compound(name="N", pos=[4,3,3,])
+        with pytest.warns(UserWarning):
+            compound.add(nitrogen)
+        compound.box = mb.Box([5.,4.,4.])
+        with pytest.warns(UserWarning):
+            compound.box = mb.Box([5.,4.,2.])
+
+    @pytest.mark.skipif(not has_py3Dmol, reason="Py3Dmol is not installed")
+    def test_visualize_py3dmol(self, ethane):
+        py3Dmol = import_("py3Dmol")
+        vis_object = ethane._visualize_py3dmol()
+        assert isinstance(vis_object, py3Dmol.view)
+
+    @pytest.mark.skipif(not has_nglview, reason="NGLView is not installed")
+    def test_visualize_nglview(self, ethane):
+        nglview = import_("nglview")
+        vis_object = ethane._visualize_nglview()
+        assert isinstance(vis_object.component_0, nglview.component.ComponentViewer)

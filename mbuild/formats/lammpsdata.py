@@ -12,8 +12,22 @@ from scipy.constants import epsilon_0
 
 __all__ = ['write_lammpsdata']
 
+# returns True if both mins and maxs have been defined, and each have length 3
+# otherwise returns False
+def _check_minsmaxs(mins, maxs):
+    if mins and maxs:
+        if len(mins) == 3 and len(maxs) == 3:
+            return True
+        else:
+            warn('mins and maxs passed to write_lammpsdata, but list size is incorrect. mins and maxs will be ignored.')
+            return False
+    else:
+        return False
+
 def write_lammpsdata(structure, filename, atom_style='full', 
                     unit_style='real',
+                    mins=None,
+                    maxs=None,
                     detect_forcefield_style=True, nbfix_in_data_file=True,
                     use_urey_bradleys=False,
                     use_rb_torsions=True, use_dihedrals=False):
@@ -39,6 +53,10 @@ def write_lammpsdata(structure, filename, atom_style='full',
         Current styles are supported: 'real', 'lj'
         see https://lammps.sandia.gov/doc/99/units.html for more information
         on unit styles
+    mins : list
+        minimum box dimension in x, y, z directions
+    maxs : list
+        maximum box dimension in x, y, z directions
     detect_forcefield_style: boolean
         If True, format lammpsdata parameters based on the contents of 
         the parmed Structure
@@ -137,10 +155,19 @@ def write_lammpsdata(structure, filename, atom_style='full',
         sigma_conversion_factor = 1
         epsilon_conversion_factor = 1
         mass_conversion_factor = 1
+    # lammps does not require the box to be centered at any a specific origin
+    # min and max dimensions are therefore needed to write the file in a consistent way
+    # the parmed structure only stores the box length.  It is not rigorous to assume bounds
+    # are 0 to L or -L/2 to L/2
 
-    # Internally use nm
-    box = Box(lengths=np.array([0.1 * val for val in structure.box[0:3]]),
-              angles=structure.box[3:6])
+    if _check_minsmaxs(mins,maxs):
+        box = Box(mins=mins, maxs=maxs, angles=structure.box[3:6])
+    else:
+        # Internally use nm
+        box = Box(lengths=np.array([0.1 * val for val in structure.box[0:3]]),
+                  angles=structure.box[3:6])
+
+        warn('Explicit box bounds (i.e., mins and maxs) were not provided. Box bounds are assumed to be min = 0 and max = length in each direction. This may not produce a system with the expected spatial location and may cause non-periodic systems to fail. Bounds can be defined explicitly by passing the them to the write_lammpsdata function or by passing box info to the save function.')
     # Divide by conversion factor
     box.maxs /= sigma_conversion_factor
     
@@ -169,6 +196,7 @@ def write_lammpsdata(structure, filename, atom_style='full',
     if use_rb_torsions and use_dihedrals:
         raise ValueError("Multiple dihedral styles detected, check your "
                          "Forcefield XML and structure")
+
 
     # Check impropers
     for dihedral in structure.dihedrals:
@@ -285,9 +313,8 @@ def write_lammpsdata(structure, filename, atom_style='full',
         # Mass data
         masses = np.array([atom.mass for atom in structure.atoms]) / mass_conversion_factor
         mass_dict = dict([(unique_types.index(atom_type)+1,mass) for atom_type,mass in zip(types,masses)])
-
         data.write('\nMasses\n\n')
-        for atom_type,mass in mass_dict.items():
+        for atom_type,mass in sorted(mass_dict.items()):
             data.write('{:d}\t{:.6f}\t# {}\n'.format(atom_type,mass,unique_types[atom_type-1]))
 
         if forcefield:
@@ -349,7 +376,7 @@ def write_lammpsdata(structure, filename, atom_style='full',
                             type1, type2, epsilon, sigma, forcefield_dict[type1], forcefield_dict[type2]))
                 else:
                     data.write('\nPair Coeffs # lj\n\n')
-                    for idx,epsilon in epsilon_dict.items():
+                    for idx,epsilon in sorted(epsilon_dict.items()):
                         data.write('{}\t{:.5f}\t{:.5f}\n'.format(idx,epsilon,sigma_dict[idx]))
                     print('Copy these commands into your input script:\n')
                     print('# type1 type2 \tepsilon (kcal/mol) \tsigma (Angstrom)\n')
@@ -364,7 +391,7 @@ def write_lammpsdata(structure, filename, atom_style='full',
                     data.write('#\tepsilon (kcal/mol)\t\tsigma (Angstrom)\n')
                 elif unit_style == 'lj':
                     data.write('#\treduced_epsilon \t\treduced_sigma \n')
-                for idx,epsilon in epsilon_dict.items():
+                for idx,epsilon in sorted(epsilon_dict.items()):
                     data.write('{}\t{:.5f}\t\t{:.5f}\t\t# {}\n'.format(idx,epsilon,sigma_dict[idx],forcefield_dict[idx]))
 
             # Bond coefficients
@@ -374,33 +401,36 @@ def write_lammpsdata(structure, filename, atom_style='full',
                     data.write('#\tk(kcal/mol/angstrom^2)\t\treq(angstrom)\n')
                 elif unit_style == 'lj':
                     data.write('#\treduced_k\t\treduced_req\n')
-                for params,idx in unique_bond_types.items():
+                sorted_bond_types = {k: v for k, v in sorted(unique_bond_types.items(),key=lambda item: item[1])}
+                for params,idx in sorted_bond_types.items():
                     data.write('{}\t{}\t\t{}\t\t# {}\t{}\n'.format(idx,params[0],params[1],params[2][0],params[2][1]))
 
             # Angle coefficients
             if angles:
+                sorted_angle_types = {k: v for k, v in sorted(unique_angle_types.items(),key=lambda item: item[1])}
                 if use_urey_bradleys:
                     data.write('\nAngle Coeffs # charmm\n')
                     data.write('#\tk(kcal/mol/rad^2)\t\ttheteq(deg)\tk(kcal/mol/angstrom^2)\treq(angstrom)\n')
-                    for params,idx in unique_angle_types.items():
+                    for params,idx in sorted_angle_types.items():
                         data.write('{}\t{}\t{:.5f}\t{:.5f}\t{:.5f}\n'.format(idx,*params))
 
                 else:
                     data.write('\nAngle Coeffs # harmonic\n')
                     data.write('#\treduced_k\t\ttheteq(deg)\n')
-                    for params,idx in unique_angle_types.items():
+                    for params,idx in sorted_angle_types.items():
                         data.write('{}\t{}\t\t{:.5f}\t# {}\t{}\t{}\n'.format(idx,params[0],params[1],
                                                                              params[3][0],params[2],params[3][1]))
 
             # Dihedral coefficients
             if dihedrals:
+                sorted_dihedral_types = {k: v for k, v in sorted(unique_dihedral_types.items(),key=lambda item: item[1])}
                 if use_rb_torsions:
                     data.write('\nDihedral Coeffs # opls\n')
                     if unit_style == 'real':
                         data.write('#\tf1(kcal/mol)\tf2(kcal/mol)\tf3(kcal/mol)\tf4(kcal/mol)\n')
                     elif unit_style == 'lj':
                         data.write('#\tf1\tf2\tf3\tf4 (all lj reduced units)\n')
-                    for params,idx in unique_dihedral_types.items():
+                    for params,idx in sorted_dihedral_types.items():
                         opls_coeffs = RB_to_OPLS(params[0],
                                                  params[1],
                                                  params[2],
@@ -416,7 +446,7 @@ def write_lammpsdata(structure, filename, atom_style='full',
                 elif use_dihedrals:
                     data.write('\nDihedral Coeffs # charmm\n')
                     data.write('#k, n, phi, weight\n')
-                    for params, idx in unique_dihedral_types.items():
+                    for params,idx in sorted_dihedral_types.items():
                         data.write('{}\t{:.5f}\t{:d}\t{:d}\t{:.5f}\t# {}\t{}\t{}\t{}\n'.format(idx, params[0],
                                                                                                 params[1], params[2],
                                                                                                 params[3], params[6],
@@ -424,9 +454,10 @@ def write_lammpsdata(structure, filename, atom_style='full',
 
             # Improper coefficients
             if impropers:
+                sorted_improper_types = {k: v for k, v in sorted(unique_improper_types.items(),key=lambda item: item[1])}
                 data.write('\nImproper Coeffs # harmonic\n')
                 data.write('#k, phi\n')
-                for params,idx in unique_improper_types.items():
+                for params,idx in sorted_improper_types.items():
                     data.write('{}\t{:.5f}\t{:.5f}\t# {}\t{}\t{}\t{}\n'.format(idx, params[0],
                                                                                 params[1], params[2],
                                                                                 params[3], params[4],
@@ -485,7 +516,7 @@ def write_lammpsdata(structure, filename, atom_style='full',
                         i+1,improper_types[i],improper[2],
                         improper[1],improper[0],improper[3]))
 
-def _get_bond_types(structure, bonds, sigma_conversion_factor, 
+def _get_bond_types(structure, bonds, sigma_conversion_factor,
         epsilon_conversion_factor):
     unique_bond_types = dict(enumerate(set([(round(bond.type.k*(
         sigma_conversion_factor**2/epsilon_conversion_factor),3),
@@ -592,12 +623,12 @@ def _get_impropers(structure, epsilon_conversion_factor):
     lj_unit = 1 / epsilon_conversion_factor
     unique_improper_types = dict(enumerate(set([(round(improper.type.psi_k*lj_unit,3),
                                                  round(improper.type.psi_eq,3),
-                                                 improper.atom1.type, improper.atom2.type,
-                                                 improper.atom3.type, improper.atom4.type) for improper in structure.impropers])))
+                                                 improper.atom3.type, improper.atom2.type,
+                                                 improper.atom1.type, improper.atom4.type) for improper in structure.impropers])))
     unique_improper_types = OrderedDict([(y,x+1) for x,y in unique_improper_types.items()])
     improper_types = [unique_improper_types[(round(improper.type.psi_k*lj_unit,3),
                                              round(improper.type.psi_eq,3),
-                                             improper.atom1.type, improper.atom2.type,
-                                             improper.atom3.type, improper.atom4.type)] for improper in structure.impropers]
+                                             improper.atom3.type, improper.atom2.type,
+                                             improper.atom1.type, improper.atom4.type)] for improper in structure.impropers]
 
     return improper_types, unique_improper_types
