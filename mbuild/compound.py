@@ -19,7 +19,6 @@ from mbuild.periodic_kdtree import PeriodicCKDTree
 from mbuild.utils.io import run_from_ipython, import_
 from mbuild.utils.jsutils import overwrite_nglview_default
 from mbuild.coordinate_transform import _translate, _rotate
-<<<<<<< HEAD
 from mbuild import conversion
 from mbuild.conversion import load
 

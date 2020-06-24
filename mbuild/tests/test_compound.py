@@ -916,7 +916,8 @@ class TestCompound(BaseTest):
         # First atom name and element are incorrect
         # Loading with MDTraj should raise an error
         with pytest.raises(KeyError):
-            mb.load(get_fn('benzene-nonatom-nonelement.mol2'))
+            mb.load(get_fn('benzene-nonatom-nonelement.mol2'),
+                    backend='mdtraj')
 
     def test_siliane_bond_number(self, silane):
         assert silane.n_bonds == 4

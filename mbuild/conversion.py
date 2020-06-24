@@ -83,7 +83,7 @@ def load(filename_or_object, relative_to_module=None,
                         smiles_or_filename=filename_or_object,
                         compound=compound,
                         infer_hierarchy=infer_hierarchy,
-                        ignore_box_warn)
+                        ignore_box_warn=ignore_box_warn)
     # Last, if none of the above, load from file
     else:
         return load_file(
@@ -268,7 +268,7 @@ def load_file( filename,relative_to_module=None,compound=None,
                         '.xyz':'internal',
                         '.sdf':'pybel',
                         '.pdb':'mdtraj',
-                        '.mol2':'parmed'
+                        '.mol2':'mdtraj'
                         }
 
     # Handle mbuild *.py files containing a class that wraps a structure file
