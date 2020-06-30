@@ -229,7 +229,7 @@ class TestPacking(BaseTest):
                     "constrain_rotation z"])])
     def test_specify_axis(self, orientations, constraints):
         for i in constraints:
-            assert i in mb.packing.packmol_constrain(orientations)
+            assert i in mb.packing._packmol_constrain(orientations)
 
     def test_remove_port(self):
         from mbuild.lib.recipes import Alkane
