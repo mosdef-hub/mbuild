@@ -7,7 +7,7 @@ import os
 import tempfile
 from warnings import warn
 
-from mdtraj.core.element import get_by_symbol
+from parmed.periodic_table import element_by_name
 import numpy as np
 from oset import oset as OrderedSet
 
@@ -1244,6 +1244,7 @@ class Compound(object):
             Visualize Ports in addition to Particles
             """
         nglview = import_('nglview')
+        mdtraj = import_('mdtraj')
         from mdtraj.geometry.sasa import _ATOMIC_RADII
         remove_digits = lambda x: ''.join(i for i in x if not i.isdigit()
                                               or i == '_')
@@ -1688,7 +1689,8 @@ class Compound(object):
         """
 
         openbabel = import_('openbabel')
-
+        md = import_('mdtraj')
+        from mdtraj.core.element import get_by_symbol
         for particle in self.particles():
             try:
                 get_by_symbol(particle.name)

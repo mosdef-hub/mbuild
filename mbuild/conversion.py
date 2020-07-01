@@ -5,8 +5,6 @@ from warnings import warn
 from collections import defaultdict
 import numpy as np
 
-import mdtraj as md
-from mdtraj.core.element import get_by_symbol
 import parmed as pmd
 from parmed.periodic_table import AtomicNum, element_by_name, Mass, Element
 
@@ -19,7 +17,7 @@ from mbuild.formats.hoomdxml import write_hoomdxml
 from mbuild.formats.lammpsdata import write_lammpsdata
 from mbuild.formats.gsdwriter import write_gsd
 from mbuild.formats.par_writer import write_par
-from mbuild.utils.io import import_, has_networkx, has_openbabel
+from mbuild.utils.io import import_, has_networkx, has_openbabel, has_mdtraj
 
 
 def load(filename_or_object, relative_to_module=None,
@@ -128,12 +126,15 @@ def load_object(object, compound=None, coords_only=False,
     # Create type_dict type -> loading method
     type_dict = {
         pmd.Structure:from_parmed,
-        md.Trajectory:from_trajectory
         #Will need to add a gmso method soon
                 }
     if has_openbabel:
         pybel = import_('pybel')
         type_dict.update({pybel.Molecule:from_pybel})
+
+    if has_mdtraj:
+        md = import_('mdtraj')
+        type_dict.update({md.Trajectory:from_trajectory})
 
     # Check if the given object is an mb.Compound
     if isinstance(object, mb.Compound):
@@ -267,8 +268,9 @@ def load_file( filename,relative_to_module=None,compound=None,
                         '.json':'internal',
                         '.xyz':'internal',
                         '.sdf':'pybel',
-                        '.pdb':'mdtraj',
-                        '.mol2':'mdtraj'
+                        '.hoomdxml':'mdtraj',
+                        '.mol2':'mdtraj',
+                        '.pdb':'mdtraj'
                         }
 
     # Handle mbuild *.py files containing a class that wraps a structure file
@@ -289,7 +291,7 @@ def load_file( filename,relative_to_module=None,compound=None,
             backend = default_backends[extension]
         except KeyError:
             # Else use default backend
-            backend = 'mdtraj'
+            backend = 'mdtraj' if has_mdtraj else 'parmed'
 
     # First check internal readers
     if backend == 'internal':
@@ -339,21 +341,9 @@ def load_file( filename,relative_to_module=None,compound=None,
             # Fail-safe measure
             compound = load_smiles(filename, compound)
 
-    # Then parmed reader
-    elif backend == 'parmed':
-        warn('Using parmed reader. Bonds may be inferred '
-             'from inter-particle distances and standard '
-             'residue templates. Please check that the bonds'
-             'in mb.Compound are accurate')
-        structure = pmd.load_file(filename, structure=True, **kwargs)
-        compound = from_parmed(
-                            structure=structure,
-                            compound=compound,
-                            coords_only=coords_only,
-                            infer_hierarchy=infer_hierarchy)
-
     # Then mdtraj reader
     elif backend == 'mdtraj':
+        md = import_('mdtraj')
         traj = md.load(filename, **kwargs)
         compound = from_trajectory(
                             traj=traj,
@@ -361,6 +351,20 @@ def load_file( filename,relative_to_module=None,compound=None,
                             frame=-1,
                             coords_only=coords_only,
                             infer_hierarchy=infer_hierarchy)
+
+    # Then parmed reader
+    elif backend == 'parmed':
+        #warn('Using parmed reader. Bonds may be inferred '
+        #     'from inter-particle distances and standard '
+        #     'residue templates. Please check that the bonds'
+        #     'in mb.Compound are accurate')
+        structure = pmd.load_file(filename, structure=True, **kwargs)
+        compound = from_parmed(
+                            structure=structure,
+                            compound=compound,
+                            coords_only=coords_only,
+                            infer_hierarchy=infer_hierarchy)
+
 
     if rigid:
         compound.label_rigid_bodies()
@@ -490,6 +494,7 @@ def from_trajectory(traj, compound=None, frame=-1,
 
     """
     # Check for coords_only option
+    md = import_('mdtraj')
     if compound and coords_only:
         if traj.n_atoms != compound.n_particles:
             raise ValueError('Number of atoms in {traj} does not match'
@@ -971,6 +976,7 @@ def to_trajectory(compound, show_ports=False, chains=None,
     _to_topology
 
     """
+    md = import_('mdtraj')
     atom_list = [particle for particle in compound.particles(show_ports)]
 
     top = _to_topology(compound, atom_list, chains, residues)
@@ -1019,7 +1025,9 @@ def _to_topology(compound, atom_list, chains=None, residues=None):
     mdtraj.Topology : Details on the mdtraj Topology object
 
     """
+    md = import_('mdtraj')
     from mdtraj.core.topology import Topology
+    from mdtraj.core.element import get_by_symbol
 
     if isinstance(chains, str):
         chains = [chains]
