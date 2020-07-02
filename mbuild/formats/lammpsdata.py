@@ -30,7 +30,10 @@ def write_lammpsdata(structure, filename, atom_style='full',
                     maxs=None,
                     detect_forcefield_style=True, nbfix_in_data_file=True,
                     use_urey_bradleys=False,
-                    use_rb_torsions=True, use_dihedrals=False):
+                    use_rb_torsions=True, use_dihedrals=False,
+                    sigma_conversion_factor=None,
+                    epsilon_conversion_factor=None,
+                    mass_conversion_factor=None):
     """Output a LAMMPS data file.
     
     Outputs a LAMMPS data file in the 'full' atom style format. Default units are 
@@ -69,6 +72,19 @@ def write_lammpsdata(structure, filename, atom_style='full',
     use_dihedrals:
         If True, will treat dihedrals as CHARMM-style dihedrals while looking for 
         `structure.dihedrals`
+    sigma_conversion_factor:
+        conversion factor of length for lj unit style. If not specified by user,
+        use the default value of the largest sigma of all atoms. If, in turn, sigma
+        is not provided by the structure, use 1.
+    epsilon_conversion_factor:
+        conversion factor of energy for lj unit style. If not specified by user,
+        use the default value of the largest epsilon of all atoms. If, in turn, epsilon
+        is not provided by the structure, use 1.
+     mass_conversion_factor:
+        conversion factor of energy for lj unit style. If not specified by user,
+        use the default value of the largest epsilon of all atoms. If, in turn, epsilon
+        is not provided by the structure, use 1.
+ 
 
     Notes
     -----
@@ -85,11 +101,33 @@ def write_lammpsdata(structure, filename, atom_style='full',
 
     if atom_style not in ['atomic', 'charge', 'molecular', 'full']:
         raise ValueError('Atom style "{}" is invalid or is not currently supported'.format(atom_style))
-
+    if unit_style not in ['real', 'lj']:
+        raise ValueError('Unit style "{}" is invalid or is not currently supported'.format(unit_style))
     # Check if structure is paramterized
     if unit_style == 'lj':
+        sigma_use_default = False
+        epsilon_use_default = False
+        mass_use_default = False
+
         if any([atom.sigma for atom in structure.atoms]) is None:
            raise ValueError('LJ units specified but one or more atoms has undefined LJ parameters.') 
+        
+        if sigma_conversion_factor is None:
+            sigma_use_default = True
+        elif sigma_conversion_factor <= 0:
+            raise ValueError('Asked for lj unit style but specified sigma conversion factor <= 0.')
+        
+        if epsilon_conversion_factor is None:
+            epsilon_use_default = True
+        elif epsilon_conversion_factor <= 0:
+            raise ValueError('Asked for lj unit style but specified epsilon conversion factor <= 0.')
+        
+        if mass_conversion_factor is None:
+            mass_use_default = True
+        elif mass_conversion_factor <= 0:
+            raise ValueError('Asked for lj unit style but specified mass conversion factor <= 0.')
+
+
 
     xyz = np.array([[atom.xx,atom.xy,atom.xz] for atom in structure.atoms])
 
@@ -141,10 +179,21 @@ def write_lammpsdata(structure, filename, atom_style='full',
 
     # Convert coordinates to LJ units
     if unit_style == 'lj':
-        # Get sigma, mass, and epsilon conversions by finding maximum of each
-        sigma_conversion_factor = np.max([atom.sigma for atom in structure.atoms])
-        epsilon_conversion_factor = np.max([atom.epsilon for atom in structure.atoms])
-        mass_conversion_factor = np.max([atom.mass for atom in structure.atoms])
+        # If not specified by user, get sigma, mass, and epsilon conversions by finding maximum of each
+        if sigma_use_default:
+            sigma_conversion_factor = np.max([atom.sigma for atom in structure.atoms])
+            if sigma_conversion_factor == 0:
+                sigma_conversion_factor = 1
+
+        if epsilon_use_default:
+            epsilon_conversion_factor = np.max([atom.epsilon for atom in structure.atoms])
+            if epsilon_conversion_factor == 0:
+                epsilon_conversion_factor = 1
+
+        if mass_use_default:
+            mass_conversion_factor = np.max([atom.mass for atom in structure.atoms])
+            if mass_conversion_factor == 0:
+                mass_conversion_factor = 1
 
         xyz = xyz / sigma_conversion_factor
         charges = (charges*1.6021e-19) / np.sqrt(4*np.pi*(sigma_conversion_factor*1e-10)*
@@ -169,6 +218,7 @@ def write_lammpsdata(structure, filename, atom_style='full',
 
         warn('Explicit box bounds (i.e., mins and maxs) were not provided. Box bounds are assumed to be min = 0 and max = length in each direction. This may not produce a system with the expected spatial location and may cause non-periodic systems to fail. Bounds can be defined explicitly by passing the them to the write_lammpsdata function or by passing box info to the save function.')
     # Divide by conversion factor
+    box.mins /= sigma_conversion_factor
     box.maxs /= sigma_conversion_factor
     
     # Lammps syntax depends on the functional form
@@ -271,15 +321,19 @@ def write_lammpsdata(structure, filename, atom_style='full',
 
 
         data.write('\n')
+        #If using real units, write our box dimensions in angstrom instead of nm.
+        boxdim_conversion = 10.0
+        if unit_style == 'lj':
+            boxdim_conversion = 1.0
         # Box data
         if np.allclose(box.angles, np.array([90, 90, 90])):
             for i,dim in enumerate(['x','y','z']):
                 data.write('{0:.6f} {1:.6f} {2}lo {2}hi\n'.format(
-                    10.0 * box.mins[i],
-                    10.0 * box.maxs[i],
+                    boxdim_conversion * box.mins[i],
+                    boxdim_conversion * box.maxs[i],
                     dim))
         else:
-            a, b, c = 10.0 * box.lengths
+            a, b, c = boxdim_conversion * box.lengths
             alpha, beta, gamma = np.radians(box.angles)
 
             lx = a
@@ -289,7 +343,7 @@ def write_lammpsdata(structure, filename, atom_style='full',
             yz = (b*c*np.cos(alpha) - xy*xz) / ly
             lz = np.sqrt(c**2 - xz**2 - yz**2)
 
-            xlo, ylo, zlo = 10.0 * box.mins
+            xlo, ylo, zlo = boxdim_conversion * box.mins
             xhi = xlo + lx
             yhi = ylo + ly
             zhi = zlo + lz
