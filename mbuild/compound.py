@@ -1504,7 +1504,7 @@ class Compound(object):
 
 
     def energy_minimization(self, forcefield='UFF', steps=1000, **kwargs):
-        raise ValueError('Please use Compound.energy_minimize()')
+        raise ValueError('energy_minimization() has been deprecated. Please use Compound.energy_minimize(). Deprecated mbuild Version 0.81')
         self.energy_minimize(forcefield=forcefield, steps=steps, **kwargs)
 
     def energy_minimize(self, forcefield='UFF', steps=1000, **kwargs):
