@@ -32,7 +32,7 @@ from mbuild.coordinate_transform import _translate, _rotate
 
 
 def load(filename_or_object, relative_to_module=None, compound=None, coords_only=False,
-         rigid=False, use_parmed=False, smiles=False, 
+         rigid=False, use_parmed=False, smiles=False,
          infer_hierarchy=True, **kwargs):
     """Load a file or an existing topology into an mbuild compound.
 
@@ -78,12 +78,12 @@ def load(filename_or_object, relative_to_module=None, compound=None, coords_only
 
     # First check if we are loading from an existing parmed or trajectory structure
     type_dict = {
-        pmd.Structure:compound.from_parmed,
-        md.Trajectory:compound.from_trajectory,
+        pmd.Structure: compound.from_parmed,
+        md.Trajectory: compound.from_trajectory,
     }
     try:
         pybel = import_('pybel')
-        type_dict.update({pybel.Molecule:compound.from_pybel})
+        type_dict.update({pybel.Molecule: compound.from_pybel})
     except ImportError:
         pass
 
@@ -91,7 +91,7 @@ def load(filename_or_object, relative_to_module=None, compound=None, coords_only
         return filename_or_object
     for type in type_dict:
         if isinstance(filename_or_object, type):
-            type_dict[type](filename_or_object,coords_only=coords_only, 
+            type_dict[type](filename_or_object, coords_only=coords_only,
                     infer_hierarchy=infer_hierarchy, **kwargs)
             return compound
     if not isinstance(filename_or_object, str):
@@ -145,7 +145,7 @@ def load(filename_or_object, relative_to_module=None, compound=None, coords_only
             "use_parmed set to True.  Bonds may be inferred from inter-particle "
             "distances and standard residue templates!")
         structure = pmd.load_file(filename_or_object, structure=True, **kwargs)
-        compound.from_parmed(structure, coords_only=coords_only, 
+        compound.from_parmed(structure, coords_only=coords_only,
                 infer_hierarchy=infer_hierarchy)
 
     elif smiles:
@@ -174,7 +174,8 @@ def load(filename_or_object, relative_to_module=None, compound=None, coords_only
         temp_file = os.path.join(tmp_dir, 'smiles_to_mol2_intermediate.mol2')
         mymol.make3D()
         compound = Compound()
-        compound.from_pybel(mymol, infer_hierarchy=infer_hierarchy, ignore_box_warn=True)
+        compound.from_pybel(
+            mymol, infer_hierarchy=infer_hierarchy, ignore_box_warn=True)
 
     else:
         traj = md.load(filename_or_object, **kwargs)
@@ -1501,10 +1502,9 @@ class Compound(object):
             particle.pos += (np.random.rand(3,) - 0.5) / 100
         self._update_port_locations(xyz_init)
 
-    warning_message = 'Please use Compound.energy_minimize()'
 
-    @deprecated(warning_message)
     def energy_minimization(self, forcefield='UFF', steps=1000, **kwargs):
+        raise ValueError('Please use Compound.energy_minimize()')
         self.energy_minimize(forcefield=forcefield, steps=steps, **kwargs)
 
     def energy_minimize(self, forcefield='UFF', steps=1000, **kwargs):
