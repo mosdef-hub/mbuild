@@ -808,42 +808,48 @@ class TestCompound(BaseTest):
 
     @pytest.mark.skipif(not has_openbabel, reason="Open Babel package not installed")
     def test_energy_minimization(self, octane):
-        octane.energy_minimization()
-
-    @pytest.mark.skipif(has_openbabel, reason="Open Babel package is installed")
-    def test_energy_minimization_openbabel_warn(self, octane):
-        with pytest.raises(MBuildError):
+        with pytest.raises(ValueError):
             octane.energy_minimization()
 
     @pytest.mark.skipif(not has_openbabel, reason="Open Babel package not installed")
-    def test_energy_minimization_ff(self, octane):
-        for ff in ['UFF', 'GAFF', 'MMFF94', 'MMFF94s', 'Ghemical']:
-            octane.energy_minimization(forcefield=ff)
-        with pytest.raises(IOError):
-            octane.energy_minimization(forcefield='fakeFF')
+    def test_energy_minimize(self, octane):
+        with pytest.raises(ValueError):
+            octane.energy_minimize()
 
-    @pytest.mark.skipif(not has_openbabel, reason="Open Babel package not installed")
-    def test_energy_minimization_algorithm(self, octane):
-        for algorithm in ['cg', 'steep', 'md']:
-            octane.energy_minimization(algorithm=algorithm)
+    @pytest.mark.skipif(has_openbabel, reason="Open Babel package is installed")
+    def test_energy_minimize_openbabel_warn(self, octane):
         with pytest.raises(MBuildError):
-            octane.energy_minimization(algorithm='fakeAlg')
+            octane.energy_minimize()
 
     @pytest.mark.skipif(not has_openbabel, reason="Open Babel package not installed")
-    def test_energy_minimization_non_element(self, octane):
+    def test_energy_minimize_ff(self, octane):
+        for ff in ['UFF', 'GAFF', 'MMFF94', 'MMFF94s', 'Ghemical']:
+            octane.energy_minimize(forcefield=ff)
+        with pytest.raises(IOError):
+            octane.energy_minimize(forcefield='fakeFF')
+
+    @pytest.mark.skipif(not has_openbabel, reason="Open Babel package not installed")
+    def test_energy_minimize_algorithm(self, octane):
+        for algorithm in ['cg', 'steep', 'md']:
+            octane.energy_minimize(algorithm=algorithm)
+        with pytest.raises(MBuildError):
+            octane.energy_minimize(algorithm='fakeAlg')
+
+    @pytest.mark.skipif(not has_openbabel, reason="Open Babel package not installed")
+    def test_energy_minimize_non_element(self, octane):
         for particle in octane.particles():
             particle.name = 'Q'
         with pytest.raises(MBuildError):
-            octane.energy_minimization()
+            octane.energy_minimize()
 
     @pytest.mark.skipif(not has_openbabel, reason="Open Babel package not installed")
-    def test_energy_minimization_ports(self, octane):
+    def test_energy_minimize_ports(self, octane):
         distances = np.round([octane.min_periodic_distance(port.pos, port.anchor.pos)
                               for port in octane.all_ports()], 5)
         orientations = np.round([port.pos - port.anchor.pos
                                  for port in octane.all_ports()], 5)
 
-        octane.energy_minimization()
+        octane.energy_minimize()
 
         updated_distances = np.round([octane.min_periodic_distance(port.pos,
                                                                    port.anchor.pos)
