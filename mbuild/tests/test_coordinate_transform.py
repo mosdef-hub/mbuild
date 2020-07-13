@@ -193,31 +193,34 @@ class TestCoordinateTransform(BaseTest):
     def test_spin_x_eq(self, sixpoints):
         compound2 = mb.clone(sixpoints)
         sixpoints.spin(np.pi*1.23456789, np.asarray([1.0, 0.0, 0.0]))
-        spin_x(compound2, np.pi*1.23456789)
+
+        compound2.spin(np.pi*1.23456789, around=np.asarray([1, 0, 0]))
         assert(np.allclose(compound2.xyz, sixpoints.xyz, atol=1e-16))
 
     def test_spin_y_eq(self, sixpoints):
         compound2 = mb.clone(sixpoints)
         sixpoints.spin(np.pi*1.23456789, np.asarray([0.0, 1.0, 0.0]))
-        spin_y(compound2, np.pi*1.23456789)
+        
+        compound2.spin(np.pi*1.23456789, around=np.asarray([0, 1, 0]))
         assert(np.allclose(compound2.xyz, sixpoints.xyz, atol=1e-16))
 
     def test_spin_z_eq(self, sixpoints):
         compound2 = mb.clone(sixpoints)
         sixpoints.spin(np.pi*1.23456789, np.asarray([0.0, 0.0, 1.0]))
-        spin_z(compound2, np.pi*1.23456789)
+        
+        compound2.spin(np.pi*1.23456789, around=np.asarray([0, 0, 1]))
         assert(np.allclose(compound2.xyz, sixpoints.xyz, atol=1e-16))
 
     def test_spin_deprecated_x(self, sixpoints):
-        with pytest.warns(DeprecationWarning):
+        with pytest.raises(ValueError):
             spin_x(sixpoints, np.pi*3/2)
 
     def test_spin_deprecated_y(self, sixpoints):
-        with pytest.warns(DeprecationWarning):
+        with pytest.raises(ValueError):
             spin_y(sixpoints, np.pi*3/2)
 
     def test_spin_deprecated_z(self, sixpoints):
-        with pytest.warns(DeprecationWarning):
+        with pytest.raises(ValueError):
             spin_z(sixpoints, 69)
 
     def test_spin_arbitraty(self, sixpoints):
@@ -227,15 +230,15 @@ class TestCoordinateTransform(BaseTest):
                 and np.allclose(sixpoints['down'].xyz, before['left'].xyz, atol=1e-16))
 
     def test_warn_rotate_x(self, methane):
-        with pytest.warns(DeprecationWarning):
+        with pytest.raises(ValueError):
             rotate_around_x(methane, np.pi)
 
     def test_warn_rotate_y(self, methane):
-        with pytest.warns(DeprecationWarning):
+        with pytest.raises(ValueError):
             rotate_around_y(methane, np.pi)
 
     def test_warn_rotate_z(self, methane):
-        with pytest.warns(DeprecationWarning):
+        with pytest.raises(ValueError):
             rotate_around_z(methane, np.pi)
 
     def test_spin_relative_compound_coordinates(self, sixpoints):
@@ -259,42 +262,42 @@ class TestCoordinateTransform(BaseTest):
 
     def test_rotate_around_x(self, methane):
         before = methane.xyz_with_ports
-        rotate_around_x(methane, np.pi)
+        methane.rotate(np.pi, around=np.asarray([1, 0, 0]))
         after = methane.xyz_with_ports
         assert (    np.allclose(before[:, 1], -1*after[:, 1], atol=1e-16)
                 and np.allclose(before[:, 2], -1*after[:, 2], atol=1e-16))
 
     def test_rotate_around_y(self, ch2):
         before = ch2.xyz_with_ports
-        rotate_around_y(ch2, np.pi)
+        ch2.rotate(np.pi, around=np.asarray([0, 1, 0]))
         after = ch2.xyz_with_ports
         assert (    np.allclose(before[:, 0], -1*after[:, 0], atol=1e-16)
                 and np.allclose(before[:, 2], -1*after[:, 2], atol=1e-16))
 
     def test_rotate_around_z(self, ch2):
         before = ch2.xyz_with_ports
-        rotate_around_z(ch2, np.pi)
+        ch2.rotate(np.pi, around=np.asarray([0, 0, 1]))
         after = ch2.xyz_with_ports
         assert (    np.allclose(before[:, 0], -1*after[:, 0], atol=1e-16)
                 and np.allclose(before[:, 1], -1*after[:, 1], atol=1e-16))
 
     def test_rotate_around_x_away_from_origin(self, sixpoints):
         before = sixpoints.xyz_with_ports
-        rotate_around_x(sixpoints, np.pi)
+        sixpoints.rotate(np.pi, around=np.asarray([1, 0, 0]))
         after = sixpoints.xyz_with_ports
         assert (    np.allclose(before[:, 1], -1*after[:, 1], atol=1e-16)
                 and np.allclose(before[:, 2], -1*after[:, 2], atol=1e-16))
 
     def test_rotate_around_y_away_from_origin(self, sixpoints):
         before = sixpoints.xyz_with_ports
-        rotate_around_y(sixpoints, np.pi)
+        sixpoints.rotate(np.pi, around=np.asarray([0, 1, 0]))
         after = sixpoints.xyz_with_ports
         assert (    np.allclose(before[:, 0], -1*after[:, 0], atol=1e-16)
                 and np.allclose(before[:, 2], -1*after[:, 2], atol=1e-16))
 
     def test_rotate_around_z_away_from_origin(self, sixpoints):
         before = sixpoints.xyz_with_ports
-        rotate_around_z(sixpoints, np.pi)
+        sixpoints.rotate(np.pi, around=np.asarray([0, 0, 1]))
         after = sixpoints.xyz_with_ports
         assert (    np.allclose(before[:, 1], -1*after[:, 1], atol=1e-16)
                 and np.allclose(before[:, 0], -1*after[:, 0], atol=1e-16))
