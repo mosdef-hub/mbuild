@@ -267,9 +267,9 @@ except ImportError:
     has_garnett = False
 
 try:
-    import pycifrw
+    import CifFile
     has_pycifrw = True
-    del pycifrw
+    del CifFile
 except ImportError:
     has_pycifrw = False
 
