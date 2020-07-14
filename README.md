@@ -17,7 +17,7 @@ complex molecular systems for molecular dynamics simulations.
   worry about manually defining bonds when constructing chemically bonded
   structures from smaller components.
 
-To learn more, get started or contribute, check out our [website](http://mosdef-hub.github.io/mbuild/).
+To learn more, get started or contribute, check out our [website](http://mbuild.mosdef.org).
 
 If you use this package, please cite [our paper](http://dx.doi.org/10.1007/978-981-10-1128-3_5
 ). The BibTeX reference is
