@@ -20,8 +20,8 @@ def load_cif(file_or_path=None, wrap_coords=False):
         Wrap the lattice points back into the 0-1 acceptable coordinates.
     """
 
-    garnett = import_('Garnett')
-    pycifrw = import_('pycifrw')
+    garnett = import_('garnett')
+    pycifrw = import_('CifFile')
 
     assert isinstance(file_or_path, (str, pathlib.Path))
     cif_location = pathlib.Path(file_or_path)
