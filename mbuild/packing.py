@@ -135,7 +135,7 @@ def fill_box(compound, n_compounds=None, box=None, density=None, overlap=0.2,
         warnings.warn("fix_orientation can now be passed as a tuple or list with True/False "
              "values specified for each x,y,z axis individually. "
              "Using a single instance of True/False defaults to (True,True,True) "
-             "and (Fale,False,False) respectively")
+             "and (False,False,False) respectively")
 
     if compound is not None and n_compounds is not None:
         if len(compound) != len(n_compounds):
@@ -285,7 +285,7 @@ def fill_region(compound, n_compounds, region, overlap=0.2,
         warnings.warn("fix_orientation can now be passed as a tuple or list with True/False "
              "values specified for each x,y,z axis individually. "
              "Using a single instance of True/False defaults to (True,True,True) "
-             "and (Fale,False,False) respectively")
+             "and (False,False,False) respectively")
     if compound is not None and n_compounds is not None:
         if len(compound) != len(n_compounds):
             msg = ("`compound` and `n_compounds` must be of equal length.")
@@ -423,7 +423,7 @@ def fill_sphere(compound, sphere, n_compounds=None, density=None, overlap=0.2,
         warnings.warn("fix_orientation can now be passed as a tuple or list with True/False "
              "values specified for each x,y,z axis individually. "
              "Using a single instance of True/False defaults to (True,True,True) "
-             "and (Fale,False,False) respectively")
+             "and (False,False,False) respectively")
 
     if compound is not None and n_compounds is not None:
         if len(compound) != len(n_compounds):
@@ -562,7 +562,7 @@ def solvate(solute, solvent, n_solvent, box, overlap=0.2,
         warnings.warn("fix_orientation can now be passed as a tuple or list with True/False "
              "values specified for each x,y,z axes individually. "
              "Using a single instance of True/False defaults to (True,True,True) "
-             "and (Fale,False,False) respectively")
+             "and (False,False,False) respectively")
 
     if len(solvent) != len(n_solvent):
         msg = ("`n_solvent` and `n_solvent` must be of equal length.")
@@ -668,11 +668,11 @@ def _packmol_constrain(fix_orientation):
     {}
     {}
     """
-    # Handles instances that are not iterable; defaults to True/Fales for all axes
-    if fix_orientation == True:
-        fix_orientation=(True, True, True)
-    if fix_orientation == False:
-        fix_orientation=(False, False, False)
+    # Handles instances that are not iterable; defaults to True/False for all axes
+    if fix_orientation is True:
+        fix_orientation = [fix_orientation] * 3
+    if fix_orientation is False:
+        fix_orientation= [fix_orientation] * 3
 
     if not any(fix_orientation):
         return None
@@ -756,7 +756,7 @@ def _run_packmol(input_text, filled_xyz, temp_file):
                "the .xyz_FORCED file instead. This may not be a "
                "sufficient packing result.")
         warnings.warn(msg)
-        os.system('cp {0}_forced {0}'.format(filled_xyz.name))
+        os.system('cp {0}_FORCED {0}'.format(filled_xyz.name))
 
     if 'ERROR' in out or proc.returncode != 0:
         _packmol_error(out, err)
