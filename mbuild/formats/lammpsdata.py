@@ -6,6 +6,7 @@ import numpy as np
 from parmed.parameters import ParameterSet
 
 from mbuild import Box
+from parmed.topologyobjects import TrackedList
 from mbuild.utils.conversion import RB_to_OPLS
 from mbuild.utils.sorting import natural_sort
 from scipy.constants import epsilon_0
@@ -189,8 +190,16 @@ def write_lammpsdata(structure, filename, atom_style='full',
         else:
             use_rb_torsions = False
         if len(structure.dihedrals) > 0:
-            print("Charmm dihedrals detected, will use dihedral_style charmm")
-            use_dihedrals = True
+            charmm_proper = TrackedList()
+            charmm_improper = TrackedList()
+            for dihedral in structure.dihedrals:
+                if dihedral.improper:
+                    charmm_improper.append(dihedral)
+                else:
+                    charmm_proper.append(dihedral)
+            if len(charmm_proper) > 0:
+                print("Charmm proper dihedrals detected, will use dihedral_style charmm")
+                use_dihedrals = True
         else:
             use_dihedrals = False
     if use_rb_torsions and use_dihedrals:
@@ -199,9 +208,13 @@ def write_lammpsdata(structure, filename, atom_style='full',
 
 
     # Check impropers
-    for dihedral in structure.dihedrals:
-        if dihedral.improper:
-            raise ValueError("Amber-style impropers are currently not supported")
+    if len(charmm_improper) > 0:
+        use_charmm_improper = True
+        if structure.impropers:
+            raise ValueError("Multiple improper styles detected, check your "
+                             "Forcefield XML and structure")
+    else:
+        use_charmm_improper = False
 
     bonds = [[bond.atom1.idx+1, bond.atom2.idx+1] for bond in structure.bonds]
     angles = [[angle.atom1.idx+1,
@@ -219,10 +232,17 @@ def write_lammpsdata(structure, filename, atom_style='full',
                       dihedral.atom4.idx+1] for dihedral in structure.dihedrals]
     else:
         dihedrals = []
-    impropers = [[improper.atom1.idx+1,
-                  improper.atom2.idx+1,
-                  improper.atom3.idx+1,
-                  improper.atom4.idx+1] for improper in structure.impropers]
+
+    if use_charmm_improper:
+        impropers = [[improper.atom1.idx+1,
+                      improper.atom2.idx+1,
+                      improper.atom3.idx+1,
+                      improper.atom4.idx+1] for improper in charmm_improper]
+    else:
+        impropers = [[improper.atom1.idx+1,
+                      improper.atom2.idx+1,
+                      improper.atom3.idx+1,
+                      improper.atom4.idx+1] for improper in structure.impropers]
 
 
     if bonds :
@@ -245,7 +265,7 @@ def write_lammpsdata(structure, filename, atom_style='full',
             
     if impropers:
         improper_types, unique_improper_types = _get_impropers(structure,
-                epsilon_conversion_factor)
+                epsilon_conversion_factor, charmm_improper=charmm_improper)
     
 
     with open(filename, 'w') as data:
@@ -455,13 +475,22 @@ def write_lammpsdata(structure, filename, atom_style='full',
             # Improper coefficients
             if impropers:
                 sorted_improper_types = {k: v for k, v in sorted(unique_improper_types.items(),key=lambda item: item[1])}
-                data.write('\nImproper Coeffs # harmonic\n')
-                data.write('#k, phi\n')
-                for params,idx in sorted_improper_types.items():
-                    data.write('{}\t{:.5f}\t{:.5f}\t# {}\t{}\t{}\t{}\n'.format(idx, params[0],
-                                                                                params[1], params[2],
-                                                                                params[3], params[4],
-                                                                                params[5]))
+                if use_charmm_improper:
+                    data.write('\nImproper Coeffs # cvff\n')
+                    data.write('#k, d, n\n')
+                    for params,idx in sorted_improper_types.items():
+                        data.write('{}\t{:.5f}\t{:.5f}\t{:.5f}\t# {}\t{}\t{}\t{}\n'.format(idx, params[0],
+                                                                                    params[1], params[2],
+                                                                                    params[3], params[4],
+                                                                                    params[5], params[6]))
+                else:
+                    data.write('\nImproper Coeffs # harmonic\n')
+                    data.write('#k, phi\n')
+                    for params,idx in sorted_improper_types.items():
+                        data.write('{}\t{:.5f}\t{:.5f}\t# {}\t{}\t{}\t{}\n'.format(idx, params[0],
+                                                                                    params[1], params[2],
+                                                                                    params[3], params[4],
+                                                                                    params[5]))
 
         # Atom data
         data.write('\nAtoms\n\n')
@@ -619,16 +648,29 @@ def _get_dihedral_types(structure, use_rb_torsions, use_dihedrals,
 
     return dihedral_types, unique_dihedral_types
 
-def _get_impropers(structure, epsilon_conversion_factor):
+def _get_impropers(structure, epsilon_conversion_factor, charmm_improper=None):
     lj_unit = 1 / epsilon_conversion_factor
-    unique_improper_types = dict(enumerate(set([(round(improper.type.psi_k*lj_unit,3),
+    if charmm_improper:
+        unique_improper_types = dict(enumerate(set([(round(improper.type.phi_k*lj_unit,3),
+                                                     1,
+                                                     improper.type.per,
+                                                     improper.atom3.type, improper.atom2.type,
+                                                     improper.atom1.type, improper.atom4.type) for improper in charmm_improper])))
+        unique_improper_types = OrderedDict([(y,x+1) for x,y in unique_improper_types.items()])
+        improper_types = [unique_improper_types[(round(improper.type.phi_k*lj_unit,3),
+                                                 1,
+                                                 improper.type.per,
+                                                 improper.atom3.type, improper.atom2.type,
+                                                 improper.atom1.type, improper.atom4.type)] for improper in charmm_improper]
+    else:
+        unique_improper_types = dict(enumerate(set([(round(improper.type.psi_k*lj_unit,3),
+                                                     round(improper.type.psi_eq,3),
+                                                     improper.atom3.type, improper.atom2.type,
+                                                     improper.atom1.type, improper.atom4.type) for improper in structure.impropers])))
+        unique_improper_types = OrderedDict([(y,x+1) for x,y in unique_improper_types.items()])
+        improper_types = [unique_improper_types[(round(improper.type.psi_k*lj_unit,3),
                                                  round(improper.type.psi_eq,3),
                                                  improper.atom3.type, improper.atom2.type,
-                                                 improper.atom1.type, improper.atom4.type) for improper in structure.impropers])))
-    unique_improper_types = OrderedDict([(y,x+1) for x,y in unique_improper_types.items()])
-    improper_types = [unique_improper_types[(round(improper.type.psi_k*lj_unit,3),
-                                             round(improper.type.psi_eq,3),
-                                             improper.atom3.type, improper.atom2.type,
-                                             improper.atom1.type, improper.atom4.type)] for improper in structure.impropers]
+                                                 improper.atom1.type, improper.atom4.type)] for improper in structure.impropers]
 
     return improper_types, unique_improper_types
