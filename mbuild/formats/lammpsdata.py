@@ -479,7 +479,7 @@ def write_lammpsdata(structure, filename, atom_style='full',
                     data.write('\nImproper Coeffs # cvff\n')
                     data.write('#k, d, n\n')
                     for params,idx in sorted_improper_types.items():
-                        data.write('{}\t{:.5f}\t{:.5f}\t{:.5f}\t# {}\t{}\t{}\t{}\n'.format(idx, params[0],
+                        data.write('{}\t{:.5f}\t{}\t{}\t# {}\t{}\t{}\t{}\n'.format(idx, params[0],
                                                                                     params[1], params[2],
                                                                                     params[3], params[4],
                                                                                     params[5], params[6]))
