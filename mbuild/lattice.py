@@ -48,7 +48,7 @@ def load_cif(file_or_path=None, wrap_coords=False):
                     else:
                         pass
             position_dict[frame.types[elem_id]].append(list(coords))
-        box_vectors = frame.box.get_box_matrix()
+        box_vectors = np.asarray(frame.box.get_box_matrix()).T
         return Lattice(lattice_spacing=lattice_spacing,
                        lattice_vectors=box_vectors,
                        lattice_points=position_dict)
