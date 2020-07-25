@@ -9,6 +9,7 @@ import tempfile
 from warnings import warn
 
 import mdtraj as md
+from mdtraj.core.element import Element as ElementClass
 from mdtraj.core.element import get_by_symbol
 import numpy as np
 from oset import oset as OrderedSet
@@ -251,6 +252,8 @@ class Compound(object):
     box : mb.Box, optional
         The simulation box containing the compound. Also accounts for the
         periodicity. Defaults to None which is treated as non-periodic.
+    element: str, optional, default=None
+        The one or two character element symbol
 
     Attributes
     ----------
@@ -285,7 +288,8 @@ class Compound(object):
     """
 
     def __init__(self, subcompounds=None, name=None, pos=None, charge=0.0,
-                 periodicity=None, box=None, port_particle=False):
+                 periodicity=None, box=None, element=None,
+                 port_particle=False):
         super(Compound, self).__init__()
 
         if name:
@@ -321,6 +325,7 @@ class Compound(object):
         self._check_if_contains_rigid_bodies = False
 
         self.box = box
+        self.element = element
 
         # self.add() must be called after labels and children are initialized.
         if subcompounds:
@@ -450,6 +455,29 @@ class Compound(object):
         """
         for particle in self.particles():
             if particle.name == name:
+                yield particle
+
+    def particles_by_element(self, element):
+        """Return all Particles of the Compound with a specific name
+
+        Parameters
+        ----------
+        name : str or mdtraj.core.element.Element
+            element abbreviation or element 
+
+        Yields
+        ------
+        mb.Compound
+            The next Particle in the Compound with the user-specified element
+
+        """
+        if not isinstance(element, ElementClass):
+            try:
+                element = get_by_symbol(element)
+            except KeyError:
+                raise MBuildError("Invalid element symbol")
+        for particle in self.particles():
+            if particle.element == element:
                 yield particle
 
     @property
@@ -1129,6 +1157,20 @@ class Compound(object):
                     "simulation box."
                 )
         self._box = box
+
+    @property
+    def element(self):
+        return self._element
+    
+    @element.setter
+    def element(self, element):
+        if element is not None:
+            try:
+                self._element = get_by_symbol(element)
+            except KeyError:
+                raise MBuildError("Invalid element symbol")
+        else:
+            self._element = None
 
     @property
     def xyz(self):
@@ -2962,6 +3004,7 @@ class Compound(object):
         clone_of[self] = newone
 
         newone.name = deepcopy(self.name)
+        newone._element = deepcopy(self.element)
         newone.periodicity = deepcopy(self.periodicity)
         newone._pos = deepcopy(self._pos)
         newone.port_particle = deepcopy(self.port_particle)
