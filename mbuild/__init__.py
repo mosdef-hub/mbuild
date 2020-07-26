@@ -7,4 +7,4 @@ from mbuild.packing import *
 from mbuild.port import Port
 from mbuild.lattice import Lattice
 from mbuild.recipes import recipes
-from mbuild.version import version
+__version__ = '0.10.8'
