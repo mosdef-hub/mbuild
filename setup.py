@@ -11,7 +11,6 @@ structures from smaller components.
 
 import os
 import subprocess
-from pathlib import Path
 from setuptools import setup, find_packages
 from distutils.spawn import find_executable
 
