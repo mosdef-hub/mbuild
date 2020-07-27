@@ -28,9 +28,14 @@ class Box(object):
         except:
             pass
 
+        self.box_vectors = box_vectors
+
     @classmethod
     def from_lengths_angles(cls, lengths, angles):
-        pass
+        box_vectors = _lengths_angles_to_vectors(lengths, angles)
+        _validate_box_vectors(box_vectors)
+
+        return Box(box_vectors=box_vectors)
 
     @classmethod
     def from_uvec_lengths(cls, uvec, lengths):
@@ -55,7 +60,18 @@ class Box(object):
 
     @classmethod
     def from_lo_hi_tilt_factors(cls, lo, hi, tilt_factors):
-        pass
+        (xlo,ylo,zlo) = lo
+        (xhi,yhi,zhi) = hi
+        (xy,xz,yz) = tilt_factors
+
+        v1 = np.asarray([xhi - xlo, 0.0, 0.0])
+        v2 = np.asarray([xy, yhi - ylo, 0.0])
+        v3 = np.asarray([xz, yz, zhi - zlo])
+        box_vectors = np.asarray([v1],[v2],[v3])
+        box_vectors.reshape(3,3)
+        _validate_box_vectors(box_vectors)
+
+        return Box(box_vectors=box_vectors)
 
     @classmethod
     def from_lengths_mins_angles(cls, lengths, mins, angles):
@@ -118,43 +134,26 @@ class Box(object):
     def __repr__(self):
         return "Box(mins={}, maxs={}, angles={})".format(self.mins, self.maxs, self.angles)
 
-class _BoxArray(np.ndarray):
-    """Subclass of np.ndarry specifically for mb.Box
 
-    This subclass is meant to be used internally to store Box attribute array.
-    This subclass is modified so that its __setitem__ method is rerouted to the
-    corresponding setter method.
+def _validate_box_vectors(box_vectors):
+    pass
 
-    Parameters
-    ----------
-    array : array-like object
-        This can be tuple, list, or any array-like object that can be usually
-        passed to np.array
-    var : str
-        Corresponding Box's attributes like "maxs", "mins", "lengths", "angles"
-    box : mb.Box
-        This is the Box contains this attribute (one level up of this array)
-    """
-    def __new__(cls, array, var=None, box=None, dtype=np.float):
-        _array = np.asarray(array, dtype).view(cls)
-        _array.var = var
-        _array.box = box
-        return _array
+def _lengths_angles_to_vectors(lengths, angles):
+    (a, b, c) = lengths
+    (alpha, beta, gamma) = np.deg2rad(angles)
 
-    def __setitem__(self, key, val):
-        array = list(self)
-        array[key] = val
-        if self.var == "maxs":
-            msg = "Given max value is less than box's min value"
-            assert val >= self.box.mins[key], msg
-            self.box.maxs = array
-        elif self.var == "mins":
-            msg = "Given min value is more than box's max value"
-            assert val <= self.box.maxs[key], msg
-            self.box.mins = array
-        elif self.var == "lengths":
-            msg = "Given length value is negative"
-            assert val >= 0, msg
-            self.box.lengths = array
-        else:
-            self.box.angles = array
+    a_vec = np.asarray([a,0.0,0.0],)
+
+    b_x = b * np.cos(gamma)
+    b_y = b * np.sin(gamma)
+    b_vec = np.asarray([b_x, b_y, 0.0],))
+
+    c_x = c * np.cos(beta)
+    c_cos_y_term = ((np.cos(alpha) - (np.cos(beta) * np.cos(gamma))) / np.sin(gamma))
+    c_y = c * c_cos_y_term
+    c_z = c * np.sqrt(1 - np.square(np.cos(beta)) - np.square(c_cos_y_term))
+    c_vec = np.asarray([c_x, c_y, c_z])
+
+    box_vectors = np.asarray([a_vec],[b_vec],[c_vec])
+    box_vectors.reshape(3,3)
+    return box_vectors
