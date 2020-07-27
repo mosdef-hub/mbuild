@@ -104,7 +104,7 @@ class Box(object):
         else:
             lengths = np.array(lengths, dtype=np.float)
         assert lengths.shape == (3, )
-        assert all(lengths >= 0), "Given lengths are negative" 
+        assert all(lengths >= 0), "Given lengths are negative"
         self._maxs = _BoxArray(array=(self.maxs + (0.5*lengths - 0.5*self.lengths)), var="maxs", box=self)
         self._mins = _BoxArray(array=(self.mins - (0.5*lengths - 0.5*self.lengths)), var="mins", box=self)
         self._lengths = _BoxArray(array=lengths, var="lengths", box=self, dtype=np.float)
@@ -145,7 +145,7 @@ class _BoxArray(np.ndarray):
         array = list(self)
         array[key] = val
         if self.var == "maxs":
-            msg = "Given max value is less than box's min value" 
+            msg = "Given max value is less than box's min value"
             assert val >= self.box.mins[key], msg
             self.box.maxs = array
         elif self.var == "mins":
