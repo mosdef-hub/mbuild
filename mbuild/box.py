@@ -7,55 +7,63 @@ __all__ = ['Box']
 class Box(object):
     """A box representing the bounds of the system.
 
+    Parameters
+    ----------
+    box_vectors : np.ndarray, shape=(3,3), dtype=float
+        Vectors that define a right-handed parallelpiped (Box).
+
+
     Attributes
     ----------
-    mins : np.ndarray, shape=(3,), dtype=float
-        Minimum x, y, z coordinates.
-    maxs : np.ndarray, shape=(3,), dtype=float
-        Maximum x, y, z coordinates.
-    lengths : np.ndarray, shape(3,), dtype=float
-        Box length in x, y and z directions.
-    angles : np.ndarray, shape(3,), dtype=float, default=[90,90,90]
-        Angles defining the tilt of the box
-
+    box_vectors : np.ndarray, shape=(3,3), dtype=float
+        Vectors that define the parallelpiped (Box).
+    Lx, Ly, Lz : float
+        Lengths of the Box in the x,y,z dimensions
+    xy,xz,yz : float
+        Tilt factors needed to displace an orthogonal box to its parallelpiped structure.
     """
-    def __init__(self, lengths=None, mins=None, maxs=None, angles=None):
-        if lengths is None:
-            if mins is None or maxs is None:
-                raise ValueError(
-                    "Either provide `lengths` or `mins` and `maxs`. "
-                    "You provided: "
-                    "lengths={} mins={} maxs={}".format(lengths, mins, maxs)
-                )
-            mins = np.array(mins, dtype=np.float)
-            maxs = np.array(maxs, dtype=np.float)
-            assert mins.shape == (3, ), "Given mins have wrong dimensions"
-            assert maxs.shape == (3, ), "Given maxs have wrong dimensions"
-            assert all(mins <= maxs), "Given mins are greater than maxs"
-            self._mins = _BoxArray(array=mins, var="mins", box=self)
-            self._maxs = _BoxArray(array=maxs, var="maxs", box=self)
-            self._lengths = _BoxArray(array=(self.maxs - self.mins), var="lengths", box=self)
-        else:
-            if mins is not None or maxs is not None:
-                warn(
-                    "Provided `lengths` and `mins` and/or `maxs`. Only `lengths` "
-                    "is being used. You provided: "
-                    "lengths={} mins={} maxs={}".format(lengths, mins, maxs)
-                )
-            if isinstance(lengths, int) or isinstance(lengths, float):
-                lengths = np.array(lengths*np.ones(3), dtype=np.float)
-            else:
-                lengths = np.array(lengths, dtype=np.float)
-            assert lengths.shape == (3, )
-            assert all(lengths >= 0), "Given lengths are negative"
-            self._mins = _BoxArray(array=(0,0,0), var="mins", box=self)
-            self._maxs = _BoxArray(array=lengths, var="maxs", box=self)
-            self._lengths = _BoxArray(array=lengths, var="lengths", box=self)
-        if angles is None:
-            angles = _BoxArray(array=(90.0, 90.0, 90.0), var="angles", box=self)
-        elif isinstance(angles, (list, np.ndarray)):
-            angles = _BoxArray(array=angles, var="angles", box=self)
-        self._angles = angles
+    def __init__(self, box_vectors=None):
+        try:
+            _validate_box_vectors(box_vectors)
+        except:
+            pass
+
+    @classmethod
+    def from_lengths_angles(cls, lengths, angles):
+        pass
+
+    @classmethod
+    def from_uvec_lengths(cls, uvec, lengths):
+        uvec = np.asarray(uvec)
+        uvec.reshape(3,3)
+        assert uvec.shape == (3,3), f"Expected a 3x3 matrix, was provided {uvec.shape}."
+
+        lengths = np.asarray(lengths)
+        lengths.reshape(1,3)
+        _validate_box_vectors(uvec)
+        scaled_vec = (uvec.T * lengths).T
+
+        return Box(box_vectors=scaled_vec)
+
+    @classmethod
+    def from_mins_maxs_angles(cls, mins, maxs, angles):
+        pass
+
+    @classmethod
+    def from_lengths_tilt_factors(cls, lengths, tilt_factors):
+        pass
+
+    @classmethod
+    def from_lo_hi_tilt_factors(cls, lo, hi, tilt_factors):
+        pass
+
+    @classmethod
+    def from_lengths_mins_angles(cls, lengths, mins, angles):
+        pass
+
+    @classmethod
+    def from_lengths_maxs_angles(cls, lengths, maxs, angles):
+        pass
 
     @property
     def mins(self):
