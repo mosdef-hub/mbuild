@@ -28,12 +28,11 @@ class Box(object):
         except:
             pass
 
-        self.box_vectors = box_vectors
+        self._box_vectors = box_vectors
 
     @classmethod
     def from_lengths_angles(cls, lengths, angles):
         box_vectors = _lengths_angles_to_vectors(lengths, angles)
-        _validate_box_vectors(box_vectors)
 
         return Box(box_vectors=box_vectors)
 
@@ -52,7 +51,11 @@ class Box(object):
 
     @classmethod
     def from_mins_maxs_angles(cls, mins, maxs, angles):
-        pass
+        (x_min, y_min, z_min) = mins
+        (x_max, y_max, z_max) = maxs
+        lengths = (x_max-x_min, y_max-y_min, z_max-z_min)
+        box_vectors = _lengths_angles_to_vectors(lengths, angles)
+        return Box(box_vectors=box_vectors)
 
     @classmethod
     def from_lengths_tilt_factors(cls, lengths, tilt_factors):
@@ -146,7 +149,7 @@ def _lengths_angles_to_vectors(lengths, angles):
 
     b_x = b * np.cos(gamma)
     b_y = b * np.sin(gamma)
-    b_vec = np.asarray([b_x, b_y, 0.0],))
+    b_vec = np.asarray([b_x, b_y, 0.0],)
 
     c_x = c * np.cos(beta)
     c_cos_y_term = ((np.cos(alpha) - (np.cos(beta) * np.cos(gamma))) / np.sin(gamma))
@@ -156,4 +159,5 @@ def _lengths_angles_to_vectors(lengths, angles):
 
     box_vectors = np.asarray([a_vec],[b_vec],[c_vec])
     box_vectors.reshape(3,3)
+    _validate_box_vectors(box_vectors=box_vectors)
     return box_vectors
