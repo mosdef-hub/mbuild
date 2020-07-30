@@ -2,6 +2,9 @@ from warnings import warn
 
 import numpy as np
 
+from mbuild.coordinate_transform import AxisTransform, ChangeOfBasis
+from mbuild.exceptions import MBuildError
+
 __all__ = ['Box']
 
 class Box(object):
@@ -85,6 +88,15 @@ class Box(object):
         pass
 
     @property
+    def box_vectors(self):
+        return self._box_vectors
+
+    #NOTE: we might not want setters at all, just make a new box?
+    @box_vectors.setter
+    def box_vectors(self, box_vectors):
+        self._box_vectors = box_vectors
+
+    @property
     def mins(self):
         return self._mins
 
@@ -100,46 +112,48 @@ class Box(object):
     def angles(self):
         return self._angles
 
-    @mins.setter
-    def mins(self, mins):
-        mins = np.array(mins, dtype=np.float)
-        assert mins.shape == (3, )
-        assert all(mins <= self.maxs), "Given mins is greater than maxs"
-        self._mins = _BoxArray(array=mins, var="mins", box=self)
-        self._lengths = _BoxArray(array=(self.maxs - self.mins), var="lengths", box=self)
-
-    @maxs.setter
-    def maxs(self, maxs):
-        maxs = np.array(maxs, dtype=np.float)
-        assert maxs.shape == (3, )
-        assert all(maxs >= self.mins), "Given maxs is less than mins"
-        self._maxs = _BoxArray(array=maxs, var="maxs", box=self)
-        self._lengths = _BoxArray(array= (self.maxs - self.mins), var="lengths", box=self)
-
-    @lengths.setter
-    def lengths(self, lengths):
-        if isinstance(lengths, int) or isinstance(lengths, float):
-            lengths = np.array(lengths*np.ones(3), dtype=np.float)
-        else:
-            lengths = np.array(lengths, dtype=np.float)
-        assert lengths.shape == (3, )
-        assert all(lengths >= 0), "Given lengths are negative"
-        self._maxs = _BoxArray(array=(self.maxs + (0.5*lengths - 0.5*self.lengths)), var="maxs", box=self)
-        self._mins = _BoxArray(array=(self.mins - (0.5*lengths - 0.5*self.lengths)), var="mins", box=self)
-        self._lengths = _BoxArray(array=lengths, var="lengths", box=self, dtype=np.float)
-
-    @angles.setter
-    def angles(self, angles):
-        angles = np.array(angles, dtype=np.float)
-        assert angles.shape == (3, )
-        self._angles = _BoxArray(array=angles, var="angles", box=self, dtype=np.float)
-
     def __repr__(self):
         return "Box(mins={}, maxs={}, angles={})".format(self.mins, self.maxs, self.angles)
 
 
 def _validate_box_vectors(box_vectors):
-    pass
+    """Determine if the vectors are in the convention we use.
+
+    This method will parse the inputted box vectors, determine if the
+    vectors follow the conventions the Box class adheres to. In this case:
+
+    1. It is a 3x3 matrix that can be coerced into a numpy array of floats
+    2. Vectors are in a right-handed basis (determinant of matrix is +)
+    3. The first vector is aligned along the [1,0,0] direction
+    4. The second vector in aligned along the xy plane
+    5. The third vector can align freely in the x,y, and +z direction
+
+    If the vectors are not right-handed, a warning will be raised,
+    and the vectors will be transformed into the right-handed coordinate
+    system.
+
+    If the three vectors are not following conventions 3-5, the matrix will
+    be transformed to comply with them, and will also raise a warning.
+    """
+    vecs = np.asarray(box_vectors, dtype=np.float)
+    if vecs.shape == (3,3):
+        pass
+    else:
+        vecs.reshape(3,3)
+
+    #verify handedness, change handedness if needed
+    basis_rh = np.asarray([[1, 0, 0],
+                            [0, 1, 0],
+                            [0, 0, 1]])
+    origin = np.asarray([0.0, 0.0, 0.0])
+    vecs = _validate_handedness(basis_rh, origin, vecs)
+
+    # align axes to standard
+    vecs = _transform_axis_to_standard(vectors=vecs,
+                                       origin=origin,
+                                       point_on_x_axis=np.array([1.0, 0.0, 0.0]),
+                                       point_on_xy_plane=np.array([1.0, 1.0, 0.0]))
+    return vecs
 
 def _lengths_angles_to_vectors(lengths, angles):
     (a, b, c) = lengths
@@ -161,3 +175,31 @@ def _lengths_angles_to_vectors(lengths, angles):
     box_vectors.reshape(3,3)
     _validate_box_vectors(box_vectors=box_vectors)
     return box_vectors
+
+def _validate_handedness(basis, origin, vectors):
+    """If the vectors are already right handed, do nothing, else, change basis.
+    """
+    det = np.linalg.det(vectors)
+    if det > 0:
+        return vectors
+    elif det < 0:
+        # left handed basis, convert to right-handed
+        warn("Box vectors provided for a left-handed basis, these will "
+             "be transformed into a right-handed basis automatically.")
+        basis_rh = np.asarray([[1, 0, 0],
+                               [0, 1, 0],
+                               [0, 0, 1]])
+        basis_change = ChangeOfBasis(basis=basis_rh, origin=origin)
+        vecs = basis_change.apply_to(vectors)
+        assert np.linalg.det(vecs) > 0
+        return vecs
+    else:
+        raise MBuildError("The vectors to define the box are co-linear, "
+                          "this does not form a 3D region in space.\n"
+                          f"Box vectors evaluated: {vecs}")
+
+
+def _transform_axis_to_standard(vectors, origin, point_on_x_axis, point_on_xy_plane):
+    transform_axis = AxisTransform(new_origin=origin, point_on_x_axis=point_on_x_axis,
+                                   point_on_xy_plane=point_on_xy_plane)
+    return transform_axis.apply_to(vectors)
