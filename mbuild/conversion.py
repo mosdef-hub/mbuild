@@ -1,6 +1,5 @@
 import os
 import sys
-import tempfile
 from warnings import warn
 from collections import defaultdict
 import numpy as np
@@ -66,10 +65,10 @@ def load(filename_or_object, relative_to_module=None,
     compound : mb.Compound
 
     """
-    # First check if we are loading from an object)
+    # First check if we are loading from an object
     if not isinstance(filename_or_object, str):
         return load_object(
-                        object=filename_or_object,
+                        obj=filename_or_object,
                         compound=compound,
                         coords_only=coords_only,
                         rigid=rigid,
@@ -94,19 +93,19 @@ def load(filename_or_object, relative_to_module=None,
                         infer_hierarchy=infer_hierarchy,
                         **kwargs)
 
-def load_object(object, compound=None, coords_only=False,
+def load_object(obj, compound=None, coords_only=False,
             rigid=False, infer_hierarchy=True, **kwargs):
-    """ Helper function to load an object into a mb.Compound
+    """Helper function to load an obj into a mb.Compound
 
-    Functions to load on-disk object to mb.Compound, supporting conversion
+    Functions to load on-disk obj to mb.Compound, supporting conversion
     from mb.Compound, pmd.Structure, md.Trajectory, and pybel.Molecule. If the
-    compound flag is supplied, this will add the object as a subcompound of that
+    compound flag is supplied, this will add the obj as a subcompound of that
     compound.
 
     Parameters
     ----------
-    object :
-        Object to be converted.
+    obj : mb.Compound, pmd.Structure, md.Trajectory, pybel.Molecule
+        Molecular object to be converted.
     compound : mb.Compound, optional, default=None
         The host mbuild Compound
     coords_only : bool, optional, default=False
@@ -137,32 +136,35 @@ def load_object(object, compound=None, coords_only=False,
         type_dict.update({md.Trajectory:from_trajectory})
 
     # Check if the given object is an mb.Compound
-    if isinstance(object, mb.Compound):
+    if isinstance(obj, mb.Compound):
         if not compound:
             warn('Given object is an mb.Compound, \
                 do nothing and return the object.')
-            return object
+            return obj
         else:
             warn('Given object is an mb.Compound, \
                 adding object to the host compound.')
-            compound.add(object)
+            compound.add(obj)
             return compound
 
     for type_ in type_dict:
-        if isinstance(object, type_):
-            return type_dict[type_](
-                            object,
+        if isinstance(obj, type_):
+            compound = type_dict[type_](
+                            obj,
                             compound,
                             coords_only=coords_only,
                             infer_hierarchy=infer_hierarchy,
                             **kwargs)
+            if rigid:
+                compound.label_rigid_bodies()
+            return compound
 
     # If nothing is return raise an error
-    raise ValueError('Input not supported')
+    raise ValueError(f'Object of type {type(object).__name__} is not supported')
 
 def load_smiles(smiles_or_filename, compound=None,
                 infer_hierarchy=True, ignore_box_warn=False):
-    """ Helper function to load a SMILES string
+    """Helper function to load a SMILES string
 
     Loading SMILES string from a string, a list, or a file using pybel.
     Must have pybel packages installed.
@@ -206,13 +208,7 @@ def load_smiles(smiles_or_filename, compound=None,
             mymol = mymol_list[0]
             warn("More than one SMILES string in file, more than one SMILES "
                  "string is not supported, using {}".format(mymol.write("smi")))
-
-    # We create a temporary directory and mol2 file that will created from the smiles string
-    # A ParmEd structure and subsequenc mBuild compound will be created from this mol2 file
-    tmp_dir = tempfile.mkdtemp()
-    temp_file = os.path.join(tmp_dir, 'smiles_to_mol2_intermediate.mol2')
     mymol.make3D()
-
 
     return from_pybel(pybel_mol=mymol,
                       compound=compound,
@@ -230,7 +226,7 @@ def load_file( filename,relative_to_module=None,compound=None,
 
     Parameters
     ----------
-    file_name : str
+    filename : str
         Name of the file from which to load atom and bond information from
     relative_to_module : str, optional, default=None
         Instead of looking in the current working directory,
@@ -582,7 +578,7 @@ def from_pybel(pybel_mol, compound=None, use_element=True,
     resindex_to_cmpd = {}
 
     if coords_only:
-        raise Warning('coords_only=True not yet implemented'
+        raise Warning('coords_only=True is not yet implemented '
                       'for conversion from pybel')
 
     # Iterating through pybel_mol for atom/residue information
