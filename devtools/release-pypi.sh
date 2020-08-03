@@ -1,5 +1,8 @@
 #! usr/bin/env bash
 
+# This script is inspired from frued's pypi publish script at
+# https://github.com/glotzerlab/freud/blob/v2.3.0/.circleci/deploy-linux.sh
+
 cat << EOF > ~/.pypirc
 [distutils]
 index-servers=
