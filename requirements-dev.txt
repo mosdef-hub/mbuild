@@ -6,7 +6,7 @@ parmed
 mdtraj
 foyer
 gsd>=1.2
-openbabel
+openbabel>=3.0.0
 networkx
 pytest >=3.0
 pytest-cov
