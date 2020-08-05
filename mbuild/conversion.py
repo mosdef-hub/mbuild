@@ -1,6 +1,7 @@
 import os
 import sys
 from warnings import warn
+from pathlib import Path
 from collections import defaultdict
 import numpy as np
 
@@ -115,7 +116,7 @@ def load_object(obj, compound=None, coords_only=False,
     infer_hierarchy : bool, optional, default=True
         If True, infer hiereachy from chains and residues
     **kwargs : keyword arguments
-        Key wordd arguments passed to mdTraj for loading
+        Keyword arguments passed to mdTraj for loading
 
     Returns
     -------
@@ -160,7 +161,7 @@ def load_object(obj, compound=None, coords_only=False,
             return compound
 
     # If nothing is return raise an error
-    raise ValueError(f'Object of type {type(object).__name__} is not supported')
+    raise ValueError(f'Object of type {type(obj).__name__} is not supported')
 
 def load_smiles(smiles_or_filename, compound=None,
                 infer_hierarchy=True, ignore_box_warn=False):
@@ -184,7 +185,7 @@ def load_smiles(smiles_or_filename, compound=None,
     compound : mb.Compound
 
     """
-    # Will try to support list of smiles string in the future
+    # Will try to support list of smiles strings in the future
     pybel = import_('pybel')
 
     # Initialize an mb.Compound if none is provided
@@ -277,9 +278,7 @@ def load_file( filename,relative_to_module=None,compound=None,
             sys.modules[relative_to_module].__file__)
         file_dir = os.path.dirname(script_path)
         filename = os.path.join(file_dir, filename)
-
-    # Handle the case of a xyz and json file, which must use an internal reader
-    extension = os.path.splitext(filename)[-1]
+    extension = Path(filename).suffix
 
     if not backend:
         try:
@@ -329,7 +328,7 @@ def load_file( filename,relative_to_module=None,compound=None,
                             infer_hierarchy=infer_hierarchy)
             else:
                 raise ValueError('More than one pybel molecule in file,'
-                            'more than one pybel molecule is not supported')
+                                 'more than one pybel molecule is not supported')
 
         # text file detected, asssume contain smiles string
         elif extension == '.txt':
@@ -350,23 +349,21 @@ def load_file( filename,relative_to_module=None,compound=None,
 
     # Then parmed reader
     elif backend == 'parmed':
-        #warn('Using parmed reader. Bonds may be inferred '
-        #     'from inter-particle distances and standard '
-        #     'residue templates. Please check that the bonds'
-        #     'in mb.Compound are accurate')
+        warn('Using parmed reader. Bonds may be inferred '
+             'from inter-particle distances and standard '
+             'residue templates. Please check that the bonds'
+             'in mb.Compound are accurate')
         structure = pmd.load_file(filename, structure=True, **kwargs)
         compound = from_parmed(
                             structure=structure,
                             compound=compound,
                             coords_only=coords_only,
                             infer_hierarchy=infer_hierarchy)
-
-
+    # Note: 'Input not supported' error will be handled
+    # by the corresponding backend
     if rigid:
         compound.label_rigid_bodies()
 
-    # Note: 'Input not supported' error will be handled
-    # by the corresponding backend
     return compound
 
 
@@ -456,7 +453,7 @@ def from_parmed(structure, compound=None, coords_only=False,
 
     # Convert box information
     if structure.box is not None:
-        warn('All angles is assumed to be 90 degree')
+        warn('All angles is assumed to be 90 degrees')
         compound.periodicity = structure.box[0:3] / 10
     else:
         warn('No box information detected, periodicity is set to [0, 0, 0]')

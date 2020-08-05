@@ -78,7 +78,7 @@ MESSAGES['pybel'] = MESSAGES['openbabel']
 
 MESSAGES['mdtraj'] = '''
 The code at {filename}:{line_number} requires the "mdtraj" package
-protobuf can be installed using:
+mdtraj can be installed using:
 # conda install -c conda-forge mdtraj
 or
 # pip install mdtraj
