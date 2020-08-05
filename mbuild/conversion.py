@@ -274,10 +274,7 @@ def load_file( filename,relative_to_module=None,compound=None,
     # in its own folder. E.g., you build a system from ~/foo.py and it imports
     # from ~/bar/baz.py where baz.py loads ~/bar/baz.pdb.
     if relative_to_module:
-        script_path = os.path.realpath(
-            sys.modules[relative_to_module].__file__)
-        file_dir = os.path.dirname(script_path)
-        filename = os.path.join(file_dir, filename)
+        filename = str(Path(sys.modules[relative_to_module].__file__).parent / filename)
     extension = Path(filename).suffix
 
     if not backend:

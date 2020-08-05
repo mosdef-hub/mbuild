@@ -20,7 +20,6 @@ from mbuild.utils.io import run_from_ipython, import_
 from mbuild.utils.jsutils import overwrite_nglview_default
 from mbuild.coordinate_transform import _translate, _rotate
 from mbuild import conversion
-from mbuild.conversion import load
 
 
 def clone(existing_compound, clone_of=None, root_container=None):
@@ -1300,10 +1299,10 @@ class Compound(object):
         """
         if update_port_locations:
             xyz_init = self.xyz
-            self = load(filename, compound=self, coords_only=True)
+            self = conversion.load(filename, compound=self, coords_only=True)
             self._update_port_locations(xyz_init)
         else:
-            self = load(filename, compound=self, coords_only=True)
+            self = conversion.load(filename, compound=self, coords_only=True)
 
     def _update_port_locations(self, initial_coordinates):
         """Adjust port locations after particles have moved
