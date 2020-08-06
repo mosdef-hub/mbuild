@@ -575,7 +575,7 @@ def solvate(solute, solvent, n_solvent, box, overlap=0.2,
              "Using a single instance of True/False defaults to [True,True,True] "
              "and [False,False,False] respectively")
     if isinstance(fix_orientation, (list, set)) and len(fix_orientation) == 3:
-        fix_orientation = [fix_orientation]*len(compound)
+        fix_orientation = [fix_orientation]*len(solvent)
 
     if len(solvent) != len(n_solvent):
         msg = ("`n_solvent` and `n_solvent` must be of equal length.")
