@@ -3,4 +3,3 @@ scipy
 packmol>=1!18.013
 oset
 parmed
-mdtraj

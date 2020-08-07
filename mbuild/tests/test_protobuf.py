@@ -1,7 +1,8 @@
 import pytest
 from mbuild.tests.base_test import BaseTest
-from mbuild.formats.protobuf import write_pb2, read_pb2
 from mbuild.utils.io import has_protobuf
+if has_protobuf:
+    from mbuild.formats.protobuf import write_pb2, read_pb2
 
 class TestPB2(BaseTest):
 

@@ -7,8 +7,11 @@ class Silane(mb.Compound):
     """An Si(OH)2 group with two ports. """
     def __init__(self, ):
         super(Silane, self).__init__()
-        mb.load('silane.pdb', compound=self, relative_to_module=self.__module__,
-                infer_hierarchy=False)
+        mb.load('silane.pdb', compound=self,
+                relative_to_module=self.__module__,
+                infer_hierarchy=False,
+                backend='parmed',
+                skip_bonds=True)
 
         # Transform the coordinate system such that the silicon atom is at the
         # origin and the oxygen atoms are on the x axis.
