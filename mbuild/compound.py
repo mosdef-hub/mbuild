@@ -7,7 +7,6 @@ import os
 import tempfile
 from warnings import warn
 
-from parmed.periodic_table import element_by_name
 import numpy as np
 from oset import oset as OrderedSet
 

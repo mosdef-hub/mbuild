@@ -20,10 +20,16 @@ from mbuild.formats.par_writer import write_par
 from mbuild.utils.io import import_, has_networkx, has_openbabel, has_mdtraj
 
 
-def load(filename_or_object, relative_to_module=None,
-         compound=None, coords_only=False, rigid=False,
-         smiles=False, infer_hierarchy=True, backend=None,
-         ignore_box_warn=False, **kwargs):
+def load(filename_or_object,
+         relative_to_module=None,
+         compound=None,
+         coords_only=False,
+         rigid=False,
+         smiles=False,
+         infer_hierarchy=True,
+         backend=None,
+         ignore_box_warn=False,
+         **kwargs):
     """Load a file or an existing topology into an mbuild compound.
 
     Files are read using the MDTraj package unless the `use_parmed` argument is
@@ -64,38 +70,45 @@ def load(filename_or_object, relative_to_module=None,
     Returns
     -------
     compound : mb.Compound
-
     """
     # First check if we are loading from an object
     if not isinstance(filename_or_object, str):
         return load_object(
-                        obj=filename_or_object,
-                        compound=compound,
-                        coords_only=coords_only,
-                        rigid=rigid,
-                        infer_hierarchy=infer_hierarchy,
-                        **kwargs)
+            obj=filename_or_object,
+            compound=compound,
+            coords_only=coords_only,
+            rigid=rigid,
+            infer_hierarchy=infer_hierarchy,
+            **kwargs
+        )
     # Second check if we are loading SMILES strings
     elif smiles:
         return load_smiles(
-                        smiles_or_filename=filename_or_object,
-                        compound=compound,
-                        infer_hierarchy=infer_hierarchy,
-                        ignore_box_warn=ignore_box_warn)
+            smiles_or_filename=filename_or_object,
+            compound=compound,
+            infer_hierarchy=infer_hierarchy,
+            ignore_box_warn=ignore_box_warn
+        )
     # Last, if none of the above, load from file
     else:
         return load_file(
-                        filename=filename_or_object,
-                        relative_to_module=relative_to_module,
-                        compound=compound,
-                        coords_only=coords_only,
-                        rigid=rigid,
-                        backend=backend,
-                        infer_hierarchy=infer_hierarchy,
-                        **kwargs)
+            filename=filename_or_object,
+            relative_to_module=relative_to_module,
+            compound=compound,
+            coords_only=coords_only,
+            rigid=rigid,
+            backend=backend,
+            infer_hierarchy=infer_hierarchy,
+            **kwargs
+        )
 
-def load_object(obj, compound=None, coords_only=False,
-            rigid=False, infer_hierarchy=True, **kwargs):
+
+def load_object(obj,
+                compound=None,
+                coords_only=False,
+                rigid=False,
+                infer_hierarchy=True,
+                **kwargs):
     """Helper function to load an obj into a mb.Compound
 
     Functions to load on-disk obj to mb.Compound, supporting conversion
@@ -121,41 +134,39 @@ def load_object(obj, compound=None, coords_only=False,
     Returns
     -------
     mb.Compound
-
     """
     # Create type_dict type -> loading method
-    type_dict = {
-        pmd.Structure:from_parmed,
-        #Will need to add a gmso method soon
-                }
+    # Will need to add a gmso method soon
+    type_dict = {pmd.Structure: from_parmed}
     if has_openbabel:
         pybel = import_('pybel')
-        type_dict.update({pybel.Molecule:from_pybel})
+        type_dict.update({pybel.Molecule: from_pybel})
 
     if has_mdtraj:
         md = import_('mdtraj')
-        type_dict.update({md.Trajectory:from_trajectory})
+        type_dict.update({md.Trajectory: from_trajectory})
 
     # Check if the given object is an mb.Compound
     if isinstance(obj, mb.Compound):
         if not compound:
             warn('Given object is an mb.Compound, \
-                do nothing and return the object.')
+                  do nothing and return the object.')
             return obj
         else:
             warn('Given object is an mb.Compound, \
-                adding object to the host compound.')
+                  adding object to the host compound.')
             compound.add(obj)
             return compound
 
     for type_ in type_dict:
         if isinstance(obj, type_):
             compound = type_dict[type_](
-                            obj,
-                            compound,
-                            coords_only=coords_only,
-                            infer_hierarchy=infer_hierarchy,
-                            **kwargs)
+                obj,
+                compound,
+                coords_only=coords_only,
+                infer_hierarchy=infer_hierarchy,
+                **kwargs
+            )
             if rigid:
                 compound.label_rigid_bodies()
             return compound
@@ -163,8 +174,11 @@ def load_object(obj, compound=None, coords_only=False,
     # If nothing is return raise an error
     raise ValueError(f'Object of type {type(obj).__name__} is not supported')
 
-def load_smiles(smiles_or_filename, compound=None,
-                infer_hierarchy=True, ignore_box_warn=False):
+
+def load_smiles(smiles_or_filename,
+                compound=None,
+                infer_hierarchy=True,
+                ignore_box_warn=False):
     """Helper function to load a SMILES string
 
     Loading SMILES string from a string, a list, or a file using pybel.
@@ -211,14 +225,22 @@ def load_smiles(smiles_or_filename, compound=None,
                  "string is not supported, using {}".format(mymol.write("smi")))
     mymol.make3D()
 
-    return from_pybel(pybel_mol=mymol,
-                      compound=compound,
-                      infer_hierarchy=infer_hierarchy,
-                      ignore_box_warn=ignore_box_warn)
+    return from_pybel(
+        pybel_mol=mymol,
+        compound=compound,
+        infer_hierarchy=infer_hierarchy,
+        ignore_box_warn=ignore_box_warn
+    )
 
-def load_file( filename,relative_to_module=None,compound=None,
-    coords_only=False,rigid=False,backend=None,
-    infer_hierarchy=True,**kwargs):
+
+def load_file(filename,
+              relative_to_module=None,
+              compound=None,
+              coords_only=False,
+              rigid=False,
+              backend=None,
+              infer_hierarchy=True,
+              **kwargs):
     """ Helper function to load from files
 
     Loading and converting a topology to mb.Compound from file. User can specify
@@ -262,13 +284,13 @@ def load_file( filename,relative_to_module=None,compound=None,
 
     # Need to come up with a different dict structure
     default_backends = {
-                        '.json':'internal',
-                        '.xyz':'internal',
-                        '.sdf':'pybel',
-                        '.hoomdxml':'mdtraj',
-                        '.mol2':'mdtraj',
-                        '.pdb':'mdtraj'
-                        }
+        '.json': 'internal',
+        '.xyz': 'internal',
+        '.sdf': 'pybel',
+        '.hoomdxml': 'mdtraj',
+        '.mol2': 'mdtraj',
+        '.pdb': 'mdtraj'
+    }
 
     # Handle mbuild *.py files containing a class that wraps a structure file
     # in its own folder. E.g., you build a system from ~/foo.py and it imports
@@ -297,10 +319,14 @@ def load_file( filename,relative_to_module=None,compound=None,
             if coords_only:
                 tmp = read_xyz(filename)
                 if tmp.n_particles != compound.n_particles:
-                    raise ValueError('Number of atoms in {filename}'
-                        'does not match {compound}'.format(**locals()))
-                ref_and_compound = zip(tmp._particles(include_ports=False),
-                                       compound.particles(include_ports=False))
+                    raise ValueError(
+                        'Number of atoms in {filename}'
+                        'does not match {compound}'.format(**locals())
+                    )
+                ref_and_compound = zip(
+                    tmp._particles(include_ports=False),
+                    compound.particles(include_ports=False)
+                )
                 for ref_particle, particle in ref_and_compound:
                     particle.pos = ref_particle.pos
             else:
@@ -319,12 +345,13 @@ def load_file( filename,relative_to_module=None,compound=None,
             pybel_mol = [i for i in pybel_mol]
             if len(pybel_mol) == 1:
                 compound = from_pybel(
-                            pybel_mol=pybel_mol[0],
-                            compound=compound,
-                            coords_only=coords_only,
-                            infer_hierarchy=infer_hierarchy)
+                    pybel_mol=pybel_mol[0],
+                    compound=compound,
+                    coords_only=coords_only,
+                    infer_hierarchy=infer_hierarchy
+                )
             else:
-                raise ValueError('More than one pybel molecule in file,'
+                raise ValueError('More than one pybel molecule in file, '
                                  'more than one pybel molecule is not supported')
 
         # text file detected, asssume contain smiles string
@@ -338,24 +365,26 @@ def load_file( filename,relative_to_module=None,compound=None,
         md = import_('mdtraj')
         traj = md.load(filename, **kwargs)
         compound = from_trajectory(
-                            traj=traj,
-                            compound=compound,
-                            frame=-1,
-                            coords_only=coords_only,
-                            infer_hierarchy=infer_hierarchy)
+            traj=traj,
+            compound=compound,
+            frame=-1,
+            coords_only=coords_only,
+            infer_hierarchy=infer_hierarchy
+        )
 
     # Then parmed reader
     elif backend == 'parmed':
         warn('Using parmed reader. Bonds may be inferred '
              'from inter-particle distances and standard '
-             'residue templates. Please check that the bonds'
+             'residue templates. Please check that the bonds '
              'in mb.Compound are accurate')
         structure = pmd.load_file(filename, structure=True, **kwargs)
         compound = from_parmed(
-                            structure=structure,
-                            compound=compound,
-                            coords_only=coords_only,
-                            infer_hierarchy=infer_hierarchy)
+            structure=structure,
+            compound=compound,
+            coords_only=coords_only,
+            infer_hierarchy=infer_hierarchy
+        )
     # Note: 'Input not supported' error will be handled
     # by the corresponding backend
     if rigid:
@@ -364,9 +393,11 @@ def load_file( filename,relative_to_module=None,compound=None,
     return compound
 
 
-def from_parmed(structure, compound=None, coords_only=False,
+def from_parmed(structure,
+                compound=None,
+                coords_only=False,
                 infer_hierarchy=True):
-    """ Backend-specific loading function - parmed
+    """Backend-specific loading function - parmed
 
     Parameters
     ----------
@@ -391,19 +422,24 @@ def from_parmed(structure, compound=None, coords_only=False,
         if len(structure.atoms) != compound.n_particles:
             raise ValueError(
                 'Number of atoms in {structure} does not '
-                '{compound}'.formats(**locals()))
-        atoms_particles = zip(structure.atoms,
-                    compound.particles(include_ports=False))
+                '{compound}'.formats(**locals())
+            )
+        atoms_particles = zip(
+            structure.atoms,
+            compound.particles(include_ports=False)
+        )
         if None in compound._particles(include_ports=False):
             raise ValueError('Some particles are None')
+
         for pmd_atom, particle in atoms_particles:
             particle.pos = np.array([pmd_atom.xx,
                                      pmd_atom.xy,
                                      pmd_atom.xz]) / 10
         return compound
     elif not compound and coords_only:
-        raise MBuildError('coords_only=True but'
-                'host compound is not provided')
+        raise MBuildError(
+            'coords_only=True but host compound is not provided'
+        )
 
     # Initialize a compound if none is provided
     if not compound:
@@ -415,7 +451,7 @@ def from_parmed(structure, compound=None, coords_only=False,
     chains = defaultdict(list)
 
     # Build up chains dict
-    # ?Could I change this to normal dict?
+    # Could I change this to normal dict?
     for residue in structure.residues:
         chains[residue.chain].append(residue)
 
@@ -437,8 +473,7 @@ def from_parmed(structure, compound=None, coords_only=False,
                 pos = np.array([atom.xx,
                                 atom.xy,
                                 atom.xz]) / 10
-                new_atom = mb.Particle(name=str(atom.name),
-                                    pos=pos)
+                new_atom = mb.Particle(name=str(atom.name), pos=pos)
                 parent_compound.add(new_atom, label='{0}[$]'.format(atom.name))
                 atom_mapping[atom] = new_atom
 
@@ -458,8 +493,12 @@ def from_parmed(structure, compound=None, coords_only=False,
 
     return compound
 
-def from_trajectory(traj, compound=None, frame=-1,
-                    coords_only=False, infer_hierarchy=True):
+
+def from_trajectory(traj,
+                    compound=None,
+                    frame=-1,
+                    coords_only=False,
+                    infer_hierarchy=True):
     """Extract atoms and bonds from a md.Trajectory.
 
     Will create sub-compounds for every chain if there is more
@@ -487,18 +526,25 @@ def from_trajectory(traj, compound=None, frame=-1,
     md = import_('mdtraj')
     if compound and coords_only:
         if traj.n_atoms != compound.n_particles:
-            raise ValueError('Number of atoms in {traj} does not match'
-                             ' {compound}'.format(**locals()))
-        atoms_particles = zip(traj.topology.atoms,
-                              compound.particles(include_ports=False))
+            raise ValueError(
+                'Number of atoms in {traj} does not match {compound}'.format(**locals())
+            )
+        atoms_particles = zip(
+            traj.topology.atoms,
+            compound.particles(include_ports=False)
+        )
+
         if None in compound._particles(include_ports=False):
             raise ValueError('Some particles are None')
+
         for mdtraj_atom, particle in atoms_particles:
             particle.pos = traj.xyz[frame, mdtraj_atom.index]
         return compound
+
     elif coords_only and not compound:
-        raise MBuildError('coords_only=True but'
-                 'host compound is not provided')
+        raise MBuildError(
+            'coords_only=True but host compound is not provided'
+        )
 
     # Initialize a compound if none is provided
     if not compound:
@@ -519,11 +565,14 @@ def from_trajectory(traj, compound=None, frame=-1,
             else:
                 parent_cmpd = chain_compound
             for atom in res.atoms:
-                new_atom = mb.Particle(name=str(atom.name),
-                                    pos=traj.xyz[frame, atom.index])
+                new_atom = mb.Particle(
+                    name=str(atom.name),
+                    pos=traj.xyz[frame, atom.index]
+                )
                 parent_cmpd.add(
-                    new_atom, label='{0}[$]'.format(
-                        atom.name))
+                    new_atom,
+                    label='{0}[$]'.format(atom.name)
+                )
                 atom_mapping[atom] = new_atom
 
     for mdtraj_atom1, mdtraj_atom2 in traj.topology.bonds:
@@ -538,8 +587,12 @@ def from_trajectory(traj, compound=None, frame=-1,
 
     return compound
 
-def from_pybel(pybel_mol, compound=None, use_element=True,
-               coords_only=False, infer_hierarchy=True,
+
+def from_pybel(pybel_mol,
+               compound=None,
+               use_element=True,
+               coords_only=False,
+               infer_hierarchy=True,
                ignore_box_warn=False):
     """Create a Compound from a Pybel.Molecule
 
@@ -558,6 +611,8 @@ def from_pybel(pybel_mol, compound=None, use_element=True,
         for parity with other conversion functions
     infer_hierarchy : bool, optional, default=False
         If True, infer hierarchy from residues
+    ignore_box_warn: bool, optional, default=False
+        If True, raise a warning if no unitcell detected for pybel molecule
 
     Return
     ------
@@ -572,8 +627,10 @@ def from_pybel(pybel_mol, compound=None, use_element=True,
     resindex_to_cmpd = {}
 
     if coords_only:
-        raise Warning('coords_only=True is not yet implemented '
-                      'for conversion from pybel')
+        raise Warning(
+            'coords_only=True is not yet implemented '
+            'for conversion from pybel'
+        )
 
     # Iterating through pybel_mol for atom/residue information
     # This could just as easily be implemented by
@@ -586,9 +643,14 @@ def from_pybel(pybel_mol, compound=None, use_element=True,
             try:
                 temp_name = Element[atom.atomicnum]
             except KeyError:
-                warn("No element detected for atom at index "
-                        "{} with number {}, type {}".format(
-                            atom.idx, atom.atomicnum, atom.type))
+                warn(
+                    "No element detected for atom at index "
+                    "{} with number {}, type {}".format(
+                        atom.idx,
+                        atom.atomicnum,
+                        atom.type
+                    )
+                )
                 temp_name = atom.type
         else:
             temp_name = atom.type
@@ -629,10 +691,18 @@ def from_pybel(pybel_mol, compound=None, use_element=True,
     return compound
 
 
-def save(compound, filename, show_ports=False, forcefield_name=None,
-        forcefield_files=None, forcefield_debug=False, box=None,
-        overwrite=False, residues=None, combining_rule='lorentz',
-        foyer_kwargs=None, **kwargs):
+def save(compound,
+         filename,
+         show_ports=False,
+         forcefield_name=None,
+         forcefield_files=None,
+         forcefield_debug=False,
+         box=None,
+         overwrite=False,
+         residues=None,
+         combining_rule='lorentz',
+         foyer_kwargs=None,
+         **kwargs):
     """Save the Compound to a file.
 
     Parameters
@@ -727,12 +797,14 @@ def save(compound, filename, show_ports=False, forcefield_name=None,
         return
 
     # Savers supported by mbuild.formats
-    savers = {'.hoomdxml': write_hoomdxml,
-              '.gsd': write_gsd,
-              '.xyz': write_xyz,
-              '.lammps': write_lammpsdata,
-              '.lmp': write_lammpsdata,
-              '.par': write_par,}
+    savers = {
+        '.hoomdxml': write_hoomdxml,
+        '.gsd': write_gsd,
+        '.xyz': write_xyz,
+        '.lammps': write_lammpsdata,
+        '.lmp': write_lammpsdata,
+        '.par': write_par
+    }
     if has_networkx:
         from mbuild.formats.cassandramcf import write_mcf
         savers.update({'.mcf': write_mcf})
@@ -750,8 +822,12 @@ def save(compound, filename, show_ports=False, forcefield_name=None,
     # Apply a force field with foyer if specified
     if forcefield_name or forcefield_files:
         foyer = import_('foyer')
-        ff = foyer.Forcefield(forcefield_files=forcefield_files,
-                        name=forcefield_name, debug=forcefield_debug)
+        ff = foyer.Forcefield(
+            forcefield_files=forcefield_files,
+            name=forcefield_name,
+            debug=forcefield_debug
+        )
+
         if not foyer_kwargs:
             foyer_kwargs = {}
         structure = ff.apply(structure, **foyer_kwargs)
@@ -783,16 +859,20 @@ def save(compound, filename, show_ports=False, forcefield_name=None,
         # Convert mb.Compound to pybel molecule
         pybel_molecule = new_compound.to_pybel()
         # Write out pybel molecule to SDF file
-        output_sdf = pybel.Outputfile("sdf", filename,
-                overwrite=overwrite)
+        output_sdf = pybel.Outputfile("sdf", filename, overwrite=overwrite)
         output_sdf.write(pybel_molecule)
         output_sdf.close()
 
     else:  # ParmEd supported saver.
         structure.save(filename, overwrite=overwrite, **kwargs)
 
-def to_parmed(compound, box=None, title='', residues=None,
-          show_ports=False, infer_residues=False):
+
+def to_parmed(compound,
+              box=None,
+              title='',
+              residues=None,
+              show_ports=False,
+              infer_residues=False):
     """ Create a Parmed Structure from a Compound.
 
     Parameters
@@ -896,13 +976,20 @@ def to_parmed(compound, box=None, title='', residues=None,
 
             atomic_number = atomic_number or AtomicNum[element]
             mass = Mass[element]
-            pmd_atom = pmd.Atom(atomic_number=atomic_number, name=atom.name,
-                                mass=mass, charge=atom.charge)
+            pmd_atom = pmd.Atom(
+                atomic_number=atomic_number,
+                name=atom.name,
+                mass=mass,
+                charge=atom.charge
+            )
             pmd_atom.xx, pmd_atom.xy, pmd_atom.xz = atom.pos * 10  # Angstroms
 
         residue = atom_residue_map[atom]
-        structure.add_atom(pmd_atom, resname=residue.name,
-                           resnum=residue.idx)
+        structure.add_atom(
+            pmd_atom,
+            resname=residue.name,
+            resnum=residue.idx
+        )
 
         atom_mapping[atom] = pmd_atom
 
@@ -937,8 +1024,12 @@ def to_parmed(compound, box=None, title='', residues=None,
     structure.box = box_vector
     return structure
 
-def to_trajectory(compound, show_ports=False, chains=None,
-                  residues=None, box=None):
+
+def to_trajectory(compound,
+                  show_ports=False,
+                  chains=None,
+                  residues=None,
+                  box=None):
     """Convert to an md.Trajectory and flatten the compound.
 
     Parameters
@@ -989,10 +1080,18 @@ def to_trajectory(compound, show_ports=False, chains=None,
         unitcell_lengths = box.lengths
         unitcell_angles = box.angles
 
-    return md.Trajectory(xyz, top, unitcell_lengths=unitcell_lengths,
-                         unitcell_angles=unitcell_angles)
+    return md.Trajectory(
+        xyz,
+        top,
+        unitcell_lengths=unitcell_lengths,
+        unitcell_angles=unitcell_angles
+    )
 
-def _to_topology(compound, atom_list, chains=None, residues=None):
+
+def _to_topology(compound,
+                 atom_list,
+                 chains=None,
+                 residues=None):
     """Create a mdtraj.Topology from a Compound.
 
     Helper function for to_trajectory.
@@ -1115,9 +1214,14 @@ def _to_topology(compound, atom_list, chains=None, residues=None):
             top.add_bond(atom_mapping[atom1], atom_mapping[atom2])
     return top
 
-def to_pybel(compound, box=None, title='', residues=None,
-             show_ports=False, infer_residues=False):
-    """ Create a pybel.Molecule from a Compound
+
+def to_pybel(compound,
+             box=None,
+             title='',
+             residues=None,
+             show_ports=False,
+             infer_residues=False):
+    """Create a pybel.Molecule from a Compound
 
     Parameters
     ----------
@@ -1196,9 +1300,8 @@ def to_pybel(compound, box=None, title='', residues=None,
                 temp.SetAtomicNum(AtomicNum[part.name.capitalize()])
             except KeyError:
                 warn("Could not infer atomic number from "
-                        "{}, setting to 0".format(part.name))
+                     "{}, setting to 0".format(part.name))
                 temp.SetAtomicNum(0)
-
 
         temp.SetVector(*(part.xyz[0]*10))
         particle_to_atom_index[part] = i
@@ -1221,15 +1324,15 @@ def to_pybel(compound, box=None, title='', residues=None,
     if mat_coef_z > 0.:
         mat_coef_z = np.sqrt(mat_coef_z)
     else:
-        raise Warning('Non-positive z-vector. Angles {} '
-                              'do not generate a box with the z-vector in the'
-                              'positive z direction'.format(box.angles))
+        raise Warning(
+            'Non-positive z-vector. Angles {} '
+            'do not generate a box with the z-vector in the '
+            'positive z direction'.format(box.angles)
+        )
 
-    box_vec = [[1, 0, 0],
-                [cosg, sing, 0],
-                [cosb, mat_coef_y, mat_coef_z]]
+    box_vec = [[1, 0, 0], [cosg, sing, 0], [cosb, mat_coef_y, mat_coef_z]]
     box_vec = np.asarray(box_vec)
-    box_mat = (np.array([a,b,c])* box_vec.T).T
+    box_mat = (np.array([a, b, c]) * box_vec.T).T
     first_vector = openbabel.vector3(*box_mat[0])
     second_vector = openbabel.vector3(*box_mat[1])
     third_vector = openbabel.vector3(*box_mat[2])
@@ -1238,14 +1341,17 @@ def to_pybel(compound, box=None, title='', residues=None,
 
     for bond in compound.bonds():
         bond_order = 1
-        mol.AddBond(particle_to_atom_index[bond[0]]+1,
-                particle_to_atom_index[bond[1]]+1,
-                bond_order)
+        mol.AddBond(
+            particle_to_atom_index[bond[0]]+1,
+            particle_to_atom_index[bond[1]]+1,
+            bond_order
+        )
 
     pybelmol = pybel.Molecule(mol)
     pybelmol.title = title if title else compound.name
 
     return pybelmol
+
 
 def to_networkx(compound, names_only=False):
     """Create a NetworkX graph representing the hierarchy of a Compound.
@@ -1288,6 +1394,7 @@ def to_networkx(compound, names_only=False):
     graph.add_edges_from(edges)
     return graph
 
+
 def _iterate_children(compound, nodes, edges, names_only=False):
     """ Create nodes and edges that connect parents and their corresponding children
 
@@ -1307,7 +1414,8 @@ def _iterate_children(compound, nodes, edges, names_only=False):
         nodes, edges = _iterate_children(child, nodes, edges, names_only=names_only)
     return nodes, edges
 
-def to_intermol(compound, molecule_types=None): # pragma: no cover
+
+def to_intermol(compound, molecule_types=None):  # pragma: no cover
     """Create an InterMol system from a Compound.
 
     Parameters
@@ -1350,8 +1458,8 @@ def to_intermol(compound, molecule_types=None): # pragma: no cover
             # type(compound)
             raise ValueError(
                 'Found an atom {} that is not part of any of '
-                'the specified molecule types {}'.format(
-                    atom, molecule_types))
+                'the specified molecule types {}'.format(atom, molecule_types)
+            )
 
         # Add the actual intermol atoms.
         intermol_atom = InterMolAtom(atom_index + 1, name=atom.name,
@@ -1359,6 +1467,7 @@ def to_intermol(compound, molecule_types=None): # pragma: no cover
         intermol_atom.position = atom.pos * u.nanometers
         last_molecule.add_atom(intermol_atom)
     return intermol_system
+
 
 def _add_intermol_molecule_type(intermol_system, parent):  # pragma: no cover
     """Create a molecule type for the parent and add bonds.
