@@ -10,6 +10,7 @@ from warnings import warn
 import numpy as np
 from oset import oset as OrderedSet
 
+from mbuild import conversion
 from mbuild.bond_graph import BondGraph
 from mbuild.box import Box
 from mbuild.exceptions import MBuildError
@@ -18,7 +19,6 @@ from mbuild.periodic_kdtree import PeriodicCKDTree
 from mbuild.utils.io import run_from_ipython, import_
 from mbuild.utils.jsutils import overwrite_nglview_default
 from mbuild.coordinate_transform import _translate, _rotate
-from mbuild import conversion
 
 
 def clone(existing_compound, clone_of=None, root_container=None):
