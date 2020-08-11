@@ -14,7 +14,8 @@ class Box(object):
     ----------
     box_vectors : np.ndarray, shape=(3,3), dtype=float
         Vectors that define a right-handed parallelpiped (Box).
-
+    precision : int, optional, default=None
+        Control the precision of the floating point representation __repr__
 
     Attributes
     ----------
@@ -24,14 +25,26 @@ class Box(object):
         Lengths of the Box in the x,y,z dimensions
     xy,xz,yz : float
         Tilt factors needed to displace an orthogonal box to its parallelpiped structure.
+    precision : int
+        Precision of the floating point numbers when accessing the __repr__
+
+    NOTE
+    ----
+    Box vectors are expected to be provided in a row-major format.
     """
-    def __init__(self, box_vectors=None):
+    def __init__(self, box_vectors=None, precision=None):
         try:
-            _validate_box_vectors(box_vectors)
+           box_vectors = _validate_box_vectors(box_vectors)
         except:
             pass
 
         self._box_vectors = box_vectors
+        self._from_vecs_to_lengths_tilt_factors()
+
+        if precision is not None:
+            self._precision = int(precision)
+        else:
+            self._precision = precision
 
     @classmethod
     def from_lengths_angles(cls, lengths, angles):
@@ -62,7 +75,15 @@ class Box(object):
 
     @classmethod
     def from_lengths_tilt_factors(cls, lengths, tilt_factors):
-        pass
+        (Lx, Ly, Lz) = lengths
+        (xy, xz, yz) = tilt_factors
+
+        v1 = np.asarray([Lx, 0.0, 0.0])
+        v2 = np.asarray([Ly*xy, Ly, 0.0])
+        v3 = np.asarray([Lz*xz, Lz*yz, Lz])
+
+        vecs = np.asarray([v1, v2, v3])
+        return _validate_box_vectors(box_vectors=vecs)
 
     @classmethod
     def from_lo_hi_tilt_factors(cls, lo, hi, tilt_factors):
@@ -79,42 +100,58 @@ class Box(object):
 
         return Box(box_vectors=box_vectors)
 
-    @classmethod
-    def from_lengths_mins_angles(cls, lengths, mins, angles):
-        pass
-
-    @classmethod
-    def from_lengths_maxs_angles(cls, lengths, maxs, angles):
-        pass
-
     @property
     def box_vectors(self):
         return self._box_vectors
+
+    def __repr__(self):
+        (Lx, Ly, Lz, xy, xz, yz) = self._from_vecs_to_lengths_tilt_factors()
+        if self._precision is not None:
+            precision = self._precision
+            desc = (f"Box: Lx={Lx:.{precision}f}, "
+                    f"Ly={Ly:.{precision}f}, "
+                    f"Lz={Lz:.{precision}f}, "
+                    f"xy={xy:.{precision}f}, "
+                    f"xz={xz:.{precision}f}, "
+                    f"yz={yz:.{precision}f}")
+        else:
+            desc = (f"Box: Lx={Lx}, "
+                    f"Ly={Ly}, "
+                    f"Lz={Lz}, "
+                    f"xy={xy}, "
+                    f"xz={xz}, "
+                    f"yz={yz}")
+        return desc
+
+    def _from_vecs_to_lengths_tilt_factors(self):
+        # vectors should already be aligned by _normalize_box
+        v1 = self._box_vectors[0, :]
+        v2 = self._box_vectors[1, :]
+        v3 = self._box_vectors[2, :]
+
+        Lx = np.linalg.norm(v1)
+        Ly = np.linalg.norm(v2)
+        Lz = np.linalg.norm(v3)
+
+        v1_dot_v2 = np.dot(v1, v2)
+        v1_dot_v3 = np.dot(v1, v3)
+        v2_dot_v3 = np.dot(v2, v3)
+
+        xy = v1_dot_v2 / (Lx * Ly)
+        xz = v1_dot_v3 / (Lx * Lz)
+        yz = (v2_dot_v3 - ((v1_dot_v2/Lx) * (v1_dot_v3/Lx))) / (Ly*Lz)
+
+        print(Lx, Ly, Lz, xy, xz, yz)
+        return (Lx, Ly, Lz, xy, xz, yz)
 
     #NOTE: we might not want setters at all, just make a new box?
     @box_vectors.setter
     def box_vectors(self, box_vectors):
         self._box_vectors = box_vectors
-
-    @property
-    def mins(self):
-        return self._mins
-
-    @property
-    def maxs(self):
-        return self._maxs
-
-    @property
-    def lengths(self):
-        return self._lengths
-
-    @property
-    def angles(self):
-        return self._angles
-
+"""
     def __repr__(self):
         return "Box(mins={}, maxs={}, angles={})".format(self.mins, self.maxs, self.angles)
-
+"""
 
 def _validate_box_vectors(box_vectors):
     """Determine if the vectors are in the convention we use.
@@ -159,7 +196,7 @@ def _lengths_angles_to_vectors(lengths, angles):
     c_z = c * np.sqrt(1 - np.square(np.cos(beta)) - np.square(c_cos_y_term))
     c_vec = np.asarray([c_x, c_y, c_z])
 
-    box_vectors = np.asarray([a_vec],[b_vec],[c_vec])
+    box_vectors = np.asarray((a_vec,b_vec,c_vec))
     box_vectors.reshape(3,3)
     _validate_box_vectors(box_vectors=box_vectors)
     return box_vectors
