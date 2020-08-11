@@ -141,19 +141,7 @@ def _validate_box_vectors(box_vectors):
     else:
         vecs.reshape(3,3)
 
-    #verify handedness, change handedness if needed
-    basis_rh = np.asarray([[1, 0, 0],
-                            [0, 1, 0],
-                            [0, 0, 1]])
-    origin = np.asarray([0.0, 0.0, 0.0])
-    vecs = _validate_handedness(basis_rh, origin, vecs)
-
-    # align axes to standard
-    vecs = _transform_axis_to_standard(vectors=vecs,
-                                       origin=origin,
-                                       point_on_x_axis=np.array([1.0, 0.0, 0.0]),
-                                       point_on_xy_plane=np.array([1.0, 1.0, 0.0]))
-    return vecs
+    return _normalize_box(vecs)
 
 def _lengths_angles_to_vectors(lengths, angles):
     (a, b, c) = lengths
@@ -180,26 +168,36 @@ def _validate_handedness(basis, origin, vectors):
     """If the vectors are already right handed, do nothing, else, change basis.
     """
     det = np.linalg.det(vectors)
-    if det > 0:
-        return vectors
-    elif det < 0:
-        # left handed basis, convert to right-handed
-        warn("Box vectors provided for a left-handed basis, these will "
-             "be transformed into a right-handed basis automatically.")
-        basis_rh = np.asarray([[1, 0, 0],
-                               [0, 1, 0],
-                               [0, 0, 1]])
-        basis_change = ChangeOfBasis(basis=basis_rh, origin=origin)
-        vecs = basis_change.apply_to(vectors)
-        assert np.linalg.det(vecs) > 0
-        return vecs
-    else:
+    if np.allclose(det, 0.0):
         raise MBuildError("The vectors to define the box are co-linear, "
                           "this does not form a 3D region in space.\n"
-                          f"Box vectors evaluated: {vecs}")
+                          f"Box vectors evaluated: {vectors}")
+    return _normalize_box(vectors=vectors)
 
 
-def _transform_axis_to_standard(vectors, origin, point_on_x_axis, point_on_xy_plane):
-    transform_axis = AxisTransform(new_origin=origin, point_on_x_axis=point_on_x_axis,
-                                   point_on_xy_plane=point_on_xy_plane)
-    return transform_axis.apply_to(vectors)
+def _normalize_box(vectors):
+    """Align the box matrix into a right-handed coordinate frame.
+
+    NOTE: This assumes that the matrix is in a row-major format.
+
+    NOTE: Inspiration and logic are from the Glotzer group
+    package, Garnett; which is provided under a BSD 3-clause License.
+    For additional information, refer to the License file provided with
+    this package.
+    """
+
+    # transpose to column-major for the time being
+    Q, R = np.linalg.qr(vectors.T)
+
+    # left or right handed: det<0 left, >0, right
+    sign = np.linalg.det(Q)
+    Q = Q * sign
+    R = R * sign
+
+    if np.linalg.det(vectors) < 0:
+        warn("Box vectors provided for a left-handed basis, these will "
+                "be transformed into a right-handed basis automatically.")
+
+    signs = np.diag(np.diag(np.where(R < 0, -np.ones(R.shape), np.ones(R.shape))))
+    transformed_vecs = R.dot(signs)
+    return transformed_vecs.T
