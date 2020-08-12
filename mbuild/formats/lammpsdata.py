@@ -72,15 +72,15 @@ def write_lammpsdata(structure, filename, atom_style='full',
     use_dihedrals:
         If True, will treat dihedrals as CHARMM-style dihedrals while looking for 
         `structure.dihedrals`
-    sigma_conversion_factor:
+    sigma_conversion_factor: int or float
         conversion factor of length for lj unit style. If not specified by user,
         use the default value of the largest sigma of all atoms. If, in turn, sigma
         is not provided by the structure, use 1.
-    epsilon_conversion_factor:
+    epsilon_conversion_factor: int or float
         conversion factor of energy for lj unit style. If not specified by user,
         use the default value of the largest epsilon of all atoms. If, in turn, epsilon
         is not provided by the structure, use 1.
-     mass_conversion_factor:
+     mass_conversion_factor: int or float
         conversion factor of energy for lj unit style. If not specified by user,
         use the default value of the largest epsilon of all atoms. If, in turn, epsilon
         is not provided by the structure, use 1.
@@ -115,17 +115,17 @@ def write_lammpsdata(structure, filename, atom_style='full',
         if sigma_conversion_factor is None:
             sigma_use_default = True
         elif sigma_conversion_factor <= 0:
-            raise ValueError('Asked for lj unit style but specified sigma conversion factor <= 0.')
+            raise ValueError('The sigma conversion factor to convert to LJ units should be greater than 0.')
         
         if epsilon_conversion_factor is None:
             epsilon_use_default = True
         elif epsilon_conversion_factor <= 0:
-            raise ValueError('Asked for lj unit style but specified epsilon conversion factor <= 0.')
+            raise ValueError('The epsilon conversion factor to convert to LJ units should be greater than 0.')
         
         if mass_conversion_factor is None:
             mass_use_default = True
         elif mass_conversion_factor <= 0:
-            raise ValueError('Asked for lj unit style but specified mass conversion factor <= 0.')
+            raise ValueError('The mass conversion factor to convert to LJ units should be greater than 0.')
 
 
 
@@ -184,16 +184,19 @@ def write_lammpsdata(structure, filename, atom_style='full',
             sigma_conversion_factor = np.max([atom.sigma for atom in structure.atoms])
             if sigma_conversion_factor == 0:
                 sigma_conversion_factor = 1
+                warnings.warn("sigma conversion factor cannot be inferred from the maximum sigma value in the ParmEd Structure. Setting the sigma conversion factor to 1")
 
         if epsilon_use_default:
             epsilon_conversion_factor = np.max([atom.epsilon for atom in structure.atoms])
             if epsilon_conversion_factor == 0:
                 epsilon_conversion_factor = 1
+                warnings.warn("epsilon conversion factor cannot be inferred from the maximum epsilon value in the ParmEd Structure. Setting the epsilon conversion factor to 1")
 
         if mass_use_default:
             mass_conversion_factor = np.max([atom.mass for atom in structure.atoms])
             if mass_conversion_factor == 0:
                 mass_conversion_factor = 1
+                warnings.warn("mass conversion factor cannot be inferred from the maximum mass value in the ParmEd Structure. Setting the mass conversion factor to 1")
 
         xyz = xyz / sigma_conversion_factor
         charges = (charges*1.6021e-19) / np.sqrt(4*np.pi*(sigma_conversion_factor*1e-10)*
@@ -457,7 +460,11 @@ def write_lammpsdata(structure, filename, atom_style='full',
                     data.write('#\treduced_k\t\treduced_req\n')
                 sorted_bond_types = {k: v for k, v in sorted(unique_bond_types.items(),key=lambda item: item[1])}
                 for params,idx in sorted_bond_types.items():
-                    data.write('{}\t{}\t\t{}\t\t# {}\t{}\n'.format(idx,params[0],params[1],params[2][0],params[2][1]))
+                    #If the user specified LJ unit style, revert the internal conversion of k by ParmEd
+                    if unit_style == 'lj':  
+                        data.write('{}\t{}\t\t{}\t\t# {}\t{}\n'.format(idx,params[0]*4184*2/10,params[1],params[2][0],params[2][1]))
+                    else:
+                        data.write('{}\t{}\t\t{}\t\t# {}\t{}\n'.format(idx,params[0],params[1],params[2][0],params[2][1]))
 
             # Angle coefficients
             if angles:
@@ -472,7 +479,12 @@ def write_lammpsdata(structure, filename, atom_style='full',
                     data.write('\nAngle Coeffs # harmonic\n')
                     data.write('#\treduced_k\t\ttheteq(deg)\n')
                     for params,idx in sorted_angle_types.items():
-                        data.write('{}\t{}\t\t{:.5f}\t# {}\t{}\t{}\n'.format(idx,params[0],params[1],
+                        #If the user specified LJ unit style, revert the internal conversion of k by ParmEd
+                        if unit_style == 'lj':
+                            data.write('{}\t{}\t\t{:.5f}\t# {}\t{}\t{}\n'.format(idx,params[0]*4.184*2,params[1],
+                                                                             params[3][0],params[2],params[3][1]))
+                        else:
+                            data.write('{}\t{}\t\t{:.5f}\t# {}\t{}\t{}\n'.format(idx,params[0],params[1],
                                                                              params[3][0],params[2],params[3][1]))
 
             # Dihedral coefficients
