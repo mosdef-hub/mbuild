@@ -39,7 +39,14 @@ class Box(object):
             pass
 
         self._box_vectors = box_vectors
-        self._from_vecs_to_lengths_tilt_factors()
+
+        (Lx,Ly,Lz,xy,xz,yz) = self._from_vecs_to_lengths_tilt_factors()
+        self._Lx = Lx
+        self._Ly = Ly
+        self._Lz = Lz
+        self._xy = xy
+        self._xz = xz
+        self._yz = yz
 
         if precision is not None:
             self._precision = int(precision)
@@ -74,9 +81,12 @@ class Box(object):
         return Box(box_vectors=box_vectors)
 
     @classmethod
-    def from_lengths_tilt_factors(cls, lengths, tilt_factors):
+    def from_lengths_tilt_factors(cls, lengths, tilt_factors=None):
         (Lx, Ly, Lz) = lengths
-        (xy, xz, yz) = tilt_factors
+        if tilt_factors is None:
+            (xy, xz, yz) = (0.0, 0.0, 0.0)
+        else:
+            (xy, xz, yz) = tilt_factors
 
         v1 = np.asarray([Lx, 0.0, 0.0])
         v2 = np.asarray([Ly*xy, Ly, 0.0])
@@ -103,6 +113,40 @@ class Box(object):
     @property
     def box_vectors(self):
         return self._box_vectors
+    
+    @property
+    def box_paramters(self):
+        return (
+            self._Lx,
+            self._Ly,
+            self._Lz,
+            self._xy,
+            self._xz,
+            self._xy
+        )
+    
+    @property
+    def bravais_parameters(self):
+        """Return the Box representation as Bravais lattice parameters.
+
+        Based on the box vectors, return the parameters to describe the box in
+        terms of the Bravais lattice parameters:
+            a,b,c = the edges of the Box
+            alpha, beta, gamma = angles(tilt) of the parallelpiped, in degrees
+        
+        Returns
+        -------
+        parameters : tuple of floats (a, b, c, alpha, beta, gamma)
+        """
+        (alpha, beta, gamma) = self._get_angles()
+        return (
+            self._Lx,
+            self._Ly,
+            self._Lz,
+            alpha,
+            beta,
+            gamma
+        )
 
     def __repr__(self):
         (Lx, Ly, Lz, xy, xz, yz) = self._from_vecs_to_lengths_tilt_factors()
@@ -141,17 +185,31 @@ class Box(object):
         xz = v1_dot_v3 / (Lx * Lz)
         yz = (v2_dot_v3 - ((v1_dot_v2/Lx) * (v1_dot_v3/Lx))) / (Ly*Lz)
 
-        print(Lx, Ly, Lz, xy, xz, yz)
         return (Lx, Ly, Lz, xy, xz, yz)
 
-    #NOTE: we might not want setters at all, just make a new box?
-    @box_vectors.setter
-    def box_vectors(self, box_vectors):
-        self._box_vectors = box_vectors
-"""
-    def __repr__(self):
-        return "Box(mins={}, maxs={}, angles={})".format(self.mins, self.maxs, self.angles)
-"""
+    def _get_angles(self):
+        """Calculate the angles between the vectors that define the box.
+
+        Calculates the angles alpha, beta, and gamma from the Box object
+        attribute box_vectors.
+
+        """
+
+        vector_magnitudes = np.linalg.norm(self.box_vectors, axis=1)
+
+        a_dot_b = np.dot(self._box_vectors[0], self._box_vectors[1])
+        b_dot_c = np.dot(self._box_vectors[1], self._box_vectors[2])
+        a_dot_c = np.dot(self._box_vectors[0], self._box_vectors[2])
+
+        alpha_raw = b_dot_c / (vector_magnitudes[1] * vector_magnitudes[2])
+        beta_raw = a_dot_c / (vector_magnitudes[0] * vector_magnitudes[2])
+        gamma_raw = a_dot_b / (vector_magnitudes[0] * vector_magnitudes[1])
+
+        alpha = np.rad2deg(np.arccos(np.clip(alpha_raw, -1.0, 1.0)))
+        beta = np.rad2deg(np.arccos(np.clip(beta_raw, -1.0, 1.0)))
+        gamma = np.rad2deg(np.arccos(np.clip(gamma_raw, -1.0, 1.0)))
+
+        return (alpha, beta, gamma)
 
 def _validate_box_vectors(box_vectors):
     """Determine if the vectors are in the convention we use.
@@ -222,6 +280,9 @@ def _normalize_box(vectors):
     For additional information, refer to the License file provided with
     this package.
     """
+    if np.linalg.det(vectors) < 0:
+        warn("Box vectors provided for a left-handed basis, these will "
+                "be transformed into a right-handed basis automatically.")
 
     # transpose to column-major for the time being
     Q, R = np.linalg.qr(vectors.T)
@@ -231,9 +292,6 @@ def _normalize_box(vectors):
     Q = Q * sign
     R = R * sign
 
-    if np.linalg.det(vectors) < 0:
-        warn("Box vectors provided for a left-handed basis, these will "
-                "be transformed into a right-handed basis automatically.")
 
     signs = np.diag(np.diag(np.where(R < 0, -np.ones(R.shape), np.ones(R.shape))))
     transformed_vecs = R.dot(signs)
