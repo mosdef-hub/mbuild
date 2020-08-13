@@ -189,9 +189,10 @@ def write_lammpsdata(structure, filename, atom_style='full',
             use_rb_torsions = True
         else:
             use_rb_torsions = False
+
+        charmm_proper = TrackedList()
+        charmm_improper = TrackedList()
         if len(structure.dihedrals) > 0:
-            charmm_proper = TrackedList()
-            charmm_improper = TrackedList()
             for dihedral in structure.dihedrals:
                 if dihedral.improper:
                     charmm_improper.append(dihedral)
