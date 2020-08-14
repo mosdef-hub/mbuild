@@ -20,11 +20,11 @@ class Box(object):
     Attributes
     ----------
     box_vectors : np.ndarray, shape=(3,3), dtype=float
-        Vectors that define the parallelpiped (Box).
+        Vectors that define the parallelepiped (Box).
     Lx, Ly, Lz : float
         Lengths of the Box in the x,y,z dimensions
     xy,xz,yz : float
-        Tilt factors needed to displace an orthogonal box to its parallelpiped structure.
+        Tilt factors needed to displace an orthogonal box to its parallelepiped structure.
     precision : int
         Precision of the floating point numbers when accessing the __repr__
 
@@ -33,10 +33,7 @@ class Box(object):
     Box vectors are expected to be provided in a row-major format.
     """
     def __init__(self, box_vectors=None, precision=None):
-        try:
-           box_vectors = _validate_box_vectors(box_vectors)
-        except:
-            pass
+        box_vectors = _validate_box_vectors(box_vectors)
 
         self._box_vectors = box_vectors
 
@@ -115,7 +112,7 @@ class Box(object):
         return self._box_vectors
     
     @property
-    def box_paramters(self):
+    def box_parameters(self):
         return (
             self._Lx,
             self._Ly,
@@ -132,7 +129,7 @@ class Box(object):
         Based on the box vectors, return the parameters to describe the box in
         terms of the Bravais lattice parameters:
             a,b,c = the edges of the Box
-            alpha, beta, gamma = angles(tilt) of the parallelpiped, in degrees
+            alpha, beta, gamma = angles(tilt) of the parallelepiped, in degrees
         
         Returns
         -------
@@ -149,7 +146,7 @@ class Box(object):
         )
 
     def __repr__(self):
-        (Lx, Ly, Lz, xy, xz, yz) = self._from_vecs_to_lengths_tilt_factors()
+        (Lx, Ly, Lz, xy, xz, yz) = self.box_parameters
         if self._precision is not None:
             precision = self._precision
             desc = (f"Box: Lx={Lx:.{precision}f}, "
@@ -259,16 +256,6 @@ def _lengths_angles_to_vectors(lengths, angles):
     _validate_box_vectors(box_vectors=box_vectors)
     return box_vectors
 
-def _validate_handedness(basis, origin, vectors):
-    """If the vectors are already right handed, do nothing, else, change basis.
-    """
-    det = np.linalg.det(vectors)
-    if np.allclose(det, 0.0):
-        raise MBuildError("The vectors to define the box are co-linear, "
-                          "this does not form a 3D region in space.\n"
-                          f"Box vectors evaluated: {vectors}")
-    return _normalize_box(vectors=vectors)
-
 
 def _normalize_box(vectors):
     """Align the box matrix into a right-handed coordinate frame.
@@ -280,7 +267,14 @@ def _normalize_box(vectors):
     For additional information, refer to the License file provided with
     this package.
     """
-    if np.linalg.det(vectors) < 0:
+    det = np.linalg.det(vectors)
+    print(f'det is: {det}')
+    if np.any(np.allclose(det, 0.0,atol=1e-5)):
+        print(f'we made it to the error')
+        raise MBuildError("The vectors to define the box are co-linear, "
+                          "this does not form a 3D region in space.\n"
+                          f"Box vectors evaluated: {vectors}")
+    if det < 0.0:
         warn("Box vectors provided for a left-handed basis, these will "
                 "be transformed into a right-handed basis automatically.")
 
