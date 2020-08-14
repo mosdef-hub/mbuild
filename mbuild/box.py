@@ -118,7 +118,7 @@ class Box(object):
     @property
     def box_vectors(self):
         return self._box_vectors
-    
+
     @property
     def box_parameters(self):
         return (
@@ -129,7 +129,31 @@ class Box(object):
             self._xz,
             self._xy
         )
-    
+
+    @property
+    def Lx(self):
+        return self._Lx
+
+    @property
+    def Ly(self):
+        return self._Ly
+
+    @property
+    def Lz(self):
+        return self._Lz
+
+    @property
+    def xy(self):
+        return self._xy
+
+    @property
+    def xz(self):
+        return self._xz
+
+    @property
+    def yz(self):
+        return self._yz
+
     @property
     def bravais_parameters(self):
         """Return the Box representation as Bravais lattice parameters.
@@ -138,7 +162,7 @@ class Box(object):
         terms of the Bravais lattice parameters:
             a,b,c = the edges of the Box
             alpha, beta, gamma = angles(tilt) of the parallelepiped, in degrees
-        
+
         Returns
         -------
         parameters : tuple of floats (a, b, c, alpha, beta, gamma)
