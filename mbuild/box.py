@@ -60,7 +60,15 @@ class Box(object):
     def from_uvec_lengths(cls, uvec, lengths):
         uvec = np.asarray(uvec)
         uvec.reshape(3,3)
-        assert uvec.shape == (3,3), f"Expected a 3x3 matrix, was provided {uvec.shape}."
+
+        if uvec.shape != (3,3):
+            raise MBuildError(f"Expected a 3x3 matrix, was provided {uvec.shape}.")
+
+        if not np.allclose(np.linalg.norm(uvec, axis=1), 1.0):
+            msg = (f"Unit vector magnitudes provided are not "
+                   f"close to 1.0, "
+                   f"magnitudes: {np.linalg.norm(uvec, axis=1)}")
+            raise MBuildError(msg)
 
         lengths = np.asarray(lengths)
         lengths.reshape(1,3)

@@ -50,3 +50,14 @@ class TestBox(BaseTest):
     def test_colinear_vectors(self, vecs):
         with pytest.raises(mb.exceptions.MBuildError, match=r'co\-linear',):
             mb.Box(box_vectors=vecs)
+
+    @pytest.mark.parametrize('vecs', [
+                                   [[1.5, 0, 0],[0, 1, 0],[0, 0, 1]],
+                                   [[0.5, np.sqrt(3)/2, 0.0],
+                                    [0.5, -np.sqrt(3)/2, 0],
+                                    [0, 0, 8]]
+                                ])
+    def test_non_unit_vectors(self, vecs):
+        lengths = [2, 2, 2]
+        with pytest.raises(MBuildError, match=r'are not close to 1\.0'):
+            mb.Box.from_uvec_lengths(uvec=vecs, lengths=lengths)
