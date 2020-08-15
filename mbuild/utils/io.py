@@ -76,6 +76,14 @@ or from source following instructions at:
 
 MESSAGES['pybel'] = MESSAGES['openbabel']
 
+MESSAGES['mdtraj'] = '''
+The code at {filename}:{line_number} requires the "mdtraj" package
+mdtraj can be installed using:
+# conda install -c conda-forge mdtraj
+or
+# pip install mdtraj
+'''
+
 MESSAGES['foyer'] = '''
 The code at {filename}:{line_number} requires the "foyer" package
 
@@ -216,6 +224,12 @@ try:
 except ImportError:
     has_openbabel = False
 
+try:
+    import mdtraj
+    has_mdtraj = True
+    del mdtraj
+except ImportError:
+    has_mdtraj = False
 try:
     import foyer
     has_foyer = True
