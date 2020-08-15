@@ -1,17 +1,17 @@
 __all__ = ['clone', 'Compound', 'Particle']
 
-from collections import OrderedDict, Iterable
-from copy import deepcopy
-import itertools
 import os
 import tempfile
-from warnings import warn
+import itertools
+import ele
 import numpy as np
+
+from collections import OrderedDict, Iterable
+from copy import deepcopy
+from warnings import warn
 from oset import oset as OrderedSet
 
-import mdtraj as md
-from mdtraj.core.element import Element as ElementClass
-from mdtraj.core.element import get_by_symbol
+from ele.element import Element
 
 from mbuild import conversion
 from mbuild.bond_graph import BondGraph
@@ -299,7 +299,7 @@ class Compound(object):
 
         Parameters
         ----------
-        name : str or mdtraj.core.element.Element
+        name : str or ele.Element
             element abbreviation or element 
 
         Yields
@@ -308,11 +308,8 @@ class Compound(object):
             The next Particle in the Compound with the user-specified element
 
         """
-        if not isinstance(element, ElementClass):
-            try:
-                element = get_by_symbol(element)
-            except KeyError:
-                raise MBuildError("Invalid element symbol")
+        if not isinstance(element, Element):
+            element = ele.element_from_symbol(element)
         for particle in self.particles():
             if particle.element == element:
                 yield particle
@@ -1001,13 +998,12 @@ class Compound(object):
     
     @element.setter
     def element(self, element):
-        if element is not None:
-            try:
-                self._element = get_by_symbol(element)
-            except KeyError:
-                raise MBuildError("Invalid element symbol")
-        else:
+        if element is None:
             self._element = None
+        elif isinstance(element, Element):
+            self._element = element
+        else:
+            self._element = ele.element_from_symbol(element)
 
     @property
     def xyz(self):

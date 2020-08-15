@@ -17,3 +17,4 @@ pycifrw
 py3Dmol
 nglview>=2.7
 bump2version
+ele
