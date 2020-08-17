@@ -30,6 +30,7 @@ requirements:
     - protobuf
     - mdtraj
     - setuptools
+    - openbabel
 
 test:
   requires:
