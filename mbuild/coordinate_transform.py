@@ -3,7 +3,6 @@ simplefilter('always', DeprecationWarning)
 
 import numpy as np
 from numpy.linalg import norm, svd, inv
-from mbuild.utils.decorators import deprecated
 from mbuild.utils.exceptions import DeprecationError
 
 
