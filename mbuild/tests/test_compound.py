@@ -9,6 +9,7 @@ import pytest
 import mbuild as mb
 from mbuild.exceptions import MBuildError
 from mbuild.utils.geometry import calc_dihedral
+from mbuild.utils.exceptions import DeprecationError
 from mbuild.utils.io import get_fn, import_, has_foyer, has_intermol, has_openbabel, has_networkx
 from mbuild.tests.base_test import BaseTest
 
@@ -447,7 +448,7 @@ class TestCompound(BaseTest):
 
         # Create another compound, rotate it and write it to file.
         p3ht2 = mb.load('CCCCCCC1=C(SC(=C1)C)C', smiles=True)
-        mb.rotate(p3ht2, np.pi / 2, [0, 0, 1])
+        p3ht2.rotate(np.pi / 2, [0, 0, 1])
         p3ht2.save("p3ht2.pdb")
 
         # Load p3ht2.pdb into p3ht1, modifying the atom positions of p3ht1.
@@ -808,13 +809,12 @@ class TestCompound(BaseTest):
 
     @pytest.mark.skipif(not has_openbabel, reason="Open Babel package not installed")
     def test_energy_minimization(self, octane):
-        with pytest.raises(ValueError):
+        with pytest.raises(DeprecationError):
             octane.energy_minimization()
 
     @pytest.mark.skipif(not has_openbabel, reason="Open Babel package not installed")
     def test_energy_minimize(self, octane):
-        with pytest.raises(ValueError):
-            octane.energy_minimize()
+        octane.energy_minimize()
 
     @pytest.mark.skipif(has_openbabel, reason="Open Babel package is installed")
     def test_energy_minimize_openbabel_warn(self, octane):

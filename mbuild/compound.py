@@ -18,7 +18,6 @@ from parmed.periodic_table import AtomicNum, element_by_name, Mass, Element
 from mbuild.bond_graph import BondGraph
 from mbuild.box import Box
 from mbuild.exceptions import MBuildError
-from mbuild.utils.decorators import deprecated
 from mbuild.formats.xyz import read_xyz, write_xyz
 from mbuild.formats.json_formats import compound_to_json, compound_from_json
 from mbuild.formats.hoomdxml import write_hoomdxml
@@ -28,6 +27,7 @@ from mbuild.formats.par_writer import write_par
 from mbuild.periodic_kdtree import PeriodicCKDTree
 from mbuild.utils.io import run_from_ipython, import_, has_networkx
 from mbuild.utils.jsutils import overwrite_nglview_default
+from mbuild.utils.exceptions import DeprecationError
 from mbuild.coordinate_transform import _translate, _rotate
 
 
@@ -1504,8 +1504,7 @@ class Compound(object):
 
 
     def energy_minimization(self, forcefield='UFF', steps=1000, **kwargs):
-        raise ValueError('energy_minimization() has been deprecated. Please use Compound.energy_minimize(). Deprecated mbuild Version 0.81')
-        self.energy_minimize(forcefield=forcefield, steps=steps, **kwargs)
+        raise DeprecationError('energy_minimization() has been deprecated. Please use Compound.energy_minimize(). Deprecated mbuild Version 0.81')
 
     def energy_minimize(self, forcefield='UFF', steps=1000, **kwargs):
         """Perform an energy minimization on a Compound
