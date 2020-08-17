@@ -15,6 +15,7 @@ from mbuild.coordinate_transform import (Translation, CoordinateTransform,
                                          rotate, spin, spin_x, spin_y, spin_z,
                                          angle, _spin)
 from mbuild.tests.base_test import BaseTest
+from mbuild.utils.exceptions import DeprecationError
 import mbuild as mb
 
 
@@ -212,15 +213,15 @@ class TestCoordinateTransform(BaseTest):
         assert(np.allclose(compound2.xyz, sixpoints.xyz, atol=1e-16))
 
     def test_spin_deprecated_x(self, sixpoints):
-        with pytest.raises(ValueError):
+        with pytest.raises(DeprecationError):
             spin_x(sixpoints, np.pi*3/2)
 
     def test_spin_deprecated_y(self, sixpoints):
-        with pytest.raises(ValueError):
+        with pytest.raises(DeprecationError):
             spin_y(sixpoints, np.pi*3/2)
 
     def test_spin_deprecated_z(self, sixpoints):
-        with pytest.raises(ValueError):
+        with pytest.raises(DeprecationError):
             spin_z(sixpoints, 69)
 
     def test_spin_arbitraty(self, sixpoints):
@@ -229,16 +230,16 @@ class TestCoordinateTransform(BaseTest):
         assert(np.allclose(sixpoints['up'].xyz, before['right'].xyz, atol=1e-16)
                 and np.allclose(sixpoints['down'].xyz, before['left'].xyz, atol=1e-16))
 
-    def test_warn_rotate_x(self, methane):
-        with pytest.raises(ValueError):
+    def test_error_rotate_x(self, methane):
+        with pytest.raises(DeprecationError):
             rotate_around_x(methane, np.pi)
 
-    def test_warn_rotate_y(self, methane):
-        with pytest.raises(ValueError):
+    def test_error_rotate_y(self, methane):
+        with pytest.raises(DeprecationError):
             rotate_around_y(methane, np.pi)
 
-    def test_warn_rotate_z(self, methane):
-        with pytest.raises(ValueError):
+    def test_error_rotate_z(self, methane):
+        with pytest.raises(DeprecationError):
             rotate_around_z(methane, np.pi)
 
     def test_spin_relative_compound_coordinates(self, sixpoints):
