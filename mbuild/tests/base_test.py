@@ -121,7 +121,6 @@ class BaseTest:
         ch.translate(-ch[0].pos)       
         ch.add(mb.Port(anchor=ch[0], separation=0.07), 'a')
         ch['a'].rotate(120.0 * (np.pi/180.0), around=np.asarray([0, 0, 1]))
-
         ch.add(mb.Port(anchor=ch[0], separation=0.07), 'b')
         ch['b'].rotate(-120.0 * (np.pi/180.0), around=np.asarray([0, 0, 1]))
         ch_copy = mb.clone(ch)
@@ -166,6 +165,7 @@ class BaseTest:
         ch.add(mb.Port(anchor=ch[0]), 'b')
         ch['b'].translate([0, 0.07, 0]) 
         ch['b'].rotate(-120.0 * (np.pi/180.0), around=np.asarray([0, 0, 1]))
+
         return ch
 
     @pytest.fixture

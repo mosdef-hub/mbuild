@@ -687,7 +687,7 @@ def _run_packmol(input_text, filled_xyz, temp_file):
                "the .xyz_FORCED file instead. This may not be a "
                "sufficient packing result.")
         warnings.warn(msg)
-        os.system('cp {0}_forced {0}'.format(filled_xyz.name))
+        os.system('cp {0}_FORCED {0}'.format(filled_xyz.name))
 
     if 'ERROR' in out or proc.returncode != 0:
         _packmol_error(out, err)

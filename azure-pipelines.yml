@@ -1,5 +1,10 @@
 trigger:
-  - master
+  branches:
+    include:
+    - master
+  tags:
+    include:
+    - 0.*
 
 pr:
   autoCancel: true
@@ -85,6 +90,23 @@ stages:
             condition: and( eq( variables['Agent.OS'], 'Linux' ), eq( variables['python.version'], '3.7' ) )
             displayName: Publish Coverage Report
 
+          - bash: |
+              source activate test-environment
+              ./devtools/release-pypi.sh testpypi
+            env:
+              TEST_PYPI_USERNAME: $(TEST_PYPI_USERNAME)
+              TEST_PYPI_PASSWORD: $(TEST_PYPI_PASSWORD)
+            condition: and( eq( variables['Agent.OS'], 'Linux' ), eq( variables['python.version'], '3.7' ), startsWith( variables['Build.SourceBranch'], 'refs/tags/0' ) )
+            displayName: Publish mbuild to Test PyPI
+
+          - bash: |
+              source activate test-environment
+              bash ./devtools/release-pypi.sh pypi
+            env:
+              PYPI_USERNAME: $(PYPI_USERNAME)
+              PYPI_PASSWORD: $(PYPI_PASSWORD)
+            condition: and( eq( variables['Agent.OS'], 'Linux' ), eq( variables['python.version'], '3.7' ), startsWith( variables['Build.SourceBranch'], 'refs/tags/0' ) )
+            displayName: Publish mbuild to PyPI
 
 
       - job: Windows_no_bleeding
@@ -171,12 +193,19 @@ stages:
 
   - stage: Docker
     dependsOn: Test
-    condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'), ne(variables['Build.Reason'], 'Schedule'))
+    condition: and(succeeded(), or(eq(variables['Build.SourceBranch'], 'refs/heads/master'), startsWith(variables['Build.SourceBranch'], 'refs/tags/0')), ne(variables['Build.Reason'], 'Schedule'))
     pool:
       vmImage: 'ubuntu-latest'
     jobs:
       - job: publishDocker
         steps:
+          - bash: |
+              if [[ $BUILD_SOURCEBRANCH == "refs/heads/master" ]]; then TAG='latest'; else TAG='stable'; fi
+              if [[ $BUILD_SOURCEBRANCH != "refs/heads/master" ]]; then VERSION=$(Build.SourceBranch); fi;
+              echo "##vso[task.setvariable variable=VERSION;]${VERSION:10}"
+              echo "##vso[task.setvariable variable=DOCKER_TAG;]$TAG"
+            displayName: Export Docker Tags
+
           - task: Docker@2
             displayName: Login to docker hub
             inputs:
@@ -188,11 +217,12 @@ stages:
             inputs:
               command: buildAndPush
               repository: mosdef/mbuild
-              tags: latest
+              tags: |
+                $(DOCKER_TAG)
+                $(VERSION)
 
           - task: Docker@2
             displayName: Logout
             inputs:
               command: logout
               containerRegistry: mosdefDockerLogin
-
