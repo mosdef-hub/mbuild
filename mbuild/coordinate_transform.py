@@ -406,9 +406,6 @@ def translate(compound, pos):
 
     """
     raise ValueError('translate() is now deprecated. Please use Compound.translate(). Deprecated as of mbuild Version 0.70')
-    atom_positions = compound.xyz_with_ports
-    atom_positions = Translation(pos).apply_to(atom_positions)
-    compound.xyz_with_ports = atom_positions
 
 
 def translate_to(compound, pos):
@@ -423,11 +420,6 @@ def translate_to(compound, pos):
 
     """
     raise ValueError('translate_to() is now deprecated. Please use Compound.translate_to(). Deprecated as of mbuild Version 0.70')
-
-    atom_positions = compound.xyz_with_ports
-    atom_positions -= compound.center
-    atom_positions = Translation(pos).apply_to(atom_positions)
-    compound.xyz_with_ports = atom_positions
 
 
 def _translate(coordinates, by):
@@ -491,14 +483,8 @@ def rotate(compound, theta, around):
         The vector about which to rotate the compound.
 
     """
-    raise ValueError('rotate() has been deprecated. Please use Compound.rotate(). Deprecated since Mbuild version 0.70'')
-
-    around = np.asarray(around).reshape(3)
-    if np.array_equal(around, np.zeros(3)):
-        raise ValueError('Cannot rotate around a zero vector')
-    atom_positions = compound.xyz_with_ports
-    atom_positions = Rotation(theta, around).apply_to(atom_positions)
-    compound.xyz_with_ports = atom_positions
+    raise ValueError('rotate() has been deprecated. Please use
+            Compound.rotate(). Deprecated since mBuild version 0.7.0')
 
 
 def rotate_around_x(compound, theta):
@@ -513,7 +499,6 @@ def rotate_around_x(compound, theta):
 
     """
     raise ValueError('rotate_around_x() has been deprecated. Please use Compound.rotate(compound, theta, around=np.asarray([1, 0, 0])). Deprecated since Mbuild version 0.70')
-    rotate(compound, theta, np.asarray([1, 0, 0]))
 
 
 def rotate_around_y(compound, theta):
@@ -527,9 +512,9 @@ def rotate_around_y(compound, theta):
         The angle by which to rotate the compound.
 
     """
-    raise ValueError('rotate_around_y() has been deprecated. Please use Compound.rotate(compound, theta, around=np.asarray([0, 1, 0])). Deprecated since Mbuild version 0.70')
-
-    rotate(compound, theta, np.asarray([0, 1, 0]))
+    raise ValueError('rotate_around_y() has been deprecated. Please
+            use Compound.rotate(compound, theta, around=np.asarray([0,
+            1, 0])). Deprecated since mBuild version 0.7.0')
 
 
 def rotate_around_z(compound, theta):
@@ -543,9 +528,9 @@ def rotate_around_z(compound, theta):
         The angle by which to rotate the compound.
 
     """
-    raise ValueError('rotate_around_z() has been deprecated. Please use Compound.rotate(compound, theta, around=np.asarray([0, 0, 1])). Deprecated since Mbuild version 0.70')
-
-    rotate(compound, theta, np.asarray([0, 0, 1]))
+    raise ValueError('rotate_around_z() has been deprecated. Please
+            use Compound.rotate(compound, theta, around=np.asarray([0,
+            0, 1])). Deprecated since mBuild version 0.7.0')
 
 
 def spin(compound, theta, around):
@@ -561,15 +546,8 @@ def spin(compound, theta, around):
         The axis about which to spin the compound.
 
     """
-    raise ValueError('spin() has been deprecated. Please use Compound.spin(). Deprecated since Mbuild version 0.70'')
-
-    around = np.asarray(around).reshape(3)
-    if np.array_equal(around, np.zeros(3)):
-        raise ValueError('Cannot spin around a zero vector')
-    center_pos = compound.center
-    translate(compound, -center_pos)
-    rotate(compound, theta, around)
-    translate(compound, center_pos)
+    raise ValueError('spin() has been deprecated. Please use
+    Compound.spin(). Deprecated since mBuild version 0.7.0')
 
 
 def _spin(coordinates, theta, around):
@@ -606,9 +584,9 @@ def spin_x(compound, theta):
         The angle by which to rotate the compound.
 
     """
-    raise ValueError('spin_x() has been deprecated. Please use Compound.spin(compound, theta, around=np.asarray([1, 0, 0])). Deprecated since Mbuild version 0.70')
-    spin(compound, theta, np.asarray([1.0, 0.0, 0.0]))
-
+    raise ValueError('spin_x() has been deprecated. Please use
+            Compound.spin(compound, theta, around=np.asarray([1, 0,
+            0])). Deprecated since mBuild version 0.7.0')
 
 
 def spin_y(compound, theta):
@@ -622,8 +600,9 @@ def spin_y(compound, theta):
         The angle by which to rotate the compound.
 
     """
-    raise ValueError('spin_y() has been deprecated. Please use Compound.spin(compound, theta, around=np.asarray([0, 1, 0])). Deprecated since Mbuild version 0.70')
-    spin(compound, theta, np.asarray([0.0, 1.0, 0.0]))
+    raise ValueError('spin_y() has been deprecated. Please use
+            Compound.spin(compound, theta, around=np.asarray([0, 1,
+            0])). Deprecated since mBuild version 0.7.0')
 
 
 def spin_z(compound, theta):
@@ -637,8 +616,9 @@ def spin_z(compound, theta):
         The angle by which to rotate the compound.
 
     """
-    raise ValueError('spin_z() has been deprecated. Please use Compound.spin(compound, theta, around=np.asarray([0, 0, 1])). Deprecated since Mbuild version 0.70')
-    spin(compound, theta, np.asarray([0.0, 0.0, 1.0]))
+    raise ValueError('spin_z() has been deprecated. Please use
+            Compound.spin(compound, theta, around=np.asarray([0, 0,
+            1])). Deprecated since mBuild version 0.7.0')
 
 
 def x_axis_transform(compound, new_origin=None,
