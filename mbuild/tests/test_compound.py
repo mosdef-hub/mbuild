@@ -1236,3 +1236,55 @@ class TestCompound(BaseTest):
         nglview = import_("nglview")
         vis_object = ethane._visualize_nglview()
         assert isinstance(vis_object.component_0, nglview.component.ComponentViewer)
+
+    def test_element(self):
+        from ele import Elements
+        na_compound = mb.Compound(element="Na")
+        assert na_compound.element == Elements.Na
+        na_compound = mb.Compound(element="NA")
+        assert na_compound.element == Elements.Na
+        na_compound = mb.Compound(element="na")
+        assert na_compound.element == Elements.Na
+        co_compound = mb.Compound(element="Co")
+        assert co_compound.element != Elements.Na
+
+        na_compound_clone = mb.clone(na_compound)
+        assert na_compound_clone.element == Elements.Na
+        container = mb.Compound()
+        container.add(na_compound)
+        container.add(na_compound_clone)
+        for child in container.children:
+            assert child.element == Elements.Na
+
+        na_compound = mb.Compound()
+        na_compound.element = "Na"
+        assert na_compound.element == Elements.Na
+
+
+    def test_invalid_element(self):
+        from ele.exceptions import ElementError
+        with pytest.raises(ElementError, match=r"No element with symbol"):
+            na_compound = mb.Compound(element="sodium")
+        with pytest.raises(ElementError, match=r"No element with symbol"):
+            na_compound = mb.Compound(element="")
+
+    def test_get_by_element(self):
+        from ele import Elements
+        from ele.exceptions import ElementError
+        container = mb.Compound()
+        na = mb.Compound(element="Na")
+        na2 = mb.Compound(element="Na")
+        co = mb.Compound(element="Co")
+        container.add([na,na2,co])
+        element_list = [
+            c.element for c in container.particles_by_element("Na")
+        ]
+        assert len(element_list) == 2
+        for item in element_list:
+            assert item == Elements.Na
+
+        with pytest.raises(ElementError, match=r"No element with symbol"):
+            element_list = [
+                c.element for c in container.particles_by_element("sod")
+            ]
+

@@ -1,14 +1,17 @@
 __all__ = ['clone', 'Compound', 'Particle']
 
-from collections import OrderedDict, Iterable
-from copy import deepcopy
-import itertools
 import os
 import tempfile
-from warnings import warn
-
+import itertools
+import ele
 import numpy as np
+
+from collections import OrderedDict, Iterable
+from copy import deepcopy
+from warnings import warn
 from oset import oset as OrderedSet
+
+from ele.element import Element
 
 from mbuild import conversion
 from mbuild.bond_graph import BondGraph
@@ -86,6 +89,8 @@ class Compound(object):
     box : mb.Box, optional
         The simulation box containing the compound. Also accounts for the
         periodicity. Defaults to None which is treated as non-periodic.
+    element: str, optional, default=None
+        The one or two character element symbol
 
     Attributes
     ----------
@@ -120,7 +125,8 @@ class Compound(object):
     """
 
     def __init__(self, subcompounds=None, name=None, pos=None, charge=0.0,
-                 periodicity=None, box=None, port_particle=False):
+                 periodicity=None, box=None, element=None,
+                 port_particle=False):
         super(Compound, self).__init__()
 
         if name:
@@ -156,6 +162,7 @@ class Compound(object):
         self._check_if_contains_rigid_bodies = False
 
         self.box = box
+        self.element = element
 
         # self.add() must be called after labels and children are initialized.
         if subcompounds:
@@ -285,6 +292,26 @@ class Compound(object):
         """
         for particle in self.particles():
             if particle.name == name:
+                yield particle
+
+    def particles_by_element(self, element):
+        """Return all Particles of the Compound with a specific name
+
+        Parameters
+        ----------
+        name : str or ele.Element
+            element abbreviation or element 
+
+        Yields
+        ------
+        mb.Compound
+            The next Particle in the Compound with the user-specified element
+
+        """
+        if not isinstance(element, Element):
+            element = ele.element_from_symbol(element)
+        for particle in self.particles():
+            if particle.element == element:
                 yield particle
 
     @property
@@ -964,6 +991,19 @@ class Compound(object):
                     "simulation box."
                 )
         self._box = box
+
+    @property
+    def element(self):
+        return self._element
+    
+    @element.setter
+    def element(self, element):
+        if element is None:
+            self._element = None
+        elif isinstance(element, Element):
+            self._element = element
+        else:
+            self._element = ele.element_from_symbol(element)
 
     @property
     def xyz(self):
@@ -2160,6 +2200,7 @@ class Compound(object):
         clone_of[self] = newone
 
         newone.name = deepcopy(self.name)
+        newone._element = deepcopy(self.element)
         newone.periodicity = deepcopy(self.periodicity)
         newone._pos = deepcopy(self._pos)
         newone.port_particle = deepcopy(self.port_particle)
