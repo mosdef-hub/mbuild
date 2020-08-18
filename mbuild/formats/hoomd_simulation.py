@@ -3,6 +3,7 @@ import itertools
 import numpy as np
 import operator
 from collections import namedtuple
+import json
 
 import parmed as pmd
 import mbuild as mb
@@ -363,3 +364,27 @@ def _check_hoomd_version():
     version_numbers = version.split('.')
     return version_numbers
 
+
+def save_forcefield(forcefield, filename="forcefield.json", overwrite=False):
+    """ Serialize hoomd objects to file
+
+     Save hoomd objects to a json file that can be used to
+     run a simulation. Useful for restarting a simulation
+     and double checking forfcefield paramters.
+
+     Parameters
+     ----------
+     hoomd_forcefield : list
+        List of hoomd force computes to be serialized
+
+     filename : str, optional, default=forcefield.json
+            Filesystem path in which to save the file
+
+     overwrite : bool, optional, default=False
+            Overwrite if the filename already exists
+    """
+    logger = hoomd.logging.Logger(flags=["state"])
+    logger += forcefield
+
+    with open(filename, 'w') as f:
+        json.dump(logger.log(), f, indent=2)
