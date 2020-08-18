@@ -215,7 +215,7 @@ def _init_hoomd_14_pairs(structure, nl, snapshot, r_cut=1.2, ref_distance=1.0, r
 
     # Update neighborlist to exclude 1-4 interactions,
     # but impose a special_pair force to handle these pairs
-    nl.exclusions = nl.exclusions + ('1-4', )
+    nl.exclusions = nl.exclusions + ['1-4', ]
 
     if snapshot.pairs.N == 0:
         print("No 1,4 pairs found in hoomd snapshot")
