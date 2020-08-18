@@ -120,10 +120,10 @@ class BaseTest:
         ch.name = 'CH'
         mb.translate(ch, -ch[0].pos)       
         ch.add(mb.Port(anchor=ch[0], separation=0.07), 'a')
-        mb.rotate_around_z(ch['a'], 120.0 * (np.pi/180.0))
+        mb.rotate_around_z(ch['a'], np.deg2rad(120.0))
 
         ch.add(mb.Port(anchor=ch[0], separation=0.07), 'b')
-        mb.rotate_around_z(ch['b'], -120.0 * (np.pi/180.0))
+        mb.rotate_around_z(ch['b'], np.deg2rad(-120.0))
         ch_copy = mb.clone(ch)
 
         benzene = mb.Compound(name='Benzene')
@@ -161,11 +161,11 @@ class BaseTest:
         mb.translate(ch, -ch[0].pos)    
         ch.add(mb.Port(anchor=ch[0]), 'a')
         mb.translate(ch['a'], [0, 0.07, 0]) 
-        mb.rotate_around_z(ch['a'], 120.0 * (np.pi/180.0))
+        mb.rotate_around_z(ch['a'], np.deg2rad(120.0))
 
         ch.add(mb.Port(anchor=ch[0]), 'b')
         mb.translate(ch['b'], [0, 0.07, 0]) 
-        mb.rotate_around_z(ch['b'], -120.0 * (np.pi/180.0))
+        mb.rotate_around_z(ch['b'], np.deg2rad(-120.0))
         return ch
 
     @pytest.fixture

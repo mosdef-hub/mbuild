@@ -1,13 +1,57 @@
-from collections import defaultdict
 import itertools as it
+import pathlib
+from collections import defaultdict
 from warnings import warn
 
 import numpy as np
 
-
 import mbuild as mb
+from mbuild.utils.io import import_
 
-__all__ = ['Lattice']
+__all__ = ['load_cif', 'Lattice']
+
+
+def load_cif(file_or_path=None, wrap_coords=False):
+    """Load a CifFile object into memory, return an mbuild.Lattice.
+
+    Parameters
+    ----------
+    wrap_coords : bool, False
+        Wrap the lattice points back into the 0-1 acceptable coordinates.
+    """
+
+    garnett = import_('garnett')
+    pycifrw = import_('CifFile')
+
+    assert isinstance(file_or_path, (str, pathlib.Path))
+    cif_location = pathlib.Path(file_or_path)
+
+    reader = garnett.ciffilereader.CifFileReader()
+    with open(cif_location.absolute(), 'r') as cif_file:
+        my_cif = reader.read(cif_file)
+
+        # only need the first frame, not used as a trajectory
+        frame = my_cif[0]
+
+        # convert angstroms to nanometers
+        lattice_spacing = [frame.box.Lx/10, frame.box.Ly/10, frame.box.Lz/10]
+
+        # create lattice_points dictionary
+        position_dict = defaultdict(list)
+        for elem_id, coords in zip(frame.typeid, frame.cif_coordinates.tolist()):
+            if wrap_coords:
+                for i, pos in enumerate(coords):
+                    if pos < 0 and pos > -1:
+                        coords[i] = coords[i] + 1
+                    elif pos > 1 and pos < 2:
+                        coords[i] = coords[i] - 1
+                    else:
+                        pass
+            position_dict[frame.types[elem_id]].append(list(coords))
+        box_vectors = np.asarray(frame.box.get_box_matrix()).T
+        return Lattice(lattice_spacing=lattice_spacing,
+                       lattice_vectors=box_vectors,
+                       lattice_points=position_dict)
 
 
 class Lattice(object):
@@ -404,12 +448,11 @@ class Lattice(object):
         dataType = np.float64
         (alpha, beta, gamma) = angles
 
-        radianConversion = np.pi / 180.0
-        cosa = np.cos(alpha * radianConversion)
-        cosb = np.cos(beta * radianConversion)
-        sinb = np.sin(beta * radianConversion)
-        cosg = np.cos(gamma * radianConversion)
-        sing = np.sin(gamma * radianConversion)
+        cosa = np.cos(np.deg2rad(alpha))
+        cosb = np.cos(np.deg2rad(beta))
+        sinb = np.sin(np.deg2rad(beta))
+        cosg = np.cos(np.deg2rad(gamma))
+        sing = np.sin(np.deg2rad(gamma))
         matCoef_y = (cosa - cosb * cosg) / sing
         matCoef_z = np.power(sinb, 2, dtype=dataType) - \
             np.power(matCoef_y, 2, dtype=dataType)
@@ -435,7 +478,6 @@ class Lattice(object):
 
         """
 
-        degreeConversion = 180.0 / np.pi
         vector_magnitudes = np.linalg.norm(self.lattice_vectors, axis=1)
 
         a_dot_b = np.dot(self.lattice_vectors[0], self.lattice_vectors[1])
@@ -446,9 +488,9 @@ class Lattice(object):
         beta_raw = a_dot_c / (vector_magnitudes[0] * vector_magnitudes[2])
         gamma_raw = a_dot_b / (vector_magnitudes[0] * vector_magnitudes[1])
 
-        alpha = np.arccos(np.clip(alpha_raw, -1.0, 1.0)) * degreeConversion
-        beta = np.arccos(np.clip(beta_raw, -1.0, 1.0)) * degreeConversion
-        gamma = np.arccos(np.clip(gamma_raw, -1.0, 1.0)) * degreeConversion
+        alpha = np.rad2deg(np.arccos(np.clip(alpha_raw, -1.0, 1.0)))
+        beta = np.rad2deg(np.arccos(np.clip(beta_raw, -1.0, 1.0)))
+        gamma = np.rad2deg(np.arccos(np.clip(gamma_raw, -1.0, 1.0)))
 
         return np.asarray([alpha, beta, gamma], dtype=np.float64)
 
@@ -579,11 +621,12 @@ class Lattice(object):
                                     'dictionary. For key {}, type: {} was '
                                     'provided, not mbuild.Compound.'
                                     .format(key_id, err_type))
-        # set periodicity
+        # set periodicity, currently assuming rectangular system
+        if not np.all(np.allclose(self.angles, [90.0, 90.0, 90.0])):
+            warn('Periodicity of non-rectangular lattices are not valid with '
+                 'default boxes. Only rectangular lattices are valid '
+                 'at this time.')
         ret_lattice.periodicity = np.asarray([a * x, b * y, c * z], dtype=np.float64)
-        warn('Periodicity of non-rectangular lattices are not valid with '
-                    'default boxes. Only rectangular lattices are valid '
-                    'at this time.')
 
         # if coordinates are below a certain threshold, set to 0
         tolerance = 1e-12

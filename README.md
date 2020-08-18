@@ -17,7 +17,7 @@ complex molecular systems for molecular dynamics simulations.
   worry about manually defining bonds when constructing chemically bonded
   structures from smaller components.
 
-To learn more, get started or contribute, check out our [website](http://mosdef-hub.github.io/mbuild/).
+To learn more, get started or contribute, check out our [website](http://mbuild.mosdef.org).
 
 If you use this package, please cite [our paper](http://dx.doi.org/10.1007/978-981-10-1128-3_5
 ). The BibTeX reference is
@@ -31,6 +31,23 @@ If you use this package, please cite [our paper](http://dx.doi.org/10.1007/978-9
       doi = "http://dx.doi.org/10.1007/978-981-10-1128-3_5" 
 }
 ```
+
+#### Quick Start with Docker
+To use `mbuild` in a jupyter-notebook that runs from a docker container with all the dependencies installed use the following command:
+
+```sh
+$ docker pull mosdef/mbuild:latest
+$ docker run -it --name mbuild -p 8888:8888 mosdef/mbuild:latest su anaconda -s\
+      /bin/sh -l -c "jupyter-notebook --no-browser --ip="0.0.0.0" --notebook-dir\
+      /home/anaconda/mbuild-notebooks
+```
+
+Alternatively, you can also start a Bourne shell directly:
+```sh
+$ docker run -it --name mbuild mosdef/mbuild:latest
+```
+
+To learn more about using `mBuild` with docker, please refer to the documentation [here](https://mbuild.mosdef.org/en/latest/docker.html).
 
 #### Tutorials
 
