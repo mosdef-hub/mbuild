@@ -4,3 +4,4 @@ packmol>=1!18.013
 oset
 parmed
 ele
+openbabel>=3.0.0
