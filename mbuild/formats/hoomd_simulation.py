@@ -58,6 +58,8 @@ def create_hoomd_simulation(structure, ref_distance=1.0, ref_mass=1.0,
         HOOMD snapshot object to initialize the simulation
     hoomd_forcefield : list
         List of hoomd force computes created during conversion
+    nl : hoomd.md.nlst.Cell
+        Neighborlist used for md.pair and md.special_pair forces
     ReferenceValues : namedtuple
         Values used in scaling
 
@@ -146,7 +148,7 @@ def create_hoomd_simulation(structure, ref_distance=1.0, ref_mass=1.0,
         hoomd_objects.append(rb_torsions)
     print("HOOMD SimulationContext updated from ParmEd Structure")
 
-    return hoomd_snapshot, hoomd_objects, ref_values
+    return hoomd_snapshot, hoomd_objects, nl, ref_values
 
 def _init_hoomd_lj(structure, nl, r_cut=1.2,
         ref_distance=1.0, ref_energy=1.0):
@@ -365,7 +367,7 @@ def _check_hoomd_version():
     return version_numbers
 
 
-def save_forcefield(forcefield, filename="forcefield.json", overwrite=False):
+def save_forcefield(forcefield, nl, filename="forcefield.json", overwrite=False):
     """ Serialize hoomd objects to file
 
      Save hoomd objects to a json file that can be used to
@@ -377,6 +379,9 @@ def save_forcefield(forcefield, filename="forcefield.json", overwrite=False):
      hoomd_forcefield : list
         List of hoomd force computes to be serialized
 
+    nl : hoomd.md.nlist.Cell
+        neighborlist used in hoomd_forcefield
+
      filename : str, optional, default=forcefield.json
             Filesystem path in which to save the file
 
@@ -384,6 +389,7 @@ def save_forcefield(forcefield, filename="forcefield.json", overwrite=False):
             Overwrite if the filename already exists
     """
     logger = hoomd.logging.Logger(flags=["state"])
+    logger += nl
     logger += forcefield
 
     with open(filename, 'w') as f:
