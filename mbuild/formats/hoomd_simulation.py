@@ -1,3 +1,4 @@
+from pathlib import Path
 import warnings
 import itertools
 import numpy as np
@@ -10,6 +11,7 @@ import mbuild as mb
 from mbuild.utils.sorting import natural_sort
 from mbuild.utils.io import import_
 from mbuild.utils.conversion import RB_to_OPLS
+from mbuild.exceptions import MBuildError
 
 from .hoomd_snapshot import to_hoomdsnapshot
 
@@ -388,6 +390,10 @@ def save_forcefield(forcefield, nl, filename="forcefield.json", overwrite=False)
      overwrite : bool, optional, default=False
             Overwrite if the filename already exists
     """
+
+    if Path(filename).is_file() and not overwrite:
+        raise MBuildError(f"{filename} exists")
+
     logger = hoomd.logging.Logger(flags=["state"])
     logger += nl
     logger += forcefield
