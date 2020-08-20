@@ -54,7 +54,7 @@ constrain_rotation z 0. 0.
 def fill_box(compound, n_compounds=None, box=None, density=None, overlap=0.2,
              seed=12345, edge=0.2, compound_ratio=None,
              aspect_ratio=None, fix_orientation=False, temp_file=None,
-             update_port_locations=False):
+             update_port_locations=False, packmol_args=None):
     """Fill a box with a `mbuild.compound` or `Compound`s using PACKMOL.
 
    `fill_box` takes a single `mbuild.Compound` or a
@@ -191,6 +191,10 @@ def fill_box(compound, n_compounds=None, box=None, density=None, overlap=0.2,
     # Apply 1nm edge buffer
     box_maxs -= edge * 10
 
+    if packmol_args:
+        for arg in packmol_args:
+            PACKMOL_HEADER += "{} {} \n".format(arg, packmol_args[arg])
+    
     # Build the input file for each compound and call packmol.
     filled_xyz = _new_xyz_file()
 
@@ -230,7 +234,7 @@ def fill_box(compound, n_compounds=None, box=None, density=None, overlap=0.2,
 
 def fill_region(compound, n_compounds, region, overlap=0.2,
                 seed=12345, edge=0.2, fix_orientation=False, temp_file=None,
-                update_port_locations=False):
+                update_port_locations=False, packmol_args=None):
     """Fill a region of a box with `mbuild.Compound`(s) using PACKMOL.
 
     Parameters
@@ -296,6 +300,10 @@ def fill_region(compound, n_compounds, region, overlap=0.2,
     # In angstroms for packmol.
     overlap *= 10
 
+    if packmol_args:
+        for arg in packmol_args:
+            PACKMOL_HEADER += "{} {} \n".format(arg, packmol_args[arg])
+    
     # Build the input file and call packmol.
     filled_xyz = _new_xyz_file()
 
@@ -337,7 +345,8 @@ def fill_region(compound, n_compounds, region, overlap=0.2,
 
 def fill_sphere(compound, sphere, n_compounds=None, density=None, overlap=0.2,
                 seed=12345, edge=0.2, compound_ratio=None,
-                fix_orientation=False, temp_file=None, update_port_locations=False):
+                fix_orientation=False, temp_file=None, update_port_locations=False,
+                packmol_args=None):
     """Fill a sphere with a compound using packmol.
 
     One argument of `n_compounds and density` must be specified.
@@ -454,6 +463,10 @@ def fill_sphere(compound, sphere, n_compounds=None, density=None, overlap=0.2,
     radius *= 10
     overlap *= 10
 
+    if packmol_args:
+        for arg in packmol_args:
+            PACKMOL_HEADER += "{} {} \n".format(arg, packmol_args[arg])
+
     # Build the input file for each compound and call packmol.
     filled_xyz = _new_xyz_file()
 
@@ -490,7 +503,7 @@ def fill_sphere(compound, sphere, n_compounds=None, density=None, overlap=0.2,
 
 def solvate(solute, solvent, n_solvent, box, overlap=0.2,
             seed=12345, edge=0.2, fix_orientation=False, temp_file=None,
-            update_port_locations=False):
+            update_port_locations=False, packmol_args=None):
     """Solvate a compound in a box of solvent using packmol.
 
     Parameters
@@ -548,6 +561,10 @@ def solvate(solute, solvent, n_solvent, box, overlap=0.2,
 
     # Apply edge buffer
     box_maxs -= edge * 10
+
+    if packmol_args:
+        for arg in packmol_args:
+            PACKMOL_HEADER += "{} {} \n".format(arg, packmol_args[arg])
 
     # Build the input file for each compound and call packmol.
     solvated_xyz = _new_xyz_file()
