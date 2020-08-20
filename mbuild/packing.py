@@ -1,4 +1,4 @@
-import os
+import os 
 import sys
 import tempfile
 import warnings
@@ -20,7 +20,7 @@ tolerance {0:.16f}
 filetype xyz
 output {1}
 seed {2}
-
+{3}
 """
 PACKMOL_SOLUTE = """
 structure {0}
@@ -191,9 +191,11 @@ def fill_box(compound, n_compounds=None, box=None, density=None, overlap=0.2,
     # Apply 1nm edge buffer
     box_maxs -= edge * 10
 
+    # generate string of addl. packmol inputs given in packmol_args
+    packmol_commands = ""
     if packmol_args:
         for arg in packmol_args:
-            PACKMOL_HEADER += "{} {} \n".format(arg, packmol_args[arg])
+            packmol_commands += "{} {} \n".format(arg, packmol_args[arg])
     
     # Build the input file for each compound and call packmol.
     filled_xyz = _new_xyz_file()
@@ -201,7 +203,7 @@ def fill_box(compound, n_compounds=None, box=None, density=None, overlap=0.2,
     # create a list to contain the file handles for the compound temp files
     compound_xyz_list = list()
     try:
-        input_text = PACKMOL_HEADER.format(overlap, filled_xyz.name, seed)
+        input_text = PACKMOL_HEADER.format(overlap, filled_xyz.name, seed, packmol_commands)
         for comp, m_compounds, rotate in zip(compound, n_compounds, fix_orientation):
             m_compounds = int(m_compounds)
 
@@ -300,9 +302,11 @@ def fill_region(compound, n_compounds, region, overlap=0.2,
     # In angstroms for packmol.
     overlap *= 10
 
+    # generate string of addl. packmol inputs given in packmol_args
+    packmol_commands = ""
     if packmol_args:
         for arg in packmol_args:
-            PACKMOL_HEADER += "{} {} \n".format(arg, packmol_args[arg])
+            packmol_commands += "{} {} \n".format(arg, packmol_args[arg])
     
     # Build the input file and call packmol.
     filled_xyz = _new_xyz_file()
@@ -310,7 +314,7 @@ def fill_region(compound, n_compounds, region, overlap=0.2,
     # List to hold file handles for the temporary compounds
     compound_xyz_list = list()
     try:
-        input_text = PACKMOL_HEADER.format(overlap, filled_xyz.name, seed)
+        input_text = PACKMOL_HEADER.format(overlap, filled_xyz.name, seed, packmol_commands)
 
         for comp, m_compounds, reg, rotate in zip(compound, n_compounds, region, fix_orientation):
             m_compounds = int(m_compounds)
@@ -463,9 +467,11 @@ def fill_sphere(compound, sphere, n_compounds=None, density=None, overlap=0.2,
     radius *= 10
     overlap *= 10
 
+    # generate string of addl. packmol inputs given in packmol_args
+    packmol_commands = ""
     if packmol_args:
         for arg in packmol_args:
-            PACKMOL_HEADER += "{} {} \n".format(arg, packmol_args[arg])
+            packmol_commands += "{} {} \n".format(arg, packmol_args[arg])
 
     # Build the input file for each compound and call packmol.
     filled_xyz = _new_xyz_file()
@@ -473,7 +479,7 @@ def fill_sphere(compound, sphere, n_compounds=None, density=None, overlap=0.2,
     # List to hold file handles for the temporary compounds
     compound_xyz_list = list()
     try:
-        input_text = PACKMOL_HEADER.format(overlap, filled_xyz.name, seed)
+        input_text = PACKMOL_HEADER.format(overlap, filled_xyz.name, seed, packmol_commands)
         for comp, m_compounds, rotate in zip(compound, n_compounds, fix_orientation):
             m_compounds = int(m_compounds)
 
@@ -562,9 +568,11 @@ def solvate(solute, solvent, n_solvent, box, overlap=0.2,
     # Apply edge buffer
     box_maxs -= edge * 10
 
+    # generate string of addl. packmol inputs given in packmol_args
+    packmol_commands = ""
     if packmol_args:
         for arg in packmol_args:
-            PACKMOL_HEADER += "{} {} \n".format(arg, packmol_args[arg])
+            packmol_commands += "{} {} \n".format(arg, packmol_args[arg])
 
     # Build the input file for each compound and call packmol.
     solvated_xyz = _new_xyz_file()
@@ -574,7 +582,7 @@ def solvate(solute, solvent, n_solvent, box, overlap=0.2,
     solvent_xyz_list = list()
     try:
         solute.save(solute_xyz.name, overwrite=True)
-        input_text = (PACKMOL_HEADER.format(overlap, solvated_xyz.name, seed) +
+        input_text = (PACKMOL_HEADER.format(overlap, solvated_xyz.name, seed, packmol_commands) +
                       PACKMOL_SOLUTE.format(solute_xyz.name, *center_solute))
 
         for solv, m_solvent, rotate in zip(solvent, n_solvent, fix_orientation):
