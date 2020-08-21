@@ -377,8 +377,9 @@ def save_forcefield(forcefield, nl, filename="forcefield.json", overwrite=False)
     """ Serialize hoomd objects to file
 
      Save hoomd objects to a json file that can be used to
-     run a simulation. Useful for restarting a simulation
-     and double checking forfcefield paramters.
+     run a simulation. Useful for restarting a simulation,
+     double checking forfcefield parameters, and to separate
+     forcefield generation from simulation.
 
      Parameters
      ----------
