@@ -370,6 +370,8 @@ def _check_hoomd_version():
 
 
 def save_forcefield(forcefield, nl, filename="forcefield.json", overwrite=False):
+    #TODO need to think about how/if scaling values should be saved here, or
+    # if that is on the user to figure out/solve/keep track of
     """ Serialize hoomd objects to file
 
      Save hoomd objects to a json file that can be used to
