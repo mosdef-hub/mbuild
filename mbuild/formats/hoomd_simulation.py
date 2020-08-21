@@ -1,3 +1,5 @@
+import importlib
+import inspect
 from pathlib import Path
 import warnings
 import itertools
@@ -402,3 +404,79 @@ def save_forcefield(forcefield, nl, filename="forcefield.json", overwrite=False)
 
     with open(filename, 'w') as f:
         json.dump(logger.log(), f, indent=2)
+
+
+def load_forcefield(filename="forcefield.json"):
+    """ Load hoomd force computes from file
+
+    Instantate hoomd force computes from json file
+    created with hoomd.logging.Logger.
+
+    Parameters
+    ----------
+
+    filename : str, optional, default=forcefield.json
+        Filesystem path to forcefield file to be loaded
+
+    Returns
+    -------
+    hoomd_forcefield : list
+        List of hoomd force computes created from forcefield file
+    nl : hoomd.md.nlst.Cell
+        Neighborlist created from json file. If no neighbor
+        list is defined in the forcefield file, then nl will
+        be None
+
+    Notes
+    -----
+    More than one md.nlist object in the
+    forcefield file will raise an error as
+    hoomd doesn't yet support a strait forward
+    way to map nlist objects to correct md.pair
+    object.
+    """
+
+    with open(filename, "r") as f:
+        ff = json.load(f)
+
+    # pop nlist from ff dict so makes looping over
+    # ff easier when creating objects
+    nlist_dict = ff["md"].pop("nlist", None)
+    if nlist_dict:
+        if len(nlist_dict) > 1:
+            raise Exception("More than one neighborlist is not supported")
+
+        nl = _get_nlist(nlist_dict)
+    else:
+        nl = None
+
+    forcefield = []
+    for module in ff:
+        for sub_module in ff[module]:
+            for class_name in ff[module][sub_module]:
+                class_name_space = f"hoomd.{module}.{sub_module}"
+                state = ff[module][sub_module][class_name]["state"]
+                loaded_module = importlib.import_module(class_name_space)
+                Obj = getattr(loaded_module, class_name)
+                if "nlist" in inspect.getfullargspec(Obj).args:
+                    if nl:
+                        cls = Obj.from_state(state, nlist=nl)
+                        forcefield.append(cls)
+                    else:
+                        raise Exception(
+                            f"no md.nlist in {filename}, cannot initialize {Obj}"
+                        )
+                else:
+                    forcefield.append(Obj.from_state(state))
+
+    return forcefield, nl
+
+
+def _get_nlist(nlist_dict):
+
+    nlist_style = list(nlist_dict.keys())[0]
+    nlist_state = nlist_dict[nlist_style]["state"]
+    _NList = getattr(hoomd.md.nlist, f"{nlist_style}")
+    nl = _NList.from_state(nlist_state)
+
+    return nl
