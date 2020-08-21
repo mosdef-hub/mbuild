@@ -55,7 +55,7 @@ def create_hoomd_simulation(structure, ref_distance=1.0, ref_mass=1.0,
         Kwargs to pass to hoomd's pppm function
 
     Returns
-    ------
+    -------
     hoomd_snapshot : snapshot
         HOOMD snapshot object to initialize the simulation
     hoomd_forcefield : list
