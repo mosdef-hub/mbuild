@@ -26,19 +26,19 @@ def Specific_FF_to_residue(structure , forcefield_files= None, forcefield_names=
         # LJ14scaler_dict  = a dictionary with the 1,4-LJ scalers for each residue
                             # (i.e., a different force field could on each residue)
 
-    if forcefield_names == None and forcefield_files == None:
+    if forcefield_names is None and forcefield_files is None:
         return warn('Please enter either the forcefield_files or forcefield_names, neither were provided')
 
     if forcefield_names != None and forcefield_files != None:
         return warn('Please enter either the forcefield_files or forcefield_names, not both')
 
-    elif forcefield_files != None and forcefield_names == None and not isinstance(forcefield_files, dict):
+    elif forcefield_files != None and forcefield_names is None and not isinstance(forcefield_files, dict):
         return warn('The force field file (forcefield_files) is not a dictionary. Please enter a dictionary'+
                       "with all the residues specified to a force field"+
                      "-> Ex: {'Water' : 'oplsaa.xml', 'OCT': 'trappe-ua.xml'}, "+
                      "Note: the file path must be specified the force field file")
 
-    elif forcefield_names != None and forcefield_files == None and not isinstance(forcefield_names, dict) and not isinstance(forcefield_names, str):
+    elif forcefield_names != None and forcefield_files is None and not isinstance(forcefield_names, dict) and not isinstance(forcefield_names, str):
         return warn('The force field names (forcefield_names) is not a string or a dictionary with' +
                     ' all the residues specified to a force field.' +
                     "-> String Ex: 'trappe-ua' or 'oplsaa'  ." +
@@ -47,21 +47,21 @@ def Specific_FF_to_residue(structure , forcefield_files= None, forcefield_names=
                     "Note: the file path must be specified the force field file")
 
 
-    if residues == None:
+    if residues is None:
         print('please enter the residues in the Specific_FF_to_residue function')
-    if reorder_res_in_pdb_psf == None:
+    if reorder_res_in_pdb_psf is None:
         print('please enter the reorder_res_in_pdb_psf in the Specific_FF_to_residue function')
 
 
     forcefield_keys_list = []
     Use_FF_files = False
     Use_FF_names = False
-    if forcefield_names != None and forcefield_files == None:
+    if forcefield_names != None and forcefield_files is None:
         Use_FF_names = True
         for res in forcefield_names.keys():
             forcefield_keys_list.append(res)
         FF_data = forcefield_names
-    elif forcefield_files != None and forcefield_names == None:
+    elif forcefield_files != None and forcefield_names is None:
         Use_FF_files = True
         for res in forcefield_files.keys():
             forcefield_keys_list.append(res)
@@ -167,7 +167,7 @@ def Specific_FF_to_residue(structure , forcefield_files= None, forcefield_names=
         new_structure_iteration = pmd.Structure()
         new_structure_iteration.box = compound_box_infor.box
         for child in structure.children:
-            if FF_data.get(child.name) == None:
+            if FF_data.get(child.name) is None:
                 print('All residues are not specified in the force_field dictionary')
                 return warn('All residues are not specified in the force_field dictionary')
 
