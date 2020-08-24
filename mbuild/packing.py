@@ -112,6 +112,17 @@ def fill_box(compound, n_compounds=None, box=None, density=None, overlap=0.2,
     update_port_locations : bool, default=False
         After packing, port locations can be updated, but since compounds
         can be rotated, port orientation may be incorrect.
+    packmol_args : dict
+        Dictionary where the key, value pairs are options and their
+        corresponding keyword arguments for PACKMOL. Some PACKMOL options
+        do not require a specified keyword. In this case, the value in
+        the dictionary should be an empty string e.g. {'movebadrandom':""}
+        These commands are placed at the header of the PACKMOL input file
+        and therefore applied to all structures. NOTE: The PACKMOL options
+        for seed and tolerance are specified by the function parameters
+        seed and overlap.
+        Other command options can be found in the PACKMOL userguide:    
+        http://www.ime.unicamp.br/~martinez/packmol/userguide.shtml
 
     Returns
     -------
@@ -263,6 +274,17 @@ def fill_region(compound, n_compounds, region, overlap=0.2,
     update_port_locations : bool, default=False
         After packing, port locations can be updated, but since compounds
         can be rotated, port orientation may be incorrect.
+    packmol_args : dict
+        Dictionary where the key, value pairs are options and their
+        corresponding keyword arguments for PACKMOL. Some PACKMOL options
+        do not require a specified keyword. In this case, the value in
+        the dictionary should be an empty string e.g. {'movebadrandom':""}
+        These commands are placed at the header of the PACKMOL input file
+        and therefore applied to all structures. NOTE: The PACKMOL options
+        for seed and tolerance are specified by the function parameters
+        seed and overlap.
+        Other command options can be found in the PACKMOL userguide:    
+        http://www.ime.unicamp.br/~martinez/packmol/userguide.shtml
 
     Returns
     -------
@@ -391,6 +413,17 @@ def fill_sphere(compound, sphere, n_compounds=None, density=None, overlap=0.2,
     update_port_locations : bool, default=False
         After packing, port locations can be updated, but since compounds
         can be rotated, port orientation may be incorrect.
+    packmol_args : dict
+        Dictionary where the key, value pairs are options and their
+        corresponding keyword arguments for PACKMOL. Some PACKMOL options
+        do not require a specified keyword. In this case, the value in
+        the dictionary should be an empty string e.g. {'movebadrandom':""}
+        These commands are placed at the header of the PACKMOL input file
+        and therefore applied to all structures. NOTE: The PACKMOL options
+        for seed and tolerance are specified by the function parameters
+        seed and overlap.
+        Other command options can be found in the PACKMOL userguide:    
+        http://www.ime.unicamp.br/~martinez/packmol/userguide.shtml
 
     Returns
     -------
@@ -538,6 +571,17 @@ def solvate(solute, solvent, n_solvent, box, overlap=0.2,
     update_port_locations : bool, default=False
         After packing, port locations can be updated, but since compounds
         can be rotated, port orientation may be incorrect.
+    packmol_args : dict
+        Dictionary where the key, value pairs are options and their
+        corresponding keyword arguments for PACKMOL. Some PACKMOL options
+        do not require a specified keyword. In this case, the value in
+        the dictionary should be an empty string e.g. {'movebadrandom':""}
+        These commands are placed at the header of the PACKMOL input file
+        and therefore applied to all structures. NOTE: The PACKMOL options 
+        for seed and tolerance are specified by the function parameters
+        seed and overlap.
+        Other command options can be found in the PACKMOL userguide:    
+        http://www.ime.unicamp.br/~martinez/packmol/userguide.shtml
 
     Returns
     -------
