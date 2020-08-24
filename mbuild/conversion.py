@@ -702,6 +702,7 @@ def save(compound,
          residues=None,
          combining_rule='lorentz',
          foyer_kwargs=None,
+         combine='all',
          **kwargs):
     """Save the Compound to a file.
 
@@ -743,6 +744,12 @@ def save(compound,
         and geometric combining rules respectively.
     foyer_kwargs : dict, optional, default=None
         Keyword arguments to provide to `foyer.Forcefield.apply`.
+    combine : 'all', None or list iterables, optional, default='all'
+        Specific for parmed GRO writer. User can choose from
+        If None, system atom order may be changed to meet the
+        need for continguously bonded groups of atoms to be part
+        of a single molecule type. All other values leave the
+        atom order unchanged.
     **kwargs
         Depending on the file extension these will be passed to either
         `write_gsd`, `write_hoomdxml`, `write_lammpsdata`,
@@ -863,6 +870,9 @@ def save(compound,
         output_sdf.write(pybel_molecule)
         output_sdf.close()
 
+    elif extension in ['.gro', '.top']:  # ParmEd supported saver.
+        structure.save(filename, overwrite=overwrite,
+                       combine=combine, **kwargs)
     else:  # ParmEd supported saver.
         structure.save(filename, overwrite=overwrite, **kwargs)
 
