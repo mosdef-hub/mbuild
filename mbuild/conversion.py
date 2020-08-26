@@ -744,17 +744,16 @@ def save(compound,
         and geometric combining rules respectively.
     foyer_kwargs : dict, optional, default=None
         Keyword arguments to provide to `foyer.Forcefield.apply`.
-    combine : 'all', None or list iterables, optional, default='all'
-        Specific for the parmed GRO and TOP writer. User can choose from
-        If None, system atom order may be changed to meet the
-        need for contiguously bonded groups of atoms to be part of a single
-        molecule type. All other values apart from 'all' will leave the atom
-        order unchanged.
     **kwargs
         Depending on the file extension these will be passed to either
         `write_gsd`, `write_hoomdxml`, `write_lammpsdata`,
         `write_mcf`, or `parmed.Structure.save`.
-        See https://parmed.github.io/ParmEd/html/structobj/parmed.structure.Structure.html#parmed.structure.Structure.save
+        For the case when saving out a `.gro` and `.top` file using parmed,
+        if the `combine` is not provided in **kwargs, we will default to
+        `combine='all'` to avoid unnecessary error when parmed tries to
+        change the atom order when saving out.
+        For more information, see
+        https://parmed.github.io/ParmEd/html/structobj/parmed.structure.Structure.html#parmed.structure.Structure.save
 
 
     Other Parameters
@@ -871,8 +870,13 @@ def save(compound,
         output_sdf.close()
 
     elif extension in ['.gro', '.top']:  # ParmEd supported saver.
-        structure.save(filename, overwrite=overwrite,
-                       combine=combine, **kwargs)
+        if 'combine' in kwargs:
+            # The case when `combine` is given as **kwarg, then pass as is
+            structure.save(filename, overwrite=overwrite, **kwargs)
+        else:
+            # else, default to `combine='all'`
+            structure.save(filename, overwrite=overwrite,
+                           combine='all', **kwargs)
     else:  # ParmEd supported saver.
         structure.save(filename, overwrite=overwrite, **kwargs)
 
