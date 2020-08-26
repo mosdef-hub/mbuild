@@ -445,7 +445,7 @@ def load_forcefield(filename="forcefield.json"):
     nlist_dict = ff["md"].pop("nlist", None)
     if nlist_dict:
         if len(nlist_dict) > 1:
-            raise Exception("More than one neighborlist is not supported")
+            raise MBuildError("More than one neighborlist is not supported")
 
         nl = _get_nlist(nlist_dict)
     else:
@@ -464,7 +464,7 @@ def load_forcefield(filename="forcefield.json"):
                         cls = Obj.from_state(state, nlist=nl)
                         forcefield.append(cls)
                     else:
-                        raise Exception(
+                        raise MBuildError(
                             f"no md.nlist in {filename}, cannot initialize {Obj}"
                         )
                 else:
