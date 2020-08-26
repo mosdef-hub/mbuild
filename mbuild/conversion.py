@@ -745,11 +745,11 @@ def save(compound,
     foyer_kwargs : dict, optional, default=None
         Keyword arguments to provide to `foyer.Forcefield.apply`.
     combine : 'all', None or list iterables, optional, default='all'
-        Specific for parmed GRO writer. User can choose from
+        Specific for the parmed GRO and TOP writer. User can choose from
         If None, system atom order may be changed to meet the
-        need for continguously bonded groups of atoms to be part
-        of a single molecule type. All other values leave the
-        atom order unchanged.
+        need for contiguously bonded groups of atoms to be part of a single
+        molecule type. All other values apart from 'all' will leave the atom
+        order unchanged.
     **kwargs
         Depending on the file extension these will be passed to either
         `write_gsd`, `write_hoomdxml`, `write_lammpsdata`,
