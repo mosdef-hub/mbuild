@@ -25,7 +25,6 @@ hoomd.md.charge = import_("hoomd.md.charge")
 hoomd.md.bond = import_("hoomd.md.bond")
 hoomd.md.angle = import_("hoomd.md.angle")
 hoomd.md.dihedral = import_("hoomd.md.dihedral")
-hoomd.group = import_("hoomd.group")
 
 
 def create_hoomd_simulation(structure, ref_distance=1.0, ref_mass=1.0,
