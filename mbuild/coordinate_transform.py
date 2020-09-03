@@ -8,6 +8,12 @@ from mbuild.utils.exceptions import DeprecationError
 
 
 __all__ = [
+    "force_overlap",
+    "x_axis_transform",
+    "y_axis_transform",
+    "z_axis_transform",
+    # Deprecated
+    "equivalence_transform",
     "rotate",
     "rotate_around_x",
     "rotate_around_y",
@@ -16,14 +22,8 @@ __all__ = [
     "spin_x",
     "spin_y",
     "spin_z",
-    "force_overlap",
     "translate",
     "translate_to",
-    "x_axis_transform",
-    "y_axis_transform",
-    "z_axis_transform",
-    # Deprecated
-    "equivalence_transform",
 ]
 
 
