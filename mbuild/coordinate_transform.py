@@ -452,9 +452,8 @@ def translate(compound, pos):
         The vector to translate the compound by.
 
     """
-    raise DeprecationError(
-        "translate() is now deprecated. Please use Compound.translate(). Deprecated as of mbuild Version 0.70"
-    )
+    raise DeprecationError('translate()', 'Compound.translate()',
+            '0.7.0')
 
 
 def translate_to(compound, pos):
@@ -468,9 +467,8 @@ def translate_to(compound, pos):
         The coordinate to translate the compound to.
 
     """
-    raise DeprecationError(
-        "translate_to() is now deprecated. Please use Compound.translate_to(). Deprecated as of mbuild Version 0.70"
-    )
+    raise DeprecationError('translate_to()', 'Compound.translate_to()',
+            '0.7.0')
 
 
 def _translate(coordinates, by):
@@ -534,10 +532,8 @@ def rotate(compound, theta, around):
         The vector about which to rotate the compound.
 
     """
-    raise DeprecationError(
-        "rotate() has been deprecated. Please use"
-        "Compound.rotate(). Deprecated since mBuild version 0.7.0"
-    )
+    raise DeprecationError('rotate()', 'Compound.rotate()',
+            '0.7.0')
 
 
 def rotate_around_x(compound, theta):
@@ -551,9 +547,9 @@ def rotate_around_x(compound, theta):
         The angle by which to rotate the compound.
 
     """
-    raise DeprecationError(
-        "rotate_around_x() has been deprecated. Please use Compound.rotate(). Deprecated since Mbuild version 0.70"
-    )
+    raise DeprecationError('rotate_around_x()',
+            'Compound.rotate_around_x()',
+            '0.7.0')
 
 
 def rotate_around_y(compound, theta):
@@ -567,10 +563,9 @@ def rotate_around_y(compound, theta):
         The angle by which to rotate the compound.
 
     """
-    raise DeprecationError(
-        "rotate_around_y() has been deprecated. "
-        "Please use Compound.rotate(). Deprecated since mBuild version 0.7.0"
-    )
+    raise DeprecationError('rotate_around_y()',
+            'Compound.rotate_around_y()',
+            '0.7.0')
 
 
 def rotate_around_z(compound, theta):
@@ -584,10 +579,9 @@ def rotate_around_z(compound, theta):
         The angle by which to rotate the compound.
 
     """
-    raise DeprecationError(
-        "rotate_around_z() has been deprecated. "
-        "Please use Compound.rotate(). Deprecated since mBuild version 0.7.0"
-    )
+    raise DeprecationError('rotate_around_z()',
+            'Compound.rotate_around_z()',
+            '0.7.0')
 
 
 def spin(compound, theta, around):
@@ -603,10 +597,9 @@ def spin(compound, theta, around):
         The axis about which to spin the compound.
 
     """
-    raise DeprecationError(
-        "spin() has been deprecated. Please use"
-        "Compound.spin(). Deprecated since mBuild version 0.7.0"
-    )
+    raise DeprecationError('spin()',
+            'Compound.spin()',
+            '0.7.0')
 
 
 def _spin(coordinates, theta, around):
@@ -643,10 +636,8 @@ def spin_x(compound, theta):
         The angle by which to rotate the compound.
 
     """
-    raise DeprecationError(
-        "spin_x() has been deprecated. Please use"
-        "Compound.spin(). Deprecated since mBuild version 0.7.0"
-    )
+    raise DeprecationError('spin_x()', 'Compound.spin_x()',
+            '0.7.0')
 
 
 def spin_y(compound, theta):
@@ -660,10 +651,8 @@ def spin_y(compound, theta):
         The angle by which to rotate the compound.
 
     """
-    raise DeprecationError(
-        "spin_y() has been deprecated. Please use"
-        "Compound.spin(). Deprecated since mBuild version 0.7.0"
-    )
+    raise DeprecationError('spin_y()', 'Compound.spin_y()',
+            '0.7.0')
 
 
 def spin_z(compound, theta):
@@ -677,10 +666,8 @@ def spin_z(compound, theta):
         The angle by which to rotate the compound.
 
     """
-    raise DeprecationError(
-        "spin_z() has been deprecated. Please use"
-        "Compound.spin(). Deprecated since mBuild version 0.7.0"
-    )
+    raise DeprecationError('spin_z()', 'Compound.spin_z()',
+            '0.7.0')
 
 
 def x_axis_transform(
