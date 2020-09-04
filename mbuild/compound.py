@@ -20,7 +20,7 @@ from mbuild.exceptions import MBuildError
 from mbuild.periodic_kdtree import PeriodicCKDTree
 from mbuild.utils.io import run_from_ipython, import_
 from mbuild.utils.jsutils import overwrite_nglview_default
-from mbuild.utils.exceptions import DeprecationError
+from mbuild.utils.exceptions import RemovedFuncError
 from mbuild.coordinate_transform import _translate, _rotate
 
 
@@ -1379,8 +1379,8 @@ class Compound(object):
 
 
     def energy_minimization(self, forcefield='UFF', steps=1000, **kwargs):
-        raise DeprecationError('Compound.energy_minimization()',
-        'Compound.energy_minimize()', '0.8.1')
+        raise RemovedFuncError('Compound.energy_minimization()',
+        'Compound.energy_minimize()', '0.8.1', '0.11.0')
 
     def energy_minimize(self, forcefield='UFF', steps=1000, **kwargs):
         """Perform an energy minimization on a Compound

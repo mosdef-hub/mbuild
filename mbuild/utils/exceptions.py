@@ -1,12 +1,13 @@
-class DeprecationError(Exception):
-    """ Error for Deprecated mBuild functions """
+class RemovedFuncError(Exception):
+    """ Exception for mBuild functions that have been deprecated and removed"""
 
-    def __init__(self, depr_func, new_func, version):
-        self.depr_func = depr_func
+    def __init__(self, deprecated_func, new_func, version_deprecated, version_removed):
+        self.deprecated_func = deprecated_func
         self.new_func = new_func
-        self.version = version
+        self.version_deprecated = version_deprecated
+        self.version_removed = version_removed
 
     def __str__(self):
-        msg = f"{self.depr_func} has been deprecated. Please use {self.new_func}. Deprecated since mBuild version {self.version}."
+        msg = f"{self.deprecated_func} has been removed. Please use {self.new_func}. Deprecated since mBuild version {self.version_deprecated} and removed in version {self.version_removed}."
 
         return msg

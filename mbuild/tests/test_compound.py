@@ -8,7 +8,7 @@ import pytest
 import mbuild as mb
 from mbuild.exceptions import MBuildError
 from mbuild.utils.geometry import calc_dihedral
-from mbuild.utils.exceptions import DeprecationError
+from mbuild.utils.exceptions import RemovedFuncError
 from mbuild.utils.io import (get_fn,
                              import_,
                              has_foyer,
@@ -860,7 +860,7 @@ class TestCompound(BaseTest):
 
     @pytest.mark.skipif(not has_openbabel, reason="Open Babel package not installed")
     def test_energy_minimization(self, octane):
-        with pytest.raises(DeprecationError):
+        with pytest.raises(RemovedFuncError):
             octane.energy_minimization()
 
     @pytest.mark.skipif(not has_openbabel, reason="Open Babel package not installed")
