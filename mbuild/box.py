@@ -143,6 +143,10 @@ class Box(object):
         return self._Lz
 
     @property
+    def lengths(self):
+        return (self._Lx, self._Ly, self._Lz)
+
+    @property
     def xy(self):
         return self._xy
 
@@ -153,6 +157,10 @@ class Box(object):
     @property
     def yz(self):
         return self._yz
+
+    @property
+    def angles(self):
+        return self._get_angles()
 
     @property
     def bravais_parameters(self):
@@ -268,8 +276,10 @@ def _validate_box_vectors(box_vectors):
     return _normalize_box(vecs)
 
 def _lengths_angles_to_vectors(lengths, angles):
+    print(f'lengths: {lengths}, angles:{angles}')
     (a, b, c) = lengths
     (alpha, beta, gamma) = np.deg2rad(angles)
+    print(a,b,c,alpha,beta,gamma)
 
     a_vec = np.asarray([a,0.0,0.0],)
 
@@ -282,8 +292,8 @@ def _lengths_angles_to_vectors(lengths, angles):
     c_y = c * c_cos_y_term
     c_z = c * np.sqrt(1 - np.square(np.cos(beta)) - np.square(c_cos_y_term))
     c_vec = np.asarray([c_x, c_y, c_z])
-
     box_vectors = np.asarray((a_vec,b_vec,c_vec))
+    print(box_vectors)
     box_vectors.reshape(3,3)
     _validate_box_vectors(box_vectors=box_vectors)
     return box_vectors

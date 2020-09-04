@@ -1230,8 +1230,16 @@ class Compound(object):
             return np.mean(self.xyz, axis=0)
 
     @property
-    def boundingbox(self):
+    def boundingbox(self, orthogonal=True):
         """Compute the bounding box of the compound.
+
+        Return the bounding box of the compound, can be rectangular
+        or triclinic.
+
+        Parameters
+        ----------
+        orthogonal : boolean, optional, default=True
+        Create an orthogonal bounding box or triclinic.
 
         Returns
         -------
@@ -1240,7 +1248,14 @@ class Compound(object):
 
         """
         xyz = self.xyz
-        return Box(mins=xyz.min(axis=0), maxs=xyz.max(axis=0))
+        mins = xyz.min(axis=0)
+        maxs = xyz.max(axis=0)
+        if orthogonal:
+            angles = [90, 90, 90]
+        #TODO fix this
+        else:
+            raise MBuildError("Non-orthogonal bounding box not currently implemented.")
+        return Box.from_mins_maxs_angles(mins=mins, maxs=maxs, angles=angles)
 
     def min_periodic_distance(self, xyz0, xyz1):
         """Vectorized distance calculation considering minimum image.
@@ -2540,8 +2555,9 @@ class Compound(object):
         # pad box with .25nm buffers
         if box is None:
             box = self.boundingbox
-            box_vec_max = box.maxs.tolist()
-            box_vec_min = box.mins.tolist()
+            #TODO need to work on how to handle max and mins for a box
+            box_vec_max = list(box.lengths)
+            box_vec_min = [0,0,0]
             for dim, val in enumerate(self.periodicity):
                 if val:
                     box_vec_max[dim] = val
@@ -2549,7 +2565,7 @@ class Compound(object):
                 if not val:
                     box_vec_max[dim] += 0.25
                     box_vec_min[dim] -= 0.25
-            box = Box(mins=box_vec_min, maxs=box_vec_max)
+            box = Box.from_mins_maxs_angles(mins=box_vec_min, maxs=box_vec_max, angles=[90,90,90])
 
         box_vector = np.empty(6)
         if box.angles is not None:
@@ -2704,30 +2720,8 @@ class Compound(object):
         ucell = openbabel.OBUnitCell()
         if box is None:
             box = self.boundingbox
-        a, b, c = 10.0 * box.lengths
-        alpha, beta, gamma = np.radians(box.angles)
 
-        cosa = np.cos(alpha)
-        cosb = np.cos(beta)
-        sinb = np.sin(beta)
-        cosg = np.cos(gamma)
-        sing = np.sin(gamma)
-        mat_coef_y = (cosa - cosb * cosg) / sing
-        mat_coef_z = np.power(sinb, 2, dtype=float) - \
-                    np.power(mat_coef_y, 2, dtype=float)
-
-        if mat_coef_z > 0.:
-            mat_coef_z = np.sqrt(mat_coef_z)
-        else:
-            raise Warning('Non-positive z-vector. Angles {} '
-                                  'do not generate a box with the z-vector in the'
-                                  'positive z direction'.format(box.angles))
-
-        box_vec = [[1, 0, 0],
-                    [cosg, sing, 0],
-                    [cosb, mat_coef_y, mat_coef_z]]
-        box_vec = np.asarray(box_vec)
-        box_mat = (np.array([a,b,c])* box_vec.T).T
+        box_mat = box.box_vectors
         first_vector = openbabel.vector3(*box_mat[0])
         second_vector = openbabel.vector3(*box_mat[1])
         third_vector = openbabel.vector3(*box_mat[2])
@@ -2809,7 +2803,7 @@ class Compound(object):
                             self[bond.GetEndAtomIdx()-1]])
 
         if hasattr(pybel_mol, 'unitcell'):
-            box = Box(lengths=[pybel_mol.unitcell.GetA()/10,
+            box = Box.from_lengths_angles(lengths=[pybel_mol.unitcell.GetA()/10,
                                 pybel_mol.unitcell.GetB()/10,
                                 pybel_mol.unitcell.GetC()/10],
                         angles=[pybel_mol.unitcell.GetAlpha(),

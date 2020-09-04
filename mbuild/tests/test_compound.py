@@ -92,8 +92,8 @@ class TestCompound(BaseTest):
 
     def test_save_box(self, ch3):
         extensions = ['.mol2', '.pdb', '.hoomdxml', '.gro', '.sdf']
-        box_attributes = ['mins', 'maxs', 'lengths']
-        custom_box = mb.Box([.8, .8, .8])
+        box_attributes = ['lengths']
+        custom_box = mb.Box.from_lengths_angles(lengths=[.8, .8, .8], angles=[90,90,90])
         for ext in extensions:
             outfile_padded = 'padded_methyl' + ext
             outfile_custom = 'custom_methyl' + ext
@@ -1134,11 +1134,13 @@ class TestCompound(BaseTest):
         assert np.allclose(filled.xyz, sdf_string.xyz, atol=1e-5)
 
     def test_box(self):
+        angles = [90., 90., 90.]
+        lengths = [3., 3., 3.]
         compound = mb.Compound()
         assert compound.box == None
-        compound.box = mb.Box([3.,3.,3.])
-        assert np.allclose(compound.box.lengths, [3.,3.,3.])
-        assert np.allclose(compound.box.angles, [90.,90.,90])
+        compound.box = mb.Box.from_lengths_angles(lengths=[3,3,3],angles=[90, 90, 90])
+        assert np.allclose(compound.box.lengths, lengths)
+        assert np.allclose(compound.box.angles, angles)
         with pytest.raises(TypeError, match=r"specified as an mbuild.Box"):
             compound.box = "Hello, world"
         with pytest.raises(TypeError, match=r"specified as an mbuild.Box"):
@@ -1146,25 +1148,26 @@ class TestCompound(BaseTest):
         port = mb.Port()
         assert port.box == None
         with pytest.raises(ValueError, match=r"cannot have"):
-            port.box = mb.Box([3.,3.,3.])
+            port.box = mb.Box.from_lengths_angles(
+                lengths=lengths, angles=angles)
 
         compound = mb.Compound()
-        subcomp = mb.Compound(box=mb.Box([3.,3.,3.]))
+        subcomp = mb.Compound(box=mb.Box.from_lengths_angles(lengths=lengths, angles=angles))
         compound.add(subcomp)
-        assert np.allclose(compound.box.lengths, [3.,3.,3.])
-        assert np.allclose(compound.box.angles, [90.,90.,90.])
+        assert np.allclose(compound.box.lengths, lengths)
+        assert np.allclose(compound.box.angles, angles)
         compound = mb.Compound(box=mb.Box([3.,3.,3.]))
-        subcomp = mb.Compound(box=mb.Box(lengths=[6.,6.,6.], angles=[60.,60.,120.]))
+        subcomp = mb.Compound(box=mb.Box.from_lengths_angles(lengths=[6.,6.,6.], angles=[60.,60.,120.]))
         with pytest.warns(UserWarning):
             compound.add(subcomp)
         assert np.allclose(compound.box.lengths, [3.,3.,3.])
         assert np.allclose(compound.box.angles, [90.,90.,90.])
-        compound = mb.Compound(box=mb.Box([3.,3.,3.]))
-        subcomp = mb.Compound(box=mb.Box(lengths=[6.,6.,6.], angles=[60.,60.,120.]))
+        compound = mb.Compound(box=mb.Box.from_lengths_angles(lengths=lengths, angles=angles))
+        subcomp = mb.Compound(box=mb.Box.from_lengths_angles(lengths=[6.,6.,6.], angles=[60.,60.,120.]))
         compound.add(subcomp, inherit_box=True)
         assert np.allclose(compound.box.lengths, [6.,6.,6.])
         assert np.allclose(compound.box.angles, [60.,60.,120.])
-        compound = mb.Compound(box=mb.Box([3.,3.,3.]))
+        compound = mb.Compound(box=mb.Box.from_lengths_angles(lengths=lengths, angles=angles))
         subcomp = mb.Compound()
         with pytest.warns(UserWarning):
             compound.add(subcomp, inherit_box=True)
@@ -1174,13 +1177,13 @@ class TestCompound(BaseTest):
         compound = mb.Compound()
         carbon = mb.Compound(name="C")
         compound.add(carbon)
-        compound.box = mb.Box([3.,3.,3.])
+        compound.box = mb.Box.from_lengths_angles(lengths=lengths, angles=angles)
         nitrogen = mb.Compound(name="N", pos=[4,3,3,])
         with pytest.warns(UserWarning):
             compound.add(nitrogen)
-        compound.box = mb.Box([5.,4.,4.])
+        compound.box = mb.Box.from_lengths_angles(lengths=[5.,4.,4.], angles=angles)
         with pytest.warns(UserWarning):
-            compound.box = mb.Box([5.,4.,2.])
+            compound.box = mb.Box.from_lengths_angles(lengths=[5.,4.,2.], angles=angles)
 
     @pytest.mark.skipif(not has_py3Dmol, reason="Py3Dmol is not installed")
     def test_visualize_py3dmol(self, ethane):

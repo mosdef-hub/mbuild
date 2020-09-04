@@ -161,10 +161,10 @@ def write_lammpsdata(structure, filename, atom_style='full',
     # are 0 to L or -L/2 to L/2
 
     if _check_minsmaxs(mins,maxs):
-        box = Box(mins=mins, maxs=maxs, angles=structure.box[3:6])
+        box = Box.from_mins_maxs_angles(mins=mins, maxs=maxs, angles=structure.box[3:6])
     else:
         # Internally use nm
-        box = Box(lengths=np.array([0.1 * val for val in structure.box[0:3]]),
+        box = Box.from_lengths_angles(lengths=np.array([0.1 * val for val in structure.box[0:3]]),
                   angles=structure.box[3:6])
 
         warn('Explicit box bounds (i.e., mins and maxs) were not provided. Box bounds are assumed to be min = 0 and max = length in each direction. This may not produce a system with the expected spatial location and may cause non-periodic systems to fail. Bounds can be defined explicitly by passing the them to the write_lammpsdata function or by passing box info to the save function.')
