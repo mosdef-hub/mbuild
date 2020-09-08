@@ -293,6 +293,6 @@ class BaseTest:
                          to_positions=self['port_R_O_1_1'])
 
         Two_propanol_UA.energy_minimize(forcefield='trappe-ua', steps=10 ** 9)
-
+        two_propanol_UA = Two_propanol_UA
         return Two_propanol_UA
 
