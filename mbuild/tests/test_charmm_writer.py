@@ -5,64 +5,6 @@ from mbuild.formats.charmm_writer import charmm_psf_psb_FF
 from mbuild.utils.io import has_foyer
 
 
-
-ethane = mb.load('CC', smiles=True)
-ethane.name = "ETH"
-
-ethanol = mb.load('CCO', smiles=True)
-ethanol.name = "ETO"
-
-
-
-class TWO_PROPANOL(mb.Compound):
-    def __init__(self, name="POL"):
-        super(TWO_PROPANOL, self).__init__()
-        self.name = name
-
-        CH3_1_1 = mb.Particle(pos=[0.2, 0.0, 0.0], name='_CH3')
-        HC_1_1 = mb.Particle(pos=[0.4, 0.0, 0.0], name='_HC')
-        O_1_1 = mb.Particle(pos=[0.8, 0.0, 0.0], name='O')
-        H_1_1 = mb.Particle(pos=[1.0, 0.0, 0.0], name='H')
-        CH3_1_2 = mb.Particle(pos=[0.6, 0.0, 0.0], name='_CH3')
-        self.add([CH3_1_1, HC_1_1, O_1_1, H_1_1, CH3_1_2 ])
-
-        port_R_CH3_1_1 = mb.Port(anchor=CH3_1_1, orientation=[0.1, 0, 0], separation=0.05)
-        port_L_HC_1_1 = mb.Port(anchor=HC_1_1, orientation=[-0.1, 0, 0], separation=0.05)
-        port_R_HC_1_1 = mb.Port(anchor=HC_1_1, orientation=[0.1, 0, 0], separation=0.05)
-        port_D_HC_1_1 = mb.Port(anchor=HC_1_1, orientation=[0, -0.1, 0], separation=0.05)
-        port_L_CH3_1_2 = mb.Port(anchor=CH3_1_2, orientation=[-0.1, 0, 0], separation=0.05)
-        port_L_O_1_1 = mb.Port(anchor=O_1_1, orientation=[-0.1, 0, 0], separation=0.05)
-        port_R_O_1_1 = mb.Port(anchor=O_1_1, orientation=[0.1, 0, 0], separation=0.05)
-        port_L_H_1_1 = mb.Port(anchor=H_1_1, orientation=[-0.1, 0, 0], separation=0.05)
-
-        self.add(port_R_CH3_1_1, label='port_R_CH3_1_1')
-        self.add(port_L_HC_1_1, label = 'port_L_HC_1_1')
-        self.add(port_R_HC_1_1, label='port_R_HC_1_1')
-        self.add(port_L_CH3_1_2, label = 'port_L_CH3_1_2')
-        self.add(port_D_HC_1_1, label='port_D_HC_1_1')
-        self.add(port_L_O_1_1, label = 'port_L_O_1_1')
-        self.add(port_R_O_1_1, label = 'port_R_O_1_1')
-        self.add(port_L_H_1_1, label = 'port_L_H_1_1')
-
-
-        mb.force_overlap(move_this=HC_1_1,
-                         from_positions=self['port_L_HC_1_1'],
-                         to_positions=self['port_R_CH3_1_1'])
-        mb.force_overlap(move_this=CH3_1_2,
-                         from_positions=self['port_L_CH3_1_2'],
-                         to_positions=self['port_R_HC_1_1'])
-        mb.force_overlap(move_this=O_1_1,
-                         from_positions=self['port_L_O_1_1'],
-                         to_positions=self['port_D_HC_1_1'])
-        mb.force_overlap(move_this=H_1_1,
-                         from_positions=self['port_L_H_1_1'],
-                         to_positions=self['port_R_O_1_1'])
-
-two_propanol_UA = TWO_PROPANOL()
-two_propanol_UA.name = "POL"
-two_propanol_UA.energy_minimize(forcefield = 'trappe-ua'  , steps=10**9)
-
-
 @pytest.mark.skipif(not has_foyer, reason="Foyer package not installed")
 class TestCharmmWriterData(BaseTest):
 

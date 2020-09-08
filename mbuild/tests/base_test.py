@@ -249,3 +249,50 @@ class BaseTest:
         cscl_compound = cscl_lattice.populate(x=3, y=3, z=1,
                                               compound_dict=cscl_dict)
         return cscl_compound
+
+    @pytest.fixture
+    def two_propanol_UA(self):
+        Two_propanol_UA = mb.Compound(name="POL")
+
+        CH3_1_1 = mb.Particle(pos=[0.2, 0.0, 0.0], name='_CH3')
+        HC_1_1 = mb.Particle(pos=[0.4, 0.0, 0.0], name='_HC')
+        O_1_1 = mb.Particle(pos=[0.8, 0.0, 0.0], name='O')
+        H_1_1 = mb.Particle(pos=[1.0, 0.0, 0.0], name='H')
+        CH3_1_2 = mb.Particle(pos=[0.6, 0.0, 0.0], name='_CH3')
+        Two_propanol_UA.add([CH3_1_1, HC_1_1, O_1_1, H_1_1, CH3_1_2])
+
+        port_R_CH3_1_1 = mb.Port(anchor=CH3_1_1, orientation=[0.1, 0, 0], separation=0.05)
+        port_L_HC_1_1 = mb.Port(anchor=HC_1_1, orientation=[-0.1, 0, 0], separation=0.05)
+        port_R_HC_1_1 = mb.Port(anchor=HC_1_1, orientation=[0.1, 0, 0], separation=0.05)
+        port_D_HC_1_1 = mb.Port(anchor=HC_1_1, orientation=[0, -0.1, 0], separation=0.05)
+        port_L_CH3_1_2 = mb.Port(anchor=CH3_1_2, orientation=[-0.1, 0, 0], separation=0.05)
+        port_L_O_1_1 = mb.Port(anchor=O_1_1, orientation=[-0.1, 0, 0], separation=0.05)
+        port_R_O_1_1 = mb.Port(anchor=O_1_1, orientation=[0.1, 0, 0], separation=0.05)
+        port_L_H_1_1 = mb.Port(anchor=H_1_1, orientation=[-0.1, 0, 0], separation=0.05)
+
+        Two_propanol_UA.add(port_R_CH3_1_1, label='port_R_CH3_1_1')
+        Two_propanol_UA.add(port_L_HC_1_1, label='port_L_HC_1_1')
+        Two_propanol_UA.add(port_R_HC_1_1, label='port_R_HC_1_1')
+        Two_propanol_UA.add(port_L_CH3_1_2, label='port_L_CH3_1_2')
+        Two_propanol_UA.add(port_D_HC_1_1, label='port_D_HC_1_1')
+        Two_propanol_UA.add(port_L_O_1_1, label='port_L_O_1_1')
+        Two_propanol_UA.add(port_R_O_1_1, label='port_R_O_1_1')
+        Two_propanol_UA.add(port_L_H_1_1, label='port_L_H_1_1')
+
+        mb.force_overlap(move_this=HC_1_1,
+                         from_positions=self['port_L_HC_1_1'],
+                         to_positions=self['port_R_CH3_1_1'])
+        mb.force_overlap(move_this=CH3_1_2,
+                         from_positions=self['port_L_CH3_1_2'],
+                         to_positions=self['port_R_HC_1_1'])
+        mb.force_overlap(move_this=O_1_1,
+                         from_positions=self['port_L_O_1_1'],
+                         to_positions=self['port_D_HC_1_1'])
+        mb.force_overlap(move_this=H_1_1,
+                         from_positions=self['port_L_H_1_1'],
+                         to_positions=self['port_R_O_1_1'])
+
+        Two_propanol_UA.energy_minimize(forcefield='trappe-ua', steps=10 ** 9)
+
+        return Two_propanol_UA
+

@@ -734,40 +734,6 @@ def charmm_psf_psb_FF(structure_0, filename_0, structure_1 = None, filename_1= N
     print('coulomb14scale from compound = ' + str(combined_1_4_Coul_dict_per_residue))
     print('lj14scale from compound = ' + str(combined_1_4_LJ_dict_per_residue))
 
-
-
-    """
-    Note:
-    -----
-    unique_types : a sorted list of unique atomtypes for all atoms in the structure_0_FF.
-        Defined by:
-            atomtype : atom.type
-    unique_bond_types: an enumarated OrderedDict of unique bond types for all bonds in the structure_0_FF.
-        Defined by bond parameters and component atomtypes, in order:
-            k : bond.type.k
-            req : bond.type.req
-            atomtypes : sorted((bond.atom1.type, bond.atom2.type))
-    unique_angle_types: an enumerated OrderedDict of unique angle types for all angles in the structure_0_FF.
-        Defined by angle parameters and component atomtypes, in order:
-            k : angle.type.k
-            theteq : angle.type.theteq
-            vertex atomtype: angle.atom2.type
-            atomtypes: sorted((bond.atom1.type, bond.atom3.type))
-    unique_dihedral_types: an enumerated OrderedDict of unique dihedrals type for all dihedrals in the structure_0_FF.
-        Defined by dihedral parameters and component atomtypes, in order:
-            c0 : dihedral.type.c0
-            c1 : dihedral.type.c1
-            c2 : dihedral.type.c2
-            c3 : dihedral.type.c3
-            c4 : dihedral.type.c4
-            c5 : dihedral.type.c5
-            scee : dihedral.type.scee
-            scnb : dihedral.type.scnb
-            atomtype 1 : dihedral.atom1.type
-            atomtype 2 : dihedral.atom2.type
-            atomtype 3 : dihedral.atom3.type
-            atomtype 4 : dihedral.atom4.type
-    """
     # lock the atom_style and unit_style for GOMC. Can be inserted into variables once more functionality is built in
     atom_style = 'full'
     unit_style = 'real'
@@ -1638,33 +1604,6 @@ def charmm_psf_psb_FF(structure_0, filename_0, structure_1 = None, filename_1= N
             typ = 1 if abs(sum(a.charge for a in stuct_iteration.atoms)) < 1e-4 else 2
             dest.write((intfmt * 3) % (0, typ, 0))
             dest.write('\n')
-        dest.write('\n')
-
-        # The next two sections are never found in VMD prmtops...
-        if not vmd:
-            # Molecule section; first set molecularity
-            set_molecules(stuct_iteration.atoms)
-            mollist = [a.marked for a in stuct_iteration.atoms]
-            dest.write(intfmt % max(mollist) + ' !MOLNT\n')
-            for v, atom in enumerate(stuct_iteration.atoms):
-                dest.write(intfmt % atom.marked)
-                if v % 8 == 7: dest.write('\n')
-            if len(stuct_iteration.atoms) % 8 != 0: dest.write('\n')
-            dest.write('\n')
-            # NUMLP/NUMLPH section
-            dest.write((intfmt * 2) % (0, 0) + ' !NUMLP NUMLPH\n')
-            dest.write('\n')
-
-            # CMAP section
-
-            dest.write(intfmt % len(stuct_iteration.cmaps) + ' !NCRTERM: cross-terms\n')
-            for v, cmap in enumerate(stuct_iteration.cmaps):
-                dest.write((intfmt * 8) % (cmap.atom1.idx + 1, cmap.atom2.idx + 1,
-                                           cmap.atom3.idx + 1, cmap.atom4.idx + 1,
-                                           cmap.atom2.idx + 1, cmap.atom3.idx + 1,
-                                           cmap.atom4.idx + 1, cmap.atom5.idx + 1)
-                           )
-                dest.write('\n')
 
         dest.write('\n')
         # Done!

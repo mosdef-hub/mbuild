@@ -96,9 +96,12 @@ def Specific_FF_to_residue(structure , forcefield_files= None, forcefield_names=
         if Use_FF_files == True:
             residue_iteration = forcefield_keys_list[j]
             FF_for_residue_iteration = FF_data[residue_iteration]
+            FF_entry_error = False
             try:
                 read_xlm_iteration = xml.dom.minidom.parse(FF_for_residue_iteration)
             except:
+                FF_entry_error = True
+            if FF_entry_error == True:
                 return warn('Please make sure are entering the correct foyer FF path, including the FF file name.xml ' +
                             'If you are using the pre-build FF files in foyer, please us the forcefield_names variable.')
             LJ_Coul_1_4_values = read_xlm_iteration.getElementsByTagName("NonbondedForce")
@@ -107,9 +110,12 @@ def Specific_FF_to_residue(structure , forcefield_files= None, forcefield_names=
             residue_iteration = forcefield_keys_list[j]
             FF_for_residue_iteration = FF_data[residue_iteration]
             FF_names_path_iteration = forcefields.get_ff_path()[0] +'/xml/'+FF_for_residue_iteration+'.xml'
+            FF_entry_error = False
             try:
                 read_xlm_iteration = xml.dom.minidom.parse(FF_names_path_iteration)
             except:
+                FF_entry_error = True
+            if FF_entry_error == True:
                 return warn('Please make sure are entering the correct foyer FF name and not a path to a FF file.' +
                             'If you are entering a path to a FF file, please us the forcefield_files variable')
             LJ_Coul_1_4_values = read_xlm_iteration.getElementsByTagName("NonbondedForce")
@@ -190,12 +196,14 @@ def Specific_FF_to_residue(structure , forcefield_files= None, forcefield_names=
             if boxes_for_simulation == 2:
                 warn(text_to_print_1 +text_to_print_2)
 
-
+    residues_entry_error = False
     if reorder_res_in_pdb_psf==False:
         residues = Residue_orig_order_list
     elif reorder_res_in_pdb_psf==True:
         residues = residues
     else:
+        residues_entry_error = True
+    if residues_entry_error == True:
         print("ERROR residues = Residue_orig_order_list or residues= residues not properly specified ")
         return warn("ERROR residues = Residue_orig_order_list or residues= residues not properly specified ")
 
