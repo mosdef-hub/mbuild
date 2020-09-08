@@ -6,7 +6,8 @@ import xml.dom.minidom
 from warnings import warn
 
 def Specific_FF_to_residue(structure , forcefield_files= None, forcefield_names= None,
-                           residues= None, reorder_res_in_pdb_psf= False):
+                           residues= None, reorder_res_in_pdb_psf= False, box = None,
+                           boxes_for_simulation = 1):
 
     #input:
         # structure =  compound structure
@@ -18,6 +19,11 @@ def Specific_FF_to_residue(structure , forcefield_files= None, forcefield_names=
                 # the forcefield_files or forcefield_names can be not be mixed combination.
         # residues = list of residues
         # note FFs and residues must be in sequenctial order
+        # box ; list of 3 positive float values or the dimensions [x, y ,z]
+             #for structure_1 in nanometers (nm)
+             #This is to add/override or change the structures dimenstions. Ex: [1,2,3]
+        # boxes_for_simulation; int of 1 or 2, default =1.  Gibbs or grand canonical ensembles
+            #are examples of where the boxes_for_simulation would be 2
 
     #Returns:
         # structure = parmed with applied force field
@@ -25,6 +31,8 @@ def Specific_FF_to_residue(structure , forcefield_files= None, forcefield_names=
                                 # (i.e., a different force field could on each residue)
         # LJ14scaler_dict  = a dictionary with the 1,4-LJ scalers for each residue
                             # (i.e., a different force field could on each residue)
+        # residues_applied_list =  list of residues (i.e., list of stings)
+                            # these are all the residues in which the force field actually applied
 
     if forcefield_names is None and forcefield_files is None:
         return warn('Please enter either the forcefield_files or forcefield_names, neither were provided')
@@ -48,10 +56,25 @@ def Specific_FF_to_residue(structure , forcefield_files= None, forcefield_names=
 
 
     if residues is None:
-        print('please enter the residues in the Specific_FF_to_residue function')
+        print('Please enter the residues in the Specific_FF_to_residue function')
     if reorder_res_in_pdb_psf is None:
-        print('please enter the reorder_res_in_pdb_psf in the Specific_FF_to_residue function')
+        print('Please enter the reorder_res_in_pdb_psf in the Specific_FF_to_residue function')
 
+    if box !=None :
+        box_Ang = []
+        box_length = len(box)
+        if box_length != 3:
+             return warn('Please enter all 3 values for the box dimensions.')
+        for box_iter in range(0, len(box)):
+            if isinstance(box[ box_iter], str)==True:
+                return warn('Please enter all positive or 0 values for the box dimensions.')
+            if box[ box_iter] < 0:
+                return warn('Please enter all positive or 0 values for the box dimensions.')
+            # change from nm to Angstroms
+            box_Ang.append(box[ box_iter]*10)
+
+    if boxes_for_simulation not in [1, 2]:
+        return warn('Please enter boxes_for_simulation equal the interger 1 or 2.')
 
     forcefield_keys_list = []
     Use_FF_files = False
@@ -105,26 +128,29 @@ def Specific_FF_to_residue(structure , forcefield_files= None, forcefield_names=
     new_structure.box = compound_box_infor.box
 
 
-
     #prepare all compound and remove nested compounds
-    restructure_compound = False
-    for child in structure.children:
-        if child.name not in residues:
-            restructure_compound = True
-
     No_layers_to_check_for_residues = 4
-    if restructure_compound == True:
-        for j in range(0, No_layers_to_check_for_residues):
-            new_compound_iter = mb.Compound()
-            new_compound_iter.periodicity[0] = structure.periodicity[0]
-            new_compound_iter.periodicity[1] = structure.periodicity[1]
-            new_compound_iter.periodicity[2] = structure.periodicity[2]
 
+    for j in range(0, No_layers_to_check_for_residues):
+        new_compound_iter = mb.Compound()
+        new_compound_iter.periodicity[0] = structure.periodicity[0]
+        new_compound_iter.periodicity[1] = structure.periodicity[1]
+        new_compound_iter.periodicity[2] = structure.periodicity[2]
+        if structure.name in residues:
+            if len(structure.children) == 0:
+                print('There are no atoms in this residue, '+str(structure.name))
+                return warn('There are no atoms in this residue, '+str(structure.name))
+
+            elif len(structure.children) > 0:
+
+                new_compound_iter.add(mb.compound.clone(structure))
+
+        else:
             for child in structure.children:
                 if len(child.children)==0:
                     if child.name not in residues:
-                        print('All the residues are not specified')
-                        return warn('All the residues are not specified')
+                        print('ERROR: All the residues are not specified')
+                        return warn('ERROR: All the residues are not specified')
 
                     else:
                         new_compound_iter.add(mb.compound.clone(child))
@@ -138,16 +164,31 @@ def Specific_FF_to_residue(structure , forcefield_files= None, forcefield_names=
                                 new_compound_iter.add(mb.compound.clone(sub_child))
                             else:
                                 if len(sub_child.children)==0 and (child.name not in residues):
-                                    print('All the residues are not specified')
-                                    return warn('All the residues are not specified')
+                                    print('ERROR: All the residues are not specified')
+                                    return warn('ERROR: All the residues are not specified')
 
-            structure = new_compound_iter
+        structure = new_compound_iter
 
 
+
+    residues_applied_list = []
     Residue_orig_order_list = []
     for child in structure.children:
         if child.name not in  Residue_orig_order_list:
             Residue_orig_order_list.append(child.name)
+    for res_reorder_iter in range(0,len(residues)):
+        if residues[res_reorder_iter] not in  Residue_orig_order_list:
+            text_to_print_1 = "All the residues were not used from the forcefield_names or forcefield_files "+ \
+                              "string or dictionary.  There may be residues below other specified residues "+ \
+                              "in the mbuild.Compound hierarchy.  If so, all the highest listed residues pass "+ \
+                              "down the force fields through the hierarchy.  Alternatively, "+ \
+                              "residues that are not in the structure may have been specified. "
+            text_to_print_2 = "Note: This warning will appear if you are using the CHARMM pdb and psf writers "+ \
+                              "2 boxes, and the boxes do not contain all the residues in each box."
+            if boxes_for_simulation == 1:
+                return warn(text_to_print_1)
+            if boxes_for_simulation == 2:
+                warn(text_to_print_1 +text_to_print_2)
 
 
     if reorder_res_in_pdb_psf==False:
@@ -158,18 +199,20 @@ def Specific_FF_to_residue(structure , forcefield_files= None, forcefield_names=
         print("ERROR residues = Residue_orig_order_list or residues= residues not properly specified ")
         return warn("ERROR residues = Residue_orig_order_list or residues= residues not properly specified ")
 
+
+
     for i in range(0, len(residues)):
         children_in_iteration = False
         new_compound_iteration = mb.Compound()
-        new_compound_iteration.periodicity[0] = structure.periodicity[0]
-        new_compound_iteration.periodicity[1] = structure.periodicity[1]
-        new_compound_iteration.periodicity[2] = structure.periodicity[2]
+        new_compound_iter.periodicity[0] = structure.periodicity[0]
+        new_compound_iter.periodicity[1] = structure.periodicity[1]
+        new_compound_iter.periodicity[2] = structure.periodicity[2]
         new_structure_iteration = pmd.Structure()
         new_structure_iteration.box = compound_box_infor.box
         for child in structure.children:
             if FF_data.get(child.name) is None:
-                print('All residues are not specified in the force_field dictionary')
-                return warn('All residues are not specified in the force_field dictionary')
+                print('ERROR: All residues are not specified in the force_field dictionary')
+                return warn('ERROR: All residues are not specified in the force_field dictionary')
 
             if child.name == residues[i]:
                 children_in_iteration = True
@@ -178,12 +221,21 @@ def Specific_FF_to_residue(structure , forcefield_files= None, forcefield_names=
         if children_in_iteration == True:
             if Use_FF_files == True:
                 FF_iteration = Forcefield(FF_data[residues[i]])
+                residues_applied_list.append(residues[i])
             elif Use_FF_names == True:
                 FF_iteration = Forcefield(name=FF_data[residues[i]])
+                residues_applied_list.append(residues[i])
+
 
             new_structure_iteration = FF_iteration.apply(new_compound_iteration, residues=[residues[i]])
             new_structure = new_structure + new_structure_iteration
 
-    structure = new_structure
-    return structure, coulomb14scaler_dict, LJ14scaler_dict
+    if box != None:
+        new_structure.box[0] = box_Ang[0]
+        new_structure.box[1] = box_Ang[1]
+        new_structure.box[2] = box_Ang[2]
 
+
+    structure = new_structure
+
+    return structure, coulomb14scaler_dict, LJ14scaler_dict, residues_applied_list
