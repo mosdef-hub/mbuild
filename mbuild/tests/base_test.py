@@ -250,6 +250,27 @@ class BaseTest:
                                               compound_dict=cscl_dict)
         return cscl_compound
 
+
+    @pytest.fixture
+    def ethane_GOMC(self, propyl):
+        class Ethane_GOMC(mb.Compound):
+            def __init__(self, name="ETH"):
+                super(Ethane_GOMC, self).__init__()
+                self = mb.load('CC', smiles=True)
+                self.name = name
+        return Ethane_GOMC()
+
+    @pytest.fixture
+    def ethanol_GOMC(self, propyl):
+        class Ethanol_GOMC(mb.Compound):
+            def __init__(self, name="ETO"):
+                super(Two_propanol_UA, self).__init__()
+                self = mb.load('CCO', smiles=True)
+                self.name = name
+
+        return Ethanol_GOMC()
+
+
     @pytest.fixture
     def two_propanol_UA(self):
         class Two_propanol_UA(mb.Compound):
@@ -297,5 +318,5 @@ class BaseTest:
 
                 self.energy_minimize(forcefield='trappe-ua', steps=10 ** 9)
 
-        return two_propanol_UA
+        return Two_propanol_UA()
 
