@@ -5,7 +5,6 @@ from mbuild.formats.charmm_writer import charmm_psf_psb_FF
 from mbuild.utils.io import has_foyer
 
 
-
 @pytest.mark.skipif(not has_foyer, reason="Foyer package not installed")
 class TestCharmmWriterData(BaseTest):
 
@@ -13,7 +12,7 @@ class TestCharmmWriterData(BaseTest):
         charmm_psf_psb_FF(ethane, 'ethane', GOMC_FF_filename='ethane',
                           residues = [ethane.name], forcefield_names = 'oplsaa')
 
-    def test_save_charmm_GOMC_FF(self):
+    def test_save_charmm_GOMC_FF(self, ethane):
         charmm_psf_psb_FF(ethane, 'charmm_data', GOMC_FF_filename='charmm_data',
                           residues = [ethane.name], forcefield_names = 'oplsaa')
 
@@ -76,7 +75,7 @@ class TestCharmmWriterData(BaseTest):
             else:
                 pass
 
-    def test_save_charmm_psf(self):
+    def test_save_charmm_psf(self, ethane):
         charmm_psf_psb_FF(ethane, 'charmm_data', GOMC_FF_filename='charmm_data',
                           residues = [ethane.name], forcefield_names = 'oplsaa')
 
@@ -99,7 +98,7 @@ class TestCharmmWriterData(BaseTest):
                 pass
 
 
-    def test_save_charmm_pdb(self):
+    def test_save_charmm_pdb(self, ethane):
         charmm_psf_psb_FF(ethane, 'charmm_data', GOMC_FF_filename='charmm_data',
                           residues = [ethane.name], forcefield_names = 'oplsaa')
 
@@ -205,7 +204,7 @@ class TestCharmmWriterData(BaseTest):
                 pass
 
 
-    def test_save_charmm_UA_psf(self):
+    def test_save_charmm_UA_psf(self, two_propanol_UA):
         charmm_psf_psb_FF(two_propanol_UA, 'charmm_data_UA', GOMC_FF_filename='charmm_data_UA',
                           residues = [two_propanol_UA.name], forcefield_names = 'trappe-ua',
                           Bead_to_atom_name_dict= {'_CH3' : 'C'})
@@ -228,7 +227,7 @@ class TestCharmmWriterData(BaseTest):
                 pass
 
 
-    def test_save_charmm_UA_pdb(self):
+    def test_save_charmm_UA_pdb(self, two_propanol_UA):
         charmm_psf_psb_FF(two_propanol_UA, 'charmm_data_UA', GOMC_FF_filename='charmm_data_UA',
                           residues = [two_propanol_UA.name], forcefield_names = 'trappe-ua',
                           Bead_to_atom_name_dict= {'_CH3' : 'C'})
@@ -253,7 +252,7 @@ class TestCharmmWriterData(BaseTest):
                 pass
 
 
-    def test_charmm_pdb_fix_angle_bond_fix_atoms(self):
+    def test_charmm_pdb_fix_angle_bond_fix_atoms(self, ethane, ethanol):
         test_box_ethane_propane = mb.fill_box(compound=[ethane,ethanol],
                                   n_compounds= [1,1] ,
                                   box=[2.0, 2.0, 2.0])
@@ -351,7 +350,7 @@ class TestCharmmWriterData(BaseTest):
             else:
                 pass
 
-    def test_charmm_pdb_residue_reorder_box_sizing(self):
+    def test_charmm_pdb_residue_reorder_box_sizing(self, two_propanol_UA, ethane):
         test_box_ethane_two_propanol_UA = mb.fill_box(compound=[two_propanol_UA, ethane],
                                   n_compounds= [1,1] ,
                                   box=[2.0, 2.0, 2.0])

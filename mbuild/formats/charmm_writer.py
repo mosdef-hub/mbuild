@@ -12,7 +12,6 @@ import datetime
 
 from parmed.utils.io import genopen
 from parmed.periodic_table import Element
-from parmed.charmm.psf import set_molecules
 from parmed.utils.six import string_types
 from parmed.utils.six.moves import range
 
@@ -1313,7 +1312,6 @@ def charmm_psf_psb_FF(structure_0, filename_0, structure_1 = None, filename_1= N
     print("******************************")
     print("")
     print('write_charmm_psf file is running')
-    vmd = True
 
     date_time = datetime.datetime.today()
 
