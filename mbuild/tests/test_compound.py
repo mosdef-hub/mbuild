@@ -889,7 +889,12 @@ class TestCompound(BaseTest):
     @pytest.mark.skipif(not has_openbabel, reason="Open Babel package not installed")
     def test_energy_minimize_non_element(self, octane):
         for particle in octane.particles():
+            particle.element = None
+        # Pass with element inference from names
+        octane.energy_minimization()
+        for particle in octane.particles():
             particle.name = 'Q'
+        # Fail once names don't match elements
         with pytest.raises(MBuildError):
             octane.energy_minimize()
 
@@ -1294,3 +1299,7 @@ class TestCompound(BaseTest):
                 c.element for c in container.particles_by_element("sod")
             ]
 
+    def test_elements_from_smiles(self):
+        mol = mb.load("COC", smiles=True)
+        for particle in mol.particles():
+            assert particle.element is not None

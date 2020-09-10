@@ -1,12 +1,13 @@
 import os
 import sys
+import numpy as np
+import parmed as pmd
+
 from warnings import warn
 from pathlib import Path
 from collections import defaultdict
-import numpy as np
-
-import parmed as pmd
-from parmed.periodic_table import AtomicNum, element_by_name, Mass, Element
+from ele import element_from_symbol, element_from_atomic_number
+from ele.exceptions import ElementError
 
 import mbuild as mb
 from mbuild.box import Box
@@ -475,8 +476,12 @@ def from_parmed(structure,
             for atom in residue.atoms:
                 pos = np.array([atom.xx,
                                 atom.xy,
-                                atom.xz]) / 10
-                new_atom = mb.Particle(name=str(atom.name), pos=pos)
+                                atom.xz]) / 10 # Angstrom to nm
+                try:
+                    element = element_from_atomic_number(atom.atomic_number)
+                except ElementError:
+                    element = None
+                new_atom = mb.Particle(name=str(atom.name), pos=pos, element=element)
                 parent_compound.add(new_atom, label='{0}[$]'.format(atom.name))
                 atom_mapping[atom] = new_atom
 
@@ -568,9 +573,16 @@ def from_trajectory(traj,
             else:
                 parent_cmpd = chain_compound
             for atom in res.atoms:
+                try:
+                    element = element_from_atomic_number(
+                        atom.element.atomic_number
+                    )
+                except ElementError:
+                    element = None
                 new_atom = mb.Particle(
                     name=str(atom.name),
-                    pos=traj.xyz[frame, atom.index]
+                    pos=traj.xyz[frame, atom.index],
+                    element=element,
                 )
                 parent_cmpd.add(
                     new_atom,
@@ -606,8 +618,8 @@ def from_pybel(pybel_mol,
     compound : mb.Compound, optional, default=None
         The host mbuild Compound.
     use_element : bool, optional, default=True
-        If True, construct mb Particles based on the pybel Atom's element.
-        If False, construcs mb Particles based on the pybel Atom's type.
+        If True, construct mb Particle names based on the pybel Atom's element.
+        If False, construcs mb Particle names based on the pybel Atom's type.
     coords_only : bool, optional, default=False
         Set preexisting atoms in compound to coordinates given
         by structure. Note: Not yet implemented, included only
@@ -642,10 +654,12 @@ def from_pybel(pybel_mol,
     # pybel atoms are 1-indexed, coordinates in Angstrom
     for atom in pybel_mol.atoms:
         xyz = np.array(atom.coords)/10
+        try:
+            element = element_from_atomic_number(atom.atomicnum)
+        except ElementError:
+            element = None
         if use_element:
-            try:
-                temp_name = Element[atom.atomicnum]
-            except KeyError:
+            if element is None:
                 warn(
                     "No element detected for atom at index "
                     "{} with number {}, type {}".format(
@@ -655,9 +669,11 @@ def from_pybel(pybel_mol,
                     )
                 )
                 temp_name = atom.type
+            else:
+                temp_name = element.symbol
         else:
             temp_name = atom.type
-        temp = mb.Particle(name=temp_name, pos=xyz)
+        temp = mb.Particle(name=temp_name, pos=xyz, element=element)
         if infer_hierarchy and hasattr(atom, 'residue'):
             # Is there a safer way to check for res?
             if atom.residue.idx not in resindex_to_cmpd:
@@ -963,29 +979,46 @@ def to_parmed(compound,
             if current_residue not in structure.residues:
                 structure.residues.append(current_residue)
 
-            atomic_number = None
-            name = ''.join(char for char in atom.name if not char.isdigit())
-            try:
-                atomic_number = AtomicNum[atom.name.capitalize()]
-            except KeyError:
-                element = element_by_name(atom.name.capitalize())
-                if name not in guessed_elements:
-                    warn(
-                        'Guessing that "{}" is element: "{}"'.format(
-                            atom, element))
-                    guessed_elements.add(name)
+            # If we have an element attribute assigned this is easy
+            if atom.element is not None:
+                atomic_number = atom.element.atomic_number
+                mass = atom.element.mass
+            # Else we try to infer from the name
             else:
-                element = atom.name.capitalize()
+                try:
+                    element = element_from_symbol(atom.name[:2])
+                    mass = element.mass
+                    atomic_number = element.atomic_number
+                    if atom.name not in guessed_elements:
+                        warn(
+                            "No element attribute associated with '{}'; "
+                            "Guessing that '{}' is element '{}'".format(
+                                atom,
+                                atom,
+                                element,
+                            )
+                        )
+                        guessed_elements.add(atom.name)
+                except ElementError:
+                    if atom.name not in guessed_elements:
+                        atomic_number = 0
+                        mass = 0.0
+                        warn(
+                            "No element attribute associated with '{}' "
+                            "and no matching elements found based upon the "
+                            "compound name. Assigning element as 'EP'".format(
+                                atom,
+                            )
+                        )
+                        guessed_elements.add(atom.name)
 
-            atomic_number = atomic_number or AtomicNum[element]
-            mass = Mass[element]
             pmd_atom = pmd.Atom(
                 atomic_number=atomic_number,
                 name=atom.name,
                 mass=mass,
                 charge=atom.charge
             )
-            pmd_atom.xx, pmd_atom.xy, pmd_atom.xz = atom.pos * 10  # Angstroms
+            pmd_atom.xx, pmd_atom.xy, pmd_atom.xz = atom.pos * 10.0  # nm to Angstroms
 
         residue = atom_residue_map[atom]
         structure.add_atom(
@@ -1188,10 +1221,17 @@ def _to_topology(compound,
         atom_residue_map[atom] = current_residue
 
         # Add the actual atoms
-        try:
-            elem = get_by_symbol(atom.name)
-        except KeyError:
-            elem = get_by_symbol("VS")
+        if atom.element is not None:
+            try:
+                elem = get_by_symbol(atom.element.symbol)
+            except KeyError:
+                elem = get_by_symbol("VS")
+        else:
+            try:
+                elem = get_by_symbol(atom.name)
+            except KeyError:
+                elem = get_by_symbol("VS")
+
         at = top.add_atom(atom.name, elem, atom_residue_map[atom])
         at.charge = atom.charge
         atom_mapping[atom] = at
@@ -1299,12 +1339,19 @@ def to_pybel(compound,
         if part.port_particle:
             temp.SetAtomicNum(0)
         else:
-            try:
-                temp.SetAtomicNum(AtomicNum[part.name.capitalize()])
-            except KeyError:
-                warn("Could not infer atomic number from "
-                     "{}, setting to 0".format(part.name))
-                temp.SetAtomicNum(0)
+            if part.element is not None:
+                temp.SetAtomicNum(part.element.atomic_number)
+            else:
+                try:
+                    element = element_from_symbol(part.name[:2])
+                    temp.SetAtomicNum(element.atomic_number)
+                except ElementError:
+                    warn(
+                        "No element attribute associated with '{}'; could not "
+                        "infer atomic number from name '{}', setting atomic "
+                        "number to 0.".format(part, part.name)
+                    )
+                    temp.SetAtomicNum(0)
 
         temp.SetVector(*(part.xyz[0]*10))
         particle_to_atom_index[part] = i
