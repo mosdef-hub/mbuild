@@ -6,7 +6,9 @@ import parmed as pmd
 from warnings import warn
 from pathlib import Path
 from collections import defaultdict
-from ele import element_from_symbol, element_from_atomic_number
+from ele import (
+    element_from_symbol, element_from_atomic_number, element_from_name
+)
 from ele.exceptions import ElementError
 
 import mbuild as mb
@@ -985,32 +987,13 @@ def to_parmed(compound,
                 mass = atom.element.mass
             # Else we try to infer from the name
             else:
-                try:
-                    element = element_from_symbol(atom.name)
-                    mass = element.mass
+                element = _infer_element_from_compound(atom, guessed_elements)
+                if element is not None:
                     atomic_number = element.atomic_number
-                    if atom.name not in guessed_elements:
-                        warn(
-                            "No element attribute associated with '{}'; "
-                            "Guessing that '{}' is element '{}'".format(
-                                atom,
-                                atom,
-                                element,
-                            )
-                        )
-                        guessed_elements.add(atom.name)
-                except ElementError:
-                    if atom.name not in guessed_elements:
-                        atomic_number = 0
-                        mass = 0.0
-                        warn(
-                            "No element attribute associated with '{}' "
-                            "and no matching elements found based upon the "
-                            "compound name. Assigning element as 'EP'".format(
-                                atom,
-                            )
-                        )
-                        guessed_elements.add(atom.name)
+                    mass = element.mass
+                else:
+                    atomic_number = 0
+                    mass = 0.0
 
             pmd_atom = pmd.Atom(
                 atomic_number=atomic_number,
@@ -1298,6 +1281,7 @@ def to_pybel(compound,
 
     mol = openbabel.OBMol()
     particle_to_atom_index = {}
+    guessed_elements = set()
 
     if not residues and infer_residues:
         residues = list(set([child.name for child in compound.children]))
@@ -1342,15 +1326,10 @@ def to_pybel(compound,
             if part.element is not None:
                 temp.SetAtomicNum(part.element.atomic_number)
             else:
-                try:
-                    element = element_from_symbol(part.name)
+                element = _infer_element_from_compound(part, guessed_elements)
+                if element is not None:
                     temp.SetAtomicNum(element.atomic_number)
-                except ElementError:
-                    warn(
-                        "No element attribute associated with '{}'; could not "
-                        "infer atomic number from name '{}', setting atomic "
-                        "number to 0.".format(part, part.name)
-                    )
+                else:
                     temp.SetAtomicNum(0)
 
         temp.SetVector(*(part.xyz[0]*10))
@@ -1537,3 +1516,46 @@ def _add_intermol_molecule_type(intermol_system, parent):  # pragma: no cover
     for atom1, atom2 in parent.bonds():
         intermol_bond = InterMolBond(atom1.index, atom2.index)
         molecule_type.bonds.add(intermol_bond)
+
+def _infer_element_from_compound(compound, guessed_elements):
+    """Infer the element from the compound name
+
+    Parameters
+    ----------
+    compound : mbuild.Compound
+        the compound to infer the element for 
+    guessed_elements : list
+        a list of the already-guessed-elements
+
+    Returns
+    -------
+    element : ele.Element or None
+    """
+    
+    try:
+        element = element_from_symbol(compound.name)
+    except ElementError:
+        try:
+            element = element_from_name(compound.name)
+            warn_msg = (
+                "No element attribute associated with '{}'; "
+                "Guessing that '{}' is element '{}'".format(
+                    compound,
+                    compound,
+                    element
+                )
+            )
+        except ElementError:
+            element = None
+            warn_msg = (
+                "No element attribute associated with '{}'; "
+                "and no matching elements found based upon the"
+                "compound name. Setting atomic number to zero.".format(
+                    compound,
+                )
+            )
+        if compound.name not in guessed_elements:
+            warn(warn_msg)
+            guessed_elements.add(compound.name)
+   
+    return element

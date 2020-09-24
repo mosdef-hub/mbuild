@@ -11,7 +11,7 @@ from collections.abc import Iterable
 from copy import deepcopy
 from warnings import warn
 from oset import oset as OrderedSet
-from ele.element import Element, element_from_symbol
+from ele.element import Element, element_from_symbol, element_from_name
 from ele.exceptions import ElementError
 
 
@@ -1733,13 +1733,16 @@ class Compound(object):
                 try:
                     element_from_symbol(particle.name)
                 except ElementError:
-                    raise MBuildError(
-                        "No element assigned to {}; element could not be"
-                        "inferred from particle name {}. Cannot perform"
-                        "an energy minimization.".format(
-                            particle, particle.name
+                    try:
+                        element_from_name(particle.name)
+                    except ElementError:
+                        raise MBuildError(
+                            "No element assigned to {}; element could not be"
+                            "inferred from particle name {}. Cannot perform"
+                            "an energy minimization.".format(
+                                particle, particle.name
+                            )
                         )
-                    )
 
         obConversion = openbabel.OBConversion()
         obConversion.SetInAndOutFormats("mol2", "pdb")
