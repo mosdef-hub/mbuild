@@ -986,7 +986,7 @@ def to_parmed(compound,
             # Else we try to infer from the name
             else:
                 try:
-                    element = element_from_symbol(atom.name[:2])
+                    element = element_from_symbol(atom.name)
                     mass = element.mass
                     atomic_number = element.atomic_number
                     if atom.name not in guessed_elements:
@@ -1343,7 +1343,7 @@ def to_pybel(compound,
                 temp.SetAtomicNum(part.element.atomic_number)
             else:
                 try:
-                    element = element_from_symbol(part.name[:2])
+                    element = element_from_symbol(part.name)
                     temp.SetAtomicNum(element.atomic_number)
                 except ElementError:
                     warn(

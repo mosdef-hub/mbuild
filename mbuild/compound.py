@@ -1731,7 +1731,7 @@ class Compound(object):
         for particle in self.particles():
             if particle.element is None:
                 try:
-                    element_from_symbol(particle.name[:2])
+                    element_from_symbol(particle.name)
                 except ElementError:
                     raise MBuildError(
                         "No element assigned to {}; element could not be"
