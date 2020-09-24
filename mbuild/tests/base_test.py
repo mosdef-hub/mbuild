@@ -252,14 +252,14 @@ class BaseTest:
 
 
     @pytest.fixture
-    def EthaneGOMC(self, ethane):
+    def EthaneGOMC(self):
         Ethane_GOMC = mb.load('CC', smiles=True)
         Ethane_GOMC.name = "ETH"
 
         return Ethane_GOMC
 
     @pytest.fixture
-    def EthanolGOMC(self, ethanol):
+    def EthanolGOMC(self):
         Ethanol_GOMC = mb.load('CCO', smiles=True)
         Ethanol_GOMC.name = "ETO"
 
