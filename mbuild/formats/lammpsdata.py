@@ -160,6 +160,8 @@ def write_lammpsdata(structure, filename, atom_style='full',
     # the parmed structure only stores the box length.  It is not rigorous to assume bounds
     # are 0 to L or -L/2 to L/2
 
+    # NOTE: 0 to L is current default, mins and maxs should be passed by user
+
     if _check_minsmaxs(mins,maxs):
         box = Box.from_mins_maxs_angles(mins=mins, maxs=maxs, angles=structure.box[3:6])
     else:
@@ -169,7 +171,10 @@ def write_lammpsdata(structure, filename, atom_style='full',
 
         warn('Explicit box bounds (i.e., mins and maxs) were not provided. Box bounds are assumed to be min = 0 and max = length in each direction. This may not produce a system with the expected spatial location and may cause non-periodic systems to fail. Bounds can be defined explicitly by passing the them to the write_lammpsdata function or by passing box info to the save function.')
     # Divide by conversion factor
-    box.maxs /= sigma_conversion_factor
+    Lx = box.Lx * (1/sigma_conversion_factor)
+    Ly = box.Ly * (1/sigma_conversion_factor)
+    Lz = box.Lz * (1/sigma_conversion_factor)
+    box = Box.from_lengths_angles(lengths=(Lx,Ly,Lz), angles=box.angles)
     
     # Lammps syntax depends on the functional form
     # Infer functional form based on the properties of the structure
@@ -272,27 +277,31 @@ def write_lammpsdata(structure, filename, atom_style='full',
 
         data.write('\n')
         # Box data
-        if np.allclose(box.angles, np.array([90, 90, 90])):
+        # NOTE: Needs better logic handling maxs and mins of a bounding box
+        # NOTE: JBG, "this should be a method/attribute of Compound?"
+        if np.allclose(box.angles, np.array([90.0, 90.0, 90.0])) and (mins is None) :
             for i,dim in enumerate(['x','y','z']):
                 data.write('{0:.6f} {1:.6f} {2}lo {2}hi\n'.format(
-                    10.0 * box.mins[i],
-                    10.0 * box.maxs[i],
+                    0.0,
+                    10.0 * box.lengths[i],
                     dim))
+        #NOTE:
+        # currently non-orthogonal bounding box translates Compound such that mins are new origin
         else:
-            a, b, c = 10.0 * box.lengths
+            a = 10.0 * box.Lx
+            b = 10.0 * box.Ly
+            c = 10.0 * box.Lz
             alpha, beta, gamma = np.radians(box.angles)
 
-            lx = a
-            xy = b * np.cos(gamma)
-            xz = c * np.cos(beta)
-            ly = np.sqrt(b**2 - xy**2)
-            yz = (b*c*np.cos(alpha) - xy*xz) / ly
-            lz = np.sqrt(c**2 - xz**2 - yz**2)
-
-            xlo, ylo, zlo = 10.0 * box.mins
-            xhi = xlo + lx
-            yhi = ylo + ly
-            zhi = zlo + lz
+            xy = box.xy
+            xz = box.xz
+            yz = box.yz
+            
+            # NOTE: using (0,0,0) as origin
+            xlo, ylo, zlo = (0.0, 0.0, 0.0)
+            xhi = xlo + a
+            yhi = ylo + b
+            zhi = zlo + c
 
             xlo_bound = xlo + np.min([0.0, xy, xz, xy+xz])
             xhi_bound = xhi + np.max([0.0, xy, xz, xy+xz])
@@ -632,3 +641,6 @@ def _get_impropers(structure, epsilon_conversion_factor):
                                              improper.atom1.type, improper.atom4.type)] for improper in structure.impropers]
 
     return improper_types, unique_improper_types
+
+def _get_box_information(structure,):
+    pass

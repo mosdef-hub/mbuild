@@ -656,7 +656,7 @@ class Lattice(object):
 
         [a, b, c] = self.lattice_spacing
 
-        return mb.Box(
+        return mb.Box.from_lengths_angles(
             lengths=np.asarray([a * x, b * y, c * z], dtype=np.float64),
             angles=np.asarray(self.angles)
         )

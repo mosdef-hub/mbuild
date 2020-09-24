@@ -26,7 +26,7 @@ class TestPacking(BaseTest):
 
     def test_fill_box_density_n_compounds(self, h2o):
         filled = mb.fill_box(h2o, density=1000,
-                             box=mb.Box([3.1042931, 3.1042931, 3.1042931]))
+                             box=mb.Box.from_lengths_angles(lengths=[3.1042931, 3.1042931, 3.1042931], angles=[90.0, 90.0, 90.0]))
         assert filled.n_particles == 3000
 
     def test_fill_box_compound_ratio(self, h2o, ethane):
@@ -84,7 +84,7 @@ class TestPacking(BaseTest):
         assert np.max(filled.xyz[:,2]) <= 5
 
     def test_fill_region_box(self, h2o):
-        mybox = mb.Box([4, 4, 4])
+        mybox = mb.Box.from_lengths_angles(lengths=[4, 4, 4], angles=[90.0, 90.0, 90.0])
         filled = mb.fill_region(h2o, n_compounds=50, region=mybox)
         assert filled.n_particles == 50 * 3
         assert filled.n_bonds == 50 * 2
@@ -100,8 +100,8 @@ class TestPacking(BaseTest):
         assert np.min(filled.xyz[16:, 0]) > 4
 
     def test_fill_region_multiple_boxes(self, ethane, h2o):
-        box1 = mb.Box(mins=[2, 2, 2], maxs=[4, 4, 4])
-        box2 = mb.Box(mins=[4, 2, 2], maxs=[6, 4, 4])
+        box1 = mb.Box.from_mins_maxs_angles(mins=[2, 2, 2], maxs=[4, 4, 4], angles=[90.0, 90.0, 90.0])
+        box2 = mb.Box.from_mins_maxs_angles(mins=[4, 2, 2], maxs=[6, 4, 4], angles=[90.0, 90.0, 90.0])
         filled = mb.fill_region(compound=[ethane, h2o], n_compounds=[2, 2],
                                 region=[box1, box2])
         assert filled.n_particles == 2 * 8 + 2 * 3
@@ -110,7 +110,7 @@ class TestPacking(BaseTest):
         assert np.min(filled.xyz[16:, 0]) > 4
 
     def test_fill_region_multiple_types(self, ethane, h2o):
-        box1 = mb.Box(mins=[2, 2, 2], maxs=[4, 4, 4])
+        box1 = mb.Box.from_mins_maxs_angles(mins=[2, 2, 2], maxs=[4, 4, 4], angles=[90.0, 90.0, 90.0])
         box2 = [4, 2, 2, 6, 4, 4]
         filled = mb.fill_region(compound=[ethane, h2o], n_compounds=[2, 2],
                                 region=[box1, box2])

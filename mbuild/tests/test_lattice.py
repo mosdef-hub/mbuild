@@ -179,7 +179,7 @@ class TestLattice(BaseTest):
     @pytest.mark.parametrize("not_compound",
                              [
                                     (1),
-                                    (mb.Box(lengths=[1, 1, 1])),
+                                    (mb.Box.from_lengths_angles(lengths=[1, 1, 1], angles=[90.0, 90.0, 90.0])),
                                     ("aLattice")
                              ]
                              )

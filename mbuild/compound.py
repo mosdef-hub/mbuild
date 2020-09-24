@@ -811,7 +811,7 @@ class Compound(object):
 
         # Check that bounding box is within box after adding compound
         if self.box:
-            if (self.box.lengths < self.boundingbox.lengths).any():
+            if (self.box.lengths < self.get_boundingbox(orthogonal=True).lengths).any():
                 warn(
                     "After adding new Compound, Compound.box.lengths < "
                     "Compound.boundingbox.lengths. There may be particles "
@@ -1122,12 +1122,14 @@ class Compound(object):
         # TODO: Fix this for non-orthogonal boxes
         # Make sure the box is bigger than the bounding box
         if box is not None:
-            if (box.lengths < self.boundingbox.lengths).any():
+            print('we got here, box setter')
+            if np.asarray((box.lengths < self.get_boundingbox(orthogonal=True).lengths)).any():
                 warn(
                     "Compound.box.lengths < Compound.boundingbox.lengths. "
                     "There may be particles outside of the defined "
                     "simulation box."
                 )
+        #print(f"setting for box:{box} ")
         self._box = box
 
     @property
@@ -1229,8 +1231,7 @@ class Compound(object):
         if np.all(np.isfinite(self.xyz)):
             return np.mean(self.xyz, axis=0)
 
-    @property
-    def boundingbox(self, orthogonal=True):
+    def get_boundingbox(self, orthogonal=True, origin=(0.0, 0.0, 0.0)):
         """Compute the bounding box of the compound.
 
         Return the bounding box of the compound, can be rectangular
@@ -1245,17 +1246,59 @@ class Compound(object):
         -------
         mb.Box
             The bounding box for this Compound
+        
+        NOTE
+        ----
+        The triclinic bounding box will also translate the Compound's positions
+        such that the min(x,y,z) is the new origin at (0,0,0) or any provided origin
 
         """
+        origin_cur = np.asarray(origin).reshape(3,)
         xyz = self.xyz
         mins = xyz.min(axis=0)
         maxs = xyz.max(axis=0)
-        if orthogonal:
-            angles = [90, 90, 90]
-        #TODO fix this
+
+        
+        # case where only 1 particle exists
+        is_one_particle = False
+        if xyz.shape[0] == 1:
+            is_one_particle = True
+
+        # are any columns all 0?
+        # an example of this would be a planar molecule
+        # from: https://stackoverflow.com/a/16092714
+        has_dimension = [True, True, True]
+        if not is_one_particle:
+            missing_dimensions = np.where((~(np.abs(xyz).any(axis=0)).any()))[0]
+            for dim in missing_dimensions:
+                has_dimension[dim] = False
+
+        if is_one_particle:
+            v1 = np.asarray([[1.0, 0.0, 0.0]])
+            v2 = np.asarray([[0.0, 1.0, 0.0]])
+            v3 = np.asarray([[0.0, 0.0, 1.0]])
         else:
-            raise MBuildError("Non-orthogonal bounding box not currently implemented.")
-        return Box.from_mins_maxs_angles(mins=mins, maxs=maxs, angles=angles)
+            if orthogonal:
+                v1 = np.asarray((maxs[0], 0.0, 0.0))
+                v2 = np.asarray((0.0, maxs[1], 0.0))
+                v3 = np.asarray((0.0, 0.0, maxs[2]))
+            else:
+                new_origin = mins
+                v1 = np.asarray((maxs[0]-mins[0], 0.0, 0.0))
+                v2 = np.asarray((maxs[0]-mins[0], maxs[1]-mins[1], 0.0))
+                v3 = np.asarray((maxs[0]-mins[0], maxs[1]-mins[1], maxs[2]-mins[2]))
+                self.translate(origin_cur - new_origin)
+        vecs = [v1, v2, v3]
+        print(f"vecs: {vecs}")
+        if not is_one_particle:
+            print(f'missing dims: {missing_dimensions}')
+            for dims in missing_dimensions:
+                v_new = [0.0, 0.0, 0.0]
+                v_new[dims] = 1.0
+                vecs[dims] = np.asarray(v_new)
+                print(f"vnew: {v_new}")
+        print(f'vecs_next: {vecs}')
+        return Box(box_vectors=np.asarray([vecs]).reshape(3,3))
 
     def min_periodic_distance(self, xyz0, xyz1):
         """Vectorized distance calculation considering minimum image.
@@ -2052,8 +2095,8 @@ class Compound(object):
             # the parmed structure only has the box length
             if extension in ['.lammps', '.lmp']:
                 if box:
-                    kwargs['mins'] = [m for m in box.mins]
-                    kwargs['maxs'] = [m for m in box.maxs]
+                    kwargs['mins'] = [0.0, 0.0, 0.0]
+                    kwargs['maxs'] = [m for m in box.lengths]
             saver(filename=filename, structure=structure, **kwargs)
 
         elif extension == '.sdf':
@@ -2223,6 +2266,7 @@ class Compound(object):
 
         # Coordinates.
         xyz = np.ndarray(shape=(1, top.n_atoms, 3), dtype='float')
+        print(f'traj: xyz: {xyz[0]}')
         for idx, atom in enumerate(atom_list):
             xyz[0, idx] = atom.pos
 
@@ -2234,7 +2278,7 @@ class Compound(object):
                 if val:
                     unitcell_lengths[dim] = val
                 else:
-                    unitcell_lengths[dim] = self.boundingbox.lengths[dim] + 0.5
+                    unitcell_lengths[dim] = self.get_boundingbox(orthogonal=True).lengths[dim] + 0.5
         else:
             unitcell_lengths = box.lengths
             unitcell_angles = box.angles
@@ -2554,7 +2598,7 @@ class Compound(object):
             structure.bonds.append(bond)
         # pad box with .25nm buffers
         if box is None:
-            box = self.boundingbox
+            box = self.get_boundingbox(orthogonal=True)
             #TODO need to work on how to handle max and mins for a box
             box_vec_max = list(box.lengths)
             box_vec_min = [0,0,0]
@@ -2719,7 +2763,8 @@ class Compound(object):
 
         ucell = openbabel.OBUnitCell()
         if box is None:
-            box = self.boundingbox
+            box = self.get_boundingbox(orthogonal=True)
+            print(f'pybel: {box}')
 
         box_mat = box.box_vectors
         first_vector = openbabel.vector3(*box_mat[0])

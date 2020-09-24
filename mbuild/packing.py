@@ -154,10 +154,10 @@ def fill_box(compound, n_compounds=None, box=None, density=None, overlap=0.2,
             # Conversion from (amu/(kg/m^3))**(1/3) to nm
             L = (total_mass/density)**(1/3)*1.1841763
             if aspect_ratio is None:
-                box = _validate_box(Box(3*[L]))
+                box = _validate_box(Box.from_lengths_angles(lengths=3*[L], angles=[90.0, 90.0, 90.0]))
             else:
                 L *= np.prod(aspect_ratio) ** (-1/3)
-                box = _validate_box(Box([val*L for val in aspect_ratio]))
+                box = _validate_box(Box.from_lengths_angles(lengths=[val*L for val in aspect_ratio], angles=3*[90.0]))
         if n_compounds is None and box is not None:
             if len(compound) == 1:
                 compound_mass = np.sum([a.mass for a in compound[0].to_parmed().atoms])
@@ -184,12 +184,15 @@ def fill_box(compound, n_compounds=None, box=None, density=None, overlap=0.2,
                     n_compounds.append(int(n_prototypes * c))
 
     # Convert nm to angstroms for PACKMOL.
-    box_mins = box.mins * 10
-    box_maxs = box.maxs * 10
+    # TODO how to handle box starts and ends
+    # not really a thing a box would know?
+    box_mins = [0.0, 0.0, 0.0] * 10
+    box_maxs = [box.Lx, box.Ly, box.Lz] * 10
+
     overlap *= 10
 
     # Apply 1nm edge buffer
-    box_maxs -= edge * 10
+    box_maxs = [a_max - (edge * 10) for a_max in box_maxs]
 
     # Build the input file for each compound and call packmol.
     filled_xyz = _new_xyz_file()
@@ -605,9 +608,9 @@ def _validate_box(box):
     """
     if isinstance(box, (list, tuple)):
         if len(box) == 3:
-            box = Box(lengths=box)
+            box = Box.from_lengths_angles(lengths=box, angles=(90.0, 90.0, 90.0))
         elif len(box) == 6:
-            box = Box(mins=box[:3], maxs=box[3:])
+            box = Box.from_mins_maxs_angles(mins=box[:3], maxs=box[3:], angles=(90.0, 90.0, 90.0))
 
     if not isinstance(box, Box):
         raise MBuildError('Unknown format for `box` parameter. Must pass a'

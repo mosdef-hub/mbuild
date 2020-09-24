@@ -102,8 +102,8 @@ class TestCompound(BaseTest):
             padded_ch3 = mb.load(outfile_padded)
             custom_ch3 = mb.load(outfile_custom)
             for attr in box_attributes:
-                pad_attr = getattr(padded_ch3.boundingbox, attr)
-                custom_attr = getattr(custom_ch3.boundingbox, attr)
+                pad_attr = getattr(padded_ch3.get_boundingbox(), attr)
+                custom_attr = getattr(custom_ch3.get_boundingbox(), attr)
                 assert np.array_equal(pad_attr, custom_attr)
 
     def test_save_overwrite(self, ch3):
@@ -205,7 +205,7 @@ class TestCompound(BaseTest):
                         assert gmx_rule == gmx_rules[combining_rule]
 
     def test_clone_with_box(self, ethane):
-        ethane.box = ethane.boundingbox
+        ethane.box = ethane.get_boundingbox(orthogonal=True)
         ethane_clone = mb.clone(ethane)
         assert np.all(ethane.xyz == ethane_clone.xyz)
         assert np.all([p.name for p in ethane.particles()] ==
@@ -546,7 +546,7 @@ class TestCompound(BaseTest):
         traj_boundingbox = ethane.to_trajectory()
         assert np.allclose(
             traj_boundingbox.unitcell_lengths,
-            ethane.boundingbox.lengths + 0.5
+            np.asarray(ethane.get_boundingbox().lengths) + 0.5
         )
 
         ethane.periodicity = [4.0, 5.0, 6.0]
@@ -557,11 +557,11 @@ class TestCompound(BaseTest):
             ethane.periodicity
         )
 
-        box = mb.Box(mins=np.zeros(3), maxs=8.0*np.zeros(3))
+        box = mb.Box.from_mins_maxs_angles(mins=np.zeros(3), maxs=8.0*np.ones(3), angles=[90.0, 90.0, 90.0])
         traj_box = ethane.to_trajectory(box=box)
         assert np.allclose(
             traj_box.unitcell_lengths,
-            box.lengths
+            np.asarray(box.lengths)
         )
 
     def test_resnames_mdtraj(self, h2o, ethane):
@@ -607,7 +607,7 @@ class TestCompound(BaseTest):
     def test_mdtraj_box(self, h2o):
         compound = mb.Compound()
         compound.add(h2o)
-        tilted_box = mb.Box(lengths=[2.0, 2.0, 2.0], angles=[60.0, 80.0, 100.0])
+        tilted_box = mb.Box.from_lengths_angles(lengths=[2.0, 2.0, 2.0], angles=[60.0, 80.0, 100.0])
         trajectory = compound.to_trajectory(box=tilted_box)
         assert (trajectory.unitcell_lengths == [2.0, 2.0, 2.0]).all()
         assert (trajectory.unitcell_angles == [60.0, 80.0, 100.0]).all()
@@ -686,7 +686,7 @@ class TestCompound(BaseTest):
         # This test would fail with the old to_parmed code (pre PR #699)
 
         bead = mb.Compound(name="Bead")
-        box = mb.Box(mins=(2,2,2), maxs=(3,3,3))
+        box = mb.Box.from_mins_maxs_angles(mins=(2,2,2), maxs=(3,3,3), angles=(90.0, 90.0, 90.0))
         bead_box = mb.fill_box(bead, 100, box)
         bead_box_in_pmd = bead_box.to_parmed()
 
@@ -733,7 +733,7 @@ class TestCompound(BaseTest):
     def test_parmed_box(self, h2o):
         compound = mb.Compound()
         compound.add(h2o)
-        tilted_box = mb.Box(lengths=[2.0, 2.0, 2.0], angles=[60.0, 80.0, 100.0])
+        tilted_box = mb.Box.from_lengths_angles(lengths=[2.0, 2.0, 2.0], angles=[60.0, 80.0, 100.0])
         structure = compound.to_parmed(box=tilted_box)
         assert all(structure.box == [20.0, 20.0, 20.0, 60.0, 80.0, 100.0])
 
@@ -1077,7 +1077,7 @@ class TestCompound(BaseTest):
     @pytest.mark.skipif(not has_openbabel, reason="Pybel is not installed")
     def test_to_more_pybel_residues(self, methane, ethane):
         box = mb.fill_box([methane, ethane], n_compounds=[3,3],
-                box=mb.Box([10,10,10]))
+                box=mb.Box.from_lengths_angles(lengths=[10,10,10], angles=[90.0, 90.0, 90.0]))
         pybel_mol = box.to_pybel(box=None, residues=['Ethane', 'Methane'])
         pybel_mol_resnames = {a.name for a in pybel_mol.residues}
         assert 'Ethane' in pybel_mol_resnames
@@ -1123,7 +1123,7 @@ class TestCompound(BaseTest):
         assert np.allclose(methane.xyz, sdf_string.xyz, atol=1e-5)
 
     def test_load_multiple_sdf(self, methane):
-        filled = mb.fill_box(methane, n_compounds=10, box=[0, 0, 0, 4, 4, 4])
+        filled = mb.fill_box(methane, n_compounds=10, box=mb.box.Box.from_lengths_angles(lengths=[4,4,4], angles=[90.0, 90.0, 90.0]))
         filled.save('methane.sdf')
         sdf_string = mb.load('methane.sdf')
 
@@ -1135,10 +1135,10 @@ class TestCompound(BaseTest):
 
     def test_box(self):
         angles = [90., 90., 90.]
-        lengths = [3., 3., 3.]
+        lengths = [3.0, 3.0, 3.0]
         compound = mb.Compound()
         assert compound.box == None
-        compound.box = mb.Box.from_lengths_angles(lengths=[3,3,3],angles=[90, 90, 90])
+        compound.box = mb.box.Box.from_lengths_angles(lengths=[3.0, 3.0, 3.0],angles=[90.0, 90.0, 90.0])
         assert np.allclose(compound.box.lengths, lengths)
         assert np.allclose(compound.box.angles, angles)
         with pytest.raises(TypeError, match=r"specified as an mbuild.Box"):
@@ -1156,7 +1156,7 @@ class TestCompound(BaseTest):
         compound.add(subcomp)
         assert np.allclose(compound.box.lengths, lengths)
         assert np.allclose(compound.box.angles, angles)
-        compound = mb.Compound(box=mb.Box([3.,3.,3.]))
+        compound = mb.Compound(box=mb.Box.from_lengths_angles(lengths=[3.,3.,3.], angles=[90.0, 90.0, 90.0]))
         subcomp = mb.Compound(box=mb.Box.from_lengths_angles(lengths=[6.,6.,6.], angles=[60.,60.,120.]))
         with pytest.warns(UserWarning):
             compound.add(subcomp)
