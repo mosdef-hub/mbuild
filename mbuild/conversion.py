@@ -1549,7 +1549,7 @@ def _infer_element_from_compound(compound, guessed_elements):
             element = None
             warn_msg = (
                 "No element attribute associated with '{}'; "
-                "and no matching elements found based upon the"
+                "and no matching elements found based upon the "
                 "compound name. Setting atomic number to zero.".format(
                     compound,
                 )
