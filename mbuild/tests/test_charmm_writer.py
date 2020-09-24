@@ -436,6 +436,18 @@ class TestCharmmWriterData(BaseTest):
         if Test_value == None:
             pass
 
+    def test_charmm_residue_string(self, EthaneGOMC):
+        Test_value = charmm_psf_psb_FF(EthaneGOMC, 'box_0',
+                                       structure_1=None,
+                                       filename_1=None,
+                                       GOMC_FF_filename=None,
+                                       residues='EthaneGOMC.name',
+                                       forcefield_names={EthaneGOMC.name: 'oplsaa'}
+                                       )
+
+        if Test_value == None:
+            pass
+
     def test_charmm_residue_is_None(self, EthaneGOMC):
         Test_value = charmm_psf_psb_FF(EthaneGOMC, 'box_0',
                                        structure_1=None,
@@ -463,9 +475,9 @@ class TestCharmmWriterData(BaseTest):
     def test_charmm_filename_1_is_string(self, EthaneGOMC):
         Test_value = charmm_psf_psb_FF(EthaneGOMC, 'box_0',
                                        structure_1 = EthaneGOMC,
-                                       filename_1 = 0,
+                                       filename_1 = ['box_0'],
                                        GOMC_FF_filename=None,
-                                       residues=[EthaneGOMC.name, EthaneGOMC.name],
+                                       residues=[EthaneGOMC.name],
                                        forcefield_names={EthaneGOMC.name: 'oplsaa'},
                                        )
 
@@ -542,6 +554,32 @@ class TestCharmmWriterData(BaseTest):
                                        residues=[EthaneGOMC.name],
                                        forcefield_names=None,
                                        forcefield_files=['oplsaa', 'oplsaa'],
+                                       )
+
+        if Test_value == None:
+            pass
+
+    def test_charmm_FFnames_not_dict(self, EthaneGOMC):
+        Test_value = charmm_psf_psb_FF(EthaneGOMC, 'box_0',
+                                       structure_1 = None,
+                                       filename_1 = None,
+                                       GOMC_FF_filename='box.test',
+                                       residues=[EthaneGOMC.name],
+                                       forcefield_names=['oplsaa', 'oplsaa'],
+                                       forcefield_files=None,
+                                       )
+
+        if Test_value == None:
+            pass
+
+    def test_charmm_FFnames_string(self, EthaneGOMC):
+        Test_value = charmm_psf_psb_FF(EthaneGOMC, 'box_0',
+                                       structure_1 = None,
+                                       filename_1 = None,
+                                       GOMC_FF_filename='box.test',
+                                       residues=[EthaneGOMC.name],
+                                       forcefield_names='oplsaa',
+                                       forcefield_files=None,
                                        )
 
         if Test_value == None:
