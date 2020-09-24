@@ -276,7 +276,8 @@ def unique_atom_naming(structure, residue_ID_list, residue_names_list, Bead_to_a
                     if len(Bead_to_atom_name_dict[str(atom.name)]) > 2:
                         text_to_write = ('ERROR: only enter atom names that have 2 or less digits' +
                                          ' in the Bead to atom naming dictionary (Bead_to_atom_name_dict) ')
-                        return print(warn(text_to_write))
+                        warn(warn(text_to_write))
+                        return None, None, None
                     else:
                         atom_name_value = Bead_to_atom_name_dict[str(atom.name)]
                         No_digits_atom_name = 2
@@ -290,7 +291,8 @@ def unique_atom_naming(structure, residue_ID_list, residue_names_list, Bead_to_a
                 else:
                     text_to_write = ('ERROR: atom numbering will not work propery at' +
                                      ' the element has more than 4 charaters')
-                    return print(warn(text_to_write))
+                    warn(warn(text_to_write))
+                    return None, None, None
             else:
                 No_digits_atom_name = 2
                 atom_name_value = atom.name
@@ -315,8 +317,8 @@ def unique_atom_naming(structure, residue_ID_list, residue_names_list, Bead_to_a
 def charmm_psf_psb_FF(structure_0, filename_0, structure_1 = None, filename_1= None,
                       non_bonded_type='LJ', forcefield_files=None, forcefield_names = None,  residues=None,
                       detect_forcefield_style=True, fix_res_bonds_angles = None, Bead_to_atom_name_dict=None,
-                      fix_residue=None, fix_residue_in_box=None,  coordinates=None, GOMC_FF_filename= None,
-                      reorder_res_in_pdb_psf =False, box_0 = None, box_1 = None  ,**kwargs):
+                      fix_residue=None, fix_residue_in_box=None,  GOMC_FF_filename= None,
+                      reorder_res_in_pdb_psf =False, box_0 = None, box_1 = None  , **kwargs):
 
     """Output a GOMC data file.
 
@@ -428,19 +430,15 @@ def charmm_psf_psb_FF(structure_0, filename_0, structure_1 = None, filename_1= N
     -----
     Impropers and NBFIX are not currenly supported
     Currently the NBFIX is disabled as since only the OPLS and TRAPPE force fields are supported
-    OPLS and CHARMM forcefield styles are supported, AMBER forcefield styles are NOT
+    OPLS and CHARMM forcefield styles are supported, AMBER forcefield styles are NOT supported.
     Impropers and Urey-Bradleys are not supported for GOMC
 
-    The atom typing is currently numbering.  Therefore, if you are utilizing
-    multiple/boxes (i.e., GCMC or GEMC), you need to ensure that all the same molecules
-    are in each system or there are zero molecules in a systems.  This will ensure that
-    they atom typing all matches and works properly with the FF, pdb, and psf files.
-    The atom typing will be changed to unique naming to avoid this issue in the future.
+    The atom typing is currently provided via a base 62 numbering.
 
     Unique atom names are provided if the system do not exceed 3844 atoms (62^2) of the same
-    name/bead per residue. For all atom names/elements with 3 or less digits, this converts
-    the atom name in the GOMC psf and pdb files to a unique atom name,  provided they do
-    not exceed 62 of the same name/element pre residue.
+    name/bead per residue (base 62 numbering). For all atom names/elements with 3 or less digits,
+    this converts the atom name in the GOMC psf and pdb files to a unique atom name,
+    provided they do not exceed 62 of the same name/element pre residue.
 
     Generating an empty pdb/psf:
         Single System: Enter residues = [], but the accompanying structure (structure_0)
@@ -450,20 +448,31 @@ def charmm_psf_psb_FF(structure_0, filename_0, structure_1 = None, filename_1= N
         Dual System: Enter an empty mb.Compound structure for either structure_0 or
         structure_1.
 
+    In this current FF/psf/pdb writer, a residue type is essentially a molecule type.
+    Therefore, it can only correctly write systems where every bead/atom in the molecule
+    has the same residue name, and the residue name is specific to that molecule type.
+    For example: a protein molecule with many residue names is not currently supported,
+    but is planned to be supported in the future.
+
     """
 
 
     if not isinstance(residues, list):
-        return warn('Error: Please enter the residues (residues) in a list format')
+        warn('Error: Please enter the residues (residues) in a list format')
+        return None
 
     date_time = datetime.datetime.today()
 
     if residues is None:
-        return warn('Error: Please enter the residues (residues)  list')
+        warn('Error: Please enter the residues (residues)  list')
+        return None
     if not isinstance(filename_0, str):
-        return warn('Error: Please enter the filename_0 as a string')
+        warn('Error: Please enter the filename_0 as a string')
+        return None
+
     if filename_1 != None and not isinstance(filename_1, str):
-        return warn('Error: Please enter the filename_1 as a string')
+        warn('Error: Please enter the filename_1 as a string')
+        return None
 
     if structure_1 is None and box_1 != None:
         warn('Error: box_1 is set to a value but there is not a structure 1 to use it on.')
@@ -471,7 +480,8 @@ def charmm_psf_psb_FF(structure_0, filename_0, structure_1 = None, filename_1= N
 
     if GOMC_FF_filename != None:
         if not isinstance(GOMC_FF_filename, str) :
-            return warn('Error: Please enter GOMC force field name (GOMC_FF_filename) as a string')
+            warn('Error: Please enter GOMC force field name (GOMC_FF_filename) as a string')
+            return None
         if isinstance(GOMC_FF_filename, str) :
             extension_FF_name = os.path.splitext(GOMC_FF_filename)[-1]
             if extension_FF_name == '.inp':
@@ -480,30 +490,28 @@ def charmm_psf_psb_FF(structure_0, filename_0, structure_1 = None, filename_1= N
                 GOMC_FF_filename = GOMC_FF_filename + '.inp'
 
     if forcefield_names is None and forcefield_files is None:
-        return warn('Please enter either the forcefield_files or forcefield_names, neither were provided')
+        warn('Please enter either the forcefield_files or forcefield_names, neither were provided')
+        return None
 
     if forcefield_names != None and forcefield_files != None:
-        return warn('Please enter either the forcefield_files or forcefield_names, not both')
+        warn('Please enter either the forcefield_files or forcefield_names, not both')
+        return None
 
     if forcefield_files != None and  forcefield_names is None:
-
         print('write_gomcdata: forcefield_files = '+str(forcefield_files) +', ' +'residues = '+str(residues) )
-
         if forcefield_files != None and not isinstance(forcefield_files, dict) and not isinstance(forcefield_files, str):
-            return warn('The force field file (forcefield_files) is not a string or a dictionary with'+
-                        ' all the residues specified to a force field.'+
-                          "-> String Ex: 'path/trappe-ua.xml'  ."+
-                         "Otherise provided a dictionary with all the residues specified to a force field "+
-                         "->Dictionary Ex: {'Water' : 'path/oplsaa.xml', 'OCT': 'path/trappe-ua.xml'}, "+
-                         "Note: the file path must be specified the force field file")
-
-
-
-
+            warn('The force field file (forcefield_files) is not a string or a dictionary with' +
+                 ' all the residues specified to a force field.' +
+                 "-> String Ex: 'path/trappe-ua.xml'  ." +
+                 "Otherise provided a dictionary with all the residues specified to a force field " +
+                 "->Dictionary Ex: {'Water' : 'path/oplsaa.xml', 'OCT': 'path/trappe-ua.xml'}, " +
+                 "Note: the file path must be specified the force field file")
+            return None
 
         if isinstance(forcefield_files, list) == True:
-            return warn('Error: Please enter the forcefield_files (forcefield_files) as a single string' +
-                        '  or in a dictionary format (i.e., residue to for each FF)')
+            warn('Error: Please enter the forcefield_files (forcefield_files) as a single string' +
+                 '  or in a dictionary format (i.e., residue to for each FF)')
+            return None
 
         if isinstance(forcefield_files, str)== True :
             FF_name = forcefield_files
@@ -516,16 +524,18 @@ def charmm_psf_psb_FF(structure_0, filename_0, structure_1 = None, filename_1= N
         print('write_gomcdata: forcefield_names = ' + str(forcefield_names) + ', ' + 'residues = ' + str(residues))
 
         if forcefield_names != None and not isinstance(forcefield_names, dict) and not isinstance(forcefield_names,str):
-            return warn('The force field names (forcefield_names) is not a string or a dictionary with' +
-                        ' all the residues specified to a force field.' +
-                        "-> String Ex: 'trappe-ua' or 'oplsaa'  ." +
-                        "Otherise provided a dictionary with all the residues specified to a force field " +
-                        "->Dictionary Ex: {'Water' : 'oplsaa', 'OCT': 'trappe-ua'}, " +
-                        "Note: the file path must be specified the force field file")
+            warn('The force field names (forcefield_names) is not a string or a dictionary with' +
+                 ' all the residues specified to a force field.' +
+                 "-> String Ex: 'trappe-ua' or 'oplsaa'  ." +
+                 "Otherise provided a dictionary with all the residues specified to a force field " +
+                 "->Dictionary Ex: {'Water' : 'oplsaa', 'OCT': 'trappe-ua'}, " +
+                 "Note: the file path must be specified the force field file")
+            return None
 
         if isinstance(forcefield_names, list) == True:
-            return warn('Error: Please enter the forcefield_names (forcefield_names) as a single string' +
-                        '  or in a dictionary format (i.e., residue to for each FF)')
+            warn('Error: Please enter the forcefield_names (forcefield_names) as a single string' +
+                 '  or in a dictionary format (i.e., residue to for each FF)')
+            return None
 
         if isinstance(forcefield_names, str) == True:
             FF_name = forcefield_names
@@ -535,68 +545,81 @@ def charmm_psf_psb_FF(structure_0, filename_0, structure_1 = None, filename_1= N
             print('FF forcefield_names = ' + str(forcefield_names))
 
     if residues != None and not isinstance(residues, list):
-        return warn('Error: Please enter the residues (residues) in a list format')
+        warn('Error: Please enter the residues (residues) in a list format')
+        return None
 
 
 
 
     if fix_res_bonds_angles != None and not isinstance(fix_res_bonds_angles, list):
-        return warn('Error: Please enter the residues that have fixed angles' +
-                    ' and bonds (fix_res_bonds_angles) in a list format')
+        warn('Error: Please enter the residues that have fixed angles' +
+             ' and bonds (fix_res_bonds_angles) in a list format')
+        return None
 
     if isinstance(fix_res_bonds_angles, list):
         for q in range(0,len(fix_res_bonds_angles)):
             if fix_res_bonds_angles[q] not in residues:
-                return warn('Error: Please ensure that all the residue names in the fix_res_bonds_angles '+
-                            'list are also in the residues list.')
+                warn('Error: Please ensure that all the residue names in the fix_res_bonds_angles ' +
+                     'list are also in the residues list.')
+                return None
             else:
                 print('INFORMATION: The following residues will have fixed bonds'
                       + ' and angles: fix_res_bonds_angles = ' +str(fix_res_bonds_angles))
 
 
     if fix_residue != None and not isinstance(fix_residue, list):
-        return warn('Error: Please enter the fix_residue in a list format')
+        warn('Error: Please enter the fix_residue in a list format')
+        return None
 
     if isinstance(fix_residue, list):
         for q in range(0,len(fix_residue)):
             if fix_residue[q] not in residues:
-                return warn('Error: Please ensure that all the residue names in the fix_residue '+
-                            'list are also in the residues list.')
+                warn('Error: Please ensure that all the residue names in the fix_residue ' +
+                     'list are also in the residues list.')
+                return None
 
     if fix_residue_in_box != None and not isinstance(fix_residue_in_box, list):
-        return warn('Error: Please enter the fix_residue_in_box in a list format')
+        warn('Error: Please enter the fix_residue_in_box in a list format')
+        return None
 
     if isinstance(fix_residue_in_box, list):
         for q in range(0,len(fix_residue_in_box)):
             if fix_residue_in_box[q] not in residues:
-                return warn('Error: Please ensure that all the residue names in the fix_residue_in_box '+
-                            'list are also in the residues list.')
+                warn('Error: Please ensure that all the residue names in the fix_residue_in_box ' +
+                     'list are also in the residues list.')
+                return None
 
     if Bead_to_atom_name_dict != None and not isinstance(Bead_to_atom_name_dict, dict):
-        return warn('Error: Please enter the a bead type to atom in the' +
-                    '  dictionary (Bead_to_atom_name_dict) '
-                    + 'so GOMC can properly evaluate the unique atom names')
-
+        warn('Error: Please enter the a bead type to atom in the' +
+             '  dictionary (Bead_to_atom_name_dict) '
+             + 'so GOMC can properly evaluate the unique atom names')
+        return None
 
     if box_0 !=None :
         box_length = len(box_0)
         if box_length != 3:
-             return warn('Please enter all 3 values for the box_0 dimensions.')
+            warn('Please enter all 3 values for the box_0 dimensions.')
+            return None
         for box_iter in range(0, len(box_0)):
             if isinstance(box_0[ box_iter], str)==True:
-                return warn('Please enter all positive or 0 values for the box_0 dimensions.')
+                warn('Please enter all positive or 0 values for the box_0 dimensions.')
+                return None
             if box_0[ box_iter] < 0:
-                return warn('Please enter all positive or 0 values for the box_0 dimensions.')
+                warn('Please enter all positive or 0 values for the box_0 dimensions.')
+                return None
 
     if box_1 !=None :
         box_length = len(box_1)
         if box_length != 3:
-             return warn('Please enter all 3 values for the box_1 dimensions.')
+            warn('Please enter all 3 values for the box_1 dimensions.')
+            return None
         for box_iter in range(0, len(box_1)):
             if isinstance(box_1[ box_iter], str)==True:
-                return warn('Please enter all positive or 0 values for the box_1 dimensions.')
+                warn('Please enter all positive or 0 values for the box_1 dimensions.')
+                return None
             if box_1[ box_iter] < 0:
-                return warn('Please enter all positive or 0 values for the box_1 dimensions.')
+                warn('Please enter all positive or 0 values for the box_1 dimensions.')
+                return None
 
 
     print("******************************")
@@ -647,11 +670,12 @@ def charmm_psf_psb_FF(structure_0, filename_0, structure_1 = None, filename_1= N
 
         for res_iter_1 in range(0, len(residues_applied_list_0_and_1)):
             if residues_applied_list_0_and_1[res_iter_1] not in  residues:
-                return warn("All the residues were not used from the forcefield_names or forcefield_files "+ \
-                            "string or dictionary.  There may be residues below other specified residues "+ \
-                            "in the mbuild.Compound hierarchy.  If so, the residues acquire the residue's "+ \
-                            "force fields, which is at the top of the hierarchy.  Alternatively, "+ \
-                            "residues that are not in the structure may have been specified.")
+                warn("All the residues were not used from the forcefield_names or forcefield_files " + \
+                     "string or dictionary.  There may be residues below other specified residues " + \
+                     "in the mbuild.Compound hierarchy.  If so, the residues acquire the residue's " + \
+                     "force fields, which is at the top of the hierarchy.  Alternatively, " + \
+                     "residues that are not in the structure may have been specified.")
+                return None
 
         total_charge = sum([atom.charge for atom in structure_0_FF])
         if round(total_charge, 4) != 0.0:
@@ -684,11 +708,12 @@ def charmm_psf_psb_FF(structure_0, filename_0, structure_1 = None, filename_1= N
 
         for res_iter_1 in range(0, len(residues_applied_list_0)):
             if residues_applied_list_0[res_iter_1] not in residues:
-                return warn("All the residues were not used from the forcefield_names or forcefield_files " + \
-                            "string or dictionary.  There may be residues below other specified residues " + \
-                            "in the mbuild.Compound hierarchy.  If so, the residues acquire the residue's " + \
-                            "force fields, which is at the top of the hierarchy.  Alternatively, " + \
-                            "residues that are not in the structure may have been specified.")
+                warn("All the residues were not used from the forcefield_names or forcefield_files " + \
+                     "string or dictionary.  There may be residues below other specified residues " + \
+                     "in the mbuild.Compound hierarchy.  If so, the residues acquire the residue's " + \
+                     "force fields, which is at the top of the hierarchy.  Alternatively, " + \
+                     "residues that are not in the structure may have been specified.")
+                return None
 
         total_charge = sum([atom.charge for atom in structure_0_FF])
         if round(total_charge, 4) != 0.0:
@@ -724,7 +749,8 @@ def charmm_psf_psb_FF(structure_0, filename_0, structure_1 = None, filename_1= N
     for n in range(0, len(residue_data_name_list)):
         if residue_data_name_list[n] not in residues:
             print('residue_data_name_list = '+str(residue_data_name_list))
-            return warn('Error: Please specifiy all residues (residues) in a list')
+            warn('Error: Please specifiy all residues (residues) in a list')
+            return None
 
     if forcefield_files != None:
         print('forcefield type from compound = '+str( forcefield_files))
@@ -747,7 +773,8 @@ def charmm_psf_psb_FF(structure_0, filename_0, structure_1 = None, filename_1= N
         epsilon_conversion_factor = 1
         mass_conversion_factor = 1
     else:
-        return print("unit_style is not real and thus not available to this writer")
+        warn("unit_style is not real and thus not available to this writer")
+        return None
 
 
     if structure_1 !=None:
@@ -823,7 +850,9 @@ def charmm_psf_psb_FF(structure_0, filename_0, structure_1 = None, filename_1= N
             print("Charmm dihedrals detected, will use dihedral_style charmm")
             # this will need tested with a standard charmm input format before releasing it
             use_dihedrals = True
-            return print("Charmm dihedrals not yet supported ")
+            print("Charmm dihedrals not yet supported ")
+            warn("Charmm dihedrals not yet supported ")
+            return None
         else:
             use_dihedrals = False
     if use_rb_torsions and use_dihedrals:
@@ -1244,8 +1273,9 @@ def charmm_psf_psb_FF(structure_0, filename_0, structure_1 = None, filename_1= N
                 coul_1_4_List.append(p)
             for c in range(0, len(coul_1_4_List)):
                 if coul_1_4_List[c] != coul_1_4_List[0]:
-                    return warn("ERROR: There are multiple 1,4-coulombic scaling factors.'+ "
-                                "' GOMC will only accept a singular input for the 1,4-coulombic scaling factors")
+                    warn("ERROR: There are multiple 1,4-coulombic scaling factors.'+ "
+                         "' GOMC will only accept a singular input for the 1,4-coulombic scaling factors")
+                    return None
 
 
             # Pair coefficients
@@ -1674,7 +1704,8 @@ def charmm_psf_psb_FF(structure_0, filename_0, structure_1 = None, filename_1= N
 
         for n in range(0, len(residue_data_name_list)):
             if residue_data_name_list[n] not in  residues:
-                return warn('Error: Please specifiy all residues (residues) in a list')
+                warn('Error: Please specifiy all residues (residues) in a list')
+                return None
 
 
         residue_data_list = []
@@ -1684,7 +1715,8 @@ def charmm_psf_psb_FF(structure_0, filename_0, structure_1 = None, filename_1= N
         if (fix_residue != None) and (fix_residue_in_box != None):
             for n in range(0,len(fix_residue)):
                 if fix_residue[n] in fix_residue_in_box:
-                    return warn("ERROR: residue type can not be specified to both fix_residue and fix_residue_in_box")
+                    warn("ERROR: residue type can not be specified to both fix_residue and fix_residue_in_box")
+                    return None
 
         residue_names_list =[]
         fix_atoms_list = []

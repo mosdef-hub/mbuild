@@ -252,31 +252,26 @@ class BaseTest:
 
 
     @pytest.fixture
-    def ethane_GOMC(self, propyl):
-        class Ethane_GOMC(mb.Compound):
-            def __init__(self, name="ETH"):
-                super(Ethane_GOMC, self).__init__()
-                self = mb.load('CC', smiles=True)
-                self.name = name
-        return Ethane_GOMC()
+    def EthaneGOMC(self, ethane):
+        Ethane_GOMC = mb.load('CC', smiles=True)
+        Ethane_GOMC.name = "ETH"
+
+        return Ethane_GOMC
 
     @pytest.fixture
-    def ethanol_GOMC(self, propyl):
-        class Ethanol_GOMC(mb.Compound):
-            def __init__(self, name="ETO"):
-                super(Two_propanol_UA, self).__init__()
-                self = mb.load('CCO', smiles=True)
-                self.name = name
+    def EthanolGOMC(self, ethanol):
+        Ethanol_GOMC = mb.load('CCO', smiles=True)
+        Ethanol_GOMC.name = "ETO"
 
-        return Ethanol_GOMC()
+        return Ethanol_GOMC
 
 
     @pytest.fixture
-    def two_propanol_UA(self):
+    def TwoPropanolUA(self):
         class Two_propanol_UA(mb.Compound):
-            def __init__(self, name="POL"):
+            def __init__(self):
                 super(Two_propanol_UA, self).__init__()
-                self.name = name
+                self.name = "POL"
 
                 CH3_1_1 = mb.Particle(pos=[0.2, 0.0, 0.0], name='_CH3')
                 HC_1_1 = mb.Particle(pos=[0.4, 0.0, 0.0], name='_HC')

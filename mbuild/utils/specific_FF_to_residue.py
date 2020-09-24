@@ -35,24 +35,28 @@ def Specific_FF_to_residue(structure , forcefield_files= None, forcefield_names=
                             # these are all the residues in which the force field actually applied
 
     if forcefield_names is None and forcefield_files is None:
-        return warn('Please enter either the forcefield_files or forcefield_names, neither were provided')
+        warn('Please enter either the forcefield_files or forcefield_names, neither were provided')
+        return None, None, None, None
 
     if forcefield_names != None and forcefield_files != None:
-        return warn('Please enter either the forcefield_files or forcefield_names, not both')
+        warn('Please enter either the forcefield_files or forcefield_names, not both')
+        return None, None, None, None
 
     elif forcefield_files != None and forcefield_names is None and not isinstance(forcefield_files, dict):
-        return warn('The force field file (forcefield_files) is not a dictionary. Please enter a dictionary'+
+        warn('The force field file (forcefield_files) is not a dictionary. Please enter a dictionary'+
                       "with all the residues specified to a force field"+
                      "-> Ex: {'Water' : 'oplsaa.xml', 'OCT': 'trappe-ua.xml'}, "+
                      "Note: the file path must be specified the force field file")
+        return None, None, None, None
 
     elif forcefield_names != None and forcefield_files is None and not isinstance(forcefield_names, dict) and not isinstance(forcefield_names, str):
-        return warn('The force field names (forcefield_names) is not a string or a dictionary with' +
+        warn('The force field names (forcefield_names) is not a string or a dictionary with' +
                     ' all the residues specified to a force field.' +
                     "-> String Ex: 'trappe-ua' or 'oplsaa'  ." +
                     "Otherise provided a dictionary with all the residues specified to a force field " +
                     "->Dictionary Ex: {'Water' : 'oplsaa', 'OCT': 'trappe-ua'}, " +
                     "Note: the file path must be specified the force field file")
+        return None, None, None, None
 
 
     if residues is None:
@@ -64,17 +68,21 @@ def Specific_FF_to_residue(structure , forcefield_files= None, forcefield_names=
         box_Ang = []
         box_length = len(box)
         if box_length != 3:
-             return warn('Please enter all 3 values for the box dimensions.')
+            warn('Please enter all 3 values for the box dimensions.')
+            return None, None, None, None
         for box_iter in range(0, len(box)):
             if isinstance(box[ box_iter], str)==True:
-                return warn('Please enter all positive or 0 values for the box dimensions.')
+                warn('Please enter all positive or 0 values for the box dimensions.')
+                return None, None, None, None
             if box[ box_iter] < 0:
-                return warn('Please enter all positive or 0 values for the box dimensions.')
+                warn('Please enter all positive or 0 values for the box dimensions.')
+                return None, None, None, None
             # change from nm to Angstroms
             box_Ang.append(box[ box_iter]*10)
 
     if boxes_for_simulation not in [1, 2]:
-        return warn('Please enter boxes_for_simulation equal the interger 1 or 2.')
+        warn('Please enter boxes_for_simulation equal the interger 1 or 2.')
+        return None, None, None, None
 
     forcefield_keys_list = []
     Use_FF_files = False
@@ -96,23 +104,24 @@ def Specific_FF_to_residue(structure , forcefield_files= None, forcefield_names=
         if Use_FF_files == True:
             residue_iteration = forcefield_keys_list[j]
             FF_for_residue_iteration = FF_data[residue_iteration]
-            FF_entry_error = False
+
             try:
                 read_xlm_iteration = xml.dom.minidom.parse(FF_for_residue_iteration)
             except:
-                return warn('Please make sure are entering the correct foyer FF path, including the FF file name.xml ' +
+                warn('Please make sure are entering the correct foyer FF path, including the FF file name.xml ' +
                         'If you are using the pre-build FF files in foyer, please us the forcefield_names variable.')
+                return None, None, None, None
 
         elif Use_FF_names == True:
             residue_iteration = forcefield_keys_list[j]
             FF_for_residue_iteration = FF_data[residue_iteration]
             FF_names_path_iteration = forcefields.get_ff_path()[0] +'/xml/'+FF_for_residue_iteration+'.xml'
-            FF_entry_error = False
             try:
                 read_xlm_iteration = xml.dom.minidom.parse(FF_names_path_iteration)
             except:
-                return warn('Please make sure are entering the correct foyer FF name and not a path to a FF file.' +
+                warn('Please make sure are entering the correct foyer FF name and not a path to a FF file.' +
                         'If you are entering a path to a FF file, please us the forcefield_files variable')
+                return None, None, None, None
         LJ_Coul_1_4_values = read_xlm_iteration.getElementsByTagName("NonbondedForce")
 
         for Scaler in LJ_Coul_1_4_values:
@@ -139,8 +148,8 @@ def Specific_FF_to_residue(structure , forcefield_files= None, forcefield_names=
         new_compound_iter.periodicity[2] = structure.periodicity[2]
         if structure.name in residues:
             if len(structure.children) == 0:
-                print('There are no atoms in this residue, '+str(structure.name))
-                return warn('There are no atoms in this residue, '+str(structure.name))
+                warn('ERROR: There are no atoms in this residue, '+str(structure.name))
+                return None, None, None, None
 
             elif len(structure.children) > 0:
 
@@ -150,8 +159,8 @@ def Specific_FF_to_residue(structure , forcefield_files= None, forcefield_names=
             for child in structure.children:
                 if len(child.children)==0:
                     if child.name not in residues:
-                        print('ERROR: All the residues are not specified')
-                        return warn('ERROR: All the residues are not specified')
+                        warn('ERROR: All the residues are not specified')
+                        return None, None, None, None
 
                     else:
                         new_compound_iter.add(mb.compound.clone(child))
@@ -165,8 +174,8 @@ def Specific_FF_to_residue(structure , forcefield_files= None, forcefield_names=
                                 new_compound_iter.add(mb.compound.clone(sub_child))
                             else:
                                 if len(sub_child.children)==0 and (child.name not in residues):
-                                    print('ERROR: All the residues are not specified')
-                                    return warn('ERROR: All the residues are not specified')
+                                    warn('ERROR: All the residues are not specified')
+                                    return None, None, None, None
 
         structure = new_compound_iter
 
@@ -187,7 +196,8 @@ def Specific_FF_to_residue(structure , forcefield_files= None, forcefield_names=
             text_to_print_2 = "Note: This warning will appear if you are using the CHARMM pdb and psf writers "+ \
                               "2 boxes, and the boxes do not contain all the residues in each box."
             if boxes_for_simulation == 1:
-                return warn(text_to_print_1)
+                warn(text_to_print_1)
+                return None, None, None, None
             if boxes_for_simulation == 2:
                 warn(text_to_print_1 +text_to_print_2)
 
@@ -196,8 +206,8 @@ def Specific_FF_to_residue(structure , forcefield_files= None, forcefield_names=
     elif reorder_res_in_pdb_psf==True:
         print("Information: the output file are being reordered in via the residues list's sequence. ")
     else:
-        print("ERROR residues = Residue_orig_order_list or residues= residues not properly specified ")
-        return warn("ERROR residues = Residue_orig_order_list or residues= residues not properly specified ")
+        warn("ERROR residues = Residue_orig_order_list or residues= residues not properly specified ")
+        return None, None, None, None
 
 
 
@@ -211,8 +221,8 @@ def Specific_FF_to_residue(structure , forcefield_files= None, forcefield_names=
         new_structure_iteration.box = compound_box_infor.box
         for child in structure.children:
             if FF_data.get(child.name) is None:
-                print('ERROR: All residues are not specified in the force_field dictionary')
-                return warn('ERROR: All residues are not specified in the force_field dictionary')
+                warn('ERROR: All residues are not specified in the force_field dictionary')
+                return None, None, None, None
 
             if child.name == residues[i]:
                 children_in_iteration = True

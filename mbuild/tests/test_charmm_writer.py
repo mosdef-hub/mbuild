@@ -8,13 +8,13 @@ from mbuild.utils.io import has_foyer
 @pytest.mark.skipif(not has_foyer, reason="Foyer package not installed")
 class TestCharmmWriterData(BaseTest):
 
-    def test_save(self, ethane_GOMC):
-        charmm_psf_psb_FF(ethane_GOMC, 'ethane', GOMC_FF_filename='ethane',
-                          residues = [ethane_GOMC.name], forcefield_names = 'oplsaa')
+    def test_save(self, EthaneGOMC):
+        charmm_psf_psb_FF(EthaneGOMC, 'ethane', GOMC_FF_filename='ethane',
+                          residues = [EthaneGOMC.name], forcefield_names = 'oplsaa')
 
-    def test_save_charmm_GOMC_FF(self, ethane_GOMC):
-        charmm_psf_psb_FF(ethane_GOMC, 'charmm_data', GOMC_FF_filename='charmm_data',
-                          residues = [ethane_GOMC.name], forcefield_names = 'oplsaa')
+    def test_save_charmm_GOMC_FF(self, EthaneGOMC):
+        charmm_psf_psb_FF(EthaneGOMC, 'charmm_data', GOMC_FF_filename='charmm_data',
+                          residues = [EthaneGOMC.name], forcefield_names = 'oplsaa')
 
         out_GOMC = open('charmm_data.inp', 'r').readlines()
         for i, line in enumerate(out_GOMC):
@@ -75,9 +75,9 @@ class TestCharmmWriterData(BaseTest):
             else:
                 pass
 
-    def test_save_charmm_psf(self, ethane_GOMC):
-        charmm_psf_psb_FF(ethane_GOMC, 'charmm_data', GOMC_FF_filename='charmm_data',
-                          residues = [ethane_GOMC.name], forcefield_names = 'oplsaa')
+    def test_save_charmm_psf(self, EthaneGOMC):
+        charmm_psf_psb_FF(EthaneGOMC, 'charmm_data', GOMC_FF_filename='charmm_data',
+                          residues = [EthaneGOMC.name], forcefield_names = 'oplsaa')
 
         out_GOMC = open('charmm_data.psf', 'r').readlines()
         for i, line in enumerate(out_GOMC):
@@ -98,9 +98,9 @@ class TestCharmmWriterData(BaseTest):
                 pass
 
 
-    def test_save_charmm_pdb(self, ethane_GOMC):
-        charmm_psf_psb_FF(ethane_GOMC, 'charmm_data', GOMC_FF_filename='charmm_data',
-                          residues = [ethane_GOMC.name], forcefield_names = 'oplsaa')
+    def test_save_charmm_pdb(self, EthaneGOMC):
+        charmm_psf_psb_FF(EthaneGOMC, 'charmm_data', GOMC_FF_filename='charmm_data',
+                          residues = [EthaneGOMC.name], forcefield_names = 'oplsaa')
 
 
         out_GOMC = open('charmm_data.pdb', 'r').readlines()
@@ -128,9 +128,9 @@ class TestCharmmWriterData(BaseTest):
                 pass
 
 
-    def test_save_charmm_UA_GOMC_FF(self, two_propanol_UA):
-        charmm_psf_psb_FF(two_propanol_UA, 'charmm_data_UA', GOMC_FF_filename='charmm_data_UA',
-                          residues = [two_propanol_UA.name], forcefield_names = 'trappe-ua',
+    def test_save_charmm_UA_GOMC_FF(self, TwoPropanolUA):
+        charmm_psf_psb_FF(TwoPropanolUA, 'charmm_data_UA', GOMC_FF_filename='charmm_data_UA',
+                          residues = [TwoPropanolUA.name], forcefield_names = 'trappe-ua',
                           Bead_to_atom_name_dict= {'_CH3' : 'C'})
 
         out_GOMC = open('charmm_data_UA.inp', 'r').readlines()
@@ -204,9 +204,9 @@ class TestCharmmWriterData(BaseTest):
                 pass
 
 
-    def test_save_charmm_UA_psf(self, two_propanol_UA):
-        charmm_psf_psb_FF(two_propanol_UA, 'charmm_data_UA', GOMC_FF_filename='charmm_data_UA',
-                          residues = [two_propanol_UA.name], forcefield_names = 'trappe-ua',
+    def test_save_charmm_UA_psf(self, TwoPropanolUA):
+        charmm_psf_psb_FF(TwoPropanolUA, 'charmm_data_UA', GOMC_FF_filename='charmm_data_UA',
+                          residues = [TwoPropanolUA.name], forcefield_names = 'trappe-ua',
                           Bead_to_atom_name_dict= {'_CH3' : 'C'})
 
 
@@ -227,9 +227,9 @@ class TestCharmmWriterData(BaseTest):
                 pass
 
 
-    def test_save_charmm_UA_pdb(self, two_propanol_UA):
-        charmm_psf_psb_FF(two_propanol_UA, 'charmm_data_UA', GOMC_FF_filename='charmm_data_UA',
-                          residues = [two_propanol_UA.name], forcefield_names = 'trappe-ua',
+    def test_save_charmm_UA_pdb(self, TwoPropanolUA):
+        charmm_psf_psb_FF(TwoPropanolUA, 'charmm_data_UA', GOMC_FF_filename='charmm_data_UA',
+                          residues = [TwoPropanolUA.name], forcefield_names = 'trappe-ua',
                           Bead_to_atom_name_dict= {'_CH3' : 'C'})
 
         out_GOMC = open('charmm_data_UA.pdb', 'r').readlines()
@@ -252,16 +252,16 @@ class TestCharmmWriterData(BaseTest):
                 pass
 
 
-    def test_charmm_pdb_fix_angle_bond_fix_atoms(self, ethane_GOMC, ethanol_GOMC):
-        test_box_ethane_propane = mb.fill_box(compound=[ethane_GOMC,ethanol_GOMC],
+    def test_charmm_pdb_fix_angle_bond_fix_atoms(self, EthaneGOMC, EthanolGOMC):
+        test_box_ethane_propane = mb.fill_box(compound=[EthaneGOMC,EthanolGOMC],
                                   n_compounds= [1,1] ,
                                   box=[2.0, 2.0, 2.0])
         charmm_psf_psb_FF(test_box_ethane_propane, 'Test_fixes_angle_bond_atoms',
                           GOMC_FF_filename='Test_fixes_angle_bond_atoms',
-                          residues = [ethane_GOMC.name, ethanol_GOMC.name], forcefield_names = 'oplsaa',
-                          fix_residue=[ethane_GOMC.name],
-                          fix_residue_in_box = [ethanol_GOMC.name],
-                          fix_res_bonds_angles=[ethane_GOMC.name]
+                          residues = [EthaneGOMC.name, EthanolGOMC.name], forcefield_names = 'oplsaa',
+                          fix_residue=[EthaneGOMC.name],
+                          fix_residue_in_box = [EthanolGOMC.name],
+                          fix_res_bonds_angles=[EthaneGOMC.name]
                           )
 
         out_GOMC = open('Test_fixes_angle_bond_atoms.inp', 'r').readlines()
@@ -350,16 +350,16 @@ class TestCharmmWriterData(BaseTest):
             else:
                 pass
 
-    def test_charmm_pdb_residue_reorder_box_sizing(self, two_propanol_UA, ethane_GOMC):
-        test_box_ethane_two_propanol_UA = mb.fill_box(compound=[two_propanol_UA, ethane_GOMC],
+    def test_charmm_pdb_residue_reorder_box_sizing(self, TwoPropanolUA, EthaneGOMC):
+        test_box_ethane_TwoPropanolUA = mb.fill_box(compound=[TwoPropanolUA, EthaneGOMC],
                                   n_compounds= [1,1] ,
                                   box=[2.0, 2.0, 2.0])
-        charmm_psf_psb_FF(test_box_ethane_two_propanol_UA, 'residue_reorder_box_sizing_box_0',
-                          structure_1 = ethane_GOMC,
+        charmm_psf_psb_FF(test_box_ethane_TwoPropanolUA, 'residue_reorder_box_sizing_box_0',
+                          structure_1 = EthaneGOMC,
                           filename_1 = 'residue_reorder_box_sizing_box_1',
                           GOMC_FF_filename=None,
-                          residues = [ethane_GOMC.name, two_propanol_UA.name],
-                          forcefield_names = {ethane_GOMC.name : 'oplsaa', two_propanol_UA.name : 'trappe-ua'},
+                          residues = [EthaneGOMC.name, TwoPropanolUA.name],
+                          forcefield_names = {EthaneGOMC.name : 'oplsaa', TwoPropanolUA.name : 'trappe-ua'},
                           fix_residue=None,
                           fix_residue_in_box = None,
                           fix_res_bonds_angles=None,
