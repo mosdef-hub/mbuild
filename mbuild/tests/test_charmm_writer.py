@@ -809,7 +809,8 @@ class TestCharmmWriterData(BaseTest):
                                        GOMC_FF_filename='box.test',
                                        residues=[EthaneGOMC.name],
                                        forcefield_names={EthaneGOMC.name: 'oplsaa'},
-                                       forcefield_files={EthaneGOMC.name: 'oplsaa'},
+                                       forcefield_files={EthaneGOMC.name: forcefields.get_ff_path()[0]
+                                                                                               +'/xml/'+'oplsaa.xml'},
                                        )
 
         assert  Test_value == None
@@ -849,3 +850,155 @@ class TestCharmmWriterData(BaseTest):
                                        )
 
         assert  Test_value == None
+
+    def test_charmm_Residue_name_not_in_residues(self, EthaneGOMC):
+        Test_value_0 = charmm_psf_psb_FF(EthaneGOMC, 'box_0',
+                                         structure_1 = None,
+                                         filename_1 = None,
+                                         GOMC_FF_filename='box.test',
+                                         residues=["XXX"],
+                                         forcefield_names='oplsaa',
+                                         forcefield_files=None,
+                                         )
+
+        assert Test_value_0 == None
+
+
+    def test_charmm_Methane_test_no_children(self, MethaneUAGOMC):
+        Test_value_0, Test_value_1, \
+        Test_value_2, Test_value_3 = Specific_FF_to_residue(MethaneUAGOMC,
+                                                            forcefield_files=None,
+                                                            forcefield_names={MethaneUAGOMC.name: 'trappe-ua'},
+                                                            residues=[MethaneUAGOMC.name],
+                                                            reorder_res_in_pdb_psf=False,
+                                                            box=None,
+                                                            boxes_for_simulation=1
+                                                            )
+
+        assert str(Test_value_0) == "<Structure 1 atoms; 1 residues; 0 bonds; PBC (orthogonal); NOT parametrized>"
+        assert Test_value_1 == {'_CH4': 0.0}
+        assert Test_value_2 == {'_CH4': 0.0}
+        assert Test_value_3 == ['_CH4']
+
+
+    def test_charmm_a_few_mbuild_layers(self, EthaneGOMC, EthanolGOMC):
+        box_reservior_1 = mb.fill_box(compound=[EthaneGOMC],
+                                    box=[1, 1, 1], n_compounds=[1])
+        box_reservior_1.periodicity[0] = 2
+        box_reservior_1.periodicity[1] = 2
+        box_reservior_1.periodicity[1] = 2
+        box_reservior_2 = mb.fill_box(compound=[EthanolGOMC],
+                                    box=[1, 1, 1], n_compounds=[1])
+        box_reservior_2.translate([0, 0, 1])
+        box_reservior_1.add(box_reservior_2, inherit_periodicity=False)
+
+        Test_value_0, Test_value_1, \
+        Test_value_2, Test_value_3 = Specific_FF_to_residue(box_reservior_1,
+                                                            forcefield_files=None,
+                                                            forcefield_names={EthanolGOMC.name: 'oplsaa',
+                                                                              EthaneGOMC.name:  'oplsaa',},
+                                                            residues=[EthanolGOMC.name, EthaneGOMC.name],
+                                                            reorder_res_in_pdb_psf=False,
+                                                            box=None,
+                                                            boxes_for_simulation=1
+                                                            )
+
+        assert str(Test_value_0) == '<Structure 17 atoms; 2 residues; 15 bonds; PBC (orthogonal); parametrized>'
+        assert Test_value_1 == {'ETO': 0.5, 'ETH': 0.5}
+        assert Test_value_2 == {'ETO': 0.5, 'ETH': 0.5}
+        assert Test_value_3 == ['ETH', 'ETO']
+
+    def test_charmm_all_residues_not_in_dict(self, EthaneGOMC, EthanolGOMC):
+        box_reservior_1 = mb.fill_box(compound=[EthaneGOMC],
+                                      box=[1, 1, 1], n_compounds=[1])
+        box_reservior_1.periodicity[0] = 2
+        box_reservior_1.periodicity[1] = 2
+        box_reservior_1.periodicity[1] = 2
+        box_reservior_2 = mb.fill_box(compound=[EthanolGOMC],
+                                      box=[1, 1, 1], n_compounds=[1])
+        box_reservior_2.translate([0, 0, 1])
+        box_reservior_1.add(box_reservior_2, inherit_periodicity=False)
+
+        Test_value_0, Test_value_1, \
+        Test_value_2, Test_value_3 = Specific_FF_to_residue(box_reservior_1,
+                                                            forcefield_files=None,
+                                                            forcefield_names={EthanolGOMC.name: 'oplsaa' },
+                                                            residues=[EthanolGOMC.name, EthaneGOMC.name],
+                                                            reorder_res_in_pdb_psf=False,
+                                                            box=None,
+                                                            boxes_for_simulation=1
+                                                            )
+
+        assert Test_value_0 == None
+        assert Test_value_1 == None
+        assert Test_value_2 == None
+        assert Test_value_3 == None
+
+
+    def test_FF_files_string(self, TwoPropanolUA):
+        charmm_psf_psb_FF(TwoPropanolUA, 'FF_files_string', GOMC_FF_filename='FF_files_string',
+                          residues = [TwoPropanolUA.name],
+                          forcefield_files = forcefields.get_ff_path()[0]+'/xml/'+'trappe-ua.xml',
+                          Bead_to_atom_name_dict= {'_CH3' : 'C'})
+
+        out_GOMC = open('FF_files_string.pdb', 'r').readlines()
+        for i, line in enumerate(out_GOMC):
+            if 'CRYST1' in line:
+                Atom_type_res_part_1_list = [['ATOM', '1', 'C1', 'POL', '1', '1'],
+                                             ['ATOM', '2', 'BD1', 'POL', '1', '1'],
+                                             ['ATOM', '3', 'O1', 'POL', '1', '1'],
+                                             ['ATOM', '4', 'H1', 'POL', '1', '1'],
+                                             ['ATOM', '5', 'C2', 'POL', '1', '1'],
+                                             ]
+                Atom_type_res_part_2_list = [['1.00', '0.00', 'EP'], ['1.00', '0.00','EP'], ['1.00', '0.00','O'],
+                                             ['1.00', '0.00','H'], ['1.00', '0.00','EP'] ]
+
+                for j in range(0, len(Atom_type_res_part_1_list)):
+                    assert out_GOMC[i + 1 + j].split()[0:6] ==  Atom_type_res_part_1_list[j]
+                    assert out_GOMC[i + 1 + j].split()[9:12] == Atom_type_res_part_2_list[j]
+
+            else:
+                pass
+
+    def test_FF_names_string(self, TwoPropanolUA):
+        charmm_psf_psb_FF(TwoPropanolUA, 'FF_files_string', GOMC_FF_filename='FF_files_string',
+                          residues = [TwoPropanolUA.name],
+                          forcefield_names = 'trappe-ua',
+                          Bead_to_atom_name_dict= {'_CH3' : 'C'})
+
+        out_GOMC = open('FF_files_string.pdb', 'r').readlines()
+        for i, line in enumerate(out_GOMC):
+            if 'CRYST1' in line:
+                Atom_type_res_part_1_list = [['ATOM', '1', 'C1', 'POL', '1', '1'],
+                                             ['ATOM', '2', 'BD1', 'POL', '1', '1'],
+                                             ['ATOM', '3', 'O1', 'POL', '1', '1'],
+                                             ['ATOM', '4', 'H1', 'POL', '1', '1'],
+                                             ['ATOM', '5', 'C2', 'POL', '1', '1'],
+                                             ]
+                Atom_type_res_part_2_list = [['1.00', '0.00', 'EP'], ['1.00', '0.00','EP'], ['1.00', '0.00','O'],
+                                             ['1.00', '0.00','H'], ['1.00', '0.00','EP'] ]
+
+                for j in range(0, len(Atom_type_res_part_1_list)):
+                    assert out_GOMC[i + 1 + j].split()[0:6] ==  Atom_type_res_part_1_list[j]
+                    assert out_GOMC[i + 1 + j].split()[9:12] == Atom_type_res_part_2_list[j]
+
+            else:
+                pass
+
+    def test_FF_files_list(self, TwoPropanolUA):
+        Test_value_0 = charmm_psf_psb_FF(TwoPropanolUA, 'S', GOMC_FF_filename='S',
+                                         residues = [TwoPropanolUA.name],
+                                         forcefield_files = [str(forcefields.get_ff_path()[0])+'/xml/'+'trappe-ua.xml'],
+                                         Bead_to_atom_name_dict= {'_CH3' : 'C'},
+                                         )
+
+        assert Test_value_0 == None
+
+    def test_residuals_not_a_string(self, TwoPropanolUA):
+        Test_value_0 = charmm_psf_psb_FF(TwoPropanolUA, 'box_0', GOMC_FF_filename='box_0',
+                                         residues = TwoPropanolUA.name,
+                                         forcefield_names = {EthanolGOMC.name: 'trappe-ua' },
+                                         Bead_to_atom_name_dict= {'_CH3' : 'C'},
+                                         )
+
+        assert Test_value_0 == None        

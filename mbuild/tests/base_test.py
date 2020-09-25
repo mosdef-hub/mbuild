@@ -265,6 +265,13 @@ class BaseTest:
 
         return Ethanol_GOMC
 
+    @pytest.fixture
+    def MethaneUAGOMC(self):
+        MethaneUA_GOMC = mb.Compound(name="_CH4")
+        MethaneUA_GOMC.name = 'MET'
+
+        return MethaneUA_GOMC
+
 
     @pytest.fixture
     def TwoPropanolUA(self):

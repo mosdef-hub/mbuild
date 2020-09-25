@@ -632,6 +632,12 @@ def charmm_psf_psb_FF(structure_0, filename_0, structure_1 = None, filename_1= N
                                                          reorder_res_in_pdb_psf=reorder_res_in_pdb_psf,
                                                          box = box_0,
                                                          boxes_for_simulation = boxes_for_simulation)
+        test_Specific_FF_to_residue_for_failure = [structure_0_FF, coulomb14scaler_dict_0,
+                                                   LJ14scaler_dict_0, residues_applied_list_0]
+        for iter_test_Specifc_res_fail in range(0, len(test_Specific_FF_to_residue_for_failure)):
+            if test_Specific_FF_to_residue_for_failure[iter_test_Specifc_res_fail] == None:
+                return None
+
         print('GOMC FF writing each residues FF as a group for  structure_1')
         structure_1_FF, \
         coulomb14scaler_dict_1, \
@@ -643,6 +649,12 @@ def charmm_psf_psb_FF(structure_0, filename_0, structure_1 = None, filename_1= N
                                                          reorder_res_in_pdb_psf=reorder_res_in_pdb_psf,
                                                          box = box_1,
                                                          boxes_for_simulation = boxes_for_simulation)
+        test_Specific_FF_to_residue_for_failure = [structure_1_FF, coulomb14scaler_dict_1,
+                                                   LJ14scaler_dict_1, residues_applied_list_1]
+        for iter_test_Specifc_res_fail in range(0, len(test_Specific_FF_to_residue_for_failure)):
+            if test_Specific_FF_to_residue_for_failure[iter_test_Specifc_res_fail] == None:
+                return None
+
         structure_0_and_1_FF =structure_0_FF + structure_1_FF
         combined_1_4_LJ_dict_per_residue.update(coulomb14scaler_dict_0)
         combined_1_4_LJ_dict_per_residue.update(coulomb14scaler_dict_1)
@@ -689,6 +701,12 @@ def charmm_psf_psb_FF(structure_0, filename_0, structure_1 = None, filename_1= N
                                                          reorder_res_in_pdb_psf=reorder_res_in_pdb_psf,
                                                          box=box_0,
                                                          boxes_for_simulation = boxes_for_simulation)
+        test_Specific_FF_to_residue_for_failure = [ structure_0_FF, coulomb14scaler_dict_0,
+                                                    LJ14scaler_dict_0, residues_applied_list_0 ]
+        for iter_test_Specifc_res_fail in range(0, len(test_Specific_FF_to_residue_for_failure)):
+            if test_Specific_FF_to_residue_for_failure[iter_test_Specifc_res_fail] == None:
+                return None
+
         combined_1_4_LJ_dict_per_residue.update(coulomb14scaler_dict_0)
         combined_1_4_Coul_dict_per_residue.update(coulomb14scaler_dict_0)
 

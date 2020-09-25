@@ -148,8 +148,8 @@ def Specific_FF_to_residue(structure , forcefield_files= None, forcefield_names=
         new_compound_iter.periodicity[2] = structure.periodicity[2]
         if structure.name in residues:
             if len(structure.children) == 0:
-                warn('ERROR: There are no atoms in this residue, '+str(structure.name))
-                return None, None, None, None
+                warn('Warning: This residue is the atom, and is a single atom., '+str(structure.name))
+                new_compound_iter.add(mb.compound.clone(structure))
 
             elif len(structure.children) > 0:
 
@@ -205,9 +205,6 @@ def Specific_FF_to_residue(structure , forcefield_files= None, forcefield_names=
         residues = Residue_orig_order_list
     elif reorder_res_in_pdb_psf==True:
         print("Information: the output file are being reordered in via the residues list's sequence. ")
-    else:
-        warn("ERROR residues = Residue_orig_order_list or residues= residues not properly specified ")
-        return None, None, None, None
 
 
 
