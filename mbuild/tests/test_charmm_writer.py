@@ -1001,4 +1001,4 @@ class TestCharmmWriterData(BaseTest):
                                          Bead_to_atom_name_dict= {'_CH3' : 'C'},
                                          )
 
-        assert Test_value_0 == None        
+        assert Test_value_0 == None

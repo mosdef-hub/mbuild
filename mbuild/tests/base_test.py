@@ -268,7 +268,6 @@ class BaseTest:
     @pytest.fixture
     def MethaneUAGOMC(self):
         MethaneUA_GOMC = mb.Compound(name="_CH4")
-        MethaneUA_GOMC.name = 'MET'
 
         return MethaneUA_GOMC
 
