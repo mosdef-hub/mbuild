@@ -34,4 +34,6 @@ RUN conda update conda -yq && \
 
 WORKDIR /home/anaconda
 
-CMD /bin/su anaconda -s /bin/sh -l
+
+ENTRYPOINT ["/bin/su", "anaconda", "-s", "/bin/sh", "-l"]
+CMD echo "Welcome to mbuild! Run with '-c python' or '-c jupyter' to open a python interpreter or jupyter notebook!" 
