@@ -414,6 +414,8 @@ class TestCharmmWriterData(BaseTest):
                 pass
 
 
+
+
     # test utils base 10 to base 16 converter
     def test_base_10_to_base_16(self, EthaneGOMC):
         Test_value_15 = changeDigit_base10_to_base16_alph_num(15)
@@ -424,13 +426,13 @@ class TestCharmmWriterData(BaseTest):
         Test_value_1000 = changeDigit_base10_to_base16_alph_num(1000)
         Test_value_5000 = changeDigit_base10_to_base16_alph_num(5000)
 
-        assert Test_value_15 == 'f'
-        assert Test_value_16 == '10'
+        assert str(Test_value_15) == 'f'
+        assert str(Test_value_16) == '10'
 
-        assert Test_value_17 == '11'
-        assert Test_value_200 == 'c8'
-        assert Test_value_1000 == '3e8'
-        assert Test_value_5000 == '1388'
+        assert str(Test_value_17) == '11'
+        assert str(Test_value_200) == 'c8'
+        assert str(Test_value_1000) == '3e8'
+        assert str(Test_value_5000) == '1388'
 
     # test utils base 10 to base 62 converter
     def test_base_10_to_base_62(self, EthaneGOMC):
@@ -443,14 +445,14 @@ class TestCharmmWriterData(BaseTest):
         Test_value_1000 = changeDigit_base10_to_base62_alph_num(1000)
         Test_value_5000 = changeDigit_base10_to_base62_alph_num(5000)
 
-        assert Test_value_61 == 'z'
-        assert Test_value_62 == '10'
-        assert Test_value_63 == '11'
+        assert str(Test_value_61) == 'z'
+        assert str(Test_value_62) == '10'
+        assert str(Test_value_63) == '11'
 
-        assert Test_value_17 == 'H'
-        assert Test_value_200 == '3E'
-        assert Test_value_1000 == 'G8'
-        assert Test_value_5000 == '1Ie'
+        assert str(Test_value_17) == 'H'
+        assert str(Test_value_200) == '3E'
+        assert str(Test_value_1000) == 'G8'
+        assert str(Test_value_5000) == '1Ie'
 
     # Tests for the mbuild.utils.specific_FF_to_residue.Specific_FF_to_residue() function
     def test_Specific_FF_to_residue_FFnames_FFfiles_both_None(self, EthaneGOMC):
@@ -464,8 +466,10 @@ class TestCharmmWriterData(BaseTest):
                                                             boxes_for_simulation = 1
                                                             )
 
-        if Test_value_0 == None and Test_value_1 == None and Test_value_2 == None and Test_value_3 == None:
-            pass
+        assert Test_value_0 == None
+        assert Test_value_1 == None
+        assert Test_value_2 == None
+        assert Test_value_3 == None
 
     def test_Specific_FF_to_residue_FFnames_FFfiles_both_Values(self, EthaneGOMC):
         Test_value_0, Test_value_1, \
@@ -479,8 +483,10 @@ class TestCharmmWriterData(BaseTest):
                                                             boxes_for_simulation=1
                                                             )
 
-        if Test_value_0 == None and Test_value_1 == None and Test_value_2 == None and Test_value_3 == None:
-            pass
+        assert Test_value_0 == None
+        assert Test_value_1 == None
+        assert Test_value_2 == None
+        assert Test_value_3 == None
 
     def test_Specific_FF_to_residue_FFnames_None_FFfiles_not_dict(self, EthaneGOMC):
         Test_value_0, Test_value_1, \
@@ -494,8 +500,10 @@ class TestCharmmWriterData(BaseTest):
                                                             boxes_for_simulation=1
                                                             )
 
-        if Test_value_0 == None and Test_value_1 == None and Test_value_2 == None and Test_value_3 == None:
-            pass
+        assert Test_value_0 == None
+        assert Test_value_1 == None
+        assert Test_value_2 == None
+        assert Test_value_3 == None
 
     def test_Specific_FF_to_residue_FFfiles_None_FFnames_not_dict(self, EthaneGOMC):
         Test_value_0, Test_value_1, \
@@ -508,8 +516,10 @@ class TestCharmmWriterData(BaseTest):
                                                             boxes_for_simulation=1
                                                             )
 
-        if Test_value_0 == None and Test_value_1 == None and Test_value_2 == None and Test_value_3 == None:
-            pass
+        assert Test_value_0 == None
+        assert Test_value_1 == None
+        assert Test_value_2 == None
+        assert Test_value_3 == None
 
     def test_Specific_FF_to_residue_is_None(self, EthaneGOMC):
         Test_value_0, Test_value_1, \
@@ -522,8 +532,10 @@ class TestCharmmWriterData(BaseTest):
                                                             boxes_for_simulation=1
                                                             )
 
-        if Test_value_0 == None and Test_value_1 == None and Test_value_2 == None and Test_value_3 == None:
-            pass
+        assert Test_value_0 == None
+        assert Test_value_1 == None
+        assert Test_value_2 == None
+        assert Test_value_3 == None
 
     def test_Specific_FF_to_residue_reorder_not_True_or_False(self, EthaneGOMC):
         Test_value_0, Test_value_1, \
@@ -536,8 +548,10 @@ class TestCharmmWriterData(BaseTest):
                                                             boxes_for_simulation=1
                                                             )
 
-        if Test_value_0 == None and Test_value_1 == None and Test_value_2 == None and Test_value_3 == None:
-            pass
+        assert Test_value_0 == None
+        assert Test_value_1 == None
+        assert Test_value_2 == None
+        assert Test_value_3 == None
 
     def test_Specific_FF_to_box_one_dim_is_negative(self, EthaneGOMC):
         Test_value_0, Test_value_1, \
@@ -549,6 +563,10 @@ class TestCharmmWriterData(BaseTest):
                                                             box=[-2,3,4,5],
                                                             boxes_for_simulation=1
                                                             )
+        assert Test_value_0 == None
+        assert Test_value_1 == None
+        assert Test_value_2 == None
+        assert Test_value_3 == None
 
     def test_Specific_FF_to_box_one_dim_is_string(self, EthaneGOMC):
         Test_value_0, Test_value_1, \
@@ -561,8 +579,10 @@ class TestCharmmWriterData(BaseTest):
                                                             boxes_for_simulation=1
                                                             )
 
-        if Test_value_0 == None and Test_value_1 == None and Test_value_2 == None and Test_value_3 == None:
-            pass
+        assert Test_value_0 == None
+        assert Test_value_1 == None
+        assert Test_value_2 == None
+        assert Test_value_3 == None
 
     def test_Specific_FF_to_simulation_boxes_not_1_or_2(self, EthaneGOMC):
         Test_value_0, Test_value_1, \
@@ -575,8 +595,10 @@ class TestCharmmWriterData(BaseTest):
                                                             boxes_for_simulation=3
                                                             )
 
-        if Test_value_0 == None and Test_value_1 == None and Test_value_2 == None and Test_value_3 == None:
-            pass
+        assert Test_value_0 == None
+        assert Test_value_1 == None
+        assert Test_value_2 == None
+        assert Test_value_3 == None
 
     def test_Specific_FF_to_residue_FFfiles_wrong_path(self, EthaneGOMC):
         Test_value_0, Test_value_1, \
@@ -588,8 +610,10 @@ class TestCharmmWriterData(BaseTest):
                                                             box=[4, 5, 6],
                                                             boxes_for_simulation=1
                                                             )
-        if Test_value_0 == None and Test_value_1 == None and Test_value_2 == None and Test_value_3 == None:
-            pass
+        assert Test_value_0 == None
+        assert Test_value_1 == None
+        assert Test_value_2 == None
+        assert Test_value_3 == None
 
     def test_Specific_FF_to_residue_FFnames_wrong_path(self, EthaneGOMC):
         Test_value_0, Test_value_1, \
@@ -601,8 +625,10 @@ class TestCharmmWriterData(BaseTest):
                                                             box=None,
                                                             boxes_for_simulation=1
                                                             )
-        if Test_value_0 == None and Test_value_1 == None and Test_value_2 == None and Test_value_3 == None:
-            pass
+        assert Test_value_0 == None
+        assert Test_value_1 == None
+        assert Test_value_2 == None
+        assert Test_value_3 == None
 
     def test_Specific_FF_to_residue_FFfiles_run(self, EthaneGOMC):
         Test_value_0, Test_value_1, \
@@ -641,7 +667,7 @@ class TestCharmmWriterData(BaseTest):
         Empty_compound.name = 'EPT'
 
         Test_value_0, Test_value_1, \
-        Test_value_2, Test_value_3 = Specific_FF_to_residue(x,
+        Test_value_2, Test_value_3 = Specific_FF_to_residue(Empty_compound,
                                                             forcefield_files=None,
                                                             forcefield_names={Empty_compound: 'oplsaa'},
                                                             residues=['oplsaa'.name],
@@ -649,8 +675,10 @@ class TestCharmmWriterData(BaseTest):
                                                             box=[5, 6, 7],
                                                             boxes_for_simulation=1
                                                             )
-        if Test_value_0 == None and Test_value_1 == None and Test_value_2 == None and Test_value_3 == None:
-            pass
+        assert Test_value_0 == None
+        assert Test_value_1 == None
+        assert Test_value_2 == None
+        assert Test_value_3 == None
 
 
 
@@ -664,8 +692,7 @@ class TestCharmmWriterData(BaseTest):
                                        forcefield_names = {EthaneGOMC.name : 'oplsaa'},
                                        )
 
-        if Test_value == None:
-            pass
+        assert  Test_value == None
 
     def test_charmm_residue_not_None(self, EthaneGOMC):
         Test_value = charmm_psf_psb_FF(EthaneGOMC, 'box_0',
@@ -676,8 +703,7 @@ class TestCharmmWriterData(BaseTest):
                                        forcefield_names={EthaneGOMC.name: 'oplsaa'}
                                        )
 
-        if Test_value == None:
-            pass
+        assert  Test_value == None
 
     def test_charmm_residue_string(self, EthaneGOMC):
         Test_value = charmm_psf_psb_FF(EthaneGOMC, 'box_0',
@@ -688,8 +714,7 @@ class TestCharmmWriterData(BaseTest):
                                        forcefield_names={EthaneGOMC.name: 'oplsaa'}
                                        )
 
-        if Test_value == None:
-            pass
+        assert  Test_value == None
 
     def test_charmm_residue_is_None(self, EthaneGOMC):
         Test_value = charmm_psf_psb_FF(EthaneGOMC, 'box_0',
@@ -700,8 +725,7 @@ class TestCharmmWriterData(BaseTest):
                                        forcefield_names={EthaneGOMC.name: 'oplsaa'}
                                        )
 
-        if Test_value == None:
-            pass
+        assert  Test_value == None
 
     def test_charmm_filename_0_is_string(self, EthaneGOMC):
         Test_value = charmm_psf_psb_FF(EthaneGOMC, 0,
@@ -712,8 +736,7 @@ class TestCharmmWriterData(BaseTest):
                                        forcefield_names={EthaneGOMC.name: 'oplsaa'}
                                        )
 
-        if Test_value == None:
-            pass
+        assert  Test_value == None
 
     def test_charmm_filename_1_is_string(self, EthaneGOMC):
         Test_value = charmm_psf_psb_FF(EthaneGOMC, 'box_0',
@@ -724,8 +747,7 @@ class TestCharmmWriterData(BaseTest):
                                        forcefield_names={EthaneGOMC.name: 'oplsaa'},
                                        )
 
-        if Test_value == None:
-            pass
+        assert  Test_value == None
 
     def test_charmm_box_1_not_None_no_structure_1(self, EthaneGOMC):
         Test_value = charmm_psf_psb_FF(EthaneGOMC, 'box_0',
@@ -737,8 +759,7 @@ class TestCharmmWriterData(BaseTest):
                                        box_1=[4, 4, 4],
                                        )
 
-        if Test_value == None:
-            pass
+        assert  Test_value == None
 
     def test_charmm_GOMC_filename_not_string(self, EthaneGOMC):
         Test_value = charmm_psf_psb_FF(EthaneGOMC, 'box_0',
@@ -749,8 +770,7 @@ class TestCharmmWriterData(BaseTest):
                                        forcefield_names={EthaneGOMC.name: 'oplsaa'},
                                        )
 
-        if Test_value == None:
-            pass
+        assert Test_value == None
 
     def test_charmm_GOMC_filename_ext_not_dot_inp(self, EthaneGOMC):
         Test_value = charmm_psf_psb_FF(EthaneGOMC, 'box_0',
@@ -761,8 +781,7 @@ class TestCharmmWriterData(BaseTest):
                                        forcefield_names={EthaneGOMC.name: 'oplsaa'},
                                        )
 
-        if Test_value == None:
-            pass
+        assert  Test_value == None
 
     def test_charmm_FFname_and_FFfiles_equal_none(self, EthaneGOMC):
         Test_value = charmm_psf_psb_FF(EthaneGOMC, 'box_0',
@@ -772,8 +791,7 @@ class TestCharmmWriterData(BaseTest):
                                        residues=[EthaneGOMC.name],
                                        )
 
-        if Test_value == None:
-            pass
+        assert  Test_value == None
 
 
     def test_charmm_FFname_and_FFfiles_box_have_values(self, EthaneGOMC):
@@ -786,8 +804,7 @@ class TestCharmmWriterData(BaseTest):
                                        forcefield_files={EthaneGOMC.name: 'oplsaa'},
                                        )
 
-        if Test_value == None:
-            pass
+        assert  Test_value == None
 
     def test_charmm_FFfiles_not_dict(self, EthaneGOMC):
         Test_value = charmm_psf_psb_FF(EthaneGOMC, 'box_0',
@@ -799,8 +816,7 @@ class TestCharmmWriterData(BaseTest):
                                        forcefield_files=['oplsaa', 'oplsaa'],
                                        )
 
-        if Test_value == None:
-            pass
+        assert  Test_value == None
 
     def test_charmm_FFnames_not_dict(self, EthaneGOMC):
         Test_value = charmm_psf_psb_FF(EthaneGOMC, 'box_0',
@@ -812,8 +828,7 @@ class TestCharmmWriterData(BaseTest):
                                        forcefield_files=None,
                                        )
 
-        if Test_value == None:
-            pass
+        assert  Test_value == None
 
     def test_charmm_FFnames_string(self, EthaneGOMC):
         Test_value = charmm_psf_psb_FF(EthaneGOMC, 'box_0',
@@ -825,5 +840,4 @@ class TestCharmmWriterData(BaseTest):
                                        forcefield_files=None,
                                        )
 
-        if Test_value == None:
-            pass
+        assert  Test_value == None

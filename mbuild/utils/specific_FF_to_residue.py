@@ -59,8 +59,10 @@ def Specific_FF_to_residue(structure , forcefield_files= None, forcefield_names=
 
     if residues is None:
         print('Please enter the residues in the Specific_FF_to_residue function')
+        return None, None, None, None
     if reorder_res_in_pdb_psf != True or reorder_res_in_pdb_psf != False:
         print('Please enter the reorder_res_in_pdb_psf in the Specific_FF_to_residue function (i.e., True or False)')
+        return None, None, None, None
 
     if box !=None :
         box_Ang = []
