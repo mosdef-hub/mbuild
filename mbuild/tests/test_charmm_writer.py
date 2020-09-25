@@ -433,7 +433,6 @@ class TestCharmmWriterData(BaseTest):
         for test_base_62_iter in  range(0, len(List_Base_10_and_62)):
             test_10_iter = List_Base_10_and_62[ test_base_62_iter][0]
             test_62_iter = List_Base_10_and_62[test_base_62_iter][1]
-            print('base10_to_base16_alph_num[test_10_iter]) = str(test_62_iter) === ' +str(base10_to_base16_alph_num(test_10_iter))+" == "+ str(test_62_iter))
             assert str(base10_to_base62_alph_num(test_10_iter)) == str(test_62_iter)
 
 

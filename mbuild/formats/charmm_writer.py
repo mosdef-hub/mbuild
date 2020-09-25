@@ -16,18 +16,10 @@ from parmed.utils.six import string_types
 from parmed.utils.six.moves import range
 
 
-
-def _number_truncated_to_n_digits(num, digits):
-    """ Truncates the given number to the specified number of digits """
-    if num < 0:
-        return int(-(-num % eval('1e%d' % (digits-1))))
-    return int(num % eval('1e%d' % digits))
-
 def print_atoms(atom, coords):
     return atom, atom.other_locations, coords[atom.idx]
 
-def _get_bond_types(structure, bonds, sigma_conversion_factor,
-        epsilon_conversion_factor):
+def _get_bond_types(structure, bonds, sigma_conversion_factor, epsilon_conversion_factor):
     unique_bond_types = dict(enumerate(set([(round(bond.type.k*(
                                              sigma_conversion_factor**2/epsilon_conversion_factor),3),
                                              round(bond.type.req/sigma_conversion_factor,3),
@@ -456,7 +448,6 @@ def charmm_psf_psb_FF(structure_0, filename_0, structure_1 = None, filename_1= N
 
     """
 
-
     if not isinstance(residues, list):
         warn('Error: Please enter the residues (residues) in a list format')
         return None
@@ -476,6 +467,7 @@ def charmm_psf_psb_FF(structure_0, filename_0, structure_1 = None, filename_1= N
 
     if structure_1 is None and box_1 != None:
         warn('Error: box_1 is set to a value but there is not a structure 1 to use it on.')
+        return None
 
 
     if GOMC_FF_filename != None:
@@ -484,9 +476,7 @@ def charmm_psf_psb_FF(structure_0, filename_0, structure_1 = None, filename_1= N
             return None
         if isinstance(GOMC_FF_filename, str) :
             extension_FF_name = os.path.splitext(GOMC_FF_filename)[-1]
-            if extension_FF_name == '.inp':
-                print('')
-            else:
+            if extension_FF_name != '.inp':
                 GOMC_FF_filename = GOMC_FF_filename + '.inp'
 
     if forcefield_names is None and forcefield_files is None:
@@ -506,11 +496,6 @@ def charmm_psf_psb_FF(structure_0, filename_0, structure_1 = None, filename_1= N
                  "Otherise provided a dictionary with all the residues specified to a force field " +
                  "->Dictionary Ex: {'Water' : 'path/oplsaa.xml', 'OCT': 'path/trappe-ua.xml'}, " +
                  "Note: the file path must be specified the force field file")
-            return None
-
-        if isinstance(forcefield_files, list) == True:
-            warn('Error: Please enter the forcefield_files (forcefield_files) as a single string' +
-                 '  or in a dictionary format (i.e., residue to for each FF)')
             return None
 
         if isinstance(forcefield_files, str)== True :
@@ -543,6 +528,7 @@ def charmm_psf_psb_FF(structure_0, filename_0, structure_1 = None, filename_1= N
             for i in range(0, len(residues)):
                 forcefield_names.update({residues[i]: FF_name})
             print('FF forcefield_names = ' + str(forcefield_names))
+
 
     if residues != None and not isinstance(residues, list):
         warn('Error: Please enter the residues (residues) in a list format')

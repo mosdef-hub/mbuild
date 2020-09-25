@@ -104,10 +104,10 @@ def base10_to_base62_alph_num(base10_No):
     while whole_no != 0:
         whole_no =int(base10_No / base62_No**power)
 
-        if whole_no == base62_No :
-            base62_Values = str(0)+base62_Values
+        #if whole_no == base16_No :
+            #base16_Values = str(0)+base16_Values
 
-        elif (whole_no != 0) and (whole_no > base62_No) :
+        if (whole_no != 0) and (whole_no > base62_No) :
             base62_Values = str(changeDigit_base10_to_base62_alph_num(int(whole_no % base62_No))) + base62_Values
 
         elif (whole_no != 0) and (whole_no < base62_No):
@@ -187,10 +187,10 @@ def base10_to_base16_alph_num(base10_No):
     while whole_no != 0:
         whole_no =int(base10_No / base16_No**power)
 
-        if whole_no == base16_No :
-            base16_Values = str(0)+base16_Values
+        #if whole_no == base16_No :
+            #base16_Values = str(0)+base16_Values
 
-        elif (whole_no != 0) and (whole_no > base16_No) :
+        if (whole_no != 0) and (whole_no > base16_No) :
             base16_Values = str(changeDigit_base10_to_base16_alph_num(int(whole_no % base16_No))) + base16_Values
 
         elif (whole_no != 0) and (whole_no < base16_No):
@@ -221,3 +221,4 @@ def changeDigit_base10_to_base16_alph_num(current_digit):
 #***********************************************
 # Converting base-10 to base-16 functions (end)
 #***********************************************
+print(base10_to_base16_alph_num(0))
