@@ -426,6 +426,19 @@ class TestCharmmWriterData(BaseTest):
             test_16_iter = List_Base_10_and_16[test_base_16_iter][1]
             assert str(base10_to_base16_alph_num(test_10_iter)) == str(test_16_iter)
 
+        unique_entries_base_16_List = []
+        for test_unique_base_16 in range(0, 16 ** 2):
+            unique_entries_base_16_List.append(base10_to_base16_alph_num(test_unique_base_16))
+
+        verified_unique_entries_base_16_List = unique_entries_in_List(unique_entries_base_16_List)
+        assert len(verified_unique_entries_base_16_List) == len(unique_entries_base_16_List)
+
+        added_values_verified_unique_entries_base_16_List = verified_unique_entries_base_16_List
+        add_same_values_List = ['1', 'a']
+        for add_same_base_16 in range(0, len(add_same_values_List)):
+            added_values_verified_unique_entries_base_16_List.append(add_same_values_List[add_same_base_16])
+        assert len(verified_unique_entries_base_16_List) - len(add_same_values_List) == len(unique_entries_base_16_List)
+
     # test utils base 10 to base 62 converter
     def test_base_10_to_base_62(self):
         List_Base_10_and_62 = [[17, 'H'], [61, 'z'], [62, '10'], [63, '11'], [200, '3E'], [1000, 'G8'], [5000, '1Ie']]
@@ -435,6 +448,18 @@ class TestCharmmWriterData(BaseTest):
             test_62_iter = List_Base_10_and_62[test_base_62_iter][1]
             assert str(base10_to_base62_alph_num(test_10_iter)) == str(test_62_iter)
 
+        unique_entries_base_62_List = []
+        for test_unique_base_62 in range(0,62**2):
+            unique_entries_base_62_List.append(base10_to_base62_alph_num(test_unique_base_62))
+
+        verified_unique_entries_base_62_List =  unique_entries_in_List(unique_entries_base_62_List )
+        assert len(verified_unique_entries_base_62_List) == len(unique_entries_base_62_List)
+
+        added_values_verified_unique_entries_base_62_List = verified_unique_entries_base_62_List
+        add_same_values_List = ['1', 'a']
+        for add_same_base_62 in range(0, len(add_same_values_List)):
+            added_values_verified_unique_entries_base_62_List.append(add_same_values_List[add_same_base_62])
+        assert len(verified_unique_entries_base_62_List)-len(add_same_values_List) == len(unique_entries_base_62_List)
 
     # Tests for the mbuild.utils.specific_FF_to_residue.Specific_FF_to_residue() function
     def test_Specific_FF_to_residue_FFnames_FFfiles_both_None(self, EthaneGOMC):
@@ -541,7 +566,7 @@ class TestCharmmWriterData(BaseTest):
                                                             forcefield_files=None,
                                                             forcefield_names={EthaneGOMC.name: 'oplsaa'},
                                                             residues=[EthaneGOMC.name],
-                                                            reorder_res_in_pdb_psf=None,
+                                                            reorder_res_in_pdb_psf=False,
                                                             box=[-2,3,4,5],
                                                             boxes_for_simulation=1
                                                             )
@@ -556,7 +581,7 @@ class TestCharmmWriterData(BaseTest):
                                                             forcefield_files=None,
                                                             forcefield_names={EthaneGOMC.name: 'oplsaa'},
                                                             residues=[EthaneGOMC.name],
-                                                            reorder_res_in_pdb_psf=None,
+                                                            reorder_res_in_pdb_psf=False,
                                                             box=["string", 3, 4, 5],
                                                             boxes_for_simulation=1
                                                             )
@@ -572,7 +597,7 @@ class TestCharmmWriterData(BaseTest):
                                                             forcefield_files=None,
                                                             forcefield_names={EthaneGOMC.name: 'oplsaa'},
                                                             residues=[EthaneGOMC.name],
-                                                            reorder_res_in_pdb_psf=None,
+                                                            reorder_res_in_pdb_psf=False,
                                                             box=[2, 3, 4, 5],
                                                             boxes_for_simulation=3
                                                             )
