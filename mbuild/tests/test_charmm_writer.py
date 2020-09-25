@@ -997,7 +997,7 @@ class TestCharmmWriterData(BaseTest):
     def test_residuals_not_a_string(self, TwoPropanolUA):
         Test_value_0 = charmm_psf_psb_FF(TwoPropanolUA, 'box_0', GOMC_FF_filename='box_0',
                                          residues = TwoPropanolUA.name,
-                                         forcefield_names = {EthanolGOMC.name: 'trappe-ua' },
+                                         forcefield_names = {TwoPropanolUA.name: 'trappe-ua' },
                                          Bead_to_atom_name_dict= {'_CH3' : 'C'},
                                          )
 
