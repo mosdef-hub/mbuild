@@ -5,6 +5,7 @@ from mbuild.formats.charmm_writer import charmm_psf_psb_FF
 from mbuild.utils.io import has_foyer
 from mbuild.utils.conversion import base10_to_base16_alph_num
 from mbuild.utils.conversion import base10_to_base62_alph_num
+from mbuild.utils.conversion import unique_entries_in_List
 from mbuild.utils.specific_FF_to_residue  import Specific_FF_to_residue
 from foyer.forcefields import forcefields
 
