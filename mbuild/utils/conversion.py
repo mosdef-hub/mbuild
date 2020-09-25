@@ -216,22 +216,6 @@ def changeDigit_base10_to_base16_alph_num(current_digit):
             current_digit = base16_Values[counter - 1]
     return current_digit
 
-print('base10_to_base16_alph_num(15)= ' +str(base10_to_base16_alph_num(15)))
-print('base10_to_base16_alph_num(16)= ' +str(base10_to_base16_alph_num(16)))
-
-print('base10_to_base16_alph_num(17)= ' +str(base10_to_base16_alph_num(17)))
-print('base10_to_base16_alph_num(200)= ' +str(base10_to_base16_alph_num(200)))
-print('base10_to_base16_alph_num(1000)= ' +str(base10_to_base16_alph_num(1000)))
-print('base10_to_base16_alph_num(5000)= ' +str(base10_to_base16_alph_num(5000)))
-
-print('base10_to_base62_alph_num(61)= ' +str(base10_to_base62_alph_num(61)))
-print('base10_to_base62_alph_num(62)= ' +str(base10_to_base62_alph_num(62)))
-print('base10_to_base62_alph_num(63)= ' +str(base10_to_base62_alph_num(63)))
-
-print('base10_to_base62_alph_num(17)= ' +str(base10_to_base62_alph_num(17)))
-print('base10_to_base62_alph_num(20)= ' +str(base10_to_base62_alph_num(200)))
-print('base10_to_base62_alph_num(1000)= ' +str(base10_to_base62_alph_num(1000)))
-print('base10_to_base62_alph_num(5000)= ' +str(base10_to_base62_alph_num(5000)))
 
 #***********************************************
 # Converting base-10 to base-16 functions (end)

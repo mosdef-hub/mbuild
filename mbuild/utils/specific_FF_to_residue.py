@@ -248,21 +248,3 @@ def Specific_FF_to_residue(structure , forcefield_files= None, forcefield_names=
 
     return structure, coulomb14scaler_dict, LJ14scaler_dict, residues_applied_list
 
-
-EthaneGOMC = mb.load('CC', smiles=True)
-EthaneGOMC.name = "ETH"
-Test_value_0, Test_value_1, \
-Test_value_2, Test_value_3 = Specific_FF_to_residue(EthaneGOMC,
-                                                    forcefield_files={EthaneGOMC.name: forcefields.get_ff_path()[0]
-                                                                                       +'/xml/'+'oplsaa.xml'},
-                                                    forcefield_names=None,
-                                                    residues=[EthaneGOMC.name],
-                                                    reorder_res_in_pdb_psf=False,
-                                                    box=None,
-                                                    boxes_for_simulation=1
-                                                    )
-
-print('Test_value_0 = '+str(Test_value_0))
-print('Test_value_1 = '+str(Test_value_1))
-print('Test_value_2 = '+str(Test_value_2))
-print('Test_value_3 = '+str(Test_value_3))
