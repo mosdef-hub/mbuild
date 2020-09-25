@@ -217,7 +217,7 @@ def changeDigit_base10_to_base16_alph_num(current_digit):
     return current_digit
 
 
+
 #***********************************************
 # Converting base-10 to base-16 functions (end)
 #***********************************************
-

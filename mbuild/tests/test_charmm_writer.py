@@ -3,7 +3,8 @@ import mbuild as mb
 from mbuild.tests.base_test import BaseTest
 from mbuild.formats.charmm_writer import charmm_psf_psb_FF
 from mbuild.utils.io import has_foyer
-from mbuild.utils.conversion import changeDigit_base10_to_base16_alph_num
+from mbuild.utils.conversion import base10_to_base16_alph_num
+from mbuild.utils.conversion import base10_to_base62_alph_num
 from mbuild.utils.specific_FF_to_residue  import Specific_FF_to_residue
 from foyer.forcefields import forcefields
 
@@ -417,42 +418,24 @@ class TestCharmmWriterData(BaseTest):
 
 
     # test utils base 10 to base 16 converter
-    def test_base_10_to_base_16(self, EthaneGOMC):
-        Test_value_15 = changeDigit_base10_to_base16_alph_num(15)
-        Test_value_16 = changeDigit_base10_to_base16_alph_num(16)
+    def test_base_10_to_base_16(self):
+        List_Base_10_and_16 = [[15, 'f'], [16, '10'], [17, '11'], [200, 'c8'], [1000, '3e8'], [5000, '1388']]
 
-        Test_value_17 = changeDigit_base10_to_base16_alph_num(17)
-        Test_value_200 = changeDigit_base10_to_base16_alph_num(200)
-        Test_value_1000 = changeDigit_base10_to_base16_alph_num(1000)
-        Test_value_5000 = changeDigit_base10_to_base16_alph_num(5000)
-
-        assert str(Test_value_15) == 'f'
-        assert str(Test_value_16) == '10'
-
-        assert str(Test_value_17) == '11'
-        assert str(Test_value_200) == 'c8'
-        assert str(Test_value_1000) == '3e8'
-        assert str(Test_value_5000) == '1388'
+        for test_base_16_iter in  range(0, len(List_Base_10_and_16)):
+            test_10_iter = List_Base_10_and_16[ test_base_16_iter][0]
+            test_16_iter = List_Base_10_and_16[test_base_16_iter][1]
+            assert str(base10_to_base16_alph_num(test_10_iter)) == str(test_16_iter)
 
     # test utils base 10 to base 62 converter
-    def test_base_10_to_base_62(self, EthaneGOMC):
-        Test_value_61 = changeDigit_base10_to_base62_alph_num(61)
-        Test_value_62 = changeDigit_base10_to_base62_alph_num(62)
-        Test_value_63 = changeDigit_base10_to_base62_alph_num(63)
+    def test_base_10_to_base_62(self):
+        List_Base_10_and_62 = [[17, 'H'], [61, 'z'], [62, '10'], [63, '11'], [200, '3E'], [1000, 'G8'], [5000, '1Ie']]
 
-        Test_value_17 = changeDigit_base10_to_base62_alph_num(17)
-        Test_value_200 = changeDigit_base10_to_base62_alph_num(200)
-        Test_value_1000 = changeDigit_base10_to_base62_alph_num(1000)
-        Test_value_5000 = changeDigit_base10_to_base62_alph_num(5000)
+        for test_base_62_iter in  range(0, len(List_Base_10_and_62)):
+            test_10_iter = List_Base_10_and_62[ test_base_62_iter][0]
+            test_62_iter = List_Base_10_and_62[test_base_62_iter][1]
+            print('base10_to_base16_alph_num[test_10_iter]) = str(test_62_iter) === ' +str(base10_to_base16_alph_num(test_10_iter))+" == "+ str(test_62_iter))
+            assert str(base10_to_base62_alph_num(test_10_iter)) == str(test_62_iter)
 
-        assert str(Test_value_61) == 'z'
-        assert str(Test_value_62) == '10'
-        assert str(Test_value_63) == '11'
-
-        assert str(Test_value_17) == 'H'
-        assert str(Test_value_200) == '3E'
-        assert str(Test_value_1000) == 'G8'
-        assert str(Test_value_5000) == '1Ie'
 
     # Tests for the mbuild.utils.specific_FF_to_residue.Specific_FF_to_residue() function
     def test_Specific_FF_to_residue_FFnames_FFfiles_both_None(self, EthaneGOMC):
@@ -670,7 +653,7 @@ class TestCharmmWriterData(BaseTest):
         Test_value_2, Test_value_3 = Specific_FF_to_residue(Empty_compound,
                                                             forcefield_files=None,
                                                             forcefield_names={Empty_compound: 'oplsaa'},
-                                                            residues=['oplsaa'.name],
+                                                            residues=['oplsaa.2'],
                                                             reorder_res_in_pdb_psf=False,
                                                             box=[5, 6, 7],
                                                             boxes_for_simulation=1
