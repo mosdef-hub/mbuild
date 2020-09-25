@@ -3,7 +3,9 @@ import mbuild as mb
 from mbuild.tests.base_test import BaseTest
 from mbuild.formats.charmm_writer import charmm_psf_psb_FF
 from mbuild.utils.io import has_foyer
-
+from mbuild.utils.conversion import changeDigit_base10_to_base16_alph_num
+from mbuild.utils.specific_FF_to_residue  import Specific_FF_to_residue
+from foyer.forcefields import forcefields
 
 @pytest.mark.skipif(not has_foyer, reason="Foyer package not installed")
 class TestCharmmWriterData(BaseTest):
@@ -410,6 +412,247 @@ class TestCharmmWriterData(BaseTest):
                                                     '90.00', '90.00', '90.00']
             else:
                 pass
+
+
+    # test utils base 10 to base 16 converter
+    def test_base_10_to_base_16(self, EthaneGOMC):
+        Test_value_15 = changeDigit_base10_to_base16_alph_num(15)
+        Test_value_16 = changeDigit_base10_to_base16_alph_num(16)
+
+        Test_value_17 = changeDigit_base10_to_base16_alph_num(17)
+        Test_value_200 = changeDigit_base10_to_base16_alph_num(200)
+        Test_value_1000 = changeDigit_base10_to_base16_alph_num(1000)
+        Test_value_5000 = changeDigit_base10_to_base16_alph_num(5000)
+
+        assert Test_value_15 == 'f'
+        assert Test_value_16 == '10'
+
+        assert Test_value_17 == '11'
+        assert Test_value_200 == 'c8'
+        assert Test_value_1000 == '3e8'
+        assert Test_value_5000 == '1388'
+
+    # test utils base 10 to base 62 converter
+    def test_base_10_to_base_62(self, EthaneGOMC):
+        Test_value_61 = changeDigit_base10_to_base62_alph_num(61)
+        Test_value_62 = changeDigit_base10_to_base62_alph_num(62)
+        Test_value_63 = changeDigit_base10_to_base62_alph_num(63)
+
+        Test_value_17 = changeDigit_base10_to_base62_alph_num(17)
+        Test_value_200 = changeDigit_base10_to_base62_alph_num(200)
+        Test_value_1000 = changeDigit_base10_to_base62_alph_num(1000)
+        Test_value_5000 = changeDigit_base10_to_base62_alph_num(5000)
+
+        assert Test_value_61 == 'z'
+        assert Test_value_62 == '10'
+        assert Test_value_63 == '11'
+
+        assert Test_value_17 == 'H'
+        assert Test_value_200 == '3E'
+        assert Test_value_1000 == 'G8'
+        assert Test_value_5000 == '1Ie'
+
+    # Tests for the mbuild.utils.specific_FF_to_residue.Specific_FF_to_residue() function
+    def test_Specific_FF_to_residue_FFnames_FFfiles_both_None(self, EthaneGOMC):
+        Test_value_0, Test_value_1, \
+        Test_value_2, Test_value_3 = Specific_FF_to_residue(EthaneGOMC,
+                                                            forcefield_files = None,
+                                                            forcefield_names = None,
+                                                            residues = [EthaneGOMC.name],
+                                                            reorder_res_in_pdb_psf = False,
+                                                            box = None,
+                                                            boxes_for_simulation = 1
+                                                            )
+
+        if Test_value_0 == None and Test_value_1 == None and Test_value_2 == None and Test_value_3 == None:
+            pass
+
+    def test_Specific_FF_to_residue_FFnames_FFfiles_both_Values(self, EthaneGOMC):
+        Test_value_0, Test_value_1, \
+        Test_value_2, Test_value_3 = Specific_FF_to_residue(EthaneGOMC,
+                                                            forcefield_files={EthaneGOMC.name : forcefields.get_ff_path()[0] +
+                                                                                                '/xml/'+'oplsaa.xml'},
+                                                            forcefield_names={EthaneGOMC.name : 'oplsaa'},
+                                                            residues=[EthaneGOMC.name],
+                                                            reorder_res_in_pdb_psf=False,
+                                                            box=None,
+                                                            boxes_for_simulation=1
+                                                            )
+
+        if Test_value_0 == None and Test_value_1 == None and Test_value_2 == None and Test_value_3 == None:
+            pass
+
+    def test_Specific_FF_to_residue_FFnames_None_FFfiles_not_dict(self, EthaneGOMC):
+        Test_value_0, Test_value_1, \
+        Test_value_2, Test_value_3 = Specific_FF_to_residue(EthaneGOMC,
+                                                            forcefield_files=forcefields.get_ff_path()[0] +'/xml/'+
+                                                                             'oplsaa.xml',
+                                                            forcefield_names=None,
+                                                            residues=[EthaneGOMC.name],
+                                                            reorder_res_in_pdb_psf=False,
+                                                            box=None,
+                                                            boxes_for_simulation=1
+                                                            )
+
+        if Test_value_0 == None and Test_value_1 == None and Test_value_2 == None and Test_value_3 == None:
+            pass
+
+    def test_Specific_FF_to_residue_FFfiles_None_FFnames_not_dict(self, EthaneGOMC):
+        Test_value_0, Test_value_1, \
+        Test_value_2, Test_value_3 = Specific_FF_to_residue(EthaneGOMC,
+                                                            forcefield_files=None,
+                                                            forcefield_names='oplsaa',
+                                                            residues=[EthaneGOMC.name],
+                                                            reorder_res_in_pdb_psf=False,
+                                                            box=None,
+                                                            boxes_for_simulation=1
+                                                            )
+
+        if Test_value_0 == None and Test_value_1 == None and Test_value_2 == None and Test_value_3 == None:
+            pass
+
+    def test_Specific_FF_to_residue_is_None(self, EthaneGOMC):
+        Test_value_0, Test_value_1, \
+        Test_value_2, Test_value_3 = Specific_FF_to_residue(EthaneGOMC,
+                                                            forcefield_files=None,
+                                                            forcefield_names={EthaneGOMC.name : 'oplsaa'},
+                                                            residues=None,
+                                                            reorder_res_in_pdb_psf=False,
+                                                            box=None,
+                                                            boxes_for_simulation=1
+                                                            )
+
+        if Test_value_0 == None and Test_value_1 == None and Test_value_2 == None and Test_value_3 == None:
+            pass
+
+    def test_Specific_FF_to_residue_reorder_not_True_or_False(self, EthaneGOMC):
+        Test_value_0, Test_value_1, \
+        Test_value_2, Test_value_3 = Specific_FF_to_residue(EthaneGOMC,
+                                                            forcefield_files=None,
+                                                            forcefield_names={EthaneGOMC.name : 'oplsaa'},
+                                                            residues=[EthaneGOMC.name],
+                                                            reorder_res_in_pdb_psf=None,
+                                                            box=None,
+                                                            boxes_for_simulation=1
+                                                            )
+
+        if Test_value_0 == None and Test_value_1 == None and Test_value_2 == None and Test_value_3 == None:
+            pass
+
+    def test_Specific_FF_to_box_one_dim_is_negative(self, EthaneGOMC):
+        Test_value_0, Test_value_1, \
+        Test_value_2, Test_value_3 = Specific_FF_to_residue(EthaneGOMC,
+                                                            forcefield_files=None,
+                                                            forcefield_names={EthaneGOMC.name: 'oplsaa'},
+                                                            residues=[EthaneGOMC.name],
+                                                            reorder_res_in_pdb_psf=None,
+                                                            box=[-2,3,4,5],
+                                                            boxes_for_simulation=1
+                                                            )
+
+    def test_Specific_FF_to_box_one_dim_is_string(self, EthaneGOMC):
+        Test_value_0, Test_value_1, \
+        Test_value_2, Test_value_3 = Specific_FF_to_residue(EthaneGOMC,
+                                                            forcefield_files=None,
+                                                            forcefield_names={EthaneGOMC.name: 'oplsaa'},
+                                                            residues=[EthaneGOMC.name],
+                                                            reorder_res_in_pdb_psf=None,
+                                                            box=["string", 3, 4, 5],
+                                                            boxes_for_simulation=1
+                                                            )
+
+        if Test_value_0 == None and Test_value_1 == None and Test_value_2 == None and Test_value_3 == None:
+            pass
+
+    def test_Specific_FF_to_simulation_boxes_not_1_or_2(self, EthaneGOMC):
+        Test_value_0, Test_value_1, \
+        Test_value_2, Test_value_3 = Specific_FF_to_residue(EthaneGOMC,
+                                                            forcefield_files=None,
+                                                            forcefield_names={EthaneGOMC.name: 'oplsaa'},
+                                                            residues=[EthaneGOMC.name],
+                                                            reorder_res_in_pdb_psf=None,
+                                                            box=[2, 3, 4, 5],
+                                                            boxes_for_simulation=3
+                                                            )
+
+        if Test_value_0 == None and Test_value_1 == None and Test_value_2 == None and Test_value_3 == None:
+            pass
+
+    def test_Specific_FF_to_residue_FFfiles_wrong_path(self, EthaneGOMC):
+        Test_value_0, Test_value_1, \
+        Test_value_2, Test_value_3 = Specific_FF_to_residue(EthaneGOMC,
+                                                            forcefield_files={EthaneGOMC.name: 'oplsaa.xml'},
+                                                            forcefield_names=None,
+                                                            residues=[EthaneGOMC.name],
+                                                            reorder_res_in_pdb_psf=False,
+                                                            box=[4, 5, 6],
+                                                            boxes_for_simulation=1
+                                                            )
+        if Test_value_0 == None and Test_value_1 == None and Test_value_2 == None and Test_value_3 == None:
+            pass
+
+    def test_Specific_FF_to_residue_FFnames_wrong_path(self, EthaneGOMC):
+        Test_value_0, Test_value_1, \
+        Test_value_2, Test_value_3 = Specific_FF_to_residue(EthaneGOMC,
+                                                            forcefield_files=None,
+                                                            forcefield_names={EthaneGOMC.name: 'file_thats_not_there'},
+                                                            residues=[EthaneGOMC.name],
+                                                            reorder_res_in_pdb_psf=False,
+                                                            box=None,
+                                                            boxes_for_simulation=1
+                                                            )
+        if Test_value_0 == None and Test_value_1 == None and Test_value_2 == None and Test_value_3 == None:
+            pass
+
+    def test_Specific_FF_to_residue_FFfiles_run(self, EthaneGOMC):
+        Test_value_0, Test_value_1, \
+        Test_value_2, Test_value_3 = Specific_FF_to_residue(EthaneGOMC,
+                                                            forcefield_files={EthaneGOMC.name: forcefields.get_ff_path()[0]
+                                                                                               +'/xml/'+'oplsaa.xml'},
+                                                            forcefield_names=None,
+                                                            residues=[EthaneGOMC.name],
+                                                            reorder_res_in_pdb_psf=False,
+                                                            box=[4,5,6],
+                                                            boxes_for_simulation=1
+                                                            )
+        assert str(Test_value_0) == "<Structure 8 atoms; 1 residues; 7 bonds; PBC (orthogonal); parametrized>"
+        assert Test_value_1 == {'ETH': 0.5}
+        assert Test_value_2 == {'ETH': 0.5}
+        assert Test_value_3 ==  ['ETH']
+
+    def test_Specific_FF_to_residue_FFnames_run(self, EthaneGOMC):
+        Test_value_0, Test_value_1, \
+        Test_value_2, Test_value_3 = Specific_FF_to_residue(EthaneGOMC,
+                                                            forcefield_files=None,
+                                                            forcefield_names={EthaneGOMC.name: 'oplsaa'},
+                                                            residues=[EthaneGOMC.name],
+                                                            reorder_res_in_pdb_psf=False,
+                                                            box=None,
+                                                            boxes_for_simulation=2
+                                                            )
+        assert str(Test_value_0) == "<Structure 8 atoms; 1 residues; 7 bonds; PBC (orthogonal); parametrized>"
+        assert Test_value_1 == {'ETH': 0.5}
+        assert Test_value_2 == {'ETH': 0.5}
+        assert Test_value_3 ==  ['ETH']
+
+
+    def test_Specific_FF_to_no_atoms_in_residue(self):
+        Empty_compound = mb.Compound()
+        Empty_compound.name = 'EPT'
+
+        Test_value_0, Test_value_1, \
+        Test_value_2, Test_value_3 = Specific_FF_to_residue(x,
+                                                            forcefield_files=None,
+                                                            forcefield_names={Empty_compound: 'oplsaa'},
+                                                            residues=['oplsaa'.name],
+                                                            reorder_res_in_pdb_psf=False,
+                                                            box=[5, 6, 7],
+                                                            boxes_for_simulation=1
+                                                            )
+        if Test_value_0 == None and Test_value_1 == None and Test_value_2 == None and Test_value_3 == None:
+            pass
+
+
 
 
     def test_charmm_correct_residue_format(self, EthaneGOMC):

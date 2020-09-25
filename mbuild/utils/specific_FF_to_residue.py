@@ -44,25 +44,23 @@ def Specific_FF_to_residue(structure , forcefield_files= None, forcefield_names=
 
     elif forcefield_files != None and forcefield_names is None and not isinstance(forcefield_files, dict):
         warn('The force field file (forcefield_files) is not a dictionary. Please enter a dictionary'+
-                      "with all the residues specified to a force field"+
-                     "-> Ex: {'Water' : 'oplsaa.xml', 'OCT': 'trappe-ua.xml'}, "+
-                     "Note: the file path must be specified the force field file")
+             "with all the residues specified to a force field"+
+             "-> Ex: {'Water' : 'oplsaa.xml', 'OCT': 'trappe-ua.xml'}, "+
+             "Note: the file path must be specified the force field file")
         return None, None, None, None
 
-    elif forcefield_names != None and forcefield_files is None and not isinstance(forcefield_names, dict) and not isinstance(forcefield_names, str):
-        warn('The force field names (forcefield_names) is not a string or a dictionary with' +
-                    ' all the residues specified to a force field.' +
-                    "-> String Ex: 'trappe-ua' or 'oplsaa'  ." +
-                    "Otherise provided a dictionary with all the residues specified to a force field " +
-                    "->Dictionary Ex: {'Water' : 'oplsaa', 'OCT': 'trappe-ua'}, " +
-                    "Note: the file path must be specified the force field file")
+    elif forcefield_names != None and forcefield_files is None and not isinstance(forcefield_names, dict):
+        warn('The force field names (forcefield_names) is not a dictionary with' +
+             "with all the residues specified to a force field" +
+             "-> Ex: {'Water' : 'oplsaa', 'OCT': 'trappe-ua'}, " +
+             "Note: the file path must be specified the name per MoSDeF's naming convention.")
         return None, None, None, None
 
 
     if residues is None:
         print('Please enter the residues in the Specific_FF_to_residue function')
-    if reorder_res_in_pdb_psf is None:
-        print('Please enter the reorder_res_in_pdb_psf in the Specific_FF_to_residue function')
+    if reorder_res_in_pdb_psf != True or reorder_res_in_pdb_psf != False:
+        print('Please enter the reorder_res_in_pdb_psf in the Specific_FF_to_residue function (i.e., True or False)')
 
     if box !=None :
         box_Ang = []
@@ -249,3 +247,22 @@ def Specific_FF_to_residue(structure , forcefield_files= None, forcefield_names=
     structure = new_structure
 
     return structure, coulomb14scaler_dict, LJ14scaler_dict, residues_applied_list
+
+
+EthaneGOMC = mb.load('CC', smiles=True)
+EthaneGOMC.name = "ETH"
+Test_value_0, Test_value_1, \
+Test_value_2, Test_value_3 = Specific_FF_to_residue(EthaneGOMC,
+                                                    forcefield_files={EthaneGOMC.name: forcefields.get_ff_path()[0]
+                                                                                       +'/xml/'+'oplsaa.xml'},
+                                                    forcefield_names=None,
+                                                    residues=[EthaneGOMC.name],
+                                                    reorder_res_in_pdb_psf=False,
+                                                    box=None,
+                                                    boxes_for_simulation=1
+                                                    )
+
+print('Test_value_0 = '+str(Test_value_0))
+print('Test_value_1 = '+str(Test_value_1))
+print('Test_value_2 = '+str(Test_value_2))
+print('Test_value_3 = '+str(Test_value_3))
