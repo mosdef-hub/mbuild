@@ -10,7 +10,6 @@ from mbuild.utils.conversion import unique_entries_in_List
 from mbuild.utils.specific_FF_to_residue  import Specific_FF_to_residue
 from foyer.forcefields import forcefields
 from collections import OrderedDict
-from foyer import Forcefield
 
 @pytest.mark.skipif(not has_foyer, reason="Foyer package not installed")
 class TestCharmmWriterData(BaseTest):
@@ -477,10 +476,10 @@ class TestCharmmWriterData(BaseTest):
                                                             boxes_for_simulation = 1
                                                             )
 
-        assert Test_value_0 == None
-        assert Test_value_1 == None
-        assert Test_value_2 == None
-        assert Test_value_3 == None
+        assert Test_value_0 is None
+        assert Test_value_1 is None
+        assert Test_value_2 is None
+        assert Test_value_3 is None
 
     def test_Specific_FF_to_residue_FFnames_FFfiles_both_Values(self, EthaneGOMC):
         Test_value_0, Test_value_1, \
@@ -494,10 +493,10 @@ class TestCharmmWriterData(BaseTest):
                                                             boxes_for_simulation=1
                                                             )
 
-        assert Test_value_0 == None
-        assert Test_value_1 == None
-        assert Test_value_2 == None
-        assert Test_value_3 == None
+        assert Test_value_0 is None
+        assert Test_value_1 is None
+        assert Test_value_2 is None
+        assert Test_value_3 is None
 
     def test_Specific_FF_to_residue_FFnames_None_FFfiles_not_dict(self, EthaneGOMC):
         Test_value_0, Test_value_1, \
@@ -511,10 +510,10 @@ class TestCharmmWriterData(BaseTest):
                                                             boxes_for_simulation=1
                                                             )
 
-        assert Test_value_0 == None
-        assert Test_value_1 == None
-        assert Test_value_2 == None
-        assert Test_value_3 == None
+        assert Test_value_0 is None
+        assert Test_value_1 is None
+        assert Test_value_2 is None
+        assert Test_value_3 is None
 
     def test_Specific_FF_to_residue_FFfiles_None_FFnames_not_dict(self, EthaneGOMC):
         Test_value_0, Test_value_1, \
@@ -527,10 +526,10 @@ class TestCharmmWriterData(BaseTest):
                                                             boxes_for_simulation=1
                                                             )
 
-        assert Test_value_0 == None
-        assert Test_value_1 == None
-        assert Test_value_2 == None
-        assert Test_value_3 == None
+        assert Test_value_0 is None
+        assert Test_value_1 is None
+        assert Test_value_2 is None
+        assert Test_value_3 is None
 
     def test_Specific_FF_to_residue_is_None(self, EthaneGOMC):
         Test_value_0, Test_value_1, \
@@ -543,10 +542,10 @@ class TestCharmmWriterData(BaseTest):
                                                             boxes_for_simulation=1
                                                             )
 
-        assert Test_value_0 == None
-        assert Test_value_1 == None
-        assert Test_value_2 == None
-        assert Test_value_3 == None
+        assert Test_value_0 is None
+        assert Test_value_1 is None
+        assert Test_value_2 is None
+        assert Test_value_3 is None
 
     def test_Specific_FF_to_residue_reorder_not_True_or_False(self, EthaneGOMC):
         Test_value_0, Test_value_1, \
@@ -559,10 +558,10 @@ class TestCharmmWriterData(BaseTest):
                                                             boxes_for_simulation=1
                                                             )
 
-        assert Test_value_0 == None
-        assert Test_value_1 == None
-        assert Test_value_2 == None
-        assert Test_value_3 == None
+        assert Test_value_0 is None
+        assert Test_value_1 is None
+        assert Test_value_2 is None
+        assert Test_value_3 is None
 
     def test_Specific_FF_to_box_one_dim_is_negative(self, EthaneGOMC):
         Test_value_0, Test_value_1, \
@@ -574,10 +573,10 @@ class TestCharmmWriterData(BaseTest):
                                                             box=[-2,3,4,5],
                                                             boxes_for_simulation=1
                                                             )
-        assert Test_value_0 == None
-        assert Test_value_1 == None
-        assert Test_value_2 == None
-        assert Test_value_3 == None
+        assert Test_value_0 is None
+        assert Test_value_1 is None
+        assert Test_value_2 is None
+        assert Test_value_3 is None
 
     def test_Specific_FF_to_box_one_dim_is_string(self, EthaneGOMC):
         Test_value_0, Test_value_1, \
@@ -590,10 +589,10 @@ class TestCharmmWriterData(BaseTest):
                                                             boxes_for_simulation=1
                                                             )
 
-        assert Test_value_0 == None
-        assert Test_value_1 == None
-        assert Test_value_2 == None
-        assert Test_value_3 == None
+        assert Test_value_0 is None
+        assert Test_value_1 is None
+        assert Test_value_2 is None
+        assert Test_value_3 is None
 
     def test_Specific_FF_to_simulation_boxes_not_1_or_2(self, EthaneGOMC):
         Test_value_0, Test_value_1, \
@@ -606,10 +605,10 @@ class TestCharmmWriterData(BaseTest):
                                                             boxes_for_simulation=3
                                                             )
 
-        assert Test_value_0 == None
-        assert Test_value_1 == None
-        assert Test_value_2 == None
-        assert Test_value_3 == None
+        assert Test_value_0 is None
+        assert Test_value_1 is None
+        assert Test_value_2 is None
+        assert Test_value_3 is None
 
     def test_Specific_FF_to_residue_FFfiles_wrong_path(self, EthaneGOMC):
         Test_value_0, Test_value_1, \
@@ -621,10 +620,10 @@ class TestCharmmWriterData(BaseTest):
                                                             box=[4, 5, 6],
                                                             boxes_for_simulation=1
                                                             )
-        assert Test_value_0 == None
-        assert Test_value_1 == None
-        assert Test_value_2 == None
-        assert Test_value_3 == None
+        assert Test_value_0 is None
+        assert Test_value_1 is None
+        assert Test_value_2 is None
+        assert Test_value_3 is None
 
     def test_Specific_FF_to_residue_FFnames_wrong_path(self, EthaneGOMC):
         Test_value_0, Test_value_1, \
@@ -636,10 +635,10 @@ class TestCharmmWriterData(BaseTest):
                                                             box=None,
                                                             boxes_for_simulation=1
                                                             )
-        assert Test_value_0 == None
-        assert Test_value_1 == None
-        assert Test_value_2 == None
-        assert Test_value_3 == None
+        assert Test_value_0 is None
+        assert Test_value_1 is None
+        assert Test_value_2 is None
+        assert Test_value_3 is None
 
     def test_Specific_FF_to_residue_FFfiles_run(self, EthaneGOMC):
         Test_value_0, Test_value_1, \
@@ -686,10 +685,10 @@ class TestCharmmWriterData(BaseTest):
                                                             box=[5, 6, 7],
                                                             boxes_for_simulation=1
                                                             )
-        assert Test_value_0 == None
-        assert Test_value_1 == None
-        assert Test_value_2 == None
-        assert Test_value_3 == None
+        assert Test_value_0 is None
+        assert Test_value_1 is None
+        assert Test_value_2 is None
+        assert Test_value_3 is None
 
 
 
@@ -703,7 +702,7 @@ class TestCharmmWriterData(BaseTest):
                                        forcefield_names = {EthaneGOMC.name : 'oplsaa'},
                                        )
 
-        assert  Test_value == None
+        assert  Test_value is None
 
     def test_charmm_residue_not_None(self, EthaneGOMC):
         Test_value = charmm_psf_psb_FF(EthaneGOMC, 'box_0',
@@ -714,7 +713,7 @@ class TestCharmmWriterData(BaseTest):
                                        forcefield_names={EthaneGOMC.name: 'oplsaa'}
                                        )
 
-        assert  Test_value == None
+        assert  Test_value is None
 
     def test_charmm_residue_string(self, EthaneGOMC):
         Test_value = charmm_psf_psb_FF(EthaneGOMC, 'box_0',
@@ -725,7 +724,7 @@ class TestCharmmWriterData(BaseTest):
                                        forcefield_names={EthaneGOMC.name: 'oplsaa'}
                                        )
 
-        assert  Test_value == None
+        assert  Test_value is None
 
     def test_charmm_residue_is_None(self, EthaneGOMC):
         Test_value = charmm_psf_psb_FF(EthaneGOMC, 'box_0',
@@ -736,7 +735,7 @@ class TestCharmmWriterData(BaseTest):
                                        forcefield_names={EthaneGOMC.name: 'oplsaa'}
                                        )
 
-        assert  Test_value == None
+        assert  Test_value is None
 
     def test_charmm_filename_0_is_string(self, EthaneGOMC):
         Test_value = charmm_psf_psb_FF(EthaneGOMC, 0,
@@ -747,7 +746,7 @@ class TestCharmmWriterData(BaseTest):
                                        forcefield_names={EthaneGOMC.name: 'oplsaa'}
                                        )
 
-        assert  Test_value == None
+        assert  Test_value is None
 
     def test_charmm_filename_1_is_string(self, EthaneGOMC):
         Test_value = charmm_psf_psb_FF(EthaneGOMC, 'box_0',
@@ -758,7 +757,7 @@ class TestCharmmWriterData(BaseTest):
                                        forcefield_names={EthaneGOMC.name: 'oplsaa'},
                                        )
 
-        assert  Test_value == None
+        assert  Test_value is None
 
     def test_charmm_box_1_not_None_no_structure_1(self, EthaneGOMC):
         Test_value = charmm_psf_psb_FF(EthaneGOMC, 'box_0',
@@ -770,7 +769,7 @@ class TestCharmmWriterData(BaseTest):
                                        box_1=[4, 4, 4],
                                        )
 
-        assert  Test_value == None
+        assert  Test_value is None
 
     def test_charmm_GOMC_filename_not_string(self, EthaneGOMC):
         Test_value = charmm_psf_psb_FF(EthaneGOMC, 'box_0',
@@ -781,7 +780,7 @@ class TestCharmmWriterData(BaseTest):
                                        forcefield_names={EthaneGOMC.name: 'oplsaa'},
                                        )
 
-        assert Test_value == None
+        assert Test_value is None
 
     def test_charmm_GOMC_filename_ext_not_dot_inp(self, EthaneGOMC):
         Test_value = charmm_psf_psb_FF(EthaneGOMC, 'box_0',
@@ -792,7 +791,7 @@ class TestCharmmWriterData(BaseTest):
                                        forcefield_names={EthaneGOMC.name: 'oplsaa'},
                                        )
 
-        assert  Test_value == None
+        assert  Test_value is None
 
     def test_charmm_FFname_and_FFfiles_equal_none(self, EthaneGOMC):
         Test_value = charmm_psf_psb_FF(EthaneGOMC, 'box_0',
@@ -802,7 +801,7 @@ class TestCharmmWriterData(BaseTest):
                                        residues=[EthaneGOMC.name],
                                        )
 
-        assert  Test_value == None
+        assert  Test_value is None
 
 
     def test_charmm_FFname_and_FFfiles_box_have_values(self, EthaneGOMC):
@@ -816,7 +815,7 @@ class TestCharmmWriterData(BaseTest):
                                                                                                +'/xml/'+'oplsaa.xml'},
                                        )
 
-        assert  Test_value == None
+        assert  Test_value is None
 
     def test_charmm_FFfiles_not_dict(self, EthaneGOMC):
         Test_value = charmm_psf_psb_FF(EthaneGOMC, 'box_0',
@@ -828,7 +827,7 @@ class TestCharmmWriterData(BaseTest):
                                        forcefield_files=['oplsaa', 'oplsaa'],
                                        )
 
-        assert  Test_value == None
+        assert  Test_value is None
 
     def test_charmm_FFnames_not_dict(self, EthaneGOMC):
         Test_value = charmm_psf_psb_FF(EthaneGOMC, 'box_0',
@@ -840,7 +839,7 @@ class TestCharmmWriterData(BaseTest):
                                        forcefield_files=None,
                                        )
 
-        assert  Test_value == None
+        assert  Test_value is None
 
     def test_charmm_FFnames_string(self, EthaneGOMC):
         Test_value = charmm_psf_psb_FF(EthaneGOMC, 'box_0',
@@ -852,7 +851,7 @@ class TestCharmmWriterData(BaseTest):
                                        forcefield_files=None,
                                        )
 
-        assert  Test_value == None
+        assert  Test_value is None
 
     def test_charmm_Residue_name_not_in_residues(self, EthaneGOMC):
         Test_value_0 = charmm_psf_psb_FF(EthaneGOMC, 'box_0',
@@ -864,7 +863,7 @@ class TestCharmmWriterData(BaseTest):
                                          forcefield_files=None,
                                          )
 
-        assert Test_value_0 == None
+        assert Test_value_0 is None
 
 
     def test_charmm_Methane_test_no_children(self, MethaneUAGOMC):
@@ -932,10 +931,10 @@ class TestCharmmWriterData(BaseTest):
                                                             boxes_for_simulation=1
                                                             )
 
-        assert Test_value_0 == None
-        assert Test_value_1 == None
-        assert Test_value_2 == None
-        assert Test_value_3 == None
+        assert Test_value_0 is None
+        assert Test_value_1 is None
+        assert Test_value_2 is None
+        assert Test_value_3 is None
 
 
     def test_FF_files_string(self, TwoPropanolUA):
@@ -995,7 +994,7 @@ class TestCharmmWriterData(BaseTest):
                                          Bead_to_atom_name_dict= {'_CH3' : 'C'},
                                          )
 
-        assert Test_value_0 == None
+        assert Test_value_0 is None
 
     def test_residuals_not_a_string(self, TwoPropanolUA):
         Test_value_0 = charmm_psf_psb_FF(TwoPropanolUA, 'box_0', GOMC_FF_filename='box_0',
@@ -1004,7 +1003,7 @@ class TestCharmmWriterData(BaseTest):
                                          Bead_to_atom_name_dict= {'_CH3' : 'C'},
                                          )
 
-        assert Test_value_0 == None
+        assert Test_value_0 is None
 
 
 
@@ -1050,8 +1049,8 @@ class TestCharmmWriterData(BaseTest):
                                                                          use_urey_bradleys, sigma_conversion_factor,
                                                                          epsilon_conversion_factor)
 
-        assert angle_types_1 == None
-        assert unique_angle_types_1 == None
+        assert angle_types_1 is None
+        assert unique_angle_types_1 is None
 
     # test for error if trying to use  use_dihedrals and impropers in the dihedrals (i.e. only RB torsion allowed)
     def test_charmm_dihedral_reorder(self, EthylEtherGOMC, MethlyEtherGOMC):
@@ -1079,8 +1078,8 @@ class TestCharmmWriterData(BaseTest):
                                                                                       use_rb_torsions_1,
                                                                                       use_dihedrals_1,
                                                                                       epsilon_conversion_factor)
-        assert dihedral_types_1 == None
-        assert unique_dihedral_types_1  == None
+        assert dihedral_types_1 is None
+        assert unique_dihedral_types_1  is None
 
         use_rb_torsions_2 = True
         use_dihedrals_2 = False
@@ -1161,3 +1160,114 @@ class TestCharmmWriterData(BaseTest):
 
         assert len(unique_angle_types_1_unsorted) == 10
         assert len(unique_angle_types_1) == 10
+
+
+    def test_Bead_AtomName_equal_3(self, TwoPropanolUA):
+        # testing def unique_atom_naming in charmm_writer, expecting when failing
+        box_reservior_0 = mb.fill_box(compound=[TwoPropanolUA],
+                                      box=[10, 10, 10], n_compounds=[10])
+
+        value_0 = charmm_psf_psb_FF(box_reservior_0, 'test_Bead_AtomName_equal_3',
+                                    GOMC_FF_filename='test_Bead_AtomName_equal_3',
+                                    residues = [TwoPropanolUA.name],
+                                    forcefield_names = 'trappe-ua',
+                                    Bead_to_atom_name_dict= {'_CH3' : 'Cx', '_HC' : 'Cxx'}
+                                    )
+
+        assert value_0 is None
+
+
+
+
+    def test_residue_string(self, TwoPropanolUA):
+        value_0 = charmm_psf_psb_FF(TwoPropanolUA, 'charmm_data_UA', GOMC_FF_filename='charmm_data_UA',
+                          residues = 'TwoPropanolUA.name', forcefield_names = 'trappe-ua',
+                          Bead_to_atom_name_dict= {'_CH3' : 'C'})
+        assert value_0 is None
+
+    def test_fix_res_bonds_angles_string(self, TwoPropanolUA):
+        value_0 = charmm_psf_psb_FF(TwoPropanolUA, 'charmm_data_UA', GOMC_FF_filename='charmm_data_UA',
+                          residues = [TwoPropanolUA.name], forcefield_names = 'trappe-ua',
+                          Bead_to_atom_name_dict= {'_CH3' : 'C'}, fix_res_bonds_angles='TwoPropanolUA.name' )
+        assert value_0 is None
+
+    def test_fix_res_bonds_angles_residue_not_in_system(self, TwoPropanolUA):
+        value_0 = charmm_psf_psb_FF(TwoPropanolUA, 'charmm_data_UA', GOMC_FF_filename='charmm_data_UA',
+                          residues = [TwoPropanolUA.name], forcefield_names = 'trappe-ua',
+                          Bead_to_atom_name_dict= {'_CH3' : 'C'}, fix_res_bonds_angles=['WNG'] )
+        assert value_0 is None
+
+    def test_fix_residue_string(self, TwoPropanolUA):
+        value_0 = charmm_psf_psb_FF(TwoPropanolUA, 'charmm_data_UA', GOMC_FF_filename='charmm_data_UA',
+                          residues = [TwoPropanolUA.name], forcefield_names = 'trappe-ua',
+                          Bead_to_atom_name_dict= {'_CH3' : 'C'}, fix_residue = 'TwoPropanolUA.name')
+        assert value_0 is None
+
+    def test_fix_residue_string_residue_not_in_system(self, TwoPropanolUA):
+        value_0 = charmm_psf_psb_FF(TwoPropanolUA, 'charmm_data_UA', GOMC_FF_filename='charmm_data_UA',
+                          residues = [TwoPropanolUA.name], forcefield_names = 'trappe-ua',
+                          Bead_to_atom_name_dict= {'_CH3' : 'C'}, fix_residue = ['WNG'])
+        assert value_0 is None
+
+    def test_fix_residue_in_box_string(self, TwoPropanolUA):
+        value_0 = charmm_psf_psb_FF(TwoPropanolUA, 'charmm_data_UA', GOMC_FF_filename='charmm_data_UA',
+                                    residues=[TwoPropanolUA.name], forcefield_names='trappe-ua',
+                                    Bead_to_atom_name_dict={'_CH3': 'C'}, fix_residue_in_box='TwoPropanolUA.name')
+        assert value_0 is None
+
+    def test_fix_residue_in_box_string_residue_not_in_system(self, TwoPropanolUA):
+        value_0 = charmm_psf_psb_FF(TwoPropanolUA, 'charmm_data_UA', GOMC_FF_filename='charmm_data_UA',
+                                    residues=[TwoPropanolUA.name], forcefield_names='trappe-ua',
+                                    Bead_to_atom_name_dict={'_CH3': 'C'}, fix_residue_in_box=['WNG'])
+        assert value_0 is None
+
+    def test_Bead_to_atom_name_dict_list(self, TwoPropanolUA):
+        value_0 = charmm_psf_psb_FF(TwoPropanolUA, 'charmm_data_UA', GOMC_FF_filename='charmm_data_UA',
+                                    residues=[TwoPropanolUA.name], forcefield_names='trappe-ua',
+                                    Bead_to_atom_name_dict=['_CH3', 'C'])
+        assert value_0 is None
+
+    def test_box_0_4_dims(self, TwoPropanolUA):
+        value_0 = charmm_psf_psb_FF(TwoPropanolUA, 'charmm_data_UA', GOMC_FF_filename='charmm_data_UA',
+                                    residues=[TwoPropanolUA.name], forcefield_names='trappe-ua',
+                                    Bead_to_atom_name_dict={'_CH3': 'C'}, box_0 = [3, 4, 5, 6])
+        assert value_0 is None
+
+    def test_box_1_4_dims(self, TwoPropanolUA):
+        value_0 = charmm_psf_psb_FF(TwoPropanolUA, 'charmm_data_UA_box_0',
+                                    structure_1 = TwoPropanolUA, filename_1='charmm_data_UA_box_1' ,
+                                    GOMC_FF_filename='charmm_data_UA',
+                                    residues=[TwoPropanolUA.name], forcefield_names='trappe-ua',
+                                    Bead_to_atom_name_dict={'_CH3': 'C'},
+                                    box_0 = [ 4, 5, 6], box_1 = [3, 4, 5, 6])
+        assert value_0 is None
+
+    def test_box_0_negative_dims(self, TwoPropanolUA):
+        value_0 = charmm_psf_psb_FF(TwoPropanolUA, 'charmm_data_UA', GOMC_FF_filename='charmm_data_UA',
+                                    residues=[TwoPropanolUA.name], forcefield_names='trappe-ua',
+                                    Bead_to_atom_name_dict={'_CH3': 'C'}, box_0 = [-3, 4, 5, 6])
+        assert value_0 is None
+
+    def test_box_1_negative_dims(self, TwoPropanolUA):
+        value_0 = charmm_psf_psb_FF(TwoPropanolUA, 'charmm_data_UA_box_0',
+                                    structure_1 = TwoPropanolUA, filename_1='charmm_data_UA_box_1' ,
+                                    GOMC_FF_filename='charmm_data_UA',
+                                    residues=[TwoPropanolUA.name], forcefield_names='trappe-ua',
+                                    Bead_to_atom_name_dict={'_CH3': 'C'},
+                                    box_0 = [ 4, 5, 6], box_1 = [-3, 4, 5, 6])
+        assert value_0 is None
+
+    def test_box_0_string_dims(self, TwoPropanolUA):
+        value_0 = charmm_psf_psb_FF(TwoPropanolUA, 'charmm_data_UA', GOMC_FF_filename='charmm_data_UA',
+                                    residues=[TwoPropanolUA.name], forcefield_names='trappe-ua',
+                                    Bead_to_atom_name_dict={'_CH3': 'C'}, box_0 = ['sting', 4, 5, 6])
+        assert value_0 is None
+
+    def test_box_1_string_dims(self, TwoPropanolUA):
+        value_0 = charmm_psf_psb_FF(TwoPropanolUA, 'charmm_data_UA_box_0',
+                                    structure_1 = TwoPropanolUA, filename_1='charmm_data_UA_box_1' ,
+                                    GOMC_FF_filename='charmm_data_UA',
+                                    residues=[TwoPropanolUA.name], forcefield_names='trappe-ua',
+                                    Bead_to_atom_name_dict={'_CH3': 'C'},
+                                    box_0 = [ 4, 5, 6], box_1 = ['sting', 4, 5, 6])
+        assert value_0 is None

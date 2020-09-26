@@ -38,17 +38,16 @@ def _get_bond_types(structure, bonds, sigma_conversion_factor, epsilon_conversio
     for i_value_bond, i_key_bond in unique_bond_types.items():
         i_value_duplicated = False
         for j_value_bond, j_key_bond in unique_bond_types.items():
-            if j_key_bond > i_key_bond:
-                j_value_bond_reorder = (j_value_bond[0], j_value_bond[1],
-                                       j_value_bond[2][0], j_value_bond[2][0],
-                                        j_value_bond[3],  j_value_bond[4])
+            j_value_bond_reorder = (j_value_bond[0], j_value_bond[1],
+                                    j_value_bond[2][0], j_value_bond[2][0],
+                                    j_value_bond[3], j_value_bond[4])
 
-                if i_value_bond == j_value_bond_reorder:
-                    i_value_duplicated = True
-                    if i_value_bond[2][0] > j_value_bond[2][0]:
-                        unique_bond_check_dict.update({j_value_bond: len(unique_bond_check_dict) })
-                    else:
-                        unique_bond_check_dict.update({i_value_bond: len(unique_bond_check_dict) })
+            if i_value_bond == j_value_bond_reorder:
+                i_value_duplicated = True
+                if i_value_bond[2][0] > j_value_bond[2][0]:
+                    unique_bond_check_dict.update({j_value_bond: len(unique_bond_check_dict)})
+                else:
+                    unique_bond_check_dict.update({i_value_bond: len(unique_bond_check_dict)})
 
             if i_value_duplicated == False:
                 unique_bond_check_dict.update({i_value_bond: len(unique_bond_check_dict)})
@@ -229,7 +228,7 @@ def unique_atom_naming(structure, residue_ID_list, residue_names_list, Bead_to_a
                     if len(Bead_to_atom_name_dict[str(atom.name)]) > 2:
                         text_to_write = ('ERROR: only enter atom names that have 2 or less digits' +
                                          ' in the Bead to atom naming dictionary (Bead_to_atom_name_dict) ')
-                        warn(warn(text_to_write))
+                        warn(text_to_write)
                         return None, None, None
                     else:
                         atom_name_value = Bead_to_atom_name_dict[str(atom.name)]
@@ -244,7 +243,7 @@ def unique_atom_naming(structure, residue_ID_list, residue_names_list, Bead_to_a
                 else:
                     text_to_write = ('ERROR: atom numbering will not work propery at' +
                                      ' the element has more than 4 charaters')
-                    warn(warn(text_to_write))
+                    warn(text_to_write)
                     return None, None, None
             else:
                 No_digits_atom_name = 2
@@ -469,6 +468,7 @@ def charmm_psf_psb_FF(structure_0, filename_0, structure_1 = None, filename_1= N
     elif forcefield_names != None and  forcefield_files is None:
         print('write_gomcdata: forcefield_names = ' + str(forcefield_names) + ', ' + 'residues = ' + str(residues))
 
+
         if forcefield_names != None and not isinstance(forcefield_names, dict) and not isinstance(forcefield_names,str):
             warn('The force field names (forcefield_names) is not a string or a dictionary with' +
                  ' all the residues specified to a force field.' +
@@ -478,10 +478,6 @@ def charmm_psf_psb_FF(structure_0, filename_0, structure_1 = None, filename_1= N
                  "Note: the file path must be specified the force field file")
             return None
 
-        if isinstance(forcefield_names, list) == True:
-            warn('Error: Please enter the forcefield_names (forcefield_names) as a single string' +
-                 '  or in a dictionary format (i.e., residue to for each FF)')
-            return None
 
         if isinstance(forcefield_names, str) == True:
             FF_name = forcefield_names
@@ -596,7 +592,7 @@ def charmm_psf_psb_FF(structure_0, filename_0, structure_1 = None, filename_1= N
         test_Specific_FF_to_residue_for_failure = [structure_0_FF, coulomb14scaler_dict_0,
                                                    LJ14scaler_dict_0, residues_applied_list_0]
         for iter_test_Specifc_res_fail in range(0, len(test_Specific_FF_to_residue_for_failure)):
-            if test_Specific_FF_to_residue_for_failure[iter_test_Specifc_res_fail] == None:
+            if test_Specific_FF_to_residue_for_failure[iter_test_Specifc_res_fail] is None:
                 return None
 
         print('GOMC FF writing each residues FF as a group for  structure_1')
@@ -613,7 +609,7 @@ def charmm_psf_psb_FF(structure_0, filename_0, structure_1 = None, filename_1= N
         test_Specific_FF_to_residue_for_failure = [structure_1_FF, coulomb14scaler_dict_1,
                                                    LJ14scaler_dict_1, residues_applied_list_1]
         for iter_test_Specifc_res_fail in range(0, len(test_Specific_FF_to_residue_for_failure)):
-            if test_Specific_FF_to_residue_for_failure[iter_test_Specifc_res_fail] == None:
+            if test_Specific_FF_to_residue_for_failure[iter_test_Specifc_res_fail] is None:
                 return None
 
         structure_0_and_1_FF =structure_0_FF + structure_1_FF
@@ -665,7 +661,7 @@ def charmm_psf_psb_FF(structure_0, filename_0, structure_1 = None, filename_1= N
         test_Specific_FF_to_residue_for_failure = [ structure_0_FF, coulomb14scaler_dict_0,
                                                     LJ14scaler_dict_0, residues_applied_list_0 ]
         for iter_test_Specifc_res_fail in range(0, len(test_Specific_FF_to_residue_for_failure)):
-            if test_Specific_FF_to_residue_for_failure[iter_test_Specifc_res_fail] == None:
+            if test_Specific_FF_to_residue_for_failure[iter_test_Specifc_res_fail] is None:
                 return None
 
         combined_1_4_LJ_dict_per_residue.update(coulomb14scaler_dict_0)
@@ -1448,7 +1444,9 @@ def charmm_psf_psb_FF(structure_0, filename_0, structure_1 = None, filename_1= N
         Individual_atom_names_List, \
         Missing_Bead_to_atom_name =unique_atom_naming(stuct_only_iteration , residue_ID_list, residue_names_list,
                                                       Bead_to_atom_name_dict=Bead_to_atom_name_dict)
-
+        if None in [unique_Individual_atom_names_dict, Individual_atom_names_List, Missing_Bead_to_atom_name]:
+            warn('ERROR : The unique_atom_naming function failed while running the  charmm_writer function.')
+            return None
         # Now time for the atoms
         dest.write(intfmt % len(stuct_iteration.atoms) + ' !NATOM\n')
         # atmfmt1 is for CHARMM format (i.e., atom types are integers)
@@ -1755,7 +1753,9 @@ def charmm_psf_psb_FF(structure_0, filename_0, structure_1 = None, filename_1= N
         Individual_atom_names_List, \
         Missing_Bead_to_atom_name = unique_atom_naming(stuct_only_iteration, residue_ID_list, residue_names_list,
                                                        Bead_to_atom_name_dict=Bead_to_atom_name_dict)
-
+        if None in [unique_Individual_atom_names_dict, Individual_atom_names_List, Missing_Bead_to_atom_name]:
+            warn('ERROR : The unique_atom_naming function failed while running the  charmm_writer function.')
+            return None
         for  model, coord in enumerate(coords):
 
 
