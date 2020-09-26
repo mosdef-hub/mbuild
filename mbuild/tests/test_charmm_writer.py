@@ -1,6 +1,7 @@
 import pytest
 import mbuild as mb
 from mbuild.tests.base_test import BaseTest
+from mbuild.formats import charmm_writer
 from mbuild.formats.charmm_writer import charmm_psf_psb_FF
 from mbuild.utils.io import has_foyer
 from mbuild.utils.conversion import base10_to_base16_alph_num
