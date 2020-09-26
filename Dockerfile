@@ -34,6 +34,11 @@ RUN conda update conda -yq && \
 
 WORKDIR /home/anaconda
 
+COPY entrypoint.sh /entrypoint.sh
 
-ENTRYPOINT ["/bin/su", "anaconda", "-s", "/bin/sh", "-l"]
-CMD echo "Welcome to mbuild! Run with '-c python' or '-c jupyter' to open a python interpreter or jupyter notebook!" 
+RUN chmod a+x /entrypoint.sh
+
+USER anaconda
+
+ENTRYPOINT ["/entrypoint.sh"]
+CMD ["jupyter"]
