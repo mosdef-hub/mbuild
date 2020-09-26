@@ -60,26 +60,8 @@ def _get_bond_types(structure, bonds, sigma_conversion_factor, epsilon_conversio
 def _get_angle_types(structure, use_urey_bradleys,
         sigma_conversion_factor, epsilon_conversion_factor):
     if use_urey_bradleys:
-        charmm_angle_types = []
-        for angle in structure.angles:
-            ub_k = 0
-            ub_req = 0
-            for ub in structure.urey_bradleys:
-                if (angle.atom1, angle.atom3) == (ub.atom1, ub.atom2):
-                    ub_k = ub.type.k
-                    ub_req = ub.type.req
-            charmm_angle_types.append((round(angle.type.k*(
-                sigma_conversion_factor**2/epsilon_conversion_factor),3),
-                                       round(angle.type.theteq,3),
-                                       round(ub_k/epsilon_conversion_factor, 3),
-                                       round(ub_req, 3),
-                                       tuple(sorted((angle.atom1.type,angle.atom3.type))),
-                                       angle.atom1.residue.name, angle.atom3.residue.name))
-
-        unique_angle_types = dict(enumerate(set(charmm_angle_types)))
-        unique_angle_types = OrderedDict([(y,x+1) for x,y in unique_angle_types.items()])
-        angle_types = [unique_angle_types[ub_info] for ub_info in charmm_angle_types]
-
+        warn('ERROR :  Urey-Bradleys are not available in the current version of this psf, pdb, and GOMC writer.')
+        return None, None
     else:
         unique_angle_types = dict(enumerate(set([(round(angle.type.k*(
             sigma_conversion_factor**2/epsilon_conversion_factor),3),
@@ -103,20 +85,19 @@ def _get_angle_types(structure, use_urey_bradleys,
     for i_value_ang, i_key_ang in unique_angle_types.items():
         i_value_duplicated = False
         for j_value_ang, j_key_ang in unique_angle_types.items():
-            if j_key_ang > i_key_ang:
-                j_value_ang_reorder = (j_value_ang[0], j_value_ang[1],
-                                       j_value_ang[2], j_value_ang[3][0], j_value_ang[3][1],
-                                         j_value_ang[4], j_value_ang[5], j_value_ang[6])
+            j_value_ang_reorder = (j_value_ang[0], j_value_ang[1],
+                                   j_value_ang[2], j_value_ang[3][0], j_value_ang[3][1],
+                                     j_value_ang[4], j_value_ang[5], j_value_ang[6])
 
-                if i_value_ang == j_value_ang_reorder:
-                    i_value_duplicated = True
-                    if i_value_ang[2] > j_value_ang[2]:
-                        unique_angle_check_dict.update({j_value_ang: len(unique_angle_check_dict) })
-                    else:
-                        unique_angle_check_dict.update({i_value_ang: len(unique_angle_check_dict) })
+            if i_value_ang == j_value_ang_reorder:
+                i_value_duplicated = True
+                if i_value_ang[2] > j_value_ang[2]:
+                    unique_angle_check_dict.update({j_value_ang: len(unique_angle_check_dict) })
+                else:
+                    unique_angle_check_dict.update({i_value_ang: len(unique_angle_check_dict) })
 
-            if i_value_duplicated == False:
-                unique_angle_check_dict.update({i_value_ang: len(unique_angle_check_dict)})
+        if i_value_duplicated == False:
+            unique_angle_check_dict.update({i_value_ang: len(unique_angle_check_dict)})
 
     unique_angle_types = OrderedDict([(y, x) for y, x in unique_angle_check_dict.items()])
 
@@ -159,45 +140,25 @@ def _get_dihedral_types(structure, use_rb_torsions, use_dihedrals,
                                                  )] for dihedral in structure.rb_torsions]
 
     elif use_dihedrals:
-        charmm_dihedrals = []
-        structure.join_dihedrals()
-        for dihedral in structure.dihedrals:
-            if not dihedral.improper:
-                weight = 1 / len(dihedral.type)
-                for dih_type in dihedral.type:
-                    charmm_dihedrals.append((round(dih_type.phi_k*lj_unit,3),
-                                             int(round(dih_type.per,0)),
-                                             int(round(dih_type.phase,0)),
-                                             round(weight, 4),
-                                             round(dih_type.scee,1),
-                                             round(dih_type.scnb,1),
-                                             dihedral.atom1.type, dihedral.atom2.type,
-                                             dihedral.atom3.type, dihedral.atom4.type,
-                                             dihedral.atom1.residue.name, dihedral.atom2.residue.name,
-                                             dihedral.atom3.residue.name, dihedral.atom4.residue.name
-                                             ))
-
-        unique_dihedral_types = dict(enumerate(set(charmm_dihedrals)))
-        unique_dihedral_types = OrderedDict([(y,x+1) for x,y in unique_dihedral_types.items()])
-        dihedral_types = [unique_dihedral_types[dihedral_info] for dihedral_info in charmm_dihedrals]
+        warn('ERROR : Using the charmm style and impropers is not available in the current version of '+
+             'this psf, pdb, and GOMC writer.')
+        return None, None
 
     unique_dihedral_check_dict = OrderedDict()
     for i_value_dihed, i_key_dihed in unique_dihedral_types.items():
         i_value_duplicated = False
         for j_value_dihed, j_key_dihed in unique_dihedral_types.items():
-            if j_key_dihed > i_key_dihed:
-                j_value_dihed_reorder = (j_value_dihed[0], j_value_dihed[1], j_value_dihed[2], j_value_dihed[3],
-                                         j_value_dihed[4], j_value_dihed[5], j_value_dihed[6], j_value_dihed[7],
-                                         j_value_dihed[11], j_value_dihed[10], j_value_dihed[9], j_value_dihed[8],
-                                         j_value_dihed[15], j_value_dihed[14], j_value_dihed[13], j_value_dihed[12])
+            j_value_dihed_reorder = (j_value_dihed[0], j_value_dihed[1], j_value_dihed[2], j_value_dihed[3],
+                                     j_value_dihed[4], j_value_dihed[5], j_value_dihed[6], j_value_dihed[7],
+                                     j_value_dihed[11], j_value_dihed[10], j_value_dihed[9], j_value_dihed[8],
+                                     j_value_dihed[15], j_value_dihed[14], j_value_dihed[13], j_value_dihed[12])
 
-                if i_value_dihed == j_value_dihed_reorder:
-                    i_value_duplicated = True
-                    if i_value_dihed[8] > j_value_dihed[8]:
-                        unique_dihedral_check_dict.update({j_value_dihed: len(unique_dihedral_check_dict)+1})
-                    else:
-                        unique_dihedral_check_dict.update({i_value_dihed: len(unique_dihedral_check_dict)+1})
-
+            if i_value_dihed == j_value_dihed_reorder:
+                i_value_duplicated = True
+                if i_value_dihed[8] > j_value_dihed[8]:
+                    unique_dihedral_check_dict.update({j_value_dihed: len(unique_dihedral_check_dict)+1})
+                else:
+                    unique_dihedral_check_dict.update({i_value_dihed: len(unique_dihedral_check_dict)+1})
         if i_value_duplicated == False:
             unique_dihedral_check_dict.update({i_value_dihed: len(unique_dihedral_check_dict)+1 })
 

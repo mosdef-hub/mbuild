@@ -271,6 +271,23 @@ class BaseTest:
 
         return MethaneUA_GOMC
 
+    @pytest.fixture
+    def TwoPropanolGOMC(self):
+        TwoPropanol_GOMC = mb.load('CC(C)O', smiles=True)
+        TwoPropanol_GOMC.name = "TPR"
+        return TwoPropanol_GOMC
+
+    @pytest.fixture
+    def EthylEtherGOMC(self):
+        EthylEther_GOMC = mb.load('CCOCC', smiles=True)
+        EthylEther_GOMC.name = "ETE"
+        return EthylEther_GOMC
+
+    @pytest.fixture
+    def MethlyEtherGOMC(self):
+        MethlyEther_GOMC = mb.load('COC', smiles=True)
+        MethlyEther_GOMC.name = "MTE"
+        return MethlyEther_GOMC
 
     @pytest.fixture
     def TwoPropanolUA(self):
