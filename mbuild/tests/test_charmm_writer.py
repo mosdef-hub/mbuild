@@ -1228,46 +1228,55 @@ class TestCharmmWriterData(BaseTest):
         assert value_0 is None
 
     def test_box_0_4_dims(self, TwoPropanolUA):
-        value_0 = charmm_psf_psb_FF(TwoPropanolUA, 'charmm_data_UA', GOMC_FF_filename='charmm_data_UA',
+        value_0 = charmm_psf_psb_FF(TwoPropanolUA, 'charmm_data_UA_box_0',
+                                    GOMC_FF_filename='charmm_data_UA',
                                     residues=[TwoPropanolUA.name], forcefield_names='trappe-ua',
-                                    Bead_to_atom_name_dict={'_CH3': 'C'}, box_0 = [3, 4, 5, 6])
+                                    Bead_to_atom_name_dict={'_CH3': 'C'},
+                                    box_0=[4, 5, 6], box_1=[3, 4, 5, 6])
         assert value_0 is None
 
     def test_box_1_4_dims(self, TwoPropanolUA):
         value_0 = charmm_psf_psb_FF(TwoPropanolUA, 'charmm_data_UA_box_0',
-                                    structure_1 = TwoPropanolUA, filename_1='charmm_data_UA_box_1' ,
+                                    structure_1=TwoPropanolUA, filename_1='charmm_data_UA_box_1',
                                     GOMC_FF_filename='charmm_data_UA',
                                     residues=[TwoPropanolUA.name], forcefield_names='trappe-ua',
                                     Bead_to_atom_name_dict={'_CH3': 'C'},
-                                    box_0 = [ 4, 5, 6], box_1 = [3, 4, 5, 6])
+                                    box_0=[4, 5, 6], box_1=[3, 4, 5, 6])
         assert value_0 is None
 
     def test_box_0_negative_dims(self, TwoPropanolUA):
         value_0 = charmm_psf_psb_FF(TwoPropanolUA, 'charmm_data_UA', GOMC_FF_filename='charmm_data_UA',
                                     residues=[TwoPropanolUA.name], forcefield_names='trappe-ua',
-                                    Bead_to_atom_name_dict={'_CH3': 'C'}, box_0 = [-3, 4, 5, 6])
+                                    Bead_to_atom_name_dict={'_CH3': 'C'}, box_0=[-3, 4, 5, 6])
         assert value_0 is None
 
     def test_box_1_negative_dims(self, TwoPropanolUA):
         value_0 = charmm_psf_psb_FF(TwoPropanolUA, 'charmm_data_UA_box_0',
-                                    structure_1 = TwoPropanolUA, filename_1='charmm_data_UA_box_1' ,
+                                    structure_1=TwoPropanolUA, filename_1='charmm_data_UA_box_1',
                                     GOMC_FF_filename='charmm_data_UA',
                                     residues=[TwoPropanolUA.name], forcefield_names='trappe-ua',
                                     Bead_to_atom_name_dict={'_CH3': 'C'},
-                                    box_0 = [ 4, 5, 6], box_1 = [-3, 4, 5, 6])
+                                    box_0=[4, 5, 6], box_1=[-3, 4, 5, 6])
         assert value_0 is None
 
     def test_box_0_string_dims(self, TwoPropanolUA):
         value_0 = charmm_psf_psb_FF(TwoPropanolUA, 'charmm_data_UA', GOMC_FF_filename='charmm_data_UA',
                                     residues=[TwoPropanolUA.name], forcefield_names='trappe-ua',
-                                    Bead_to_atom_name_dict={'_CH3': 'C'}, box_0 = ['sting', 4, 5, 6])
+                                    Bead_to_atom_name_dict={'_CH3': 'C'}, box_0=['string', 5, 6])
         assert value_0 is None
 
-    def test_box_1_string_dims(self, TwoPropanolUA):
-        value_0 = charmm_psf_psb_FF(TwoPropanolUA, 'charmm_data_UA_box_0',
-                                    structure_1 = TwoPropanolUA, filename_1='charmm_data_UA_box_1' ,
-                                    GOMC_FF_filename='charmm_data_UA',
+    def test_box_1_string_dims(self,  TwoPropanolUA):
+        value_0 = charmm_psf_psb_FF(TwoPropanolUA, 'charmm_data_UA_box_0', GOMC_FF_filename='charmm_data_UA',
+                                    structure_1= TwoPropanolUA, filename_1='charmm_data_UA_box_1',
                                     residues=[TwoPropanolUA.name], forcefield_names='trappe-ua',
                                     Bead_to_atom_name_dict={'_CH3': 'C'},
-                                    box_0 = [ 4, 5, 6], box_1 = ['sting', 4, 5, 6])
+                                    box_0=[ 4, 5, 6], box_1=['string', 5, 6])
+        assert value_0 is None
+
+    def test_2_box_residues_not_all_listed(self, EthaneGOMC, EthanolGOMC):
+        value_0 = charmm_psf_psb_FF(EthaneGOMC, 'charmm_data_UA_box_0',
+                                    structure_1=EthanolGOMC, filename_1='charmm_data_UA_box_1',
+                                    GOMC_FF_filename='charmm_data_UA',
+                                    residues=[EthanolGOMC.name, EthanolGOMC.name], forcefield_names='oplsaa',
+                                    )
         assert value_0 is None
