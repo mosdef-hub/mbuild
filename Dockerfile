@@ -34,7 +34,7 @@ RUN conda update conda -yq && \
 
 WORKDIR /home/anaconda
 
-COPY entrypoint.sh /entrypoint.sh
+COPY devtools/docker-entrypoint.sh /entrypoint.sh
 
 RUN chmod a+x /entrypoint.sh
 
