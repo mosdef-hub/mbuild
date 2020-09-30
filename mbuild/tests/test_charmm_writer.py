@@ -259,7 +259,7 @@ class TestCharmmWriterData(BaseTest):
                 pass
 
 
-    def test_charmm_pdb_fix_angle_bond_fix_atoms(self, EthaneGOMC):
+    def test_charmm_pdb_fix_angle_bond_fix_atoms(self, EthaneGOMC,EthanolGOMC):
         test_box_ethane_propane = mb.fill_box(compound=[EthaneGOMC,EthanolGOMC],
                                   n_compounds= [1,1] ,
                                   box=[2.0, 2.0, 2.0])
@@ -289,16 +289,20 @@ class TestCharmmWriterData(BaseTest):
 
 
             elif '!atom_types 	 Kb	b0 		  atoms_types_per_utilized_FF' in line:
-                fixed_bond_types = [['A', 'A', '999999999999', '1.529'], ['A', 'C', '999999999999', '1.09'] ]
+                bond_types = [['D', 'G', '340.0', '1.09'], ['E', 'G', '320.0', '1.41'],
+                                    ['E', 'F', '553.0', '0.945'], ['A', 'C', '999999999999', '1.09'],
+                                    ['B', 'D', '340.0', '1.09'], ['A', 'A', '999999999999', '1.529'],
+                                    ['B', 'G', '268.0', '1.529']]
                 total_bonds_evaluated = []
                 total_fixed_bonds = []
                 for j in range(0,  7):
-                    if out_GOMC[i + 1 + j].split('!')[0].split()[0:4] == (fixed_bond_types[0] or fixed_bond_types[1]):
-                        total_bonds_evaluated.append(out_GOMC[i + 1 + j].split('!')[0].split()[0:4])
+                    total_bonds_evaluated.append(out_GOMC[i + 1 + j].split('!')[0].split()[0:4])
                     if out_GOMC[i + 1 + j].split('!')[0].split()[2:3] == ['999999999999']:
                         total_fixed_bonds.append(out_GOMC[i + 1 + j].split('!')[0].split()[0:4])
-                assert total_bonds_evaluated.sort() == total_bonds_evaluated.sort()
-                assert len(total_fixed_bonds) == len(fixed_bond_types)
+                    print('total_bonds_evaluated = '+str(total_bonds_evaluated))
+                    print('total_fixed_bonds = '+str(total_fixed_bonds))
+                assert total_bonds_evaluated.sort() == bond_types.sort()
+                assert len(total_fixed_bonds) == 2
 
             elif '!atom_types 		Ktheta	Theta0			  atoms_types_per_utilized_FF' in line:
                 fixed_angle_types = [['A',	'A',	'C',	'999999999999',	'110.70000'],
