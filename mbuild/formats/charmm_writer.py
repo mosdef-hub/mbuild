@@ -6,6 +6,7 @@ from mbuild import Box
 from mbuild.utils.conversion import RB_to_CHARMM
 from mbuild.utils.sorting import natural_sort
 from mbuild.utils.conversion import base10_to_base16_alph_num
+from mbuild.utils.conversion import base10_to_base52_alph_num
 from mbuild.utils.conversion import base10_to_base62_alph_num
 from mbuild.utils.specific_FF_to_residue import Specific_FF_to_residue
 import datetime
@@ -567,6 +568,7 @@ def charmm_psf_psb_FF(structure_0, filename_0, structure_1 = None, filename_1= N
 
     print("******************************")
     print("")
+    sub_1_for_base_52 = 1
 
     if structure_1 != None:
         boxes_for_simulation = 2
@@ -764,7 +766,7 @@ def charmm_psf_psb_FF(structure_0, filename_0, structure_1 = None, filename_1= N
     # added an index so the atom types can be converted to numbers as the type name is to long for insertion into
     # the pdb and psf files
     atom_types_to_index_value_dict = dict(
-        [(unique_types[unique_types.index(atom_type)], unique_types.index(atom_type) + 1) for atom_type, masses in
+        [(unique_types[unique_types.index(atom_type)], unique_types.index(atom_type) ) for atom_type, masses in
          zip(types, masses)])
 
     box_0 = Box(lengths=np.array([0.1 * val for val in structure_0_FF.box[0:3]]),angles=structure_0_FF.box[3:6])
@@ -919,7 +921,7 @@ def charmm_psf_psb_FF(structure_0, filename_0, structure_1 = None, filename_1= N
                        +'(i.e., atoms_type_per_utilized_FF)  \n')
             for atom_type,mass in mass_dict.items():
                 mass_format = '*  {}\t\t{:.6f}\t! {}\n'
-                data.write(mass_format.format(base10_to_base62_alph_num(atom_type),
+                data.write(mass_format.format(base10_to_base52_alph_num(atom_type-sub_1_for_base_52),
                                               mass, unique_types[atom_type - 1]))
 
 
@@ -945,15 +947,15 @@ def charmm_psf_psb_FF(structure_0, filename_0, structure_1 = None, filename_1= N
                     bond_format = '{}\t{}\t{}\t{}\t\t! {}\t{}\n'
                     if (fix_res_bonds_angles != None) and ((params[3] and  params[4]) in fix_res_bonds_angles ):
                         fix_bond_K_value = '999999999999'
-                        data.write( bond_format.format(base10_to_base62_alph_num(atom_types_to_index_value_dict[params[2][0]+'_' + str(params[3])]),
-                                                       base10_to_base62_alph_num(atom_types_to_index_value_dict[params[2][1]+'_' + str(params[4])]),
+                        data.write( bond_format.format(base10_to_base52_alph_num(atom_types_to_index_value_dict[params[2][0]+'_' + str(params[3])]),
+                                                       base10_to_base52_alph_num(atom_types_to_index_value_dict[params[2][1]+'_' + str(params[4])]),
                                                        fix_bond_K_value, params[1],
                                                        params[2][0]+'_' + str(params[3]),
                                                        params[2][1]+'_' + str(params[4])))
 
                     else:
-                        data.write( bond_format.format(base10_to_base62_alph_num(atom_types_to_index_value_dict[params[2][0] +'_' + str(params[3])]),
-                                                       base10_to_base62_alph_num(atom_types_to_index_value_dict[params[2][1]+'_' + str(params[4])]),
+                        data.write( bond_format.format(base10_to_base52_alph_num(atom_types_to_index_value_dict[params[2][0] +'_' + str(params[3])]),
+                                                       base10_to_base52_alph_num(atom_types_to_index_value_dict[params[2][1]+'_' + str(params[4])]),
                                                        params[0],params[1],
                                                        params[2][0]+'_' + str(params[3]),
                                                        params[2][1]+'_' + str(params[4])))
@@ -981,9 +983,9 @@ def charmm_psf_psb_FF(structure_0, filename_0, structure_1 = None, filename_1= N
                                                            in fix_res_bonds_angles ):
                         fix_angle_K_value = '999999999999'
                         angle_format = '{}\t{}\t{}\t{}\t{:.5f}\t\t! {}\t{}\t{}\n'
-                        data.write(angle_format.format(base10_to_base62_alph_num(atom_types_to_index_value_dict[params[3][0]+'_'+params[4]]),
-                                                       base10_to_base62_alph_num(atom_types_to_index_value_dict[params[2]+'_'+params[5]]),
-                                                       base10_to_base62_alph_num(atom_types_to_index_value_dict[params[3][1]+'_'+params[6]]),
+                        data.write(angle_format.format(base10_to_base52_alph_num(atom_types_to_index_value_dict[params[3][0]+'_'+params[4]]),
+                                                       base10_to_base52_alph_num(atom_types_to_index_value_dict[params[2]+'_'+params[5]]),
+                                                       base10_to_base52_alph_num(atom_types_to_index_value_dict[params[3][1]+'_'+params[6]]),
                                                        fix_angle_K_value ,params[1],
                                                        params[3][0]+'_'+params[4],
                                                        params[2]+'_'+params[5],
@@ -991,9 +993,9 @@ def charmm_psf_psb_FF(structure_0, filename_0, structure_1 = None, filename_1= N
 
                     else:
                         data.write(
-                            '{}\t{}\t{}\t{}\t{:.5f}\t\t! {}\t{}\t{}\n'.format(base10_to_base62_alph_num(atom_types_to_index_value_dict[params[3][0]+'_'+params[4]]),
-                                                                              base10_to_base62_alph_num(atom_types_to_index_value_dict[params[2]+'_'+params[5]]),
-                                                                              base10_to_base62_alph_num(atom_types_to_index_value_dict[params[3][1]+'_'+params[6]]),
+                            '{}\t{}\t{}\t{}\t{:.5f}\t\t! {}\t{}\t{}\n'.format(base10_to_base52_alph_num(atom_types_to_index_value_dict[params[3][0]+'_'+params[4]]),
+                                                                              base10_to_base52_alph_num(atom_types_to_index_value_dict[params[2]+'_'+params[5]]),
+                                                                              base10_to_base52_alph_num(atom_types_to_index_value_dict[params[3][1]+'_'+params[6]]),
                                                                               params[0], params[1],
                                                                               params[3][0]+'_'+params[4],
                                                                               params[2]+'_'+params[5],
@@ -1110,10 +1112,10 @@ def charmm_psf_psb_FF(structure_0, filename_0, structure_1 = None, filename_1= N
                         # check the error between the convertions of RB_tortions to CHARMM DIHEDRALS (end)
                         # **************************************
                         dihedral_format = '{}\t{}\t{}\t{}\t{:.6f}\t{}\t{}\t\t! {}\t{}\t{}\t{}\n'
-                        data.write(dihedral_format.format(base10_to_base62_alph_num(atom_types_to_index_value_dict[ params[8]+ '_' + params[12]]),
-                                                          base10_to_base62_alph_num(atom_types_to_index_value_dict[params[9]+ '_' + params[13]]),
-                                                          base10_to_base62_alph_num(atom_types_to_index_value_dict[params[10]+ '_' + params[14]]),
-                                                          base10_to_base62_alph_num(atom_types_to_index_value_dict[params[11]+ '_' + params[15]]),
+                        data.write(dihedral_format.format(base10_to_base52_alph_num(atom_types_to_index_value_dict[ params[8]+ '_' + params[12]]),
+                                                          base10_to_base52_alph_num(atom_types_to_index_value_dict[params[9]+ '_' + params[13]]),
+                                                          base10_to_base52_alph_num(atom_types_to_index_value_dict[params[10]+ '_' + params[14]]),
+                                                          base10_to_base52_alph_num(atom_types_to_index_value_dict[params[11]+ '_' + params[15]]),
                                                           CHARMM_coeffs[0,0],
                                                           int(CHARMM_coeffs[0,1]),
                                                           CHARMM_coeffs[0,2],
@@ -1121,10 +1123,10 @@ def charmm_psf_psb_FF(structure_0, filename_0, structure_1 = None, filename_1= N
                                                           params[9]+ '_' + params[13],
                                                           params[10]+ '_' + params[14],
                                                           params[11]+ '_' + params[15]))
-                        data.write(dihedral_format.format(base10_to_base62_alph_num(atom_types_to_index_value_dict[params[8]+ '_' + params[12]]),
-                                                          base10_to_base62_alph_num(atom_types_to_index_value_dict[params[9]+ '_' + params[13]]),
-                                                          base10_to_base62_alph_num(atom_types_to_index_value_dict[params[10]+ '_' + params[14]]),
-                                                          base10_to_base62_alph_num(atom_types_to_index_value_dict[params[11]+ '_' + params[15]]),
+                        data.write(dihedral_format.format(base10_to_base52_alph_num(atom_types_to_index_value_dict[params[8]+ '_' + params[12]]),
+                                                          base10_to_base52_alph_num(atom_types_to_index_value_dict[params[9]+ '_' + params[13]]),
+                                                          base10_to_base52_alph_num(atom_types_to_index_value_dict[params[10]+ '_' + params[14]]),
+                                                          base10_to_base52_alph_num(atom_types_to_index_value_dict[params[11]+ '_' + params[15]]),
                                                           CHARMM_coeffs[1, 0],
                                                           int(CHARMM_coeffs[1, 1]),
                                                           CHARMM_coeffs[1, 2],
@@ -1132,10 +1134,10 @@ def charmm_psf_psb_FF(structure_0, filename_0, structure_1 = None, filename_1= N
                                                           params[9]+ '_' + params[13],
                                                           params[10]+ '_' + params[14],
                                                           params[11]+ '_' + params[15]))
-                        data.write(dihedral_format.format(base10_to_base62_alph_num(atom_types_to_index_value_dict[params[8]+ '_' + params[12]]),
-                                                          base10_to_base62_alph_num(atom_types_to_index_value_dict[params[9]+ '_' + params[13]]),
-                                                          base10_to_base62_alph_num(atom_types_to_index_value_dict[params[10]+ '_' + params[14]]),
-                                                          base10_to_base62_alph_num(atom_types_to_index_value_dict[params[11]+ '_' + params[15]]),
+                        data.write(dihedral_format.format(base10_to_base52_alph_num(atom_types_to_index_value_dict[params[8]+ '_' + params[12]]),
+                                                          base10_to_base52_alph_num(atom_types_to_index_value_dict[params[9]+ '_' + params[13]]),
+                                                          base10_to_base52_alph_num(atom_types_to_index_value_dict[params[10]+ '_' + params[14]]),
+                                                          base10_to_base52_alph_num(atom_types_to_index_value_dict[params[11]+ '_' + params[15]]),
                                                           CHARMM_coeffs[2, 0],
                                                           int(CHARMM_coeffs[2, 1]),
                                                           CHARMM_coeffs[2, 2],
@@ -1143,10 +1145,10 @@ def charmm_psf_psb_FF(structure_0, filename_0, structure_1 = None, filename_1= N
                                                           params[9]+ '_' + params[13],
                                                           params[10]+ '_' + params[14],
                                                           params[11]+ '_' + params[15]))
-                        data.write(dihedral_format.format(base10_to_base62_alph_num(atom_types_to_index_value_dict[params[8]+ '_' + params[12]]),
-                                                          base10_to_base62_alph_num(atom_types_to_index_value_dict[params[9]+ '_' + params[13]]),
-                                                          base10_to_base62_alph_num(atom_types_to_index_value_dict[params[10]+ '_' + params[14]]),
-                                                          base10_to_base62_alph_num(atom_types_to_index_value_dict[params[11]+ '_' + params[15]]),
+                        data.write(dihedral_format.format(base10_to_base52_alph_num(atom_types_to_index_value_dict[params[8]+ '_' + params[12]]),
+                                                          base10_to_base52_alph_num(atom_types_to_index_value_dict[params[9]+ '_' + params[13]]),
+                                                          base10_to_base52_alph_num(atom_types_to_index_value_dict[params[10]+ '_' + params[14]]),
+                                                          base10_to_base52_alph_num(atom_types_to_index_value_dict[params[11]+ '_' + params[15]]),
                                                           CHARMM_coeffs[3, 0],
                                                           int(CHARMM_coeffs[3, 1]),
                                                           CHARMM_coeffs[3, 2],
@@ -1154,10 +1156,10 @@ def charmm_psf_psb_FF(structure_0, filename_0, structure_1 = None, filename_1= N
                                                           params[9]+ '_' + params[13],
                                                           params[10]+ '_' + params[14],
                                                           params[11]+ '_' + params[15]))
-                        data.write(dihedral_format.format(base10_to_base62_alph_num(atom_types_to_index_value_dict[params[8]+ '_' + params[12]]),
-                                                          base10_to_base62_alph_num(atom_types_to_index_value_dict[params[9]+ '_' + params[13]]),
-                                                          base10_to_base62_alph_num(atom_types_to_index_value_dict[params[10]+ '_' + params[14]]),
-                                                          base10_to_base62_alph_num(atom_types_to_index_value_dict[params[11]+ '_' + params[15]]),
+                        data.write(dihedral_format.format(base10_to_base52_alph_num(atom_types_to_index_value_dict[params[8]+ '_' + params[12]]),
+                                                          base10_to_base52_alph_num(atom_types_to_index_value_dict[params[9]+ '_' + params[13]]),
+                                                          base10_to_base52_alph_num(atom_types_to_index_value_dict[params[10]+ '_' + params[14]]),
+                                                          base10_to_base52_alph_num(atom_types_to_index_value_dict[params[11]+ '_' + params[15]]),
                                                           CHARMM_coeffs[4, 0],
                                                           int(CHARMM_coeffs[4, 1]),
                                                           CHARMM_coeffs[4, 2],
@@ -1165,10 +1167,10 @@ def charmm_psf_psb_FF(structure_0, filename_0, structure_1 = None, filename_1= N
                                                           params[9]+ '_' + params[13],
                                                           params[10]+ '_' + params[14],
                                                           params[11]+ '_' + params[15]))
-                        data.write(dihedral_format.format(base10_to_base62_alph_num(atom_types_to_index_value_dict[params[8]+ '_' + params[12]]),
-                                                          base10_to_base62_alph_num(atom_types_to_index_value_dict[params[9]+ '_' + params[13]]),
-                                                          base10_to_base62_alph_num(atom_types_to_index_value_dict[params[10]+ '_' + params[14]]),
-                                                          base10_to_base62_alph_num(atom_types_to_index_value_dict[params[11]+ '_' + params[15]]),
+                        data.write(dihedral_format.format(base10_to_base52_alph_num(atom_types_to_index_value_dict[params[8]+ '_' + params[12]]),
+                                                          base10_to_base52_alph_num(atom_types_to_index_value_dict[params[9]+ '_' + params[13]]),
+                                                          base10_to_base52_alph_num(atom_types_to_index_value_dict[params[10]+ '_' + params[14]]),
+                                                          base10_to_base52_alph_num(atom_types_to_index_value_dict[params[11]+ '_' + params[15]]),
                                                           CHARMM_coeffs[5, 0],
                                                           int(CHARMM_coeffs[5, 1]),
                                                           CHARMM_coeffs[5, 2],
@@ -1217,12 +1219,12 @@ def charmm_psf_psb_FF(structure_0, filename_0, structure_1 = None, filename_1= N
             sigmas = np.array([atom.sigma for atom in structure_selection.atoms]) / sigma_conversion_factor
             forcefields = [atom.type+'_'+atom.residue.name for atom in structure_selection.atoms]
             Residues = [atom.residue.name for atom in structure_selection.atoms]
-            epsilon_dict = dict([(unique_types.index(atom_type)+1,epsilon)
+            epsilon_dict = dict([(unique_types.index(atom_type),epsilon)
                                  for atom_type,epsilon in zip(types,epsilons)])
-            sigma_dict = dict([(unique_types.index(atom_type)+1,sigma) for atom_type,sigma in zip(types,sigmas)])
-            LJ_1_4_dict = dict([(unique_types.index(atom_type) + 1, combined_1_4_LJ_dict_per_residue[Residues])
+            sigma_dict = dict([(unique_types.index(atom_type),sigma) for atom_type,sigma in zip(types,sigmas)])
+            LJ_1_4_dict = dict([(unique_types.index(atom_type) , combined_1_4_LJ_dict_per_residue[Residues])
                                 for atom_type, Residues in zip(types, Residues)])
-            forcefield_dict = dict([(unique_types.index(atom_type) + 1, forcefield)
+            forcefield_dict = dict([(unique_types.index(atom_type) , forcefield)
                                     for atom_type, forcefield in zip(types, forcefields)])
 
             # ensure all 1,4-coulombic scaling factors are the same
@@ -1257,7 +1259,7 @@ def charmm_psf_psb_FF(structure_0, filename_0, structure_1 = None, filename_1= N
 
                 for idx, epsilon in epsilon_dict.items():
                     NB_format = '{}\t{:.2f}\t{:.9f}\t{:.11f}\t{:.2f}\t{:.9f}\t{:.11f}\t\t! {}\t{}\n'
-                    data.write(NB_format.format(base10_to_base62_alph_num(idx), 0, -epsilon,
+                    data.write(NB_format.format(base10_to_base52_alph_num(idx), 0, -epsilon,
                                                 sigma_dict[idx] * (2 ** (1 / 6)) / 2, 0,
                                                 float(LJ_1_4_dict[idx])* (-epsilon),
                                                 float(LJ_1_4_dict[idx])* sigma_dict[idx] * (2 ** (1 / 6)) / 2,
@@ -1271,12 +1273,8 @@ def charmm_psf_psb_FF(structure_0, filename_0, structure_1 = None, filename_1= N
                 data.write("Error: Currenly this potential is not supported in this MoSDeF GOMC parameter writer")
 
 
-            data.write('\n!\n')
 
-            if forcefield_files != None:
-                data.write('!NBFIX not used for the '+str(forcefield_files)+' file type(s)')
-            elif forcefield_names != None:
-                data.write('!NBFIX not used for the '+str(forcefield_names)+' file type(s)')
+
 
 
 
@@ -1419,25 +1417,14 @@ def charmm_psf_psb_FF(structure_0, filename_0, structure_1 = None, filename_1= N
 
         dest.write('PSF ')  # BC Changed from 'PSF CHEQ ' to 'PSF'
         dest.write('\n\n')
-        if isinstance(stuct_iteration.title, string_types):
-            dest.write(intfmt % 1 + ' !NTITLE\n')
-            dest.write(' REMARKS this file ' + file_name_iteration + ' - created by mBuild/foyer using the' + '\n')
-            if forcefield_files != None:
-                dest.write(' REMARKS parameters from the ' + str(forcefield_files) + ' force field via MoSDef\n')
-            elif forcefield_names != None:
-                dest.write(' REMARKS parameters from the ' + str(forcefield_names) + ' force field via MoSDef\n')
-            dest.write(' REMARKS created on ' + str(date_time) + '\n')
-            dest.write('%s\n\n' % stuct_iteration.title)
-        else:
-            dest.write(intfmt % len(stuct_iteration.title) + ' !NTITLE\n')
-            dest.write(' REMARKS this file ' + file_name_iteration + ' - created by mBuild/foyer using the' + '\n')
-            if forcefield_files != None:
-                dest.write(' REMARKS parameters from the ' + str(forcefield_files) + ' force field via MoSDef\n')
-            elif forcefield_names != None:
-                dest.write(' REMARKS parameters from the ' + str(forcefield_names) + ' force field via MoSDef\n')
-            dest.write(' REMARKS created on ' + str(date_time) + '\n')
-            dest.write('\n'.join(stuct_iteration.title) + '\n\n')
 
+        dest.write(intfmt % 3 + ' !NTITLE\n')
+        dest.write(' REMARKS this file ' + file_name_iteration + ' - created by mBuild/foyer using the' + '\n')
+        if forcefield_files != None:
+            dest.write(' REMARKS parameters from the ' + str(forcefield_files) + ' force field via MoSDef\n')
+        elif forcefield_names != None:
+            dest.write(' REMARKS parameters from the ' + str(forcefield_names) + ' force field via MoSDef\n')
+        dest.write(' REMARKS created on ' + str(date_time) + '\n\n\n')
 
         # This converts the atom name in the GOMC psf and pdb files to unique atom names
         unique_Individual_atom_names_dict, \
@@ -1451,7 +1438,7 @@ def charmm_psf_psb_FF(structure_0, filename_0, structure_1 = None, filename_1= N
         dest.write(intfmt % len(stuct_iteration.atoms) + ' !NATOM\n')
         # atmfmt1 is for CHARMM format (i.e., atom types are integers)
         for i, atom in enumerate(stuct_iteration.atoms):
-            typ = base10_to_base62_alph_num(atom_types_to_index_value_dict[atom.type+'_'+atom.residue.name])
+            typ = base10_to_base52_alph_num(atom_types_to_index_value_dict[atom.type+'_'+atom.residue.name])
             fmt = atmfmt1
             segid = atom.residue.segid or 'SYS'
 

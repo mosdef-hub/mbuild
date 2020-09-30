@@ -5,6 +5,7 @@ from mbuild.formats import charmm_writer
 from mbuild.formats.charmm_writer import charmm_psf_psb_FF
 from mbuild.utils.io import has_foyer
 from mbuild.utils.conversion import base10_to_base16_alph_num
+from mbuild.utils.conversion import base10_to_base52_alph_num
 from mbuild.utils.conversion import base10_to_base62_alph_num
 from mbuild.utils.conversion import unique_entries_in_List
 from mbuild.utils.specific_FF_to_residue  import Specific_FF_to_residue
@@ -27,14 +28,14 @@ class TestCharmmWriterData(BaseTest):
             if '! atom_types 	mass 		  atomTypeForceFieldName_ResidueName' \
                ' (i.e., atoms_type_per_utilized_FF)' in line:
                 assert len(out_GOMC[i + 1].split('!')[0].split()) == 3
-                assert out_GOMC[i + 1].split('!')[0].split()[0:3] == ['*', '1', '12.010780']
+                assert out_GOMC[i + 1].split('!')[0].split()[0:3] == ['*', 'A', '12.010780']
                 assert len(out_GOMC[i + 2].split('!')[0].split()) == 3
-                assert out_GOMC[i + 2].split('!')[0].split()[0:3] == ['*', '2', '1.007947']
+                assert out_GOMC[i + 2].split('!')[0].split()[0:3] == ['*', 'B', '1.007947']
                 assert out_GOMC[i + 1].split()[4:5] == ['opls_135_ETH']
                 assert out_GOMC[i + 2].split()[4:5] == ['opls_140_ETH']
 
             elif '!atom_types 	 Kb	b0 		  atoms_types_per_utilized_FF' in line:
-                bond_types = [['1', '2', '340.0', '1.09'], ['1', '1', '268.0', '1.529']]
+                bond_types = [['A', 'B', '340.0', '1.09'], ['A', 'A', '268.0', '1.529']]
                 assert len(out_GOMC[i + 1].split('!')[0].split()) == 4
                 assert len(out_GOMC[i + 2].split('!')[0].split()) == 4
                 if out_GOMC[i + 1].split('!')[0].split()[0:4] == bond_types[0]:
@@ -46,7 +47,7 @@ class TestCharmmWriterData(BaseTest):
                     assert out_GOMC[i + 2].split('!')[0].split()[0:4] == bond_types[0]
 
             elif '!atom_types 		Ktheta	Theta0			  atoms_types_per_utilized_FF' in line:
-                angle_types = [['1', '1', '2', '37.5', '110.70000'], ['2', '1', '2', '33.0', '107.80000']]
+                angle_types = [['A', 'A', 'B', '37.5', '110.70000'], ['B', 'A', 'B', '33.0', '107.80000']]
                 assert len(out_GOMC[i + 1].split('!')[0].split()) == 5
                 assert len(out_GOMC[i + 2].split('!')[0].split()) == 5
                 if out_GOMC[i + 1].split('!')[0].split()[0:5] == angle_types[0]:
@@ -58,12 +59,12 @@ class TestCharmmWriterData(BaseTest):
                     assert out_GOMC[i + 2].split('!')[0].split()[0:5] == angle_types[0]
 
             elif '!atom_types 			Kchi		n	delta		  atoms_types_per_utilized_FF' in line:
-                dihed_types = [['2', '1', '1', '2', '0.300000', '0', '90.0'],
-                               ['2', '1', '1', '2', '0.000000', '1', '180.0'],
-                               ['2', '1', '1', '2', '0.000000', '2', '0.0'],
-                               ['2', '1', '1', '2', '-0.150000', '3', '180.0'],
-                               ['2', '1', '1', '2', '0.000000', '4', '0.0'],
-                               ['2', '1', '1', '2', '0.000000', '5', '180.0']
+                dihed_types = [['B', 'A', 'A', 'B', '0.300000', '0', '90.0'],
+                               ['B', 'A', 'A', 'B', '0.000000', '1', '180.0'],
+                               ['B', 'A', 'A', 'B', '0.000000', '2', '0.0'],
+                               ['B', 'A', 'A', 'B', '-0.150000', '3', '180.0'],
+                               ['B', 'A', 'A', 'B', '0.000000', '4', '0.0'],
+                               ['B', 'A', 'A', 'B', '0.000000', '5', '180.0']
                                ]
                 for j in range(0, len(dihed_types)):
                     assert len(out_GOMC[i + 1 + j].split('!')[0].split()) == 7
@@ -71,8 +72,8 @@ class TestCharmmWriterData(BaseTest):
 
             elif '!atype 	ignored	epsilon 	Rmin/2 		ignored	eps,1-4		Rmin/2,1-4' \
                  '		  atom_type_per_utilized_FF' in line:
-                NB_types = [['1', '0.00', '-0.066000000', '1.96430858454', '0.00', '-0.033000000',	'0.98215429227'],
-                               ['2', '0.00', '-0.030000000', '1.40307756039', '0.00', '-0.015000000',	'0.70153878019']]
+                NB_types = [['A', '0.00', '-0.066000000', '1.96430858454', '0.00', '-0.033000000',	'0.98215429227'],
+                               ['B', '0.00', '-0.030000000', '1.40307756039', '0.00', '-0.015000000',	'0.70153878019']]
 
                 for j in range(0, len(NB_types)):
                     assert len(out_GOMC[i + 1 + j].split('!')[0].split()) == 7
@@ -88,14 +89,14 @@ class TestCharmmWriterData(BaseTest):
         out_GOMC = open('charmm_data.psf', 'r').readlines()
         for i, line in enumerate(out_GOMC):
             if '8 !NATOM' in line:
-                Atom_type_charge_etc_list = [['1', 'SYS', '1', 'ETH', 'C1', '1', '-0.180000', '12.0108'],
-                                             ['2', 'SYS', '1', 'ETH', 'C2', '1', '-0.180000', '12.0108'],
-                                             ['3', 'SYS', '1', 'ETH', 'H1', '2', '0.060000', '1.0079'],
-                                             ['4', 'SYS', '1', 'ETH', 'H2', '2', '0.060000', '1.0079'],
-                                             ['5', 'SYS', '1', 'ETH', 'H3', '2', '0.060000', '1.0079'],
-                                             ['6', 'SYS', '1', 'ETH', 'H4', '2', '0.060000', '1.0079'],
-                                             ['7', 'SYS', '1', 'ETH', 'H5', '2', '0.060000', '1.0079'],
-                                             ['8', 'SYS', '1', 'ETH', 'H6', '2', '0.060000', '1.0079']
+                Atom_type_charge_etc_list = [['1', 'SYS', '1', 'ETH', 'C1', 'A', '-0.180000', '12.0108'],
+                                             ['2', 'SYS', '1', 'ETH', 'C2', 'A', '-0.180000', '12.0108'],
+                                             ['3', 'SYS', '1', 'ETH', 'H1', 'B', '0.060000', '1.0079'],
+                                             ['4', 'SYS', '1', 'ETH', 'H2', 'B', '0.060000', '1.0079'],
+                                             ['5', 'SYS', '1', 'ETH', 'H3', 'B', '0.060000', '1.0079'],
+                                             ['6', 'SYS', '1', 'ETH', 'H4', 'B', '0.060000', '1.0079'],
+                                             ['7', 'SYS', '1', 'ETH', 'H5', 'B', '0.060000', '1.0079'],
+                                             ['8', 'SYS', '1', 'ETH', 'H6', 'B', '0.060000', '1.0079']
                                              ]
                 for j in range(0, len(Atom_type_charge_etc_list)):
                     assert out_GOMC[i + 1 + j ].split()[0:8] == Atom_type_charge_etc_list[j]
@@ -143,8 +144,8 @@ class TestCharmmWriterData(BaseTest):
         for i, line in enumerate(out_GOMC):
             if '! atom_types 	mass 		  atomTypeForceFieldName_ResidueName ' \
                '(i.e., atoms_type_per_utilized_FF)' in line:
-                atom_types_1 = [['*', '1', '15.035000'], ['*', '2', '13.019000'],
-                              ['*', '4', '15.999430'], ['*', '3', '1.007947']]
+                atom_types_1 = [['*', 'A', '15.035000'], ['*', 'B', '13.019000'],
+                              ['*', 'D', '15.999430'], ['*', 'C', '1.007947']]
                 atom_types_2= [['CH3_sp3_POL'], ['CH_O_POL'], ['O_POL'],['H_POL']]
 
                 for j in range(0, len(atom_types_1)):
@@ -153,8 +154,8 @@ class TestCharmmWriterData(BaseTest):
                     assert out_GOMC[i + 1 + j].split()[4:5] == atom_types_2[j]
 
             elif '!atom_types 	 Kb	b0 		  atoms_types_per_utilized_FF' in line:
-                bond_types = [['3', '4', '600.402', '0.945'], ['2', '4', '600.402', '1.43'],
-                              ['1', '2', '600.402', '1.54']]
+                bond_types = [['C', 'D', '600.402', '0.945'], ['B', 'D', '600.402', '1.43'],
+                              ['A', 'B', '600.402', '1.54']]
                 total_bonds_evaluated = []
                 total_bonds_evaluated_reorg = []
                 for j in range(0, len(bond_types)):
@@ -168,8 +169,8 @@ class TestCharmmWriterData(BaseTest):
                 assert total_bonds_evaluated_reorg == bond_types
 
             elif '!atom_types 		Ktheta	Theta0			  atoms_types_per_utilized_FF' in line:
-                angle_types = [['1', '2', '1', '62.1', '112.00000'], ['1', '2', '4', '50.078', '109.47000'],
-                               ['2', '4', '3', '55.046', '108.50000']]
+                angle_types = [['A', 'B', 'A', '62.1', '112.00000'], ['A', 'B', 'D', '50.078', '109.47000'],
+                               ['B', 'D', 'C', '55.046', '108.50000']]
                 total_angles_evaluated = []
                 total_angles_evaluated_reorg = []
                 for j in range(0, len(angle_types )):
@@ -183,12 +184,12 @@ class TestCharmmWriterData(BaseTest):
                 assert total_angles_evaluated_reorg == angle_types
 
             elif '!atom_types 			Kchi		n	delta		  atoms_types_per_utilized_FF' in line:
-                dihedral_types = [['1', '2', '4', '3', '0.648000', '0', '90.0'],
-                                  ['1', '2', '4', '3', '-0.392500', '1', '180.0'],
-                                  ['1', '2', '4', '3', '-0.062500', '2', '0.0'],
-                                  ['1', '2', '4', '3', '0.345500', '3', '180.0'],
-                                  ['1', '2', '4', '3', '0.000000', '4', '0.0'],
-                                  ['1', '2', '4', '3', '0.000000', '5', '180.0']
+                dihedral_types = [['A', 'B', 'D', 'C', '0.648000', '0', '90.0'],
+                                  ['A', 'B', 'D', 'C', '-0.392500', '1', '180.0'],
+                                  ['A', 'B', 'D', 'C', '-0.062500', '2', '0.0'],
+                                  ['A', 'B', 'D', 'C', '0.345500', '3', '180.0'],
+                                  ['A', 'B', 'D', 'C', '0.000000', '4', '0.0'],
+                                  ['A', 'B', 'D', 'C', '0.000000', '5', '180.0']
                                   ]
                 for j in range(0, len(dihedral_types)):
                     assert len(out_GOMC[i + 1 + j].split('!')[0].split()) == 7
@@ -196,10 +197,10 @@ class TestCharmmWriterData(BaseTest):
 
             elif '!atype 	ignored	epsilon 	Rmin/2 		ignored	eps,1-4		Rmin/2,1-4		  ' \
                  'atom_type_per_utilized_FF' in line:
-                angle_types = [['1', '0.00', '-0.194745937', '2.10461634058', '0.00', '-0.000000000', '0.00000000000'],
-                               ['2', '0.00', '-0.019872012', '2.43013033459', '0.00', '-0.000000000', '0.00000000000'],
-                               ['4', '0.00', '-0.184809990', '1.69491769295', '0.00', '-0.000000000', '0.00000000000'],
-                               ['3', '0.00', '-0.000000000', '5.61231024155', '0.00', '-0.000000000', '0.00000000000']
+                angle_types = [['A', '0.00', '-0.194745937', '2.10461634058', '0.00', '-0.000000000', '0.00000000000'],
+                               ['B', '0.00', '-0.019872012', '2.43013033459', '0.00', '-0.000000000', '0.00000000000'],
+                               ['D', '0.00', '-0.184809990', '1.69491769295', '0.00', '-0.000000000', '0.00000000000'],
+                               ['C', '0.00', '-0.000000000', '5.61231024155', '0.00', '-0.000000000', '0.00000000000']
                                ]
 
                 for j in range(0, len(angle_types)):
@@ -219,11 +220,11 @@ class TestCharmmWriterData(BaseTest):
         out_GOMC = open('charmm_data_UA.psf', 'r').readlines()
         for i, line in enumerate(out_GOMC):
             if '5 !NATOM' in line:
-                Atom_type_charge_etc_list = [['1', 'SYS', '1', 'POL', 'C1', '1', '0.000000', '15.0350'],
-                                             ['2', 'SYS', '1', 'POL', 'BD1', '2', '0.265000', '13.0190'],
-                                             ['3', 'SYS', '1', 'POL', 'O1', '4', '-0.700000', '15.9994'],
-                                             ['4', 'SYS', '1', 'POL', 'H1', '3', '0.435000', '1.0079'],
-                                             ['5', 'SYS', '1', 'POL', 'C2', '1', '0.000000', '15.0350'],
+                Atom_type_charge_etc_list = [['1', 'SYS', '1', 'POL', 'C1', 'A', '0.000000', '15.0350'],
+                                             ['2', 'SYS', '1', 'POL', 'BD1', 'B', '0.265000', '13.0190'],
+                                             ['3', 'SYS', '1', 'POL', 'O1', 'D', '-0.700000', '15.9994'],
+                                             ['4', 'SYS', '1', 'POL', 'H1', 'C', '0.435000', '1.0079'],
+                                             ['5', 'SYS', '1', 'POL', 'C2', 'A', '0.000000', '15.0350'],
                                              ]
 
                 for j in range(0, len(Atom_type_charge_etc_list)):
@@ -258,7 +259,7 @@ class TestCharmmWriterData(BaseTest):
                 pass
 
 
-    def test_charmm_pdb_fix_angle_bond_fix_atoms(self, EthaneGOMC, EthanolGOMC):
+    def test_charmm_pdb_fix_angle_bond_fix_atoms(self, EthaneGOMC):
         test_box_ethane_propane = mb.fill_box(compound=[EthaneGOMC,EthanolGOMC],
                                   n_compounds= [1,1] ,
                                   box=[2.0, 2.0, 2.0])
@@ -274,9 +275,9 @@ class TestCharmmWriterData(BaseTest):
         for i, line in enumerate(out_GOMC):
             if '! atom_types 	mass 		  atomTypeForceFieldName_ResidueName ' \
                '(i.e., atoms_type_per_utilized_FF)' in line:
-                mass_type_1 = [ ['*', '1', '12.010780'], ['*', '3', '1.007947'], ['*', '2', '12.010780'],
-                                ['*', '7', '12.010780'], ['*', '5', '15.999430'], ['*', '4', '1.007947'],
-                                ['*', '6', '1.007947']
+                mass_type_1 = [ ['*', 'A', '12.010780'], ['*', 'C', '1.007947'], ['*', 'B', '12.010780'],
+                                ['*', 'G', '12.010780'], ['*', 'E', '15.999430'], ['*', 'D', '1.007947'],
+                                ['*', 'F', '1.007947']
                                 ]
                 mass_type_2 = [ ['opls_135_ETH'], ['opls_140_ETH'], ['opls_135_ETO'], ['opls_157_ETO'],
                                 ['opls_154_ETO'], ['opls_140_ETO'], ['opls_155_ETO'] ]
@@ -288,7 +289,7 @@ class TestCharmmWriterData(BaseTest):
 
 
             elif '!atom_types 	 Kb	b0 		  atoms_types_per_utilized_FF' in line:
-                fixed_bond_types = [['1', '1', '999999999999', '1.529'], ['1', '3', '999999999999', '1.09'] ]
+                fixed_bond_types = [['A', 'A', '999999999999', '1.529'], ['A', 'C', '999999999999', '1.09'] ]
                 total_bonds_evaluated = []
                 total_fixed_bonds = []
                 for j in range(0,  7):
@@ -300,8 +301,8 @@ class TestCharmmWriterData(BaseTest):
                 assert len(total_fixed_bonds) == len(fixed_bond_types)
 
             elif '!atom_types 		Ktheta	Theta0			  atoms_types_per_utilized_FF' in line:
-                fixed_angle_types = [['1',	'1',	'3',	'999999999999',	'110.70000'],
-                                     ['3',	'1',	'3',	'999999999999',	'107.80000']
+                fixed_angle_types = [['A',	'A',	'C',	'999999999999',	'110.70000'],
+                                     ['C',	'A',	'C',	'999999999999',	'107.80000']
                                      ]
                 total_angles_evaluated = []
                 total_fixed_angles = []
@@ -441,6 +442,30 @@ class TestCharmmWriterData(BaseTest):
         for add_same_base_16 in range(0, len(add_same_values_List)):
             added_values_verified_unique_entries_base_16_List.append(add_same_values_List[add_same_base_16])
         assert len(verified_unique_entries_base_16_List) - len(add_same_values_List) == len(unique_entries_base_16_List)
+
+    # test utils base 10 to base 52 converter
+    def test_base_10_to_base_52(self):
+        List_Base_10_and_52 = [[17, 'R'], [51, 'z'], [52, 'BA'], [53, 'BB'],
+                               [200, 'Ds'], [1000, 'TM'], [5000, 'BsI']]
+
+        for test_base_52_iter in range(0, len(List_Base_10_and_52)):
+            test_10_iter = List_Base_10_and_52[test_base_52_iter][0]
+            test_52_iter = List_Base_10_and_52[test_base_52_iter][1]
+            assert str(base10_to_base52_alph_num(test_10_iter)) == str(test_52_iter)
+
+        unique_entries_base_52_List = []
+        for test_unique_base_52 in range(0, 52 ** 2):
+            unique_entries_base_52_List.append(base10_to_base52_alph_num(test_unique_base_52))
+
+        verified_unique_entries_base_52_List = unique_entries_in_List(unique_entries_base_52_List)
+        assert len(verified_unique_entries_base_52_List) == len(unique_entries_base_52_List)
+
+        added_values_verified_unique_entries_base_52_List = verified_unique_entries_base_52_List
+        add_same_values_List = ['1', 'a']
+        for add_same_base_52 in range(0, len(add_same_values_List)):
+            added_values_verified_unique_entries_base_52_List.append(add_same_values_List[add_same_base_52])
+        assert len(verified_unique_entries_base_52_List) - len(add_same_values_List) == len(
+            unique_entries_base_52_List)
 
     # test utils base 10 to base 62 converter
     def test_base_10_to_base_62(self):

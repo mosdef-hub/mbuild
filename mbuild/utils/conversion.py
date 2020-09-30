@@ -104,10 +104,10 @@ def base10_to_base62_alph_num(base10_No):
     while whole_no != 0:
         whole_no =int(base10_No / base62_No**power)
 
-        #if whole_no == base16_No :
-            #base16_Values = str(0)+base16_Values
+        if whole_no == base62_No :
+            base62_Values = str(0)+base62_Values
 
-        if (whole_no != 0) and (whole_no > base62_No) :
+        elif (whole_no != 0) and (whole_no > base62_No) :
             base62_Values = str(changeDigit_base10_to_base62_alph_num(int(whole_no % base62_No))) + base62_Values
 
         elif (whole_no != 0) and (whole_no < base62_No):
@@ -187,10 +187,10 @@ def base10_to_base16_alph_num(base10_No):
     while whole_no != 0:
         whole_no =int(base10_No / base16_No**power)
 
-        #if whole_no == base16_No :
-            #base16_Values = str(0)+base16_Values
+        if whole_no == base16_No :
+            base16_Values = str(0)+base16_Values
 
-        if (whole_no != 0) and (whole_no > base16_No) :
+        elif (whole_no != 0) and (whole_no > base16_No) :
             base16_Values = str(changeDigit_base10_to_base16_alph_num(int(whole_no % base16_No))) + base16_Values
 
         elif (whole_no != 0) and (whole_no < base16_No):
@@ -221,3 +221,68 @@ def changeDigit_base10_to_base16_alph_num(current_digit):
 #***********************************************
 # Converting base-10 to base-16 functions (end)
 #***********************************************
+
+
+#***********************************************
+# Converting base-10 to base-52 functions (start)
+#***********************************************
+
+def base10_to_base52_alph_num(base10_No):
+    '''Converst base 10 to base 52 so pdb/psf files can add may more than
+    9999 atoms and 999 residues.'''
+
+    '''base10_No = the base-10 number that you want to convert to base-52)'''
+
+    base52_No = 52
+    base10_No = int(base10_No)
+
+    whole_no =1
+    remainder = changeDigit_base10_to_base52_alph_num(int(base10_No % base52_No))
+    base52_Values =  str(remainder)
+    power =1
+
+    while whole_no != 0:
+        whole_no =int(base10_No / base52_No**power)
+
+        if whole_no == base52_No :
+            base52_Values = str('A')+base52_Values
+
+        elif (whole_no != 0) and (whole_no > base52_No) :
+            #base52_Values = str(changeDigit_base10_to_base52_alph_num(int(whole_no % base52_No))) + base52_Values
+            base52_Values =  str(changeDigit_base10_to_base52_alph_num(int(whole_no % base52_No)))+ base52_Values
+        elif (whole_no != 0) and (whole_no < base52_No):
+            #base52_Values = str(changeDigit_base10_to_base52_alph_num(int(whole_no))) + base52_Values
+            base52_Values =str(changeDigit_base10_to_base52_alph_num(int(whole_no)))+ base52_Values
+
+
+        power =power+1
+
+    return base52_Values
+
+def changeDigit_base10_to_base52_alph_num(current_digit):
+    '''The supplimental digits for the base10_to_base52_alph_num function,
+    which Converts the base 10 to base 52 '''
+
+    '''current_digit = the currenty digit for this base.
+    (i.e. in base10 it would be the one, ten, hundreds, or thousands places .....)'''
+
+
+    base52_Values = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J",
+                   "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T",
+                   "U", "V", "W", "X", "Y", "Z", "a", "b", "c", "d",
+                   "e", "f", "g", "h", "i", "j", "k", "l", "m", "n",
+                   "o", "p", "q", "r", "s", "t", "u", "v", "w", "x",
+                   "y", "z"]
+
+
+
+    current_digit = base52_Values[current_digit]
+    return current_digit
+
+
+
+
+#***********************************************
+# Converting base-10 to base-52 functions (end)
+#***********************************************
+
