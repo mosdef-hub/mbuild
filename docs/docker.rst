@@ -92,7 +92,7 @@ local machine, run:
 
 .. code-block:: bash
 
-    $ docker run --mount type=bind,source=$(pwd),target="/home/anaconda/data" mosdef/mbuild:latest "python data/test.py"
+    $ docker run --mount type=bind,source=$(pwd),target=/home/anaconda/data mosdef/mbuild:latest "python data/test.py"
 
 Note that once again we are ``bind`` mounting the current working directory
 to ``/home/anaconda/data``. The command we pass to the container is
@@ -110,7 +110,7 @@ you can run:
 
 .. code-block:: bash
 
-    $ docker run --mount type=bind,source=$(pwd),target="/home/anaconda/data" mosdef/mbuild:latest python
+    $ docker run --mount type=bind,source=$(pwd),target=/home/anaconda/data mosdef/mbuild:latest python
 
 If you don't need access to any local data, you can of course drop the
 ``--mount`` command:
