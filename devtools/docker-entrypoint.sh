@@ -5,7 +5,7 @@ conda activate base
 conda activate mbuild-docker
 
 if [ "$@" == "jupyter" ]; then
-	jupyter notebook --no-browser --notebook-dir /home/anaconda/mbuild-notebooks --ip="0.0.0.0"
+	jupyter notebook --no-browser --notebook-dir /home/anaconda/data --ip="0.0.0.0"
 else
 	$@
 fi

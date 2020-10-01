@@ -26,7 +26,7 @@ RUN conda update conda -yq && \
 	echo "source activate mbuild-docker" >> \
 	/home/anaconda/.profile && \
 	conda clean -afy && \
-	mkdir /home/anaconda/mbuild-notebooks && \
+	mkdir /home/anaconda/data && \
 	chown -R anaconda:anaconda /mbuild && \
 	chown -R anaconda:anaconda /opt && \
 	chown -R anaconda:anaconda /home/anaconda
