@@ -79,7 +79,7 @@ def compound_to_json(cmpd, file_path, include_ports=False):
     include_ports: bool, whether to dump port information, default False
     """
     # Maintain a bookkeeping dict, to do the nesting of children correctly
-    version = mb.version
+    version = mb.__version__
     cmpd_info = {}
     compound_dict = _particle_info(cmpd, include_ports)
     cmpd_info[cmpd] = compound_dict
@@ -206,7 +206,7 @@ def _perform_sanity_check(json_dict):
     """Perform Sanity Check on the JSON File"""
     from warnings import warn
     warning_msg = "This Json was written using {0}, current mbuild version is {1}."
-    this_version = mb.version
+    this_version = mb.__version__
     json_mbuild_version = json_dict.get('mbuild-version', None)
 
     if not json_mbuild_version:

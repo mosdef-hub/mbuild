@@ -3,4 +3,5 @@ scipy
 packmol>=1!18.013
 oset
 parmed
-mdtraj
+ele
+openbabel>=3.0.0
