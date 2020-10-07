@@ -1,7 +1,15 @@
+import os
+import datetime
 from collections import OrderedDict
 from warnings import warn
-import os
+
 import numpy as np
+
+from parmed.utils.io import genopen
+from parmed.periodic_table import Element
+from parmed.utils.six import string_types
+from parmed.utils.six.moves import range
+
 from mbuild import Box
 from mbuild.utils.conversion import RB_to_CHARMM
 from mbuild.utils.sorting import natural_sort
@@ -9,31 +17,67 @@ from mbuild.utils.conversion import base10_to_base16_alph_num
 from mbuild.utils.conversion import base10_to_base52_alph_num
 from mbuild.utils.conversion import base10_to_base62_alph_num
 from mbuild.utils.specific_FF_to_residue import Specific_FF_to_residue
-import datetime
-
-from parmed.utils.io import genopen
-from parmed.periodic_table import Element
-from parmed.utils.six import string_types
-from parmed.utils.six.moves import range
 
 
 def print_atoms(atom, coords):
     return atom, atom.other_locations, coords[atom.idx]
 
-def _get_bond_types(structure, bonds, sigma_conversion_factor, epsilon_conversion_factor):
-    unique_bond_types = dict(enumerate(set([(round(bond.type.k*(
-                                             sigma_conversion_factor**2/epsilon_conversion_factor),3),
-                                             round(bond.type.req/sigma_conversion_factor,3),
-                                             tuple(sorted((bond.atom1.type,bond.atom2.type))),
-                                             bond.atom1.residue.name, bond.atom2.residue.name
-                                             ) for bond in structure.bonds])))
 
-    unique_bond_types = OrderedDict([(y,x+1) for x,y in unique_bond_types.items()])
-    bond_types = [unique_bond_types[(round(bond.type.k*(sigma_conversion_factor**2/epsilon_conversion_factor),3),
-                                     round(bond.type.req/sigma_conversion_factor,3),
-                                     tuple(sorted((bond.atom1.type,bond.atom2.type))),
-                                     bond.atom1.residue.name, bond.atom2.residue.name
-                                     )] for bond in structure.bonds]
+def _get_bond_type_key(bond,
+                       sigma_conversion_factor,
+                       epsilon_conversion_factor):
+    """Get the bond_type key for a bond"""
+    return (
+        round(bond.type.k * (sigma_conversion_factor ** 2 / epsilon_conversion_factor), 3),
+        round(bond.type.req / sigma_conversion_factor, 3),
+        tuple(sorted((bond.atom1.type, bond.atom2.type))),
+        bond.atom1.residue.name, bond.atom2.residue.name
+     )
+
+
+def _get_unique_bond_types(structure,
+                           sigma_conversion_factor,
+                           epsilon_conversion_factor):
+    unique_bond_set = set()
+    for bond in structure.bonds:
+        unique_bond_set.add(
+            _get_bond_type_key(bond, sigma_conversion_factor, epsilon_conversion_factor)
+        )
+
+    return dict(enumerate(unique_bond_set))
+
+
+def _get_bond_types(structure,
+                    bonds,
+                    sigma_conversion_factor,
+                    epsilon_conversion_factor):
+    """Get a list of unique bond_types given a parmed structure
+
+    Parameters
+    ----------
+    structure: parmed.Structure
+        The parmed structure
+    bonds:
+        #ToDO: What is this intended for?
+    # FIXME: Improve this docstring
+    sigma_conversion_factor: float
+        The sigma conversion factor
+    epsilon_conversion_factor: float
+        The epsilon conversion factor
+
+    Returns
+    -------
+
+    """
+    unique_bond_types = _get_unique_bond_types(structure, sigma_conversion_factor, epsilon_conversion_factor)
+
+    # Question ? Why cant we return a dictionary with this key from the function??
+    unique_bond_types = OrderedDict([(y, x+1) for x, y in unique_bond_types.items()])
+
+    bond_types = [
+        unique_bond_types[_get_bond_type_key(bond, sigma_conversion_factor, epsilon_conversion_factor)]
+        for bond in structure.bonds
+    ]
 
     unique_bond_check_dict = {}
     for i_value_bond, i_key_bond in unique_bond_types.items():
@@ -56,6 +100,7 @@ def _get_bond_types(structure, bonds, sigma_conversion_factor, epsilon_conversio
     unique_bond_types = OrderedDict([(y, x) for y, x in unique_bond_check_dict.items()])
 
     return bond_types, unique_bond_types
+
 
 def _get_angle_types(structure, use_urey_bradleys,
         sigma_conversion_factor, epsilon_conversion_factor):
