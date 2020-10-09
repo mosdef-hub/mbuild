@@ -246,5 +246,5 @@ class TestPacking(BaseTest):
                     sphere=[1000, 1000, 1000, 1000],
                     n_compounds=500,
                     sidemax=2000.0)
-        assert all(big_box_of_methane.boundingbox.lengths > [990, 990, 990])
-        assert all(big_sphere_of_methane.boundingbox.lengths > [1900, 1900, 1900])
+        assert all(big_box_of_methane.boundingbox.lengths > [900, 900, 900])
+        assert all(big_sphere_of_methane.boundingbox.lengths > [1800, 1800, 1800])
