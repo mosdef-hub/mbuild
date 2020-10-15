@@ -15,6 +15,7 @@ from mbuild.exceptions import MBuildError
 __all__ = ['fill_box', 'fill_region', 'fill_sphere', 'solvate']
 
 PACKMOL = find_executable('packmol')
+
 PACKMOL_HEADER = """
 tolerance {0:.16f}
 filetype xyz
@@ -43,13 +44,24 @@ structure {0}
     {6}
 end structure
 """
-
 PACKMOL_CONSTRAIN = """
 constrain_rotation x 0. 0.
 constrain_rotation y 0. 0.
 constrain_rotation z 0. 0.
 """
 
+packmol_default_args = {'tolerance': 0.2, 'seed': 12345}
+
+def combine_packmol_args(default_args, custom_args):
+    
+    # List of all available packmol_inputs
+    packmol_inputs = [] 
+    
+    #
+
+    #Parse through custom args first
+    
+    #Combine into single dict
 
 def fill_box(compound, n_compounds=None, box=None, density=None, overlap=0.2,
              seed=12345, edge=0.2, compound_ratio=None,
