@@ -26,7 +26,7 @@ RUN conda update conda -yq && \
 	echo "source activate mbuild-docker" >> \
 	/home/anaconda/.profile && \
 	conda clean -afy && \
-	mkdir /home/anaconda/mbuild-notebooks && \
+	mkdir /home/anaconda/data && \
 	chown -R anaconda:anaconda /mbuild && \
 	chown -R anaconda:anaconda /opt && \
 	chown -R anaconda:anaconda /home/anaconda
@@ -34,4 +34,11 @@ RUN conda update conda -yq && \
 
 WORKDIR /home/anaconda
 
-CMD /bin/su anaconda -s /bin/sh -l
+COPY devtools/docker-entrypoint.sh /entrypoint.sh
+
+RUN chmod a+x /entrypoint.sh
+
+USER anaconda
+
+ENTRYPOINT ["/entrypoint.sh"]
+CMD ["jupyter"]
