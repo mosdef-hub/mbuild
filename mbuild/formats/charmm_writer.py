@@ -35,6 +35,60 @@ def _get_bond_type_key(bond,
      )
 
 
+def _get_angle_type_key(angle,
+                        sigma_conversion_factor,
+                        epsilon_conversion_factor):
+    """Get the angle_type key for an angle"""
+    return (
+        round(angle.type.k*(sigma_conversion_factor**2/epsilon_conversion_factor), 3),
+        round(angle.type.theteq, 3),
+        angle.atom2.type,
+        tuple(sorted((angle.atom1.type, angle.atom3.type))),
+        angle.atom1.residue.name, angle.atom2.residue.name,
+        angle.atom3.residue.name
+    )
+
+
+def _get_dihedral_rb_torsion_key(dihedral,
+                                 epsilon_conversion_factor):
+    lj_unit = 1 / epsilon_conversion_factor
+    return (
+        round(dihedral.type.c0*lj_unit, 3),
+        round(dihedral.type.c1*lj_unit, 3),
+        round(dihedral.type.c2*lj_unit, 3),
+        round(dihedral.type.c3*lj_unit, 3),
+        round(dihedral.type.c4*lj_unit, 3),
+        round(dihedral.type.c5*lj_unit, 3),
+        round(dihedral.type.scee, 1),
+        round(dihedral.type.scnb, 1),
+        dihedral.atom1.type,
+        dihedral.atom2.type,
+        dihedral.atom3.type,
+        dihedral.atom4.type,
+        dihedral.atom1.residue.name,
+        dihedral.atom2.residue.name,
+        dihedral.atom3.residue.name,
+        dihedral.atom4.residue.name
+    )
+
+
+def _get_improper_type_key(improper,
+                           epsilon_conversion_factor):
+    lj_unit = 1 / epsilon_conversion_factor
+    return (
+        round(improper.type.psi_k * lj_unit, 3),
+        round(improper.type.psi_eq, 3),
+        improper.atom1.type,
+        improper.atom2.type,
+        improper.atom3.type,
+        improper.atom4.type,
+        improper.atom1.residue.name,
+        improper.atom2.residue.name,
+        improper.atom3.residue.name,
+        improper.atom4.residue.name
+    )
+
+
 def _get_unique_bond_types(structure,
                            sigma_conversion_factor,
                            epsilon_conversion_factor):
@@ -44,7 +98,39 @@ def _get_unique_bond_types(structure,
             _get_bond_type_key(bond, sigma_conversion_factor, epsilon_conversion_factor)
         )
 
-    return dict(enumerate(unique_bond_set))
+    return {bond_key: i+1 for i, bond_key in enumerate(unique_bond_set)}
+
+
+def _get_unique_angle_types(structure,
+                            sigma_conversion_factor,
+                            epsilon_conversion_factor):
+    unique_angle_set = set()
+    for angle in structure.angles:
+        unique_angle_set.add(
+            _get_angle_type_key(angle, sigma_conversion_factor, epsilon_conversion_factor)
+        )
+
+    return {angle_key: i+1 for i, angle_key in enumerate(unique_angle_set)}
+
+
+def _get_unique_rb_torsion_types(structure,
+                                 epsilon_conversion_factor):
+    unique_dihedral_set = set()
+    for dihedral in structure.rb_torsions:
+        unique_dihedral_set.add(
+            _get_dihedral_rb_torsion_key(dihedral, epsilon_conversion_factor)
+        )
+
+    return {torsion_key: i + 1 for i, torsion_key in enumerate(unique_dihedral_set)}
+
+
+def _get_unique_improper_types(structure,
+                               epsilon_conversion_factor):
+    unique_improper_set = set()
+    for improper in structure.impropers:
+        unique_improper_set.add(_get_improper_type_key(improper, epsilon_conversion_factor))
+
+    return {improper_key: i + 1 for i, improper_key in enumerate(unique_improper_set)}
 
 
 def _get_bond_types(structure,
@@ -58,8 +144,8 @@ def _get_bond_types(structure,
     structure: parmed.Structure
         The parmed structure
     bonds:
-        #ToDO: What is this intended for?
-    # FIXME: Improve this docstring
+    #ToDO: What is this intended for?
+    #FIXME: Improve this docstring
     sigma_conversion_factor: float
         The sigma conversion factor
     epsilon_conversion_factor: float
@@ -69,10 +155,11 @@ def _get_bond_types(structure,
     -------
 
     """
-    unique_bond_types = _get_unique_bond_types(structure, sigma_conversion_factor, epsilon_conversion_factor)
-
-    # Question ? Why cant we return a dictionary with this key from the function??
-    unique_bond_types = OrderedDict([(y, x+1) for x, y in unique_bond_types.items()])
+    unique_bond_types = _get_unique_bond_types(
+        structure,
+        sigma_conversion_factor,
+        epsilon_conversion_factor
+    )
 
     bond_types = [
         unique_bond_types[_get_bond_type_key(bond, sigma_conversion_factor, epsilon_conversion_factor)]
@@ -102,29 +189,25 @@ def _get_bond_types(structure,
     return bond_types, unique_bond_types
 
 
-def _get_angle_types(structure, use_urey_bradleys,
-        sigma_conversion_factor, epsilon_conversion_factor):
+def _get_angle_types(structure,
+                     sigma_conversion_factor,
+                     epsilon_conversion_factor,
+                     use_urey_bradleys=False):
     if use_urey_bradleys:
         warn('ERROR :  Urey-Bradleys are not available in the current version of this psf, pdb, and GOMC writer.')
         return None, None
     else:
-        unique_angle_types = dict(enumerate(set([(round(angle.type.k*(
-            sigma_conversion_factor**2/epsilon_conversion_factor),3),
-                                                  round(angle.type.theteq,3),
-                                                  angle.atom2.type,
-                                                  tuple(sorted((angle.atom1.type,angle.atom3.type))),
-                                                  angle.atom1.residue.name, angle.atom2.residue.name,
-                                                  angle.atom3.residue.name
-                                                  ) for angle in structure.angles])))
-        unique_angle_types = OrderedDict([(y,x+1) for x,y in unique_angle_types.items()])
-        angle_types = [unique_angle_types[(round(angle.type.k*(
-            sigma_conversion_factor**2/epsilon_conversion_factor),3),
-                                           round(angle.type.theteq,3),
-                                           angle.atom2.type,
-                                           tuple(sorted((angle.atom1.type,angle.atom3.type))) ,
-                                           angle.atom1.residue.name, angle.atom2.residue.name,
-                                           angle.atom3.residue.name
-                                           )] for angle in structure.angles]
+        unique_angle_types = _get_unique_angle_types(
+            structure,
+            sigma_conversion_factor,
+            epsilon_conversion_factor
+        )
+
+        angle_types = [unique_angle_types[_get_angle_type_key(
+            angle,
+            sigma_conversion_factor,
+            epsilon_conversion_factor
+        )] for angle in structure.angles]
 
     unique_angle_check_dict = {}
     for i_value_ang, i_key_ang in unique_angle_types.items():
@@ -141,48 +224,26 @@ def _get_angle_types(structure, use_urey_bradleys,
                 else:
                     unique_angle_check_dict.update({i_value_ang: len(unique_angle_check_dict) })
 
-        if i_value_duplicated == False:
+        if not i_value_duplicated:
             unique_angle_check_dict.update({i_value_ang: len(unique_angle_check_dict)})
 
     unique_angle_types = OrderedDict([(y, x) for y, x in unique_angle_check_dict.items()])
 
     return angle_types, unique_angle_types
 
-def _get_dihedral_types(structure, use_rb_torsions, use_dihedrals,
-         epsilon_conversion_factor):
-    lj_unit = 1 / epsilon_conversion_factor
+
+def _get_dihedral_types(structure,
+                        use_rb_torsions,
+                        use_dihedrals,
+                        epsilon_conversion_factor):
     if use_rb_torsions:
-        unique_dihedral_types = dict(enumerate(set([(round(dihedral.type.c0*lj_unit,3),
-                                                     round(dihedral.type.c1*lj_unit,3),
-                                                     round(dihedral.type.c2*lj_unit,3),
-                                                     round(dihedral.type.c3*lj_unit,3),
-                                                     round(dihedral.type.c4*lj_unit,3),
-                                                     round(dihedral.type.c5*lj_unit,3),
-                                                     round(dihedral.type.scee,1),
-                                                     round(dihedral.type.scnb,1),
-                                                     dihedral.atom1.type, dihedral.atom2.type,
-                                                     dihedral.atom3.type, dihedral.atom4.type,
-                                                     dihedral.atom1.residue.name, dihedral.atom2.residue.name,
-                                                     dihedral.atom3.residue.name, dihedral.atom4.residue.name
-                                                     ) for dihedral in structure.rb_torsions])))
+        unique_dihedral_types = _get_unique_rb_torsion_types(structure, epsilon_conversion_factor)
 
-
-
-        unique_dihedral_types = OrderedDict([(y,x+1) for x,y in unique_dihedral_types.items()])
-
-        dihedral_types = [unique_dihedral_types[(round(dihedral.type.c0*lj_unit,3),
-                                                 round(dihedral.type.c1*lj_unit,3),
-                                                 round(dihedral.type.c2*lj_unit,3),
-                                                 round(dihedral.type.c3*lj_unit,3),
-                                                 round(dihedral.type.c4*lj_unit,3),
-                                                 round(dihedral.type.c5*lj_unit,3),
-                                                 round(dihedral.type.scee,1),
-                                                 round(dihedral.type.scnb,1),
-                                                 dihedral.atom1.type, dihedral.atom2.type,
-                                                 dihedral.atom3.type, dihedral.atom4.type,
-                                                 dihedral.atom1.residue.name, dihedral.atom2.residue.name,
-                                                 dihedral.atom3.residue.name, dihedral.atom4.residue.name
-                                                 )] for dihedral in structure.rb_torsions]
+        dihedral_types = [
+            unique_dihedral_types[
+                _get_dihedral_rb_torsion_key(dihedral, epsilon_conversion_factor)]
+            for dihedral in structure.rb_torsions
+        ]
 
     elif use_dihedrals:
         warn('ERROR : Using the charmm style and impropers is not available in the current version of '+
@@ -211,23 +272,15 @@ def _get_dihedral_types(structure, use_rb_torsions, use_dihedrals,
 
     return dihedral_types, unique_dihedral_types
 
+
 def _get_impropers(structure, epsilon_conversion_factor):
-    lj_unit = 1 / epsilon_conversion_factor
-    unique_improper_types = dict(enumerate(set([(round(improper.type.psi_k*lj_unit,3),
-                                                 round(improper.type.psi_eq,3),
-                                                 improper.atom1.type, improper.atom2.type,
-                                                 improper.atom3.type, improper.atom4.type,
-                                                 improper.atom1.residue.name, improper.atom2.residue.name,
-                                                 improper.atom3.residue.name, improper.atom4.residue.name)
-                                                for improper in structure.impropers])))
-    unique_improper_types = OrderedDict([(y,x+1) for x,y in unique_improper_types.items()])
-    improper_types = [unique_improper_types[(round(improper.type.psi_k*lj_unit,3),
-                                             round(improper.type.psi_eq,3),
-                                             improper.atom1.type, improper.atom2.type,
-                                             improper.atom3.type, improper.atom4.type,
-                                             improper.atom1.residue.name, improper.atom2.residue.name,
-                                             improper.atom3.residue.name, improper.atom4.residue.name)]
-                      for improper in structure.impropers]
+    unique_improper_types = _get_unique_improper_types(structure, epsilon_conversion_factor)
+
+    improper_types = [
+        unique_improper_types[
+            _get_improper_type_key(improper, epsilon_conversion_factor)]
+                for improper in structure.impropers
+    ]
 
     # If impropers are added to GOMC, add the atom sorter for the unique combinations here
 
@@ -904,9 +957,12 @@ def charmm_psf_psb_FF(structure_0, filename_0, structure_1 = None, filename_1= N
 
 
     if angles:
-        angle_types, unique_angle_types = _get_angle_types(structure_selection,
-                use_urey_bradleys, sigma_conversion_factor,
-                epsilon_conversion_factor)
+        angle_types, unique_angle_types = _get_angle_types(
+            structure_selection,
+            sigma_conversion_factor,
+            epsilon_conversion_factor,
+            use_urey_bradleys=use_urey_bradleys
+        )
 
     if dihedrals:
         dihedral_types, unique_dihedral_types = _get_dihedral_types(
