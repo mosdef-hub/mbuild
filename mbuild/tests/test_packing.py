@@ -223,3 +223,28 @@ class TestPacking(BaseTest):
         butane = Alkane(n=4)
         butane.remove(butane[-1])
         box = mb.fill_box(butane, n_compounds=10, density=1)
+
+    def test_sidemax(self):
+        from mbuild.lib.molecules import Methane
+        ch4 = Methane()
+        #With default sidemax
+        box_of_methane = mb.fill_box(ch4,
+                    box=[1000, 1000, 1000],
+                    n_compounds=500)
+        sphere_of_methane = mb.fill_sphere(ch4,
+                    sphere=[1000, 1000, 1000, 1000],
+                    n_compounds=500)
+        assert all(box_of_methane.boundingbox.lengths < [110, 110, 110])
+        assert all(sphere_of_methane.boundingbox.lengths < [210, 210, 210])
+
+        #With adjusted sidemax
+        big_box_of_methane = mb.fill_box(ch4,
+                    box=[1000, 1000, 1000],
+                    n_compounds=500,
+                    sidemax=1000.0)
+        big_sphere_of_methane = mb.fill_sphere(ch4,
+                    sphere=[1000, 1000, 1000, 1000],
+                    n_compounds=500,
+                    sidemax=2000.0)
+        assert all(big_box_of_methane.boundingbox.lengths > [900, 900, 900])
+        assert all(big_sphere_of_methane.boundingbox.lengths > [1800, 1800, 1800])
