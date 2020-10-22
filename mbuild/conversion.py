@@ -421,8 +421,11 @@ def from_parmed(structure,
     if compound and coords_only:
         if len(structure.atoms) != compound.n_particles:
             raise ValueError(
-                'Number of atoms in {structure} does not '
-                '{compound}'.formats(**locals())
+                'Number of atoms in {} does not '
+                'match {}'
+                'Structure: {} atoms'
+                'Compound: {} atoms'
+                .format(structure, compound, len(structure.atoms), compound.n_particles)
             )
         atoms_particles = zip(
             structure.atoms,
