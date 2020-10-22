@@ -1301,8 +1301,10 @@ class Compound(object):
         scale = 50.0
         for element in elements:
             try:
-                widget.add_ball_and_stick('_{}'.format(
-                    element.upper()), aspect_ratio=_ATOMIC_RADII[element.title()]**1.5 * scale)
+                widget.add_ball_and_stick(
+                        '_{}'.format(element.upper()),
+                        aspect_ratio=_ATOMIC_RADII[element.title()]**1.5*scale
+                        )
             except KeyError:
                 ids = [str(i) for i, particle in enumerate(self.particles())
                        if particle.name == element]
@@ -1404,7 +1406,8 @@ class Compound(object):
             The number of optimization iterations
         forcefield : str, optional, default='UFF'
             The generic force field to apply to the Compound for minimization.
-            Valid options are 'MMFF94', 'MMFF94s', ''UFF', 'GAFF', and 'Ghemical'.
+            Valid options are 'MMFF94', 'MMFF94s', ''UFF', 'GAFF', and
+            'Ghemical'.
             Please refer to the Open Babel documentation (http://open-babel.
             readthedocs.io/en/latest/Forcefields/Overview.html) when considering
             your choice of force field.
@@ -1674,7 +1677,8 @@ class Compound(object):
             gradient, and equilibrium molecular dynamics respectively.
         forcefield : str, optional, default='UFF'
             The generic force field to apply to the Compound for minimization.
-            Valid options are 'MMFF94', 'MMFF94s', ''UFF', 'GAFF', and 'Ghemical'.
+            Valid options are 'MMFF94', 'MMFF94s', ''UFF', 'GAFF', and
+            'Ghemical'.
             Please refer to the Open Babel documentation (http://open-babel.
             readthedocs.io/en/latest/Forcefields/Overview.html) when considering
             your choice of force field.
@@ -1749,9 +1753,11 @@ class Compound(object):
                               "'MMFF94s', 'UFF', 'GAFF', and 'Ghemical'."
                               "".format(forcefield))
         warn(
-            "Performing energy minimization using the Open Babel package. Please "
-            "refer to the documentation to find the appropriate citations for "
-            "Open Babel and the {} force field".format(forcefield))
+            "Performing energy minimization using the Open Babel package. "
+            "Please refer to the documentation to find the appropriate "
+            "citations for Open Babel and the {} force field".format(
+                forcefield
+                ))
         ff.Setup(mol)
         if algorithm == 'steep':
             ff.SteepestDescent(steps)
@@ -1789,9 +1795,9 @@ class Compound(object):
             package, e.g. 'oplsaa'. Forcefields listed here:
             https://github.com/mosdef-hub/foyer/tree/master/foyer/forcefields
         forcefield_debug : bool, optional, default=False
-            Choose level of verbosity when applying a forcefield through `foyer`.
-            Specifically, when missing atom types in the forcefield xml file,
-            determine if the warning is condensed or verbose.
+            Choose level of verbosity when applying a forcefield through
+            `foyer`. Specifically, when missing atom types in the forcefield
+            xml file, determine if the warning is condensed or verbose.
         box : mb.Box, optional, default=self.boundingbox (with buffer)
             Box information to be written to the output file. If 'None', a
             bounding box is used with 0.25nm buffers at each face to avoid
@@ -1826,19 +1832,22 @@ class Compound(object):
             Normalization factor used when saving to .gsd and .hoomdxml formats
             for converting mass values to reduced units.
         atom_style: str, default='full'
-            Defines the style of atoms to be saved in a LAMMPS data file. The following atom
-            styles are currently supported: 'full', 'atomic', 'charge', 'molecular'
+            Defines the style of atoms to be saved in a LAMMPS data file. The
+            following atom styles are currently supported: 'full', 'atomic',
+            'charge', 'molecular'
             see http://lammps.sandia.gov/doc/atom_style.html for more
             information on atom styles.
         unit_style: str, default='real'
-            Defines to unit style to be save in a LAMMPS data file.  Defaults to 'real' units.
+            Defines to unit style to be save in a LAMMPS data file.  Defaults to
+            'real' units.
             Current styles are supported: 'real', 'lj'
             see https://lammps.sandia.gov/doc/99/units.html for more information
             on unit styles
 
         Notes
         ------
-        When saving the compound as a json, only the following arguments are used:
+        When saving the compound as a json, only the following arguments are
+        used:
             - filename
             - show_ports
 
@@ -2021,8 +2030,11 @@ class Compound(object):
         parmed.structure.Structure : Details on the ParmEd Structure object
 
         """
-        return conversion.to_parmed(compound=self, box=box, title=title,
-            residues=residues, show_ports=show_ports, infer_residues=infer_residues)
+        return conversion.to_parmed(
+                compound=self, box=box, title=title,
+                residues=residues, show_ports=show_ports,
+                infer_residues=infer_residues
+                )
 
     def to_networkx(self, names_only=False):
         """Create a NetworkX graph representing the hierarchy of a Compound.
@@ -2031,9 +2043,9 @@ class Compound(object):
         ----------
         names_only : bool, optional, default=False
         Store only the names of the
-            compounds in the graph, appended with their IDs, for distinction even
-            if they have the same name. When set to False, the default behavior,
-            the nodes are the compounds themselves.
+            compounds in the graph, appended with their IDs, for distinction
+            even if they have the same name. When set to False, the default
+            behavior, the nodes are the compounds themselves.
 
         Returns
         -------
@@ -2154,7 +2166,9 @@ class Compound(object):
             return list(self.particles())[selection]
         if isinstance(selection, str):
             if selection not in self.labels:
-                raise MBuildError('{}[\'{}\'] does not exist.'.format(self.name,selection))
+                raise MBuildError(
+                        '{}[\'{}\'] does not exist.'.format(self.name,selection)
+                        )
             return self.labels.get(selection)
 
     def __repr__(self):
@@ -2250,7 +2264,8 @@ class Compound(object):
         return newone
 
     def _clone_bonds(self, clone_of=None):
-        """While cloning, clone the bond of the source compound to clone compound"""
+        """While cloning, clone the bond of the source compound to clone
+        compound"""
         newone = clone_of[self]
         for c1, c2 in self.bonds():
             try:
