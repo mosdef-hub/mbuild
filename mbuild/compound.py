@@ -2217,7 +2217,6 @@ class Compound(object):
         newone.periodicity = deepcopy(self.periodicity)
         newone._pos = deepcopy(self._pos)
         newone.port_particle = deepcopy(self.port_particle)
-        newone.box = deepcopy(self.box)
         newone._check_if_contains_rigid_bodies = deepcopy(
             self._check_if_contains_rigid_bodies)
         newone._contains_rigid = deepcopy(self._contains_rigid)
