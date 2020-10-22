@@ -1,5 +1,6 @@
 from itertools import chain
 
+import ele
 import mbuild as mb
 import numpy as np
 from numpy.linalg import norm
@@ -165,6 +166,10 @@ def read_poscar(filename, conversion=0.1):
             )
 
     for i,xyz in enumerate(coords):
-        comp.add(mb.Particle(name=all_types[i], pos=xyz*conversion))
+        comp.add(mb.Particle(
+            name=all_types[i],
+            element=ele.element_from_symbol(all_types[i]),
+            pos=xyz*conversion
+            ))
 
     return comp
