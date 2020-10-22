@@ -2,7 +2,7 @@
 Installation
 ============
 
-Install with `conda <http://continuum.io/downloads>`_
+Install with `conda <https://repo.anaconda.com/miniconda/>`_
 -----------------------------------------------------
 ::
 
@@ -17,9 +17,14 @@ after which you can simply install without specifying the channels::
     $ conda install mbuild
 
 .. note::
-    The `MDTraj website <http://mdtraj.org/latest/new_to_python.html>`_ makes a
+    The order in which channels are added matters: ``conda-forge`` should
+    be the highest priority as a result of being added last. In your ``.condarc``
+    file, it should be listed first.
+
+.. note::
+    The `MDTraj website <http://mdtraj.org/1.9.3/new_to_python.html>`_ makes a
     nice case for using Python and in particular the
-    `Anaconda scientific python distribution <http://continuum.io/downloads>`_
+    `Anaconda scientific python distribution <https://www.anaconda.com/products/individual>`_
     to manage your numerical and scientific Python packages.
 
 Install with `pip <https://pypi.org/project/pip/>`_
@@ -41,7 +46,7 @@ Install an editable version from source
     $ pip install -e .
 
 To make your life easier, we recommend that you use a pre-packaged Python
-distribution like `Continuum's Anaconda <https://store.continuum.io/>`_
+distribution like `Continuum's Anaconda <https://www.anaconda.com/products/individual/>`_
 in order to get all of the dependencies.
 
 Supported Python Versions

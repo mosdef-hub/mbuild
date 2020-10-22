@@ -325,3 +325,49 @@ class TestCassandraMCF(BaseTest):
                     atom_section_start = idx
 
         assert mcf_data[atom_section_start+2][1] == "y_very_very_extended"
+
+    def test_fused_rings(self):
+        import mbuild
+        import foyer
+        from mbuild.formats.cassandramcf import write_mcf
+
+        naph = mbuild.load("C1=CC=C2C=CC=CC2=C1", smiles=True)
+        # Note the atomtyping is wrong -- doesn't matter for test though
+        naph_ff = foyer.forcefields.load_OPLSAA().apply(naph)
+        write_mcf(naph_ff, 'naph.mcf', angle_style='harmonic',
+                dihedral_style='opls')
+
+        mcf_data = []
+        with open('naph.mcf') as f:
+            for line in f:
+                mcf_data.append(line.strip().split())
+
+        for idx,line in enumerate(mcf_data):
+            if len(line) > 1:
+                if line[1] == 'Fragment_Info':
+                    frag_section_start = idx
+
+        assert int(mcf_data[frag_section_start+1][0]) == 1
+        assert int(mcf_data[frag_section_start+2][1]) == 18
+
+        tmada = mbuild.load("C[C](C)(C)C12CC3CC(C1)CC(C3)C2", smiles=True)
+        tmada_ff = foyer.forcefields.load_OPLSAA().apply(tmada)
+        write_mcf(tmada_ff, 'tmada.mcf', angle_style='harmonic',
+                dihedral_style='opls')
+
+        mcf_data = []
+        with open('tmada.mcf') as f:
+            for line in f:
+                mcf_data.append(line.strip().split())
+
+        for idx,line in enumerate(mcf_data):
+            if len(line) > 1:
+                if line[1] == 'Fragment_Info':
+                    frag_section_start = idx
+
+        assert int(mcf_data[frag_section_start+1][0]) == 5
+        assert int(mcf_data[frag_section_start+2][1]) == 26
+        assert int(mcf_data[frag_section_start+3][1]) == 5
+        assert int(mcf_data[frag_section_start+4][1]) == 5
+        assert int(mcf_data[frag_section_start+5][1]) == 5
+        assert int(mcf_data[frag_section_start+6][1]) == 5

@@ -1,5 +1,10 @@
 trigger:
-  - master
+  branches:
+    include:
+    - master
+  tags:
+    include:
+    - 0.*
 
 pr:
   autoCancel: true
@@ -14,6 +19,7 @@ schedules:
     include:
     - master
   always: true
+
 
 stages:
   - stage: Test
@@ -48,8 +54,8 @@ stages:
           - bash: |
               conda config --set always_yes yes --set changeps1 no
               conda config --add channels omnia
-              conda config --add channels janschulz
               conda config --add channels conda-forge
+              conda config --add channels conda-forge/label/testing
               conda config --add channels mosdef
             displayName: Add relavent Channels
 
@@ -66,7 +72,7 @@ stages:
           - bash: |
               source activate test-environment
               pip install pytest-azurepipelines
-              python -m pytest -v --nbval --nbval-lax --pyargs mbuild --cov=mbuild --no-coverage-upload
+              python -m pytest -v --pyargs mbuild --cov=mbuild --no-coverage-upload
             displayName: Run Tests
 
           - bash: |
@@ -86,7 +92,6 @@ stages:
             displayName: Publish Coverage Report
 
 
-
       - job: Windows_no_bleeding
         pool:
           vmImage: 'windows-latest'
@@ -104,8 +109,8 @@ stages:
           - script: |
               conda config --set always_yes yes --set changeps1 no
               conda config --add channels omnia
-              conda config --add channels janschulz
               conda config --add channels conda-forge
+              conda config --add channels conda-forge/label/testing
               conda config --add channels mosdef
             displayName: Add relavent channels
 
@@ -127,7 +132,7 @@ stages:
           - script: |
               call activate test-environment
               python -m pip install pytest-azurepipelines
-              python -m pytest -v --nbval --nbval-lax --cov=mbuild --cov-report=html --pyargs mbuild --no-coverage-upload
+              python -m pytest -v --cov=mbuild --cov-report=html --pyargs mbuild --no-coverage-upload
             displayName: Run Tests
 
       - job: LinuxBleedingFoyer
@@ -142,8 +147,8 @@ stages:
           - bash: |
               conda config --set always_yes yes --set changeps1 no
               conda config --add channels omnia
-              conda config --add channels janschulz
               conda config --add channels conda-forge
+              conda config --add channels conda-forge/label/testing
               conda config --add channels mosdef
               conda update -c defaults conda
               conda update --all
@@ -168,17 +173,24 @@ stages:
           - bash: |
               source activate bleeding-test-environment
               pip install pytest-azurepipelines
-              python -m pytest -v --nbval --nbval-lax --cov=mbuild --cov-report= --pyargs mbuild --no-coverage-upload
+              python -m pytest -v --cov=mbuild --cov-report= --pyargs mbuild --no-coverage-upload
             displayName: Run Tests
 
   - stage: Docker
     dependsOn: Test
-    condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'), ne(variables['Build.Reason'], 'Schedule'))
+    condition: and(succeeded(), or(eq(variables['Build.SourceBranch'], 'refs/heads/master'), startsWith(variables['Build.SourceBranch'], 'refs/tags/0')), ne(variables['Build.Reason'], 'Schedule'))
     pool:
       vmImage: 'ubuntu-latest'
     jobs:
       - job: publishDocker
         steps:
+          - bash: |
+              if [[ $BUILD_SOURCEBRANCH == "refs/heads/master" ]]; then TAG='latest'; else TAG='stable'; fi
+              if [[ $BUILD_SOURCEBRANCH != "refs/heads/master" ]]; then VERSION=$(Build.SourceBranch); fi;
+              echo "##vso[task.setvariable variable=VERSION;]${VERSION:10}"
+              echo "##vso[task.setvariable variable=DOCKER_TAG;]$TAG"
+            displayName: Export Docker Tags
+
           - task: Docker@2
             displayName: Login to docker hub
             inputs:
@@ -190,11 +202,12 @@ stages:
             inputs:
               command: buildAndPush
               repository: mosdef/mbuild
-              tags: latest
+              tags: |
+                $(DOCKER_TAG)
+                $(VERSION)
 
           - task: Docker@2
             displayName: Logout
             inputs:
               command: logout
               containerRegistry: mosdefDockerLogin
-

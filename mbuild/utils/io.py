@@ -76,6 +76,14 @@ or from source following instructions at:
 
 MESSAGES['pybel'] = MESSAGES['openbabel']
 
+MESSAGES['mdtraj'] = '''
+The code at {filename}:{line_number} requires the "mdtraj" package
+mdtraj can be installed using:
+# conda install -c conda-forge mdtraj
+or
+# pip install mdtraj
+'''
+
 MESSAGES['foyer'] = '''
 The code at {filename}:{line_number} requires the "foyer" package
 
@@ -86,6 +94,22 @@ foyer can be installed using:
 or
 
 # pip install foyer
+'''
+
+MESSAGES['garnett'] = '''
+The code at {filename}:{line_number} requires the "garnett" package
+
+garnett can be installed with conda using:
+
+# conda install -c conda-forge garnett
+'''
+
+MESSAGES['pycifrw'] = '''
+The code at {filename}:{line_number} requires the "pycifrw" package
+
+pycifrw can be installed with conda using:
+
+# conda install -c conda-forge pycifrw
 '''
 
 MESSAGES['protobuf'] = '''
@@ -201,6 +225,12 @@ except ImportError:
     has_openbabel = False
 
 try:
+    import mdtraj
+    has_mdtraj = True
+    del mdtraj
+except ImportError:
+    has_mdtraj = False
+try:
     import foyer
     has_foyer = True
     del foyer
@@ -242,6 +272,20 @@ try:
 except ImportError:
     has_protobuf = False
 
+
+try:
+    import garnett
+    has_garnett = True
+    del garnett
+except ImportError:
+    has_garnett = False
+
+try:
+    import CifFile
+    has_pycifrw = True
+    del CifFile
+except ImportError:
+    has_pycifrw = False
 
 def get_fn(name):
     """Get the full path to one of the reference files shipped for utils.
