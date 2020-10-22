@@ -7,27 +7,32 @@ from numpy.linalg import norm
 
 __all__ = ['write_poscar', 'read_poscar']
 
-def write_poscar(compound, filename, lattice_constant, bravais=[[1,0,0],
-    [0,1,0],[0,0,1]], sel_dev=False,coord='cartesian'):
+def write_poscar(
+        compound, filename, lattice_constant,
+        bravais=[[1,0,0],[0,1,0],[0,0,1]], sel_dev=False, coord='cartesian'
+        ):
     """
     Outputs VASP POSCAR files.  See //https://www.vasp.at for
     more information.
 
     Parameters
     ----------
-    compound: mb.Compound
-        mBuild Compound
-    filename: str
-        Path of the output file
-    lattice_constant: float
-        Scaling constant for POSCAR file, used to scale all lattice vectors and
-        atomic coordinates
-    bravais: array, default = [[1,0,0],[0,1,0],[0,0,1]]
-        array of bravais cell that defines unit cell of the system
-    sel_dev: boolean, default=False
-        Turns selective dynamics on.  Not currently implemented.
-    coord: str, default = 'cartesian', other option = 'direct'
-        Coordinate style of atom positions
+    compound : mbuild.Compound
+               the Compound to write to the POSCAR file
+    filename : str
+               Path of the output file
+    lattice_constant : float
+                       Scaling constant for POSCAR file, used to scale all
+                       lattice vectors and atomic coordinates
+    bravais : array-like
+              (3x3) array of bravais cell that defines unit cell of the system
+              (default [[1,0,0],[0,1,0],[0,0,1]])
+    sel_dev : bool
+              Turns selective dynamics on.  Not currently implemented.
+              (default False)
+    coord : str
+            Coordinate style of atom positions 'cartesian' or 'direct'
+            (default 'cartesian')
     """
     structure = compound.to_parmed()
     atom_names = np.unique([atom.name for atom in structure.atoms])
@@ -81,13 +86,13 @@ def write_poscar(compound, filename, lattice_constant, bravais=[[1,0,0],
 
 def read_poscar(filename, conversion=0.1):
     """
-    Reads in a VASP POSCAR file and returns an mbuild Compound.
+    Reads in a VASP POSCAR or CONTCAR file and returns an mbuild Compound.
 
     Parameters
     ----------
-    filename : str,
+    filename : str
                path to the POSCAR file
-    conversion : float,
+    conversion : float
                  conversion factor multiplied to coordinates when
                  converting between VASP units (angstroems)
                  and mbuild units (nm) (default = 0.1)
@@ -123,7 +128,9 @@ def read_poscar(filename, conversion=0.1):
         n_types = np.fromiter(data.pop(0).split(), dtype="int")
 
     total_atoms = np.sum(n_types)
-    all_types = list(chain.from_iterable([[itype] * n for itype, n in zip(types,n_types)]))
+    all_types = list(chain.from_iterable(
+        [[itype] * n for itype, n in zip(types,n_types)]
+        ))
 
     # handle optional argument "Selective dynamics"
     # and required arguments "Cartesian" or "Direct"
@@ -138,7 +145,10 @@ def read_poscar(filename, conversion=0.1):
     else:
         cartesian = False
 
-    coords = np.stack([np.fromiter(line.split()[:3], dtype="float64") for line in data[:total_atoms]])
+    # Slice is necessary to handle files using selective dynamics
+    coords = np.stack([np.fromiter(
+        line.split()[:3], dtype="float64"
+        ) for line in data[:total_atoms]])
 
     if cartesian:
         coords = coords * scale
@@ -149,7 +159,11 @@ def read_poscar(filename, conversion=0.1):
     beta = np.rad2deg(np.arccos(a.dot(c)/(norm(a) * norm(c))))
     gamma = np.rad2deg(np.arccos(a.dot(b)/(norm(a) * norm(b))))
 
-    comp.box = mb.Box(lengths = norm(lattice_vectors, axis=1), angles = [alpha, beta, gamma])
+    comp.box = mb.Box(
+            lengths=norm(lattice_vectors, axis=1),
+            angles=[alpha, beta, gamma]
+            )
+
     for i,xyz in enumerate(coords):
         comp.add(mb.Particle(name=all_types[i], pos=xyz*conversion))
 
