@@ -17,10 +17,10 @@ from mbuild import conversion
 from mbuild.bond_graph import BondGraph
 from mbuild.box import Box
 from mbuild.exceptions import MBuildError
-from mbuild.utils.decorators import deprecated
 from mbuild.periodic_kdtree import PeriodicCKDTree
 from mbuild.utils.io import run_from_ipython, import_
 from mbuild.utils.jsutils import overwrite_nglview_default
+from mbuild.utils.exceptions import RemovedFuncError
 from mbuild.coordinate_transform import _translate, _rotate
 
 
@@ -1377,11 +1377,10 @@ class Compound(object):
             particle.pos += (np.random.rand(3,) - 0.5) / 100
         self._update_port_locations(xyz_init)
 
-    warning_message = 'Please use Compound.energy_minimize()'
 
-    @deprecated(warning_message)
     def energy_minimization(self, forcefield='UFF', steps=1000, **kwargs):
-        self.energy_minimize(forcefield=forcefield, steps=steps, **kwargs)
+        raise RemovedFuncError('Compound.energy_minimization()',
+        'Compound.energy_minimize()', '0.8.1', '0.11.0')
 
     def energy_minimize(self, forcefield='UFF', steps=1000, **kwargs):
         """Perform an energy minimization on a Compound

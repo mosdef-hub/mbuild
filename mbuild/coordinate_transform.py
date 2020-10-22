@@ -1,18 +1,30 @@
 from warnings import warn, simplefilter
-simplefilter('always', DeprecationWarning)
+
+simplefilter("always", DeprecationWarning)
 
 import numpy as np
 from numpy.linalg import norm, svd, inv
-from mbuild.utils.decorators import deprecated
+from mbuild.utils.exceptions import RemovedFuncError
 
 
-__all__ = ['rotate', 'rotate_around_x', 'rotate_around_y', 'rotate_around_z',
-           'spin', 'spin_x', 'spin_y', 'spin_z',
-           'force_overlap', 'translate', 'translate_to',
-           'x_axis_transform', 'y_axis_transform', 'z_axis_transform',
-
-           # Deprecated
-           'equivalence_transform']
+__all__ = [
+    "force_overlap",
+    "x_axis_transform",
+    "y_axis_transform",
+    "z_axis_transform",
+    # Deprecated
+    "equivalence_transform",
+    "rotate",
+    "rotate_around_x",
+    "rotate_around_y",
+    "rotate_around_z",
+    "spin",
+    "spin_x",
+    "spin_y",
+    "spin_z",
+    "translate",
+    "translate_to",
+]
 
 
 def force_overlap(move_this, from_positions, to_positions, add_bond=True):
@@ -33,8 +45,11 @@ def force_overlap(move_this, from_positions, to_positions, add_bond=True):
 
     """
     from mbuild.port import Port
+
     T = None
-    if isinstance(from_positions, (list, tuple)) and isinstance(to_positions, (list, tuple)):
+    if isinstance(from_positions, (list, tuple)) and isinstance(
+        to_positions, (list, tuple)
+    ):
         equivalence_pairs = zip(from_positions, to_positions)
     elif isinstance(from_positions, Port) and isinstance(to_positions, Port):
         equivalence_pairs, T = _choose_correct_port(from_positions, to_positions)
@@ -54,14 +69,19 @@ def force_overlap(move_this, from_positions, to_positions, add_bond=True):
             if not from_positions.anchor or not to_positions.anchor:
                 warn("Attempting to form bond from port that has no anchor")
             else:
-                from_positions.anchor.parent.add_bond((from_positions.anchor, to_positions.anchor))
-                to_positions.anchor.parent.add_bond((from_positions.anchor, to_positions.anchor))
+                from_positions.anchor.parent.add_bond(
+                    (from_positions.anchor, to_positions.anchor)
+                )
+                to_positions.anchor.parent.add_bond(
+                    (from_positions.anchor, to_positions.anchor)
+                )
                 from_positions.anchor.parent.remove(from_positions)
                 to_positions.anchor.parent.remove(to_positions)
 
 
 class CoordinateTransform(object):
     """  """
+
     def __init__(self, T=None):
         if T is None:
             T = np.eye(4)
@@ -82,6 +102,7 @@ class CoordinateTransform(object):
 
 class Translation(CoordinateTransform):
     """Cartesian translation. """
+
     def __init__(self, P):
         T = np.eye(4)
         T[0, 3] = P[0]
@@ -92,6 +113,7 @@ class Translation(CoordinateTransform):
 
 class RotationAroundZ(CoordinateTransform):
     """Rotation around the z-axis. """
+
     def __init__(self, theta):
         T = np.eye(4)
         T[0, 0] = np.cos(theta)
@@ -103,6 +125,7 @@ class RotationAroundZ(CoordinateTransform):
 
 class RotationAroundY(CoordinateTransform):
     """Rotation around the y-axis. """
+
     def __init__(self, theta):
         T = np.eye(4)
         T[0, 0] = np.cos(theta)
@@ -114,6 +137,7 @@ class RotationAroundY(CoordinateTransform):
 
 class RotationAroundX(CoordinateTransform):
     """Rotation around the x-axis. """
+
     def __init__(self, theta):
         T = np.eye(4)
         T[1, 1] = np.cos(theta)
@@ -125,6 +149,7 @@ class RotationAroundX(CoordinateTransform):
 
 class Rotation(CoordinateTransform):
     """Rotation around vector by angle theta. """
+
     def __init__(self, theta, around):
         assert around.size == 3
 
@@ -139,16 +164,20 @@ class Rotation(CoordinateTransform):
         x = n[0]
         y = n[1]
         z = n[2]
-        m = np.array([
-            [t * x * x + c, t * x * y - s * z, t * x * z + s * y],
-            [t * x * y + s * z, t * y * y + c, t * y * z - s * x],
-            [t * x * z - s * y, t * y * z + s * x, t * z * z + c]])
+        m = np.array(
+            [
+                [t * x * x + c, t * x * y - s * z, t * x * z + s * y],
+                [t * x * y + s * z, t * y * y + c, t * y * z - s * x],
+                [t * x * z - s * y, t * y * z + s * x, t * z * z + c],
+            ]
+        )
         T[0:3, 0:3] = m
         super(Rotation, self).__init__(T)
 
 
 class ChangeOfBasis(CoordinateTransform):
     """Convert the basis of coordinates to another basis"""
+
     def __init__(self, basis, origin=None):
         assert np.shape(basis) == (3, 3)
         if origin is None:
@@ -165,8 +194,8 @@ class ChangeOfBasis(CoordinateTransform):
 
 class AxisTransform(CoordinateTransform):
     """ """
-    def __init__(self, new_origin=None, point_on_x_axis=None,
-                 point_on_xy_plane=None):
+
+    def __init__(self, new_origin=None, point_on_x_axis=None, point_on_xy_plane=None):
         if new_origin is None:
             new_origin = np.array([0.0, 0.0, 0.0])
         if point_on_x_axis is None:
@@ -233,15 +262,18 @@ class RigidTransform(CoordinateTransform):
         R = V.dot(np.transpose(U))
 
         C_A = np.eye(3)
-        C_A = np.vstack([np.hstack([C_A, np.transpose(centroid_A) * -1.0]),
-                         np.array([0, 0, 0, 1])])
+        C_A = np.vstack(
+            [np.hstack([C_A, np.transpose(centroid_A) * -1.0]), np.array([0, 0, 0, 1])]
+        )
 
-        R_new = np.vstack([np.hstack([R, np.array([[0], [0], [0]])]),
-                           np.array([0, 0, 0, 1])])
+        R_new = np.vstack(
+            [np.hstack([R, np.array([[0], [0], [0]])]), np.array([0, 0, 0, 1])]
+        )
 
         C_B = np.eye(3)
-        C_B = np.vstack([np.hstack([C_B, np.transpose(centroid_B)]),
-                        np.array([0, 0, 0, 1])])
+        C_B = np.vstack(
+            [np.hstack([C_B, np.transpose(centroid_B)]), np.array([0, 0, 0, 1])]
+        )
 
         T = C_B.dot(R_new).dot(C_A)
 
@@ -279,6 +311,7 @@ def _create_equivalence_transform(equiv):
 
     """
     from mbuild.compound import Compound
+
     self_points = np.array([])
     self_points.shape = (0, 3)
     other_points = np.array([])
@@ -286,11 +319,12 @@ def _create_equivalence_transform(equiv):
 
     for pair in equiv:
         if not isinstance(pair, tuple) or len(pair) != 2:
-            raise ValueError('Equivalence pair not a 2-tuple')
+            raise ValueError("Equivalence pair not a 2-tuple")
         if not (isinstance(pair[0], Compound) and isinstance(pair[1], Compound)):
-            raise ValueError('Equivalence pair type mismatch: pair[0] is a {0} '
-                             'and pair[1] is a {1}'.format(type(pair[0]),
-                                                           type(pair[1])))
+            raise ValueError(
+                "Equivalence pair type mismatch: pair[0] is a {0} "
+                "and pair[1] is a {1}".format(type(pair[0]), type(pair[1]))
+            )
 
         # TODO: vstack is slow, replace with list concatenation
         if not pair[0].children:
@@ -319,11 +353,17 @@ def equivalence_transform(compound, from_positions, to_positions, add_bond=True)
         New positions.
 
     """
-    warn('The `equivalence_transform` function is being phased out in favor of'
-         ' `force_overlap`.', DeprecationWarning)
+    warn(
+        "The `equivalence_transform` function is being phased out in favor of"
+        " `force_overlap`.",
+        DeprecationWarning,
+    )
     from mbuild.port import Port
+
     T = None
-    if isinstance(from_positions, (list, tuple)) and isinstance(to_positions, (list, tuple)):
+    if isinstance(from_positions, (list, tuple)) and isinstance(
+        to_positions, (list, tuple)
+    ):
         equivalence_pairs = zip(from_positions, to_positions)
     elif isinstance(from_positions, Port) and isinstance(to_positions, Port):
         equivalence_pairs, T = _choose_correct_port(from_positions, to_positions)
@@ -344,8 +384,12 @@ def equivalence_transform(compound, from_positions, to_positions, add_bond=True)
                 # TODO: I think warnings is undefined here
                 warn("Attempting to form bond from port that has no anchor")
             else:
-                from_positions.anchor.parent.add_bond((from_positions.anchor, to_positions.anchor))
-                to_positions.anchor.parent.add_bond((from_positions.anchor, to_positions.anchor))
+                from_positions.anchor.parent.add_bond(
+                    (from_positions.anchor, to_positions.anchor)
+                )
+                to_positions.anchor.parent.add_bond(
+                    (from_positions.anchor, to_positions.anchor)
+                )
 
 
 def _choose_correct_port(from_port, to_port):
@@ -373,30 +417,30 @@ def _choose_correct_port(from_port, to_port):
 
     """
     # First we try matching the two 'up' ports.
-    T1 = _create_equivalence_transform([(from_port['up'], to_port['up'])])
+    T1 = _create_equivalence_transform([(from_port["up"], to_port["up"])])
     new_position = T1.apply_to(np.array(from_port.anchor.pos, ndmin=2))
 
     dist_between_anchors_up_up = norm(new_position[0] - to_port.anchor.pos)
 
     # Then matching a 'down' with an 'up' port.
-    T2 = _create_equivalence_transform([(from_port['down'], to_port['up'])])
+    T2 = _create_equivalence_transform([(from_port["down"], to_port["up"])])
     new_position = T2.apply_to(np.array(from_port.anchor.pos, ndmin=2))
 
     # Determine which transform places the anchors further away from each other.
     dist_between_anchors_down_up = norm(new_position[0] - to_port.anchor.pos)
-    difference_between_distances = dist_between_anchors_down_up - dist_between_anchors_up_up
+    difference_between_distances = (
+        dist_between_anchors_down_up - dist_between_anchors_up_up
+    )
 
     if difference_between_distances > 0:
-        correct_port = from_port['down']
+        correct_port = from_port["down"]
         T = T2
     else:
-        correct_port = from_port['up']
+        correct_port = from_port["up"]
         T = T1
-    return [(correct_port, to_port['up'])], T
+    return [(correct_port, to_port["up"])], T
 
 
-warning_message = 'Please use Compound.translate()'
-@deprecated(warning_message)
 def translate(compound, pos):
     """Translate a compound by a vector.
 
@@ -408,12 +452,10 @@ def translate(compound, pos):
         The vector to translate the compound by.
 
     """
-    atom_positions = compound.xyz_with_ports
-    atom_positions = Translation(pos).apply_to(atom_positions)
-    compound.xyz_with_ports = atom_positions
+    raise RemovedFuncError('translate()', 'Compound.translate()',
+            '0.7.0', '0.11.0')
 
-warning_message = 'Please use Compound.translate_to()'
-@deprecated(warning_message)
+
 def translate_to(compound, pos):
     """Translate a compound to a coordinate.
 
@@ -425,10 +467,8 @@ def translate_to(compound, pos):
         The coordinate to translate the compound to.
 
     """
-    atom_positions = compound.xyz_with_ports
-    atom_positions -= compound.center
-    atom_positions = Translation(pos).apply_to(atom_positions)
-    compound.xyz_with_ports = atom_positions
+    raise RemovedFuncError('translate_to()', 'Compound.translate_to()',
+            '0.7.0', '0.11.0')
 
 
 def _translate(coordinates, by):
@@ -475,12 +515,10 @@ def _rotate(coordinates, theta, around):
     """
     around = np.asarray(around).reshape(3)
     if np.array_equal(around, np.zeros(3)):
-        raise ValueError('Cannot rotate around a zero vector')
+        raise ValueError("Cannot rotate around a zero vector")
     return Rotation(theta, around).apply_to(coordinates)
 
 
-warning_message = 'Please use Compound.rotate()'
-@deprecated(warning_message)
 def rotate(compound, theta, around):
     """Rotate a compound around an arbitrary vector.
 
@@ -494,16 +532,10 @@ def rotate(compound, theta, around):
         The vector about which to rotate the compound.
 
     """
-    around = np.asarray(around).reshape(3)
-    if np.array_equal(around, np.zeros(3)):
-        raise ValueError('Cannot rotate around a zero vector')
-    atom_positions = compound.xyz_with_ports
-    atom_positions = Rotation(theta, around).apply_to(atom_positions)
-    compound.xyz_with_ports = atom_positions
+    raise RemovedFuncError('rotate()', 'Compound.rotate()',
+            '0.7.0', '0.11.0')
 
 
-warning_message = 'Please use rotate(compound, theta, around=np.asarray([1, 0, 0]))'
-@deprecated(warning_message)
 def rotate_around_x(compound, theta):
     """Rotate a compound around the x axis.
 
@@ -515,11 +547,11 @@ def rotate_around_x(compound, theta):
         The angle by which to rotate the compound.
 
     """
-    rotate(compound, theta, np.asarray([1, 0, 0]))
+    raise RemovedFuncError('rotate_around_x()',
+            'Compound.rotate_around_x()',
+            '0.7.0', '0.11.0')
 
 
-warning_message = 'Please use rotate(compound, theta, around=np.asarray([0, 1, 0]))'
-@deprecated(warning_message)
 def rotate_around_y(compound, theta):
     """Rotate a compound around the y axis.
 
@@ -531,11 +563,11 @@ def rotate_around_y(compound, theta):
         The angle by which to rotate the compound.
 
     """
-    rotate(compound, theta, np.asarray([0, 1, 0]))
+    raise RemovedFuncError('rotate_around_y()',
+            'Compound.rotate_around_y()',
+            '0.7.0', '0.11.0')
 
 
-warning_message = 'Please use rotate(compound, theta, around=np.asarray([0, 0, 1]))'
-@deprecated(warning_message)
 def rotate_around_z(compound, theta):
     """Rotate a compound around the z axis.
 
@@ -547,11 +579,11 @@ def rotate_around_z(compound, theta):
         The angle by which to rotate the compound.
 
     """
-    rotate(compound, theta, np.asarray([0, 0, 1]))
+    raise RemovedFuncError('rotate_around_z()',
+            'Compound.rotate_around_z()',
+            '0.7.0', '0.11.0')
 
 
-warning_message = 'Please use Compound.spin()'
-@deprecated(warning_message)
 def spin(compound, theta, around):
     """Rotate a compound in place around an arbitrary vector.
 
@@ -565,13 +597,9 @@ def spin(compound, theta, around):
         The axis about which to spin the compound.
 
     """
-    around = np.asarray(around).reshape(3)
-    if np.array_equal(around, np.zeros(3)):
-        raise ValueError('Cannot spin around a zero vector')
-    center_pos = compound.center
-    translate(compound, -center_pos)
-    rotate(compound, theta, around)
-    translate(compound, center_pos)
+    raise RemovedFuncError('spin()',
+            'Compound.spin()',
+            '0.7.0', '0.11.0')
 
 
 def _spin(coordinates, theta, around):
@@ -589,7 +617,7 @@ def _spin(coordinates, theta, around):
     """
     around = np.asarray(around).reshape(3)
     if np.array_equal(around, np.zeros(3)):
-        raise ValueError('Cannot spin around a zero vector')
+        raise ValueError("Cannot spin around a zero vector")
     center_pos = np.mean(coordinates, axis=0)
     coordinates -= center_pos
     coordinates = _rotate(coordinates, theta, around)
@@ -597,8 +625,6 @@ def _spin(coordinates, theta, around):
     return coordinates
 
 
-warning_message = 'Please use spin(compound, theta, around=np.asarray([1, 0, 0]))'
-@deprecated(warning_message)
 def spin_x(compound, theta):
     """Rotate a compound in place around the x axis.
 
@@ -610,11 +636,10 @@ def spin_x(compound, theta):
         The angle by which to rotate the compound.
 
     """
-    spin(compound, theta, np.asarray([1.0, 0.0, 0.0]))
+    raise RemovedFuncError('spin_x()', 'Compound.spin_x()',
+            '0.7.0', '0.11.0')
 
 
-warning_message = 'Please use spin(compound, theta, around=np.asarray([0, 1, 0]))'
-@deprecated(warning_message)
 def spin_y(compound, theta):
     """Rotate a compound in place around the y axis.
 
@@ -626,11 +651,10 @@ def spin_y(compound, theta):
         The angle by which to rotate the compound.
 
     """
-    spin(compound, theta, np.asarray([0.0, 1.0, 0.0]))
+    raise RemovedFuncError('spin_y()', 'Compound.spin_y()',
+            '0.7.0', '0.11.0')
 
 
-warning_message = 'Please use spin(compound, theta, around=np.asarray([0, 0, 1]))'
-@deprecated(warning_message)
 def spin_z(compound, theta):
     """Rotate a compound in place around the z axis.
 
@@ -642,12 +666,13 @@ def spin_z(compound, theta):
         The angle by which to rotate the compound.
 
     """
-    spin(compound, theta, np.asarray([0.0, 0.0, 1.0]))
+    raise RemovedFuncError('spin_z()', 'Compound.spin_z()',
+            '0.7.0', '0.11.0')
 
 
-def x_axis_transform(compound, new_origin=None,
-                     point_on_x_axis=None,
-                     point_on_xy_plane=None):
+def x_axis_transform(
+    compound, new_origin=None, point_on_x_axis=None, point_on_xy_plane=None
+):
     """Move a compound such that the x-axis lies on specified points.
 
     Parameters
@@ -668,12 +693,14 @@ def x_axis_transform(compound, new_origin=None,
         new_origin = np.array([0, 0, 0])
     elif isinstance(new_origin, mb.Compound):
         new_origin = new_origin.pos
-    elif isinstance(new_origin, (tuple, list,np.ndarray)):
+    elif isinstance(new_origin, (tuple, list, np.ndarray)):
         new_origin = np.asarray(new_origin)
     else:
-        raise TypeError('x_axis_transform, y_axis_transform, and z_axis_transform only accept'
-                        ' mb.Compounds, list-like of length 3 or None for the new_origin'
-                        ' parameter. User passed type: {}.'.format(type(new_origin)))
+        raise TypeError(
+            "x_axis_transform, y_axis_transform, and z_axis_transform only accept"
+            " mb.Compounds, list-like of length 3 or None for the new_origin"
+            " parameter. User passed type: {}.".format(type(new_origin))
+        )
     if point_on_x_axis is None:
         point_on_x_axis = np.array([1.0, 0.0, 0.0])
     elif isinstance(point_on_x_axis, mb.Compound):
@@ -681,9 +708,11 @@ def x_axis_transform(compound, new_origin=None,
     elif isinstance(point_on_x_axis, (list, tuple, np.ndarray)):
         point_on_x_axis = np.asarray(point_on_x_axis)
     else:
-        raise TypeError('x_axis_transform, y_axis_transform, and z_axis_transform only accept'
-                        ' mb.Compounds, list-like of size 3, or None for the point_on_x_axis'
-                        ' parameter. User passed type: {}.'.format(type(point_on_x_axis)))    
+        raise TypeError(
+            "x_axis_transform, y_axis_transform, and z_axis_transform only accept"
+            " mb.Compounds, list-like of size 3, or None for the point_on_x_axis"
+            " parameter. User passed type: {}.".format(type(point_on_x_axis))
+        )
     if point_on_xy_plane is None:
         point_on_xy_plane = np.array([1.0, 1.0, 0.0])
     elif isinstance(point_on_xy_plane, mb.Compound):
@@ -691,21 +720,25 @@ def x_axis_transform(compound, new_origin=None,
     elif isinstance(point_on_xy_plane, (list, tuple, np.ndarray)):
         point_on_xy_plane = np.asarray(point_on_xy_plane)
     else:
-        raise TypeError('x_axis_transform, y_axis_transform, and z_axis_transform only accept'
-                        ' mb.Compounds, list-like of size 3, or None for the point_on_xy_plane'
-                        ' parameter. User passed type: {}.'.format(type(point_on_xy_plane)))
+        raise TypeError(
+            "x_axis_transform, y_axis_transform, and z_axis_transform only accept"
+            " mb.Compounds, list-like of size 3, or None for the point_on_xy_plane"
+            " parameter. User passed type: {}.".format(type(point_on_xy_plane))
+        )
 
     atom_positions = compound.xyz_with_ports
-    transform = AxisTransform(new_origin=new_origin,
-                              point_on_x_axis=point_on_x_axis,
-                              point_on_xy_plane=point_on_xy_plane)
+    transform = AxisTransform(
+        new_origin=new_origin,
+        point_on_x_axis=point_on_x_axis,
+        point_on_xy_plane=point_on_xy_plane,
+    )
     atom_positions = transform.apply_to(atom_positions)
     compound.xyz_with_ports = atom_positions
 
 
-def y_axis_transform(compound, new_origin=None,
-                     point_on_y_axis=None,
-                     point_on_xy_plane=None):
+def y_axis_transform(
+    compound, new_origin=None, point_on_y_axis=None, point_on_xy_plane=None
+):
     """Move a compound such that the y-axis lies on specified points.
 
     Parameters
@@ -720,15 +753,18 @@ def y_axis_transform(compound, new_origin=None,
         A point on the new xy-plane.
 
     """
-    x_axis_transform(compound, new_origin=new_origin,
-                     point_on_x_axis=point_on_y_axis,
-                     point_on_xy_plane=point_on_xy_plane)
+    x_axis_transform(
+        compound,
+        new_origin=new_origin,
+        point_on_x_axis=point_on_y_axis,
+        point_on_xy_plane=point_on_xy_plane,
+    )
     rotate_around_z(compound, np.pi / 2)
 
 
-def z_axis_transform(compound, new_origin=None,
-                     point_on_z_axis=None,
-                     point_on_zx_plane=None):
+def z_axis_transform(
+    compound, new_origin=None, point_on_z_axis=None, point_on_zx_plane=None
+):
     """Move a compound such that the z-axis lies on specified points.
 
     Parameters
@@ -743,7 +779,10 @@ def z_axis_transform(compound, new_origin=None,
         A point on the new xz-plane.
 
     """
-    x_axis_transform(compound, new_origin=new_origin,
-                     point_on_x_axis=point_on_z_axis,
-                     point_on_xy_plane=point_on_zx_plane)
+    x_axis_transform(
+        compound,
+        new_origin=new_origin,
+        point_on_x_axis=point_on_z_axis,
+        point_on_xy_plane=point_on_zx_plane,
+    )
     rotate_around_y(compound, np.pi * 3 / 2)
