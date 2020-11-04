@@ -91,24 +91,6 @@ stages:
             condition: and( eq( variables['Agent.OS'], 'Linux' ), eq( variables['python.version'], '3.7' ) )
             displayName: Publish Coverage Report
 
-          - bash: |
-              source activate test-environment
-              ./devtools/release-pypi.sh testpypi
-            env:
-              TEST_PYPI_USERNAME: $(TEST_PYPI_USERNAME)
-              TEST_PYPI_PASSWORD: $(TEST_PYPI_PASSWORD)
-            condition: and( eq( variables['Agent.OS'], 'Linux' ), eq( variables['python.version'], '3.7' ), startsWith( variables['Build.SourceBranch'], 'refs/tags/0' ) )
-            displayName: Publish mbuild to Test PyPI
-
-          - bash: |
-              source activate test-environment
-              bash ./devtools/release-pypi.sh pypi
-            env:
-              PYPI_USERNAME: $(PYPI_USERNAME)
-              PYPI_PASSWORD: $(PYPI_PASSWORD)
-            condition: and( eq( variables['Agent.OS'], 'Linux' ), eq( variables['python.version'], '3.7' ), startsWith( variables['Build.SourceBranch'], 'refs/tags/0' ) )
-            displayName: Publish mbuild to PyPI
-
 
       - job: Windows_no_bleeding
         pool:

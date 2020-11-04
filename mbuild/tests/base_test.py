@@ -118,12 +118,11 @@ class BaseTest:
     def benzene_from_parts(self):
         ch = mb.load(get_fn('ch.mol2'))
         ch.name = 'CH'
-        mb.translate(ch, -ch[0].pos)       
+        ch.translate(-ch[0].pos)       
         ch.add(mb.Port(anchor=ch[0], separation=0.07), 'a')
-        mb.rotate_around_z(ch['a'], np.deg2rad(120.0))
-
+        ch['a'].rotate(120.0 * (np.pi/180.0), around=np.asarray([0, 0, 1]))
         ch.add(mb.Port(anchor=ch[0], separation=0.07), 'b')
-        mb.rotate_around_z(ch['b'], np.deg2rad(-120.0))
+        ch['b'].rotate(-120.0 * (np.pi/180.0), around=np.asarray([0, 0, 1]))
         ch_copy = mb.clone(ch)
 
         benzene = mb.Compound(name='Benzene')
@@ -158,14 +157,15 @@ class BaseTest:
         ch = mb.load(get_fn('ch.mol2'))
         ch.name = 'CH'
         ch.label_rigid_bodies()
-        mb.translate(ch, -ch[0].pos)    
+        ch.translate(-ch[0].pos)    
         ch.add(mb.Port(anchor=ch[0]), 'a')
-        mb.translate(ch['a'], [0, 0.07, 0]) 
-        mb.rotate_around_z(ch['a'], np.deg2rad(120.0))
+        ch['a'].translate([0, 0.07, 0]) 
+        ch['a'].rotate(120.0 * (np.pi/180.0), around=np.asarray([0, 0, 1]))
 
         ch.add(mb.Port(anchor=ch[0]), 'b')
-        mb.translate(ch['b'], [0, 0.07, 0]) 
-        mb.rotate_around_z(ch['b'], np.deg2rad(-120.0))
+        ch['b'].translate([0, 0.07, 0]) 
+        ch['b'].rotate(-120.0 * (np.pi/180.0), around=np.asarray([0, 0, 1]))
+
         return ch
 
     @pytest.fixture

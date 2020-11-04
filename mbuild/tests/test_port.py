@@ -16,12 +16,12 @@ class TestPattern(BaseTest):
         assert [ethane.center[i]==coord for i,coord in enumerate(port.center)]
 
     def test_port_init_shift_0(self, ethane):
-        mb.translate_to(ethane, np.ones(3))
+        ethane.translate_to(np.ones(3))
         port = mb.Port(anchor=ethane, separation=0)
         assert [ethane.center[i]==coord for i,coord in enumerate(port.center)]
 
     def test_port_init_shift(self, ethane):
-        mb.translate_to(ethane, np.ones(3))
+        ethane.translate_to(np.ones(3))
         separation = [1, 2, 3]
         port = mb.Port(anchor=ethane, separation=separation)
         assert [ethane.center[i]+separation[i]==coord 
@@ -49,7 +49,7 @@ class TestPattern(BaseTest):
     def test_port_direction(self):
         port = mb.Port()
         assert(np.allclose([0, 1, 0], port.direction, atol=1e-16))
-        mb.coordinate_transform.rotate(port, np.pi, [1, 0, 0])
+        port.rotate(np.pi, [1, 0, 0])
         assert(np.allclose([0, -1, 0], port.direction, atol=1e-15))
 
     def test_access_labels(self):

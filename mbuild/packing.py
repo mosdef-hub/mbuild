@@ -20,6 +20,7 @@ tolerance {0:.16f}
 filetype xyz
 output {1}
 seed {2}
+sidemax {3}
 """
 PACKMOL_SOLUTE = """
 structure {0}
@@ -51,7 +52,7 @@ constrain_rotation z 0. 0.
 
 
 def fill_box(compound, n_compounds=None, box=None, density=None, overlap=0.2,
-             seed=12345, edge=0.2, compound_ratio=None,
+             seed=12345, sidemax=100.0, edge=0.2, compound_ratio=None,
              aspect_ratio=None, fix_orientation=False, temp_file=None,
              update_port_locations=False):
     """Fill a box with a `mbuild.compound` or `Compound`s using PACKMOL.
@@ -92,6 +93,10 @@ def fill_box(compound, n_compounds=None, box=None, density=None, overlap=0.2,
         Minimum separation between atoms of different molecules.
     seed : int, default=12345
         Random seed to be passed to PACKMOL.
+    sidemax : float, optional, default=100.0
+        Needed to build an initial approximation of the molecule distribution in PACKMOL.
+        All system coordinates must fit with in +/- sidemax,
+        so increase sidemax accordingly to your final box size.
     edge : float, units nm, default=0.2
         Buffer at the edge of the box to not place molecules. This is necessary
         in some systems because PACKMOL does not account for periodic boundary
@@ -202,7 +207,7 @@ def fill_box(compound, n_compounds=None, box=None, density=None, overlap=0.2,
     # create a list to contain the file handles for the compound temp files
     compound_xyz_list = list()
     try:
-        input_text = PACKMOL_HEADER.format(overlap, filled_xyz.name, seed)
+        input_text = PACKMOL_HEADER.format(overlap, filled_xyz.name, seed, sidemax*10)
         for comp, m_compounds, rotate in zip(compound, n_compounds, fix_orientation):
             m_compounds = int(m_compounds)
 
@@ -215,7 +220,6 @@ def fill_box(compound, n_compounds=None, box=None, density=None, overlap=0.2,
                                              box_mins[0][2], box_maxs[0][0],
                                              box_maxs[0][1], box_maxs[0][2],
                                              PACKMOL_CONSTRAIN if rotate else "")
-
         _run_packmol(input_text, filled_xyz, temp_file)
         # Create the topology and update the coordinates.
         filled = Compound()
@@ -234,8 +238,8 @@ def fill_box(compound, n_compounds=None, box=None, density=None, overlap=0.2,
 
 
 def fill_region(compound, n_compounds, region, overlap=0.2,
-                seed=12345, edge=0.2, fix_orientation=False, temp_file=None,
-                update_port_locations=False, bounds=None):
+                seed=12345, sidemax=100.0, edge=0.2, fix_orientation=False, temp_file=None,
+                update_port_locations=False):
     """Fill a region of a box with `mbuild.Compound`(s) using PACKMOL.
 
     Parameters
@@ -250,6 +254,10 @@ def fill_region(compound, n_compounds, region, overlap=0.2,
         Minimum separation between atoms of different molecules.
     seed : int, default=12345
         Random seed to be passed to PACKMOL.
+    sidemax : float, optional, default=100.0
+        Needed to build an initial approximation of the molecule distribution in PACKMOL.
+        All system coordinates must fit with in +/- sidemax,
+        so increase sidemax accordingly to your final box size.
     edge : float, units nm, default=0.2
         Buffer at the edge of the region to not place molecules. This is
         necessary in some systems because PACKMOL does not account for
@@ -314,7 +322,7 @@ def fill_region(compound, n_compounds, region, overlap=0.2,
     # List to hold file handles for the temporary compounds
     compound_xyz_list = list()
     try:
-        input_text = PACKMOL_HEADER.format(overlap, filled_xyz.name, seed)
+        input_text = PACKMOL_HEADER.format(overlap, filled_xyz.name, seed, sidemax*10)
         for comp, m_compounds, rotate, items_n in zip(compound, n_compounds, fix_orientation, container):
             m_compounds = int(m_compounds)
 
@@ -354,7 +362,7 @@ def fill_region(compound, n_compounds, region, overlap=0.2,
 
 
 def fill_sphere(compound, sphere, n_compounds=None, density=None, overlap=0.2,
-                seed=12345, edge=0.2, compound_ratio=None,
+                seed=12345, sidemax=100.0, edge=0.2, compound_ratio=None,
                 fix_orientation=False, temp_file=None, update_port_locations=False):
     """Fill a sphere with a compound using packmol.
 
@@ -380,6 +388,10 @@ def fill_sphere(compound, sphere, n_compounds=None, density=None, overlap=0.2,
         Minimum separation between atoms of different molecules.
     seed : int, default=12345
         Random seed to be passed to PACKMOL.
+    sidemax : float, optional, default=100.0
+        Needed to build an initial approximation of the molecule distribution in PACKMOL.
+        All system coordinates must fit with in +/- sidemax,
+        so increase sidemax accordingly to your final box size
     edge : float, units nm, default=0.2
         Buffer at the edge of the sphere to not place molecules. This is necessary
         in some systems because PACKMOL does not account for periodic boundary
@@ -478,7 +490,7 @@ def fill_sphere(compound, sphere, n_compounds=None, density=None, overlap=0.2,
     # List to hold file handles for the temporary compounds
     compound_xyz_list = list()
     try:
-        input_text = PACKMOL_HEADER.format(overlap, filled_xyz.name, seed)
+        input_text = PACKMOL_HEADER.format(overlap, filled_xyz.name, seed, sidemax*10)
         for comp, m_compounds, rotate in zip(compound, n_compounds, fix_orientation):
             m_compounds = int(m_compounds)
 
@@ -490,7 +502,6 @@ def fill_sphere(compound, sphere, n_compounds=None, density=None, overlap=0.2,
                                                 sphere[0], sphere[1],
                                                 sphere[2], radius,
                                                 PACKMOL_CONSTRAIN if rotate else "")
-        print(input_text)
         _run_packmol(input_text, filled_xyz, temp_file)
 
         # Create the topology and update the coordinates.
@@ -507,7 +518,7 @@ def fill_sphere(compound, sphere, n_compounds=None, density=None, overlap=0.2,
 
 
 def solvate(solute, solvent, n_solvent, box, overlap=0.2,
-            seed=12345, edge=0.2, fix_orientation=False, temp_file=None,
+            seed=12345, sidemax=100.0, edge=0.2, fix_orientation=False, temp_file=None,
             update_port_locations=False):
     """Solvate a compound in a box of solvent using packmol.
 
@@ -525,6 +536,10 @@ def solvate(solute, solvent, n_solvent, box, overlap=0.2,
         Minimum separation between atoms of different molecules.
     seed : int, default=12345
         Random seed to be passed to PACKMOL.
+    sidemax : float, optional, default=100.0
+        Needed to build an initial approximation of the molecule distribution in PACKMOL.
+        All system coordinates must fit with in +/- sidemax,
+        so increase sidemax accordingly to your final box size
     edge : float, units nm, default=0.2
         Buffer at the edge of the box to not place molecules. This is necessary
         in some systems because PACKMOL does not account for periodic boundary
@@ -575,7 +590,7 @@ def solvate(solute, solvent, n_solvent, box, overlap=0.2,
     solvent_xyz_list = list()
     try:
         solute.save(solute_xyz.name, overwrite=True)
-        input_text = (PACKMOL_HEADER.format(overlap, solvated_xyz.name, seed) +
+        input_text = (PACKMOL_HEADER.format(overlap, solvated_xyz.name, seed, sidemax*10) +
                       PACKMOL_SOLUTE.format(solute_xyz.name, *center_solute[0].tolist()))
 
         for solv, m_solvent, rotate, in zip(solvent, n_solvent, fix_orientation):

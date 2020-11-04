@@ -9,6 +9,7 @@ from mbuild.utils.io import get_fn, import_, run_from_ipython
 from mbuild.utils.validation import assert_port_exists
 from mbuild.utils.jsutils import overwrite_nglview_default
 from mbuild.utils.geometry import wrap_coords
+from mbuild.utils.exceptions import RemovedFuncError
 
 
 class TestUtils(BaseTest):
@@ -139,3 +140,5 @@ class TestUtils(BaseTest):
         __IPYTHON__ = None
         assert run_from_ipython() is False
 
+    def test_removed_func_error(self):
+        RemovedFuncError('old_function', 'new_function', '0.0.0', '0.1.0')
