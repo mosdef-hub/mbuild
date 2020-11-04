@@ -19,12 +19,12 @@ class TestGSD(BaseTest):
     @pytest.mark.skipif(not has_foyer, reason="Foyer package not installed")
     @pytest.mark.skipif(not has_gsd, reason="GSD package not installed")
     def test_save_box(self, ethane):
-        box = mb.Box(lengths=np.array([2.0,2.0,2.0]))
+        box = mb.Box.from_lengths_angles(lengths=[2.0,2.0,2.0], angles=[90.0, 90.0, 90.0])
         ethane.save(filename='ethane-box.gsd', forcefield_name='oplsaa',box=box)
 
     @pytest.mark.skipif(not has_foyer, reason="Foyer package not installed")
     def test_save_triclinic_box_(self, ethane):
-        box = mb.Box(lengths=np.array([2.0, 2.0, 2.0]), angles=[60, 70, 80])
+        box = mb.box.Box.from_lengths_angles(lengths=np.array([2.0, 2.0, 2.0]), angles=[60, 70, 80])
         ethane.save(filename='triclinic-box.gsd', forcefield_name='oplsaa', box=box)
 
     @pytest.mark.skipif(not has_foyer, reason="Foyer package not installed")
@@ -72,13 +72,17 @@ class TestGSD(BaseTest):
     def test_box(self, ethane):
         import gsd, gsd.pygsd
 
-        box = mb.Box(lengths=[1.0, 2.0, 3.0])
+        box = mb.box.Box.from_lengths_angles(lengths=[1.0, 2.0, 3.0], angles=[90.0, 90.0, 90.0])
         ethane.save(filename='ethane.gsd', forcefield_name='oplsaa', box=box)
         gsd_file = gsd.pygsd.GSDFile(open('ethane.gsd', 'rb'))
         frame = gsd.hoomd.HOOMDTrajectory(gsd_file).read_frame(0)
 
         box_from_gsd = frame.configuration.box.astype(float)
-        assert np.array_equal(box_from_gsd[:3], box.lengths*10)
+        (lx, ly, lz) = box.lengths
+        lx *= 10
+        ly *= 10
+        lz *= 10
+        assert np.array_equal(box_from_gsd[:3], [lx, ly, lz])
         assert not np.any(box_from_gsd[3:])
 
         ethane.periodicity = [1.0, 2.0, 3.0]
@@ -88,7 +92,7 @@ class TestGSD(BaseTest):
         box_from_gsd_periodic = frame.configuration.box.astype(float)
         assert np.array_equal(box_from_gsd, box_from_gsd_periodic)
 
-        box = mb.Box(lengths=np.array([2.0, 2.0, 2.0]), angles=[60, 70, 80])
+        box = mb.box.Box.from_lengths_angles(lengths=np.array([2.0, 2.0, 2.0]), angles=[60, 70, 80])
         ethane.save(filename='triclinic-box.gsd', forcefield_name='oplsaa', box=box)
         gsd_file = gsd.pygsd.GSDFile(open('triclinic-box.gsd', 'rb'))
         frame = gsd.hoomd.HOOMDTrajectory(gsd_file).read_frame(0)
@@ -223,7 +227,7 @@ class TestGSD(BaseTest):
         ref_energy = 0.066
         ref_mass = 12.011
 
-        box = mb.Box(lengths=[1.0, 2.0, 3.0])
+        box = mb.Box.from_lengths_angles(lengths=[1.0, 2.0, 3.0], angles=[90.0, 90.0, 90.0])
         ethane.save(filename='ethane.gsd', forcefield_name='oplsaa',
                     ref_distance=ref_distance, ref_energy=ref_energy,
                     ref_mass=ref_mass, box=box)
@@ -232,7 +236,7 @@ class TestGSD(BaseTest):
 
         box_from_gsd = frame.configuration.box.astype(float)
         assert np.array_equal(np.round(box_from_gsd[:3], decimals=5),
-                              np.round(box.lengths * 10 / ref_distance, decimals=5))
+                              np.round(np.asarray(box.lengths) * 10 / ref_distance, decimals=5))
 
         mass_dict = {'C' : 12.011, 'H' : 1.008}
         masses = frame.particles.mass.astype(float)

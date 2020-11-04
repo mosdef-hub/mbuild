@@ -128,11 +128,11 @@ class TestUtils(BaseTest):
         xyz = np.array([[3, 3, 1],
                         [1, 1, 0]])
 
-        box = mb.Box(mins=[-2.0,-2.0,-2.0], maxs=[2.0,2.0,2.0])
+        box = mb.Box.from_lengths_angles(lengths=[2.0, 2.0, 2.0], angles=[90, 90, 90])
 
-        new_xyz = wrap_coords(xyz, box)
+        new_xyz = wrap_coords(xyz, box, mins=np.min(xyz, axis=0))
 
-        assert (new_xyz[0,:] == np.array([-1,-1,1])).all()
+        assert (new_xyz[0,:] == np.array([1,1,1])).all()
         assert (new_xyz[1,:] == xyz[1,:]).all()
 
     def test_has_ipython(self):

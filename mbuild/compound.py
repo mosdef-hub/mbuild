@@ -972,6 +972,15 @@ class Compound(object):
         self._periodicity = np.array(periods)
 
     @property
+    def mins(self):
+        return self.xyz.min(axis=0)
+
+    @property
+    def maxs(self):
+        return self.xyz.max(axis=0)
+
+
+    @property
     def box(self):
         return self._box
 
@@ -1128,25 +1137,30 @@ class Compound(object):
         such that the min(x,y,z) is the new origin at (0,0,0) or any provided origin
 
         """
-        origin_cur = np.asarray(origin).reshape(3,)
-        xyz = self.xyz
-        mins = xyz.min(axis=0)
-        maxs = xyz.max(axis=0)
-
+        origin = np.asarray(origin).reshape(3,)
+        mins = self.mins
+        maxs = self.maxs
         
         # case where only 1 particle exists
         is_one_particle = False
-        if xyz.shape[0] == 1:
+        if self.xyz.shape[0] == 1:
             is_one_particle = True
 
-        # are any columns all 0?
+        # are any columns all equalivalent values?
         # an example of this would be a planar molecule
-        # from: https://stackoverflow.com/a/16092714
+        # example: all z values are 0.0
+        # from: https://stackoverflow.com/a/14860884
+        # steps: create mask array comparing first value in each column
+        # use np.all with axis=0 to do row columnar comparision
         has_dimension = [True, True, True]
+        print(f'my positions: {self.xyz}')
         if not is_one_particle:
-            missing_dimensions = np.where((~(np.abs(xyz).any(axis=0)).any()))[0]
-            for dim in missing_dimensions:
-                has_dimension[dim] = False
+            print(f'is close: {np.isclose(self.xyz, self.xyz[0,:])}')
+            print(f'truths: {np.all(np.isclose(self.xyz, self.xyz[0,:]), axis=0)}')
+            print(f'truths: {np.any(np.isclose(self.xyz, self.xyz[0,:]), axis=0)}')
+            missing_dimensions = np.all(np.isclose(self.xyz, self.xyz[0,:]), axis=0)
+            for i,truthy in enumerate(missing_dimensions):
+                has_dimension[i] = (not truthy)
 
         if is_one_particle:
             v1 = np.asarray([[1.0, 0.0, 0.0]])
@@ -1154,23 +1168,31 @@ class Compound(object):
             v3 = np.asarray([[0.0, 0.0, 1.0]])
         else:
             if orthogonal:
-                v1 = np.asarray((maxs[0], 0.0, 0.0))
-                v2 = np.asarray((0.0, maxs[1], 0.0))
-                v3 = np.asarray((0.0, 0.0, maxs[2]))
+                v1 = np.asarray((maxs[0] - mins[0], 0.0, 0.0))
+                v2 = np.asarray((0.0, maxs[1] - mins[1], 0.0))
+                v3 = np.asarray((0.0, 0.0, maxs[2] - mins[2]))
             else:
                 new_origin = mins
                 v1 = np.asarray((maxs[0]-mins[0], 0.0, 0.0))
                 v2 = np.asarray((maxs[0]-mins[0], maxs[1]-mins[1], 0.0))
                 v3 = np.asarray((maxs[0]-mins[0], maxs[1]-mins[1], maxs[2]-mins[2]))
-                self.translate(origin_cur - new_origin)
+                self.translate(origin - new_origin)
         vecs = [v1, v2, v3]
         print(f"vecs: {vecs}")
+        print(f'has_dim: {has_dimension}')
         if not is_one_particle:
             print(f'missing dims: {missing_dimensions}')
-            for dims in missing_dimensions:
-                v_new = [0.0, 0.0, 0.0]
-                v_new[dims] = 1.0
-                vecs[dims] = np.asarray(v_new)
+            for i, truthy in enumerate(has_dimension):
+                if truthy:
+                    continue
+                else:
+                    v_new = [0.0, 0.0, 0.0]
+                    # if the max value in this dimension is 0, add a 1nm buffer
+                    if np.isclose(maxs[i], 0.0):
+                        v_new[i] = 1.0
+                    else:
+                        v_new[i] = maxs[i]
+                    vecs[i] = np.asarray(v_new)
                 print(f"vnew: {v_new}")
         print(f'vecs_next: {vecs}')
         return Box(box_vectors=np.asarray([vecs]).reshape(3,3))
@@ -1916,7 +1938,7 @@ class Compound(object):
              forcefield_files, forcefield_debug, box,
              overwrite, residues, combining_rule, foyer_kwargs, **kwargs)
 
-        def translate(self, by):
+    def translate(self, by):
         """Translate the Compound by a vector
 
         Parameters
@@ -2023,54 +2045,6 @@ class Compound(object):
         --------
         _to_topology
 
-        """
-        atom_list = [particle for particle in self.particles(show_ports)]
-
-        top = self._to_topology(atom_list, chains, residues)
-
-        # Coordinates.
-        xyz = np.ndarray(shape=(1, top.n_atoms, 3), dtype='float')
-        print(f'traj: xyz: {xyz[0]}')
-        for idx, atom in enumerate(atom_list):
-            xyz[0, idx] = atom.pos
-
-        # Unitcell information.
-        unitcell_angles = [90.0, 90.0, 90.0]
-        if box is None:
-            unitcell_lengths = np.empty(3)
-            for dim, val in enumerate(self.periodicity):
-                if val:
-                    unitcell_lengths[dim] = val
-                else:
-                    unitcell_lengths[dim] = self.get_boundingbox(orthogonal=True).lengths[dim] + 0.5
-        else:
-            unitcell_lengths = box.lengths
-            unitcell_angles = box.angles
-
-        return md.Trajectory(xyz, top, unitcell_lengths=unitcell_lengths,
-                             unitcell_angles=unitcell_angles)
-
-    def _to_topology(self, atom_list, chains=None, residues=None):
-        """Create a mdtraj.Topology from a Compound.
-
-        Parameters
-        ----------
-        atom_list : list of mb.Compound
-            Atoms to include in the topology
-        chains : mb.Compound or list of mb.Compound
-            Chain types to add to the topology
-        residues : str of list of str
-            Labels of residues in the Compound. Residues are assigned by
-            checking against Compound.name.
-
-        Returns
-        -------
-        top : mdtraj.Topology
-
-        See Also
-        --------
-        mdtraj.Topology : Details on the mdtraj Topology object
-        mbuild.conversion.to_trajectory
         """
         return conversion.to_trajectory(compound=self, show_ports=show_ports,
             chains=chains, residues=residues, box=box)

@@ -73,7 +73,8 @@ class TestPacking(BaseTest):
 
     def test_fill_region(self, h2o):
         filled = mb.fill_region(h2o, n_compounds=50,
-                                region=[3, 2, 2, 5, 5, 5])
+                                region=[3, 2, 2, 5, 5, 5],
+                                bounds=[[3,2,2,5,5,5]])
         assert filled.n_particles == 50 * 3
         assert filled.n_bonds == 50 * 2
         assert np.min(filled.xyz[:,0]) >= 3
@@ -85,7 +86,7 @@ class TestPacking(BaseTest):
 
     def test_fill_region_box(self, h2o):
         mybox = mb.Box.from_lengths_angles(lengths=[4, 4, 4], angles=[90.0, 90.0, 90.0])
-        filled = mb.fill_region(h2o, n_compounds=50, region=mybox)
+        filled = mb.fill_region(h2o, n_compounds=50, region=mybox, bounds=[[0,0,0,4,4,4]])
         assert filled.n_particles == 50 * 3
         assert filled.n_bonds == 50 * 2
         assert np.min(filled.xyz[:,0]) >= 0
@@ -93,17 +94,18 @@ class TestPacking(BaseTest):
 
     def test_fill_region_multiple(self, ethane, h2o):
         filled = mb.fill_region(compound=[ethane, h2o], n_compounds=[2, 2],
-                                region=[[2, 2, 2, 4, 4, 4], [4, 2, 2, 6, 4, 4]])
+                                region=[[2, 2, 2, 4, 4, 4], [4, 2, 2, 6, 4, 4]],
+                                bounds=[[2,2,2,4,4,4],[4,2,2,6,4,4]])
         assert filled.n_particles == 2 * 8 + 2 * 3
         assert filled.n_bonds == 2 * 7 + 2 * 2
         assert np.max(filled.xyz[:16, 0]) < 4
         assert np.min(filled.xyz[16:, 0]) > 4
 
-    def test_fill_region_multiple_boxes(self, ethane, h2o):
+    def test_fill_region_multiple_bounds(self, ethane, h2o):
         box1 = mb.Box.from_mins_maxs_angles(mins=[2, 2, 2], maxs=[4, 4, 4], angles=[90.0, 90.0, 90.0])
         box2 = mb.Box.from_mins_maxs_angles(mins=[4, 2, 2], maxs=[6, 4, 4], angles=[90.0, 90.0, 90.0])
         filled = mb.fill_region(compound=[ethane, h2o], n_compounds=[2, 2],
-                                region=[box1, box2])
+                                region=[box1, box2], bounds=[[2,2,2,4,4,4], [4,2,2,6,4,4]])
         assert filled.n_particles == 2 * 8 + 2 * 3
         assert filled.n_bonds == 2 * 7 + 2 * 2
         assert np.max(filled.xyz[:16, 0]) < 4
@@ -113,7 +115,7 @@ class TestPacking(BaseTest):
         box1 = mb.Box.from_mins_maxs_angles(mins=[2, 2, 2], maxs=[4, 4, 4], angles=[90.0, 90.0, 90.0])
         box2 = [4, 2, 2, 6, 4, 4]
         filled = mb.fill_region(compound=[ethane, h2o], n_compounds=[2, 2],
-                                region=[box1, box2])
+                                region=[box1, box2], bounds=[[2,2,2,4,4,4], box2])
         assert filled.n_particles == 2 * 8 + 2 * 3
         assert filled.n_bonds == 2 * 7 + 2 * 2
         assert np.max(filled.xyz[:16, 0]) < 4
@@ -131,11 +133,6 @@ class TestPacking(BaseTest):
         solvated = mb.solvate(ethane, h2o, n_solvent=n_solvent, box=[4, 4, 4])
         assert solvated.n_particles == 8 + n_solvent * 3
         assert solvated.n_bonds == 7 + n_solvent * 2
-
-    def test_fill_box_seed(self, h2o):
-        filled = mb.fill_box(h2o, n_compounds=50, box=[2, 2, 2])
-        filled_same = mb.fill_box(h2o, n_compounds=50, box=[2, 2, 2])
-        filled_diff = mb.fill_box(h2o, n_compounds=50, box=[2, 2, 2], seed=2)
 
     def test_solvate_multiple(self, methane, ethane, h2o):
         init_box = mb.fill_box(methane, 2, box=[4, 4, 4])
@@ -178,26 +175,19 @@ class TestPacking(BaseTest):
     def test_write_temp_file(self, h2o):
         cwd = os.getcwd() # Must keep track of the temp dir that pytest creates
         filled = mb.fill_box(h2o, n_compounds=10, box=[4, 4, 4], temp_file='temp_file1.pdb')
-        region = mb.fill_region(h2o, 10, [2, 2, 2, 4, 4, 4], temp_file='temp_file2.pdb')
+        region = mb.fill_region(h2o, 10, [2, 2, 2, 4, 4, 4], temp_file='temp_file2.pdb', bounds=[[2,2,2,4,4,4]])
         solvated = mb.solvate(filled, h2o, 10, box=[4, 4, 4], temp_file='temp_file3.pdb')
         assert os.path.isfile(os.path.join(cwd, 'temp_file1.pdb'))
         assert os.path.isfile(os.path.join(cwd, 'temp_file2.pdb'))
         assert os.path.isfile(os.path.join(cwd, 'temp_file3.pdb'))
 
     def test_packmol_error(self, h2o):
-        with pytest.raises(RuntimeError):
-            filled = mb.fill_box(h2o, n_compounds=10, box=[0, 0, 0])
-
-    def test_packmol_log_error(self, h2o):
-        try:
-            filled = mb.fill_box(h2o, n_compounds=10, box=[0, 0, 0])
-        except(RuntimeError):
-            with open("log.txt", "r") as logfile:
-                assert "ERROR" in logfile.read()
+        with pytest.raises(MBuildError, match=r'co\-linear'):
+            mb.fill_box(h2o, n_compounds=10, box=[0, 0, 0])
 
     def test_packmol_warning(self, h2o):
         with pytest.warns(UserWarning):
-            filled = mb.fill_box(h2o, n_compounds=10, box=[1, 1, 1], overlap=10)
+            mb.fill_box(h2o, n_compounds=10, box=[1, 1, 1], overlap=10)
 
     def test_rotate(self, h2o):
         filled = mb.fill_box(h2o, 2, box=[1, 1, 1], fix_orientation=True)

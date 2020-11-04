@@ -132,10 +132,10 @@ class Pattern(object):
         n_ports = len(host.available_ports())
         assert n_ports >= self.points.shape[0], "Not enough ports for pattern."
         assert_port_exists(guest_port_name, guest)
-        box = host.boundingbox
+        box = host.get_boundingbox()
         if scale:
             self.scale(box.lengths)
-            self.points += box.mins
+            self.points += host.mins
         pattern = self.points
         port_positions = np.empty(shape=(n_ports, 3))
         port_list = list()

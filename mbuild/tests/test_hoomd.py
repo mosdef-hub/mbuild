@@ -120,11 +120,11 @@ class TestHoomdXML(BaseTest):
         ethane.save(filename='ethane-opls.hoomdxml', forcefield_name='oplsaa')
 
     def test_save_box(self, ethane):
-        box = mb.Box(lengths=np.array([2.0, 2.0, 2.0]))
+        box = mb.box.Box.from_lengths_angles(lengths=[2.0, 2.0, 2.0], angles=[90, 90, 90])
         ethane.save(filename='ethane-box.hoomdxml', box=box)
 
     def test_save_triclinic_box_(self, ethane):
-        box = mb.Box(lengths=np.array([2.0, 2.0, 2.0]), angles=[60, 70, 80])
+        box = mb.Box.from_lengths_angles(lengths=np.array([2.0, 2.0, 2.0]), angles=[60, 70, 80])
         ethane.save(filename='triclinic-box.hoomdxml', box=box)
 
     def test_rigid(self, benzene):

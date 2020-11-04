@@ -422,7 +422,7 @@ def from_parmed(structure,
         if len(structure.atoms) != compound.n_particles:
             raise ValueError(
                 'Number of atoms in {structure} does not '
-                '{compound}'.formats(**locals())
+                '{compound}'.format(**locals())
             )
         atoms_particles = zip(
             structure.atoms,
@@ -675,7 +675,7 @@ def from_pybel(pybel_mol,
                         compound[bond.GetEndAtomIdx()-1]])
 
     if hasattr(pybel_mol, 'unitcell'):
-        box = Box(lengths=[pybel_mol.unitcell.GetA()/10,
+        box = Box.from_lengths_angles(lengths=[pybel_mol.unitcell.GetA()/10,
                             pybel_mol.unitcell.GetB()/10,
                             pybel_mol.unitcell.GetC()/10],
                     angles=[pybel_mol.unitcell.GetAlpha(),
@@ -1002,23 +1002,20 @@ def to_parmed(compound,
         structure.bonds.append(bond)
     # pad box with .25nm buffers
     if box is None:
-        box = compound.boundingbox
-        box_vec_max = box.maxs.tolist()
-        box_vec_min = box.mins.tolist()
+        box = compound.get_boundingbox(orthogonal=True)
+        compound_max = compound.maxs.tolist()
+        compound_min = compound.mins.tolist()
         for dim, val in enumerate(compound.periodicity):
             if val:
-                box_vec_max[dim] = val
-                box_vec_min[dim] = 0.0
+                compound_max[dim] = val
+                compound_min[dim] = 0.0
             if not val:
-                box_vec_max[dim] += 0.25
-                box_vec_min[dim] -= 0.25
-        box = Box(mins=box_vec_min, maxs=box_vec_max)
+                compound_max[dim] += 0.25
+                compound_min[dim] -= 0.25
+        box = Box.from_mins_maxs_angles(mins=compound_min, maxs=compound_max, angles=box.angles)
 
     box_vector = np.empty(6)
-    if box.angles is not None:
-        box_vector[3:6] = box.angles
-    else:
-        box_vector[3] = box_vector[4] = box_vector[5] = 90.0
+    box_vector[3:6] = box.angles
     for dim in range(3):
         box_vector[dim] = box.lengths[dim] * 10
     structure.box = box_vector
@@ -1075,7 +1072,7 @@ def to_trajectory(compound,
             if val:
                 unitcell_lengths[dim] = val
             else:
-                unitcell_lengths[dim] = compound.boundingbox.lengths[dim] + 0.5
+                unitcell_lengths[dim] = compound.get_boundingbox().lengths[dim] + 0.5
     else:
         unitcell_lengths = box.lengths
         unitcell_angles = box.angles
@@ -1308,10 +1305,14 @@ def to_pybel(compound,
 
     ucell = openbabel.OBUnitCell()
     if box is None:
-        box = compound.boundingbox
-    a, b, c = 10.0 * box.lengths
+        box = compound.get_boundingbox()
+    (a, b, c) = box.lengths
+    a *= 10
+    b *= 10
+    c *= 10
     alpha, beta, gamma = np.radians(box.angles)
 
+    '''
     cosa = np.cos(alpha)
     cosb = np.cos(beta)
     sinb = np.sin(beta)
@@ -1333,10 +1334,12 @@ def to_pybel(compound,
     box_vec = [[1, 0, 0], [cosg, sing, 0], [cosb, mat_coef_y, mat_coef_z]]
     box_vec = np.asarray(box_vec)
     box_mat = (np.array([a, b, c]) * box_vec.T).T
-    first_vector = openbabel.vector3(*box_mat[0])
-    second_vector = openbabel.vector3(*box_mat[1])
-    third_vector = openbabel.vector3(*box_mat[2])
-    ucell.SetData(first_vector, second_vector, third_vector)
+    first_vector = openbabel.vector3(np.asarray(box.box_vectors[0,:]) * 10.0)
+    second_vector = openbabel.vector3(np.asarray(box.box_vectors[1,:]) * 10.0)
+    third_vector = openbabel.vector3(np.asarray(box.box_vectors[2,:]) * 10.0)
+    '''
+    ucell.SetData(a, b, c, alpha, beta, gamma)
+    #ucell.SetData(first_vector, second_vector, third_vector)
     mol.CloneData(ucell)
 
     for bond in compound.bonds():

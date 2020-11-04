@@ -172,22 +172,19 @@ class TestLammpsData(BaseTest):
                     xlo = float(line.split()[0])
                     xhi = float(line.split()[1])
                     assert np.isclose(xlo, 0.0)
-                    assert np.isclose(xhi, 6.07)
-                    #assert np.isclose(xhi, 7.13999987)
+                    assert np.isclose(xhi, 7.13999987)
                     
                     line = fi.readline()
                     ylo = float(line.split()[0])
                     yhi = float(line.split()[1])
                     assert np.isclose(ylo, 0.0)
-                    assert np.isclose(yhi, 5.769)
-                    #assert np.isclose(yhi, 7.93800011)
+                    assert np.isclose(yhi, 7.93800011)
                     
                     line = fi.readline()
                     zlo = float(line.split()[0])
                     zhi = float(line.split()[1])
                     assert np.isclose(zlo, 0.0)
-                    assert np.isclose(zhi, 5.653)
-                    #assert np.isclose(zhi, 6.646)
+                    assert np.isclose(zhi, 6.646)
                     
                     checked_section = True
 
@@ -206,14 +203,11 @@ class TestLammpsData(BaseTest):
                 if 'dihedral types' in line:
                     fi.readline()
                     line = float(fi.readline().split()[1])
-                    #assert np.isclose(float(line), 2.04)
-                    assert np.isclose(float(line), 1.734286)
+                    assert np.isclose(float(line), 2.04)
                     line = float(fi.readline().split()[1])
-                    #assert np.isclose(line, 2.268)
-                    assert np.isclose(line, 1.648286)
+                    assert np.isclose(line, 2.268)
                     line = float(fi.readline().split()[1])
-                    assert np.isclose(line, 1.615143)
-                    #assert np.isclose(line, 1.898857)
+                    assert np.isclose(line, 1.898857)
                     checked_section = True
 
     def test_lj_masses(self, ethane):

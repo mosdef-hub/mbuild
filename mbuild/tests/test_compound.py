@@ -723,11 +723,12 @@ class TestCompound(BaseTest):
 
         bead = mb.Compound(name="Bead")
         box = mb.Box.from_mins_maxs_angles(mins=(2,2,2), maxs=(3,3,3), angles=(90.0, 90.0, 90.0))
-        bead_box = mb.fill_box(bead, 100, box)
-        bead_box_in_pmd = bead_box.to_parmed()
+        bead_box = mb.fill_box(bead, 100, box=[2,2,2,3,3,3])
+        bead_box_in_pmd = bead_box.to_parmed(box=box)
 
         assert isinstance(bead_box_in_pmd, pmd.Structure)
         assert len(bead_box_in_pmd.atoms) == 100
+        print(bead_box_in_pmd.box)
         assert (bead_box_in_pmd.box == np.array([10., 10.,10. ,90., 90., 90.])).all()
 
     def test_resnames_parmed(self, h2o, ethane):
@@ -770,8 +771,10 @@ class TestCompound(BaseTest):
         compound = mb.Compound()
         compound.add(h2o)
         tilted_box = mb.Box.from_lengths_angles(lengths=[2.0, 2.0, 2.0], angles=[60.0, 80.0, 100.0])
+        print(tilted_box)
         structure = compound.to_parmed(box=tilted_box)
-        assert all(structure.box == [20.0, 20.0, 20.0, 60.0, 80.0, 100.0])
+        print(structure.box)
+        assert np.all(np.isclose(structure.box, [20.0, 20.0, 20.0, 60.0, 80.0, 100.0]))
 
     def test_min_periodic_dist(self, ethane):
         compound = mb.Compound(ethane)
@@ -1200,16 +1203,16 @@ class TestCompound(BaseTest):
         assert np.allclose(compound.box.lengths, lengths)
         assert np.allclose(compound.box.angles, angles)
         compound = mb.Compound(box=mb.Box.from_lengths_angles(lengths=[3.,3.,3.], angles=[90.0, 90.0, 90.0]))
-        subcomp = mb.Compound(box=mb.Box.from_lengths_angles(lengths=[6.,6.,6.], angles=[60.,60.,120.]))
+        subcomp = mb.Compound(box=mb.Box.from_lengths_angles(lengths=[6.,6.,6.], angles=[90.,90.,120.]))
         with pytest.warns(UserWarning):
             compound.add(subcomp)
         assert np.allclose(compound.box.lengths, [3.,3.,3.])
         assert np.allclose(compound.box.angles, [90.,90.,90.])
         compound = mb.Compound(box=mb.Box.from_lengths_angles(lengths=lengths, angles=angles))
-        subcomp = mb.Compound(box=mb.Box.from_lengths_angles(lengths=[6.,6.,6.], angles=[60.,60.,120.]))
+        subcomp = mb.Compound(box=mb.Box.from_lengths_angles(lengths=[6.,6.,6.], angles=[90.,90.,120.]))
         compound.add(subcomp, inherit_box=True)
         assert np.allclose(compound.box.lengths, [6.,6.,6.])
-        assert np.allclose(compound.box.angles, [60.,60.,120.])
+        assert np.allclose(compound.box.angles, [90.,90.,120.])
         compound = mb.Compound(box=mb.Box.from_lengths_angles(lengths=lengths, angles=angles))
         subcomp = mb.Compound()
         with pytest.warns(UserWarning):
@@ -1226,7 +1229,7 @@ class TestCompound(BaseTest):
             compound.add(nitrogen)
         compound.box = mb.Box.from_lengths_angles(lengths=[5.,4.,4.], angles=angles)
         with pytest.warns(UserWarning):
-            compound.box = mb.Box.from_lengths_angles(lengths=[5.,4.,2.], angles=angles)
+            compound.box = mb.Box.from_lengths_angles(lengths=[1.,1.,1.], angles=angles)
 
     @pytest.mark.skipif(not has_py3Dmol, reason="Py3Dmol is not installed")
     def test_visualize_py3dmol(self, ethane):

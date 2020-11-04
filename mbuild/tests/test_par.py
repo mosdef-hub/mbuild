@@ -16,7 +16,7 @@ class TestPar(BaseTest):
         cmpd = mb.load(get_fn('charmm_dihedral.mol2'))
         for i in cmpd.particles():
             i.name = "_{}".format(i.name)
-        structure = cmpd.to_parmed(box=cmpd.boundingbox, 
+        structure = cmpd.to_parmed(box=cmpd.get_boundingbox(), 
                                     residues=set([p.parent.name for \
                                                  p in cmpd.particles()]))
 

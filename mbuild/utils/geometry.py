@@ -57,7 +57,7 @@ def coord_shift(xyz, box):
 
     return xyz
 
-def wrap_coords(xyz, box):
+def wrap_coords(xyz, box, mins=None):
     """ Wrap coordinates inside box
 
     Parameters
@@ -82,9 +82,9 @@ def wrap_coords(xyz, box):
 
         wrap_xyz = xyz - 1*np.floor_divide(xyz, box_arr) * box_arr
     else:
-        xyz = xyz - box.mins  
+        xyz = xyz - mins  
         wrap_xyz = (xyz 
-                - (1*np.floor_divide(xyz, box.lengths) * box.lengths)
-                + box.mins)
+                - (1*np.floor_divide(xyz, np.asarray(box.lengths)) * np.asarray(box.lengths))
+                + mins)
 
     return wrap_xyz
