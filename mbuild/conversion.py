@@ -64,6 +64,7 @@ def load(filename_or_object,
         If True, infer hierarchy from chains and residues
     ignore_box_warn : bool, optional, default=False
         If True, ignore warning if no box is present.
+        Defaults to True when loading from SMILES
     **kwargs : keyword arguments
         Key word arguments passed to mdTraj for loading.
 
