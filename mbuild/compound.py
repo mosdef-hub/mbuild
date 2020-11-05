@@ -6,7 +6,8 @@ import itertools
 import ele
 import numpy as np
 
-from collections import OrderedDict, Iterable
+from collections import OrderedDict
+from collections.abc import Iterable
 from copy import deepcopy
 from warnings import warn
 from oset import oset as OrderedSet
