@@ -1517,13 +1517,14 @@ def _add_intermol_molecule_type(intermol_system, parent):  # pragma: no cover
         intermol_bond = InterMolBond(atom1.index, atom2.index)
         molecule_type.bonds.add(intermol_bond)
 
+
 def _infer_element_from_compound(compound, guessed_elements):
     """Infer the element from the compound name
 
     Parameters
     ----------
     compound : mbuild.Compound
-        the compound to infer the element for 
+        the compound to infer the element for
     guessed_elements : list
         a list of the already-guessed-elements
 
@@ -1531,7 +1532,7 @@ def _infer_element_from_compound(compound, guessed_elements):
     -------
     element : ele.Element or None
     """
-    
+
     try:
         element = element_from_symbol(compound.name)
     except ElementError:
@@ -1557,5 +1558,5 @@ def _infer_element_from_compound(compound, guessed_elements):
         if compound.name not in guessed_elements:
             warn(warn_msg)
             guessed_elements.add(compound.name)
-   
+
     return element
