@@ -225,7 +225,7 @@ def fill_box(compound, n_compounds=None, box=None, density=None, overlap=0.2,
         filled = Compound()
         filled = _create_topology(filled, compound, n_compounds)
         filled.update_coordinates(filled_xyz.name, update_port_locations=update_port_locations)
-        filled.periodicity = np.asarray(filled.get_boundingbox().lengths, dtype=np.float32)
+        filled.periodicity = np.asarray(box.lengths, dtype=np.float32)
 
     # ensure that the temporary files are removed from the machine after filling
     finally:
