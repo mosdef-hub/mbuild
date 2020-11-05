@@ -13,7 +13,7 @@ class Box(object):
     Parameters
     ----------
     box_vectors : np.ndarray, shape=(3,3), dtype=float
-        Vectors that define a right-handed parallelpiped (Box).
+        Vectors that define a right-handed parallelepiped (triclinic box).
     precision : int, optional, default=None
         Control the precision of the floating point representation __repr__
 
@@ -23,7 +23,7 @@ class Box(object):
         Vectors that define the parallelepiped (Box).
     Lx, Ly, Lz : float
         Lengths of the Box in the x,y,z dimensions
-    xy,xz,yz : float
+    xy, xz, yz : float
         Tilt factors needed to displace an orthogonal box to its parallelepiped structure.
     precision : int
         Precision of the floating point numbers when accessing the __repr__
@@ -54,7 +54,7 @@ class Box(object):
     def from_lengths_angles(cls, lengths, angles):
         box_vectors = _lengths_angles_to_vectors(lengths, angles)
 
-        return Box(box_vectors=box_vectors)
+        return cls(box_vectors=box_vectors)
 
     @classmethod
     def from_uvec_lengths(cls, uvec, lengths):
@@ -75,15 +75,14 @@ class Box(object):
         _validate_box_vectors(uvec)
         scaled_vec = (uvec.T * lengths).T
 
-        return Box(box_vectors=scaled_vec)
+        return cls(box_vectors=scaled_vec)
 
     @classmethod
     def from_mins_maxs_angles(cls, mins, maxs, angles):
         (x_min, y_min, z_min) = mins
         (x_max, y_max, z_max) = maxs
         lengths = (x_max-x_min, y_max-y_min, z_max-z_min)
-        box_vectors = _lengths_angles_to_vectors(lengths, angles)
-        return Box(box_vectors=box_vectors)
+        return cls.from_lengths_angles(lengths, angles)
 
     @classmethod
     def from_lengths_tilt_factors(cls, lengths, tilt_factors=None):
@@ -187,21 +186,13 @@ class Box(object):
 
     def __repr__(self):
         (Lx, Ly, Lz, xy, xz, yz) = self.box_parameters
-        if self._precision is not None:
-            precision = self._precision
-            desc = (f"Box: Lx={Lx:.{precision}f}, "
-                    f"Ly={Ly:.{precision}f}, "
-                    f"Lz={Lz:.{precision}f}, "
-                    f"xy={xy:.{precision}f}, "
-                    f"xz={xz:.{precision}f}, "
-                    f"yz={yz:.{precision}f}")
-        else:
-            desc = (f"Box: Lx={Lx}, "
-                    f"Ly={Ly}, "
-                    f"Lz={Lz}, "
-                    f"xy={xy}, "
-                    f"xz={xz}, "
-                    f"yz={yz}")
+        format_precision = f".{self._precision}f" if self._precision else ""
+        desc = (f"Box: Lx={Lx:{format_precision}}, "
+                f"Ly={Ly:{format_precision}}, "
+                f"Lz={Lz:{format_precision}}, "
+                f"xy={xy:{format_precision}}, "
+                f"xz={xz:{format_precision}}, "
+                f"yz={yz:{format_precision}}, ")
         return desc
 
     def _from_vecs_to_lengths_tilt_factors(self):
@@ -242,9 +233,7 @@ class Box(object):
         beta_raw = a_dot_c / (vector_magnitudes[0] * vector_magnitudes[2])
         gamma_raw = a_dot_b / (vector_magnitudes[0] * vector_magnitudes[1])
 
-        alpha = np.rad2deg(np.arccos(np.clip(alpha_raw, -1.0, 1.0)))
-        beta = np.rad2deg(np.arccos(np.clip(beta_raw, -1.0, 1.0)))
-        gamma = np.rad2deg(np.arccos(np.clip(gamma_raw, -1.0, 1.0)))
+        (alpha, beta, gamma) = np.rad2deg(np.arccos(np.clip([alpha_raw, beta_raw, gamma_raw], -1.0, 1.0)))
 
         return (alpha, beta, gamma)
 
@@ -268,10 +257,7 @@ def _validate_box_vectors(box_vectors):
     be transformed to comply with them, and will also raise a warning.
     """
     vecs = np.asarray(box_vectors, dtype=np.float)
-    if vecs.shape == (3,3):
-        pass
-    else:
-        vecs.reshape(3,3)
+    vecs.reshape(3,3)
 
     return _normalize_box(vecs)
 
@@ -311,7 +297,7 @@ def _normalize_box(vectors):
     """
     det = np.linalg.det(vectors)
     #print(f'det is: {det}')
-    if np.any(np.allclose(det, 0.0,atol=1e-5)):
+    if np.isclose(det, 0.0, atol=1e-5):
         #print(f'we made it to the error')
         raise MBuildError("The vectors to define the box are co-linear, "
                           "this does not form a 3D region in space.\n"
