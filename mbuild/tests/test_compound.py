@@ -722,7 +722,7 @@ class TestCompound(BaseTest):
     def test_fillbox_then_parmed(self):
         # This test would fail with the old to_parmed code (pre PR #699)
 
-        bead = mb.Compound(name="Bead")
+        bead = mb.Compound(name="Ar")
         box = mb.Box(mins=(2,2,2), maxs=(3,3,3))
         bead_box = mb.fill_box(bead, 100, box)
         bead_box_in_pmd = bead_box.to_parmed()
@@ -891,7 +891,7 @@ class TestCompound(BaseTest):
         for particle in octane.particles():
             particle.element = None
         # Pass with element inference from names
-        octane.energy_minimization()
+        octane.energy_minimize()
         for particle in octane.particles():
             particle.name = 'Q'
         # Fail once names don't match elements
