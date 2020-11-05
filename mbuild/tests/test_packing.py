@@ -224,8 +224,8 @@ class TestPacking(BaseTest):
         sphere_of_methane = mb.fill_sphere(ch4,
                     sphere=[1000, 1000, 1000, 1000],
                     n_compounds=500)
-        assert all(box_of_methane.boundingbox.lengths < [110, 110, 110])
-        assert all(sphere_of_methane.boundingbox.lengths < [210, 210, 210])
+        assert all(np.asarray(box_of_methane.get_boundingbox().lengths) < [110, 110, 110])
+        assert all(np.asarray(sphere_of_methane.get_boundingbox().lengths) < [210, 210, 210])
 
         #With adjusted sidemax
         big_box_of_methane = mb.fill_box(ch4,
@@ -236,5 +236,5 @@ class TestPacking(BaseTest):
                     sphere=[1000, 1000, 1000, 1000],
                     n_compounds=500,
                     sidemax=2000.0)
-        assert all(big_box_of_methane.boundingbox.lengths > [900, 900, 900])
-        assert all(big_sphere_of_methane.boundingbox.lengths > [1800, 1800, 1800])
+        assert all(np.asarray(big_box_of_methane.get_boundingbox().lengths) > [900, 900, 900])
+        assert all(np.asarray(big_sphere_of_methane.get_boundingbox().lengths) > [1800, 1800, 1800])

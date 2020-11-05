@@ -237,7 +237,7 @@ def fill_box(compound, n_compounds=None, box=None, density=None, overlap=0.2,
     return filled
 
 
-def fill_region(compound, n_compounds, region, overlap=0.2,
+def fill_region(compound, n_compounds, region, overlap=0.2, bounds=None,
                 seed=12345, sidemax=100.0, edge=0.2, fix_orientation=False, temp_file=None,
                 update_port_locations=False):
     """Fill a region of a box with `mbuild.Compound`(s) using PACKMOL.
