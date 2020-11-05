@@ -83,6 +83,8 @@ def load(filename_or_object,
         )
     # Second check if we are loading SMILES strings
     elif smiles:
+        # Ignore the box info for SMILES (its never there)
+        ignore_box_warn = True
         return load_smiles(
             smiles_or_filename=filename_or_object,
             compound=compound,
