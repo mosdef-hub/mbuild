@@ -164,7 +164,7 @@ def _dict_to_mb(compound_dict):
     elif isinstance(element, list):
         atom_num = element[0]
         element = ele.element_from_atomic_number(atom_num)
-    elif isinstance(element,str):
+    elif isinstance(element, str):
         pass
     else:
         pass
