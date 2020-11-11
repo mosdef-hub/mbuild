@@ -153,24 +153,29 @@ def to_hoomdsnapshot(
             # shift the typeids
             typeids += len(set(hoomd_snapshot.particles.types))
             # shift bond/angle/dihedral indices
-            bond_groups += n_init
-            angle_groups = [
-                    tuple(row) for row in np.array(angle_groups) + n_init
-                    ]
-            dihedral_groups = [
-                    tuple(row) for row in np.array(dihedral_groups) + n_init
-                    ]
-            improper_groups = [
-                    tuple(row) for row in np.array(improper_groups) + n_init
-                    ]
-            pairs = [tuple(row) for row in np.array(pairs) + n_init]
+            if n_bonds > 0:
+                bond_groups += n_init
+            if n_angles > 0:
+                angle_groups = [
+                        tuple(row) for row in np.array(angle_groups) + n_init
+                        ]
+            if n_dihedrals > 0:
+                dihedral_groups = [
+                        tuple(row) for row in np.array(dihedral_groups) + n_init
+                        ]
+            if n_impropers > 0:
+                improper_groups = [
+                        tuple(row) for row in np.array(improper_groups) + n_init
+                        ]
+            if n_pairs > 0:
+                pairs = [tuple(row) for row in np.array(pairs) + n_init]
         else:
             raise RuntimeError(
                     "Initial snapshot provided, but it contains no particles"
                     )
 
         hoomd_snapshot.box = hoomd.data.boxdim(
-                lx=lx, ly=ly, lz=lz, xy=xy, xz=xz, yz=yz
+                Lx=lx, Ly=ly, Lz=lz, xy=xy, xz=xz, yz=yz
                 )
 
         init_bonds = hoomd_snapshot.bonds.N
@@ -222,8 +227,8 @@ def to_hoomdsnapshot(
         init_pairs = 0
 
         hoomd_snapshot = hoomd.data.make_snapshot(
-            n=n_particles,
-            box=hoomd.data.boxdim(lx=lx, ly=ly, lz=lz, xy=xy, xz=xz, yz=yz),
+            N=n_particles,
+            box=hoomd.data.boxdim(Lx=lx, Ly=ly, Lz=lz, xy=xy, xz=xz, yz=yz),
             particle_types=unique_types,
             bond_types=unique_bond_types,
             angle_types=unique_angle_types,
