@@ -7,7 +7,6 @@ import numpy as np
 
 from parmed.utils.io import genopen
 from parmed.periodic_table import Element
-from parmed.utils.six import string_types
 from parmed.utils.six.moves import range
 
 from mbuild import Box
@@ -525,7 +524,6 @@ def charmm_psf_psb_FF(structure_0, filename_0, structure_1 = None, filename_1= N
         return None
 
     unique_residue_test_name_list = []
-    residue_test_name_iterate = 0
     for res_m in range(0, len(residues)):
         if residues[res_m] not in unique_residue_test_name_list:
             unique_residue_test_name_list.append(residues[res_m])
@@ -1004,7 +1002,7 @@ def charmm_psf_psb_FF(structure_0, filename_0, structure_1 = None, filename_1= N
 
     if impropers:
         improper_types, unique_improper_types = _get_impropers(structure_selection,
-                epsilon_conversion_factor)
+                                                               epsilon_conversion_factor)
 
     if FF_filename is None:
         print('GOMC FF is not printing, as the FF_filename variable was not supplied a string for its name')
