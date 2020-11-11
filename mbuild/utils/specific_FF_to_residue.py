@@ -128,9 +128,8 @@ def Specific_FF_to_residue(structure , forcefield_files= None, forcefield_names=
             coulomb14scaler_dict.update({residue_iteration: float(Scaler.getAttribute("coulomb14scale"))})
             LJ14scaler_dict.update({residue_iteration: float(Scaler.getAttribute("lj14scale"))})
 
-
-
-
+    # calculate the initial number of atoms for later comparison
+    initial_No_atoms = len(structure.to_parmed().atoms)
 
     # add the FF to the residues
     compound_box_infor = structure.to_parmed(residues=residues)
@@ -244,6 +243,17 @@ def Specific_FF_to_residue(structure , forcefield_files= None, forcefield_names=
 
 
     structure = new_structure
+
+    # calculate the final number of atoms
+    final_No_atoms = len(structure.atoms)
+
+    if final_No_atoms != initial_No_atoms:
+        warn('ERROR: The initial number of atoms send to the force field analysis is not the same '+
+             'as the final number of atoms analyzed.  The intial number of atoms was ' + str(initial_No_atoms) +
+             ' and the final number of atoms was ' + str(final_No_atoms) +'. Please ensure that all '+
+             'the residues names that are in the initial Compound are listed in the '+
+             'residues list (i.e., the residues variable)')
+        return None, None, None, None
 
     return structure, coulomb14scaler_dict, LJ14scaler_dict, residues_applied_list
 

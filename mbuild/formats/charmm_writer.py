@@ -1,7 +1,15 @@
+import os
+import datetime
 from collections import OrderedDict
 from warnings import warn
-import os
+
 import numpy as np
+
+from parmed.utils.io import genopen
+from parmed.periodic_table import Element
+from parmed.utils.six import string_types
+from parmed.utils.six.moves import range
+
 from mbuild import Box
 from mbuild.utils.conversion import RB_to_CHARMM
 from mbuild.utils.sorting import natural_sort
@@ -9,31 +17,162 @@ from mbuild.utils.conversion import base10_to_base16_alph_num
 from mbuild.utils.conversion import base10_to_base52_alph_num
 from mbuild.utils.conversion import base10_to_base62_alph_num
 from mbuild.utils.specific_FF_to_residue import Specific_FF_to_residue
-import datetime
-
-from parmed.utils.io import genopen
-from parmed.periodic_table import Element
-from parmed.utils.six import string_types
-from parmed.utils.six.moves import range
 
 
-def print_atoms(atom, coords):
-    return atom, atom.other_locations, coords[atom.idx]
+def generate_impropers_for_PSF(stucture,
+                               Dihedrals):
 
-def _get_bond_types(structure, bonds, sigma_conversion_factor, epsilon_conversion_factor):
-    unique_bond_types = dict(enumerate(set([(round(bond.type.k*(
-                                             sigma_conversion_factor**2/epsilon_conversion_factor),3),
-                                             round(bond.type.req/sigma_conversion_factor,3),
-                                             tuple(sorted((bond.atom1.type,bond.atom2.type))),
-                                             bond.atom1.residue.name, bond.atom2.residue.name
-                                             ) for bond in structure.bonds])))
+    for improper_iteration in stucture.impropers:
+        yield (improper_iteration.atom1, improper_iteration.atom2,
+               improper_iteration.atom3, improper_iteration.atom4)
 
-    unique_bond_types = OrderedDict([(y,x+1) for x,y in unique_bond_types.items()])
-    bond_types = [unique_bond_types[(round(bond.type.k*(sigma_conversion_factor**2/epsilon_conversion_factor),3),
-                                     round(bond.type.req/sigma_conversion_factor,3),
-                                     tuple(sorted((bond.atom1.type,bond.atom2.type))),
-                                     bond.atom1.residue.name, bond.atom2.residue.name
-                                     )] for bond in structure.bonds]
+    for dihedral_iteration in Dihedrals:
+        if dihedral_iteration.improper:
+            yield (dihedral_iteration.atom1, dihedral_iteration.atom2,
+                   dihedral_iteration.atom3, dihedral_iteration.atom4)
+
+def _get_bond_type_key(bond,
+                       sigma_conversion_factor,
+                       epsilon_conversion_factor):
+    """Get the bond_type key for a bond"""
+    return (
+        round(bond.type.k * (sigma_conversion_factor ** 2 / epsilon_conversion_factor), 3),
+        round(bond.type.req / sigma_conversion_factor, 3),
+        tuple(sorted((bond.atom1.type, bond.atom2.type))),
+        bond.atom1.residue.name, bond.atom2.residue.name
+     )
+
+
+def _get_angle_type_key(angle,
+                        sigma_conversion_factor,
+                        epsilon_conversion_factor):
+    """Get the angle_type key for an angle"""
+    return (
+        round(angle.type.k*(sigma_conversion_factor**2/epsilon_conversion_factor), 3),
+        round(angle.type.theteq, 3),
+        angle.atom2.type,
+        tuple(sorted((angle.atom1.type, angle.atom3.type))),
+        angle.atom1.residue.name, angle.atom2.residue.name,
+        angle.atom3.residue.name
+    )
+
+
+def _get_dihedral_rb_torsion_key(dihedral,
+                                 epsilon_conversion_factor):
+    lj_unit = 1 / epsilon_conversion_factor
+    return (
+        round(dihedral.type.c0*lj_unit, 3),
+        round(dihedral.type.c1*lj_unit, 3),
+        round(dihedral.type.c2*lj_unit, 3),
+        round(dihedral.type.c3*lj_unit, 3),
+        round(dihedral.type.c4*lj_unit, 3),
+        round(dihedral.type.c5*lj_unit, 3),
+        round(dihedral.type.scee, 1),
+        round(dihedral.type.scnb, 1),
+        dihedral.atom1.type,
+        dihedral.atom2.type,
+        dihedral.atom3.type,
+        dihedral.atom4.type,
+        dihedral.atom1.residue.name,
+        dihedral.atom2.residue.name,
+        dihedral.atom3.residue.name,
+        dihedral.atom4.residue.name
+    )
+
+
+def _get_improper_type_key(improper,
+                           epsilon_conversion_factor):
+    lj_unit = 1 / epsilon_conversion_factor
+    return (
+        round(improper.type.psi_k * lj_unit, 3),
+        round(improper.type.psi_eq, 3),
+        improper.atom1.type,
+        improper.atom2.type,
+        improper.atom3.type,
+        improper.atom4.type,
+        improper.atom1.residue.name,
+        improper.atom2.residue.name,
+        improper.atom3.residue.name,
+        improper.atom4.residue.name
+    )
+
+
+def _get_unique_bond_types(structure,
+                           sigma_conversion_factor,
+                           epsilon_conversion_factor):
+    unique_bond_set = set()
+    for bond in structure.bonds:
+        unique_bond_set.add(
+            _get_bond_type_key(bond, sigma_conversion_factor, epsilon_conversion_factor)
+        )
+
+    return {bond_key: i+1 for i, bond_key in enumerate(unique_bond_set)}
+
+
+def _get_unique_angle_types(structure,
+                            sigma_conversion_factor,
+                            epsilon_conversion_factor):
+    unique_angle_set = set()
+    for angle in structure.angles:
+        unique_angle_set.add(
+            _get_angle_type_key(angle, sigma_conversion_factor, epsilon_conversion_factor)
+        )
+
+    return {angle_key: i+1 for i, angle_key in enumerate(unique_angle_set)}
+
+
+def _get_unique_rb_torsion_types(structure,
+                                 epsilon_conversion_factor):
+    unique_dihedral_set = set()
+    for dihedral in structure.rb_torsions:
+        unique_dihedral_set.add(
+            _get_dihedral_rb_torsion_key(dihedral, epsilon_conversion_factor)
+        )
+
+    return {torsion_key: i + 1 for i, torsion_key in enumerate(unique_dihedral_set)}
+
+
+def _get_unique_improper_types(structure,
+                               epsilon_conversion_factor):
+    unique_improper_set = set()
+    for improper in structure.impropers:
+        unique_improper_set.add(_get_improper_type_key(improper, epsilon_conversion_factor))
+
+    return {improper_key: i + 1 for i, improper_key in enumerate(unique_improper_set)}
+
+
+def _get_bond_types(structure,
+                    bonds,
+                    sigma_conversion_factor,
+                    epsilon_conversion_factor):
+    """Get a list of unique bond_types given a parmed structure
+
+    Parameters
+    ----------
+    structure: parmed.Structure
+        The parmed structure
+    bonds:
+    #ToDO: What is this intended for?
+    #FIXME: Improve this docstring
+    sigma_conversion_factor: float
+        The sigma conversion factor
+    epsilon_conversion_factor: float
+        The epsilon conversion factor
+
+    Returns
+    -------
+
+    """
+    unique_bond_types = _get_unique_bond_types(
+        structure,
+        sigma_conversion_factor,
+        epsilon_conversion_factor
+    )
+
+    bond_types = [
+        unique_bond_types[_get_bond_type_key(bond, sigma_conversion_factor, epsilon_conversion_factor)]
+        for bond in structure.bonds
+    ]
 
     unique_bond_check_dict = {}
     for i_value_bond, i_key_bond in unique_bond_types.items():
@@ -57,29 +196,26 @@ def _get_bond_types(structure, bonds, sigma_conversion_factor, epsilon_conversio
 
     return bond_types, unique_bond_types
 
-def _get_angle_types(structure, use_urey_bradleys,
-        sigma_conversion_factor, epsilon_conversion_factor):
+
+def _get_angle_types(structure,
+                     sigma_conversion_factor,
+                     epsilon_conversion_factor,
+                     use_urey_bradleys=False):
     if use_urey_bradleys:
         warn('ERROR :  Urey-Bradleys are not available in the current version of this psf, pdb, and GOMC writer.')
         return None, None
     else:
-        unique_angle_types = dict(enumerate(set([(round(angle.type.k*(
-            sigma_conversion_factor**2/epsilon_conversion_factor),3),
-                                                  round(angle.type.theteq,3),
-                                                  angle.atom2.type,
-                                                  tuple(sorted((angle.atom1.type,angle.atom3.type))),
-                                                  angle.atom1.residue.name, angle.atom2.residue.name,
-                                                  angle.atom3.residue.name
-                                                  ) for angle in structure.angles])))
-        unique_angle_types = OrderedDict([(y,x+1) for x,y in unique_angle_types.items()])
-        angle_types = [unique_angle_types[(round(angle.type.k*(
-            sigma_conversion_factor**2/epsilon_conversion_factor),3),
-                                           round(angle.type.theteq,3),
-                                           angle.atom2.type,
-                                           tuple(sorted((angle.atom1.type,angle.atom3.type))) ,
-                                           angle.atom1.residue.name, angle.atom2.residue.name,
-                                           angle.atom3.residue.name
-                                           )] for angle in structure.angles]
+        unique_angle_types = _get_unique_angle_types(
+            structure,
+            sigma_conversion_factor,
+            epsilon_conversion_factor
+        )
+
+        angle_types = [unique_angle_types[_get_angle_type_key(
+            angle,
+            sigma_conversion_factor,
+            epsilon_conversion_factor
+        )] for angle in structure.angles]
 
     unique_angle_check_dict = {}
     for i_value_ang, i_key_ang in unique_angle_types.items():
@@ -96,48 +232,26 @@ def _get_angle_types(structure, use_urey_bradleys,
                 else:
                     unique_angle_check_dict.update({i_value_ang: len(unique_angle_check_dict) })
 
-        if i_value_duplicated == False:
+        if not i_value_duplicated:
             unique_angle_check_dict.update({i_value_ang: len(unique_angle_check_dict)})
 
     unique_angle_types = OrderedDict([(y, x) for y, x in unique_angle_check_dict.items()])
 
     return angle_types, unique_angle_types
 
-def _get_dihedral_types(structure, use_rb_torsions, use_dihedrals,
-         epsilon_conversion_factor):
-    lj_unit = 1 / epsilon_conversion_factor
+
+def _get_dihedral_types(structure,
+                        use_rb_torsions,
+                        use_dihedrals,
+                        epsilon_conversion_factor):
     if use_rb_torsions:
-        unique_dihedral_types = dict(enumerate(set([(round(dihedral.type.c0*lj_unit,3),
-                                                     round(dihedral.type.c1*lj_unit,3),
-                                                     round(dihedral.type.c2*lj_unit,3),
-                                                     round(dihedral.type.c3*lj_unit,3),
-                                                     round(dihedral.type.c4*lj_unit,3),
-                                                     round(dihedral.type.c5*lj_unit,3),
-                                                     round(dihedral.type.scee,1),
-                                                     round(dihedral.type.scnb,1),
-                                                     dihedral.atom1.type, dihedral.atom2.type,
-                                                     dihedral.atom3.type, dihedral.atom4.type,
-                                                     dihedral.atom1.residue.name, dihedral.atom2.residue.name,
-                                                     dihedral.atom3.residue.name, dihedral.atom4.residue.name
-                                                     ) for dihedral in structure.rb_torsions])))
+        unique_dihedral_types = _get_unique_rb_torsion_types(structure, epsilon_conversion_factor)
 
-
-
-        unique_dihedral_types = OrderedDict([(y,x+1) for x,y in unique_dihedral_types.items()])
-
-        dihedral_types = [unique_dihedral_types[(round(dihedral.type.c0*lj_unit,3),
-                                                 round(dihedral.type.c1*lj_unit,3),
-                                                 round(dihedral.type.c2*lj_unit,3),
-                                                 round(dihedral.type.c3*lj_unit,3),
-                                                 round(dihedral.type.c4*lj_unit,3),
-                                                 round(dihedral.type.c5*lj_unit,3),
-                                                 round(dihedral.type.scee,1),
-                                                 round(dihedral.type.scnb,1),
-                                                 dihedral.atom1.type, dihedral.atom2.type,
-                                                 dihedral.atom3.type, dihedral.atom4.type,
-                                                 dihedral.atom1.residue.name, dihedral.atom2.residue.name,
-                                                 dihedral.atom3.residue.name, dihedral.atom4.residue.name
-                                                 )] for dihedral in structure.rb_torsions]
+        dihedral_types = [
+            unique_dihedral_types[
+                _get_dihedral_rb_torsion_key(dihedral, epsilon_conversion_factor)]
+            for dihedral in structure.rb_torsions
+        ]
 
     elif use_dihedrals:
         warn('ERROR : Using the charmm style and impropers is not available in the current version of '+
@@ -166,23 +280,15 @@ def _get_dihedral_types(structure, use_rb_torsions, use_dihedrals,
 
     return dihedral_types, unique_dihedral_types
 
+
 def _get_impropers(structure, epsilon_conversion_factor):
-    lj_unit = 1 / epsilon_conversion_factor
-    unique_improper_types = dict(enumerate(set([(round(improper.type.psi_k*lj_unit,3),
-                                                 round(improper.type.psi_eq,3),
-                                                 improper.atom1.type, improper.atom2.type,
-                                                 improper.atom3.type, improper.atom4.type,
-                                                 improper.atom1.residue.name, improper.atom2.residue.name,
-                                                 improper.atom3.residue.name, improper.atom4.residue.name)
-                                                for improper in structure.impropers])))
-    unique_improper_types = OrderedDict([(y,x+1) for x,y in unique_improper_types.items()])
-    improper_types = [unique_improper_types[(round(improper.type.psi_k*lj_unit,3),
-                                             round(improper.type.psi_eq,3),
-                                             improper.atom1.type, improper.atom2.type,
-                                             improper.atom3.type, improper.atom4.type,
-                                             improper.atom1.residue.name, improper.atom2.residue.name,
-                                             improper.atom3.residue.name, improper.atom4.residue.name)]
-                      for improper in structure.impropers]
+    unique_improper_types = _get_unique_improper_types(structure, epsilon_conversion_factor)
+
+    improper_types = [
+        unique_improper_types[
+            _get_improper_type_key(improper, epsilon_conversion_factor)]
+                for improper in structure.impropers
+    ]
 
     # If impropers are added to GOMC, add the atom sorter for the unique combinations here
 
@@ -270,7 +376,7 @@ def unique_atom_naming(structure, residue_ID_list, residue_names_list, Bead_to_a
 def charmm_psf_psb_FF(structure_0, filename_0, structure_1 = None, filename_1= None,
                       non_bonded_type='LJ', forcefield_files=None, forcefield_names = None,  residues=None,
                       detect_forcefield_style=True, fix_res_bonds_angles = None, Bead_to_atom_name_dict=None,
-                      fix_residue=None, fix_residue_in_box=None,  GOMC_FF_filename= None,
+                      fix_residue=None, fix_residue_in_box=None,  FF_filename= None,
                       reorder_res_in_pdb_psf =False, box_0 = None, box_1 = None  , **kwargs):
 
     """Output a GOMC data file.
@@ -298,12 +404,12 @@ def charmm_psf_psb_FF(structure_0, filename_0, structure_1 = None, filename_1= N
             Specify the type of non-bonded potential for the GOMC force field files.
             Note: Currently, on the 'LJ' potential is supported.
     residues : str of list of str
-        Labels of residues in the Compound. Residues are assigned by
+        Labels of unique residues in the Compound. Residues are assigned by
         checking against Compound.name.
         Note: to write the GOMC force field files and the psf files the
         residues and forcefield_files/forcefiled_names must be provided in a list, which
         is in sequential order of each other. (Example:
-        residues = [WAT, OIL] and forcefield_files/forcefiled_names = [WAT_FF_file, OIL_FF_file]
+        residues = ['WAT', 'OIL'] and forcefield_files/forcefiled_names = [WAT_FF_file, OIL_FF_file]
     forcefield_files : str or dictionary, default = None
         Apply a forcefield to the output file using a forcefield provided
         by the `foyer` package.
@@ -329,16 +435,11 @@ def charmm_psf_psb_FF(structure_0, filename_0, structure_1 = None, filename_1= N
         If True, format lammpsdata parameters based on the contents of
         the parmed structure_0
     fix_res_bonds_angles: list, default = None
-        When list of residues is provided the the residue will have
-        bonds and angles fixed.  This is only for the GOMC force field
-        writer.
-        WARNING: Currently if the residue is similar to another residue,
-        this will not work as distinguishing between the 2 residues is
-        currently under construction.
-        Example 1: If you have a n-pentane and n-octane, you will not
-        be able to fix the bonds and angles on one and not the other
-        Example 2: if you have a water and n-pentane, you are able to
-        fix the waters and/or n-pentanes bonds and angles.
+        When list of residues is provided, the selected residues will have
+        their bonds and angles fixed in the GOMC engine.  This is specifically 
+        for the GOMC engine and it changes the residue's bond constants (Kbs) 
+        and angle constants (Kthetas) values to 999999999999 in the 
+        FF file (i.e., the .inp file).
     Bead_to_atom_name_dict: dict, optional, default =None
         For all atom names/elements/beads with 2 or less digits, this converts
         the atom name in the GOMC psf and pdb files to a unique atom name,
@@ -348,7 +449,7 @@ def charmm_psf_psb_FF(structure_0, filename_0, structure_1 = None, filename_1= N
         provided they do not exceed 62 of the same name/element pre residue.
         Example dictionary: {'_CH3':'C', '_CH2':'C', '_CH':'C', '_HC':'C'}
     fix_residue: list  or None, default = None
-        Changes occcur in the GOMC pdb file only.
+        Changes occcur in the pdb file only.
         When residues are listed here, all the atoms in the residue are
         fixed and can not move via setting the Beta values in the PDB
         file to 1.00.
@@ -357,7 +458,7 @@ def charmm_psf_psb_FF(structure_0, filename_0, structure_1 = None, filename_1= N
         in the residue are free to move in the simulation and Beta values
         in the PDB file is set to 0.00
     fix_residue_in_box: list  or None, default = None
-        Changes occcur in the GOMC pdb file only.
+        Changes occcur in the pdb file only.
         When residues are listed here, all the atoms in the residue become
         can move within the box but cannot be transferred between boxes
         via setting the Beta values in the PDB file to 2.00.
@@ -365,8 +466,9 @@ def charmm_psf_psb_FF(structure_0, filename_0, structure_1 = None, filename_1= N
         residue or both equal None, then the Beta values for all the atoms
         in the residue are free to move in the simulation and Beta values
         in the PDB file is set to 0.00
-    GOMC_FF_filename ; str, default =None
-        If a sting, it will write the GOMC force field files for the
+    FF_filename ; str, default =None
+        If a sting, it will write the  force field files that work in 
+        GOMC and NAMD
         structures
     reorder_res_in_pdb_psf ; bool, default =False
         If False, the order of of the atoms in the pdb file is kept in
@@ -409,17 +511,26 @@ def charmm_psf_psb_FF(structure_0, filename_0, structure_1 = None, filename_1= N
 
     """
 
-    if not isinstance(residues, list):
-        warn('Error: Please enter the residues (residues) in a list format')
-        return None
-
     date_time = datetime.datetime.today()
 
+    if not isinstance(residues, list):
+        warn('Error: Please enter the residues list (residues) in a list format')
+        return None
+
     if residues is None:
-        warn('Error: Please enter the residues (residues)  list')
+        warn('Error: Please enter the residues list (residues)')
         return None
     if not isinstance(filename_0, str):
         warn('Error: Please enter the filename_0 as a string')
+        return None
+
+    unique_residue_test_name_list = []
+    residue_test_name_iterate = 0
+    for res_m in range(0, len(residues)):
+        if residues[res_m] not in unique_residue_test_name_list:
+            unique_residue_test_name_list.append(residues[res_m])
+    if len(unique_residue_test_name_list) != len(residues):
+        warn('Error: Please enter the residues list (residues) that has only unique residue names')
         return None
 
     if filename_1 != None and not isinstance(filename_1, str):
@@ -431,14 +542,14 @@ def charmm_psf_psb_FF(structure_0, filename_0, structure_1 = None, filename_1= N
         return None
 
 
-    if GOMC_FF_filename != None:
-        if not isinstance(GOMC_FF_filename, str) :
-            warn('Error: Please enter GOMC force field name (GOMC_FF_filename) as a string')
+    if FF_filename != None:
+        if not isinstance(FF_filename, str) :
+            warn('Error: Please enter GOMC force field name (FF_filename) as a string')
             return None
-        if isinstance(GOMC_FF_filename, str) :
-            extension_FF_name = os.path.splitext(GOMC_FF_filename)[-1]
+        if isinstance(FF_filename, str) :
+            extension_FF_name = os.path.splitext(FF_filename)[-1]
             if extension_FF_name != '.inp':
-                GOMC_FF_filename = GOMC_FF_filename + '.inp'
+                FF_filename = FF_filename + '.inp'
 
     if forcefield_names is None and forcefield_files is None:
         warn('Please enter either the forcefield_files or forcefield_names, neither were provided')
@@ -634,6 +745,15 @@ def charmm_psf_psb_FF(structure_0, filename_0, structure_1 = None, filename_1= N
                      "residues that are not in the structure may have been specified.")
                 return None
 
+        for res_iter_1 in range(0, len(residues)):
+            if residues[res_iter_1] not in residues_applied_list_0_and_1:
+                warn("All the residues were not used from the forcefield_names or forcefield_files " + \
+                     "string or dictionary.  There may be residues below other specified residues " + \
+                     "in the mbuild.Compound hierarchy.  If so, the residues acquire the residue's " + \
+                     "force fields, which is at the top of the hierarchy.  Alternatively, " + \
+                     "residues that are not in the structure may have been specified.")
+                return None
+
         total_charge = sum([atom.charge for atom in structure_0_FF])
         if round(total_charge, 4) != 0.0:
             warn('System is not charge neutral for structure_0. Total charge is {}.'.format(total_charge))
@@ -671,6 +791,15 @@ def charmm_psf_psb_FF(structure_0, filename_0, structure_1 = None, filename_1= N
 
         for res_iter_1 in range(0, len(residues_applied_list_0)):
             if residues_applied_list_0[res_iter_1] not in residues:
+                warn("All the residues were not used from the forcefield_names or forcefield_files " + \
+                     "string or dictionary.  There may be residues below other specified residues " + \
+                     "in the mbuild.Compound hierarchy.  If so, the residues acquire the residue's " + \
+                     "force fields, which is at the top of the hierarchy.  Alternatively, " + \
+                     "residues that are not in the structure may have been specified.")
+                return None
+
+        for res_iter_1 in range(0, len(residues)):
+            if residues[res_iter_1] not in residues_applied_list_0:
                 warn("All the residues were not used from the forcefield_names or forcefield_files " + \
                      "string or dictionary.  There may be residues below other specified residues " + \
                      "in the mbuild.Compound hierarchy.  If so, the residues acquire the residue's " + \
@@ -859,9 +988,12 @@ def charmm_psf_psb_FF(structure_0, filename_0, structure_1 = None, filename_1= N
 
 
     if angles:
-        angle_types, unique_angle_types = _get_angle_types(structure_selection,
-                use_urey_bradleys, sigma_conversion_factor,
-                epsilon_conversion_factor)
+        angle_types, unique_angle_types = _get_angle_types(
+            structure_selection,
+            sigma_conversion_factor,
+            epsilon_conversion_factor,
+            use_urey_bradleys=use_urey_bradleys
+        )
 
     if dihedrals:
         dihedral_types, unique_dihedral_types = _get_dihedral_types(
@@ -874,14 +1006,14 @@ def charmm_psf_psb_FF(structure_0, filename_0, structure_1 = None, filename_1= N
         improper_types, unique_improper_types = _get_impropers(structure_selection,
                 epsilon_conversion_factor)
 
-    if GOMC_FF_filename is None:
-        print('GOMC FF is not printing, as the GOMC_FF_filename variable was not supplied a string for its name')
+    if FF_filename is None:
+        print('GOMC FF is not printing, as the FF_filename variable was not supplied a string for its name')
 
     else:
         print("******************************")
         print("")
         print('writing the GOMC force field file ')
-        with open(GOMC_FF_filename, 'w') as data:
+        with open(FF_filename, 'w') as data:
             if structure_1 != None:
                 data.write("*  "+filename_0+' and '+ filename_1+
                            ' - created by mBuild using the on ' + str(date_time) +'\n') #
@@ -1326,53 +1458,72 @@ def charmm_psf_psb_FF(structure_0, filename_0, structure_1 = None, filename_1= N
     for q in range(0, len(list_of_structures)):
         stuct_iteration = list_of_structures[q]
         file_name_iteration = list_of_file_names[q]
-        dest = str(file_name_iteration)+'.psf'
+        output = str(file_name_iteration)+'.psf'
         stuct_only_iteration =stuct_only[q]
         # Lammps syntax depends on the functional form
         # Infer functional form based on the properties of the stuct_iteration
         if detect_forcefield_style:
-            # Check angles
+            # Check  for angles
             if len(stuct_iteration.urey_bradleys) > 0:
-                print("Urey bradley terms detected")
-                data.write("Urey bradley terms detected")
-                data.write("Warning: GOMC does no support the Urey-Bradley terms")
+                print("Warning: Urey bradley terms detected. GOMC does no support the Urey-Bradley terms")
+                raise ValueError("Warning: Urey bradley terms detected. GOMC does no support the Urey-Bradley terms")
                 use_urey_bradleys = True
             else:
                 print("No urey bradley terms detected")
                 use_urey_bradleys = False
 
-            # Check dihedrals
+            # Check for dihedrals
             if len(stuct_iteration.rb_torsions) > 0:
                 print("RB Torsions detected, will converted to CHARMM Dihedrals")
                 use_rb_torsions = True
-                dihedral_rb_torsions_stuct_iteration_list = stuct_iteration.rb_torsions
+                Dihedrals_list = stuct_iteration.rb_torsions
+                dihedrals = [[dihedral.atom1.idx + 1,
+                              dihedral.atom2.idx + 1,
+                              dihedral.atom3.idx + 1,
+                              dihedral.atom4.idx + 1] for dihedral in stuct_iteration.rb_torsions]
             else:
                 use_rb_torsions = False
 
             if len(stuct_iteration.dihedrals) > 0:
                 print("Charmm dihedrals detected, so CHARMM Dihedrals will remain")
                 use_dihedrals = True
-                dihedral_rb_torsions_stuct_iteration_list = stuct_iteration.dihedrals
+                Dihedrals_list = stuct_iteration.dihedrals
+                dihedrals = [[dihedral.atom1.idx + 1,
+                              dihedral.atom2.idx + 1,
+                              dihedral.atom3.idx + 1,
+                              dihedral.atom4.idx + 1] for dihedral in stuct_iteration.dihedrals]
             else:
                 use_dihedrals = False
         if (use_rb_torsions == False) and (use_dihedrals == False):
-            dihedral_rb_torsions_stuct_iteration_list = []
+            Dihedrals_list = []
+            dihedrals = []
         if use_rb_torsions and use_dihedrals:
             raise ValueError("Multiple dihedral styles detected, check your "
-                             "Forcefield XML and stuct_iteration")
+                             "Forcefield XML and structure files")
 
-        # Check impropers
+        # Check for impropers
         for dihedral in stuct_iteration.dihedrals:
             if dihedral.improper:
-                raise ValueError("Error: Amber-style impropers are currently not supported")
+                raise ValueError("Error: Amber-style impropers are currently not supported in GOMC")
 
-        dihedral_impropers_stuct_iteration_list = stuct_iteration.impropers
+        impropers = [[improper.atom1.idx + 1,
+                      improper.atom2.idx + 1,
+                      improper.atom3.idx + 1,
+                      improper.atom4.idx + 1] for improper in stuct_iteration.impropers]
+
+        No_atoms = len(stuct_iteration.atoms)
+        No_bonds = len(stuct_iteration.bonds)
+        No_angles = len(stuct_iteration.angles)
+
+        No_dihedrals = len(dihedrals)
+        No_impropers = len(impropers)
+
+        No_donors = len(stuct_iteration.donors)
+        No_acceptors = len(stuct_iteration.acceptors)
+        No_groups = len(stuct_iteration.groups)
 
 
         # psf printing (start)
-
-
-        own_handle = False
 
         residue_data_list = []
         residue_names_list = []
@@ -1395,7 +1546,7 @@ def charmm_psf_psb_FF(structure_0, filename_0, structure_1 = None, filename_1= N
 
         Res_No_iteration_corrected_List = []
         residue_ID_list = []
-        for f, atom in enumerate(stuct_only_iteration.atoms):
+        for f, PSF_atom_iteration_0 in enumerate(stuct_only_iteration.atoms):
 
             residue_ID_int = int(unique_residue_data_dict[residue_data_list[f]])
             Res_ID_adder = int((residue_ID_int % Max_Residue_No) % (Max_Residue_No))
@@ -1407,24 +1558,23 @@ def charmm_psf_psb_FF(structure_0, filename_0, structure_1 = None, filename_1= N
             Res_No_iteration_corrected_List.append(Res_No_iteration_corrected)
             residue_ID_list.append(residue_ID_int)
 
-        # Index the atoms and residues TODO delete
-        if isinstance(dest, string_types):
-            own_handle = True
-            dest = genopen(dest, 'w')
 
-        atmfmt1 = ('%8s %-4s %-4s %-4s %-4s %4s %10.6f %13.4f' + 11 * ' ')
-        intfmt = '%8s'  # For pointers
+        output_write = genopen(output, 'w')
 
-        dest.write('PSF ')  # BC Changed from 'PSF CHEQ ' to 'PSF'
-        dest.write('\n\n')
+        first_indent = '%8s'
+        PSF_formating = ('%8s %-4s %-4s %-4s %-4s %4s %10.6f %13.4f' + 11 * ' ')
 
-        dest.write(intfmt % 3 + ' !NTITLE\n')
-        dest.write(' REMARKS this file ' + file_name_iteration + ' - created by mBuild/foyer using the' + '\n')
+        output_write.write('PSF ')
+        output_write.write('\n\n')
+
+        No_of_remarks = 3
+        output_write.write(first_indent % No_of_remarks + ' !NTITLE\n')
+        output_write.write(' REMARKS this file ' + file_name_iteration + ' - created by mBuild/foyer using the' + '\n')
         if forcefield_files != None:
-            dest.write(' REMARKS parameters from the ' + str(forcefield_files) + ' force field via MoSDef\n')
+            output_write.write(' REMARKS parameters from the ' + str(forcefield_files) + ' force field via MoSDef\n')
         elif forcefield_names != None:
-            dest.write(' REMARKS parameters from the ' + str(forcefield_names) + ' force field via MoSDef\n')
-        dest.write(' REMARKS created on ' + str(date_time) + '\n\n\n')
+            output_write.write(' REMARKS parameters from the ' + str(forcefield_names) + ' force field via MoSDef\n')
+        output_write.write(' REMARKS created on ' + str(date_time) + '\n\n\n')
 
         # This converts the atom name in the GOMC psf and pdb files to unique atom names
         unique_Individual_atom_names_dict, \
@@ -1434,160 +1584,178 @@ def charmm_psf_psb_FF(structure_0, filename_0, structure_1 = None, filename_1= N
         if None in [unique_Individual_atom_names_dict, Individual_atom_names_List, Missing_Bead_to_atom_name]:
             warn('ERROR : The unique_atom_naming function failed while running the  charmm_writer function.')
             return None
-        # Now time for the atoms
-        dest.write(intfmt % len(stuct_iteration.atoms) + ' !NATOM\n')
-        # atmfmt1 is for CHARMM format (i.e., atom types are integers)
-        for i, atom in enumerate(stuct_iteration.atoms):
-            typ = base10_to_base52_alph_num(atom_types_to_index_value_dict[atom.type+'_'+atom.residue.name])
-            fmt = atmfmt1
-            segid = atom.residue.segid or 'SYS'
 
+        # ATOMS: Calculate the atom data
+        # PSF_formating is conducted for the for CHARMM format (i.e., atom types are base 52, letters only)
+        output_write.write(first_indent % No_atoms  + ' !NATOM\n')
+        for i_atom, PSF_atom_iteration_1 in enumerate(stuct_iteration.atoms):
+            Segment_ID = PSF_atom_iteration_1.residue.segid or 'SYS'
+            atom_type_iter = base10_to_base52_alph_num(atom_types_to_index_value_dict[PSF_atom_iteration_1.type + '_' +
+                                                                                      PSF_atom_iteration_1.residue.name])
 
-            atmstr = fmt % (i + 1, segid,
-                            Res_No_iteration_corrected_List[i],
-                            str(residue_names_list[i])[:No_last_values_res_name], Individual_atom_names_List[i], typ,
-                            atom.charge, atom.mass)
+            atom_lines_iteration = PSF_formating % (i_atom + 1, Segment_ID, Res_No_iteration_corrected_List[i_atom],
+                                                    str(residue_names_list[i_atom])[:No_last_values_res_name],
+                                                    Individual_atom_names_List[i_atom], atom_type_iter,
+                                                    PSF_atom_iteration_1.charge, PSF_atom_iteration_1.mass)
 
-            if hasattr(atom, 'props'):
-                dest.write(atmstr + '   '.join(atom.props) + '\n')
-            else:
-                dest.write('%s\n' % atmstr)
-        dest.write('\n')
+            output_write.write('%s\n' % atom_lines_iteration)
 
-        # Bonds
-        dest.write(intfmt % len(stuct_iteration.bonds) + ' !NBOND: bonds\n')
-        for i, bond in enumerate(stuct_iteration.bonds):
+        output_write.write('\n')
 
-            dest.write((intfmt * 2) % (bond.atom1.idx + 1, bond.atom2.idx + 1))
-            if i % 4 == 3:  # Write 4 bonds per line
-                dest.write('\n')
-        # See if we need to terminate
-        if len(stuct_iteration.bonds) % 4 != 0 or len(stuct_iteration.bonds) == 0:
-            dest.write('\n')
-        dest.write('\n')
+        # BONDS: Calculate the bonding data
+        output_write.write(first_indent % No_bonds + ' !NBOND: bonds\n')
+        for i_bond, PSF_bond_iteration_1 in enumerate(stuct_iteration.bonds):
+            output_write.write((first_indent * 2) % (PSF_bond_iteration_1.atom1.idx + 1,
+                                                     PSF_bond_iteration_1.atom2.idx + 1))
 
-        # Angles
-        dest.write(intfmt % len(stuct_iteration.angles) + ' !NTHETA: angles\n')
-        for i, angle in enumerate(stuct_iteration.angles):
+            if (i_bond + 1) % 4 == 0:
+                output_write.write('\n')
 
-            dest.write((intfmt * 3) % (angle.atom1.idx + 1, angle.atom2.idx + 1,
-                                       angle.atom3.idx + 1)
-                       )
-            if i % 3 == 2:  # Write 3 angles per line
-                dest.write('\n')
-        # See if we need to terminate
-        if len(stuct_iteration.angles) % 3 != 0 or len(stuct_iteration.angles) == 0:
-            dest.write('\n')
-        dest.write('\n')
-
-        # Dihedrals
-        # impropers need to be split off in the "improper" section.
-        # PSF files need to have each dihedral listed *only* once. So count the
-        # number of unique dihedrals
-        nnormal = 0
-        torsions = set()
-        # for dih in stuct_iteration.dihedrals:
-        for dih in dihedral_rb_torsions_stuct_iteration_list:
-            if dih.improper: continue
-            a1, a2, a3, a4 = dih.atom1, dih.atom2, dih.atom3, dih.atom4
-            if (a1, a2, a3, a4) in torsions or (a4, a3, a2, a1) in torsions:
-                continue
-            nnormal += 1
-            torsions.add((a1, a2, a3, a4))
-        nimprop = sum(1 for dih in stuct_iteration.dihedrals if dih.improper)
-        dest.write(intfmt % nnormal + ' !NPHI: dihedrals\n')
-        torsions = set()
-        c = 0
-        # for dih in stuct_iteration.dihedrals:
-        for dih in dihedral_rb_torsions_stuct_iteration_list:
-            if dih.improper: continue
-            a1, a2, a3, a4 = dih.atom1, dih.atom2, dih.atom3, dih.atom4
-            if (a1, a2, a3, a4) in torsions or (a4, a3, a2, a1) in torsions:
-                continue
-
-            dest.write((intfmt * 4) % (a1.idx + 1, a2.idx + 1, a3.idx + 1, a4.idx + 1))
-            torsions.add((a1, a2, a3, a4))
-            if c % 2 == 1:  # Write 2 dihedrals per line
-                dest.write('\n')
-            c += 1
-        # See if we need to terminate
-        if nnormal % 2 != 0 or nnormal == 0:
-            dest.write('\n')
-        dest.write('\n')
-        # Impropers
-        nimprop += len(dihedral_impropers_stuct_iteration_list)
-        dest.write(intfmt % (nimprop) + ' !NIMPHI: impropers\n')
-
-        def improp_gen(stuct_iteration):
-            # for imp in stuct_iteration.impropers:
-            for imp in dihedral_impropers_stuct_iteration_list:
-                yield (imp.atom1, imp.atom2, imp.atom3, imp.atom4)
-            # for dih in stuct_iteration.dihedrals:
-            for dih in dihedral_rb_torsions_stuct_iteration_list:
-                if dih.improper:
-                    yield (dih.atom1, dih.atom2, dih.atom3, dih.atom4)
-
-        for i, (a1, a2, a3, a4) in enumerate(improp_gen(stuct_iteration)):
-
-            dest.write((intfmt * 4) % (a1.idx + 1, a2.idx + 1, a3.idx + 1, a4.idx + 1))
-            if i % 2 == 1:  # Write 2 dihedrals per line
-                dest.write('\n')
-        # See if we need to terminate
-        if nimprop % 2 != 0 or nimprop == 0:
-            dest.write('\n')
-        dest.write('\n')
-        # Donor section
-        dest.write(intfmt % len(stuct_iteration.donors) + ' !NDON: donors\n')
-        for i, don in enumerate(stuct_iteration.donors):
-
-            dest.write((intfmt * 2) % (don.atom1.idx + 1, don.atom2.idx + 1))
-            if i % 4 == 3:  # 4 donors per line
-                dest.write('\n')
-        if len(stuct_iteration.donors) % 4 != 0 or len(stuct_iteration.donors) == 0:
-            dest.write('\n')
-        dest.write('\n')
-        # Acceptor section
-        dest.write(intfmt % len(stuct_iteration.acceptors) + ' !NACC: acceptors\n')
-        for i, acc in enumerate(stuct_iteration.acceptors):
-
-            dest.write((intfmt * 2) % (acc.atom1.idx + 1, acc.atom2.idx + 1))
-            if i % 4 == 3:  # 4 donors per line
-                dest.write('\n')
-        if len(stuct_iteration.acceptors) % 4 != 0 or len(stuct_iteration.acceptors) == 0:
-            dest.write('\n')
-        dest.write('\n')
-        # NNB section ??
-        dest.write(intfmt % 0 + ' !NNB\n\n')
-        for i in range(len(stuct_iteration.atoms)):
-            dest.write(intfmt % 0)
-            if i % 8 == 7:  # Write 8 0's per line
-                dest.write('\n')
-        if len(stuct_iteration.atoms) % 8 != 0: dest.write('\n')
-        dest.write('\n')
-        # Group section
-        try:
-            nst2 = stuct_iteration.groups.nst2
-        except AttributeError:
-            nst2 = 0
-        dest.write((intfmt * 2) % (len(stuct_iteration.groups) or 1, nst2))
-        dest.write(' !NGRP \n')  # Changed from ' !NGRP NST2\n' to ' !NGRP \n'
-        if stuct_iteration.groups:
-            for v, gp in enumerate(stuct_iteration.groups):
-
-                dest.write((intfmt * 3) % (gp.atom.idx, gp.type, gp.move))
-                if v % 3 == 2: dest.write('\n')
-            if len(stuct_iteration.groups) % 3 != 0 or len(stuct_iteration.groups) == 0:
-                dest.write('\n')
+        if No_bonds % 4 == 0:
+            output_write.write('\n')
         else:
-            typ = 1 if abs(sum(a.charge for a in stuct_iteration.atoms)) < 1e-4 else 2
-            dest.write((intfmt * 3) % (0, typ, 0))
-            dest.write('\n')
+            output_write.write('\n\n')
 
-        dest.write('\n')
-        # Done!
-        # If we opened our own handle, close it
-        if own_handle:
-            dest.close()
+        if No_bonds == 0:
+            output_write.write('\n')
+
+        # ANGLES: Calculate the angle data
+        output_write.write(first_indent % No_angles + ' !NTHETA: angles\n')
+        for i_angle, angle_iteration in enumerate(stuct_iteration.angles):
+
+            output_write.write((first_indent * 3) % (angle_iteration.atom1.idx + 1, angle_iteration.atom2.idx + 1,
+                                                     angle_iteration.atom3.idx + 1) )
+
+            if (i_angle + 1) % 3 == 0:
+                output_write.write('\n')
+
+        if No_angles % 3 == 0:
+            output_write.write('\n')
+        else:
+            output_write.write('\n\n')
+
+        if No_angles == 0:
+            output_write.write('\n')
+
+        # DIHEDRALS: Calculate the dihedral  data
+        output_write.write(first_indent % No_dihedrals + ' !NPHI: dihedrals\n')
+        for i_dihedral, dihedral_iter in enumerate(Dihedrals_list):
+            dihedral_atom_1,  dihedral_atom_2,  dihedral_atom_3,  dihedral_atom_4 =  dihedral_iter.atom1,  \
+                                                                                     dihedral_iter.atom2,  \
+                                                                                     dihedral_iter.atom3,  \
+                                                                                     dihedral_iter.atom4
+
+            output_write.write((first_indent * 4) % (dihedral_atom_1.idx + 1, dihedral_atom_2.idx + 1,
+                                                     dihedral_atom_3.idx+ 1, dihedral_atom_4.idx + 1))
+
+            if (i_dihedral +1) % 2 == 0:
+                output_write.write('\n')
+
+        if No_dihedrals % 2 == 0:
+            output_write.write('\n')
+        else:
+            output_write.write('\n\n')
+
+        if No_dihedrals == 0:
+            output_write.write('\n')
+
+        # IMPROPERS: Calculate the improper data
+        output_write.write(first_indent % No_impropers + ' !NIMPHI: impropers\n')
+        for i_improper, (atom_1, atom_2, atom_3, atom_4) in enumerate(generate_impropers_for_PSF(stuct_iteration,
+                                                                                                 Dihedrals_list )):
+
+            output_write.write((first_indent * 4) % (atom_1.idx + 1, atom_2.idx + 1, atom_3.idx + 1, atom_4.idx + 1))
+            if (i_improper +1) % 2 == 0:
+                output_write.write('\n')
+
+        if No_impropers % 2 == 0:
+            output_write.write('\n')
+        else:
+            output_write.write('\n\n')
+
+        if No_impropers == 0:
+            output_write.write('\n')
+
+        # DONOR: calculate the donor data
+        output_write.write(first_indent % No_donors + ' !NDON: donors\n')
+        for donor_i, donor_iter in enumerate(stuct_iteration.donors):
+
+            output_write.write((first_indent * 2) % (donor_iter.atom1.idx + 1, donor_iter.atom2.idx + 1))
+            if (donor_i + 1) % 4 == 0:
+                output_write.write('\n')
+
+        if No_donors % 4 == 0:
+            output_write.write('\n')
+        else:
+            output_write.write('\n\n')
+
+        if No_donors == 0:
+            output_write.write('\n')
+
+        # ACCEPTOR: calculate the acceptor data
+        output_write.write(first_indent % No_acceptors + ' !NACC: acceptors\n')
+        for acceptor_i, acceptor_iter in enumerate(stuct_iteration.acceptors):
+
+            output_write.write((first_indent * 2) % (acceptor_iter.atom1.idx + 1, acceptor_iter.atom2.idx + 1))
+            if (acceptor_i + 1) % 4 == 0:
+                output_write.write('\n')
+
+        if No_acceptors % 4 == 0:
+            output_write.write('\n')
+        else:
+            output_write.write('\n\n')
+
+        if No_acceptors == 0:
+            output_write.write('\n')
+
+        # NNB: calculate the NNB data
+        output_write.write(first_indent % 0 + ' !NNB\n\n')
+        for nbb_i, atoms_iter in enumerate(stuct_iteration.atoms):
+
+            output_write.write(first_indent % 0)
+            if (nbb_i + 1) % 8 == 0:
+                output_write.write('\n')
+
+        if No_atoms % 8 == 0:
+            output_write.write('\n')
+        else:
+            output_write.write('\n\n')
+
+        if No_atoms == 0:
+            output_write.write('\n')
+
+        # GROUP: calculate the group data
+        try:
+            group_data = stuct_iteration.groups.nst2
+        except AttributeError:
+            group_data = 0
+        output_write.write((first_indent * 2) % (No_groups or 1, group_data) + ' !NGRP \n')
+        if stuct_iteration.groups == True:
+            for group_i, group_iter in enumerate(stuct_iteration.groups):
+
+                output_write.write((first_indent * 3) % (group_iter.atom.idx, group_iter.type, group_iter.move))
+                if (group_i + 1) % 3 == 0:
+                    output_write.write('\n')
+
+            if No_groups % 3 == 0:
+                output_write.write('\n')
+            else:
+                output_write.write('\n\n')
+
+            if No_groups == 0:
+                output_write.write('\n')
+
+        else:
+            structure_abs_charge_value = abs(sum(atom_charge_iter.charge for atom_charge_iter in stuct_iteration.atoms))
+            if structure_abs_charge_value < 1.0e-4:
+                group_type = 1
+            else:
+                group_type = 2
+            output_write.write((first_indent * 3) % (0, group_type, 0))
+            output_write.write('\n')
+
+        output_write.write('\n')
+        output_write.close()
     # **********************************
     # **********************************
     # psf writer (end)
@@ -1614,8 +1782,6 @@ def charmm_psf_psb_FF(structure_0, filename_0, structure_1 = None, filename_1= N
     print('fix_residue_in_box = ' + str(fix_residue_in_box))
     print('Bead_to_atom_name_dict = ' + str(Bead_to_atom_name_dict))
 
-
-
     if fix_residue is None and fix_residue_in_box is None:
         print('INFORMATION: No atoms are fixed in this pdb file for the GOMC simulation engine. ')
     else:
@@ -1623,8 +1789,6 @@ def charmm_psf_psb_FF(structure_0, filename_0, structure_1 = None, filename_1= N
 
     print("******************************")
     print("")
-
-
 
     if structure_1 !=None:
         list_of_structures = [structure_0_FF, structure_1_FF]
@@ -1637,16 +1801,14 @@ def charmm_psf_psb_FF(structure_0, filename_0, structure_1 = None, filename_1= N
 
     for q in range(0, len(list_of_structures)):
         file_name_iteration = list_of_file_names[q]
-        dest = str(file_name_iteration)+'.pdb'
+        output = str(file_name_iteration)+'.pdb'
         stuct_only_iteration =stuct_only[q]
 
-        dest = genopen(dest, 'w')
-
+        output_write = genopen(output, 'w')
 
         unique_residue_data_dict = {}
         unique_residue_data_list = []
         residue_data_name_list = []
-
         for m, residue in enumerate( stuct_only_iteration.residues):
             unique_residue_data_list.append(str( stuct_only_iteration.residues[m]))
             unique_residue_data_dict.update({ unique_residue_data_list[m]: m+1})
@@ -1656,7 +1818,6 @@ def charmm_psf_psb_FF(structure_0, filename_0, structure_1 = None, filename_1= N
             if residue_data_name_list[n] not in  residues:
                 warn('Error: Please specifiy all residues (residues) in a list')
                 return None
-
 
         residue_data_list = []
         for k, atom in enumerate( stuct_only_iteration.atoms):
@@ -1680,43 +1841,36 @@ def charmm_psf_psb_FF(structure_0, filename_0, structure_1 = None, filename_1= N
                 beta_iteration = 0.00
             fix_atoms_list.append(beta_iteration)
 
-
         if  stuct_only_iteration.box is not None:
-            dest.write('CRYST1%9.3f%9.3f%9.3f%7.2f%7.2f%7.2f %-11s%4s\n' % (
-                 stuct_only_iteration.box[0],  stuct_only_iteration.box[1],
-                 stuct_only_iteration.box[2],  stuct_only_iteration.box[3],
-                 stuct_only_iteration.box[4],  stuct_only_iteration.box[5],
-                 stuct_only_iteration.space_group, ''))
-        if  stuct_only_iteration.symmetry is not None:
-            fmt = '%d%4d%10.6f%10.6f%10.6f%15.5f\n'
-            for index, arr in enumerate( stuct_only_iteration.symmetry.data):
-                arr_list = [1 + index % 3, 1 + index // 3] + arr.tolist()
-                symm_line = "REMARK 290   SMTRY" + fmt % tuple(arr_list)
-                dest.write(symm_line)
+            output_write.write('CRYST1%9.3f%9.3f%9.3f%7.2f%7.2f%7.2f %-11s%4s\n' % (stuct_only_iteration.box[0],
+                                                                                    stuct_only_iteration.box[1],
+                                                                                    stuct_only_iteration.box[2],
+                                                                                    stuct_only_iteration.box[3],
+                                                                                    stuct_only_iteration.box[4],
+                                                                                    stuct_only_iteration.box[5],
+                                                                                    stuct_only_iteration.space_group,
+                                                                              ''
+                                                                              ))
 
-        coords = stuct_only_iteration.get_coordinates('all')
-        if coords is None:
-            raise ValueError('Cannot write PDB file with no coordinates')
-        # Create a function to process each atom and return which one we want
-        # to print, based on our alternate location choice
+        All_atom_coordinates = stuct_only_iteration.get_coordinates('all')
+        if All_atom_coordinates is None:
+            warn("ERROR: the submitted structure has no PDB coordintes, so the PDB writer has terminated. ")
+            return None
 
+        PDB_atom_line_format = ('ATOM  %5s %-4s%1s%-4s%1s%4d%1s   %8.3f%8.3f%8.3f%6.2f%6.2f      %-4s%2s%-2s\n')
 
-        atomrec = ('ATOM  %5s %-4s%1s%-4s%1s%4d%1s   %8.3f%8.3f%8.3f%6.2f'
-                       '%6.2f      %-4s%2s%-2s\n')
-
-        pa_altloc_List = []
-        res_chain_List = []
-        res_insertion_code_List = []
+        atom_alternate_location_List = []
+        residue_chain_List = []
+        residue_code_insertion_List = []
         x_List = []
         y_List = []
         z_List = []
-        pa_occupancy_List = []
-        pa_bfactor_List = []
+        atom_occupancy_List = []
+        atom_bfactor_List = []
         Element_List = []
 
         # lock occupany factor at 1 (instead of: atom.occupancy)
         locked_occupany_factor = 1.00
-
         Max_No_atoms_in_base10 = 99999  # 99,999 for atoms in psf/pdb
 
         Max_Residue_No = 9999
@@ -1724,7 +1878,7 @@ def charmm_psf_psb_FF(structure_0, filename_0, structure_1 = None, filename_1= N
 
         Res_No_iteration_corrected_List =[]
         residue_ID_list = []
-        for i, atom in enumerate( stuct_only_iteration.atoms):
+        for i, atom_iter in enumerate( stuct_only_iteration.atoms):
 
             residue_ID_int = int(unique_residue_data_dict[residue_data_list[i]])
             Res_ID_adder = int((residue_ID_int % Max_Residue_No) % (Max_Residue_No))
@@ -1735,66 +1889,55 @@ def charmm_psf_psb_FF(structure_0, filename_0, structure_1 = None, filename_1= N
 
             residue_ID_list.append(residue_ID_int)
 
-        # This converts the atom name in the GOMC psf and pdb files to unique atom names
+        # This converts the atom name in the CHARMM psf and pdb files to unique atom names
         unique_Individual_atom_names_dict, \
         Individual_atom_names_List, \
         Missing_Bead_to_atom_name = unique_atom_naming(stuct_only_iteration, residue_ID_list, residue_names_list,
                                                        Bead_to_atom_name_dict=Bead_to_atom_name_dict)
+
         if None in [unique_Individual_atom_names_dict, Individual_atom_names_List, Missing_Bead_to_atom_name]:
             warn('ERROR : The unique_atom_naming function failed while running the  charmm_writer function.')
             return None
-        for  model, coord in enumerate(coords):
 
 
-            if coords.shape[0] > 1:
-                dest.write('MODEL      %5d\n' % (model+1))
-            for res in  stuct_only_iteration.residues:
-                atoms = sorted(res.atoms, key=lambda atom: atom.number)
-                segid = ''
-                for atom in atoms:
-                    pa, others, (x, y, z) = print_atoms(atom, coord)
-                    # Figure out the serial numbers we want to print
+        for  coord_iter, atom_coordinates in enumerate(All_atom_coordinates):
 
+            for PDB_residue_count in  stuct_only_iteration.residues:
+                Segment_ID = ''
+                atom_iteration = sorted(PDB_residue_count.atoms, key=lambda atom: atom.number)
 
-                    pa_altloc_List.append(pa.altloc)
-                    res_chain_List.append(res.chain[-1:])
-                    res_insertion_code_List.append(res.insertion_code[:1])
+                for atom_iteration_2 in atom_iteration:
+                    x, y, z = atom_coordinates[atom_iteration_2.idx]
+                    atom_alternate_location_List.append(atom_iteration_2.altloc)
+                    residue_chain_List.append(PDB_residue_count.chain[-1:])
+                    residue_code_insertion_List.append(PDB_residue_count.insertion_code[:1])
                     x_List.append(x)
                     y_List.append(y)
                     z_List.append(z)
-                    pa_occupancy_List.append(pa.occupancy)
-                    pa_bfactor_List.append(pa.bfactor)
-                    Element_List.append(Element[pa.atomic_number].upper())
+                    atom_occupancy_List.append(atom_iteration_2.occupancy)
+                    atom_bfactor_List.append(atom_iteration_2.bfactor)
+                    Element_List.append(Element[atom_iteration_2.atomic_number].upper())
 
-
-            for v, atom in enumerate( stuct_only_iteration.atoms):
+            for v, atom_iter_1 in enumerate( stuct_only_iteration.atoms):
 
                 if v + 1 > Max_No_atoms_in_base10:
-                    adj_atom_number = base10_to_base16_alph_num(v + 1)
+                    atom_number = base10_to_base16_alph_num(v + 1)
+
                 else:
-                    adj_atom_number = v + 1
+                    atom_number = v + 1
 
-                dest.write(atomrec % (adj_atom_number, Individual_atom_names_List[v], pa_altloc_List[v],
-                                      str(residue_names_list[v])[:No_last_values_res_name], res_chain_List[v],
-                                      Res_No_iteration_corrected_List[v],
-                                      res_insertion_code_List[v], x_List[v], y_List[v], z_List[v],
-                                      locked_occupany_factor, fix_atoms_list[v], segid, Element_List[v], ''))
+                output_write.write(PDB_atom_line_format % (atom_number, Individual_atom_names_List[v],
+                                                           atom_alternate_location_List[v],
+                                                           str(residue_names_list[v])[:No_last_values_res_name],
+                                                           residue_chain_List[v], Res_No_iteration_corrected_List[v],
+                                                           residue_code_insertion_List[v],
+                                                           x_List[v], y_List[v], z_List[v],
+                                                           locked_occupany_factor, fix_atoms_list[v],
+                                                           Segment_ID, Element_List[v], ''))
 
+            output_write.write('%-80s\n' % 'END')
 
-            dest.write("%-80s\n" % "END")
-
-            if coords.shape[0] > 1:
-                dest.write('ENDMDL\n')
-
-
-        own_handle = True
-        if own_handle:
-            dest.close()
-
-
-
-
-
+        output_write.close()
 
         # **********************************
         # **********************************
