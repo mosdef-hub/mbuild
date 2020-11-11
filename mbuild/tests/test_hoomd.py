@@ -28,6 +28,23 @@ class TestHoomd(BaseTest):
         assert snap.angles.N == 0
 
 
+    def test_snapshot_from_initial(self):
+        hoomd = import_("hoomd")
+        hoomd_snapshot = import_("mbuild.formats.hoomd_snapshot")
+        part = mb.Compound(name='Ar')
+        box = mb.fill_box(part, n_compounds=10, box=mb.Box([5,5,5]))
+        init_snap = hoomd.data.make_snapshot(
+                N=10, box=hoomd.data.boxdim(L=10)
+                )
+        snap, _ = hoomd_snapshot.to_hoomdsnapshot(
+                box, hoomd_snapshot=init_snap
+                )
+
+        assert snap.particles.N == 20
+        assert snap.bonds.N == 0
+        assert snap.angles.N == 0
+
+
     def test_bad_input_to_snapshot(self):
         hoomd_snapshot = import_("mbuild.formats.hoomd_snapshot")
         with pytest.raises(ValueError):
