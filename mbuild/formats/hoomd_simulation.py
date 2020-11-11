@@ -126,7 +126,7 @@ def create_hoomd_simulation(
         ref_mass=ref_mass,
         ref_energy=ref_energy,
         **snapshot_kwargs,
-        init_snap=init_snap
+        hoomd_snapshot=init_snap
     )
     hoomd_objects.append(snapshot)
     hoomd.init.read_snapshot(snapshot)
