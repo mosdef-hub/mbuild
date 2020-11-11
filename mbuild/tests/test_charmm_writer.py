@@ -1074,9 +1074,12 @@ class TestCharmmWriterData(BaseTest):
 
         # test for error if trying to use urey_bradleys in th angles
         use_urey_bradleys = True
-        angle_types_1, unique_angle_types_1 = charmm_writer._get_angle_types(structure_FF,
-                                                                         use_urey_bradleys, sigma_conversion_factor,
-                                                                         epsilon_conversion_factor)
+        angle_types_1, unique_angle_types_1 = charmm_writer._get_angle_types(
+            structure_FF,
+            sigma_conversion_factor,
+            epsilon_conversion_factor,
+            use_urey_bradleys=use_urey_bradleys
+        )
 
         assert angle_types_1 is None
         assert unique_angle_types_1 is None
@@ -1150,7 +1153,7 @@ class TestCharmmWriterData(BaseTest):
                                                                                  epsilon_conversion_factor)
 
         assert str(improper_types_1) == '[]'
-        assert str(unique_improper_types_1) == 'OrderedDict()'
+        assert str(unique_improper_types_1) == '{}'
 
 
     def test_charmm_angle_reorder(self, EthylEtherGOMC, MethlyEtherGOMC):
@@ -1169,13 +1172,16 @@ class TestCharmmWriterData(BaseTest):
                                                        box=None,
                                                        boxes_for_simulation=1
                                                        )
-
         sigma_conversion_factor = 1
         epsilon_conversion_factor = 1
         use_urey_bradleys = False
-        angle_types_1, unique_angle_types_1 = charmm_writer._get_angle_types(structure_FF,
-                                                                     use_urey_bradleys, sigma_conversion_factor,
-                                                                     epsilon_conversion_factor)
+        angle_types_1, unique_angle_types_1 = charmm_writer._get_angle_types(
+            structure_FF,
+            sigma_conversion_factor,
+            epsilon_conversion_factor,
+            use_urey_bradleys
+        )
+
         #note this sorts all the posssible combinations, so this should be the same as the double check (i.e, both 10)
         unique_angle_types_1_unsorted = dict(enumerate(set([(round(angle.type.k * (
                 sigma_conversion_factor ** 2 / epsilon_conversion_factor), 3),
