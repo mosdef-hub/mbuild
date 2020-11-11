@@ -23,6 +23,7 @@ def to_hoomdsnapshot(
     write_special_pairs=True,
     auto_scale=False,
     parmed_kwargs={},
+    init_snap=None
 ):
     """Convert mb.Compound or parmed.Structure to hoomd.data.Snapshot
 
@@ -48,8 +49,11 @@ def to_hoomdsnapshot(
         largest mass value as ref_mass
         and largest epsilon value as ref_energy
     write_special_pairs : bool, optional, default=True
-        Writes out special pair information necessary to correctly use 
+        Writes out special pair information necessary to correctly use
         the OPLS fudged 1,4 interactions in HOOMD.
+    init_snap : hoomd.data.SnapshotParticleData, optional, default=None
+        Initial snapshot to which to add the ParmEd structure object
+        (useful for rigid bodies)
 
     Returns
     -------
@@ -60,7 +64,7 @@ def to_hoomdsnapshot(
 
     Notes
     -----
-    Force field parameters are not written to the hoomd_snapshot 
+    Force field parameters are not written to the hoomd_snapshot
 
     """
     if not isinstance(structure, (mb.Compound, pmd.Structure)):
@@ -105,22 +109,39 @@ def to_hoomdsnapshot(
         yz = (b * c * np.cos(alpha) - xy * xz) / ly
         lz = np.sqrt(c ** 2 - xz ** 2 - yz ** 2)
 
-    n_particles, scaled_positions, unique_types, typeids, scaled_mass, scaled_charges, rigid_bodies = _parse_particle_information(
+    (n_particles,
+     scaled_positions,
+     unique_types,
+     typeids,
+     scaled_mass,
+     scaled_charges,
+     rigid_bodies) = _parse_particle_information(
         structure, xyz, ref_distance, ref_mass, ref_energy, rigid_bodies
     )
-    n_bonds, unique_bond_types, bond_typeids, bond_groups = _parse_bond_information(
-        structure
-    )
-    n_angles, unique_angle_types, angle_typeids, angle_groups = _parse_angle_information(
-        structure
-    )
-    n_dihedrals, unique_dihedral_types, dihedral_typeids, dihedral_groups = _parse_dihedral_information(
-        structure
-    )
-    n_impropers, unique_improper_types, improper_typeids, improper_groups = _parse_improper_information(
-        structure
-    )
-    pair_types, pair_typeid, pairs, n_pairs = _parse_pair_information(structure)
+    (n_bonds,
+     unique_bond_types,
+     bond_typeids,
+     bond_groups) = _parse_bond_information(structure)
+
+    (n_angles,
+     unique_angle_types,
+     angle_typeids,
+     angle_groups) = _parse_angle_information(structure)
+
+    (n_dihedrals,
+     unique_dihedral_types,
+     dihedral_typeids,
+     dihedral_groups) = _parse_dihedral_information(structure)
+
+    (n_impropers,
+     unique_improper_types,
+     improper_typeids,
+     improper_groups) = _parse_improper_information(structure)
+
+    (pair_types,
+     pair_typeid,
+     pairs,
+     n_pairs) = _parse_pair_information(structure)
 
     hoomd_snapshot = hoomd.data.make_snapshot(
         N=n_particles,
