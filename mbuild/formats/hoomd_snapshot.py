@@ -23,7 +23,7 @@ def to_hoomdsnapshot(
     write_special_pairs=True,
     auto_scale=False,
     parmed_kwargs={},
-    init_snap=None
+    hoomd_snapshot=None
 ):
     """Convert mb.Compound or parmed.Structure to hoomd.data.Snapshot
 
@@ -51,8 +51,9 @@ def to_hoomdsnapshot(
     write_special_pairs : bool, optional, default=True
         Writes out special pair information necessary to correctly use
         the OPLS fudged 1,4 interactions in HOOMD.
-    init_snap : hoomd.data.SnapshotParticleData, optional, default=None
-        Initial snapshot to which to add the ParmEd structure object
+    hoomd_snapshot : hoomd.data.SnapshotParticleData, optional, default=None
+        Initial snapshot to which to add the ParmEd structure object.
+        The box information of the initial snapshot will be overwritten.
         (useful for rigid bodies)
 
     Returns
@@ -118,6 +119,7 @@ def to_hoomdsnapshot(
      rigid_bodies) = _parse_particle_information(
         structure, xyz, ref_distance, ref_mass, ref_energy, rigid_bodies
     )
+
     (n_bonds,
      unique_bond_types,
      bond_typeids,
@@ -143,54 +145,130 @@ def to_hoomdsnapshot(
      pairs,
      n_pairs) = _parse_pair_information(structure)
 
-    hoomd_snapshot = hoomd.data.make_snapshot(
-        N=n_particles,
-        box=hoomd.data.boxdim(Lx=lx, Ly=ly, Lz=lz, xy=xy, xz=xz, yz=yz),
-        particle_types=unique_types,
-        bond_types=unique_bond_types,
-        angle_types=unique_angle_types,
-        dihedral_types=unique_dihedral_types,
-        improper_types=unique_improper_types,
-        pair_types=pair_types,
-    )
+    if hoomd_snapshot is not None:
+        n_init = hoomd_snapshot.particles.N
+
+        if n_init > 0:
+            n_particles += n_init
+            # shift the typeids
+            typeids += len(set(hoomd_snapshot.particles.types))
+            # shift bond/angle/dihedral indices
+            bond_groups += n_init
+            angle_groups = [
+                    tuple(row) for row in np.array(angle_groups) + n_init
+                    ]
+            dihedral_groups = [
+                    tuple(row) for row in np.array(dihedral_groups) + n_init
+                    ]
+            improper_groups = [
+                    tuple(row) for row in np.array(improper_groups) + n_init
+                    ]
+            pairs = [tuple(row) for row in np.array(pairs) + n_init]
+        else:
+            raise RuntimeError(
+                    "Initial snapshot provided, but it contains no particles"
+                    )
+
+        hoomd_snapshot.box = hoomd.data.boxdim(
+                lx=lx, ly=ly, lz=lz, xy=xy, xz=xz, yz=yz
+                )
+
+        init_bonds = hoomd_snapshot.bonds.N
+        if init_bonds > 0:
+            n_bonds += init_bonds
+            bond_typeids = list(
+                    np.array(bond_typeids) +
+                    len(set(hoomd_snapshot.bonds.types))
+                    )
+
+        init_angles = hoomd_snapshot.angles.N
+        if init_angles > 0:
+            n_angles += init_angles
+            angle_typeids = list(
+                    np.array(angle_typeids) +
+                    len(set(hoomd_snapshot.angles.types))
+                    )
+
+        init_dihedrals = hoomd_snapshot.dihedrals.N
+        if init_dihedrals > 0:
+            n_dihedrals += init_dihedrals
+            dihedral_typeids = list(
+                    np.array(dihedral_typeids) +
+                    len(set(hoomd_snapshot.dihedrals.types))
+                    )
+
+        init_impropers = hoomd_snapshot.impropers.N
+        if init_impropers > 0:
+            n_impropers += init_impropers
+            improper_typeids = list(
+                    np.array(improper_typeids) +
+                    len(set(hoomd_snapshot.impropers.types))
+                    )
+
+        init_pairs = hoomd_snapshot.pairs.N
+        if init_pairs > 0:
+            n_pairs += init_pairs
+            pair_typeids = list(
+                    np.array(pair_typeids) +
+                    len(set(hoomd_snapshot.pairs.types))
+                    )
+
+    else:
+        n_init = 0
+        init_bonds = 0
+        init_angles = 0
+        init_dihedrals = 0
+        init_impropers = 0
+        init_pairs = 0
+
+        hoomd_snapshot = hoomd.data.make_snapshot(
+            n=n_particles,
+            box=hoomd.data.boxdim(lx=lx, ly=ly, lz=lz, xy=xy, xz=xz, yz=yz),
+            particle_types=unique_types,
+            bond_types=unique_bond_types,
+            angle_types=unique_angle_types,
+            dihedral_types=unique_dihedral_types,
+            improper_types=unique_improper_types,
+            pair_types=pair_types,
+        )
 
     hoomd_snapshot.particles.resize(n_particles)
-    hoomd_snapshot.particles.position[:] = scaled_positions
-    hoomd_snapshot.particles.types[:] = unique_types
-    hoomd_snapshot.particles.typeid[:] = typeids
-    hoomd_snapshot.particles.mass[:] = scaled_mass
-    hoomd_snapshot.particles.charge[:] = scaled_charges
-    hoomd_snapshot.particles.body[:] = rigid_bodies
+    hoomd_snapshot.particles.position[n_init:] = scaled_positions
+    hoomd_snapshot.particles.types[n_init:] = unique_types
+    hoomd_snapshot.particles.typeid[n_init:] = typeids
+    hoomd_snapshot.particles.mass[n_init:] = scaled_mass
+    hoomd_snapshot.particles.charge[n_init:] = scaled_charges
+    hoomd_snapshot.particles.body[n_init:] = rigid_bodies
 
     if n_bonds > 0:
         hoomd_snapshot.bonds.resize(n_bonds)
-        hoomd_snapshot.bonds.types[:] = unique_bond_types
-        hoomd_snapshot.bonds.typeid[:] = bond_typeids
-        hoomd_snapshot.bonds.group[:] = bond_groups
+        hoomd_snapshot.bonds.types[init_bonds:] = unique_bond_types
+        hoomd_snapshot.bonds.typeid[init_bonds:] = bond_typeids
+        hoomd_snapshot.bonds.group[init_bonds:] = bond_groups
 
     if n_angles > 0:
         hoomd_snapshot.angles.resize(n_angles)
-        hoomd_snapshot.angles.types[:] = unique_angle_types
-        hoomd_snapshot.angles.typeid[:] = angle_typeids
-        hoomd_snapshot.angles.group[:] = np.reshape(angle_groups, (-1, 3))
+        hoomd_snapshot.angles.types[init_angles:] = unique_angle_types
+        hoomd_snapshot.angles.typeid[init_angles:] = angle_typeids
+        hoomd_snapshot.angles.group[init_angles:] = np.reshape(angle_groups, (-1, 3))
 
     if n_dihedrals > 0:
         hoomd_snapshot.dihedrals.resize(n_dihedrals)
-        hoomd_snapshot.dihedrals.types[:] = unique_dihedral_types
-        hoomd_snapshot.dihedrals.typeid[:] = dihedral_typeids
-        hoomd_snapshot.dihedrals.group[:] = np.reshape(dihedral_groups, (-1, 4))
+        hoomd_snapshot.dihedrals.types[init_dihedrals:] = unique_dihedral_types
+        hoomd_snapshot.dihedrals.typeid[init_dihedrals:] = dihedral_typeids
+        hoomd_snapshot.dihedrals.group[init_dihedrals:] = np.reshape(dihedral_groups, (-1, 4))
 
     if n_impropers > 0:
         hoomd_snapshot.impropers.resize(n_impropers)
-        hoomd_snapshot.impropers.types[:] = unique_improper_types
-        hoomd_snapshot.impropers.typeid[:] = improper_typeids
-        hoomd_snapshot.impropers.group[:] = np.reshape(improper_groups, (-1, 4))
+        hoomd_snapshot.impropers.types[init_impropers:] = unique_improper_types
+        hoomd_snapshot.impropers.typeid[init_impropers:] = improper_typeids
+        hoomd_snapshot.impropers.group[init_impropers:] = np.reshape(improper_groups, (-1, 4))
 
     if n_pairs > 0:
         hoomd_snapshot.pairs.resize(n_pairs)
-        hoomd_snapshot.pairs.types[:] = pair_types
-        hoomd_snapshot.pairs.typeid[:] = pair_typeid
-        hoomd_snapshot.pairs.group[:] = np.reshape(pairs, (-1, 2))
+        hoomd_snapshot.pairs.types[init_pairs:] = pair_types
+        hoomd_snapshot.pairs.typeid[init_pairs:] = pair_typeid
+        hoomd_snapshot.pairs.group[init_pairs:] = np.reshape(pairs, (-1, 2))
 
     return hoomd_snapshot, ref_values
 
