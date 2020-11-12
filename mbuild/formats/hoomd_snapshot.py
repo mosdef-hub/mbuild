@@ -213,8 +213,8 @@ def to_hoomdsnapshot(
         init_pairs = hoomd_snapshot.pairs.N
         if init_pairs > 0:
             n_pairs += init_pairs
-            pair_typeids = list(
-                    np.array(pair_typeids) +
+            pair_typeid = list(
+                    np.array(pair_typeid) +
                     len(set(hoomd_snapshot.pairs.types))
                     )
 
