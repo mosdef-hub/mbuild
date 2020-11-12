@@ -92,7 +92,7 @@ def create_hoomd_simulation(
         )
     elif not isinstance(structure, pmd.Structure):
         raise ValueError(
-            "Please pass a parmed.Structure to " + "create_hoomd_simulation"
+            "Please pass a parmed.Structure to create_hoomd_simulation"
         )
 
     _check_hoomd_version()
