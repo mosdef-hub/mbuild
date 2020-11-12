@@ -66,6 +66,7 @@ stages:
               source activate test-environment
               conda install --yes python=$(python.version) --file requirements-dev.txt
               conda install --yes python=$(python.version) --file requirements-dev.txt
+              conda install 'hoomd<3'
               pip install -e .
             displayName: Create Conda env, Activate, Install dependencies, Install Branch
 
