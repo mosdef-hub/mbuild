@@ -4,7 +4,7 @@ ele
 foyer
 garnett>=0.7.1
 gsd>=1.2
-hoomd
+hoomd>3
 mdtraj
 networkx
 nglview>=2.7
