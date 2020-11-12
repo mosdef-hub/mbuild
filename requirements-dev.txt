@@ -4,7 +4,7 @@ ele
 foyer
 garnett>=0.7.1
 gsd>=1.2
-hoomd>3
+hoomd<3
 mdtraj
 networkx
 nglview>=2.7
@@ -16,6 +16,6 @@ parmed
 protobuf
 py3Dmol
 pycifrw
-pytest >=3.0
+pytest>=3.0
 pytest-cov
 scipy
