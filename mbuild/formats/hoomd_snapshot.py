@@ -1,4 +1,6 @@
 from collections import namedtuple
+import operator
+
 import numpy as np
 import parmed as pmd
 
@@ -154,7 +156,9 @@ def to_hoomdsnapshot(
             typeids += len(set(hoomd_snapshot.particles.types))
             # shift bond/angle/dihedral indices
             if n_bonds > 0:
-                bond_groups += n_init
+                bond_groups = [
+                        tuple(row) for row in np.array(bond_groups) + n_init
+                        ]
             if n_angles > 0:
                 angle_groups = [
                         tuple(row) for row in np.array(angle_groups) + n_init
