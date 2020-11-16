@@ -2,7 +2,7 @@ import numpy as np
 import pytest
 
 import mbuild as mb
-from mbuild.formats.vasp import write_poscar
+from mbuild.formats.vasp import write_poscar, read_poscar
 from mbuild.tests.base_test import BaseTest
 
 class TestVasp(BaseTest):
@@ -79,6 +79,6 @@ class TestVasp(BaseTest):
         with open('test.poscar', 'r') as f:
             for i, line in enumerate(f):
                 if i == 7:
-                   coord = line.strip() 
+                   coord = line.strip()
 
         assert coord == coord_type
