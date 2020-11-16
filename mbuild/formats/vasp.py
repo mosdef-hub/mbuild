@@ -10,7 +10,7 @@ from numpy.linalg import norm
 __all__ = ['write_poscar', 'read_poscar']
 
 def write_poscar(
-        compound, filename, lattice_constant=1.0, coord='cartesian'
+        compound, filename, lattice_constant=1.0, coord_style='cartesian'
         ):
     """
     Outputs VASP POSCAR files.  See //https://www.vasp.at for
