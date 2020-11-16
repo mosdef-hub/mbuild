@@ -74,7 +74,7 @@ def write_poscar(
         f.write("{}\n".format('\t'.join(unique_atoms)))
         f.write("{}\n".format('\t'.join(count_list)))
         f.write(f"{coord_style}\n")
-        for xyz in sorted_xyz:
+        for row in sorted_xyz:
             f.write(" ".join([f"{i:.15f}" for i in row])+"\n")
 
 
@@ -183,14 +183,14 @@ def _box_to_lattice(box):
     return np.stack((a,b,c))
 
 
-def _lattice_to_box(lattice_vectors):
+def _lattice_to_box(lattice):
     a,b,c = lattice
     alpha = np.rad2deg(np.arccos(b.dot(c)/(norm(b) * norm(c))))
     beta = np.rad2deg(np.arccos(a.dot(c)/(norm(a) * norm(c))))
     gamma = np.rad2deg(np.arccos(a.dot(b)/(norm(a) * norm(b))))
 
     box = mb.Box(
-            lengths=norm(lattice_vectors, axis=1),
+            lengths=norm(lattice, axis=1),
             angles=[alpha, beta, gamma]
             )
     return box
