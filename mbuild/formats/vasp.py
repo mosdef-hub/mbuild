@@ -95,7 +95,7 @@ def read_poscar(filename, conversion=0.1):
                path to the POSCAR file
     conversion : float
                  conversion factor multiplied to coordinates when
-                 converting between VASP units (angstroems)
+                 converting between VASP units (angstroms)
                  and mbuild units (nm) (default = 0.1)
 
     Returns
