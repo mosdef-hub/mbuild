@@ -49,11 +49,14 @@ def write_poscar(
             atom.xz /= lattice_constant
 
     for atom_name in atom_names:
-        atom_count = np.array([atom.name for atom in
-            structure.atoms].count(atom_name))
+        atom_count = np.array(
+                [atom.name for atom in structure.atoms].count(atom_name)
+                )
         count_list.append(atom_count)
-        xyz = np.array([[atom.xx, atom.xy, atom.xz] for atom in
-            structure.atoms if atom.name == atom_name])
+        xyz = np.array([
+            [atom.xx, atom.xy, atom.xz] for atom in structure.atoms
+            if atom.name == atom_name
+            ])
         xyz = xyz / 10 # unit conversion from angstroms to nm
         xyz_list.append(xyz)
 
