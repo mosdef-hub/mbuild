@@ -10,7 +10,7 @@ __all__ = ['write_poscar', 'read_poscar']
 
 def write_poscar(
         compound, filename, lattice_constant,
-        bravais=[[1,0,0],[0,1,0],[0,0,1]], sel_dev=False, coord='cartesian'
+        bravais=[[1,0,0],[0,1,0],[0,0,1]], coord='cartesian'
         ):
     """
     Outputs VASP POSCAR files.  See //https://www.vasp.at for
@@ -28,9 +28,6 @@ def write_poscar(
     bravais : array-like
               (3x3) array of bravais cell that defines unit cell of the system
               (default [[1,0,0],[0,1,0],[0,0,1]])
-    sel_dev : bool
-              Turns selective dynamics on.  Not currently implemented.
-              (default False)
     coord : str
             Coordinate style of atom positions 'cartesian' or 'direct'
             (default 'cartesian')
@@ -47,9 +44,9 @@ def write_poscar(
     """
     if coord == 'direct':
         for atom in structure.atoms:
-            atom.xx = atom.xx / lattice_constant
-            atom.xy = atom.xy / lattice_constant
-            atom.xz = atom.xz / lattice_constant
+            atom.xx /= lattice_constant
+            atom.xy /= lattice_constant
+            atom.xz /= lattice_constant
 
     for atom_name in atom_names:
         atom_count = np.array([atom.name for atom in
@@ -77,8 +74,6 @@ def write_poscar(
         data.write('\n')
         data.write('{}\n'.format('   '.join(map(str,atom_names))))
         data.write('{}\n'.format('   '.join(map(str,count_list))))
-        if sel_dev:
-            data.write('Selective Dyn\n')
         data.write(coord+'\n')
         for xyz in xyz_list:
             for pos in xyz:
