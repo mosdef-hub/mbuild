@@ -1,4 +1,5 @@
 from itertools import chain
+import warnings
 
 import ele
 import mbuild as mb
@@ -9,8 +10,7 @@ from numpy.linalg import norm
 __all__ = ['write_poscar', 'read_poscar']
 
 def write_poscar(
-        compound, filename, lattice_constant,
-        bravais=[[1,0,0],[0,1,0],[0,0,1]], coord='cartesian'
+        compound, filename, lattice_constant=1.0, coord='cartesian'
         ):
     """
     Outputs VASP POSCAR files.  See //https://www.vasp.at for
@@ -19,69 +19,64 @@ def write_poscar(
     Parameters
     ----------
     compound : mbuild.Compound
-               the Compound to write to the POSCAR file
+        The Compound to write to the POSCAR file
     filename : str
-               Path of the output file
+        Path of the output file
     lattice_constant : float
-                       Scaling constant for POSCAR file, used to scale all
-                       lattice vectors and atomic coordinates
-    bravais : array-like
-              (3x3) array of bravais cell that defines unit cell of the system
-              (default [[1,0,0],[0,1,0],[0,0,1]])
-    coord : str
-            Coordinate style of atom positions 'cartesian' or 'direct'
-            (default 'cartesian')
+        Scaling constant for POSCAR file, used to scale all lattice vectors
+        and atomic coordinates
+        (default 1.0)
+    coord_style : str
+        Coordinate style of atom positions 'cartesian' or 'direct'
+        (default 'cartesian')
     """
-    structure = compound.to_parmed()
-    atom_names = np.unique([atom.name for atom in structure.atoms])
-    count_list = list()
-    xyz_list = list()
+    try:
+        atoms = [p.element.symbol for p in compound.particles()]
+    except AttributeError:
+        for p in compound.particles():
+            p.element = ele.element_from_symbol(p.name)
+        atoms = [p.element.symbol for p in compound.particles()]
 
-    """
-    Coordinates are broken up into a list of np.arrays to ensure
-    that the coordinates of the first atom listed are written to the
-    file first
-    """
-    if coord == 'direct':
-        for atom in structure.atoms:
-            atom.xx /= lattice_constant
-            atom.xy /= lattice_constant
-            atom.xz /= lattice_constant
+    # This automatically sorts element names alphabetically
+    unique_atoms = np.unique(atoms)
 
-    for atom_name in atom_names:
-        atom_count = np.array(
-                [atom.name for atom in structure.atoms].count(atom_name)
-                )
-        count_list.append(atom_count)
-        xyz = np.array([
-            [atom.xx, atom.xy, atom.xz] for atom in structure.atoms
-            if atom.name == atom_name
-            ])
-        xyz = xyz / 10 # unit conversion from angstroms to nm
-        xyz_list.append(xyz)
+    count_list = [str(atoms.count(i)) for i in unique_atoms]
 
-    with open(filename, 'w') as data:
-        data.write(filename+' - created by mBuild\n')
-        data.write('     {0:.15f}\n'.format(lattice_constant))
-        data.write('    ')
-        for item in bravais[0]:
-            data.write(' {0:.15f}'.format(item))
-        data.write('\n')
-        data.write('    ')
-        for item in bravais[1]:
-            data.write(' {0:.15f}'.format(item))
-        data.write('\n')
-        data.write('    ')
-        for item in bravais[2]:
-            data.write(' {0:.15f}'.format(item))
-        data.write('\n')
-        data.write('{}\n'.format('   '.join(map(str,atom_names))))
-        data.write('{}\n'.format('   '.join(map(str,count_list))))
-        data.write(coord+'\n')
-        for xyz in xyz_list:
-            for pos in xyz:
-                data.write('{0:.15f} {1:.15f} {2:.15f}\n'.format(
-                    pos[0],pos[1],pos[2]))
+    # This sorts the coordinates so they are in the same
+    # order as the elements
+    sorted_xyz = compound.xyz[np.argsort(atoms)]
+
+    try:
+        lattice = _box_to_lattice(compound.box)
+    except AttributeError:
+        lattice = _box_to_lattice(compound.boundingbox)
+        if coord_style == "direct":
+            warnings.warn(
+                    "'direct' coord_style specified, but compound has no box "
+                    "-- using 'cartesian' instead"
+                    )
+            coord_style = 'cartesian'
+
+    if coord_style == 'cartesian':
+        sorted_xyz /= lattice_constant
+    elif coord_style == 'direct':
+        sorted_xyz = sorted_xyz.dot(lattice) / lattice_constant
+    else:
+        raise ValueError("coord_style must be either 'cartesian' or 'direct'")
+
+    with open(filename, 'w') as f:
+        f.write(filename+' - created by mBuild\n')
+        f.write(f'\t{lattice_constant:.15f}\n')
+
+        f.write('\t{0:.15f} {1:.15f} {2:.15f}\n'.format(*lattice[0]))
+        f.write('\t{0:.15f} {1:.15f} {2:.15f}\n'.format(*lattice[1]))
+        f.write('\t{0:.15f} {1:.15f} {2:.15f}\n'.format(*lattice[2]))
+        f.write("{}\n".format('\t'.join(unique_atoms)))
+        f.write("{}\n".format('\t'.join(count_list)))
+        f.write(f"{coord_style}\n")
+        for xyz in sorted_xyz:
+            f.write(" ".join([f"{i:.15f}" for i in row])+"\n")
+
 
 def read_poscar(filename, conversion=0.1):
     """
@@ -90,11 +85,10 @@ def read_poscar(filename, conversion=0.1):
     Parameters
     ----------
     filename : str
-               path to the POSCAR file
+        path to the POSCAR file
     conversion : float
-                 conversion factor multiplied to coordinates when
-                 converting between VASP units (angstroms)
-                 and mbuild units (nm) (default = 0.1)
+        conversion factor multiplied to coordinates when converting between
+        VASP units (angstroms) and mbuild units (nm) (default = 0.1)
 
     Returns
     -------
@@ -154,14 +148,7 @@ def read_poscar(filename, conversion=0.1):
     else:
         coords = coords.dot(lattice_vectors) * scale
 
-    alpha = np.rad2deg(np.arccos(b.dot(c)/(norm(b) * norm(c))))
-    beta = np.rad2deg(np.arccos(a.dot(c)/(norm(a) * norm(c))))
-    gamma = np.rad2deg(np.arccos(a.dot(b)/(norm(a) * norm(b))))
-
-    comp.box = mb.Box(
-            lengths=norm(lattice_vectors, axis=1),
-            angles=[alpha, beta, gamma]
-            )
+    comp.box = _lattice_to_box(lattice_vectors)
 
     for i,xyz in enumerate(coords):
         comp.add(mb.Particle(
@@ -171,3 +158,39 @@ def read_poscar(filename, conversion=0.1):
             ))
 
     return comp
+
+
+def _box_to_lattice(box):
+    """
+    http://gisaxs.com/index.php/Unit_cell
+    """
+    lengths = box.maxs - box.mins
+    alpha, beta, gamma = [np.deg2rad(a) for a in box.angles]
+
+    a = np.array([lengths[0], 0, 0])
+    b = np.array([
+        lengths[1] * np.cos(gamma),
+        lengths[1] * np.sin(gamma),
+        0
+    ])
+
+    fraction = (np.cos(alpha) - np.cos(beta)*np.cos(gamma)) / np.sin(gamma)
+    c = np.array([
+        lengths[2] * np.cos(beta),
+        lengths[2] * fraction,
+        lengths[2] * np.sqrt(1 - np.cos(beta)**2 - fraction**2)
+    ])
+    return np.stack((a,b,c))
+
+
+def _lattice_to_box(lattice_vectors):
+    a,b,c = lattice
+    alpha = np.rad2deg(np.arccos(b.dot(c)/(norm(b) * norm(c))))
+    beta = np.rad2deg(np.arccos(a.dot(c)/(norm(a) * norm(c))))
+    gamma = np.rad2deg(np.arccos(a.dot(b)/(norm(a) * norm(b))))
+
+    box = mb.Box(
+            lengths=norm(lattice_vectors, axis=1),
+            angles=[alpha, beta, gamma]
+            )
+    return box
