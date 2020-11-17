@@ -4,7 +4,7 @@ import warnings
 import ele
 import mbuild as mb
 import numpy as np
-from numpy.linalg import norm
+from numpy.linalg import norm, inv
 
 
 __all__ = ['write_poscar', 'read_poscar']
@@ -44,7 +44,8 @@ def write_poscar(
 
     # This sorts the coordinates so they are in the same
     # order as the elements
-    sorted_xyz = compound.xyz[np.argsort(atoms)]
+    # mBuild (nm) --> (x10) --> VASP (angstroms)
+    sorted_xyz = compound.xyz[np.argsort(atoms)] * 10
 
     try:
         lattice = _box_to_lattice(compound.box)
@@ -60,7 +61,7 @@ def write_poscar(
     if coord_style == 'cartesian':
         sorted_xyz /= lattice_constant
     elif coord_style == 'direct':
-        sorted_xyz = sorted_xyz.dot(lattice) / lattice_constant
+        sorted_xyz = sorted_xyz.dot(inv(lattice)) / lattice_constant
     else:
         raise ValueError("coord_style must be either 'cartesian' or 'direct'")
 
