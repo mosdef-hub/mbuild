@@ -251,7 +251,7 @@ class BaseTest:
         return cscl_compound
 
     @pytest.fixture
-    def gilmerite_triclinic(self):
+    def gilmerite(self):
         gilmerite = mb.Compound()
         gilmerite.box = mb.Box(
                 lengths=[5.44500017, 5.87300015, 5.10400009],
