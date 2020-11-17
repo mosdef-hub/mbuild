@@ -77,7 +77,7 @@ def write_poscar(
         f.write("{}\n".format("\t".join(count_list)))
         f.write(f"{coord_style}\n")
         for row in sorted_xyz:
-            f.write(" ".join([f"{i:.15f}" for i in row]) + "\n")
+            f.write(f"{row[0]:.15f} {row[1]:.15f} {row[2]:.15f}\n")
 
 
 def read_poscar(filename, conversion=0.1):
@@ -103,6 +103,8 @@ def read_poscar(filename, conversion=0.1):
         data = f.readlines()
 
     title = data.pop(0)
+    comp.name = title
+
     scale = float(data.pop(0).strip())
 
     a = np.fromiter(data.pop(0).split(), dtype="float64")
@@ -130,9 +132,12 @@ def read_poscar(filename, conversion=0.1):
     # handle optional argument "Selective dynamics"
     # and required arguments "Cartesian" or "Direct"
     switch = data.pop(0)[0].upper()
-    selective_dynamics = False  # don't know if this is necessary
+
+    # If we ever want to do something with selective dynamics,
+    # the following lines could be uncommented
+    # selective_dynamics = False
     if switch == "S":
-        selective_dynamics = True
+        # selective_dynamics = True
         switch = data.pop(0)[0].upper()
 
     if switch == "C":
