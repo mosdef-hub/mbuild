@@ -118,7 +118,7 @@ class BaseTest:
     def benzene_from_parts(self):
         ch = mb.load(get_fn('ch.mol2'))
         ch.name = 'CH'
-        ch.translate(-ch[0].pos)       
+        ch.translate(-ch[0].pos)
         ch.add(mb.Port(anchor=ch[0], separation=0.07), 'a')
         ch['a'].rotate(120.0 * (np.pi/180.0), around=np.asarray([0, 0, 1]))
         ch.add(mb.Port(anchor=ch[0], separation=0.07), 'b')
@@ -148,7 +148,7 @@ class BaseTest:
         benzene.name = 'Benzene'
         filled = mb.fill_box(benzene,
                              n_compounds=n_benzenes,
-                             box=[0, 0, 0, 4, 4, 4]) 
+                             box=[0, 0, 0, 4, 4, 4])
         filled.label_rigid_bodies(discrete_bodies='Benzene', rigid_particles='C')
         return filled
 
@@ -157,13 +157,13 @@ class BaseTest:
         ch = mb.load(get_fn('ch.mol2'))
         ch.name = 'CH'
         ch.label_rigid_bodies()
-        ch.translate(-ch[0].pos)    
+        ch.translate(-ch[0].pos)
         ch.add(mb.Port(anchor=ch[0]), 'a')
-        ch['a'].translate([0, 0.07, 0]) 
+        ch['a'].translate([0, 0.07, 0])
         ch['a'].rotate(120.0 * (np.pi/180.0), around=np.asarray([0, 0, 1]))
 
         ch.add(mb.Port(anchor=ch[0]), 'b')
-        ch['b'].translate([0, 0.07, 0]) 
+        ch['b'].translate([0, 0.07, 0])
         ch['b'].rotate(-120.0 * (np.pi/180.0), around=np.asarray([0, 0, 1]))
 
         return ch
@@ -219,8 +219,9 @@ class BaseTest:
                 lattice_vectors=lattice_vector,
                 lattice_points=basis)
         copper_dict = {'Cu': copper}
-        copper_pillar = copper_lattice.populate(x=3, y=3, z=1,
-                compound_dict=copper_dict)
+        copper_pillar = copper_lattice.populate(
+                x=3, y=3, z=1, compound_dict=copper_dict
+                )
         return copper_pillar
 
     @pytest.fixture
@@ -243,9 +244,50 @@ class BaseTest:
         spacing = [.4123, .4123, .4123]
         basis = {'Cs' : [[0.5, 0.5, 0.5]], 'Cl' : [[0, 0, 0]]}
         cscl_lattice = mb.Lattice(spacing, lattice_points=basis)
-        
-        
+
         cscl_dict = {'Cs' : cesium, 'Cl' : chlorine}
         cscl_compound = cscl_lattice.populate(x=3, y=3, z=1,
                                               compound_dict=cscl_dict)
         return cscl_compound
+
+    @pytest.fixture
+    def gilmerite_triclinic(self):
+        gilmerite = mb.Compound()
+        gilmerite.box = mb.Box(
+                lengths=[5.44500017, 5.87300015, 5.10400009],
+                angles=[114.94999695, 93.05000305, 91.91999817]
+                )
+        gilmerite.add(mb.Particle(
+            name="Cu", pos=[0.00615697, 0.28454988, 0.14878373]
+            ))
+        gilmerite.add(mb.Particle(
+            name="Cu", pos=[0.28204174, 0.13594167, 0.16465892]
+            ))
+        gilmerite.add(mb.Particle(
+            name="Cu", pos=[0.28377297, 0.43348074, 0.17854972]
+			))
+        gilmerite.add(mb.Particle(
+            name="As", pos=[5.43783569e-01, 1.54457900e-04, 4.61488000e-05]
+			))
+        gilmerite.add(mb.Particle(
+            name="O", pos=[0.08094841, 0.14370937, 0.03276565]
+			))
+        gilmerite.add(mb.Particle(
+			name="O", pos=[0.08451646, 0.45650253, 0.03415011]
+			))
+        gilmerite.add(mb.Particle(
+			name="O", pos=[0.36793642, 0.28482277, 0.07106915]
+			))
+        gilmerite.add(mb.Particle(
+			name="O", pos=[0.39833167, -0.00501952, 0.08583677]
+			))
+        gilmerite.add(mb.Particle(
+			name="O", pos=[0.17415644, 0.27864442, 0.24828055]
+			))
+        gilmerite.add(mb.Particle(
+			name="O", pos=[0.24149659, -0.00539473, 0.29073744]
+			))
+        gilmerite.add(mb.Particle(
+			name="O", pos=[0.45795937, 0.36822546, 0.30135167]
+			))
+        return gilmerite
