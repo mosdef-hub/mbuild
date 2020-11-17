@@ -7,11 +7,12 @@ import numpy as np
 from numpy.linalg import norm, inv
 
 
-__all__ = ['write_poscar', 'read_poscar']
+__all__ = ["write_poscar", "read_poscar"]
+
 
 def write_poscar(
-        compound, filename, lattice_constant=1.0, coord_style='cartesian'
-        ):
+    compound, filename, lattice_constant=1.0, coord_style="cartesian"
+):
     """
     Outputs VASP POSCAR files.  See //https://www.vasp.at for
     more information.
@@ -53,30 +54,30 @@ def write_poscar(
         lattice = _box_to_lattice(compound.boundingbox)
         if coord_style == "direct":
             warnings.warn(
-                    "'direct' coord_style specified, but compound has no box "
-                    "-- using 'cartesian' instead"
-                    )
-            coord_style = 'cartesian'
+                "'direct' coord_style specified, but compound has no box "
+                "-- using 'cartesian' instead"
+            )
+            coord_style = "cartesian"
 
-    if coord_style == 'cartesian':
+    if coord_style == "cartesian":
         sorted_xyz /= lattice_constant
-    elif coord_style == 'direct':
+    elif coord_style == "direct":
         sorted_xyz = sorted_xyz.dot(inv(lattice)) / lattice_constant
     else:
         raise ValueError("coord_style must be either 'cartesian' or 'direct'")
 
-    with open(filename, 'w') as f:
-        f.write(filename+' - created by mBuild\n')
-        f.write(f'\t{lattice_constant:.15f}\n')
+    with open(filename, "w") as f:
+        f.write(filename + " - created by mBuild\n")
+        f.write(f"\t{lattice_constant:.15f}\n")
 
-        f.write('\t{0:.15f} {1:.15f} {2:.15f}\n'.format(*lattice[0]))
-        f.write('\t{0:.15f} {1:.15f} {2:.15f}\n'.format(*lattice[1]))
-        f.write('\t{0:.15f} {1:.15f} {2:.15f}\n'.format(*lattice[2]))
-        f.write("{}\n".format('\t'.join(unique_atoms)))
-        f.write("{}\n".format('\t'.join(count_list)))
+        f.write("\t{0:.15f} {1:.15f} {2:.15f}\n".format(*lattice[0]))
+        f.write("\t{0:.15f} {1:.15f} {2:.15f}\n".format(*lattice[1]))
+        f.write("\t{0:.15f} {1:.15f} {2:.15f}\n".format(*lattice[2]))
+        f.write("{}\n".format("\t".join(unique_atoms)))
+        f.write("{}\n".format("\t".join(count_list)))
         f.write(f"{coord_style}\n")
         for row in sorted_xyz:
-            f.write(" ".join([f"{i:.15f}" for i in row])+"\n")
+            f.write(" ".join([f"{i:.15f}" for i in row]) + "\n")
 
 
 def read_poscar(filename, conversion=0.1):
@@ -108,28 +109,28 @@ def read_poscar(filename, conversion=0.1):
     b = np.fromiter(data.pop(0).split(), dtype="float64")
     c = np.fromiter(data.pop(0).split(), dtype="float64")
 
-    lattice_vectors = np.stack((a,b,c))
+    lattice_vectors = np.stack((a, b, c))
 
     # POSCAR files do not require atom types to be specified
     # this block handles unspecified types
     line = data.pop(0).split()
     try:
         n_types = np.fromiter(line, dtype="int")
-        types = ["_"+chr(i+64) for i in range(1,len(n_types)+1)]
+        types = ["_" + chr(i + 64) for i in range(1, len(n_types) + 1)]
         # if no types exist, assign placeholder types "_A", "_B", "_C", etc
     except ValueError:
         types = line
         n_types = np.fromiter(data.pop(0).split(), dtype="int")
 
     total_atoms = np.sum(n_types)
-    all_types = list(chain.from_iterable(
-        [[itype] * n for itype, n in zip(types,n_types)]
-        ))
+    all_types = list(
+        chain.from_iterable([[itype] * n for itype, n in zip(types, n_types)])
+    )
 
     # handle optional argument "Selective dynamics"
     # and required arguments "Cartesian" or "Direct"
     switch = data.pop(0)[0].upper()
-    selective_dynamics = False # don't know if this is necessary
+    selective_dynamics = False  # don't know if this is necessary
     if switch == "S":
         selective_dynamics = True
         switch = data.pop(0)[0].upper()
@@ -140,9 +141,12 @@ def read_poscar(filename, conversion=0.1):
         cartesian = False
 
     # Slice is necessary to handle files using selective dynamics
-    coords = np.stack([np.fromiter(
-        line.split()[:3], dtype="float64"
-        ) for line in data[:total_atoms]])
+    coords = np.stack(
+        [
+            np.fromiter(line.split()[:3], dtype="float64")
+            for line in data[:total_atoms]
+        ]
+    )
 
     if cartesian:
         coords = coords * scale
@@ -151,12 +155,14 @@ def read_poscar(filename, conversion=0.1):
 
     comp.box = _lattice_to_box(lattice_vectors)
 
-    for i,xyz in enumerate(coords):
-        comp.add(mb.Particle(
-            name=all_types[i],
-            element=ele.element_from_symbol(all_types[i]),
-            pos=xyz*conversion
-            ))
+    for i, xyz in enumerate(coords):
+        comp.add(
+            mb.Particle(
+                name=all_types[i],
+                element=ele.element_from_symbol(all_types[i]),
+                pos=xyz * conversion,
+            )
+        )
 
     return comp
 
@@ -169,29 +175,24 @@ def _box_to_lattice(box):
     alpha, beta, gamma = [np.deg2rad(a) for a in box.angles]
 
     a = np.array([lengths[0], 0, 0])
-    b = np.array([
-        lengths[1] * np.cos(gamma),
-        lengths[1] * np.sin(gamma),
-        0
-    ])
+    b = np.array([lengths[1] * np.cos(gamma), lengths[1] * np.sin(gamma), 0])
 
-    fraction = (np.cos(alpha) - np.cos(beta)*np.cos(gamma)) / np.sin(gamma)
-    c = np.array([
-        lengths[2] * np.cos(beta),
-        lengths[2] * fraction,
-        lengths[2] * np.sqrt(1 - np.cos(beta)**2 - fraction**2)
-    ])
-    return np.stack((a,b,c))
+    fraction = (np.cos(alpha) - np.cos(beta) * np.cos(gamma)) / np.sin(gamma)
+    c = np.array(
+        [
+            lengths[2] * np.cos(beta),
+            lengths[2] * fraction,
+            lengths[2] * np.sqrt(1 - np.cos(beta) ** 2 - fraction ** 2),
+        ]
+    )
+    return np.stack((a, b, c))
 
 
 def _lattice_to_box(lattice):
-    a,b,c = lattice
-    alpha = np.rad2deg(np.arccos(b.dot(c)/(norm(b) * norm(c))))
-    beta = np.rad2deg(np.arccos(a.dot(c)/(norm(a) * norm(c))))
-    gamma = np.rad2deg(np.arccos(a.dot(b)/(norm(a) * norm(b))))
+    a, b, c = lattice
+    alpha = np.rad2deg(np.arccos(b.dot(c) / (norm(b) * norm(c))))
+    beta = np.rad2deg(np.arccos(a.dot(c) / (norm(a) * norm(c))))
+    gamma = np.rad2deg(np.arccos(a.dot(b) / (norm(a) * norm(b))))
 
-    box = mb.Box(
-            lengths=norm(lattice, axis=1),
-            angles=[alpha, beta, gamma]
-            )
+    box = mb.Box(lengths=norm(lattice, axis=1), angles=[alpha, beta, gamma])
     return box
