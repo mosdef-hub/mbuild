@@ -14,12 +14,20 @@ class TestVasp(BaseTest):
     def initdir(self, tmpdir):
         tmpdir.chdir()
 
-    def test_write(self, copper_cell):
-        write_poscar(copper_cell, 'test.poscar')
+    def test_read_write(self, gilmerite):
+        write_poscar(gilmerite, 'test.poscar')
+        new_gilmerite = read_poscar('test.poscar')
+        assert np.allclose(gilmerite.box.lengths, new_gilmerite.box.lengths)
+        assert np.allclose(gilmerite.box.angles, new_gilmerite.box.angles)
+        assert np.allclose(gilmerite.xyz, new_gilmerite.xyz)
 
 
-    def test_write_direct(self, copper_cell):
-        write_poscar(copper_cell, 'test.poscar', coord_style='direct')
+    def test_read_write_direct(self, gilmerite):
+        write_poscar(gilmerite, 'test.poscar', coord_style='direct')
+        new_gilmerite = read_poscar('test.poscar')
+        assert np.allclose(gilmerite.box.lengths, new_gilmerite.box.lengths)
+        assert np.allclose(gilmerite.box.angles, new_gilmerite.box.angles)
+        assert np.allclose(gilmerite.xyz, new_gilmerite.xyz)
 
 
     def test_lattice_constant(self, copper_cell):
@@ -64,8 +72,8 @@ class TestVasp(BaseTest):
 
 
     @pytest.mark.parametrize('coord_type', ['direct', 'cartesian'])
-    def test_coordinate_header(self, copper_cell, coord_type):
-        write_poscar(copper_cell, 'test.poscar', coord_style=coord_type)
+    def test_coordinate_header(self, gilmerite, coord_type):
+        write_poscar(gilmerite, 'test.poscar', coord_style=coord_type)
         with open('test.poscar', 'r') as f:
             for i, line in enumerate(f):
                 if i == 7:
