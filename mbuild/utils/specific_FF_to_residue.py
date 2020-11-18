@@ -1,59 +1,54 @@
-from foyer import Forcefield
-from foyer.forcefields import forcefields
-import parmed as pmd
 import mbuild as mb
 import xml.dom.minidom
+import os
+from foyer import Forcefield
+from foyer.forcefields import forcefields
 from warnings import warn
+import parmed as pmd
 
-def Specific_FF_to_residue(structure , forcefield_files= None, forcefield_names= None,
+
+def Specific_FF_to_residue(structure , forcefield_selection = None,
                            residues= None, reorder_res_in_pdb_psf= False, box = None,
                            boxes_for_simulation = 1):
+    """
+    Input:
+        structure =  compound structure
+        forcefield_selection =  dictionary of residues to force fields, listed with a path
+            and filename, or by selecting a force field xlm file with
+            its path or by using the standard force field name provided the `foyer` package.
+            Ex: {'Water' : 'oplsaa.xml', 'OCT': 'trappe-ua.xml'}
+        forcefield_names =  dictionary of residues to force fields.
+            Ex: {'Water' : 'oplsaa', 'OCT': 'trappe-ua'}
+            Note: either the forcefield_files or forcefield_names can be provided, not both.
+            the forcefield_files or forcefield_names can be not be mixed combination.
+        residues = list of residues
+            note FFs and residues must be in sequenctial order
+        box ; list of 3 positive float values or the dimensions [x, y ,z]
+            for structure in nanometers (nm)
+            This is to add/override or change the structures dimenstions. Ex: [1,2,3]
+        boxes_for_simulation; int of 1 or 2, default =1.  Gibbs or grand canonical ensembles
+            are examples of where the boxes_for_simulation would be 2
 
-    #input:
-        # structure =  compound structure
-        #  forcefield_files =  dictionary of residues to force fields.
-            # Ex: {'Water' : 'oplsaa.xml', 'OCT': 'trappe-ua.xml'}
-        #  forcefield_names =  dictionary of residues to force fields.
-            # Ex: {'Water' : 'oplsaa', 'OCT': 'trappe-ua'}
-        # Note: either the forcefield_files or forcefield_names can be provided, not both.
-                # the forcefield_files or forcefield_names can be not be mixed combination.
-        # residues = list of residues
-        # note FFs and residues must be in sequenctial order
-        # box ; list of 3 positive float values or the dimensions [x, y ,z]
-             #for structure_1 in nanometers (nm)
-             #This is to add/override or change the structures dimenstions. Ex: [1,2,3]
-        # boxes_for_simulation; int of 1 or 2, default =1.  Gibbs or grand canonical ensembles
-            #are examples of where the boxes_for_simulation would be 2
+    Returns:
+        structure = parmed with applied force field
+        coulomb14scaler_dict = a dictionary with the 1,4-colombic scalers for each residue
+            (i.e., a different force field could on each residue)
+        LJ14scaler_dict  = a dictionary with the 1,4-LJ scalers for each residue
+            (i.e., a different force field could on each residue)
+        residues_applied_list =  list of residues (i.e., list of stings)
+            these are all the residues in which the force field actually applied
+    """
 
-    #Returns:
-        # structure = parmed with applied force field
-        # coulomb14scaler_dict = a dictionary with the 1,4-colombic scalers for each residue
-                                # (i.e., a different force field could on each residue)
-        # LJ14scaler_dict  = a dictionary with the 1,4-LJ scalers for each residue
-                            # (i.e., a different force field could on each residue)
-        # residues_applied_list =  list of residues (i.e., list of stings)
-                            # these are all the residues in which the force field actually applied
-
-    if forcefield_names is None and forcefield_files is None:
-        warn('Please enter either the forcefield_files or forcefield_names, neither were provided')
+    if forcefield_selection is None:
+        warn('Please enter either the forcefields for the forcefield_selection variable')
         return None, None, None, None
 
-    if forcefield_names != None and forcefield_files != None:
-        warn('Please enter either the forcefield_files or forcefield_names, not both')
-        return None, None, None, None
-
-    elif forcefield_files != None and forcefield_names is None and not isinstance(forcefield_files, dict):
-        warn('The force field file (forcefield_files) is not a dictionary. Please enter a dictionary'+
+    elif forcefield_selection != None and not isinstance(forcefield_selection, dict):
+        warn('The force field selction (forcefield_selection) is not a dictionary. Please enter a dictionary'+
              "with all the residues specified to a force field"+
-             "-> Ex: {'Water' : 'oplsaa.xml', 'OCT': 'trappe-ua.xml'}, "+
-             "Note: the file path must be specified the force field file")
-        return None, None, None, None
-
-    elif forcefield_names != None and forcefield_files is None and not isinstance(forcefield_names, dict):
-        warn('The force field names (forcefield_names) is not a dictionary with' +
-             "with all the residues specified to a force field" +
-             "-> Ex: {'Water' : 'oplsaa', 'OCT': 'trappe-ua'}, " +
-             "Note: the file path must be specified the name per MoSDeF's naming convention.")
+             "-> Ex: {'Water' : 'oplsaa', 'OCT': 'path/trappe-ua.xml'}, "+
+             "Note: the file path must be specified the force field file or by using the standard"+
+             " force field name provided the `foyer` package.")
         return None, None, None, None
 
 
@@ -85,42 +80,45 @@ def Specific_FF_to_residue(structure , forcefield_files= None, forcefield_names=
         return None, None, None, None
 
     forcefield_keys_list = []
-    Use_FF_files = False
-    Use_FF_names = False
-    if forcefield_names != None and forcefield_files is None:
-        Use_FF_names = True
-        for res in forcefield_names.keys():
+    if  forcefield_selection != None :
+        for res in forcefield_selection.keys():
             forcefield_keys_list.append(res)
-        FF_data = forcefield_names
-    elif forcefield_files != None and forcefield_names is None:
-        Use_FF_files = True
-        for res in forcefield_files.keys():
-            forcefield_keys_list.append(res)
-        FF_data = forcefield_files
+        FF_data = forcefield_selection
+
+    User_entered_FF_with_path_dict  = {}   # True means user entered the path, False is a standard foyer FF with no path
+    for z in range(0, len(forcefield_keys_list)):
+        if os.path.splitext(FF_data[forcefield_keys_list[z]])[1] == '.xml' and len(residues) != 0:
+            User_entered_FF_with_path_dict .update({residues[z]: True})
+        elif os.path.splitext(FF_data[forcefield_keys_list[z]])[1] == '' and len(residues) != 0:
+            User_entered_FF_with_path_dict .update({residues[z]: False})
+        else:
+            warn('Please make sure are entering the correct foyer FF name and not a path to a FF file.' +
+                 'If you are entering a path to a FF file, please us the forcefield_files variable')
+            return None, None, None, None
+
 
     coulomb14scaler_dict = {}
     LJ14scaler_dict = {}
     for j in range(0, len(forcefield_keys_list)):
-        if Use_FF_files == True:
-            residue_iteration = forcefield_keys_list[j]
+        residue_iteration = forcefield_keys_list[j]
+        if User_entered_FF_with_path_dict[residue_iteration] == True and len(residues) != 0:
             FF_for_residue_iteration = FF_data[residue_iteration]
 
             try:
                 read_xlm_iteration = xml.dom.minidom.parse(FF_for_residue_iteration)
             except:
                 warn('Please make sure are entering the correct foyer FF path, including the FF file name.xml ' +
-                        'If you are using the pre-build FF files in foyer, please us the forcefield_names variable.')
+                     'If you are using the pre-build FF files in foyer, please us the forcefield_names variable.')
                 return None, None, None, None
 
-        elif Use_FF_names == True:
-            residue_iteration = forcefield_keys_list[j]
+        elif User_entered_FF_with_path_dict[residue_iteration] == False and len(residues) != 0:
             FF_for_residue_iteration = FF_data[residue_iteration]
-            FF_names_path_iteration = forcefields.get_ff_path()[0] +'/xml/'+FF_for_residue_iteration+'.xml'
+            FF_names_path_iteration = forcefields.get_ff_path()[0] + '/xml/' + FF_for_residue_iteration + '.xml'
             try:
                 read_xlm_iteration = xml.dom.minidom.parse(FF_names_path_iteration)
             except:
                 warn('Please make sure are entering the correct foyer FF name and not a path to a FF file.' +
-                        'If you are entering a path to a FF file, please us the forcefield_files variable')
+                     'If you are entering a path to a FF file, please us the forcefield_files variable')
                 return None, None, None, None
         LJ_Coul_1_4_values = read_xlm_iteration.getElementsByTagName("NonbondedForce")
 
@@ -187,7 +185,7 @@ def Specific_FF_to_residue(structure , forcefield_files= None, forcefield_names=
             Residue_orig_order_list.append(child.name)
     for res_reorder_iter in range(0,len(residues)):
         if residues[res_reorder_iter] not in  Residue_orig_order_list:
-            text_to_print_1 = "All the residues were not used from the forcefield_names or forcefield_files "+ \
+            text_to_print_1 = "All the residues were not used from the forcefield_selection "+ \
                               "string or dictionary.  There may be residues below other specified residues "+ \
                               "in the mbuild.Compound hierarchy.  If so, all the highest listed residues pass "+ \
                               "down the force fields through the hierarchy.  Alternatively, "+ \
@@ -225,10 +223,11 @@ def Specific_FF_to_residue(structure , forcefield_files= None, forcefield_names=
                 new_compound_iteration.add(mb.compound.clone(child))
 
         if children_in_iteration == True:
-            if Use_FF_files == True:
+            print(" = "+str())
+            if User_entered_FF_with_path_dict[residues[i]] == True:
                 FF_iteration = Forcefield(FF_data[residues[i]])
                 residues_applied_list.append(residues[i])
-            elif Use_FF_names == True:
+            elif User_entered_FF_with_path_dict[residues[i]] == False:
                 FF_iteration = Forcefield(name=FF_data[residues[i]])
                 residues_applied_list.append(residues[i])
 

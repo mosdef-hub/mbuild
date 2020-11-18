@@ -1,9 +1,9 @@
 import os
 import datetime
+import numpy as np
+
 from collections import OrderedDict
 from warnings import warn
-
-import numpy as np
 
 from parmed.utils.io import genopen
 from parmed.periodic_table import Element
@@ -141,7 +141,6 @@ def _get_unique_improper_types(structure,
 
 
 def _get_bond_types(structure,
-                    bonds,
                     sigma_conversion_factor,
                     epsilon_conversion_factor):
     """Get a list of unique bond_types given a parmed structure
@@ -150,7 +149,6 @@ def _get_bond_types(structure,
     ----------
     structure: parmed.Structure
         The parmed structure
-    bonds:
     #ToDO: What is this intended for?
     #FIXME: Improve this docstring
     sigma_conversion_factor: float
@@ -373,7 +371,7 @@ def unique_atom_naming(structure, residue_ID_list, residue_names_list, Bead_to_a
 # Currently the NBFIX is disabled as since only the OPLS and TRAPPE force fields are currently supported
 
 def charmm_psf_psb_FF(structure_0, filename_0, structure_1 = None, filename_1= None,
-                      non_bonded_type='LJ', forcefield_files=None, forcefield_names = None,  residues=None,
+                      non_bonded_type='LJ', forcefield_selection = None,  residues=None,
                       detect_forcefield_style=True, fix_res_bonds_angles = None, Bead_to_atom_name_dict=None,
                       fix_residue=None, fix_residue_in_box=None,  FF_filename= None,
                       reorder_res_in_pdb_psf =False, box_0 = None, box_1 = None  , **kwargs):
@@ -405,31 +403,19 @@ def charmm_psf_psb_FF(structure_0, filename_0, structure_1 = None, filename_1= N
     residues : str of list of str
         Labels of unique residues in the Compound. Residues are assigned by
         checking against Compound.name.
-        Note: to write the GOMC force field files and the psf files the
-        residues and forcefield_files/forcefiled_names must be provided in a list, which
-        is in sequential order of each other. (Example:
-        residues = ['WAT', 'OIL'] and forcefield_files/forcefiled_names = [WAT_FF_file, OIL_FF_file]
-    forcefield_files : str or dictionary, default = None
-        Apply a forcefield to the output file using a forcefield provided
-        by the `foyer` package.
-        Note: to write the GOMC force field files and the psf files the
-        residues and forcefield_files must be provided in a str or
+    forcefield_selection : str or dictionary, default = None
+        Apply a forcefield to the output file by selecting a force field xlm file with
+        its path or by using the standard force field name provided the `foyer` package.
+        Note: to write the NAMD/GOMC force field files, pdb, and psf files, the
+        residues and forcefields must be provided in a str or
         dictionary.  If a dictionary is provided all residues must
         be specified to a force field.
-            Ex dict: {'Water' : 'oplsaa.xml', 'OCT': 'trappe-ua.xml'}
-            Ex str: 'trappe-ua.xml'
-        Note: the file path name must also be specified.
-    forcefield_names : str or dictionary, default = None
-        Apply a forcefield to the output file using a forcefield provided
-        by the `foyer` package.  These forcefields are called by name and
-        stored in the prebuilt foyer package.
-        Note: to write the GOMC force field files and the psf files the
-        residues and forcefield_names must be provided in a str or
-        dictionary.  If a dictionary is provided all residues must
-        be specified to a force field.
-            Ex dict: {'Water' : 'oplsaa', 'OCT': 'trappe-ua'}
-            Ex str: 'trappe-ua'
-        Note: the file path name must also be specified.
+            Example dict for FF file: {'Water' : 'oplsaa.xml', 'OCT': 'path_to file/'trappe-ua.xml'}
+            Example str for FF file: 'trappe-ua.xml'
+        Note: the file path name must also be specified for the FF files.
+            Example dict for standard FF names : {'Water' : 'oplsaa', 'OCT': 'trappe-ua'}
+            Example str for standard FF names: 'trappe-ua'
+            Example of a mixed dict with both : {'Water' : 'oplsaa', 'OCT': 'path_to file/'trappe-ua.xml'}
     detect_forcefield_style: boolean
         If True, format lammpsdata parameters based on the contents of
         the parmed structure_0
@@ -496,9 +482,9 @@ def charmm_psf_psb_FF(structure_0, filename_0, structure_1 = None, filename_1= N
 
     Generating an empty pdb/psf:
         Single System: Enter residues = [], but the accompanying structure (structure_0)
-        must be an empty mb.Compound structure. However, when doing this, the forcefield_names or
-        forcefield_files must be supplied, or it will provide an error
-        (i.e., forcefield_files and forcefield_names are both not equal to None)
+        must be an empty mb.Compound structure. However, when doing this, the forcefield_selection
+         must be supplied, or it will provide an error
+        (i.e., forcefield_selection are both not equal to None)
         Dual System: Enter an empty mb.Compound structure for either structure_0 or
         structure_1.
 
@@ -549,59 +535,35 @@ def charmm_psf_psb_FF(structure_0, filename_0, structure_1 = None, filename_1= N
             if extension_FF_name != '.inp':
                 FF_filename = FF_filename + '.inp'
 
-    if forcefield_names is None and forcefield_files is None:
-        warn('Please enter either the forcefield_files or forcefield_names, neither were provided')
-        return None
 
-    if forcefield_names != None and forcefield_files != None:
-        warn('Please enter either the forcefield_files or forcefield_names, not both')
-        return None
-
-    if forcefield_files != None and  forcefield_names is None:
-        print('write_gomcdata: forcefield_files = '+str(forcefield_files) +', ' +'residues = '+str(residues) )
-        if forcefield_files != None and not isinstance(forcefield_files, dict) and not isinstance(forcefield_files, str):
-            warn('The force field file (forcefield_files) is not a string or a dictionary with' +
+    if forcefield_selection != None:
+        print('write_gomcdata: forcefield_selection = '+str(forcefield_selection) +', ' +'residues = '+str(residues) )
+        if forcefield_selection != None and not isinstance(forcefield_selection, dict) and not isinstance(forcefield_selection, str):
+            warn('The force field selection (forcefield_selection) is not a string or a dictionary with' +
                  ' all the residues specified to a force field.' +
-                 "-> String Ex: 'path/trappe-ua.xml'  ." +
+                 "-> String Ex: 'path/trappe-ua.xml' or Ex: 'trappe-ua' " +
                  "Otherise provided a dictionary with all the residues specified to a force field " +
-                 "->Dictionary Ex: {'Water' : 'path/oplsaa.xml', 'OCT': 'path/trappe-ua.xml'}, " +
-                 "Note: the file path must be specified the force field file")
+                 "->Dictionary Ex: {'Water' : 'oplsaa', 'OCT': 'path/trappe-ua.xml'}, " +
+                 "Note: the file path must be specified the force field file if a standard foyer " +
+                 "force field is not used")
             return None
 
-        if isinstance(forcefield_files, str)== True :
-            FF_name = forcefield_files
-            forcefield_files = {}
+        if isinstance(forcefield_selection, str)== True :
+            FF_name = forcefield_selection
+            forcefield_selection = {}
             for i in range(0, len(residues)):
-                forcefield_files.update({residues[i] : FF_name})
-            print('FF forcefield_files = '+str(forcefield_files))
+                forcefield_selection.update({residues[i] : FF_name})
+            print('FF forcefield_selection = '+str(forcefield_selection))
 
-    elif forcefield_names != None and  forcefield_files is None:
-        print('write_gomcdata: forcefield_names = ' + str(forcefield_names) + ', ' + 'residues = ' + str(residues))
+    elif forcefield_selection is None:
+        warn('Please enter the forcefield_selection as it was not provided')
+        return None
 
-
-        if forcefield_names != None and not isinstance(forcefield_names, dict) and not isinstance(forcefield_names,str):
-            warn('The force field names (forcefield_names) is not a string or a dictionary with' +
-                 ' all the residues specified to a force field.' +
-                 "-> String Ex: 'trappe-ua' or 'oplsaa'  ." +
-                 "Otherise provided a dictionary with all the residues specified to a force field " +
-                 "->Dictionary Ex: {'Water' : 'oplsaa', 'OCT': 'trappe-ua'}, " +
-                 "Note: the file path must be specified the force field file")
-            return None
-
-
-        if isinstance(forcefield_names, str) == True:
-            FF_name = forcefield_names
-            forcefield_names = {}
-            for i in range(0, len(residues)):
-                forcefield_names.update({residues[i]: FF_name})
-            print('FF forcefield_names = ' + str(forcefield_names))
 
 
     if residues != None and not isinstance(residues, list):
         warn('Error: Please enter the residues (residues) in a list format')
         return None
-
-
 
 
     if fix_res_bonds_angles != None and not isinstance(fix_res_bonds_angles, list):
@@ -694,8 +656,7 @@ def charmm_psf_psb_FF(structure_0, filename_0, structure_1 = None, filename_1= N
         coulomb14scaler_dict_0, \
         LJ14scaler_dict_0,\
         residues_applied_list_0 = Specific_FF_to_residue(structure_0,
-                                                         forcefield_files=forcefield_files,
-                                                         forcefield_names=forcefield_names,
+                                                         forcefield_selection=forcefield_selection,
                                                          residues=residues,
                                                          reorder_res_in_pdb_psf=reorder_res_in_pdb_psf,
                                                          box = box_0,
@@ -711,8 +672,7 @@ def charmm_psf_psb_FF(structure_0, filename_0, structure_1 = None, filename_1= N
         coulomb14scaler_dict_1, \
         LJ14scaler_dict_1, \
         residues_applied_list_1 = Specific_FF_to_residue(structure_1,
-                                                         forcefield_files=forcefield_files,
-                                                         forcefield_names=forcefield_names,
+                                                         forcefield_selection=forcefield_selection,
                                                          residues=residues,
                                                          reorder_res_in_pdb_psf=reorder_res_in_pdb_psf,
                                                          box = box_1,
@@ -736,7 +696,7 @@ def charmm_psf_psb_FF(structure_0, filename_0, structure_1 = None, filename_1= N
 
         for res_iter_1 in range(0, len(residues_applied_list_0_and_1)):
             if residues_applied_list_0_and_1[res_iter_1] not in  residues:
-                warn("All the residues were not used from the forcefield_names or forcefield_files " + \
+                warn("All the residues were not used from the forcefield_selection " + \
                      "string or dictionary.  There may be residues below other specified residues " + \
                      "in the mbuild.Compound hierarchy.  If so, the residues acquire the residue's " + \
                      "force fields, which is at the top of the hierarchy.  Alternatively, " + \
@@ -745,7 +705,7 @@ def charmm_psf_psb_FF(structure_0, filename_0, structure_1 = None, filename_1= N
 
         for res_iter_1 in range(0, len(residues)):
             if residues[res_iter_1] not in residues_applied_list_0_and_1:
-                warn("All the residues were not used from the forcefield_names or forcefield_files " + \
+                warn("All the residues were not used from the forcefield_selection " + \
                      "string or dictionary.  There may be residues below other specified residues " + \
                      "in the mbuild.Compound hierarchy.  If so, the residues acquire the residue's " + \
                      "force fields, which is at the top of the hierarchy.  Alternatively, " + \
@@ -772,8 +732,7 @@ def charmm_psf_psb_FF(structure_0, filename_0, structure_1 = None, filename_1= N
         coulomb14scaler_dict_0, \
         LJ14scaler_dict_0, \
         residues_applied_list_0 = Specific_FF_to_residue(structure_0,
-                                                         forcefield_files=forcefield_files,
-                                                         forcefield_names=forcefield_names,
+                                                         forcefield_selection=forcefield_selection,
                                                          residues=residues,
                                                          reorder_res_in_pdb_psf=reorder_res_in_pdb_psf,
                                                          box=box_0,
@@ -789,7 +748,7 @@ def charmm_psf_psb_FF(structure_0, filename_0, structure_1 = None, filename_1= N
 
         for res_iter_1 in range(0, len(residues_applied_list_0)):
             if residues_applied_list_0[res_iter_1] not in residues:
-                warn("All the residues were not used from the forcefield_names or forcefield_files " + \
+                warn("All the residues were not used from the forcefield_selection " + \
                      "string or dictionary.  There may be residues below other specified residues " + \
                      "in the mbuild.Compound hierarchy.  If so, the residues acquire the residue's " + \
                      "force fields, which is at the top of the hierarchy.  Alternatively, " + \
@@ -798,7 +757,7 @@ def charmm_psf_psb_FF(structure_0, filename_0, structure_1 = None, filename_1= N
 
         for res_iter_1 in range(0, len(residues)):
             if residues[res_iter_1] not in residues_applied_list_0:
-                warn("All the residues were not used from the forcefield_names or forcefield_files " + \
+                warn("All the residues were not used from the forcefield_selection " + \
                      "string or dictionary.  There may be residues below other specified residues " + \
                      "in the mbuild.Compound hierarchy.  If so, the residues acquire the residue's " + \
                      "force fields, which is at the top of the hierarchy.  Alternatively, " + \
@@ -842,10 +801,8 @@ def charmm_psf_psb_FF(structure_0, filename_0, structure_1 = None, filename_1= N
             warn('Error: Please specifiy all residues (residues) in a list')
             return None
 
-    if forcefield_files != None:
-        print('forcefield type from compound = '+str( forcefield_files))
-    elif forcefield_names != None:
-        print('forcefield type from compound = ' + str(forcefield_names))
+
+    print('forcefield type from compound = '+str( forcefield_selection))
     print('coulomb14scale from compound = ' + str(combined_1_4_Coul_dict_per_residue))
     print('lj14scale from compound = ' + str(combined_1_4_LJ_dict_per_residue))
 
@@ -1017,10 +974,8 @@ def charmm_psf_psb_FF(structure_0, filename_0, structure_1 = None, filename_1= N
                            ' - created by mBuild using the on ' + str(date_time) +'\n') #
             else:
                 data.write("*  " + filename_0 + ' - created by mBuild using the on ' + str(date_time) + '\n')
-            if forcefield_files != None:
-                data.write("*  " + 'parameters from the ' + str(forcefield_files) + ' force field(s) via MoSDef\n')
-            elif forcefield_names != None:
-                data.write("*  " + 'parameters from the '+str(forcefield_names)+' force field(s) via MoSDef\n')
+
+            data.write("*  " + 'parameters from the ' + str(forcefield_selection) + ' force field(s) via MoSDef\n')
             data.write("*  1-4 coulombic scaling = " + str(combined_1_4_Coul_dict_per_residue)+
                        ', and 1-4 LJ scaling = ' + str(combined_1_4_LJ_dict_per_residue)+'\n\n')
             data.write("*  "+'{:d} atoms\n'.format(len(structure_selection.atoms)))
@@ -1434,10 +1389,9 @@ def charmm_psf_psb_FF(structure_0, filename_0, structure_1 = None, filename_1= N
 
     date_time = datetime.datetime.today()
 
-    if forcefield_files != None:
-        print('write_charmm_psf: forcefield_files = ' + str(forcefield_files) + ', ' + 'residues = ' + str(residues))
-    elif forcefield_names != None:
-        print('write_charmm_psf: forcefield_names = ' + str(forcefield_names) + ', ' + 'residues = ' + str(residues))
+
+    print('write_charmm_psf: forcefield_selection = ' + str(forcefield_selection) + ', ' + 'residues = ' + str(residues))
+
 
 
     print("******************************")
@@ -1568,10 +1522,7 @@ def charmm_psf_psb_FF(structure_0, filename_0, structure_1 = None, filename_1= N
         No_of_remarks = 3
         output_write.write(first_indent % No_of_remarks + ' !NTITLE\n')
         output_write.write(' REMARKS this file ' + file_name_iteration + ' - created by mBuild/foyer using the' + '\n')
-        if forcefield_files != None:
-            output_write.write(' REMARKS parameters from the ' + str(forcefield_files) + ' force field via MoSDef\n')
-        elif forcefield_names != None:
-            output_write.write(' REMARKS parameters from the ' + str(forcefield_names) + ' force field via MoSDef\n')
+        output_write.write(' REMARKS parameters from the ' + str(forcefield_selection) + ' force field via MoSDef\n')
         output_write.write(' REMARKS created on ' + str(date_time) + '\n\n\n')
 
         # This converts the atom name in the GOMC psf and pdb files to unique atom names
