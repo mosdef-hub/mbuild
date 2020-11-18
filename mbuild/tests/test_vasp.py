@@ -41,16 +41,22 @@ class TestVasp(BaseTest):
 
 
     def test_bravais(self, copper_cell):
+        """
+        Test that a compound with no set box (bounding box only)
+        has a lattice that is zeros off-diagonal
+        """
         write_poscar(copper_cell, 'test.poscar')
         with open('test.poscar', 'r') as f:
-            bravais = list()
-            for i,line in enumerate(f):
-                if i in [2,3,4]:
-                    bravais.append(np.genfromtxt(line.splitlines(True)))
+            lines = f.readlines()
 
-        assert all([
-            a.all() == b.all() for a, b in zip(bravais, [np.array([1,0,0]), np.array([0,1,0]), np.array([0,0,1])])
-            ])
+        bravais = np.stack(
+                [np.fromstring(line, sep=" ") for line in lines[2:5]]
+                )
+
+        # zero the diagonal
+        for i in range(3):
+            bravais[i,i] = 0
+        assert np.array_equal(bravais, np.zeros((3,3)))
 
 
     def test_num_elements(self, cscl_crystal):
@@ -80,3 +86,13 @@ class TestVasp(BaseTest):
                    coord = line.strip()
 
         assert coord == coord_type
+
+
+    def test_warning_raised(self, copper_cell):
+        with pytest.warns(UserWarning):
+            write_poscar(copper_cell, 'test.poscar', coord_style="direct")
+
+
+    def test_error_raised(self, copper_cell):
+        with pytest.raises(ValueError):
+            write_poscar(copper_cell, 'test.poscar', coord_style="heck")
