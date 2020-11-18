@@ -1011,7 +1011,7 @@ def charmm_psf_psb_FF(structure_0, filename_0, structure_1 = None, filename_1= N
                 data.write('!\n')
                 data.write('!Kb: kcal/mole/A**2\n')
                 data.write('!b0: A\n')
-                data.write('!Kb (kcal/mol) = Kb (K) * Boltz. const.; (9999999999 if no stretching)\n')
+                data.write('!Kb (kcal/mol) = Kb_K (K) * Boltz. const.; (9999999999 if no stretching)\n')
                 data.write('!\n')
 
 
@@ -1051,7 +1051,7 @@ def charmm_psf_psb_FF(structure_0, filename_0, structure_1 = None, filename_1= N
                 data.write('!Ktheta: kcal/mole/rad**2\n')
                 data.write('!Theta0: degrees\n')
                 data.write('!\n')
-                data.write('! Ktheta (kcal/mol) = Ktheta (K) * Boltz. const.\t\t\n')
+                data.write('! Ktheta (kcal/mol) = Ktheta_K (K) * Boltz. const.\t\t\n')
                 data.write('!\n')
                 data.write('!atom_types \t\tKtheta\tTheta0\t\t\t  atoms_types_per_utilized_FF\n')
                 for params,idx in unique_angle_types.items():
@@ -1099,7 +1099,7 @@ def charmm_psf_psb_FF(structure_0, filename_0, structure_1 = None, filename_1= N
                     data.write('!n: multiplicity\n')
                     data.write('!delta: degrees\n')
                     data.write('!\n')
-                    data.write('! Kchi (kcal/mol) = Kchi (K) * Boltz. const.\n')
+                    data.write('! Kchi (kcal/mol) = Kchi_K (K) * Boltz. const.\n')
                     data.write('! Boltzmann = 0.0019872041 kcal / (mol * K)\n')
                     data.write('!\n')
                     if unit_style == 'real':
