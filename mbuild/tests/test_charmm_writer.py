@@ -140,7 +140,7 @@ class TestCharmmWriterData(BaseTest):
     def test_save_charmm_UA_GOMC_FF(self, TwoPropanolUA):
         charmm_psf_psb_FF(TwoPropanolUA, 'charmm_data_UA', FF_filename='charmm_data_UA',
                           residues = [TwoPropanolUA.name], forcefield_selection = 'trappe-ua',
-                          Bead_to_atom_name_dict= {'_CH3' : 'C'})
+                          bead_to_atom_name_dict= {'_CH3' : 'C'})
 
         out_GOMC = open('charmm_data_UA.inp', 'r').readlines()
         for i, line in enumerate(out_GOMC):
@@ -216,7 +216,7 @@ class TestCharmmWriterData(BaseTest):
     def test_save_charmm_UA_psf(self, TwoPropanolUA):
         charmm_psf_psb_FF(TwoPropanolUA, 'charmm_data_UA', FF_filename='charmm_data_UA',
                           residues = [TwoPropanolUA.name], forcefield_selection = 'trappe-ua',
-                          Bead_to_atom_name_dict= {'_CH3' : 'C'})
+                          bead_to_atom_name_dict= {'_CH3' : 'C'})
 
 
         out_GOMC = open('charmm_data_UA.psf', 'r').readlines()
@@ -239,7 +239,7 @@ class TestCharmmWriterData(BaseTest):
     def test_save_charmm_UA_pdb(self, TwoPropanolUA):
         charmm_psf_psb_FF(TwoPropanolUA, 'charmm_data_UA', FF_filename='charmm_data_UA',
                           residues = [TwoPropanolUA.name], forcefield_selection = 'trappe-ua',
-                          Bead_to_atom_name_dict= {'_CH3' : 'C'})
+                          bead_to_atom_name_dict= {'_CH3' : 'C'})
 
         out_GOMC = open('charmm_data_UA.pdb', 'r').readlines()
         for i, line in enumerate(out_GOMC):
@@ -379,7 +379,7 @@ class TestCharmmWriterData(BaseTest):
                           reorder_res_in_pdb_psf=True,
                           box_0 = [3, 3, 3],
                           box_1 =[4, 4, 4],
-                          Bead_to_atom_name_dict={'_CH3': 'C'}
+                          bead_to_atom_name_dict={'_CH3': 'C'}
                           )
 
         out_GOMC = open('residue_reorder_box_sizing_box_0.pdb', 'r').readlines()
@@ -844,7 +844,7 @@ class TestCharmmWriterData(BaseTest):
         charmm_psf_psb_FF(TwoPropanolUA, 'FFselection_string', FF_filename='FFselection_string',
                           residues = [TwoPropanolUA.name],
                           forcefield_selection = forcefields.get_ff_path()[0]+'/xml/'+'trappe-ua.xml',
-                          Bead_to_atom_name_dict= {'_CH3' : 'C'})
+                          bead_to_atom_name_dict= {'_CH3' : 'C'})
 
         out_GOMC = open('FFselection_string.pdb', 'r').readlines()
         for i, line in enumerate(out_GOMC):
@@ -871,7 +871,7 @@ class TestCharmmWriterData(BaseTest):
         Test_value_0 = charmm_psf_psb_FF(TwoPropanolUA, 'S', FF_filename='S',
                                          residues = [TwoPropanolUA.name],
                                          forcefield_selection = [str(forcefields.get_ff_path()[0])+'/xml/'+'trappe-ua.xml'],
-                                         Bead_to_atom_name_dict= {'_CH3' : 'C'},
+                                         bead_to_atom_name_dict= {'_CH3' : 'C'},
                                          )
 
         assert Test_value_0 is None
@@ -880,7 +880,7 @@ class TestCharmmWriterData(BaseTest):
         Test_value_0 = charmm_psf_psb_FF(TwoPropanolUA, 'box_0', FF_filename='box_0',
                                          residues = TwoPropanolUA.name,
                                          forcefield_selection = {TwoPropanolUA.name: 'trappe-ua' },
-                                         Bead_to_atom_name_dict= {'_CH3' : 'C'},
+                                         bead_to_atom_name_dict= {'_CH3' : 'C'},
                                          )
 
         assert Test_value_0 is None
@@ -1055,7 +1055,7 @@ class TestCharmmWriterData(BaseTest):
                                     FF_filename='test_Bead_AtomName_equal_3',
                                     residues = [TwoPropanolUA.name],
                                     forcefield_selection = 'trappe-ua',
-                                    Bead_to_atom_name_dict= {'_CH3' : 'Cx', '_HC' : 'Cxx'}
+                                    bead_to_atom_name_dict= {'_CH3' : 'Cx', '_HC' : 'Cxx'}
                                     )
 
         assert value_0 is None
@@ -1066,56 +1066,56 @@ class TestCharmmWriterData(BaseTest):
     def test_residue_string(self, TwoPropanolUA):
         value_0 = charmm_psf_psb_FF(TwoPropanolUA, 'charmm_data_UA', FF_filename='charmm_data_UA',
                           residues = 'TwoPropanolUA.name', forcefield_selection = 'trappe-ua',
-                          Bead_to_atom_name_dict= {'_CH3' : 'C'})
+                          bead_to_atom_name_dict= {'_CH3' : 'C'})
         assert value_0 is None
 
     def test_fix_res_bonds_angles_string(self, TwoPropanolUA):
         value_0 = charmm_psf_psb_FF(TwoPropanolUA, 'charmm_data_UA', FF_filename='charmm_data_UA',
                           residues = [TwoPropanolUA.name], forcefield_selection = 'trappe-ua',
-                          Bead_to_atom_name_dict= {'_CH3' : 'C'}, fix_res_bonds_angles='TwoPropanolUA.name' )
+                          bead_to_atom_name_dict= {'_CH3' : 'C'}, fix_res_bonds_angles='TwoPropanolUA.name' )
         assert value_0 is None
 
     def test_fix_res_bonds_angles_residue_not_in_system(self, TwoPropanolUA):
         value_0 = charmm_psf_psb_FF(TwoPropanolUA, 'charmm_data_UA', FF_filename='charmm_data_UA',
                           residues = [TwoPropanolUA.name], forcefield_selection = 'trappe-ua',
-                          Bead_to_atom_name_dict= {'_CH3' : 'C'}, fix_res_bonds_angles=['WNG'] )
+                          bead_to_atom_name_dict= {'_CH3' : 'C'}, fix_res_bonds_angles=['WNG'] )
         assert value_0 is None
 
     def test_fix_residue_string(self, TwoPropanolUA):
         value_0 = charmm_psf_psb_FF(TwoPropanolUA, 'charmm_data_UA', FF_filename='charmm_data_UA',
                           residues = [TwoPropanolUA.name], forcefield_selection = 'trappe-ua',
-                          Bead_to_atom_name_dict= {'_CH3' : 'C'}, fix_residue = 'TwoPropanolUA.name')
+                          bead_to_atom_name_dict= {'_CH3' : 'C'}, fix_residue = 'TwoPropanolUA.name')
         assert value_0 is None
 
     def test_fix_residue_string_residue_not_in_system(self, TwoPropanolUA):
         value_0 = charmm_psf_psb_FF(TwoPropanolUA, 'charmm_data_UA', FF_filename='charmm_data_UA',
                           residues = [TwoPropanolUA.name], forcefield_selection = 'trappe-ua',
-                          Bead_to_atom_name_dict= {'_CH3' : 'C'}, fix_residue = ['WNG'])
+                          bead_to_atom_name_dict= {'_CH3' : 'C'}, fix_residue = ['WNG'])
         assert value_0 is None
 
     def test_fix_residue_in_box_string(self, TwoPropanolUA):
         value_0 = charmm_psf_psb_FF(TwoPropanolUA, 'charmm_data_UA', FF_filename='charmm_data_UA',
                                     residues=[TwoPropanolUA.name], forcefield_selection='trappe-ua',
-                                    Bead_to_atom_name_dict={'_CH3': 'C'}, fix_residue_in_box='TwoPropanolUA.name')
+                                    bead_to_atom_name_dict={'_CH3': 'C'}, fix_residue_in_box='TwoPropanolUA.name')
         assert value_0 is None
 
     def test_fix_residue_in_box_string_residue_not_in_system(self, TwoPropanolUA):
         value_0 = charmm_psf_psb_FF(TwoPropanolUA, 'charmm_data_UA', FF_filename='charmm_data_UA',
                                     residues=[TwoPropanolUA.name], forcefield_selection='trappe-ua',
-                                    Bead_to_atom_name_dict={'_CH3': 'C'}, fix_residue_in_box=['WNG'])
+                                    bead_to_atom_name_dict={'_CH3': 'C'}, fix_residue_in_box=['WNG'])
         assert value_0 is None
 
-    def test_Bead_to_atom_name_dict_list(self, TwoPropanolUA):
+    def test_bead_to_atom_name_dict_list(self, TwoPropanolUA):
         value_0 = charmm_psf_psb_FF(TwoPropanolUA, 'charmm_data_UA', FF_filename='charmm_data_UA',
                                     residues=[TwoPropanolUA.name], forcefield_selection='trappe-ua',
-                                    Bead_to_atom_name_dict=['_CH3', 'C'])
+                                    bead_to_atom_name_dict=['_CH3', 'C'])
         assert value_0 is None
 
     def test_box_0_4_dims(self, TwoPropanolUA):
         value_0 = charmm_psf_psb_FF(TwoPropanolUA, 'charmm_data_UA_box_0',
                                     FF_filename='charmm_data_UA',
                                     residues=[TwoPropanolUA.name], forcefield_selection='trappe-ua',
-                                    Bead_to_atom_name_dict={'_CH3': 'C'},
+                                    bead_to_atom_name_dict={'_CH3': 'C'},
                                     box_0=[4, 5, 6], box_1=[3, 4, 5, 6])
         assert value_0 is None
 
@@ -1124,14 +1124,14 @@ class TestCharmmWriterData(BaseTest):
                                     structure_1=TwoPropanolUA, filename_1='charmm_data_UA_box_1',
                                     FF_filename='charmm_data_UA',
                                     residues=[TwoPropanolUA.name], forcefield_selection='trappe-ua',
-                                    Bead_to_atom_name_dict={'_CH3': 'C'},
+                                    bead_to_atom_name_dict={'_CH3': 'C'},
                                     box_0=[4, 5, 6], box_1=[3, 4, 5, 6])
         assert value_0 is None
 
     def test_box_0_negative_dims(self, TwoPropanolUA):
         value_0 = charmm_psf_psb_FF(TwoPropanolUA, 'charmm_data_UA', FF_filename='charmm_data_UA',
                                     residues=[TwoPropanolUA.name], forcefield_selection='trappe-ua',
-                                    Bead_to_atom_name_dict={'_CH3': 'C'}, box_0=[-3, 4, 5, 6])
+                                    bead_to_atom_name_dict={'_CH3': 'C'}, box_0=[-3, 4, 5, 6])
         assert value_0 is None
 
     def test_box_1_negative_dims(self, TwoPropanolUA):
@@ -1139,21 +1139,21 @@ class TestCharmmWriterData(BaseTest):
                                     structure_1=TwoPropanolUA, filename_1='charmm_data_UA_box_1',
                                     FF_filename='charmm_data_UA',
                                     residues=[TwoPropanolUA.name], forcefield_selection='trappe-ua',
-                                    Bead_to_atom_name_dict={'_CH3': 'C'},
+                                    bead_to_atom_name_dict={'_CH3': 'C'},
                                     box_0=[4, 5, 6], box_1=[-3, 4, 5, 6])
         assert value_0 is None
 
     def test_box_0_string_dims(self, TwoPropanolUA):
         value_0 = charmm_psf_psb_FF(TwoPropanolUA, 'charmm_data_UA', FF_filename='charmm_data_UA',
                                     residues=[TwoPropanolUA.name], forcefield_selection='trappe-ua',
-                                    Bead_to_atom_name_dict={'_CH3': 'C'}, box_0=['string', 5, 6])
+                                    bead_to_atom_name_dict={'_CH3': 'C'}, box_0=['string', 5, 6])
         assert value_0 is None
 
     def test_box_1_string_dims(self,  TwoPropanolUA):
         value_0 = charmm_psf_psb_FF(TwoPropanolUA, 'charmm_data_UA_box_0', FF_filename='charmm_data_UA',
                                     structure_1= TwoPropanolUA, filename_1='charmm_data_UA_box_1',
                                     residues=[TwoPropanolUA.name], forcefield_selection='trappe-ua',
-                                    Bead_to_atom_name_dict={'_CH3': 'C'},
+                                    bead_to_atom_name_dict={'_CH3': 'C'},
                                     box_0=[ 4, 5, 6], box_1=['string', 5, 6])
         assert value_0 is None
 
