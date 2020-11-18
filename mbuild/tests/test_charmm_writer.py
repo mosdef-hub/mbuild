@@ -908,11 +908,12 @@ class TestCharmmWriterData(BaseTest):
         epsilon_conversion_factor = 1
         #reversed the bond order so it fixes itself
         bonds_1 = [[bond.atom1.idx + 1, bond.atom2.idx + 1] for bond in structure_FF.bonds]
-        bond_types_1, unique_bond_types_1 = charmm_writer._get_bond_types(structure_FF, bonds_1, sigma_conversion_factor,
-                                                                      epsilon_conversion_factor)
+        bond_types_1, unique_bond_types_1 = charmm_writer._get_bond_types(structure_FF,
+                                                                          sigma_conversion_factor,
+                                                                          epsilon_conversion_factor)
 
         bonds_2 = [[bond.atom2.idx + 1, bond.atom1.idx + 1] for bond in structure_FF.bonds]
-        bond_types_2, unique_bond_types_2 = charmm_writer._get_bond_types(structure_FF, bonds_2,
+        bond_types_2, unique_bond_types_2 = charmm_writer._get_bond_types(structure_FF,
                                                                           sigma_conversion_factor,
                                                                           epsilon_conversion_factor)
 

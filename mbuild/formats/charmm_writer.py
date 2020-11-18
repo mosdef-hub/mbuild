@@ -938,8 +938,8 @@ def charmm_psf_psb_FF(structure_0, filename_0, structure_1 = None, filename_1= N
             bond_types = np.ones(len(bonds),dtype=int)
         else:
             bond_types, unique_bond_types = _get_bond_types(structure_selection,
-                    bonds, sigma_conversion_factor,
-                    epsilon_conversion_factor)
+                                                            sigma_conversion_factor,
+                                                            epsilon_conversion_factor)
 
 
     if angles:
