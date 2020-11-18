@@ -160,11 +160,7 @@ def _get_bond_types(structure,
     -------
 
     """
-    unique_bond_types = _get_unique_bond_types(
-        structure,
-        sigma_conversion_factor,
-        epsilon_conversion_factor
-    )
+    unique_bond_types = _get_unique_bond_types(structure, sigma_conversion_factor, epsilon_conversion_factor )
 
     bond_types = [
         unique_bond_types[_get_bond_type_key(bond, sigma_conversion_factor, epsilon_conversion_factor)]
@@ -202,17 +198,11 @@ def _get_angle_types(structure,
         warn('ERROR :  Urey-Bradleys are not available in the current version of this psf, pdb, and GOMC writer.')
         return None, None
     else:
-        unique_angle_types = _get_unique_angle_types(
-            structure,
-            sigma_conversion_factor,
-            epsilon_conversion_factor
-        )
+        unique_angle_types = _get_unique_angle_types(structure, sigma_conversion_factor, epsilon_conversion_factor )
 
-        angle_types = [unique_angle_types[_get_angle_type_key(
-            angle,
-            sigma_conversion_factor,
-            epsilon_conversion_factor
-        )] for angle in structure.angles]
+        angle_types = [unique_angle_types[_get_angle_type_key( angle, sigma_conversion_factor,
+                                                               epsilon_conversion_factor
+                                                               )] for angle in structure.angles]
 
     unique_angle_check_dict = {}
     for i_value_ang, i_key_ang in unique_angle_types.items():
@@ -292,7 +282,7 @@ def _get_impropers(structure, epsilon_conversion_factor):
     return improper_types, unique_improper_types
 
 
-def unique_atom_naming(structure, residue_ID_list, residue_names_list, Bead_to_atom_name_dict=None):
+def unique_atom_naming(structure, residue_ID_list, residue_names_list, bead_to_atom_name_dict=None):
 
     """ Outputs
         unique_Individual_atom_names_dict : dictionary
@@ -301,7 +291,7 @@ def unique_atom_naming(structure, residue_ID_list, residue_names_list, Bead_to_a
             The atom names for every atom in the system
         Missing_Bead_to_atom_name  : list, in sequential  order
             The bead names of any atoms beads that did not have a name specificed to them
-            via the Bead_to_atom_name_dict
+            via the bead_to_atom_name_dict
 
     Parameters
     ----------
@@ -310,7 +300,7 @@ def unique_atom_naming(structure, residue_ID_list, residue_names_list, Bead_to_a
             The residue ID for every atom in the system
     residue_names_list  : list, in sequential  order
         The atom names for every atom in the system
-    Bead_to_atom_name_dict: dictionary ; optional, default =None
+    bead_to_atom_name_dict: dictionary ; optional, default =None
         For all atom names/elements/beads with 2 or less digits, this converts
         the atom name in the GOMC psf and pdb files to a unique atom name,
         provided they do not exceed 3844 atoms (62^2) of the same name/element/bead
@@ -328,14 +318,14 @@ def unique_atom_naming(structure, residue_ID_list, residue_names_list, Bead_to_a
         while interate_thru_names == True:
             j = j + 1
             if str(atom.name)[:1] == '_':
-                if Bead_to_atom_name_dict != None and (str(atom.name) in Bead_to_atom_name_dict) == True:
-                    if len(Bead_to_atom_name_dict[str(atom.name)]) > 2:
+                if bead_to_atom_name_dict != None and (str(atom.name) in bead_to_atom_name_dict) == True:
+                    if len(bead_to_atom_name_dict[str(atom.name)]) > 2:
                         text_to_write = ('ERROR: only enter atom names that have 2 or less digits' +
-                                         ' in the Bead to atom naming dictionary (Bead_to_atom_name_dict) ')
+                                         ' in the Bead to atom naming dictionary (bead_to_atom_name_dict) ')
                         warn(text_to_write)
                         return None, None, None
                     else:
-                        atom_name_value = Bead_to_atom_name_dict[str(atom.name)]
+                        atom_name_value = bead_to_atom_name_dict[str(atom.name)]
                         No_digits_atom_name = 2
                 else:
                     Missing_Bead_to_atom_name.append(1)
@@ -363,7 +353,7 @@ def unique_atom_naming(structure, residue_ID_list, residue_names_list, Bead_to_a
                     str(atom_name_value) + str(str(base10_to_base62_alph_num(j))[-No_digits_atom_name:]))
 
     if sum(Missing_Bead_to_atom_name) > 0:
-        warn("NOTE: All bead names were not found in the Bead to atom naming dictionary (Bead_to_atom_name_dict) ")
+        warn("NOTE: All bead names were not found in the Bead to atom naming dictionary (bead_to_atom_name_dict) ")
 
     return unique_Individual_atom_names_dict, Individual_atom_names_List, Missing_Bead_to_atom_name
 
@@ -372,7 +362,7 @@ def unique_atom_naming(structure, residue_ID_list, residue_names_list, Bead_to_a
 
 def charmm_psf_psb_FF(structure_0, filename_0, structure_1 = None, filename_1= None,
                       non_bonded_type='LJ', forcefield_selection = None,  residues=None,
-                      detect_forcefield_style=True, fix_res_bonds_angles = None, Bead_to_atom_name_dict=None,
+                      detect_forcefield_style=True, fix_res_bonds_angles = None, bead_to_atom_name_dict=None,
                       fix_residue=None, fix_residue_in_box=None,  FF_filename= None,
                       reorder_res_in_pdb_psf =False, box_0 = None, box_1 = None  , **kwargs):
 
@@ -402,22 +392,23 @@ def charmm_psf_psb_FF(structure_0, filename_0, structure_1 = None, filename_1= N
             Note: Currently, on the 'LJ' potential is supported.
     residues : str of list of str
         Labels of unique residues in the Compound. Residues are assigned by
-        checking against Compound.name.
+        checking against Compound.name.  Only supply residue names as 3 characters
+        strings, as the residue names are truncated to 3 characters to fit in the
+        psf and pdb file.
     forcefield_selection : str or dictionary, default = None
         Apply a forcefield to the output file by selecting a force field xlm file with
         its path or by using the standard force field name provided the `foyer` package.
-        Note: to write the NAMD/GOMC force field files, pdb, and psf files, the
+        Note: to write the NAMD/GOMC force field, pdb, and psf files, the
         residues and forcefields must be provided in a str or
         dictionary.  If a dictionary is provided all residues must
         be specified to a force field.
-            Example dict for FF file: {'Water' : 'oplsaa.xml', 'OCT': 'path_to file/'trappe-ua.xml'}
-            Example str for FF file: 'trappe-ua.xml'
-        Note: the file path name must also be specified for the FF files.
-            Example dict for standard FF names : {'Water' : 'oplsaa', 'OCT': 'trappe-ua'}
+            Example dict for FF file: {'ETH' : 'oplsaa.xml', 'OCT': 'path_to file/trappe-ua.xml'}
+            Example str for FF file: 'path_to file/trappe-ua.xml'
+            Example dict for standard FF names : {'ETH' : 'oplsaa', 'OCT': 'trappe-ua'}
             Example str for standard FF names: 'trappe-ua'
-            Example of a mixed dict with both : {'Water' : 'oplsaa', 'OCT': 'path_to file/'trappe-ua.xml'}
+            Example of a mixed dict with both : {'ETH' : 'oplsaa', 'OCT': 'path_to file/'trappe-ua.xml'}
     detect_forcefield_style: boolean
-        If True, format lammpsdata parameters based on the contents of
+        If True, format NAMD/GOMC/LAMMPS parameters based on the contents of
         the parmed structure_0
     fix_res_bonds_angles: list, default = None
         When list of residues is provided, the selected residues will have
@@ -425,7 +416,7 @@ def charmm_psf_psb_FF(structure_0, filename_0, structure_1 = None, filename_1= N
         for the GOMC engine and it changes the residue's bond constants (Kbs) 
         and angle constants (Kthetas) values to 999999999999 in the 
         FF file (i.e., the .inp file).
-    Bead_to_atom_name_dict: dict, optional, default =None
+    bead_to_atom_name_dict: dict, optional, default =None
         For all atom names/elements/beads with 2 or less digits, this converts
         the atom name in the GOMC psf and pdb files to a unique atom name,
         provided they do not exceed 3844 atoms (62^2) of the same name/element/bead
@@ -462,10 +453,10 @@ def charmm_psf_psb_FF(structure_0, filename_0, structure_1 = None, filename_1= N
         residue names in the 'residues' list that was entered.
     box_0 ; list of 3 positive float values or the dimensions [x, y ,z]
         for structure_0 in nanometers (nm)
-        This is to add/override or change the structures dimenstions. Ex: [1,2,3]
+        This is to add/override or change the structures dimensions. Ex: [1,2,3]
     box_1 ; list of 3 positive float values or the dimensions [x, y ,z]
         for structure_1 in nanometers (nm)
-        This is to add/override or change the structures dimenstions. Ex: [1,2,3]
+        This is to add/override or change the structures dimensions. Ex: [1,2,3]
     Notes
     -----
     Impropers and NBFIX are not currenly supported
@@ -473,7 +464,8 @@ def charmm_psf_psb_FF(structure_0, filename_0, structure_1 = None, filename_1= N
     OPLS and CHARMM forcefield styles are supported, AMBER forcefield styles are NOT supported.
     Impropers and Urey-Bradleys are not supported for GOMC
 
-    The atom typing is currently provided via a base 62 numbering.
+    The atom typing is currently provided via a base 52 numbering (capital and lowercase lettering).
+    This base 52 numbering allows for (52)^4 unique atom types.
 
     Unique atom names are provided if the system do not exceed 3844 atoms (62^2) of the same
     name/bead per residue (base 62 numbering). For all atom names/elements with 3 or less digits,
@@ -604,9 +596,9 @@ def charmm_psf_psb_FF(structure_0, filename_0, structure_1 = None, filename_1= N
                      'list are also in the residues list.')
                 return None
 
-    if Bead_to_atom_name_dict != None and not isinstance(Bead_to_atom_name_dict, dict):
+    if bead_to_atom_name_dict != None and not isinstance(bead_to_atom_name_dict, dict):
         warn('Error: Please enter the a bead type to atom in the' +
-             '  dictionary (Bead_to_atom_name_dict) '
+             '  dictionary (bead_to_atom_name_dict) '
              + 'so GOMC can properly evaluate the unique atom names')
         return None
 
@@ -1529,7 +1521,7 @@ def charmm_psf_psb_FF(structure_0, filename_0, structure_1 = None, filename_1= N
         unique_Individual_atom_names_dict, \
         Individual_atom_names_List, \
         Missing_Bead_to_atom_name =unique_atom_naming(stuct_only_iteration , residue_ID_list, residue_names_list,
-                                                      Bead_to_atom_name_dict=Bead_to_atom_name_dict)
+                                                      bead_to_atom_name_dict=bead_to_atom_name_dict)
         if None in [unique_Individual_atom_names_dict, Individual_atom_names_List, Missing_Bead_to_atom_name]:
             warn('ERROR : The unique_atom_naming function failed while running the  charmm_writer function.')
             return None
@@ -1729,7 +1721,7 @@ def charmm_psf_psb_FF(structure_0, filename_0, structure_1 = None, filename_1= N
     print('write_charmm_pdb: residues == ' + str(residues))
     print('fix_residue = ' + str(fix_residue))
     print('fix_residue_in_box = ' + str(fix_residue_in_box))
-    print('Bead_to_atom_name_dict = ' + str(Bead_to_atom_name_dict))
+    print('bead_to_atom_name_dict = ' + str(bead_to_atom_name_dict))
 
     if fix_residue is None and fix_residue_in_box is None:
         print('INFORMATION: No atoms are fixed in this pdb file for the GOMC simulation engine. ')
@@ -1842,7 +1834,7 @@ def charmm_psf_psb_FF(structure_0, filename_0, structure_1 = None, filename_1= N
         unique_Individual_atom_names_dict, \
         Individual_atom_names_List, \
         Missing_Bead_to_atom_name = unique_atom_naming(stuct_only_iteration, residue_ID_list, residue_names_list,
-                                                       Bead_to_atom_name_dict=Bead_to_atom_name_dict)
+                                                       bead_to_atom_name_dict=bead_to_atom_name_dict)
 
         if None in [unique_Individual_atom_names_dict, Individual_atom_names_List, Missing_Bead_to_atom_name]:
             warn('ERROR : The unique_atom_naming function failed while running the  charmm_writer function.')

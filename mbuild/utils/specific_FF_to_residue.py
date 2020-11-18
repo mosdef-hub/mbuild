@@ -13,16 +13,23 @@ def Specific_FF_to_residue(structure , forcefield_selection = None,
     """
     Input:
         structure =  compound structure
-        forcefield_selection =  dictionary of residues to force fields, listed with a path
-            and filename, or by selecting a force field xlm file with
+        forcefield_selection : str or dictionary, default = None
+            Apply a forcefield to the output file by selecting a force field xlm file with
             its path or by using the standard force field name provided the `foyer` package.
-            Ex: {'Water' : 'oplsaa.xml', 'OCT': 'trappe-ua.xml'}
-        forcefield_names =  dictionary of residues to force fields.
-            Ex: {'Water' : 'oplsaa', 'OCT': 'trappe-ua'}
-            Note: either the forcefield_files or forcefield_names can be provided, not both.
-            the forcefield_files or forcefield_names can be not be mixed combination.
-        residues = list of residues
-            note FFs and residues must be in sequenctial order
+            Note: to write the NAMD/GOMC force field, pdb, and psf files, the
+            residues and forcefields must be provided in a str or
+            dictionary.  If a dictionary is provided all residues must
+            be specified to a force field.
+            Example dict for FF file: {'ETH' : 'oplsaa.xml', 'OCT': 'path_to file/trappe-ua.xml'}
+            Example str for FF file: 'path_to file/trappe-ua.xml'
+            Example dict for standard FF names : {'ETH' : 'oplsaa', 'OCT': 'trappe-ua'}
+            Example str for standard FF names: 'trappe-ua'
+            Example of a mixed dict with both : {'ETH' : 'oplsaa', 'OCT': 'path_to file/'trappe-ua.xml'}
+        residues : str of list of str
+            Labels of unique residues in the Compound. Residues are assigned by
+            checking against Compound.name.  Only supply residue names as 3 characters
+            strings, as the residue names are truncated to 3 characters to fit in the
+            psf and pdb file.
         box ; list of 3 positive float values or the dimensions [x, y ,z]
             for structure in nanometers (nm)
             This is to add/override or change the structures dimenstions. Ex: [1,2,3]
@@ -223,7 +230,6 @@ def Specific_FF_to_residue(structure , forcefield_selection = None,
                 new_compound_iteration.add(mb.compound.clone(child))
 
         if children_in_iteration == True:
-            print(" = "+str())
             if User_entered_FF_with_path_dict[residues[i]] == True:
                 FF_iteration = Forcefield(FF_data[residues[i]])
                 residues_applied_list.append(residues[i])
