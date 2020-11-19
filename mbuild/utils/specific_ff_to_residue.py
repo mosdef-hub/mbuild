@@ -52,13 +52,13 @@ def specific_ff_to_residue(structure,
     Example of a mixed dict with both : {'ETH' : 'oplsaa', 'OCT': 'path_to file/'trappe-ua.xml'}
 
     Returns
-    --------
+    -------
     structure: parmed.Structure
         parmed structure with applied force field
     coulomb14scaler_dict: dict
         a dictionary with the 1,4-colombic scalers for each residue
             (i.e., a different force field could on each residue)
-    LJ14scaler_dict: dict
+    lj14_scaler_dict: dict
         a dictionary with the 1,4-LJ scalers for each residue
         (i.e., a different force field could on each residue)
     residues_applied_list: list
