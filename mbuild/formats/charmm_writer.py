@@ -15,7 +15,7 @@ from mbuild.utils.sorting import natural_sort
 from mbuild.utils.conversion import base10_to_base16_alph_num
 from mbuild.utils.conversion import base10_to_base52_alph_num
 from mbuild.utils.conversion import base10_to_base62_alph_num
-from mbuild.utils.specific_FF_to_residue import Specific_FF_to_residue
+from mbuild.utils.specific_ff_to_residue import specific_ff_to_residue
 
 
 def generate_impropers_for_PSF(stucture,
@@ -647,7 +647,7 @@ def charmm_psf_psb_FF(structure_0, filename_0, structure_1 = None, filename_1= N
         structure_0_FF, \
         coulomb14scaler_dict_0, \
         LJ14scaler_dict_0,\
-        residues_applied_list_0 = Specific_FF_to_residue(structure_0,
+        residues_applied_list_0 = specific_ff_to_residue(structure_0,
                                                          forcefield_selection=forcefield_selection,
                                                          residues=residues,
                                                          reorder_res_in_pdb_psf=reorder_res_in_pdb_psf,
@@ -663,7 +663,7 @@ def charmm_psf_psb_FF(structure_0, filename_0, structure_1 = None, filename_1= N
         structure_1_FF, \
         coulomb14scaler_dict_1, \
         LJ14scaler_dict_1, \
-        residues_applied_list_1 = Specific_FF_to_residue(structure_1,
+        residues_applied_list_1 = specific_ff_to_residue(structure_1,
                                                          forcefield_selection=forcefield_selection,
                                                          residues=residues,
                                                          reorder_res_in_pdb_psf=reorder_res_in_pdb_psf,
@@ -723,7 +723,7 @@ def charmm_psf_psb_FF(structure_0, filename_0, structure_1 = None, filename_1= N
         structure_0_FF, \
         coulomb14scaler_dict_0, \
         LJ14scaler_dict_0, \
-        residues_applied_list_0 = Specific_FF_to_residue(structure_0,
+        residues_applied_list_0 = specific_ff_to_residue(structure_0,
                                                          forcefield_selection=forcefield_selection,
                                                          residues=residues,
                                                          reorder_res_in_pdb_psf=reorder_res_in_pdb_psf,
