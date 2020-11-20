@@ -4,6 +4,7 @@ from warnings import warn
 from pathlib import Path
 from collections import defaultdict
 import numpy as np
+from copy import deepcopy
 
 import parmed as pmd
 from parmed.periodic_table import AtomicNum, element_by_name, Mass, Element
@@ -1008,14 +1009,11 @@ def to_parmed(compound,
     # pad box with .25nm buffers
     if box is None:
         if compound.box is not None:
-            box = compound.box
+            box = deepcopy(compound.box)
         else:
-            box = compound.boundingbox
-        box_vec_max = box.maxs.tolist()
-        box_vec_min = box.mins.tolist()
-        box_vec_max[dim] += 0.25
-        box_vec_min[dim] -= 0.25
-        box = Box(mins=box_vec_min, maxs=box_vec_max)
+            box = deepcopy(compound.boundingbox)
+        box.maxs += 0.25
+        box.maxs -= 0.25
 
     box_vector = np.empty(6)
     if box.angles is not None:
