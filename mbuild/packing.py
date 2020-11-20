@@ -237,7 +237,6 @@ def fill_box(
         input_text = PACKMOL_HEADER.format(
             overlap, filled_xyz.name, seed, sidemax * 10
         )
-        print(f"input_text:\n{input_text}")
         for comp, m_compounds, rotate in zip(
             compound, n_compounds, fix_orientation
         ):
