@@ -1013,7 +1013,7 @@ def to_parmed(compound,
         else:
             box = deepcopy(compound.boundingbox)
         box.maxs += 0.25
-        box.maxs -= 0.25
+        box.mins -= 0.25
 
     box_vector = np.empty(6)
     if box.angles is not None:
