@@ -237,6 +237,7 @@ def fill_box(
         input_text = PACKMOL_HEADER.format(
             overlap, filled_xyz.name, seed, sidemax * 10
         )
+        print(f"input_text:\n{input_text}")
         for comp, m_compounds, rotate in zip(
             compound, n_compounds, fix_orientation
         ):
@@ -264,7 +265,7 @@ def fill_box(
         filled.update_coordinates(
             filled_xyz.name, update_port_locations=update_port_locations
         )
-        filled.periodicity = np.asarray(box.lengths, dtype=np.float32)
+        filled.box = box
 
     # ensure that the temporary files are removed from the machine after filling
     finally:
