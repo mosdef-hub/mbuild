@@ -1012,8 +1012,17 @@ def to_parmed(compound,
             box = deepcopy(compound.box)
         else:
             box = deepcopy(compound.boundingbox)
-        box.maxs += 0.25
-        box.mins -= 0.25
+            maxs = np.zeros(3)
+            mins = np.zeros(3)
+            # if periodicty is set, use it before bounding box
+            nonzero_inds = np.where(compound.periodicity != 0)
+            zero_inds = np.where(compound.periodicity == 0)
+            maxs[nonzero_inds] = compound.periodicity[nonzero_inds]
+            # if using bounding box, pad by 0.25 nm
+            maxs[zero_inds] = box.maxs[zero_inds] + 0.25
+            mins[zero_inds] = box.mins[zero_inds] - 0.25
+            box.maxs = maxs
+            box.mins = mins
 
     box_vector = np.empty(6)
     if box.angles is not None:
