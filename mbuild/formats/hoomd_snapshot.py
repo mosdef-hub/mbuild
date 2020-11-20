@@ -145,9 +145,13 @@ def to_hoomdsnapshot(
     ) = _parse_improper_information(structure)
     pair_types, pair_typeid, pairs, n_pairs = _parse_pair_information(structure)
 
+    # wrap particles into the box
+    box = hoomd.data.boxdim(Lx=lx, Ly=ly, Lz=lz, xy=xy, xz=xz, yz=yz)
+    scaled_positions = np.stack([box.wrap(xyz)[0] for xyz in scaled_positions])
+
     hoomd_snapshot = hoomd.data.make_snapshot(
         N=n_particles,
-        box=hoomd.data.boxdim(Lx=lx, Ly=ly, Lz=lz, xy=xy, xz=xz, yz=yz),
+        box=box,
         particle_types=unique_types,
         bond_types=unique_bond_types,
         angle_types=unique_angle_types,
