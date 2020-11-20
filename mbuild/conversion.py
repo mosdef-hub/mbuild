@@ -885,12 +885,11 @@ def to_parmed(compound,
     ----------
     compound : mb.Compound
         mbuild Compound that need to be converted.
-    box : mb.Box, optional, default=compound.boundingbox (with buffer)
+    box : mb.Box, optional, default=None
         Box information to be used when converting to a `Structure`.
-        If 'None', a bounding box is used with 0.25nm buffers at
-        each face to avoid overlapping atoms, unless `compound.periodicity`
-        is not None, in which case those values are used for the
-        box lengths.
+        If 'None' and the box attribute is set, the box is used with
+        0.25nm buffers at each face to avoid overlapping atoms. Otherwise
+        the boundingbox is used with the same 0.25nm buffers.
     title : str, optional, default=compound.name
         Title/name of the ParmEd Structure
     residues : str of list of str
@@ -1014,13 +1013,8 @@ def to_parmed(compound,
             box = compound.boundingbox
         box_vec_max = box.maxs.tolist()
         box_vec_min = box.mins.tolist()
-        for dim, val in enumerate(compound.periodicity):
-            if val:
-                box_vec_max[dim] = val
-                box_vec_min[dim] = 0.0
-            if not val:
-                box_vec_max[dim] += 0.25
-                box_vec_min[dim] -= 0.25
+        box_vec_max[dim] += 0.25
+        box_vec_min[dim] -= 0.25
         box = Box(mins=box_vec_min, maxs=box_vec_max)
 
     box_vector = np.empty(6)
