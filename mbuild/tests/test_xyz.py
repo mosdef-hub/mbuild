@@ -1,5 +1,6 @@
 import numpy as np
 import pytest
+import ele
 
 import mbuild as mb
 from mbuild.formats.xyz import write_xyz
@@ -15,6 +16,10 @@ class TestXYZ(BaseTest):
         assert len(ethane_in.children) == 8
         assert ethane_in.n_bonds == 0
         assert set([child.name for child in ethane_in.children]) == {'C', 'H'}
+        assert set([child.element for child in ethane_in.children]) == {
+            ele.Elements.C,
+            ele.Elements.H
+        }
 
     def test_wrong_n_atoms(self):
         with pytest.raises(MBuildError):
