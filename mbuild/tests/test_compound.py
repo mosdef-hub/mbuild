@@ -722,7 +722,7 @@ class TestCompound(BaseTest):
     def test_fillbox_then_parmed(self):
         # This test would fail with the old to_parmed code (pre PR #699)
 
-        bead = mb.Compound(name="Bead")
+        bead = mb.Compound(name="Ar")
         box = mb.Box(mins=(2,2,2), maxs=(3,3,3))
         bead_box = mb.fill_box(bead, 100, box)
         bead_box_in_pmd = bead_box.to_parmed()
@@ -889,7 +889,12 @@ class TestCompound(BaseTest):
     @pytest.mark.skipif(not has_openbabel, reason="Open Babel package not installed")
     def test_energy_minimize_non_element(self, octane):
         for particle in octane.particles():
+            particle.element = None
+        # Pass with element inference from names
+        octane.energy_minimize()
+        for particle in octane.particles():
             particle.name = 'Q'
+        # Fail once names don't match elements
         with pytest.raises(MBuildError):
             octane.energy_minimize()
 
@@ -1294,3 +1299,7 @@ class TestCompound(BaseTest):
                 c.element for c in container.particles_by_element("sod")
             ]
 
+    def test_elements_from_smiles(self):
+        mol = mb.load("COC", smiles=True)
+        for particle in mol.particles():
+            assert particle.element is not None

@@ -3,6 +3,7 @@ from collections import OrderedDict
 
 import mbuild as mb
 from mbuild.exceptions import MBuildError
+import ele
 
 
 def compound_from_json(json_file):
@@ -124,6 +125,7 @@ def _particle_info(cmpd, include_ports=False):
     particle_dict['pos'] = list(cmpd.pos)
     particle_dict['charge'] = cmpd.charge
     particle_dict['periodicity'] = list(cmpd.periodicity)
+    particle_dict['element'] = cmpd.element
 
     if include_ports:
         particle_dict['ports'] = list()
@@ -156,7 +158,19 @@ def _dict_to_mb(compound_dict):
     pos = compound_dict.get('pos', [0.0, 0.0, 0.0])
     charge = compound_dict.get('charge', 0.0)
     periodicity = compound_dict.get('periodicity', [0.0, 0.0, 0.0])
-    this_particle = mb.Compound(name=name, pos=pos, charge=charge, periodicity=periodicity)
+    element = compound_dict.get('element', None)
+    if isinstance(element, ele.element.Element):
+        pass
+    elif isinstance(element, list):
+        atom_num = element[0]
+        element = ele.element_from_atomic_number(atom_num)
+    elif isinstance(element, str):
+        pass
+    else:
+        pass
+
+    this_particle = mb.Compound(name=name, pos=pos, charge=charge,
+                                periodicity=periodicity, element=element)
     return this_particle
 
 
