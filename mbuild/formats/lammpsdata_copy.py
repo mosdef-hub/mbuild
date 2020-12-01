@@ -462,7 +462,7 @@ def write_lammpsdata(structure, filename, atom_style='full',
                 for params,idx in sorted_bond_types.items():
                     #If the user specified LJ unit style, revert the internal conversion of k by ParmEd
                     if unit_style == 'lj':  
-                        data.write('{}\t{}\t\t{}\t\t# {}\t{}\n'.format(idx,params[0]*4184*2/10,params[1]/10,params[2][0],params[2][1]))
+                        data.write('{}\t{}\t\t{}\t\t# {}\t{}\n'.format(idx,params[0]*4184*2/10,params[1],params[2][0],params[2][1]))
                     else:
                         data.write('{}\t{}\t\t{}\t\t# {}\t{}\n'.format(idx,params[0],params[1],params[2][0],params[2][1]))
 
@@ -547,17 +547,10 @@ def write_lammpsdata(structure, filename, atom_style='full',
                 atom_line ='{index:d}\t{zero:d}\t{type_index:d}\t{charge:.4e}\t{x:.6f}\t{y:.6f}\t{z:.6f}\n'
 
         for i,coords in enumerate(xyz):
-            if unit_style == 'lj': 
-                data.write(atom_line.format(
-                    index=i+1,type_index=unique_types.index(types[i])+1,
-                    zero=structure.atoms[i].residue.idx,charge=charges[i],
-                    x=coords[0]/10.,y=coords[1]/10.,z=coords[2]/10.))
-
-            else:
-                data.write(atom_line.format(
-                    index=i+1,type_index=unique_types.index(types[i])+1,
-                    zero=structure.atoms[i].residue.idx,charge=charges[i],
-                    x=coords[0],y=coords[1],z=coords[2]))
+            data.write(atom_line.format(
+                index=i+1,type_index=unique_types.index(types[i])+1,
+                zero=structure.atoms[i].residue.idx,charge=charges[i],
+                x=coords[0],y=coords[1],z=coords[2]))
 
         if atom_style in ['full', 'molecular']:
             # Bond data

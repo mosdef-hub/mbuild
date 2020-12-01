@@ -1,10 +1,9 @@
 numpy
 scipy
-packmol>=1!18.013
+packmol
 oset
 parmed
 mdtraj
-foyer
 gsd>=1.2
 openbabel
 networkx
