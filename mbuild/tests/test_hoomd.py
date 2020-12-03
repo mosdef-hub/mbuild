@@ -73,24 +73,26 @@ class TestHoomd(BaseTest):
         hoomd_simulation = import_("mbuild.formats.hoomd_simulation")
         ff = forcefield.Forcefield(name='oplsaa')
         structure = ff.apply(ethane)
-        hoomd_simulation.create_hoomd_simulation(structure)
+        sim = hoomd.context.SimulationContext()
+        with sim:
+            hoomd_simulation.create_hoomd_simulation(structure)
 
-        sim_forces = hoomd.context.current.forces
-        pair_force = import_("hoomd.md.pair")
-        charge_force = import_("hoomd.md.charge")
-        special_pair_force = import_("hoomd.md.special_pair")
-        bond_force = import_("hoomd.md.bond")
-        angle_force = import_("hoomd.md.angle")
-        dihedral_force = import_("hoomd.md.dihedral")
+            sim_forces = hoomd.context.current.forces
+            pair_force = import_("hoomd.md.pair")
+            charge_force = import_("hoomd.md.charge")
+            special_pair_force = import_("hoomd.md.special_pair")
+            bond_force = import_("hoomd.md.bond")
+            angle_force = import_("hoomd.md.angle")
+            dihedral_force = import_("hoomd.md.dihedral")
 
-        assert isinstance(sim_forces[0], pair_force.lj)
-        assert isinstance(sim_forces[1], charge_force.pppm)
-        assert isinstance(sim_forces[2], pair_force.ewald)
-        assert isinstance(sim_forces[3], special_pair_force.lj)
-        assert isinstance(sim_forces[4], special_pair_force.coulomb)
-        assert isinstance(sim_forces[5], bond_force.harmonic)
-        assert isinstance(sim_forces[6], angle_force.harmonic)
-        assert isinstance(sim_forces[7], dihedral_force.opls)
+            assert isinstance(sim_forces[0], pair_force.lj)
+            assert isinstance(sim_forces[1], charge_force.pppm)
+            assert isinstance(sim_forces[2], pair_force.ewald)
+            assert isinstance(sim_forces[3], special_pair_force.lj)
+            assert isinstance(sim_forces[4], special_pair_force.coulomb)
+            assert isinstance(sim_forces[5], bond_force.harmonic)
+            assert isinstance(sim_forces[6], angle_force.harmonic)
+            assert isinstance(sim_forces[7], dihedral_force.opls)
 
     @pytest.mark.skipif(not has_foyer, reason="Foyer is not installed")
     def test_lj_to_hoomdsimulation(self):
@@ -103,11 +105,13 @@ class TestHoomd(BaseTest):
         ff = forcefield.Forcefield(forcefield_files=get_fn('lj.xml'))
         structure = ff.apply(box)
         structure.box = [10, 10, 10, 90, 90, 90]
-        hoomd_simulation.create_hoomd_simulation(structure)
-        sim_forces = hoomd.context.current.forces
-        pair_force = import_("hoomd.md.pair")
+        sim = hoomd.context.SimulationContext()
+        with sim:
+            hoomd_simulation.create_hoomd_simulation(structure)
+            sim_forces = hoomd.context.current.forces
+            pair_force = import_("hoomd.md.pair")
 
-        assert isinstance(sim_forces[0], pair_force.lj)
+            assert isinstance(sim_forces[0], pair_force.lj)
 
 
 class TestHoomdXML(BaseTest):
