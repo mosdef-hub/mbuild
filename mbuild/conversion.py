@@ -1,11 +1,12 @@
-import os
-import sys
-import numpy as np
-import parmed as pmd
-
-from warnings import warn
-from pathlib import Path
 from collections import defaultdict
+from copy import deepcopy
+import numpy as np
+import os
+from pathlib import Path
+import sys
+from warnings import warn
+
+import parmed as pmd
 from ele import (
     element_from_symbol, element_from_atomic_number, element_from_name
 )
@@ -903,12 +904,11 @@ def to_parmed(compound,
     ----------
     compound : mb.Compound
         mbuild Compound that need to be converted.
-    box : mb.Box, optional, default=compound.boundingbox (with buffer)
+    box : mb.Box, optional, default=None
         Box information to be used when converting to a `Structure`.
-        If 'None', a bounding box is used with 0.25nm buffers at
-        each face to avoid overlapping atoms, unless `compound.periodicity`
-        is not None, in which case those values are used for the
-        box lengths.
+        If 'None' and the box attribute is set, the box is used with
+        0.25nm buffers at each face to avoid overlapping atoms. Otherwise
+        the boundingbox is used with the same 0.25nm buffers.
     title : str, optional, default=compound.name
         Title/name of the ParmEd Structure
     residues : str of list of str
@@ -1024,17 +1024,21 @@ def to_parmed(compound,
         structure.bonds.append(bond)
     # pad box with .25nm buffers
     if box is None:
-        box = compound.boundingbox
-        box_vec_max = box.maxs.tolist()
-        box_vec_min = box.mins.tolist()
-        for dim, val in enumerate(compound.periodicity):
-            if val:
-                box_vec_max[dim] = val
-                box_vec_min[dim] = 0.0
-            if not val:
-                box_vec_max[dim] += 0.25
-                box_vec_min[dim] -= 0.25
-        box = Box(mins=box_vec_min, maxs=box_vec_max)
+        if compound.box is not None:
+            box = deepcopy(compound.box)
+        else:
+            box = deepcopy(compound.boundingbox)
+            maxs = np.zeros(3)
+            mins = np.zeros(3)
+            # if periodicty is set, use it before bounding box
+            nonzero_inds = np.where(compound.periodicity != 0)
+            zero_inds = np.where(compound.periodicity == 0)
+            maxs[nonzero_inds] = compound.periodicity[nonzero_inds]
+            # if using bounding box, pad by 0.25 nm
+            maxs[zero_inds] = box.maxs[zero_inds] + 0.25
+            mins[zero_inds] = box.mins[zero_inds] - 0.25
+            box.maxs = maxs
+            box.mins = mins
 
     box_vector = np.empty(6)
     if box.angles is not None:
