@@ -373,7 +373,8 @@ def _init_hoomd_dihedrals(structure, ref_energy=1.0):
                     warnings.warn(
                         "Multiple dihedral types detected"
                         + " for single dihedral, will ignore all except "
-                        + " first diheral type"
+                        + " first diheral type."
+                        + "First dihedral type: {}".format(dihedral.type[0])
                     )
                 dihedral_type_params[dihedral_type] = dihedral.type[0]
 
