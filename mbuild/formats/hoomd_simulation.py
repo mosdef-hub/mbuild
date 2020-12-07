@@ -282,7 +282,7 @@ def _init_hoomd_14_pairs(
         lj_14.pair_coeff.set(
             name,
             sigma=adjust_type.sigma / ref_distance,
-            # The adjust epsilon alreayd carries the scaling
+            # The adjust epsilon already carries the scaling
             epsilon=adjust_type.epsilon / ref_energy,
             # Do NOT use hoomd's alpha to modify any LJ terms
             alpha=1,
