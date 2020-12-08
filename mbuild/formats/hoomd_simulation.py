@@ -145,7 +145,7 @@ def create_hoomd_simulation(
             nl,
             r_cut=r_cut,
             ref_distance=ref_distance,
-            ref_energy=ref_energy
+            ref_energy=ref_energy,
         )
         qq = _init_hoomd_qq(structure, nl, r_cut=r_cut, **pppm_kwargs)
         hoomd_objects.append(lj)
