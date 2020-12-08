@@ -85,7 +85,10 @@ def to_hoomdsnapshot(
     if auto_scale:
         ref_mass = max([atom.mass for atom in structure.atoms])
         pair_coeffs = list(
-            set((atom.type, atom.epsilon, atom.sigma) for atom in structure.atoms)
+            set(
+                (atom.type, atom.epsilon, atom.sigma)
+                for atom in structure.atoms
+            )
         )
         ref_energy = max(pair_coeffs, key=operator.itemgetter(1))[1]
         ref_distance = max(pair_coeffs, key=operator.itemgetter(2))[2]
@@ -112,40 +115,42 @@ def to_hoomdsnapshot(
         yz = (b * c * np.cos(alpha) - xy * xz) / ly
         lz = np.sqrt(c ** 2 - xz ** 2 - yz ** 2)
 
-    (n_particles,
-     scaled_positions,
-     unique_types,
-     typeids,
-     scaled_mass,
-     scaled_charges,
-     rigid_bodies) = _parse_particle_information(
+    (
+        n_particles,
+        scaled_positions,
+        unique_types,
+        typeids,
+        scaled_mass,
+        scaled_charges,
+        rigid_bodies,
+    ) = _parse_particle_information(
         structure, xyz, ref_distance, ref_mass, ref_energy, rigid_bodies
     )
-
-    (n_bonds,
-     unique_bond_types,
-     bond_typeids,
-     bond_groups) = _parse_bond_information(structure)
-
-    (n_angles,
-     unique_angle_types,
-     angle_typeids,
-     angle_groups) = _parse_angle_information(structure)
-
-    (n_dihedrals,
-     unique_dihedral_types,
-     dihedral_typeids,
-     dihedral_groups) = _parse_dihedral_information(structure)
-
-    (n_impropers,
-     unique_improper_types,
-     improper_typeids,
-     improper_groups) = _parse_improper_information(structure)
-
-    (pair_types,
-     pair_typeid,
-     pairs,
-     n_pairs) = _parse_pair_information(structure)
+    (
+        n_bonds,
+        unique_bond_types,
+        bond_typeids,
+        bond_groups,
+    ) = _parse_bond_information(structure)
+    (
+        n_angles,
+        unique_angle_types,
+        angle_typeids,
+        angle_groups,
+    ) = _parse_angle_information(structure)
+    (
+        n_dihedrals,
+        unique_dihedral_types,
+        dihedral_typeids,
+        dihedral_groups,
+    ) = _parse_dihedral_information(structure)
+    (
+        n_impropers,
+        unique_improper_types,
+        improper_typeids,
+        improper_groups,
+    ) = _parse_improper_information(structure)
+    pair_types, pair_typeid, pairs, n_pairs = _parse_pair_information(structure)
 
     if hoomd_snapshot is not None:
         n_init = hoomd_snapshot.particles.N
@@ -241,6 +246,10 @@ def to_hoomdsnapshot(
             pair_types=pair_types,
         )
 
+    # wrap particles into the box
+    box = hoomd.data.boxdim(Lx=lx, Ly=ly, Lz=lz, xy=xy, xz=xz, yz=yz)
+    scaled_positions = np.stack([box.wrap(xyz)[0] for xyz in scaled_positions])
+
     hoomd_snapshot.particles.resize(n_particles)
     hoomd_snapshot.particles.position[n_init:] = scaled_positions
     hoomd_snapshot.particles.types[n_init:] = unique_types
@@ -259,19 +268,25 @@ def to_hoomdsnapshot(
         hoomd_snapshot.angles.resize(n_angles)
         hoomd_snapshot.angles.types[init_angles:] = unique_angle_types
         hoomd_snapshot.angles.typeid[init_angles:] = angle_typeids
-        hoomd_snapshot.angles.group[init_angles:] = np.reshape(angle_groups, (-1, 3))
+        hoomd_snapshot.angles.group[init_angles:] = np.reshape(
+                angle_groups, (-1, 3)
+                )
 
     if n_dihedrals > 0:
         hoomd_snapshot.dihedrals.resize(n_dihedrals)
         hoomd_snapshot.dihedrals.types[init_dihedrals:] = unique_dihedral_types
         hoomd_snapshot.dihedrals.typeid[init_dihedrals:] = dihedral_typeids
-        hoomd_snapshot.dihedrals.group[init_dihedrals:] = np.reshape(dihedral_groups, (-1, 4))
+        hoomd_snapshot.dihedrals.group[init_dihedrals:] = np.reshape(
+                dihedral_groups, (-1, 4)
+                )
 
     if n_impropers > 0:
         hoomd_snapshot.impropers.resize(n_impropers)
         hoomd_snapshot.impropers.types[init_impropers:] = unique_improper_types
         hoomd_snapshot.impropers.typeid[init_impropers:] = improper_typeids
-        hoomd_snapshot.impropers.group[init_impropers:] = np.reshape(improper_groups, (-1, 4))
+        hoomd_snapshot.impropers.group[init_impropers:] = np.reshape(
+                improper_groups, (-1, 4)
+                )
 
     if n_pairs > 0:
         hoomd_snapshot.pairs.resize(n_pairs)
@@ -285,14 +300,13 @@ def to_hoomdsnapshot(
 def _parse_particle_information(
     structure, xyz, ref_distance, ref_mass, ref_energy, rigid_bodies
 ):
-    """Write out the particle information.
-
-    """
-
+    """Write out the particle information."""
     n_particles = len(structure.atoms)
     scaled_positions = xyz / ref_distance
 
-    types = [atom.name if atom.type == "" else atom.type for atom in structure.atoms]
+    types = [
+        atom.name if atom.type == "" else atom.type for atom in structure.atoms
+    ]
 
     unique_types = list(set(types))
     unique_types.sort(key=natural_sort)
@@ -413,7 +427,9 @@ def _parse_dihedral_information(structure):
         else:
             dihedral_type = "-".join((t4, t3, t2, t1))
         unique_dihedral_types.add(dihedral_type)
-    unique_dihedral_types = sorted(list(unique_dihedral_types), key=natural_sort)
+    unique_dihedral_types = sorted(
+        list(unique_dihedral_types), key=natural_sort
+    )
 
     dihedral_typeids = []
     dihedral_groups = []
@@ -449,7 +465,9 @@ def _parse_improper_information(structure):
         else:
             dihedral_type = "-".join((t4, t3, t2, t1))
         unique_dihedral_types.add(dihedral_type)
-    unique_dihedral_types = sorted(list(unique_dihedral_types), key=natural_sort)
+    unique_dihedral_types = sorted(
+        list(unique_dihedral_types), key=natural_sort
+    )
 
     dihedral_typeids = []
     dihedral_groups = []

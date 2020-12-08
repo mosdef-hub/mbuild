@@ -34,7 +34,7 @@ def create_hoomd_simulation(
     pppm_kwargs={"Nx": 8, "Ny": 8, "Nz": 8, "order": 4},
     init_snap=None,
 ):
-    """ Convert a parametrized pmd.Structure to hoomd.SimulationContext
+    """Convert a parametrized pmd.Structure to hoomd.SimulationContext
 
     Parameters
     ----------
@@ -110,7 +110,10 @@ def create_hoomd_simulation(
     if auto_scale:
         ref_mass = max([atom.mass for atom in structure.atoms])
         pair_coeffs = list(
-            set((atom.type, atom.epsilon, atom.sigma) for atom in structure.atoms)
+            set(
+                (atom.type, atom.epsilon, atom.sigma)
+                for atom in structure.atoms
+            )
         )
         ref_energy = max(pair_coeffs, key=operator.itemgetter(1))[1]
         ref_distance = max(pair_coeffs, key=operator.itemgetter(2))[2]
@@ -167,9 +170,8 @@ def create_hoomd_simulation(
     if structure.dihedral_types:
         print("Processing periodic torsions")
         periodic_torsions = _init_hoomd_dihedrals(
-                structure,
-                ref_energy=ref_energy
-                )
+            structure, ref_energy=ref_energy
+        )
         hoomd_objects.append(periodic_torsions)
     if structure.rb_torsion_types:
         print("Processing RB torsions")
@@ -206,11 +208,14 @@ def _init_hoomd_lj(structure, nl, r_cut=1.2, ref_distance=1.0, ref_energy=1.0):
         if nb_fix_info is None:
             # No nbfix means use mixing rule to find cross-interaction
             if structure.combining_rule == "lorentz":
-                sigma = (atom_type_params[a1].sigma + atom_type_params[a2].sigma) / (
-                    2 * ref_distance
-                )
+                sigma = (
+                    atom_type_params[a1].sigma + atom_type_params[a2].sigma
+                ) / (2 * ref_distance)
                 epsilon = (
-                    (atom_type_params[a1].epsilon * atom_type_params[a2].epsilon)
+                    (
+                        atom_type_params[a1].epsilon
+                        * atom_type_params[a2].epsilon
+                    )
                     / ref_energy ** 2
                 ) ** 0.5
             elif structure.combining_rule == "geometric":
@@ -219,7 +224,10 @@ def _init_hoomd_lj(structure, nl, r_cut=1.2, ref_distance=1.0, ref_energy=1.0):
                     / ref_distance ** 2
                 ) ** 0.5
                 epsilon = (
-                    (atom_type_params[a1].epsilon * atom_type_params[a2].epsilon)
+                    (
+                        atom_type_params[a1].epsilon
+                        * atom_type_params[a2].epsilon
+                    )
                     / ref_energy ** 2
                 ) ** 0.5
             else:
@@ -248,11 +256,13 @@ def _init_hoomd_qq(structure, nl, Nx=1, Ny=1, Nz=1, order=4, r_cut=1.2):
         return qq
 
 
-def _init_hoomd_14_pairs(structure, nl, r_cut=1.2, ref_distance=1.0, ref_energy=1.0):
+def _init_hoomd_14_pairs(
+    structure, nl, r_cut=1.2, ref_distance=1.0, ref_energy=1.0
+):
     """Special_pairs to handle 14 scalings
 
     See discussion: https://groups.google.com/forum/
-    #!topic/hoomd-users/iZ9WCpHczg0 """
+    #!topic/hoomd-users/iZ9WCpHczg0"""
 
     # Update neighborlist to exclude 1-4 interactions,
     # but impose a special_pair force to handle these pairs
@@ -276,7 +286,7 @@ def _init_hoomd_14_pairs(structure, nl, r_cut=1.2, ref_distance=1.0, ref_energy=
         lj_14.pair_coeff.set(
             name,
             sigma=adjust_type.sigma / ref_distance,
-            # The adjust epsilon alreayd carries the scaling
+            # The adjust epsilon already carries the scaling
             epsilon=adjust_type.epsilon / ref_energy,
             # Do NOT use hoomd's alpha to modify any LJ terms
             alpha=1,
@@ -332,7 +342,9 @@ def _init_hoomd_angles(structure, ref_energy=1.0):
     harmonic_angle = hoomd.md.angle.harmonic()
     for name, angle_type in angle_type_params.items():
         harmonic_angle.angle_coeff.set(
-            name, t0=np.deg2rad(angle_type.theteq), k=2 * angle_type.k / ref_energy
+            name,
+            t0=np.deg2rad(angle_type.theteq),
+            k=2 * angle_type.k / ref_energy,
         )
 
     return harmonic_angle
@@ -365,12 +377,14 @@ def _init_hoomd_dihedrals(structure, ref_energy=1.0):
                     warnings.warn(
                         "Multiple dihedral types detected"
                         + " for single dihedral, will ignore all except "
-                        + " first diheral type"
+                        + " first dihedral type."
+                        + "First dihedral type: {}".format(dihedral.type[0])
                     )
                 dihedral_type_params[dihedral_type] = dihedral.type[0]
 
     # Set the hoomd parameters
-    periodic_torsion = hoomd.md.dihedral.harmonic()  # These are periodic torsions
+    # These are periodic torsions
+    periodic_torsion = hoomd.md.dihedral.harmonic()
     for name, dihedral_type in dihedral_type_params.items():
         periodic_torsion.dihedral_coeff.set(
             name,
