@@ -32,6 +32,7 @@ def create_hoomd_simulation(
     auto_scale=False,
     snapshot_kwargs={},
     pppm_kwargs={"Nx": 8, "Ny": 8, "Nz": 8, "order": 4},
+    init_snap=None,
 ):
     """Convert a parametrized pmd.Structure to hoomd.SimulationContext
 
@@ -49,13 +50,15 @@ def create_hoomd_simulation(
         Cutoff radius, in reduced units
     auto_scale : bool, optional, default=False
         Automatically use largest sigma value as ref_distance,
-        largest mass value as ref_mass
+        largest mass value as ref_mass,
         and largest epsilon value as ref_energy
-
     snapshot_kwargs : dict
         Kwargs to pass to to_hoomdsnapshot
     pppm_kwargs : dict
         Kwargs to pass to hoomd's pppm function
+    init_snap : hoomd.data.SnapshotParticleData, optional, default=None
+        Initial snapshot to which to add the ParmEd structure object
+        (useful for rigid bodies)
 
     Returns
     ------
@@ -89,7 +92,7 @@ def create_hoomd_simulation(
         )
     elif not isinstance(structure, pmd.Structure):
         raise ValueError(
-            "Please pass a parmed.Structure to " + "create_hoomd_simulation"
+            "Please pass a parmed.Structure to create_hoomd_simulation"
         )
 
     _check_hoomd_version()
@@ -125,7 +128,8 @@ def create_hoomd_simulation(
         ref_distance=ref_distance,
         ref_mass=ref_mass,
         ref_energy=ref_energy,
-        **snapshot_kwargs
+        **snapshot_kwargs,
+        hoomd_snapshot=init_snap
     )
     hoomd_objects.append(snapshot)
     hoomd.init.read_snapshot(snapshot)
@@ -373,15 +377,14 @@ def _init_hoomd_dihedrals(structure, ref_energy=1.0):
                     warnings.warn(
                         "Multiple dihedral types detected"
                         + " for single dihedral, will ignore all except "
-                        + " first diheral type."
+                        + " first dihedral type."
                         + "First dihedral type: {}".format(dihedral.type[0])
                     )
                 dihedral_type_params[dihedral_type] = dihedral.type[0]
 
     # Set the hoomd parameters
-    periodic_torsion = (
-        hoomd.md.dihedral.harmonic()
-    )  # These are periodic torsions
+    # These are periodic torsions
+    periodic_torsion = hoomd.md.dihedral.harmonic()
     for name, dihedral_type in dihedral_type_params.items():
         periodic_torsion.dihedral_coeff.set(
             name,
