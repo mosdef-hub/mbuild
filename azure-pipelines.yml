@@ -53,6 +53,7 @@ stages:
 
           - bash: |
               conda config --set always_yes yes --set changeps1 no
+              conda config --add channels omnia
               conda config --add channels conda-forge
             displayName: Add relavent Channels
 
@@ -105,6 +106,7 @@ stages:
 
           - script: |
               conda config --set always_yes yes --set changeps1 no
+              conda config --add channels omnia
               conda config --add channels conda-forge
             displayName: Add relavent channels
 
@@ -140,6 +142,7 @@ stages:
 
           - bash: |
               conda config --set always_yes yes --set changeps1 no
+              conda config --add channels omnia
               conda config --add channels conda-forge
               conda update -c defaults conda
               conda update --all
