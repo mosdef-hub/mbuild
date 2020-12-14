@@ -33,12 +33,18 @@ stages:
             Python37Ubuntu:
               imageName: 'ubuntu-latest'
               python.version: 3.7
+            Python38Ubuntu:
+              imageName: 'ubuntu-latest'
+              python.version: 3.8
             Python36macOS:
               imageName: 'macOS-latest'
               python.version: 3.6
             Python37macOS:
               imageName: 'macOS-latest'
               python.version: 3.7
+            Python38macOS:
+              imageName: 'macOS-latest'
+              python.version: 3.8
 
         pool:
           vmImage: $(imageName)
