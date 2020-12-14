@@ -112,10 +112,9 @@ stages:
 
           - script: |
               conda update -c defaults conda
-              conda update --all
+              conda update conda -yq
               conda create -n test-environment
               call activate test-environment
-              conda install --yes python=$(python.version) --file requirements-dev.txt
               conda install --yes python=$(python.version) --file requirements-dev.txt
             displayName: Create Conda env, Activate, Install dependencies
 
