@@ -66,6 +66,7 @@ def read_xyz(filename, compound=None):
                         "attribute.".format(name)
                     )
                     guessed_elements.add(name)
+                element = None
 
             particle = mb.Compound(pos=coords[row], name=name, element=element)
             compound.add(particle)
