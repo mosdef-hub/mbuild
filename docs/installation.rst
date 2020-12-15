@@ -6,20 +6,17 @@ Install with `conda <https://repo.anaconda.com/miniconda/>`_
 -----------------------------------------------------
 ::
 
-    $ conda install -c conda-forge -c mosdef -c omnia mbuild
+    $ conda install -c conda-forge -c omnia mbuild
 
 Alternatively you can add all the required channels to your ``.condarc``
 after which you can simply install without specifying the channels::
 
     $ conda config --add channels omnia
-    $ conda config --add channels mosdef
     $ conda config --add channels conda-forge
     $ conda install mbuild
 
 .. note::
-    The order in which channels are added matters: ``conda-forge`` should
-    be the highest priority as a result of being added last. In your ``.condarc``
-    file, it should be listed first.
+    The order in which channels are added matters: ``conda-forge`` should be the highest priority as a result of being added last. In your ``.condarc`` file, it should be listed first.
 
 .. note::
     The `MDTraj website <http://mdtraj.org/1.9.3/new_to_python.html>`_ makes a
@@ -52,9 +49,9 @@ in order to get all of the dependencies.
 Supported Python Versions
 -------------------------
 
-Python 3.6 and 3.7 are officially supported, including testing during
-development and packaging. Support for Python 2.7 has been dropped as of 
-August 6, 2019. Other Python versions, such as 3.8 and 3.5 and older, may
+Python 3.6, 3.7 and 3.8 are officially supported, including testing during
+development and packaging. Support for Python 2.7 has been dropped as of
+August 6, 2019. Other Python versions, such as 3.9 and 3.5 and older, may
 successfully build and function but no guarantee is made.
 
 Testing your installation

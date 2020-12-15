@@ -33,12 +33,18 @@ stages:
             Python37Ubuntu:
               imageName: 'ubuntu-latest'
               python.version: 3.7
+            Python38Ubuntu:
+              imageName: 'ubuntu-latest'
+              python.version: 3.8
             Python36macOS:
               imageName: 'macOS-latest'
               python.version: 3.6
             Python37macOS:
               imageName: 'macOS-latest'
               python.version: 3.7
+            Python38macOS:
+              imageName: 'macOS-latest'
+              python.version: 3.8
 
         pool:
           vmImage: $(imageName)
@@ -55,8 +61,6 @@ stages:
               conda config --set always_yes yes --set changeps1 no
               conda config --add channels omnia
               conda config --add channels conda-forge
-              conda config --add channels conda-forge/label/testing
-              conda config --add channels mosdef
             displayName: Add relavent Channels
 
           - bash: |
@@ -101,6 +105,8 @@ stages:
               python.version: 3.6
             Python37:
               python.version: 3.7
+            Python38:
+              python.version: 3.8
 
         steps:
           - powershell: Write-Host "##vso[task.prependpath]$env:CONDA\Scripts"
@@ -110,16 +116,13 @@ stages:
               conda config --set always_yes yes --set changeps1 no
               conda config --add channels omnia
               conda config --add channels conda-forge
-              conda config --add channels conda-forge/label/testing
-              conda config --add channels mosdef
             displayName: Add relavent channels
 
           - script: |
               conda update -c defaults conda
-              conda update --all
+              conda update conda -yq
               conda create -n test-environment
               call activate test-environment
-              conda install --yes python=$(python.version) --file requirements-dev.txt
               conda install --yes python=$(python.version) --file requirements-dev.txt
             displayName: Create Conda env, Activate, Install dependencies
 
@@ -148,8 +151,6 @@ stages:
               conda config --set always_yes yes --set changeps1 no
               conda config --add channels omnia
               conda config --add channels conda-forge
-              conda config --add channels conda-forge/label/testing
-              conda config --add channels mosdef
               conda update -c defaults conda
               conda update --all
               conda create -n  bleeding-test-environment
