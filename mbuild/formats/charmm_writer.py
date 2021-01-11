@@ -35,8 +35,8 @@ def _get_bond_type_key(bond,
                        epsilon_conversion_factor):
     """Get the bond_type key for a bond"""
     return (
-        round(bond.type.k * (sigma_conversion_factor ** 2 / epsilon_conversion_factor), 3),
-        round(bond.type.req / sigma_conversion_factor, 3),
+        round(bond.type.k * (sigma_conversion_factor ** 2 / epsilon_conversion_factor), 4),
+        round(bond.type.req / sigma_conversion_factor, 4),
         tuple(sorted((bond.atom1.type, bond.atom2.type))),
         bond.atom1.residue.name, bond.atom2.residue.name
      )
@@ -47,8 +47,8 @@ def _get_angle_type_key(angle,
                         epsilon_conversion_factor):
     """Get the angle_type key for an angle"""
     return (
-        round(angle.type.k*(sigma_conversion_factor**2/epsilon_conversion_factor), 3),
-        round(angle.type.theteq, 3),
+        round(angle.type.k*(sigma_conversion_factor**2/epsilon_conversion_factor), 4),
+        round(angle.type.theteq, 4),
         angle.atom2.type,
         tuple(sorted((angle.atom1.type, angle.atom3.type))),
         angle.atom1.residue.name, angle.atom2.residue.name,
@@ -60,12 +60,12 @@ def _get_dihedral_rb_torsion_key(dihedral,
                                  epsilon_conversion_factor):
     lj_unit = 1 / epsilon_conversion_factor
     return (
-        round(dihedral.type.c0*lj_unit, 3),
-        round(dihedral.type.c1*lj_unit, 3),
-        round(dihedral.type.c2*lj_unit, 3),
-        round(dihedral.type.c3*lj_unit, 3),
-        round(dihedral.type.c4*lj_unit, 3),
-        round(dihedral.type.c5*lj_unit, 3),
+        round(dihedral.type.c0*lj_unit, 4),
+        round(dihedral.type.c1*lj_unit, 4),
+        round(dihedral.type.c2*lj_unit, 4),
+        round(dihedral.type.c3*lj_unit, 4),
+        round(dihedral.type.c4*lj_unit, 4),
+        round(dihedral.type.c5*lj_unit, 4),
         round(dihedral.type.scee, 1),
         round(dihedral.type.scnb, 1),
         dihedral.atom1.type,
@@ -735,7 +735,7 @@ def charmm_psf_psb_FF(structure_0, filename_0, structure_1 = None, filename_1= N
             if test_Specific_FF_to_residue_for_failure[iter_test_Specifc_res_fail] is None:
                 return None
 
-        combined_1_4_LJ_dict_per_residue.update(coulomb14scaler_dict_0)
+        combined_1_4_LJ_dict_per_residue.update(LJ14scaler_dict_0)
         combined_1_4_Coul_dict_per_residue.update(coulomb14scaler_dict_0)
 
         for res_iter_1 in range(0, len(residues_applied_list_0)):
@@ -1020,8 +1020,10 @@ def charmm_psf_psb_FF(structure_0, filename_0, structure_1 = None, filename_1= N
                     data.write('!atom_types \t Kb\tb0 \t\t  atoms_types_per_utilized_FF\n')
                 elif unit_style == 'lj':
                     data.write('ERROR invalid option')
-                for params,idx in unique_bond_types.items():
+                for params, idx in unique_bond_types.items():
                     bond_format = '{}\t{}\t{}\t{}\t\t! {}\t{}\n'
+                    print('params[1] = ' + str(params[1]))
+                    print('unique_bond_types = ' + str(unique_bond_types))
                     if (fix_res_bonds_angles != None) and ((params[3] and  params[4]) in fix_res_bonds_angles ):
                         fix_bond_K_value = '999999999999'
                         data.write( bond_format.format(base10_to_base52_alph_num(atom_types_to_index_value_dict[params[2][0]+'_' + str(params[3])]),
@@ -1339,19 +1341,18 @@ def charmm_psf_psb_FF(structure_0, filename_0, structure_1 = None, filename_1= N
                     data.write(NB_format.format(base10_to_base52_alph_num(idx), 0, -epsilon,
                                                 sigma_dict[idx] * (2 ** (1 / 6)) / 2, 0,
                                                 float(LJ_1_4_dict[idx])* (-epsilon),
-                                                float(LJ_1_4_dict[idx])* sigma_dict[idx] * (2 ** (1 / 6)) / 2,
+                                                sigma_dict[idx] * (2 ** (1 / 6)) / 2,
                                                 forcefield_dict[idx],forcefield_dict[idx]))
 
 
 
             elif  non_bonded_type=='Mie':
-                data.write("Error: Currenly the Mie potential is not supported in this MoSDeF GOMC parameter writer")
+                data.write("Error: Currenly the Mie potential is not supported in this MoSDeF GOMC parameter writer\n")
             else:
-                data.write("Error: Currenly this potential is not supported in this MoSDeF GOMC parameter writer")
+                data.write("Error: Currenly this potential is not supported in this MoSDeF GOMC parameter writer\n")
 
-
-
-
+            # writing end in file
+            data.write('\nEND\n')
 
 
 
@@ -1486,7 +1487,7 @@ def charmm_psf_psb_FF(structure_0, filename_0, structure_1 = None, filename_1= N
 
 
         Max_Residue_No = 9999
-        No_last_values_res_name = 3
+        No_1st_values_res_name = 3
 
         Res_No_iteration_corrected_List = []
         residue_ID_list = []
@@ -1535,7 +1536,7 @@ def charmm_psf_psb_FF(structure_0, filename_0, structure_1 = None, filename_1= N
                                                                                       PSF_atom_iteration_1.residue.name])
 
             atom_lines_iteration = PSF_formating % (i_atom + 1, Segment_ID, Res_No_iteration_corrected_List[i_atom],
-                                                    str(residue_names_list[i_atom])[:No_last_values_res_name],
+                                                    str(residue_names_list[i_atom])[:No_1st_values_res_name],
                                                     Individual_atom_names_List[i_atom], atom_type_iter,
                                                     PSF_atom_iteration_1.charge, PSF_atom_iteration_1.mass)
 
@@ -1815,7 +1816,7 @@ def charmm_psf_psb_FF(structure_0, filename_0, structure_1 = None, filename_1= N
         Max_No_atoms_in_base10 = 99999  # 99,999 for atoms in psf/pdb
 
         Max_Residue_No = 9999
-        No_last_values_res_name = 3
+        No_1st_values_res_name = 3
 
         Res_No_iteration_corrected_List =[]
         residue_ID_list = []
@@ -1869,7 +1870,7 @@ def charmm_psf_psb_FF(structure_0, filename_0, structure_1 = None, filename_1= N
 
                 output_write.write(PDB_atom_line_format % (atom_number, Individual_atom_names_List[v],
                                                            atom_alternate_location_List[v],
-                                                           str(residue_names_list[v])[:No_last_values_res_name],
+                                                           str(residue_names_list[v])[:No_1st_values_res_name],
                                                            residue_chain_List[v], Res_No_iteration_corrected_List[v],
                                                            residue_code_insertion_List[v],
                                                            x_List[v], y_List[v], z_List[v],
