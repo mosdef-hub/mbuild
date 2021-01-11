@@ -9,7 +9,7 @@ from mbuild.utils.conversion import base10_to_base16_alph_num
 from mbuild.utils.conversion import base10_to_base52_alph_num
 from mbuild.utils.conversion import base10_to_base62_alph_num
 from mbuild.utils.conversion import unique_entries_in_List
-from mbuild.utils.specific_FF_to_residue  import Specific_FF_to_residue
+from mbuild.utils.specific_ff_to_residue  import specific_ff_to_residue
 from foyer.forcefields import forcefields
 from collections import OrderedDict
 
@@ -499,7 +499,7 @@ class TestCharmmWriterData(BaseTest):
 
     def test_Specific_FF_to_residue_FFselection_not_dict(self, EthaneGOMC):
         Test_value_0, Test_value_1, \
-        Test_value_2, Test_value_3 = Specific_FF_to_residue(EthaneGOMC,
+        Test_value_2, Test_value_3 = specific_ff_to_residue(EthaneGOMC,
                                                             forcefield_selection='oplsaa',
                                                             residues=[EthaneGOMC.name],
                                                             reorder_res_in_pdb_psf=False,
@@ -514,7 +514,7 @@ class TestCharmmWriterData(BaseTest):
 
     def test_Specific_FF_to_residue_is_None(self, EthaneGOMC):
         Test_value_0, Test_value_1, \
-        Test_value_2, Test_value_3 = Specific_FF_to_residue(EthaneGOMC,
+        Test_value_2, Test_value_3 = specific_ff_to_residue(EthaneGOMC,
                                                             forcefield_selection={EthaneGOMC.name : 'oplsaa'},
                                                             residues=None,
                                                             reorder_res_in_pdb_psf=False,
@@ -529,7 +529,7 @@ class TestCharmmWriterData(BaseTest):
 
     def test_Specific_FF_to_residue_reorder_not_True_or_False(self, EthaneGOMC):
         Test_value_0, Test_value_1, \
-        Test_value_2, Test_value_3 = Specific_FF_to_residue(EthaneGOMC,
+        Test_value_2, Test_value_3 = specific_ff_to_residue(EthaneGOMC,
                                                             forcefield_selection={EthaneGOMC.name : 'oplsaa'},
                                                             residues=[EthaneGOMC.name],
                                                             reorder_res_in_pdb_psf=None,
@@ -544,7 +544,7 @@ class TestCharmmWriterData(BaseTest):
 
     def test_Specific_FF_to_box_one_dim_is_negative(self, EthaneGOMC):
         Test_value_0, Test_value_1, \
-        Test_value_2, Test_value_3 = Specific_FF_to_residue(EthaneGOMC,
+        Test_value_2, Test_value_3 = specific_ff_to_residue(EthaneGOMC,
                                                             forcefield_selection={EthaneGOMC.name: 'oplsaa'},
                                                             residues=[EthaneGOMC.name],
                                                             reorder_res_in_pdb_psf=False,
@@ -558,7 +558,7 @@ class TestCharmmWriterData(BaseTest):
 
     def test_Specific_FF_to_box_one_dim_is_string(self, EthaneGOMC):
         Test_value_0, Test_value_1, \
-        Test_value_2, Test_value_3 = Specific_FF_to_residue(EthaneGOMC,
+        Test_value_2, Test_value_3 = specific_ff_to_residue(EthaneGOMC,
                                                             forcefield_selection={EthaneGOMC.name: 'oplsaa'},
                                                             residues=[EthaneGOMC.name],
                                                             reorder_res_in_pdb_psf=False,
@@ -573,7 +573,7 @@ class TestCharmmWriterData(BaseTest):
 
     def test_Specific_FF_to_simulation_boxes_not_1_or_2(self, EthaneGOMC):
         Test_value_0, Test_value_1, \
-        Test_value_2, Test_value_3 = Specific_FF_to_residue(EthaneGOMC,
+        Test_value_2, Test_value_3 = specific_ff_to_residue(EthaneGOMC,
                                                             forcefield_selection={EthaneGOMC.name: 'oplsaa'},
                                                             residues=[EthaneGOMC.name],
                                                             reorder_res_in_pdb_psf=False,
@@ -588,7 +588,7 @@ class TestCharmmWriterData(BaseTest):
 
     def test_Specific_FF_to_residue_FFselection_wrong_path(self, EthaneGOMC):
         Test_value_0, Test_value_1, \
-        Test_value_2, Test_value_3 = Specific_FF_to_residue(EthaneGOMC,
+        Test_value_2, Test_value_3 = specific_ff_to_residue(EthaneGOMC,
                                                             forcefield_selection={EthaneGOMC.name: 'oplsaa.xml'},
                                                             residues=[EthaneGOMC.name],
                                                             reorder_res_in_pdb_psf=False,
@@ -603,7 +603,7 @@ class TestCharmmWriterData(BaseTest):
 
     def test_Specific_FF_to_residue_FFselection_run(self, EthaneGOMC):
         Test_value_0, Test_value_1, \
-        Test_value_2, Test_value_3 = Specific_FF_to_residue(EthaneGOMC,
+        Test_value_2, Test_value_3 = specific_ff_to_residue(EthaneGOMC,
                                                             forcefield_selection={EthaneGOMC.name: forcefields.get_ff_path()[0]
                                                                                                +'/xml/'+'oplsaa.xml'},
                                                             residues=[EthaneGOMC.name],
@@ -621,7 +621,7 @@ class TestCharmmWriterData(BaseTest):
         Empty_compound = mb.Compound()
 
         Test_value_0, Test_value_1, \
-        Test_value_2, Test_value_3 = Specific_FF_to_residue(Empty_compound,
+        Test_value_2, Test_value_3 = specific_ff_to_residue(Empty_compound,
                                                             forcefield_selection={Empty_compound: 'oplsaa'},
                                                             residues=[],
                                                             reorder_res_in_pdb_psf=False,
@@ -774,7 +774,7 @@ class TestCharmmWriterData(BaseTest):
 
     def test_charmm_Methane_test_no_children(self, MethaneUAGOMC):
         Test_value_0, Test_value_1, \
-        Test_value_2, Test_value_3 = Specific_FF_to_residue(MethaneUAGOMC,
+        Test_value_2, Test_value_3 = specific_ff_to_residue(MethaneUAGOMC,
                                                             forcefield_selection={MethaneUAGOMC.name: 'trappe-ua'},
                                                             residues=[MethaneUAGOMC.name],
                                                             reorder_res_in_pdb_psf=False,
@@ -800,7 +800,7 @@ class TestCharmmWriterData(BaseTest):
         box_reservior_1.add(box_reservior_2, inherit_periodicity=False)
 
         Test_value_0, Test_value_1, \
-        Test_value_2, Test_value_3 = Specific_FF_to_residue(box_reservior_1,
+        Test_value_2, Test_value_3 = specific_ff_to_residue(box_reservior_1,
                                                             forcefield_selection={EthanolGOMC.name: 'oplsaa',
                                                                                   EthaneGOMC.name:  'oplsaa',},
                                                             residues=[EthanolGOMC.name, EthaneGOMC.name],
@@ -826,7 +826,7 @@ class TestCharmmWriterData(BaseTest):
         box_reservior_1.add(box_reservior_2, inherit_periodicity=False)
 
         Test_value_0, Test_value_1, \
-        Test_value_2, Test_value_3 = Specific_FF_to_residue(box_reservior_1,
+        Test_value_2, Test_value_3 = specific_ff_to_residue(box_reservior_1,
                                                             forcefield_selection={EthanolGOMC.name: 'oplsaa' },
                                                             residues=[EthanolGOMC.name, EthaneGOMC.name],
                                                             reorder_res_in_pdb_psf=False,
@@ -895,7 +895,7 @@ class TestCharmmWriterData(BaseTest):
         structure_FF, \
         coulomb14scaler_dict, \
         LJ14scaler_dict, \
-        residues_applied_list  =  Specific_FF_to_residue(box_reservior_0,
+        residues_applied_list  =  specific_ff_to_residue(box_reservior_0,
                                                          forcefield_selection={TwoPropanolGOMC.name: 'oplsaa',
                                                                            EthanolGOMC.name: 'oplsaa' },
                                                          residues=[TwoPropanolGOMC.name, EthanolGOMC.name],
@@ -943,7 +943,7 @@ class TestCharmmWriterData(BaseTest):
         structure_FF, \
         coulomb14scaler_dict, \
         LJ14scaler_dict, \
-        residues_applied_list = Specific_FF_to_residue(box_reservior_0,
+        residues_applied_list = specific_ff_to_residue(box_reservior_0,
                                                        forcefield_selection={EthylEtherGOMC.name: 'oplsaa',
                                                                              MethlyEtherGOMC.name: 'oplsaa'},
                                                        residues=[EthylEtherGOMC.name,MethlyEtherGOMC.name],
@@ -1013,7 +1013,7 @@ class TestCharmmWriterData(BaseTest):
         structure_FF, \
         coulomb14scaler_dict, \
         LJ14scaler_dict, \
-        residues_applied_list = Specific_FF_to_residue(box_reservior_0,
+        residues_applied_list = specific_ff_to_residue(box_reservior_0,
                                                        forcefield_selection={EthylEtherGOMC.name: 'oplsaa',
                                                                              MethlyEtherGOMC.name: 'oplsaa'},
                                                        residues=[EthylEtherGOMC.name, MethlyEtherGOMC.name],
