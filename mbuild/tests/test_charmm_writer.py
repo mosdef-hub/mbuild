@@ -74,8 +74,8 @@ class TestCharmmWriterData(BaseTest):
 
             elif '!atype 	ignored	epsilon 	Rmin/2 		ignored	eps,1-4		Rmin/2,1-4' \
                  '		  atom_type_per_utilized_FF' in line:
-                NB_types = [['A', '0.00', '-0.066000000', '1.96430858454', '0.00', '-0.033000000',	'0.98215429227'],
-                               ['B', '0.00', '-0.030000000', '1.40307756039', '0.00', '-0.015000000',	'0.70153878019']]
+                NB_types = [['A', '0.00', '-0.066000000', '1.96430858454', '0.00', '-0.033000000',	'1.96430858454'],
+                               ['B', '0.00', '-0.030000000', '1.40307756039', '0.00', '-0.015000000',	'1.40307756039']]
 
                 for j in range(0, len(NB_types)):
                     assert len(out_GOMC[i + 1 + j].split('!')[0].split()) == 7
@@ -156,8 +156,8 @@ class TestCharmmWriterData(BaseTest):
                     assert out_GOMC[i + 1 + j].split()[4:5] == atom_types_2[j]
 
             elif '!atom_types 	 Kb	b0 		  atoms_types_per_utilized_FF' in line:
-                bond_types = [['C', 'D', '600.402', '0.945'], ['B', 'D', '600.402', '1.43'],
-                              ['A', 'B', '600.402', '1.54']]
+                bond_types = [['C', 'D', '600.4015', '0.945'], ['B', 'D', '600.4015', '1.43'],
+                              ['A', 'B', '600.4015', '1.54']]
                 total_bonds_evaluated = []
                 total_bonds_evaluated_reorg = []
                 for j in range(0, len(bond_types)):
@@ -171,8 +171,8 @@ class TestCharmmWriterData(BaseTest):
                 assert total_bonds_evaluated_reorg == bond_types
 
             elif '!atom_types 		Ktheta	Theta0			  atoms_types_per_utilized_FF' in line:
-                angle_types = [['A', 'B', 'A', '62.1', '112.00000'], ['A', 'B', 'D', '50.078', '109.47000'],
-                               ['B', 'D', 'C', '55.046', '108.50000']]
+                angle_types = [['A', 'B', 'A', '62.1001', '112.00010'], ['A', 'B', 'D', '50.0775', '109.46990'],
+                               ['B', 'D', 'C', '55.0456', '108.49990']]
                 total_angles_evaluated = []
                 total_angles_evaluated_reorg = []
                 for j in range(0, len(angle_types )):
@@ -186,10 +186,10 @@ class TestCharmmWriterData(BaseTest):
                 assert total_angles_evaluated_reorg == angle_types
 
             elif '!atom_types 			Kchi		n	delta		  atoms_types_per_utilized_FF' in line:
-                dihedral_types = [['A', 'B', 'D', 'C', '0.648000', '0', '90.0'],
-                                  ['A', 'B', 'D', 'C', '-0.392500', '1', '180.0'],
+                dihedral_types = [['A', 'B', 'D', 'C', '0.647200', '0', '90.0'],
+                                  ['A', 'B', 'D', 'C', '-0.392125', '1', '180.0'],
                                   ['A', 'B', 'D', 'C', '-0.062500', '2', '0.0'],
-                                  ['A', 'B', 'D', 'C', '0.345500', '3', '180.0'],
+                                  ['A', 'B', 'D', 'C', '0.345625', '3', '180.0'],
                                   ['A', 'B', 'D', 'C', '0.000000', '4', '0.0'],
                                   ['A', 'B', 'D', 'C', '0.000000', '5', '180.0']
                                   ]
@@ -199,15 +199,15 @@ class TestCharmmWriterData(BaseTest):
 
             elif '!atype 	ignored	epsilon 	Rmin/2 		ignored	eps,1-4		Rmin/2,1-4		  ' \
                  'atom_type_per_utilized_FF' in line:
-                angle_types = [['A', '0.00', '-0.194745937', '2.10461634058', '0.00', '-0.000000000', '0.00000000000'],
-                               ['B', '0.00', '-0.019872012', '2.43013033459', '0.00', '-0.000000000', '0.00000000000'],
-                               ['D', '0.00', '-0.184809990', '1.69491769295', '0.00', '-0.000000000', '0.00000000000'],
-                               ['C', '0.00', '-0.000000000', '5.61231024155', '0.00', '-0.000000000', '0.00000000000']
+                NB_types =    [['A', '0.00', '-0.194745937', '2.10461634058', '0.00', '-0.000000000', '2.10461634058'],
+                               ['B', '0.00', '-0.019872012', '2.43013033459', '0.00', '-0.000000000', '2.43013033459'],
+                               ['D', '0.00', '-0.184809990', '1.69491769295', '0.00', '-0.000000000', '1.69491769295'],
+                               ['C', '0.00', '-0.000000000', '5.61231024155', '0.00', '-0.000000000', '5.61231024155']
                                ]
 
-                for j in range(0, len(angle_types)):
+                for j in range(0, len(NB_types)):
                     assert len(out_GOMC[i + 1+ j].split('!')[0].split()) == 7
-                    assert out_GOMC[i + 1+ j].split('!')[0].split()[0:7] == angle_types[j]
+                    assert out_GOMC[i + 1+ j].split('!')[0].split()[0:7] == NB_types[j]
 
             else:
                 pass

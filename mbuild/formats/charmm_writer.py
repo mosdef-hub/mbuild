@@ -83,8 +83,8 @@ def _get_improper_type_key(improper,
                            epsilon_conversion_factor):
     lj_unit = 1 / epsilon_conversion_factor
     return (
-        round(improper.type.psi_k * lj_unit, 3),
-        round(improper.type.psi_eq, 3),
+        round(improper.type.psi_k * lj_unit, 4),
+        round(improper.type.psi_eq, 4),
         improper.atom1.type,
         improper.atom2.type,
         improper.atom3.type,
@@ -1017,7 +1017,7 @@ def charmm_psf_psb_FF(structure_0, filename_0, structure_1 = None, filename_1= N
 
 
                 if unit_style == 'real':
-                    data.write('!atom_types \t Kb\tb0 \t\t  atoms_types_per_utilized_FF\n')
+                    data.write('!atom_types \t Kb\t\tb0 \t\t  atoms_types_per_utilized_FF\n')
                 elif unit_style == 'lj':
                     data.write('ERROR invalid option')
                 for params, idx in unique_bond_types.items():
@@ -1055,13 +1055,13 @@ def charmm_psf_psb_FF(structure_0, filename_0, structure_1 = None, filename_1= N
                 data.write('!\n')
                 data.write('! Ktheta (kcal/mol) = Ktheta_K (K) * Boltz. const.\t\t\n')
                 data.write('!\n')
-                data.write('!atom_types \t\tKtheta\tTheta0\t\t\t  atoms_types_per_utilized_FF\n')
+                data.write('!atom_types \t\tKtheta\t\tTheta0\t\t\t  atoms_types_per_utilized_FF\n')
                 for params,idx in unique_angle_types.items():
 
                     if (fix_res_bonds_angles != None) and ((params[4] and  params[5] and  params[6])
                                                            in fix_res_bonds_angles ):
                         fix_angle_K_value = '999999999999'
-                        angle_format = '{}\t{}\t{}\t{}\t{:.5f}\t\t! {}\t{}\t{}\n'
+                        angle_format = '{}\t{}\t{}\t{}\t\t{:.5f}\t\t! {}\t{}\t{}\n'
                         data.write(angle_format.format(base10_to_base52_alph_num(atom_types_to_index_value_dict[params[3][0]+'_'+params[4]]),
                                                        base10_to_base52_alph_num(atom_types_to_index_value_dict[params[2]+'_'+params[5]]),
                                                        base10_to_base52_alph_num(atom_types_to_index_value_dict[params[3][1]+'_'+params[6]]),
@@ -1072,7 +1072,7 @@ def charmm_psf_psb_FF(structure_0, filename_0, structure_1 = None, filename_1= N
 
                     else:
                         data.write(
-                            '{}\t{}\t{}\t{}\t{:.5f}\t\t! {}\t{}\t{}\n'.format(base10_to_base52_alph_num(atom_types_to_index_value_dict[params[3][0]+'_'+params[4]]),
+                            '{}\t{}\t{}\t{}\t\t{:.5f}\t\t! {}\t{}\t{}\n'.format(base10_to_base52_alph_num(atom_types_to_index_value_dict[params[3][0]+'_'+params[4]]),
                                                                               base10_to_base52_alph_num(atom_types_to_index_value_dict[params[2]+'_'+params[5]]),
                                                                               base10_to_base52_alph_num(atom_types_to_index_value_dict[params[3][1]+'_'+params[6]]),
                                                                               params[0], params[1],
