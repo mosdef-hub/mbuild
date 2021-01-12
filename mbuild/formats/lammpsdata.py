@@ -203,6 +203,7 @@ def write_lammpsdata(structure, filename, atom_style='full',
           (epsilon_conversion_factor*4184)*epsilon_0)
         charges[np.isinf(charges)] = 0 
         # TODO: FIX CHARGE UNIT CONVERSION
+        print(sigma_conversion_factor,epsilon_conversion_factor)
     else:
         sigma_conversion_factor = 1
         epsilon_conversion_factor = 1
@@ -462,7 +463,7 @@ def write_lammpsdata(structure, filename, atom_style='full',
                 for params,idx in sorted_bond_types.items():
                     #If the user specified LJ unit style, revert the internal conversion of k by ParmEd
                     if unit_style == 'lj':  
-                        data.write('{}\t{}\t\t{}\t\t# {}\t{}\n'.format(idx,params[0]*4184*2/10,params[1]/10,params[2][0],params[2][1]))
+                        data.write('{}\t{}\t\t{}\t\t# {}\t{}\n'.format(idx,params[0]*4.184*100.*2.,params[1]/10.,params[2][0],params[2][1]))
                     else:
                         data.write('{}\t{}\t\t{}\t\t# {}\t{}\n'.format(idx,params[0],params[1],params[2][0],params[2][1]))
 
@@ -481,7 +482,7 @@ def write_lammpsdata(structure, filename, atom_style='full',
                     for params,idx in sorted_angle_types.items():
                         #If the user specified LJ unit style, revert the internal conversion of k by ParmEd
                         if unit_style == 'lj':
-                            data.write('{}\t{}\t\t{:.5f}\t# {}\t{}\t{}\n'.format(idx,params[0]*4.184*2,params[1],
+                            data.write('{}\t{}\t\t{:.5f}\t# {}\t{}\t{}\n'.format(idx,params[0]*4.184*2.,params[1],
                                                                              params[3][0],params[2],params[3][1]))
                         else:
                             data.write('{}\t{}\t\t{:.5f}\t# {}\t{}\t{}\n'.format(idx,params[0],params[1],
@@ -547,12 +548,11 @@ def write_lammpsdata(structure, filename, atom_style='full',
                 atom_line ='{index:d}\t{zero:d}\t{type_index:d}\t{charge:.4e}\t{x:.6f}\t{y:.6f}\t{z:.6f}\n'
 
         for i,coords in enumerate(xyz):
-            if unit_style == 'lj': 
+            if (unit_style == 'lj'):
                 data.write(atom_line.format(
                     index=i+1,type_index=unique_types.index(types[i])+1,
                     zero=structure.atoms[i].residue.idx,charge=charges[i],
                     x=coords[0]/10.,y=coords[1]/10.,z=coords[2]/10.))
-
             else:
                 data.write(atom_line.format(
                     index=i+1,type_index=unique_types.index(types[i])+1,
@@ -597,6 +597,7 @@ def _get_bond_types(structure, bonds, sigma_conversion_factor,
                                              tuple(sorted((bond.atom1.type,bond.atom2.type)))
                                              ) for bond in structure.bonds])))
     unique_bond_types = OrderedDict([(y,x+1) for x,y in unique_bond_types.items()])
+    print(unique_bond_types)
     bond_types = [unique_bond_types[(round(bond.type.k*
         (sigma_conversion_factor**2/epsilon_conversion_factor),3),
                                      round(bond.type.req/sigma_conversion_factor,3),
