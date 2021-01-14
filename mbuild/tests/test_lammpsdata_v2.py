@@ -201,11 +201,11 @@ class TestLammpsData(BaseTest):
                 if 'dihedral types' in line:
                     fi.readline()
                     line = float(fi.readline().split()[1])
-                    assert np.isclose(line, 0.204)
+                    assert np.isclose(line, 2.04)
                     line = float(fi.readline().split()[1])
-                    assert np.isclose(line, 0.2268)
+                    assert np.isclose(line, 2.268)
                     line = float(fi.readline().split()[1])
-                    assert np.isclose(line, 0.1898857)
+                    assert np.isclose(line, 1.898857)
                     checked_section = True
 
     def test_lj_masses(self, ethane):
@@ -264,8 +264,29 @@ class TestLammpsData(BaseTest):
                     bonds = list()
                     bonds.append(float(fi.readline().split()[1]))
                     bonds.append(float(fi.readline().split()[1]))
-                    print(bonds)
-                    assert np.allclose(sorted(bonds), [41624460.4032, 52807151.8448])
+                    assert np.allclose(sorted(bonds), [49742.424, 63106.06])
+                    checked_section = True
+
+    def test_lj_bonds_cg(self):
+        from foyer import Forcefield
+
+        structure = mb.recipes.CLP(['PKGPOGDOG'],[1,1,1],[1,1])
+        cgff = Forcefield(forcefield_files=get_fn('CLP.xml'))
+        clpBox_typed =cgff.apply(structure,assert_dihedral_params=False)
+        write_lammpsdata(clpBox_typed,'CLP.lammps',atom_style='full',
+                         unit_style='lj',sigma_conversion_factor=1,epsilon_conversion_factor=1,
+                         mass_conversion_factor=1)
+
+        checked_section = False
+        with open('CLP.lammps', 'r') as fi:
+            while not checked_section:
+                line = fi.readline()
+                if 'Bond Coeffs' in line:
+                    fi.readline()
+                    test_ln = fi.readline().split()
+                    print(test_ln)
+                    bonds = [float(i) for i in test_ln[1:3]]
+                    assert np.allclose(bonds, [999.976, 0.37])
                     checked_section = True
 
     def test_lj_angles(self, ethane):
@@ -286,7 +307,30 @@ class TestLammpsData(BaseTest):
                     angles.append(float(fi.readline().split()[1]))
                     angles.append(float(fi.readline().split()[1]))
 
-                    assert np.allclose(sorted(angles), [51254.0, 58243.179536])
+                    assert np.allclose(sorted(angles), [6125.0, 6960.227])
+                    checked_section = True
+
+    def test_lj_angles_cg(self):
+        from foyer import Forcefield
+
+        structure = mb.recipes.CLP(['PKGPOGDOG'],[1,1,1],[1,1])
+        cgff = Forcefield(forcefield_files=get_fn('CLP.xml'))
+        clpBox_typed =cgff.apply(structure,assert_dihedral_params=False)
+        write_lammpsdata(clpBox_typed,'CLP.lammps',atom_style='full',
+                         unit_style='lj',sigma_conversion_factor=1,epsilon_conversion_factor=1,
+                         mass_conversion_factor=1)
+
+        checked_section = False
+        with open('CLP.lammps', 'r') as fi:
+            while not checked_section:
+                line = fi.readline()
+                if 'Angle Coeffs' in line:
+                    fi.readline()
+                    angles = list()
+                    angles.append(float(fi.readline().split()[1]))
+                    angles.append(float(fi.readline().split()[1]))
+
+                    assert np.allclose(sorted(angles), [19.0, 301.0])
                     checked_section = True
 
     def test_lj_dihedrals(self, ethane):
