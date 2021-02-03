@@ -26,19 +26,23 @@ class Polymer(Compound):
         The names of the two ports to use to connect copies of proto.
 
     """
-    def __init__(self, monomers, n, sequence='A', port_labels=('up', 'down')):
+    def __init__(self):
+        super(Polymer, self).__init__()
+        self.monomers = []
+        self.port_labels = []
+
+    def build(self, n, sequence='A'):
         if n < 1:
             raise ValueError('n must be 1 or more')
-        super(Polymer, self).__init__()
-        if isinstance(monomers, Compound):
-            monomers = (monomers,)
-        for monomer in monomers:
+        if isinstance(self.monomers, Compound):
+            self.monomers = (self.monomers,)
+        for monomer, port_label in zip(self.monomers, self.port_labels):
             for label in port_labels:
                 assert_port_exists(label, monomer)
 
         unique_seq_ids = sorted(set(sequence))
 
-        if len(monomers) != len(unique_seq_ids):
+        if len(self.monomers) != len(unique_seq_ids):
             raise ValueError('Number of monomers passed to `Polymer` class must'
                              ' match number of unique entries in the specified'
                              ' sequence.')
@@ -68,8 +72,44 @@ class Polymer(Compound):
         # Hoist the first part's bottom port to be the bottom port of the polymer.
         self.add(first_part.labels[port_labels[1]], port_labels[1], containment=False)
 
-if __name__ == "__main__":
-    from mbuild.lib.moieties import CH2
-    ch2 = CH2()
-    poly = Polymer(ch2, n=13, port_labels=("up", "down"))
-    poly.save('polymer.mol2')
+
+    def add_monomer(self, monomer, bonding_indices,
+                    port_labels, separation, orientation=None,
+                    replace=True):
+        ""
+        
+        ""
+        if self.port_labels:
+            if not sorted(set(port_labels)) == sorted(set(self.port_labels)):
+                raise ValueError("The port labels given for each" +
+                                "monomer must match. The previous" +
+                                "port labels used were {}".format(self.port_labels)
+                                )
+        else:
+            self.port_labels.append(*port_labels)
+
+        for idx, label in zip(bonding_indices, port_labels):
+            _add_port(self, monomer, label, idx, separation, orientation, replace)
+
+        self.monomers.append(monomer)
+
+
+    def _add_port(self, monomer, label, atom_idx, separation, orientation=None, replace=True):
+        ""
+        ""
+        if replace:
+            bonds = [bond for bond in monomer.bonds()]
+            atom_bonds = [b for b in bonds if monomer[atom_idx] in b]
+            
+            for atom_pair in atom_bonds:
+                for atom in atom_pair:
+                    if atom.name == 'H':
+                        orientation = atom.pos - monomer[atom_idx].pos
+                        monomer.remove(atom)    
+            
+        port = mb.Port(anchor = monomer[atom_idx],
+                       orientation=orientation,
+                       separation=separation/2
+                       )
+        monomer.add(port, label=label)
+
