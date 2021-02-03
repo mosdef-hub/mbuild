@@ -72,8 +72,8 @@ class Polymer(Compound):
         self.add(first_part.labels[port_labels[1]], port_labels[1], containment=False)
 
 
-    def add_monomer(self, monomer, bonding_indices,
-                    port_labels, separation, orientation=None,
+    def add_monomer(self, monomer, bonding_indices, separation,
+                    port_labels=['A', 'B'], orientation=None,
                     replace=True):
         """
         Add an mBuild compound to self.monomers which will be used to build the polymer.
@@ -89,14 +89,14 @@ class Polymer(Compound):
             bonding sites. You can specify the indices of particles that will
             be replaced by the polymer bond, or indices of particles that act
             as the bonding sites. See the 'replace' parameter notes.
-        port_labels : list of str of length 2
+        separation : float, units nm
+            The bond length desired at the monomer-monomer bonding site.
+            (separation / 2) is used to set the length of each port
+        port_labels : list of str of length 2, default=['A', 'B']
             Labels given to the two ports added to monomer.
             Ex.) ['head', 'tail'] or ['A', 'B']
             The same port labels must be used for any subsequent
             monomer created using add_monomer()
-        separation : float, units nm
-            The bond length desired at the monomer-monomer bonding site.
-            (separation / 2) is used to set the length of each port
         orientation : array-like, shape=(3,), default=None
             Vector along which to orient the port
             If replace = True, then the orientation of the bond
@@ -133,7 +133,7 @@ class Polymer(Compound):
         if replace:
             bonds = [bond for bond in monomer.bonds()]
             atom_bonds = [b for b in bonds if monomer[atom_idx] in b]
-            
+                        
             for atom_pair in atom_bonds:
                 for atom in atom_pair:
                     if atom.name == 'H':
