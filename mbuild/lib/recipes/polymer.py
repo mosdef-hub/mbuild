@@ -36,19 +36,18 @@ class Polymer(Compound):
             raise ValueError('n must be 1 or more')
         if isinstance(self.monomers, Compound):
             self.monomers = (self.monomers,)
-        for monomer, port_label in zip(self.monomers, self.port_labels):
-            for label in port_labels:
+        for monomer in self.monomers:
+            for label in self.port_labels:
                 assert_port_exists(label, monomer)
 
         unique_seq_ids = sorted(set(sequence))
-
         if len(self.monomers) != len(unique_seq_ids):
             raise ValueError('Number of monomers passed to `Polymer` class must'
                              ' match number of unique entries in the specified'
                              ' sequence.')
 
         # 'A': monomer_1, 'B': monomer_2....
-        seq_map = dict(zip(unique_seq_ids, monomers))
+        seq_map = dict(zip(unique_seq_ids, self.monomers))
 
         last_part = None
         for n_added, seq_item in enumerate(it.cycle(sequence)):
@@ -76,9 +75,43 @@ class Polymer(Compound):
     def add_monomer(self, monomer, bonding_indices,
                     port_labels, separation, orientation=None,
                     replace=True):
-        ""
+        """
+        Add an mBuild compound to self.monomers which will be used to build the polymer.
+        Call this function for each unique monomer to be used in the polymer.
+
         
-        ""
+        Parameters
+        ----------
+        monomer : mb.Compound
+            A compound of an individual monomer
+        bonding_indices : list of int of length 2
+            The particle indicies of monomer that represent the polymer
+            bonding sites. You can specify the indices of particles that will
+            be replaced by the polymer bond, or indices of particles that act
+            as the bonding sites. See the 'replace' parameter notes.
+        port_labels : list of str of length 2
+            Labels given to the two ports added to monomer.
+            Ex.) ['head', 'tail'] or ['A', 'B']
+            The same port labels must be used for any subsequent
+            monomer created using add_monomer()
+        separation : float, units nm
+            The bond length desired at the monomer-monomer bonding site.
+            (separation / 2) is used to set the length of each port
+        orientation : array-like, shape=(3,), default=None
+            Vector along which to orient the port
+            If replace = True, then the orientation of the bond
+            between the particle being removed and the anchor particle
+            is used.
+        replace : Bool, required, default=True
+            If True, then the particles identified by bonding_indices
+            will be removed and ports are added to the particles they
+            were initially bonded to. Only use replace=True in the case
+            that bonding_indices point to hydrogen atoms bonded to the
+            desired monomer-monomer bonding site particles.
+            If False, then the particles identified by bonding_indices
+            will have ports added, and no particles are removed from 
+            the monomer compound.
+        """
         if self.port_labels:
             if not sorted(set(port_labels)) == sorted(set(self.port_labels)):
                 raise ValueError("The port labels given for each" +
@@ -86,7 +119,7 @@ class Polymer(Compound):
                                 "port labels used were {}".format(self.port_labels)
                                 )
         else:
-            self.port_labels.append(*port_labels)
+            self.port_labels.append(port_labels*)
 
         for idx, label in zip(bonding_indices, port_labels):
             _add_port(self, monomer, label, idx, separation, orientation, replace)
