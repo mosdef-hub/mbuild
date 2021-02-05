@@ -131,16 +131,14 @@ class Polymer(Compound):
         ""
         ""
         if replace:
-            bonds = [bond for bond in monomer.bonds()]
-            atom_bonds = [b for b in bonds if monomer[atom_idx] in b]
-                        
-            for atom_pair in atom_bonds:
-                for atom in atom_pair:
-                    if atom.name == 'H':
-                        orientation = atom.pos - monomer[atom_idx].pos
-                        monomer.remove(atom)    
+            atom_bonds = [bond for bond in monomer.bonds() if monomer[atom_idx] in bond][0]
+            anchor_particle = [p for p in atom_bonds if p != monomer[atom_idx]][0]
+            orientation = monomer[atom_idx].pos - anchor_particle.pos
+            compound.remove(monomer[atom_idx])
+        else:
+            anchor_particle = monomer[atom_idx]
             
-        port = mb.Port(anchor = monomer[atom_idx],
+        port = mb.Port(anchor = anchor_particle,
                        orientation=orientation,
                        separation=separation/2
                        )
