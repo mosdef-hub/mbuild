@@ -354,21 +354,21 @@ class TestCoordinateTransform(BaseTest):
     def test_spin(self):
         points = np.asarray(
                 [[0, 0, 0], [1, 0, 0], [0, 1, 0], [-1, 0, 0], [0, -1, 0]],
-                dtype=np.float)
+                dtype=float)
         new_points_should_be = np.asarray(
                 [[0, 0, 0], [0, 1, 0], [-1, 0, 0], [0, -1, 0], [1, 0, 0]],
-                dtype=np.float)
+                dtype=float)
         spun_points = _spin(points, np.pi/2, [0, 0, 1])
         assert np.allclose(spun_points, new_points_should_be, atol=1e-15)
 
     def test_spin_away_from_origin(self):
         points = np.asarray(
                 [[0, 0, 0], [1, 0, 0], [0, 1, 0], [-1, 0, 0], [0, -1, 0]],
-                dtype=np.float)
+                dtype=float)
         points += [2, 2, 69]
         new_points_should_be = np.asarray(
                 [[2, 2, 69], [2, 3, 69], [1, 2, 69], [2, 1, 69], [3, 2, 69]],
-                dtype=np.float)
+                dtype=float)
         spun_points = _spin(points, np.pi/2, [0, 0, 1])
         assert np.allclose(spun_points, new_points_should_be, atol=1e-15)
     def test_xyz_axis_transform(self):
