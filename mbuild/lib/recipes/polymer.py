@@ -1,5 +1,6 @@
 import itertools as it
 
+from mbuild.port import Port
 from mbuild.compound import Compound
 from mbuild.coordinate_transform import force_overlap
 from mbuild.utils.validation import assert_port_exists
@@ -30,10 +31,12 @@ class Polymer(Compound):
         super(Polymer, self).__init__()
         self.monomers = []
         self.port_labels = []
+        self.N = None
 
     def build(self, n, sequence='A'):
         if n < 1:
             raise ValueError('n must be 1 or more')
+        self.N = n
         if isinstance(self.monomers, Compound):
             self.monomers = (self.monomers,)
         for monomer in self.monomers:
@@ -59,17 +62,17 @@ class Polymer(Compound):
                 # Transform this part, such that it's bottom port is rotated
                 # and translated to the last part's top port.
                 force_overlap(this_part,
-                              this_part.labels[port_labels[1]],
-                              last_part.labels[port_labels[0]])
+                              this_part.labels[self.port_labels[1]],
+                              last_part.labels[self.port_labels[0]])
             last_part = this_part
             if n_added == n * len(sequence) - 1:
                 break
 
         # Hoist the last part's top port to be the top port of the polymer.
-        self.add(last_part.labels[port_labels[0]], port_labels[0], containment=False)
+        self.add(last_part.labels[self.port_labels[0]], self.port_labels[0], containment=False)
 
         # Hoist the first part's bottom port to be the bottom port of the polymer.
-        self.add(first_part.labels[port_labels[1]], port_labels[1], containment=False)
+        self.add(first_part.labels[self.port_labels[1]], self.port_labels[1], containment=False)
 
 
     def add_monomer(self, monomer, bonding_indices, separation,
@@ -119,28 +122,47 @@ class Polymer(Compound):
                                 "port labels used were {}".format(self.port_labels)
                                 )
         else:
-            self.port_labels.append(port_labels*)
+            self.port_labels.extend(port_labels)
 
         for idx, label in zip(bonding_indices, port_labels):
-            _add_port(self, monomer, label, idx, separation, orientation, replace)
+            _add_port(monomer, label, idx, separation, orientation, replace)
 
         self.monomers.append(monomer)
 
+    def add_end_groups(self, compound, bond_index, separation, orientation=None, replace=True):
+        """
+        """
+        head = self['monomer[0]'] # First monomer group
+        tail = self['monomer[{}]'.format(self.N - 1)] # Last monomer group
 
-    def _add_port(self, monomer, label, atom_idx, separation, orientation=None, replace=True):
-        ""
-        ""
-        if replace:
-            atom_bonds = [bond for bond in monomer.bonds() if monomer[atom_idx] in bond][0]
-            anchor_particle = [p for p in atom_bonds if p != monomer[atom_idx]][0]
-            orientation = monomer[atom_idx].pos - anchor_particle.pos
-            compound.remove(monomer[atom_idx])
-        else:
-            anchor_particle = monomer[atom_idx]
-            
-        port = mb.Port(anchor = anchor_particle,
-                       orientation=orientation,
-                       separation=separation/2
-                       )
-        monomer.add(port, label=label)
+        for label in self.port_labels:
+            if not head[label].used:
+                head_port = head[label]
+            if not tail[label].used:
+                tail_port = tail[label]
+
+        compound_2 = clone(compound)
+        add_port(compound, 'head', bond_index, separation, orientation, replace)
+        add_port(compound_2, 'tail', bond_index, separation, orientation, replace)
+
+
+        
+
+
+def _add_port(compound, label, atom_idx, separation, orientation=None, replace=True):
+    """
+    """
+    if replace:
+        atom_bonds = [bond for bond in compound.bonds() if compound[atom_idx] in bond][0]
+        anchor_particle = [p for p in atom_bonds if p != compound[atom_idx]][0]
+        orientation = compound[atom_idx].pos - anchor_particle.pos
+        compound.remove(compound[atom_idx])
+    else:
+        anchor_particle = compound[atom_idx]
+        
+    port = Port(anchor = anchor_particle,
+                orientation=orientation,
+                separation=separation/2
+                )
+    compound.add(port, label=label)
 
