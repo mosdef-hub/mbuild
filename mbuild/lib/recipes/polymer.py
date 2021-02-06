@@ -156,10 +156,8 @@ class Polymer(Compound):
         """
         """
         compound_2 = clone(compound)
-        print('adding ports')
         _add_port(compound, 'up', bond_index, separation, orientation, replace)
         _add_port(compound_2, 'up', bond_index, separation, orientation, replace)
-        print('finished adding ports')
         self.end_groups.extend([compound, compound_2])
 
 
