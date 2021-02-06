@@ -4,6 +4,7 @@ from mbuild.port import Port
 from mbuild.compound import Compound
 from mbuild.coordinate_transform import force_overlap
 from mbuild.utils.validation import assert_port_exists
+from mbuild.lib.atoms import H
 from mbuild import clone
 
 
@@ -31,12 +32,11 @@ class Polymer(Compound):
         super(Polymer, self).__init__()
         self.monomers = []
         self.port_labels = []
-        self.N = None
+        self.end_groups = []
 
     def build(self, n, sequence='A'):
         if n < 1:
             raise ValueError('n must be 1 or more')
-        self.N = n
         if isinstance(self.monomers, Compound):
             self.monomers = (self.monomers,)
         for monomer in self.monomers:
@@ -74,7 +74,30 @@ class Polymer(Compound):
         # Hoist the first part's bottom port to be the bottom port of the polymer.
         self.add(first_part.labels[self.port_labels[1]], self.port_labels[1], containment=False)
 
+        # Add the end groups
+        head = self['monomer[0]'] # First monomer group
+        tail = self['monomer[{}]'.format(n - 1)] # Last monomer group
+        for label in self.port_labels:
+            if not head[label].used:
+                head_port = head[label]
+            if not tail[label].used:
+                tail_port = tail[label]
 
+        if not self.end_groups:
+            self.end_groups.extend([H(), H()])
+        for compound in self.end_groups:
+            self.add(compound)
+
+        force_overlap(self.end_groups[0],
+                     self.end_groups[0].labels['up'],
+                     head_port
+                     )
+        force_overlap(self.end_groups[1],
+                     self.end_groups[1].labels['up'],
+                     tail_port
+                     )
+
+        
     def add_monomer(self, monomer, bonding_indices, separation,
                     port_labels=['A', 'B'], orientation=None,
                     replace=True):
@@ -132,21 +155,12 @@ class Polymer(Compound):
     def add_end_groups(self, compound, bond_index, separation, orientation=None, replace=True):
         """
         """
-        head = self['monomer[0]'] # First monomer group
-        tail = self['monomer[{}]'.format(self.N - 1)] # Last monomer group
-
-        for label in self.port_labels:
-            if not head[label].used:
-                head_port = head[label]
-            if not tail[label].used:
-                tail_port = tail[label]
-
         compound_2 = clone(compound)
-        add_port(compound, 'head', bond_index, separation, orientation, replace)
-        add_port(compound_2, 'tail', bond_index, separation, orientation, replace)
-
-
-        
+        print('adding ports')
+        _add_port(compound, 'up', bond_index, separation, orientation, replace)
+        _add_port(compound_2, 'up', bond_index, separation, orientation, replace)
+        print('finished adding ports')
+        self.end_groups.extend([compound, compound_2])
 
 
 def _add_port(compound, label, atom_idx, separation, orientation=None, replace=True):
