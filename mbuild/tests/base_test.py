@@ -118,11 +118,12 @@ class BaseTest:
     def benzene_from_parts(self):
         ch = mb.load(get_fn('ch.mol2'))
         ch.name = 'CH'
-        ch.translate(-ch[0].pos)       
+        mb.translate(ch, -ch[0].pos)       
         ch.add(mb.Port(anchor=ch[0], separation=0.07), 'a')
-        ch['a'].rotate(120.0 * (np.pi/180.0), around=np.asarray([0, 0, 1]))
+        mb.rotate_around_z(ch['a'], np.deg2rad(120.0))
+
         ch.add(mb.Port(anchor=ch[0], separation=0.07), 'b')
-        ch['b'].rotate(-120.0 * (np.pi/180.0), around=np.asarray([0, 0, 1]))
+        mb.rotate_around_z(ch['b'], np.deg2rad(-120.0))
         ch_copy = mb.clone(ch)
 
         benzene = mb.Compound(name='Benzene')
@@ -157,15 +158,14 @@ class BaseTest:
         ch = mb.load(get_fn('ch.mol2'))
         ch.name = 'CH'
         ch.label_rigid_bodies()
-        ch.translate(-ch[0].pos)    
+        mb.translate(ch, -ch[0].pos)    
         ch.add(mb.Port(anchor=ch[0]), 'a')
-        ch['a'].translate([0, 0.07, 0]) 
-        ch['a'].rotate(120.0 * (np.pi/180.0), around=np.asarray([0, 0, 1]))
+        mb.translate(ch['a'], [0, 0.07, 0]) 
+        mb.rotate_around_z(ch['a'], np.deg2rad(120.0))
 
         ch.add(mb.Port(anchor=ch[0]), 'b')
-        ch['b'].translate([0, 0.07, 0]) 
-        ch['b'].rotate(-120.0 * (np.pi/180.0), around=np.asarray([0, 0, 1]))
-
+        mb.translate(ch['b'], [0, 0.07, 0]) 
+        mb.rotate_around_z(ch['b'], np.deg2rad(-120.0))
         return ch
 
     @pytest.fixture
@@ -249,3 +249,92 @@ class BaseTest:
         cscl_compound = cscl_lattice.populate(x=3, y=3, z=1,
                                               compound_dict=cscl_dict)
         return cscl_compound
+
+
+    @pytest.fixture
+    def EthaneGOMC(self):
+        Ethane_GOMC = mb.load('CC', smiles=True)
+        Ethane_GOMC.name = "ETH"
+
+        return Ethane_GOMC
+
+    @pytest.fixture
+    def EthanolGOMC(self):
+        Ethanol_GOMC = mb.load('CCO', smiles=True)
+        Ethanol_GOMC.name = "ETO"
+
+        return Ethanol_GOMC
+
+    @pytest.fixture
+    def MethaneUAGOMC(self):
+        MethaneUA_GOMC = mb.Compound(name="_CH4")
+
+        return MethaneUA_GOMC
+
+    @pytest.fixture
+    def TwoPropanolGOMC(self):
+        TwoPropanol_GOMC = mb.load('CC(C)O', smiles=True)
+        TwoPropanol_GOMC.name = "TPR"
+        return TwoPropanol_GOMC
+
+    @pytest.fixture
+    def EthylEtherGOMC(self):
+        EthylEther_GOMC = mb.load('CCOCC', smiles=True)
+        EthylEther_GOMC.name = "ETE"
+        return EthylEther_GOMC
+
+    @pytest.fixture
+    def MethlyEtherGOMC(self):
+        MethlyEther_GOMC = mb.load('COC', smiles=True)
+        MethlyEther_GOMC.name = "MTE"
+        return MethlyEther_GOMC
+
+    @pytest.fixture
+    def TwoPropanolUA(self):
+        class Two_propanol_UA(mb.Compound):
+            def __init__(self):
+                super(Two_propanol_UA, self).__init__()
+                self.name = "POL"
+
+                CH3_1_1 = mb.Particle(pos=[0.2, 0.0, 0.0], name='_CH3')
+                HC_1_1 = mb.Particle(pos=[0.4, 0.0, 0.0], name='_HC')
+                O_1_1 = mb.Particle(pos=[0.8, 0.0, 0.0], name='O')
+                H_1_1 = mb.Particle(pos=[1.0, 0.0, 0.0], name='H')
+                CH3_1_2 = mb.Particle(pos=[0.6, 0.0, 0.0], name='_CH3')
+                self.add([CH3_1_1, HC_1_1, O_1_1, H_1_1, CH3_1_2])
+
+                port_R_CH3_1_1 = mb.Port(anchor=CH3_1_1, orientation=[0.1, 0, 0], separation=0.05)
+                port_L_HC_1_1 = mb.Port(anchor=HC_1_1, orientation=[-0.1, 0, 0], separation=0.05)
+                port_R_HC_1_1 = mb.Port(anchor=HC_1_1, orientation=[0.1, 0, 0], separation=0.05)
+                port_D_HC_1_1 = mb.Port(anchor=HC_1_1, orientation=[0, -0.1, 0], separation=0.05)
+                port_L_CH3_1_2 = mb.Port(anchor=CH3_1_2, orientation=[-0.1, 0, 0], separation=0.05)
+                port_L_O_1_1 = mb.Port(anchor=O_1_1, orientation=[-0.1, 0, 0], separation=0.05)
+                port_R_O_1_1 = mb.Port(anchor=O_1_1, orientation=[0.1, 0, 0], separation=0.05)
+                port_L_H_1_1 = mb.Port(anchor=H_1_1, orientation=[-0.1, 0, 0], separation=0.05)
+
+                self.add(port_R_CH3_1_1, label='port_R_CH3_1_1')
+                self.add(port_L_HC_1_1, label='port_L_HC_1_1')
+                self.add(port_R_HC_1_1, label='port_R_HC_1_1')
+                self.add(port_L_CH3_1_2, label='port_L_CH3_1_2')
+                self.add(port_D_HC_1_1, label='port_D_HC_1_1')
+                self.add(port_L_O_1_1, label='port_L_O_1_1')
+                self.add(port_R_O_1_1, label='port_R_O_1_1')
+                self.add(port_L_H_1_1, label='port_L_H_1_1')
+
+                mb.force_overlap(move_this=HC_1_1,
+                                 from_positions=self['port_L_HC_1_1'],
+                                 to_positions=self['port_R_CH3_1_1'])
+                mb.force_overlap(move_this=CH3_1_2,
+                                 from_positions=self['port_L_CH3_1_2'],
+                                 to_positions=self['port_R_HC_1_1'])
+                mb.force_overlap(move_this=O_1_1,
+                                 from_positions=self['port_L_O_1_1'],
+                                 to_positions=self['port_D_HC_1_1'])
+                mb.force_overlap(move_this=H_1_1,
+                                 from_positions=self['port_L_H_1_1'],
+                                 to_positions=self['port_R_O_1_1'])
+
+                self.energy_minimize(forcefield='trappe-ua', steps=10 ** 9)
+
+        return Two_propanol_UA()
+
