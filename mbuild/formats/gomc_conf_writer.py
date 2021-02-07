@@ -1127,13 +1127,6 @@ class GOMCControl():
                  ):
 
         """
-        def __init__(self, ensemble_type, RunSteps, Temperature,
-                     FF_filename, coul_1_4_scaling, Coordinates_box_0, Structures_box_0,
-                     x_dim_box_0, y_dim_box_0, z_dim_box_0,
-                     Coordinates_box_1 = None, Structures_box_1 = None,
-                     x_dim_box_1 = None, y_dim_box_1 = None, z_dim_box_1 = None,
-                     input_variables_dict = None,
-                     ):
 
         Construct the GOMC configuration input file with the defaults,
         or adding additional data in the input_variable section
@@ -1182,6 +1175,8 @@ class GOMCControl():
 
         which prints the required inputs with their subsection description
         for the selected 'NVT' ensemble (other ensembles can be set as well).
+
+        The box units imported are in nm.  They need and are to be converted to Ang for GOMC or NAMD
         """
 
         # set this to check and see if all the input pass
@@ -1232,13 +1227,13 @@ class GOMCControl():
         self.coul_1_4_scaling = charmm_object.coul_1_4
         self.input_variables_dict = input_variables_dict
 
-        self.x_dim_box_0 = charmm_object.box_0.maxs[0]
-        self.y_dim_box_0 = charmm_object.box_0.maxs[1]
-        self.z_dim_box_0 = charmm_object.box_0.maxs[2]
+        self.x_dim_box_0 = charmm_object.box_0.maxs[0] * 10   # times 10 to convert from nm to Angstroms
+        self.y_dim_box_0 = charmm_object.box_0.maxs[1] * 10   # times 10 to convert from nm to Angstroms
+        self.z_dim_box_0 = charmm_object.box_0.maxs[2] * 10   # times 10 to convert from nm to Angstroms
         if charmm_object.filename_box_1 != None and isinstance(charmm_object.filename_box_1, str) == True:
-            self.x_dim_box_1 = charmm_object.box_1.maxs[0]
-            self.y_dim_box_1 = charmm_object.box_1.maxs[1]
-            self.z_dim_box_1 = charmm_object.box_1.maxs[2]
+            self.x_dim_box_1 = charmm_object.box_1.maxs[0] * 10   # times 10 to convert from nm to Angstroms
+            self.y_dim_box_1 = charmm_object.box_1.maxs[1] * 10   # times 10 to convert from nm to Angstroms
+            self.z_dim_box_1 = charmm_object.box_1.maxs[2] * 10   # times 10 to convert from nm to Angstroms
         else:
             self.x_dim_box_1 = None
             self.y_dim_box_1 = None
