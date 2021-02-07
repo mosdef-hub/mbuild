@@ -711,7 +711,7 @@ def _get_default_variables_dict():
         "Exclude": '1-3' ,
         "coul_1_4_scaling" : None,
         "Potential": 'VDW',
-        "Rswitch": 12,
+        "Rswitch": 9,
         "ElectroStatic": True,
         "Ewald":  True,
         "CachedFourier": False,
@@ -1636,6 +1636,8 @@ class GOMCControl():
                              "CrankShaftFreq", "VolFreq", "MultiParticleFreq",
                              "IntraMEMC-1Freq", "MEMC-1Freq", "IntraMEMC-2Freq", "MEMC-2Freq",
                              "IntraMEMC-3Freq", "MEMC-3Freq"]
+
+
             if input_var_keys_list[var_iter] in key_move_List:
                 self.ck_input_variable_int_or_float_zero_to_1(self.input_variables_dict,
                                                               input_var_keys_list[var_iter],
@@ -1656,7 +1658,16 @@ class GOMCControl():
                 self.IntraMEMC_3Freq = 0.00
                 self.MEMC_3Freq = 0.00
 
+            # set all the "RcutLow", "Rcut", "Rswitch" variable ahead of time so they can check the values
+            # relative to each other in the next interation, regardless of their user entered order
+            if input_var_keys_list[var_iter] == "Rcut":
+                self.Rcut = self.input_variables_dict["Rcut"]
 
+            if input_var_keys_list[var_iter] == "RcutLow":
+                self.RcutLow = self.input_variables_dict["RcutLow"]
+
+            if input_var_keys_list[var_iter] == "Rswitch":
+                self.Rswitch = self.input_variables_dict["Rswitch"]
 
 
         # check for bad input variables and list the bad ones
@@ -1821,6 +1832,7 @@ class GOMCControl():
                         or isinstance(self.Rcut, int)):
                     if self.input_variables_dict[key] <= self.RcutLow \
                             or self.input_variables_dict[key] >= self.Rcut:
+                        print('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx')
                         bad_input_variables_values_List.append(key)
 
                 if input_var_keys_list[var_iter] == key and key in possible_ensemble_variables_List:
