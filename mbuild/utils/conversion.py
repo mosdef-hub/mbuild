@@ -278,11 +278,66 @@ def changeDigit_base10_to_base52_alph_num(current_digit):
 
     current_digit = base52_Values[current_digit]
     return current_digit
-
-
-
-
 #***********************************************
 # Converting base-10 to base-52 functions (end)
 #***********************************************
 
+
+#***********************************************
+# Converting base-10 to base-26 functions (start)
+#***********************************************
+def base10_to_base26_alph_num(base10_No):
+    '''Converst base 10 to base 26 so pdb/psf files can add may more than
+    9999 atoms and 999 residues.'''
+
+    '''base10_No = the base-10 number that you want to convert to base-26)'''
+
+    base26_No = 26
+    base10_No = int(base10_No)
+
+    whole_no =1
+    remainder = changeDigit_base10_to_base26_alph_num(int(base10_No % base26_No))
+    base26_Values =  str(remainder)
+    power =1
+
+    while whole_no != 0:
+        whole_no =int(base10_No / base26_No**power)
+
+        if whole_no == base26_No :
+            base26_Values = str('A')+base26_Values
+
+        elif (whole_no != 0) and (whole_no > base26_No) :
+            #base26_Values = str(changeDigit_base10_to_base26_alph_num(int(whole_no % base26_No))) + base26_Values
+            base26_Values =  str(changeDigit_base10_to_base26_alph_num(int(whole_no % base26_No)))+ base26_Values
+        elif (whole_no != 0) and (whole_no < base26_No):
+            #base26_Values = str(changeDigit_base10_to_base26_alph_num(int(whole_no))) + base26_Values
+            base26_Values =str(changeDigit_base10_to_base26_alph_num(int(whole_no)))+ base26_Values
+
+
+        power =power+1
+
+    return base26_Values
+
+def changeDigit_base10_to_base26_alph_num(current_digit):
+    '''The supplimental digits for the base10_to_base26_alph_num function,
+    which Converts the base 10 to base 26 '''
+
+    '''current_digit = the currenty digit for this base.
+    (i.e. in base10 it would be the one, ten, hundreds, or thousands places .....)'''
+
+
+    base26_Values = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J",
+                   "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T",
+                   "U", "V", "W", "X", "Y", "Z"]
+
+
+
+    current_digit = base26_Values[current_digit]
+    return current_digit
+
+
+
+
+#***********************************************
+# Converting base-10 to base-26 functions (end)
+#***********************************************
