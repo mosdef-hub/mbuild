@@ -79,6 +79,7 @@ class BaseTest:
                 mb.force_overlap(self['propyl1'],
                                  self['propyl1']['down'],
                                  self['propyl2']['down'])
+
         return Hexane()
 
     @pytest.fixture
@@ -118,12 +119,11 @@ class BaseTest:
     def benzene_from_parts(self):
         ch = mb.load(get_fn('ch.mol2'))
         ch.name = 'CH'
-        mb.translate(ch, -ch[0].pos)       
+        ch.translate(-ch[0].pos)
         ch.add(mb.Port(anchor=ch[0], separation=0.07), 'a')
-        mb.rotate_around_z(ch['a'], np.deg2rad(120.0))
-
+        ch['a'].rotate(120.0 * (np.pi / 180.0), around=np.asarray([0, 0, 1]))
         ch.add(mb.Port(anchor=ch[0], separation=0.07), 'b')
-        mb.rotate_around_z(ch['b'], np.deg2rad(-120.0))
+        ch['b'].rotate(-120.0 * (np.pi / 180.0), around=np.asarray([0, 0, 1]))
         ch_copy = mb.clone(ch)
 
         benzene = mb.Compound(name='Benzene')
@@ -139,7 +139,7 @@ class BaseTest:
             benzene.add(ch_new)
 
         carbons = [p for p in benzene.particles_by_name('C')]
-        benzene.add_bond((carbons[0],carbons[-1]))
+        benzene.add_bond((carbons[0], carbons[-1]))
 
         return benzene
 
@@ -149,7 +149,7 @@ class BaseTest:
         benzene.name = 'Benzene'
         filled = mb.fill_box(benzene,
                              n_compounds=n_benzenes,
-                             box=[0, 0, 0, 4, 4, 4]) 
+                             box=[0, 0, 0, 4, 4, 4])
         filled.label_rigid_bodies(discrete_bodies='Benzene', rigid_particles='C')
         return filled
 
@@ -158,14 +158,15 @@ class BaseTest:
         ch = mb.load(get_fn('ch.mol2'))
         ch.name = 'CH'
         ch.label_rigid_bodies()
-        mb.translate(ch, -ch[0].pos)    
+        ch.translate(-ch[0].pos)
         ch.add(mb.Port(anchor=ch[0]), 'a')
-        mb.translate(ch['a'], [0, 0.07, 0]) 
-        mb.rotate_around_z(ch['a'], np.deg2rad(120.0))
+        ch['a'].translate([0, 0.07, 0])
+        ch['a'].rotate(120.0 * (np.pi / 180.0), around=np.asarray([0, 0, 1]))
 
         ch.add(mb.Port(anchor=ch[0]), 'b')
-        mb.translate(ch['b'], [0, 0.07, 0]) 
-        mb.rotate_around_z(ch['b'], np.deg2rad(-120.0))
+        ch['b'].translate([0, 0.07, 0])
+        ch['b'].rotate(-120.0 * (np.pi / 180.0), around=np.asarray([0, 0, 1]))
+
         return ch
 
     @pytest.fixture
@@ -184,6 +185,7 @@ class BaseTest:
                 self.add([carbon, hydrogen, fluorine])
                 self.add_bond((carbon, hydrogen))
                 self.add_bond((carbon, fluorine))
+
         return CHF()
 
     @pytest.fixture
@@ -192,20 +194,20 @@ class BaseTest:
             first = mb.clone(chf)
             second = mb.clone(chf)
             first.add(mb.Port(anchor=first[0], orientation=bond_vector,
-                separation=0.075), label='up')
+                              separation=0.075), label='up')
             second.add(mb.Port(anchor=second[0], orientation=-bond_vector,
-                separation=0.075), label='down')
+                               separation=0.075), label='down')
             c2h2f2 = mb.Compound(subcompounds=(first, second))
             mb.force_overlap(first, first['up'], second['down'])
             fccf_dihedral_init = calc_dihedral(first[2].pos, first[0].pos,
-                second[0].pos, second[2].pos)
+                                               second[0].pos, second[2].pos)
             c2h2f2.remove_bond((first[0], second[0]))
             mb.force_overlap(first, first['port[0]'], second['port[0]'])
             fccf_dihedral_final = calc_dihedral(first[2].pos, first[0].pos,
-                second[0].pos, second[2].pos)
+                                                second[0].pos, second[2].pos)
             return fccf_dihedral_init, fccf_dihedral_final
-        return _connect_and_reconnect
 
+        return _connect_and_reconnect
 
     @pytest.fixture
     def copper_cell(self):
@@ -213,25 +215,25 @@ class BaseTest:
         lattice_vector = [[1, 0, 0], [0, 1, 0], [0, 0, 1]]
         spacing = [.36149, .36149, .36149]
         copper_locations = [[0., 0., 0.], [.5, .5, 0.],
-                [.5, 0., .5], [0., .5, .5]]
-        basis =  {'Cu' : copper_locations}
-        copper_lattice = mb.Lattice(lattice_spacing = spacing,
-                lattice_vectors=lattice_vector,
-                lattice_points=basis)
+                            [.5, 0., .5], [0., .5, .5]]
+        basis = {'Cu': copper_locations}
+        copper_lattice = mb.Lattice(lattice_spacing=spacing,
+                                    lattice_vectors=lattice_vector,
+                                    lattice_points=basis)
         copper_dict = {'Cu': copper}
         copper_pillar = copper_lattice.populate(x=3, y=3, z=1,
-                compound_dict=copper_dict)
+                                                compound_dict=copper_dict)
         return copper_pillar
 
     @pytest.fixture
     def graphene(self):
         carbon = mb.Compound(name='C')
         angles = [90, 90, 120]
-        carbon_locations = [[0, 0, 0], [2/3, 1/3, 0]]
-        basis = {'C' : carbon_locations}
+        carbon_locations = [[0, 0, 0], [2 / 3, 1 / 3, 0]]
+        basis = {'C': carbon_locations}
         graphene = mb.Lattice(lattice_spacing=[.2456, .2456, 0],
-                               angles=angles, lattice_points=basis)
-        carbon_dict = {'C' : carbon}
+                              angles=angles, lattice_points=basis)
+        carbon_dict = {'C': carbon}
         graphene_cell = graphene.populate(compound_dict=carbon_dict,
                                           x=3, y=3, z=1)
         return graphene_cell
@@ -241,11 +243,10 @@ class BaseTest:
         cesium = mb.Compound(name='Cs')
         chlorine = mb.Compound(name='Cl')
         spacing = [.4123, .4123, .4123]
-        basis = {'Cs' : [[0.5, 0.5, 0.5]], 'Cl' : [[0, 0, 0]]}
+        basis = {'Cs': [[0.5, 0.5, 0.5]], 'Cl': [[0, 0, 0]]}
         cscl_lattice = mb.Lattice(spacing, lattice_points=basis)
-        
-        
-        cscl_dict = {'Cs' : cesium, 'Cl' : chlorine}
+
+        cscl_dict = {'Cs': cesium, 'Cl': chlorine}
         cscl_compound = cscl_lattice.populate(x=3, y=3, z=1,
                                               compound_dict=cscl_dict)
         return cscl_compound
