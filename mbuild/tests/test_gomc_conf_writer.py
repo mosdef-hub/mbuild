@@ -4,7 +4,7 @@ import mbuild.formats.gomc_conf_writer as gomc_control
 
 from mbuild.formats.charmm_writer import Charmm
 from mbuild.tests.base_test import BaseTest
-
+from mbuild.utils.io import has_foyer
 
 @pytest.mark.skipif(not has_foyer, reason="Foyer package not installed")
 class TestGOMCControlFileWriter(BaseTest):
