@@ -1873,6 +1873,11 @@ class Charmm:
             stuct_only_iteration =stuct_only[q]
 
             output_write = genopen(output, 'w')
+            output_write.write(
+                'REMARK this file ' + file_name_iteration + ' - created by mBuild/foyer using the' + '\n')
+            output_write.write(
+                'REMARK parameters from the ' + str(self.forcefield_selection) + ' force field via MoSDef\n')
+            output_write.write('REMARK created on ' + str(date_time) + '\n')
 
             unique_residue_data_dict = {}
             unique_residue_data_list = []

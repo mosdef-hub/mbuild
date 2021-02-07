@@ -1,7 +1,5 @@
-import mbuild
 import datetime
 import os
-import numpy as np
 import mbuild.formats.charmm_writer as mf_charmm
 from warnings import warn
 
@@ -1043,7 +1041,7 @@ def _get_possible_ensemble_input_variables(ensemble_type):
 
         valid_input_variables_List = sim_info_variables_List + CBMC_variables_List \
                                      + output_freq_variables_List + histogram_output_variables_List \
-                                     + output_data_variables_List \
+                                     + output_data_variables_List + free_energy_variables_List \
                                      + Std_MC_moves_variables_List + MEMC_MC_moves_variables_List
 
 
@@ -1213,7 +1211,7 @@ class GOMCControl():
         self.Temperature = Temperature
         if charmm_object.FF_filename != None and isinstance(charmm_object.FF_filename, str) == True:
             self.FF_filename = charmm_object.FF_filename
-        elif charmm_object.FF_filename == None or isinstance(charmm_object.FF_filename, str) == False:
+        elif charmm_object.FF_filename is None or isinstance(charmm_object.FF_filename, str) == False:
             self.all_inputs_pass = False
             print_error_message = "The force field file name was not specified and in the Charmm object (Charmm())." \
                                   "Therefore, the force field file (.inp) can not be written, and thus, the " \
@@ -1473,7 +1471,7 @@ class GOMCControl():
                 print_error_message = "ERROR: The x-dimension for box 1 is not an integer, float, or is <= 0."
                 raise ValueError(print_error_message)
 
-            elif self.x_dim_box_1 == None:
+            elif self.x_dim_box_1 is None:
                 self.all_inputs_pass = False
                 print_error_message = "ERROR: The x-dimension for box 1 was not provided.  The x-dimension for box 1, "\
                                       " is required to be an an integer, float, and be > 0."
@@ -1486,7 +1484,7 @@ class GOMCControl():
                 print_error_message = "ERROR: The y-dimension for box 1 is not an integer, float, or is <= 0."
                 raise ValueError(print_error_message)
 
-            elif self.y_dim_box_1 == None:
+            elif self.y_dim_box_1 is None:
                 self.all_inputs_pass = False
                 print_error_message = "ERROR: The y-dimension for box 1 was not provided.  The y-dimension for box 1, "\
                                       "is required to be an an integer, float, and be > 0."
@@ -1499,7 +1497,7 @@ class GOMCControl():
                 print_error_message = "ERROR: The z-dimension for box 1 is not an integer, float, or is <= 0."
                 raise ValueError(print_error_message)
 
-            elif self.z_dim_box_1 == None:
+            elif self.z_dim_box_1 is None:
                 self.all_inputs_pass = False
                 print_error_message = "ERROR: The z-dimension for box 1 was not provided.  The z-dimension for box 1, "\
                                       "is required to be an an integer, float, and be > 0."
@@ -1592,7 +1590,7 @@ class GOMCControl():
             print("INFO: All the required force field, pdb, and psf files for box 0 and 1 (.inp, .pdb, and .psf) all "
                   "passed the intial error checking. Note: the file names and their existance is not confirmed.")
 
-        if input_variables_dict == None:
+        if input_variables_dict is None:
             self.input_variables_dict = {}
         elif isinstance(input_variables_dict, dict) == True:
             self.input_variables_dict = input_variables_dict
@@ -2590,7 +2588,7 @@ class GOMCControl():
             raise ValueError(print_error_message)
 
         # check that both the ChemPot and Fugacity are set to None.  Only one can be used
-        if self.Fugacity == None and self.ChemPot == None \
+        if self.Fugacity is None and self.ChemPot is None \
                 and self.ensemble_type == 'GCMC':
             warn('ERROR: In the GCMC ensemble, neither Fugacity and ChemPot are provided (i.e., both are None). '
                        'Add a dictionary for either the Fugacity or ChemPot and set the other variable to None. ' 
@@ -2617,7 +2615,7 @@ class GOMCControl():
                                   'IntraMEMC_3Freq, and MEMC_3Freq ). '
             raise ValueError(print_error_message)
 
-        if self.MEMC_DataInput == None and (    self.MEMC_1Freq != 0 \
+        if self.MEMC_DataInput is None and (    self.MEMC_1Freq != 0 \
                                                            or self.MEMC_2Freq != 0 \
                                                            or self.MEMC_3Freq != 0 \
                                                            or self.IntraMEMC_1Freq != 0 \
@@ -2634,10 +2632,10 @@ class GOMCControl():
         if self.MEMC_DataInput != None and (self.MEMC_2Freq > 0
                                                        or self.IntraMEMC_2Freq > 0):
             for MEMC_2_i in range(0, len(self.MEMC_DataInput)):
-                if self.MEMC_DataInput[MEMC_2_i][2][0] == None \
-                    or self.MEMC_DataInput[MEMC_2_i][2][1] == None \
-                        or self.MEMC_DataInput[MEMC_2_i][4][0] == None \
-                        or self.MEMC_DataInput[MEMC_2_i][4][1] == None :
+                if self.MEMC_DataInput[MEMC_2_i][2][0] is None \
+                    or self.MEMC_DataInput[MEMC_2_i][2][1] is None \
+                        or self.MEMC_DataInput[MEMC_2_i][4][0] is None \
+                        or self.MEMC_DataInput[MEMC_2_i][4][1] is None :
 
                     self.all_inputs_pass = False
                     print_error_message = 'ERROR:  The  LargeKindBackBone and SmallKindBackBones unique ' \
@@ -2649,8 +2647,8 @@ class GOMCControl():
         if self.MEMC_DataInput != None and (self.MEMC_3Freq > 0
                                                        or self.IntraMEMC_3Freq > 0):
             for MEMC_3_i in range(0, len(self.MEMC_DataInput)):
-                if self.MEMC_DataInput[MEMC_3_i][2][0] == None \
-                    or self.MEMC_DataInput[MEMC_3_i][2][1] == None:
+                if self.MEMC_DataInput[MEMC_3_i][2][0] is None \
+                    or self.MEMC_DataInput[MEMC_3_i][2][1] is None:
                     self.all_inputs_pass = False
                     print_error_message = 'ERROR:  The LargeKindBackBone unique atom names, strings, ' \
                                           'both must be provided when using the IntraMEMC-3Freq or MEMC-3Freq moves ' \
@@ -2660,8 +2658,8 @@ class GOMCControl():
         # check that all required free energy values are provided
         if (self.FreeEnergyCalc != None or self.MoleculeType != None \
                 or self.InitialState != None or self.LambdaVDW != None ) \
-                and (self.FreeEnergyCalc == None or self.MoleculeType == None \
-                or self.InitialState == None or self.LambdaVDW == None ):
+                and (self.FreeEnergyCalc is None or self.MoleculeType is None \
+                or self.InitialState is None or self.LambdaVDW is None ):
             self.all_inputs_pass = False
             print_error_message = 'ERROR: To utilize the free energy calculations all the following ' \
                                   'variables need to be set, and not equal to None: ' \
@@ -2729,7 +2727,7 @@ class GOMCControl():
         self.conf_filename = conf_filename
 
         if isinstance(self.conf_filename, str) == False \
-                or isinstance(self.conf_filename, str) == None:
+                or isinstance(self.conf_filename, str) is None:
             self.all_inputs_pass = False
             print_error_message = 'ERROR: The control file name (conf_filename) is not provided as a string. '
             raise ValueError(print_error_message)
@@ -2822,7 +2820,7 @@ class GOMCControl():
         data_control_file.write('Temperature \t ' + str(self.Temperature) + '\n')
 
         if self.ensemble_type in ['GCMC'] and self.ChemPot != None \
-                and self.Fugacity == None:
+                and self.Fugacity is None:
             chem_pot_dict_key_List = dict_keys_to_list(self.ChemPot)
             for chem_pot_iter in range(0, len(chem_pot_dict_key_List)):
                 chem_pot_residue_iter = chem_pot_dict_key_List[chem_pot_iter]
@@ -2830,7 +2828,7 @@ class GOMCControl():
                                + str(self.ChemPot[chem_pot_residue_iter]) + '\n')
 
         if self.ensemble_type in ['GCMC'] and self.Fugacity != None \
-                and self.ChemPot == None :
+                and self.ChemPot is None :
             fugacity_iter_dict_key_List = dict_keys_to_list(self.Fugacity)
             for fugacity_iter in range(0, len(fugacity_iter_dict_key_List)):
                 fugacity_residue_iter = fugacity_iter_dict_key_List[fugacity_iter]
