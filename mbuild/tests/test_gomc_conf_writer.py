@@ -95,35 +95,35 @@ class TestGOMCControlFileWriter(BaseTest):
 
 
     def test_print_ensemble_info(self):
-        print_valid_ensemble_input_variables('NVT', description=True)
+        gomc_control.print_valid_ensemble_input_variables('NVT', description=True)
         ['charmm_object', 'ensemble_type', 'RunSteps', 'Temperature']
         print_required_ensemble_files('NVT', description=True)
 
-        print_valid_ensemble_input_variables('NVT', description=False)
+        gomc_control.print_valid_ensemble_input_variables('NVT', description=False)
         print_required_ensemble_files('NVT', description=False)
 
-        print_valid_ensemble_input_variables('NPT', description=True)
+        gomc_control.print_valid_ensemble_input_variables('NPT', description=True)
         print_required_ensemble_files('NPT', description=True)
 
-        print_valid_ensemble_input_variables('NPT', description=False)
+        gomc_control.print_valid_ensemble_input_variables('NPT', description=False)
         print_required_ensemble_files('NPT', description=False)
 
-        print_valid_ensemble_input_variables('GEMC_NVT', description=True)
+        gomc_control.print_valid_ensemble_input_variables('GEMC_NVT', description=True)
         print_required_ensemble_files('GEMC_NVT', description=True)
 
-        print_valid_ensemble_input_variables('GEMC_NVT', description=False)
+        gomc_control.print_valid_ensemble_input_variables('GEMC_NVT', description=False)
         print_required_ensemble_files('GEMC_NVT', description=False)
 
-        print_valid_ensemble_input_variables('GEMC_NPT', description=True)
+        gomc_control.print_valid_ensemble_input_variables('GEMC_NPT', description=True)
         print_required_ensemble_files('GEMC_NPT', description=True)
 
-        print_valid_ensemble_input_variables('GEMC_NPT', description=False)
+        gomc_control.print_valid_ensemble_input_variables('GEMC_NPT', description=False)
         print_required_ensemble_files('GEMC_NPT', description=False)
 
-        print_valid_ensemble_input_variables('GCMC', description=True)
+        gomc_control.print_valid_ensemble_input_variables('GCMC', description=True)
         print_required_ensemble_files('GCMC', description=True)
 
-        print_valid_ensemble_input_variables('GCMC', description=False)
+        gomc_control.print_valid_ensemble_input_variables('GCMC', description=False)
         print_required_ensemble_files('GCMC', description=False)
 
 
