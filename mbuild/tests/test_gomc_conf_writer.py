@@ -334,7 +334,7 @@ class TestGOMCControlFileWriter(BaseTest):
             elif line.startswith('CellBasisVector1 '):
                 split_line = line.split()
                 assert split_line[1] == '0'
-                assert split_line[2] == '1.0'
+                assert split_line[2] == '10.0'
                 assert split_line[3] == '0.00'
                 assert split_line[4] == '0.00'
 
@@ -342,7 +342,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 split_line = line.split()
                 assert split_line[1] == '0'
                 assert split_line[2] == '0.00'
-                assert split_line[3] == '1.0'
+                assert split_line[3] == '10.0'
                 assert split_line[4] == '0.00'
 
             elif line.startswith('CellBasisVector3 '):
@@ -350,7 +350,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 assert split_line[1] == '0'
                 assert split_line[2] == '0.00'
                 assert split_line[3] == '0.00'
-                assert split_line[4] == '1.0'
+                assert split_line[4] == '10.0'
 
             elif line.startswith('CBMC_First '):
                 split_line = line.split()
@@ -550,7 +550,7 @@ class TestGOMCControlFileWriter(BaseTest):
             elif line.startswith('CellBasisVector1 '):
                 split_line = line.split()
                 assert split_line[1] == '0'
-                assert split_line[2] == '2.0'
+                assert split_line[2] == '20.0'
                 assert split_line[3] == '0.00'
                 assert split_line[4] == '0.00'
 
@@ -558,7 +558,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 split_line = line.split()
                 assert split_line[1] == '0'
                 assert split_line[2] == '0.00'
-                assert split_line[3] == '2.0'
+                assert split_line[3] == '20.0'
                 assert split_line[4] == '0.00'
 
             elif line.startswith('CellBasisVector3 '):
@@ -566,7 +566,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 assert split_line[1] == '0'
                 assert split_line[2] == '0.00'
                 assert split_line[3] == '0.00'
-                assert split_line[4] == '2.0'
+                assert split_line[4] == '20.0'
 
             elif line.startswith('RestartFreq '):
                 split_line = line.split()
@@ -730,7 +730,7 @@ class TestGOMCControlFileWriter(BaseTest):
             elif line.startswith('CellBasisVector1 0'):
                 split_line = line.split()
                 assert split_line[1] == '0'
-                assert split_line[2] == '2.0'
+                assert split_line[2] == '20.0'
                 assert split_line[3] == '0.00'
                 assert split_line[4] == '0.00'
 
@@ -738,7 +738,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 split_line = line.split()
                 assert split_line[1] == '0'
                 assert split_line[2] == '0.00'
-                assert split_line[3] == '2.0'
+                assert split_line[3] == '20.0'
                 assert split_line[4] == '0.00'
 
             elif line.startswith('CellBasisVector3 0'):
@@ -746,12 +746,12 @@ class TestGOMCControlFileWriter(BaseTest):
                 assert split_line[1] == '0'
                 assert split_line[2] == '0.00'
                 assert split_line[3] == '0.00'
-                assert split_line[4] == '2.0'
+                assert split_line[4] == '20.0'
 
             elif line.startswith('CellBasisVector1 1'):
                 split_line = line.split()
                 assert split_line[1] == '1'
-                assert split_line[2] == '2.0'
+                assert split_line[2] == '20.0'
                 assert split_line[3] == '0.00'
                 assert split_line[4] == '0.00'
 
@@ -759,7 +759,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 split_line = line.split()
                 assert split_line[1] == '1'
                 assert split_line[2] == '0.00'
-                assert split_line[3] == '2.0'
+                assert split_line[3] == '20.0'
                 assert split_line[4] == '0.00'
 
             elif line.startswith('CellBasisVector3 1'):
@@ -767,7 +767,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 assert split_line[1] == '1'
                 assert split_line[2] == '0.00'
                 assert split_line[3] == '0.00'
-                assert split_line[4] == '2.0'
+                assert split_line[4] == '20.0'
 
             elif line.startswith('RestartFreq '):
                 split_line = line.split()
@@ -1175,7 +1175,7 @@ class TestGOMCControlFileWriter(BaseTest):
             elif line.startswith('CellBasisVector1 '):
                 split_line = line.split()
                 assert split_line[1] == '0'
-                assert split_line[2] == '4.0'
+                assert split_line[2] == '40.0'
                 assert split_line[3] == '0.00'
                 assert split_line[4] == '0.00'
 
@@ -1183,7 +1183,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 split_line = line.split()
                 assert split_line[1] == '0'
                 assert split_line[2] == '0.00'
-                assert split_line[3] == '4.0'
+                assert split_line[3] == '40.0'
                 assert split_line[4] == '0.00'
 
             elif line.startswith('CellBasisVector3 '):
@@ -1191,7 +1191,7 @@ class TestGOMCControlFileWriter(BaseTest):
                 assert split_line[1] == '0'
                 assert split_line[2] == '0.00'
                 assert split_line[3] == '0.00'
-                assert split_line[4] == '4.0'
+                assert split_line[4] == '40.0'
 
             elif line.startswith('FreeEnergyCalc '):
                 split_line = line.split()
