@@ -156,7 +156,6 @@ def specific_ff_to_residue(structure,
 
             try:
                 read_xlm_iteration = minidom.parse(ff_for_residue_iteration)
-                print('ff_for_residue_iteration read_xlm_iteration = ' +str(read_xlm_iteration ))
             except:
                 warn('Please make sure are entering the correct foyer FF path, including the FF file name.xml ' +
                      'If you are using the pre-build FF files in foyer, please us the forcefield_names variable.')
@@ -167,7 +166,6 @@ def specific_ff_to_residue(structure,
             ff_names_path_iteration = forcefields.get_ff_path()[0] + '/xml/' + ff_for_residue_iteration + '.xml'
             try:
                 read_xlm_iteration = minidom.parse(ff_names_path_iteration)
-                print('ff_names_path_iteration read_xlm_iteration = ' + str(read_xlm_iteration))
             except:
                 warn('Please make sure are entering the correct foyer FF name and not a path to a FF file.' +
                      'If you are entering a path to a FF file, please us the forcefield_files variable')
