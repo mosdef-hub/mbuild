@@ -369,16 +369,16 @@ class TestCharmmWriterData(BaseTest):
             else:
                 pass
 
-    def test_charmm_pdb_residue_reorder_box_sizing(self, TwoPropanolUA, EthaneGOMC):
-        test_box_ethane_TwoPropanolUA = mb.fill_box(compound=[TwoPropanolUA, EthaneGOMC],
+    def test_charmm_pdb_residue_reorder_box_sizing(self, EthanolGOMC, EthaneGOMC):
+        test_box_ethane_EthanolGOMC = mb.fill_box(compound=[EthanolGOMC, EthaneGOMC],
                                   n_compounds= [1,1] ,
                                   box=[2.0, 2.0, 2.0])
-        charmm = Charmm(test_box_ethane_TwoPropanolUA, 'residue_reorder_box_sizing_box_0',
+        charmm = Charmm(test_box_ethane_EthanolGOMC, 'residue_reorder_box_sizing_box_0',
                           structure_box_1 = EthaneGOMC,
                           filename_box_1 = 'residue_reorder_box_sizing_box_1',
                           FF_filename=None,
-                          residues = [EthaneGOMC.name, TwoPropanolUA.name],
-                          forcefield_selection = { TwoPropanolUA.name : 'trappe-ua', EthaneGOMC.name : 'oplsaa'},
+                          residues = [EthaneGOMC.name, EthanolGOMC.name],
+                          forcefield_selection = { EthanolGOMC.name : 'oplsaa', EthaneGOMC.name : 'oplsaa'},
                           fix_residue=None,
                           fix_residue_in_box = None,
                           fix_res_bonds_angles=None,
@@ -387,21 +387,45 @@ class TestCharmmWriterData(BaseTest):
                           box_1 =[4, 4, 4],
                           bead_to_atom_name_dict={'_CH3': 'C'}
                           )
+
         charmm.write_pdb()
 
-    def test_charmm_pdb_residue_reorder_and_FF_filename_box_sizing(self, TwoPropanolUA, EthaneGOMC):
+
+    def test_charmm_pdb_no_differenc_1_4_coul_scalars(self, TwoPropanolUA, EthaneGOMC):
         test_box_ethane_TwoPropanolUA = mb.fill_box(compound=[TwoPropanolUA, EthaneGOMC],
                                                     n_compounds=[1, 1],
                                                     box=[2.0, 2.0, 2.0])
-        charmm = Charmm(test_box_ethane_TwoPropanolUA, 'residue_reorder_box_sizing_box_0',
+        try:
+            Test_value = Charmm(test_box_ethane_TwoPropanolUA, 'residue_reorder_box_sizing_box_0',
+                            structure_box_1=EthaneGOMC,
+                            filename_box_1='residue_reorder_box_sizing_box_1',
+                            FF_filename=None,
+                            residues=[TwoPropanolUA.name, EthaneGOMC.name],
+                            forcefield_selection= {TwoPropanolUA.name : 'trappe-ua', EthaneGOMC.name : 'oplsaa'} ,
+                            fix_residue=None,
+                            fix_residue_in_box=None,
+                            fix_res_bonds_angles=None,
+                            reorder_res_in_pdb_psf=False,
+                            box_0=[3, 3, 3],
+                            box_1=[4, 4, 4],
+                            bead_to_atom_name_dict={'_CH3': 'C'}
+                            )
+        except:
+            Test_value = "TEST_FAILED"
+
+        assert Test_value == "TEST_FAILED"
+
+
+    def test_charmm_pdb_residue_reorder_and_FF_filename_box_sizing(self, EthanolGOMC, EthaneGOMC):
+        test_box_ethane_EthanolGOMC = mb.fill_box(compound=[EthanolGOMC, EthaneGOMC],
+                                                    n_compounds=[1, 1],
+                                                    box=[2.0, 2.0, 2.0])
+        charmm = Charmm(test_box_ethane_EthanolGOMC, 'residue_reorder_box_sizing_box_0',
                         structure_box_1=EthaneGOMC,
                         filename_box_1='residue_reorder_box_sizing_box_1',
                         FF_filename=None,
-                        residues=[EthaneGOMC.name, TwoPropanolUA.name],
-                        forcefield_selection={TwoPropanolUA.name: str(forcefields.get_ff_path()[0]) +
-                                                                  '/xml/' + 'trappe-ua.xml',
-                                              EthaneGOMC.name: 'oplsaa'
-                                            },
+                        residues=[EthaneGOMC.name, EthanolGOMC.name],
+                        forcefield_selection= str(forcefields.get_ff_path()[0]) +  '/xml/' + 'oplsaa.xml' ,
                         fix_residue=None,
                         fix_residue_in_box=None,
                         fix_res_bonds_angles=None,
@@ -428,18 +452,24 @@ class TestCharmmWriterData(BaseTest):
                                              ['ATOM', '6', 'H4', 'ETH', 'A', '1'],
                                              ['ATOM', '7', 'H5', 'ETH', 'A', '1'],
                                              ['ATOM', '8', 'H6', 'ETH', 'A', '1'],
-                                             ['ATOM', '9', 'C1', 'POL', 'A', '2'],
-                                             ['ATOM', '10', 'BD1', 'POL', 'A', '2'],
-                                             ['ATOM', '11', 'O1', 'POL', 'A', '2'],
-                                             ['ATOM', '12', 'H1', 'POL', 'A', '2'],
-                                             ['ATOM', '13', 'C2', 'POL', 'A', '2']
+                                             ['ATOM', '9', 'C1', 'ETO', 'A', '2'],
+                                             ['ATOM', '10', 'C2', 'ETO', 'A', '2'],
+                                             ['ATOM', '11', 'O1', 'ETO', 'A', '2'],
+                                             ['ATOM', '12', 'H1', 'ETO', 'A', '2'],
+                                             ['ATOM', '13', 'H2', 'ETO', 'A', '2'],
+                                             ['ATOM', '14', 'H3', 'ETO', 'A', '2'],
+                                             ['ATOM', '15', 'H4', 'ETO', 'A', '2'],
+                                             ['ATOM', '16', 'H5', 'ETO', 'A', '2'],
+                                             ['ATOM', '17', 'H6', 'ETO', 'A', '2']
                                              ]
 
                 Atom_type_res_part_2_list = [['1.00', '0.00', 'C'], ['1.00', '0.00', 'C'], ['1.00', '0.00', 'H'],
                                              ['1.00', '0.00', 'H'], ['1.00', '0.00', 'H'], ['1.00', '0.00', 'H'],
                                              ['1.00', '0.00', 'H'], ['1.00', '0.00', 'H'],
-                                             ['1.00', '0.00', 'EP'], ['1.00', '0.00', 'EP'], ['1.00', '0.00', 'O'],
-                                             ['1.00', '0.00', 'H'], ['1.00', '0.00', 'EP']
+                                             ['1.00', '0.00', 'C'], ['1.00', '0.00', 'C'], ['1.00', '0.00', 'O'],
+                                             ['1.00', '0.00', 'H'], ['1.00', '0.00', 'H'],
+                                             ['1.00', '0.00', 'H'], ['1.00', '0.00', 'H'],
+                                             ['1.00', '0.00', 'H'], ['1.00', '0.00', 'H']
                                              ]
                 for j in range(0, len(Atom_type_res_part_1_list)):
                     assert out_GOMC[i + 1 + j].split()[0:6] ==  Atom_type_res_part_1_list[j]
@@ -553,6 +583,82 @@ class TestCharmmWriterData(BaseTest):
         assert len(verified_unique_entries_base_62_List)-len(add_same_values_List) == len(unique_entries_base_62_List)
 
     # Tests for the mbuild.utils.specific_FF_to_residue.Specific_FF_to_residue() function
+
+    def test_Specific_FF_to_box_value_negative(self, EthaneGOMC):
+        Test_value_0, Test_value_1, \
+        Test_value_2, Test_value_3 = specific_ff_to_residue(EthaneGOMC,
+                                                            forcefield_selection='oplsaa',
+                                                            residues=[EthaneGOMC.name],
+                                                            reorder_res_in_pdb_psf=False,
+                                                            box=[1,-2,3],
+                                                            boxes_for_simulation=1
+                                                            )
+
+        assert Test_value_0 is None
+        assert Test_value_1 is None
+        assert Test_value_2 is None
+        assert Test_value_3 is None
+
+    def test_Specific_FF_to_box_value_str(self, EthaneGOMC):
+        Test_value_0, Test_value_1, \
+        Test_value_2, Test_value_3 = specific_ff_to_residue(EthaneGOMC,
+                                                            forcefield_selection='oplsaa',
+                                                            residues=[EthaneGOMC.name],
+                                                            reorder_res_in_pdb_psf=False,
+                                                            box=[1,'2',3],
+                                                            boxes_for_simulation=1
+                                                            )
+
+        assert Test_value_0 is None
+        assert Test_value_1 is None
+        assert Test_value_2 is None
+        assert Test_value_3 is None
+
+
+    def test_Specific_FF_FF_is_None(self, EthaneGOMC):
+        Test_value_0, Test_value_1, \
+        Test_value_2, Test_value_3 = specific_ff_to_residue(EthaneGOMC,
+                                                            forcefield_selection=None,
+                                                            residues=[EthaneGOMC.name],
+                                                            reorder_res_in_pdb_psf=False,
+                                                            box=None,
+                                                            boxes_for_simulation=1
+                                                            )
+
+        assert Test_value_0 is None
+        assert Test_value_1 is None
+        assert Test_value_2 is None
+        assert Test_value_3 is None
+
+    def test_Specific_FF_wrong_FF_extention(self, EthaneGOMC):
+        Test_value_0, Test_value_1, \
+        Test_value_2, Test_value_3 = specific_ff_to_residue(EthaneGOMC,
+                                                            forcefield_selection='oplsaa.pdb',
+                                                            residues=[EthaneGOMC.name],
+                                                            reorder_res_in_pdb_psf=False,
+                                                            box=None,
+                                                            boxes_for_simulation=1
+                                                            )
+
+        assert Test_value_0 is None
+        assert Test_value_1 is None
+        assert Test_value_2 is None
+        assert Test_value_3 is None
+
+    def test_Specific_all_residue_not_input(self, EthaneGOMC, EthanolGOMC):
+        Test_value_0, Test_value_1, \
+        Test_value_2, Test_value_3 = specific_ff_to_residue(EthaneGOMC,
+                                                            forcefield_selection='oplsaa',
+                                                            residues=[EthaneGOMC.name],
+                                                            reorder_res_in_pdb_psf=False,
+                                                            box=None,
+                                                            boxes_for_simulation=1
+                                                            )
+
+        assert Test_value_0 is None
+        assert Test_value_1 is None
+        assert Test_value_2 is None
+        assert Test_value_3 is None
 
     def test_Specific_FF_to_residue_FFselection_not_dict(self, EthaneGOMC):
         Test_value_0, Test_value_1, \
@@ -1528,10 +1634,10 @@ class TestCharmmWriterData(BaseTest):
         assert value_0 == "TEST_FAILED"
 
 
-    def test_residues_not_None_not_not_list(self, EthaneGOMC, TwoPropanolUA):
+    def test_residues_not_None_not_not_list(self, EthaneGOMC):
         try:
             value_0 = Charmm(EthaneGOMC, 'charmm_data_box_0',
-                             structure_box_1=TwoPropanolUA, filename_box_1='charmm_data_box_1',
+                             structure_box_1='EthaneGOMC', filename_box_1='charmm_data_box_1',
                              FF_filename='charmm_data',
                              residues='EthaneGOMC.name', forcefield_selection='oplsaa',
                              )
@@ -1545,9 +1651,10 @@ class TestCharmmWriterData(BaseTest):
             value_0 = Charmm(EthaneGOMC, 'charmm_data_box_0',
                              structure_box_1=EthaneGOMC, filename_box_1='charmm_data_box_1',
                              FF_filename='charmm_data',
-                             residues=[EthaneGOMC.name], forcefield_selection=None,
+                             residues=[EthaneGOMC.name], forcefield_selection='oplsaa',
                              non_bonded_type = 'Mie'
                              )
+            charmm.write_inp()
         except:
             value_0 = "TEST_FAILED"
 
@@ -1558,23 +1665,68 @@ class TestCharmmWriterData(BaseTest):
             value_0 = Charmm(EthaneGOMC, 'charmm_data_box_0',
                              structure_box_1=EthaneGOMC, filename_box_1='charmm_data_box_1',
                              FF_filename='charmm_data',
-                             residues=[EthaneGOMC.name], forcefield_selection=None,
+                             residues=[EthaneGOMC.name], forcefield_selection='oplsaa',
                              non_bonded_type = 'OTH'
                              )
+            charmm.write_inp()
         except:
             value_0 = "TEST_FAILED"
 
         assert value_0 == "TEST_FAILED"
 
 
-    def test_diff_1_4_coul_scalers(self, EthaneGOMC):
+    def test_diff_1_4_coul_scalers(self, EthaneGOMC, TwoPropanolUA):
+        try:
+            value_0 = Charmm(EthaneGOMC, 'charmm_data_box_0',
+                             structure_box_1=TwoPropanolUA, filename_box_1='charmm_data_box_1',
+                             FF_filename='charmm_data',
+                             residues=[EthaneGOMC.name, TwoPropanolUA.name],
+                             forcefield_selection = {EthaneGOMC.name : 'oplsaa', TwoPropanolUA.name : 'trappe-ua'},
+                             )
+        except:
+            value_0 = "TEST_FAILED"
+
+        assert value_0 == "TEST_FAILED"
+
+    def test_write_inp_wo_FFfilename(self, EthaneGOMC):
+        try:
+            value_0 = Charmm(EthaneGOMC, 'charmm_data_box_0',
+                             structure_box_1=EthaneGOMC, filename_box_1='charmm_data_box_1',
+                             FF_filename=None,
+                             residues=[EthaneGOMC.name],
+                             forcefield_selection = 'oplsaa',
+                             )
+            value_0.write_inp()
+
+        except:
+            value_0 = "TEST_FAILED"
+
+        assert value_0 == "TEST_FAILED"
+
+    def test_write_inp_with_2_boxes(self, EthaneGOMC):
         try:
             value_0 = Charmm(EthaneGOMC, 'charmm_data_box_0',
                              structure_box_1=EthaneGOMC, filename_box_1='charmm_data_box_1',
                              FF_filename='charmm_data',
-                             residues=[EthaneGOMC.name], forcefield_selection=None,
-                             non_bonded_type = 'OTH'
+                             residues=[EthaneGOMC.name],
+                             forcefield_selection='oplsaa',
                              )
+            value_0.write_inp()
+
+        except:
+            value_0 = "TEST_FAILED"
+
+        assert value_0 == "TEST_FAILED"
+
+    def test_extra_residue_specified(self, EthaneGOMC):
+        try:
+            value_0 = Charmm(EthaneGOMC, 'charmm_data_box_0',
+                             structure_box_1=EthaneGOMC, filename_box_1='charmm_data_box_1',
+                             FF_filename='charmm_data',
+                             residues=[EthaneGOMC.name, 'XXX'],
+                             forcefield_selection='oplsaa',
+                             )
+
         except:
             value_0 = "TEST_FAILED"
 
