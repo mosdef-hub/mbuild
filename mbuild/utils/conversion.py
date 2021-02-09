@@ -10,7 +10,7 @@ def RB_to_OPLS(c0, c1, c2, c3, c4, c5):
 
     Returns
     -------
-    opls_coeffs : np.array, shape=(4)
+    opls_coeffs : np.array, shape=(4,)
         Array containing the OPLS dihedrals coeffs f1, f2, f3, and f4
         (in kcal/mol)
 
@@ -27,13 +27,21 @@ def RB_to_CHARMM(c0, c1, c2, c3, c4, c5):
     """Converts Ryckaert-Bellemans (RB) type dihedrals to CHARMM type
     or
 
-    RB_torsions = c0 + c1*Cos[Psi] + c2*Cos[Psi]^2 + c3*CosPsi]^3 + c4*Cos[Psi]^4 + c5*Cos[5*Psi]^5
+    RB_torsions = c0 + c1*Cos[Psi] + c2*Cos[Psi]^2 + c3*Cos[Psi]^3 + c4*Cos[Psi]^4 + c5*Cos[5*Psi]^5
 
-    where Psi= t-Pi = t - 180 degress
+    where Psi= t-Pi = t - 180 degrees
 
     Parameters
     ----------
     c0, c1, c2, c3, c4, c5 : Ryckaert-Belleman coefficients (in kcal/mol)
+
+    where:
+    n0 = 0
+    n1 = 1
+    n2 = 2
+    n3 = 3
+    n4 = 4
+    n5 = 5
 
     converts to:
 
@@ -46,7 +54,7 @@ def RB_to_CHARMM(c0, c1, c2, c3, c4, c5):
 
     Returns
     -------
-    0, K1, K2, K3, K4, K5, n0, n1, n2, n3, n4, n5, d0, d1, d2, d3, d4, and d5  : Charmm coefficients (in kcal/mol)
+    K0, K1, K2, K3, K4, K5, n0, n1, n2, n3, n4, n5, d0, d1, d2, d3, d4, and d5  : Charmm coefficients (in kcal/mol)
 
     CHARMM_ dihedral coeffs : np.matrix, shape=(6,3)
         Array containing the CHARMM dihedral coeffs  [[K0, n0, d0], [K1, n1, d1], [K2, n2, d2], [K3, n3, d3],
@@ -227,7 +235,7 @@ def changeDigit_base10_to_base16_alph_num(current_digit):
 # Converting base-10 to base-52 functions (start)
 #***********************************************
 
-def base10_to_base52_alph_num(base10_No):
+def base10_to_base52_alph(base10_No):
     '''Converst base 10 to base 52 so pdb/psf files can add may more than
     9999 atoms and 999 residues.'''
 
@@ -248,10 +256,8 @@ def base10_to_base52_alph_num(base10_No):
             base52_Values = str('A')+base52_Values
 
         elif (whole_no != 0) and (whole_no > base52_No) :
-            #base52_Values = str(changeDigit_base10_to_base52_alph_num(int(whole_no % base52_No))) + base52_Values
             base52_Values =  str(changeDigit_base10_to_base52_alph_num(int(whole_no % base52_No)))+ base52_Values
         elif (whole_no != 0) and (whole_no < base52_No):
-            #base52_Values = str(changeDigit_base10_to_base52_alph_num(int(whole_no))) + base52_Values
             base52_Values =str(changeDigit_base10_to_base52_alph_num(int(whole_no)))+ base52_Values
 
 
@@ -286,7 +292,7 @@ def changeDigit_base10_to_base52_alph_num(current_digit):
 #***********************************************
 # Converting base-10 to base-26 functions (start)
 #***********************************************
-def base10_to_base26_alph_num(base10_No):
+def base10_to_base26_alph(base10_No):
     '''Converst base 10 to base 26 so pdb/psf files can add may more than
     9999 atoms and 999 residues.'''
 
@@ -304,13 +310,12 @@ def base10_to_base26_alph_num(base10_No):
         whole_no =int(base10_No / base26_No**power)
 
         if whole_no == base26_No :
+            print('dfe')
             base26_Values = str('A')+base26_Values
 
         elif (whole_no != 0) and (whole_no > base26_No) :
-            #base26_Values = str(changeDigit_base10_to_base26_alph_num(int(whole_no % base26_No))) + base26_Values
             base26_Values =  str(changeDigit_base10_to_base26_alph_num(int(whole_no % base26_No)))+ base26_Values
         elif (whole_no != 0) and (whole_no < base26_No):
-            #base26_Values = str(changeDigit_base10_to_base26_alph_num(int(whole_no))) + base26_Values
             base26_Values =str(changeDigit_base10_to_base26_alph_num(int(whole_no)))+ base26_Values
 
 

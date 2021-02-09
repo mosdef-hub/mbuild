@@ -14,8 +14,8 @@ from mbuild import Box
 from mbuild.utils.conversion import RB_to_CHARMM
 from mbuild.utils.sorting import natural_sort
 from mbuild.utils.conversion import base10_to_base16_alph_num
-from mbuild.utils.conversion import base10_to_base26_alph_num
-from mbuild.utils.conversion import base10_to_base52_alph_num
+from mbuild.utils.conversion import base10_to_base26_alph
+from mbuild.utils.conversion import base10_to_base52_alph
 from mbuild.utils.conversion import base10_to_base62_alph_num
 from mbuild.utils.specific_ff_to_residue import specific_ff_to_residue
 
@@ -704,7 +704,8 @@ class Charmm:
 
         self.sub_1_for_base_52 = 1
 
-        if self.structure_box_1 != None:
+        #if self.structure_box_1 != None:
+        if self.structure_box_1:
             self.boxes_for_simulation = 2
         else:
             self.boxes_for_simulation = 1
@@ -712,7 +713,8 @@ class Charmm:
         #write the Force fields
         self.combined_1_4_LJ_dict_per_residue = {}
         self.combined_1_4_Coul_dict_per_residue = {}
-        if self.structure_box_1 != None:
+        #if self.structure_box_1 != None:
+        if self.structure_box_1:
 
             print('GOMC FF writing each residues FF as a group for structure_box_0')
             self.structure_box_0_FF, \
@@ -746,7 +748,7 @@ class Charmm:
                                                              boxes_for_simulation = self.boxes_for_simulation)
             test_Specific_FF_to_residue_for_failure = [self.structure_box_1_FF, self.coulomb14scaler_dict_1,
                                                        self.LJ14scaler_dict_1, self.residues_applied_list_1]
-            print('test_Specific_FF_to_residue_for_failure = ' +str(test_Specific_FF_to_residue_for_failure))
+
             for iter_test_Specifc_res_fail in range(0, len(test_Specific_FF_to_residue_for_failure)):
                 if test_Specific_FF_to_residue_for_failure[iter_test_Specifc_res_fail] is None:
                     self.input_error = True
@@ -916,13 +918,15 @@ class Charmm:
         self.box_0.maxs /= self.sigma_conversion_factor
 
         #Internally use nm
-        if self.structure_box_1 != None:
+        #if self.structure_box_1 != None:
+        if self.structure_box_1:
             self.box_1 = Box(lengths=np.array([0.1 * val for val in self.structure_box_1_FF.box[0:3]]),
                       angles=self.structure_box_1_FF.box[3:6])
             # Divide by conversion factor
             self.box_1.maxs /= self.sigma_conversion_factor
 
-        if self.structure_box_1 != None:
+        #if self.structure_box_1 != None:
+        if self.structure_box_1:
             self.structure_selection = self.structure_box_0_and_1_FF
         else:
             self.structure_selection = self.structure_box_0_FF
@@ -985,7 +989,8 @@ class Charmm:
             unique_residue_data_dict = {}
             unique_residue_data_list = []
             residue_data_name_list = []
-            if self.structure_box_1 != None:
+            #if self.structure_box_1 != None:
+            if self.structure_box_1:
                 residue_iterate = 0
                 for m, residue in enumerate(self.structure_box_0_FF.residues):
                     residue_iterate = residue_iterate + 1
@@ -1107,7 +1112,8 @@ class Charmm:
 
 
             with open(self.FF_filename, 'w') as data:
-                if self.structure_box_1 != None:
+                #if self.structure_box_1 != None:
+                if self.structure_box_1:
                     data.write("*  " + self.filename_box_0 + ' and '+ self.filename_box_1+
                                ' - created by mBuild using the on ' + str(date_time) +'\n') #
                 else:
@@ -1146,7 +1152,7 @@ class Charmm:
                            +'(i.e., atoms_type_per_utilized_FF)  \n')
                 for atom_type,mass in self.mass_dict.items():
                     mass_format = '*  {}\t\t{:.6f}\t! {}\n'
-                    data.write(mass_format.format(base10_to_base52_alph_num(atom_type-self.sub_1_for_base_52),
+                    data.write(mass_format.format(base10_to_base52_alph(atom_type-self.sub_1_for_base_52),
                                                   mass, self.unique_types[atom_type - 1]))
 
 
@@ -1170,15 +1176,15 @@ class Charmm:
                         if (self.fix_res_bonds_angles != None) and ((params[3] and  params[4])
                                                                       in self.fix_res_bonds_angles ):
                             fix_bond_K_value = '999999999999'
-                            data.write( bond_format.format(base10_to_base52_alph_num(self.atom_types_to_index_value_dict[params[2][0]+'_' + str(params[3])]),
-                                                           base10_to_base52_alph_num(self.atom_types_to_index_value_dict[params[2][1]+'_' + str(params[4])]),
+                            data.write( bond_format.format(base10_to_base52_alph(self.atom_types_to_index_value_dict[params[2][0]+'_' + str(params[3])]),
+                                                           base10_to_base52_alph(self.atom_types_to_index_value_dict[params[2][1]+'_' + str(params[4])]),
                                                            fix_bond_K_value, params[1],
                                                            params[2][0]+'_' + str(params[3]),
                                                            params[2][1]+'_' + str(params[4])))
 
                         else:
-                            data.write( bond_format.format(base10_to_base52_alph_num(self.atom_types_to_index_value_dict[params[2][0] +'_' + str(params[3])]),
-                                                           base10_to_base52_alph_num(self.atom_types_to_index_value_dict[params[2][1]+'_' + str(params[4])]),
+                            data.write( bond_format.format(base10_to_base52_alph(self.atom_types_to_index_value_dict[params[2][0] +'_' + str(params[3])]),
+                                                           base10_to_base52_alph(self.atom_types_to_index_value_dict[params[2][1]+'_' + str(params[4])]),
                                                            params[0],params[1],
                                                            params[2][0]+'_' + str(params[3]),
                                                            params[2][1]+'_' + str(params[4])))
@@ -1206,9 +1212,9 @@ class Charmm:
                                                                in self.fix_res_bonds_angles ):
                             fix_angle_K_value = '999999999999'
                             angle_format = '{}\t{}\t{}\t{}\t\t{:.5f}\t\t! {}\t{}\t{}\n'
-                            data.write(angle_format.format(base10_to_base52_alph_num(self.atom_types_to_index_value_dict[params[3][0]+'_'+params[4]]),
-                                                           base10_to_base52_alph_num(self.atom_types_to_index_value_dict[params[2]+'_'+params[5]]),
-                                                           base10_to_base52_alph_num(self.atom_types_to_index_value_dict[params[3][1]+'_'+params[6]]),
+                            data.write(angle_format.format(base10_to_base52_alph(self.atom_types_to_index_value_dict[params[3][0]+'_'+params[4]]),
+                                                           base10_to_base52_alph(self.atom_types_to_index_value_dict[params[2]+'_'+params[5]]),
+                                                           base10_to_base52_alph(self.atom_types_to_index_value_dict[params[3][1]+'_'+params[6]]),
                                                            fix_angle_K_value ,params[1],
                                                            params[3][0]+'_'+params[4],
                                                            params[2]+'_'+params[5],
@@ -1216,9 +1222,9 @@ class Charmm:
 
                         else:
                             data.write(
-                                '{}\t{}\t{}\t{}\t\t{:.5f}\t\t! {}\t{}\t{}\n'.format(base10_to_base52_alph_num(self.atom_types_to_index_value_dict[params[3][0]+'_'+params[4]]),
-                                                                                  base10_to_base52_alph_num(self.atom_types_to_index_value_dict[params[2]+'_'+params[5]]),
-                                                                                  base10_to_base52_alph_num(self.atom_types_to_index_value_dict[params[3][1]+'_'+params[6]]),
+                                '{}\t{}\t{}\t{}\t\t{:.5f}\t\t! {}\t{}\t{}\n'.format(base10_to_base52_alph(self.atom_types_to_index_value_dict[params[3][0]+'_'+params[4]]),
+                                                                                  base10_to_base52_alph(self.atom_types_to_index_value_dict[params[2]+'_'+params[5]]),
+                                                                                  base10_to_base52_alph(self.atom_types_to_index_value_dict[params[3][1]+'_'+params[6]]),
                                                                                   params[0], params[1],
                                                                                   params[3][0]+'_'+params[4],
                                                                                   params[2]+'_'+params[5],
@@ -1332,10 +1338,10 @@ class Charmm:
                             # check the error between the convertions of RB_tortions to CHARMM DIHEDRALS (end)
                             # **************************************
                             dihedral_format = '{}\t{}\t{}\t{}\t{:.6f}\t{}\t{}\t\t! {}\t{}\t{}\t{}\n'
-                            data.write(dihedral_format.format(base10_to_base52_alph_num(self.atom_types_to_index_value_dict[ params[8]+ '_' + params[12]]),
-                                                              base10_to_base52_alph_num(self.atom_types_to_index_value_dict[params[9]+ '_' + params[13]]),
-                                                              base10_to_base52_alph_num(self.atom_types_to_index_value_dict[params[10]+ '_' + params[14]]),
-                                                              base10_to_base52_alph_num(self.atom_types_to_index_value_dict[params[11]+ '_' + params[15]]),
+                            data.write(dihedral_format.format(base10_to_base52_alph(self.atom_types_to_index_value_dict[ params[8]+ '_' + params[12]]),
+                                                              base10_to_base52_alph(self.atom_types_to_index_value_dict[params[9]+ '_' + params[13]]),
+                                                              base10_to_base52_alph(self.atom_types_to_index_value_dict[params[10]+ '_' + params[14]]),
+                                                              base10_to_base52_alph(self.atom_types_to_index_value_dict[params[11]+ '_' + params[15]]),
                                                               CHARMM_coeffs[0,0],
                                                               int(CHARMM_coeffs[0,1]),
                                                               CHARMM_coeffs[0,2],
@@ -1343,10 +1349,10 @@ class Charmm:
                                                               params[9]+ '_' + params[13],
                                                               params[10]+ '_' + params[14],
                                                               params[11]+ '_' + params[15]))
-                            data.write(dihedral_format.format(base10_to_base52_alph_num(self.atom_types_to_index_value_dict[params[8]+ '_' + params[12]]),
-                                                              base10_to_base52_alph_num(self.atom_types_to_index_value_dict[params[9]+ '_' + params[13]]),
-                                                              base10_to_base52_alph_num(self.atom_types_to_index_value_dict[params[10]+ '_' + params[14]]),
-                                                              base10_to_base52_alph_num(self.atom_types_to_index_value_dict[params[11]+ '_' + params[15]]),
+                            data.write(dihedral_format.format(base10_to_base52_alph(self.atom_types_to_index_value_dict[params[8]+ '_' + params[12]]),
+                                                              base10_to_base52_alph(self.atom_types_to_index_value_dict[params[9]+ '_' + params[13]]),
+                                                              base10_to_base52_alph(self.atom_types_to_index_value_dict[params[10]+ '_' + params[14]]),
+                                                              base10_to_base52_alph(self.atom_types_to_index_value_dict[params[11]+ '_' + params[15]]),
                                                               CHARMM_coeffs[1, 0],
                                                               int(CHARMM_coeffs[1, 1]),
                                                               CHARMM_coeffs[1, 2],
@@ -1354,10 +1360,10 @@ class Charmm:
                                                               params[9]+ '_' + params[13],
                                                               params[10]+ '_' + params[14],
                                                               params[11]+ '_' + params[15]))
-                            data.write(dihedral_format.format(base10_to_base52_alph_num(self.atom_types_to_index_value_dict[params[8]+ '_' + params[12]]),
-                                                              base10_to_base52_alph_num(self.atom_types_to_index_value_dict[params[9]+ '_' + params[13]]),
-                                                              base10_to_base52_alph_num(self.atom_types_to_index_value_dict[params[10]+ '_' + params[14]]),
-                                                              base10_to_base52_alph_num(self.atom_types_to_index_value_dict[params[11]+ '_' + params[15]]),
+                            data.write(dihedral_format.format(base10_to_base52_alph(self.atom_types_to_index_value_dict[params[8]+ '_' + params[12]]),
+                                                              base10_to_base52_alph(self.atom_types_to_index_value_dict[params[9]+ '_' + params[13]]),
+                                                              base10_to_base52_alph(self.atom_types_to_index_value_dict[params[10]+ '_' + params[14]]),
+                                                              base10_to_base52_alph(self.atom_types_to_index_value_dict[params[11]+ '_' + params[15]]),
                                                               CHARMM_coeffs[2, 0],
                                                               int(CHARMM_coeffs[2, 1]),
                                                               CHARMM_coeffs[2, 2],
@@ -1365,10 +1371,10 @@ class Charmm:
                                                               params[9]+ '_' + params[13],
                                                               params[10]+ '_' + params[14],
                                                               params[11]+ '_' + params[15]))
-                            data.write(dihedral_format.format(base10_to_base52_alph_num(self.atom_types_to_index_value_dict[params[8]+ '_' + params[12]]),
-                                                              base10_to_base52_alph_num(self.atom_types_to_index_value_dict[params[9]+ '_' + params[13]]),
-                                                              base10_to_base52_alph_num(self.atom_types_to_index_value_dict[params[10]+ '_' + params[14]]),
-                                                              base10_to_base52_alph_num(self.atom_types_to_index_value_dict[params[11]+ '_' + params[15]]),
+                            data.write(dihedral_format.format(base10_to_base52_alph(self.atom_types_to_index_value_dict[params[8]+ '_' + params[12]]),
+                                                              base10_to_base52_alph(self.atom_types_to_index_value_dict[params[9]+ '_' + params[13]]),
+                                                              base10_to_base52_alph(self.atom_types_to_index_value_dict[params[10]+ '_' + params[14]]),
+                                                              base10_to_base52_alph(self.atom_types_to_index_value_dict[params[11]+ '_' + params[15]]),
                                                               CHARMM_coeffs[3, 0],
                                                               int(CHARMM_coeffs[3, 1]),
                                                               CHARMM_coeffs[3, 2],
@@ -1376,10 +1382,10 @@ class Charmm:
                                                               params[9]+ '_' + params[13],
                                                               params[10]+ '_' + params[14],
                                                               params[11]+ '_' + params[15]))
-                            data.write(dihedral_format.format(base10_to_base52_alph_num(self.atom_types_to_index_value_dict[params[8]+ '_' + params[12]]),
-                                                              base10_to_base52_alph_num(self.atom_types_to_index_value_dict[params[9]+ '_' + params[13]]),
-                                                              base10_to_base52_alph_num(self.atom_types_to_index_value_dict[params[10]+ '_' + params[14]]),
-                                                              base10_to_base52_alph_num(self.atom_types_to_index_value_dict[params[11]+ '_' + params[15]]),
+                            data.write(dihedral_format.format(base10_to_base52_alph(self.atom_types_to_index_value_dict[params[8]+ '_' + params[12]]),
+                                                              base10_to_base52_alph(self.atom_types_to_index_value_dict[params[9]+ '_' + params[13]]),
+                                                              base10_to_base52_alph(self.atom_types_to_index_value_dict[params[10]+ '_' + params[14]]),
+                                                              base10_to_base52_alph(self.atom_types_to_index_value_dict[params[11]+ '_' + params[15]]),
                                                               CHARMM_coeffs[4, 0],
                                                               int(CHARMM_coeffs[4, 1]),
                                                               CHARMM_coeffs[4, 2],
@@ -1387,10 +1393,10 @@ class Charmm:
                                                               params[9]+ '_' + params[13],
                                                               params[10]+ '_' + params[14],
                                                               params[11]+ '_' + params[15]))
-                            data.write(dihedral_format.format(base10_to_base52_alph_num(self.atom_types_to_index_value_dict[params[8]+ '_' + params[12]]),
-                                                              base10_to_base52_alph_num(self.atom_types_to_index_value_dict[params[9]+ '_' + params[13]]),
-                                                              base10_to_base52_alph_num(self.atom_types_to_index_value_dict[params[10]+ '_' + params[14]]),
-                                                              base10_to_base52_alph_num(self.atom_types_to_index_value_dict[params[11]+ '_' + params[15]]),
+                            data.write(dihedral_format.format(base10_to_base52_alph(self.atom_types_to_index_value_dict[params[8]+ '_' + params[12]]),
+                                                              base10_to_base52_alph(self.atom_types_to_index_value_dict[params[9]+ '_' + params[13]]),
+                                                              base10_to_base52_alph(self.atom_types_to_index_value_dict[params[10]+ '_' + params[14]]),
+                                                              base10_to_base52_alph(self.atom_types_to_index_value_dict[params[11]+ '_' + params[15]]),
                                                               CHARMM_coeffs[5, 0],
                                                               int(CHARMM_coeffs[5, 1]),
                                                               CHARMM_coeffs[5, 2],
@@ -1455,7 +1461,7 @@ class Charmm:
 
                     for idx, epsilon in self.epsilon_dict.items():
                         NB_format = '{}\t{:.2f}\t{:.9f}\t{:.11f}\t{:.2f}\t{:.9f}\t{:.11f}\t\t! {}\t{}\n'
-                        data.write(NB_format.format(base10_to_base52_alph_num(idx), 0, -epsilon,
+                        data.write(NB_format.format(base10_to_base52_alph(idx), 0, -epsilon,
                                                     self.sigma_dict[idx] * (2 ** (1 / 6)) / 2, 0,
                                                     float(self.LJ_1_4_dict[idx])* (-epsilon),
                                                     self.sigma_dict[idx] * (2 ** (1 / 6)) / 2,
@@ -1634,8 +1640,10 @@ class Charmm:
 
             No_of_remarks = 3
             output_write.write(first_indent % No_of_remarks + ' !NTITLE\n')
-            output_write.write(' REMARKS this file ' + file_name_iteration + ' - created by mBuild/foyer using the' + '\n')
-            output_write.write(' REMARKS parameters from the ' + str(self.forcefield_selection) + ' force field via MoSDef\n')
+            output_write.write(' REMARKS this file ' + file_name_iteration
+                               + ' - created by mBuild/foyer using the' + '\n')
+            output_write.write(' REMARKS parameters from the ' + str(self.forcefield_selection)
+                               + ' force field via MoSDef\n')
             output_write.write(' REMARKS created on ' + str(date_time) + '\n\n\n')
 
             # This converts the atom name in the GOMC psf and pdb files to unique atom names
@@ -1656,7 +1664,8 @@ class Charmm:
             output_write.write(first_indent % No_atoms  + ' !NATOM\n')
             for i_atom, PSF_atom_iteration_1 in enumerate(stuct_iteration.atoms):
                 Segment_ID = PSF_atom_iteration_1.residue.segid or 'SYS'
-                atom_type_iter = base10_to_base52_alph_num(self.atom_types_to_index_value_dict[PSF_atom_iteration_1.type + '_' +
+                atom_type_iter = base10_to_base52_alph(self.atom_types_to_index_value_dict[PSF_atom_iteration_1.type
+                                                                                           + '_' +
                                                                                           PSF_atom_iteration_1.residue.name])
 
                 atom_lines_iteration = PSF_formating % (i_atom + 1, Segment_ID, Res_No_iteration_corrected_List[i_atom],
@@ -1952,7 +1961,7 @@ class Charmm:
             residue_ID_list = []
             for i, atom_iter in enumerate( stuct_only_iteration.atoms):
                 residue_ID_int = int(unique_residue_data_dict[residue_data_list[i]])
-                Res_Chain_iteration_corrected_List.append(base10_to_base26_alph_num(int(residue_ID_int
+                Res_Chain_iteration_corrected_List.append(base10_to_base26_alph(int(residue_ID_int
                                                                                         / (Max_Residue_No + 1)))[-1:]
                                                           )
                 Res_ID_adder = int((residue_ID_int % Max_Residue_No) % (Max_Residue_No))
