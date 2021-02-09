@@ -397,21 +397,21 @@ class Charmm:
                 Note: Currently, on the 'LJ' potential is supported.
         residues : str of list of str
             Labels of unique residues in the Compound. Residues are assigned by
-            checking against Compound.name.  Only supply residue names as 3 characters
+            checking against Compound.name.  Only supply residue names as 3 character
             strings, as the residue names are truncated to 3 characters to fit in the
             psf and pdb file.
         forcefield_selection : str or dictionary, default = None
-            Apply a forcefield to the output file by selecting a force field xlm file with
+            Apply a forcefield to the output file by selecting a force field XML file with
             its path or by using the standard force field name provided the `foyer` package.
             Note: to write the NAMD/GOMC force field, pdb, and psf files, the
             residues and forcefields must be provided in a str or
             dictionary.  If a dictionary is provided all residues must
             be specified to a force field.
-                Example dict for FF file: {'ETH' : 'oplsaa.xml', 'OCT': 'path_to file/trappe-ua.xml'}
+                Example dict for FF file: {'ETH' : 'oplsaa.xml', 'OCT': 'path_to_file/trappe-ua.xml'}
                 Example str for FF file: 'path_to file/trappe-ua.xml'
                 Example dict for standard FF names : {'ETH' : 'oplsaa', 'OCT': 'trappe-ua'}
                 Example str for standard FF names: 'trappe-ua'
-                Example of a mixed dict with both : {'ETH' : 'oplsaa', 'OCT': 'path_to file/'trappe-ua.xml'}
+                Example of a mixed dict with both : {'ETH' : 'oplsaa', 'OCT': 'path_to_file/'trappe-ua.xml'}
         detect_forcefield_style: boolean
             If True, format NAMD/GOMC/LAMMPS parameters based on the contents of
             the parmed structure_box_0
@@ -440,7 +440,7 @@ class Charmm:
             in the PDB file is set to 0.00
         fix_residue_in_box: list  or None, default = None
             Changes occcur in the pdb file only.
-            When residues are listed here, all the atoms in the residue become
+            When residues are listed here, all the atoms in the residue
             can move within the box but cannot be transferred between boxes
             via setting the Beta values in the PDB file to 2.00.
             If neither fix_residue or fix_residue_in_box lists a
@@ -448,7 +448,7 @@ class Charmm:
             in the residue are free to move in the simulation and Beta values
             in the PDB file is set to 0.00
         FF_filename ; str, default =None
-            If a sting, it will write the  force field files that work in
+            If a string, it will write the  force field files that work in
             GOMC and NAMD
             structures
         reorder_res_in_pdb_psf ; bool, default =False

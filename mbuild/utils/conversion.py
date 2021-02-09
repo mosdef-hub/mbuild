@@ -43,6 +43,15 @@ def RB_to_CHARMM(c0, c1, c2, c3, c4, c5):
     n4 = 4
     n5 = 5
 
+    and
+
+    d0 = 90
+    d1 = 180
+    d2 =  0
+    d3 =  180
+    d4 = 0
+    d5 = 180
+
     converts to:
 
     CHARMM_torsions =
@@ -56,18 +65,18 @@ def RB_to_CHARMM(c0, c1, c2, c3, c4, c5):
     -------
     K0, K1, K2, K3, K4, K5, n0, n1, n2, n3, n4, n5, d0, d1, d2, d3, d4, and d5  : Charmm coefficients (in kcal/mol)
 
-    CHARMM_ dihedral coeffs : np.matrix, shape=(6,3)
+    CHARMM_dihedral coeffs : np.matrix, shape=(6,3)
         Array containing the CHARMM dihedral coeffs  [[K0, n0, d0], [K1, n1, d1], [K2, n2, d2], [K3, n3, d3],
         [K4, n4, d4], [K5, n5, d5]]  (in kcal/mol)
 
     """
     # see below or the long version is,  K0 = (c0 + c2 / 2 + 3 / 8 * c4) - K1 - K2 - K3 - K4 - K5
-    K0 = (c0  -c1 - c3 - c4/4 - c5)
-    K1 = (+c1 + 3/4 * c3 + 5/8 * c5)
-    K2 =  (+(1/2) * c2 + 1/2 * c4)
-    K3 =  (+(1/4) * c3 + 5/16 * c5)
-    K4 = (+(1/8) * c4)
-    K5 = (+(1/16) * c5)
+    K0 = (c0 - c1 - c3 - (c4/4) - c5)
+    K1 = (c1 + (3/4) * c3 + (5/8) * c5)
+    K2 =  ((1/2) * c2 + (1/2) * c4)
+    K3 =  ((1/4) * c3 + (5/16) * c5)
+    K4 = ((1/8) * c4)
+    K5 = ((1/16) * c5)
 
 
     n0 = 0
@@ -79,13 +88,13 @@ def RB_to_CHARMM(c0, c1, c2, c3, c4, c5):
 
     d0 = 90
     d1 = 180
-    d2 =  0
-    d3 =  180
+    d2 = 0
+    d3 = 180
     d4 = 0
     d5 = 180
 
 
-    return np.matrix([[K0, n0, d0], [K1, n1, d1], [K2, n2, d2], [K3, n3, d3], [K4, n4, d4], [K5, n5, d5]])
+    return np.array([[K0, n0, d0], [K1, n1, d1], [K2, n2, d2], [K3, n3, d3], [K4, n4, d4], [K5, n5, d5]])
 
 
 
@@ -96,21 +105,21 @@ def RB_to_CHARMM(c0, c1, c2, c3, c4, c5):
 #***********************************************
 
 def base10_to_base62_alph_num(base10_No):
-    '''Converst base 10 to base 62 so pdb/psf files can add may more than
-    9999 atoms and 999 residues.'''
+    """Converts base 10 to base 62 so pdb/psf files can add may more than
+    9999 atoms and 999 residues."""
 
     '''base10_No = the base-10 number that you want to convert to base-62)'''
 
     base62_No = 62
     base10_No = int(base10_No)
 
-    whole_no =1
+    whole_no = 1
     remainder = changeDigit_base10_to_base62_alph_num(int(base10_No % base62_No))
     base62_Values =  str(remainder)
-    power =1
+    power = 1
 
     while whole_no != 0:
-        whole_no =int(base10_No / base62_No**power)
+        whole_no = int( base10_No / base62_No**power)
 
         if whole_no == base62_No :
             base62_Values = str(0)+base62_Values
@@ -127,10 +136,10 @@ def base10_to_base62_alph_num(base10_No):
     return base62_Values
 
 def changeDigit_base10_to_base62_alph_num(current_digit):
-    '''The supplimental digits for the base10_to_base62_alph_num function,
+    '''The supplemental digits for the base10_to_base62_alph_num function,
     which Converts the base 10 to base 62 '''
 
-    '''current_digit = the currenty digit for this base.
+    '''current_digit = the current digit for this base.
     (i.e. in base10 it would be the one, ten, hundreds, or thousands places .....)'''
 
     base62_No = 62
@@ -154,18 +163,6 @@ def changeDigit_base10_to_base62_alph_num(current_digit):
 
 
 
-def unique_entries_in_List(list1):
-    '''checks the list to see how many entries are unique '''
-    unique_list = []
-
-    # traverse for all elements
-    for x in list1:
-        # check if exists in unique_list or not
-        if x not in unique_list:
-            unique_list.append(x)
-            # print list
-    return unique_list
-
 #***********************************************
 # Converting base-10 to base-62 functions (end)
 #***********************************************
@@ -179,7 +176,7 @@ def unique_entries_in_List(list1):
 #***********************************************
 
 def base10_to_base16_alph_num(base10_No):
-    '''Converst base 10 to base 16 so pdb/psf files can add may more than
+    '''Converts base 10 to base 16 so pdb/psf files can add may more than
     9999 atoms and 999 residues.'''
 
     '''base10_No = the base-10 number that you want to convert to base-16)'''
@@ -187,13 +184,13 @@ def base10_to_base16_alph_num(base10_No):
     base16_No = 16
     base10_No = int(base10_No)
 
-    whole_no =1
+    whole_no = 1
     remainder = changeDigit_base10_to_base16_alph_num(int(base10_No % base16_No))
     base16_Values =  str(remainder)
-    power =1
+    power = 1
 
     while whole_no != 0:
-        whole_no =int(base10_No / base16_No**power)
+        whole_no = int(base10_No / base16_No**power)
 
         if whole_no == base16_No :
             base16_Values = str(0)+base16_Values
@@ -210,10 +207,10 @@ def base10_to_base16_alph_num(base10_No):
     return base16_Values
 
 def changeDigit_base10_to_base16_alph_num(current_digit):
-    '''The supplimental digits for the base10_to_base16_alph_num function,
+    '''The supplemental digits for the base10_to_base16_alph_num function,
     which Converts the base 10 to base 16 '''
 
-    '''current_digit = the currenty digit for this base.
+    '''current_digit = the current digit for this base.
     (i.e. in base10 it would be the one, ten, hundreds, or thousands places .....)'''
 
     base16_No = 16
@@ -236,21 +233,21 @@ def changeDigit_base10_to_base16_alph_num(current_digit):
 #***********************************************
 
 def base10_to_base52_alph(base10_No):
-    '''Converst base 10 to base 52 so pdb/psf files can add may more than
-    9999 atoms and 999 residues.'''
+    """Converts base 10 to base 52 so pdb/psf files can add may more than
+    atom types in the 3 or 4 character limited pdb and psf files"""
 
     '''base10_No = the base-10 number that you want to convert to base-52)'''
 
     base52_No = 52
     base10_No = int(base10_No)
 
-    whole_no =1
+    whole_no = 1
     remainder = changeDigit_base10_to_base52_alph_num(int(base10_No % base52_No))
     base52_Values =  str(remainder)
-    power =1
+    power = 1
 
     while whole_no != 0:
-        whole_no =int(base10_No / base52_No**power)
+        whole_no = int(base10_No / base52_No**power)
 
         if whole_no == base52_No :
             base52_Values = str('A')+base52_Values
@@ -266,10 +263,10 @@ def base10_to_base52_alph(base10_No):
     return base52_Values
 
 def changeDigit_base10_to_base52_alph_num(current_digit):
-    '''The supplimental digits for the base10_to_base52_alph_num function,
+    '''The supplemental digits for the base10_to_base52_alph_num function,
     which Converts the base 10 to base 52 '''
 
-    '''current_digit = the currenty digit for this base.
+    '''current_digit = the current digit for this base.
     (i.e. in base10 it would be the one, ten, hundreds, or thousands places .....)'''
 
 
@@ -293,21 +290,21 @@ def changeDigit_base10_to_base52_alph_num(current_digit):
 # Converting base-10 to base-26 functions (start)
 #***********************************************
 def base10_to_base26_alph(base10_No):
-    '''Converst base 10 to base 26 so pdb/psf files can add may more than
-    9999 atoms and 999 residues.'''
+    """Converts base 10 to base 26 so pdb/psf files can add may more than
+    9999 atoms and 999 residues."""
 
     '''base10_No = the base-10 number that you want to convert to base-26)'''
 
     base26_No = 26
     base10_No = int(base10_No)
 
-    whole_no =1
+    whole_no = 1
     remainder = changeDigit_base10_to_base26_alph_num(int(base10_No % base26_No))
     base26_Values =  str(remainder)
-    power =1
+    power = 1
 
     while whole_no != 0:
-        whole_no =int(base10_No / base26_No**power)
+        whole_no = int(base10_No / base26_No**power)
 
         if whole_no == base26_No :
             print('dfe')
@@ -324,10 +321,10 @@ def base10_to_base26_alph(base10_No):
     return base26_Values
 
 def changeDigit_base10_to_base26_alph_num(current_digit):
-    '''The supplimental digits for the base10_to_base26_alph_num function,
+    '''The supplemental digits for the base10_to_base26_alph_num function,
     which Converts the base 10 to base 26 '''
 
-    '''current_digit = the currenty digit for this base.
+    '''current_digit = the current digit for this base.
     (i.e. in base10 it would be the one, ten, hundreds, or thousands places .....)'''
 
 

@@ -9,7 +9,6 @@ from mbuild.utils.conversion import base10_to_base16_alph_num
 from mbuild.utils.conversion import base10_to_base26_alph_num
 from mbuild.utils.conversion import base10_to_base52_alph_num
 from mbuild.utils.conversion import base10_to_base62_alph_num
-from mbuild.utils.conversion import unique_entries_in_List
 from mbuild.utils.specific_ff_to_residue  import specific_ff_to_residue
 from foyer.forcefields import forcefields
 from collections import OrderedDict
@@ -504,13 +503,13 @@ class TestCharmmWriterData(BaseTest):
         for test_unique_base_16 in range(0, 16**2):
             unique_entries_base_16_List.append(base10_to_base16_alph_num(test_unique_base_16))
 
-        verified_unique_entries_base_16_List = unique_entries_in_List(unique_entries_base_16_List)
+        verified_unique_entries_base_16_List = np.unique(unique_entries_base_16_List)
         assert len(verified_unique_entries_base_16_List) == len(unique_entries_base_16_List)
 
-        added_values_verified_unique_entries_base_16_List = verified_unique_entries_base_16_List
         add_same_values_List = ['1', 'a']
         for add_same_base_16 in range(0, len(add_same_values_List)):
-            added_values_verified_unique_entries_base_16_List.append(add_same_values_List[add_same_base_16])
+            verified_unique_entries_base_16_List = np.append(verified_unique_entries_base_16_List,
+                                                             add_same_values_List[add_same_base_16])
         assert len(verified_unique_entries_base_16_List) - len(add_same_values_List) == len(unique_entries_base_16_List)
 
 
@@ -529,13 +528,13 @@ class TestCharmmWriterData(BaseTest):
         for test_unique_base_26 in range(0, 26**2):
             unique_entries_base_26_List.append(base10_to_base26_alph(test_unique_base_26))
 
-        verified_unique_entries_base_26_List = unique_entries_in_List(unique_entries_base_26_List)
+        verified_unique_entries_base_26_List = np.unique(unique_entries_base_26_List)
         assert len(verified_unique_entries_base_26_List) == len(unique_entries_base_26_List)
 
-        added_values_verified_unique_entries_base_26_List = verified_unique_entries_base_26_List
         add_same_values_List = ['1', 'a']
         for add_same_base_26 in range(0, len(add_same_values_List)):
-            added_values_verified_unique_entries_base_26_List.append(add_same_values_List[add_same_base_26])
+            verified_unique_entries_base_26_List = np.append(verified_unique_entries_base_26_List,
+                                                             add_same_values_List[add_same_base_26])
         assert len(verified_unique_entries_base_26_List) - len(add_same_values_List) == len(
             unique_entries_base_26_List)
 
@@ -555,13 +554,13 @@ class TestCharmmWriterData(BaseTest):
         for test_unique_base_52 in range(0, 52**2):
             unique_entries_base_52_List.append(base10_to_base52_alph(test_unique_base_52))
 
-        verified_unique_entries_base_52_List = unique_entries_in_List(unique_entries_base_52_List)
+        verified_unique_entries_base_52_List = np.unique(unique_entries_base_52_List)
         assert len(verified_unique_entries_base_52_List) == len(unique_entries_base_52_List)
 
-        added_values_verified_unique_entries_base_52_List = verified_unique_entries_base_52_List
         add_same_values_List = ['1', 'a']
         for add_same_base_52 in range(0, len(add_same_values_List)):
-            added_values_verified_unique_entries_base_52_List.append(add_same_values_List[add_same_base_52])
+            verified_unique_entries_base_52_List = np.append(verified_unique_entries_base_52_List,
+                                                             add_same_values_List[add_same_base_52])
         assert len(verified_unique_entries_base_52_List) - len(add_same_values_List) == len(
             unique_entries_base_52_List)
 
@@ -580,14 +579,15 @@ class TestCharmmWriterData(BaseTest):
         for test_unique_base_62 in range(0,62**2):
             unique_entries_base_62_List.append(base10_to_base62_alph_num(test_unique_base_62))
 
-        verified_unique_entries_base_62_List =  unique_entries_in_List(unique_entries_base_62_List )
+        verified_unique_entries_base_62_List = np.unique(unique_entries_base_62_List )
         assert len(verified_unique_entries_base_62_List) == len(unique_entries_base_62_List)
 
-        added_values_verified_unique_entries_base_62_List = verified_unique_entries_base_62_List
         add_same_values_List = ['1', 'a']
         for add_same_base_62 in range(0, len(add_same_values_List)):
-            added_values_verified_unique_entries_base_62_List.append(add_same_values_List[add_same_base_62])
+            verified_unique_entries_base_62_List = np.append(verified_unique_entries_base_62_List,
+                                                             add_same_values_List[add_same_base_62])
         assert len(verified_unique_entries_base_62_List)-len(add_same_values_List) == len(unique_entries_base_62_List)
+
 
     # Tests for the mbuild.utils.specific_FF_to_residue.Specific_FF_to_residue() function
 
