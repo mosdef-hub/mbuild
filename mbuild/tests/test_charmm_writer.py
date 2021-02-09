@@ -1301,7 +1301,7 @@ class TestCharmmWriterData(BaseTest):
                              FF_filename='charmm_data_UA',
                              residues=[TwoPropanolUA.name], forcefield_selection='trappe-ua',
                              bead_to_atom_name_dict={'_CH3': 'C'},
-                             box_0=[4, 5, 6], box_1=[3, 4, 5, 6]
+                             box_0=[4, 5, 6, 6], box_1=[3, 4, 5]
                              )
         except:
             value_0 = "TEST_FAILED"
@@ -1326,7 +1326,7 @@ class TestCharmmWriterData(BaseTest):
         try:
             value_0 = Charmm(TwoPropanolUA, 'charmm_data_UA', FF_filename='charmm_data_UA',
                              residues=[TwoPropanolUA.name], forcefield_selection='trappe-ua',
-                             bead_to_atom_name_dict={'_CH3': 'C'}, box_0=[-3, 4, 5, 6]
+                             bead_to_atom_name_dict={'_CH3': 'C'}, box_0=[-3, 4, 5]
                              )
         except:
             value_0 = "TEST_FAILED"
@@ -1340,7 +1340,7 @@ class TestCharmmWriterData(BaseTest):
                              FF_filename='charmm_data_UA',
                              residues=[TwoPropanolUA.name], forcefield_selection='trappe-ua',
                              bead_to_atom_name_dict={'_CH3': 'C'},
-                             box_0=[4, 5, 6], box_1=[-3, 4, 5, 6]
+                             box_0=[4, 5, 6], box_1=[-3, 4, 5]
                              )
         except:
             value_0 = "TEST_FAILED"
@@ -1401,7 +1401,7 @@ class TestCharmmWriterData(BaseTest):
 
         charmm = Charmm(TwoPropanolUA, 'charmm_filled_box',
                          structure_box_1= Empty_compound, filename_box_1='charmm_empty_box',
-                         FF_filename='charmm_empty_box',
+                         FF_filename='charmm_empty_box.inp',
                          residues=[TwoPropanolUA.name], forcefield_selection='trappe-ua',
                          bead_to_atom_name_dict={'_CH3': 'C'},
                          box_0=[4, 5, 6], box_1=[3, 4, 5]
@@ -1477,3 +1477,92 @@ class TestCharmmWriterData(BaseTest):
 
             else:
                 pass
+
+    def test_structure_box_0_not_mb_Compound(self, EthaneGOMC):
+        try:
+            value_0 = Charmm('EthaneGOMC', 'charmm_data_UA_box_0',
+                             structure_box_1=EthaneGOMC, filename_box_1='charmm_data_UA_box_1',
+                             FF_filename='charmm_data_UA',
+                             residues=[EthaneGOMC.name], forcefield_selection='oplsaa',
+                             )
+        except:
+            value_0 = "TEST_FAILED"
+
+        assert value_0 == "TEST_FAILED"
+
+
+    def test_structure_box_1_not_mb_Compound(self, EthaneGOMC):
+        try:
+            value_0 = Charmm(EthaneGOMC, 'charmm_data_UA_box_0',
+                             structure_box_1='EthaneGOMC', filename_box_1='charmm_data_UA_box_1',
+                             FF_filename='charmm_data_UA',
+                             residues=[EthaneGOMC.name], forcefield_selection='oplsaa',
+                             )
+        except:
+            value_0 = "TEST_FAILED"
+
+        assert value_0 == "TEST_FAILED"
+
+    def test_residue_list_not_entered(self, EthaneGOMC):
+        try:
+            value_0 = Charmm(EthaneGOMC, 'charmm_data_UA_box_0',
+                             structure_box_1='EthaneGOMC', filename_box_1='charmm_data_UA_box_1',
+                             FF_filename='charmm_data_UA',
+                             residues=None, forcefield_selection='oplsaa',
+                             )
+        except:
+            value_0 = "TEST_FAILED"
+
+        assert value_0 == "TEST_FAILED"
+
+    def test_FF_dict_not_entered(self, EthaneGOMC):
+        try:
+            value_0 = Charmm(EthaneGOMC, 'charmm_data_UA_box_0',
+                             structure_box_1='EthaneGOMC', filename_box_1='charmm_data_UA_box_1',
+                             FF_filename='charmm_data_UA',
+                             residues=[EthaneGOMC.name], forcefield_selection=None,
+                             )
+        except:
+            value_0 = "TEST_FAILED"
+
+        assert value_0 == "TEST_FAILED"
+
+
+    def test_residues_not_None_not_not_list(self, EthaneGOMC):
+        try:
+            value_0 = Charmm(EthaneGOMC, 'charmm_data_UA_box_0',
+                             structure_box_1='EthaneGOMC', filename_box_1='charmm_data_UA_box_1',
+                             FF_filename='charmm_data_UA',
+                             residues='EthaneGOMC.name', forcefield_selection='oplsaa',
+                             )
+        except:
+            value_0 = "TEST_FAILED"
+
+        assert value_0 == "TEST_FAILED"
+
+    def test_Mie_non_bonded_type(self, EthaneGOMC):
+        try:
+            value_0 = Charmm(EthaneGOMC, 'charmm_data_UA_box_0',
+                             structure_box_1=EthaneGOMC, filename_box_1='charmm_data_UA_box_1',
+                             FF_filename='charmm_data_UA',
+                             residues=[EthaneGOMC.name], forcefield_selection=None,
+                             non_bonded_type = 'Mie'
+                             )
+        except:
+            value_0 = "TEST_FAILED"
+
+        assert value_0 == "TEST_FAILED"
+
+    def test_other_non_bonded_type(self, EthaneGOMC):
+        try:
+            value_0 = Charmm(EthaneGOMC, 'charmm_data_UA_box_0',
+                             structure_box_1=EthaneGOMC, filename_box_1='charmm_data_UA_box_1',
+                             FF_filename='charmm_data_UA',
+                             residues=[EthaneGOMC.name], forcefield_selection=None,
+                             non_bonded_type = 'OTH'
+                             )
+        except:
+            value_0 = "TEST_FAILED"
+
+        assert value_0 == "TEST_FAILED"
+

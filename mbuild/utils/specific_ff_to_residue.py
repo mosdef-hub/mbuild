@@ -198,11 +198,13 @@ def specific_ff_to_residue(structure,
 
     # Check to see if it is an empty mbuild.Compound and set intial atoms to 0
     # note empty mbuild.Compound will read 1 atoms but there is really noting there
+    print('len(structure.children) ==  ' +str(len(structure.children) ))
     if str(structure.to_parmed()) == '<Structure 1 atoms; 1 residues; 0 bonds; PBC (orthogonal); NOT parametrized>' \
            and str(structure.children) == 'OrderedSet()' and initial_no_atoms == 1 \
            and str(structure.pos)=='[0. 0. 0.]' \
            and str(structure.to_parmed().atoms[0]) == '<Atom Compound [0]; In RES 0>' \
-           and str(structure.to_parmed().residues[0]) ==  '<Residue RES[0]>' :
+           and str(structure.to_parmed().residues[0]) ==  '<Residue RES[0]>' \
+            and len(structure.children) == 0 :
         # there are no real atoms so set initial atoms to 0
         initial_no_atoms = 0
 
