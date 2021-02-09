@@ -130,18 +130,22 @@ def specific_ff_to_residue(structure,
 
     user_entered_ff_with_path_dict = {}  # True means user entered the path, False is a standard foyer FF with no path
     for z in range(0, len(forcefield_keys_list)):
-        if os.path.splitext(ff_data[forcefield_keys_list[z]])[1] == '.xml' and len(residues) != 0:
-            user_entered_ff_with_path_dict.update({residues[z]: True})
-        elif os.path.splitext(ff_data[forcefield_keys_list[z]])[1] == '' and len(residues) != 0:
-            user_entered_ff_with_path_dict.update({residues[z]: False})
-        else:
-            warn(
-                'Please make sure are entering the correct '
-                'foyer FF name and not a path to a FF file. ' 
-                'If you are entering a path to a FF file, '
-                'please use the forcefield_files variable.'
-            )
-            return None, None, None, None
+        for res_i in range(0, len(residues)):
+            if residues[res_i] == forcefield_keys_list[z]:
+                if os.path.splitext(ff_data[forcefield_keys_list[z]])[1] == '.xml' and len(residues) != 0:
+                    user_entered_ff_with_path_dict.update({residues[res_i]: True})
+                elif os.path.splitext(ff_data[forcefield_keys_list[z]])[1] == '' and len(residues) != 0:
+                    user_entered_ff_with_path_dict.update({residues[res_i]: False})
+                else:
+                    warn(
+                        'Please make sure are entering the correct '
+                        'foyer FF name and not a path to a FF file. ' 
+                        'If you are entering a path to a FF file, '
+                        'please use the forcefield_files variable.'
+                    )
+                    return None, None, None, None
+
+    print('user_entered_ff_with_path_dict = ' +str(user_entered_ff_with_path_dict ))
 
     coulomb14scaler_dict = {}
     lj14_scaler_dict = {}
@@ -152,6 +156,7 @@ def specific_ff_to_residue(structure,
 
             try:
                 read_xlm_iteration = minidom.parse(ff_for_residue_iteration)
+                print('ff_for_residue_iteration read_xlm_iteration = ' +str(read_xlm_iteration ))
             except:
                 warn('Please make sure are entering the correct foyer FF path, including the FF file name.xml ' +
                      'If you are using the pre-build FF files in foyer, please us the forcefield_names variable.')
@@ -162,6 +167,7 @@ def specific_ff_to_residue(structure,
             ff_names_path_iteration = forcefields.get_ff_path()[0] + '/xml/' + ff_for_residue_iteration + '.xml'
             try:
                 read_xlm_iteration = minidom.parse(ff_names_path_iteration)
+                print('ff_names_path_iteration read_xlm_iteration = ' + str(read_xlm_iteration))
             except:
                 warn('Please make sure are entering the correct foyer FF name and not a path to a FF file.' +
                      'If you are entering a path to a FF file, please us the forcefield_files variable')
