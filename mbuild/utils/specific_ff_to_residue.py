@@ -78,7 +78,7 @@ def specific_ff_to_residue(structure,
 
     if forcefield_selection is None:
         warn('Please enter either the forcefields for the forcefield_selection variable')
-        return None, None, None
+        return None, None, None, None
 
     elif forcefield_selection is not None and not isinstance(forcefield_selection, dict):
         warn(
@@ -161,8 +161,6 @@ def specific_ff_to_residue(structure,
                     )
                     return None, None, None, None
 
-    print('user_entered_ff_with_path_dict = ' +str(user_entered_ff_with_path_dict ))
-
 
     coulomb14scaler_dict = {}
     lj14_scaler_dict = {}
@@ -198,7 +196,6 @@ def specific_ff_to_residue(structure,
 
     # Check to see if it is an empty mbuild.Compound and set intial atoms to 0
     # note empty mbuild.Compound will read 1 atoms but there is really noting there
-    print('len(structure.children) ==  ' +str(len(structure.children) ))
     if str(structure.to_parmed()) == '<Structure 1 atoms; 1 residues; 0 bonds; PBC (orthogonal); NOT parametrized>' \
            and str(structure.children) == 'OrderedSet()' and initial_no_atoms == 1 \
            and str(structure.pos)=='[0. 0. 0.]' \

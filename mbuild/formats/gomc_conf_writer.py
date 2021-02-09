@@ -1459,6 +1459,7 @@ class GOMCControl():
             raise ValueError(print_error_message)
 
         if self.ensemble_type in ['GEMC_NVT', 'GEMC_NPT', 'GCMC']:
+            print('self.x_dim_box_1 = ' +str(self.x_dim_box_1))
             if (isinstance(self.x_dim_box_1, int) == False \
                 and isinstance(self.x_dim_box_1, float) == False) \
                     or self.x_dim_box_1 <= 0:

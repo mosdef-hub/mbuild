@@ -1373,9 +1373,9 @@ class TestCharmmWriterData(BaseTest):
 
     def test_2_box_residues_not_all_listed(self, EthaneGOMC, EthanolGOMC):
         try:
-            value_0 = Charmm(EthaneGOMC, 'charmm_data_UA_box_0',
-                             structure_box_1=EthanolGOMC, filename_box_1='charmm_data_UA_box_1',
-                             FF_filename='charmm_data_UA',
+            value_0 = Charmm(EthaneGOMC, 'charmm_data_box_0',
+                             structure_box_1=EthanolGOMC, filename_box_1='charmm_data_box_1',
+                             FF_filename='charmm_data',
                              residues=[EthanolGOMC.name, EthanolGOMC.name], forcefield_selection='oplsaa',
                              )
         except:
@@ -1385,9 +1385,9 @@ class TestCharmmWriterData(BaseTest):
 
     def test_all_residues_are_listed(self, EthaneGOMC, EthanolGOMC):
         try:
-            value_0 = Charmm(EthaneGOMC, 'charmm_data_UA_box_0',
-                                        structure_box_1=EthanolGOMC, filename_box_1='charmm_data_UA_box_1',
-                                        FF_filename='charmm_data_UA',
+            value_0 = Charmm(EthaneGOMC, 'charmm_data_box_0',
+                                        structure_box_1=EthanolGOMC, filename_box_1='charmm_data_box_1',
+                                        FF_filename='charmm_data',
                                         residues=[EthanolGOMC.name], forcefield_selection='oplsaa',
                                         )
         except:
@@ -1480,9 +1480,9 @@ class TestCharmmWriterData(BaseTest):
 
     def test_structure_box_0_not_mb_Compound(self, EthaneGOMC):
         try:
-            value_0 = Charmm('EthaneGOMC', 'charmm_data_UA_box_0',
-                             structure_box_1=EthaneGOMC, filename_box_1='charmm_data_UA_box_1',
-                             FF_filename='charmm_data_UA',
+            value_0 = Charmm('EthaneGOMC', 'charmm_data_box_0',
+                             structure_box_1=EthaneGOMC, filename_box_1='charmm_data_box_1',
+                             FF_filename='charmm_data',
                              residues=[EthaneGOMC.name], forcefield_selection='oplsaa',
                              )
         except:
@@ -1493,9 +1493,9 @@ class TestCharmmWriterData(BaseTest):
 
     def test_structure_box_1_not_mb_Compound(self, EthaneGOMC):
         try:
-            value_0 = Charmm(EthaneGOMC, 'charmm_data_UA_box_0',
-                             structure_box_1='EthaneGOMC', filename_box_1='charmm_data_UA_box_1',
-                             FF_filename='charmm_data_UA',
+            value_0 = Charmm(EthaneGOMC, 'charmm_data_box_0',
+                             structure_box_1='EthaneGOMC', filename_box_1='charmm_data_box_1',
+                             FF_filename='charmm_data',
                              residues=[EthaneGOMC.name], forcefield_selection='oplsaa',
                              )
         except:
@@ -1505,9 +1505,9 @@ class TestCharmmWriterData(BaseTest):
 
     def test_residue_list_not_entered(self, EthaneGOMC):
         try:
-            value_0 = Charmm(EthaneGOMC, 'charmm_data_UA_box_0',
-                             structure_box_1='EthaneGOMC', filename_box_1='charmm_data_UA_box_1',
-                             FF_filename='charmm_data_UA',
+            value_0 = Charmm(EthaneGOMC, 'charmm_data_box_0',
+                             structure_box_1='EthaneGOMC', filename_box_1='charmm_data_box_1',
+                             FF_filename='charmm_data',
                              residues=None, forcefield_selection='oplsaa',
                              )
         except:
@@ -1517,9 +1517,9 @@ class TestCharmmWriterData(BaseTest):
 
     def test_FF_dict_not_entered(self, EthaneGOMC):
         try:
-            value_0 = Charmm(EthaneGOMC, 'charmm_data_UA_box_0',
-                             structure_box_1='EthaneGOMC', filename_box_1='charmm_data_UA_box_1',
-                             FF_filename='charmm_data_UA',
+            value_0 = Charmm(EthaneGOMC, 'charmm_data_box_0',
+                             structure_box_1='EthaneGOMC', filename_box_1='charmm_data_box_1',
+                             FF_filename='charmm_data',
                              residues=[EthaneGOMC.name], forcefield_selection=None,
                              )
         except:
@@ -1528,11 +1528,11 @@ class TestCharmmWriterData(BaseTest):
         assert value_0 == "TEST_FAILED"
 
 
-    def test_residues_not_None_not_not_list(self, EthaneGOMC):
+    def test_residues_not_None_not_not_list(self, EthaneGOMC, TwoPropanolUA):
         try:
-            value_0 = Charmm(EthaneGOMC, 'charmm_data_UA_box_0',
-                             structure_box_1='EthaneGOMC', filename_box_1='charmm_data_UA_box_1',
-                             FF_filename='charmm_data_UA',
+            value_0 = Charmm(EthaneGOMC, 'charmm_data_box_0',
+                             structure_box_1=TwoPropanolUA, filename_box_1='charmm_data_box_1',
+                             FF_filename='charmm_data',
                              residues='EthaneGOMC.name', forcefield_selection='oplsaa',
                              )
         except:
@@ -1542,9 +1542,9 @@ class TestCharmmWriterData(BaseTest):
 
     def test_Mie_non_bonded_type(self, EthaneGOMC):
         try:
-            value_0 = Charmm(EthaneGOMC, 'charmm_data_UA_box_0',
-                             structure_box_1=EthaneGOMC, filename_box_1='charmm_data_UA_box_1',
-                             FF_filename='charmm_data_UA',
+            value_0 = Charmm(EthaneGOMC, 'charmm_data_box_0',
+                             structure_box_1=EthaneGOMC, filename_box_1='charmm_data_box_1',
+                             FF_filename='charmm_data',
                              residues=[EthaneGOMC.name], forcefield_selection=None,
                              non_bonded_type = 'Mie'
                              )
@@ -1555,9 +1555,23 @@ class TestCharmmWriterData(BaseTest):
 
     def test_other_non_bonded_type(self, EthaneGOMC):
         try:
-            value_0 = Charmm(EthaneGOMC, 'charmm_data_UA_box_0',
-                             structure_box_1=EthaneGOMC, filename_box_1='charmm_data_UA_box_1',
-                             FF_filename='charmm_data_UA',
+            value_0 = Charmm(EthaneGOMC, 'charmm_data_box_0',
+                             structure_box_1=EthaneGOMC, filename_box_1='charmm_data_box_1',
+                             FF_filename='charmm_data',
+                             residues=[EthaneGOMC.name], forcefield_selection=None,
+                             non_bonded_type = 'OTH'
+                             )
+        except:
+            value_0 = "TEST_FAILED"
+
+        assert value_0 == "TEST_FAILED"
+
+
+    def test_diff_1_4_coul_scalers(self, EthaneGOMC):
+        try:
+            value_0 = Charmm(EthaneGOMC, 'charmm_data_box_0',
+                             structure_box_1=EthaneGOMC, filename_box_1='charmm_data_box_1',
+                             FF_filename='charmm_data',
                              residues=[EthaneGOMC.name], forcefield_selection=None,
                              non_bonded_type = 'OTH'
                              )

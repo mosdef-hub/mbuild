@@ -498,7 +498,7 @@ class Charmm:
         self.filename_box_0 = filename_box_0
         self.structure_box_1 = structure_box_1
         self.filename_box_1 = filename_box_1
-        self. non_bonded_type =  non_bonded_type
+        self.non_bonded_type =  non_bonded_type
         self.forcefield_selection = forcefield_selection
         self.residues = residues
         self.detect_forcefield_style = detect_forcefield_style
@@ -726,6 +726,7 @@ class Charmm:
                                                              boxes_for_simulation = self.boxes_for_simulation)
             test_Specific_FF_to_residue_for_failure = [self.structure_box_0_FF, self.coulomb14scaler_dict_0,
                                                        self.LJ14scaler_dict_0, self.residues_applied_list_0]
+
             for iter_test_Specifc_res_fail in range(0, len(test_Specific_FF_to_residue_for_failure)):
                 if test_Specific_FF_to_residue_for_failure[iter_test_Specifc_res_fail] is None:
                     self.input_error = True
@@ -745,6 +746,7 @@ class Charmm:
                                                              boxes_for_simulation = self.boxes_for_simulation)
             test_Specific_FF_to_residue_for_failure = [self.structure_box_1_FF, self.coulomb14scaler_dict_1,
                                                        self.LJ14scaler_dict_1, self.residues_applied_list_1]
+            print('test_Specific_FF_to_residue_for_failure = ' +str(test_Specific_FF_to_residue_for_failure))
             for iter_test_Specifc_res_fail in range(0, len(test_Specific_FF_to_residue_for_failure)):
                 if test_Specific_FF_to_residue_for_failure[iter_test_Specifc_res_fail] is None:
                     self.input_error = True
@@ -802,7 +804,7 @@ class Charmm:
 
             total_charge = sum([atom.charge for atom in self.structure_box_0_and_1_FF])
             if round(total_charge, 4) != 0.0:
-                warn('System is not charge neutral for structure__0_and_1. '
+                warn('System is not charge neutral for structure_0_and_1. '
                                  'Total charge is {}.'.format(total_charge))
 
         else:
@@ -870,15 +872,12 @@ class Charmm:
         use_dihedrals = False
         use_urey_bradleys = False
 
-        # Convert coordinates to LJ units
+        # Convert coordinates to real or other units (real only current option)
         if self.unit_style == 'real':
             self.sigma_conversion_factor = 1
             self.epsilon_conversion_factor = 1
             self.mass_conversion_factor = 1
-        else:
-            self.input_error = True
-            print_error_message = "ERROR: unit_style is not real and thus not available to this writer"
-            raise ValueError(print_error_message)
+
 
 
         if self.structure_box_1 !=None:
@@ -946,11 +945,8 @@ class Charmm:
                                        for atom_type, forcefield in zip(self.types, self.forcefields)])
 
         # ensure all 1,4-coulombic scaling factors are the same
-        self.coul_1_4_dict = dict(
-            [(self.unique_types.index(atom_type) + 1, self.combined_1_4_Coul_dict_per_residue[self.Residues]) for
-             atom_type, Residues in zip(self.types, self.Residues)])
         self.coul_1_4_List = []
-        for p in self.coul_1_4_dict.values():
+        for p in self.combined_1_4_Coul_dict_per_residue.values():
             self.coul_1_4_List.append(p)
         for c in range(0, len(self.coul_1_4_List)):
             if self.coul_1_4_List[c] != self.coul_1_4_List[0]:
@@ -969,11 +965,13 @@ class Charmm:
         print('The charmm force field file writer (the write_inp function) is running')
 
         if self.FF_filename is None:
-            warn("The force field file name was not specified and in the Charmm object (Charmm())."
-                             "Therefore, the force field file (.inp) can not be written."
-                             "Please use the force field file name when building the Charmm object (Charmm()), "
-                             "then use the write_inp function. ")
-            return
+            self.input_error = True
+            print_error_message = "ERROR: The force field file name was not specified and in the " \
+                                  "Charmm object (Charmm())."\
+                                  "Therefore, the force field file (.inp) can not be written."\
+                                  "Please use the force field file name when building the Charmm object (Charmm()), "\
+                                  "then use the write_inp function. "
+            raise ValueError(print_error_message)
         else:
 
             print("******************************")
@@ -1034,18 +1032,20 @@ class Charmm:
                           "K4 * (1 + Cos[n4*(t) - (d4)] ) + K5 * (1 + Cos[n5*(t) - (d5)] ) ")
                     use_rb_torsions = True
 
-
                 else:
                     use_rb_torsions = False
+
                 if len(self.structure_selection.dihedrals) > 0:
                     print("Charmm dihedrals detected, will use dihedral_style charmm")
                     # this will need tested with a standard charmm input format before releasing it
                     use_dihedrals = True
                     self.input_error = True
-                    print_error_message = "ERROR: Charmm dihedrals not yet supported "
+                    print_error_message = "ERROR: use_dihedrals = " +str(use_dihedrals) \
+                                          + "Charmm dihedrals not yet supported "
                     raise ValueError(print_error_message)
                 else:
                     use_dihedrals = False
+
             if use_rb_torsions and use_dihedrals:
                 warn("Multiple dihedral styles detected, check your "
                                  "Forcefield XML and structure_selection")
@@ -1111,9 +1111,11 @@ class Charmm:
                     data.write("*  " + self.filename_box_0 + ' and '+ self.filename_box_1+
                                ' - created by mBuild using the on ' + str(date_time) +'\n') #
                 else:
-                    data.write("*  " + self.filename_box_0 + ' - created by mBuild using the on ' + str(date_time) + '\n')
+                    data.write("*  " + self.filename_box_0 + ' - created by mBuild using the on '
+                               + str(date_time) + '\n')
 
-                data.write("*  " + 'parameters from the ' + str(self.forcefield_selection) + ' force field(s) via MoSDef\n')
+                data.write("*  " + 'parameters from the ' + str(self.forcefield_selection)
+                           + ' force field(s) via MoSDef\n')
                 data.write("*  1-4 coulombic scaling = " + str(self.combined_1_4_Coul_dict_per_residue)+
                            ', and 1-4 LJ scaling = ' + str(self.combined_1_4_LJ_dict_per_residue)+'\n\n')
                 data.write("*  "+'{:d} atoms\n'.format(len(self.structure_selection.atoms)))
@@ -1161,11 +1163,8 @@ class Charmm:
                     data.write('!\n')
 
 
-
                     if self.unit_style == 'real':
                         data.write('!atom_types \t Kb\t\tb0 \t\t  atoms_types_per_utilized_FF\n')
-                    elif self.unit_style == 'lj':
-                        data.write('ERROR invalid option')
                     for params, idx in unique_bond_types.items():
                         bond_format = '{}\t{}\t{}\t{}\t\t! {}\t{}\n'
                         if (self.fix_res_bonds_angles != None) and ((params[3] and  params[4])
@@ -1251,11 +1250,6 @@ class Charmm:
                         data.write('!\n')
                         if self.unit_style == 'real':
                             data.write('!atom_types \t\t\tKchi\t\tn\tdelta\t\t  atoms_types_per_utilized_FF\n')
-
-                        elif self.unit_style == 'lj':
-                            data.write('ERROR invalid option unit_style == "lj" ')
-                            print_error_message = 'ERROR invalid option unit_style == "lj" '
-                            raise ValueError(print_error_message)
 
                         for params,idx in unique_dihedral_types.items():
                             CHARMM_coeffs = RB_to_CHARMM(params[0],
@@ -1445,7 +1439,7 @@ class Charmm:
 
                 # Pair coefficients
                 print('NBFIX_Mixing not used or no mixing used for the non-bonded potentials out')
-
+                print('self.non_bonded_type = ' +str(self.non_bonded_type))
                 if self.non_bonded_type=='LJ':
                     data.write('\n')
                     data.write('NONBONDED\n')
@@ -1468,7 +1462,6 @@ class Charmm:
                                                     self.forcefield_dict[idx],self.forcefield_dict[idx]))
 
 
-
                 elif  self.non_bonded_type=='Mie':
                     data.write("ERROR: Currenly the Mie potential is not supported in this MoSDeF "
                                "GOMC parameter writer\n")
@@ -1481,6 +1474,7 @@ class Charmm:
                     print_error_message = "ERROR: Currenly this potential is not supported in " \
                                           "this MoSDeF GOMC parameter writer\n"
                     raise ValueError(print_error_message)
+
                 # writing end in file
                 data.write('\nEND\n')
 
