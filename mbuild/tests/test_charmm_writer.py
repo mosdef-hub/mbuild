@@ -271,12 +271,13 @@ class TestCharmmWriterData(BaseTest):
                                   n_compounds= [1,1] ,
                                   box=[2.0, 2.0, 2.0])
         charmm = Charmm(test_box_ethane_propane, 'Test_fixes_angle_bond_atoms',
-                          FF_filename='Test_fixes_angle_bond_atoms',
-                          residues = [EthaneGOMC.name, EthanolGOMC.name], forcefield_selection = 'oplsaa',
-                          fix_residue=[EthaneGOMC.name],
-                          fix_residue_in_box = [EthanolGOMC.name],
-                          fix_res_bonds_angles=[EthaneGOMC.name]
-                          )
+                        FF_filename='Test_fixes_angle_bond_atoms',
+                        residues=[EthanolGOMC.name, EthaneGOMC.name],
+                        forcefield_selection='oplsaa',
+                        fix_residue=[EthaneGOMC.name],
+                        fix_residue_in_box=[EthanolGOMC.name],
+                        fix_res_bonds_angles=[EthaneGOMC.name]
+                        )
         charmm.write_inp()
         charmm.write_pdb()
 
@@ -377,7 +378,7 @@ class TestCharmmWriterData(BaseTest):
                           filename_box_1 = 'residue_reorder_box_sizing_box_1',
                           FF_filename=None,
                           residues = [EthaneGOMC.name, TwoPropanolUA.name],
-                          forcefield_selection = {EthaneGOMC.name : 'oplsaa', TwoPropanolUA.name : 'trappe-ua'},
+                          forcefield_selection = { TwoPropanolUA.name : 'trappe-ua', EthaneGOMC.name : 'oplsaa'},
                           fix_residue=None,
                           fix_residue_in_box = None,
                           fix_res_bonds_angles=None,
@@ -387,6 +388,31 @@ class TestCharmmWriterData(BaseTest):
                           bead_to_atom_name_dict={'_CH3': 'C'}
                           )
         charmm.write_pdb()
+
+    def test_charmm_pdb_residue_reorder_and_FF_filename_box_sizing(self, TwoPropanolUA, EthaneGOMC):
+        test_box_ethane_TwoPropanolUA = mb.fill_box(compound=[TwoPropanolUA, EthaneGOMC],
+                                                    n_compounds=[1, 1],
+                                                    box=[2.0, 2.0, 2.0])
+        charmm = Charmm(test_box_ethane_TwoPropanolUA, 'residue_reorder_box_sizing_box_0',
+                        structure_box_1=EthaneGOMC,
+                        filename_box_1='residue_reorder_box_sizing_box_1',
+                        FF_filename=None,
+                        residues=[EthaneGOMC.name, TwoPropanolUA.name],
+                        forcefield_selection={TwoPropanolUA.name: str(forcefields.get_ff_path()[0]) +
+                                                                  '/xml/' + 'trappe-ua.xml',
+                                              EthaneGOMC.name: 'oplsaa'
+                                            },
+                        fix_residue=None,
+                        fix_residue_in_box=None,
+                        fix_res_bonds_angles=None,
+                        reorder_res_in_pdb_psf=True,
+                        box_0=[3, 3, 3],
+                        box_1=[4, 4, 4],
+                        bead_to_atom_name_dict={'_CH3': 'C'}
+                        )
+        charmm.write_pdb()
+
+
 
         out_GOMC = open('residue_reorder_box_sizing_box_0.pdb', 'r').readlines()
         for i, line in enumerate(out_GOMC):
@@ -653,12 +679,13 @@ class TestCharmmWriterData(BaseTest):
 
         Test_value_0, Test_value_1, \
         Test_value_2, Test_value_3 = specific_ff_to_residue(Empty_compound,
-                                                            forcefield_selection={Empty_compound: 'oplsaa'},
+                                                            forcefield_selection={'Empty_compound': 'oplsaa'},
                                                             residues=[],
                                                             reorder_res_in_pdb_psf=False,
                                                             box=[5, 6, 7],
                                                             boxes_for_simulation=1
                                                             )
+        print('Test_value_0 = ' +str(Test_value_0))
         assert Test_value_0 is None
         assert Test_value_1 is None
         assert Test_value_2 is None
@@ -856,7 +883,7 @@ class TestCharmmWriterData(BaseTest):
                                                             box=None,
                                                             boxes_for_simulation=1
                                                             )
-
+        print('Test_value_3 = ' +str(Test_value_3))
         assert str(Test_value_0) == "<Structure 1 atoms; 1 residues; 0 bonds; PBC (orthogonal); NOT parametrized>"
         assert Test_value_1 == {'_CH4': 0.0}
         assert Test_value_2 == {'_CH4': 0.0}
@@ -958,6 +985,7 @@ class TestCharmmWriterData(BaseTest):
         assert Test_value_0 == "TEST_FAILED"
 
 
+
     def test_residuals_not_a_string(self, TwoPropanolUA):
         try:
             Test_value_0 = Charmm(TwoPropanolUA, 'box_0', FF_filename='box_0',
@@ -985,7 +1013,7 @@ class TestCharmmWriterData(BaseTest):
             residues_applied_list  =  specific_ff_to_residue(box_reservior_0,
                                                              forcefield_selection={TwoPropanolGOMC.name: 'oplsaa',
                                                                                EthanolGOMC.name: 'oplsaa' },
-                                                             residues=[TwoPropanolGOMC.name, EthanolGOMC.name],
+                                                             residues=[EthanolGOMC.name, TwoPropanolGOMC.name],
                                                              reorder_res_in_pdb_psf=False,
                                                              box=None,
                                                              boxes_for_simulation=1
@@ -1041,7 +1069,7 @@ class TestCharmmWriterData(BaseTest):
             residues_applied_list = specific_ff_to_residue(box_reservior_0,
                                                            forcefield_selection={EthylEtherGOMC.name: 'oplsaa',
                                                                                  MethlyEtherGOMC.name: 'oplsaa'},
-                                                           residues=[EthylEtherGOMC.name,MethlyEtherGOMC.name],
+                                                           residues=[EthylEtherGOMC.name, MethlyEtherGOMC.name],
                                                            reorder_res_in_pdb_psf=False,
                                                            box=None,
                                                            boxes_for_simulation=1
@@ -1366,3 +1394,86 @@ class TestCharmmWriterData(BaseTest):
             value_0 = "TEST_FAILED"
 
         assert value_0 == "TEST_FAILED"
+
+
+    def test_box_1_empty_test_1(self, TwoPropanolUA):
+        Empty_compound = mb.Compound()
+
+        charmm = Charmm(TwoPropanolUA, 'charmm_filled_box',
+                         structure_box_1= Empty_compound, filename_box_1='charmm_empty_box',
+                         FF_filename='charmm_empty_box',
+                         residues=[TwoPropanolUA.name], forcefield_selection='trappe-ua',
+                         bead_to_atom_name_dict={'_CH3': 'C'},
+                         box_0=[4, 5, 6], box_1=[3, 4, 5]
+                         )
+        charmm.write_pdb()
+        charmm.write_psf()
+        out_GOMC = open('charmm_empty_box.pdb', 'r').readlines()
+        for i, line in enumerate(out_GOMC):
+            if 'CRYST1' in line:
+                assert out_GOMC[i].split()[0:7] == ['CRYST1', '30.000', '40.000', '50.000',
+                                                    '90.00', '90.00', '90.00']
+                assert  out_GOMC[i + 1 ].split() == ['END']
+
+            else:
+                pass
+
+        out_GOMC = open('charmm_filled_box.pdb', 'r').readlines()
+        for i, line in enumerate(out_GOMC):
+            if 'CRYST1' in line:
+                Atom_type_res_part_1_list = [['ATOM', '1', 'C1', 'POL', 'A', '1'],
+                                             ['ATOM', '2', 'BD1', 'POL', 'A', '1'],
+                                             ['ATOM', '3', 'O1', 'POL', 'A', '1'],
+                                             ['ATOM', '4', 'H1', 'POL', 'A', '1'],
+                                             ['ATOM', '5', 'C2', 'POL', 'A', '1'],
+                                             ]
+                Atom_type_res_part_2_list = [['1.00', '0.00', 'EP'], ['1.00', '0.00','EP'], ['1.00', '0.00','O'],
+                                             ['1.00', '0.00','H'], ['1.00', '0.00','EP'] ]
+
+                for j in range(0, len(Atom_type_res_part_1_list)):
+                    assert out_GOMC[i + 1 + j].split()[0:6] ==  Atom_type_res_part_1_list[j]
+                    assert out_GOMC[i + 1 + j].split()[9:12] == Atom_type_res_part_2_list[j]
+
+            else:
+                pass
+
+    def test_box_1_empty_test_2(self, TwoPropanolUA):
+        Empty_compound = mb.Compound()
+
+        charmm = Charmm(Empty_compound, 'charmm_empty_box',
+                         structure_box_1= TwoPropanolUA, filename_box_1='charmm_filled_box',
+                         FF_filename='charmm_empty_box',
+                         residues=[TwoPropanolUA.name], forcefield_selection='trappe-ua',
+                         bead_to_atom_name_dict={'_CH3': 'C'},
+                         box_0=[4, 5, 6], box_1=[3, 4, 5]
+                         )
+        charmm.write_pdb()
+        charmm.write_psf()
+        out_GOMC = open('charmm_empty_box.pdb', 'r').readlines()
+        for i, line in enumerate(out_GOMC):
+            if 'CRYST1' in line:
+                assert out_GOMC[i].split()[0:7] == ['CRYST1', '40.000', '50.000', '60.000',
+                                                    '90.00', '90.00', '90.00']
+                assert  out_GOMC[i + 1 ].split() == ['END']
+
+            else:
+                pass
+
+        out_GOMC = open('charmm_filled_box.pdb', 'r').readlines()
+        for i, line in enumerate(out_GOMC):
+            if 'CRYST1' in line:
+                Atom_type_res_part_1_list = [['ATOM', '1', 'C1', 'POL', 'A', '1'],
+                                             ['ATOM', '2', 'BD1', 'POL', 'A', '1'],
+                                             ['ATOM', '3', 'O1', 'POL', 'A', '1'],
+                                             ['ATOM', '4', 'H1', 'POL', 'A', '1'],
+                                             ['ATOM', '5', 'C2', 'POL', 'A', '1'],
+                                             ]
+                Atom_type_res_part_2_list = [['1.00', '0.00', 'EP'], ['1.00', '0.00','EP'], ['1.00', '0.00','O'],
+                                             ['1.00', '0.00','H'], ['1.00', '0.00','EP'] ]
+
+                for j in range(0, len(Atom_type_res_part_1_list)):
+                    assert out_GOMC[i + 1 + j].split()[0:6] ==  Atom_type_res_part_1_list[j]
+                    assert out_GOMC[i + 1 + j].split()[9:12] == Atom_type_res_part_2_list[j]
+
+            else:
+                pass

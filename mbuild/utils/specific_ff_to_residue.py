@@ -72,7 +72,7 @@ def specific_ff_to_residue(structure,
     else:
         warn(
             'Package foyer is not installed. '
-            'Please install it using conda install -c mosdef foyer'
+            'Please install it using conda install -c conda-forge foyer'
         )
         return None, None, None, None
 
@@ -91,9 +91,10 @@ def specific_ff_to_residue(structure,
         )
         return None, None, None, None
 
-    if residues is None:
+    if residues is None or isinstance(residues, list) == False:
         print('Please enter the residues in the Specific_FF_to_residue function')
         return None, None, None, None
+
 
     if not isinstance(reorder_res_in_pdb_psf, bool):
         print(
@@ -122,11 +123,26 @@ def specific_ff_to_residue(structure,
         warn('Please enter boxes_for_simulation equal the integer 1 or 2.')
         return None, None, None, None
 
+
+
     forcefield_keys_list = []
     if forcefield_selection is not None:
         for res in forcefield_selection.keys():
             forcefield_keys_list.append(res)
         ff_data = forcefield_selection
+
+
+    if forcefield_keys_list == [] and len(residues) != 0 :
+        warn(
+            'The forcefield_selection variable are not provided, but there are residues provided.'
+        )
+        return None, None, None, None
+    elif forcefield_keys_list != [] and len(residues) == 0 :
+        warn(
+            'The residues variable is and empty list but there are forcefield_selection variables provided.'
+        )
+        return None, None, None, None
+
 
     user_entered_ff_with_path_dict = {}  # True means user entered the path, False is a standard foyer FF with no path
     for z in range(0, len(forcefield_keys_list)):
@@ -147,11 +163,12 @@ def specific_ff_to_residue(structure,
 
     print('user_entered_ff_with_path_dict = ' +str(user_entered_ff_with_path_dict ))
 
+
     coulomb14scaler_dict = {}
     lj14_scaler_dict = {}
     for j in range(0, len(forcefield_keys_list)):
         residue_iteration = forcefield_keys_list[j]
-        if user_entered_ff_with_path_dict[residue_iteration] and len(residues):
+        if user_entered_ff_with_path_dict[residue_iteration] :
             ff_for_residue_iteration = ff_data[residue_iteration]
 
             try:
@@ -161,7 +178,7 @@ def specific_ff_to_residue(structure,
                      'If you are using the pre-build FF files in foyer, please us the forcefield_names variable.')
                 return None, None, None, None
 
-        elif not user_entered_ff_with_path_dict[residue_iteration] and len(residues):
+        elif not user_entered_ff_with_path_dict[residue_iteration]:
             ff_for_residue_iteration = ff_data[residue_iteration]
             ff_names_path_iteration = forcefields.get_ff_path()[0] + '/xml/' + ff_for_residue_iteration + '.xml'
             try:
@@ -178,6 +195,17 @@ def specific_ff_to_residue(structure,
 
     # calculate the initial number of atoms for later comparison
     initial_no_atoms = len(structure.to_parmed().atoms)
+
+    # Check to see if it is an empty mbuild.Compound and set intial atoms to 0
+    # note empty mbuild.Compound will read 1 atoms but there is really noting there
+    if str(structure.to_parmed()) == '<Structure 1 atoms; 1 residues; 0 bonds; PBC (orthogonal); NOT parametrized>' \
+           and str(structure.children) == 'OrderedSet()' and initial_no_atoms == 1 \
+           and str(structure.pos)=='[0. 0. 0.]' \
+           and str(structure.to_parmed().atoms[0]) == '<Atom Compound [0]; In RES 0>' \
+           and str(structure.to_parmed().residues[0]) ==  '<Residue RES[0]>' :
+        # there are no real atoms so set initial atoms to 0
+        initial_no_atoms = 0
+
 
     # add the FF to the residues
     compound_box_infor = structure.to_parmed(residues=residues)
