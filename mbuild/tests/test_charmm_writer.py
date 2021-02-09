@@ -77,7 +77,7 @@ class TestCharmmWriterData(BaseTest):
             elif '!atype 	ignored	epsilon 	Rmin/2 		ignored	eps,1-4		Rmin/2,1-4' \
                  '		  atom_type_per_utilized_FF' in line:
                 NB_types = [['A', '0.00', '-0.066000000', '1.96430858454', '0.00', '-0.033000000',	'1.96430858454'],
-                               ['B', '0.00', '-0.030000000', '1.40307756039', '0.00', '-0.015000000',	'1.40307756039']]
+                            ['B', '0.00', '-0.030000000', '1.40307756039', '0.00', '-0.015000000',	'1.40307756039']]
 
                 for j in range(0, len(NB_types)):
                     assert len(out_GOMC[i + 1 + j].split('!')[0].split()) == 7
@@ -376,7 +376,7 @@ class TestCharmmWriterData(BaseTest):
         charmm = Charmm(test_box_ethane_EthanolGOMC, 'residue_reorder_box_sizing_box_0',
                           structure_box_1 = EthaneGOMC,
                           filename_box_1 = 'residue_reorder_box_sizing_box_1',
-                          FF_filename=None,
+                          FF_filename='residue_reorder_box',
                           residues = [EthaneGOMC.name, EthanolGOMC.name],
                           forcefield_selection = { EthanolGOMC.name : 'oplsaa', EthaneGOMC.name : 'oplsaa'},
                           fix_residue=None,
@@ -399,7 +399,7 @@ class TestCharmmWriterData(BaseTest):
             Test_value = Charmm(test_box_ethane_TwoPropanolUA, 'residue_reorder_box_sizing_box_0',
                             structure_box_1=EthaneGOMC,
                             filename_box_1='residue_reorder_box_sizing_box_1',
-                            FF_filename=None,
+                            FF_filename='residue_reorder_box',
                             residues=[TwoPropanolUA.name, EthaneGOMC.name],
                             forcefield_selection= {TwoPropanolUA.name : 'trappe-ua', EthaneGOMC.name : 'oplsaa'} ,
                             fix_residue=None,
@@ -491,7 +491,9 @@ class TestCharmmWriterData(BaseTest):
 
     # test utils base 10 to base 16 converter
     def test_base_10_to_base_16(self):
-        List_Base_10_and_16 = [[15, 'f'], [16, '10'], [17, '11'], [200, 'c8'], [1000, '3e8'], [5000, '1388']]
+        List_Base_10_and_16 = [[15, 'f'], [16, '10'], [17, '11'], [200, 'c8'], [1000, '3e8'], [5000, '1388'],
+                              [int(16**3 - 1), 'fff'], [int(16**3), '1000']
+                               ]
 
         for test_base_16_iter in  range(0, len(List_Base_10_and_16)):
             test_10_iter = List_Base_10_and_16[ test_base_16_iter][0]
@@ -499,7 +501,7 @@ class TestCharmmWriterData(BaseTest):
             assert str(base10_to_base16_alph_num(test_10_iter)) == str(test_16_iter)
 
         unique_entries_base_16_List = []
-        for test_unique_base_16 in range(0, 16 ** 2):
+        for test_unique_base_16 in range(0, 16**2):
             unique_entries_base_16_List.append(base10_to_base16_alph_num(test_unique_base_16))
 
         verified_unique_entries_base_16_List = unique_entries_in_List(unique_entries_base_16_List)
@@ -515,16 +517,17 @@ class TestCharmmWriterData(BaseTest):
     # test utils base 10 to base 26 converter
     def test_base_10_to_base_26(self):
         List_Base_10_and_26 = [[0, 'A'], [5, 'F'], [25, 'Z'], [26, 'BA'],
-                               [200, 'HS'], [1000, 'BMM'], [5000, 'HKI']]
+                               [200, 'HS'], [1000, 'BMM'], [5000, 'HKI'],
+                               [int(26**3 - 1), 'ZZZ'], [int(26**3 ), 'BAAA']]
 
         for test_base_26_iter in range(0, len(List_Base_10_and_26)):
             test_10_iter = List_Base_10_and_26[test_base_26_iter][0]
             test_26_iter = List_Base_10_and_26[test_base_26_iter][1]
-            assert str(base10_to_base26_alph_num(test_10_iter)) == str(test_26_iter)
+            assert str(base10_to_base26_alph(test_10_iter)) == str(test_26_iter)
 
         unique_entries_base_26_List = []
-        for test_unique_base_26 in range(0, 26 ** 2):
-            unique_entries_base_26_List.append(base10_to_base26_alph_num(test_unique_base_26))
+        for test_unique_base_26 in range(0, 26**2):
+            unique_entries_base_26_List.append(base10_to_base26_alph(test_unique_base_26))
 
         verified_unique_entries_base_26_List = unique_entries_in_List(unique_entries_base_26_List)
         assert len(verified_unique_entries_base_26_List) == len(unique_entries_base_26_List)
@@ -539,16 +542,18 @@ class TestCharmmWriterData(BaseTest):
     # test utils base 10 to base 52 converter
     def test_base_10_to_base_52(self):
         List_Base_10_and_52 = [[17, 'R'], [51, 'z'], [52, 'BA'], [53, 'BB'],
-                               [200, 'Ds'], [1000, 'TM'], [5000, 'BsI']]
+                               [200, 'Ds'], [1000, 'TM'], [5000, 'BsI'],
+                              [int(52**3 - 1), 'zzz'], [int(52**3), 'BAAA']
+                               ]
 
         for test_base_52_iter in range(0, len(List_Base_10_and_52)):
             test_10_iter = List_Base_10_and_52[test_base_52_iter][0]
             test_52_iter = List_Base_10_and_52[test_base_52_iter][1]
-            assert str(base10_to_base52_alph_num(test_10_iter)) == str(test_52_iter)
+            assert str(base10_to_base52_alph(test_10_iter)) == str(test_52_iter)
 
         unique_entries_base_52_List = []
-        for test_unique_base_52 in range(0, 52 ** 2):
-            unique_entries_base_52_List.append(base10_to_base52_alph_num(test_unique_base_52))
+        for test_unique_base_52 in range(0, 52**2):
+            unique_entries_base_52_List.append(base10_to_base52_alph(test_unique_base_52))
 
         verified_unique_entries_base_52_List = unique_entries_in_List(unique_entries_base_52_List)
         assert len(verified_unique_entries_base_52_List) == len(unique_entries_base_52_List)
@@ -562,7 +567,9 @@ class TestCharmmWriterData(BaseTest):
 
     # test utils base 10 to base 62 converter
     def test_base_10_to_base_62(self):
-        List_Base_10_and_62 = [[17, 'H'], [61, 'z'], [62, '10'], [63, '11'], [200, '3E'], [1000, 'G8'], [5000, '1Ie']]
+        List_Base_10_and_62 = [[17, 'H'], [61, 'z'], [62, '10'], [63, '11'], [200, '3E'], [1000, 'G8'], [5000, '1Ie'],
+                              [int(62**3 - 1), 'zzz'], [int(62**3), '1000']
+                               ]
 
         for test_base_62_iter in  range(0, len(List_Base_10_and_62)):
             test_10_iter = List_Base_10_and_62[ test_base_62_iter][0]
@@ -646,8 +653,11 @@ class TestCharmmWriterData(BaseTest):
         assert Test_value_3 is None
 
     def test_Specific_all_residue_not_input(self, EthaneGOMC, EthanolGOMC):
+        box = mb.fill_box(compound=[EthaneGOMC, EthanolGOMC],
+                                      box=[1, 1, 1], n_compounds=[1,1])
+
         Test_value_0, Test_value_1, \
-        Test_value_2, Test_value_3 = specific_ff_to_residue(EthaneGOMC,
+        Test_value_2, Test_value_3 = specific_ff_to_residue(box ,
                                                             forcefield_selection='oplsaa',
                                                             residues=[EthaneGOMC.name],
                                                             reorder_res_in_pdb_psf=False,
@@ -669,7 +679,7 @@ class TestCharmmWriterData(BaseTest):
                                                             box=None,
                                                             boxes_for_simulation=1
                                                             )
-
+        print('here 999999999999999999999999999')
         assert Test_value_0 is None
         assert Test_value_1 is None
         assert Test_value_2 is None
