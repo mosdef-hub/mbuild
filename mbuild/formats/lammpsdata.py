@@ -348,8 +348,8 @@ def write_lammpsdata(structure, filename, atom_style='full',
                     if combo in params.nbfix_types:
                         type1 = unique_types.index(combo[0])+1
                         type2 = unique_types.index(combo[1])+1
-                        rmin = params.nbfix_types[combo][0] # Angstrom OR lj units
-                        epsilon = params.nbfix_types[combo][1] # kcal OR lj units
+                        epsilon = params.nbfix_types[combo][0] # kcal OR lj units
+                        rmin = params.nbfix_types[combo][1] # Angstrom OR lj units
                         sigma = rmin/2**(1/6)
                         coeffs[(type1, type2)] = (round(sigma, 8), round(epsilon, 8))
                     else:

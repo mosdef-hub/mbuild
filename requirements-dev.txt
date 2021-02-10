@@ -11,7 +11,7 @@ numpy
 openbabel>=3.0.0
 oset
 packmol>=1!18.013
-parmed
+parmed>=3.4.0
 protobuf
 py3Dmol
 pycifrw
