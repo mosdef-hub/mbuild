@@ -12,7 +12,53 @@ from mbuild.utils.io import import_
 hoomd = import_("hoomd")
 hoomd.data = import_("hoomd.data")
 
-__all__ = ["to_hoomdsnapshot"]
+__all__ = ["to_hoomdsnapshot", "from_snapshot"]
+
+
+def from_snapshot(snapshot, scale=1.0):
+    """Convert a hoomd.data.Snapshot or a gsd.hoomd.Snapshot to an
+    mbuild Compound.
+
+    Parameters
+    ----------
+    snapshot : hoomd.data.SnapshotParticleData or gsd.hoomd.Snapshot
+        Snapshot from which to build the mbuild Compound.
+    scale : float, optional, default 1.0
+        Value by which to scale the length values
+
+    Returns
+    -------
+    comp : mb.Compound
+    """
+    comp = mb.Compound()
+    bond_array = snap.bonds.group
+    n_atoms = snap.particles.N
+
+    # There will be a better way to do this once box overhaul merged
+    try:
+        # gsd
+        box = snap.configuration.box
+        comp.box = mb.box.Box(lengths=box[:3] * scale)
+    except AttributeError:
+        # hoomd
+        box = snap.box
+        comp.box = mb.box.Box(lengths=np.array([box.Lx,box.Ly,box.Lz]) * scale)
+
+    # Add particles
+    for i in range(n_atoms):
+        name = snap.particles.types[snap.particles.typeid[i]]
+        xyz = snap.particles.position[i] * scale
+        charge = snap.particles.charge[i]
+
+        atom = mb.Particle(name=name, pos=xyz, charge=charge)
+        comp.add(atom, label=str(i))
+
+    # Add bonds
+    for i in range(bond_array.shape[0]):
+        atom1 = int(bond_array[i][0])
+        atom2 = int(bond_array[i][1])
+        comp.add_bond([comp[atom1], comp[atom2]])
+    return comp
 
 
 def to_hoomdsnapshot(
