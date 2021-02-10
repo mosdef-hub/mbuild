@@ -136,29 +136,13 @@ def base10_to_base62_alph_num(base10_No):
     return base62_Values
 
 def changeDigit_base10_to_base62_alph_num(current_digit):
-    '''The supplemental digits for the base10_to_base62_alph_num function,
-    which Converts the base 10 to base 62 '''
+    """The supplemental digits for the base10_to_base62_alph_num function,
+    which Converts the base 10 to base 62 """
 
-    '''current_digit = the current digit for this base.
-    (i.e. in base10 it would be the one, ten, hundreds, or thousands places .....)'''
-
-    base62_No = 62
-    decimal =     [10, 11, 12, 13, 14, 15, 16, 17, 18, 19,
-                   20, 21, 22, 23, 24, 25, 26, 27, 28, 29,
-                   30, 31, 32, 33, 34, 35, 36, 37, 38, 39,
-                   40, 41, 42, 43, 44, 45, 46, 47, 48, 49,
-                   50, 51, 52, 53, 54, 55, 56, 57, 58, 59,
-                   60, 61]
-    base62_Values = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J",
-                   "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T",
-                   "U", "V", "W", "X", "Y", "Z", "a", "b", "c", "d",
-                   "e", "f", "g", "h", "i", "j", "k", "l", "m", "n",
-                   "o", "p", "q", "r", "s", "t", "u", "v", "w", "x",
-                   "y", "z"]
-    for counter in range(int(base62_No-10)):
-        if current_digit == decimal[counter - 1]:
-            current_digit = base62_Values[counter - 1]
-    return current_digit
+    """current_digit = the current digit for this base.
+    (i.e. in base10 it would be the one, ten, hundreds, or thousands places .....)"""
+    base62_values = {j: chr(j+55) if j < 36 else chr(j+61) for j in range(10, 62)}
+    return base62_values.get(current_digit, current_digit)
 
 
 
@@ -176,51 +160,11 @@ def changeDigit_base10_to_base62_alph_num(current_digit):
 #***********************************************
 
 def base10_to_base16_alph_num(base10_No):
-    '''Converts base 10 to base 16 so pdb/psf files can add may more than
-    9999 atoms and 999 residues.'''
+    """Converts base 10 to base 16 so pdb/psf files can add may more than
+    9999 atoms and 999 residues."""
 
-    '''base10_No = the base-10 number that you want to convert to base-16)'''
-
-    base16_No = 16
-    base10_No = int(base10_No)
-
-    whole_no = 1
-    remainder = changeDigit_base10_to_base16_alph_num(int(base10_No % base16_No))
-    base16_Values =  str(remainder)
-    power = 1
-
-    while whole_no != 0:
-        whole_no = int(base10_No / base16_No**power)
-
-        if whole_no == base16_No :
-            base16_Values = str(0)+base16_Values
-
-        elif (whole_no != 0) and (whole_no > base16_No) :
-            base16_Values = str(changeDigit_base10_to_base16_alph_num(int(whole_no % base16_No))) + base16_Values
-
-        elif (whole_no != 0) and (whole_no < base16_No):
-            base16_Values = str(changeDigit_base10_to_base16_alph_num(int(whole_no))) + base16_Values
-
-
-        power =power+1
-
-    return base16_Values
-
-def changeDigit_base10_to_base16_alph_num(current_digit):
-    '''The supplemental digits for the base10_to_base16_alph_num function,
-    which Converts the base 10 to base 16 '''
-
-    '''current_digit = the current digit for this base.
-    (i.e. in base10 it would be the one, ten, hundreds, or thousands places .....)'''
-
-    base16_No = 16
-    decimal =     [10, 11, 12, 13, 14, 15]
-    base16_Values = [ "a", "b", "c", "d", "e", "f"]
-    for counter in range(int(base16_No-10)):
-        if current_digit == decimal[counter - 1]:
-            current_digit = base16_Values[counter - 1]
-    return current_digit
-
+    """base10_No = the base-10 number that you want to convert to base-16)"""
+    return hex(int(base10_No))[2:]
 
 
 #***********************************************
@@ -236,7 +180,7 @@ def base10_to_base52_alph(base10_No):
     """Converts base 10 to base 52 so pdb/psf files can add may more than
     atom types in the 3 or 4 character limited pdb and psf files"""
 
-    '''base10_No = the base-10 number that you want to convert to base-52)'''
+    """base10_No = the base-10 number that you want to convert to base-52)"""
 
     base52_No = 52
     base10_No = int(base10_No)
@@ -263,23 +207,14 @@ def base10_to_base52_alph(base10_No):
     return base52_Values
 
 def changeDigit_base10_to_base52_alph_num(current_digit):
-    '''The supplemental digits for the base10_to_base52_alph_num function,
-    which Converts the base 10 to base 52 '''
+    """The supplemental digits for the base10_to_base52_alph_num function,
+    which Converts the base 10 to base 52 """
 
-    '''current_digit = the current digit for this base.
-    (i.e. in base10 it would be the one, ten, hundreds, or thousands places .....)'''
+    """current_digit = the current digit for this base.
+    (i.e. in base10 it would be the one, ten, hundreds, or thousands places .....)"""
+    base52_values = {j: chr(j+65) if j < 26 else chr(j+71) for j in range(0, 52)}
 
-
-    base52_Values = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J",
-                   "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T",
-                   "U", "V", "W", "X", "Y", "Z", "a", "b", "c", "d",
-                   "e", "f", "g", "h", "i", "j", "k", "l", "m", "n",
-                   "o", "p", "q", "r", "s", "t", "u", "v", "w", "x",
-                   "y", "z"]
-
-
-
-    current_digit = base52_Values[current_digit]
+    current_digit = base52_values[current_digit]
     return current_digit
 #***********************************************
 # Converting base-10 to base-52 functions (end)
@@ -293,7 +228,7 @@ def base10_to_base26_alph(base10_No):
     """Converts base 10 to base 26 so pdb/psf files can add may more than
     9999 atoms and 999 residues."""
 
-    '''base10_No = the base-10 number that you want to convert to base-26)'''
+    """base10_No = the base-10 number that you want to convert to base-26)"""
 
     base26_No = 26
     base10_No = int(base10_No)
@@ -321,24 +256,14 @@ def base10_to_base26_alph(base10_No):
     return base26_Values
 
 def changeDigit_base10_to_base26_alph_num(current_digit):
-    '''The supplemental digits for the base10_to_base26_alph_num function,
-    which Converts the base 10 to base 26 '''
+    """The supplemental digits for the base10_to_base26_alph_num function,
+    which Converts the base 10 to base 26 """
 
-    '''current_digit = the current digit for this base.
-    (i.e. in base10 it would be the one, ten, hundreds, or thousands places .....)'''
-
-
-    base26_Values = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J",
-                   "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T",
-                   "U", "V", "W", "X", "Y", "Z"]
-
-
-
-    current_digit = base26_Values[current_digit]
+    """current_digit = the current digit for this base.
+    (i.e. in base10 it would be the one, ten, hundreds, or thousands places .....)"""
+    base26_values = {j: chr(j+65) for j in range(0, 26)}
+    current_digit = base26_values[current_digit]
     return current_digit
-
-
-
 
 #***********************************************
 # Converting base-10 to base-26 functions (end)
