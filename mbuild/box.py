@@ -21,10 +21,18 @@ class Box(object):
     ----------
     box_vectors : np.ndarray, shape=(3,3), dtype=float
         Vectors that define the parallelepiped (Box).
-    Lx, Ly, Lz : float
-        Lengths of the Box in the x,y,z dimensions
-    xy, xz, yz : float
-        Tilt factors needed to displace an orthogonal box to its parallelepiped structure.
+    Lx : float
+        Length of the Box in the x dimension
+    Ly : float
+        Length of the Box in the y dimension
+    Lz : float
+        Length of the Box in the z dimension
+    xy : float
+        Tilt factor needed to displace an orthogonal box's xy face to its parallelepiped structure.
+    xz : float
+        Tilt factor needed to displace an orthogonal box's xz face to its parallelepiped structure.
+    yz : float
+        Tilt factor needed to displace an orthogonal box's yz face to its parallelepiped structure.
     precision : int
         Precision of the floating point numbers when accessing the __repr__
 
@@ -61,9 +69,6 @@ class Box(object):
         uvec = np.asarray(uvec)
         uvec.reshape(3,3)
 
-        if uvec.shape != (3,3):
-            raise MBuildError(f"Expected a 3x3 matrix, was provided {uvec.shape}.")
-
         if not np.allclose(np.linalg.norm(uvec, axis=1), 1.0):
             msg = (f"Unit vector magnitudes provided are not "
                    f"close to 1.0, "
@@ -92,11 +97,10 @@ class Box(object):
         else:
             (xy, xz, yz) = tilt_factors
 
-        v1 = np.asarray([Lx, 0.0, 0.0])
-        v2 = np.asarray([Ly*xy, Ly, 0.0])
-        v3 = np.asarray([Lz*xz, Lz*yz, Lz])
+        vecs = np.asarray([Lx, 0.0, 0.0],
+                          [Ly*xy, Ly, 0.0],
+                          [Lz*xz, Lz*yz, Lz])
 
-        vecs = np.asarray([v1, v2, v3])
         return _validate_box_vectors(box_vectors=vecs)
 
     @classmethod
@@ -105,11 +109,9 @@ class Box(object):
         (xhi,yhi,zhi) = hi
         (xy,xz,yz) = tilt_factors
 
-        v1 = np.asarray([xhi - xlo, 0.0, 0.0])
-        v2 = np.asarray([xy, yhi - ylo, 0.0])
-        v3 = np.asarray([xz, yz, zhi - zlo])
-        box_vectors = np.asarray([v1],[v2],[v3])
-        box_vectors.reshape(3,3)
+        box_vectors = np.asarray([xhi - xlo, 0.0, 0.0],
+                                 [xy, yhi - ylo, 0.0],
+                                 [xz, yz, zhi - zlo])
         _validate_box_vectors(box_vectors)
 
         return Box(box_vectors=box_vectors)
@@ -262,10 +264,8 @@ def _validate_box_vectors(box_vectors):
     return _normalize_box(vecs)
 
 def _lengths_angles_to_vectors(lengths, angles):
-    #print(f'lengths: {lengths}, angles:{angles}')
     (a, b, c) = lengths
     (alpha, beta, gamma) = np.deg2rad(angles)
-    #print(a,b,c,alpha,beta,gamma)
 
     a_vec = np.asarray([a,0.0,0.0],)
 
@@ -279,7 +279,6 @@ def _lengths_angles_to_vectors(lengths, angles):
     c_z = c * np.sqrt(1 - np.square(np.cos(beta)) - np.square(c_cos_y_term))
     c_vec = np.asarray([c_x, c_y, c_z])
     box_vectors = np.asarray((a_vec,b_vec,c_vec))
-    #print(box_vectors)
     box_vectors.reshape(3,3)
     _validate_box_vectors(box_vectors=box_vectors)
     return box_vectors
@@ -296,9 +295,7 @@ def _normalize_box(vectors):
     this package.
     """
     det = np.linalg.det(vectors)
-    #print(f'det is: {det}')
     if np.isclose(det, 0.0, atol=1e-5):
-        #print(f'we made it to the error')
         raise MBuildError("The vectors to define the box are co-linear, "
                           "this does not form a 3D region in space.\n"
                           f"Box vectors evaluated: {vectors}")
