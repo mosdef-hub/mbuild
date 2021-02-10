@@ -1188,8 +1188,8 @@ class GOMCControl():
         # Check if charmm_object is really a Charmm() object
         if isinstance(charmm_object, mf_charmm.Charmm) == False:
             self.all_inputs_pass = False
-            print_error_message = 'The variable supplied as a charmm_object ' \
-                                  '(Charmm()) is not a charmm_object (Charmm())'
+            print_error_message = 'The variable supplied as a charmm_object ({}}) is not a ' \
+                                  'charmm_object ({}})'.format(type(mf_charmm.Charmm), type(mf_charmm.Charmm))
             raise ValueError(print_error_message)
 
         # check ensemble is a correct type
@@ -1208,10 +1208,11 @@ class GOMCControl():
             self.FF_filename = charmm_object.FF_filename
         elif charmm_object.FF_filename is None or isinstance(charmm_object.FF_filename, str) == False:
             self.all_inputs_pass = False
-            print_error_message = "The force field file name was not specified and in the Charmm object (Charmm())." \
+            print_error_message = "The force field file name was not specified and in the Charmm object ({}})." \
                                   "Therefore, the force field file (.inp) can not be written, and thus, the " \
-                                  "GOMC control file (.conf) can not be created.  " \
-                                  "Please use the force field file name when building the Charmm object (Charmm()) "
+                                  "GOMC control file (.conf) can not be created. Please use the force field file " \
+                                  "name when building the Charmm object ({}})".format(type(mf_charmm.Charmm),
+                                                                                      type(mf_charmm.Charmm))
             raise ValueError(print_error_message)
 
         if charmm_object.filename_box_0 != None and isinstance(charmm_object.filename_box_0, str) == True:
@@ -1441,21 +1442,24 @@ class GOMCControl():
             and isinstance( self.x_dim_box_0, float) == False) \
                 or self.x_dim_box_0 <= 0:
             self.all_inputs_pass = False
-            print_error_message = "ERROR: The x-dimension for box 0 is not an integer, float, or is <= 0."
+            print_error_message = "ERROR: The x-dimension for box 0 is, {} , not an integer, float, " \
+                                  "or is <= 0.".format(self.x_dim_box_0)
             raise ValueError(print_error_message)
 
         if (isinstance( self.y_dim_box_0, int) == False \
             and isinstance( self.y_dim_box_0, float) == False) \
                 or self.y_dim_box_0 <= 0:
             self.all_inputs_pass = False
-            print_error_message = "ERROR: The y-dimension for box 0 is not an integer, float, or is <= 0."
+            print_error_message = "ERROR: The y-dimension for box 0 is, {} , not an integer, float, " \
+                                  "or is <= 0.".format(self.y_dim_box_0)
             raise ValueError(print_error_message)
 
         if (isinstance( self.z_dim_box_0, int) == False \
             and isinstance( self.z_dim_box_0, float) == False) \
                 or self.z_dim_box_0 <= 0:
             self.all_inputs_pass = False
-            print_error_message = "ERROR: The z-dimension for box 0 is not an integer, float, or is <= 0."
+            print_error_message = "ERROR: The z-dimension for box 0 is, {} , not an integer, float, " \
+                                  "or is <= 0.".format(self.z_dim_box_0)
             raise ValueError(print_error_message)
 
         if self.ensemble_type in ['GEMC_NVT', 'GEMC_NPT', 'GCMC']:
@@ -1464,7 +1468,8 @@ class GOMCControl():
                 and isinstance(self.x_dim_box_1, float) == False) \
                     or self.x_dim_box_1 <= 0:
                 self.all_inputs_pass = False
-                print_error_message = "ERROR: The x-dimension for box 1 is not an integer, float, or is <= 0."
+                print_error_message = "ERROR: The x-dimension for box 1 is, {} , not an integer, float, " \
+                                      "or is <= 0.".format(self.x_dim_box_1)
                 raise ValueError(print_error_message)
 
             elif self.x_dim_box_1 is None:
@@ -1477,7 +1482,8 @@ class GOMCControl():
                 and isinstance(self.y_dim_box_1, float) == False) \
                     or self.y_dim_box_1 <= 0:
                 self.all_inputs_pass = False
-                print_error_message = "ERROR: The y-dimension for box 1 is not an integer, float, or is <= 0."
+                print_error_message = "ERROR: The y-dimension for box 1 is, {} , not an integer, float, " \
+                                      "or is <= 0.".format(self.y_dim_box_1)
                 raise ValueError(print_error_message)
 
             elif self.y_dim_box_1 is None:
@@ -1490,7 +1496,8 @@ class GOMCControl():
                 and isinstance(self.z_dim_box_1, float) == False) \
                     or self.z_dim_box_1 <= 0:
                 self.all_inputs_pass = False
-                print_error_message = "ERROR: The z-dimension for box 1 is not an integer, float, or is <= 0."
+                print_error_message = "ERROR: The z-dimension for box 1 is, {} , not an integer, float, " \
+                                      "or is <= 0.".format(self.z_dim_box_1)
                 raise ValueError(print_error_message)
 
             elif self.z_dim_box_1 is None:
@@ -1508,9 +1515,9 @@ class GOMCControl():
         # Checking for a valid ensemble type
         if self.ensemble_type not in ['NPT', 'NVT', 'GEMC_NVT', 'GEMC_NPT', 'GCMC']:
             self.all_inputs_pass = False
-            print_error_message = "ERROR: The ensemble type selection of " + str(ensemble_type) \
-                                  + " is not a valid ensemble option. Please choose the "\
-                                    "'NPT', 'NVT', 'GEMC_NVT','GEMC_NPT', or 'GCMC' ensembles"
+            print_error_message = "ERROR: The ensemble type selection of {}  is not a valid ensemble option. " \
+                                  "Please choose the 'NPT', 'NVT', 'GEMC_NVT','GEMC_NPT', or 'GCMC' " \
+                                  "ensembles".format(ensemble_type)
             raise ValueError(print_error_message)
         else:
             print("INFO: All the ensemble (ensemble_type) input passed the intial error checking")
@@ -1520,15 +1527,16 @@ class GOMCControl():
                 and isinstance(self.coul_1_4_scaling, float) == False ) \
                 or self.coul_1_4_scaling < 0 or self.coul_1_4_scaling > 1:
             self.all_inputs_pass = False
-            print_error_message = "ERROR: The selected 1-4 Coulombic scaler is not correct. "\
-                                  "The 1-4 Coulombic scaler need to be an integer or float from 0 to 1."
+            print_error_message = "ERROR: The selected 1-4 Coulombic scalar ({{) is not correct. "\
+                                  "The 1-4 Coulombic scalar need to be an integer or float from " \
+                                  "0 to 1.".format(self.coul_1_4_scaling)
             raise ValueError(print_error_message)
 
         # check that the Temperature is valid
         if self.Temperature <= 1:
             self.all_inputs_pass = False
-            print_error_message = "ERROR: The selected temperature is equal to or less than 1 Kelvin. "\
-                                  "Please select a valid temperature"
+            print_error_message = "ERROR: The selected temperature ({}) is equal to or less than 1 Kelvin. "\
+                                  "Please select a valid temperature".format(self.Temperature)
             raise ValueError(print_error_message)
         else:
             print("INFO: All the temperature  (Temperature) input passed the initial error checking")
@@ -1536,8 +1544,8 @@ class GOMCControl():
         # RunSteps
         if not isinstance(self.RunSteps, int) or self.RunSteps <= 0:
             self.all_inputs_pass = False
-            print_error_message = "ERROR: The selected run steps (RunSteps variable) is not "\
-                                  "an integer or is less than or equal to 0."
+            print_error_message = "ERROR: The selected run steps (RunSteps variable = {}) is not "\
+                                  "an integer or is less than or equal to 0.".format(self.RunSteps)
             raise ValueError(print_error_message)
 
         # create a list of the possible required files and check them based on the ensemble
@@ -1599,12 +1607,11 @@ class GOMCControl():
         input_variables_dict_keys_list = dict_keys_to_list(self.input_variables_dict)
         if check_valid_ensemble_input_variables(self.ensemble_type, input_variables_dict_keys_list) == False:
             self.all_inputs_pass = False
-            print_error_message = "ERROR: All the correct input variable where not provided for the " \
-                                  + str(self.ensemble_type) + \
-                                  " ensemble. Please be sure to check that the keys in the " \
-                                  " input variables dictionary (input_variables_dict) is correct, and be aware "\
+            print_error_message = "ERROR: All the correct input variable where not provided for the {} " \
+                                  "ensemble. Please be sure to check that the keys in the " \
+                                  "input variables dictionary (input_variables_dict) is correct, and be aware "\
                                   "that added spaces before or after the variable in any keys " \
-                                  "will also give this warning. "
+                                  "will also give this warning.".format(self.ensemble_type)
             raise ValueError(print_error_message)
 
         # verify all input variable values are valid, for their keys
@@ -1833,7 +1840,6 @@ class GOMCControl():
                         or isinstance(self.Rcut, int)):
                     if self.input_variables_dict[key] <= self.RcutLow \
                             or self.input_variables_dict[key] >= self.Rcut:
-                        print('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx')
                         bad_input_variables_values_List.append(key)
 
                 if input_var_keys_list[var_iter] == key and key in possible_ensemble_variables_List:
@@ -2495,7 +2501,8 @@ class GOMCControl():
                 or self.ParaTypeMie == True and self.ParaTypeMARTINI == True :
             self.all_inputs_pass = False
             print_error_message = 'ERROR: there can only be 1 VDW type set to true.  Please set only one of the '\
-                                  'ParaTypeCHARMM, ParaTypeMie, ParaTypeMARTINI types to True'
+                                  'ParaTypeCHARMM = {}, ParaTypeMie = {}, ParaTypeMARTINI = {} types ' \
+                                  'to True'.format(self.ParaTypeCHARMM, self.ParaTypeMie, self.ParaTypeMARTINI)
             raise ValueError(print_error_message)
         elif self.ParaTypeCHARMM == True or self.ParaTypeMie == True \
                 or self.ParaTypeMARTINI == True:
@@ -2508,13 +2515,14 @@ class GOMCControl():
         else:
             self.all_inputs_pass = False
             print_error_message = 'ERROR: There no VDW types that are set as True.  Please set only one of the '\
-                                  'ParaTypeCHARMM, ParaTypeMie, ParaTypeMARTINI types to True'
+                                  'ParaTypeCHARMM = {}, ParaTypeMie = {}, ParaTypeMARTINI = {} types ' \
+                                  'to True'.format(self.ParaTypeCHARMM, self.ParaTypeMie, self.ParaTypeMARTINI)
             raise ValueError(print_error_message)
 
         if len(bad_input_variables_values_List) > 0:
             self.all_inputs_pass = False
-            print_error_message = 'ERROR: The following input variables have bad values: ' \
-                                  + str(bad_input_variables_values_List)
+            print_error_message = 'ERROR: The following input variables have ' \
+                                  'bad values: {}'.format(bad_input_variables_values_List)
             raise ValueError(print_error_message)
 
         else:
@@ -2580,10 +2588,11 @@ class GOMCControl():
             raise ValueError(print_error_message)
 
         # Check that RunSteps >= EqSteps >= AdjSteps
-        if RunSteps < self.EqSteps or RunSteps < self.AdjSteps \
+        if self.RunSteps < self.EqSteps or self.RunSteps < self.AdjSteps \
                 or self.EqSteps < self.AdjSteps:
             self.all_inputs_pass = False
-            print_error_message = 'ERROR: The values must be in this order RunSteps >= EqSteps >= AdjSteps '
+            print_error_message = 'ERROR: The values must be in this order RunSteps >= EqSteps >= AdjSteps ' \
+                                  ' ({} >= {} >= {} )'.format(self.RunSteps, self.EqSteps, self.AdjSteps)
             raise ValueError(print_error_message)
 
         # check if both the ChemPot and Fugacity are not set to None.  Only one can be used

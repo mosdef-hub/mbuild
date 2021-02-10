@@ -1,7 +1,7 @@
 import os
 import datetime
 import numpy as np
-
+import mbuild as mb
 from collections import OrderedDict
 from warnings import warn
 from parmed.utils.io import genopen
@@ -513,32 +513,32 @@ class Charmm:
         #value to check for errors, with  self.input_error = True or False. Set to False initally
         self.input_error = False
 
-        if isinstance(self.structure_box_0, Compound) == False:
+        if not isinstance(self.structure_box_0, Compound):
             self.input_error = True
-            print_error_message = 'ERROR: The structure_box_0 supplied as a Mbuild Compound '\
-                                  '(Compound()) is not a  Mbuild Compound (Compound())'
-            raise ValueError(print_error_message)
+            print_error_message ='ERROR: The structure_box_0 expected to be of type: ' \
+                                 '{}, received: {}'.format(type(mb.Compound), type(structure_box_1))
+            raise TypeError(print_error_message)
 
-        if self.structure_box_1 != None and isinstance(self.structure_box_1, Compound) == False:
+        if  self.structure_box_1 and not isinstance(self.structure_box_1, Compound):
             self.input_error = True
-            print_error_message = 'ERROR: The structure_box_1 supplied as a Mbuild Compound '\
-                                  '(Compound()) is not a  Mbuild Compound (Compound())'
-            raise ValueError(print_error_message)
+            print_error_message = 'ERROR: The structure_box_1 expected to be of type: ' \
+                                  '{}, received: {}'.format(type(mb.Compound), type(structure_box_1))
+            raise TypeError(print_error_message)
 
 
         if not isinstance(self.residues, list):
             self.input_error = True
             print_error_message = 'ERROR:  Please enter the residues list (residues) in a list format.'
-            raise ValueError(print_error_message)
+            raise TypeError(print_error_message)
 
         if self.residues is None:
             self.input_error = True
             print_error_message = 'ERROR: Please enter the residues list (residues)'
-            raise ValueError(print_error_message)
+            raise TypeError(print_error_message)
         if not isinstance(self.filename_box_0, str):
             self.input_error = True
             print_error_message = 'ERROR: Please enter the filename_box_0 as a string'
-            raise ValueError(print_error_message)
+            raise TypeError(print_error_message)
 
         unique_residue_test_name_list = []
         for res_m in range(0, len(self.residues)):
@@ -552,24 +552,24 @@ class Charmm:
         if self.filename_box_1 != None and not isinstance(self.filename_box_1, str):
             self.input_error = True
             print_error_message = 'ERROR: Please enter the filename_box_1 as a string'
-            raise ValueError(print_error_message)
+            raise TypeError(print_error_message)
 
         if self.structure_box_1 is None and self.box_1 != None:
             self.input_error = True
             print_error_message = 'ERROR: box_1 is set to a value but there is not a structure 1 to use it on.'
-            raise ValueError(print_error_message)
+            raise TypeError(print_error_message)
 
 
         if self.FF_filename != None:
-            if not isinstance(self.FF_filename, str) :
+            if not isinstance(self.FF_filename, str):
                 self.input_error = True
                 print_error_message = 'ERROR: Please enter GOMC force field name (FF_filename) as a string'
                 raise ValueError(print_error_message)
-            if isinstance(self.FF_filename, str) :
+            if isinstance(self.FF_filename, str):
                 extension_FF_name = os.path.splitext(self.FF_filename)[-1]
-                if extension_FF_name == '' :
+                if extension_FF_name == '':
                     self.FF_filename = self.FF_filename + '.inp'
-                elif extension_FF_name == '.inp' :
+                elif extension_FF_name == '.inp':
                     self.FF_filename = self.FF_filename + ''
                 elif extension_FF_name != '.inp':
                     self.input_error = True
@@ -591,9 +591,9 @@ class Charmm:
                                       '->Dictionary Ex: {"Water" : "oplsaa", "OCT": "path/trappe-ua.xml"}, ' \
                                       'Note: the file path must be specified the force field file if ' \
                                       'a standard foyer force field is not used.'
-                raise ValueError(print_error_message)
+                raise TypeError(print_error_message)
 
-            if isinstance(self.forcefield_selection, str)== True :
+            if isinstance(self.forcefield_selection, str):
                 FF_name = self.forcefield_selection
                 self.forcefield_selection = {}
                 for i in range(0, len(self.residues)):
@@ -603,21 +603,21 @@ class Charmm:
         elif self.forcefield_selection is None:
             self.input_error = True
             print_error_message = 'ERROR: Please enter the forcefield_selection as it was not provided'
-            raise ValueError(print_error_message)
+            raise TypeError(print_error_message)
 
 
 
         if self.residues != None and not isinstance(self.residues, list):
             self.input_error = True
             print_error_message = 'ERROR:  Please enter the residues (residues) in a list format'
-            raise ValueError(print_error_message)
+            raise TypeError(print_error_message)
 
 
         if self.fix_res_bonds_angles != None and not isinstance(self.fix_res_bonds_angles, list):
             self.input_error = True
             print_error_message = 'ERROR: Please enter the residues that have fixed angles '\
                                   'and bonds (fix_res_bonds_angles) in a list format'
-            raise ValueError(print_error_message)
+            raise TypeError(print_error_message)
 
         if isinstance(self.fix_res_bonds_angles, list):
             for q in range(0,len(self.fix_res_bonds_angles)):
@@ -634,7 +634,7 @@ class Charmm:
         if self.fix_residue != None and not isinstance(self.fix_residue, list):
             self.input_error = True
             print_error_message = 'ERROR: Please enter the fix_residue in a list format'
-            raise ValueError(print_error_message)
+            raise TypeError(print_error_message)
 
         if isinstance(self.fix_residue, list):
             for q in range(0,len(self.fix_residue)):
@@ -647,7 +647,7 @@ class Charmm:
         if self.fix_residue_in_box != None and not isinstance(self.fix_residue_in_box, list):
             self.input_error = True
             print_error_message = 'ERROR: Please enter the fix_residue_in_box in a list format'
-            raise ValueError(print_error_message)
+            raise TypeError(print_error_message)
 
         if isinstance(self.fix_residue_in_box, list):
             for q in range(0,len(self.fix_residue_in_box)):
@@ -670,7 +670,7 @@ class Charmm:
                 print_error_message = 'ERROR: Please enter all 3 values for the box_0 dimensions.'
                 raise ValueError(print_error_message)
             for box_iter in range(0, len(self.box_0)):
-                if isinstance(self.box_0[ box_iter], str)==True:
+                if isinstance(self.box_0[ box_iter], str):
                     self.input_error = True
                     print_error_message = 'ERROR: Please enter all positive or 0 values for the box_0 dimensions.'
                     raise ValueError(print_error_message)
@@ -686,7 +686,7 @@ class Charmm:
                 print_error_message = 'ERROR: Please enter all 3 values for the box_1 dimensions.'
                 raise ValueError(print_error_message)
             for box_iter in range(0, len(self.box_1)):
-                if isinstance(self.box_1[ box_iter], str)==True:
+                if isinstance(self.box_1[ box_iter], str):
                     self.input_error = True
                     print_error_message = 'ERROR: Please enter all positive or 0 values for the box_1 dimensions.'
                     raise ValueError(print_error_message)
@@ -718,16 +718,16 @@ class Charmm:
 
             print('GOMC FF writing each residues FF as a group for structure_box_0')
             self.structure_box_0_FF, \
-            self.coulomb14scaler_dict_0, \
-            self.LJ14scaler_dict_0,\
+            self.coulomb14scalar_dict_0, \
+            self.LJ14scalar_dict_0,\
             self.residues_applied_list_0 = specific_ff_to_residue(self.structure_box_0,
                                                              forcefield_selection=self.forcefield_selection,
                                                              residues=self.residues,
                                                              reorder_res_in_pdb_psf=self.reorder_res_in_pdb_psf,
                                                              box = self.box_0,
                                                              boxes_for_simulation = self.boxes_for_simulation)
-            test_Specific_FF_to_residue_for_failure = [self.structure_box_0_FF, self.coulomb14scaler_dict_0,
-                                                       self.LJ14scaler_dict_0, self.residues_applied_list_0]
+            test_Specific_FF_to_residue_for_failure = [self.structure_box_0_FF, self.coulomb14scalar_dict_0,
+                                                       self.LJ14scalar_dict_0, self.residues_applied_list_0]
 
             for iter_test_Specifc_res_fail in range(0, len(test_Specific_FF_to_residue_for_failure)):
                 if test_Specific_FF_to_residue_for_failure[iter_test_Specifc_res_fail] is None:
@@ -738,16 +738,16 @@ class Charmm:
 
             print('GOMC FF writing each residues FF as a group for  structure_box_1')
             self.structure_box_1_FF, \
-            self.coulomb14scaler_dict_1, \
-            self.LJ14scaler_dict_1, \
+            self.coulomb14scalar_dict_1, \
+            self.LJ14scalar_dict_1, \
             self.residues_applied_list_1 = specific_ff_to_residue(self.structure_box_1,
                                                              forcefield_selection=self.forcefield_selection,
                                                              residues=self.residues,
                                                              reorder_res_in_pdb_psf=self.reorder_res_in_pdb_psf,
                                                              box = self.box_1,
                                                              boxes_for_simulation = self.boxes_for_simulation)
-            test_Specific_FF_to_residue_for_failure = [self.structure_box_1_FF, self.coulomb14scaler_dict_1,
-                                                       self.LJ14scaler_dict_1, self.residues_applied_list_1]
+            test_Specific_FF_to_residue_for_failure = [self.structure_box_1_FF, self.coulomb14scalar_dict_1,
+                                                       self.LJ14scalar_dict_1, self.residues_applied_list_1]
 
             for iter_test_Specifc_res_fail in range(0, len(test_Specific_FF_to_residue_for_failure)):
                 if test_Specific_FF_to_residue_for_failure[iter_test_Specifc_res_fail] is None:
@@ -757,18 +757,18 @@ class Charmm:
                     raise ValueError(print_error_message)
 
             self.structure_box_0_and_1_FF =self.structure_box_0_FF + self.structure_box_1_FF
-            self.combined_1_4_LJ_dict_per_residue.update(self.LJ14scaler_dict_0)
-            self.combined_1_4_LJ_dict_per_residue.update(self.LJ14scaler_dict_1)
-            self.combined_1_4_Coul_dict_per_residue.update(self.coulomb14scaler_dict_0)
-            self.combined_1_4_Coul_dict_per_residue.update(self.coulomb14scaler_dict_1)
+            self.combined_1_4_LJ_dict_per_residue.update(self.LJ14scalar_dict_0)
+            self.combined_1_4_LJ_dict_per_residue.update(self.LJ14scalar_dict_1)
+            self.combined_1_4_Coul_dict_per_residue.update(self.coulomb14scalar_dict_0)
+            self.combined_1_4_Coul_dict_per_residue.update(self.coulomb14scalar_dict_1)
 
             self.residues_applied_list_0_and_1 = self.residues_applied_list_0
             for res_iter in range(0,len(self.residues_applied_list_1 )):
                 if self.residues_applied_list_1[res_iter] not in self.residues_applied_list_0:
                     self.residues_applied_list_0_and_1.append(self.residues_applied_list_1[res_iter])
 
-            for res_iter_1 in range(0, len(self.residues_applied_list_0_and_1)):
-                if self.residues_applied_list_0_and_1[res_iter_1] not in  self.residues:
+            for res_iter_0_1 in self.residues_applied_list_0_and_1:
+                if res_iter_0_1 not in  self.residues:
                     self.input_error = True
                     print_error_message = "ERROR: All the residues were not used from the forcefield_selection " \
                                           "string or dictionary.  There may be residues below other specified " \
@@ -778,8 +778,8 @@ class Charmm:
                                           " may have been specified."
                     raise ValueError(print_error_message)
 
-            for res_iter_1 in range(0, len(self.residues)):
-                if self.residues[res_iter_1] not in self.residues_applied_list_0_and_1:
+            for res_iter_0_1 in self.residues:
+                if res_iter_0_1 not in self.residues_applied_list_0_and_1:
                     warn("ERROR: All the residues were not used from the forcefield_selection " 
                                      "string or dictionary.  There may be residues below other specified residues " 
                                      "in the mbuild.Compound hierarchy.  If so, the residues acquire the residue's " 
@@ -814,16 +814,16 @@ class Charmm:
 
             print('GOMC FF writing each residues FF as a group for structure_box_0')
             self.structure_box_0_FF, \
-            self.coulomb14scaler_dict_0, \
-            self.LJ14scaler_dict_0, \
+            self.coulomb14scalar_dict_0, \
+            self.LJ14scalar_dict_0, \
             self.residues_applied_list_0 = specific_ff_to_residue(self.structure_box_0,
                                                              forcefield_selection=self.forcefield_selection,
                                                              residues=self.residues,
                                                              reorder_res_in_pdb_psf=self.reorder_res_in_pdb_psf,
                                                              box=self.box_0,
                                                              boxes_for_simulation = self.boxes_for_simulation)
-            test_Specific_FF_to_residue_for_failure = [ self.structure_box_0_FF, self.coulomb14scaler_dict_0,
-                                                        self.LJ14scaler_dict_0, self.residues_applied_list_0 ]
+            test_Specific_FF_to_residue_for_failure = [ self.structure_box_0_FF, self.coulomb14scalar_dict_0,
+                                                        self.LJ14scalar_dict_0, self.residues_applied_list_0 ]
             for iter_test_Specifc_res_fail in range(0, len(test_Specific_FF_to_residue_for_failure)):
                 if test_Specific_FF_to_residue_for_failure[iter_test_Specifc_res_fail] is None:
                     self.input_error = True
@@ -831,11 +831,11 @@ class Charmm:
                                           'found and built for structure_box_0.'
                     raise ValueError(print_error_message)
 
-            self.combined_1_4_LJ_dict_per_residue.update(self.LJ14scaler_dict_0)
-            self.combined_1_4_Coul_dict_per_residue.update(self.coulomb14scaler_dict_0)
+            self.combined_1_4_LJ_dict_per_residue.update(self.LJ14scalar_dict_0)
+            self.combined_1_4_Coul_dict_per_residue.update(self.coulomb14scalar_dict_0)
 
-            for res_iter_1 in range(0, len(self.residues_applied_list_0)):
-                if self.residues_applied_list_0[res_iter_1] not in self.residues:
+            for res_iter_0 in self.residues_applied_list_0:
+                if res_iter_0 not in self.residues:
                     self.input_error = True
                     print_error_message = "ERROR: All the residues were not used from the forcefield_selection "\
                                           "string or dictionary.  There may be residues below other specified " \
@@ -845,8 +845,8 @@ class Charmm:
                                           "may have been specified."
                     raise ValueError(print_error_message)
 
-            for res_iter_1 in range(0, len(self.residues)):
-                if self.residues[res_iter_1] not in self.residues_applied_list_0:
+            for res_iter_0 in self.residues:
+                if res_iter_0 not in self.residues_applied_list_0:
                     self.input_error = True
                     print_error_message = "ERROR: All the residues were not used from the forcefield_selection " \
                                           "string or dictionary.  There may be residues below other specified " \
@@ -862,7 +862,7 @@ class Charmm:
                                  'Total charge is {}.'.format(total_charge))
 
 
-        print('forcefield type from compound = '+str( self.forcefield_selection))
+        print('forcefield type from compound = ' + str( self.forcefield_selection))
         print('coulomb14scale from compound = ' + str(self.combined_1_4_Coul_dict_per_residue))
         print('lj14scale from compound = ' + str(self.combined_1_4_LJ_dict_per_residue))
 
@@ -880,10 +880,8 @@ class Charmm:
             self.epsilon_conversion_factor = 1
             self.mass_conversion_factor = 1
 
-
-
-        if self.structure_box_1 !=None:
-            self.types = [atom.type+'_'+str(atom.residue.name) for atom in self.structure_box_0_and_1_FF.atoms]
+        if self.structure_box_1:
+            self.types = [atom.type + '_' + str(atom.residue.name) for atom in self.structure_box_0_and_1_FF.atoms]
 
         else:
             self.types = [atom.type + '_' + str(atom.residue.name) for atom in self.structure_box_0_FF.atoms]
@@ -891,14 +889,10 @@ class Charmm:
         self.unique_types = list(set(self.types))
         self.unique_types.sort(key=natural_sort)
 
-        print('unique_types = '+str(self.unique_types))
+        print('unique_types = {}'.format(self.unique_types))
 
 
-
-        #***************
-        # edited fix for residues (start)
-        # ***************
-        if self.structure_box_1 !=None:
+        if self.structure_box_1:
             self.masses = np.array([atom.mass for atom in self.structure_box_0_and_1_FF.atoms]) / self.mass_conversion_factor
             self.mass_dict = dict([(self.unique_types.index(atom_type) + 1, mass) for atom_type, mass in zip(self.types, self.masses)])
 
@@ -906,19 +900,17 @@ class Charmm:
             self.masses = np.array([atom.mass for atom in self.structure_box_0_FF.atoms]) / self.mass_conversion_factor
             self.mass_dict = dict([(self.unique_types.index(atom_type) + 1, mass) for atom_type, mass in zip(self.types, self.masses)])
 
-
         # added an index so the atom types can be converted to numbers as the type name is to long for insertion into
         # the pdb and psf files
         self.atom_types_to_index_value_dict = dict(
-            [(self.unique_types[self.unique_types.index(atom_type)], self.unique_types.index(atom_type) ) for atom_type, mass in
-             zip(self.types, self.masses)])
+            [(self.unique_types[self.unique_types.index(atom_type)], self.unique_types.index(atom_type) )
+             for atom_type, mass in zip(self.types, self.masses)])
 
         self.box_0 = Box(lengths=np.array([0.1 * val for val in self.structure_box_0_FF.box[0:3]]),angles=self.structure_box_0_FF.box[3:6])
         #Divide by conversion factor
         self.box_0.maxs /= self.sigma_conversion_factor
 
         #Internally use nm
-        #if self.structure_box_1 != None:
         if self.structure_box_1:
             self.box_1 = Box(lengths=np.array([0.1 * val for val in self.structure_box_1_FF.box[0:3]]),
                       angles=self.structure_box_1_FF.box[3:6])
@@ -952,15 +944,16 @@ class Charmm:
         self.coul_1_4_List = []
         for p in self.combined_1_4_Coul_dict_per_residue.values():
             self.coul_1_4_List.append(p)
-        for c in range(0, len(self.coul_1_4_List)):
-            if self.coul_1_4_List[c] != self.coul_1_4_List[0]:
-                self.input_error = True
-                print_error_message = "ERROR: There are multiple 1,4-coulombic scaling factors "\
-                                      "GOMC will only accept a singular input for the 1,4-coulombic " \
-                                      "scaling factors"
-                raise ValueError(print_error_message)
-            else:
-                self.coul_1_4 = self.coul_1_4_List[0]
+        self.coul_1_4_set = set(self.coul_1_4_List)
+        if  len(self.coul_1_4_set) > 1:
+            self.input_error = True
+            print_error_message = "ERROR: There are multiple 1,4-coulombic scaling factors "\
+                                  "GOMC will only accept a singular input for the 1,4-coulombic " \
+                                  "scaling factors"
+            raise ValueError(print_error_message)
+        else:
+            self.coul_1_4 = list(self.coul_1_4_set)[0]
+
 
 
     def write_inp(self):
@@ -971,10 +964,10 @@ class Charmm:
         if self.FF_filename is None:
             self.input_error = True
             print_error_message = "ERROR: The force field file name was not specified and in the " \
-                                  "Charmm object (Charmm())."\
+                                  "Charmm object ({}})."\
                                   "Therefore, the force field file (.inp) can not be written."\
-                                  "Please use the force field file name when building the Charmm object (Charmm()), "\
-                                  "then use the write_inp function. "
+                                  "Please use the force field file name when building the Charmm object ({}}), "\
+                                  "then use the write_inp function. ".format(type(Charmm), type(Charmm))
             raise ValueError(print_error_message)
         else:
 
@@ -1045,8 +1038,8 @@ class Charmm:
                     # this will need tested with a standard charmm input format before releasing it
                     use_dihedrals = True
                     self.input_error = True
-                    print_error_message = "ERROR: use_dihedrals = " +str(use_dihedrals) \
-                                          + "Charmm dihedrals not yet supported "
+                    print_error_message = "ERROR: use_dihedrals = {} " \
+                                          "Charmm dihedrals not yet supported.".format(use_dihedrals)
                     raise ValueError(print_error_message)
                 else:
                     use_dihedrals = False
@@ -1508,7 +1501,7 @@ class Charmm:
         date_time = datetime.datetime.today()
 
 
-        print('write_psf: forcefield_selection = ' + str(self.forcefield_selection) + ', ' + 'residues = ' + str(self.residues))
+        print('write_psf: forcefield_selection = {}, residues = {}'.format(self.forcefield_selection, self.residues))
 
 
 
@@ -1516,7 +1509,7 @@ class Charmm:
         print("")
 
 
-        if self.structure_box_1 !=None:
+        if self.structure_box_1:
             list_of_structures = [self.structure_box_0_FF, self.structure_box_1_FF]
             list_of_file_names = [self.filename_box_0, self.filename_box_1]
             stuct_only = [self.structure_box_0_FF, self.structure_box_1_FF]
@@ -1647,7 +1640,7 @@ class Charmm:
             output_write.write(' REMARKS created on ' + str(date_time) + '\n\n\n')
 
             # This converts the atom name in the GOMC psf and pdb files to unique atom names
-            print('self.bead_to_atom_name_dict = ' +str(self.bead_to_atom_name_dict))
+            print('self.bead_to_atom_name_dict = {}'.format(self.bead_to_atom_name_dict))
             unique_Individual_atom_names_dict, \
             Individual_atom_names_List, \
             Missing_Bead_to_atom_name =unique_atom_naming(stuct_only_iteration , residue_ID_list, residue_names_list,
@@ -1848,10 +1841,10 @@ class Charmm:
         print("******************************")
         print("")
         print('The charmm pdb writer (the write_pdb function) is running')
-        print('write_charmm_pdb: residues == ' + str(self.residues))
-        print('fix_residue = ' + str(self.fix_residue))
-        print('fix_residue_in_box = ' + str(self.fix_residue_in_box))
-        print('bead_to_atom_name_dict = ' + str(self.bead_to_atom_name_dict))
+        print('write_charmm_pdb: residues == {}'.format(self.residues))
+        print('fix_residue = {}'.format(self.fix_residue))
+        print('fix_residue_in_box = {}'.format(self.fix_residue_in_box))
+        print('bead_to_atom_name_dict = {}'.format(self.bead_to_atom_name_dict))
 
         if self.fix_residue is None and self.fix_residue_in_box is None:
             print('INFORMATION: No atoms are fixed in this pdb file for the GOMC simulation engine. ')
@@ -1861,7 +1854,7 @@ class Charmm:
         print("******************************")
         print("")
 
-        if self.structure_box_1 !=None:
+        if self.structure_box_1:
             list_of_structures = [self.structure_box_0_FF, self.structure_box_1_FF]
             list_of_file_names = [self.filename_box_0, self.filename_box_1]
             stuct_only = [self.structure_box_0_FF, self.structure_box_1_FF]
@@ -1934,7 +1927,7 @@ class Charmm:
             All_atom_coordinates = stuct_only_iteration.get_coordinates('all')
             if All_atom_coordinates is None:
                 self.input_error = True
-                print_error_message = "ERROR: the submitted structure has no PDB coordintes, "\
+                print_error_message = "ERROR: the submitted structure has no PDB coordinates, "\
                                       "so the PDB writer has terminated. "
                 raise ValueError(print_error_message)
 

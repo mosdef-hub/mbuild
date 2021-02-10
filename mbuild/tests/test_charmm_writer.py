@@ -1,5 +1,6 @@
 import pytest
 import mbuild as mb
+import numpy as np
 
 from mbuild.tests.base_test import BaseTest
 from mbuild.formats import charmm_writer
@@ -679,7 +680,6 @@ class TestCharmmWriterData(BaseTest):
                                                             box=None,
                                                             boxes_for_simulation=1
                                                             )
-        print('here 999999999999999999999999999')
         assert Test_value_0 is None
         assert Test_value_1 is None
         assert Test_value_2 is None
@@ -1124,8 +1124,8 @@ class TestCharmmWriterData(BaseTest):
 
         try:
             structure_FF, \
-            coulomb14scaler_dict, \
-            LJ14scaler_dict, \
+            coulomb14scalar_dict, \
+            LJ14scalar_dict, \
             residues_applied_list  =  specific_ff_to_residue(box_reservior_0,
                                                              forcefield_selection={TwoPropanolGOMC.name: 'oplsaa',
                                                                                EthanolGOMC.name: 'oplsaa' },
@@ -1180,8 +1180,8 @@ class TestCharmmWriterData(BaseTest):
                                           box=[10, 10, 10], n_compounds=[10, 10])
 
             structure_FF, \
-            coulomb14scaler_dict, \
-            LJ14scaler_dict, \
+            coulomb14scalar_dict, \
+            LJ14scalar_dict, \
             residues_applied_list = specific_ff_to_residue(box_reservior_0,
                                                            forcefield_selection={EthylEtherGOMC.name: 'oplsaa',
                                                                                  MethlyEtherGOMC.name: 'oplsaa'},
@@ -1257,8 +1257,8 @@ class TestCharmmWriterData(BaseTest):
                                           box=[10, 10, 10], n_compounds=[10, 10])
 
             structure_FF, \
-            coulomb14scaler_dict, \
-            LJ14scaler_dict, \
+            coulomb14scalar_dict, \
+            LJ14scalar_dict, \
             residues_applied_list = specific_ff_to_residue(box_reservior_0,
                                                            forcefield_selection={EthylEtherGOMC.name: 'oplsaa',
                                                                                  MethlyEtherGOMC.name: 'oplsaa'},
@@ -1685,7 +1685,7 @@ class TestCharmmWriterData(BaseTest):
         assert value_0 == "TEST_FAILED"
 
 
-    def test_diff_1_4_coul_scalers(self, EthaneGOMC, TwoPropanolUA):
+    def test_diff_1_4_coul_scalars(self, EthaneGOMC, TwoPropanolUA):
         try:
             value_0 = Charmm(EthaneGOMC, 'charmm_data_box_0',
                              structure_box_1=TwoPropanolUA, filename_box_1='charmm_data_box_1',

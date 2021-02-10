@@ -55,11 +55,11 @@ def specific_ff_to_residue(structure,
     -------
     structure: parmed.Structure
         parmed structure with applied force field
-    coulomb14scaler_dict: dict
-        a dictionary with the 1,4-colombic scalers for each residue
+    coulomb14scalar_dict: dict
+        a dictionary with the 1,4-colombic scalars for each residue
             (i.e., a different force field could on each residue)
-    lj14_scaler_dict: dict
-        a dictionary with the 1,4-LJ scalers for each residue
+    lj14_scalar_dict: dict
+        a dictionary with the 1,4-LJ scalars for each residue
         (i.e., a different force field could on each residue)
     residues_applied_list: list
         list of residues (i.e., list of stings).
@@ -91,7 +91,7 @@ def specific_ff_to_residue(structure,
         )
         return None, None, None, None
 
-    if residues is None or isinstance(residues, list) == False:
+    if residues is None or not isinstance(residues, list):
         print('Please enter the residues in the Specific_FF_to_residue function')
         return None, None, None, None
 
@@ -162,8 +162,8 @@ def specific_ff_to_residue(structure,
                     return None, None, None, None
 
 
-    coulomb14scaler_dict = {}
-    lj14_scaler_dict = {}
+    coulomb14scalar_dict = {}
+    lj14_scalar_dict = {}
     for j in range(0, len(forcefield_keys_list)):
         residue_iteration = forcefield_keys_list[j]
         if user_entered_ff_with_path_dict[residue_iteration] :
@@ -187,9 +187,9 @@ def specific_ff_to_residue(structure,
                 return None, None, None, None
         lj_coul_1_4_values = read_xlm_iteration.getElementsByTagName("NonbondedForce")
 
-        for Scaler in lj_coul_1_4_values:
-            coulomb14scaler_dict.update({residue_iteration: float(Scaler.getAttribute("coulomb14scale"))})
-            lj14_scaler_dict.update({residue_iteration: float(Scaler.getAttribute("lj14scale"))})
+        for Scalar in lj_coul_1_4_values:
+            coulomb14scalar_dict.update({residue_iteration: float(Scalar.getAttribute("coulomb14scale"))})
+            lj14_scalar_dict.update({residue_iteration: float(Scalar.getAttribute("lj14scale"))})
 
     # calculate the initial number of atoms for later comparison
     initial_no_atoms = len(structure.to_parmed().atoms)
@@ -323,4 +323,4 @@ def specific_ff_to_residue(structure,
              'residues list (i.e., the residues variable)')
         return None, None, None, None
 
-    return structure, coulomb14scaler_dict, lj14_scaler_dict, residues_applied_list
+    return structure, coulomb14scalar_dict, lj14_scalar_dict, residues_applied_list
