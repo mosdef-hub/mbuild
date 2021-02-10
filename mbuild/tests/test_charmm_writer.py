@@ -371,51 +371,34 @@ class TestCharmmWriterData(BaseTest):
             else:
                 pass
 
-    def test_charmm_pdb_residue_reorder_box_sizing(self, EthanolGOMC, EthaneGOMC):
-        test_box_ethane_EthanolGOMC = mb.fill_box(compound=[EthanolGOMC, EthaneGOMC],
-                                  n_compounds= [1,1] ,
-                                  box=[2.0, 2.0, 2.0])
-        charmm = Charmm(test_box_ethane_EthanolGOMC, 'residue_reorder_box_sizing_box_0',
-                          structure_box_1 = EthaneGOMC,
-                          filename_box_1 = 'residue_reorder_box_sizing_box_1',
-                          FF_filename='residue_reorder_box',
-                          residues = [EthaneGOMC.name, EthanolGOMC.name],
-                          forcefield_selection = { EthanolGOMC.name : 'oplsaa', EthaneGOMC.name : 'oplsaa'},
-                          fix_residue=None,
-                          fix_residue_in_box = None,
-                          fix_res_bonds_angles=None,
-                          reorder_res_in_pdb_psf=True,
-                          box_0 = [3, 3, 3],
-                          box_1 =[4, 4, 4],
-                          bead_to_atom_name_dict={'_CH3': 'C'}
-                          )
-
-        charmm.write_pdb()
-
-
     def test_charmm_pdb_no_differenc_1_4_coul_scalars(self, TwoPropanolUA, EthaneGOMC):
         test_box_ethane_TwoPropanolUA = mb.fill_box(compound=[TwoPropanolUA, EthaneGOMC],
                                                     n_compounds=[1, 1],
                                                     box=[2.0, 2.0, 2.0])
-        try:
-            Test_value = Charmm(test_box_ethane_TwoPropanolUA, 'residue_reorder_box_sizing_box_0',
-                            structure_box_1=EthaneGOMC,
-                            filename_box_1='residue_reorder_box_sizing_box_1',
-                            FF_filename='residue_reorder_box',
-                            residues=[TwoPropanolUA.name, EthaneGOMC.name],
-                            forcefield_selection= {TwoPropanolUA.name : 'trappe-ua', EthaneGOMC.name : 'oplsaa'} ,
-                            fix_residue=None,
-                            fix_residue_in_box=None,
-                            fix_res_bonds_angles=None,
-                            reorder_res_in_pdb_psf=False,
-                            box_0=[3, 3, 3],
-                            box_1=[4, 4, 4],
-                            bead_to_atom_name_dict={'_CH3': 'C'}
-                            )
-        except:
-            Test_value = "TEST_FAILED"
 
-        assert Test_value == "TEST_FAILED"
+        with pytest.raises(ValueError, match=r"ERROR: There are multiple 1,4-coulombic scaling factors "\
+                                             "GOMC will only accept a singular input for the 1,4-coulombic " \
+                                             "scaling factors"):
+
+            Charmm(test_box_ethane_TwoPropanolUA, 'residue_reorder_box_sizing_box_0',
+                   structure_box_1=EthaneGOMC,
+                   filename_box_1='residue_reorder_box_sizing_box_1',
+                   FF_filename='residue_reorder_box',
+                   residues=[TwoPropanolUA.name, EthaneGOMC.name],
+                   forcefield_selection={TwoPropanolUA.name: 'trappe-ua', EthaneGOMC.name: 'oplsaa'},
+                   fix_residue=None,
+                   fix_residue_in_box=None,
+                   fix_res_bonds_angles=None,
+                   reorder_res_in_pdb_psf=False,
+                   box_0=[3, 3, 3],
+                   box_1=[4, 4, 4],
+                   bead_to_atom_name_dict={'_CH3': 'C'}
+                   )
+
+        #except:
+            #Test_value = "TEST_FAILED"
+
+        #assert Test_value == "TEST_FAILED"
 
 
     def test_charmm_pdb_residue_reorder_and_FF_filename_box_sizing(self, EthanolGOMC, EthaneGOMC):
@@ -803,192 +786,10 @@ class TestCharmmWriterData(BaseTest):
                                                             box=[5, 6, 7],
                                                             boxes_for_simulation=1
                                                             )
-        print('Test_value_0 = ' +str(Test_value_0))
         assert Test_value_0 is None
         assert Test_value_1 is None
         assert Test_value_2 is None
         assert Test_value_3 is None
-
-
-
-
-    def test_charmm_correct_residue_format(self, EthaneGOMC):
-        try:
-            Test_value = Charmm(EthaneGOMC, 'box_0',
-                                structure_box_1 = None,
-                                filename_box_1 = None,
-                                FF_filename=None,
-                                residues = [EthaneGOMC.name],
-                                forcefield_selection = {EthaneGOMC.name : 'oplsaa'},
-                                )
-
-        except:
-            Test_value = "TEST_FAILED"
-
-        assert Test_value.input_error is False
-
-    def test_charmm_residue_not_None(self, EthaneGOMC):
-        try:
-            Test_value = Charmm(EthaneGOMC, 'box_0',
-                                structure_box_1=None,
-                                filename_box_1=None,
-                                FF_filename=None,
-                                residues=EthaneGOMC.name,
-                                forcefield_selection={EthaneGOMC.name: 'oplsaa'}
-                                )
-        except:
-            Test_value = "TEST_FAILED"
-
-        assert Test_value == "TEST_FAILED"
-
-    def test_charmm_residue_string(self, EthaneGOMC):
-        try:
-            Test_value = Charmm(EthaneGOMC, 'box_0',
-                                structure_box_1=None,
-                                filename_box_1=None,
-                                FF_filename=None,
-                                residues='EthaneGOMC.name',
-                                forcefield_selection={EthaneGOMC.name: 'oplsaa'}
-                                )
-
-        except:
-            Test_value = "TEST_FAILED"
-
-        assert Test_value == "TEST_FAILED"
-
-    def test_charmm_residue_is_None(self, EthaneGOMC):
-        try:
-            Test_value = Charmm(EthaneGOMC, 'box_0',
-                                structure_box_1=None,
-                                filename_box_1=None,
-                                FF_filename=None,
-                                residues=None,
-                                forcefield_selections={EthaneGOMC.name: 'oplsaa'}
-                                )
-        except:
-            Test_value = "TEST_FAILED"
-
-        assert Test_value == "TEST_FAILED"
-
-    def test_charmm_filename_0_is_string(self, EthaneGOMC):
-        try:
-            Test_value = Charmm(EthaneGOMC, 0,
-                                structure_box_1=None,
-                                filename_box_1=None,
-                                FF_filename=None,
-                                residues= [EthaneGOMC.name],
-                                forcefield_selection={EthaneGOMC.name: 'oplsaa'}
-                                )
-        except:
-            Test_value = "TEST_FAILED"
-
-        assert Test_value == "TEST_FAILED"
-
-
-    def test_charmm_filename_box_1_is_string(self, EthaneGOMC):
-        try:
-            Test_value = Charmm(EthaneGOMC, 'box_0',
-                                structure_box_1 = EthaneGOMC,
-                                filename_box_1 = ['box_0'],
-                                FF_filename=None,
-                                residues= EthaneGOMC.name,
-                                forcefield_selection={EthaneGOMC.name: 'oplsaa'},
-                                )
-        except:
-            Test_value = "TEST_FAILED"
-
-        assert Test_value == "TEST_FAILED"
-
-
-    def test_charmm_box_1_not_None_no_structure_box_1(self, EthaneGOMC):
-        try:
-            Test_value = Charmm(EthaneGOMC, 'box_0',
-                                structure_box_1 = None,
-                                filename_box_1 = None,
-                                FF_filename=None,
-                                residues=[EthaneGOMC.name],
-                                forcefield_selection={EthaneGOMC.name: 'oplsaa'},
-                                box_1=[4, 4, 4],
-                                )
-        except:
-            Test_value = "TEST_FAILED"
-
-        assert Test_value == "TEST_FAILED"
-
-
-    def test_charmm_GOMC_filename_not_string(self, EthaneGOMC):
-        try:
-            Test_value = Charmm(EthaneGOMC, 'box_0',
-                                structure_box_1 = None,
-                                filename_box_1 = None,
-                                FF_filename=0,
-                                residues=[EthaneGOMC.name],
-                                forcefield_selection={EthaneGOMC.name: 'oplsaa'},
-                                )
-        except:
-            Test_value = "TEST_FAILED"
-
-        assert Test_value == "TEST_FAILED"
-
-
-    def test_charmm_GOMC_filename_ext_not_dot_inp(self, EthaneGOMC):
-        try:
-            Test_value = Charmm(EthaneGOMC, 'box_0',
-                                structure_box_1 = None,
-                                filename_box_1 = None,
-                                FF_filename='box.test',
-                                residues=[EthaneGOMC.name],
-                                forcefield_selection={EthaneGOMC.name: 'oplsaa'},
-                                )
-        except:
-            Test_value = "TEST_FAILED"
-
-        assert Test_value == "TEST_FAILED"
-
-
-    def test_charmm_FFselection_not_dict(self, EthaneGOMC):
-        try:
-            Test_value = Charmm(EthaneGOMC, 'box_0',
-                                structure_box_1 = None,
-                                filename_box_1 = None,
-                                FF_filename='box.test',
-                                residues=[EthaneGOMC.name],
-                                forcefield_selection=['oplsaa', 'oplsaa'],
-                                )
-        except:
-            Test_value = "TEST_FAILED"
-
-        assert Test_value == "TEST_FAILED"
-
-
-    def test_charmm_FFselection_string(self, EthaneGOMC):
-        try:
-            Test_value = Charmm(EthaneGOMC, 'box_0',
-                                structure_box_1 = None,
-                                filename_box_1 = None,
-                                FF_filename='box.test',
-                                residues=[EthaneGOMC.name],
-                                forcefield_selection='oplsaa',
-                                )
-        except:
-            Test_value = "TEST_FAILED"
-
-        assert Test_value == "TEST_FAILED"
-
-
-    def test_charmm_Residue_name_not_in_residues(self, EthaneGOMC):
-        try:
-            Test_value = Charmm(EthaneGOMC, 'box_0',
-                                  structure_box_1 = None,
-                                  filename_box_1 = None,
-                                  FF_filename='box.test',
-                                  residues=["XXX"],
-                                  forcefield_selection='oplsaa',
-                                  )
-        except:
-            Test_value = "TEST_FAILED"
-
-        assert Test_value == "TEST_FAILED"
 
 
     def test_charmm_Methane_test_no_children(self, MethaneUAGOMC):
@@ -1035,6 +836,7 @@ class TestCharmmWriterData(BaseTest):
         assert Test_value_2 == {'ETO': 0.5, 'ETH': 0.5}
         assert Test_value_3 == ['ETH', 'ETO']
 
+
     def test_charmm_all_residues_not_in_dict(self, EthaneGOMC, EthanolGOMC):
         box_reservior_1 = mb.fill_box(compound=[EthaneGOMC],
                                       box=[1, 1, 1], n_compounds=[1])
@@ -1060,6 +862,156 @@ class TestCharmmWriterData(BaseTest):
         assert Test_value_1 == None
         assert Test_value_2 == None
         assert Test_value_3 == None
+
+    def test_charmm_correct_residue_format(self, EthaneGOMC):
+        try:
+            Test_value = Charmm(EthaneGOMC, 'box_0',
+                                structure_box_1 = None,
+                                filename_box_1 = None,
+                                FF_filename=None,
+                                residues = [EthaneGOMC.name],
+                                forcefield_selection = {EthaneGOMC.name : 'oplsaa'},
+                                )
+
+        except:
+            Test_value = "TEST_FAILED"
+
+        assert Test_value.input_error is False
+
+
+    def test_charmm_residue_not_List(self, EthaneGOMC):
+        with pytest.raises(TypeError, match=r'ERROR: Please enter the residues list \(residues\) in a list format.'):
+            Charmm(EthaneGOMC, 'box_0',
+                   structure_box_1=None, filename_box_1=None,
+                   FF_filename=None,
+                   residues=EthaneGOMC.name,
+                   forcefield_selection={EthaneGOMC.name: 'oplsaa'},
+                   )
+
+
+    def test_charmm_residue_string(self, EthaneGOMC):
+        with pytest.raises(TypeError, match=r'ERROR: Please enter the residues list \(residues\) in a list format.'):
+            Charmm(EthaneGOMC, 'box_0',
+                   structure_box_1=None,
+                   filename_box_1=None,
+                   FF_filename=None,
+                   residues='EthaneGOMC.name',
+                   forcefield_selection={EthaneGOMC.name: 'oplsaa'},
+                   )
+
+
+    def test_charmm_residue_is_None(self, EthaneGOMC):
+        with pytest.raises(TypeError, match=r'ERROR: Please enter the residues list \(residues\)'):
+            Charmm(EthaneGOMC, 'box_0',
+                   structure_box_1=None,
+                   filename_box_1=None,
+                   FF_filename=None,
+                   residues=None,
+                   forcefield_selections={EthaneGOMC.name: 'oplsaa'},
+                   )
+
+
+    def test_charmm_filename_0_is_not_string(self, EthaneGOMC):
+        with pytest.raises(TypeError, match=r'ERROR: Please enter the filename_box_0 as a string.'):
+            Charmm(EthaneGOMC, 0,
+                   structure_box_1=None,
+                   filename_box_1=None,
+                   FF_filename=None,
+                   residues=[EthaneGOMC.name],
+                   forcefield_selection={EthaneGOMC.name: 'oplsaa'},
+                   )
+
+
+    def test_charmm_filename_box_1_is_not_string(self, EthaneGOMC):
+        with pytest.raises(TypeError, match=r'ERROR: Please enter the filename_box_1 as a string.'):
+            Charmm(EthaneGOMC, 'box_0',
+                   structure_box_1 = EthaneGOMC,
+                   filename_box_1 = ['box_0'],
+                   FF_filename=None,
+                   residues= [EthaneGOMC.name],
+                   forcefield_selection={EthaneGOMC.name: 'oplsaa'},
+                   )
+
+
+    def test_charmm_box_1_not_None_no_structure_box_1(self, EthaneGOMC):
+        with pytest.raises(TypeError, match=r'ERROR: box_1 is set to a value but there is not a '
+                                            r'structure 1 to use it on.'):
+            Charmm(EthaneGOMC, 'box_0',
+                   structure_box_1 = None,
+                   filename_box_1 = None,
+                   FF_filename=None,
+                   residues=[EthaneGOMC.name],
+                   forcefield_selection={EthaneGOMC.name: 'oplsaa'},
+                   box_1=[4, 4, 4],
+                   )
+
+
+    def test_charmm_GOMC_filename_not_string(self, EthaneGOMC):
+        with pytest.raises(TypeError, match=r'ERROR: Please enter GOMC force field name \(FF_filename\) as a string.'):
+            Charmm(EthaneGOMC, 'box_0',
+                   structure_box_1 = None,
+                   filename_box_1 = None,
+                   FF_filename=0,
+                   residues=[EthaneGOMC.name],
+                   forcefield_selection={EthaneGOMC.name: 'oplsaa'},
+                   )
+
+
+    def test_charmm_GOMC_filename_ext_not_dot_inp(self, EthaneGOMC):
+        with pytest.raises(ValueError, match=r'ERROR: Please enter GOMC force field name without an '
+                                             'extention or the .inp extension.'):
+            Charmm(EthaneGOMC, 'box_0',
+                   structure_box_1 = None,
+                   filename_box_1 = None,
+                   FF_filename='box.test',
+                   residues=[EthaneGOMC.name],
+                   forcefield_selection={EthaneGOMC.name: 'oplsaa'},
+                   )
+
+
+    def test_charmm_FFselection_not_dict(self, EthaneGOMC):
+        with pytest.raises(TypeError, match=r'ERROR: The force field selection \(forcefield_selection\) '
+                                            'is not a string or a dictionary with all the residues specified ' 
+                                            'to a force field. -> String Ex: "path/trappe-ua.xml" or Ex: "trappe-ua" '
+                                            'Otherise provided a dictionary with all the residues specified ' 
+                                            'to a force field '
+                                            '->Dictionary Ex: {"Water" : "oplsaa", "OCT": "path/trappe-ua.xml"}, ' 
+                                            'Note: the file path must be specified the force field file if ' 
+                                            'a standard foyer force field is not used.'):
+            Charmm(EthaneGOMC, 'box_0',
+                   structure_box_1 = None,
+                   filename_box_1 = None,
+                   FF_filename='box_0',
+                   residues=[EthaneGOMC.name],
+                   forcefield_selection=['oplsaa', 'oplsaa'],
+                   )
+
+
+    def test_charmm_FFselection_string(self, EthaneGOMC):
+        try:
+            Test_value = Charmm(EthaneGOMC, 'box_0',
+                                structure_box_1 = None,
+                                filename_box_1 = None,
+                                FF_filename='box_0',
+                                residues=[EthaneGOMC.name],
+                                forcefield_selection='oplsaa',
+                                )
+        except:
+            Test_value = "TEST_FAILED"
+
+        assert Test_value.input_error is False
+
+
+    def test_charmm_Residue_name_not_in_residues(self, EthaneGOMC):
+        with pytest.raises(ValueError, match=r'ERROR: The residues entered does not match the residues that were '
+                                             r'found and built for structure_box_0.'):
+            Charmm(EthaneGOMC, 'box_0',
+                   structure_box_1 = None,
+                   filename_box_1 = None,
+                   FF_filename='box_0',
+                   residues=["XXX"],
+                   forcefield_selection='oplsaa',
+                   )
 
 
     def test_FFselection_string(self, TwoPropanolUA):
@@ -1091,32 +1043,29 @@ class TestCharmmWriterData(BaseTest):
 
 
     def test_FFselection_list(self, TwoPropanolUA):
-        try:
-            Test_value_0 = Charmm(TwoPropanolUA, 'S', FF_filename='S',
-                                  residues = [TwoPropanolUA.name],
-                                  forcefield_selection = [str(forcefields.get_ff_path()[0])+'/xml/'+'trappe-ua.xml'],
-                                  bead_to_atom_name_dict= {'_CH3' : 'C'},
-                                  )
-        except:
-            Test_value_0 = "TEST_FAILED"
-
-        assert Test_value_0 == "TEST_FAILED"
-
-
-
-    def test_residuals_not_a_string(self, TwoPropanolUA):
-        try:
-            Test_value_0 = Charmm(TwoPropanolUA, 'box_0', FF_filename='box_0',
-                                  residues = TwoPropanolUA.name,
-                                  forcefield_selection = {TwoPropanolUA.name: 'trappe-ua' },
-                                  bead_to_atom_name_dict= {'_CH3' : 'C'},
+        with pytest.raises(TypeError, match=r'ERROR: The force field selection \(forcefield_selection\) '
+                                            'is not a string or a dictionary with all the residues specified ' 
+                                            'to a force field. -> String Ex: "path/trappe-ua.xml" or Ex: "trappe-ua" '
+                                            'Otherise provided a dictionary with all the residues specified ' 
+                                            'to a force field '
+                                            '->Dictionary Ex: {"Water" : "oplsaa", "OCT": "path/trappe-ua.xml"}, ' 
+                                            'Note: the file path must be specified the force field file if ' 
+                                            'a standard foyer force field is not used.'):
+            Charmm(TwoPropanolUA, 'S', FF_filename='S',
+                   residues = [TwoPropanolUA.name],
+                   forcefield_selection = [str(forcefields.get_ff_path()[0])+'/xml/'+'trappe-ua.xml'],
+                   bead_to_atom_name_dict= {'_CH3' : 'C'},
                                   )
 
-        except:
-            Test_value_0 = "TEST_FAILED"
 
-        assert Test_value_0 == "TEST_FAILED"
-
+    def test_residues_not_a_string(self, TwoPropanolUA):
+        with pytest.raises(TypeError, match=r'ERROR: Please enter a residues list '
+                                            r'\(residues\) with only string values.'):
+            Charmm(TwoPropanolUA, 'box_0', FF_filename='box_0',
+                   residues = [2],
+                   forcefield_selection = {TwoPropanolUA.name: 'trappe-ua' },
+                   bead_to_atom_name_dict= {'_CH3' : 'C'},
+                   )
 
 
     #Charmm writer sub-function testing
@@ -1303,7 +1252,9 @@ class TestCharmmWriterData(BaseTest):
 
     def test_Bead_AtomName_equal_3(self, TwoPropanolUA):
         # testing def unique_atom_naming in charmm_writer, expecting when failing
-        try:
+        with pytest.raises(ValueError, match=r'ERROR: The unique_atom_naming function failed while '
+                                             r'running the charmm_writer function. Ensure the proper inputs are '
+                                             r'in the bead_to_atom_name_dict.'):
             box_reservior_0 = mb.fill_box(compound=[TwoPropanolUA],
                                           box=[10, 10, 10], n_compounds=[10])
 
@@ -1318,202 +1269,197 @@ class TestCharmmWriterData(BaseTest):
             value_0.write_psf()
 
 
-        except:
-            value_0 = "TEST_FAILED"
-
-        assert value_0 == "TEST_FAILED"
-
-
-    def test_residue_string(self, TwoPropanolUA):
-        try:
-            value_0 = Charmm(TwoPropanolUA, 'charmm_data_UA', FF_filename='charmm_data_UA',
-                              residues = 'TwoPropanolUA.name', forcefield_selection = 'trappe-ua',
-                              bead_to_atom_name_dict= {'_CH3' : 'C'}
-                             )
-        except:
-            value_0 = "TEST_FAILED"
-
-        assert value_0 == "TEST_FAILED"
-
     def test_fix_res_bonds_angles_string(self, TwoPropanolUA):
-        try:
-            value_0 = Charmm(TwoPropanolUA, 'charmm_data_UA', FF_filename='charmm_data_UA',
-                              residues = [TwoPropanolUA.name], forcefield_selection = 'trappe-ua',
-                              bead_to_atom_name_dict= {'_CH3' : 'C'}, fix_res_bonds_angles='TwoPropanolUA.name'
-                             )
-        except:
-            value_0 = "TEST_FAILED"
+        with pytest.raises(TypeError, match=r'ERROR: Please enter the residues that have fixed angles and '
+                                             r'bonds \(fix_res_bonds_angles\) in a list format.'):
+            Charmm(TwoPropanolUA, 'charmm_data_UA', FF_filename='charmm_data_UA',
+                   residues = [TwoPropanolUA.name], forcefield_selection = 'trappe-ua',
+                   bead_to_atom_name_dict= {'_CH3' : 'C'}, fix_res_bonds_angles='TwoPropanolUA.name'
+                   )
 
-        assert value_0 == "TEST_FAILED"
 
     def test_fix_res_bonds_angles_residue_not_in_system(self, TwoPropanolUA):
-        try:
-            value_0 = Charmm(TwoPropanolUA, 'charmm_data_UA', FF_filename='charmm_data_UA',
-                              residues = [TwoPropanolUA.name], forcefield_selection = 'trappe-ua',
-                              bead_to_atom_name_dict= {'_CH3' : 'C'}, fix_res_bonds_angles=['WNG']
-                             )
-        except:
-            value_0 = "TEST_FAILED"
+        with pytest.raises(ValueError, match=r'ERROR: Please ensure that all the residue names in the '
+                                             r'fix_res_bonds_angles list are also in the residues list.'):
+            Charmm(TwoPropanolUA, 'charmm_data_UA', FF_filename='charmm_data_UA',
+                   residues = [TwoPropanolUA.name], forcefield_selection = 'trappe-ua',
+                   bead_to_atom_name_dict= {'_CH3' : 'C'}, fix_res_bonds_angles=['WNG']
+                   )
 
-        assert value_0 == "TEST_FAILED"
 
     def test_fix_residue_string(self, TwoPropanolUA):
-        try:
-            value_0 = Charmm(TwoPropanolUA, 'charmm_data_UA', FF_filename='charmm_data_UA',
-                             residues = [TwoPropanolUA.name], forcefield_selection = 'trappe-ua',
-                             bead_to_atom_name_dict= {'_CH3' : 'C'}, fix_residue = 'TwoPropanolUA.name'
-                             )
-        except:
-            value_0 = "TEST_FAILED"
+        with pytest.raises(TypeError, match=r'ERROR: Please enter the fix_residue in a list format'):
+            Charmm(TwoPropanolUA, 'charmm_data_UA', FF_filename='charmm_data_UA',
+                   residues = [TwoPropanolUA.name], forcefield_selection = 'trappe-ua',
+                   bead_to_atom_name_dict= {'_CH3' : 'C'}, fix_residue = 'TwoPropanolUA.name'
+                   )
 
-        assert value_0 == "TEST_FAILED"
 
     def test_fix_residue_string_residue_not_in_system(self, TwoPropanolUA):
-        try:
-            value_0 = Charmm(TwoPropanolUA, 'charmm_data_UA', FF_filename='charmm_data_UA',
-                             residues = [TwoPropanolUA.name], forcefield_selection = 'trappe-ua',
-                             bead_to_atom_name_dict= {'_CH3' : 'C'}, fix_residue = ['WNG']
-                             )
-        except:
-            value_0 = "TEST_FAILED"
+        with pytest.raises(ValueError, match=r'Error: Please ensure that all the residue names in the fix_residue '
+                                             r'list are also in the residues list.'):
+            Charmm(TwoPropanolUA, 'charmm_data_UA', FF_filename='charmm_data_UA',
+                   residues = [TwoPropanolUA.name], forcefield_selection = 'trappe-ua',
+                   bead_to_atom_name_dict= {'_CH3' : 'C'}, fix_residue = ['WNG']
+                   )
 
-        assert value_0 == "TEST_FAILED"
 
     def test_fix_residue_in_box_string(self, TwoPropanolUA):
-        try:
-            value_0 = Charmm(TwoPropanolUA, 'charmm_data_UA', FF_filename='charmm_data_UA',
-                             residues=[TwoPropanolUA.name], forcefield_selection='trappe-ua',
-                             bead_to_atom_name_dict={'_CH3': 'C'},
-                             fix_residue_in_box='TwoPropanolUA.name'
-                             )
-        except:
-            value_0 = "TEST_FAILED"
+        with pytest.raises(TypeError, match=r'ERROR: Please enter the fix_residue_in_box in a list format.'):
+            Charmm(TwoPropanolUA, 'charmm_data_UA', FF_filename='charmm_data_UA',
+                   residues=[TwoPropanolUA.name], forcefield_selection='trappe-ua',
+                   bead_to_atom_name_dict={'_CH3': 'C'},
+                   fix_residue_in_box='TwoPropanolUA.name'
+                   )
 
-        assert value_0 == "TEST_FAILED"
 
     def test_fix_residue_in_box_string_residue_not_in_system(self, TwoPropanolUA):
-        try:
-            value_0 = Charmm(TwoPropanolUA, 'charmm_data_UA', FF_filename='charmm_data_UA',
-                             residues=[TwoPropanolUA.name], forcefield_selection='trappe-ua',
-                             bead_to_atom_name_dict={'_CH3': 'C'}, fix_residue_in_box=['WNG']
-                             )
-        except:
-            value_0 = "TEST_FAILED"
+        with pytest.raises(ValueError, match=r'Error: Please ensure that all the residue names in the '
+                                             r'fix_residue_in_box list are also in the residues list.'):
+            Charmm(TwoPropanolUA, 'charmm_data_UA', FF_filename='charmm_data_UA',
+                   residues=[TwoPropanolUA.name], forcefield_selection='trappe-ua',
+                   bead_to_atom_name_dict={'_CH3': 'C'}, fix_residue_in_box=['WNG']
+                   )
 
-        assert value_0 == "TEST_FAILED"
 
     def test_bead_to_atom_name_dict_list(self, TwoPropanolUA):
-        try:
-            value_0 = Charmm(TwoPropanolUA, 'charmm_data_UA', FF_filename='charmm_data_UA',
-                             residues=[TwoPropanolUA.name], forcefield_selection='trappe-ua',
-                             bead_to_atom_name_dict=['_CH3', 'C']
-                             )
-        except:
-            value_0 = "TEST_FAILED"
+        with pytest.raises(TypeError, match=r'ERROR: Please enter the a bead type to atom in the dictionary '
+                                            r'\(bead_to_atom_name_dict\) so GOMC can properly evaluate the '
+                                            r'unique atom names'):
+            Charmm(TwoPropanolUA, 'charmm_data_UA', FF_filename='charmm_data_UA',
+                   residues=[TwoPropanolUA.name], forcefield_selection='trappe-ua',
+                   bead_to_atom_name_dict=['_CH3', 'C']
+                   )
 
-        assert value_0 == "TEST_FAILED"
+    def test_bead_to_atom_name_dict_not_string_0(self, TwoPropanolUA):
+        with pytest.raises(TypeError, match=r'ERROR: Please enter the bead_to_atom_name_dict with only '
+                                            r'string inputs.'):
+            Charmm(TwoPropanolUA, 'charmm_data_UA', FF_filename='charmm_data_UA',
+                   residues=[TwoPropanolUA.name], forcefield_selection='trappe-ua',
+                   bead_to_atom_name_dict={'_CH3': 0},
+                   )
+
+    def test_bead_to_atom_name_dict_not_string_1(self, TwoPropanolUA):
+        with pytest.raises(TypeError, match=r'ERROR: Please enter the bead_to_atom_name_dict with only '
+                                            r'string inputs.'):
+            Charmm(TwoPropanolUA, 'charmm_data_UA', FF_filename='charmm_data_UA',
+                   residues=[TwoPropanolUA.name], forcefield_selection='trappe-ua',
+                   bead_to_atom_name_dict={0: 'C'},
+                   )
+
 
     def test_box_0_4_dims(self, TwoPropanolUA):
-        try:
-            value_0 = Charmm(TwoPropanolUA, 'charmm_data_UA_box_0',
-                             FF_filename='charmm_data_UA',
-                             residues=[TwoPropanolUA.name], forcefield_selection='trappe-ua',
-                             bead_to_atom_name_dict={'_CH3': 'C'},
-                             box_0=[4, 5, 6, 6], box_1=[3, 4, 5]
-                             )
-        except:
-            value_0 = "TEST_FAILED"
+        with pytest.raises(ValueError, match=r'ERROR: Please enter all 3 values and only 3 values for '
+                                             r'the box_0 dimensions.'):
+            Charmm(TwoPropanolUA, 'charmm_data_UA_box_0',
+                   FF_filename='charmm_data_UA',
+                   residues=[TwoPropanolUA.name], forcefield_selection='trappe-ua',
+                   bead_to_atom_name_dict={'_CH3': 'C'},
+                   box_0=[4, 5, 6, 6],
+                   )
 
-        assert value_0 == "TEST_FAILED"
 
     def test_box_1_4_dims(self, TwoPropanolUA):
-        try:
-            value_0 = Charmm(TwoPropanolUA, 'charmm_data_UA_box_0',
-                             structure_box_1=TwoPropanolUA, filename_box_1='charmm_data_UA_box_1',
-                             FF_filename='charmm_data_UA',
-                             residues=[TwoPropanolUA.name], forcefield_selection='trappe-ua',
-                             bead_to_atom_name_dict={'_CH3': 'C'},
-                             box_0=[4, 5, 6], box_1=[3, 4, 5, 6]
-                             )
-        except:
-            value_0 = "TEST_FAILED"
+        with pytest.raises(ValueError, match=r'ERROR: Please enter all 3 values and only 3 values for '
+                                            r'the box_1 dimensions.'):
+            Charmm(TwoPropanolUA, 'charmm_data_UA_box_0',
+                   structure_box_1=TwoPropanolUA, filename_box_1='charmm_data_UA_box_1',
+                   FF_filename='charmm_data_UA',
+                   residues=[TwoPropanolUA.name], forcefield_selection='trappe-ua',
+                   bead_to_atom_name_dict={'_CH3': 'C'},
+                   box_0=[4, 5, 6], box_1=[3, 4, 5, 6]
+                   )
 
-        assert value_0 == "TEST_FAILED"
 
     def test_box_0_negative_dims(self, TwoPropanolUA):
-        try:
-            value_0 = Charmm(TwoPropanolUA, 'charmm_data_UA', FF_filename='charmm_data_UA',
-                             residues=[TwoPropanolUA.name], forcefield_selection='trappe-ua',
-                             bead_to_atom_name_dict={'_CH3': 'C'}, box_0=[-3, 4, 5]
-                             )
-        except:
-            value_0 = "TEST_FAILED"
+        with pytest.raises(ValueError, match=r'ERROR: Please enter float or integer values, which are all '
+                                             r'positive values for the box_0 dimensions.'):
+            Charmm(TwoPropanolUA, 'charmm_data_UA', FF_filename='charmm_data_UA',
+                   residues=[TwoPropanolUA.name], forcefield_selection='trappe-ua',
+                   bead_to_atom_name_dict={'_CH3': 'C'}, box_0=[-3, 4, 5]
+                   )
 
-        assert value_0 == "TEST_FAILED"
 
     def test_box_1_negative_dims(self, TwoPropanolUA):
-        try:
-            value_0 = Charmm(TwoPropanolUA, 'charmm_data_UA_box_0',
-                             structure_box_1=TwoPropanolUA, filename_box_1='charmm_data_UA_box_1',
-                             FF_filename='charmm_data_UA',
-                             residues=[TwoPropanolUA.name], forcefield_selection='trappe-ua',
-                             bead_to_atom_name_dict={'_CH3': 'C'},
-                             box_0=[4, 5, 6], box_1=[-3, 4, 5]
-                             )
-        except:
-            value_0 = "TEST_FAILED"
+        with pytest.raises(ValueError, match=r'ERROR: Please enter float or integer values, which are all '
+                                             r'positive values for the box_1 dimensions.'):
+            Charmm(TwoPropanolUA, 'charmm_data_UA_box_0',
+                   structure_box_1=TwoPropanolUA, filename_box_1='charmm_data_UA_box_1',
+                   FF_filename='charmm_data_UA',
+                   residues=[TwoPropanolUA.name], forcefield_selection='trappe-ua',
+                   bead_to_atom_name_dict={'_CH3': 'C'},
+                   box_0=[4, 5, 6], box_1=[-3, 4, 5]
+                   )
 
-        assert value_0 == "TEST_FAILED"
 
     def test_box_0_string_dims(self, TwoPropanolUA):
-        try:
-            value_0 = Charmm(TwoPropanolUA, 'charmm_data_UA', FF_filename='charmm_data_UA',
-                             residues=[TwoPropanolUA.name], forcefield_selection='trappe-ua',
-                             bead_to_atom_name_dict={'_CH3': 'C'}, box_0=['string', 5, 6]
-                             )
-        except:
-            value_0 = "TEST_FAILED"
+        with pytest.raises(ValueError, match=r'ERROR: Please enter float or integer values, which are all '
+                                             r'positive values for the box_0 dimensions.'):
+            Charmm(TwoPropanolUA, 'charmm_data_UA', FF_filename='charmm_data_UA',
+                   residues=[TwoPropanolUA.name], forcefield_selection='trappe-ua',
+                   bead_to_atom_name_dict={'_CH3': 'C'}, box_0=['string', 5, 6]
+                   )
 
-        assert value_0 == "TEST_FAILED"
 
     def test_box_1_string_dims(self,  TwoPropanolUA):
-        try:
-            value_0 = Charmm(TwoPropanolUA, 'charmm_data_UA_box_0', FF_filename='charmm_data_UA',
-                                        structure_box_1= TwoPropanolUA, filename_box_1='charmm_data_UA_box_1',
-                                        residues=[TwoPropanolUA.name], forcefield_selection='trappe-ua',
-                                        bead_to_atom_name_dict={'_CH3': 'C'},
-                                        box_0=[ 4, 5, 6], box_1=['string', 5, 6]
-                             )
-        except:
-            value_0 = "TEST_FAILED"
+        with pytest.raises(ValueError, match=r'ERROR: Please enter float or integer values, which are all '
+                                             r'positive values for the box_1 dimensions.'):
+            Charmm(TwoPropanolUA, 'charmm_data_UA_box_0', FF_filename='charmm_data_UA',
+                   structure_box_1= TwoPropanolUA, filename_box_1='charmm_data_UA_box_1',
+                   residues=[TwoPropanolUA.name], forcefield_selection='trappe-ua',
+                   bead_to_atom_name_dict={'_CH3': 'C'},
+                   box_0=[ 4, 5, 6], box_1=['string', 5, 6]
+                   )
 
-        assert value_0 == "TEST_FAILED"
+    def test_1_box_residues_not_all_listed_box_0(self, EthaneGOMC, EthanolGOMC):
+        with pytest.raises(ValueError, match=r'ERROR: The residues entered does not match the residues that '
+                                             r'were found and built for structure_box_0.'):
+            Charmm(EthaneGOMC, 'charmm_data_box_0',
+                   structure_box_1=None, filename_box_1=None,
+                   FF_filename='charmm_data',
+                   residues=[EthanolGOMC.name], forcefield_selection='oplsaa',
+                   )
 
-    def test_2_box_residues_not_all_listed(self, EthaneGOMC, EthanolGOMC):
-        try:
-            value_0 = Charmm(EthaneGOMC, 'charmm_data_box_0',
-                             structure_box_1=EthanolGOMC, filename_box_1='charmm_data_box_1',
-                             FF_filename='charmm_data',
-                             residues=[EthanolGOMC.name, EthanolGOMC.name], forcefield_selection='oplsaa',
-                             )
-        except:
-            value_0 = "TEST_FAILED"
 
-        assert value_0 == "TEST_FAILED"
+    def test_2_box_residues_not_all_listed_box_0(self, EthaneGOMC, EthanolGOMC):
+        with pytest.raises(ValueError, match=r'ERROR: The residues entered does not match the residues that '
+                                             r'were found and built for structure_box_0.'):
+            Charmm(EthaneGOMC, 'charmm_data_box_0',
+                   structure_box_1=EthanolGOMC, filename_box_1='charmm_data_box_1',
+                   FF_filename='charmm_data',
+                   residues=['XXX', EthanolGOMC.name], forcefield_selection='oplsaa',
+                   )
+
+
+    def test_2_box_residues_not_all_listed_box_1(self, EthaneGOMC, EthanolGOMC):
+        with pytest.raises(ValueError, match=r'ERROR: The residues entered does not match the residues that '
+                                             r'were found and built for structure_box_1.'):
+            Charmm(EthaneGOMC, 'charmm_data_box_0',
+                   structure_box_1=EthanolGOMC, filename_box_1='charmm_data_box_1',
+                   FF_filename='charmm_data',
+                   residues=['XXX', EthaneGOMC.name], forcefield_selection='oplsaa',
+                   )
+
+    def test_2_box_residues_listed_2x(self, EthaneGOMC, EthanolGOMC):
+        with pytest.raises(ValueError, match=r'ERROR: Please enter the residues list \(residues\) that has '
+                                             r'only unique residue names.'):
+            Charmm(EthaneGOMC, 'charmm_data_box_0',
+                   structure_box_1=EthanolGOMC, filename_box_1='charmm_data_box_1',
+                   FF_filename='charmm_data',
+                   residues=[EthanolGOMC.name, EthanolGOMC.name], forcefield_selection='oplsaa',
+                   )
+
 
     def test_all_residues_are_listed(self, EthaneGOMC, EthanolGOMC):
-        try:
-            value_0 = Charmm(EthaneGOMC, 'charmm_data_box_0',
-                                        structure_box_1=EthanolGOMC, filename_box_1='charmm_data_box_1',
-                                        FF_filename='charmm_data',
-                                        residues=[EthanolGOMC.name], forcefield_selection='oplsaa',
-                                        )
-        except:
-            value_0 = "TEST_FAILED"
+        with pytest.raises(ValueError, match=r'ERROR: The residues entered does not match the residues that '
+                                             r'were found and built for structure_box_0.'):
+            Charmm(EthaneGOMC, 'charmm_data_box_0',
+                   structure_box_1=EthanolGOMC, filename_box_1='charmm_data_box_1',
+                   FF_filename='charmm_data',
+                   residues=[EthanolGOMC.name], forcefield_selection='oplsaa',
+                   )
 
-        assert value_0 == "TEST_FAILED"
-
-
+    # Test that an empty box (psf and pdb files) can be created to start a simulation
     def test_box_1_empty_test_1(self, TwoPropanolUA):
         Empty_compound = mb.Compound()
 
@@ -1597,150 +1543,95 @@ class TestCharmmWriterData(BaseTest):
                 pass
 
     def test_structure_box_0_not_mb_Compound(self, EthaneGOMC):
-        try:
-            value_0 = Charmm('EthaneGOMC', 'charmm_data_box_0',
-                             structure_box_1=EthaneGOMC, filename_box_1='charmm_data_box_1',
-                             FF_filename='charmm_data',
-                             residues=[EthaneGOMC.name], forcefield_selection='oplsaa',
-                             )
-        except:
-            value_0 = "TEST_FAILED"
-
-        assert value_0 == "TEST_FAILED"
+        with pytest.raises(TypeError, match=r"ERROR: The structure_box_0 expected to be of type: "
+                                            r"<class 'mbuild.compound.Compound'>, received: <class 'str'>"):
+            Charmm('EthaneGOMC', 'charmm_data_box_0',
+                   structure_box_1=EthaneGOMC, filename_box_1='charmm_data_box_1',
+                   FF_filename='charmm_data',
+                   residues=[EthaneGOMC.name], forcefield_selection='oplsaa',
+                   )
 
 
     def test_structure_box_1_not_mb_Compound(self, EthaneGOMC):
-        try:
-            value_0 = Charmm(EthaneGOMC, 'charmm_data_box_0',
-                             structure_box_1='EthaneGOMC', filename_box_1='charmm_data_box_1',
-                             FF_filename='charmm_data',
-                             residues=[EthaneGOMC.name], forcefield_selection='oplsaa',
-                             )
-        except:
-            value_0 = "TEST_FAILED"
+        with pytest.raises(TypeError, match=r"ERROR: The structure_box_1 expected to be of type: "
+                                            r"<class 'mbuild.compound.Compound'>, received: <class 'int'>"):
+            Charmm(EthaneGOMC, 'charmm_data_box_0',
+                   structure_box_1=0, filename_box_1='charmm_data_box_1',
+                   FF_filename='charmm_data',
+                   residues=[EthaneGOMC.name], forcefield_selection='oplsaa',
+                   )
 
-        assert value_0 == "TEST_FAILED"
-
-    def test_residue_list_not_entered(self, EthaneGOMC):
-        try:
-            value_0 = Charmm(EthaneGOMC, 'charmm_data_box_0',
-                             structure_box_1='EthaneGOMC', filename_box_1='charmm_data_box_1',
-                             FF_filename='charmm_data',
-                             residues=None, forcefield_selection='oplsaa',
-                             )
-        except:
-            value_0 = "TEST_FAILED"
-
-        assert value_0 == "TEST_FAILED"
 
     def test_FF_dict_not_entered(self, EthaneGOMC):
-        try:
-            value_0 = Charmm(EthaneGOMC, 'charmm_data_box_0',
-                             structure_box_1='EthaneGOMC', filename_box_1='charmm_data_box_1',
-                             FF_filename='charmm_data',
-                             residues=[EthaneGOMC.name], forcefield_selection=None,
-                             )
-        except:
-            value_0 = "TEST_FAILED"
+        with pytest.raises(TypeError, match=r'ERROR: Please enter the forcefield_selection as it was not provided.'):
+            Charmm(EthaneGOMC, 'charmm_data_box_0',
+                   structure_box_1=EthaneGOMC, filename_box_1='charmm_data_box_1',
+                   FF_filename='charmm_data',
+                   residues=[EthaneGOMC.name], forcefield_selection=None,
+                   )
 
-        assert value_0 == "TEST_FAILED"
-
-
-    def test_residues_not_None_not_not_list(self, EthaneGOMC):
-        try:
-            value_0 = Charmm(EthaneGOMC, 'charmm_data_box_0',
-                             structure_box_1='EthaneGOMC', filename_box_1='charmm_data_box_1',
-                             FF_filename='charmm_data',
-                             residues='EthaneGOMC.name', forcefield_selection='oplsaa',
-                             )
-        except:
-            value_0 = "TEST_FAILED"
-
-        assert value_0 == "TEST_FAILED"
 
     def test_Mie_non_bonded_type(self, EthaneGOMC):
-        try:
-            value_0 = Charmm(EthaneGOMC, 'charmm_data_box_0',
-                             structure_box_1=EthaneGOMC, filename_box_1='charmm_data_box_1',
-                             FF_filename='charmm_data',
-                             residues=[EthaneGOMC.name], forcefield_selection='oplsaa',
-                             non_bonded_type = 'Mie'
-                             )
+        with pytest.raises(ValueError, match=r'ERROR: Currenly the Mie potential \(non_bonded_type\) is not '
+                                             r'supported in this MoSDeF GOMC parameter writer'):
+            charmm = Charmm(EthaneGOMC, 'charmm_data_box_0',
+                            structure_box_1=EthaneGOMC, filename_box_1='charmm_data_box_1',
+                            FF_filename='charmm_data',
+                            residues=[EthaneGOMC.name], forcefield_selection='oplsaa',
+                            non_bonded_type = 'Mie'
+                            )
             charmm.write_inp()
-        except:
-            value_0 = "TEST_FAILED"
 
-        assert value_0 == "TEST_FAILED"
 
     def test_other_non_bonded_type(self, EthaneGOMC):
-        try:
-            value_0 = Charmm(EthaneGOMC, 'charmm_data_box_0',
+        with pytest.raises(ValueError, match=r'ERROR: Currenly this potential \(non_bonded_type\) is not '
+                                             r'supported in this MoSDeF GOMC parameter writer.'):
+            charmm = Charmm(EthaneGOMC, 'charmm_data_box_0',
                              structure_box_1=EthaneGOMC, filename_box_1='charmm_data_box_1',
                              FF_filename='charmm_data',
                              residues=[EthaneGOMC.name], forcefield_selection='oplsaa',
-                             non_bonded_type = 'OTH'
+                             non_bonded_type = 'XXX'
                              )
             charmm.write_inp()
-        except:
-            value_0 = "TEST_FAILED"
-
-        assert value_0 == "TEST_FAILED"
 
 
     def test_diff_1_4_coul_scalars(self, EthaneGOMC, TwoPropanolUA):
-        try:
-            value_0 = Charmm(EthaneGOMC, 'charmm_data_box_0',
-                             structure_box_1=TwoPropanolUA, filename_box_1='charmm_data_box_1',
-                             FF_filename='charmm_data',
-                             residues=[EthaneGOMC.name, TwoPropanolUA.name],
-                             forcefield_selection = {EthaneGOMC.name : 'oplsaa', TwoPropanolUA.name : 'trappe-ua'},
-                             )
-        except:
-            value_0 = "TEST_FAILED"
+        with pytest.raises(ValueError, "ERROR: There are multiple 1,4-coulombic scaling factors GOMC will "
+                                       "only accept a singular input for the 1,4-coulombic scaling factors"):
+            Charmm(EthaneGOMC, 'charmm_data_box_0',
+                   structure_box_1=TwoPropanolUA, filename_box_1='charmm_data_box_1',
+                   FF_filename='charmm_data',
+                   residues=[EthaneGOMC.name, TwoPropanolUA.name],
+                   forcefield_selection = {EthaneGOMC.name : 'oplsaa', TwoPropanolUA.name : 'trappe-ua'},
+                   )
 
-        assert value_0 == "TEST_FAILED"
+    def test_write_inp_wo_FF_filename(self, EthaneGOMC):
+        with pytest.raises(TypeError, match=r'ERROR: The force field file name was not specified and in the '
+                                            r'Charmm object. '
+                                            r'Therefore, the force field file \(.inp\) can not be written. '
+                                            r'Please use the force field file name when building the Charmm object, '
+                                            r'then use the write_inp function.'):
+            charmm = Charmm(EthaneGOMC, 'charmm_data_box_0',
+                            structure_box_1=EthaneGOMC, filename_box_1='charmm_data_box_1',
+                            FF_filename=None,
+                            forcefield_selection='oplsaa',
+                            residues=[EthaneGOMC.name],
+                            )
+            charmm.write_inp()
 
-    def test_write_inp_wo_FFfilename(self, EthaneGOMC):
-        try:
-            value_0 = Charmm(EthaneGOMC, 'charmm_data_box_0',
-                             structure_box_1=EthaneGOMC, filename_box_1='charmm_data_box_1',
-                             FF_filename=None,
-                             residues=[EthaneGOMC.name],
-                             forcefield_selection = 'oplsaa',
-                             )
-            value_0.write_inp()
-
-        except:
-            value_0 = "TEST_FAILED"
-
-        assert value_0 == "TEST_FAILED"
 
     def test_write_inp_with_2_boxes(self, EthaneGOMC):
         try:
-            value_0 = Charmm(EthaneGOMC, 'charmm_data_box_0',
+            charmm  = Charmm(EthaneGOMC, 'charmm_data_box_0',
                              structure_box_1=EthaneGOMC, filename_box_1='charmm_data_box_1',
                              FF_filename='charmm_data',
                              residues=[EthaneGOMC.name],
                              forcefield_selection='oplsaa',
                              )
-            value_0.write_inp()
+            charmm.write_inp()
+            Test_value = "TEST_PASSED"
 
         except:
-            value_0 = "TEST_FAILED"
+            Test_value  = "TEST_FAILED"
 
-        assert value_0 == "TEST_FAILED"
-
-    def test_extra_residue_specified(self, EthaneGOMC):
-        try:
-            value_0 = Charmm(EthaneGOMC, 'charmm_data_box_0',
-                             structure_box_1=EthaneGOMC, filename_box_1='charmm_data_box_1',
-                             FF_filename='charmm_data',
-                             residues=[EthaneGOMC.name, 'XXX'],
-                             forcefield_selection='oplsaa',
-                             )
-
-        except:
-            value_0 = "TEST_FAILED"
-
-        assert value_0 == "TEST_FAILED"
-
+        assert Test_value == "TEST_PASSED"

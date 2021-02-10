@@ -1,7 +1,7 @@
 import os
 import datetime
 import numpy as np
-import mbuild as mb
+
 from collections import OrderedDict
 from warnings import warn
 from parmed.utils.io import genopen
@@ -516,20 +516,27 @@ class Charmm:
         if not isinstance(self.structure_box_0, Compound):
             self.input_error = True
             print_error_message ='ERROR: The structure_box_0 expected to be of type: ' \
-                                 '{}, received: {}'.format(type(mb.Compound), type(structure_box_1))
+                                 '{}, received: {}'.format(type(Compound()), type(structure_box_0))
             raise TypeError(print_error_message)
 
-        if  self.structure_box_1 and not isinstance(self.structure_box_1, Compound):
+        if  self.structure_box_1 != None and not isinstance(self.structure_box_1, Compound):
             self.input_error = True
             print_error_message = 'ERROR: The structure_box_1 expected to be of type: ' \
-                                  '{}, received: {}'.format(type(mb.Compound), type(structure_box_1))
+                                  '{}, received: {}'.format(type(Compound()), type(structure_box_1))
             raise TypeError(print_error_message)
 
 
         if not isinstance(self.residues, list):
             self.input_error = True
-            print_error_message = 'ERROR:  Please enter the residues list (residues) in a list format.'
+            print_error_message = 'ERROR: Please enter the residues list (residues) in a list format.'
             raise TypeError(print_error_message)
+
+        if isinstance(self.residues, list):
+            for each_residue in self.residues:
+                if not isinstance(each_residue, str):
+                    self.input_error = True
+                    print_error_message = 'ERROR: Please enter a residues list (residues) with only string values.'
+                    raise TypeError(print_error_message)
 
         if self.residues is None:
             self.input_error = True
@@ -537,7 +544,7 @@ class Charmm:
             raise TypeError(print_error_message)
         if not isinstance(self.filename_box_0, str):
             self.input_error = True
-            print_error_message = 'ERROR: Please enter the filename_box_0 as a string'
+            print_error_message = 'ERROR: Please enter the filename_box_0 as a string.'
             raise TypeError(print_error_message)
 
         unique_residue_test_name_list = []
@@ -546,12 +553,12 @@ class Charmm:
                 unique_residue_test_name_list.append(self.residues[res_m])
         if len(unique_residue_test_name_list) != len(self.residues):
             self.input_error = True
-            print_error_message = 'ERROR: Please enter the residues list (residues) that has only unique residue names'
+            print_error_message = 'ERROR: Please enter the residues list (residues) that has only unique residue names.'
             raise ValueError(print_error_message)
 
         if self.filename_box_1 != None and not isinstance(self.filename_box_1, str):
             self.input_error = True
-            print_error_message = 'ERROR: Please enter the filename_box_1 as a string'
+            print_error_message = 'ERROR: Please enter the filename_box_1 as a string.'
             raise TypeError(print_error_message)
 
         if self.structure_box_1 is None and self.box_1 != None:
@@ -563,8 +570,8 @@ class Charmm:
         if self.FF_filename != None:
             if not isinstance(self.FF_filename, str):
                 self.input_error = True
-                print_error_message = 'ERROR: Please enter GOMC force field name (FF_filename) as a string'
-                raise ValueError(print_error_message)
+                print_error_message = 'ERROR: Please enter GOMC force field name (FF_filename) as a string.'
+                raise TypeError(print_error_message)
             if isinstance(self.FF_filename, str):
                 extension_FF_name = os.path.splitext(self.FF_filename)[-1]
                 if extension_FF_name == '':
@@ -574,7 +581,7 @@ class Charmm:
                 elif extension_FF_name != '.inp':
                     self.input_error = True
                     print_error_message = 'ERROR: Please enter GOMC force field name without an '\
-                                          'extention or the .inp extension'
+                                          'extention or the .inp extension.'
                     raise ValueError(print_error_message)
 
         if self.forcefield_selection != None:
@@ -602,7 +609,7 @@ class Charmm:
 
         elif self.forcefield_selection is None:
             self.input_error = True
-            print_error_message = 'ERROR: Please enter the forcefield_selection as it was not provided'
+            print_error_message = 'ERROR: Please enter the forcefield_selection as it was not provided.'
             raise TypeError(print_error_message)
 
 
@@ -616,16 +623,20 @@ class Charmm:
         if self.fix_res_bonds_angles != None and not isinstance(self.fix_res_bonds_angles, list):
             self.input_error = True
             print_error_message = 'ERROR: Please enter the residues that have fixed angles '\
-                                  'and bonds (fix_res_bonds_angles) in a list format'
+                                  'and bonds (fix_res_bonds_angles) in a list format.'
             raise TypeError(print_error_message)
 
         if isinstance(self.fix_res_bonds_angles, list):
-            for q in range(0,len(self.fix_res_bonds_angles)):
-                if self.fix_res_bonds_angles[q] not in self.residues:
+            for fix_res_bonds_angles_i in self.fix_res_bonds_angles:
+                if fix_res_bonds_angles_i not in self.residues:
                     self.input_error = True
                     print_error_message = 'ERROR: Please ensure that all the residue names in the ' \
                                           'fix_res_bonds_angles list are also in the residues list.'
                     raise ValueError(print_error_message)
+                elif not isinstance(fix_res_bonds_angles_i, str):
+                    self.input_error = True
+                    print_error_message = 'ERROR: Please enter a fix_res_bonds_angle list with only string values.'
+                    raise TypeError(print_error_message)
                 else:
                     print('INFORMATION: The following residues will have fixed bonds'
                           + ' and angles: fix_res_bonds_angles = ' +str(self.fix_res_bonds_angles))
@@ -646,7 +657,7 @@ class Charmm:
 
         if self.fix_residue_in_box != None and not isinstance(self.fix_residue_in_box, list):
             self.input_error = True
-            print_error_message = 'ERROR: Please enter the fix_residue_in_box in a list format'
+            print_error_message = 'ERROR: Please enter the fix_residue_in_box in a list format.'
             raise TypeError(print_error_message)
 
         if isinstance(self.fix_residue_in_box, list):
@@ -661,38 +672,43 @@ class Charmm:
             self.input_error = True
             print_error_message = 'ERROR: Please enter the a bead type to atom in the dictionary '\
                                   '(bead_to_atom_name_dict) so GOMC can properly evaluate the unique atom names'
-            raise ValueError(print_error_message)
+            raise TypeError(print_error_message)
+
+        if isinstance(self.bead_to_atom_name_dict, dict):
+            dict_list = []
+            for key in self.bead_to_atom_name_dict.keys():
+                dict_list.append(key)
+
+            for dict_lis_i in dict_list:
+                if not isinstance(dict_lis_i, str) or not isinstance(self.bead_to_atom_name_dict[dict_lis_i], str):
+                    print_error_message = 'ERROR: Please enter the bead_to_atom_name_dict with only string inputs.'
+                    raise TypeError(print_error_message)
 
         if self.box_0 !=None :
             box_length = len(self.box_0)
             if box_length != 3:
                 self.input_error = True
-                print_error_message = 'ERROR: Please enter all 3 values for the box_0 dimensions.'
+                print_error_message = 'ERROR: Please enter all 3 values and only 3 values for the box_0 dimensions.'
                 raise ValueError(print_error_message)
             for box_iter in range(0, len(self.box_0)):
-                if isinstance(self.box_0[ box_iter], str):
-                    self.input_error = True
-                    print_error_message = 'ERROR: Please enter all positive or 0 values for the box_0 dimensions.'
-                    raise ValueError(print_error_message)
-                if self.box_0[ box_iter] < 0:
-                    self.input_error = True
-                    print_error_message = 'ERROR: Please enter all positive or 0 values for the box_0 dimensions.'
-                    raise ValueError(print_error_message)
+                for box_iter in range(0, len(self.box_0)):
+                    if isinstance(self.box_0[box_iter], str) or self.box_0[box_iter] <= 0:
+                        self.input_error = True
+                        print_error_message = 'ERROR: Please enter float or integer values, which are all ' \
+                                              'positive values for the box_0 dimensions.'
+                        raise ValueError(print_error_message)
 
         if self.box_1 !=None :
             box_length = len(self.box_1)
             if box_length != 3:
                 self.input_error = True
-                print_error_message = 'ERROR: Please enter all 3 values for the box_1 dimensions.'
+                print_error_message = 'ERROR: Please enter all 3 values and only 3 values for the box_1 dimensions.'
                 raise ValueError(print_error_message)
             for box_iter in range(0, len(self.box_1)):
-                if isinstance(self.box_1[ box_iter], str):
+                if isinstance(self.box_1[ box_iter], str) or self.box_1[ box_iter] <= 0:
                     self.input_error = True
-                    print_error_message = 'ERROR: Please enter all positive or 0 values for the box_1 dimensions.'
-                    raise ValueError(print_error_message)
-                if self.box_1[ box_iter] < 0:
-                    self.input_error = True
-                    print_error_message = 'ERROR: Please enter all positive or 0 values for the box_1 dimensions.'
+                    print_error_message = 'ERROR: Please enter float or integer values, which are all ' \
+                                          'positive values for the box_1 dimensions.'
                     raise ValueError(print_error_message)
 
 
@@ -732,7 +748,7 @@ class Charmm:
             for iter_test_Specifc_res_fail in range(0, len(test_Specific_FF_to_residue_for_failure)):
                 if test_Specific_FF_to_residue_for_failure[iter_test_Specifc_res_fail] is None:
                     self.input_error = True
-                    print_error_message = 'The residues entered does not match the residues that were ' \
+                    print_error_message = 'ERROR: The residues entered does not match the residues that were ' \
                                           'found and built for structure_box_0.'
                     raise ValueError(print_error_message)
 
@@ -752,7 +768,7 @@ class Charmm:
             for iter_test_Specifc_res_fail in range(0, len(test_Specific_FF_to_residue_for_failure)):
                 if test_Specific_FF_to_residue_for_failure[iter_test_Specifc_res_fail] is None:
                     self.input_error = True
-                    print_error_message = 'The residues entered does not match the residues that were ' \
+                    print_error_message = 'ERROR: The residues entered does not match the residues that were ' \
                                           'found and built for structure_box_1.'
                     raise ValueError(print_error_message)
 
@@ -774,24 +790,19 @@ class Charmm:
                                           "string or dictionary.  There may be residues below other specified " \
                                           "residues in the mbuild.Compound hierarchy.  If so, the residues " \
                                           "acquire the residue's force fields, which is at the top of the " \
-                                          "hierarchy.  Alternatively, residues that are not in the structure" \
-                                          " may have been specified."
+                                          "hierarchy.  Alternatively, residues that are not in the structure " \
+                                          "may have been specified."
                     raise ValueError(print_error_message)
 
             for res_iter_0_1 in self.residues:
                 if res_iter_0_1 not in self.residues_applied_list_0_and_1:
-                    warn("ERROR: All the residues were not used from the forcefield_selection " 
-                                     "string or dictionary.  There may be residues below other specified residues " 
-                                     "in the mbuild.Compound hierarchy.  If so, the residues acquire the residue's " 
-                                     "force fields, which is at the top of the hierarchy.  Alternatively, " 
-                                     "residues that are not in the structure may have been specified.")
                     self.input_error = True
-                    print_error_message = "ERROR: All the residues were not used from the forcefield_selection " \
-                                          "string or dictionary.  There may be residues below other specified " \
-                                          "residues in the mbuild.Compound hierarchy.  If so, the residues " \
-                                          "acquire the residue's force fields, which is at the top of the " \
-                                          "hierarchy.  Alternatively, residues that are not in the structure " \
-                                          "may have been specified."
+                    print_error_message = ("ERROR: All the residues were not used from the forcefield_selection " \
+                                           "string or dictionary.  There may be residues below other specified " \
+                                           "residues in the mbuild.Compound hierarchy.  If so, the residues " \
+                                           "acquire the residue's force fields, which is at the top of the " \
+                                           "hierarchy.  Alternatively, residues that are not in the structure " \
+                                           "may have been specified.")
                     raise ValueError(print_error_message)
 
             total_charge = sum([atom.charge for atom in self.structure_box_0_FF])
@@ -827,7 +838,7 @@ class Charmm:
             for iter_test_Specifc_res_fail in range(0, len(test_Specific_FF_to_residue_for_failure)):
                 if test_Specific_FF_to_residue_for_failure[iter_test_Specifc_res_fail] is None:
                     self.input_error = True
-                    print_error_message = 'The residues entered does not match the residues that were ' \
+                    print_error_message = 'ERROR: The residues entered does not match the residues that were ' \
                                           'found and built for structure_box_0.'
                     raise ValueError(print_error_message)
 
@@ -837,23 +848,23 @@ class Charmm:
             for res_iter_0 in self.residues_applied_list_0:
                 if res_iter_0 not in self.residues:
                     self.input_error = True
-                    print_error_message = "ERROR: All the residues were not used from the forcefield_selection "\
-                                          "string or dictionary.  There may be residues below other specified " \
-                                          "residues in the mbuild.Compound hierarchy.  If so, the residues " \
-                                          "acquire the residue's force fields, which is at the top of the " \
-                                          "hierarchy.  Alternatively, residues that are not in the structure " \
-                                          "may have been specified."
+                    print_error_message = "ERROR: All the residues were not used from the forcefield_selection " \
+                                           "string or dictionary.  There may be residues below other specified " \
+                                           "residues in the mbuild.Compound hierarchy.  If so, the residues " \
+                                           "acquire the residue's force fields, which is at the top of the " \
+                                           "hierarchy.  Alternatively, residues that are not in the structure " \
+                                           "may have been specified."
                     raise ValueError(print_error_message)
 
             for res_iter_0 in self.residues:
                 if res_iter_0 not in self.residues_applied_list_0:
                     self.input_error = True
                     print_error_message = "ERROR: All the residues were not used from the forcefield_selection " \
-                                          "string or dictionary.  There may be residues below other specified " \
-                                          "residues in the mbuild.Compound hierarchy.  If so, the residues " \
-                                          "acquire the residue's force fields, which is at the top of the " \
-                                          "hierarchy.  Alternatively, residues that are not in the structure " \
-                                          "may have been specified."
+                                           "string or dictionary.  There may be residues below other specified " \
+                                           "residues in the mbuild.Compound hierarchy.  If so, the residues " \
+                                           "acquire the residue's force fields, which is at the top of the " \
+                                           "hierarchy.  Alternatively, residues that are not in the structure " \
+                                           "may have been specified."
                     raise ValueError(print_error_message)
 
             total_charge = sum([atom.charge for atom in self.structure_box_0_FF])
@@ -963,12 +974,12 @@ class Charmm:
 
         if self.FF_filename is None:
             self.input_error = True
-            print_error_message = "ERROR: The force field file name was not specified and in the " \
-                                  "Charmm object ({}})."\
-                                  "Therefore, the force field file (.inp) can not be written."\
-                                  "Please use the force field file name when building the Charmm object ({}}), "\
-                                  "then use the write_inp function. ".format(type(Charmm), type(Charmm))
-            raise ValueError(print_error_message)
+            print_error_message = 'ERROR: The force field file name was not specified and in the ' \
+                                  'Charmm object. ' \
+                                  'Therefore, the force field file (.inp) can not be written. ' \
+                                  'Please use the force field file name when building the Charmm object, ' \
+                                  'then use the write_inp function.'
+            raise TypeError(print_error_message)
         else:
 
             print("******************************")
@@ -1462,16 +1473,16 @@ class Charmm:
 
 
                 elif  self.non_bonded_type=='Mie':
-                    data.write("ERROR: Currenly the Mie potential is not supported in this MoSDeF "
+                    data.write("ERROR: Currenly the Mie potential (non_bonded_type) is not supported in this MoSDeF "
                                "GOMC parameter writer\n")
-                    print_error_message = "ERROR: Currenly the Mie potential is not supported in this MoSDeF "\
-                                          "GOMC parameter writer\n"
+                    print_error_message = "ERROR: Currenly the Mie potential (non_bonded_type) is not " \
+                                          "supported in this MoSDeF GOMC parameter writer."
                     raise ValueError(print_error_message)
                 else:
-                    data.write("ERROR: Currenly this potential is not supported in "
+                    data.write("ERROR: Currenly this potential (non_bonded_type) is not supported in "
                                "this MoSDeF GOMC parameter writer\n")
-                    print_error_message = "ERROR: Currenly this potential is not supported in " \
-                                          "this MoSDeF GOMC parameter writer\n"
+                    print_error_message = "ERROR: Currenly this potential (non_bonded_type) is not supported in " \
+                                          "this MoSDeF GOMC parameter writer."
                     raise ValueError(print_error_message)
 
                 # writing end in file
@@ -1640,7 +1651,7 @@ class Charmm:
             output_write.write(' REMARKS created on ' + str(date_time) + '\n\n\n')
 
             # This converts the atom name in the GOMC psf and pdb files to unique atom names
-            print('self.bead_to_atom_name_dict = {}'.format(self.bead_to_atom_name_dict))
+            print('bead_to_atom_name_dict = {}'.format(self.bead_to_atom_name_dict))
             unique_Individual_atom_names_dict, \
             Individual_atom_names_List, \
             Missing_Bead_to_atom_name =unique_atom_naming(stuct_only_iteration , residue_ID_list, residue_names_list,
@@ -1974,7 +1985,9 @@ class Charmm:
             if None in [unique_Individual_atom_names_dict, Individual_atom_names_List, Missing_Bead_to_atom_name]:
                 self.input_error = True
                 print_error_message = 'ERROR: The unique_atom_naming function failed while '\
-                                      'running the  charmm_writer function.'
+                                      'running the charmm_writer function. Ensure the proper inputs are ' \
+                                      'in the bead_to_atom_name_dict.'
+
                 raise ValueError(print_error_message)
 
 
