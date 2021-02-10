@@ -1,4 +1,6 @@
 import pytest
+import numpy as np
+
 import mbuild as mb
 import numpy as np
 
@@ -7,8 +9,8 @@ from mbuild.formats import charmm_writer
 from mbuild.formats.charmm_writer import Charmm
 from mbuild.utils.io import has_foyer
 from mbuild.utils.conversion import base10_to_base16_alph_num
-from mbuild.utils.conversion import base10_to_base26_alph_num
-from mbuild.utils.conversion import base10_to_base52_alph_num
+from mbuild.utils.conversion import base10_to_base26_alph
+from mbuild.utils.conversion import base10_to_base52_alph
 from mbuild.utils.conversion import base10_to_base62_alph_num
 from mbuild.utils.specific_ff_to_residue  import specific_ff_to_residue
 from foyer.forcefields import forcefields
