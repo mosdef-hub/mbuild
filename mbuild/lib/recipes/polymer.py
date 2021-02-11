@@ -87,6 +87,16 @@ class Polymer(Compound):
             self.end_groups.extend([H(), H()])
         for compound in self.end_groups:
             self.add(compound)
+        
+        # Update head_port and tail_port orientation and separation before using force_overlap
+        # Goal is for the orientation and separation in head and tail ports to match
+        # what was given in the ports created in the self.end_groups compounds
+
+        head_port.orientation = -self.end_groups[0].labels['up'].orientation
+        head_port.separation = self.end_groups[0].labels['up'].separation
+
+        tail_port.orientation = -self.end_groups[1].labels['up'].orientation
+        tail_port.separation = self.end_groups[1].labels['up'].separation
 
         force_overlap(self.end_groups[0],
                      self.end_groups[0].labels['up'],

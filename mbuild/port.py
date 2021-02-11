@@ -39,11 +39,12 @@ class Port(Compound):
     def __init__(self, anchor=None, orientation=None, separation=0):
         super(Port, self).__init__(name='Port', port_particle=True)
         self.anchor = anchor
-
+        self.separation = separtaion
         default_direction = np.array([0, 1, 0])
         if orientation is None:
             orientation = [0, 1, 0]
         orientation = np.asarray(orientation)
+        self.orientation = orientation
 
         up = Compound(name='subport', port_particle=True)
         up.add(Particle(name='G', pos=[0.005, 0.0025, -0.0025],
