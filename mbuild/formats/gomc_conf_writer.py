@@ -6,13 +6,13 @@ from warnings import warn
 
 def dict_keys_to_list(dict):
     """
-    Outputs
-    ---------
-    list : list of keys from the provided dictionary.
-
     Parameters
     ----------
     dict : dict, a provided dictionary
+
+    Outputs
+    ---------
+    list : list of keys from the provided dictionary.
     """
 
     list = []
@@ -24,17 +24,17 @@ def dict_keys_to_list(dict):
 
 def print_valid_required_input_variables(description=False):
     """
-    Outputs
-    ---------
-    Prints out the valid input variables (user optional) on the screen
-        , which can be entered in the GOMC writer. These are the valid input
-        variables for all ensembles.
-
     Parameters
     ----------
     description =  bool, default = False
         If True, it prints the descriptions of the input_variables (i.e. dict),
         If False, it only prints the input_variables without the descriptions (i.e. list)
+
+    Outputs
+    ---------
+    Prints out the valid input variables (user optional) on the screen
+        , which can be entered in the GOMC writer. These are the valid input
+        variables for all ensembles.
     """
 
     valid_args = _get_all_possible_input_variables(description=description)
@@ -46,17 +46,17 @@ def _get_required_data(description=False):
     """
     Provides a list of the required inputs for all possible ensembles.
 
-    Outputs
-    ---------
-    required_data = dict or list, default = list.
-        If the description = True then a dict is provided with the key and value.
-        if the description = False then a list of the dict keys is provided.
-
     Parameters
     ----------
     description =  bool, default = False.
         If True, it prints the descriptions of the input_variables (i.e. dict),
         If False, it only prints the input_variables without the descriptions (i.e. list)
+
+    Outputs
+    ---------
+    required_data = dict or list, default = list.
+        If the description = True then a dict is provided with the key and value.
+        if the description = False then a list of the dict keys is provided.
     """
 
 
@@ -84,17 +84,17 @@ def _get_all_possible_input_variables(description=False):
     """
     Provides a list of the variables inputs (user optional) for all possible ensembles.
 
-    Outputs
-    ---------
-    valid_input_variables = dict or list, default = list.
-        If the description = True then a dict is provided with the key and value.
-        if the description = False then a list of the dict keys is provided.
-
     Parameters
     ----------
     description =  bool, default = False.
         If True, it prints the descriptions of the input_variables (i.e. dict),
         If False, it only prints the input_variables without the descriptions (i.e. list)
+
+    Outputs
+    ---------
+    valid_input_variables = dict or list, default = list.
+        If the description = True then a dict is provided with the key and value.
+        if the description = False then a list of the dict keys is provided.
     """
 
     valid_input_variables = {
@@ -689,16 +689,16 @@ def _get_all_possible_input_variables(description=False):
 
 def _get_default_variables_dict():
     """
-        Provides a dict of the default variables inputs (user optional)
+    Provides a dict of the default variables inputs (user optional)
 
-        Outputs
-        ---------
-        default_input_variables_dict =  Provides a dict of the default variables inputs (user optional)
+    Parameters
+    ----------
+    None
 
-        Parameters
-        ----------
-        None
-        """
+    Outputs
+    ---------
+    default_input_variables_dict =  Provides a dict of the default variables inputs (user optional)
+    """
 
     default_input_variables_dict = {
         "Restart": False ,
@@ -806,16 +806,16 @@ def check_valid_ensemble_files(ensemble_type, testing_ensemble_files_List):
     Checks if all the required ensemble inputs are provided,
         and provides a list of the bad variables in the printed output.
 
-    Outputs
-    ---------
-    bool, returns a bool (True or False) depending on if all variables
-        are valid or not
-
     Parameters
     ----------
     ensemble_type = str; valid options are 'NVT', 'NPT', 'GEMC_NVT', 'GEMC_NPT', 'GCMC'
     testing_ensemble_files_List =  list, a list containing the required ensemble
         files variables, which will be tested for to see if they are valid.
+
+    Outputs
+    ---------
+    bool, returns a bool (True or False) depending on if all variables
+        are valid or not
     """
 
     bad_key_inputs_List = []
@@ -845,9 +845,6 @@ def check_valid_ensemble_files(ensemble_type, testing_ensemble_files_List):
 
 def print_required_ensemble_files(ensemble_type, description=False):
     """
-
-    Outputs
-    ---------
     Prints the required ensemble arguments with an optional description based on the ensemble type
 
     Parameters
@@ -856,6 +853,11 @@ def print_required_ensemble_files(ensemble_type, description=False):
     description =  bool, default = False.
         If True, it prints the descriptions of the required ensemble inputs (i.e. dict),
         If False, it only prints the required ensemble inputs without the descriptions (i.e. list)
+
+    Outputs
+    ---------
+    Prints the required ensemble arguments with an optional description based on the ensemble type
+
     """
 
 
@@ -919,9 +921,6 @@ def check_valid_ensemble_input_variables(ensemble_type, testing_input_variables_
 
 def print_valid_ensemble_input_variables(ensemble_type, description=False):
     """
-
-    Outputs
-    ---------
     Prints the arguments for optional variables brief description based on the ensemble type
 
     Parameters
@@ -931,6 +930,10 @@ def print_valid_ensemble_input_variables(ensemble_type, description=False):
         If True, it prints the descriptions of the optional variable ensemble inputs (i.e. dict),
         If False, it only prints the  optional variable ensemble inputs without the
         descriptions (i.e. list)
+
+    Outputs
+    ---------
+    Prints the arguments for optional variables brief description based on the ensemble type
     """
 
     valid_input_variables_dict = _get_all_possible_input_variables(description=True)
@@ -962,14 +965,14 @@ def _get_possible_ensemble_input_variables(ensemble_type):
     """
     Provides list of the possible optional input variables based on the ensemble type
 
+    Parameters
+    ----------
+    ensemble_type = str; valid options are 'NVT', 'NPT', 'GEMC_NVT', 'GEMC_NPT', 'GCMC'
+
     Outputs
     ---------
     valid_input_variables_List = list; a list possible optional input variables
         for the provided ensemble type.
-
-    Parameters
-    ----------
-    ensemble_type = str; valid options are 'NVT', 'NPT', 'GEMC_NVT', 'GEMC_NPT', 'GCMC'
 
     """
 
@@ -1091,13 +1094,14 @@ def _get_required_ensemble_files(ensemble_type):
     """
     Provides list of the possible optional input variables based on the ensemble type
 
+    Parameters
+    ----------
+    ensemble_type = str; valid options are 'NVT', 'NPT', 'GEMC_NVT', 'GEMC_NPT', 'GCMC'
+
     Outputs
     ---------
     required_ensemble_files_List = list; a list of the required ensemble input variables
 
-    Parameters
-    ----------
-    ensemble_type = str; valid options are 'NVT', 'NPT', 'GEMC_NVT', 'GEMC_NPT', 'GCMC'
     """
     if ensemble_type in ['NVT', 'NPT']:
 
@@ -2729,16 +2733,16 @@ class GOMCControl():
         """
         Writes the GOMC control file
 
-        Outputs
-        ---------
-        Writes the GOMC control file with the name provided via conf_filename
-
         Parameters
         ----------
         conf_filename; str,
             The path and file name for the control file name, with
             the .conf extension, or no extension.  If no extension is provided, the
             code will add the .conf extension to the provided file name.
+
+        Outputs
+        ---------
+        Writes the GOMC control file with the name provided via conf_filename
 
         Returns
         ---------
@@ -3170,13 +3174,6 @@ class GOMCControl():
         Checks if the input variable is either True for false.
         If not either True or False, the provided list is appended with the bad with the dict_key
 
-        Outputs
-        ---------
-        bad_user_variable_List =  list; A list to append with the bad dict_key user inputs,
-            which is appended upon detecting a bad user input variable.
-            Note: This list is intented to be printed with all the bad input variables
-            so the user can fix them after upon a failed GOMC conf file writing attempt.
-
         Parameters
         ----------
         input_variables_dict; dict; The user input variable dictionary
@@ -3185,6 +3182,12 @@ class GOMCControl():
             Note: This list is intented to be printed with all the bad input variables
             so the user can fix them after upon a failed GOMC conf file writing attempt.
 
+        Outputs
+        ---------
+        bad_user_variable_List =  list; A list to append with the bad dict_key user inputs,
+            which is appended upon detecting a bad user input variable.
+            Note: This list is intented to be printed with all the bad input variables
+            so the user can fix them after upon a failed GOMC conf file writing attempt.
         """
 
         if input_variables_dict[key] != True \
@@ -3199,14 +3202,7 @@ class GOMCControl():
                                                        bad_input_variables_values_List):
         """
         Checks if the input variable is an integer or float is zero or greater ( value >= 0 ).
-        If not, the provided list is appended with the bad with the dict_key
-
-        Outputs
-        ---------
-        bad_user_variable_List =  list; A list to append with the bad dict_key user inputs,
-            which is appended upon detecting a bad user input variable.
-            Note: This list is intented to be printed with all the bad input variables
-            so the user can fix them after upon a failed GOMC conf file writing attempt.
+        If not, the provided list is appended with the bad with the dict_key.
 
         Parameters
         ----------
@@ -3216,6 +3212,12 @@ class GOMCControl():
             Note: This list is intented to be printed with all the bad input variables
             so the user can fix them after upon a failed GOMC conf file writing attempt.
 
+        Outputs
+        ---------
+        bad_user_variable_List =  list; A list to append with the bad dict_key user inputs,
+            which is appended upon detecting a bad user input variable.
+            Note: This list is intented to be printed with all the bad input variables
+            so the user can fix them after upon a failed GOMC conf file writing attempt.
         """
 
         if input_variables_dict[key] != None and isinstance(
@@ -3234,13 +3236,6 @@ class GOMCControl():
         Checks if the input variable is an integer is zero or greater   ( value >= 0 ).
         If not, the provided list is appended with the bad with the dict_key
 
-        Outputs
-        ---------
-        bad_user_variable_List =  list; A list to append with the bad dict_key user inputs,
-            which is appended upon detecting a bad user input variable.
-            Note: This list is intented to be printed with all the bad input variables
-            so the user can fix them after upon a failed GOMC conf file writing attempt.
-
         Parameters
         ----------
         input_variables_dict; dict; The user input variable dictionary
@@ -3249,6 +3244,12 @@ class GOMCControl():
             Note: This list is intented to be printed with all the bad input variables
             so the user can fix them after upon a failed GOMC conf file writing attempt.
 
+        Outputs
+        ---------
+        bad_user_variable_List =  list; A list to append with the bad dict_key user inputs,
+            which is appended upon detecting a bad user input variable.
+            Note: This list is intented to be printed with all the bad input variables
+            so the user can fix them after upon a failed GOMC conf file writing attempt.
         """
 
         if input_variables_dict[key] != None and isinstance(
@@ -3266,13 +3267,6 @@ class GOMCControl():
         Checks if the input variable is a float is zero or greater  ( value >= 0 ).
         If not, the provided list is appended with the bad with the dict_key
 
-        Outputs
-        ---------
-        bad_user_variable_List =  list; A list to append with the bad dict_key user inputs,
-            which is appended upon detecting a bad user input variable.
-            Note: This list is intented to be printed with all the bad input variables
-            so the user can fix them after upon a failed GOMC conf file writing attempt.
-
         Parameters
         ----------
         input_variables_dict; dict; The user input variable dictionary
@@ -3281,6 +3275,12 @@ class GOMCControl():
             Note: This list is intented to be printed with all the bad input variables
             so the user can fix them after upon a failed GOMC conf file writing attempt.
 
+        Outputs
+        ---------
+        bad_user_variable_List =  list; A list to append with the bad dict_key user inputs,
+            which is appended upon detecting a bad user input variable.
+            Note: This list is intented to be printed with all the bad input variables
+            so the user can fix them after upon a failed GOMC conf file writing attempt.
         """
 
         if input_variables_dict[key] != None \
@@ -3298,13 +3298,6 @@ class GOMCControl():
         Checks if the input variable is an integer or float is greater than zero.
         If not, the provided list is appended with the bad with the dict_key
 
-        Outputs
-        ---------
-        bad_user_variable_List =  list; A list to append with the bad dict_key user inputs,
-            which is appended upon detecting a bad user input variable.
-            Note: This list is intented to be printed with all the bad input variables
-            so the user can fix them after upon a failed GOMC conf file writing attempt.
-
         Parameters
         ----------
         input_variables_dict; dict; The user input variable dictionary
@@ -3313,6 +3306,12 @@ class GOMCControl():
             Note: This list is intented to be printed with all the bad input variables
             so the user can fix them after upon a failed GOMC conf file writing attempt.
 
+        Outputs
+        ---------
+        bad_user_variable_List =  list; A list to append with the bad dict_key user inputs,
+            which is appended upon detecting a bad user input variable.
+            Note: This list is intented to be printed with all the bad input variables
+            so the user can fix them after upon a failed GOMC conf file writing attempt.
         """
 
         if input_variables_dict[key] != None and isinstance(
@@ -3331,13 +3330,6 @@ class GOMCControl():
         Checks if the input variable is an integer greater than zero.
         If not, the provided list is appended with the bad with the dict_key
 
-        Outputs
-        ---------
-        bad_user_variable_List =  list; A list to append with the bad dict_key user inputs,
-            which is appended upon detecting a bad user input variable.
-            Note: This list is intented to be printed with all the bad input variables
-            so the user can fix them after upon a failed GOMC conf file writing attempt.
-
         Parameters
         ----------
         input_variables_dict; dict; The user input variable dictionary
@@ -3346,6 +3338,12 @@ class GOMCControl():
             Note: This list is intented to be printed with all the bad input variables
             so the user can fix them after upon a failed GOMC conf file writing attempt.
 
+        Outputs
+        ---------
+        bad_user_variable_List =  list; A list to append with the bad dict_key user inputs,
+            which is appended upon detecting a bad user input variable.
+            Note: This list is intented to be printed with all the bad input variables
+            so the user can fix them after upon a failed GOMC conf file writing attempt.
         """
 
         if input_variables_dict[key] != None and isinstance(
@@ -3363,13 +3361,6 @@ class GOMCControl():
         Checks if the input variable is a float greater than zero.
         If not, the provided list is appended with the bad with the dict_key
 
-        Outputs
-        ---------
-        bad_user_variable_List =  list; A list to append with the bad dict_key user inputs,
-            which is appended upon detecting a bad user input variable.
-            Note: This list is intented to be printed with all the bad input variables
-            so the user can fix them after upon a failed GOMC conf file writing attempt.
-
         Parameters
         ----------
         input_variables_dict; dict; The user input variable dictionary
@@ -3378,6 +3369,12 @@ class GOMCControl():
             Note: This list is intented to be printed with all the bad input variables
             so the user can fix them after upon a failed GOMC conf file writing attempt.
 
+        Outputs
+        ---------
+        bad_user_variable_List =  list; A list to append with the bad dict_key user inputs,
+            which is appended upon detecting a bad user input variable.
+            Note: This list is intented to be printed with all the bad input variables
+            so the user can fix them after upon a failed GOMC conf file writing attempt.
         """
 
         if input_variables_dict[key] != None \
@@ -3396,13 +3393,6 @@ class GOMCControl():
         ( 0 < value < 1).
         If not, the provided list is appended with the bad with the dict_key
 
-        Outputs
-        ---------
-        bad_user_variable_List =  list; A list to append with the bad dict_key user inputs,
-            which is appended upon detecting a bad user input variable.
-            Note: This list is intented to be printed with all the bad input variables
-            so the user can fix them after upon a failed GOMC conf file writing attempt.
-
         Parameters
         ----------
         input_variables_dict; dict; The user input variable dictionary
@@ -3411,6 +3401,12 @@ class GOMCControl():
             Note: This list is intented to be printed with all the bad input variables
             so the user can fix them after upon a failed GOMC conf file writing attempt.
 
+        Outputs
+        ---------
+        bad_user_variable_List =  list; A list to append with the bad dict_key user inputs,
+            which is appended upon detecting a bad user input variable.
+            Note: This list is intented to be printed with all the bad input variables
+            so the user can fix them after upon a failed GOMC conf file writing attempt.
         """
 
         if input_variables_dict[key] != None \
@@ -3430,13 +3426,6 @@ class GOMCControl():
         If not, the provided list is appended with the bad with the dict_key
         If not, the provided list is appended with the bad with the dict_key
 
-        Outputs
-        ---------
-        bad_user_variable_List =  list; A list to append with the bad dict_key user inputs,
-            which is appended upon detecting a bad user input variable.
-            Note: This list is intented to be printed with all the bad input variables
-            so the user can fix them after upon a failed GOMC conf file writing attempt.
-
         Parameters
         ----------
         input_variables_dict; dict; The user input variable dictionary
@@ -3445,6 +3434,12 @@ class GOMCControl():
             Note: This list is intented to be printed with all the bad input variables
             so the user can fix them after upon a failed GOMC conf file writing attempt.
 
+        Outputs
+        ---------
+        bad_user_variable_List =  list; A list to append with the bad dict_key user inputs,
+            which is appended upon detecting a bad user input variable.
+            Note: This list is intented to be printed with all the bad input variables
+            so the user can fix them after upon a failed GOMC conf file writing attempt.
         """
 
         if input_variables_dict[key] != None \
@@ -3464,13 +3459,6 @@ class GOMCControl():
         Checks if the input variable is a float from 0 to 1 ( 0 =< value <= 1).
         If not, the provided list is appended with the bad with the dict_key
 
-        Outputs
-        ---------
-        bad_user_variable_List =  list; A list to append with the bad dict_key user inputs,
-            which is appended upon detecting a bad user input variable.
-            Note: This list is intented to be printed with all the bad input variables
-            so the user can fix them after upon a failed GOMC conf file writing attempt.
-
         Parameters
         ----------
         input_variables_dict; dict; The user input variable dictionary
@@ -3479,6 +3467,12 @@ class GOMCControl():
             Note: This list is intented to be printed with all the bad input variables
             so the user can fix them after upon a failed GOMC conf file writing attempt.
 
+        Outputs
+        ---------
+        bad_user_variable_List =  list; A list to append with the bad dict_key user inputs,
+            which is appended upon detecting a bad user input variable.
+            Note: This list is intented to be printed with all the bad input variables
+            so the user can fix them after upon a failed GOMC conf file writing attempt.
         """
 
         if input_variables_dict[key] != None \
@@ -3497,13 +3491,6 @@ class GOMCControl():
         Checks if the input variable is an integer from 0 to 1 ( 0 =< value <= 1).
         If not, the provided list is appended with the bad with the dict_key
 
-        Outputs
-        ---------
-        bad_user_variable_List =  list; A list to append with the bad dict_key user inputs,
-            which is appended upon detecting a bad user input variable.
-            Note: This list is intented to be printed with all the bad input variables
-            so the user can fix them after upon a failed GOMC conf file writing attempt.
-
         Parameters
         ----------
         input_variables_dict; dict; The user input variable dictionary
@@ -3512,6 +3499,12 @@ class GOMCControl():
             Note: This list is intented to be printed with all the bad input variables
             so the user can fix them after upon a failed GOMC conf file writing attempt.
 
+        Outputs
+        ---------
+        bad_user_variable_List =  list; A list to append with the bad dict_key user inputs,
+            which is appended upon detecting a bad user input variable.
+            Note: This list is intented to be printed with all the bad input variables
+            so the user can fix them after upon a failed GOMC conf file writing attempt.
         """
         if input_variables_dict[key] != None \
                 and isinstance(input_variables_dict[key], int) != True \
@@ -3530,13 +3523,6 @@ class GOMCControl():
         ([bool, int >= 0 ]).
         If not, the provided list is appended with the bad with the dict_key
 
-        Outputs
-        ---------
-        bad_user_variable_List =  list; A list to append with the bad dict_key user inputs,
-            which is appended upon detecting a bad user input variable.
-            Note: This list is intented to be printed with all the bad input variables
-            so the user can fix them after upon a failed GOMC conf file writing attempt.
-
         Parameters
         ----------
         input_variables_dict; dict; The user input variable dictionary
@@ -3545,6 +3531,12 @@ class GOMCControl():
             Note: This list is intented to be printed with all the bad input variables
             so the user can fix them after upon a failed GOMC conf file writing attempt.
 
+        Outputs
+        ---------
+        bad_user_variable_List =  list; A list to append with the bad dict_key user inputs,
+            which is appended upon detecting a bad user input variable.
+            Note: This list is intented to be printed with all the bad input variables
+            so the user can fix them after upon a failed GOMC conf file writing attempt.
         """
         if isinstance(input_variables_dict[key], list) == False:
             bad_input_variables_values_List.append(key)
@@ -3569,13 +3561,6 @@ class GOMCControl():
         ([bool, int > 0 ]).
         If not, the provided list is appended with the bad with the dict_key
 
-        Outputs
-        ---------
-        bad_user_variable_List =  list; A list to append with the bad dict_key user inputs,
-            which is appended upon detecting a bad user input variable.
-            Note: This list is intented to be printed with all the bad input variables
-            so the user can fix them after upon a failed GOMC conf file writing attempt.
-
         Parameters
         ----------
         input_variables_dict; dict; The user input variable dictionary
@@ -3584,6 +3569,12 @@ class GOMCControl():
             Note: This list is intented to be printed with all the bad input variables
             so the user can fix them after upon a failed GOMC conf file writing attempt.
 
+        Outputs
+        ---------
+        bad_user_variable_List =  list; A list to append with the bad dict_key user inputs,
+            which is appended upon detecting a bad user input variable.
+            Note: This list is intented to be printed with all the bad input variables
+            so the user can fix them after upon a failed GOMC conf file writing attempt.
         """
         if isinstance(input_variables_dict[key], list) == False:
             bad_input_variables_values_List.append(key)
@@ -3608,13 +3599,6 @@ class GOMCControl():
         ([bool, int > 0 ]).
         If not, the provided list is appended with the bad with the dict_key
 
-        Outputs
-        ---------
-        bad_user_variable_List =  list; A list to append with the bad dict_key user inputs,
-            which is appended upon detecting a bad user input variable.
-            Note: This list is intented to be printed with all the bad input variables
-            so the user can fix them after upon a failed GOMC conf file writing attempt.
-
         Parameters
         ----------
         input_variables_dict; dict; The user input variable dictionary
@@ -3623,6 +3607,12 @@ class GOMCControl():
             Note: This list is intented to be printed with all the bad input variables
             so the user can fix them after upon a failed GOMC conf file writing attempt.
 
+        Outputs
+        ---------
+        bad_user_variable_List =  list; A list to append with the bad dict_key user inputs,
+            which is appended upon detecting a bad user input variable.
+            Note: This list is intented to be printed with all the bad input variables
+            so the user can fix them after upon a failed GOMC conf file writing attempt.
         """
 
         if isinstance(input_variables_dict[key], list) == False:
@@ -3650,13 +3640,6 @@ class GOMCControl():
         Checks if the input variable is a list with a 2 booleans  ([bool, bool]).
         If not, the provided list is appended with the bad with the dict_key
 
-        Outputs
-        ---------
-        bad_user_variable_List =  list; A list to append with the bad dict_key user inputs,
-            which is appended upon detecting a bad user input variable.
-            Note: This list is intented to be printed with all the bad input variables
-            so the user can fix them after upon a failed GOMC conf file writing attempt.
-
         Parameters
         ----------
         input_variables_dict; dict; The user input variable dictionary
@@ -3665,6 +3648,12 @@ class GOMCControl():
             Note: This list is intented to be printed with all the bad input variables
             so the user can fix them after upon a failed GOMC conf file writing attempt.
 
+        Outputs
+        ---------
+        bad_user_variable_List =  list; A list to append with the bad dict_key user inputs,
+            which is appended upon detecting a bad user input variable.
+            Note: This list is intented to be printed with all the bad input variables
+            so the user can fix them after upon a failed GOMC conf file writing attempt.
         """
 
         if isinstance(input_variables_dict[key], list) == False:
@@ -3690,13 +3679,6 @@ class GOMCControl():
         Note: the list can be of any length with 0.0 <= float <= 1.0
         If not, the provided list is appended with the bad with the dict_key
 
-        Outputs
-        ---------
-        bad_user_variable_List =  list; A list to append with the bad dict_key user inputs,
-            which is appended upon detecting a bad user input variable.
-            Note: This list is intented to be printed with all the bad input variables
-            so the user can fix them after upon a failed GOMC conf file writing attempt.
-
         Parameters
         ----------
         input_variables_dict; dict; The user input variable dictionary
@@ -3705,6 +3687,12 @@ class GOMCControl():
             Note: This list is intented to be printed with all the bad input variables
             so the user can fix them after upon a failed GOMC conf file writing attempt.
 
+        Outputs
+        ---------
+        bad_user_variable_List =  list; A list to append with the bad dict_key user inputs,
+            which is appended upon detecting a bad user input variable.
+            Note: This list is intented to be printed with all the bad input variables
+            so the user can fix them after upon a failed GOMC conf file writing attempt.
         """
 
         if input_variables_dict[key] != None:
@@ -3733,13 +3721,6 @@ class GOMCControl():
         Note: the dictionary can be of any length
         If not, the provided list is appended with the bad with the dict_key
 
-        Outputs
-        ---------
-        bad_user_variable_List =  list; A list to append with the bad dict_key user inputs,
-            which is appended upon detecting a bad user input variable.
-            Note: This list is intented to be printed with all the bad input variables
-            so the user can fix them after upon a failed GOMC conf file writing attempt.
-
         Parameters
         ----------
         input_variables_dict; dict; The user input variable dictionary
@@ -3748,6 +3729,12 @@ class GOMCControl():
             Note: This list is intented to be printed with all the bad input variables
             so the user can fix them after upon a failed GOMC conf file writing attempt.
 
+        Outputs
+        ---------
+        bad_user_variable_List =  list; A list to append with the bad dict_key user inputs,
+            which is appended upon detecting a bad user input variable.
+            Note: This list is intented to be printed with all the bad input variables
+            so the user can fix them after upon a failed GOMC conf file writing attempt.
         """
 
         if input_variables_dict[key] != None \
@@ -3786,13 +3773,6 @@ class GOMCControl():
         Note: the dictionary can be of any length
         If not, the provided list is appended with the bad with the dict_key
 
-        Outputs
-        ---------
-        bad_user_variable_List =  list; A list to append with the bad dict_key user inputs,
-            which is appended upon detecting a bad user input variable.
-            Note: This list is intented to be printed with all the bad input variables
-            so the user can fix them after upon a failed GOMC conf file writing attempt.
-
         Parameters
         ----------
         input_variables_dict; dict; The user input variable dictionary
@@ -3801,6 +3781,12 @@ class GOMCControl():
             Note: This list is intented to be printed with all the bad input variables
             so the user can fix them after upon a failed GOMC conf file writing attempt.
 
+        Outputs
+        ---------
+        bad_user_variable_List =  list; A list to append with the bad dict_key user inputs,
+            which is appended upon detecting a bad user input variable.
+            Note: This list is intented to be printed with all the bad input variables
+            so the user can fix them after upon a failed GOMC conf file writing attempt.
         """
 
         if input_variables_dict[key] != None \
@@ -3837,13 +3823,6 @@ class GOMCControl():
         Checks if the input variable is a string with no spaces.
         If not, the provided list is appended with the bad with the dict_key
 
-        Outputs
-        ---------
-        bad_user_variable_List =  list; A list to append with the bad dict_key user inputs,
-            which is appended upon detecting a bad user input variable.
-            Note: This list is intented to be printed with all the bad input variables
-            so the user can fix them after upon a failed GOMC conf file writing attempt.
-
         Parameters
         ----------
         input_variables_dict; dict; The user input variable dictionary
@@ -3852,6 +3831,12 @@ class GOMCControl():
             Note: This list is intented to be printed with all the bad input variables
             so the user can fix them after upon a failed GOMC conf file writing attempt.
 
+        Outputs
+        ---------
+        bad_user_variable_List =  list; A list to append with the bad dict_key user inputs,
+            which is appended upon detecting a bad user input variable.
+            Note: This list is intented to be printed with all the bad input variables
+            so the user can fix them after upon a failed GOMC conf file writing attempt.
         """
         if isinstance(input_variables_dict[key], str) == True:
             No_spaces_in_OutputName_string = " " in input_variables_dict[key]
