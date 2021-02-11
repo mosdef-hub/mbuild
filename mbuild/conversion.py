@@ -1005,7 +1005,7 @@ def to_parmed(compound,
         structure.bonds.append(bond)
     # pad box with .25nm buffers
     if box is None:
-        box = compound.get_boundingbox(orthogonal=True)
+        box = compound.get_boundingbox()
         compound_max = compound.maxs.tolist()
         compound_min = compound.mins.tolist()
         for dim, val in enumerate(compound.periodicity):

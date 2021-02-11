@@ -300,7 +300,7 @@ class Compound(object):
         Parameters
         ----------
         name : str or ele.Element
-            element abbreviation or element 
+            element abbreviation or element
 
         Yields
         ------
@@ -673,7 +673,7 @@ class Compound(object):
 
         # Check that bounding box is within box after adding compound
         if self.box:
-            if (self.box.lengths < self.get_boundingbox(orthogonal=True).lengths).any():
+            if (self.box.lengths < self.get_boundingbox().lengths).any():
                 warn(
                     "After adding new Compound, Compound.box.lengths < "
                     "Compound.boundingbox.lengths. There may be particles "
@@ -993,20 +993,18 @@ class Compound(object):
         # TODO: Fix this for non-orthogonal boxes
         # Make sure the box is bigger than the bounding box
         if box is not None:
-            print('we got here, box setter')
-            if np.asarray((box.lengths < self.get_boundingbox(orthogonal=True).lengths)).any():
+            if np.asarray((box.lengths < self.get_boundingbox().lengths)).any():
                 warn(
                     "Compound.box.lengths < Compound.boundingbox.lengths. "
                     "There may be particles outside of the defined "
                     "simulation box."
                 )
-        #print(f"setting for box:{box} ")
         self._box = box
 
     @property
     def element(self):
         return self._element
-    
+
     @element.setter
     def element(self, element):
         if element is None:
@@ -1115,32 +1113,26 @@ class Compound(object):
         if np.all(np.isfinite(self.xyz)):
             return np.mean(self.xyz, axis=0)
 
-    def get_boundingbox(self, orthogonal=True, origin=(0.0, 0.0, 0.0)):
+    def get_boundingbox(self):
         """Compute the bounding box of the compound.
 
-        Return the bounding box of the compound, can be rectangular
-        or triclinic.
-
-        Parameters
-        ----------
-        orthogonal : boolean, optional, default=True
-        Create an orthogonal bounding box or triclinic.
+        Compute and store the rectangular bounding box of the Compound.
 
         Returns
         -------
         mb.Box
-            The bounding box for this Compound
-        
+            The bounding box for this Compound.
+
         NOTE
         ----
-        The triclinic bounding box will also translate the Compound's positions
-        such that the min(x,y,z) is the new origin at (0,0,0) or any provided origin
+        Triclinic bounding boxes are supported, but only for Compounds
+        that are generated from mb.Lattice's and the resulting
+        mb.Lattice.get_populated_box method.
 
         """
-        origin = np.asarray(origin).reshape(3,)
         mins = self.mins
         maxs = self.maxs
-        
+
         # case where only 1 particle exists
         is_one_particle = False
         if self.xyz.shape[0] == 1:
@@ -1153,11 +1145,7 @@ class Compound(object):
         # steps: create mask array comparing first value in each column
         # use np.all with axis=0 to do row columnar comparision
         has_dimension = [True, True, True]
-        print(f'my positions: {self.xyz}')
         if not is_one_particle:
-            print(f'is close: {np.isclose(self.xyz, self.xyz[0,:])}')
-            print(f'truths: {np.all(np.isclose(self.xyz, self.xyz[0,:]), axis=0)}')
-            print(f'truths: {np.any(np.isclose(self.xyz, self.xyz[0,:]), axis=0)}')
             missing_dimensions = np.all(np.isclose(self.xyz, self.xyz[0,:]), axis=0)
             for i,truthy in enumerate(missing_dimensions):
                 has_dimension[i] = (not truthy)
@@ -1167,34 +1155,15 @@ class Compound(object):
             v2 = np.asarray([[0.0, 1.0, 0.0]])
             v3 = np.asarray([[0.0, 0.0, 1.0]])
         else:
-            if orthogonal:
-                v1 = np.asarray((maxs[0] - mins[0], 0.0, 0.0))
-                v2 = np.asarray((0.0, maxs[1] - mins[1], 0.0))
-                v3 = np.asarray((0.0, 0.0, maxs[2] - mins[2]))
-            else:
-                new_origin = mins
-                v1 = np.asarray((maxs[0]-mins[0], 0.0, 0.0))
-                v2 = np.asarray((maxs[0]-mins[0], maxs[1]-mins[1], 0.0))
-                v3 = np.asarray((maxs[0]-mins[0], maxs[1]-mins[1], maxs[2]-mins[2]))
-                self.translate(origin - new_origin)
+            v1 = np.asarray((maxs[0] - mins[0], 0.0, 0.0))
+            v2 = np.asarray((0.0, maxs[1] - mins[1], 0.0))
+            v3 = np.asarray((0.0, 0.0, maxs[2] - mins[2]))
         vecs = [v1, v2, v3]
-        print(f"vecs: {vecs}")
-        print(f'has_dim: {has_dimension}')
-        if not is_one_particle:
-            print(f'missing dims: {missing_dimensions}')
-            for i, truthy in enumerate(has_dimension):
-                if truthy:
-                    continue
-                else:
-                    v_new = [0.0, 0.0, 0.0]
-                    # if the max value in this dimension is 0, add a 1nm buffer
-                    if np.isclose(maxs[i], 0.0):
-                        v_new[i] = 1.0
-                    else:
-                        v_new[i] = maxs[i]
-                    vecs[i] = np.asarray(v_new)
-                print(f"vnew: {v_new}")
-        print(f'vecs_next: {vecs}')
+
+        # handle any missing dimensions (planar molecules)
+        for i, dim in enumerate(has_dimension):
+            if not dim:
+                vecs[i][i] = 1.0
         return Box(box_vectors=np.asarray([vecs]).reshape(3,3))
 
     def min_periodic_distance(self, xyz0, xyz1):
@@ -2246,7 +2215,7 @@ class Compound(object):
             else:
                 descr.append('non-periodic, ')
         else:
-            descr.append('pos=({: .4f},{: .4f},{: .4f}), '.format(*self.pos))
+            descr.append('pos=({}), '.format(np.array2string(self.pos, precision=4)))
 
         descr.append('{:d} bonds, '.format(self.n_bonds))
 

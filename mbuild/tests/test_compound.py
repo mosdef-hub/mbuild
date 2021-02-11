@@ -237,7 +237,7 @@ class TestCompound(BaseTest):
                         assert gmx_rule == gmx_rules[combining_rule]
 
     def test_clone_with_box(self, ethane):
-        ethane.box = ethane.get_boundingbox(orthogonal=True)
+        ethane.box = ethane.get_boundingbox()
         ethane_clone = mb.clone(ethane)
         assert np.all(ethane.xyz == ethane_clone.xyz)
         assert np.all([p.name for p in ethane.particles()] ==
