@@ -92,11 +92,10 @@ class Polymer(Compound):
         # Goal is for the orientation and separation in head and tail ports to match
         # what was given in the ports created in the self.end_groups compounds
 
-        head_port.orientation = -self.end_groups[0].labels['up'].orientation
-        head_port.separation = self.end_groups[0].labels['up'].separation
-
-        tail_port.orientation = -self.end_groups[1].labels['up'].orientation
-        tail_port.separation = self.end_groups[1].labels['up'].separation
+        #head_port.orientation = -self.end_groups[0].labels['up'].orientation
+        #head_port.separation = self.end_groups[0].labels['up'].separation
+        #tail_port.orientation = -self.end_groups[1].labels['up'].orientation
+        #tail_port.separation = self.end_groups[1].labels['up'].separation
 
         force_overlap(self.end_groups[0],
                      self.end_groups[0].labels['up'],
