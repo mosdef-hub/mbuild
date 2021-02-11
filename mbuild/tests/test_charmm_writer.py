@@ -1594,15 +1594,15 @@ class TestCharmmWriterData(BaseTest):
                              )
             charmm.write_inp()
 
-
     def test_diff_1_4_coul_scalars(self, EthaneGOMC, TwoPropanolUA):
-        with pytest.raises(ValueError, "ERROR: There are multiple 1,4-coulombic scaling factors GOMC will "
-                                       "only accept a singular input for the 1,4-coulombic scaling factors"):
+        with pytest.raises(ValueError, match=r"ERROR: There are multiple 1,4-coulombic scaling factors " \
+                                             "GOMC will only accept a singular input for the 1,4-coulombic " \
+                                             "scaling factors."):
             Charmm(EthaneGOMC, 'charmm_data_box_0',
                    structure_box_1=TwoPropanolUA, filename_box_1='charmm_data_box_1',
                    FF_filename='charmm_data',
                    residues=[EthaneGOMC.name, TwoPropanolUA.name],
-                   forcefield_selection = {EthaneGOMC.name : 'oplsaa', TwoPropanolUA.name : 'trappe-ua'},
+                   forcefield_selection={EthaneGOMC.name: 'oplsaa', TwoPropanolUA.name: 'trappe-ua'},
                    )
 
     def test_write_inp_wo_FF_filename(self, EthaneGOMC):

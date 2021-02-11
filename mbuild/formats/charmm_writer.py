@@ -960,7 +960,7 @@ class Charmm:
             self.input_error = True
             print_error_message = "ERROR: There are multiple 1,4-coulombic scaling factors "\
                                   "GOMC will only accept a singular input for the 1,4-coulombic " \
-                                  "scaling factors"
+                                  "scaling factors."
             raise ValueError(print_error_message)
         else:
             self.coul_1_4 = list(self.coul_1_4_set)[0]
