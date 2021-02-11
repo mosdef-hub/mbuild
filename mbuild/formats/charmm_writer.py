@@ -324,7 +324,7 @@ def unique_atom_naming(structure, residue_ID_list, residue_names_list, bead_to_a
                 if bead_to_atom_name_dict != None and (str(atom.name) in bead_to_atom_name_dict) == True:
                     if len(bead_to_atom_name_dict[str(atom.name)]) > 2:
                         text_to_write = ('ERROR: only enter atom names that have 2 or less digits' +
-                                         ' in the Bead to atom naming dictionary (bead_to_atom_name_dict) ')
+                                         ' in the Bead to atom naming dictionary (bead_to_atom_name_dict).')
                         warn(text_to_write)
                         return None, None, None
                     else:
@@ -972,18 +972,13 @@ class Charmm:
         self.all_residue_names_List = []
         if self.structure_box_1:
             list_of_structures = [self.structure_box_0_FF, self.structure_box_1_FF]
-            list_of_file_names = [self.filename_box_0, self.filename_box_1]
             stuct_only = [self.structure_box_0_FF, self.structure_box_1_FF]
         else:
             list_of_structures = [self.structure_box_0_FF]
-            list_of_file_names = [self.filename_box_0]
             stuct_only = [self.structure_box_0_FF]
 
-        for q in range(0, len(list_of_structures)):
-            stuct_iteration = list_of_structures[q]
-            file_name_iteration = list_of_file_names[q]
-            output = str(file_name_iteration)+'.psf'
-            stuct_only_iteration =stuct_only[q]
+        for q_i in range(0, len(list_of_structures)):
+            stuct_only_iteration =stuct_only[q_i]
 
             # caluculate the atom name and unique atom names
             residue_data_list = []
@@ -1022,30 +1017,47 @@ class Charmm:
             # This converts the atom name in the GOMC psf and pdb files to unique atom names
             unique_Individual_atom_names_dict_iter, \
             Individual_atom_names_List_iter, \
-            Missing_Bead_to_atom_name_iter =unique_atom_naming(stuct_only_iteration ,
+            Missing_Bead_to_atom_name_iter = unique_atom_naming(stuct_only_iteration ,
                                                                residue_ID_list,
                                                                residue_names_list,
                                                                bead_to_atom_name_dict=self.bead_to_atom_name_dict)
 
             print('Individual_atom_names_List_iter = {}'.format(Individual_atom_names_List_iter))
-            self.all_Individual_atom_names_List =  self.all_Individual_atom_names_List \
-                                                          + Individual_atom_names_List_iter
-            print('self.all_Individual_atom_names_List = {}'.format(self.all_Individual_atom_names_List))
+            print( 'self.all_Individual_atom_names_List = {}'.format(self.all_Individual_atom_names_List))
+            if q_i == 0:
+                self.all_Individual_atom_names_List = Individual_atom_names_List_iter
+
+                self.all_residue_names_List = residue_names_list
+            else:
+
+                self.all_Individual_atom_names_List =  self.all_Individual_atom_names_List \
+                                                              + Individual_atom_names_List_iter
+
+                self.all_residue_names_List = self.all_residue_names_List \
+                                               + residue_names_list
 
             print('Individual_atom_names_List_iter = {}'.format(Individual_atom_names_List_iter))
-            self.all_residue_names_List = self.all_residue_names_List \
-                                           + residue_names_list
             print('self.all_Individual_atom_names_List = {}'.format(self.all_Individual_atom_names_List))
 
         # put the  self.all_Individual_atom_names_List and self.all_residue_names_List in a list to match
         # the the atom name with a residue and find the unique matches
-        self.all_atom_name_res_pairs_List = []
-        for name_res_i in range(0, len(self.all_Individual_atom_names_List)):
-            all_name_res_pairs_iteration = [self.all_Individual_atom_names_List[name_res_i],
-                                            self.all_residue_names_List[name_res_i]
-                                            ]
-            if all_name_res_pairs_iteration not in self.all_atom_name_res_pairs_List:
-                self.all_atom_name_res_pairs_List.append(all_name_res_pairs_iteration)
+        if None in [unique_Individual_atom_names_dict_iter, Individual_atom_names_List_iter, \
+                    Missing_Bead_to_atom_name_iter]:
+            self.input_error = True
+            print_error_message = 'ERROR: The unique_atom_naming function failed while '\
+                                  'running the charmm_writer function. Ensure the proper inputs are ' \
+                                  'in the bead_to_atom_name_dict.'
+            raise ValueError(print_error_message)
+
+        else:
+            self.all_atom_name_res_pairs_List = []
+            for name_res_i in range(0, len(self.all_Individual_atom_names_List)):
+
+                all_name_res_pairs_iteration = [self.all_Individual_atom_names_List[name_res_i],
+                                                self.all_residue_names_List[name_res_i]
+                                                ]
+                if all_name_res_pairs_iteration not in self.all_atom_name_res_pairs_List:
+                    self.all_atom_name_res_pairs_List.append(all_name_res_pairs_iteration)
 
         print('self.all_atom_name_res_pairs_List = {}'.format(self.all_atom_name_res_pairs_List))
 
@@ -1735,13 +1747,14 @@ class Charmm:
             print('bead_to_atom_name_dict = {}'.format(self.bead_to_atom_name_dict))
             unique_Individual_atom_names_dict, \
             Individual_atom_names_List, \
-            Missing_Bead_to_atom_name =unique_atom_naming(stuct_only_iteration , residue_ID_list, residue_names_list,
+            Missing_Bead_to_atom_name = unique_atom_naming(stuct_only_iteration , residue_ID_list, residue_names_list,
                                                           bead_to_atom_name_dict=self.bead_to_atom_name_dict)
 
             if None in [unique_Individual_atom_names_dict, Individual_atom_names_List, Missing_Bead_to_atom_name]:
                 self.input_error = True
-                print_error_message = 'ERROR : The unique_atom_naming function failed while '\
-                                      'running the  charmm_writer function.'
+                print_error_message = 'ERROR: The unique_atom_naming function failed while '\
+                                      'running the charmm_writer function. Ensure the proper inputs are ' \
+                                      'in the bead_to_atom_name_dict.'
                 raise ValueError(print_error_message)
 
             # ATOMS: Calculate the atom data

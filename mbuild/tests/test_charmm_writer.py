@@ -1252,9 +1252,9 @@ class TestCharmmWriterData(BaseTest):
 
     def test_Bead_AtomName_equal_3(self, TwoPropanolUA):
         # testing def unique_atom_naming in charmm_writer, expecting when failing
-        with pytest.raises(ValueError, match=r'ERROR: The unique_atom_naming function failed while '
-                                             r'running the charmm_writer function. Ensure the proper inputs are '
-                                             r'in the bead_to_atom_name_dict.'):
+        with pytest.raises(ValueError, match=r'ERROR: The unique_atom_naming function failed while '\
+                                             'running the charmm_writer function. Ensure the proper inputs are ' \
+                                             'in the bead_to_atom_name_dict.'):
             box_reservior_0 = mb.fill_box(compound=[TwoPropanolUA],
                                           box=[10, 10, 10], n_compounds=[10])
 

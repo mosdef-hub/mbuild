@@ -253,6 +253,7 @@ def _get_all_possible_input_variables(description=False):
                     + 'default = None (i.e., user must set as there is no working default).' \
                     + 'The chemical potentials in GOMC units of energy, K. ' \
                     + 'There is a 4 character limit for the string/residue name since the PDB/PSF ' \
+                    +  'Note: These strings must match the residue in the psf and psb files or it will fail. ' \
                     + 'files have a 4 character limitation and require and exact match in the conf file. ' \
                     + 'The name of the residues and their corresponding chemical potential must specified ' \
                     + 'for ever residue in the system (i.e., {"residue_name" : chemical_potential}). ' \
@@ -264,6 +265,7 @@ def _get_all_possible_input_variables(description=False):
                     + 'default = None (i.e., user must set as there is no working default). ' \
                     + 'The fugacity in GOMC units of pressure, bar. ' \
                     + 'There is a 4 character limit for the string/residue name since the PDB/PSF' \
+                    + 'Note: These strings must match the residue in the psf and psb files or it will fail. ' \
                     + 'files have a 4 character limitation and require and exact match in the conf file. ' \
                    + 'The name of the residues and their corresponding fugacity must specified ' \
                    + 'for ever residue in the system (i.e., {"residue_name" : fugacity}). ' \
