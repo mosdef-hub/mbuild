@@ -605,7 +605,10 @@ def _get_all_possible_input_variables(description=False):
                       + 'NOTE: CURRENTLY ALL THESE INPUTS NEED TO BE SPECIFIED, REGARDLESS OF THE MEMC TYPE ' \
                       + 'SELECTION. IF THE SmallKindBackBone or LargeKindBackBone IS NOT REQUIRED FOR THE MEMC TYPE, '\
                       + 'None CAN BE USED IN PLACE OF A STRING. ' \
-                      + 'Note: ONLY 4 characters can be used for the strings. ' \
+                      + 'Note: These strings must match the residue in the psf and psb files or it will fail. ' \
+                      + 'It is recommended that the user print the Charmm object psf and pdb files '
+                      + 'and review the residue names that match the atom name before using the in '
+                      + 'the  MEMC_DataInput variable input'
                       + 'Note: see the below data explanations for the ExchangeRatio, ExchangeSmallKind, '\
                       + 'ExchangeLargeKind, LargeKindBackBone, SmallKindBackBone. ' \
                       + "Example 1 (MEMC-1) : [ [1, 'WAT', [None, None], 'wat', [None, None]] , "
@@ -905,17 +908,11 @@ def check_valid_ensemble_input_variables(ensemble_type, testing_input_variables_
             ensemble_has_valid_input_variables_List = False
 
     if ensemble_has_valid_input_variables_List:
-        return True
+        return [True, bad_key_inputs_List]
 
 
     else:
-        warn("ERROR: checking the valid input variables for the " + str(ensemble_type) + " " \
-                   + "ensemble \n "\
-                   + "(check_valid_ensemble_input_variables function), " 
-                     "shows that some of the seleted input_variables are not in main input_variables list "
-                     "(i.e., the input_variables are not valid and can not be selected).\n "
-                     "The bad variable inputs ensemble inputs = " +str(bad_key_inputs_List))
-        return False
+        return [False, bad_key_inputs_List]
 
 
 def print_valid_ensemble_input_variables(ensemble_type, description=False):
@@ -1227,6 +1224,8 @@ class GOMCControl():
 
         self.coul_1_4_scaling = charmm_object.coul_1_4
         self.input_variables_dict = input_variables_dict
+        self.residues_List = charmm_object.residues
+        self.all_atom_names_and_res_pairs_List = charmm_object.all_atom_name_res_pairs_List
 
         self.x_dim_box_0 = charmm_object.box_0.maxs[0] * 10   # times 10 to convert from nm to Angstroms
         self.y_dim_box_0 = charmm_object.box_0.maxs[1] * 10   # times 10 to convert from nm to Angstroms
@@ -1463,7 +1462,6 @@ class GOMCControl():
             raise ValueError(print_error_message)
 
         if self.ensemble_type in ['GEMC_NVT', 'GEMC_NPT', 'GCMC']:
-            print('self.x_dim_box_1 = ' +str(self.x_dim_box_1))
             if (isinstance(self.x_dim_box_1, int) == False \
                 and isinstance(self.x_dim_box_1, float) == False) \
                     or self.x_dim_box_1 <= 0:
@@ -1605,13 +1603,16 @@ class GOMCControl():
 
         # verify all input variables keys are valid
         input_variables_dict_keys_list = dict_keys_to_list(self.input_variables_dict)
-        if check_valid_ensemble_input_variables(self.ensemble_type, input_variables_dict_keys_list) == False:
+        if check_valid_ensemble_input_variables(self.ensemble_type, input_variables_dict_keys_list)[0] == False:
+            returned_ck_bad_inputs_List = check_valid_ensemble_input_variables(self.ensemble_type,
+                                                                               input_variables_dict_keys_list)[1]
             self.all_inputs_pass = False
-            print_error_message = "ERROR: All the correct input variable where not provided for the {} " \
+            print_error_message = "ERROR: All the correct input variables where not provided for the {} " \
                                   "ensemble. Please be sure to check that the keys in the " \
                                   "input variables dictionary (input_variables_dict) is correct, and be aware "\
                                   "that added spaces before or after the variable in any keys " \
-                                  "will also give this warning.".format(self.ensemble_type)
+                                  "will also give this warning. The bad variable inputs " \
+                                  "ensemble inputs = {}".format(self.ensemble_type, returned_ck_bad_inputs_List)
             raise ValueError(print_error_message)
 
         # verify all input variable values are valid, for their keys
@@ -1647,10 +1648,6 @@ class GOMCControl():
 
 
             if input_var_keys_list[var_iter] in key_move_List:
-                self.ck_input_variable_int_or_float_zero_to_1(self.input_variables_dict,
-                                                              input_var_keys_list[var_iter],
-                                                              bad_input_variables_values_List)
-
                 self.DisFreq = 0.00
                 self.RotFreq = 0.00
                 self.IntraSwapFreq = 0.00
@@ -1938,18 +1935,18 @@ class GOMCControl():
             # ChemPot and Fugacity are only for GCMC
             key = "ChemPot"
             if input_var_keys_list[var_iter] == key:
-                self.ck_input_variable_dict_str_int_or_float(self.input_variables_dict,
-                                                                        key,
-                                                                        bad_input_variables_values_List)
+                self.ck_input_variable_GCMC_dict_str_int_or_float(self.input_variables_dict,
+                                                                  key,
+                                                                  bad_input_variables_values_List)
 
                 if input_var_keys_list[var_iter] == key and key in possible_ensemble_variables_List:
                     self.ChemPot = self.input_variables_dict[key]
 
             key = "Fugacity"
             if input_var_keys_list[var_iter] == key:
-                self.ck_input_variable_dict_str_int_or_float_zero_or_greater(self.input_variables_dict,
-                                                                                        key,
-                                                                                        bad_input_variables_values_List)
+                self.ck_input_variable_GCMC_dict_str_int_or_float_zero_or_greater(self.input_variables_dict,
+                                                                                  key,
+                                                                                  bad_input_variables_values_List)
 
                 if input_var_keys_list[var_iter] == key and key in possible_ensemble_variables_List:
                     self.Fugacity = self.input_variables_dict[key]
@@ -2161,17 +2158,18 @@ class GOMCControl():
             key = "FreeEnergyCalc"
             if input_var_keys_list[var_iter] == key:
                 self.ck_input_variable_list_bool_int_greater_zero(self.input_variables_dict,
-                                                                                key,
-                                                                                bad_input_variables_values_List)
+                                                                  key,
+                                                                  bad_input_variables_values_List)
 
                 if input_var_keys_list[var_iter] == key and key in possible_ensemble_variables_List:
                     self.FreeEnergyCalc = self.input_variables_dict[key]
 
             key = "MoleculeType"
             if input_var_keys_list[var_iter] == key:
-                self.ck_input_variable_list_str_int_greater_zero(self.input_variables_dict,
-                                                                            key,
-                                                                            bad_input_variables_values_List)
+                self.ck_input_variable_list_residue_str_int_greater_zero(self.input_variables_dict,
+                                                                         key,
+                                                                         bad_input_variables_values_List)
+
 
                 if input_var_keys_list[var_iter] == key and key in possible_ensemble_variables_List:
                     self.MoleculeType = self.input_variables_dict[key]
@@ -2459,19 +2457,33 @@ class GOMCControl():
                                                 or (isinstance(self.input_variables_dict[key][MEMC_iter][4][0], str) == False \
                                                 and self.input_variables_dict[key][MEMC_iter][4][0] != None) \
                                                 or (isinstance(self.input_variables_dict[key][MEMC_iter][4][1], str) == False \
-                                                and self.input_variables_dict[key][MEMC_iter][4][1] != None) :
-                                            bad_input_variables_values_List.append(key)
+                                                and self.input_variables_dict[key][MEMC_iter][4][1] != None) \
+                                                or [ self.input_variables_dict[key][MEMC_iter][2][0],
+                                                    self.input_variables_dict[key][MEMC_iter][1] ] \
+                                                not in self.all_atom_names_and_res_pairs_List \
+                                                or [self.input_variables_dict[key][MEMC_iter][2][1],
+                                                    self.input_variables_dict[key][MEMC_iter][1]] \
+                                                not in self.all_atom_names_and_res_pairs_List \
+                                                or [self.input_variables_dict[key][MEMC_iter][4][0],
+                                                    self.input_variables_dict[key][MEMC_iter][3]] \
+                                                not in self.all_atom_names_and_res_pairs_List \
+                                                or [self.input_variables_dict[key][MEMC_iter][4][1],
+                                                    self.input_variables_dict[key][MEMC_iter][3]] \
+                                                not in self.all_atom_names_and_res_pairs_List :
+                                                bad_input_variables_values_List.append(key)
                                     else:
                                         bad_input_variables_values_List.append(key)
 
                                     if isinstance(self.input_variables_dict[key][MEMC_iter][0], int) == True:
                                         if self.input_variables_dict[key][MEMC_iter][0] <= 0:
                                             bad_input_variables_values_List.append(key)
-
+                                    """
                                     if isinstance(self.input_variables_dict[key][MEMC_iter][1], str) ==True \
                                             and isinstance(self.input_variables_dict[key][MEMC_iter][3], str) ==True:
                                         if len(self.input_variables_dict[key][MEMC_iter][1]) > 4 \
-                                                or len(self.input_variables_dict[key][MEMC_iter][3]) > 4 :
+                                                or len(self.input_variables_dict[key][MEMC_iter][3]) > 4 \
+                                                or (self.input_variables_dict[key][MEMC_iter][1] \
+                                            or self.input_variables_dict[key][MEMC_iter][3] ) not in self.residues_List:
                                             bad_input_variables_values_List.append(key)
 
                                     if isinstance(self.input_variables_dict[key][MEMC_iter][2][0], str) ==True \
@@ -2483,15 +2495,25 @@ class GOMCControl():
                                                 or len(self.input_variables_dict[key][MEMC_iter][4][0]) > 4 \
                                                 or len(self.input_variables_dict[key][MEMC_iter][4][1]) > 4:
                                             bad_input_variables_values_List.append(key)
-
+                                    """
                                 else:
                                     bad_input_variables_values_List.append(key)
 
                 if input_var_keys_list[var_iter] == key and key in possible_ensemble_variables_List:
                     self.MEMC_DataInput = self.input_variables_dict[key]
 
+        #Error out and print the bad input values
+        if len(bad_input_variables_values_List) > 0:
+            self.all_inputs_pass = False
+            # create unique list
+            bad_input_variables_values_set = set(bad_input_variables_values_List)
+            bad_unique_input_variables_values_List = list(bad_input_variables_values_set)
+            print_error_message = 'ERROR: The following input variables have ' \
+                                  'bad values: {}'.format(bad_unique_input_variables_values_List)
+            raise ValueError(print_error_message)
 
-
+        else:
+            print("INFO: All the input variable passed the intial error checking")
 
 
         # check to make sure the VDW FF (ParaTypeCHARMM) is not true for multiple ones
@@ -2519,17 +2541,6 @@ class GOMCControl():
                                   'to True'.format(self.ParaTypeCHARMM, self.ParaTypeMie, self.ParaTypeMARTINI)
             raise ValueError(print_error_message)
 
-        if len(bad_input_variables_values_List) > 0:
-            self.all_inputs_pass = False
-            print_error_message = 'ERROR: The following input variables have ' \
-                                  'bad values: {}'.format(bad_input_variables_values_List)
-            raise ValueError(print_error_message)
-
-        else:
-            print("INFO: All the input variable passed the intial error checking")
-
-
-
 
 
         # check to see if the moves sum up to 1
@@ -2537,7 +2548,7 @@ class GOMCControl():
             if self.VolFreq != 0:
                 self.all_inputs_pass = False
                 print_error_message = 'ERROR: The input variable VolFreq is non-zero (0). '\
-                                      'VolFreq must be zero (0) for the "NVT", "GEMC_NVT", and "GCMC" ensembles. '
+                                      'VolFreq must be zero (0) for the "NVT", "GEMC_NVT", and "GCMC" ensembles.'
                 raise ValueError(print_error_message)
 
         if ensemble_type in ['NVT', 'NPT']:
@@ -2546,7 +2557,7 @@ class GOMCControl():
                 print_error_message = 'ERROR: All the MC move input variables must be non-zero (0) for the '\
                                       'SwapFreq, MEMC_1Freq, MEMC_2Freq, and MEMC_3Freq. ' \
                                       'The SwapFreq, MEMC_1Freq, MEMC_2Freq, '\
-                                      'and MEMC_3Freq need to be zero (0) for the "NVT" and "NPT" ensembles. '
+                                      'and MEMC_3Freq need to be zero (0) for the "NVT" and "NPT" ensembles.'
                 raise ValueError(print_error_message)
 
         moves_list = [self.DisFreq, self.RotFreq, self.IntraSwapFreq,
@@ -2584,7 +2595,7 @@ class GOMCControl():
                                   'the default moves are not being used, all the move frequencies ' \
                                   'which do not have default values of zero will need to be set manually '\
                                   'so the sum equals (DisFreq, RotFreq, IntraSwapFreq, SwapFreq, '\
-                                  'RegrowthFreq, CrankShaftFreq, and VolFreq). '
+                                  'RegrowthFreq, CrankShaftFreq, and VolFreq).'
             raise ValueError(print_error_message)
 
         # Check that RunSteps >= EqSteps >= AdjSteps
@@ -2626,10 +2637,10 @@ class GOMCControl():
                                                            and self.IntraMEMC_2Freq == 0 \
                                                            and self.IntraMEMC_3Freq == 0):
             self.all_inputs_pass = False
-            print_error_message = 'ERROR:  The MEMC_DataInput variable is not equal to None, ' \
+            print_error_message = 'ERROR: The MEMC_DataInput variable is not equal to None, ' \
                                   'but all the MEMC move ratios are '\
-                                  'zero  (IntraMEMC_1Freq, MEMC_1Freq, IntraMEMC_2Freq, MEMC_2Freq, '\
-                                  'IntraMEMC_3Freq, and MEMC_3Freq ). '
+                                  'zero (IntraMEMC_1Freq, MEMC_1Freq, IntraMEMC_2Freq, MEMC_2Freq, '\
+                                  'IntraMEMC_3Freq, and MEMC_3Freq).'
             raise ValueError(print_error_message)
 
         if self.MEMC_DataInput is None and (    self.MEMC_1Freq != 0 \
@@ -2639,10 +2650,10 @@ class GOMCControl():
                                                            or self.IntraMEMC_2Freq != 0 \
                                                            or self.IntraMEMC_3Freq != 0):
             self.all_inputs_pass = False
-            print_error_message = 'ERROR:  The MEMC_DataInput variable is equal to None, ' \
+            print_error_message = 'ERROR: The MEMC_DataInput variable is equal to None, ' \
                                   'but at least one of the MEMC move ratios are '\
-                                  'all non-zero  (IntraMEMC_1Freq, MEMC_1Freq, IntraMEMC_2Freq, MEMC_2Freq, '\
-                                  'IntraMEMC_3Freq, and MEMC_3Freq ). '
+                                  'all non-zero (IntraMEMC_1Freq, MEMC_1Freq, IntraMEMC_2Freq, MEMC_2Freq, '\
+                                  'IntraMEMC_3Freq, and MEMC_3Freq).'
             raise ValueError(print_error_message)
 
         # ensure the LargeKindBackBone and SmallKindBackBones are provided as appropriate for MEMC-1, MEMC-2, MEMC-3
@@ -3586,10 +3597,10 @@ class GOMCControl():
                     or str(input_variables_dict[key][1]) == str(False):
                 bad_input_variables_values_List.append(key)
 
-    def ck_input_variable_list_str_int_greater_zero(self,
-                                                    input_variables_dict,
-                                                    key,
-                                                    bad_input_variables_values_List):
+    def ck_input_variable_list_residue_str_int_greater_zero(self,
+                                                            input_variables_dict,
+                                                            key,
+                                                            bad_input_variables_values_List):
         """
         Checks if the input variable is a list with a bool and integer greater than zero
         ([bool, int > 0 ]).
@@ -3621,7 +3632,8 @@ class GOMCControl():
                             or isinstance(input_variables_dict[key][1], int) == False:
                         bad_input_variables_values_List.append(key)
                     elif isinstance(input_variables_dict[key][0], str) == True:
-                        if len(input_variables_dict[key][0]) > 4:
+                        if len(input_variables_dict[key][0]) > 4 \
+                                or input_variables_dict[key][0] not in self.residues_List:
                             bad_input_variables_values_List.append(key)
 
                     if isinstance(input_variables_dict[key][1], int) == True \
@@ -3708,10 +3720,10 @@ class GOMCControl():
                 else:
                     bad_input_variables_values_List.append(key)
 
-    def ck_input_variable_dict_str_int_or_float(self,
-                                                input_variables_dict,
-                                                key,
-                                                bad_input_variables_values_List):
+    def ck_input_variable_GCMC_dict_str_int_or_float(self,
+                                                     input_variables_dict,
+                                                     key,
+                                                     bad_input_variables_values_List):
         """
         Checks if the input variable is a dictionary with a key = string and
         value = integer or float  ({'str_1' : integer_1 or float_1, ....,
@@ -3746,6 +3758,9 @@ class GOMCControl():
                 key_iter = keys_List[keys_iter_No]
                 value_iter = input_variables_dict[key][key_iter]
 
+                if key_iter not in self.residues_List:
+                    bad_input_variables_values_List.append(key)
+
                 if isinstance(key_iter, str) == False:
                     bad_input_variables_values_List.append(key)
                 elif isinstance(key_iter, str) == True:
@@ -3758,10 +3773,10 @@ class GOMCControl():
                         or str(value_iter) == str(False):
                     bad_input_variables_values_List.append(key)
 
-    def ck_input_variable_dict_str_int_or_float_zero_or_greater(self,
-                                                                input_variables_dict,
-                                                                key,
-                                                                bad_input_variables_values_List):
+    def ck_input_variable_GCMC_dict_str_int_or_float_zero_or_greater(self,
+                                                                     input_variables_dict,
+                                                                     key,
+                                                                     bad_input_variables_values_List):
         """
         Checks if the input variable is a dictionary with a key = string and
         value = integer or float zero or greater  ({'str_1' : integer_1 or float_1 (>= 0), ....,
@@ -3795,6 +3810,9 @@ class GOMCControl():
             for keys_iter_No in range(0, len(keys_List)):
                 key_iter = keys_List[keys_iter_No]
                 value_iter = input_variables_dict[key][key_iter]
+
+                if key_iter not in self.residues_List:
+                    bad_input_variables_values_List.append(key)
 
                 if isinstance(key_iter, str) == False:
                     bad_input_variables_values_List.append(key)

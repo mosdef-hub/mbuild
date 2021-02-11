@@ -11,12 +11,11 @@ from mbuild.utils.io import has_foyer
 @pytest.mark.skipif(not has_foyer, reason="Foyer package not installed")
 class TestGOMCControlFileWriter(BaseTest):
 
-    def test_dict_keys_to_list(self,):
+    def test_dict_keys_to_list(self, ):
         dict = {'a': '1', 'b': '2', 'c': '3'}
         keys = gomc_control.dict_keys_to_list(dict)
 
         assert keys == ['a', 'b', 'c']
-
 
     def test_get_required_data(self):
         value = gomc_control._get_required_data(description=False)
@@ -24,7 +23,6 @@ class TestGOMCControlFileWriter(BaseTest):
 
         value = gomc_control._get_required_data(description=True)
         assert gomc_control.dict_keys_to_list(value) == ['charmm_object', 'ensemble_type', 'RunSteps', 'Temperature']
-
 
     def test_get_all_possible_input_variable(self):
         value = gomc_control._get_all_possible_input_variables(description=False)
@@ -58,14 +56,13 @@ class TestGOMCControlFileWriter(BaseTest):
                                                          'RunLetter', 'SampleFreq', 'OutEnergy', 'OutPressure',
                                                          'OutMolNumber', 'OutDensity', 'OutVolume',
                                                          'OutSurfaceTension', 'FreeEnergyCalc', 'MoleculeType',
-                                                         'InitialState', 'LambdaVDW', 'LambdaCoulomb','ScaleCoulomb',
+                                                         'InitialState', 'LambdaVDW', 'LambdaCoulomb', 'ScaleCoulomb',
                                                          'ScalePower', 'ScaleAlpha', 'MinSigma', 'DisFreq', 'RotFreq',
                                                          'IntraSwapFreq', 'SwapFreq', 'RegrowthFreq', 'CrankShaftFreq',
                                                          'VolFreq', 'MultiParticleFreq', 'IntraMEMC-1Freq',
                                                          'MEMC-1Freq', 'IntraMEMC-2Freq', 'MEMC-2Freq',
                                                          'IntraMEMC-3Freq', 'MEMC-3Freq', 'ExchangeVolumeDim',
                                                          'MEMC_DataInput']
-
 
     def test_get_default_variables_dict(self):
         value = gomc_control._get_default_variables_dict()
@@ -90,11 +87,6 @@ class TestGOMCControlFileWriter(BaseTest):
                                                          'CrankShaftFreq', 'VolFreq', 'MultiParticleFreq',
                                                          'IntraMEMC-1Freq', 'MEMC-1Freq', 'IntraMEMC-2Freq',
                                                          'MEMC-2Freq', 'IntraMEMC-3Freq', 'MEMC-3Freq']
-
-
-
-
-
 
     def test_print_ensemble_info(self):
         try:
@@ -177,11 +169,10 @@ class TestGOMCControlFileWriter(BaseTest):
             test_status = "FAILED"
         assert test_status == "PASSED"
 
-
     def test_save_basic_NVT(self, EthaneGOMC):
         charmm = Charmm(EthaneGOMC, 'ethane', FF_filename='ethane',
                         residues=[EthaneGOMC.name], forcefield_selection='oplsaa',
-                        box_0 = [1,1,1]
+                        box_0=[1, 1, 1]
                         )
         gomc_control.write_gomc_control_file(charmm, 'test_save_basic_NVT.conf', 'NVT', 10, 300,
                                              )
@@ -455,7 +446,6 @@ class TestGOMCControlFileWriter(BaseTest):
             else:
                 pass
 
-
     def test_save_basic_NPT(self, EthaneGOMC):
         charmm = Charmm(EthaneGOMC, 'ethane', FF_filename='ethane',
                         residues=[EthaneGOMC.name], forcefield_selection='oplsaa',
@@ -605,16 +595,15 @@ class TestGOMCControlFileWriter(BaseTest):
             else:
                 pass
 
-
     def test_save_basic_GCMC(self, EthaneGOMC):
         charmm = Charmm(EthaneGOMC, 'ethane_box_0',
-                        structure_box_1= EthaneGOMC, filename_box_1= 'ethane_box_1',
+                        structure_box_1=EthaneGOMC, filename_box_1='ethane_box_1',
                         FF_filename='ethane_FF',
                         residues=[EthaneGOMC.name], forcefield_selection='oplsaa',
-                        box_0= [2, 2, 2], box_1 = [2, 2, 2]
+                        box_0=[2, 2, 2], box_1=[2, 2, 2]
                         )
         gomc_control.write_gomc_control_file(charmm, 'test_save_basic_GCMC.conf', 'GCMC', 100000, 500,
-                                             input_variables_dict={"ChemPot" : {'ETH': -4000}
+                                             input_variables_dict={"ChemPot": {'ETH': -4000}
                                                                    }
                                              )
 
@@ -806,13 +795,12 @@ class TestGOMCControlFileWriter(BaseTest):
             else:
                 pass
 
-
     def test_save_basic_GEMC_NVT(self, EthaneGOMC):
         charmm = Charmm(EthaneGOMC, 'ethane_box_0',
-                        structure_box_1= EthaneGOMC, filename_box_1= 'ethane_box_1',
+                        structure_box_1=EthaneGOMC, filename_box_1='ethane_box_1',
                         FF_filename='ethane_FF',
                         residues=[EthaneGOMC.name], forcefield_selection='oplsaa',
-                        box_0= [2, 2, 2], box_1 = [2, 2, 2]
+                        box_0=[2, 2, 2], box_1=[2, 2, 2]
                         )
         gomc_control.write_gomc_control_file(charmm, 'test_save_basic_GEMC_NVT.conf', 'GEMC_NVT', 1000000, 500,
                                              )
@@ -876,13 +864,12 @@ class TestGOMCControlFileWriter(BaseTest):
                 split_line = line.split()
                 assert split_line[1] == '0.0'
 
-
     def test_save_basic_GEMC_NPT(self, EthaneGOMC):
         charmm = Charmm(EthaneGOMC, 'ethane_box_0',
-                        structure_box_1= EthaneGOMC, filename_box_1= 'ethane_box_1',
+                        structure_box_1=EthaneGOMC, filename_box_1='ethane_box_1',
                         FF_filename='ethane_FF',
                         residues=[EthaneGOMC.name], forcefield_selection='oplsaa',
-                        box_0= [2, 2, 2], box_1 = [2, 2, 2]
+                        box_0=[2, 2, 2], box_1=[2, 2, 2]
                         )
         gomc_control.write_gomc_control_file(charmm, 'test_save_basic_GEMC_NPT.conf', 'GEMC_NPT', 1000000, 500,
                                              input_variables_dict={"Pressure": 10
@@ -951,7 +938,6 @@ class TestGOMCControlFileWriter(BaseTest):
                 split_line = line.split()
                 assert split_line[1] == '0.0'
 
-
     def test_save_change_most_variable_NVT(self, EthaneGOMC, EthanolGOMC):
         test_box_ethane_ethanol = mb.fill_box(compound=[EthaneGOMC, EthanolGOMC],
                                               n_compounds=[1, 1],
@@ -967,13 +953,13 @@ class TestGOMCControlFileWriter(BaseTest):
                                                                    'ParaTypeCHARMM': True,
                                                                    'ParaTypeMARTINI': False,
                                                                    'ParaTypeMie': False,
-                                                                   'LRC' : False,
+                                                                   'LRC': False,
                                                                    'Rcut': 12,
                                                                    'RcutLow': 8,
-                                                                   'Exclude' : '1-4',
-                                                                   'Ewald' : False,
-                                                                   'ElectroStatic' : False,
-                                                                   'CachedFourier' : True,
+                                                                   'Exclude': '1-4',
+                                                                   'Ewald': False,
+                                                                   'ElectroStatic': False,
+                                                                   'CachedFourier': True,
                                                                    "RcutCoulomb_box_0": 14,
                                                                    "PressureCalc": [False, 4],
                                                                    "Tolerance": 0.01,
@@ -1009,7 +995,7 @@ class TestGOMCControlFileWriter(BaseTest):
                                                                    "LambdaCoulomb": [0.1, 0.3, 0.8, 0.8],
                                                                    "MEMC_DataInput":
                                                                        [[1, 'ETH', ['C1', 'C2'], 'ETO', ['C1', 'C2']]],
-                                                                   "OutEnergy" : [False, False],
+                                                                   "OutEnergy": [False, False],
                                                                    "OutPressure": [False, False],
                                                                    "OutMolNumber": [False, False],
                                                                    "OutDensity": [False, False],
@@ -1352,3085 +1338,1200 @@ class TestGOMCControlFileWriter(BaseTest):
                                               n_compounds=[1, 1],
                                               box=[4.0, 4.0, 4.0])
 
-        charmm = Charmm(test_box_ethane_ethanol, 'ethane_ethanol', FF_filename = 'ethane_ethanol',
+        charmm = Charmm(test_box_ethane_ethanol, 'ethane_ethanol', FF_filename='ethane_ethanol',
                         residues=[EthaneGOMC.name, EthanolGOMC.name], forcefield_selection='oplsaa',
-                        box_0 = [1,1,1]
+                        box_0=[1, 1, 1]
                         )
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'Restart': 's', }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'RestartCheckpoint' : 's', }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'PRNG' : [1], }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'ParaTypeCHARMM': 's', }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'ParaTypeMie': 's', }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'ParaTypeMARTINI': 's', }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'RcutCoulomb_box_0': 's', }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'RcutCoulomb_box_1': 's', }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'Pressure': 's', }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'Rcut': 's', }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'RcutLow': 's', }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'LRC': 's', }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'Exclude': 's', }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'coul_1_4_scaling': 's', }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'Potential': 's', }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'Rswitch': 's', }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'ElectroStatic': 's', }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'Ewald': 's', }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'CachedFourier': 's', }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'Tolerance': 's', }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'Dielectric': 's', }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'PressureCalc': 's', }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'EqSteps': 's', }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'AdjSteps': 's', }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'useConstantArea': 's', }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'FixVolBox0': 's', }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'ChemPot': 's', }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'Fugacity': 's', }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'CBMC_First': 's', }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'CBMC_Nth': 's', }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'CBMC_Ang': 's', }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'CBMC_Dih': 's', }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'OutputName': 1, }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'CoordinatesFreq': 's', }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'RestartFreq': 's', }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'CheckpointFreq': 's', }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'ConsoleFreq': 's', }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'BlockAverageFreq': 's', }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'HistogramFreq': 's', }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'DistName': 1, }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'HistName': 1, }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'RunNumber': 's', }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'RunLetter': 1, }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'SampleFreq': 's', }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'OutEnergy': 's', }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'OutPressure': 's', }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'OutMolNumber': 's', }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'OutDensity': 's', }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'OutVolume': 's', }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'OutSurfaceTension': 's', }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'FreeEnergyCalc': 's', }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'MoleculeType': ['s'], }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'InitialState': 's', }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'LambdaVDW': 's', }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'LambdaCoulomb': 's', }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'ScaleCoulomb': 's', }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'ScalePower': 's', }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'ScaleAlpha': 's', }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'MinSigma': 's', }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'ExchangeVolumeDim': 's', }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'MEMC_DataInput': 's', }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'DisFreq': 's', }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'RotFreq': 's', }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'IntraSwapFreq': 's', }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'SwapFreq': 's', }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'RegrowthFreq': 's', }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'CrankShaftFreq': 's', }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'VolFreq': 's', }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'MultiParticleFreq': 's', }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'IntraMEMC-1Freq': 's', }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'MEMC-1Freq': 's', }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'IntraMEMC-2Freq': 's', }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'MEMC-2Freq': 's', }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'IntraMEMC-3Freq': 's', }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'MEMC-3Freq': 's', }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'XXXXXX': 's', }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
 
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
+                                             r"values: \['Restart'\]"):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
+                                                 'NVT', 10, 300,
+                                                 input_variables_dict={'Restart': 's', }
+                                                 )
+
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
+                                             r"values: \['RestartCheckpoint'\]"):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
+                                                 'NVT', 10, 300,
+                                                 input_variables_dict={'RestartCheckpoint': 's', }
+                                                 )
+
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
+                                             r"values: \['PRNG'\]"):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
+                                                 'NVT', 10, 300,
+                                                 input_variables_dict={'PRNG': [1], }
+                                                 )
+
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
+                                             r"values: \['ParaTypeCHARMM'\]"):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
+                                                 'NVT', 10, 300,
+                                                 input_variables_dict={'ParaTypeCHARMM': 's', }
+                                                 )
+
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
+                                             r"values: \['ParaTypeMie'\]"):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
+                                                 'NVT', 10, 300,
+                                                 input_variables_dict={'ParaTypeMie': 's', }
+                                                 )
+
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
+                                             r"values: \['ParaTypeMARTINI'\]"):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
+                                                 'NVT', 10, 300,
+                                                 input_variables_dict={'ParaTypeMARTINI': 's', }
+                                                 )
+
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
+                                             r"values: \['RcutCoulomb_box_0'\]"):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
+                                                 'NVT', 10, 300,
+                                                 input_variables_dict={'RcutCoulomb_box_0': 's', }
+                                                 )
+
+        with pytest.raises(ValueError, match=r"ERROR: All the correct input variables where not provided for "
+                                             r"the NVT ensemble. Please be sure to check that the keys in the "
+                                             r"input variables dictionary \(input_variables_dict\) is correct, and "
+                                             r"be aware that added spaces before or after the variable in any keys "
+                                             r"will also give this warning. The bad variable inputs ensemble "
+                                             r"inputs = \['RcutCoulomb_box_1'\]"):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
+                                                 'NVT', 10, 300,
+                                                 input_variables_dict={'RcutCoulomb_box_1': 's', }
+                                                 )
+
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
+                                             r"values: \['Pressure'\]"):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
+                                                 'NVT', 10, 300,
+                                                 input_variables_dict={'Pressure': 's', }
+                                                 )
+
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
+                                             r"values: \['Rcut'\]"):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
+                                                 'NVT', 10, 300,
+                                                 input_variables_dict={'Rcut': 's', }
+                                                 )
+
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
+                                             r"values: \['RcutLow'\]"):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
+                                                 'NVT', 10, 300,
+                                                 input_variables_dict={'RcutLow': 's', }
+                                                 )
+
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
+                                             r"values: \['LRC'\]"):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
+                                                 'NVT', 10, 300,
+                                                 input_variables_dict={'LRC': 's', }
+                                                 )
+
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
+                                             r"values: \['Exclude'\]"):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
+                                                 'NVT', 10, 300,
+                                                 input_variables_dict={'Exclude': 's', }
+                                                 )
+
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
+                                             r"values: \['Potential'\]"):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
+                                                 'NVT', 10, 300,
+                                                 input_variables_dict={'Potential': 's', }
+                                                 )
+
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
+                                             r"values: \['Rswitch'\]"):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
+                                                 'NVT', 10, 300,
+                                                 input_variables_dict={'Rswitch': 's', }
+                                                 )
+
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
+                                             r"values: \['ElectroStatic'\]"):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
+                                                 'NVT', 10, 300,
+                                                 input_variables_dict={'ElectroStatic': 's', }
+                                                 )
+
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
+                                             r"values: \['Ewald'\]"):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
+                                                 'NVT', 10, 300,
+                                                 input_variables_dict={'Ewald': 's', }
+                                                 )
+
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
+                                             r"values: \['CachedFourier'\]"):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
+                                                 'NVT', 10, 300,
+                                                 input_variables_dict={'CachedFourier': 's', }
+                                                 )
+
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
+                                             r"values: \['Tolerance'\]"):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
+                                                 'NVT', 10, 300,
+                                                 input_variables_dict={'Tolerance': 's', }
+                                                 )
+
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
+                                             r"values: \['Dielectric'\]"):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
+                                                 'NVT', 10, 300,
+                                                 input_variables_dict={'Dielectric': 's', }
+                                                 )
+
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
+                                             r"values: \['PressureCalc'\]"):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
+                                                 'NVT', 10, 300,
+                                                 input_variables_dict={'PressureCalc': 's', }
+                                                 )
+
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
+                                             r"values: \['EqSteps'\]"):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
+                                                 'NVT', 10, 300,
+                                                 input_variables_dict={'EqSteps': 's', }
+                                                 )
+
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
+                                             r"values: \['EqSteps'\]"):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
+                                                 'NVT', 10, 300,
+                                                 input_variables_dict={'EqSteps': 's', }
+                                                 )
+
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
+                                             r"values: \['useConstantArea'\]"):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
+                                                 'NPT', 10, 300,
+                                                 input_variables_dict={'useConstantArea': 's', }
+                                                 )
+
+        with pytest.raises(ValueError, match=r"ERROR: All the correct input variables where not provided for "
+                                             r"the NVT ensemble. Please be sure to check that the keys in the "
+                                             r"input variables dictionary \(input_variables_dict\) is correct, and "
+                                             r"be aware that added spaces before or after the variable in any keys "
+                                             r"will also give this warning. The bad variable inputs ensemble "
+                                             r"inputs = \['ChemPot'\]"):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
+                                                 'NVT', 10, 300,
+                                                 input_variables_dict={'ChemPot': 's', }
+                                                 )
+
+        with pytest.raises(ValueError, match=r"ERROR: All the correct input variables where not provided for "
+                                             r"the NVT ensemble. Please be sure to check that the keys in the "
+                                             r"input variables dictionary \(input_variables_dict\) is correct, and "
+                                             r"be aware that added spaces before or after the variable in any keys "
+                                             r"will also give this warning. The bad variable inputs ensemble "
+                                             r"inputs = \['Fugacity'\]"):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
+                                                 'NVT', 10, 300,
+                                                 input_variables_dict={'Fugacity': 's', }
+                                                 )
+
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
+                                             r"values: \['CBMC_First'\]"):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
+                                                 'NVT', 10, 300,
+                                                 input_variables_dict={'CBMC_First': 's', }
+                                                 )
+
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
+                                             r"values: \['CBMC_Nth'\]"):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
+                                                 'NVT', 10, 300,
+                                                 input_variables_dict={'CBMC_Nth': 's', }
+                                                 )
+
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
+                                             r"values: \['CBMC_Ang'\]"):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
+                                                 'NVT', 10, 300,
+                                                 input_variables_dict={'CBMC_Ang': 's', }
+                                                 )
+
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
+                                             r"values: \['CBMC_Dih'\]"):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
+                                                 'NVT', 10, 300,
+                                                 input_variables_dict={'CBMC_Dih': 's', }
+                                                 )
+
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
+                                             r"values: \['OutputName'\]"):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
+                                                 'NVT', 10, 300,
+                                                 input_variables_dict={'OutputName': 1, }
+                                                 )
+
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
+                                             r"values: \['CoordinatesFreq'\]"):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
+                                                 'NVT', 10, 300,
+                                                 input_variables_dict={'CoordinatesFreq': 's', }
+                                                 )
+
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
+                                             r"values: \['RestartFreq'\]"):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
+                                                 'NVT', 10, 300,
+                                                 input_variables_dict={'RestartFreq': 's', }
+                                                 )
+
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
+                                             r"values: \['CheckpointFreq'\]"):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
+                                                 'NVT', 10, 300,
+                                                 input_variables_dict={'CheckpointFreq': 's', }
+                                                 )
+
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
+                                             r"values: \['ConsoleFreq'\]"):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
+                                                 'NVT', 10, 300,
+                                                 input_variables_dict={'ConsoleFreq': 's', }
+                                                 )
+
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
+                                             r"values: \['BlockAverageFreq'\]"):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
+                                                 'NVT', 10, 300,
+                                                 input_variables_dict={'BlockAverageFreq': 's', }
+                                                 )
+
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
+                                             r"values: \['HistogramFreq'\]"):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
+                                                 'NVT', 10, 300,
+                                                 input_variables_dict={'HistogramFreq': 's', }
+                                                 )
+
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
+                                             r"values: \['DistName'\]"):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
+                                                 'NVT', 10, 300,
+                                                 input_variables_dict={'DistName': 1, }
+                                                 )
+
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
+                                             r"values: \['HistName'\]"):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
+                                                 'NVT', 10, 300,
+                                                 input_variables_dict={'HistName': 1, }
+                                                 )
+
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
+                                             r"values: \['RunNumber'\]"):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
+                                                 'NVT', 10, 300,
+                                                 input_variables_dict={'RunNumber': 's', }
+                                                 )
+
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
+                                             r"values: \['RunLetter'\]"):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
+                                                 'NVT', 10, 300,
+                                                 input_variables_dict={'RunLetter': 1, }
+                                                 )
+
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
+                                             r"values: \['SampleFreq'\]"):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
+                                                 'NVT', 10, 300,
+                                                 input_variables_dict={'SampleFreq': 's', }
+                                                 )
+
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
+                                             r"values: \['OutEnergy'\]"):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
+                                                 'NVT', 10, 300,
+                                                 input_variables_dict={'OutEnergy': 's', }
+                                                 )
+
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
+                                             r"values: \['OutPressure'\]"):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
+                                                 'NVT', 10, 300,
+                                                 input_variables_dict={'OutPressure': 's', }
+                                                 )
+
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
+                                             r"values: \['OutMolNumber'\]"):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
+                                                 'NVT', 10, 300,
+                                                 input_variables_dict={'OutMolNumber': 's', }
+                                                 )
+
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
+                                             r"values: \['OutDensity'\]"):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
+                                                 'NVT', 10, 300,
+                                                 input_variables_dict={'OutDensity': 's', }
+                                                 )
+
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
+                                             r"values: \['OutVolume'\]"):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
+                                                 'NVT', 10, 300,
+                                                 input_variables_dict={'OutVolume': 's', }
+                                                 )
+
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
+                                             r"values: \['OutSurfaceTension'\]"):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
+                                                 'NVT', 10, 300,
+                                                 input_variables_dict={'OutSurfaceTension': 's', }
+                                                 )
+
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
+                                             r"values: \['FreeEnergyCalc'\]"):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
+                                                 'NVT', 10, 300,
+                                                 input_variables_dict={"FreeEnergyCalc": 's',
+                                                                       "MoleculeType": ['ETH', 1],
+                                                                       "InitialState": 1,
+                                                                       "LambdaVDW": [0.1, 0.2, 0.4, 0.9],
+                                                                       "LambdaCoulomb": [0.1, 0.3, 0.8, 0.8]}
+                                                 )
+
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
+                                             r"values: \['MoleculeType'\]"):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
+                                                 'NVT', 10, 300,
+                                                 input_variables_dict={"FreeEnergyCalc": [True, 10000],
+                                                                       "MoleculeType": ['ETH', 's'],
+                                                                       "InitialState": 1,
+                                                                       "LambdaVDW": [0.1, 0.2, 0.4, 0.9],
+                                                                       "LambdaCoulomb": [0.1, 0.3, 0.8, 0.8]}
+                                                 )
+
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
+                                             r"values: \['MoleculeType'\]"):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
+                                                 'NVT', 10, 300,
+                                                 input_variables_dict={"FreeEnergyCalc": [True, 10000],
+                                                                       "MoleculeType": [['ETH'], 1],
+                                                                       "InitialState": 1,
+                                                                       "LambdaVDW": [0.1, 0.2, 0.4, 0.9],
+                                                                       "LambdaCoulomb": [0.1, 0.3, 0.8, 0.8]}
+                                                 )
+
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
+                                             r"values: \['MoleculeType'\]"):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
+                                                 'NVT', 10, 300,
+                                                 input_variables_dict={"FreeEnergyCalc": [True, 10000],
+                                                                       "MoleculeType": [{'ETH': "1"}, 1],
+                                                                       "InitialState": 1,
+                                                                       "LambdaVDW": [0.1, 0.2, 0.4, 0.9],
+                                                                       "LambdaCoulomb": [0.1, 0.3, 0.8, 0.8]}
+                                                 )
+
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
+                                             r"values: \['InitialState'\]"):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
+                                                 'NVT', 10, 300,
+                                                 input_variables_dict={"FreeEnergyCalc": [True, 10000],
+                                                                       "MoleculeType": ['ETH', 1],
+                                                                       "InitialState": 's',
+                                                                       "LambdaVDW": [0.1, 0.2, 0.4, 0.9],
+                                                                       "LambdaCoulomb": [0.1, 0.3, 0.8, 0.8]}
+                                                 )
+
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
+                                             r"values: \['LambdaVDW'\]"):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
+                                                 'NVT', 10, 300,
+                                                 input_variables_dict={"FreeEnergyCalc": [True, 10000],
+                                                                       "MoleculeType": ['ETH', 1],
+                                                                       "InitialState": 1,
+                                                                       "LambdaVDW": 's',
+                                                                       "LambdaCoulomb": [0.1, 0.3, 0.8, 0.8]}
+                                                 )
+
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
+                                             r"values: \['LambdaCoulomb'\]"):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
+                                                 'NVT', 10, 300,
+                                                 input_variables_dict={"FreeEnergyCalc": [True, 10000],
+                                                                       "MoleculeType": ['ETH', 1],
+                                                                       "InitialState": 1,
+                                                                       "LambdaVDW": [0.1, 0.2, 0.4, 0.9],
+                                                                       "LambdaCoulomb": 's'}
+                                                 )
+
+        with pytest.raises(ValueError, match=r"ERROR: To utilize the free energy calculations all the "
+                                             r"following variables need to be set, and not equal to "
+                                             r"None: FreeEnergyCalc, MoleculeType, InitialState, LambdaVDW."):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
+                                                 'NVT', 10, 300,
+                                                 input_variables_dict={"FreeEnergyCalc": [True, 10000]}
+                                                 )
+
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
+                                             r"values: \['ScaleCoulomb'\]"):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
+                                                 'NVT', 10, 300,
+                                                 input_variables_dict={'ScaleCoulomb': 's', }
+                                                 )
+
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
+                                             r"values: \['ScalePower'\]"):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
+                                                 'NVT', 10, 300,
+                                                 input_variables_dict={'ScalePower': 's', }
+                                                 )
+
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
+                                             r"values: \['ScaleAlpha'\]"):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
+                                                 'NVT', 10, 300,
+                                                 input_variables_dict={'ScaleAlpha': 's', }
+                                                 )
+
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
+                                             r"values: \['MinSigma'\]"):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
+                                                 'NVT', 10, 300,
+                                                 input_variables_dict={'MinSigma': 's', }
+                                                 )
+
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
+                                             r"values: \['ExchangeVolumeDim'\]"):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
+                                                 'NVT', 10, 300,
+                                                 input_variables_dict={'ExchangeVolumeDim': 's', }
+                                                 )
+
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
+                                             r"values: \['MEMC_DataInput'\]"):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
+                                                 'NVT', 10, 300,
+                                                 input_variables_dict={'MEMC_DataInput': 's', }
+                                                 )
+
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
+                                             r"values: \['DisFreq'\]"):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
+                                                 'NVT', 10, 300,
+                                                 input_variables_dict={'DisFreq': 's', }
+                                                 )
+
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
+                                             r"values: \['RotFreq'\]"):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
+                                                 'NVT', 10, 300,
+                                                 input_variables_dict={'RotFreq': 's', }
+                                                 )
+
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
+                                             r"values: \['IntraSwapFreq'\]"):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
+                                                 'NVT', 10, 300,
+                                                 input_variables_dict={'IntraSwapFreq': 's', }
+                                                 )
+
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
+                                             r"values: \['SwapFreq'\]"):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
+                                                 'NVT', 10, 300,
+                                                 input_variables_dict={'SwapFreq': 's', }
+                                                 )
+
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
+                                             r"values: \['RegrowthFreq'\]"):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
+                                                 'NVT', 10, 300,
+                                                 input_variables_dict={'RegrowthFreq': 's', }
+                                                 )
+
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
+                                             r"values: \['CrankShaftFreq'\]"):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
+                                                 'NVT', 10, 300,
+                                                 input_variables_dict={'CrankShaftFreq': 's', }
+                                                 )
+
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
+                                             r"values: \['VolFreq'\]"):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
+                                                 'NVT', 10, 300,
+                                                 input_variables_dict={'VolFreq': 's', }
+                                                 )
+
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
+                                             r"values: \['MultiParticleFreq'\]"):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
+                                                 'NVT', 10, 300,
+                                                 input_variables_dict={'MultiParticleFreq': 's', }
+                                                 )
+
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
+                                             r"values: \['IntraMEMC-1Freq'\]"):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
+                                                 'NVT', 10, 300,
+                                                 input_variables_dict={'IntraMEMC-1Freq': 's', }
+                                                 )
+
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
+                                             r"values: \['MEMC-1Freq'\]"):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
+                                                 'NVT', 10, 300,
+                                                 input_variables_dict={'MEMC-1Freq': 's', }
+                                                 )
+
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
+                                             r"values: \['IntraMEMC-2Freq'\]"):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
+                                                 'NVT', 10, 300,
+                                                 input_variables_dict={'IntraMEMC-2Freq': 's', }
+                                                 )
+
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
+                                             r"values: \['MEMC-2Freq'\]"):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
+                                                 'NVT', 10, 300,
+                                                 input_variables_dict={'MEMC-2Freq': 's', }
+                                                 )
+
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
+                                             r"values: \['IntraMEMC-3Freq'\]"):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
+                                                 'NVT', 10, 300,
+                                                 input_variables_dict={'IntraMEMC-3Freq': 's', }
+                                                 )
+
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
+                                             r"values: \['MEMC-3Freq'\]"):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
+                                                 'NVT', 10, 300,
+                                                 input_variables_dict={'MEMC-3Freq': 's', }
+                                                 )
+
+        with pytest.raises(ValueError, match=r"ERROR: All the correct input variables where not provided for "
+                                             r"the NVT ensemble. Please be sure to check that the keys in the "
+                                             r"input variables dictionary \(input_variables_dict\) is correct, and "
+                                             r"be aware that added spaces before or after the variable in any keys "
+                                             r"will also give this warning. The bad variable inputs ensemble "
+                                             r"inputs = \['XXXXXX'\]"):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
+                                                 'NVT', 10, 300,
+                                                 input_variables_dict={'XXXXXX': 's', }
+                                                 )
 
     def test_save_NVT_bad_variables_part_2(self, EthaneGOMC, EthanolGOMC):
         test_box_ethane_ethanol = mb.fill_box(compound=[EthaneGOMC, EthanolGOMC],
                                               n_compounds=[1, 1],
                                               box=[4.0, 4.0, 4.0])
 
-        charmm = Charmm(test_box_ethane_ethanol, 'ethane_ethanol', FF_filename = 'ethane_ethanol',
+        charmm = Charmm(test_box_ethane_ethanol, 'ethane_ethanol', FF_filename='ethane_ethanol',
                         residues=[EthaneGOMC.name, EthanolGOMC.name], forcefield_selection='oplsaa',
-                        box_0 = [1,1,1]
+                        box_0=[1, 1, 1]
                         )
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_2.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'Restart': [], }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_2.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'RestartCheckpoint' : [], }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_2.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'PRNG' : [], }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_2.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'ParaTypeCHARMM': [], }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_2.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'ParaTypeMie': [], }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_2.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'ParaTypeMARTINI': [], }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_2.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'RcutCoulomb_box_0': [], }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_2.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'RcutCoulomb_box_1': [], }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_2.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'Pressure': [], }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_2.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'Rcut': [], }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_2.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'RcutLow': [], }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_2.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'LRC': [], }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_2.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'Exclude': [], }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_2.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'coul_1_4_scaling': [], }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_2.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'Potential': [], }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_2.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'Rswitch': [], }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_2.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'ElectroStatic': [], }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_2.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'Ewald': [], }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_2.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'CachedFourier': [], }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_2.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'Tolerance': [], }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_2.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'Dielectric': [], }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_2.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'PressureCalc': [], }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_2.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'EqSteps': [], }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_2.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'AdjSteps': [], }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_2.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'useConstantArea': [], }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_2.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'FixVolBox0': [], }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_2.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'ChemPot': [], }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_2.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'Fugacity': [], }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_2.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'CBMC_First': [], }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_2.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'CBMC_Nth': [], }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_2.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'CBMC_Ang': [], }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_2.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'CBMC_Dih': [], }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_2.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'OutputName': [], }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_2.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'CoordinatesFreq': [], }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_2.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'RestartFreq': [], }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_2.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'CheckpointFreq': [], }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_2.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'ConsoleFreq': [], }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_2.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'BlockAverageFreq': [], }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_2.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'HistogramFreq': [], }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_2.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'DistName': [], }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_2.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'HistName': [], }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_2.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'RunNumber': [], }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_2.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'RunLetter': [], }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_2.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'SampleFreq': [], }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_2.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'OutEnergy': [], }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_2.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'OutPressure': [], }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_2.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'OutMolNumber': [], }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_2.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'OutDensity': [], }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_2.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'OutVolume': [], }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_2.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'OutSurfaceTension': [], }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_2.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'FreeEnergyCalc': [], }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_2.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'MoleculeType': [[]], }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_2.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'InitialState': [], }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_2.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'LambdaVDW': [], }
-                                                         )
-
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_2.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'LambdaCoulomb': [], }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_2.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'ScaleCoulomb': [], }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_2.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'ScalePower': [], }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_2.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'ScaleAlpha': [], }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_2.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'MinSigma': [], }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_2.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'ExchangeVolumeDim': [], }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_2.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'MEMC_DataInput': [], }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_2.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'DisFreq': [], }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_2.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'RotFreq': [], }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_2.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'IntraSwapFreq': [], }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_2.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'SwapFreq': [], }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_2.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'RegrowthFreq': [], }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_2.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'CrankShaftFreq': [], }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_2.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'VolFreq': [], }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_2.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'MultiParticleFreq': [], }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_2.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'IntraMEMC-1Freq': [], }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_2.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'MEMC-1Freq': [], }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_2.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'IntraMEMC-2Freq': [], }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_2.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'MEMC-2Freq': [], }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_2.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'IntraMEMC-3Freq': [], }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_2.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'MEMC-3Freq': [], }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_2.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'XXXXXX': [], }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-
-    def test_save_NVT_bad_variables_part_3(self, EthaneGOMC, EthanolGOMC):
-        test_box_ethane_ethanol = mb.fill_box(compound=[EthaneGOMC, EthanolGOMC],
-                                              n_compounds=[1, 1],
-                                              box=[4.0, 4.0, 4.0])
-
-        charmm = Charmm(test_box_ethane_ethanol, 'ethane_ethanol', FF_filename = 'ethane_ethanol',
-                        residues=[EthaneGOMC.name, EthanolGOMC.name], forcefield_selection='oplsaa',
-                        box_0 = [1,1,1]
-                        )
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_3.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'Restart': {}, }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_3.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'RestartCheckpoint' : {}, }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_3.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'PRNG' : {}, }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_3.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'ParaTypeCHARMM': {}, }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_3.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'ParaTypeMie': {}, }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_3.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'ParaTypeMARTINI': {}, }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_3.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'RcutCoulomb_box_0': {}, }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_3.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'RcutCoulomb_box_1': {}, }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_3.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'Pressure': {}, }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_3.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'Rcut': {}, }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_3.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'RcutLow': {}, }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_3.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'LRC': {}, }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_3.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'Exclude': {}, }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_3.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'coul_1_4_scaling': {}, }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_3.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'Potential': {}, }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_3.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'Rswitch': {}, }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_3.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'ElectroStatic': {}, }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_3.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'Ewald': {}, }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_3.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'CachedFourier': {}, }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_3.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'Tolerance': {}, }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_3.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'Dielectric': {}, }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_3.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'PressureCalc': {}, }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_3.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'EqSteps': {}, }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_3.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'AdjSteps': {}, }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_3.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'useConstantArea': {}, }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_3.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'FixVolBox0': {}, }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_3.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'ChemPot': {}, }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_3.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'Fugacity': {}, }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_3.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'CBMC_First': {}, }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_3.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'CBMC_Nth': {}, }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_3.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'CBMC_Ang': {}, }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_3.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'CBMC_Dih': {}, }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_3.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'OutputName': {}, }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_3.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'CoordinatesFreq': {}, }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_3.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'RestartFreq': {}, }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_3.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'CheckpointFreq': {}, }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_3.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'ConsoleFreq': {}, }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_3.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'BlockAverageFreq': {}, }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_3.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'HistogramFreq': {}, }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_3.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'DistName': {}, }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_3.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'HistName': {}, }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_3.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'RunNumber': {}, }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_3.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'RunLetter': {}, }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_3.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'SampleFreq': {}, }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_3.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'OutEnergy': {}, }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_3.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'OutPressure': {}, }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_3.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'OutMolNumber': {}, }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_3.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'OutDensity': {}, }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_3.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'OutVolume': {}, }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_3.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'OutSurfaceTension': {}, }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_3.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'FreeEnergyCalc': {}, }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_3.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'MoleculeType': {}, }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_3.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'InitialState': {}, }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_3.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'LambdaVDW': {}, }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_3.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'LambdaCoulomb': {}, }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_3.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'ScaleCoulomb': {}, }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_3.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'ScalePower': {}, }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_3.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'ScaleAlpha': {}, }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_3.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'MinSigma': {}, }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_3.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'ExchangeVolumeDim': {}, }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_3.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'MEMC_DataInput': {}, }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_3.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'DisFreq': {}, }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_3.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'RotFreq': {}, }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_3.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'IntraSwapFreq': {}, }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_3.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'SwapFreq': {}, }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_3.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'RegrowthFreq': {}, }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_3.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'CrankShaftFreq': {}, }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_3.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'VolFreq': {}, }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_3.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'MultiParticleFreq': {}, }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_3.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'IntraMEMC-1Freq': {}, }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_3.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'MEMC-1Freq': {}, }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_3.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'IntraMEMC-2Freq': {}, }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_3.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'MEMC-2Freq': {}, }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_3.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'IntraMEMC-3Freq': {}, }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_3.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'MEMC-3Freq': {}, }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_3.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'XXXXXX': {}, }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-
-    def test_save_NVT_bad_variables_part_4(self, EthaneGOMC, EthanolGOMC):
-        test_box_ethane_ethanol = mb.fill_box(compound=[EthaneGOMC, EthanolGOMC],
-                                              n_compounds=[1, 1],
-                                              box=[4.0, 4.0, 4.0])
-
-        charmm = Charmm(test_box_ethane_ethanol, 'ethane_ethanol', FF_filename = 'ethane_ethanol',
-                        residues=[EthaneGOMC.name, EthanolGOMC.name], forcefield_selection='oplsaa',
-                        box_0 = [1,1,1]
-                        )
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_4.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'Restart': 1, }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_4.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'RestartCheckpoint' : 1, }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_4.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'PRNG' : [1], }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_4.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'ParaTypeCHARMM': 1, }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_4.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'ParaTypeMie': 1, }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_4.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'ParaTypeMARTINI': 1, }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_4.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'RcutCoulomb_box_0': [1], }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_4.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'RcutCoulomb_box_1': [1], }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_4.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'Pressure': [1], }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_4.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'Rcut': [3], }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_4.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'RcutLow': 20, }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_4.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'LRC': 1, }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_4.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'Exclude': 1, }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_4.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'coul_1_4_scaling': [1], }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_4.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'Potential': 1 }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_4.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'Rswitch': 1, }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_4.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'ElectroStatic': 1, }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_4.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'Ewald': 1, }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_4.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'CachedFourier': 1, }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_4.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'Tolerance': 1, }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_4.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'Dielectric': [1], }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_4.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'PressureCalc': 1, }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_4.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'EqSteps': [1], }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_4.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'AdjSteps': [1], }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_4.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'useConstantArea': 1, }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_4.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'FixVolBox0': 1, }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_4.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'ChemPot': 1, }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_4.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'Fugacity': 1, }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_4.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'CBMC_First': [1], }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_4.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'CBMC_Nth': [1], }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_4.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'CBMC_Ang': [1], }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_4.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'CBMC_Dih': [1], }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_4.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'OutputName': 1, }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_4.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'CoordinatesFreq': 1, }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_4.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'RestartFreq': 1, }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_4.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'CheckpointFreq': 1, }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_4.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'ConsoleFreq': 1, }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_4.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'BlockAverageFreq': 1, }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_4.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'HistogramFreq': 1, }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_4.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'DistName': 1, }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_4.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'HistName': 1, }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_4.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'RunNumber': [1], }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_4.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'RunLetter': [1], }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_4.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'SampleFreq': [1], }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_4.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'OutEnergy': 1, }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_4.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'OutPressure': 1, }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_4.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'OutMolNumber': 1, }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_4.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'OutDensity': 1, }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_4.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'OutVolume': 1, }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_4.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'OutSurfaceTension': 1, }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_4.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'FreeEnergyCalc': 1, }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_4.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'MoleculeType': 1, }
-                                                         )
-
-
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_4.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'InitialState': [1], }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_4.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'LambdaVDW': 1, }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_4.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'LambdaCoulomb': 1, }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_4.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'ScaleCoulomb': 1, }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_4.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'ScalePower': [1], }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_4.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'ScaleAlpha': [1], }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_4.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'MinSigma': [1], }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_4.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'ExchangeVolumeDim': 1, }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_4.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'MEMC_DataInput': 1, }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_4.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'DisFreq': 1, }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "GOMC_CONTROL_FILE_WRITTEN"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_4.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'DisFreq': 1,
-                                                                               'RotFreq': 0.01}
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_4.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'RotFreq': 1, }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "GOMC_CONTROL_FILE_WRITTEN"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_4.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'IntraSwapFreq': 1, }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "GOMC_CONTROL_FILE_WRITTEN"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_4.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'SwapFreq': 1, }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_4.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'RegrowthFreq': 1, }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "GOMC_CONTROL_FILE_WRITTEN"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_4.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'CrankShaftFreq': 1, }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "GOMC_CONTROL_FILE_WRITTEN"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_4.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'VolFreq': 1, }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_4.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'MultiParticleFreq': 1, }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "GOMC_CONTROL_FILE_WRITTEN"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_4.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'IntraMEMC-1Freq': 1, }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_4.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'MEMC-1Freq': 1, }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_4.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'IntraMEMC-2Freq': 1, }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_4.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'MEMC-2Freq': 1, }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_4.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'IntraMEMC-3Freq': 1, }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_4.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'MEMC-3Freq': 1, }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_4.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'XXXXXX': 1, }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
+
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
+                                             r"values: \['Restart'\]"):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_2.conf',
+                                                 'NVT', 10, 300,
+                                                 input_variables_dict={'Restart': [], }
+                                                 )
+
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
+                                             r"values: \['RestartCheckpoint'\]"):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_2.conf',
+                                                 'NVT', 10, 300,
+                                                 input_variables_dict={'RestartCheckpoint': [], }
+                                                 )
+
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
+                                             r"values: \['PRNG'\]"):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_2.conf',
+                                                 'NVT', 10, 300,
+                                                 input_variables_dict={'PRNG': [], }
+                                                 )
+
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
+                                             r"values: \['ParaTypeCHARMM'\]"):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_2.conf',
+                                                 'NVT', 10, 300,
+                                                 input_variables_dict={'ParaTypeCHARMM': [], }
+                                                 )
+
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
+                                             r"values: \['ParaTypeMie'\]"):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_2.conf',
+                                                 'NVT', 10, 300,
+                                                 input_variables_dict={'ParaTypeMie': [], }
+                                                 )
+
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
+                                             r"values: \['ParaTypeMARTINI'\]"):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_2.conf',
+                                                 'NVT', 10, 300,
+                                                 input_variables_dict={'ParaTypeMARTINI': [], }
+                                                 )
+
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
+                                             r"values: \['RcutCoulomb_box_0'\]"):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_2.conf',
+                                                 'NVT', 10, 300,
+                                                 input_variables_dict={'RcutCoulomb_box_0': [], }
+                                                 )
+
+        with pytest.raises(ValueError, match=r"ERROR: All the correct input variables where not provided for "
+                                             r"the NVT ensemble. Please be sure to check that the keys in the "
+                                             r"input variables dictionary \(input_variables_dict\) is correct, and "
+                                             r"be aware that added spaces before or after the variable in any keys "
+                                             r"will also give this warning. The bad variable inputs ensemble "
+                                             r"inputs = \['RcutCoulomb_box_1'\]"):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_2.conf',
+                                                 'NVT', 10, 300,
+                                                 input_variables_dict={'RcutCoulomb_box_1': [], }
+                                                 )
+
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
+                                             r"values: \['Pressure'\]"):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_2.conf',
+                                                 'NVT', 10, 300,
+                                                 input_variables_dict={'Pressure': [], }
+                                                 )
+
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
+                                             r"values: \['Rcut'\]"):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_2.conf',
+                                                 'NVT', 10, 300,
+                                                 input_variables_dict={'Rcut': [], }
+                                                 )
+
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
+                                             r"values: \['RcutLow'\]"):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_2.conf',
+                                                 'NVT', 10, 300,
+                                                 input_variables_dict={'RcutLow': [], }
+                                                 )
+
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
+                                             r"values: \['LRC'\]"):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_2.conf',
+                                                 'NVT', 10, 300,
+                                                 input_variables_dict={'LRC': [], }
+                                                 )
+
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
+                                             r"values: \['Exclude'\]"):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_2.conf',
+                                                 'NVT', 10, 300,
+                                                 input_variables_dict={'Exclude': [], }
+                                                 )
+
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
+                                             r"values: \['Potential'\]"):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_2.conf',
+                                                 'NVT', 10, 300,
+                                                 input_variables_dict={'Potential': [], }
+                                                 )
+
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
+                                             r"values: \['Rswitch'\]"):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_2.conf',
+                                                 'NVT', 10, 300,
+                                                 input_variables_dict={'Rswitch': [], }
+                                                 )
+
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
+                                             r"values: \['ElectroStatic'\]"):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_2.conf',
+                                                 'NVT', 10, 300,
+                                                 input_variables_dict={'ElectroStatic': [], }
+                                                 )
+
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
+                                             r"values: \['Ewald'\]"):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_2.conf',
+                                                 'NVT', 10, 300,
+                                                 input_variables_dict={'Ewald': [], }
+                                                 )
+
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
+                                             r"values: \['CachedFourier'\]"):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_2.conf',
+                                                 'NVT', 10, 300,
+                                                 input_variables_dict={'CachedFourier': [], }
+                                                 )
+
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
+                                             r"values: \['Tolerance'\]"):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_2.conf',
+                                                 'NVT', 10, 300,
+                                                 input_variables_dict={'Tolerance': [], }
+                                                 )
+
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
+                                             r"values: \['Dielectric'\]"):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_2.conf',
+                                                 'NVT', 10, 300,
+                                                 input_variables_dict={'Dielectric': [], }
+                                                 )
+
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
+                                             r"values: \['PressureCalc'\]"):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_2.conf',
+                                                 'NVT', 10, 300,
+                                                 input_variables_dict={'PressureCalc': [], }
+                                                 )
+
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
+                                             r"values: \['EqSteps'\]"):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_2.conf',
+                                                 'NVT', 10, 300,
+                                                 input_variables_dict={'EqSteps': [], }
+                                                 )
+
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
+                                             r"values: \['AdjSteps'\]"):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_2.conf',
+                                                 'NVT', 10, 300,
+                                                 input_variables_dict={'AdjSteps': [], }
+                                                 )
+
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
+                                             r"values: \['useConstantArea'\]"):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_2.conf',
+                                                 'NVT', 10, 300,
+                                                 input_variables_dict={'useConstantArea': [], }
+                                                 )
+
+        with pytest.raises(ValueError, match=r"ERROR: All the correct input variables where not provided for "
+                                             r"the NVT ensemble. Please be sure to check that the keys in the "
+                                             r"input variables dictionary \(input_variables_dict\) is correct, and "
+                                             r"be aware that added spaces before or after the variable in any keys "
+                                             r"will also give this warning. The bad variable inputs ensemble "
+                                             r"inputs = \['FixVolBox0'\]"):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_2.conf',
+                                                 'NVT', 10, 300,
+                                                 input_variables_dict={'FixVolBox0': [], }
+                                                 )
+
+        with pytest.raises(ValueError, match=r"ERROR: All the correct input variables where not provided for "
+                                             r"the NVT ensemble. Please be sure to check that the keys in the "
+                                             r"input variables dictionary \(input_variables_dict\) is correct, and "
+                                             r"be aware that added spaces before or after the variable in any keys "
+                                             r"will also give this warning. The bad variable inputs ensemble "
+                                             r"inputs = \['ChemPot'\]"):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_2.conf',
+                                                 'NVT', 10, 300,
+                                                 input_variables_dict={'ChemPot': [], }
+                                                 )
+
+        with pytest.raises(ValueError, match=r"ERROR: All the correct input variables where not provided for "
+                                             r"the NVT ensemble. Please be sure to check that the keys in the "
+                                             r"input variables dictionary \(input_variables_dict\) is correct, and "
+                                             r"be aware that added spaces before or after the variable in any keys "
+                                             r"will also give this warning. The bad variable inputs ensemble "
+                                             r"inputs = \['Fugacity'\]"):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_2.conf',
+                                                 'NVT', 10, 300,
+                                                 input_variables_dict={'Fugacity': [], }
+                                                 )
+
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
+                                             r"values: \['CBMC_First'\]"):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_2.conf',
+                                                 'NVT', 10, 300,
+                                                 input_variables_dict={'CBMC_First': [], }
+                                                 )
+
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
+                                             r"values: \['CBMC_Nth'\]"):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_2.conf',
+                                                 'NVT', 10, 300,
+                                                 input_variables_dict={'CBMC_Nth': [], }
+                                                 )
+
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
+                                             r"values: \['CBMC_Ang'\]"):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_2.conf',
+                                                 'NVT', 10, 300,
+                                                 input_variables_dict={'CBMC_Ang': [], }
+                                                 )
+
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
+                                             r"values: \['CBMC_Dih'\]"):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_2.conf',
+                                                 'NVT', 10, 300,
+                                                 input_variables_dict={'CBMC_Dih': [], }
+                                                 )
+
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
+                                             r"values: \['OutputName'\]"):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_2.conf',
+                                                 'NVT', 10, 300,
+                                                 input_variables_dict={'OutputName': [], }
+                                                 )
+
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
+                                             r"values: \['CoordinatesFreq'\]"):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_2.conf',
+                                                 'NVT', 10, 300,
+                                                 input_variables_dict={'CoordinatesFreq': [], }
+                                                 )
+
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
+                                             r"values: \['RestartFreq'\]"):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_2.conf',
+                                                 'NVT', 10, 300,
+                                                 input_variables_dict={'RestartFreq': [], }
+                                                 )
+
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
+                                             r"values: \['CheckpointFreq'\]"):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_2.conf',
+                                                 'NVT', 10, 300,
+                                                 input_variables_dict={'CheckpointFreq': [], }
+                                                 )
+
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
+                                             r"values: \['ConsoleFreq'\]"):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_2.conf',
+                                                 'NVT', 10, 300,
+                                                 input_variables_dict={'ConsoleFreq': [], }
+                                                 )
+
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
+                                             r"values: \['BlockAverageFreq'\]"):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_2.conf',
+                                                 'NVT', 10, 300,
+                                                 input_variables_dict={'BlockAverageFreq': [], }
+                                                 )
+
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
+                                             r"values: \['HistogramFreq'\]"):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_2.conf',
+                                                 'NVT', 10, 300,
+                                                 input_variables_dict={'HistogramFreq': [], }
+                                                 )
+
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
+                                             r"values: \['DistName'\]"):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_2.conf',
+                                                 'NVT', 10, 300,
+                                                 input_variables_dict={'DistName': [], }
+                                                 )
+
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
+                                             r"values: \['HistName'\]"):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_2.conf',
+                                                 'NVT', 10, 300,
+                                                 input_variables_dict={'HistName': [], }
+                                                 )
+
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
+                                             r"values: \['RunNumber'\]"):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_2.conf',
+                                                 'NVT', 10, 300,
+                                                 input_variables_dict={'RunNumber': [], }
+                                                 )
+
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
+                                             r"values: \['RunLetter'\]"):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_2.conf',
+                                                 'NVT', 10, 300,
+                                                 input_variables_dict={'RunLetter': [], }
+                                                 )
+
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
+                                             r"values: \['SampleFreq'\]"):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_2.conf',
+                                                 'NVT', 10, 300,
+                                                 input_variables_dict={'SampleFreq': [], }
+                                                 )
+
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
+                                             r"values: \['OutEnergy'\]"):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_2.conf',
+                                                 'NVT', 10, 300,
+                                                 input_variables_dict={'OutEnergy': [], }
+                                                 )
+
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
+                                             r"values: \['OutPressure'\]"):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_2.conf',
+                                                 'NVT', 10, 300,
+                                                 input_variables_dict={'OutPressure': [], }
+                                                 )
+
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
+                                             r"values: \['OutMolNumber'\]"):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_2.conf',
+                                                 'NVT', 10, 300,
+                                                 input_variables_dict={'OutMolNumber': [], }
+                                                 )
+
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
+                                             r"values: \['OutDensity'\]"):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_2.conf',
+                                                 'NVT', 10, 300,
+                                                 input_variables_dict={'OutDensity': [], }
+                                                 )
+
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
+                                             r"values: \['OutVolume'\]"):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_2.conf',
+                                                 'NVT', 10, 300,
+                                                 input_variables_dict={'OutVolume': [], }
+                                                 )
+
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
+                                             r"values: \['OutSurfaceTension'\]"):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_2.conf',
+                                                 'NVT', 10, 300,
+                                                 input_variables_dict={'OutSurfaceTension': [], }
+                                                 )
+
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
+                                             r"values: \['FreeEnergyCalc'\]"):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
+                                                 'NVT', 10, 300,
+                                                 input_variables_dict={"FreeEnergyCalc": [],
+                                                                       "MoleculeType": ['ETH', 1],
+                                                                       "InitialState": 1,
+                                                                       "LambdaVDW": [0.1, 0.2, 0.4, 0.9],
+                                                                       "LambdaCoulomb": [0.1, 0.3, 0.8, 0.8]}
+                                                 )
+
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
+                                             r"values: \['MoleculeType'\]"):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
+                                                 'NVT', 10, 300,
+                                                 input_variables_dict={"FreeEnergyCalc": [True, 10000],
+                                                                       "MoleculeType": ['ETH', []],
+                                                                       "InitialState": 1,
+                                                                       "LambdaVDW": [0.1, 0.2, 0.4, 0.9],
+                                                                       "LambdaCoulomb": [0.1, 0.3, 0.8, 0.8]}
+                                                 )
+
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
+                                             r"values: \['MoleculeType'\]"):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
+                                                 'NVT', 10, 300,
+                                                 input_variables_dict={"FreeEnergyCalc": [True, 10000],
+                                                                       "MoleculeType": [['ETH'], 1],
+                                                                       "InitialState": 1,
+                                                                       "LambdaVDW": [0.1, 0.2, 0.4, 0.9],
+                                                                       "LambdaCoulomb": [0.1, 0.3, 0.8, 0.8]}
+                                                 )
+
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
+                                             r"values: \['MoleculeType'\]"):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
+                                                 'NVT', 10, 300,
+                                                 input_variables_dict={"FreeEnergyCalc": [True, 10000],
+                                                                       "MoleculeType": [{'ETH': "1"}, 1],
+                                                                       "InitialState": 1,
+                                                                       "LambdaVDW": [0.1, 0.2, 0.4, 0.9],
+                                                                       "LambdaCoulomb": [0.1, 0.3, 0.8, 0.8]}
+                                                 )
+
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
+                                             r"values: \['InitialState'\]"):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
+                                                 'NVT', 10, 300,
+                                                 input_variables_dict={"FreeEnergyCalc": [True, 10000],
+                                                                       "MoleculeType": ['ETH', 1],
+                                                                       "InitialState": [],
+                                                                       "LambdaVDW": [0.1, 0.2, 0.4, 0.9],
+                                                                       "LambdaCoulomb": [0.1, 0.3, 0.8, 0.8]}
+                                                 )
+
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
+                                             r"values: \['LambdaVDW'\]"):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
+                                                 'NVT', 10, 300,
+                                                 input_variables_dict={"FreeEnergyCalc": [True, 10000],
+                                                                       "MoleculeType": ['ETH', 1],
+                                                                       "InitialState": 1,
+                                                                       "LambdaVDW": [],
+                                                                       "LambdaCoulomb": [0.1, 0.3, 0.8, 0.8]}
+                                                 )
+
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
+                                             r"values: \['LambdaCoulomb'\]"):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
+                                                 'NVT', 10, 300,
+                                                 input_variables_dict={"FreeEnergyCalc": [True, 10000],
+                                                                       "MoleculeType": ['ETH', 1],
+                                                                       "InitialState": 1,
+                                                                       "LambdaVDW": [0.1, 0.2, 0.4, 0.9],
+                                                                       "LambdaCoulomb": []}
+                                                 )
+
+        with pytest.raises(ValueError, match=r"ERROR: To utilize the free energy calculations all the "
+                                             r"following variables need to be set, and not equal to "
+                                             r"None: FreeEnergyCalc, MoleculeType, InitialState, LambdaVDW."):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
+                                                 'NVT', 10, 300,
+                                                 input_variables_dict={"FreeEnergyCalc": [True, 10000]}
+                                                 )
+
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
+                                             r"values: \['ScaleCoulomb'\]"):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_2.conf',
+                                                 'NVT', 10, 300,
+                                                 input_variables_dict={'ScaleCoulomb': [], }
+                                                 )
+
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
+                                             r"values: \['ScalePower'\]"):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_2.conf',
+                                                 'NVT', 10, 300,
+                                                 input_variables_dict={'ScalePower': [], }
+                                                 )
+
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
+                                             r"values: \['ScaleAlpha'\]"):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_2.conf',
+                                                 'NVT', 10, 300,
+                                                 input_variables_dict={'ScaleAlpha': [], }
+                                                 )
+
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
+                                             r"values: \['MinSigma'\]"):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_2.conf',
+                                                 'NVT', 10, 300,
+                                                 input_variables_dict={'MinSigma': [], }
+                                                 )
+
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
+                                             r"values: \['ExchangeVolumeDim'\]"):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_2.conf',
+                                                 'NVT', 10, 300,
+                                                 input_variables_dict={'ExchangeVolumeDim': [], }
+                                                 )
+
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
+                                             r"values: \['MEMC_DataInput'\]"):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_2.conf',
+                                                 'NVT', 10, 300,
+                                                 input_variables_dict={'MEMC_DataInput': [], }
+                                                 )
+
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
+                                             r"values: \['DisFreq'\]"):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_2.conf',
+                                                 'NVT', 10, 300,
+                                                 input_variables_dict={'DisFreq': [], }
+                                                 )
+
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
+                                             r"values: \['DisFreq'\]"):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_2.conf',
+                                                 'NVT', 10, 300,
+                                                 input_variables_dict={'DisFreq': [], }
+                                                 )
+
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
+                                             r"values: \['IntraSwapFreq'\]"):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_2.conf',
+                                                 'NVT', 10, 300,
+                                                 input_variables_dict={'IntraSwapFreq': [], }
+                                                 )
+
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
+                                             r"values: \['IntraSwapFreq'\]"):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_2.conf',
+                                                 'NVT', 10, 300,
+                                                 input_variables_dict={'IntraSwapFreq': [], }
+                                                 )
+
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
+                                             r"values: \['RegrowthFreq'\]"):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_2.conf',
+                                                 'NVT', 10, 300,
+                                                 input_variables_dict={'RegrowthFreq': [], }
+                                                 )
+
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
+                                             r"values: \['CrankShaftFreq'\]"):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_2.conf',
+                                                 'NVT', 10, 300,
+                                                 input_variables_dict={'CrankShaftFreq': [], }
+                                                 )
+
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
+                                             r"values: \['VolFreq'\]"):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_2.conf',
+                                                 'NVT', 10, 300,
+                                                 input_variables_dict={'VolFreq': [], }
+                                                 )
+
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
+                                             r"values: \['MultiParticleFreq'\]"):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_2.conf',
+                                                 'NVT', 10, 300,
+                                                 input_variables_dict={'MultiParticleFreq': [], }
+                                                 )
+
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
+                                             r"values: \['IntraMEMC-1Freq'\]"):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_2.conf',
+                                                 'NVT', 10, 300,
+                                                 input_variables_dict={'IntraMEMC-1Freq': [], }
+                                                 )
+
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
+                                             r"values: \['MEMC-1Freq'\]"):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_2.conf',
+                                                 'NVT', 10, 300,
+                                                 input_variables_dict={'MEMC-1Freq': [], }
+                                                 )
+
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
+                                             r"values: \['IntraMEMC-2Freq'\]"):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_2.conf',
+                                                 'NVT', 10, 300,
+                                                 input_variables_dict={'IntraMEMC-2Freq': [], }
+                                                 )
+
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
+                                             r"values: \['MEMC-2Freq'\]"):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_2.conf',
+                                                 'NVT', 10, 300,
+                                                 input_variables_dict={'MEMC-2Freq': [], }
+                                                 )
+
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
+                                             r"values: \['IntraMEMC-3Freq'\]"):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_2.conf',
+                                                 'NVT', 10, 300,
+                                                 input_variables_dict={'IntraMEMC-3Freq': [], }
+                                                 )
+
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
+                                             r"values: \['MEMC-3Freq'\]"):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_2.conf',
+                                                 'NVT', 10, 300,
+                                                 input_variables_dict={'MEMC-3Freq': [], }
+                                                 )
+
+        with pytest.raises(ValueError, match=r"ERROR: All the correct input variables where not provided for "
+                                             r"the NVT ensemble. Please be sure to check that the keys in the "
+                                             r"input variables dictionary \(input_variables_dict\) is correct, and "
+                                             r"be aware that added spaces before or after the variable in any keys "
+                                             r"will also give this warning. The bad variable inputs ensemble "
+                                             r"inputs = \['XXXXXX'\]"):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_2.conf',
+                                                 'NVT', 10, 300,
+                                                 input_variables_dict={'XXXXXX': [], }
+                                                 )
+
 
 
     def test_save_NVT_bad_variables_part_5(self, EthaneGOMC, EthanolGOMC):
@@ -4438,9 +2539,9 @@ class TestGOMCControlFileWriter(BaseTest):
                                               n_compounds=[1, 1],
                                               box=[4.0, 4.0, 4.0])
 
-        charmm = Charmm(test_box_ethane_ethanol, 'ethane_ethanol', FF_filename = 'ethane_ethanol',
+        charmm = Charmm(test_box_ethane_ethanol, 'ethane_ethanol', FF_filename='ethane_ethanol',
                         residues=[EthaneGOMC.name, EthanolGOMC.name], forcefield_selection='oplsaa',
-                        box_0 = [1,1,1]
+                        box_0=[1, 1, 1]
                         )
 
         try:
@@ -4463,20 +2564,17 @@ class TestGOMCControlFileWriter(BaseTest):
 
         assert value == "GOMC_CONTROL_FILE_WRITTEN"
 
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_5.conf',
-                                                         'NPT', 10, 300,
-                                                         input_variables_dict={'PressureCalc': [1, 10000], }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
+                                             r"values: \['PressureCalc'\]"):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_5.conf',
+                                                 'NPT', 10, 300,
+                                                 input_variables_dict={'PressureCalc': [1, 10000], }
+                                                 )
 
         try:
             value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_5.conf',
                                                          'NVT', 10, 300,
-                                                         input_variables_dict={'PressureCalc': [True , 10000], }
+                                                         input_variables_dict={'PressureCalc': [True, 10000], }
                                                          )
         except:
             value = "TEST_FAILED"
@@ -4486,121 +2584,84 @@ class TestGOMCControlFileWriter(BaseTest):
         try:
             value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_5.conf',
                                                          'NVT', 10, 300,
-                                                         input_variables_dict={'PressureCalc': [False , 10000], }
+                                                         input_variables_dict={'PressureCalc': [False, 10000], }
                                                          )
         except:
             value = "TEST_FAILED"
 
         assert value == "GOMC_CONTROL_FILE_WRITTEN"
 
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_5.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'PressureCalc': [1 , 10000], }
-                                                         )
-        except:
-            value = "TEST_FAILED"
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
+                                             r"values: \['PressureCalc'\]"):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_5.conf',
+                                                 'NVT', 10, 300,
+                                                 input_variables_dict={'PressureCalc': [1, 10000], }
+                                                 )
 
-        assert value== "TEST_FAILED"
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
+                                             r"values: \['PressureCalc'\]"):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_5.conf',
+                                                 'NVT', 10, 300,
+                                                 input_variables_dict={'PressureCalc': ['', 10000], }
+                                                 )
 
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_5.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'PressureCalc' : ['' , 10000], }
-                                                         )
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
+                                             r"values: \['PressureCalc'\]"):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_5.conf',
+                                                 'NVT', 10, 300,
+                                                 input_variables_dict={'PressureCalc': [['x'], 10000], }
+                                                 )
 
-        except:
-            value = "TEST_FAILED"
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
+                                             r"values: \['PressureCalc'\]"):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_5.conf',
+                                                 'NVT', 10, 300,
+                                                 input_variables_dict={'PressureCalc': [{'s': 1}, 10000], }
+                                                 )
 
-        assert value== "TEST_FAILED"
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
+                                             r"values: \['PressureCalc'\]"):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_5.conf',
+                                                 'NVT', 10, 300,
+                                                 input_variables_dict={'PressureCalc': [True, 1.0], }
+                                                 )
 
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_5.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'PressureCalc' : [['x'] , 10000], }
-                                                         )
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
+                                             r"values: \['PressureCalc'\]"):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_5.conf',
+                                                 'NVT', 10, 300,
+                                                 input_variables_dict={'PressureCalc': [True, 'x'], }
+                                                 )
 
-        except:
-            value = "TEST_FAILED"
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
+                                             r"values: \['PressureCalc'\]"):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_5.conf',
+                                                 'NVT', 10, 300,
+                                                 input_variables_dict={'PressureCalc': [True, ['x']], }
+                                                 )
 
-        assert value== "TEST_FAILED"
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
+                                             r"values: \['PressureCalc'\]"):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_5.conf',
+                                                 'NVT', 10, 300,
+                                                 input_variables_dict={'PressureCalc': [True, {'s': 1}], }
+                                                 )
 
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_5.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'PressureCalc' : [{'s' : 1} , 10000], }
-                                                         )
-
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_5.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'PressureCalc' : [True , 1.0], }
-                                                         )
-
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_5.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'PressureCalc' : [True , 'x'], }
-                                                         )
-
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_5.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'PressureCalc' : [True , ['x']], }
-                                                         )
-
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_5.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'PressureCalc' : [True , {'s' : 1}], }
-                                                         )
-
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_5.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'PressureCalc': [1 , True], }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
+                                             r"values: \['PressureCalc'\]"):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_5.conf',
+                                                 'NVT', 10, 300,
+                                                 input_variables_dict={'PressureCalc': [1, True], }
+                                                 )
 
     def test_save_NVT_bad_variables_part_6(self, EthaneGOMC, EthanolGOMC):
         test_box_ethane_ethanol = mb.fill_box(compound=[EthaneGOMC, EthanolGOMC],
                                               n_compounds=[1, 1],
                                               box=[4.0, 4.0, 4.0])
 
-        charmm = Charmm(test_box_ethane_ethanol, 'ethane_ethanol', FF_filename = 'ethane_ethanol',
+        charmm = Charmm(test_box_ethane_ethanol, 'ethane_ethanol', FF_filename='ethane_ethanol',
                         residues=[EthaneGOMC.name, EthanolGOMC.name], forcefield_selection='oplsaa',
-                        box_0 = [1,1,1]
+                        box_0=[1, 1, 1]
                         )
 
         try:
@@ -4624,141 +2685,109 @@ class TestGOMCControlFileWriter(BaseTest):
         assert value == "GOMC_CONTROL_FILE_WRITTEN"
 
         try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_6.conf',
-                                                         'NPT', 10, 300,
-                                                         input_variables_dict={'OutEnergy': [False, False], }
-                                                         )
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_6.conf',
+                                                 'NPT', 10, 300,
+                                                 input_variables_dict={'OutEnergy': [False, False], }
+                                                 )
         except:
             value = "TEST_FAILED"
 
         assert value == "GOMC_CONTROL_FILE_WRITTEN"
 
         try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_6.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'OutEnergy': [True , True], }
-                                                         )
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_6.conf',
+                                                 'NVT', 10, 300,
+                                                 input_variables_dict={'OutEnergy': [True, True], }
+                                                 )
         except:
             value = "TEST_FAILED"
 
         assert value == "GOMC_CONTROL_FILE_WRITTEN"
 
         try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_6.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'OutEnergy': [False , True], }
-                                                         )
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_6.conf',
+                                                 'NVT', 10, 300,
+                                                 input_variables_dict={'OutEnergy': [False, True], }
+                                                 )
         except:
             value = "TEST_FAILED"
 
         assert value == "GOMC_CONTROL_FILE_WRITTEN"
 
         try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_6.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'OutEnergy': [False , False], }
-                                                         )
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_6.conf',
+                                                 'NVT', 10, 300,
+                                                 input_variables_dict={'OutEnergy': [False, False], }
+                                                 )
         except:
             value = "TEST_FAILED"
 
         assert value == "GOMC_CONTROL_FILE_WRITTEN"
 
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_6.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'OutEnergy': [1 , True], }
-                                                         )
-        except:
-            value = "TEST_FAILED"
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
+                                             r"values: \['OutEnergy'\]"):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_6.conf',
+                                                 'NVT', 10, 300,
+                                                 input_variables_dict={'OutEnergy': [1, True], }
+                                                 )
 
-        assert value== "TEST_FAILED"
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
+                                             r"values: \['OutEnergy'\]"):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_6.conf',
+                                                 'NVT', 10, 300,
+                                                 input_variables_dict={'OutEnergy': ['', True], }
+                                                 )
 
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_6.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'OutEnergy' : ['' , True], }
-                                                         )
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
+                                             r"values: \['OutEnergy'\]"):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_6.conf',
+                                                 'NVT', 10, 300,
+                                                 input_variables_dict={'OutEnergy': [['x'], True], }
+                                                 )
 
-        except:
-            value = "TEST_FAILED"
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
+                                             r"values: \['OutEnergy'\]"):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_6.conf',
+                                                 'NVT', 10, 300,
+                                                 input_variables_dict={'OutEnergy': [{'s': 1}, True], }
+                                                 )
 
-        assert value== "TEST_FAILED"
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
+                                             r"values: \['OutEnergy'\]"):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_6.conf',
+                                                 'NVT', 10, 300,
+                                                 input_variables_dict={'OutEnergy': [True, 1.0], }
+                                                 )
 
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_6.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'OutEnergy' : [['x'] , True], }
-                                                         )
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
+                                             r"values: \['OutEnergy'\]"):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_6.conf',
+                                                 'NVT', 10, 300,
+                                                 input_variables_dict={'OutEnergy': [True, 'x'], }
+                                                 )
 
-        except:
-            value = "TEST_FAILED"
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
+                                             r"values: \['OutEnergy'\]"):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_6.conf',
+                                                 'NVT', 10, 300,
+                                                 input_variables_dict={'OutEnergy': [True, ['x']], }
+                                                 )
 
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_6.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'OutEnergy' : [{'s' : 1} , True], }
-                                                         )
-
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_6.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'OutEnergy' : [True , 1.0], }
-                                                         )
-
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_6.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'OutEnergy' : [True , 'x'], }
-                                                         )
-
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_6.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'OutEnergy' : [True , ['x']], }
-                                                         )
-
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_6.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={'OutEnergy' : [True , {'s' : 1}], }
-                                                         )
-
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
+                                             r"values: \['OutEnergy'\]"):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_6.conf',
+                                                 'NVT', 10, 300,
+                                                 input_variables_dict={'OutEnergy': [True, {'s': 1}], }
+                                                 )
 
     def test_save_NVT_bad_variables_part_7(self, EthaneGOMC, EthanolGOMC):
         test_box_ethane_ethanol = mb.fill_box(compound=[EthaneGOMC, EthanolGOMC],
                                               n_compounds=[1, 1],
                                               box=[4.0, 4.0, 4.0])
 
-        charmm = Charmm(test_box_ethane_ethanol, 'ethane_ethanol', FF_filename = 'ethane_ethanol',
+        charmm = Charmm(test_box_ethane_ethanol, 'ethane_ethanol', FF_filename='ethane_ethanol',
                         residues=[EthaneGOMC.name, EthanolGOMC.name], forcefield_selection='oplsaa',
-                        box_0 = [1,1,1]
+                        box_0=[1, 1, 1]
                         )
 
         try:
@@ -4824,142 +2853,121 @@ class TestGOMCControlFileWriter(BaseTest):
 
         assert value == "GOMC_CONTROL_FILE_WRITTEN"
 
+        with pytest.raises(ValueError, match=r"ERROR: To utilize the free energy calculations all the following "
+                                             r"variables need to be set, and not equal to None: FreeEnergyCalc, "
+                                             r"MoleculeType, InitialState, LambdaVDW."):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_7.conf',
+                                                 'NVT', 10, 300,
+                                                 input_variables_dict={
+                                                     "MoleculeType": ['ETO', 1],
+                                                     "InitialState": 1,
+                                                     "LambdaVDW": [0.1, 0.2, 0.4, 0.9],
+                                                     "LambdaCoulomb": [0.1, 0.3, 0.8, 0.8],
+                                                 }
+                                                 )
+
+        with pytest.raises(ValueError, match=r"ERROR: To utilize the free energy calculations all the following "
+                                             r"variables need to be set, and not equal to None: FreeEnergyCalc, "
+                                             r"MoleculeType, InitialState, LambdaVDW."):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_7.conf',
+                                                 'NVT', 10, 300,
+                                                 input_variables_dict={"FreeEnergyCalc": [False, 10000],
+
+                                                                       "InitialState": 1,
+                                                                       "LambdaVDW": [0.1, 0.2, 0.4, 0.9],
+                                                                       "LambdaCoulomb": [0.1, 0.3, 0.8, 0.8],
+                                                                       }
+                                                 )
+
+        with pytest.raises(ValueError, match=r"ERROR: To utilize the free energy calculations all the following "
+                                             r"variables need to be set, and not equal to None: FreeEnergyCalc, "
+                                             r"MoleculeType, InitialState, LambdaVDW."):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_7.conf',
+                                                 'NVT', 10, 300,
+                                                 input_variables_dict={"FreeEnergyCalc": [False, 10000],
+                                                                       "MoleculeType": ['ETO', 1],
+
+                                                                       "LambdaVDW": [0.1, 0.2, 0.4, 0.9],
+                                                                       "LambdaCoulomb": [0.1, 0.3, 0.8, 0.8],
+                                                                       }
+                                                 )
+
+        with pytest.raises(ValueError, match=r"ERROR: To utilize the free energy calculations all the following "
+                                             r"variables need to be set, and not equal to None: FreeEnergyCalc, "
+                                             r"MoleculeType, InitialState, LambdaVDW."):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_7.conf',
+                                                 'NVT', 10, 300,
+                                                 input_variables_dict={"FreeEnergyCalc": [False, 10000],
+                                                                       "MoleculeType": ['ETO', 1],
+                                                                       "InitialState": 1,
+
+                                                                       "LambdaCoulomb": [0.1, 0.3, 0.8, 0.8],
+                                                                       }
+                                                 )
+
         try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_7.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={
-                                                                               "MoleculeType": ['ETO', 1],
-                                                                               "InitialState": 1,
-                                                                               "LambdaVDW": [0.1, 0.2, 0.4, 0.9],
-                                                                               "LambdaCoulomb": [0.1, 0.3, 0.8, 0.8],
-                                                                               }
-                                                         )
-        except:
-            value = "TEST_FAILED"
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_7.conf',
+                                                 'NVT', 10, 300,
+                                                 input_variables_dict={"FreeEnergyCalc": [False, 10000],
+                                                                       "MoleculeType": ['ETO', 1],
+                                                                       "InitialState": 1,
+                                                                       "LambdaVDW": [0.1, 0.2, 0.4, 0.9],
 
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_7.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={"FreeEnergyCalc": [False, 10000],
-
-                                                                               "InitialState": 1,
-                                                                               "LambdaVDW": [0.1, 0.2, 0.4, 0.9],
-                                                                               "LambdaCoulomb": [0.1, 0.3, 0.8, 0.8],
-                                                                               }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_7.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={"FreeEnergyCalc": [False, 10000],
-                                                                               "MoleculeType": ['ETO', 1],
-
-                                                                               "LambdaVDW": [0.1, 0.2, 0.4, 0.9],
-                                                                               "LambdaCoulomb": [0.1, 0.3, 0.8, 0.8],
-                                                                               }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_7.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={"FreeEnergyCalc": [False, 10000],
-                                                                               "MoleculeType": ['ETO', 1],
-                                                                               "InitialState": 1,
-
-                                                                               "LambdaCoulomb": [0.1, 0.3, 0.8, 0.8],
-                                                                               }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        # this passes as the "LambdaCoulomb" is default set to "LambdaVDW" if not used
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_7.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={"FreeEnergyCalc": [False, 10000],
-                                                                               "MoleculeType": ['ETO', 1],
-                                                                               "InitialState": 1,
-                                                                               "LambdaVDW": [0.1, 0.2, 0.4, 0.9],
-
-                                                                               }
-                                                         )
+                                                                       }
+                                                 )
         except:
             value = "TEST_FAILED"
 
         assert value == "GOMC_CONTROL_FILE_WRITTEN"
 
         # starting bad inputs for the Free engergy calcs side from not using all required variables
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_7.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={"FreeEnergyCalc": [1, 10000],
-                                                                               "MoleculeType": ['ETO', 1],
-                                                                               "InitialState": 1,
-                                                                               "LambdaVDW": [0.1, 0.2, 0.4, 0.9],
-                                                                               "LambdaCoulomb": [0.1, 0.3, 0.8, 0.8],
-                                                                               }
-                                                         )
-        except:
-            value = "TEST_FAILED"
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
+                                             r"values: \['FreeEnergyCalc'\]"):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_7.conf',
+                                                 'NVT', 10, 300,
+                                                 input_variables_dict={"FreeEnergyCalc": [1, 10000],
+                                                                       "MoleculeType": ['ETO', 1],
+                                                                       "InitialState": 1,
+                                                                       "LambdaVDW": [0.1, 0.2, 0.4, 0.9],
+                                                                       "LambdaCoulomb": [0.1, 0.3, 0.8, 0.8],
+                                                                       }
+                                                 )
 
-        assert value== "TEST_FAILED"
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
+                                             r"values: \['FreeEnergyCalc'\]"):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_7.conf',
+                                                 'NVT', 10, 300,
+                                                 input_variables_dict={"FreeEnergyCalc": ['1', 10000],
+                                                                       "MoleculeType": ['ETO', 1],
+                                                                       "InitialState": 1,
+                                                                       "LambdaVDW": [0.1, 0.2, 0.4, 0.9],
+                                                                       "LambdaCoulomb": [0.1, 0.3, 0.8, 0.8],
+                                                                       }
+                                                 )
 
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_7.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={"FreeEnergyCalc": ['1', 10000],
-                                                                               "MoleculeType": ['ETO', 1],
-                                                                               "InitialState": 1,
-                                                                               "LambdaVDW": [0.1, 0.2, 0.4, 0.9],
-                                                                               "LambdaCoulomb": [0.1, 0.3, 0.8, 0.8],
-                                                                               }
-                                                         )
-        except:
-            value = "TEST_FAILED"
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
+                                             r"values: \['FreeEnergyCalc'\]"):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_7.conf',
+                                                 'NVT', 10, 300,
+                                                 input_variables_dict={"FreeEnergyCalc": [['1'], 10000],
+                                                                       "MoleculeType": ['ETO', 1],
+                                                                       "InitialState": 1,
+                                                                       "LambdaVDW": [0.1, 0.2, 0.4, 0.9],
+                                                                       "LambdaCoulomb": [0.1, 0.3, 0.8, 0.8],
+                                                                       }
+                                                 )
 
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_7.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={"FreeEnergyCalc": [['1'], 10000],
-                                                                               "MoleculeType": ['ETO', 1],
-                                                                               "InitialState": 1,
-                                                                               "LambdaVDW": [0.1, 0.2, 0.4, 0.9],
-                                                                               "LambdaCoulomb": [0.1, 0.3, 0.8, 0.8],
-                                                                               }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_7.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={"FreeEnergyCalc": [{'a' : '1'}, 10000],
-                                                                               "MoleculeType": ['ETO', 1],
-                                                                               "InitialState": 1,
-                                                                               "LambdaVDW": [0.1, 0.2, 0.4, 0.9],
-                                                                               "LambdaCoulomb": [0.1, 0.3, 0.8, 0.8],
-                                                                               }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
+                                             r"values: \['FreeEnergyCalc'\]"):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_7.conf',
+                                                 'NVT', 10, 300,
+                                                 input_variables_dict={"FreeEnergyCalc": [{'a': '1'}, 10000],
+                                                                       "MoleculeType": ['ETO', 1],
+                                                                       "InitialState": 1,
+                                                                       "LambdaVDW": [0.1, 0.2, 0.4, 0.9],
+                                                                       "LambdaCoulomb": [0.1, 0.3, 0.8, 0.8],
+                                                                       }
+                                                 )
 
         try:
             value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_7.conf',
@@ -4977,356 +2985,296 @@ class TestGOMCControlFileWriter(BaseTest):
         assert value == "GOMC_CONTROL_FILE_WRITTEN"
 
         # starting bad inputs for the Free engergy calcs side from not using all required variables
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_7.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={"FreeEnergyCalc": [True, 1.0],
-                                                                               "MoleculeType": ['ETO', 1],
-                                                                               "InitialState": 1,
-                                                                               "LambdaVDW": [0.1, 0.2, 0.4, 0.9],
-                                                                               "LambdaCoulomb": [0.1, 0.3, 0.8, 0.8],
-                                                                               }
-                                                         )
-        except:
-            value = "TEST_FAILED"
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
+                                             r"values: \['FreeEnergyCalc'\]"):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_7.conf',
+                                                 'NVT', 10, 300,
+                                                 input_variables_dict={"FreeEnergyCalc": [True, 1.0],
+                                                                       "MoleculeType": ['ETO', 1],
+                                                                       "InitialState": 1,
+                                                                       "LambdaVDW": [0.1, 0.2, 0.4, 0.9],
+                                                                       "LambdaCoulomb": [0.1, 0.3, 0.8, 0.8],
+                                                                       }
+                                                 )
 
-        assert value== "TEST_FAILED"
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
+                                             r"values: \['FreeEnergyCalc'\]"):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_7.conf',
+                                                 'NVT', 10, 300,
+                                                 input_variables_dict={"FreeEnergyCalc": [True, '1'],
+                                                                       "MoleculeType": ['ETO', 1],
+                                                                       "InitialState": 1,
+                                                                       "LambdaVDW": [0.1, 0.2, 0.4, 0.9],
+                                                                       "LambdaCoulomb": [0.1, 0.3, 0.8, 0.8],
+                                                                       }
+                                                 )
 
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_7.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={"FreeEnergyCalc": [True, '1'],
-                                                                               "MoleculeType": ['ETO', 1],
-                                                                               "InitialState": 1,
-                                                                               "LambdaVDW": [0.1, 0.2, 0.4, 0.9],
-                                                                               "LambdaCoulomb": [0.1, 0.3, 0.8, 0.8],
-                                                                               }
-                                                         )
-        except:
-            value = "TEST_FAILED"
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
+                                             r"values: \['FreeEnergyCalc'\]"):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_7.conf',
+                                                 'NVT', 10, 300,
+                                                 input_variables_dict={"FreeEnergyCalc": [True, ['1']],
+                                                                       "MoleculeType": ['ETO', 1],
+                                                                       "InitialState": 1,
+                                                                       "LambdaVDW": [0.1, 0.2, 0.4, 0.9],
+                                                                       "LambdaCoulomb": [0.1, 0.3, 0.8, 0.8],
+                                                                       }
+                                                 )
 
-        assert value== "TEST_FAILED"
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
+                                             r"values: \['FreeEnergyCalc'\]"):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_7.conf',
+                                                 'NVT', 10, 300,
+                                                 input_variables_dict={"FreeEnergyCalc": [True, {'a': '1'}],
+                                                                       "MoleculeType": ['ETO', 1],
+                                                                       "InitialState": 1,
+                                                                       "LambdaVDW": [0.1, 0.2, 0.4, 0.9],
+                                                                       "LambdaCoulomb": [0.1, 0.3, 0.8, 0.8],
+                                                                       }
+                                                 )
 
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_7.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={"FreeEnergyCalc": [True, ['1']],
-                                                                               "MoleculeType": ['ETO', 1],
-                                                                               "InitialState": 1,
-                                                                               "LambdaVDW": [0.1, 0.2, 0.4, 0.9],
-                                                                               "LambdaCoulomb": [0.1, 0.3, 0.8, 0.8],
-                                                                               }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_7.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={"FreeEnergyCalc": [True, {'a' : '1'}],
-                                                                               "MoleculeType": ['ETO', 1],
-                                                                               "InitialState": 1,
-                                                                               "LambdaVDW": [0.1, 0.2, 0.4, 0.9],
-                                                                               "LambdaCoulomb": [0.1, 0.3, 0.8, 0.8],
-                                                                               }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_7.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={"FreeEnergyCalc": [True, 10000, 's'],
-                                                                               "MoleculeType": ['ETO', 1],
-                                                                               "InitialState": 1,
-                                                                               "LambdaVDW": [0.1, 0.2, 0.4, 0.9],
-                                                                               "LambdaCoulomb": [0.1, 0.3, 0.8, 0.8],
-                                                                               }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
+                                             r"values: \['FreeEnergyCalc'\]"):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_7.conf',
+                                                 'NVT', 10, 300,
+                                                 input_variables_dict={"FreeEnergyCalc": [True, 10000, 's'],
+                                                                       "MoleculeType": ['ETO', 1],
+                                                                       "InitialState": 1,
+                                                                       "LambdaVDW": [0.1, 0.2, 0.4, 0.9],
+                                                                       "LambdaCoulomb": [0.1, 0.3, 0.8, 0.8],
+                                                                       }
+                                                 )
 
         # start checking the MoleculeType variable for errors
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_7.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={"FreeEnergyCalc": [True, 10000],
-                                                                               "MoleculeType": [1, 1],
-                                                                               "InitialState": 1,
-                                                                               "LambdaVDW": [0.1, 0.2, 0.4, 0.9],
-                                                                               "LambdaCoulomb": [0.1, 0.3, 0.8, 0.8],
-                                                                               }
-                                                         )
-        except:
-            value = "TEST_FAILED"
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
+                                             r"values: \['MoleculeType'\]"):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_7.conf',
+                                                 'NVT', 10, 300,
+                                                 input_variables_dict={"FreeEnergyCalc": [True, 10000],
+                                                                       "MoleculeType": [1, 1],
+                                                                       "InitialState": 1,
+                                                                       "LambdaVDW": [0.1, 0.2, 0.4, 0.9],
+                                                                       "LambdaCoulomb": [0.1, 0.3, 0.8, 0.8],
+                                                                       }
+                                                 )
 
-        assert value== "TEST_FAILED"
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
+                                             r"values: \['MoleculeType'\]"):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_7.conf',
+                                                 'NVT', 10, 300,
+                                                 input_variables_dict={"FreeEnergyCalc": [True, 10000],
+                                                                       "MoleculeType": [[1], 1],
+                                                                       "InitialState": 1,
+                                                                       "LambdaVDW": [0.1, 0.2, 0.4, 0.9],
+                                                                       "LambdaCoulomb": [0.1, 0.3, 0.8, 0.8],
+                                                                       }
+                                                 )
 
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_7.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={"FreeEnergyCalc": [True, 10000],
-                                                                               "MoleculeType": [[1], 1],
-                                                                               "InitialState": 1,
-                                                                               "LambdaVDW": [0.1, 0.2, 0.4, 0.9],
-                                                                               "LambdaCoulomb": [0.1, 0.3, 0.8, 0.8],
-                                                                               }
-                                                         )
-        except:
-            value = "TEST_FAILED"
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
+                                             r"values: \['MoleculeType'\]"):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_7.conf',
+                                                 'NVT', 10, 300,
+                                                 input_variables_dict={"FreeEnergyCalc": [True, 10000],
+                                                                       "MoleculeType": [{'a': '1'}, 1],
+                                                                       "InitialState": 1,
+                                                                       "LambdaVDW": [0.1, 0.2, 0.4, 0.9],
+                                                                       "LambdaCoulomb": [0.1, 0.3, 0.8, 0.8],
+                                                                       }
+                                                 )
 
-        assert value== "TEST_FAILED"
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
+                                             r"values: \['MoleculeType'\]"):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_7.conf',
+                                                 'NVT', 10, 300,
+                                                 input_variables_dict={"FreeEnergyCalc": [True, 10000],
+                                                                       "MoleculeType": ['ETO', '1'],
+                                                                       "InitialState": 1,
+                                                                       "LambdaVDW": [0.1, 0.2, 0.4, 0.9],
+                                                                       "LambdaCoulomb": [0.1, 0.3, 0.8, 0.8],
+                                                                       }
+                                                 )
 
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_7.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={"FreeEnergyCalc": [True, 10000],
-                                                                               "MoleculeType": [{'a' : '1'}, 1],
-                                                                               "InitialState": 1,
-                                                                               "LambdaVDW": [0.1, 0.2, 0.4, 0.9],
-                                                                               "LambdaCoulomb": [0.1, 0.3, 0.8, 0.8],
-                                                                               }
-                                                         )
-        except:
-            value = "TEST_FAILED"
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
+                                             r"values: \['MoleculeType'\]"):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_7.conf',
+                                                 'NVT', 10, 300,
+                                                 input_variables_dict={"FreeEnergyCalc": [True, 10000],
+                                                                       "MoleculeType": ['ETO', ['1']],
+                                                                       "InitialState": 1,
+                                                                       "LambdaVDW": [0.1, 0.2, 0.4, 0.9],
+                                                                       "LambdaCoulomb": [0.1, 0.3, 0.8, 0.8],
+                                                                       }
+                                                 )
 
-        assert value== "TEST_FAILED"
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
+                                             r"values: \['MoleculeType'\]"):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_7.conf',
+                                                 'NVT', 10, 300,
+                                                 input_variables_dict={"FreeEnergyCalc": [True, 10000],
+                                                                       "MoleculeType": ['ETO', {'a': '1'}],
+                                                                       "InitialState": 1,
+                                                                       "LambdaVDW": [0.1, 0.2, 0.4, 0.9],
+                                                                       "LambdaCoulomb": [0.1, 0.3, 0.8, 0.8],
+                                                                       }
+                                                 )
 
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_7.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={"FreeEnergyCalc": [True, 10000, 's'],
-                                                                               "MoleculeType": ['ETO', '1'],
-                                                                               "InitialState": 1,
-                                                                               "LambdaVDW": [0.1, 0.2, 0.4, 0.9],
-                                                                               "LambdaCoulomb": [0.1, 0.3, 0.8, 0.8],
-                                                                               }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_7.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={"FreeEnergyCalc": [True, 10000, 's'],
-                                                                               "MoleculeType": ['ETO', ['1']],
-                                                                               "InitialState": 1,
-                                                                               "LambdaVDW": [0.1, 0.2, 0.4, 0.9],
-                                                                               "LambdaCoulomb": [0.1, 0.3, 0.8, 0.8],
-                                                                               }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_7.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={"FreeEnergyCalc": [True, 10000, 's'],
-                                                                               "MoleculeType": ['ETO', {'a' : '1'}],
-                                                                               "InitialState": 1,
-                                                                               "LambdaVDW": [0.1, 0.2, 0.4, 0.9],
-                                                                               "LambdaCoulomb": [0.1, 0.3, 0.8, 0.8],
-                                                                               }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
+                                             r"values: \['MoleculeType'\]"):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_7.conf',
+                                                 'NVT', 10, 300,
+                                                 input_variables_dict={"FreeEnergyCalc": [True, 10000],
+                                                                       "MoleculeType": ['ETOa', 1],
+                                                                       "InitialState": 1,
+                                                                       "LambdaVDW": [0.1, 0.2, 0.4, 0.9],
+                                                                       "LambdaCoulomb": [0.1, 0.3, 0.8, 0.8],
+                                                                       }
+                                                 )
 
         # start checking the initial state variable
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_7.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={"FreeEnergyCalc": [True, 10000],
-                                                                               "MoleculeType": ['ETO', 1],
-                                                                               "InitialState": 's',
-                                                                               "LambdaVDW": [0.1, 0.2, 0.4, 0.9],
-                                                                               "LambdaCoulomb": [0.1, 0.3, 0.8, 0.8],
-                                                                               }
-                                                         )
-        except:
-            value = "TEST_FAILED"
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
+                                             r"values: \['InitialState'\]"):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_7.conf',
+                                                 'NVT', 10, 300,
+                                                 input_variables_dict={"FreeEnergyCalc": [True, 10000],
+                                                                       "MoleculeType": ['ETO', 1],
+                                                                       "InitialState": 's',
+                                                                       "LambdaVDW": [0.1, 0.2, 0.4, 0.9],
+                                                                       "LambdaCoulomb": [0.1, 0.3, 0.8, 0.8],
+                                                                       }
+                                                 )
 
-        assert value== "TEST_FAILED"
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
+                                             r"values: \['InitialState'\]"):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_7.conf',
+                                                 'NVT', 10, 300,
+                                                 input_variables_dict={"FreeEnergyCalc": [True, 10000],
+                                                                       "MoleculeType": ['ETO', 1],
+                                                                       "InitialState": ['s'],
+                                                                       "LambdaVDW": [0.1, 0.2, 0.4, 0.9],
+                                                                       "LambdaCoulomb": [0.1, 0.3, 0.8, 0.8],
+                                                                       }
+                                                 )
 
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_7.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={"FreeEnergyCalc": [True, 10000],
-                                                                               "MoleculeType": ['ETO', 1],
-                                                                               "InitialState": ['s'],
-                                                                               "LambdaVDW": [0.1, 0.2, 0.4, 0.9],
-                                                                               "LambdaCoulomb": [0.1, 0.3, 0.8, 0.8],
-                                                                               }
-                                                         )
-        except:
-            value = "TEST_FAILED"
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
+                                             r"values: \['InitialState'\]"):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_7.conf',
+                                                 'NVT', 10, 300,
+                                                 input_variables_dict={"FreeEnergyCalc": [True, 10000],
+                                                                       "MoleculeType": ['ETO', 1],
+                                                                       "InitialState": {'a': '1'},
+                                                                       "LambdaVDW": [0.1, 0.2, 0.4, 0.9],
+                                                                       "LambdaCoulomb": [0.1, 0.3, 0.8, 0.8],
+                                                                       }
+                                                 )
 
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_7.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={"FreeEnergyCalc": [True, 10000],
-                                                                               "MoleculeType": ['ETO', 1],
-                                                                               "InitialState": {'a' : '1'},
-                                                                               "LambdaVDW": [0.1, 0.2, 0.4, 0.9],
-                                                                               "LambdaCoulomb": [0.1, 0.3, 0.8, 0.8],
-                                                                               }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_7.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={"FreeEnergyCalc": [True, 10000],
-                                                                               "MoleculeType": ['ETO', 1],
-                                                                               "InitialState": 1.0,
-                                                                               "LambdaVDW": [0.1, 0.2, 0.4, 0.9],
-                                                                               "LambdaCoulomb": [0.1, 0.3, 0.8, 0.8],
-                                                                               }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
+                                             r"values: \['InitialState'\]"):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_7.conf',
+                                                 'NVT', 10, 300,
+                                                 input_variables_dict={"FreeEnergyCalc": [True, 10000],
+                                                                       "MoleculeType": ['ETO', 1],
+                                                                       "InitialState": 1.0,
+                                                                       "LambdaVDW": [0.1, 0.2, 0.4, 0.9],
+                                                                       "LambdaCoulomb": [0.1, 0.3, 0.8, 0.8],
+                                                                       }
+                                                 )
 
         # start checking the LamdaVDW variable
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_7.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={"FreeEnergyCalc": [True, 10000],
-                                                                               "MoleculeType": ['ETO', 1],
-                                                                               "InitialState": 1,
-                                                                               "LambdaVDW": ["x", 0.2, 0.4, 0.9],
-                                                                               "LambdaCoulomb": [0.1, 0.3, 0.8, 0.8],
-                                                                               }
-                                                         )
-        except:
-            value = "TEST_FAILED"
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
+                                             r"values: \['LambdaVDW'\]"):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_7.conf',
+                                                 'NVT', 10, 300,
+                                                 input_variables_dict={"FreeEnergyCalc": [True, 10000],
+                                                                       "MoleculeType": ['ETO', 1],
+                                                                       "InitialState": 1,
+                                                                       "LambdaVDW": ["x", 0.2, 0.4, 0.9],
+                                                                       "LambdaCoulomb": [0.1, 0.3, 0.8, 0.8],
+                                                                       }
+                                                 )
 
-        assert value== "TEST_FAILED"
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
+                                             r"values: \['LambdaVDW'\]"):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_7.conf',
+                                                 'NVT', 10, 300,
+                                                 input_variables_dict={"FreeEnergyCalc": [True, 10000],
+                                                                       "MoleculeType": ['ETO', 1],
+                                                                       "InitialState": 1,
+                                                                       "LambdaVDW": [[0.1], 0.2, 0.4, 0.9],
+                                                                       "LambdaCoulomb": [0.1, 0.3, 0.8, 0.8],
+                                                                       }
+                                                 )
 
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_7.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={"FreeEnergyCalc": [True, 10000],
-                                                                               "MoleculeType": ['ETO', 1],
-                                                                               "InitialState": 1,
-                                                                               "LambdaVDW": [[0.1], 0.2, 0.4, 0.9],
-                                                                               "LambdaCoulomb": [0.1, 0.3, 0.8, 0.8],
-                                                                               }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_7.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={"FreeEnergyCalc": [True, 10000],
-                                                                               "MoleculeType": ['ETO', 1],
-                                                                               "InitialState": 1,
-                                                                               "LambdaVDW": [{'a' : '1'}, 0.2, 0.4],
-                                                                               "LambdaCoulomb": [0.1, 0.3, 0.8],
-                                                                               }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
+                                             r"values: \['LambdaVDW'\]"):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_7.conf',
+                                                 'NVT', 10, 300,
+                                                 input_variables_dict={"FreeEnergyCalc": [True, 10000],
+                                                                       "MoleculeType": ['ETO', 1],
+                                                                       "InitialState": 1,
+                                                                       "LambdaVDW": [{'a': '1'}, 0.2, 0.4],
+                                                                       "LambdaCoulomb": [0.1, 0.3, 0.8],
+                                                                       }
+                                                 )
 
         # start testing the LambdaCoulomb
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_7.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={"FreeEnergyCalc": [True, 10000],
-                                                                               "MoleculeType": ['ETO', 1],
-                                                                               "InitialState": 1,
-                                                                               "LambdaVDW": [0.1, 0.2, 0.4, 0.9],
-                                                                               "LambdaCoulomb": ["x", 0.3, 0.8, 0.8],
-                                                                               }
-                                                         )
-        except:
-            value = "TEST_FAILED"
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
+                                             r"values: \['LambdaCoulomb'\]"):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_7.conf',
+                                                 'NVT', 10, 300,
+                                                 input_variables_dict={"FreeEnergyCalc": [True, 10000],
+                                                                       "MoleculeType": ['ETO', 1],
+                                                                       "InitialState": 1,
+                                                                       "LambdaVDW": [0.1, 0.2, 0.4, 0.9],
+                                                                       "LambdaCoulomb": ["x", 0.3, 0.8, 0.8],
+                                                                       }
+                                                 )
 
-        assert value== "TEST_FAILED"
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
+                                             r"values: \['LambdaCoulomb'\]"):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_7.conf',
+                                                 'NVT', 10, 300,
+                                                 input_variables_dict={"FreeEnergyCalc": [True, 10000],
+                                                                       "MoleculeType": ['ETO', 1],
+                                                                       "InitialState": 1,
+                                                                       "LambdaVDW": [0.1, 0.2, 0.4, 0.9],
+                                                                       "LambdaCoulomb": [[0.1], 0.3, 0.8, 0.8],
+                                                                       }
+                                                 )
 
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_7.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={"FreeEnergyCalc": [True, 10000],
-                                                                               "MoleculeType": ['ETO', 1],
-                                                                               "InitialState": 1,
-                                                                               "LambdaVDW": [0.1, 0.2, 0.4, 0.9],
-                                                                               "LambdaCoulomb": [[0.1], 0.3, 0.8, 0.8],
-                                                                               }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_7.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={"FreeEnergyCalc": [True, 10000],
-                                                                               "MoleculeType": ['ETO', 1],
-                                                                               "InitialState": 1,
-                                                                               "LambdaVDW": [0.1, 0.2, 0.4],
-                                                                               "LambdaCoulomb": [{'a': '1'}, 0.3, 0.8],
-                                                                               }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
+                                             r"values: \['LambdaCoulomb'\]"):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_7.conf',
+                                                 'NVT', 10, 300,
+                                                 input_variables_dict={"FreeEnergyCalc": [True, 10000],
+                                                                       "MoleculeType": ['ETO', 1],
+                                                                       "InitialState": 1,
+                                                                       "LambdaVDW": [0.1, 0.2, 0.4],
+                                                                       "LambdaCoulomb": [{'a': '1'}, 0.3, 0.8],
+                                                                       }
+                                                 )
 
         # different LambdaVDW and LambdaCoulomb list lengths
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_7.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={"FreeEnergyCalc": [True, 10000],
-                                                                               "MoleculeType": ['ETO', 1],
-                                                                               "InitialState": 1,
-                                                                               "LambdaVDW": [ 0.2, 0.4, 0.9],
-                                                                               "LambdaCoulomb": [0.1, 0.3, 0.8, 0.8],
-                                                                               }
-                                                         )
-        except:
-            value = "TEST_FAILED"
+        with pytest.raises(ValueError, match=r"ERROR: The LambdaVDW and LambdaCoulomb list must be of equal length."):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_7.conf',
+                                                 'NVT', 10, 300,
+                                                 input_variables_dict={"FreeEnergyCalc": [True, 10000],
+                                                                       "MoleculeType": ['ETO', 1],
+                                                                       "InitialState": 1,
+                                                                       "LambdaVDW": [0.2, 0.4, 0.9],
+                                                                       "LambdaCoulomb": [0.1, 0.3, 0.8, 0.8],
+                                                                       }
+                                                 )
 
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_7.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={"FreeEnergyCalc": [True, 10000],
-                                                                               "MoleculeType": ['ETO', 1],
-                                                                               "InitialState": 1,
-                                                                               "LambdaVDW": [0.1, 0.2, 0.4, 0.9],
-                                                                               "LambdaCoulomb": [0.3, 0.8, 0.8],
-                                                                               }
-                                                        )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
+        with pytest.raises(ValueError, match=r"ERROR: The LambdaVDW and LambdaCoulomb list must be of equal length."):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_7.conf',
+                                                 'NVT', 10, 300,
+                                                 input_variables_dict={"FreeEnergyCalc": [True, 10000],
+                                                                       "MoleculeType": ['ETO', 1],
+                                                                       "InitialState": 1,
+                                                                       "LambdaVDW": [0.1, 0.2, 0.4, 0.9],
+                                                                       "LambdaCoulomb": [0.3, 0.8, 0.8],
+                                                                       }
+                                                 )
 
     def test_save_NVT_bad_variables_part_8(self, EthaneGOMC, EthanolGOMC):
         test_box_ethane_ethanol = mb.fill_box(compound=[EthaneGOMC, EthanolGOMC],
@@ -5334,7 +3282,7 @@ class TestGOMCControlFileWriter(BaseTest):
                                               box=[4.0, 4.0, 4.0])
 
         charmm = Charmm(test_box_ethane_ethanol, 'ethane_ethanol_box_0',
-                        structure_box_1 = test_box_ethane_ethanol, filename_box_1 = 'ethane_ethanol_box_1',
+                        structure_box_1=test_box_ethane_ethanol, filename_box_1='ethane_ethanol_box_1',
                         FF_filename='ethane_ethanol',
                         residues=[EthaneGOMC.name, EthanolGOMC.name], forcefield_selection='oplsaa'
                         )
@@ -5348,17 +3296,30 @@ class TestGOMCControlFileWriter(BaseTest):
                                 residues=[EthaneGOMC.name, EthanolGOMC.name], forcefield_selection='oplsaa'
                                 )
 
-        # test ExchangeVolumeDim for errors
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_8.conf',
-                                                         'GEMC_NVT', 10, 300,
-                                                         input_variables_dict={"MEMC-1Freq": 1,
-                                                                               }
-                                                         )
-        except:
-            value = "TEST_FAILED"
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
+                                             r"values: \['RcutCoulomb_box_1'\]"):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
+                                                 'GEMC_NVT', 10, 300,
+                                                 input_variables_dict={'RcutCoulomb_box_1': 's', }
+                                                 )
 
-        assert value == "TEST_FAILED"
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
+                                             r"values: \['FixVolBox0'\]"):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
+                                                 'GEMC_NPT', 10, 300,
+                                                 input_variables_dict={'FixVolBox0': 's', }
+                                                 )
+
+        # test ExchangeVolumeDim for errors
+        with pytest.raises(ValueError, match=r"The MEMC_DataInput variable is equal to None, but at least one "
+                                             r"of the MEMC move ratios are all non-zero \(IntraMEMC_1Freq, "
+                                             r"MEMC_1Freq, IntraMEMC_2Freq, MEMC_2Freq, IntraMEMC_3Freq, "
+                                             r"and MEMC_3Freq\)."):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_8.conf',
+                                                 'GEMC_NVT', 10, 300,
+                                                 input_variables_dict={"MEMC-1Freq": 1,
+                                                                       }
+                                                 )
 
         try:
             value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_8.conf',
@@ -5374,63 +3335,55 @@ class TestGOMCControlFileWriter(BaseTest):
         try:
             value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_8.conf',
                                                          'GEMC_NVT', 10, 300,
-                                                         input_variables_dict={"ExchangeVolumeDim": [1, 1, 1] }
+                                                         input_variables_dict={"ExchangeVolumeDim": [1, 1, 1]}
                                                          )
         except:
             value = "TEST_FAILED"
 
         assert value == "GOMC_CONTROL_FILE_WRITTEN"
 
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_8.conf',
-                                                         'GEMC_NVT', 10, 300,
-                                                         input_variables_dict={"ExchangeVolumeDim": ['s', 1.0, 1.0]  }
-                                                         )
-        except:
-            value = "TEST_FAILED"
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
+                                             r"values: \['ExchangeVolumeDim'\]"):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_8.conf',
+                                                 'GEMC_NVT', 10, 300,
+                                                 input_variables_dict={"ExchangeVolumeDim": ['s', 1.0, 1.0]}
+                                                 )
 
-        assert value== "TEST_FAILED"
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
+                                             r"values: \['ExchangeVolumeDim'\]"):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_8.conf',
+                                                 'GEMC_NVT', 10, 300,
+                                                 input_variables_dict={"ExchangeVolumeDim": [1.0, [1.0], 1.0]}
+                                                 )
 
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_8.conf',
-                                                         'GEMC_NVT', 10, 300,
-                                                         input_variables_dict={"ExchangeVolumeDim": [1.0, [1.0], 1.0] }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_8.conf',
-                                                         'GEMC_NVT', 10, 300,
-                                                         input_variables_dict={"ExchangeVolumeDim": [1.0, 1.0, {1.0}]}
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
+                                             r"values: \['ExchangeVolumeDim'\]"):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_8.conf',
+                                                 'GEMC_NVT', 10, 300,
+                                                 input_variables_dict={"ExchangeVolumeDim": [1.0, 1.0, {'a': 1.0}]}
+                                                 )
 
         # testing failures and passes for MEMC_DataInput
         try:
             value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_8.conf',
                                                          'GEMC_NPT', 10, 300,
                                                          input_variables_dict={"MEMC_DataInput":
-                                                             [ [1, 'ETH', ['C1', 'C2'], 'ETO', ['C1', 'C2']]  ],
+                                                                                   [[1, 'ETH', ['C1', 'C2'], 'ETO',
+                                                                                     ['C1', 'C2']]],
                                                                                "DisFreq": 0.05,
                                                                                "RotFreq": 0.05,
-                                                                               "IntraSwapFreq":  0.05,
+                                                                               "IntraSwapFreq": 0.05,
                                                                                "SwapFreq": 0.05,
-                                                                               "RegrowthFreq":   0.05 ,
-                                                                               "CrankShaftFreq":  0.05 ,
-                                                                               "VolFreq":   0.05 ,
-                                                                               "MultiParticleFreq": 0.05 ,
-                                                                               "IntraMEMC-1Freq": 0.10 ,
-                                                                               "MEMC-1Freq": 0.10 ,
-                                                                               "IntraMEMC-2Freq": 0.10 ,
-                                                                               "MEMC-2Freq": 0.10 ,
-                                                                               "IntraMEMC-3Freq": 0.10 ,
-                                                                               "MEMC-3Freq": 0.10 ,
+                                                                               "RegrowthFreq": 0.05,
+                                                                               "CrankShaftFreq": 0.05,
+                                                                               "VolFreq": 0.05,
+                                                                               "MultiParticleFreq": 0.05,
+                                                                               "IntraMEMC-1Freq": 0.10,
+                                                                               "MEMC-1Freq": 0.10,
+                                                                               "IntraMEMC-2Freq": 0.10,
+                                                                               "MEMC-2Freq": 0.10,
+                                                                               "IntraMEMC-3Freq": 0.10,
+                                                                               "MEMC-3Freq": 0.10,
                                                                                }
                                                          )
         except:
@@ -5442,482 +3395,559 @@ class TestGOMCControlFileWriter(BaseTest):
             value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_8.conf',
                                                          'GEMC_NPT', 10, 300,
                                                          input_variables_dict={"MEMC_DataInput":
-                                                             [ [1.0, 'ETH', ['C1', 'C2'], 'ETO', ['C1', 'C2']]  ],
+                                                                                   [[1, 'ETH', ['C1', 'C2'], 'ETO',
+                                                                                     ['C1', 'O1']]],
                                                                                "DisFreq": 0.05,
                                                                                "RotFreq": 0.05,
-                                                                               "IntraSwapFreq":  0.05,
+                                                                               "IntraSwapFreq": 0.05,
                                                                                "SwapFreq": 0.05,
-                                                                               "RegrowthFreq":   0.05 ,
-                                                                               "CrankShaftFreq":  0.05 ,
-                                                                               "VolFreq":   0.05 ,
-                                                                               "MultiParticleFreq": 0.05 ,
-                                                                               "IntraMEMC-1Freq": 0.10 ,
-                                                                               "MEMC-1Freq": 0.10 ,
-                                                                               "IntraMEMC-2Freq": 0.10 ,
-                                                                               "MEMC-2Freq": 0.10 ,
-                                                                               "IntraMEMC-3Freq": 0.10 ,
-                                                                               "MEMC-3Freq": 0.10 ,
+                                                                               "RegrowthFreq": 0.05,
+                                                                               "CrankShaftFreq": 0.05,
+                                                                               "VolFreq": 0.05,
+                                                                               "MultiParticleFreq": 0.05,
+                                                                               "IntraMEMC-1Freq": 0.10,
+                                                                               "MEMC-1Freq": 0.10,
+                                                                               "IntraMEMC-2Freq": 0.10,
+                                                                               "MEMC-2Freq": 0.10,
+                                                                               "IntraMEMC-3Freq": 0.10,
+                                                                               "MEMC-3Freq": 0.10,
                                                                                }
                                                          )
         except:
             value = "TEST_FAILED"
 
-        assert value== "TEST_FAILED"
+        assert value == "GOMC_CONTROL_FILE_WRITTEN"
 
         try:
             value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_8.conf',
                                                          'GEMC_NPT', 10, 300,
                                                          input_variables_dict={"MEMC_DataInput":
-                                                             [ ['s', 'ETH', ['C1', 'C2'], 'ETO', ['C1', 'C2']]  ],
+                                                                                   [[1, 'ETH', ['C2', 'C1'], 'ETO',
+                                                                                     ['O1', 'C1']]],
                                                                                "DisFreq": 0.05,
                                                                                "RotFreq": 0.05,
-                                                                               "IntraSwapFreq":  0.05,
+                                                                               "IntraSwapFreq": 0.05,
                                                                                "SwapFreq": 0.05,
-                                                                               "RegrowthFreq":   0.05 ,
-                                                                               "CrankShaftFreq":  0.05 ,
-                                                                               "VolFreq":   0.05 ,
-                                                                               "MultiParticleFreq": 0.05 ,
-                                                                               "IntraMEMC-1Freq": 0.10 ,
-                                                                               "MEMC-1Freq": 0.10 ,
-                                                                               "IntraMEMC-2Freq": 0.10 ,
-                                                                               "MEMC-2Freq": 0.10 ,
-                                                                               "IntraMEMC-3Freq": 0.10 ,
-                                                                               "MEMC-3Freq": 0.10 ,
+                                                                               "RegrowthFreq": 0.05,
+                                                                               "CrankShaftFreq": 0.05,
+                                                                               "VolFreq": 0.05,
+                                                                               "MultiParticleFreq": 0.05,
+                                                                               "IntraMEMC-1Freq": 0.10,
+                                                                               "MEMC-1Freq": 0.10,
+                                                                               "IntraMEMC-2Freq": 0.10,
+                                                                               "MEMC-2Freq": 0.10,
+                                                                               "IntraMEMC-3Freq": 0.10,
+                                                                               "MEMC-3Freq": 0.10,
                                                                                }
                                                          )
         except:
             value = "TEST_FAILED"
 
-        assert value== "TEST_FAILED"
+        assert value == "GOMC_CONTROL_FILE_WRITTEN"
 
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_8.conf',
-                                                         'GEMC_NPT', 10, 300,
-                                                         input_variables_dict={"MEMC_DataInput":
-                                                             [ [[1], 'ETH', ['C1', 'C2'], 'ETO', ['C1', 'C2']]  ],
-                                                                               "DisFreq": 0.05,
-                                                                               "RotFreq": 0.05,
-                                                                               "IntraSwapFreq":  0.05,
-                                                                               "SwapFreq": 0.05,
-                                                                               "RegrowthFreq":   0.05 ,
-                                                                               "CrankShaftFreq":  0.05 ,
-                                                                               "VolFreq":   0.05 ,
-                                                                               "MultiParticleFreq": 0.05 ,
-                                                                               "IntraMEMC-1Freq": 0.10 ,
-                                                                               "MEMC-1Freq": 0.10 ,
-                                                                               "IntraMEMC-2Freq": 0.10 ,
-                                                                               "MEMC-2Freq": 0.10 ,
-                                                                               "IntraMEMC-3Freq": 0.10 ,
-                                                                               "MEMC-3Freq": 0.10 ,
-                                                                               }
-                                                         )
-        except:
-            value = "TEST_FAILED"
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
+                                             r"values: \['MEMC_DataInput'\]"):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_8.conf',
+                                                 'GEMC_NPT', 10, 300,
+                                                 input_variables_dict={"MEMC_DataInput":
+                                                                           [[1, 'ETH', ['C1', 'O1'], 'ETO',
+                                                                             ['C1', 'C2']]],
+                                                                       "DisFreq": 0.05,
+                                                                       "RotFreq": 0.05,
+                                                                       "IntraSwapFreq": 0.05,
+                                                                       "SwapFreq": 0.05,
+                                                                       "RegrowthFreq": 0.05,
+                                                                       "CrankShaftFreq": 0.05,
+                                                                       "VolFreq": 0.05,
+                                                                       "MultiParticleFreq": 0.05,
+                                                                       "IntraMEMC-1Freq": 0.10,
+                                                                       "MEMC-1Freq": 0.10,
+                                                                       "IntraMEMC-2Freq": 0.10,
+                                                                       "MEMC-2Freq": 0.10,
+                                                                       "IntraMEMC-3Freq": 0.10,
+                                                                       "MEMC-3Freq": 0.10,
+                                                                       }
+                                                 )
 
-        assert value== "TEST_FAILED"
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
+                                             r"values: \['MEMC_DataInput'\]"):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_8.conf',
+                                                 'GEMC_NPT', 10, 300,
+                                                 input_variables_dict={"MEMC_DataInput":
+                                                                           [[1, 'ETH', ['O1', 'C1'], 'ETO',
+                                                                             ['C2', 'C1']]],
+                                                                       "DisFreq": 0.05,
+                                                                       "RotFreq": 0.05,
+                                                                       "IntraSwapFreq": 0.05,
+                                                                       "SwapFreq": 0.05,
+                                                                       "RegrowthFreq": 0.05,
+                                                                       "CrankShaftFreq": 0.05,
+                                                                       "VolFreq": 0.05,
+                                                                       "MultiParticleFreq": 0.05,
+                                                                       "IntraMEMC-1Freq": 0.10,
+                                                                       "MEMC-1Freq": 0.10,
+                                                                       "IntraMEMC-2Freq": 0.10,
+                                                                       "MEMC-2Freq": 0.10,
+                                                                       "IntraMEMC-3Freq": 0.10,
+                                                                       "MEMC-3Freq": 0.10,
+                                                                       }
+                                                 )
 
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_8.conf',
-                                                         'GEMC_NPT', 10, 300,
-                                                         input_variables_dict={"MEMC_DataInput":
-                                                             [[{'a' : '1'}, 'ETH', ['C1', 'C2'], 'ETO', ['C1', 'C2']]],
-                                                                               "DisFreq": 0.05,
-                                                                               "RotFreq": 0.05,
-                                                                               "IntraSwapFreq":  0.05,
-                                                                               "SwapFreq": 0.05,
-                                                                               "RegrowthFreq":   0.05 ,
-                                                                               "CrankShaftFreq":  0.05 ,
-                                                                               "VolFreq":   0.05 ,
-                                                                               "MultiParticleFreq": 0.05 ,
-                                                                               "IntraMEMC-1Freq": 0.10 ,
-                                                                               "MEMC-1Freq": 0.10 ,
-                                                                               "IntraMEMC-2Freq": 0.10 ,
-                                                                               "MEMC-2Freq": 0.10 ,
-                                                                               "IntraMEMC-3Freq": 0.10 ,
-                                                                               "MEMC-3Freq": 0.10 ,
-                                                                               }
-                                                         )
-        except:
-            value = "TEST_FAILED"
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
+                                             r"values: \['MEMC_DataInput'\]"):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_8.conf',
+                                                 'GEMC_NPT', 10, 300,
+                                                 input_variables_dict={"MEMC_DataInput":
+                                                                           [[1.0, 'ETH', ['C1', 'C2'], 'ETO',
+                                                                             ['C1', 'C2']]],
+                                                                       "DisFreq": 0.05,
+                                                                       "RotFreq": 0.05,
+                                                                       "IntraSwapFreq": 0.05,
+                                                                       "SwapFreq": 0.05,
+                                                                       "RegrowthFreq": 0.05,
+                                                                       "CrankShaftFreq": 0.05,
+                                                                       "VolFreq": 0.05,
+                                                                       "MultiParticleFreq": 0.05,
+                                                                       "IntraMEMC-1Freq": 0.10,
+                                                                       "MEMC-1Freq": 0.10,
+                                                                       "IntraMEMC-2Freq": 0.10,
+                                                                       "MEMC-2Freq": 0.10,
+                                                                       "IntraMEMC-3Freq": 0.10,
+                                                                       "MEMC-3Freq": 0.10,
+                                                                       }
+                                                 )
 
-        assert value== "TEST_FAILED"
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
+                                             r"values: \['MEMC_DataInput'\]"):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_8.conf',
+                                                 'GEMC_NPT', 10, 300,
+                                                 input_variables_dict={"MEMC_DataInput":
+                                                                           [['s', 'ETH', ['C1', 'C2'], 'ETO',
+                                                                             ['C1', 'C2']]],
+                                                                       "DisFreq": 0.05,
+                                                                       "RotFreq": 0.05,
+                                                                       "IntraSwapFreq": 0.05,
+                                                                       "SwapFreq": 0.05,
+                                                                       "RegrowthFreq": 0.05,
+                                                                       "CrankShaftFreq": 0.05,
+                                                                       "VolFreq": 0.05,
+                                                                       "MultiParticleFreq": 0.05,
+                                                                       "IntraMEMC-1Freq": 0.10,
+                                                                       "MEMC-1Freq": 0.10,
+                                                                       "IntraMEMC-2Freq": 0.10,
+                                                                       "MEMC-2Freq": 0.10,
+                                                                       "IntraMEMC-3Freq": 0.10,
+                                                                       "MEMC-3Freq": 0.10,
+                                                                       }
+                                                 )
 
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_8.conf',
-                                                         'GEMC_NPT', 10, 300,
-                                                         input_variables_dict={"MEMC_DataInput":
-                                                             [[1, 'ETHaa', ['C1', 'C2'], 'ETO', ['C1', 'C2']]],
-                                                                               "DisFreq": 0.05,
-                                                                               "RotFreq": 0.05,
-                                                                               "IntraSwapFreq":  0.05,
-                                                                               "SwapFreq": 0.05,
-                                                                               "RegrowthFreq":   0.05 ,
-                                                                               "CrankShaftFreq":  0.05 ,
-                                                                               "VolFreq":   0.05 ,
-                                                                               "MultiParticleFreq": 0.05 ,
-                                                                               "IntraMEMC-1Freq": 0.10 ,
-                                                                               "MEMC-1Freq": 0.10 ,
-                                                                               "IntraMEMC-2Freq": 0.10 ,
-                                                                               "MEMC-2Freq": 0.10 ,
-                                                                               "IntraMEMC-3Freq": 0.10 ,
-                                                                               "MEMC-3Freq": 0.10 ,
-                                                                               }
-                                                         )
-        except:
-            value = "TEST_FAILED"
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
+                                             r"values: \['MEMC_DataInput'\]"):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_8.conf',
+                                                 'GEMC_NPT', 10, 300,
+                                                 input_variables_dict={"MEMC_DataInput":
+                                                                           [[[1], 'ETH', ['C1', 'C2'], 'ETO',
+                                                                             ['C1', 'C2']]],
+                                                                       "DisFreq": 0.05,
+                                                                       "RotFreq": 0.05,
+                                                                       "IntraSwapFreq": 0.05,
+                                                                       "SwapFreq": 0.05,
+                                                                       "RegrowthFreq": 0.05,
+                                                                       "CrankShaftFreq": 0.05,
+                                                                       "VolFreq": 0.05,
+                                                                       "MultiParticleFreq": 0.05,
+                                                                       "IntraMEMC-1Freq": 0.10,
+                                                                       "MEMC-1Freq": 0.10,
+                                                                       "IntraMEMC-2Freq": 0.10,
+                                                                       "MEMC-2Freq": 0.10,
+                                                                       "IntraMEMC-3Freq": 0.10,
+                                                                       "MEMC-3Freq": 0.10,
+                                                                       }
+                                                 )
 
-        assert value== "TEST_FAILED"
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
+                                             r"values: \['MEMC_DataInput'\]"):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_8.conf',
+                                                 'GEMC_NPT', 10, 300,
+                                                 input_variables_dict={"MEMC_DataInput":
+                                                                           [[{'a': '1'}, 'ETH', ['C1', 'C2'], 'ETO',
+                                                                             ['C1', 'C2']]],
+                                                                       "DisFreq": 0.05,
+                                                                       "RotFreq": 0.05,
+                                                                       "IntraSwapFreq": 0.05,
+                                                                       "SwapFreq": 0.05,
+                                                                       "RegrowthFreq": 0.05,
+                                                                       "CrankShaftFreq": 0.05,
+                                                                       "VolFreq": 0.05,
+                                                                       "MultiParticleFreq": 0.05,
+                                                                       "IntraMEMC-1Freq": 0.10,
+                                                                       "MEMC-1Freq": 0.10,
+                                                                       "IntraMEMC-2Freq": 0.10,
+                                                                       "MEMC-2Freq": 0.10,
+                                                                       "IntraMEMC-3Freq": 0.10,
+                                                                       "MEMC-3Freq": 0.10,
+                                                                       }
+                                                 )
 
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_8.conf',
-                                                         'GEMC_NPT', 10, 300,
-                                                         input_variables_dict={"MEMC_DataInput":
-                                                             [ [1, 1, ['C1', 'C2'], 'ETO', ['C1', 'C2']]  ],
-                                                                               "DisFreq": 0.05,
-                                                                               "RotFreq": 0.05,
-                                                                               "IntraSwapFreq":  0.05,
-                                                                               "SwapFreq": 0.05,
-                                                                               "RegrowthFreq":   0.05 ,
-                                                                               "CrankShaftFreq":  0.05 ,
-                                                                               "VolFreq":   0.05 ,
-                                                                               "MultiParticleFreq": 0.05 ,
-                                                                               "IntraMEMC-1Freq": 0.10 ,
-                                                                               "MEMC-1Freq": 0.10 ,
-                                                                               "IntraMEMC-2Freq": 0.10 ,
-                                                                               "MEMC-2Freq": 0.10 ,
-                                                                               "IntraMEMC-3Freq": 0.10 ,
-                                                                               "MEMC-3Freq": 0.10 ,
-                                                                               }
-                                                         )
-        except:
-            value = "TEST_FAILED"
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
+                                             r"values: \['MEMC_DataInput'\]"):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_8.conf',
+                                                 'GEMC_NPT', 10, 300,
+                                                 input_variables_dict={"MEMC_DataInput":
+                                                                           [[1, 'ETHa', ['C1', 'C2'], 'ETO',
+                                                                             ['C1', 'C2']]],
+                                                                       "DisFreq": 0.05,
+                                                                       "RotFreq": 0.05,
+                                                                       "IntraSwapFreq": 0.05,
+                                                                       "SwapFreq": 0.05,
+                                                                       "RegrowthFreq": 0.05,
+                                                                       "CrankShaftFreq": 0.05,
+                                                                       "VolFreq": 0.05,
+                                                                       "MultiParticleFreq": 0.05,
+                                                                       "IntraMEMC-1Freq": 0.10,
+                                                                       "MEMC-1Freq": 0.10,
+                                                                       "IntraMEMC-2Freq": 0.10,
+                                                                       "MEMC-2Freq": 0.10,
+                                                                       "IntraMEMC-3Freq": 0.10,
+                                                                       "MEMC-3Freq": 0.10,
+                                                                       }
+                                                 )
 
-        assert value== "TEST_FAILED"
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
+                                             r"values: \['MEMC_DataInput'\]"):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_8.conf',
+                                                 'GEMC_NPT', 10, 300,
+                                                 input_variables_dict={"MEMC_DataInput":
+                                                                           [[1, 1, ['C1', 'C2'], 'ETO', ['C1', 'C2']]],
+                                                                       "DisFreq": 0.05,
+                                                                       "RotFreq": 0.05,
+                                                                       "IntraSwapFreq": 0.05,
+                                                                       "SwapFreq": 0.05,
+                                                                       "RegrowthFreq": 0.05,
+                                                                       "CrankShaftFreq": 0.05,
+                                                                       "VolFreq": 0.05,
+                                                                       "MultiParticleFreq": 0.05,
+                                                                       "IntraMEMC-1Freq": 0.10,
+                                                                       "MEMC-1Freq": 0.10,
+                                                                       "IntraMEMC-2Freq": 0.10,
+                                                                       "MEMC-2Freq": 0.10,
+                                                                       "IntraMEMC-3Freq": 0.10,
+                                                                       "MEMC-3Freq": 0.10,
+                                                                       }
+                                                 )
 
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_8.conf',
-                                                         'GEMC_NPT', 10, 300,
-                                                         input_variables_dict={"MEMC_DataInput":
-                                                             [ [1, [1], ['C1', 'C2'], 'ETO', ['C1', 'C2']]  ],
-                                                                               "DisFreq": 0.05,
-                                                                               "RotFreq": 0.05,
-                                                                               "IntraSwapFreq":  0.05,
-                                                                               "SwapFreq": 0.05,
-                                                                               "RegrowthFreq":   0.05 ,
-                                                                               "CrankShaftFreq":  0.05 ,
-                                                                               "VolFreq":   0.05 ,
-                                                                               "MultiParticleFreq": 0.05 ,
-                                                                               "IntraMEMC-1Freq": 0.10 ,
-                                                                               "MEMC-1Freq": 0.10 ,
-                                                                               "IntraMEMC-2Freq": 0.10 ,
-                                                                               "MEMC-2Freq": 0.10 ,
-                                                                               "IntraMEMC-3Freq": 0.10 ,
-                                                                               "MEMC-3Freq": 0.10 ,
-                                                                               }
-                                                         )
-        except:
-            value = "TEST_FAILED"
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
+                                             r"values: \['MEMC_DataInput'\]"):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_8.conf',
+                                                 'GEMC_NPT', 10, 300,
+                                                 input_variables_dict={"MEMC_DataInput":
+                                                                           [[1, [1], ['C1', 'C2'], 'ETO',
+                                                                             ['C1', 'C2']]],
+                                                                       "DisFreq": 0.05,
+                                                                       "RotFreq": 0.05,
+                                                                       "IntraSwapFreq": 0.05,
+                                                                       "SwapFreq": 0.05,
+                                                                       "RegrowthFreq": 0.05,
+                                                                       "CrankShaftFreq": 0.05,
+                                                                       "VolFreq": 0.05,
+                                                                       "MultiParticleFreq": 0.05,
+                                                                       "IntraMEMC-1Freq": 0.10,
+                                                                       "MEMC-1Freq": 0.10,
+                                                                       "IntraMEMC-2Freq": 0.10,
+                                                                       "MEMC-2Freq": 0.10,
+                                                                       "IntraMEMC-3Freq": 0.10,
+                                                                       "MEMC-3Freq": 0.10,
+                                                                       }
+                                                 )
 
-        assert value== "TEST_FAILED"
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
+                                             r"values: \['MEMC_DataInput'\]"):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_8.conf',
+                                                 'GEMC_NPT', 10, 300,
+                                                 input_variables_dict={"MEMC_DataInput":
+                                                                           [[1, 'ETH', [1, 'C2'], 'ETO', ['C1', 'C2']]],
+                                                                       "DisFreq": 0.05,
+                                                                       "RotFreq": 0.05,
+                                                                       "IntraSwapFreq": 0.05,
+                                                                       "SwapFreq": 0.05,
+                                                                       "RegrowthFreq": 0.05,
+                                                                       "CrankShaftFreq": 0.05,
+                                                                       "VolFreq": 0.05,
+                                                                       "MultiParticleFreq": 0.05,
+                                                                       "IntraMEMC-1Freq": 0.10,
+                                                                       "MEMC-1Freq": 0.10,
+                                                                       "IntraMEMC-2Freq": 0.10,
+                                                                       "MEMC-2Freq": 0.10,
+                                                                       "IntraMEMC-3Freq": 0.10,
+                                                                       "MEMC-3Freq": 0.10,
+                                                                       }
+                                                 )
 
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_8.conf',
-                                                         'GEMC_NPT', 10, 300,
-                                                         input_variables_dict={"MEMC_DataInput":
-                                                             [ [1, 'ETH', [1, 'C2'], 'ETO', ['C1', 'C2']]  ],
-                                                                               "DisFreq": 0.05,
-                                                                               "RotFreq": 0.05,
-                                                                               "IntraSwapFreq":  0.05,
-                                                                               "SwapFreq": 0.05,
-                                                                               "RegrowthFreq":   0.05 ,
-                                                                               "CrankShaftFreq":  0.05 ,
-                                                                               "VolFreq":   0.05 ,
-                                                                               "MultiParticleFreq": 0.05 ,
-                                                                               "IntraMEMC-1Freq": 0.10 ,
-                                                                               "MEMC-1Freq": 0.10 ,
-                                                                               "IntraMEMC-2Freq": 0.10 ,
-                                                                               "MEMC-2Freq": 0.10 ,
-                                                                               "IntraMEMC-3Freq": 0.10 ,
-                                                                               "MEMC-3Freq": 0.10 ,
-                                                                               }
-                                                         )
-        except:
-            value = "TEST_FAILED"
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
+                                             r"values: \['MEMC_DataInput'\]"):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_8.conf',
+                                                 'GEMC_NPT', 10, 300,
+                                                 input_variables_dict={"MEMC_DataInput":
+                                                                           [[1, 'ETH', [[1], 'C2'], 'ETO',
+                                                                             ['C1', 'C2']]],
+                                                                       "DisFreq": 0.05,
+                                                                       "RotFreq": 0.05,
+                                                                       "IntraSwapFreq": 0.05,
+                                                                       "SwapFreq": 0.05,
+                                                                       "RegrowthFreq": 0.05,
+                                                                       "CrankShaftFreq": 0.05,
+                                                                       "VolFreq": 0.05,
+                                                                       "MultiParticleFreq": 0.05,
+                                                                       "IntraMEMC-1Freq": 0.10,
+                                                                       "MEMC-1Freq": 0.10,
+                                                                       "IntraMEMC-2Freq": 0.10,
+                                                                       "MEMC-2Freq": 0.10,
+                                                                       "IntraMEMC-3Freq": 0.10,
+                                                                       "MEMC-3Freq": 0.10,
+                                                                       }
+                                                 )
 
-        assert value== "TEST_FAILED"
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
+                                             r"values: \['MEMC_DataInput'\]"):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_8.conf',
+                                                 'GEMC_NPT', 10, 300,
+                                                 input_variables_dict={"MEMC_DataInput":
+                                                                           [[1, 'ETH', ['C1', 1], 'ETO', ['C1', 'C2']]],
+                                                                       "DisFreq": 0.05,
+                                                                       "RotFreq": 0.05,
+                                                                       "IntraSwapFreq": 0.05,
+                                                                       "SwapFreq": 0.05,
+                                                                       "RegrowthFreq": 0.05,
+                                                                       "CrankShaftFreq": 0.05,
+                                                                       "VolFreq": 0.05,
+                                                                       "MultiParticleFreq": 0.05,
+                                                                       "IntraMEMC-1Freq": 0.10,
+                                                                       "MEMC-1Freq": 0.10,
+                                                                       "IntraMEMC-2Freq": 0.10,
+                                                                       "MEMC-2Freq": 0.10,
+                                                                       "IntraMEMC-3Freq": 0.10,
+                                                                       "MEMC-3Freq": 0.10,
+                                                                       }
+                                                 )
 
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_8.conf',
-                                                         'GEMC_NPT', 10, 300,
-                                                         input_variables_dict={"MEMC_DataInput":
-                                                             [ [1, 'ETH', [[1], 'C2'], 'ETO', ['C1', 'C2']]  ],
-                                                                               "DisFreq": 0.05,
-                                                                               "RotFreq": 0.05,
-                                                                               "IntraSwapFreq":  0.05,
-                                                                               "SwapFreq": 0.05,
-                                                                               "RegrowthFreq":   0.05 ,
-                                                                               "CrankShaftFreq":  0.05 ,
-                                                                               "VolFreq":   0.05 ,
-                                                                               "MultiParticleFreq": 0.05 ,
-                                                                               "IntraMEMC-1Freq": 0.10 ,
-                                                                               "MEMC-1Freq": 0.10 ,
-                                                                               "IntraMEMC-2Freq": 0.10 ,
-                                                                               "MEMC-2Freq": 0.10 ,
-                                                                               "IntraMEMC-3Freq": 0.10 ,
-                                                                               "MEMC-3Freq": 0.10 ,
-                                                                               }
-                                                         )
-        except:
-            value = "TEST_FAILED"
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
+                                             r"values: \['MEMC_DataInput'\]"):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_8.conf',
+                                                 'GEMC_NPT', 10, 300,
+                                                 input_variables_dict={"MEMC_DataInput":
+                                                                           [[1, 'ETH', ['C1', [1]], 'ETO',
+                                                                             ['C1', 'C2']]],
+                                                                       "DisFreq": 0.05,
+                                                                       "RotFreq": 0.05,
+                                                                       "IntraSwapFreq": 0.05,
+                                                                       "SwapFreq": 0.05,
+                                                                       "RegrowthFreq": 0.05,
+                                                                       "CrankShaftFreq": 0.05,
+                                                                       "VolFreq": 0.05,
+                                                                       "MultiParticleFreq": 0.05,
+                                                                       "IntraMEMC-1Freq": 0.10,
+                                                                       "MEMC-1Freq": 0.10,
+                                                                       "IntraMEMC-2Freq": 0.10,
+                                                                       "MEMC-2Freq": 0.10,
+                                                                       "IntraMEMC-3Freq": 0.10,
+                                                                       "MEMC-3Freq": 0.10,
+                                                                       }
+                                                 )
 
-        assert value== "TEST_FAILED"
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
+                                             r"values: \['MEMC_DataInput'\]"):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_8.conf',
+                                                 'GEMC_NPT', 10, 300,
+                                                 input_variables_dict={"MEMC_DataInput":
+                                                                           [[1, 'ETH', ['C1', 'C2'], 1, ['C1', 'C2']]],
+                                                                       "DisFreq": 0.05,
+                                                                       "RotFreq": 0.05,
+                                                                       "IntraSwapFreq": 0.05,
+                                                                       "SwapFreq": 0.05,
+                                                                       "RegrowthFreq": 0.05,
+                                                                       "CrankShaftFreq": 0.05,
+                                                                       "VolFreq": 0.05,
+                                                                       "MultiParticleFreq": 0.05,
+                                                                       "IntraMEMC-1Freq": 0.10,
+                                                                       "MEMC-1Freq": 0.10,
+                                                                       "IntraMEMC-2Freq": 0.10,
+                                                                       "MEMC-2Freq": 0.10,
+                                                                       "IntraMEMC-3Freq": 0.10,
+                                                                       "MEMC-3Freq": 0.10,
+                                                                       }
+                                                 )
 
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_8.conf',
-                                                         'GEMC_NPT', 10, 300,
-                                                         input_variables_dict={"MEMC_DataInput":
-                                                             [ [1, 'ETH', ['C1', 1], 'ETO', ['C1', 'C2']]  ],
-                                                                               "DisFreq": 0.05,
-                                                                               "RotFreq": 0.05,
-                                                                               "IntraSwapFreq":  0.05,
-                                                                               "SwapFreq": 0.05,
-                                                                               "RegrowthFreq":   0.05 ,
-                                                                               "CrankShaftFreq":  0.05 ,
-                                                                               "VolFreq":   0.05 ,
-                                                                               "MultiParticleFreq": 0.05 ,
-                                                                               "IntraMEMC-1Freq": 0.10 ,
-                                                                               "MEMC-1Freq": 0.10 ,
-                                                                               "IntraMEMC-2Freq": 0.10 ,
-                                                                               "MEMC-2Freq": 0.10 ,
-                                                                               "IntraMEMC-3Freq": 0.10 ,
-                                                                               "MEMC-3Freq": 0.10 ,
-                                                                               }
-                                                         )
-        except:
-            value = "TEST_FAILED"
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
+                                             r"values: \['MEMC_DataInput'\]"):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_8.conf',
+                                                 'GEMC_NPT', 10, 300,
+                                                 input_variables_dict={"MEMC_DataInput":
+                                                                           [[1, 'ETH', ['C1', 'C2'], [1],
+                                                                             ['C1', 'C2']]],
+                                                                       "DisFreq": 0.05,
+                                                                       "RotFreq": 0.05,
+                                                                       "IntraSwapFreq": 0.05,
+                                                                       "SwapFreq": 0.05,
+                                                                       "RegrowthFreq": 0.05,
+                                                                       "CrankShaftFreq": 0.05,
+                                                                       "VolFreq": 0.05,
+                                                                       "MultiParticleFreq": 0.05,
+                                                                       "IntraMEMC-1Freq": 0.10,
+                                                                       "MEMC-1Freq": 0.10,
+                                                                       "IntraMEMC-2Freq": 0.10,
+                                                                       "MEMC-2Freq": 0.10,
+                                                                       "IntraMEMC-3Freq": 0.10,
+                                                                       "MEMC-3Freq": 0.10,
+                                                                       }
+                                                 )
 
-        assert value== "TEST_FAILED"
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
+                                             r"values: \['MEMC_DataInput'\]"):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_8.conf',
+                                                 'GEMC_NPT', 10, 300,
+                                                 input_variables_dict={"MEMC_DataInput":
+                                                                           [[1, 'ETH', ['C1', 'C2'], 'ETO', [1, 'C2']]],
+                                                                       "DisFreq": 0.05,
+                                                                       "RotFreq": 0.05,
+                                                                       "IntraSwapFreq": 0.05,
+                                                                       "SwapFreq": 0.05,
+                                                                       "RegrowthFreq": 0.05,
+                                                                       "CrankShaftFreq": 0.05,
+                                                                       "VolFreq": 0.05,
+                                                                       "MultiParticleFreq": 0.05,
+                                                                       "IntraMEMC-1Freq": 0.10,
+                                                                       "MEMC-1Freq": 0.10,
+                                                                       "IntraMEMC-2Freq": 0.10,
+                                                                       "MEMC-2Freq": 0.10,
+                                                                       "IntraMEMC-3Freq": 0.10,
+                                                                       "MEMC-3Freq": 0.10,
+                                                                       }
+                                                 )
 
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_8.conf',
-                                                         'GEMC_NPT', 10, 300,
-                                                         input_variables_dict={"MEMC_DataInput":
-                                                             [ [1, 'ETH', ['C1', [1]], 'ETO', ['C1', 'C2']]  ],
-                                                                               "DisFreq": 0.05,
-                                                                               "RotFreq": 0.05,
-                                                                               "IntraSwapFreq":  0.05,
-                                                                               "SwapFreq": 0.05,
-                                                                               "RegrowthFreq":   0.05 ,
-                                                                               "CrankShaftFreq":  0.05 ,
-                                                                               "VolFreq":   0.05 ,
-                                                                               "MultiParticleFreq": 0.05 ,
-                                                                               "IntraMEMC-1Freq": 0.10 ,
-                                                                               "MEMC-1Freq": 0.10 ,
-                                                                               "IntraMEMC-2Freq": 0.10 ,
-                                                                               "MEMC-2Freq": 0.10 ,
-                                                                               "IntraMEMC-3Freq": 0.10 ,
-                                                                               "MEMC-3Freq": 0.10 ,
-                                                                               }
-                                                         )
-        except:
-            value = "TEST_FAILED"
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
+                                             r"values: \['MEMC_DataInput'\]"):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_8.conf',
+                                                 'GEMC_NPT', 10, 300,
+                                                 input_variables_dict={"MEMC_DataInput":
+                                                                           [[1, 'ETH', ['C1', 'C2'], 'ETO',
+                                                                             [[1], 'C2']]],
+                                                                       "DisFreq": 0.05,
+                                                                       "RotFreq": 0.05,
+                                                                       "IntraSwapFreq": 0.05,
+                                                                       "SwapFreq": 0.05,
+                                                                       "RegrowthFreq": 0.05,
+                                                                       "CrankShaftFreq": 0.05,
+                                                                       "VolFreq": 0.05,
+                                                                       "MultiParticleFreq": 0.05,
+                                                                       "IntraMEMC-1Freq": 0.10,
+                                                                       "MEMC-1Freq": 0.10,
+                                                                       "IntraMEMC-2Freq": 0.10,
+                                                                       "MEMC-2Freq": 0.10,
+                                                                       "IntraMEMC-3Freq": 0.10,
+                                                                       "MEMC-3Freq": 0.10,
+                                                                       }
+                                                 )
 
-        assert value== "TEST_FAILED"
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
+                                             r"values: \['MEMC_DataInput'\]"):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_8.conf',
+                                                 'GEMC_NPT', 10, 300,
+                                                 input_variables_dict={"MEMC_DataInput":
+                                                                           [[1, 'ETH', ['C1', 'C2'], 'ETO', ['C1', 1]]],
+                                                                       "DisFreq": 0.05,
+                                                                       "RotFreq": 0.05,
+                                                                       "IntraSwapFreq": 0.05,
+                                                                       "SwapFreq": 0.05,
+                                                                       "RegrowthFreq": 0.05,
+                                                                       "CrankShaftFreq": 0.05,
+                                                                       "VolFreq": 0.05,
+                                                                       "MultiParticleFreq": 0.05,
+                                                                       "IntraMEMC-1Freq": 0.10,
+                                                                       "MEMC-1Freq": 0.10,
+                                                                       "IntraMEMC-2Freq": 0.10,
+                                                                       "MEMC-2Freq": 0.10,
+                                                                       "IntraMEMC-3Freq": 0.10,
+                                                                       "MEMC-3Freq": 0.10,
+                                                                       }
+                                                 )
 
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_8.conf',
-                                                         'GEMC_NPT', 10, 300,
-                                                         input_variables_dict={"MEMC_DataInput":
-                                                             [ [1, 'ETH', ['C1', 'C2'], 1, ['C1', 'C2']]  ],
-                                                                               "DisFreq": 0.05,
-                                                                               "RotFreq": 0.05,
-                                                                               "IntraSwapFreq":  0.05,
-                                                                               "SwapFreq": 0.05,
-                                                                               "RegrowthFreq":   0.05 ,
-                                                                               "CrankShaftFreq":  0.05 ,
-                                                                               "VolFreq":   0.05 ,
-                                                                               "MultiParticleFreq": 0.05 ,
-                                                                               "IntraMEMC-1Freq": 0.10 ,
-                                                                               "MEMC-1Freq": 0.10 ,
-                                                                               "IntraMEMC-2Freq": 0.10 ,
-                                                                               "MEMC-2Freq": 0.10 ,
-                                                                               "IntraMEMC-3Freq": 0.10 ,
-                                                                               "MEMC-3Freq": 0.10 ,
-                                                                               }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_8.conf',
-                                                         'GEMC_NPT', 10, 300,
-                                                         input_variables_dict={"MEMC_DataInput":
-                                                             [ [1, 'ETH', ['C1', 'C2'], [1], ['C1', 'C2']]  ],
-                                                                               "DisFreq": 0.05,
-                                                                               "RotFreq": 0.05,
-                                                                               "IntraSwapFreq":  0.05,
-                                                                               "SwapFreq": 0.05,
-                                                                               "RegrowthFreq":   0.05 ,
-                                                                               "CrankShaftFreq":  0.05 ,
-                                                                               "VolFreq":   0.05 ,
-                                                                               "MultiParticleFreq": 0.05 ,
-                                                                               "IntraMEMC-1Freq": 0.10 ,
-                                                                               "MEMC-1Freq": 0.10 ,
-                                                                               "IntraMEMC-2Freq": 0.10 ,
-                                                                               "MEMC-2Freq": 0.10 ,
-                                                                               "IntraMEMC-3Freq": 0.10 ,
-                                                                               "MEMC-3Freq": 0.10 ,
-                                                                               }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_8.conf',
-                                                         'GEMC_NPT', 10, 300,
-                                                         input_variables_dict={"MEMC_DataInput":
-                                                             [ [1, 'ETH', ['C1', 'C2'], 'ETO', [1, 'C2']]  ],
-                                                                               "DisFreq": 0.05,
-                                                                               "RotFreq": 0.05,
-                                                                               "IntraSwapFreq":  0.05,
-                                                                               "SwapFreq": 0.05,
-                                                                               "RegrowthFreq":   0.05 ,
-                                                                               "CrankShaftFreq":  0.05 ,
-                                                                               "VolFreq":   0.05 ,
-                                                                               "MultiParticleFreq": 0.05 ,
-                                                                               "IntraMEMC-1Freq": 0.10 ,
-                                                                               "MEMC-1Freq": 0.10 ,
-                                                                               "IntraMEMC-2Freq": 0.10 ,
-                                                                               "MEMC-2Freq": 0.10 ,
-                                                                               "IntraMEMC-3Freq": 0.10 ,
-                                                                               "MEMC-3Freq": 0.10 ,
-                                                                               }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_8.conf',
-                                                         'GEMC_NPT', 10, 300,
-                                                         input_variables_dict={"MEMC_DataInput":
-                                                             [ [1, 'ETH', ['C1', 'C2'], 'ETO', [[1], 'C2']]  ],
-                                                                               "DisFreq": 0.05,
-                                                                               "RotFreq": 0.05,
-                                                                               "IntraSwapFreq":  0.05,
-                                                                               "SwapFreq": 0.05,
-                                                                               "RegrowthFreq":   0.05 ,
-                                                                               "CrankShaftFreq":  0.05 ,
-                                                                               "VolFreq":   0.05 ,
-                                                                               "MultiParticleFreq": 0.05 ,
-                                                                               "IntraMEMC-1Freq": 0.10 ,
-                                                                               "MEMC-1Freq": 0.10 ,
-                                                                               "IntraMEMC-2Freq": 0.10 ,
-                                                                               "MEMC-2Freq": 0.10 ,
-                                                                               "IntraMEMC-3Freq": 0.10 ,
-                                                                               "MEMC-3Freq": 0.10 ,
-                                                                               }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_8.conf',
-                                                         'GEMC_NPT', 10, 300,
-                                                         input_variables_dict={"MEMC_DataInput":
-                                                             [ [1, 'ETH', ['C1', 'C2'], 'ETO', ['C1', 1]]  ],
-                                                                               "DisFreq": 0.05,
-                                                                               "RotFreq": 0.05,
-                                                                               "IntraSwapFreq":  0.05,
-                                                                               "SwapFreq": 0.05,
-                                                                               "RegrowthFreq":   0.05 ,
-                                                                               "CrankShaftFreq":  0.05 ,
-                                                                               "VolFreq":   0.05 ,
-                                                                               "MultiParticleFreq": 0.05 ,
-                                                                               "IntraMEMC-1Freq": 0.10 ,
-                                                                               "MEMC-1Freq": 0.10 ,
-                                                                               "IntraMEMC-2Freq": 0.10 ,
-                                                                               "MEMC-2Freq": 0.10 ,
-                                                                               "IntraMEMC-3Freq": 0.10 ,
-                                                                               "MEMC-3Freq": 0.10 ,
-                                                                               }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_8.conf',
-                                                         'GEMC_NPT', 10, 300,
-                                                         input_variables_dict={"MEMC_DataInput":
-                                                             [ [1, 'ETH', ['C1', 'C2'], 'ETO', ['C1', [1]]]  ],
-                                                                               "DisFreq": 0.05,
-                                                                               "RotFreq": 0.05,
-                                                                               "IntraSwapFreq":  0.05,
-                                                                               "SwapFreq": 0.05,
-                                                                               "RegrowthFreq":   0.05 ,
-                                                                               "CrankShaftFreq":  0.05 ,
-                                                                               "VolFreq":   0.05 ,
-                                                                               "MultiParticleFreq": 0.05 ,
-                                                                               "IntraMEMC-1Freq": 0.10 ,
-                                                                               "MEMC-1Freq": 0.10 ,
-                                                                               "IntraMEMC-2Freq": 0.10 ,
-                                                                               "MEMC-2Freq": 0.10 ,
-                                                                               "IntraMEMC-3Freq": 0.10 ,
-                                                                               "MEMC-3Freq": 0.10 ,
-                                                                               }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
+                                             r"values: \['MEMC_DataInput'\]"):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_8.conf',
+                                                 'GEMC_NPT', 10, 300,
+                                                 input_variables_dict={"MEMC_DataInput":
+                                                                           [[1, 'ETH', ['C1', 'C2'], 'ETO',
+                                                                             ['C1', [1]]]],
+                                                                       "DisFreq": 0.05,
+                                                                       "RotFreq": 0.05,
+                                                                       "IntraSwapFreq": 0.05,
+                                                                       "SwapFreq": 0.05,
+                                                                       "RegrowthFreq": 0.05,
+                                                                       "CrankShaftFreq": 0.05,
+                                                                       "VolFreq": 0.05,
+                                                                       "MultiParticleFreq": 0.05,
+                                                                       "IntraMEMC-1Freq": 0.10,
+                                                                       "MEMC-1Freq": 0.10,
+                                                                       "IntraMEMC-2Freq": 0.10,
+                                                                       "MEMC-2Freq": 0.10,
+                                                                       "IntraMEMC-3Freq": 0.10,
+                                                                       "MEMC-3Freq": 0.10,
+                                                                       }
+                                                 )
 
         # test the MEMC move ratios cant be set without specifying the MEMC move paramters ("MEMC_DataInput")
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_8.conf',
-                                                         'GEMC_NPT', 10, 300,
-                                                         input_variables_dict={
-                                                                               "IntraMEMC-1Freq": 0.20 ,
-                                                                               "MEMC-1Freq": 0.20 ,
-                                                                               "IntraMEMC-2Freq": 0.20 ,
-                                                                               "MEMC-2Freq": 0.20 ,
-                                                                               "IntraMEMC-3Freq": 0.10 ,
-                                                                               "MEMC-3Freq": 0.10 ,
-                                                                               }
-                                                         )
-        except:
-            value = "TEST_FAILED"
+        with pytest.raises(ValueError, match=r"ERROR: The MEMC_DataInput variable is equal to None, but at least "
+                                             r"one of the MEMC move ratios are all non-zero "
+                                             r"\(IntraMEMC_1Freq, MEMC_1Freq, IntraMEMC_2Freq, MEMC_2Freq, "
+                                             r"IntraMEMC_3Freq, and MEMC_3Freq\)."):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_8.conf',
+                                                 'GEMC_NPT', 10, 300,
+                                                 input_variables_dict={
+                                                     "IntraMEMC-1Freq": 0.20,
+                                                     "MEMC-1Freq": 0.20,
+                                                     "IntraMEMC-2Freq": 0.20,
+                                                     "MEMC-2Freq": 0.20,
+                                                     "IntraMEMC-3Freq": 0.10,
+                                                     "MEMC-3Freq": 0.10,
+                                                 }
+                                                 )
 
-        assert value== "TEST_FAILED"
+        # test some GCMC variable errors with Chempot and fugacity
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
+                                             r"values: \['ChemPot'\]"):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
+                                                 'GCMC', 10, 300,
+                                                 input_variables_dict={'ChemPot': 's', }
+                                                 )
 
-        #testing the move frequency sum to 1 for all ensembles
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
+                                             r"values: \['Fugacity'\]"):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
+                                                 'GCMC', 10, 300,
+                                                 input_variables_dict={'Fugacity': 's', }
+                                                 )
+
+        # testing the move frequency sum to 1 for all ensembles
         try:
             value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_8.conf',
                                                          'GEMC_NPT', 10, 300,
                                                          input_variables_dict={"MEMC_DataInput":
-                                                             [ [1, 'ETH', ['C1', 'C2'], 'ETO', ['C1', 'C2']]  ],
+                                                                                   [[1, 'ETH', ['C1', 'C2'], 'ETO',
+                                                                                     ['C1', 'C2']]],
                                                                                "DisFreq": 0.05,
                                                                                "RotFreq": 0.05,
-                                                                               "IntraSwapFreq":  0.05,
+                                                                               "IntraSwapFreq": 0.05,
                                                                                "SwapFreq": 0.05,
-                                                                               "RegrowthFreq":   0.05 ,
-                                                                               "CrankShaftFreq":  0.05 ,
-                                                                               "VolFreq":   0.05 ,
-                                                                               "MultiParticleFreq": 0.05 ,
-                                                                               "IntraMEMC-1Freq": 0.10 ,
-                                                                               "MEMC-1Freq": 0.10 ,
-                                                                               "IntraMEMC-2Freq": 0.10 ,
-                                                                               "MEMC-2Freq": 0.10 ,
-                                                                               "IntraMEMC-3Freq": 0.10 ,
-                                                                               "MEMC-3Freq": 0.10 ,
+                                                                               "RegrowthFreq": 0.05,
+                                                                               "CrankShaftFreq": 0.05,
+                                                                               "VolFreq": 0.05,
+                                                                               "MultiParticleFreq": 0.05,
+                                                                               "IntraMEMC-1Freq": 0.10,
+                                                                               "MEMC-1Freq": 0.10,
+                                                                               "IntraMEMC-2Freq": 0.10,
+                                                                               "MEMC-2Freq": 0.10,
+                                                                               "IntraMEMC-3Freq": 0.10,
+                                                                               "MEMC-3Freq": 0.10,
                                                                                }
                                                          )
         except:
@@ -5925,31 +3955,35 @@ class TestGOMCControlFileWriter(BaseTest):
 
         assert value == "GOMC_CONTROL_FILE_WRITTEN"
 
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_8.conf',
-                                                         'GEMC_NPT', 10, 300,
-                                                         input_variables_dict={"MEMC_DataInput":
-                                                             [ [1, 'ETH', ['C1', 'C2'], 'ETO', ['C1', 'C2']]  ],
-                                                                               "DisFreq": 0.05,
-                                                                               "RotFreq": 0.05,
-                                                                               "IntraSwapFreq":  0.05,
-                                                                               "SwapFreq": 0.05,
-                                                                               "RegrowthFreq":   0.05 ,
-                                                                               "CrankShaftFreq":  0.05 ,
-                                                                               "VolFreq":   0.05 ,
-                                                                               "MultiParticleFreq": 0.05 ,
-                                                                               "IntraMEMC-1Freq": 0.10 ,
-                                                                               "MEMC-1Freq": 0.10 ,
-                                                                               "IntraMEMC-2Freq": 0.20 ,
-                                                                               "MEMC-2Freq": 0.20 ,
-                                                                               "IntraMEMC-3Freq": 0.20 ,
-                                                                               "MEMC-3Freq": 0.20 ,
-                                                                               }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
+        with pytest.raises(ValueError, match=r"ERROR: The sum of the Monte Carlo move ratios does not equal 1. "
+                                             r"Note: The sum that was manually entered may equal 1, but some "
+                                             r"moves may not be valid for the provided ensemble. The moves that "
+                                             r"are invalid for a given ensemble are set to zero. If the default "
+                                             r"moves are not being used, all the move frequencies which do not have "
+                                             r"default values of zero will need to be set manually so the sum equals "
+                                             r"\(DisFreq, RotFreq, IntraSwapFreq, SwapFreq, RegrowthFreq, "
+                                             r"CrankShaftFreq, and VolFreq\)."):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_8.conf',
+                                                 'GEMC_NPT', 10, 300,
+                                                 input_variables_dict={"MEMC_DataInput":
+                                                                           [[1, 'ETH', ['C1', 'C2'], 'ETO',
+                                                                             ['C1', 'C2']]],
+                                                                       "DisFreq": 0.05,
+                                                                       "RotFreq": 0.05,
+                                                                       "IntraSwapFreq": 0.05,
+                                                                       "SwapFreq": 0.05,
+                                                                       "RegrowthFreq": 0.05,
+                                                                       "CrankShaftFreq": 0.05,
+                                                                       "VolFreq": 0.05,
+                                                                       "MultiParticleFreq": 0.05,
+                                                                       "IntraMEMC-1Freq": 0.10,
+                                                                       "MEMC-1Freq": 0.10,
+                                                                       "IntraMEMC-2Freq": 0.20,
+                                                                       "MEMC-2Freq": 0.20,
+                                                                       "IntraMEMC-3Freq": 0.20,
+                                                                       "MEMC-3Freq": 0.20,
+                                                                       }
+                                                 )
 
         try:
             value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_8.conf',
@@ -5977,85 +4011,92 @@ class TestGOMCControlFileWriter(BaseTest):
 
         assert value == "GOMC_CONTROL_FILE_WRITTEN"
 
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_8.conf',
-                                                         'GEMC_NVT', 10, 300,
-                                                         input_variables_dict={"MEMC_DataInput":
-                                                                                   [[1, 'ETH', ['C1', 'C2'], 'ETO',
-                                                                                     ['C1', 'C2']]],
-                                                                               "DisFreq": 0.05,
-                                                                               "RotFreq": 0.05,
-                                                                               "IntraSwapFreq": 0.05,
-                                                                               "SwapFreq": 0.05,
-                                                                               "RegrowthFreq": 0.05,
-                                                                               "CrankShaftFreq": 0.1,
-                                                                               "MultiParticleFreq": 0.05,
-                                                                               "IntraMEMC-1Freq": 0.10,
-                                                                               "MEMC-1Freq": 0.20,
-                                                                               "IntraMEMC-2Freq": 0.20,
-                                                                               "MEMC-2Freq": 0.20,
-                                                                               "IntraMEMC-3Freq": 0.20,
-                                                                               "MEMC-3Freq": 0.20,
-                                                                               }
-                                                         )
-        except:
-            value = "TEST_FAILED"
+        with pytest.raises(ValueError, match=r"ERROR: The sum of the Monte Carlo move ratios does not equal 1. "
+                                             r"Note: The sum that was manually entered may equal 1, but some "
+                                             r"moves may not be valid for the provided ensemble. The moves that "
+                                             r"are invalid for a given ensemble are set to zero. If the default "
+                                             r"moves are not being used, all the move frequencies which do not have "
+                                             r"default values of zero will need to be set manually so the sum equals "
+                                             r"\(DisFreq, RotFreq, IntraSwapFreq, SwapFreq, RegrowthFreq, "
+                                             r"CrankShaftFreq, and VolFreq\)."):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_8.conf',
+                                                 'GEMC_NVT', 10, 300,
+                                                 input_variables_dict={"MEMC_DataInput":
+                                                                           [[1, 'ETH', ['C1', 'C2'], 'ETO',
+                                                                             ['C1', 'C2']]],
+                                                                       "DisFreq": 0.05,
+                                                                       "RotFreq": 0.05,
+                                                                       "IntraSwapFreq": 0.05,
+                                                                       "SwapFreq": 0.05,
+                                                                       "RegrowthFreq": 0.05,
+                                                                       "CrankShaftFreq": 0.1,
+                                                                       "MultiParticleFreq": 0.05,
+                                                                       "IntraMEMC-1Freq": 0.10,
+                                                                       "MEMC-1Freq": 0.20,
+                                                                       "IntraMEMC-2Freq": 0.20,
+                                                                       "MEMC-2Freq": 0.20,
+                                                                       "IntraMEMC-3Freq": 0.20,
+                                                                       "MEMC-3Freq": 0.20,
+                                                                       }
+                                                 )
 
-        assert value== "TEST_FAILED"
-
         try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_8.conf',
-                                                         'GCMC', 10, 300,
-                                                         input_variables_dict={"MEMC_DataInput":
-                                                                                   [[1, 'ETH', ['C1', 'C2'], 'ETO',
-                                                                                     ['C1', 'C2']]],
-                                                                               "DisFreq": 0.05,
-                                                                               "RotFreq": 0.05,
-                                                                               "IntraSwapFreq": 0.05,
-                                                                               "SwapFreq": 0.05,
-                                                                               "RegrowthFreq": 0.05,
-                                                                               "CrankShaftFreq": 0.1,
-                                                                               "MultiParticleFreq": 0.05,
-                                                                               "IntraMEMC-1Freq": 0.10,
-                                                                               "MEMC-1Freq": 0.10,
-                                                                               "IntraMEMC-2Freq": 0.10,
-                                                                               "MEMC-2Freq": 0.10,
-                                                                               "IntraMEMC-3Freq": 0.10,
-                                                                               "MEMC-3Freq": 0.10,
-                                                                               "ChemPot": {"ETH": -4000, "ETO": 8000},
-                                                                               }
-                                                         )
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_8.conf',
+                                                 'GCMC', 10, 300,
+                                                 input_variables_dict={"MEMC_DataInput":
+                                                                           [[1, 'ETH', ['C1', 'C2'], 'ETO',
+                                                                             ['C1', 'C2']]
+                                                                            ],
+                                                                       "DisFreq": 0.05,
+                                                                       "RotFreq": 0.05,
+                                                                       "IntraSwapFreq": 0.05,
+                                                                       "SwapFreq": 0.05,
+                                                                       "RegrowthFreq": 0.05,
+                                                                       "CrankShaftFreq": 0.1,
+                                                                       "MultiParticleFreq": 0.05,
+                                                                       "IntraMEMC-1Freq": 0.10,
+                                                                       "MEMC-1Freq": 0.10,
+                                                                       "IntraMEMC-2Freq": 0.10,
+                                                                       "MEMC-2Freq": 0.10,
+                                                                       "IntraMEMC-3Freq": 0.10,
+                                                                       "MEMC-3Freq": 0.10,
+                                                                       "ChemPot": {'ETH': -4000, 'ETO': 8000},
+                                                                       }
+                                                 )
         except:
             value = "TEST_FAILED"
 
         assert value == "GOMC_CONTROL_FILE_WRITTEN"
 
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_8.conf',
-                                                         'GCMC', 10, 300,
-                                                         input_variables_dict={"MEMC_DataInput":
-                                                                                   [[1, 'ETH', ['C1', 'C2'], 'ETO',
-                                                                                     ['C1', 'C2']]],
-                                                                               "DisFreq": 0.05,
-                                                                               "RotFreq": 0.05,
-                                                                               "IntraSwapFreq": 0.05,
-                                                                               "SwapFreq": 0.05,
-                                                                               "RegrowthFreq": 0.05,
-                                                                               "CrankShaftFreq": 0.1,
-                                                                               "MultiParticleFreq": 0.05,
-                                                                               "IntraMEMC-1Freq": 0.10,
-                                                                               "MEMC-1Freq": 0.20,
-                                                                               "IntraMEMC-2Freq": 0.20,
-                                                                               "MEMC-2Freq": 0.20,
-                                                                               "IntraMEMC-3Freq": 0.20,
-                                                                               "MEMC-3Freq": 0.20,
-                                                                               "Fugacity": {"ETH": 0, "ETO": 1.0},
-                                                                               }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
+        with pytest.raises(ValueError, match=r"ERROR: The sum of the Monte Carlo move ratios does not equal 1. "
+                                             r"Note: The sum that was manually entered may equal 1, but some "
+                                             r"moves may not be valid for the provided ensemble. The moves that "
+                                             r"are invalid for a given ensemble are set to zero. If the default "
+                                             r"moves are not being used, all the move frequencies which do not have "
+                                             r"default values of zero will need to be set manually so the sum equals "
+                                             r"\(DisFreq, RotFreq, IntraSwapFreq, SwapFreq, RegrowthFreq, "
+                                             r"CrankShaftFreq, and VolFreq\)."):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_8.conf',
+                                                 'GCMC', 10, 300,
+                                                 input_variables_dict={"MEMC_DataInput":
+                                                                           [[1, 'ETH', ['C1', 'C2'], 'ETO',
+                                                                             ['C1', 'C2']]],
+                                                                       "DisFreq": 0.05,
+                                                                       "RotFreq": 0.05,
+                                                                       "IntraSwapFreq": 0.05,
+                                                                       "SwapFreq": 0.05,
+                                                                       "RegrowthFreq": 0.05,
+                                                                       "CrankShaftFreq": 0.1,
+                                                                       "MultiParticleFreq": 0.05,
+                                                                       "IntraMEMC-1Freq": 0.10,
+                                                                       "MEMC-1Freq": 0.20,
+                                                                       "IntraMEMC-2Freq": 0.20,
+                                                                       "MEMC-2Freq": 0.20,
+                                                                       "IntraMEMC-3Freq": 0.20,
+                                                                       "MEMC-3Freq": 0.20,
+                                                                       "Fugacity": {'ETH': 0, 'ETO': 1.0},
+                                                                       }
+                                                 )
 
         try:
             value = gomc_control.write_gomc_control_file(charmm_NPT_NVT, 'test_save_NVT_bad_variables_part_8.conf',
@@ -6084,33 +4125,35 @@ class TestGOMCControlFileWriter(BaseTest):
 
         assert value == "GOMC_CONTROL_FILE_WRITTEN"
 
-        try:
-            value = gomc_control.write_gomc_control_file(charmm_NPT_NVT, 'test_save_NVT_bad_variables_part_8.conf',
-                                                         'NPT', 10, 300,
-                                                         input_variables_dict={"MEMC_DataInput":
-                                                                                   [[1, 'ETH', ['C1', 'C2'], 'ETO',
-                                                                                     ['C1', 'C2']]],
-                                                                               "DisFreq": 0.05,
-                                                                               "RotFreq": 0.05,
-                                                                               "IntraSwapFreq": 0.05,
-                                                                               "SwapFreq": 0.00,
-                                                                               "RegrowthFreq": 0.10,
-                                                                               "CrankShaftFreq": 0.05,
-                                                                               "VolFreq": 0.05,
-                                                                               "MultiParticleFreq": 0.05,
-                                                                               "IntraMEMC-1Freq": 0.20,
-                                                                               "MEMC-1Freq": 0.00,
-                                                                               "IntraMEMC-2Freq": 0.20,
-                                                                               "MEMC-2Freq": 0.00,
-                                                                               "IntraMEMC-3Freq": 0.19,
-                                                                               "MEMC-3Freq": 0.00,
-                                                                               }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
+        with pytest.raises(ValueError, match=r"ERROR: The sum of the Monte Carlo move ratios does not equal 1. "
+                                             r"Note: The sum that was manually entered may equal 1, but some "
+                                             r"moves may not be valid for the provided ensemble. The moves that "
+                                             r"are invalid for a given ensemble are set to zero. If the default "
+                                             r"moves are not being used, all the move frequencies which do not have "
+                                             r"default values of zero will need to be set manually so the sum equals "
+                                             r"\(DisFreq, RotFreq, IntraSwapFreq, SwapFreq, RegrowthFreq, "
+                                             r"CrankShaftFreq, and VolFreq\)."):
+            gomc_control.write_gomc_control_file(charmm_NPT_NVT, 'test_save_NVT_bad_variables_part_8.conf',
+                                                 'NPT', 10, 300,
+                                                 input_variables_dict={"MEMC_DataInput":
+                                                                           [[1, 'ETH', ['C1', 'C2'], 'ETO',
+                                                                             ['C1', 'C2']]],
+                                                                       "DisFreq": 0.05,
+                                                                       "RotFreq": 0.05,
+                                                                       "IntraSwapFreq": 0.05,
+                                                                       "SwapFreq": 0.00,
+                                                                       "RegrowthFreq": 0.10,
+                                                                       "CrankShaftFreq": 0.05,
+                                                                       "VolFreq": 0.05,
+                                                                       "MultiParticleFreq": 0.05,
+                                                                       "IntraMEMC-1Freq": 0.20,
+                                                                       "MEMC-1Freq": 0.00,
+                                                                       "IntraMEMC-2Freq": 0.20,
+                                                                       "MEMC-2Freq": 0.00,
+                                                                       "IntraMEMC-3Freq": 0.19,
+                                                                       "MEMC-3Freq": 0.00,
+                                                                       }
+                                                 )
 
         try:
             value = gomc_control.write_gomc_control_file(charmm_NPT_NVT, 'test_save_NVT_bad_variables_part_8.conf',
@@ -6139,154 +4182,35 @@ class TestGOMCControlFileWriter(BaseTest):
 
         assert value == "GOMC_CONTROL_FILE_WRITTEN"
 
-        try:
-            value = gomc_control.write_gomc_control_file(charmm_NPT_NVT, 'test_save_NVT_bad_variables_part_8.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={"MEMC_DataInput":
-                                                                                   [[1, 'ETH', ['C1', 'C2'], 'ETO',
-                                                                                     ['C1', 'C2']]],
-                                                                               "DisFreq": 0.05,
-                                                                               "RotFreq": 0.05,
-                                                                               "IntraSwapFreq": 0.05,
-                                                                               "SwapFreq": 0.00,
-                                                                               "RegrowthFreq": 0.10,
-                                                                               "CrankShaftFreq": 0.05,
-                                                                               "VolFreq": 0.0,
-                                                                               "MultiParticleFreq": 0.1,
-                                                                               "IntraMEMC-1Freq": 0.20,
-                                                                               "MEMC-1Freq": 0.00,
-                                                                               "IntraMEMC-2Freq": 0.20,
-                                                                               "MEMC-2Freq": 0.00,
-                                                                               "IntraMEMC-3Freq": 0.21,
-                                                                               "MEMC-3Freq": 0.00,
-                                                                               }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        # check the  input_variables_dict ChemPot and Fugacity for errors
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_8.conf',
-                                                         'GCMC', 10, 300,
-                                                         input_variables_dict={"MEMC_DataInput":
-                                                                                   [[1, 'ETH', ['C1', 'C2'], 'ETO',
-                                                                                     ['C1', 'C2']]],
-                                                                               "DisFreq": 1,
-                                                                               "Fugacity": {1: 0, "ETO": 1.0},
-                                                                               }
-                                                        )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_8.conf',
-                                                         'GCMC', 10, 300,
-                                                         input_variables_dict={"MEMC_DataInput":
-                                                                                   [[1, 'ETH', ['C1', 'C2'], 'ETO',
-                                                                                     ['C1', 'C2']]],
-                                                                                "DisFreq": 1,
-                                                                               "Fugacity": {"ETH": -1, "ETO": 1.0},
-                                                                               }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_8.conf',
-                                                         'GCMC', 10, 300,
-                                                         input_variables_dict={"MEMC_DataInput":
-                                                                                   [[1, 'ETH', ['C1', 'C2'], 'ETO',
-                                                                                     ['C1', 'C2']]],
-                                                                                "DisFreq": 1,
-                                                                               "Fugacity": {"ETH": "1", "ETO": 1.0},
-                                                                               }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_8.conf',
-                                                         'GCMC', 10, 300,
-                                                         input_variables_dict={"MEMC_DataInput":
-                                                                                   [[1, 'ETH', ['C1', 'C2'], 'ETO',
-                                                                                     ['C1', 'C2']]],
-                                                                                "DisFreq": 1,
-                                                                               "Fugacity": {"ETH": ["1"], "ETO": 1.0},
-                                                                               }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_8.conf',
-                                                         'GCMC', 10, 300,
-                                                         input_variables_dict={"MEMC_DataInput":
-                                                                                   [[1, 'ETH', ['C1', 'C2'], 'ETO',
-                                                                                     ['C1', 'C2']]],
-                                                                                "DisFreq": 1,
-                                                                               "Fugacity": {"ETH": 0, "ETO": 1.0},
-                                                                               }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_8.conf',
-                                                         'GCMC', 10, 300,
-                                                         input_variables_dict={"MEMC_DataInput":
-                                                                                   [[1, 'ETH', ['C1', 'C2'], 'ETO',
-                                                                                     ['C1', 'C2']]],
-                                                                                "DisFreq": 1,
-                                                                                "ChemPot": {1: -4000, "ETO": -8000},
-                                                                               }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_8.conf',
-                                                         'GCMC', 10, 300,
-                                                         input_variables_dict={"MEMC_DataInput":
-                                                                                   [[1, 'ETH', ['C1', 'C2'], 'ETO',
-                                                                                     ['C1', 'C2']]],
-                                                                                "DisFreq": 1,
-                                                                                "ChemPot": {'ETH': '40', "ETO": -8000},
-                                                                               }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_8.conf',
-                                                         'GCMC', 10, 300,
-                                                         input_variables_dict={"MEMC_DataInput":
-                                                                                   [[1, 'ETH', ['C1', 'C2'], 'ETO',
-                                                                                     ['C1', 'C2']]],
-                                                                                "DisFreq": 1,
-                                                                                "ChemPot": {'ETH': ['40'], "ETO": -8000},
-                                                                               }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
+        with pytest.raises(ValueError, match=r"ERROR: The sum of the Monte Carlo move ratios does not equal 1. "
+                                             r"Note: The sum that was manually entered may equal 1, but some "
+                                             r"moves may not be valid for the provided ensemble. The moves that "
+                                             r"are invalid for a given ensemble are set to zero. If the default "
+                                             r"moves are not being used, all the move frequencies which do not have "
+                                             r"default values of zero will need to be set manually so the sum equals "
+                                             r"\(DisFreq, RotFreq, IntraSwapFreq, SwapFreq, RegrowthFreq, "
+                                             r"CrankShaftFreq, and VolFreq\)."):
+            gomc_control.write_gomc_control_file(charmm_NPT_NVT, 'test_save_NVT_bad_variables_part_8.conf',
+                                                 'NVT', 10, 300,
+                                                 input_variables_dict={"MEMC_DataInput":
+                                                                           [[1, 'ETH', ['C1', 'C2'], 'ETO',
+                                                                             ['C1', 'C2']]],
+                                                                       "DisFreq": 0.05,
+                                                                       "RotFreq": 0.05,
+                                                                       "IntraSwapFreq": 0.05,
+                                                                       "SwapFreq": 0.00,
+                                                                       "RegrowthFreq": 0.10,
+                                                                       "CrankShaftFreq": 0.05,
+                                                                       "VolFreq": 0.0,
+                                                                       "MultiParticleFreq": 0.1,
+                                                                       "IntraMEMC-1Freq": 0.20,
+                                                                       "MEMC-1Freq": 0.00,
+                                                                       "IntraMEMC-2Freq": 0.20,
+                                                                       "MEMC-2Freq": 0.00,
+                                                                       "IntraMEMC-3Freq": 0.21,
+                                                                       "MEMC-3Freq": 0.00,
+                                                                       }
+                                                 )
 
         # test good values of Volume for NVT, and GCMC if set to zero
         try:
@@ -6371,231 +4295,337 @@ class TestGOMCControlFileWriter(BaseTest):
 
         assert value == "GOMC_CONTROL_FILE_WRITTEN"
 
+        # test come MEMC with GCMC
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
+                                             r"values: \['Fugacity'\]"):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_8.conf',
+                                                 'GCMC', 10, 300,
+                                                 input_variables_dict={"MEMC_DataInput":
+                                                                           [[1, 'ETH', ['C1', 'C2'], 'ETO',
+                                                                             ['C1', 'C2']]],
+                                                                       "DisFreq": 1,
+                                                                       "Fugacity": {1: 0, "ETO": 1.0},
+                                                                       }
+                                                 )
 
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad values: \['Fugacity'\]"):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_8.conf',
+                                                 'GCMC', 10, 300,
+                                                 input_variables_dict={"MEMC_DataInput":
+                                                                           [[1, 'ETH', ['C1', 'C2'], 'ETO',
+                                                                             ['C1', 'C2']]],
+                                                                       "DisFreq": 1,
+                                                                       "Fugacity": {"ETH": -1, "ETO": 1.0},
+                                                                       }
+                                                 )
+
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad values: \['Fugacity'\]"):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_8.conf',
+                                                 'GCMC', 10, 300,
+                                                 input_variables_dict={"MEMC_DataInput":
+                                                                           [[1, 'ETH', ['C1', 'C2'], 'ETO',
+                                                                             ['C1', 'C2']]],
+                                                                       "DisFreq": 1,
+                                                                       "Fugacity": {"ETH": "1", "ETO": 1.0},
+                                                                       }
+                                                 )
+
+        with pytest.raises(ValueError, match=r"ERROR: The MEMC_DataInput variable is not equal to None, "
+                                             r"but all the MEMC move ratios are zero \(IntraMEMC_1Freq, MEMC_1Freq, "
+                                             r"IntraMEMC_2Freq, MEMC_2Freq, IntraMEMC_3Freq, and MEMC_3Freq\)."):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_8.conf',
+                                                 'GCMC', 10, 300,
+                                                 input_variables_dict={"MEMC_DataInput":
+                                                                           [[1, 'ETH', ['C1', 'C2'], 'ETO',
+                                                                             ['C1', 'C2']]],
+                                                                       "DisFreq": 1,
+                                                                       "Fugacity": {"ETH": 2, "ETO": 1.0},
+                                                                       }
+                                                 )
+
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
+                                             r"values: \['Fugacity'\]"):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_8.conf',
+                                                 'GCMC', 10, 300,
+                                                 input_variables_dict={
+                                                     "DisFreq": 1,
+                                                     "Fugacity": {"ETH": 0, "XXX": 1.0},
+                                                 }
+                                                 )
+
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
+                                             r"values: \['Fugacity'\]"):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_8.conf',
+                                                 'GCMC', 10, 300,
+                                                 input_variables_dict={
+                                                     "DisFreq": 1,
+                                                     "Fugacity": {"XXX": 0, "ETO": 1.0},
+                                                 }
+                                                 )
+
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
+                                             r"values: \['ChemPot'\]"):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_8.conf',
+                                                 'GCMC', 10, 300,
+                                                 input_variables_dict={
+                                                     "DisFreq": 1,
+                                                     "ChemPot": {1: -4000, "ETO": -8000},
+                                                 }
+                                                 )
+
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
+                                             r"values: \['ChemPot'\]"):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_8.conf',
+                                                 'GCMC', 10, 300,
+                                                 input_variables_dict={
+                                                     "DisFreq": 1,
+                                                     "ChemPot": {"XXX": -4000, "ETO": -8000},
+                                                 }
+                                                 )
+
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
+                                             r"values: \['ChemPot'\]"):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_8.conf',
+                                                 'GCMC', 10, 300,
+                                                 input_variables_dict={
+                                                     "DisFreq": 1,
+                                                     "ChemPot": {"ETH": -4000, "XXX": -8000},
+                                                 }
+                                                 )
+
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
+                                             r"values: \['ChemPot'\]"):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_8.conf',
+                                                 'GCMC', 10, 300,
+                                                 input_variables_dict={
+                                                     "DisFreq": 1,
+                                                     "ChemPot": {'ETH': '40', "ETO": -8000},
+                                                 }
+                                                 )
+
+        with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
+                                             r"values: \['ChemPot'\]"):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_8.conf',
+                                                 'GCMC', 10, 300,
+                                                 input_variables_dict={
+                                                     "DisFreq": 1,
+                                                     "ChemPot": {'ETH': ['40'], "ETO": -8000},
+                                                 }
+                                                 )
 
         # test bad values of Volume for NVT, and GCMC
-        try:
-            value = gomc_control.write_gomc_control_file(charmm_NPT_NVT, 'test_save_NVT_bad_variables_part_8.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={"MEMC_DataInput":
-                                                                                   [[1, 'ETH', ['C1', 'C2'], 'ETO',
-                                                                                     ['C1', 'C2']]],
-                                                                               "DisFreq": 0.05,
-                                                                               "RotFreq": 0.05,
-                                                                               "IntraSwapFreq": 0.05,
-                                                                               "SwapFreq": 0.00,
-                                                                               "RegrowthFreq": 0.10,
-                                                                               "CrankShaftFreq": 0.05,
-                                                                               "VolFreq": 0.1,
-                                                                               "MultiParticleFreq": 0.1,
-                                                                               "IntraMEMC-1Freq": 0.10,
-                                                                               "MEMC-1Freq": 0.00,
-                                                                               "IntraMEMC-2Freq": 0.20,
-                                                                               "MEMC-2Freq": 0.00,
-                                                                               "IntraMEMC-3Freq": 0.20,
-                                                                               "MEMC-3Freq": 0.00,
-                                                                               }
-                                                         )
-        except:
-            value = "TEST_FAILED"
+        with pytest.raises(ValueError, match=r'ERROR: The input variable VolFreq is non-zero \(0\). '
+                                             'VolFreq must be zero \(0\) for the "NVT", "GEMC_NVT", '
+                                             'and "GCMC" ensembles.'):
+            gomc_control.write_gomc_control_file(charmm_NPT_NVT, 'test_save_NVT_bad_variables_part_8.conf',
+                                                 'NVT', 10, 300,
+                                                 input_variables_dict={"MEMC_DataInput":
+                                                                           [[1, 'ETH', ['C1', 'C2'], 'ETO',
+                                                                             ['C1', 'C2']]],
+                                                                       "DisFreq": 0.05,
+                                                                       "RotFreq": 0.05,
+                                                                       "IntraSwapFreq": 0.05,
+                                                                       "SwapFreq": 0.00,
+                                                                       "RegrowthFreq": 0.10,
+                                                                       "CrankShaftFreq": 0.05,
+                                                                       "VolFreq": 0.1,
+                                                                       "MultiParticleFreq": 0.1,
+                                                                       "IntraMEMC-1Freq": 0.10,
+                                                                       "MEMC-1Freq": 0.00,
+                                                                       "IntraMEMC-2Freq": 0.20,
+                                                                       "MEMC-2Freq": 0.00,
+                                                                       "IntraMEMC-3Freq": 0.20,
+                                                                       "MEMC-3Freq": 0.00,
+                                                                       }
+                                                 )
 
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_8.conf',
-                                                         'GCMC', 10, 300,
-                                                         input_variables_dict={"MEMC_DataInput":
-                                                                                   [[1, 'ETH', ['C1', 'C2'], 'ETO',
-                                                                                     ['C1', 'C2']]],
-                                                                               "ChemPot": {'ETH': -4000, "ETO": -8000},
-                                                                               "DisFreq": 0.05,
-                                                                               "RotFreq": 0.05,
-                                                                               "IntraSwapFreq": 0.05,
-                                                                               "SwapFreq": 0.00,
-                                                                               "RegrowthFreq": 0.10,
-                                                                               "CrankShaftFreq": 0.05,
-                                                                               "VolFreq": 0.1,
-                                                                               "MultiParticleFreq": 0.1,
-                                                                               "IntraMEMC-1Freq": 0.10,
-                                                                               "MEMC-1Freq": 0.00,
-                                                                               "IntraMEMC-2Freq": 0.20,
-                                                                               "MEMC-2Freq": 0.00,
-                                                                               "IntraMEMC-3Freq": 0.20,
-                                                                               "MEMC-3Freq": 0.00,
-                                                                               }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
+        with pytest.raises(ValueError, match=r'ERROR: The input variable VolFreq is non-zero \(0\). ' \
+                                             'VolFreq must be zero \(0\) for the "NVT", "GEMC_NVT", '
+                                             'and "GCMC" ensembles.'):
+            gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_8.conf',
+                                                 'GCMC', 10, 300,
+                                                 input_variables_dict={"MEMC_DataInput":
+                                                                           [[1, 'ETH', ['C1', 'C2'], 'ETO',
+                                                                             ['C1', 'C2']]],
+                                                                       "ChemPot": {'ETH': -4000, "ETO": -8000},
+                                                                       "DisFreq": 0.05,
+                                                                       "RotFreq": 0.05,
+                                                                       "IntraSwapFreq": 0.05,
+                                                                       "SwapFreq": 0.00,
+                                                                       "RegrowthFreq": 0.10,
+                                                                       "CrankShaftFreq": 0.05,
+                                                                       "VolFreq": 0.1,
+                                                                       "MultiParticleFreq": 0.1,
+                                                                       "IntraMEMC-1Freq": 0.10,
+                                                                       "MEMC-1Freq": 0.00,
+                                                                       "IntraMEMC-2Freq": 0.20,
+                                                                       "MEMC-2Freq": 0.00,
+                                                                       "IntraMEMC-3Freq": 0.20,
+                                                                       "MEMC-3Freq": 0.00,
+                                                                       }
+                                                 )
 
         # test bad values of MEMC  for NVT, NPT
-        try:
-            value = gomc_control.write_gomc_control_file(charmm_NPT_NVT, 'test_save_NVT_bad_variables_part_8.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={"MEMC_DataInput":
-                                                                                   [[1, 'ETH', ['C1', 'C2'], 'ETO',
-                                                                                     ['C1', 'C2']]],
-                                                                               "DisFreq": 0.05,
-                                                                               "RotFreq": 0.05,
-                                                                               "IntraSwapFreq": 0.05,
-                                                                               "SwapFreq": 0.00,
-                                                                               "RegrowthFreq": 0.10,
-                                                                               "CrankShaftFreq": 0.05,
-                                                                               "VolFreq": 0.0,
-                                                                               "MultiParticleFreq": 0.1,
-                                                                               "IntraMEMC-1Freq": 0.10,
-                                                                               "MEMC-1Freq": 0.10,
-                                                                               "IntraMEMC-2Freq": 0.20,
-                                                                               "MEMC-2Freq": 0.00,
-                                                                               "IntraMEMC-3Freq": 0.20,
-                                                                               "MEMC-3Freq": 0.00,
-                                                                               }
-                                                         )
-        except:
-            value = "TEST_FAILED"
+        with pytest.raises(ValueError, match=r'ERROR: All the MC move input variables must be non-zero \(0\) '
+                                             r'for the SwapFreq, MEMC_1Freq, MEMC_2Freq, and MEMC_3Freq. '
+                                             r'The SwapFreq, MEMC_1Freq, MEMC_2Freq, and MEMC_3Freq need to be zero '
+                                             r'\(0\) for the "NVT" and "NPT" ensembles.'):
+            gomc_control.write_gomc_control_file(charmm_NPT_NVT, 'test_save_NVT_bad_variables_part_8.conf',
+                                                 'NVT', 10, 300,
+                                                 input_variables_dict={"MEMC_DataInput":
+                                                                           [[1, 'ETH', ['C1', 'C2'], 'ETO',
+                                                                             ['C1', 'C2']]],
+                                                                       "DisFreq": 0.05,
+                                                                       "RotFreq": 0.05,
+                                                                       "IntraSwapFreq": 0.05,
+                                                                       "SwapFreq": 0.00,
+                                                                       "RegrowthFreq": 0.10,
+                                                                       "CrankShaftFreq": 0.05,
+                                                                       "VolFreq": 0.0,
+                                                                       "MultiParticleFreq": 0.1,
+                                                                       "IntraMEMC-1Freq": 0.10,
+                                                                       "MEMC-1Freq": 0.10,
+                                                                       "IntraMEMC-2Freq": 0.20,
+                                                                       "MEMC-2Freq": 0.00,
+                                                                       "IntraMEMC-3Freq": 0.20,
+                                                                       "MEMC-3Freq": 0.00,
+                                                                       }
+                                                 )
 
-        assert value== "TEST_FAILED"
+        with pytest.raises(ValueError, match=r'ERROR: All the MC move input variables must be non-zero \(0\) '
+                                             r'for the SwapFreq, MEMC_1Freq, MEMC_2Freq, and MEMC_3Freq. '
+                                             r'The SwapFreq, MEMC_1Freq, MEMC_2Freq, and MEMC_3Freq need to be zero '
+                                             r'\(0\) for the "NVT" and "NPT" ensembles.'):
+            gomc_control.write_gomc_control_file(charmm_NPT_NVT, 'test_save_NVT_bad_variables_part_8.conf',
+                                                 'NVT', 10, 300,
+                                                 input_variables_dict={"MEMC_DataInput":
+                                                                           [[1, 'ETH', ['C1', 'C2'], 'ETO',
+                                                                             ['C1', 'C2']]],
+                                                                       "DisFreq": 0.05,
+                                                                       "RotFreq": 0.05,
+                                                                       "IntraSwapFreq": 0.05,
+                                                                       "SwapFreq": 0.00,
+                                                                       "RegrowthFreq": 0.10,
+                                                                       "CrankShaftFreq": 0.05,
+                                                                       "VolFreq": 0.0,
+                                                                       "MultiParticleFreq": 0.1,
+                                                                       "IntraMEMC-1Freq": 0.10,
+                                                                       "MEMC-1Freq": 0.00,
+                                                                       "IntraMEMC-2Freq": 0.20,
+                                                                       "MEMC-2Freq": 0.10,
+                                                                       "IntraMEMC-3Freq": 0.20,
+                                                                       "MEMC-3Freq": 0.00,
+                                                                       }
+                                                 )
 
-        try:
-            value = gomc_control.write_gomc_control_file(charmm_NPT_NVT, 'test_save_NVT_bad_variables_part_8.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={"MEMC_DataInput":
-                                                                                   [[1, 'ETH', ['C1', 'C2'], 'ETO',
-                                                                                     ['C1', 'C2']]],
-                                                                               "DisFreq": 0.05,
-                                                                               "RotFreq": 0.05,
-                                                                               "IntraSwapFreq": 0.05,
-                                                                               "SwapFreq": 0.00,
-                                                                               "RegrowthFreq": 0.10,
-                                                                               "CrankShaftFreq": 0.05,
-                                                                               "VolFreq": 0.0,
-                                                                               "MultiParticleFreq": 0.1,
-                                                                               "IntraMEMC-1Freq": 0.10,
-                                                                               "MEMC-1Freq": 0.00,
-                                                                               "IntraMEMC-2Freq": 0.20,
-                                                                               "MEMC-2Freq": 0.10,
-                                                                               "IntraMEMC-3Freq": 0.20,
-                                                                               "MEMC-3Freq": 0.00,
-                                                                               }
-                                                         )
-        except:
-            value = "TEST_FAILED"
+        with pytest.raises(ValueError, match=r'ERROR: All the MC move input variables must be non-zero \(0\) '
+                                             r'for the SwapFreq, MEMC_1Freq, MEMC_2Freq, and MEMC_3Freq. '
+                                             r'The SwapFreq, MEMC_1Freq, MEMC_2Freq, and MEMC_3Freq need to be zero '
+                                             r'\(0\) for the "NVT" and "NPT" ensembles.'):
+            gomc_control.write_gomc_control_file(charmm_NPT_NVT, 'test_save_NVT_bad_variables_part_8.conf',
+                                                 'NVT', 10, 300,
+                                                 input_variables_dict={"MEMC_DataInput":
+                                                                           [[1, 'ETH', ['C1', 'C2'], 'ETO',
+                                                                             ['C1', 'C2']]],
+                                                                       "DisFreq": 0.05,
+                                                                       "RotFreq": 0.05,
+                                                                       "IntraSwapFreq": 0.05,
+                                                                       "SwapFreq": 0.00,
+                                                                       "RegrowthFreq": 0.10,
+                                                                       "CrankShaftFreq": 0.05,
+                                                                       "VolFreq": 0.0,
+                                                                       "MultiParticleFreq": 0.1,
+                                                                       "IntraMEMC-1Freq": 0.10,
+                                                                       "MEMC-1Freq": 0.00,
+                                                                       "IntraMEMC-2Freq": 0.20,
+                                                                       "MEMC-2Freq": 0.00,
+                                                                       "IntraMEMC-3Freq": 0.20,
+                                                                       "MEMC-3Freq": 0.10,
+                                                                       }
+                                                 )
 
-        assert value== "TEST_FAILED"
+        with pytest.raises(ValueError, match=r'ERROR: All the MC move input variables must be non-zero \(0\) '
+                                             r'for the SwapFreq, MEMC_1Freq, MEMC_2Freq, and MEMC_3Freq. '
+                                             r'The SwapFreq, MEMC_1Freq, MEMC_2Freq, and MEMC_3Freq need to be zero '
+                                             r'\(0\) for the "NVT" and "NPT" ensembles.'):
+            gomc_control.write_gomc_control_file(charmm_NPT_NVT, 'test_save_NVT_bad_variables_part_8.conf',
+                                                 'NPT', 10, 300,
+                                                 input_variables_dict={"MEMC_DataInput":
+                                                                           [[1, 'ETH', ['C1', 'C2'], 'ETO',
+                                                                             ['C1', 'C2']]],
+                                                                       "DisFreq": 0.05,
+                                                                       "RotFreq": 0.05,
+                                                                       "IntraSwapFreq": 0.05,
+                                                                       "SwapFreq": 0.00,
+                                                                       "RegrowthFreq": 0.10,
+                                                                       "CrankShaftFreq": 0.05,
+                                                                       "VolFreq": 0.0,
+                                                                       "MultiParticleFreq": 0.1,
+                                                                       "IntraMEMC-1Freq": 0.10,
+                                                                       "MEMC-1Freq": 0.10,
+                                                                       "IntraMEMC-2Freq": 0.20,
+                                                                       "MEMC-2Freq": 0.00,
+                                                                       "IntraMEMC-3Freq": 0.20,
+                                                                       "MEMC-3Freq": 0.00,
+                                                                       }
+                                                 )
 
-        try:
-            value = gomc_control.write_gomc_control_file(charmm_NPT_NVT, 'test_save_NVT_bad_variables_part_8.conf',
-                                                         'NVT', 10, 300,
-                                                         input_variables_dict={"MEMC_DataInput":
-                                                                                   [[1, 'ETH', ['C1', 'C2'], 'ETO',
-                                                                                     ['C1', 'C2']]],
-                                                                               "DisFreq": 0.05,
-                                                                               "RotFreq": 0.05,
-                                                                               "IntraSwapFreq": 0.05,
-                                                                               "SwapFreq": 0.00,
-                                                                               "RegrowthFreq": 0.10,
-                                                                               "CrankShaftFreq": 0.05,
-                                                                               "VolFreq": 0.0,
-                                                                               "MultiParticleFreq": 0.1,
-                                                                               "IntraMEMC-1Freq": 0.10,
-                                                                               "MEMC-1Freq": 0.00,
-                                                                               "IntraMEMC-2Freq": 0.20,
-                                                                               "MEMC-2Freq": 0.00,
-                                                                               "IntraMEMC-3Freq": 0.20,
-                                                                               "MEMC-3Freq": 0.10,
-                                                                               }
-                                                         )
-        except:
-            value = "TEST_FAILED"
+        with pytest.raises(ValueError, match=r'ERROR: All the MC move input variables must be non-zero \(0\) '
+                                             r'for the SwapFreq, MEMC_1Freq, MEMC_2Freq, and MEMC_3Freq. '
+                                             r'The SwapFreq, MEMC_1Freq, MEMC_2Freq, and MEMC_3Freq need to be zero '
+                                             r'\(0\) for the "NVT" and "NPT" ensembles.'):
+            gomc_control.write_gomc_control_file(charmm_NPT_NVT, 'test_save_NVT_bad_variables_part_8.conf',
+                                                 'NPT', 10, 300,
+                                                 input_variables_dict={"MEMC_DataInput":
+                                                                           [[1, 'ETH', ['C1', 'C2'], 'ETO',
+                                                                             ['C1', 'C2']]],
+                                                                       "DisFreq": 0.05,
+                                                                       "RotFreq": 0.05,
+                                                                       "IntraSwapFreq": 0.05,
+                                                                       "SwapFreq": 0.00,
+                                                                       "RegrowthFreq": 0.10,
+                                                                       "CrankShaftFreq": 0.05,
+                                                                       "VolFreq": 0.0,
+                                                                       "MultiParticleFreq": 0.1,
+                                                                       "IntraMEMC-1Freq": 0.10,
+                                                                       "MEMC-1Freq": 0.00,
+                                                                       "IntraMEMC-2Freq": 0.20,
+                                                                       "MEMC-2Freq": 0.10,
+                                                                       "IntraMEMC-3Freq": 0.20,
+                                                                       "MEMC-3Freq": 0.00,
+                                                                       }
+                                                 )
 
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm_NPT_NVT, 'test_save_NVT_bad_variables_part_8.conf',
-                                                         'NPT', 10, 300,
-                                                         input_variables_dict={"MEMC_DataInput":
-                                                                                   [[1, 'ETH', ['C1', 'C2'], 'ETO',
-                                                                                     ['C1', 'C2']]],
-                                                                               "DisFreq": 0.05,
-                                                                               "RotFreq": 0.05,
-                                                                               "IntraSwapFreq": 0.05,
-                                                                               "SwapFreq": 0.00,
-                                                                               "RegrowthFreq": 0.10,
-                                                                               "CrankShaftFreq": 0.05,
-                                                                               "VolFreq": 0.0,
-                                                                               "MultiParticleFreq": 0.1,
-                                                                               "IntraMEMC-1Freq": 0.10,
-                                                                               "MEMC-1Freq": 0.10,
-                                                                               "IntraMEMC-2Freq": 0.20,
-                                                                               "MEMC-2Freq": 0.00,
-                                                                               "IntraMEMC-3Freq": 0.20,
-                                                                               "MEMC-3Freq": 0.00,
-                                                                               }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm_NPT_NVT, 'test_save_NVT_bad_variables_part_8.conf',
-                                                         'NPT', 10, 300,
-                                                         input_variables_dict={"MEMC_DataInput":
-                                                                                   [[1, 'ETH', ['C1', 'C2'], 'ETO',
-                                                                                     ['C1', 'C2']]],
-                                                                               "DisFreq": 0.05,
-                                                                               "RotFreq": 0.05,
-                                                                               "IntraSwapFreq": 0.05,
-                                                                               "SwapFreq": 0.00,
-                                                                               "RegrowthFreq": 0.10,
-                                                                               "CrankShaftFreq": 0.05,
-                                                                               "VolFreq": 0.0,
-                                                                               "MultiParticleFreq": 0.1,
-                                                                               "IntraMEMC-1Freq": 0.10,
-                                                                               "MEMC-1Freq": 0.00,
-                                                                               "IntraMEMC-2Freq": 0.20,
-                                                                               "MEMC-2Freq": 0.10,
-                                                                               "IntraMEMC-3Freq": 0.20,
-                                                                               "MEMC-3Freq": 0.00,
-                                                                               }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
-
-        try:
-            value = gomc_control.write_gomc_control_file(charmm_NPT_NVT, 'test_save_NVT_bad_variables_part_8.conf',
-                                                         'NPT' , 10, 300,
-                                                         input_variables_dict={"MEMC_DataInput":
-                                                                                   [[1, 'ETH', ['C1', 'C2'], 'ETO',
-                                                                                     ['C1', 'C2']]],
-                                                                               "DisFreq": 0.05,
-                                                                               "RotFreq": 0.05,
-                                                                               "IntraSwapFreq": 0.05,
-                                                                               "SwapFreq": 0.00,
-                                                                               "RegrowthFreq": 0.10,
-                                                                               "CrankShaftFreq": 0.05,
-                                                                               "VolFreq": 0.0,
-                                                                               "MultiParticleFreq": 0.1,
-                                                                               "IntraMEMC-1Freq": 0.10,
-                                                                               "MEMC-1Freq": 0.00,
-                                                                               "IntraMEMC-2Freq": 0.20,
-                                                                               "MEMC-2Freq": 0.00,
-                                                                               "IntraMEMC-3Freq": 0.20,
-                                                                               "MEMC-3Freq": 0.10,
-                                                                               }
-                                                         )
-        except:
-            value = "TEST_FAILED"
-
-        assert value== "TEST_FAILED"
+        with pytest.raises(ValueError, match=r'ERROR: All the MC move input variables must be non-zero \(0\) '
+                                             r'for the SwapFreq, MEMC_1Freq, MEMC_2Freq, and MEMC_3Freq. '
+                                             r'The SwapFreq, MEMC_1Freq, MEMC_2Freq, and MEMC_3Freq need to be zero '
+                                             r'\(0\) for the "NVT" and "NPT" ensembles.'):
+            gomc_control.write_gomc_control_file(charmm_NPT_NVT, 'test_save_NVT_bad_variables_part_8.conf',
+                                                 'NPT', 10, 300,
+                                                 input_variables_dict={"MEMC_DataInput":
+                                                                           [[1, 'ETH', ['C1', 'C2'], 'ETO',
+                                                                             ['C1', 'C2']]],
+                                                                       "DisFreq": 0.05,
+                                                                       "RotFreq": 0.05,
+                                                                       "IntraSwapFreq": 0.05,
+                                                                       "SwapFreq": 0.00,
+                                                                       "RegrowthFreq": 0.10,
+                                                                       "CrankShaftFreq": 0.05,
+                                                                       "VolFreq": 0.0,
+                                                                       "MultiParticleFreq": 0.1,
+                                                                       "IntraMEMC-1Freq": 0.10,
+                                                                       "MEMC-1Freq": 0.00,
+                                                                       "IntraMEMC-2Freq": 0.20,
+                                                                       "MEMC-2Freq": 0.00,
+                                                                       "IntraMEMC-3Freq": 0.20,
+                                                                       "MEMC-3Freq": 0.10,
+                                                                       }
+                                                 )
 
         # test good values of MEMC  with GCMC
         try:
             value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_8.conf',
-                                                         'GCMC' , 10, 300,
+                                                         'GCMC', 10, 300,
                                                          input_variables_dict={"MEMC_DataInput":
                                                                                    [[1, 'ETH', ['C1', 'C2'], 'ETO',
                                                                                      ['C1', 'C2']]],

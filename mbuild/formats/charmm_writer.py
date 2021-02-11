@@ -967,6 +967,90 @@ class Charmm:
 
 
 
+        # get all the unique atom name to check for the MEMC move in the gomc_conf_writer
+        self.all_Individual_atom_names_List = []
+        self.all_residue_names_List = []
+        if self.structure_box_1:
+            list_of_structures = [self.structure_box_0_FF, self.structure_box_1_FF]
+            list_of_file_names = [self.filename_box_0, self.filename_box_1]
+            stuct_only = [self.structure_box_0_FF, self.structure_box_1_FF]
+        else:
+            list_of_structures = [self.structure_box_0_FF]
+            list_of_file_names = [self.filename_box_0]
+            stuct_only = [self.structure_box_0_FF]
+
+        for q in range(0, len(list_of_structures)):
+            stuct_iteration = list_of_structures[q]
+            file_name_iteration = list_of_file_names[q]
+            output = str(file_name_iteration)+'.psf'
+            stuct_only_iteration =stuct_only[q]
+
+            # caluculate the atom name and unique atom names
+            residue_data_list = []
+            residue_names_list = []
+            for k, atom in enumerate(stuct_only_iteration.atoms):
+                residue_data_list.append(str(atom.residue))
+                residue_names_list.append(atom.residue.name)
+
+            unique_residue_data_dict = {}
+            unique_residue_data_list = []
+            residue_data_name_list = []
+
+            for m, residue in enumerate(stuct_only_iteration.residues):
+                unique_residue_data_list.append(str(stuct_only_iteration.residues[m]))
+                unique_residue_data_dict.update({unique_residue_data_list[m]: m + 1})
+                residue_data_name_list.append(stuct_only_iteration.residues[m].name)
+
+
+            self.Max_Residue_No = 9999
+            self.No_1st_values_res_name = 3
+
+            Res_No_iteration_corrected_List = []
+            residue_ID_list = []
+            for f, PSF_atom_iteration_0 in enumerate(stuct_only_iteration.atoms):
+
+                residue_ID_int = int(unique_residue_data_dict[residue_data_list[f]])
+                Res_ID_adder = int((residue_ID_int % self.Max_Residue_No) % (self.Max_Residue_No))
+                if int(Res_ID_adder) == 0:
+                    Res_No_iteration_corrected = int(self.Max_Residue_No)
+                else:
+                    Res_No_iteration_corrected = Res_ID_adder
+
+                Res_No_iteration_corrected_List.append(Res_No_iteration_corrected)
+                residue_ID_list.append(residue_ID_int)
+
+            # This converts the atom name in the GOMC psf and pdb files to unique atom names
+            unique_Individual_atom_names_dict_iter, \
+            Individual_atom_names_List_iter, \
+            Missing_Bead_to_atom_name_iter =unique_atom_naming(stuct_only_iteration ,
+                                                               residue_ID_list,
+                                                               residue_names_list,
+                                                               bead_to_atom_name_dict=self.bead_to_atom_name_dict)
+
+            print('Individual_atom_names_List_iter = {}'.format(Individual_atom_names_List_iter))
+            self.all_Individual_atom_names_List =  self.all_Individual_atom_names_List \
+                                                          + Individual_atom_names_List_iter
+            print('self.all_Individual_atom_names_List = {}'.format(self.all_Individual_atom_names_List))
+
+            print('Individual_atom_names_List_iter = {}'.format(Individual_atom_names_List_iter))
+            self.all_residue_names_List = self.all_residue_names_List \
+                                           + residue_names_list
+            print('self.all_Individual_atom_names_List = {}'.format(self.all_Individual_atom_names_List))
+
+        # put the  self.all_Individual_atom_names_List and self.all_residue_names_List in a list to match
+        # the the atom name with a residue and find the unique matches
+        self.all_atom_name_res_pairs_List = []
+        for name_res_i in range(0, len(self.all_Individual_atom_names_List)):
+            all_name_res_pairs_iteration = [self.all_Individual_atom_names_List[name_res_i],
+                                            self.all_residue_names_List[name_res_i]
+                                            ]
+            if all_name_res_pairs_iteration not in self.all_atom_name_res_pairs_List:
+                self.all_atom_name_res_pairs_List.append(all_name_res_pairs_iteration)
+
+        print('self.all_atom_name_res_pairs_List = {}'.format(self.all_atom_name_res_pairs_List))
+
+
+
     def write_inp(self):
         print("******************************")
         print("")
@@ -1616,17 +1700,14 @@ class Charmm:
                 residue_data_name_list.append(stuct_only_iteration.residues[m].name)
 
 
-            Max_Residue_No = 9999
-            No_1st_values_res_name = 3
-
             Res_No_iteration_corrected_List = []
             residue_ID_list = []
             for f, PSF_atom_iteration_0 in enumerate(stuct_only_iteration.atoms):
 
                 residue_ID_int = int(unique_residue_data_dict[residue_data_list[f]])
-                Res_ID_adder = int((residue_ID_int % Max_Residue_No) % (Max_Residue_No))
+                Res_ID_adder = int((residue_ID_int % self.Max_Residue_No) % (self.Max_Residue_No))
                 if int(Res_ID_adder) == 0:
-                    Res_No_iteration_corrected = int(Max_Residue_No)
+                    Res_No_iteration_corrected = int(self.Max_Residue_No)
                 else:
                     Res_No_iteration_corrected = Res_ID_adder
 
@@ -1673,7 +1754,7 @@ class Charmm:
                                                                                           PSF_atom_iteration_1.residue.name])
 
                 atom_lines_iteration = PSF_formating % (i_atom + 1, Segment_ID, Res_No_iteration_corrected_List[i_atom],
-                                                        str(residue_names_list[i_atom])[:No_1st_values_res_name],
+                                                        str(residue_names_list[i_atom])[:self.No_1st_values_res_name],
                                                         Individual_atom_names_List[i_atom], atom_type_iter,
                                                         PSF_atom_iteration_1.charge, PSF_atom_iteration_1.mass)
 
@@ -1957,8 +2038,6 @@ class Charmm:
             locked_occupany_factor = 1.00
             Max_No_atoms_in_base10 = 99999  # 99,999 for atoms in psf/pdb
 
-            Max_Residue_No = 9999
-            No_1st_values_res_name = 3
 
             Res_No_iteration_corrected_List =[]
             Res_Chain_iteration_corrected_List = []
@@ -1966,11 +2045,11 @@ class Charmm:
             for i, atom_iter in enumerate( stuct_only_iteration.atoms):
                 residue_ID_int = int(unique_residue_data_dict[residue_data_list[i]])
                 Res_Chain_iteration_corrected_List.append(base10_to_base26_alph(int(residue_ID_int
-                                                                                        / (Max_Residue_No + 1)))[-1:]
+                                                                                        / (self.Max_Residue_No + 1)))[-1:]
                                                           )
-                Res_ID_adder = int((residue_ID_int % Max_Residue_No) % (Max_Residue_No))
+                Res_ID_adder = int((residue_ID_int % self.Max_Residue_No) % (self.Max_Residue_No))
                 if int(Res_ID_adder) == 0:
-                    Res_No_iteration_corrected_List.append(int(Max_Residue_No))
+                    Res_No_iteration_corrected_List.append(int(self.Max_Residue_No))
                 else:
                     Res_No_iteration_corrected_List.append(Res_ID_adder)
 
@@ -2017,7 +2096,7 @@ class Charmm:
 
                     output_write.write(PDB_atom_line_format % (atom_number, Individual_atom_names_List[v],
                                                                atom_alternate_location_List[v],
-                                                               str(residue_names_list[v])[:No_1st_values_res_name],
+                                                               str(residue_names_list[v])[:self.No_1st_values_res_name],
                                                                Res_Chain_iteration_corrected_List[v],
                                                                Res_No_iteration_corrected_List[v],
                                                                residue_code_insertion_List[v],
