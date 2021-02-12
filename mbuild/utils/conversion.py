@@ -93,149 +93,138 @@ def RB_to_CHARMM(c0, c1, c2, c3, c4, c5):
     d4 = 0
     d5 = 180
 
-
     return np.array([[K0, n0, d0], [K1, n1, d1], [K2, n2, d2], [K3, n3, d3], [K4, n4, d4], [K5, n5, d5]])
 
 
+def base10_to_base62_alph_num(base10_no):
+    """Converts base-10 integer to base-62 alphanumeric system
+
+    This function provides a utility to write pdb/psf files such that it
+    can add may more than 9999 atoms and 999 residues.
+
+    Parameters
+    ----------
+    base10_no: int
+        The integer to convert to base-62 alphanumeric system
+
+    Returns
+    -------
+    str
+        The converted base-62 system string
+
+    See Also
+    --------
+    mbuild.conversion._to_base: Helper function to perform a base-n conversion
+    """
+    return _to_base(base10_no, base=62)
 
 
+def base10_to_base52_alph(base10_no):
+    """Converts base-10 integer to base-52 alphabetic system
 
-#***********************************************
-# Converting base-10 to base-62 functions (start)
-#***********************************************
+    This function provides a utility to write pdb/psf files such that it
+    can add more atom types in the 3 or 4 character limited pdb and psf files
 
-def base10_to_base62_alph_num(base10_No):
-    """Converts base 10 to base 62 so pdb/psf files can add may more than
-    9999 atoms and 999 residues."""
+    Parameters
+    ----------
+    base10_no: int
+        The integer to convert to base-52 alphabetic system
 
-    '''base10_No = the base-10 number that you want to convert to base-62)'''
+    Returns
+    -------
+    str
+        The converted base-52 system string
 
-    base62_No = 62
-    base10_No = int(base10_No)
+    See Also
+    --------
+    mbuild.conversion._to_base: Helper function to perform a base-n conversion
 
-    whole_no = 1
-    remainder = _digit_to_alpha_num(int(base10_No % base62_No), 62)
-    base62_Values =  str(remainder)
+    """
+    return _to_base(number=base10_no, base=52)
+
+
+def base10_to_base26_alph(base10_no):
+    """Converts base-10 integer to base-26 alphabetic system
+
+    This function provides a utility to write pdb/psf files such that it
+    can add many more than 9999 atoms and 999 residues.
+
+    Parameters
+    ----------
+    base10_no: int
+        The integer to convert to base-26 alphabetic system
+
+    Returns
+    -------
+    str
+        The converted base-26 system string
+
+    See Also
+    --------
+    mbuild.conversion._to_base: Helper function to perform a base-n conversion
+    """
+    return _to_base(base10_no, base=26)
+
+
+def base10_to_base16_alph_num(base10_no):
+    """Converts base-10 integer to base-16 hexadecimal system
+
+    This function provides a utility to write pdb/psf files such that it
+    can add many more than 9999 atoms and 999 residues.
+
+    Parameters
+    ----------
+    base10_no: int
+        The integer to convert to base-16 hexadecimal system
+
+    Returns
+    -------
+    str
+        The converted base-16 system string
+
+    See Also
+    --------
+    mbuild.conversion._to_base: Helper function to perform a base-n conversion
+    """
+    return hex(int(base10_no))[2:]
+
+
+# Helpers to convert base
+def _to_base(number, base=62):
+    """Convert a base-10 number into base-n alpha-num"""
+    start_values = {
+        62: '0',
+        52: 'A',
+        26: 'A'
+    }
+    if base not in start_values:
+        raise ValueError(
+            f'Base-{base} system is not supported.'
+            f'Supported bases are: {list(start_values.keys())}'
+        )
+
+    num = 1
+    number = int(number)
+    remainder = _digit_to_alpha_num((number % base), base)
+    base_n_values = str(remainder)
     power = 1
 
-    while whole_no != 0:
-        whole_no = int( base10_No / base62_No**power)
+    while num != 0:
+        num = int(number / base ** power)
 
-        if whole_no == base62_No :
-            base62_Values = str(0)+base62_Values
+        if num == base:
+            base_n_values = start_values[base] + base_n_values
 
-        elif (whole_no != 0) and (whole_no > base62_No) :
-            base62_Values = str(_digit_to_alpha_num(int(whole_no % base62_No), 62)) + base62_Values
+        elif num != 0 and num > base:
+            base_n_values = str(_digit_to_alpha_num(int(num % base), base)) + base_n_values
 
-        elif (whole_no != 0) and (whole_no < base62_No):
-            base62_Values = str(_digit_to_alpha_num(int(whole_no), 62)) + base62_Values
+        elif (num != 0) and (num < base):
+            base_n_values = str(_digit_to_alpha_num(int(num), base)) + base_n_values
 
+        power += 1
 
-        power =power+1
+    return base_n_values
 
-    return base62_Values
-
-
-#***********************************************
-# Converting base-10 to base-62 functions (end)
-#***********************************************
-
-
-
-
-
-#***********************************************
-# Converting base-10 to base-16 functions (start)
-#***********************************************
-
-def base10_to_base16_alph_num(base10_No):
-    """Converts base 10 to base 16 so pdb/psf files can add may more than
-    9999 atoms and 999 residues."""
-
-    """base10_No = the base-10 number that you want to convert to base-16)"""
-    return hex(int(base10_No))[2:]
-
-
-#***********************************************
-# Converting base-10 to base-16 functions (end)
-#***********************************************
-
-
-#***********************************************
-# Converting base-10 to base-52 functions (start)
-#***********************************************
-
-def base10_to_base52_alph(base10_No):
-    """Converts base 10 to base 52 so pdb/psf files can add may more than
-    atom types in the 3 or 4 character limited pdb and psf files"""
-
-    """base10_No = the base-10 number that you want to convert to base-52)"""
-
-    base52_No = 52
-    base10_No = int(base10_No)
-
-    whole_no = 1
-    remainder = _digit_to_alpha_num(int(base10_No % base52_No), base=52)
-    base52_Values =  str(remainder)
-    power = 1
-
-    while whole_no != 0:
-        whole_no = int(base10_No / base52_No**power)
-
-        if whole_no == base52_No :
-            base52_Values = str('A')+base52_Values
-
-        elif (whole_no != 0) and (whole_no > base52_No) :
-            base52_Values =  str(_digit_to_alpha_num(int(whole_no % base52_No), 52))+ base52_Values
-        elif (whole_no != 0) and (whole_no < base52_No):
-            base52_Values =str(_digit_to_alpha_num(int(whole_no), 52))+ base52_Values
-
-
-        power =power+1
-
-    return base52_Values
-
-#***********************************************
-# Converting base-10 to base-52 functions (end)
-#***********************************************
-
-
-#***********************************************
-# Converting base-10 to base-26 functions (start)
-#***********************************************
-def base10_to_base26_alph(base10_No):
-    """Converts base 10 to base 26 so pdb/psf files can add may more than
-    9999 atoms and 999 residues."""
-
-    """base10_No = the base-10 number that you want to convert to base-26)"""
-
-    base26_No = 26
-    base10_No = int(base10_No)
-
-    whole_no = 1
-    remainder = _digit_to_alpha_num(int(base10_No % base26_No), 26)
-    base26_Values =  str(remainder)
-    power = 1
-
-    while whole_no != 0:
-        whole_no = int(base10_No / base26_No**power)
-
-        if whole_no == base26_No :
-            base26_Values = str('A')+base26_Values
-
-        elif (whole_no != 0) and (whole_no > base26_No):
-            base26_Values =  str(_digit_to_alpha_num(int(whole_no % base26_No), 26)) + base26_Values
-        elif (whole_no != 0) and (whole_no < base26_No):
-            base26_Values =str(_digit_to_alpha_num(int(whole_no), 26)) + base26_Values
-
-
-        power =power+1
-
-    return base26_Values
-
-#***********************************************
-# Converting base-10 to base-26 functions (end)
-#***********************************************
 
 def _digit_to_alpha_num(digit, base=52):
     """Helper function to convert digit to base-n"""
