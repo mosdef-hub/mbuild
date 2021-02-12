@@ -114,7 +114,7 @@ def base10_to_base62_alph_num(base10_No):
     base10_No = int(base10_No)
 
     whole_no = 1
-    remainder = changeDigit_base10_to_base62_alph_num(int(base10_No % base62_No))
+    remainder = _digit_to_alpha_num(int(base10_No % base62_No), 62)
     base62_Values =  str(remainder)
     power = 1
 
@@ -125,26 +125,15 @@ def base10_to_base62_alph_num(base10_No):
             base62_Values = str(0)+base62_Values
 
         elif (whole_no != 0) and (whole_no > base62_No) :
-            base62_Values = str(changeDigit_base10_to_base62_alph_num(int(whole_no % base62_No))) + base62_Values
+            base62_Values = str(_digit_to_alpha_num(int(whole_no % base62_No), 62)) + base62_Values
 
         elif (whole_no != 0) and (whole_no < base62_No):
-            base62_Values = str(changeDigit_base10_to_base62_alph_num(int(whole_no))) + base62_Values
+            base62_Values = str(_digit_to_alpha_num(int(whole_no), 62)) + base62_Values
 
 
         power =power+1
 
     return base62_Values
-
-def changeDigit_base10_to_base62_alph_num(current_digit):
-    """The supplemental digits for the base10_to_base62_alph_num function,
-    which Converts the base 10 to base 62 """
-
-    """current_digit = the current digit for this base.
-    (i.e. in base10 it would be the one, ten, hundreds, or thousands places .....)"""
-    base62_values = {j: chr(j+55) if j < 36 else chr(j+61) for j in range(10, 62)}
-    return base62_values.get(current_digit, current_digit)
-
-
 
 
 #***********************************************
@@ -186,7 +175,7 @@ def base10_to_base52_alph(base10_No):
     base10_No = int(base10_No)
 
     whole_no = 1
-    remainder = changeDigit_base10_to_base52_alph_num(int(base10_No % base52_No))
+    remainder = _digit_to_alpha_num(int(base10_No % base52_No), base=52)
     base52_Values =  str(remainder)
     power = 1
 
@@ -197,25 +186,15 @@ def base10_to_base52_alph(base10_No):
             base52_Values = str('A')+base52_Values
 
         elif (whole_no != 0) and (whole_no > base52_No) :
-            base52_Values =  str(changeDigit_base10_to_base52_alph_num(int(whole_no % base52_No)))+ base52_Values
+            base52_Values =  str(_digit_to_alpha_num(int(whole_no % base52_No), 52))+ base52_Values
         elif (whole_no != 0) and (whole_no < base52_No):
-            base52_Values =str(changeDigit_base10_to_base52_alph_num(int(whole_no)))+ base52_Values
+            base52_Values =str(_digit_to_alpha_num(int(whole_no), 52))+ base52_Values
 
 
         power =power+1
 
     return base52_Values
 
-def changeDigit_base10_to_base52_alph_num(current_digit):
-    """The supplemental digits for the base10_to_base52_alph_num function,
-    which Converts the base 10 to base 52 """
-
-    """current_digit = the current digit for this base.
-    (i.e. in base10 it would be the one, ten, hundreds, or thousands places .....)"""
-    base52_values = {j: chr(j+65) if j < 26 else chr(j+71) for j in range(0, 52)}
-
-    current_digit = base52_values[current_digit]
-    return current_digit
 #***********************************************
 # Converting base-10 to base-52 functions (end)
 #***********************************************
@@ -234,7 +213,7 @@ def base10_to_base26_alph(base10_No):
     base10_No = int(base10_No)
 
     whole_no = 1
-    remainder = changeDigit_base10_to_base26_alph_num(int(base10_No % base26_No))
+    remainder = _digit_to_alpha_num(int(base10_No % base26_No), 26)
     base26_Values =  str(remainder)
     power = 1
 
@@ -245,26 +224,32 @@ def base10_to_base26_alph(base10_No):
             print('dfe')
             base26_Values = str('A')+base26_Values
 
-        elif (whole_no != 0) and (whole_no > base26_No) :
-            base26_Values =  str(changeDigit_base10_to_base26_alph_num(int(whole_no % base26_No)))+ base26_Values
+        elif (whole_no != 0) and (whole_no > base26_No):
+            base26_Values =  str(_digit_to_alpha_num(int(whole_no % base26_No), 26)) + base26_Values
         elif (whole_no != 0) and (whole_no < base26_No):
-            base26_Values =str(changeDigit_base10_to_base26_alph_num(int(whole_no)))+ base26_Values
+            base26_Values =str(_digit_to_alpha_num(int(whole_no), 26)) + base26_Values
 
 
         power =power+1
 
     return base26_Values
 
-def changeDigit_base10_to_base26_alph_num(current_digit):
-    """The supplemental digits for the base10_to_base26_alph_num function,
-    which Converts the base 10 to base 26 """
-
-    """current_digit = the current digit for this base.
-    (i.e. in base10 it would be the one, ten, hundreds, or thousands places .....)"""
-    base26_values = {j: chr(j+65) for j in range(0, 26)}
-    current_digit = base26_values[current_digit]
-    return current_digit
-
 #***********************************************
 # Converting base-10 to base-26 functions (end)
 #***********************************************
+
+def _digit_to_alpha_num(digit, base=52):
+    """Helper function to convert digit to base-n"""
+    base_values = {
+        26: {j: chr(j+65) for j in range(0, 26)},
+        52: {j: chr(j + 65) if j < 26 else chr(j + 71) for j in range(0, 52)},
+        62: {j: chr(j+55) if j < 36 else chr(j+61) for j in range(10, 62)}
+    }
+
+    if base not in base_values:
+        raise ValueError(
+            f'Base-{base} system is not supported.'
+            f'Supported bases are: {list(base_values.keys())}'
+        )
+
+    return base_values[base].get(digit, digit)
