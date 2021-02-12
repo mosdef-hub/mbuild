@@ -1231,7 +1231,8 @@ class GOMCControl():
         self.coul_1_4_scaling = charmm_object.coul_1_4
         self.input_variables_dict = input_variables_dict
         self.residues_List = charmm_object.residues
-        self.all_atom_names_and_res_pairs_List = charmm_object.all_atom_name_res_pairs_List
+        self.all_atom_names_and_res_pairs_dict = charmm_object.all_atom_name_res_pairs_dict
+        self.all_atom_names_and_res_pairs_List = list(self.all_atom_names_and_res_pairs_dict.keys())
 
         self.x_dim_box_0 = charmm_object.box_0.maxs[0] * 10   # times 10 to convert from nm to Angstroms
         self.y_dim_box_0 = charmm_object.box_0.maxs[1] * 10   # times 10 to convert from nm to Angstroms
@@ -2463,22 +2464,51 @@ class GOMCControl():
                                                 or (isinstance(self.input_variables_dict[key][MEMC_iter][4][0], str) == False \
                                                 and self.input_variables_dict[key][MEMC_iter][4][0] != None) \
                                                 or (isinstance(self.input_variables_dict[key][MEMC_iter][4][1], str) == False \
-                                                and self.input_variables_dict[key][MEMC_iter][4][1] != None) \
-                                                or [ self.input_variables_dict[key][MEMC_iter][2][0],
-                                                    self.input_variables_dict[key][MEMC_iter][1] ] \
-                                                not in self.all_atom_names_and_res_pairs_List \
-                                                or [self.input_variables_dict[key][MEMC_iter][2][1],
-                                                    self.input_variables_dict[key][MEMC_iter][1]] \
-                                                not in self.all_atom_names_and_res_pairs_List \
-                                                or [self.input_variables_dict[key][MEMC_iter][4][0],
-                                                    self.input_variables_dict[key][MEMC_iter][3]] \
-                                                not in self.all_atom_names_and_res_pairs_List \
-                                                or [self.input_variables_dict[key][MEMC_iter][4][1],
-                                                    self.input_variables_dict[key][MEMC_iter][3]] \
-                                                not in self.all_atom_names_and_res_pairs_List :
-                                                bad_input_variables_values_List.append(key)
+                                                and self.input_variables_dict[key][MEMC_iter][4][1] != None):
+                                            print('aaaaaaaaaaaaa')
+                                            bad_input_variables_values_List.append(key)
                                     else:
                                         bad_input_variables_values_List.append(key)
+
+                                    # check that the atom names match the residues that exist
+                                    print('self.all_atom_names_and_res_pairs_List = ' +str(self.all_atom_names_and_res_pairs_List))
+                                    if self.input_variables_dict[key][MEMC_iter][1] not in \
+                                            self.all_atom_names_and_res_pairs_List:
+                                        bad_input_variables_values_List.append(key)
+
+                                    elif self.input_variables_dict[key][MEMC_iter][1] in \
+                                        self.all_atom_names_and_res_pairs_List:
+
+                                        if self.input_variables_dict[key][MEMC_iter][2][0] not in \
+                                                self.all_atom_names_and_res_pairs_dict[
+                                                    self.input_variables_dict[key][MEMC_iter][1]]:
+
+                                            bad_input_variables_values_List.append(key)
+
+                                        if self.input_variables_dict[key][MEMC_iter][2][1] not in \
+                                                self.all_atom_names_and_res_pairs_dict[
+                                                    self.input_variables_dict[key][MEMC_iter][1]]:
+                                            print('ccccccccccc')
+                                            bad_input_variables_values_List.append(key)
+
+                                    if self.input_variables_dict[key][MEMC_iter][3] not in \
+                                            self.all_atom_names_and_res_pairs_List:
+                                        print('cxxxxxxxxxxx')
+                                        bad_input_variables_values_List.append(key)
+
+                                    elif self.input_variables_dict[key][MEMC_iter][3] in \
+                                            self.all_atom_names_and_res_pairs_List:
+                                        if self.input_variables_dict[key][MEMC_iter][4][0] not in \
+                                                self.all_atom_names_and_res_pairs_dict[
+                                                    self.input_variables_dict[key][MEMC_iter][3]]:
+                                            print('vvvvvvvvvvvvvv')
+                                            bad_input_variables_values_List.append(key)
+
+                                        if self.input_variables_dict[key][MEMC_iter][4][1] not in \
+                                                self.all_atom_names_and_res_pairs_dict[
+                                                    self.input_variables_dict[key][MEMC_iter][3]]:
+                                            print('bbbbbbbbbbbbbbbbbbb')
+                                            bad_input_variables_values_List.append(key)
 
                                     if isinstance(self.input_variables_dict[key][MEMC_iter][0], int) == True:
                                         if self.input_variables_dict[key][MEMC_iter][0] <= 0:

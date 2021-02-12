@@ -892,10 +892,13 @@ class Charmm:
             self.mass_conversion_factor = 1
 
         if self.structure_box_1:
-            self.types = [atom.type + '_' + str(atom.residue.name) for atom in self.structure_box_0_and_1_FF.atoms]
+            self.types = np.array([atom.type + '_' + str(atom.residue.name)
+                                   for atom in self.structure_box_0_and_1_FF.atoms]
+                                  )
 
         else:
-            self.types = [atom.type + '_' + str(atom.residue.name) for atom in self.structure_box_0_FF.atoms]
+            self.types = np.array([atom.type + '_' + str(atom.residue.name)
+                                   for atom in self.structure_box_0_FF.atoms])
 
         self.unique_types = list(set(self.types))
         self.unique_types.sort(key=natural_sort)
@@ -996,7 +999,6 @@ class Charmm:
                 unique_residue_data_dict.update({unique_residue_data_list[m]: m + 1})
                 residue_data_name_list.append(stuct_only_iteration.residues[m].name)
 
-
             self.Max_Residue_No = 9999
             self.No_1st_values_res_name = 3
 
@@ -1050,16 +1052,12 @@ class Charmm:
             raise ValueError(print_error_message)
 
         else:
-            self.all_atom_name_res_pairs_List = []
+            self.all_atom_name_res_pairs_dict = {}
             for name_res_i in range(0, len(self.all_Individual_atom_names_List)):
+                self.all_atom_name_res_pairs_dict.setdefault(self.all_residue_names_List[name_res_i], []
+                                                             ).append(self.all_Individual_atom_names_List[name_res_i])
 
-                all_name_res_pairs_iteration = [self.all_Individual_atom_names_List[name_res_i],
-                                                self.all_residue_names_List[name_res_i]
-                                                ]
-                if all_name_res_pairs_iteration not in self.all_atom_name_res_pairs_List:
-                    self.all_atom_name_res_pairs_List.append(all_name_res_pairs_iteration)
-
-        print('self.all_atom_name_res_pairs_List = {}'.format(self.all_atom_name_res_pairs_List))
+        print('self.all_atom_name_res_pairs_List = {}'.format(self.all_atom_name_res_pairs_dict))
 
 
 
