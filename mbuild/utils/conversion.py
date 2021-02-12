@@ -221,7 +221,6 @@ def base10_to_base26_alph(base10_No):
         whole_no = int(base10_No / base26_No**power)
 
         if whole_no == base26_No :
-            print('dfe')
             base26_Values = str('A')+base26_Values
 
         elif (whole_no != 0) and (whole_no > base26_No):
