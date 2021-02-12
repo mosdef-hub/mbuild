@@ -1048,11 +1048,18 @@ class Charmm:
 
         else:
             self.all_atom_name_res_pairs_dict = {}
-            for name_res_i in range(0, len(self.all_Individual_atom_names_List)):
-                self.all_atom_name_res_pairs_dict.setdefault(self.all_residue_names_List[name_res_i], []
-                                                             ).append(self.all_Individual_atom_names_List[name_res_i])
+            for res_i in range(0, len(self.all_Individual_atom_names_List)):
+                try:
+                    if self.all_Individual_atom_names_List[res_i] \
+                        not in self.all_atom_name_res_pairs_dict[self.all_residue_names_List[res_i]]:
+                        self.all_atom_name_res_pairs_dict.setdefault(self.all_residue_names_List[res_i], []
+                                                                     ).append(self.all_Individual_atom_names_List[res_i])
 
-        print('self.all_atom_name_res_pairs_List = {}'.format(self.all_atom_name_res_pairs_dict))
+                except:
+                    self.all_atom_name_res_pairs_dict.setdefault(self.all_residue_names_List[res_i], []
+                                                                 ).append(self.all_Individual_atom_names_List[res_i])
+
+        print('all_atom_name_res_pairs_dict = {}'.format(self.all_atom_name_res_pairs_dict))
 
 
 
