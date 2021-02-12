@@ -31,24 +31,24 @@ def from_snapshot(snapshot, scale=1.0):
     comp : mb.Compound
     """
     comp = mb.Compound()
-    bond_array = snap.bonds.group
-    n_atoms = snap.particles.N
+    bond_array = snapshot.bonds.group
+    n_atoms = snapshot.particles.N
 
     # There will be a better way to do this once box overhaul merged
     try:
         # gsd
-        box = snap.configuration.box
+        box = snapshot.configuration.box
         comp.box = mb.box.Box(lengths=box[:3] * scale)
     except AttributeError:
         # hoomd
-        box = snap.box
+        box = snapshot.box
         comp.box = mb.box.Box(lengths=np.array([box.Lx,box.Ly,box.Lz]) * scale)
 
     # Add particles
     for i in range(n_atoms):
-        name = snap.particles.types[snap.particles.typeid[i]]
-        xyz = snap.particles.position[i] * scale
-        charge = snap.particles.charge[i]
+        name = snapshot.particles.types[snapshot.particles.typeid[i]]
+        xyz = snapshot.particles.position[i] * scale
+        charge = snapshot.particles.charge[i]
 
         atom = mb.Particle(name=name, pos=xyz, charge=charge)
         comp.add(atom, label=str(i))
