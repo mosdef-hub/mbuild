@@ -1024,8 +1024,6 @@ class Charmm:
                                                                residue_names_list,
                                                                bead_to_atom_name_dict=self.bead_to_atom_name_dict)
 
-            print('Individual_atom_names_List_iter = {}'.format(Individual_atom_names_List_iter))
-            print( 'self.all_Individual_atom_names_List = {}'.format(self.all_Individual_atom_names_List))
             if q_i == 0:
                 self.all_Individual_atom_names_List = Individual_atom_names_List_iter
 
@@ -1037,9 +1035,6 @@ class Charmm:
 
                 self.all_residue_names_List = self.all_residue_names_List \
                                                + residue_names_list
-
-            print('Individual_atom_names_List_iter = {}'.format(Individual_atom_names_List_iter))
-            print('self.all_Individual_atom_names_List = {}'.format(self.all_Individual_atom_names_List))
 
         # put the  self.all_Individual_atom_names_List and self.all_residue_names_List in a list to match
         # the the atom name with a residue and find the unique matches

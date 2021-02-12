@@ -2465,13 +2465,11 @@ class GOMCControl():
                                                 and self.input_variables_dict[key][MEMC_iter][4][0] != None) \
                                                 or (isinstance(self.input_variables_dict[key][MEMC_iter][4][1], str) == False \
                                                 and self.input_variables_dict[key][MEMC_iter][4][1] != None):
-                                            print('aaaaaaaaaaaaa')
                                             bad_input_variables_values_List.append(key)
                                     else:
                                         bad_input_variables_values_List.append(key)
 
                                     # check that the atom names match the residues that exist
-                                    print('self.all_atom_names_and_res_pairs_List = ' +str(self.all_atom_names_and_res_pairs_List))
                                     if self.input_variables_dict[key][MEMC_iter][1] not in \
                                             self.all_atom_names_and_res_pairs_List:
                                         bad_input_variables_values_List.append(key)
@@ -2488,12 +2486,10 @@ class GOMCControl():
                                         if self.input_variables_dict[key][MEMC_iter][2][1] not in \
                                                 self.all_atom_names_and_res_pairs_dict[
                                                     self.input_variables_dict[key][MEMC_iter][1]]:
-                                            print('ccccccccccc')
                                             bad_input_variables_values_List.append(key)
 
                                     if self.input_variables_dict[key][MEMC_iter][3] not in \
                                             self.all_atom_names_and_res_pairs_List:
-                                        print('cxxxxxxxxxxx')
                                         bad_input_variables_values_List.append(key)
 
                                     elif self.input_variables_dict[key][MEMC_iter][3] in \
@@ -2501,37 +2497,17 @@ class GOMCControl():
                                         if self.input_variables_dict[key][MEMC_iter][4][0] not in \
                                                 self.all_atom_names_and_res_pairs_dict[
                                                     self.input_variables_dict[key][MEMC_iter][3]]:
-                                            print('vvvvvvvvvvvvvv')
                                             bad_input_variables_values_List.append(key)
 
                                         if self.input_variables_dict[key][MEMC_iter][4][1] not in \
                                                 self.all_atom_names_and_res_pairs_dict[
                                                     self.input_variables_dict[key][MEMC_iter][3]]:
-                                            print('bbbbbbbbbbbbbbbbbbb')
                                             bad_input_variables_values_List.append(key)
 
                                     if isinstance(self.input_variables_dict[key][MEMC_iter][0], int) == True:
                                         if self.input_variables_dict[key][MEMC_iter][0] <= 0:
                                             bad_input_variables_values_List.append(key)
-                                    """
-                                    if isinstance(self.input_variables_dict[key][MEMC_iter][1], str) ==True \
-                                            and isinstance(self.input_variables_dict[key][MEMC_iter][3], str) ==True:
-                                        if len(self.input_variables_dict[key][MEMC_iter][1]) > 4 \
-                                                or len(self.input_variables_dict[key][MEMC_iter][3]) > 4 \
-                                                or (self.input_variables_dict[key][MEMC_iter][1] \
-                                            or self.input_variables_dict[key][MEMC_iter][3] ) not in self.residues_List:
-                                            bad_input_variables_values_List.append(key)
 
-                                    if isinstance(self.input_variables_dict[key][MEMC_iter][2][0], str) ==True \
-                                            and isinstance(self.input_variables_dict[key][MEMC_iter][2][1], str) ==True \
-                                        and isinstance(self.input_variables_dict[key][MEMC_iter][4][0], str) ==True \
-                                            and isinstance(self.input_variables_dict[key][MEMC_iter][4][1], str) ==True:
-                                        if len(self.input_variables_dict[key][MEMC_iter][2][0]) > 4 \
-                                                or len(self.input_variables_dict[key][MEMC_iter][2][1]) > 4 \
-                                                or len(self.input_variables_dict[key][MEMC_iter][4][0]) > 4 \
-                                                or len(self.input_variables_dict[key][MEMC_iter][4][1]) > 4:
-                                            bad_input_variables_values_List.append(key)
-                                    """
                                 else:
                                     bad_input_variables_values_List.append(key)
 
