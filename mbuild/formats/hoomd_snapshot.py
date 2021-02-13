@@ -44,10 +44,12 @@ def from_snapshot(snapshot, scale=1.0):
         box = snapshot.box
         comp.box = mb.box.Box(lengths=np.array([box.Lx,box.Ly,box.Lz]) * scale)
 
+    # to_hoomdsnapshot shifts the coords, this will keep consistent
+    shift = np.array(comp.box.lengths)/2
     # Add particles
     for i in range(n_atoms):
         name = snapshot.particles.types[snapshot.particles.typeid[i]]
-        xyz = snapshot.particles.position[i] * scale
+        xyz = snapshot.particles.position[i] * scale + shift
         charge = snapshot.particles.charge[i]
 
         atom = mb.Particle(name=name, pos=xyz, charge=charge)
