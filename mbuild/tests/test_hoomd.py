@@ -4,11 +4,72 @@ import xml.etree.ElementTree
 
 import mbuild as mb
 from mbuild.tests.base_test import BaseTest
-from mbuild.utils.io import get_fn, has_foyer, has_hoomd, import_
+from mbuild.utils.io import get_fn, has_foyer, has_gsd, has_hoomd, import_
 
 
 @pytest.mark.skipif(not has_hoomd, reason="HOOMD is not installed")
 class TestHoomd(BaseTest):
+    def test_compound_from_snapshot(self, ethane):
+        hoomd_snapshot = import_("mbuild.formats.hoomd_snapshot")
+        box = mb.fill_box(ethane, n_compounds=5, box=mb.Box([5,5,5]))
+        snap, _ = hoomd_snapshot.to_hoomdsnapshot(box)
+        new_box = hoomd_snapshot.from_snapshot(snap, scale=0.1)
+
+        assert box.n_bonds == new_box.n_bonds
+        assert box.n_particles == new_box.n_particles
+
+        for attr in ["lengths", "mins", "maxs", "angles"]:
+            np.testing.assert_array_equal(
+                    getattr(box.box, attr), getattr(new_box.box, attr)
+                    )
+        old_dict = {i:p for i,p in enumerate(box.particles())}
+        new_dict = {i:p for i,p in enumerate(new_box.particles())}
+        for i in range(box.n_particles):
+            np.testing.assert_array_almost_equal(
+                    old_dict[i].xyz, new_dict[i].xyz
+                    )
+
+    @pytest.mark.skipif(not has_gsd, reason="gsd is not installed")
+    def test_compound_from_gsdsnapshot(self, ethane):
+        hoomd_snapshot = import_("mbuild.formats.hoomd_snapshot")
+        box = mb.fill_box(ethane, n_compounds=5, box=mb.Box([5,5,5]))
+        snap, _ = hoomd_snapshot.to_hoomdsnapshot(box)
+
+        # copy attributes from the snapshot to a gsd snapshot
+        gsd_snap = gsd.hoomd.Snapshot()
+        gsd_snap.particles.N = snap.particles.N
+        gsd_snap.particles.types = snap.particles.types
+        gsd_snap.particles.typeid = snap.particles.typeid
+        gsd_snap.particles.position = snap.particles.position
+        gsd_snap.configuration.box = np.array([
+            snap.box.Lx,
+            snap.box.Ly,
+            snap.box.Lz,
+            snap.box.xy,
+            snap.box.xy,
+            snap.box.yz
+        ])
+        gsd_snap.bonds.N = snap.bonds.N
+        gsd_snap.bonds.group = snap.bonds.group
+        gsd_snap.particles.charge = snap.particles.charge
+        gsd_snap.validate()
+
+        new_box = hoomd_snapshot.from_snapshot(gsd_snap, scale=0.1)
+
+        assert box.n_bonds == new_box.n_bonds
+        assert box.n_particles == new_box.n_particles
+
+        for attr in ["lengths", "mins", "maxs", "angles"]:
+            np.testing.assert_array_equal(
+                    getattr(box.box, attr), getattr(new_box.box, attr)
+                    )
+        old_dict = {i:p for i,p in enumerate(box.particles())}
+        new_dict = {i:p for i,p in enumerate(new_box.particles())}
+        for i in range(box.n_particles):
+            np.testing.assert_array_almost_equal(
+                    old_dict[i].xyz, new_dict[i].xyz
+                    )
+
     def test_compound_to_snapshot(self, ethane):
         hoomd_snapshot = import_("mbuild.formats.hoomd_snapshot")
         snap, _ = hoomd_snapshot.to_hoomdsnapshot(ethane)
