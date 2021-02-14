@@ -18,8 +18,6 @@ from collections import OrderedDict
 
 
 
-
-
 class TestCharmmWriterData(BaseTest):
 
     def test_save(self, EthaneGOMC):
@@ -729,15 +727,16 @@ class TestCharmmWriterData(BaseTest):
                                    )
 
     def test_Specific_FF_to_residue_FFselection_run(self, EthaneGOMC):
-        Test_value_0, Test_value_1, \
-        Test_value_2, Test_value_3 = specific_ff_to_residue(EthaneGOMC,
-                                                            forcefield_selection={EthaneGOMC.name: forcefields.get_ff_path()[0]
+        [Test_value_0, Test_value_1, \
+        Test_value_2, Test_value_3] = specific_ff_to_residue(EthaneGOMC,
+                                                             forcefield_selection={EthaneGOMC.name:
+                                                                                       forcefields.get_ff_path()[0]
                                                                                                +'/xml/'+'oplsaa.xml'},
-                                                            residues=[EthaneGOMC.name],
-                                                            reorder_res_in_pdb_psf=False,
-                                                            box=[4,5,6],
-                                                            boxes_for_simulation=1
-                                                            )
+                                                             residues=[EthaneGOMC.name],
+                                                             reorder_res_in_pdb_psf=False,
+                                                             box=[4,5,6],
+                                                             boxes_for_simulation=1
+                                                             )
         assert Test_value_1 == {'ETH': 0.5}
         assert Test_value_2 == {'ETH': 0.5}
         assert Test_value_3 ==  ['ETH']
@@ -781,15 +780,15 @@ class TestCharmmWriterData(BaseTest):
         box_reservior_1.add(box_reservior_2, inherit_periodicity=False)
 
 
-        Test_value_0, Test_value_1, \
-        Test_value_2, Test_value_3 = specific_ff_to_residue(box_reservior_1,
-                                                            forcefield_selection={EthanolGOMC.name: 'oplsaa',
+        [Test_value_0, Test_value_1, \
+        Test_value_2, Test_value_3] = specific_ff_to_residue(box_reservior_1,
+                                                             forcefield_selection={EthanolGOMC.name: 'oplsaa',
                                                                                   EthaneGOMC.name:  'oplsaa',},
-                                                            residues=[EthanolGOMC.name, EthaneGOMC.name],
-                                                            reorder_res_in_pdb_psf=False,
-                                                            box=None,
-                                                            boxes_for_simulation=1
-                                                            )
+                                                             residues=[EthanolGOMC.name, EthaneGOMC.name],
+                                                             reorder_res_in_pdb_psf=False,
+                                                             box=None,
+                                                             boxes_for_simulation=1
+                                                             )
 
         assert str(Test_value_0) == '<Structure 17 atoms; 2 residues; 15 bonds; PBC (orthogonal); parametrized>'
         assert Test_value_1 == {'ETO': 0.5, 'ETH': 0.5}
@@ -1026,17 +1025,17 @@ class TestCharmmWriterData(BaseTest):
                                       box=[2, 2, 2], n_compounds=[2,2])
 
         try:
-            structure_FF, \
+            [structure_FF, \
             coulomb14scalar_dict, \
             LJ14scalar_dict, \
-            residues_applied_list  =  specific_ff_to_residue(box_reservior_0,
-                                                             forcefield_selection={TwoPropanolGOMC.name: 'oplsaa',
-                                                                               EthanolGOMC.name: 'oplsaa' },
-                                                             residues=[EthanolGOMC.name, TwoPropanolGOMC.name],
-                                                             reorder_res_in_pdb_psf=False,
-                                                             box=None,
-                                                             boxes_for_simulation=1
-                                                             )
+            residues_applied_list]  =  specific_ff_to_residue(box_reservior_0,
+                                                              forcefield_selection={TwoPropanolGOMC.name: 'oplsaa',
+                                                                                    EthanolGOMC.name: 'oplsaa' },
+                                                              residues=[EthanolGOMC.name, TwoPropanolGOMC.name],
+                                                              reorder_res_in_pdb_psf=False,
+                                                              box=None,
+                                                              boxes_for_simulation=1
+                                                              )
 
             sigma_conversion_factor = 1
             epsilon_conversion_factor = 1
@@ -1082,17 +1081,17 @@ class TestCharmmWriterData(BaseTest):
             box_reservior_0 = mb.fill_box(compound=[EthylEtherGOMC, MethlyEtherGOMC],
                                           box=[10, 10, 10], n_compounds=[10, 10])
 
-            structure_FF, \
+            [structure_FF, \
             coulomb14scalar_dict, \
             LJ14scalar_dict, \
-            residues_applied_list = specific_ff_to_residue(box_reservior_0,
-                                                           forcefield_selection={EthylEtherGOMC.name: 'oplsaa',
-                                                                                 MethlyEtherGOMC.name: 'oplsaa'},
-                                                           residues=[EthylEtherGOMC.name, MethlyEtherGOMC.name],
-                                                           reorder_res_in_pdb_psf=False,
-                                                           box=None,
-                                                           boxes_for_simulation=1
-                                                           )
+            residues_applied_list] = specific_ff_to_residue(box_reservior_0,
+                                                            forcefield_selection={EthylEtherGOMC.name: 'oplsaa',
+                                                                                  MethlyEtherGOMC.name: 'oplsaa'},
+                                                            residues=[EthylEtherGOMC.name, MethlyEtherGOMC.name],
+                                                            reorder_res_in_pdb_psf=False,
+                                                            box=None,
+                                                            boxes_for_simulation=1
+                                                            )
 
             use_rb_torsions_1 = False
             use_dihedrals_1 = True
@@ -1159,17 +1158,18 @@ class TestCharmmWriterData(BaseTest):
             box_reservior_0 = mb.fill_box(compound=[EthylEtherGOMC, MethlyEtherGOMC],
                                           box=[10, 10, 10], n_compounds=[10, 10])
 
-            structure_FF, \
+            [structure_FF, \
             coulomb14scalar_dict, \
             LJ14scalar_dict, \
-            residues_applied_list = specific_ff_to_residue(box_reservior_0,
-                                                           forcefield_selection={EthylEtherGOMC.name: 'oplsaa',
-                                                                                 MethlyEtherGOMC.name: 'oplsaa'},
-                                                           residues=[EthylEtherGOMC.name, MethlyEtherGOMC.name],
-                                                           reorder_res_in_pdb_psf=False,
-                                                           box=None,
-                                                           boxes_for_simulation=1
-                                                           )
+            residues_applied_list] = specific_ff_to_residue(box_reservior_0,
+                                                            forcefield_selection={EthylEtherGOMC.name: 'oplsaa',
+                                                                                  MethlyEtherGOMC.name: 'oplsaa'},
+                                                            residues=[EthylEtherGOMC.name, MethlyEtherGOMC.name],
+                                                            reorder_res_in_pdb_psf=False,
+                                                            box=None,
+                                                            boxes_for_simulation=1
+                                                            )
+
             sigma_conversion_factor = 1
             epsilon_conversion_factor = 1
             use_urey_bradleys = False
@@ -1190,6 +1190,7 @@ class TestCharmmWriterData(BaseTest):
                                                       angle.atom3.residue.name
                                                       ) for angle in structure_FF.angles])))
             unique_angle_types_1_unsorted = OrderedDict([(y, x + 1) for x, y in unique_angle_types_1_unsorted.items()])
+
 
             assert len(unique_angle_types_1_unsorted) == 10
             assert len(unique_angle_types_1) == 10

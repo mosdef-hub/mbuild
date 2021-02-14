@@ -371,4 +371,4 @@ def specific_ff_to_residue(structure,
                               '(i.e., the residues variable).'.format(initial_no_atoms, final_no_atoms)
         raise ValueError(print_error_message)
 
-    return structure, coulomb14scalar_dict, lj14_scalar_dict, residues_applied_list
+    return [structure, coulomb14scalar_dict, lj14_scalar_dict, residues_applied_list]

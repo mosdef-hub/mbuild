@@ -760,10 +760,10 @@ class Charmm:
         if self.structure_box_1:
 
             print('GOMC FF writing each residues FF as a group for structure_box_0')
-            self.structure_box_0_FF, \
+            [self.structure_box_0_FF, \
             self.coulomb14scalar_dict_0, \
             self.LJ14scalar_dict_0,\
-            self.residues_applied_list_0 = specific_ff_to_residue(self.structure_box_0,
+            self.residues_applied_list_0] = specific_ff_to_residue(self.structure_box_0,
                                                              forcefield_selection=self.forcefield_selection,
                                                              residues=self.residues,
                                                              reorder_res_in_pdb_psf=self.reorder_res_in_pdb_psf,
@@ -771,10 +771,10 @@ class Charmm:
                                                              boxes_for_simulation = self.boxes_for_simulation)
 
             print('GOMC FF writing each residues FF as a group for  structure_box_1')
-            self.structure_box_1_FF, \
+            [self.structure_box_1_FF, \
             self.coulomb14scalar_dict_1, \
             self.LJ14scalar_dict_1, \
-            self.residues_applied_list_1 = specific_ff_to_residue(self.structure_box_1,
+            self.residues_applied_list_1] = specific_ff_to_residue(self.structure_box_1,
                                                              forcefield_selection=self.forcefield_selection,
                                                              residues=self.residues,
                                                              reorder_res_in_pdb_psf=self.reorder_res_in_pdb_psf,
