@@ -20,6 +20,32 @@ from collections import OrderedDict
 
 
 @pytest.mark.skipif(not has_foyer, reason="Foyer package not installed")
+class ethane(mb.Compound):
+    def __init__(self, name='ethane'):
+        super(ethane, self).__init__()
+
+        self.name = name
+
+        CH3_1_1 = mb.Particle(pos=[0, 0.0, 0.0], name='_CH3')
+        CH3_1_2 = mb.Particle(pos=[0, 0.0, 0.0], name='_CH3')
+        self.add([CH3_1_1, CH3_1_2])
+
+        port_1_CH3_1_1 = mb.Port(anchor=CH3_1_1, orientation=[-0.1, 0, 0], separation=0.05)
+        port_1_CH3_1_2 = mb.Port(anchor=CH3_1_2, orientation=[-0.1, 0, 0], separation=0.05)
+
+        self.add(port_1_CH3_1_1, label='left_1')
+        self.add(port_1_CH3_1_2, label='left_2')
+
+        mb.force_overlap(move_this=CH3_1_1,
+                         from_positions=self['left_1'],
+                         to_positions=self['left_2'])
+
+TwoPropanolUA = mb.load('files/2_propanol.mol2')
+TwoPropanolUA.name = "POL"
+
+
+
+
 class TestCharmmWriterData(BaseTest):
 
     def test_save(self, EthaneGOMC):
@@ -1551,7 +1577,7 @@ class TestCharmmWriterData(BaseTest):
             Charmm(Empty_compound_box_0, 'charmm_data_box_0',
                    structure_box_1=Empty_compound_box_1, filename_box_1='charmm_data_box_1',
                    FF_filename='charmm_data',
-                   residues=[EthaneGOMC.name], forcefield_selection='oplsaa',
+                   residues=[], forcefield_selection='oplsaa',
                    )
 
     def test_box_1_empty_test_5(self):
