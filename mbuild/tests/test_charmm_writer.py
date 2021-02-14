@@ -4,6 +4,8 @@ import numpy as np
 import mbuild as mb
 import numpy as np
 
+from mbuild.compound import Compound
+from mbuild import Box
 from mbuild.tests.base_test import BaseTest
 from mbuild.formats import charmm_writer
 from mbuild.formats.charmm_writer import Charmm
@@ -578,186 +580,153 @@ class TestCharmmWriterData(BaseTest):
     # Tests for the mbuild.utils.specific_FF_to_residue.Specific_FF_to_residue() function
 
     def test_Specific_FF_to_box_value_negative(self, EthaneGOMC):
-        Test_value_0, Test_value_1, \
-        Test_value_2, Test_value_3 = specific_ff_to_residue(EthaneGOMC,
-                                                            forcefield_selection='oplsaa',
-                                                            residues=[EthaneGOMC.name],
-                                                            reorder_res_in_pdb_psf=False,
-                                                            box=[1,-2,3],
-                                                            boxes_for_simulation=1
-                                                            )
-
-        assert Test_value_0 is None
-        assert Test_value_1 is None
-        assert Test_value_2 is None
-        assert Test_value_3 is None
+        with pytest.raises(ValueError, match=r'Please enter all positive intergers > 0 for the box dimensions.'):
+            specific_ff_to_residue(EthaneGOMC,
+                                   forcefield_selection={EthaneGOMC.name : 'oplsaa'},
+                                   residues=[EthaneGOMC.name],
+                                   reorder_res_in_pdb_psf=False,
+                                   box=[1,-2, 3],
+                                   boxes_for_simulation=1
+                                   )
 
     def test_Specific_FF_to_box_value_str(self, EthaneGOMC):
-        Test_value_0, Test_value_1, \
-        Test_value_2, Test_value_3 = specific_ff_to_residue(EthaneGOMC,
-                                                            forcefield_selection='oplsaa',
-                                                            residues=[EthaneGOMC.name],
-                                                            reorder_res_in_pdb_psf=False,
-                                                            box=[1,'2',3],
-                                                            boxes_for_simulation=1
-                                                            )
-
-        assert Test_value_0 is None
-        assert Test_value_1 is None
-        assert Test_value_2 is None
-        assert Test_value_3 is None
-
+        with pytest.raises(TypeError, match=r'Please enter all positive intergers > 0 for the box dimensions.'):
+            specific_ff_to_residue(EthaneGOMC,
+                                   forcefield_selection={EthaneGOMC.name : 'oplsaa'},
+                                   residues=[EthaneGOMC.name],
+                                   reorder_res_in_pdb_psf=False,
+                                   box=[1,'2',3],
+                                   boxes_for_simulation=1
+                                   )
 
     def test_Specific_FF_FF_is_None(self, EthaneGOMC):
-        Test_value_0, Test_value_1, \
-        Test_value_2, Test_value_3 = specific_ff_to_residue(EthaneGOMC,
-                                                            forcefield_selection=None,
-                                                            residues=[EthaneGOMC.name],
-                                                            reorder_res_in_pdb_psf=False,
-                                                            box=None,
-                                                            boxes_for_simulation=1
-                                                            )
-
-        assert Test_value_0 is None
-        assert Test_value_1 is None
-        assert Test_value_2 is None
-        assert Test_value_3 is None
+        with pytest.raises(TypeError, match=r'Please the force field selection \(forcefield_selection\) as a '
+                                            r'dictionary with all the residues specified to a force field '
+                                            '-> Ex: {"Water" : "oplsaa", "OCT": "path/trappe-ua.xml"}, '
+                                            'Note: the file path must be specified the force field file '
+                                            'or by using the standard force field name provided the `foyer` package.'
+                           ):
+            specific_ff_to_residue(EthaneGOMC,
+                                   forcefield_selection=None,
+                                   residues=[EthaneGOMC.name],
+                                   reorder_res_in_pdb_psf=False,
+                                   box=None,
+                                   boxes_for_simulation=1
+                                   )
 
     def test_Specific_FF_wrong_FF_extention(self, EthaneGOMC):
-        Test_value_0, Test_value_1, \
-        Test_value_2, Test_value_3 = specific_ff_to_residue(EthaneGOMC,
-                                                            forcefield_selection='oplsaa.pdb',
-                                                            residues=[EthaneGOMC.name],
-                                                            reorder_res_in_pdb_psf=False,
-                                                            box=None,
-                                                            boxes_for_simulation=1
-                                                            )
-
-        assert Test_value_0 is None
-        assert Test_value_1 is None
-        assert Test_value_2 is None
-        assert Test_value_3 is None
+        with pytest.raises(ValueError, match=r'Please make sure are entering the correct '
+                                             r'foyer FF name and not a path to a FF file. '
+                                             r'If you are entering a path to a FF file, '
+                                             r'please use the forcefield_files variable with the '
+                                             r'proper XML extension \(.xml\).'
+                           ):
+            specific_ff_to_residue(EthaneGOMC,
+                                   forcefield_selection={EthaneGOMC.name : 'oplsaa.pdb'},
+                                   residues=[EthaneGOMC.name],
+                                   reorder_res_in_pdb_psf=False,
+                                   box=None,
+                                   boxes_for_simulation=1
+                                   )
 
     def test_Specific_all_residue_not_input(self, EthaneGOMC, EthanolGOMC):
-        box = mb.fill_box(compound=[EthaneGOMC, EthanolGOMC],
+        with pytest.raises(ValueError, match=r'ERROR: The initial number of atoms send to the force field analysis is '
+                                            'not the same as the final number of atoms analyzed. '
+                                            'The intial number of atoms was 17 and the final number of atoms was 8. '
+                                            'Please ensure that all the residues names that are in the initial '
+                                            'Compound are listed in the residues list '
+                                            '\(i.e., the residues variable\).'
+                           ):
+            box = mb.fill_box(compound=[EthaneGOMC, EthanolGOMC],
                                       box=[1, 1, 1], n_compounds=[1,1])
 
-        Test_value_0, Test_value_1, \
-        Test_value_2, Test_value_3 = specific_ff_to_residue(box ,
-                                                            forcefield_selection='oplsaa',
-                                                            residues=[EthaneGOMC.name],
-                                                            reorder_res_in_pdb_psf=False,
-                                                            box=None,
-                                                            boxes_for_simulation=1
-                                                            )
+            specific_ff_to_residue(box,
+                                   forcefield_selection={EthaneGOMC.name : 'oplsaa'},
+                                   residues=[EthaneGOMC.name],
+                                   reorder_res_in_pdb_psf=False,
+                                   box=None,
+                                   boxes_for_simulation=1
+                                   )
 
-        assert Test_value_0 is None
-        assert Test_value_1 is None
-        assert Test_value_2 is None
-        assert Test_value_3 is None
 
     def test_Specific_FF_to_residue_FFselection_not_dict(self, EthaneGOMC):
-        Test_value_0, Test_value_1, \
-        Test_value_2, Test_value_3 = specific_ff_to_residue(EthaneGOMC,
-                                                            forcefield_selection='oplsaa',
-                                                            residues=[EthaneGOMC.name],
-                                                            reorder_res_in_pdb_psf=False,
-                                                            box=None,
-                                                            boxes_for_simulation=1
-                                                            )
-        assert Test_value_0 is None
-        assert Test_value_1 is None
-        assert Test_value_2 is None
-        assert Test_value_3 is None
+        with pytest.raises(TypeError, match=r'The force field selection \(forcefield_selection\) '
+                                            'is not a dictionary. Please enter a dictionary '
+                                            'with all the residues specified to a force field '
+                                            '-> Ex: {"Water" : "oplsaa", "OCT": "path/trappe-ua.xml"}, '
+                                            'Note: the file path must be specified the force field file '
+                                            'or by using the standard force field name provided the `foyer` package.'
+                           ):
+            specific_ff_to_residue(EthaneGOMC,
+                                   forcefield_selection='oplsaa',
+                                   residues=[EthaneGOMC.name],
+                                   reorder_res_in_pdb_psf=False,
+                                   box=None,
+                                   boxes_for_simulation=1
+                                   )
 
     def test_Specific_FF_to_residue_is_None(self, EthaneGOMC):
-        Test_value_0, Test_value_1, \
-        Test_value_2, Test_value_3 = specific_ff_to_residue(EthaneGOMC,
-                                                            forcefield_selection={EthaneGOMC.name : 'oplsaa'},
-                                                            residues=None,
-                                                            reorder_res_in_pdb_psf=False,
-                                                            box=None,
-                                                            boxes_for_simulation=1
-                                                            )
-
-        assert Test_value_0 is None
-        assert Test_value_1 is None
-        assert Test_value_2 is None
-        assert Test_value_3 is None
+        with pytest.raises(TypeError, match=r'Please enter the residues in the Specific_FF_to_residue function.'):
+            specific_ff_to_residue(EthaneGOMC,
+                                   forcefield_selection={EthaneGOMC.name : 'oplsaa'},
+                                   residues=None,
+                                   reorder_res_in_pdb_psf=False,
+                                   box=None,
+                                   boxes_for_simulation=1
+                                   )
 
     def test_Specific_FF_to_residue_reorder_not_True_or_False(self, EthaneGOMC):
-        Test_value_0, Test_value_1, \
-        Test_value_2, Test_value_3 = specific_ff_to_residue(EthaneGOMC,
-                                                            forcefield_selection={EthaneGOMC.name : 'oplsaa'},
-                                                            residues=[EthaneGOMC.name],
-                                                            reorder_res_in_pdb_psf=None,
-                                                            box=None,
-                                                            boxes_for_simulation=1
-                                                            )
-
-        assert Test_value_0 is None
-        assert Test_value_1 is None
-        assert Test_value_2 is None
-        assert Test_value_3 is None
+        with pytest.raises(TypeError, match=r'Please enter the reorder_res_in_pdb_psf '
+                                            'in the Specific_FF_to_residue function \(i.e., True or False\).'):
+            specific_ff_to_residue(EthaneGOMC,
+                                   forcefield_selection={EthaneGOMC.name : 'oplsaa'},
+                                   residues=[EthaneGOMC.name],
+                                   reorder_res_in_pdb_psf=None,
+                                   box=None,
+                                   boxes_for_simulation=1
+                                   )
 
     def test_Specific_FF_to_box_one_dim_is_negative(self, EthaneGOMC):
-        Test_value_0, Test_value_1, \
-        Test_value_2, Test_value_3 = specific_ff_to_residue(EthaneGOMC,
-                                                            forcefield_selection={EthaneGOMC.name: 'oplsaa'},
-                                                            residues=[EthaneGOMC.name],
-                                                            reorder_res_in_pdb_psf=False,
-                                                            box=[-2,3,4,5],
-                                                            boxes_for_simulation=1
-                                                            )
-        assert Test_value_0 is None
-        assert Test_value_1 is None
-        assert Test_value_2 is None
-        assert Test_value_3 is None
+        with pytest.raises(ValueError, match=r'Please enter all 3 values, and only 3 values for the box dimensions.'):
+            specific_ff_to_residue(EthaneGOMC,
+                                   forcefield_selection={EthaneGOMC.name: 'oplsaa'},
+                                   residues=[EthaneGOMC.name],
+                                   reorder_res_in_pdb_psf=False,
+                                   box=[-2,3,4,5],
+                                   boxes_for_simulation=1
+                                   )
 
     def test_Specific_FF_to_box_one_dim_is_string(self, EthaneGOMC):
-        Test_value_0, Test_value_1, \
-        Test_value_2, Test_value_3 = specific_ff_to_residue(EthaneGOMC,
-                                                            forcefield_selection={EthaneGOMC.name: 'oplsaa'},
-                                                            residues=[EthaneGOMC.name],
-                                                            reorder_res_in_pdb_psf=False,
-                                                            box=["string", 3, 4, 5],
-                                                            boxes_for_simulation=1
-                                                            )
-
-        assert Test_value_0 is None
-        assert Test_value_1 is None
-        assert Test_value_2 is None
-        assert Test_value_3 is None
+        with pytest.raises(ValueError, match=r'Please enter all 3 values, and only 3 values for the box dimensions.'):
+            specific_ff_to_residue(EthaneGOMC,
+                                   forcefield_selection={EthaneGOMC.name: 'oplsaa'},
+                                   residues=[EthaneGOMC.name],
+                                   reorder_res_in_pdb_psf=False,
+                                   box=["string", 3, 4, 5],
+                                   boxes_for_simulation=1
+                                   )
 
     def test_Specific_FF_to_simulation_boxes_not_1_or_2(self, EthaneGOMC):
-        Test_value_0, Test_value_1, \
-        Test_value_2, Test_value_3 = specific_ff_to_residue(EthaneGOMC,
-                                                            forcefield_selection={EthaneGOMC.name: 'oplsaa'},
-                                                            residues=[EthaneGOMC.name],
-                                                            reorder_res_in_pdb_psf=False,
-                                                            box=[2, 3, 4, 5],
-                                                            boxes_for_simulation=3
-                                                            )
-
-        assert Test_value_0 is None
-        assert Test_value_1 is None
-        assert Test_value_2 is None
-        assert Test_value_3 is None
+        with pytest.raises(ValueError, match=r'Please enter boxes_for_simulation equal the integer 1 or 2.'):
+            specific_ff_to_residue(EthaneGOMC,
+                                   forcefield_selection={EthaneGOMC.name: 'oplsaa'},
+                                   residues=[EthaneGOMC.name],
+                                   reorder_res_in_pdb_psf=False,
+                                   box=[2, 3, 4],
+                                   boxes_for_simulation=3
+                                   )
 
     def test_Specific_FF_to_residue_FFselection_wrong_path(self, EthaneGOMC):
-        Test_value_0, Test_value_1, \
-        Test_value_2, Test_value_3 = specific_ff_to_residue(EthaneGOMC,
-                                                            forcefield_selection={EthaneGOMC.name: 'oplsaa.xml'},
-                                                            residues=[EthaneGOMC.name],
-                                                            reorder_res_in_pdb_psf=False,
-                                                            box=[4, 5, 6],
-                                                            boxes_for_simulation=1
-                                                            )
-        assert Test_value_0 is None
-        assert Test_value_1 is None
-        assert Test_value_2 is None
-        assert Test_value_3 is None
-
+        with pytest.raises(ValueError, match=r'Please make sure are entering the correct foyer FF path, '
+                                             r'including the FF file name.xml If you are using the pre-build FF '
+                                             r'files in foyer, please us the forcefield_names variable.'):
+            specific_ff_to_residue(EthaneGOMC,
+                                   forcefield_selection={EthaneGOMC.name: 'oplsaa.xml'},
+                                   residues=[EthaneGOMC.name],
+                                   reorder_res_in_pdb_psf=False,
+                                   box=[4, 5, 6],
+                                   boxes_for_simulation=1
+                                   )
 
     def test_Specific_FF_to_residue_FFselection_run(self, EthaneGOMC):
         Test_value_0, Test_value_1, \
@@ -769,45 +738,36 @@ class TestCharmmWriterData(BaseTest):
                                                             box=[4,5,6],
                                                             boxes_for_simulation=1
                                                             )
-        assert str(Test_value_0) == "<Structure 8 atoms; 1 residues; 7 bonds; PBC (orthogonal); parametrized>"
         assert Test_value_1 == {'ETH': 0.5}
         assert Test_value_2 == {'ETH': 0.5}
         assert Test_value_3 ==  ['ETH']
 
 
     def test_Specific_FF_to_no_atoms_in_residue(self):
-        Empty_compound = mb.Compound()
+        with pytest.raises(ValueError, match=r'The residues variable is and empty list but there '
+                                             r'are forcefield_selection variables provided.'):
+            Empty_compound = mb.Compound()
 
-        Test_value_0, Test_value_1, \
-        Test_value_2, Test_value_3 = specific_ff_to_residue(Empty_compound,
-                                                            forcefield_selection={'Empty_compound': 'oplsaa'},
-                                                            residues=[],
-                                                            reorder_res_in_pdb_psf=False,
-                                                            box=[5, 6, 7],
-                                                            boxes_for_simulation=1
-                                                            )
-        assert Test_value_0 is None
-        assert Test_value_1 is None
-        assert Test_value_2 is None
-        assert Test_value_3 is None
-
+            specific_ff_to_residue(Empty_compound,
+                                   forcefield_selection={'Empty_compound': 'oplsaa'},
+                                   residues=[],
+                                   reorder_res_in_pdb_psf=False,
+                                   box=[5, 6, 7],
+                                   boxes_for_simulation=1
+                                   )
 
     def test_charmm_Methane_test_no_children(self, MethaneUAGOMC):
-
-        Test_value_0, Test_value_1, \
-        Test_value_2, Test_value_3 = specific_ff_to_residue(MethaneUAGOMC,
-                                                            forcefield_selection={MethaneUAGOMC.name: 'trappe-ua'},
-                                                            residues=[MethaneUAGOMC.name],
-                                                            reorder_res_in_pdb_psf=False,
-                                                            box=None,
-                                                            boxes_for_simulation=1
-                                                            )
-        print('Test_value_3 = ' +str(Test_value_3))
-        assert str(Test_value_0) == "<Structure 1 atoms; 1 residues; 0 bonds; PBC (orthogonal); NOT parametrized>"
-        assert Test_value_1 == {'_CH4': 0.0}
-        assert Test_value_2 == {'_CH4': 0.0}
-        assert Test_value_3 == ['_CH4']
-
+        with pytest.raises(TypeError, match=r'ERROR: If you are not providing and empty box, '\
+                                             'you need to specify the atoms/beads as children in the mb.Compound. '\
+                                             'If you are providing and empty box, please do so by specifying and ' \
+                                             'mbuild Box \({}\)'.format(type(Box(lengths=[1, 1, 1])))):
+            specific_ff_to_residue(MethaneUAGOMC,
+                                   forcefield_selection={MethaneUAGOMC.name: 'trappe-ua'},
+                                   residues=[MethaneUAGOMC.name],
+                                   reorder_res_in_pdb_psf=False,
+                                   box=None,
+                                   boxes_for_simulation=1
+                                   )
 
     def test_charmm_a_few_mbuild_layers(self, EthaneGOMC, EthanolGOMC):
         box_reservior_1 = mb.fill_box(compound=[EthaneGOMC],
@@ -838,30 +798,21 @@ class TestCharmmWriterData(BaseTest):
 
 
     def test_charmm_all_residues_not_in_dict(self, EthaneGOMC, EthanolGOMC):
-        box_reservior_1 = mb.fill_box(compound=[EthaneGOMC],
-                                      box=[1, 1, 1], n_compounds=[1])
-        box_reservior_1.periodicity[0] = 2
-        box_reservior_1.periodicity[1] = 2
-        box_reservior_1.periodicity[1] = 2
-        box_reservior_2 = mb.fill_box(compound=[EthanolGOMC],
-                                      box=[1, 1, 1], n_compounds=[1])
-        box_reservior_2.translate([0, 0, 1])
-        box_reservior_1.add(box_reservior_2, inherit_periodicity=False)
-
-
-        Test_value_0, Test_value_1, \
-        Test_value_2, Test_value_3 = specific_ff_to_residue(box_reservior_1,
-                                                            forcefield_selection={EthanolGOMC.name: 'oplsaa' },
-                                                            residues=[EthanolGOMC.name, EthaneGOMC.name],
-                                                            reorder_res_in_pdb_psf=False,
-                                                            box=None,
-                                                            boxes_for_simulation=1
-                                                            )
-
-        assert Test_value_0 == None
-        assert Test_value_1 == None
-        assert Test_value_2 == None
-        assert Test_value_3 == None
+        with pytest.raises(ValueError, match=r'All the residues were not used from the forcefield_selection '
+                                             r'string or dictionary. There may be residues below other '
+                                             r'specified residues in the mbuild.Compound hierarchy. '
+                                             r'If so, all the highest listed residues pass down the force '
+                                             r'fields through the hierarchy. Alternatively, residues that '
+                                             r'are not in the structure may have been specified. '):
+            box_reservior_1 = mb.fill_box(compound=[EthaneGOMC],
+                                          box=[1, 1, 1], n_compounds=[1])
+            specific_ff_to_residue(box_reservior_1,
+                                   forcefield_selection={EthanolGOMC.name: 'oplsaa' },
+                                   residues=[EthanolGOMC.name, EthaneGOMC.name],
+                                   reorder_res_in_pdb_psf=False,
+                                   box=None,
+                                   boxes_for_simulation=1
+                                   )
 
     def test_charmm_correct_residue_format(self, EthaneGOMC):
         try:
@@ -1003,8 +954,9 @@ class TestCharmmWriterData(BaseTest):
 
 
     def test_charmm_Residue_name_not_in_residues(self, EthaneGOMC):
-        with pytest.raises(ValueError, match=r'ERROR: The residues entered does not match the residues that were '
-                                             r'found and built for structure_box_0.'):
+        with pytest.raises(ValueError, match=r'ERROR: All the residues are not specified, or '
+                                             'the residues entered does not match the residues that '
+                                             'were found and built for structure.'):
             Charmm(EthaneGOMC, 'box_0',
                    structure_box_1 = None,
                    filename_box_1 = None,
@@ -1412,8 +1364,9 @@ class TestCharmmWriterData(BaseTest):
                    )
 
     def test_1_box_residues_not_all_listed_box_0(self, EthaneGOMC, EthanolGOMC):
-        with pytest.raises(ValueError, match=r'ERROR: The residues entered does not match the residues that '
-                                             r'were found and built for structure_box_0.'):
+        with pytest.raises(ValueError, match=r'ERROR: All the residues are not specified, or the residues '
+                                             r'entered does not match the residues that were found and '
+                                             r'built for structure.'):
             Charmm(EthaneGOMC, 'charmm_data_box_0',
                    structure_box_1=None, filename_box_1=None,
                    FF_filename='charmm_data',
@@ -1422,8 +1375,9 @@ class TestCharmmWriterData(BaseTest):
 
 
     def test_2_box_residues_not_all_listed_box_0(self, EthaneGOMC, EthanolGOMC):
-        with pytest.raises(ValueError, match=r'ERROR: The residues entered does not match the residues that '
-                                             r'were found and built for structure_box_0.'):
+        with pytest.raises(ValueError, match=r'ERROR: All the residues are not specified, or the residues '
+                                             r'entered does not match the residues that were found and '
+                                             r'built for structure.'):
             Charmm(EthaneGOMC, 'charmm_data_box_0',
                    structure_box_1=EthanolGOMC, filename_box_1='charmm_data_box_1',
                    FF_filename='charmm_data',
@@ -1432,8 +1386,9 @@ class TestCharmmWriterData(BaseTest):
 
 
     def test_2_box_residues_not_all_listed_box_1(self, EthaneGOMC, EthanolGOMC):
-        with pytest.raises(ValueError, match=r'ERROR: The residues entered does not match the residues that '
-                                             r'were found and built for structure_box_1.'):
+        with pytest.raises(ValueError, match=r'ERROR: All the residues are not specified, or the residues '
+                                             r'entered does not match the residues that were found and '
+                                             r'built for structure.'):
             Charmm(EthaneGOMC, 'charmm_data_box_0',
                    structure_box_1=EthanolGOMC, filename_box_1='charmm_data_box_1',
                    FF_filename='charmm_data',
@@ -1451,8 +1406,9 @@ class TestCharmmWriterData(BaseTest):
 
 
     def test_all_residues_are_listed(self, EthaneGOMC, EthanolGOMC):
-        with pytest.raises(ValueError, match=r'ERROR: The residues entered does not match the residues that '
-                                             r'were found and built for structure_box_0.'):
+        with pytest.raises(ValueError, match=r'ERROR: All the residues are not specified, or the residues '
+                                             r'entered does not match the residues that were found and '
+                                             r'built for structure.'):
             Charmm(EthaneGOMC, 'charmm_data_box_0',
                    structure_box_1=EthanolGOMC, filename_box_1='charmm_data_box_1',
                    FF_filename='charmm_data',
@@ -1461,21 +1417,21 @@ class TestCharmmWriterData(BaseTest):
 
     # Test that an empty box (psf and pdb files) can be created to start a simulation
     def test_box_1_empty_test_1(self, TwoPropanolUA):
-        Empty_compound = mb.Compound()
+        Empty_compound = mb.Box(lengths=[2, 2, 2])
 
         charmm = Charmm(TwoPropanolUA, 'charmm_filled_box',
                          structure_box_1= Empty_compound, filename_box_1='charmm_empty_box',
                          FF_filename='charmm_empty_box.inp',
                          residues=[TwoPropanolUA.name], forcefield_selection='trappe-ua',
                          bead_to_atom_name_dict={'_CH3': 'C'},
-                         box_0=[4, 5, 6], box_1=[3, 4, 5]
+                         box_0=[4, 5, 6],
                          )
         charmm.write_pdb()
         charmm.write_psf()
         out_GOMC = open('charmm_empty_box.pdb', 'r').readlines()
         for i, line in enumerate(out_GOMC):
             if 'CRYST1' in line:
-                assert out_GOMC[i].split()[0:7] == ['CRYST1', '30.000', '40.000', '50.000',
+                assert out_GOMC[i].split()[0:7] == ['CRYST1', '20.000', '20.000', '20.000',
                                                     '90.00', '90.00', '90.00']
                 assert  out_GOMC[i + 1 ].split() == ['END']
 
@@ -1501,8 +1457,50 @@ class TestCharmmWriterData(BaseTest):
             else:
                 pass
 
+
     def test_box_1_empty_test_2(self, TwoPropanolUA):
-        Empty_compound = mb.Compound()
+        Empty_compound = mb.Box( mins=[1, 1, 1], maxs=[4, 4, 4])
+
+        charmm = Charmm(TwoPropanolUA, 'charmm_filled_box',
+                         structure_box_1= Empty_compound, filename_box_1='charmm_empty_box',
+                         FF_filename='charmm_empty_box.inp',
+                         residues=[TwoPropanolUA.name], forcefield_selection='trappe-ua',
+                         bead_to_atom_name_dict={'_CH3': 'C'},
+                         box_0=[4, 5, 6],
+                         )
+        charmm.write_pdb()
+        charmm.write_psf()
+        out_GOMC = open('charmm_empty_box.pdb', 'r').readlines()
+        for i, line in enumerate(out_GOMC):
+            if 'CRYST1' in line:
+                assert out_GOMC[i].split()[0:7] == ['CRYST1', '30.000', '30.000', '30.000',
+                                                    '90.00', '90.00', '90.00']
+                assert  out_GOMC[i + 1 ].split() == ['END']
+
+            else:
+                pass
+
+        out_GOMC = open('charmm_filled_box.pdb', 'r').readlines()
+        for i, line in enumerate(out_GOMC):
+            if 'CRYST1' in line:
+                Atom_type_res_part_1_list = [['ATOM', '1', 'C1', 'POL', 'A', '1'],
+                                             ['ATOM', '2', 'BD1', 'POL', 'A', '1'],
+                                             ['ATOM', '3', 'O1', 'POL', 'A', '1'],
+                                             ['ATOM', '4', 'H1', 'POL', 'A', '1'],
+                                             ['ATOM', '5', 'C2', 'POL', 'A', '1'],
+                                             ]
+                Atom_type_res_part_2_list = [['1.00', '0.00', 'EP'], ['1.00', '0.00','EP'], ['1.00', '0.00','O'],
+                                             ['1.00', '0.00','H'], ['1.00', '0.00','EP'] ]
+
+                for j in range(0, len(Atom_type_res_part_1_list)):
+                    assert out_GOMC[i + 1 + j].split()[0:6] ==  Atom_type_res_part_1_list[j]
+                    assert out_GOMC[i + 1 + j].split()[9:12] == Atom_type_res_part_2_list[j]
+
+            else:
+                pass
+
+    def test_box_1_empty_test_3(self, TwoPropanolUA):
+        Empty_compound = mb.Box(lengths=[2, 2, 2])
 
         charmm = Charmm(Empty_compound, 'charmm_empty_box',
                          structure_box_1= TwoPropanolUA, filename_box_1='charmm_filled_box',
@@ -1542,9 +1540,55 @@ class TestCharmmWriterData(BaseTest):
             else:
                 pass
 
+    def test_box_1_empty_test_4(self):
+        Empty_compound_box_0 = mb.Box(lengths=[2, 2, 2])
+        Empty_compound_box_1 = mb.Box(lengths=[3, 3, 3])
+        with pytest.raises(TypeError, match=r'ERROR: Both structure_box_0 and structure_box_0 are empty Boxes {}. ' \
+                                            'At least 1 structure must be an mbuild compound {} with 1 ' \
+                                            'or more atoms in it'.format(type(Box(lengths=[1, 1, 1])),
+                                                                         type(Compound()))
+                           ):
+            Charmm(Empty_compound_box_0, 'charmm_data_box_0',
+                   structure_box_1=Empty_compound_box_1, filename_box_1='charmm_data_box_1',
+                   FF_filename='charmm_data',
+                   residues=[EthaneGOMC.name], forcefield_selection='oplsaa',
+                   )
+
+    def test_box_1_empty_test_5(self):
+        Empty_compound_box_0 = mb.Box(lengths=[2, 2, 2])
+        with pytest.raises(TypeError, match=r'ERROR: Only 1 structure is provided and it can not be an empty '
+                                            r'mbuild Box {}. ' \
+                                            'it must be an mbuild compound {} with at least 1 ' \
+                                            'or more atoms in it.'.format(type(Box(lengths=[1, 1, 1])),
+                                                                          type(Compound()))
+                           ):
+            Charmm(Empty_compound_box_0, 'charmm_data_box_0',
+                   structure_box_1=None, filename_box_1=None,
+                   FF_filename='charmm_data',
+                   residues=[], forcefield_selection='oplsaa',
+                   )
+
+    def test_box_1_empty_test_6(self, TwoPropanolUA):
+        with pytest.raises(TypeError, match=r'ERROR: If you are not providing and empty box, '
+                                             'you need to specify the atoms/beads as children in the mb.Compound. '
+                                             'If you are providing and empty box, please do so by specifying and ' 
+                                             'mbuild Box \({}\)'.format(type(Box(lengths=[1, 1, 1])))
+                           ):
+            Empty_compound = mb.Compound()
+            Charmm(Empty_compound, 'charmm_empty_box',
+                   structure_box_1=TwoPropanolUA, filename_box_1='charmm_filled_box',
+                   FF_filename='charmm_empty_box',
+                   residues=[TwoPropanolUA.name], forcefield_selection='trappe-ua',
+                   bead_to_atom_name_dict={'_CH3': 'C'},
+                   box_0=[4, 5, 6], box_1=[3, 4, 5]
+                   )
+
+
     def test_structure_box_0_not_mb_Compound(self, EthaneGOMC):
-        with pytest.raises(TypeError, match=r"ERROR: The structure_box_0 expected to be of type: "
-                                            r"<class 'mbuild.compound.Compound'>, received: <class 'str'>"):
+        with pytest.raises(TypeError, match=r'ERROR: The structure_box_0 expected to be of type: ' 
+                                            '{} or {}, received: {}'.format(type(Compound()),
+                                                                            type(Box(lengths=[1, 1, 1])),
+                                                                            type('EthaneGOMC'))):
             Charmm('EthaneGOMC', 'charmm_data_box_0',
                    structure_box_1=EthaneGOMC, filename_box_1='charmm_data_box_1',
                    FF_filename='charmm_data',
@@ -1553,8 +1597,10 @@ class TestCharmmWriterData(BaseTest):
 
 
     def test_structure_box_1_not_mb_Compound(self, EthaneGOMC):
-        with pytest.raises(TypeError, match=r"ERROR: The structure_box_1 expected to be of type: "
-                                            r"<class 'mbuild.compound.Compound'>, received: <class 'int'>"):
+        with pytest.raises(TypeError, match=r'ERROR: The structure_box_1 expected to be of type: ' 
+                                            '{} or {}, received: {}'.format(type(Compound()),
+                                                                            type(Box(lengths=[1, 1, 1])),
+                                                                            type(0))):
             Charmm(EthaneGOMC, 'charmm_data_box_0',
                    structure_box_1=0, filename_box_1='charmm_data_box_1',
                    FF_filename='charmm_data',

@@ -1,12 +1,13 @@
 import os
-from warnings import warn
-from xml.dom import minidom
-
+import mbuild as mb
 import parmed as pmd
 
+from mbuild.compound import Compound
+from mbuild import Box
+from warnings import warn
+from xml.dom import minidom
 from mbuild.utils.io import has_foyer
 
-import mbuild as mb
 
 
 def specific_ff_to_residue(structure,
@@ -18,6 +19,7 @@ def specific_ff_to_residue(structure,
     """ToDo: List What this function does??
     Parameters
     ----------
+    structure_box_0 : mbuild Compound object or mbuild Box object;
     structure: mb.Compound
         The mBuild Compound object
     forcefield_selection: str or dictionary, default=None
@@ -35,7 +37,7 @@ def specific_ff_to_residue(structure,
         list of 3 positive float values or the dimensions [x, y ,z]
         for structure in nanometers (nm). This is to add/override or change the structures dimensions.
         Ex: [1,2,3]
-    boxes_for_simulation: {1, 2}
+    boxes_for_simulation: int of 1 or 2 only;
         Gibbs or grand canonical ensembles are examples of where the boxes_for_simulation would be 2
 
     Notes
@@ -70,58 +72,67 @@ def specific_ff_to_residue(structure,
         from foyer import Forcefield
         from foyer.forcefields import forcefields
     else:
-        warn(
-            'Package foyer is not installed. '
-            'Please install it using conda install -c conda-forge foyer'
-        )
-        return None, None, None, None
+        print_error_message = 'Package foyer is not installed. '\
+                              'Please install it using conda install -c conda-forge foyer'
+        raise ImportError(print_error_message)
 
+
+    if not isinstance(structure, Compound) and not isinstance(structure, Box):
+        print_error_message = 'ERROR: The structure expected to be of type: ' \
+                              '{} or {}, received: {}'.format(type(Compound()),
+                                                              type(Box(lengths=[1, 1, 1])),
+                                                              type(structure_box_0))
+        raise TypeError(print_error_message)
+
+    print('forcefield_selection = ' + str(forcefield_selection))
     if forcefield_selection is None:
-        warn('Please enter either the forcefields for the forcefield_selection variable')
-        return None, None, None, None
+        print_error_message = 'Please the force field selection (forcefield_selection) as a dictionary '\
+                              'with all the residues specified to a force field '\
+                              '-> Ex: {"Water" : "oplsaa", "OCT": "path/trappe-ua.xml"}, '\
+                              'Note: the file path must be specified the force field file '\
+                              'or by using the standard force field name provided the `foyer` package.'
+        raise TypeError(print_error_message)
 
     elif forcefield_selection is not None and not isinstance(forcefield_selection, dict):
-        warn(
-            'The force field selection (forcefield_selection) '
-            'is not a dictionary. Please enter a dictionary '
-            'with all the residues specified to a force field '
-            '-> Ex: {"Water" : "oplsaa", "OCT": "path/trappe-ua.xml"}, '
-            'Note: the file path must be specified the force field file '
-            'or by using the standard force field name provided the `foyer` package.'
-        )
-        return None, None, None, None
+        print_error_message = 'The force field selection (forcefield_selection) '\
+                              'is not a dictionary. Please enter a dictionary '\
+                              'with all the residues specified to a force field '\
+                              '-> Ex: {"Water" : "oplsaa", "OCT": "path/trappe-ua.xml"}, '\
+                              'Note: the file path must be specified the force field file '\
+                              'or by using the standard force field name provided the `foyer` package.'
+        raise TypeError(print_error_message)
 
     if residues is None or not isinstance(residues, list):
-        print('Please enter the residues in the Specific_FF_to_residue function')
-        return None, None, None, None
+        print_error_message = 'Please enter the residues in the Specific_FF_to_residue function.'
+        raise TypeError(print_error_message)
 
 
     if not isinstance(reorder_res_in_pdb_psf, bool):
-        print(
-            'Please enter the reorder_res_in_pdb_psf '
-            'in the Specific_FF_to_residue function (i.e., True or False)'
-        )
-        return None, None, None, None
+        print_error_message = 'Please enter the reorder_res_in_pdb_psf ' \
+                              'in the Specific_FF_to_residue function (i.e., True or False).'
+        raise TypeError(print_error_message)
 
     if box is not None:
         box_ang = []
         box_length = len(box)
         if box_length != 3:
-            warn('Please enter all 3 values for the box dimensions.')
-            return None, None, None, None
-        for box_iter in range(0, len(box)):
-            if isinstance(box[box_iter], str):
-                warn('Please enter all positive or 0 values for the box dimensions.')
-                return None, None, None, None
-            if box[box_iter] < 0:
-                warn('Please enter all positive or 0 values for the box dimensions.')
-                return None, None, None, None
+            print_error_message = 'Please enter all 3 values, and only 3 values for the box dimensions.'
+            raise ValueError(print_error_message)
+        print_error_message_box_positive_values = 'Please enter all positive intergers > 0 for the box dimensions.'
+        for box_iter in box:
+            if not isinstance(box_iter, int) and not isinstance(box_iter, float):
+                raise TypeError(print_error_message_box_positive_values)
+            if box_iter < 0:
+                raise ValueError(print_error_message_box_positive_values)
             # change from nm to Angstroms
-            box_ang.append(box[box_iter] * 10)
+            box_ang.append(box_iter * 10)
 
-    if boxes_for_simulation not in [1, 2]:
-        warn('Please enter boxes_for_simulation equal the integer 1 or 2.')
-        return None, None, None, None
+    print_error_message_for_boxes_for_simulatiion = 'Please enter boxes_for_simulation equal the integer 1 or 2.'
+    if not isinstance(boxes_for_simulation, int):
+        raise TypeError(print_error_message_for_boxes_for_simulatiion)
+
+    elif isinstance(boxes_for_simulation, int) and boxes_for_simulation not in [1, 2]:
+        raise ValueError(print_error_message_for_boxes_for_simulatiion)
 
 
 
@@ -133,15 +144,13 @@ def specific_ff_to_residue(structure,
 
 
     if forcefield_keys_list == [] and len(residues) != 0 :
-        warn(
-            'The forcefield_selection variable are not provided, but there are residues provided.'
-        )
-        return None, None, None, None
+        print_error_message = 'The forcefield_selection variable are not provided, but there are residues provided.'
+        raise ValueError(print_error_message)
+
     elif forcefield_keys_list != [] and len(residues) == 0 :
-        warn(
-            'The residues variable is and empty list but there are forcefield_selection variables provided.'
-        )
-        return None, None, None, None
+        print_error_message =  'The residues variable is and empty list but there are ' \
+                               'forcefield_selection variables provided.'
+        raise ValueError(print_error_message)
 
 
     user_entered_ff_with_path_dict = {}  # True means user entered the path, False is a standard foyer FF with no path
@@ -153,13 +162,12 @@ def specific_ff_to_residue(structure,
                 elif os.path.splitext(ff_data[forcefield_keys_list[z]])[1] == '' and len(residues) != 0:
                     user_entered_ff_with_path_dict.update({residues[res_i]: False})
                 else:
-                    warn(
-                        'Please make sure are entering the correct '
-                        'foyer FF name and not a path to a FF file. ' 
-                        'If you are entering a path to a FF file, '
-                        'please use the forcefield_files variable.'
-                    )
-                    return None, None, None, None
+                    print_error_message = r'Please make sure are entering the correct '\
+                                          'foyer FF name and not a path to a FF file. '\
+                                          'If you are entering a path to a FF file, '\
+                                          'please use the forcefield_files variable with the '\
+                                          'proper XML extension (.xml).'
+                    raise ValueError(print_error_message)
 
 
     coulomb14scalar_dict = {}
@@ -172,38 +180,75 @@ def specific_ff_to_residue(structure,
             try:
                 read_xlm_iteration = minidom.parse(ff_for_residue_iteration)
             except:
-                warn('Please make sure are entering the correct foyer FF path, including the FF file name.xml ' +
-                     'If you are using the pre-build FF files in foyer, please us the forcefield_names variable.')
-                return None, None, None, None
-
+                print_error_message = 'Please make sure are entering the correct foyer FF path, ' \
+                                      'including the FF file name.xml '\
+                                      'If you are using the pre-build FF files in foyer, ' \
+                                      'please us the forcefield_names variable.'
+                raise ValueError(print_error_message)
         elif not user_entered_ff_with_path_dict[residue_iteration]:
             ff_for_residue_iteration = ff_data[residue_iteration]
             ff_names_path_iteration = forcefields.get_ff_path()[0] + '/xml/' + ff_for_residue_iteration + '.xml'
             try:
                 read_xlm_iteration = minidom.parse(ff_names_path_iteration)
             except:
-                warn('Please make sure are entering the correct foyer FF name and not a path to a FF file.' +
-                     'If you are entering a path to a FF file, please us the forcefield_files variable')
-                return None, None, None, None
+                print_error_message = 'Please make sure are entering the correct foyer FF name, or the ' \
+                                      'correct file extention (i.e., .xml, if required).'
+                raise ValueError(print_error_message)
         lj_coul_1_4_values = read_xlm_iteration.getElementsByTagName("NonbondedForce")
 
         for Scalar in lj_coul_1_4_values:
             coulomb14scalar_dict.update({residue_iteration: float(Scalar.getAttribute("coulomb14scale"))})
             lj14_scalar_dict.update({residue_iteration: float(Scalar.getAttribute("lj14scale"))})
 
-    # calculate the initial number of atoms for later comparison
-    initial_no_atoms = len(structure.to_parmed().atoms)
 
     # Check to see if it is an empty mbuild.Compound and set intial atoms to 0
     # note empty mbuild.Compound will read 1 atoms but there is really noting there
-    if str(structure.to_parmed()) == '<Structure 1 atoms; 1 residues; 0 bonds; PBC (orthogonal); NOT parametrized>' \
-           and str(structure.children) == 'OrderedSet()' and initial_no_atoms == 1 \
-           and str(structure.pos)=='[0. 0. 0.]' \
-           and str(structure.to_parmed().atoms[0]) == '<Atom Compound [0]; In RES 0>' \
-           and str(structure.to_parmed().residues[0]) ==  '<Residue RES[0]>' \
-            and len(structure.children) == 0 :
-        # there are no real atoms so set initial atoms to 0
-        initial_no_atoms = 0
+    if isinstance(structure, Compound):
+        if len(structure.children) == 0 :
+            # there are no real atoms in the Compound so the test fails. User should use mbuild.Box
+            print_error_message = 'ERROR: If you are not providing and empty box, '\
+                                  'you need to specify the atoms/beads as children in the mb.Compound. '\
+                                  'If you are providing and empty box, please do so by specifying and ' \
+                                  'mbuild Box ({})'.format(type(Box(lengths=[1, 1, 1])))
+            raise TypeError(print_error_message)
+        else:
+            initial_no_atoms = len(structure.to_parmed().atoms)
+
+    # calculate the initial number of atoms for later comparison
+    if isinstance(structure, Box):
+        if structure.lengths is not None:
+            mb_box_length_0 = structure.lengths[0]
+            mb_box_length_1 = structure.lengths[1]
+            mb_box_length_2 = structure.lengths[2]
+
+        elif structure.mins is not None and structure.maxs is not None:
+            mb_box_mins_0 = structure.mins[0]
+            mb_box_mins_1 = structure.mins[1]
+            mb_box_mins_2 = structure.mins[2]
+
+            mb_box_maxs_0 = structure.maxs[0]
+            mb_box_maxs_1 = structure.maxs[1]
+            mb_box_maxs_2 = structure.maxs[2]
+
+            mb_box_length_0 = mb_box_maxs_0 - mb_box_mins_0
+            mb_box_length_1 = mb_box_maxs_1 - mb_box_mins_1
+            mb_box_length_2 = mb_box_maxs_2 - mb_box_mins_2
+
+        if not structure.angles[0] == 90 and not structure.angles[0] == 90 and not structure.angles[0] == 90:
+            print_error_message = 'This writer only currently supports orthogonal boxes ' \
+                                  '(i.e., boxes with all 90 degree angles)'
+            raise ValueError(print_error_message)
+
+        # convert the structure to a mbuild.Compound and set the  initial_no_atoms = 0
+        if structure.lengths is None or mb_box_length_0 <= 0 or mb_box_length_1 <= 0 or mb_box_length_2 <= 0:
+            print_error_message = 'An empty box was specified, without any box dimensions.'
+            raise ValueError(print_error_message)
+        else:
+            structure = mb.Compound()
+            structure.periodicity[0] = mb_box_length_0
+            structure.periodicity[1] = mb_box_length_1
+            structure.periodicity[2] = mb_box_length_2
+            initial_no_atoms = 0
 
 
     # add the FF to the residues
@@ -214,6 +259,9 @@ def specific_ff_to_residue(structure,
     # prepare all compound and remove nested compounds
     no_layers_to_check_for_residues = 4
 
+    print_error_message_all_res_not_specified = 'ERROR: All the residues are not specified, or ' \
+                                                'the residues entered does not match the residues that ' \
+                                                'were found and built for structure.'
     for j in range(0, no_layers_to_check_for_residues):
         new_compound_iter = mb.Compound()
         new_compound_iter.periodicity[0] = structure.periodicity[0]
@@ -232,8 +280,7 @@ def specific_ff_to_residue(structure,
             for child in structure.children:
                 if len(child.children) == 0:
                     if child.name not in residues:
-                        warn('ERROR: All the residues are not specified')
-                        return None, None, None, None
+                        raise ValueError(print_error_message_all_res_not_specified)
 
                     else:
                         new_compound_iter.add(mb.compound.clone(child))
@@ -247,8 +294,7 @@ def specific_ff_to_residue(structure,
                                 new_compound_iter.add(mb.compound.clone(sub_child))
                             else:
                                 if len(sub_child.children) == 0 and (child.name not in residues):
-                                    warn('ERROR: All the residues are not specified')
-                                    return None, None, None, None
+                                    raise ValueError(print_error_message_all_res_not_specified)
 
         structure = new_compound_iter
 
@@ -259,16 +305,17 @@ def specific_ff_to_residue(structure,
             residue_orig_order_list.append(child.name)
     for res_reorder_iter in range(0, len(residues)):
         if residues[res_reorder_iter] not in residue_orig_order_list:
-            text_to_print_1 = "All the residues were not used from the forcefield_selection " + \
-                              "string or dictionary.  There may be residues below other specified residues " + \
-                              "in the mbuild.Compound hierarchy.  If so, all the highest listed residues pass " + \
-                              "down the force fields through the hierarchy.  Alternatively, " + \
-                              "residues that are not in the structure may have been specified. "
+            text_to_print_1 = 'All the residues were not used from the forcefield_selection '\
+                              'string or dictionary. There may be residues below other '\
+                              'specified residues in the mbuild.Compound hierarchy. '\
+                              'If so, all the highest listed residues pass down the force '\
+                              'fields through the hierarchy. Alternatively, residues that '\
+                              'are not in the structure may have been specified. '
             text_to_print_2 = "Note: This warning will appear if you are using the CHARMM pdb and psf writers " + \
                               "2 boxes, and the boxes do not contain all the residues in each box."
             if boxes_for_simulation == 1:
                 warn(text_to_print_1)
-                return None, None, None, None
+                raise ValueError(text_to_print_1)
             if boxes_for_simulation == 2:
                 warn(text_to_print_1 + text_to_print_2)
 
@@ -287,8 +334,8 @@ def specific_ff_to_residue(structure,
         new_structure_iteration.box = compound_box_infor.box
         for child in structure.children:
             if ff_data.get(child.name) is None:
-                warn('ERROR: All residues are not specified in the force_field dictionary')
-                return None, None, None, None
+                print_error_message = 'ERROR: All residues are not specified in the force_field dictionary'
+                raise ValueError(print_error_message)
 
             if child.name == residues[i]:
                 children_in_iteration = True
@@ -316,11 +363,12 @@ def specific_ff_to_residue(structure,
     final_no_atoms = len(structure.atoms)
 
     if final_no_atoms != initial_no_atoms:
-        warn('ERROR: The initial number of atoms send to the force field analysis is not the same ' +
-             'as the final number of atoms analyzed.  The intial number of atoms was ' + str(initial_no_atoms) +
-             ' and the final number of atoms was ' + str(final_no_atoms) + '. Please ensure that all ' +
-             'the residues names that are in the initial Compound are listed in the ' +
-             'residues list (i.e., the residues variable)')
-        return None, None, None, None
+        print_error_message = 'ERROR: The initial number of atoms send to the force field analysis is ' \
+                              'not the same as the final number of atoms analyzed. ' \
+                              'The intial number of atoms was {} and the final number of atoms was {}. ' \
+                              'Please ensure that all the residues names that are in the initial ' \
+                              'Compound are listed in the residues list ' \
+                              '(i.e., the residues variable).'.format(initial_no_atoms, final_no_atoms)
+        raise ValueError(print_error_message)
 
     return structure, coulomb14scalar_dict, lj14_scalar_dict, residues_applied_list

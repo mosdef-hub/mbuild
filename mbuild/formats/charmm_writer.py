@@ -384,11 +384,19 @@ class Charmm:
 
         Parameters
         ----------
-        structure_box_0 : compound object
+        structure_box_0 : mbuild Compound object or mbuild Box object;
+            If the structure has atoms/beads it must be an mbuild Compound.
+            If the structure is empty it must be and mbuild Box object.
+            Note: If 1 structures are provided (i.e., only structure_box_0),
+            it must be an mbuild Compound.
+            Note: If 2 stuctures are provided,
+            only 1 structure can be an empty box (i.e., either structure_box_0 or structure_box_1)
         filename_box_0 : str
             Path of the output file for structure_box_0
-        structure_box_1 : compound object number 2, optional
-            (Ex: for GCMC or GEMC simulations which have mulitiple simulation boxes)
+        structure_box_1 : mbuild Compound object or mbuild Box object, optional;
+            If the structure has atoms/beads it must be an mbuild Compound.
+            Note: If 2 structures are provided,
+            only 1 structure can be an empty box (i.e., either structure_box_0 or structure_box_1)
         filename_box_1 : str , optional
             Path of the output file for structure_box_1 (Ex: for GCMC or GEMC simulations
             which have mulitiple simulation boxes)
@@ -513,16 +521,37 @@ class Charmm:
         #value to check for errors, with  self.input_error = True or False. Set to False initally
         self.input_error = False
 
-        if not isinstance(self.structure_box_0, Compound):
+        if not isinstance(self.structure_box_0, Compound) and not isinstance(self.structure_box_0, Box):
             self.input_error = True
             print_error_message ='ERROR: The structure_box_0 expected to be of type: ' \
-                                 '{}, received: {}'.format(type(Compound()), type(structure_box_0))
+                                 '{} or {}, received: {}'.format(type(Compound()),
+                                                                 type(Box(lengths=[1, 1, 1])),
+                                                                 type(structure_box_0))
             raise TypeError(print_error_message)
 
-        if  self.structure_box_1 != None and not isinstance(self.structure_box_1, Compound):
+        if  self.structure_box_1 != None and not isinstance(self.structure_box_1, Compound) \
+                and not isinstance(self.structure_box_1, Box):
             self.input_error = True
             print_error_message = 'ERROR: The structure_box_1 expected to be of type: ' \
-                                  '{}, received: {}'.format(type(Compound()), type(structure_box_1))
+                                  '{} or {}, received: {}'.format(type(Compound()),
+                                                                  type(Box(lengths=[1, 1, 1])),
+                                                                  type(structure_box_1))
+            raise TypeError(print_error_message)
+
+        if isinstance(self.structure_box_0, Box) and isinstance(self.structure_box_1, Box):
+            self.input_error = True
+            print_error_message = 'ERROR: Both structure_box_0 and structure_box_0 are empty Boxes {}. ' \
+                                  'At least 1 structure must be an mbuild compound {} with 1 ' \
+                                  'or more atoms in it'.format(type(Box(lengths=[1, 1, 1])),
+                                                               type(Compound()))
+            raise TypeError(print_error_message)
+
+        if self.structure_box_1 == None and not isinstance(self.structure_box_0, Compound):
+            self.input_error = True
+            print_error_message = 'ERROR: Only 1 structure is provided and it can not be an empty mbuild Box {}. ' \
+                                  'it must be an mbuild compound {} with at least 1 ' \
+                                  'or more atoms in it.'.format(type(Box(lengths=[1, 1, 1])),
+                                                                type(Compound()))
             raise TypeError(print_error_message)
 
 
@@ -587,8 +616,7 @@ class Charmm:
         if self.forcefield_selection != None:
             print('write_gomcdata: forcefield_selection = '+str(self.forcefield_selection) \
                   +', ' +'residues = '+str(self.residues) )
-            if self.forcefield_selection != None and not isinstance(self.forcefield_selection, dict) \
-                    and not isinstance(self.forcefield_selection, str):
+            if not isinstance(self.forcefield_selection, dict) and not isinstance(self.forcefield_selection, str):
                 self.input_error = True
                 print_error_message = 'ERROR: The force field selection (forcefield_selection) '\
                                       'is not a string or a dictionary with all the residues specified ' \
@@ -745,13 +773,6 @@ class Charmm:
             test_Specific_FF_to_residue_for_failure = [self.structure_box_0_FF, self.coulomb14scalar_dict_0,
                                                        self.LJ14scalar_dict_0, self.residues_applied_list_0]
 
-            for iter_test_Specifc_res_fail in range(0, len(test_Specific_FF_to_residue_for_failure)):
-                if test_Specific_FF_to_residue_for_failure[iter_test_Specifc_res_fail] is None:
-                    self.input_error = True
-                    print_error_message = 'ERROR: The residues entered does not match the residues that were ' \
-                                          'found and built for structure_box_0.'
-                    raise ValueError(print_error_message)
-
             print('GOMC FF writing each residues FF as a group for  structure_box_1')
             self.structure_box_1_FF, \
             self.coulomb14scalar_dict_1, \
@@ -764,13 +785,6 @@ class Charmm:
                                                              boxes_for_simulation = self.boxes_for_simulation)
             test_Specific_FF_to_residue_for_failure = [self.structure_box_1_FF, self.coulomb14scalar_dict_1,
                                                        self.LJ14scalar_dict_1, self.residues_applied_list_1]
-
-            for iter_test_Specifc_res_fail in range(0, len(test_Specific_FF_to_residue_for_failure)):
-                if test_Specific_FF_to_residue_for_failure[iter_test_Specifc_res_fail] is None:
-                    self.input_error = True
-                    print_error_message = 'ERROR: The residues entered does not match the residues that were ' \
-                                          'found and built for structure_box_1.'
-                    raise ValueError(print_error_message)
 
             self.structure_box_0_and_1_FF =self.structure_box_0_FF + self.structure_box_1_FF
             self.combined_1_4_LJ_dict_per_residue.update(self.LJ14scalar_dict_0)
@@ -835,12 +849,6 @@ class Charmm:
                                                              boxes_for_simulation = self.boxes_for_simulation)
             test_Specific_FF_to_residue_for_failure = [ self.structure_box_0_FF, self.coulomb14scalar_dict_0,
                                                         self.LJ14scalar_dict_0, self.residues_applied_list_0 ]
-            for iter_test_Specifc_res_fail in range(0, len(test_Specific_FF_to_residue_for_failure)):
-                if test_Specific_FF_to_residue_for_failure[iter_test_Specifc_res_fail] is None:
-                    self.input_error = True
-                    print_error_message = 'ERROR: The residues entered does not match the residues that were ' \
-                                          'found and built for structure_box_0.'
-                    raise ValueError(print_error_message)
 
             self.combined_1_4_LJ_dict_per_residue.update(self.LJ14scalar_dict_0)
             self.combined_1_4_Coul_dict_per_residue.update(self.coulomb14scalar_dict_0)
