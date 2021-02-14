@@ -1,11 +1,9 @@
 import pytest
-import numpy as np
-
 import mbuild as mb
 import numpy as np
 
+from mbuild.box import Box
 from mbuild.compound import Compound
-from mbuild import Box
 from mbuild.tests.base_test import BaseTest
 from mbuild.formats import charmm_writer
 from mbuild.formats.charmm_writer import Charmm
@@ -18,30 +16,6 @@ from mbuild.utils.specific_ff_to_residue  import specific_ff_to_residue
 from foyer.forcefields import forcefields
 from collections import OrderedDict
 
-
-@pytest.mark.skipif(not has_foyer, reason="Foyer package not installed")
-class ethane(mb.Compound):
-    def __init__(self, name='ethane'):
-        super(ethane, self).__init__()
-
-        self.name = name
-
-        CH3_1_1 = mb.Particle(pos=[0, 0.0, 0.0], name='_CH3')
-        CH3_1_2 = mb.Particle(pos=[0, 0.0, 0.0], name='_CH3')
-        self.add([CH3_1_1, CH3_1_2])
-
-        port_1_CH3_1_1 = mb.Port(anchor=CH3_1_1, orientation=[-0.1, 0, 0], separation=0.05)
-        port_1_CH3_1_2 = mb.Port(anchor=CH3_1_2, orientation=[-0.1, 0, 0], separation=0.05)
-
-        self.add(port_1_CH3_1_1, label='left_1')
-        self.add(port_1_CH3_1_2, label='left_2')
-
-        mb.force_overlap(move_this=CH3_1_1,
-                         from_positions=self['left_1'],
-                         to_positions=self['left_2'])
-
-TwoPropanolUA = mb.load('files/2_propanol.mol2')
-TwoPropanolUA.name = "POL"
 
 
 
@@ -1443,7 +1417,7 @@ class TestCharmmWriterData(BaseTest):
 
     # Test that an empty box (psf and pdb files) can be created to start a simulation
     def test_box_1_empty_test_1(self, TwoPropanolUA):
-        Empty_compound = mb.Box(lengths=[2, 2, 2])
+        Empty_compound = Box(lengths=[2, 2, 2])
 
         charmm = Charmm(TwoPropanolUA, 'charmm_filled_box',
                          structure_box_1= Empty_compound, filename_box_1='charmm_empty_box',
@@ -1485,7 +1459,7 @@ class TestCharmmWriterData(BaseTest):
 
 
     def test_box_1_empty_test_2(self, TwoPropanolUA):
-        Empty_compound = mb.Box( mins=[1, 1, 1], maxs=[4, 4, 4])
+        Empty_compound = Box( mins=[1, 1, 1], maxs=[4, 4, 4])
 
         charmm = Charmm(TwoPropanolUA, 'charmm_filled_box',
                          structure_box_1= Empty_compound, filename_box_1='charmm_empty_box',
@@ -1526,7 +1500,7 @@ class TestCharmmWriterData(BaseTest):
                 pass
 
     def test_box_1_empty_test_3(self, TwoPropanolUA):
-        Empty_compound = mb.Box(lengths=[2, 2, 2])
+        Empty_compound = Box(lengths=[2, 2, 2])
 
         charmm = Charmm(Empty_compound, 'charmm_empty_box',
                          structure_box_1= TwoPropanolUA, filename_box_1='charmm_filled_box',
@@ -1567,8 +1541,8 @@ class TestCharmmWriterData(BaseTest):
                 pass
 
     def test_box_1_empty_test_4(self):
-        Empty_compound_box_0 = mb.Box(lengths=[2, 2, 2])
-        Empty_compound_box_1 = mb.Box(lengths=[3, 3, 3])
+        Empty_compound_box_0 = Box(lengths=[2, 2, 2])
+        Empty_compound_box_1 = Box(lengths=[3, 3, 3])
         with pytest.raises(TypeError, match=r'ERROR: Both structure_box_0 and structure_box_0 are empty Boxes {}. ' \
                                             'At least 1 structure must be an mbuild compound {} with 1 ' \
                                             'or more atoms in it'.format(type(Box(lengths=[1, 1, 1])),
@@ -1581,7 +1555,7 @@ class TestCharmmWriterData(BaseTest):
                    )
 
     def test_box_1_empty_test_5(self):
-        Empty_compound_box_0 = mb.Box(lengths=[2, 2, 2])
+        Empty_compound_box_0 = Box(lengths=[2, 2, 2])
         with pytest.raises(TypeError, match=r'ERROR: Only 1 structure is provided and it can not be an empty '
                                             r'mbuild Box {}. ' \
                                             'it must be an mbuild compound {} with at least 1 ' \

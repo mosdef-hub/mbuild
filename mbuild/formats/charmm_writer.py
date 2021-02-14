@@ -10,7 +10,7 @@ from parmed.periodic_table import Element
 from parmed.utils.six.moves import range
 
 from mbuild.compound import Compound
-from mbuild import Box
+from mbuild.box import Box
 from mbuild.utils.conversion import RB_to_CHARMM
 from mbuild.utils.sorting import natural_sort
 from mbuild.utils.conversion import base10_to_base16_alph_num
@@ -745,10 +745,8 @@ class Charmm:
 
 
 
-
         self.sub_1_for_base_52 = 1
 
-        #if self.structure_box_1 != None:
         if self.structure_box_1:
             self.boxes_for_simulation = 2
         else:
@@ -757,7 +755,8 @@ class Charmm:
         #write the Force fields
         self.combined_1_4_LJ_dict_per_residue = {}
         self.combined_1_4_Coul_dict_per_residue = {}
-        #if self.structure_box_1 != None:
+
+
         if self.structure_box_1:
 
             print('GOMC FF writing each residues FF as a group for structure_box_0')
@@ -770,8 +769,6 @@ class Charmm:
                                                              reorder_res_in_pdb_psf=self.reorder_res_in_pdb_psf,
                                                              box = self.box_0,
                                                              boxes_for_simulation = self.boxes_for_simulation)
-            test_Specific_FF_to_residue_for_failure = [self.structure_box_0_FF, self.coulomb14scalar_dict_0,
-                                                       self.LJ14scalar_dict_0, self.residues_applied_list_0]
 
             print('GOMC FF writing each residues FF as a group for  structure_box_1')
             self.structure_box_1_FF, \
@@ -783,8 +780,6 @@ class Charmm:
                                                              reorder_res_in_pdb_psf=self.reorder_res_in_pdb_psf,
                                                              box = self.box_1,
                                                              boxes_for_simulation = self.boxes_for_simulation)
-            test_Specific_FF_to_residue_for_failure = [self.structure_box_1_FF, self.coulomb14scalar_dict_1,
-                                                       self.LJ14scalar_dict_1, self.residues_applied_list_1]
 
             self.structure_box_0_and_1_FF =self.structure_box_0_FF + self.structure_box_1_FF
             self.combined_1_4_LJ_dict_per_residue.update(self.LJ14scalar_dict_0)
@@ -847,8 +842,6 @@ class Charmm:
                                                              reorder_res_in_pdb_psf=self.reorder_res_in_pdb_psf,
                                                              box=self.box_0,
                                                              boxes_for_simulation = self.boxes_for_simulation)
-            test_Specific_FF_to_residue_for_failure = [ self.structure_box_0_FF, self.coulomb14scalar_dict_0,
-                                                        self.LJ14scalar_dict_0, self.residues_applied_list_0 ]
 
             self.combined_1_4_LJ_dict_per_residue.update(self.LJ14scalar_dict_0)
             self.combined_1_4_Coul_dict_per_residue.update(self.coulomb14scalar_dict_0)
