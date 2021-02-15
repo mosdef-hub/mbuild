@@ -17,7 +17,7 @@ from foyer.forcefields import forcefields
 from collections import OrderedDict
 
 
-
+@pytest.mark.skipif(not has_foyer, reason="Foyer package not installed")
 class TestCharmmWriterData(BaseTest):
 
     def test_save(self, EthaneGOMC):
@@ -814,17 +814,13 @@ class TestCharmmWriterData(BaseTest):
                                    )
 
     def test_charmm_correct_residue_format(self, EthaneGOMC):
-        try:
-            Test_value = Charmm(EthaneGOMC, 'box_0',
-                                structure_box_1 = None,
-                                filename_box_1 = None,
-                                FF_filename=None,
-                                residues = [EthaneGOMC.name],
-                                forcefield_selection = {EthaneGOMC.name : 'oplsaa'},
-                                )
-
-        except:
-            Test_value = "TEST_FAILED"
+        Test_value = Charmm(EthaneGOMC, 'box_0',
+                            structure_box_1 = None,
+                            filename_box_1 = None,
+                            FF_filename=None,
+                            residues = [EthaneGOMC.name],
+                            forcefield_selection = {EthaneGOMC.name : 'oplsaa'},
+                            )
 
         assert Test_value.input_error is False
 
@@ -938,16 +934,13 @@ class TestCharmmWriterData(BaseTest):
 
 
     def test_charmm_FFselection_string(self, EthaneGOMC):
-        try:
-            Test_value = Charmm(EthaneGOMC, 'box_0',
-                                structure_box_1 = None,
-                                filename_box_1 = None,
-                                FF_filename='box_0',
-                                residues=[EthaneGOMC.name],
-                                forcefield_selection='oplsaa',
-                                )
-        except:
-            Test_value = "TEST_FAILED"
+        Test_value = Charmm(EthaneGOMC, 'box_0',
+                            structure_box_1 = None,
+                            filename_box_1 = None,
+                            FF_filename='box_0',
+                            residues=[EthaneGOMC.name],
+                            forcefield_selection='oplsaa',
+                            )
 
         assert Test_value.input_error is False
 
@@ -1024,183 +1017,164 @@ class TestCharmmWriterData(BaseTest):
         box_reservior_0 = mb.fill_box(compound=[TwoPropanolGOMC, EthanolGOMC],
                                       box=[2, 2, 2], n_compounds=[2,2])
 
-        try:
-            [structure_FF, \
-            coulomb14scalar_dict, \
-            LJ14scalar_dict, \
-            residues_applied_list]  =  specific_ff_to_residue(box_reservior_0,
-                                                              forcefield_selection={TwoPropanolGOMC.name: 'oplsaa',
-                                                                                    EthanolGOMC.name: 'oplsaa' },
-                                                              residues=[EthanolGOMC.name, TwoPropanolGOMC.name],
-                                                              reorder_res_in_pdb_psf=False,
-                                                              box=None,
-                                                              boxes_for_simulation=1
-                                                              )
 
-            sigma_conversion_factor = 1
-            epsilon_conversion_factor = 1
-            #reversed the bond order so it fixes itself
-            bonds_1 = [[bond.atom1.idx + 1, bond.atom2.idx + 1] for bond in structure_FF.bonds]
-            bond_types_1, unique_bond_types_1 = charmm_writer._get_bond_types(structure_FF,
-                                                                              sigma_conversion_factor,
-                                                                              epsilon_conversion_factor)
+        [structure_FF, \
+        coulomb14scalar_dict, \
+        LJ14scalar_dict, \
+        residues_applied_list]  =  specific_ff_to_residue(box_reservior_0,
+                                                          forcefield_selection={TwoPropanolGOMC.name: 'oplsaa',
+                                                                                EthanolGOMC.name: 'oplsaa' },
+                                                          residues=[EthanolGOMC.name, TwoPropanolGOMC.name],
+                                                          reorder_res_in_pdb_psf=False,
+                                                          box=None,
+                                                          boxes_for_simulation=1
+                                                          )
 
-            bonds_2 = [[bond.atom2.idx + 1, bond.atom1.idx + 1] for bond in structure_FF.bonds]
-            bond_types_2, unique_bond_types_2 = charmm_writer._get_bond_types(structure_FF,
-                                                                              sigma_conversion_factor,
-                                                                              epsilon_conversion_factor)
+        sigma_conversion_factor = 1
+        epsilon_conversion_factor = 1
+        #reversed the bond order so it fixes itself
+        bonds_1 = [[bond.atom1.idx + 1, bond.atom2.idx + 1] for bond in structure_FF.bonds]
+        bond_types_1, unique_bond_types_1 = charmm_writer._get_bond_types(structure_FF,
+                                                                          sigma_conversion_factor,
+                                                                          epsilon_conversion_factor)
+
+        bonds_2 = [[bond.atom2.idx + 1, bond.atom1.idx + 1] for bond in structure_FF.bonds]
+        bond_types_2, unique_bond_types_2 = charmm_writer._get_bond_types(structure_FF,
+                                                                          sigma_conversion_factor,
+                                                                          epsilon_conversion_factor)
 
 
 
-            assert bonds_1 != bonds_2
-            assert bond_types_1 == bond_types_2
-            assert unique_bond_types_1 ==  unique_bond_types_2
+        assert bonds_1 != bonds_2
+        assert bond_types_1 == bond_types_2
+        assert unique_bond_types_1 ==  unique_bond_types_2
 
-            # test for error if trying to use urey_bradleys in th angles
-            use_urey_bradleys = True
-            angle_types_1, unique_angle_types_1 = charmm_writer._get_angle_types(
-                structure_FF,
-                sigma_conversion_factor,
-                epsilon_conversion_factor,
-                use_urey_bradleys=use_urey_bradleys
-            )
+        # test for error if trying to use urey_bradleys in th angles
+        use_urey_bradleys = True
+        angle_types_1, unique_angle_types_1 = charmm_writer._get_angle_types(
+            structure_FF,
+            sigma_conversion_factor,
+            epsilon_conversion_factor,
+            use_urey_bradleys=use_urey_bradleys
+        )
 
-            assert angle_types_1 is None
-            assert unique_angle_types_1 is None
+        assert angle_types_1 is None
+        assert unique_angle_types_1 is None
 
-            Test_value_0 = "TEST_PASSED"
-
-        except:
-            Test_value_0 = "TEST_FAILED"
-
-        assert Test_value_0 == "TEST_PASSED"
 
     # test for error if trying to use  use_dihedrals and impropers in the dihedrals (i.e. only RB torsion allowed)
     def test_charmm_dihedral_reorder(self, EthylEtherGOMC, MethlyEtherGOMC):
-        try:
-            box_reservior_0 = mb.fill_box(compound=[EthylEtherGOMC, MethlyEtherGOMC],
-                                          box=[10, 10, 10], n_compounds=[10, 10])
 
-            [structure_FF, \
-            coulomb14scalar_dict, \
-            LJ14scalar_dict, \
-            residues_applied_list] = specific_ff_to_residue(box_reservior_0,
-                                                            forcefield_selection={EthylEtherGOMC.name: 'oplsaa',
-                                                                                  MethlyEtherGOMC.name: 'oplsaa'},
-                                                            residues=[EthylEtherGOMC.name, MethlyEtherGOMC.name],
-                                                            reorder_res_in_pdb_psf=False,
-                                                            box=None,
-                                                            boxes_for_simulation=1
-                                                            )
+        box_reservior_0 = mb.fill_box(compound=[EthylEtherGOMC, MethlyEtherGOMC],
+                                      box=[10, 10, 10], n_compounds=[10, 10])
 
-            use_rb_torsions_1 = False
-            use_dihedrals_1 = True
-            epsilon_conversion_factor = 1
-            lj_unit = 1 / epsilon_conversion_factor
-            dihedral_types_1, unique_dihedral_types_1 = charmm_writer._get_dihedral_types(structure_FF,
-                                                                                          use_rb_torsions_1,
-                                                                                          use_dihedrals_1,
-                                                                                          epsilon_conversion_factor)
-            assert dihedral_types_1 is None
-            assert unique_dihedral_types_1  is None
+        [structure_FF, \
+        coulomb14scalar_dict, \
+        LJ14scalar_dict, \
+        residues_applied_list] = specific_ff_to_residue(box_reservior_0,
+                                                        forcefield_selection={EthylEtherGOMC.name: 'oplsaa',
+                                                                              MethlyEtherGOMC.name: 'oplsaa'},
+                                                        residues=[EthylEtherGOMC.name, MethlyEtherGOMC.name],
+                                                        reorder_res_in_pdb_psf=False,
+                                                        box=None,
+                                                        boxes_for_simulation=1
+                                                        )
 
-            use_rb_torsions_2 = True
-            use_dihedrals_2 = False
+        use_rb_torsions_1 = False
+        use_dihedrals_1 = True
+        epsilon_conversion_factor = 1
+        lj_unit = 1 / epsilon_conversion_factor
+        dihedral_types_1, unique_dihedral_types_1 = charmm_writer._get_dihedral_types(structure_FF,
+                                                                                      use_rb_torsions_1,
+                                                                                      use_dihedrals_1,
+                                                                                      epsilon_conversion_factor)
+        assert dihedral_types_1 is None
+        assert unique_dihedral_types_1  is None
 
-            dihedral_types_2, unique_dihedral_types_2 = charmm_writer._get_dihedral_types(structure_FF,
-                                                                                          use_rb_torsions_2,
-                                                                                          use_dihedrals_2,
-                                                                                          epsilon_conversion_factor)
+        use_rb_torsions_2 = True
+        use_dihedrals_2 = False
 
-            unique_dih_typ_unsorted_2 = dict(enumerate(set([(round(dihedral.type.c0 * lj_unit, 3),
-                                                             round(dihedral.type.c1 * lj_unit, 3),
-                                                             round(dihedral.type.c2 * lj_unit, 3),
-                                                             round(dihedral.type.c3 * lj_unit, 3),
-                                                             round(dihedral.type.c4 * lj_unit, 3),
-                                                             round(dihedral.type.c5 * lj_unit, 3),
-                                                             round(dihedral.type.scee, 1),
-                                                             round(dihedral.type.scnb, 1),
-                                                             dihedral.atom1.type, dihedral.atom2.type,
-                                                             dihedral.atom3.type, dihedral.atom4.type,
-                                                             dihedral.atom1.residue.name, dihedral.atom2.residue.name,
-                                                             dihedral.atom3.residue.name, dihedral.atom4.residue.name
-                                                             ) for dihedral in structure_FF.rb_torsions])))
+        dihedral_types_2, unique_dihedral_types_2 = charmm_writer._get_dihedral_types(structure_FF,
+                                                                                      use_rb_torsions_2,
+                                                                                      use_dihedrals_2,
+                                                                                      epsilon_conversion_factor)
 
-            unique_dih_typ_unsorted_2 = OrderedDict([(y, x + 1) for x, y in unique_dih_typ_unsorted_2.items()])
+        unique_dih_typ_unsorted_2 = dict(enumerate(set([(round(dihedral.type.c0 * lj_unit, 3),
+                                                         round(dihedral.type.c1 * lj_unit, 3),
+                                                         round(dihedral.type.c2 * lj_unit, 3),
+                                                         round(dihedral.type.c3 * lj_unit, 3),
+                                                         round(dihedral.type.c4 * lj_unit, 3),
+                                                         round(dihedral.type.c5 * lj_unit, 3),
+                                                         round(dihedral.type.scee, 1),
+                                                         round(dihedral.type.scnb, 1),
+                                                         dihedral.atom1.type, dihedral.atom2.type,
+                                                         dihedral.atom3.type, dihedral.atom4.type,
+                                                         dihedral.atom1.residue.name, dihedral.atom2.residue.name,
+                                                         dihedral.atom3.residue.name, dihedral.atom4.residue.name
+                                                         ) for dihedral in structure_FF.rb_torsions])))
 
-            assert len(unique_dih_typ_unsorted_2) == 7
-            assert len(unique_dihedral_types_2) == 5
+        unique_dih_typ_unsorted_2 = OrderedDict([(y, x + 1) for x, y in unique_dih_typ_unsorted_2.items()])
 
-            # test for error if trying to use impropers in the dihedrals (currently impropers are found but not used in
-            # the output)
-            # ******** NOTE*************************
-            # ******** NOTE*************************
-            # These impropers are blank and will need filled in upon adding the improper functionallity.
-            # They are kept in the code to identify if there are any impropers in the system and count them
-            # ******** NOTE*************************
-            # ******** NOTE*************************
-            # ******** NOTE*************************
-            improper_types_1, unique_improper_types_1 = charmm_writer._get_impropers(structure_FF,
-                                                                                     epsilon_conversion_factor)
+        assert len(unique_dih_typ_unsorted_2) == 7
+        assert len(unique_dihedral_types_2) == 5
 
-            assert str(improper_types_1) == '[]'
-            assert str(unique_improper_types_1) == '{}'
+        # test for error if trying to use impropers in the dihedrals (currently impropers are found but not used in
+        # the output)
+        # ******** NOTE*************************
+        # ******** NOTE*************************
+        # These impropers are blank and will need filled in upon adding the improper functionallity.
+        # They are kept in the code to identify if there are any impropers in the system and count them
+        # ******** NOTE*************************
+        # ******** NOTE*************************
+        # ******** NOTE*************************
+        improper_types_1, unique_improper_types_1 = charmm_writer._get_impropers(structure_FF,
+                                                                                 epsilon_conversion_factor)
 
-            Test_value_0 = "TEST_PASSED"
+        assert str(improper_types_1) == '[]'
+        assert str(unique_improper_types_1) == '{}'
 
-        except:
-            Test_value_0 = "TEST_FAILED"
-
-        assert Test_value_0 == "TEST_PASSED"
 
     def test_charmm_angle_reorder(self, EthylEtherGOMC, MethlyEtherGOMC):
-        try:
-            box_reservior_0 = mb.fill_box(compound=[EthylEtherGOMC, MethlyEtherGOMC],
-                                          box=[10, 10, 10], n_compounds=[10, 10])
+        box_reservior_0 = mb.fill_box(compound=[EthylEtherGOMC, MethlyEtherGOMC],
+                                      box=[10, 10, 10], n_compounds=[10, 10])
 
-            [structure_FF, \
-            coulomb14scalar_dict, \
-            LJ14scalar_dict, \
-            residues_applied_list] = specific_ff_to_residue(box_reservior_0,
-                                                            forcefield_selection={EthylEtherGOMC.name: 'oplsaa',
-                                                                                  MethlyEtherGOMC.name: 'oplsaa'},
-                                                            residues=[EthylEtherGOMC.name, MethlyEtherGOMC.name],
-                                                            reorder_res_in_pdb_psf=False,
-                                                            box=None,
-                                                            boxes_for_simulation=1
-                                                            )
+        [structure_FF, \
+        coulomb14scalar_dict, \
+        LJ14scalar_dict, \
+        residues_applied_list] = specific_ff_to_residue(box_reservior_0,
+                                                        forcefield_selection={EthylEtherGOMC.name: 'oplsaa',
+                                                                              MethlyEtherGOMC.name: 'oplsaa'},
+                                                        residues=[EthylEtherGOMC.name, MethlyEtherGOMC.name],
+                                                        reorder_res_in_pdb_psf=False,
+                                                        box=None,
+                                                        boxes_for_simulation=1
+                                                        )
 
-            sigma_conversion_factor = 1
-            epsilon_conversion_factor = 1
-            use_urey_bradleys = False
-            angle_types_1, unique_angle_types_1 = charmm_writer._get_angle_types(
-                structure_FF,
-                sigma_conversion_factor,
-                epsilon_conversion_factor,
-                use_urey_bradleys
-            )
+        sigma_conversion_factor = 1
+        epsilon_conversion_factor = 1
+        use_urey_bradleys = False
+        angle_types_1, unique_angle_types_1 = charmm_writer._get_angle_types(
+            structure_FF,
+            sigma_conversion_factor,
+            epsilon_conversion_factor,
+            use_urey_bradleys
+        )
 
-            #note this sorts all the posssible combinations, so this should be the same as the double check (i.e, both 10)
-            unique_angle_types_1_unsorted = dict(enumerate(set([(round(angle.type.k * (
-                    sigma_conversion_factor ** 2 / epsilon_conversion_factor), 3),
-                                                      round(angle.type.theteq, 3),
-                                                      angle.atom2.type,
-                                                      tuple(sorted((angle.atom1.type, angle.atom3.type))),
-                                                      angle.atom1.residue.name, angle.atom2.residue.name,
-                                                      angle.atom3.residue.name
-                                                      ) for angle in structure_FF.angles])))
-            unique_angle_types_1_unsorted = OrderedDict([(y, x + 1) for x, y in unique_angle_types_1_unsorted.items()])
+        #note this sorts all the posssible combinations, so this should be the same as the double check (i.e, both 10)
+        unique_angle_types_1_unsorted = dict(enumerate(set([(round(angle.type.k * (
+                sigma_conversion_factor ** 2 / epsilon_conversion_factor), 3),
+                                                  round(angle.type.theteq, 3),
+                                                  angle.atom2.type,
+                                                  tuple(sorted((angle.atom1.type, angle.atom3.type))),
+                                                  angle.atom1.residue.name, angle.atom2.residue.name,
+                                                  angle.atom3.residue.name
+                                                  ) for angle in structure_FF.angles])))
+        unique_angle_types_1_unsorted = OrderedDict([(y, x + 1) for x, y in unique_angle_types_1_unsorted.items()])
 
 
-            assert len(unique_angle_types_1_unsorted) == 10
-            assert len(unique_angle_types_1) == 10
+        assert len(unique_angle_types_1_unsorted) == 10
+        assert len(unique_angle_types_1) == 10
 
-            Test_value_0 = "TEST_PASSED"
-
-        except:
-            Test_value_0 = "TEST_FAILED"
-
-        assert Test_value_0 == "TEST_PASSED"
 
 
     def test_Bead_AtomName_equal_3(self, TwoPropanolUA):
@@ -1652,6 +1626,7 @@ class TestCharmmWriterData(BaseTest):
                    forcefield_selection={EthaneGOMC.name: 'oplsaa', TwoPropanolUA.name: 'trappe-ua'},
                    )
 
+
     def test_write_inp_wo_FF_filename(self, EthaneGOMC):
         with pytest.raises(TypeError, match=r'ERROR: The force field file name was not specified and in the '
                                             r'Charmm object. '
@@ -1668,17 +1643,23 @@ class TestCharmmWriterData(BaseTest):
 
 
     def test_write_inp_with_2_boxes(self, EthaneGOMC):
-        try:
-            charmm  = Charmm(EthaneGOMC, 'charmm_data_box_0',
-                             structure_box_1=EthaneGOMC, filename_box_1='charmm_data_box_1',
-                             FF_filename='charmm_data',
-                             residues=[EthaneGOMC.name],
-                             forcefield_selection='oplsaa',
-                             )
-            charmm.write_inp()
-            Test_value = "TEST_PASSED"
+        charmm  = Charmm(EthaneGOMC, 'charmm_data_box_0',
+                         structure_box_1=EthaneGOMC, filename_box_1='charmm_data_box_1',
+                         FF_filename='charmm_data',
+                         residues=[EthaneGOMC.name],
+                         forcefield_selection='oplsaa',
+                         )
+        charmm.write_inp()
 
-        except:
-            Test_value  = "TEST_FAILED"
-
-        assert Test_value == "TEST_PASSED"
+        out_GOMC = open('charmm_data.inp', 'r').readlines()
+        for i, line in enumerate(out_GOMC):
+            if '! atom_types 	mass 		  atomTypeForceFieldName_ResidueName ' \
+               '(i.e., atoms_type_per_utilized_FF)' in line:
+                mass_type_1 = [['*', 'A', '12.010780'], ['*', 'B', '1.007947']
+                               ]
+                mass_type_2 = [['opls_135_ETH'], ['opls_140_ETH']
+                               ]
+                for j in range(0, len(mass_type_1)):
+                    assert len(out_GOMC[i + 1 + j].split('!')[0].split()) == 3
+                    assert out_GOMC[i + 1 + j].split('!')[0].split()[0:3] == mass_type_1[j]
+                    assert out_GOMC[i + 1 + j].split()[4:5] == mass_type_2[j]

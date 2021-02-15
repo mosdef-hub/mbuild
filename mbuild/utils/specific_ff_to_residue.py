@@ -3,7 +3,6 @@ import mbuild as mb
 import parmed as pmd
 
 from mbuild.compound import Compound
-from mbuild import Box
 from warnings import warn
 from xml.dom import minidom
 from mbuild.utils.io import has_foyer
@@ -77,10 +76,10 @@ def specific_ff_to_residue(structure,
         raise ImportError(print_error_message)
 
 
-    if not isinstance(structure, Compound) and not isinstance(structure, Box):
+    if not isinstance(structure, Compound) and not isinstance(structure, mb.Box):
         print_error_message = 'ERROR: The structure expected to be of type: ' \
                               '{} or {}, received: {}'.format(type(Compound()),
-                                                              type(Box(lengths=[1, 1, 1])),
+                                                              type(mb.Box(lengths=[1, 1, 1])),
                                                               type(structure_box_0))
         raise TypeError(print_error_message)
 
@@ -209,13 +208,13 @@ def specific_ff_to_residue(structure,
             print_error_message = 'ERROR: If you are not providing and empty box, '\
                                   'you need to specify the atoms/beads as children in the mb.Compound. '\
                                   'If you are providing and empty box, please do so by specifying and ' \
-                                  'mbuild Box ({})'.format(type(Box(lengths=[1, 1, 1])))
+                                  'mbuild Box ({})'.format(type(mb.Box(lengths=[1, 1, 1])))
             raise TypeError(print_error_message)
         else:
             initial_no_atoms = len(structure.to_parmed().atoms)
 
     # calculate the initial number of atoms for later comparison
-    if isinstance(structure, Box):
+    if isinstance(structure, mb.Box):
         if structure.lengths is not None:
             mb_box_length_0 = structure.lengths[0]
             mb_box_length_1 = structure.lengths[1]
