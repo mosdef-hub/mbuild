@@ -1,4 +1,4 @@
-Yeaimport pytest
+import pytest
 import mbuild as mb
 import mbuild.formats.gomc_conf_writer as gomc_control
 
