@@ -19,10 +19,10 @@ class TestGOMCControlFileWriter(BaseTest):
 
     def test_get_required_data(self):
         value = gomc_control._get_required_data(description=False)
-        assert value == ['charmm_object', 'ensemble_type', 'run_steps', 'Temperature']
+        assert value == ['charmm_object', 'ensemble_type', 'RunSteps', 'Temperature']
 
         value = gomc_control._get_required_data(description=True)
-        assert gomc_control.dict_keys_to_list(value) == ['charmm_object', 'ensemble_type', 'run_steps', 'Temperature']
+        assert gomc_control.dict_keys_to_list(value) == ['charmm_object', 'ensemble_type', 'RunSteps', 'Temperature']
 
     def test_get_all_possible_input_variable(self):
         value = gomc_control._get_all_possible_input_variables(description=False)

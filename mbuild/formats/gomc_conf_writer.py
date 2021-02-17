@@ -76,7 +76,7 @@ def _get_required_data(description=False):
         "ensemble_type": "Required files or System Info (all ensembles): str " 
                          "(valid strings are 'NVT', 'NPT', 'GEMC_NPT', 'GCMC-NVT', or 'GCMC'); " 
                          'the ensemble type for the simulation.',
-        "run_steps": "Required files or System Info (all ensembles): int (> 0); " 
+        "RunSteps": "Required files or System Info (all ensembles): int (> 0); " 
                      "The number or run steps for the simulation.",
         "Temperature":  "Required files or System Info (all ensembles): float or integer (> 0); " 
                         "Temperature of system in Kelvin (K)",
@@ -1114,13 +1114,13 @@ def _get_required_ensemble_files(ensemble_type):
     """
     if ensemble_type in ['NVT', 'NPT']:
 
-        simulation_settings = ["charmm_object", "ensemble_type", "run_steps", "Temperature"]
+        simulation_settings = ["charmm_object", "ensemble_type", "RunSteps", "Temperature"]
 
         required_ensemble_files_list = simulation_settings
 
     elif ensemble_type in ['GEMC_NVT', 'GEMC_NPT', 'GCMC']:
 
-        simulation_settings = ["charmm_object", "ensemble_type", "run_steps", "Temperature"]
+        simulation_settings = ["charmm_object", "ensemble_type", "RunSteps", "Temperature"]
 
         required_ensemble_files_list = simulation_settings
 
@@ -1132,7 +1132,7 @@ def _get_required_ensemble_files(ensemble_type):
 
 
 class GOMCControl():
-    def __init__(self, charmm_object, ensemble_type, run_steps, Temperature, input_variables_dict=None
+    def __init__(self, charmm_object, ensemble_type, RunSteps, Temperature, input_variables_dict=None
                  ):
 
         """
@@ -1157,7 +1157,7 @@ class GOMCControl():
         charmm_object :  Charmm object, which by definition has been parameterized ' \
                       + 'from the selected force field.',
         ensemble_typ : str, only accepts 'NVT', 'NPT', 'GEMC_NPT', 'GCMC-NVT', 'GCMC'
-        run_steps : int; must be an integer greater than zero.
+        RunSteps : int; must be an integer greater than zero.
             Sets the total number of simulation steps.
         Temperature : Temperature of system in Kelvin (K)
 
@@ -1218,7 +1218,7 @@ class GOMCControl():
                                   "Only 'NPT', 'NVT', 'GCMC', 'GEMC_NVT', 'GEMC_NPT' are valid entries."
             raise ValueError(print_error_message)
 
-        self.run_steps = run_steps
+        self.RunSteps = RunSteps
         self.Temperature = Temperature
         if charmm_object.ff_filename is not None and isinstance(charmm_object.ff_filename, str) is True:
             self.ff_filename = charmm_object.ff_filename
@@ -1357,98 +1357,98 @@ class GOMCControl():
         # auto calculate the best EqSteps (number of Equilbrium Steps) and Adj_Steps (number of AdjSteps Steps)
         set_max_steps_equib = self.EqSteps
 
-        if run_steps / 10 >= set_max_steps_equib and run_steps / 10 >= 1:
+        if RunSteps / 10 >= set_max_steps_equib and RunSteps / 10 >= 1:
             self.EqSteps = int(set_max_steps_equib)
-        elif run_steps / 10 >= 1:
-            self.EqSteps = int(run_steps / 10)
+        elif RunSteps / 10 >= 1:
+            self.EqSteps = int(RunSteps / 10)
         else:
             self.EqSteps = int(1)
 
         set_max_steps_adj = self.AdjSteps  # 1000
-        if run_steps / 10 >= set_max_steps_adj and run_steps / 10 >= 1:
+        if RunSteps / 10 >= set_max_steps_adj and RunSteps / 10 >= 1:
             self.AdjSteps = int(set_max_steps_adj)
-        elif run_steps / 10 >= 1:
-            self.AdjSteps = int(run_steps / 10)
+        elif RunSteps / 10 >= 1:
+            self.AdjSteps = int(RunSteps / 10)
         else:
             self.AdjSteps = int(1)
 
-        # auto calculate the best RestartFreq  for the number of run_steps
+        # auto calculate the best RestartFreq  for the number of RunSteps
         set_max_steps_RestartFreq = self.RestartFreq[1]
 
-        if run_steps / 10 >= set_max_steps_RestartFreq and run_steps / 10 >= 1:
+        if RunSteps / 10 >= set_max_steps_RestartFreq and RunSteps / 10 >= 1:
             self.RestartFreq[1] = int(set_max_steps_RestartFreq)
-        elif run_steps / 10 >= 1:
-            self.RestartFreq[1] = int(run_steps / 10)
+        elif RunSteps / 10 >= 1:
+            self.RestartFreq[1] = int(RunSteps / 10)
         else:
             self.RestartFreq[1] = int(1)
 
-        # auto calculate the best CheckpointFreq  for the number of run_steps
+        # auto calculate the best CheckpointFreq  for the number of RunSteps
         set_max_steps_CheckpointFreq = self.CheckpointFreq[1]
 
-        if run_steps / 10 >= set_max_steps_CheckpointFreq and run_steps / 10 >= 1:
+        if RunSteps / 10 >= set_max_steps_CheckpointFreq and RunSteps / 10 >= 1:
             self.CheckpointFreq[1] = int(set_max_steps_CheckpointFreq)
-        elif run_steps / 10 >= 1:
-            self.CheckpointFreq[1] = int(run_steps / 10)
+        elif RunSteps / 10 >= 1:
+            self.CheckpointFreq[1] = int(RunSteps / 10)
         else:
             self.CheckpointFreq[1] = int(1)
 
-        # auto calculate the best CoordinatesFreq  for the number of run_steps
+        # auto calculate the best CoordinatesFreq  for the number of RunSteps
         set_max_steps_CoordinatesFreq = self.CoordinatesFreq[1]
 
-        if run_steps / 10 >= set_max_steps_CoordinatesFreq and run_steps / 10 >= 1:
+        if RunSteps / 10 >= set_max_steps_CoordinatesFreq and RunSteps / 10 >= 1:
             self.CoordinatesFreq[1] = int(set_max_steps_CoordinatesFreq)
-        elif run_steps / 10 >= 1:
-            self.CoordinatesFreq[1] = int(run_steps / 10)
+        elif RunSteps / 10 >= 1:
+            self.CoordinatesFreq[1] = int(RunSteps / 10)
         else:
             self.CoordinatesFreq[1] = int(1)
 
-        # auto calculate the best ConsoleFreq  for the number of run_steps
+        # auto calculate the best ConsoleFreq  for the number of RunSteps
         set_max_steps_ConsoleFreq = self.ConsoleFreq[1]
 
-        if run_steps / 10 >= set_max_steps_ConsoleFreq and run_steps / 10 >= 1:
+        if RunSteps / 10 >= set_max_steps_ConsoleFreq and RunSteps / 10 >= 1:
             self.ConsoleFreq[1] = int(set_max_steps_ConsoleFreq)
-        elif run_steps / 10 >= 1:
-            self.ConsoleFreq[1] = int(run_steps / 10)
+        elif RunSteps / 10 >= 1:
+            self.ConsoleFreq[1] = int(RunSteps / 10)
         else:
             self.ConsoleFreq[1] = int(1)
 
-        # auto calculate the best PressureCalc  for the number of run_steps
+        # auto calculate the best PressureCalc  for the number of RunSteps
         set_max_steps_PressureCalc = self.PressureCalc[1]
 
-        if run_steps / 10 >= set_max_steps_PressureCalc and run_steps / 10 >= 1:
+        if RunSteps / 10 >= set_max_steps_PressureCalc and RunSteps / 10 >= 1:
             self.PressureCalc[1] = int(set_max_steps_PressureCalc)
-        elif run_steps / 10 >= 1:
-            self.PressureCalc[1] = int(run_steps / 10)
+        elif RunSteps / 10 >= 1:
+            self.PressureCalc[1] = int(RunSteps / 10)
         else:
             self.PressureCalc[1] = int(1)
 
-        # auto calculate the best BlockAverageFreq  for the number of run_steps
+        # auto calculate the best BlockAverageFreq  for the number of RunSteps
         set_max_steps_BlockAverageFreq = self.BlockAverageFreq[1]
 
-        if run_steps / 10 >= set_max_steps_BlockAverageFreq and run_steps / 10 >= 1:
+        if RunSteps / 10 >= set_max_steps_BlockAverageFreq and RunSteps / 10 >= 1:
             self.BlockAverageFreq[1] = int(set_max_steps_BlockAverageFreq)
-        elif run_steps / 10 >= 1:
-            self.BlockAverageFreq[1] = int(run_steps / 10)
+        elif RunSteps / 10 >= 1:
+            self.BlockAverageFreq[1] = int(RunSteps / 10)
         else:
             self.BlockAverageFreq[1] = int(1)
 
-        # auto calculate the best HistogramFreq  for the number of run_steps
+        # auto calculate the best HistogramFreq  for the number of RunSteps
         set_max_steps_HistogramFreq = self.HistogramFreq[1]
 
-        if run_steps / 10 >= set_max_steps_HistogramFreq and run_steps / 10 >= 1:
+        if RunSteps / 10 >= set_max_steps_HistogramFreq and RunSteps / 10 >= 1:
             self.HistogramFreq[1] = int(set_max_steps_HistogramFreq)
-        elif run_steps / 10 >= 1:
-            self.HistogramFreq[1] = int(run_steps / 10)
+        elif RunSteps / 10 >= 1:
+            self.HistogramFreq[1] = int(RunSteps / 10)
         else:
             self.HistogramFreq[1] = int(1)
 
-        # auto calculate the best SampleFreq  for the number of run_steps
+        # auto calculate the best SampleFreq  for the number of RunSteps
         set_max_steps_SampleFreq = self.SampleFreq
 
-        if run_steps / 10 >= set_max_steps_SampleFreq and run_steps / 10 >= 1:
+        if RunSteps / 10 >= set_max_steps_SampleFreq and RunSteps / 10 >= 1:
             self.SampleFreq = int(set_max_steps_SampleFreq)
-        elif run_steps / 10 >= 1:
-            self.SampleFreq = int(run_steps / 10)
+        elif RunSteps / 10 >= 1:
+            self.SampleFreq = int(RunSteps / 10)
         else:
             self.SampleFreq = int(1)
 
@@ -1553,11 +1553,11 @@ class GOMCControl():
         else:
             print("INFO: All the Temperature  (Temperature) input passed the initial error checking")
 
-        # run_steps
-        if not isinstance(self.run_steps, int) or self.run_steps <= 0:
+        # RunSteps
+        if not isinstance(self.RunSteps, int) or self.RunSteps <= 0:
             self.all_inputs_pass = False
-            print_error_message = "ERROR: The selected run steps (run_steps variable = {}) is not "\
-                                  "an integer or is less than or equal to 0.".format(self.run_steps)
+            print_error_message = "ERROR: The selected run steps (RunSteps variable = {}) is not "\
+                                  "an integer or is less than or equal to 0.".format(self.RunSteps)
             raise ValueError(print_error_message)
 
         # create a list of the possible required files and check them based on the ensemble
@@ -2603,12 +2603,12 @@ class GOMCControl():
                                   'RegrowthFreq, CrankShaftFreq, and VolFreq).'
             raise ValueError(print_error_message)
 
-        # Check that run_steps >= EqSteps >= AdjSteps
-        if self.run_steps < self.EqSteps or self.run_steps < self.AdjSteps \
+        # Check that RunSteps >= EqSteps >= AdjSteps
+        if self.RunSteps < self.EqSteps or self.RunSteps < self.AdjSteps \
                 or self.EqSteps < self.AdjSteps:
             self.all_inputs_pass = False
-            print_error_message = 'ERROR: The values must be in this order run_steps >= EqSteps >= AdjSteps ' \
-                                  ' ({} >= {} >= {} )'.format(self.run_steps, self.EqSteps, self.AdjSteps)
+            print_error_message = 'ERROR: The values must be in this order RunSteps >= EqSteps >= AdjSteps ' \
+                                  ' ({} >= {} >= {} )'.format(self.RunSteps, self.EqSteps, self.AdjSteps)
             raise ValueError(print_error_message)
 
         # check if both the ChemPot and Fugacity are not set to None.  Only one can be used
@@ -2893,7 +2893,7 @@ class GOMCControl():
         data_control_file.write('################################\n')
         data_control_file.write('# STEPS \n')
         data_control_file.write('################################\n')
-        data_control_file.write('run_steps \t {}\n'.format(self.run_steps))
+        data_control_file.write('RunSteps \t {}\n'.format(self.RunSteps))
         data_control_file.write('EqSteps \t {}\n'.format(self.EqSteps))
         data_control_file.write('AdjSteps \t {}\n'.format(self.AdjSteps))
         data_control_file.write(' \n')
@@ -3753,7 +3753,7 @@ class GOMCControl():
 
 # user callable function to write the GOMC control file
 def write_gomc_control_file(charmm_object, conf_filename,  ensemble_type,
-                            run_steps, Temperature, input_variables_dict=None):
+                            RunSteps, Temperature, input_variables_dict=None):
     """
     The usable command that creates the GOMCControl object and write
     the GOMC control file via the GOMCControl.write_conf_file function
@@ -3776,7 +3776,7 @@ def write_gomc_control_file(charmm_object, conf_filename,  ensemble_type,
         This can wither have no extension or (.conf).  If no extension is provided
         the .conf extension is automatically added.
     ensemble_type: str, only accepts 'NVT', 'NPT', 'GEMC_NPT', 'GCMC-NVT', 'GCMC'
-    run_steps: int; must be an integer greater than zero.
+    RunSteps: int; must be an integer greater than zero.
         Sets the total number of simulation steps.
     Temperature: Temperature of system in Kelvin (K)
     input_variables_dict: dict, default = None
@@ -3812,7 +3812,7 @@ def write_gomc_control_file(charmm_object, conf_filename,  ensemble_type,
     """
 
     gomc_control = GOMCControl(charmm_object, ensemble_type,
-                               run_steps, Temperature, input_variables_dict=input_variables_dict)
+                               RunSteps, Temperature, input_variables_dict=input_variables_dict)
     test_gomc_control_write_conf_file = gomc_control.write_conf_file(conf_filename)
 
     if gomc_control.all_inputs_pass is True and test_gomc_control_write_conf_file == "GOMC_CONTROL_FILE_WRITTEN":
