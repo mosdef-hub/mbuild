@@ -2396,12 +2396,12 @@ class GOMCControl():
                                 and isinstance(self.input_variables_dict[key][1], int) is not True) \
                             or (isinstance(self.input_variables_dict[key][2], float) is not True
                                 and isinstance(self.input_variables_dict[key][2], int) is not True) \
-                            or str(self.input_variables_dict[key][0]) is str(True) \
-                            or str(self.input_variables_dict[key][0]) is str(False) \
-                            or str(self.input_variables_dict[key][1]) is str(True) \
-                            or str(self.input_variables_dict[key][1]) is str(False) \
-                            or str(self.input_variables_dict[key][2]) is str(True) \
-                            or str(self.input_variables_dict[key][2]) is str(False):
+                            or str(self.input_variables_dict[key][0]) == str(True) \
+                            or str(self.input_variables_dict[key][0]) == str(False) \
+                            or str(self.input_variables_dict[key][1]) == str(True) \
+                            or str(self.input_variables_dict[key][1]) == str(False) \
+                            or str(self.input_variables_dict[key][2]) == str(True) \
+                            or str(self.input_variables_dict[key][2]) == str(False):
                         bad_input_variables_values_list.append(key)
                     elif len(self.input_variables_dict[key]) == 3:
                         if (isinstance(self.input_variables_dict[key][0], float) is True
@@ -2443,8 +2443,8 @@ class GOMCControl():
                                     elif (len(self.input_variables_dict[key][MEMC_iter][2]) == 2
                                             and len(self.input_variables_dict[key][MEMC_iter][4]) == 2):
                                         if isinstance(self.input_variables_dict[key][MEMC_iter][0], int) is not True \
-                                                or str(self.input_variables_dict[key][MEMC_iter][0]) is str(True) \
-                                                or str(self.input_variables_dict[key][MEMC_iter][0]) is str(False) \
+                                                or str(self.input_variables_dict[key][MEMC_iter][0]) == str(True) \
+                                                or str(self.input_variables_dict[key][MEMC_iter][0]) == str(False) \
                                                 or isinstance(self.input_variables_dict[key][MEMC_iter][1], str
                                                               ) is False \
                                                 or (isinstance(self.input_variables_dict[key][MEMC_iter][2][0], str
