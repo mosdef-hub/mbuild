@@ -35,15 +35,12 @@ def RB_to_CHARMM(c0, c1, c2, c3, c4, c5):
     ----------
     c0, c1, c2, c3, c4, c5 : Ryckaert-Belleman coefficients (in kcal/mol)
 
-    where:
     n0 = 0
     n1 = 1
     n2 = 2
     n3 = 3
     n4 = 4
     n5 = 5
-
-    and
 
     d0 = 90
     d1 = 180
@@ -73,11 +70,10 @@ def RB_to_CHARMM(c0, c1, c2, c3, c4, c5):
     # see below or the long version is,  K0 = (c0 + c2 / 2 + 3 / 8 * c4) - K1 - K2 - K3 - K4 - K5
     K0 = (c0 - c1 - c3 - (c4/4) - c5)
     K1 = (c1 + (3/4) * c3 + (5/8) * c5)
-    K2 =  ((1/2) * c2 + (1/2) * c4)
-    K3 =  ((1/4) * c3 + (5/16) * c5)
+    K2 = ((1/2) * c2 + (1/2) * c4)
+    K3 = ((1/4) * c3 + (5/16) * c5)
     K4 = ((1/8) * c4)
     K5 = ((1/16) * c5)
-
 
     n0 = 0
     n1 = 1

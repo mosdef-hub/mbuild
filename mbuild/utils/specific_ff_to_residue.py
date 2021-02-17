@@ -8,14 +8,19 @@ from xml.dom import minidom
 from mbuild.utils.io import has_foyer
 
 
-
 def specific_ff_to_residue(structure,
                            forcefield_selection=None,
                            residues=None,
                            reorder_res_in_pdb_psf=False,
                            box=None,
                            boxes_for_simulation=1):
-    """ToDo: List What this function does??
+
+    """
+    Takes the mbuild Compound or mbuild Box structure and applies the selected
+    force field to the corresponding residue via foyer.
+    Note: a residue is defined as a molecule in this case, so it is not
+    designed for applying a force field to a protein.
+
     Parameters
     ----------
     structure_box_0 : mbuild Compound object or mbuild Box object;
@@ -75,7 +80,6 @@ def specific_ff_to_residue(structure,
                               'Please install it using conda install -c conda-forge foyer'
         raise ImportError(print_error_message)
 
-
     if not isinstance(structure, Compound) and not isinstance(structure, mb.Box):
         print_error_message = 'ERROR: The structure expected to be of type: ' \
                               '{} or {}, received: {}'.format(type(Compound()),
@@ -105,7 +109,6 @@ def specific_ff_to_residue(structure,
         print_error_message = 'Please enter the residues in the Specific_FF_to_residue function.'
         raise TypeError(print_error_message)
 
-
     if not isinstance(reorder_res_in_pdb_psf, bool):
         print_error_message = 'Please enter the reorder_res_in_pdb_psf ' \
                               'in the Specific_FF_to_residue function (i.e., True or False).'
@@ -133,24 +136,20 @@ def specific_ff_to_residue(structure,
     elif isinstance(boxes_for_simulation, int) and boxes_for_simulation not in [1, 2]:
         raise ValueError(print_error_message_for_boxes_for_simulatiion)
 
-
-
     forcefield_keys_list = []
     if forcefield_selection is not None:
         for res in forcefield_selection.keys():
             forcefield_keys_list.append(res)
         ff_data = forcefield_selection
 
-
-    if forcefield_keys_list == [] and len(residues) != 0 :
+    if forcefield_keys_list == [] and len(residues) != 0:
         print_error_message = 'The forcefield_selection variable are not provided, but there are residues provided.'
         raise ValueError(print_error_message)
 
-    elif forcefield_keys_list != [] and len(residues) == 0 :
-        print_error_message =  'The residues variable is and empty list but there are ' \
+    elif forcefield_keys_list != [] and len(residues) == 0:
+        print_error_message = 'The residues variable is and empty list but there are ' \
                                'forcefield_selection variables provided.'
         raise ValueError(print_error_message)
-
 
     user_entered_ff_with_path_dict = {}  # True means user entered the path, False is a standard foyer FF with no path
     for z in range(0, len(forcefield_keys_list)):
@@ -168,16 +167,16 @@ def specific_ff_to_residue(structure,
                                           'proper XML extension (.xml).'
                     raise ValueError(print_error_message)
 
-
     coulomb14scalar_dict = {}
     lj14_scalar_dict = {}
     for j in range(0, len(forcefield_keys_list)):
         residue_iteration = forcefield_keys_list[j]
-        if user_entered_ff_with_path_dict[residue_iteration] :
+        if user_entered_ff_with_path_dict[residue_iteration]:
             ff_for_residue_iteration = ff_data[residue_iteration]
 
             try:
                 read_xlm_iteration = minidom.parse(ff_for_residue_iteration)
+
             except:
                 print_error_message = 'Please make sure are entering the correct foyer FF path, ' \
                                       'including the FF file name.xml '\
@@ -199,11 +198,10 @@ def specific_ff_to_residue(structure,
             coulomb14scalar_dict.update({residue_iteration: float(Scalar.getAttribute("coulomb14scale"))})
             lj14_scalar_dict.update({residue_iteration: float(Scalar.getAttribute("lj14scale"))})
 
-
     # Check to see if it is an empty mbuild.Compound and set intial atoms to 0
     # note empty mbuild.Compound will read 1 atoms but there is really noting there
     if isinstance(structure, Compound):
-        if len(structure.children) == 0 :
+        if len(structure.children) == 0:
             # there are no real atoms in the Compound so the test fails. User should use mbuild.Box
             print_error_message = 'ERROR: If you are not providing and empty box, '\
                                   'you need to specify the atoms/beads as children in the mb.Compound. '\
@@ -249,14 +247,13 @@ def specific_ff_to_residue(structure,
             structure.periodicity[2] = mb_box_length_2
             initial_no_atoms = 0
 
-
     # add the FF to the residues
     compound_box_infor = structure.to_parmed(residues=residues)
     new_structure = pmd.Structure()
     new_structure.box = compound_box_infor.box
 
     # prepare all compound and remove nested compounds
-    no_layers_to_check_for_residues = 4
+    no_layers_to_check_for_residues = 3
 
     print_error_message_all_res_not_specified = 'ERROR: All the residues are not specified, or ' \
                                                 'the residues entered does not match the residues that ' \

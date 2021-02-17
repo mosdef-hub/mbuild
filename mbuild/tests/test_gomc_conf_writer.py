@@ -19,10 +19,10 @@ class TestGOMCControlFileWriter(BaseTest):
 
     def test_get_required_data(self):
         value = gomc_control._get_required_data(description=False)
-        assert value == ['charmm_object', 'ensemble_type', 'RunSteps', 'Temperature']
+        assert value == ['charmm_object', 'ensemble_type', 'run_steps', 'Temperature']
 
         value = gomc_control._get_required_data(description=True)
-        assert gomc_control.dict_keys_to_list(value) == ['charmm_object', 'ensemble_type', 'RunSteps', 'Temperature']
+        assert gomc_control.dict_keys_to_list(value) == ['charmm_object', 'ensemble_type', 'run_steps', 'Temperature']
 
     def test_get_all_possible_input_variable(self):
         value = gomc_control._get_all_possible_input_variables(description=False)
@@ -169,16 +169,16 @@ class TestGOMCControlFileWriter(BaseTest):
             test_status = "FAILED"
         assert test_status == "PASSED"
 
-    def test_save_basic_NVT(self, EthaneGOMC):
-        charmm = Charmm(EthaneGOMC, 'ethane', FF_filename='ethane',
-                        residues=[EthaneGOMC.name], forcefield_selection='oplsaa',
+    def test_save_basic_NVT(self, ethane_gomc):
+        charmm = Charmm(ethane_gomc, 'ethane', ff_filename='ethane',
+                        residues=[ethane_gomc.name], forcefield_selection='oplsaa',
                         box_0=[1, 1, 1]
                         )
         gomc_control.write_gomc_control_file(charmm, 'test_save_basic_NVT.conf', 'NVT', 10, 300,
                                              )
 
-        out_GOMC = open('test_save_basic_NVT.conf', 'r').readlines()
-        for i, line in enumerate(out_GOMC):
+        out_gomc = open('test_save_basic_NVT.conf', 'r').readlines()
+        for i, line in enumerate(out_gomc):
             if line.startswith('Restart '):
                 split_line = line.split()
                 assert split_line[1] == 'False'
@@ -325,6 +325,7 @@ class TestGOMCControlFileWriter(BaseTest):
             elif line.startswith('CellBasisVector1 '):
                 split_line = line.split()
                 assert split_line[1] == '0'
+                print('split_line[2] = ' + str(split_line[2]))
                 assert split_line[2] == '10.0'
                 assert split_line[3] == '0.00'
                 assert split_line[4] == '0.00'
@@ -446,15 +447,15 @@ class TestGOMCControlFileWriter(BaseTest):
             else:
                 pass
 
-    def test_save_basic_NPT(self, EthaneGOMC):
-        charmm = Charmm(EthaneGOMC, 'ethane', FF_filename='ethane',
-                        residues=[EthaneGOMC.name], forcefield_selection='oplsaa',
+    def test_save_basic_NPT(self, ethane_gomc):
+        charmm = Charmm(ethane_gomc, 'ethane', ff_filename='ethane',
+                        residues=[ethane_gomc.name], forcefield_selection='oplsaa',
                         box_0=[2, 2, 2]
                         )
         gomc_control.write_gomc_control_file(charmm, 'test_save_basic_NPT.conf', 'NPT', 1000, 500)
 
-        out_GOMC = open('test_save_basic_NPT.conf', 'r').readlines()
-        for i, line in enumerate(out_GOMC):
+        out_gomc = open('test_save_basic_NPT.conf', 'r').readlines()
+        for i, line in enumerate(out_gomc):
 
             if line.startswith('Pressure '):
                 split_line = line.split()
@@ -595,11 +596,11 @@ class TestGOMCControlFileWriter(BaseTest):
             else:
                 pass
 
-    def test_save_basic_GCMC(self, EthaneGOMC):
-        charmm = Charmm(EthaneGOMC, 'ethane_box_0',
-                        structure_box_1=EthaneGOMC, filename_box_1='ethane_box_1',
-                        FF_filename='ethane_FF',
-                        residues=[EthaneGOMC.name], forcefield_selection='oplsaa',
+    def test_save_basic_GCMC(self, ethane_gomc):
+        charmm = Charmm(ethane_gomc, 'ethane_box_0',
+                        structure_box_1=ethane_gomc, filename_box_1='ethane_box_1',
+                        ff_filename='ethane_FF',
+                        residues=[ethane_gomc.name], forcefield_selection='oplsaa',
                         box_0=[2, 2, 2], box_1=[2, 2, 2]
                         )
         gomc_control.write_gomc_control_file(charmm, 'test_save_basic_GCMC.conf', 'GCMC', 100000, 500,
@@ -607,8 +608,8 @@ class TestGOMCControlFileWriter(BaseTest):
                                                                    }
                                              )
 
-        out_GOMC = open('test_save_basic_GCMC.conf', 'r').readlines()
-        for i, line in enumerate(out_GOMC):
+        out_gomc = open('test_save_basic_GCMC.conf', 'r').readlines()
+        for i, line in enumerate(out_gomc):
 
             if line.startswith('Parameters '):
                 split_line = line.split()
@@ -795,18 +796,18 @@ class TestGOMCControlFileWriter(BaseTest):
             else:
                 pass
 
-    def test_save_basic_GEMC_NVT(self, EthaneGOMC):
-        charmm = Charmm(EthaneGOMC, 'ethane_box_0',
-                        structure_box_1=EthaneGOMC, filename_box_1='ethane_box_1',
-                        FF_filename='ethane_FF',
-                        residues=[EthaneGOMC.name], forcefield_selection='oplsaa',
+    def test_save_basic_GEMC_NVT(self, ethane_gomc):
+        charmm = Charmm(ethane_gomc, 'ethane_box_0',
+                        structure_box_1=ethane_gomc, filename_box_1='ethane_box_1',
+                        ff_filename='ethane_FF',
+                        residues=[ethane_gomc.name], forcefield_selection='oplsaa',
                         box_0=[2, 2, 2], box_1=[2, 2, 2]
                         )
         gomc_control.write_gomc_control_file(charmm, 'test_save_basic_GEMC_NVT.conf', 'GEMC_NVT', 1000000, 500,
                                              )
 
-        out_GOMC = open('test_save_basic_GEMC_NVT.conf', 'r').readlines()
-        for i, line in enumerate(out_GOMC):
+        out_gomc = open('test_save_basic_GEMC_NVT.conf', 'r').readlines()
+        for i, line in enumerate(out_gomc):
 
             if line.startswith('DisFreq '):
                 split_line = line.split()
@@ -864,11 +865,11 @@ class TestGOMCControlFileWriter(BaseTest):
                 split_line = line.split()
                 assert split_line[1] == '0.0'
 
-    def test_save_basic_GEMC_NPT(self, EthaneGOMC):
-        charmm = Charmm(EthaneGOMC, 'ethane_box_0',
-                        structure_box_1=EthaneGOMC, filename_box_1='ethane_box_1',
-                        FF_filename='ethane_FF',
-                        residues=[EthaneGOMC.name], forcefield_selection='oplsaa',
+    def test_save_basic_GEMC_NPT(self, ethane_gomc):
+        charmm = Charmm(ethane_gomc, 'ethane_box_0',
+                        structure_box_1=ethane_gomc, filename_box_1='ethane_box_1',
+                        ff_filename='ethane_FF',
+                        residues=[ethane_gomc.name], forcefield_selection='oplsaa',
                         box_0=[2, 2, 2], box_1=[2, 2, 2]
                         )
         gomc_control.write_gomc_control_file(charmm, 'test_save_basic_GEMC_NPT.conf', 'GEMC_NPT', 1000000, 500,
@@ -876,8 +877,8 @@ class TestGOMCControlFileWriter(BaseTest):
                                                                    }
                                              )
 
-        out_GOMC = open('test_save_basic_GEMC_NPT.conf', 'r').readlines()
-        for i, line in enumerate(out_GOMC):
+        out_gomc = open('test_save_basic_GEMC_NPT.conf', 'r').readlines()
+        for i, line in enumerate(out_gomc):
             if line.startswith('Pressure '):
                 split_line = line.split()
                 assert split_line[1] == '10'
@@ -938,13 +939,13 @@ class TestGOMCControlFileWriter(BaseTest):
                 split_line = line.split()
                 assert split_line[1] == '0.0'
 
-    def test_save_change_most_variable_NVT(self, EthaneGOMC, EthanolGOMC):
-        test_box_ethane_ethanol = mb.fill_box(compound=[EthaneGOMC, EthanolGOMC],
+    def test_save_change_most_variable_NVT(self, ethane_gomc, ethanol_gomc):
+        test_box_ethane_ethanol = mb.fill_box(compound=[ethane_gomc, ethanol_gomc],
                                               n_compounds=[1, 1],
                                               box=[4.0, 4.0, 4.0])
         charmm = Charmm(test_box_ethane_ethanol, 'ethane_ethanol',
-                        FF_filename='ethane_ethanol',
-                        residues=[EthaneGOMC.name, EthanolGOMC.name],
+                        ff_filename='ethane_ethanol',
+                        residues=[ethane_gomc.name, ethanol_gomc.name],
                         forcefield_selection='oplsaa'
                         )
 
@@ -1004,8 +1005,8 @@ class TestGOMCControlFileWriter(BaseTest):
                                                                    }
                                              )
 
-        out_GOMC = open('test_save_change_most_variable_NVT.conf', 'r').readlines()
-        for i, line in enumerate(out_GOMC):
+        out_gomc = open('test_save_change_most_variable_NVT.conf', 'r').readlines()
+        for i, line in enumerate(out_gomc):
             if line.startswith('Restart '):
                 split_line = line.split()
                 assert split_line[1] == 'True'
@@ -1333,13 +1334,13 @@ class TestGOMCControlFileWriter(BaseTest):
             else:
                 pass
 
-    def test_save_NVT_bad_variables_part_1(self, EthaneGOMC, EthanolGOMC):
-        test_box_ethane_ethanol = mb.fill_box(compound=[EthaneGOMC, EthanolGOMC],
+    def test_save_NVT_bad_variables_part_1(self, ethane_gomc, ethanol_gomc):
+        test_box_ethane_ethanol = mb.fill_box(compound=[ethane_gomc, ethanol_gomc],
                                               n_compounds=[1, 1],
                                               box=[4.0, 4.0, 4.0])
 
-        charmm = Charmm(test_box_ethane_ethanol, 'ethane_ethanol', FF_filename='ethane_ethanol',
-                        residues=[EthaneGOMC.name, EthanolGOMC.name], forcefield_selection='oplsaa',
+        charmm = Charmm(test_box_ethane_ethanol, 'ethane_ethanol', ff_filename='ethane_ethanol',
+                        residues=[ethane_gomc.name, ethanol_gomc.name], forcefield_selection='oplsaa',
                         box_0=[1, 1, 1]
                         )
 
@@ -1699,7 +1700,8 @@ class TestGOMCControlFileWriter(BaseTest):
                                                                        "MoleculeType": ['ETH', 1],
                                                                        "InitialState": 1,
                                                                        "LambdaVDW": [0.1, 0.2, 0.4, 0.9],
-                                                                       "LambdaCoulomb": [0.1, 0.3, 0.8, 0.8]}
+                                                                       "LambdaCoulomb": [0.1, 0.3, 0.8, 0.8]
+                                                                       }
                                                  )
 
         with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
@@ -1710,7 +1712,8 @@ class TestGOMCControlFileWriter(BaseTest):
                                                                        "MoleculeType": ['ETH', 's'],
                                                                        "InitialState": 1,
                                                                        "LambdaVDW": [0.1, 0.2, 0.4, 0.9],
-                                                                       "LambdaCoulomb": [0.1, 0.3, 0.8, 0.8]}
+                                                                       "LambdaCoulomb": [0.1, 0.3, 0.8, 0.8]
+                                                                       }
                                                  )
 
         with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
@@ -1732,7 +1735,8 @@ class TestGOMCControlFileWriter(BaseTest):
                                                                        "MoleculeType": [{'ETH': "1"}, 1],
                                                                        "InitialState": 1,
                                                                        "LambdaVDW": [0.1, 0.2, 0.4, 0.9],
-                                                                       "LambdaCoulomb": [0.1, 0.3, 0.8, 0.8]}
+                                                                       "LambdaCoulomb": [0.1, 0.3, 0.8, 0.8]
+                                                                       }
                                                  )
 
         with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
@@ -1743,7 +1747,8 @@ class TestGOMCControlFileWriter(BaseTest):
                                                                        "MoleculeType": ['ETH', 1],
                                                                        "InitialState": 's',
                                                                        "LambdaVDW": [0.1, 0.2, 0.4, 0.9],
-                                                                       "LambdaCoulomb": [0.1, 0.3, 0.8, 0.8]}
+                                                                       "LambdaCoulomb": [0.1, 0.3, 0.8, 0.8]
+                                                                       }
                                                  )
 
         with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
@@ -1754,7 +1759,8 @@ class TestGOMCControlFileWriter(BaseTest):
                                                                        "MoleculeType": ['ETH', 1],
                                                                        "InitialState": 1,
                                                                        "LambdaVDW": 's',
-                                                                       "LambdaCoulomb": [0.1, 0.3, 0.8, 0.8]}
+                                                                       "LambdaCoulomb": [0.1, 0.3, 0.8, 0.8]
+                                                                       }
                                                  )
 
         with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
@@ -1765,7 +1771,8 @@ class TestGOMCControlFileWriter(BaseTest):
                                                                        "MoleculeType": ['ETH', 1],
                                                                        "InitialState": 1,
                                                                        "LambdaVDW": [0.1, 0.2, 0.4, 0.9],
-                                                                       "LambdaCoulomb": 's'}
+                                                                       "LambdaCoulomb": 's'
+                                                                       }
                                                  )
 
         with pytest.raises(ValueError, match=r"ERROR: To utilize the free energy calculations all the "
@@ -1773,7 +1780,8 @@ class TestGOMCControlFileWriter(BaseTest):
                                              r"None: FreeEnergyCalc, MoleculeType, InitialState, LambdaVDW."):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_1.conf',
                                                  'NVT', 10, 300,
-                                                 input_variables_dict={"FreeEnergyCalc": [True, 10000]}
+                                                 input_variables_dict={"FreeEnergyCalc": [True, 10000]
+                                                                       }
                                                  )
 
         with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
@@ -1927,13 +1935,13 @@ class TestGOMCControlFileWriter(BaseTest):
                                                  input_variables_dict={'XXXXXX': 's', }
                                                  )
 
-    def test_save_NVT_bad_variables_part_2(self, EthaneGOMC, EthanolGOMC):
-        test_box_ethane_ethanol = mb.fill_box(compound=[EthaneGOMC, EthanolGOMC],
+    def test_save_NVT_bad_variables_part_2(self, ethane_gomc, ethanol_gomc):
+        test_box_ethane_ethanol = mb.fill_box(compound=[ethane_gomc, ethanol_gomc],
                                               n_compounds=[1, 1],
                                               box=[4.0, 4.0, 4.0])
 
-        charmm = Charmm(test_box_ethane_ethanol, 'ethane_ethanol', FF_filename='ethane_ethanol',
-                        residues=[EthaneGOMC.name, EthanolGOMC.name], forcefield_selection='oplsaa',
+        charmm = Charmm(test_box_ethane_ethanol, 'ethane_ethanol', ff_filename='ethane_ethanol',
+                        residues=[ethane_gomc.name, ethanol_gomc.name], forcefield_selection='oplsaa',
                         box_0=[1, 1, 1]
                         )
 
@@ -2304,7 +2312,8 @@ class TestGOMCControlFileWriter(BaseTest):
                                                                        "MoleculeType": ['ETH', 1],
                                                                        "InitialState": 1,
                                                                        "LambdaVDW": [0.1, 0.2, 0.4, 0.9],
-                                                                       "LambdaCoulomb": [0.1, 0.3, 0.8, 0.8]}
+                                                                       "LambdaCoulomb": [0.1, 0.3, 0.8, 0.8]
+                                                                       }
                                                  )
 
         with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
@@ -2532,15 +2541,13 @@ class TestGOMCControlFileWriter(BaseTest):
                                                  input_variables_dict={'XXXXXX': [], }
                                                  )
 
-
-
-    def test_save_NVT_bad_variables_part_5(self, EthaneGOMC, EthanolGOMC):
-        test_box_ethane_ethanol = mb.fill_box(compound=[EthaneGOMC, EthanolGOMC],
+    def test_save_NVT_bad_variables_part_5(self, ethane_gomc, ethanol_gomc):
+        test_box_ethane_ethanol = mb.fill_box(compound=[ethane_gomc, ethanol_gomc],
                                               n_compounds=[1, 1],
                                               box=[4.0, 4.0, 4.0])
 
-        charmm = Charmm(test_box_ethane_ethanol, 'ethane_ethanol', FF_filename='ethane_ethanol',
-                        residues=[EthaneGOMC.name, EthanolGOMC.name], forcefield_selection='oplsaa',
+        charmm = Charmm(test_box_ethane_ethanol, 'ethane_ethanol', ff_filename='ethane_ethanol',
+                        residues=[ethane_gomc.name, ethanol_gomc.name], forcefield_selection='oplsaa',
                         box_0=[1, 1, 1]
                         )
 
@@ -2654,13 +2661,13 @@ class TestGOMCControlFileWriter(BaseTest):
                                                  input_variables_dict={'PressureCalc': [1, True], }
                                                  )
 
-    def test_save_NVT_bad_variables_part_6(self, EthaneGOMC, EthanolGOMC):
-        test_box_ethane_ethanol = mb.fill_box(compound=[EthaneGOMC, EthanolGOMC],
+    def test_save_NVT_bad_variables_part_6(self, ethane_gomc, ethanol_gomc):
+        test_box_ethane_ethanol = mb.fill_box(compound=[ethane_gomc, ethanol_gomc],
                                               n_compounds=[1, 1],
                                               box=[4.0, 4.0, 4.0])
 
-        charmm = Charmm(test_box_ethane_ethanol, 'ethane_ethanol', FF_filename='ethane_ethanol',
-                        residues=[EthaneGOMC.name, EthanolGOMC.name], forcefield_selection='oplsaa',
+        charmm = Charmm(test_box_ethane_ethanol, 'ethane_ethanol', ff_filename='ethane_ethanol',
+                        residues=[ethane_gomc.name, ethanol_gomc.name], forcefield_selection='oplsaa',
                         box_0=[1, 1, 1]
                         )
 
@@ -2780,13 +2787,13 @@ class TestGOMCControlFileWriter(BaseTest):
                                                  input_variables_dict={'OutEnergy': [True, {'s': 1}], }
                                                  )
 
-    def test_save_NVT_bad_variables_part_7(self, EthaneGOMC, EthanolGOMC):
-        test_box_ethane_ethanol = mb.fill_box(compound=[EthaneGOMC, EthanolGOMC],
+    def test_save_NVT_bad_variables_part_7(self, ethane_gomc, ethanol_gomc):
+        test_box_ethane_ethanol = mb.fill_box(compound=[ethane_gomc, ethanol_gomc],
                                               n_compounds=[1, 1],
                                               box=[4.0, 4.0, 4.0])
 
-        charmm = Charmm(test_box_ethane_ethanol, 'ethane_ethanol', FF_filename='ethane_ethanol',
-                        residues=[EthaneGOMC.name, EthanolGOMC.name], forcefield_selection='oplsaa',
+        charmm = Charmm(test_box_ethane_ethanol, 'ethane_ethanol', ff_filename='ethane_ethanol',
+                        residues=[ethane_gomc.name, ethanol_gomc.name], forcefield_selection='oplsaa',
                         box_0=[1, 1, 1]
                         )
 
@@ -3276,24 +3283,24 @@ class TestGOMCControlFileWriter(BaseTest):
                                                                        }
                                                  )
 
-    def test_save_NVT_bad_variables_part_8(self, EthaneGOMC, EthanolGOMC):
-        test_box_ethane_ethanol = mb.fill_box(compound=[EthaneGOMC, EthanolGOMC],
+    def test_save_NVT_bad_variables_part_8(self, ethane_gomc, ethanol_gomc):
+        test_box_ethane_ethanol = mb.fill_box(compound=[ethane_gomc, ethanol_gomc],
                                               n_compounds=[1, 1],
                                               box=[4.0, 4.0, 4.0])
 
         charmm = Charmm(test_box_ethane_ethanol, 'ethane_ethanol_box_0',
                         structure_box_1=test_box_ethane_ethanol, filename_box_1='ethane_ethanol_box_1',
-                        FF_filename='ethane_ethanol',
-                        residues=[EthaneGOMC.name, EthanolGOMC.name], forcefield_selection='oplsaa'
+                        ff_filename='ethane_ethanol',
+                        residues=[ethane_gomc.name, ethanol_gomc.name], forcefield_selection='oplsaa'
                         )
 
-        test_box_ethane_ethanol = mb.fill_box(compound=[EthaneGOMC, EthanolGOMC],
+        test_box_ethane_ethanol = mb.fill_box(compound=[ethane_gomc, ethanol_gomc],
                                               n_compounds=[1, 1],
                                               box=[4.0, 4.0, 4.0])
 
         charmm_NPT_NVT = Charmm(test_box_ethane_ethanol, 'ethane_ethanol_box_0',
-                                FF_filename='ethane_ethanol',
-                                residues=[EthaneGOMC.name, EthanolGOMC.name], forcefield_selection='oplsaa'
+                                ff_filename='ethane_ethanol',
+                                residues=[ethane_gomc.name, ethanol_gomc.name], forcefield_selection='oplsaa'
                                 )
 
         with pytest.raises(ValueError, match=r"ERROR: The following input variables have bad "
@@ -3368,8 +3375,9 @@ class TestGOMCControlFileWriter(BaseTest):
             value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_8.conf',
                                                          'GEMC_NPT', 10, 300,
                                                          input_variables_dict={"MEMC_DataInput":
-                                                                                   [[1, 'ETH', ['C1', 'C2'], 'ETO',
-                                                                                     ['C1', 'C2']]],
+                                                                                   [[1, 'ETH', ['C1', 'C2'],
+                                                                                     'ETO', ['C1', 'C2']]
+                                                                                    ],
                                                                                "DisFreq": 0.05,
                                                                                "RotFreq": 0.05,
                                                                                "IntraSwapFreq": 0.05,
@@ -3395,8 +3403,9 @@ class TestGOMCControlFileWriter(BaseTest):
             value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_8.conf',
                                                          'GEMC_NPT', 10, 300,
                                                          input_variables_dict={"MEMC_DataInput":
-                                                                                   [[1, 'ETH', ['C1', 'C2'], 'ETO',
-                                                                                     ['C1', 'O1']]],
+                                                                                   [[1, 'ETH', ['C1', 'C2'],
+                                                                                     'ETO', ['C1', 'O1']]
+                                                                                    ],
                                                                                "DisFreq": 0.05,
                                                                                "RotFreq": 0.05,
                                                                                "IntraSwapFreq": 0.05,
@@ -3422,8 +3431,9 @@ class TestGOMCControlFileWriter(BaseTest):
             value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_8.conf',
                                                          'GEMC_NPT', 10, 300,
                                                          input_variables_dict={"MEMC_DataInput":
-                                                                                   [[1, 'ETH', ['C2', 'C1'], 'ETO',
-                                                                                     ['O1', 'C1']]],
+                                                                                   [[1, 'ETH', ['C2', 'C1'],
+                                                                                     'ETO', ['O1', 'C1']]
+                                                                                    ],
                                                                                "DisFreq": 0.05,
                                                                                "RotFreq": 0.05,
                                                                                "IntraSwapFreq": 0.05,
@@ -3450,8 +3460,9 @@ class TestGOMCControlFileWriter(BaseTest):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_8.conf',
                                                  'GEMC_NPT', 10, 300,
                                                  input_variables_dict={"MEMC_DataInput":
-                                                                           [[1, 'ETH', ['C1', 'O1'], 'ETO',
-                                                                             ['C1', 'C2']]],
+                                                                           [[1, 'ETH', ['C1', 'O1'],
+                                                                             'ETO', ['C1', 'C2']]
+                                                                            ],
                                                                        "DisFreq": 0.05,
                                                                        "RotFreq": 0.05,
                                                                        "IntraSwapFreq": 0.05,
@@ -3474,8 +3485,9 @@ class TestGOMCControlFileWriter(BaseTest):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_8.conf',
                                                  'GEMC_NPT', 10, 300,
                                                  input_variables_dict={"MEMC_DataInput":
-                                                                           [[1, 'ETH', ['O1', 'C1'], 'ETO',
-                                                                             ['C2', 'C1']]],
+                                                                           [[1, 'ETH', ['O1', 'C1'],
+                                                                             'ETO', ['C2', 'C1']]
+                                                                            ],
                                                                        "DisFreq": 0.05,
                                                                        "RotFreq": 0.05,
                                                                        "IntraSwapFreq": 0.05,
@@ -3498,8 +3510,9 @@ class TestGOMCControlFileWriter(BaseTest):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_8.conf',
                                                  'GEMC_NPT', 10, 300,
                                                  input_variables_dict={"MEMC_DataInput":
-                                                                           [[1.0, 'ETH', ['C1', 'C2'], 'ETO',
-                                                                             ['C1', 'C2']]],
+                                                                           [[1.0, 'ETH', ['C1', 'C2'],
+                                                                             'ETO', ['C1', 'C2']]
+                                                                            ],
                                                                        "DisFreq": 0.05,
                                                                        "RotFreq": 0.05,
                                                                        "IntraSwapFreq": 0.05,
@@ -3522,8 +3535,9 @@ class TestGOMCControlFileWriter(BaseTest):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_8.conf',
                                                  'GEMC_NPT', 10, 300,
                                                  input_variables_dict={"MEMC_DataInput":
-                                                                           [['s', 'ETH', ['C1', 'C2'], 'ETO',
-                                                                             ['C1', 'C2']]],
+                                                                           [['s', 'ETH', ['C1', 'C2'],
+                                                                             'ETO', ['C1', 'C2']]
+                                                                            ],
                                                                        "DisFreq": 0.05,
                                                                        "RotFreq": 0.05,
                                                                        "IntraSwapFreq": 0.05,
@@ -3546,8 +3560,9 @@ class TestGOMCControlFileWriter(BaseTest):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_8.conf',
                                                  'GEMC_NPT', 10, 300,
                                                  input_variables_dict={"MEMC_DataInput":
-                                                                           [[[1], 'ETH', ['C1', 'C2'], 'ETO',
-                                                                             ['C1', 'C2']]],
+                                                                           [[[1], 'ETH', ['C1', 'C2'],
+                                                                             'ETO', ['C1', 'C2']]
+                                                                            ],
                                                                        "DisFreq": 0.05,
                                                                        "RotFreq": 0.05,
                                                                        "IntraSwapFreq": 0.05,
@@ -3570,8 +3585,9 @@ class TestGOMCControlFileWriter(BaseTest):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_8.conf',
                                                  'GEMC_NPT', 10, 300,
                                                  input_variables_dict={"MEMC_DataInput":
-                                                                           [[{'a': '1'}, 'ETH', ['C1', 'C2'], 'ETO',
-                                                                             ['C1', 'C2']]],
+                                                                           [[{'a': '1'}, 'ETH', ['C1', 'C2'],
+                                                                             'ETO', ['C1', 'C2']]
+                                                                            ],
                                                                        "DisFreq": 0.05,
                                                                        "RotFreq": 0.05,
                                                                        "IntraSwapFreq": 0.05,
@@ -3594,8 +3610,9 @@ class TestGOMCControlFileWriter(BaseTest):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_8.conf',
                                                  'GEMC_NPT', 10, 300,
                                                  input_variables_dict={"MEMC_DataInput":
-                                                                           [[1, 'ETHa', ['C1', 'C2'], 'ETO',
-                                                                             ['C1', 'C2']]],
+                                                                           [[1, 'ETHa', ['C1', 'C2'],
+                                                                             'ETO', ['C1', 'C2']]
+                                                                            ],
                                                                        "DisFreq": 0.05,
                                                                        "RotFreq": 0.05,
                                                                        "IntraSwapFreq": 0.05,
@@ -3618,7 +3635,9 @@ class TestGOMCControlFileWriter(BaseTest):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_8.conf',
                                                  'GEMC_NPT', 10, 300,
                                                  input_variables_dict={"MEMC_DataInput":
-                                                                           [[1, 1, ['C1', 'C2'], 'ETO', ['C1', 'C2']]],
+                                                                           [[1, 1, ['C1', 'C2'],
+                                                                             'ETO', ['C1', 'C2']]
+                                                                            ],
                                                                        "DisFreq": 0.05,
                                                                        "RotFreq": 0.05,
                                                                        "IntraSwapFreq": 0.05,
@@ -3641,8 +3660,9 @@ class TestGOMCControlFileWriter(BaseTest):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_8.conf',
                                                  'GEMC_NPT', 10, 300,
                                                  input_variables_dict={"MEMC_DataInput":
-                                                                           [[1, [1], ['C1', 'C2'], 'ETO',
-                                                                             ['C1', 'C2']]],
+                                                                           [[1, [1], ['C1', 'C2'],
+                                                                             'ETO', ['C1', 'C2']]
+                                                                            ],
                                                                        "DisFreq": 0.05,
                                                                        "RotFreq": 0.05,
                                                                        "IntraSwapFreq": 0.05,
@@ -3665,7 +3685,9 @@ class TestGOMCControlFileWriter(BaseTest):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_8.conf',
                                                  'GEMC_NPT', 10, 300,
                                                  input_variables_dict={"MEMC_DataInput":
-                                                                           [[1, 'ETH', [1, 'C2'], 'ETO', ['C1', 'C2']]],
+                                                                           [[1, 'ETH', [1, 'C2'],
+                                                                             'ETO', ['C1', 'C2']]
+                                                                            ],
                                                                        "DisFreq": 0.05,
                                                                        "RotFreq": 0.05,
                                                                        "IntraSwapFreq": 0.05,
@@ -3688,8 +3710,9 @@ class TestGOMCControlFileWriter(BaseTest):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_8.conf',
                                                  'GEMC_NPT', 10, 300,
                                                  input_variables_dict={"MEMC_DataInput":
-                                                                           [[1, 'ETH', [[1], 'C2'], 'ETO',
-                                                                             ['C1', 'C2']]],
+                                                                           [[1, 'ETH', [[1], 'C2'],
+                                                                             'ETO', ['C1', 'C2']]
+                                                                            ],
                                                                        "DisFreq": 0.05,
                                                                        "RotFreq": 0.05,
                                                                        "IntraSwapFreq": 0.05,
@@ -3712,7 +3735,9 @@ class TestGOMCControlFileWriter(BaseTest):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_8.conf',
                                                  'GEMC_NPT', 10, 300,
                                                  input_variables_dict={"MEMC_DataInput":
-                                                                           [[1, 'ETH', ['C1', 1], 'ETO', ['C1', 'C2']]],
+                                                                           [[1, 'ETH', ['C1', 1],
+                                                                             'ETO', ['C1', 'C2']]
+                                                                            ],
                                                                        "DisFreq": 0.05,
                                                                        "RotFreq": 0.05,
                                                                        "IntraSwapFreq": 0.05,
@@ -3735,8 +3760,9 @@ class TestGOMCControlFileWriter(BaseTest):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_8.conf',
                                                  'GEMC_NPT', 10, 300,
                                                  input_variables_dict={"MEMC_DataInput":
-                                                                           [[1, 'ETH', ['C1', [1]], 'ETO',
-                                                                             ['C1', 'C2']]],
+                                                                           [[1, 'ETH', ['C1', [1]],
+                                                                             'ETO', ['C1', 'C2']]
+                                                                            ],
                                                                        "DisFreq": 0.05,
                                                                        "RotFreq": 0.05,
                                                                        "IntraSwapFreq": 0.05,
@@ -3759,7 +3785,9 @@ class TestGOMCControlFileWriter(BaseTest):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_8.conf',
                                                  'GEMC_NPT', 10, 300,
                                                  input_variables_dict={"MEMC_DataInput":
-                                                                           [[1, 'ETH', ['C1', 'C2'], 1, ['C1', 'C2']]],
+                                                                           [[1, 'ETH', ['C1', 'C2'],
+                                                                             1, ['C1', 'C2']]
+                                                                            ],
                                                                        "DisFreq": 0.05,
                                                                        "RotFreq": 0.05,
                                                                        "IntraSwapFreq": 0.05,
@@ -3782,8 +3810,9 @@ class TestGOMCControlFileWriter(BaseTest):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_8.conf',
                                                  'GEMC_NPT', 10, 300,
                                                  input_variables_dict={"MEMC_DataInput":
-                                                                           [[1, 'ETH', ['C1', 'C2'], [1],
-                                                                             ['C1', 'C2']]],
+                                                                           [[1, 'ETH', ['C1', 'C2'],
+                                                                             [1], ['C1', 'C2']]
+                                                                            ],
                                                                        "DisFreq": 0.05,
                                                                        "RotFreq": 0.05,
                                                                        "IntraSwapFreq": 0.05,
@@ -3806,7 +3835,9 @@ class TestGOMCControlFileWriter(BaseTest):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_8.conf',
                                                  'GEMC_NPT', 10, 300,
                                                  input_variables_dict={"MEMC_DataInput":
-                                                                           [[1, 'ETH', ['C1', 'C2'], 'ETO', [1, 'C2']]],
+                                                                           [[1, 'ETH', ['C1', 'C2'],
+                                                                             'ETO', [1, 'C2']]
+                                                                            ],
                                                                        "DisFreq": 0.05,
                                                                        "RotFreq": 0.05,
                                                                        "IntraSwapFreq": 0.05,
@@ -3829,8 +3860,9 @@ class TestGOMCControlFileWriter(BaseTest):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_8.conf',
                                                  'GEMC_NPT', 10, 300,
                                                  input_variables_dict={"MEMC_DataInput":
-                                                                           [[1, 'ETH', ['C1', 'C2'], 'ETO',
-                                                                             [[1], 'C2']]],
+                                                                           [[1, 'ETH', ['C1', 'C2'],
+                                                                             'ETO', [[1], 'C2']]
+                                                                            ],
                                                                        "DisFreq": 0.05,
                                                                        "RotFreq": 0.05,
                                                                        "IntraSwapFreq": 0.05,
@@ -3853,7 +3885,9 @@ class TestGOMCControlFileWriter(BaseTest):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_8.conf',
                                                  'GEMC_NPT', 10, 300,
                                                  input_variables_dict={"MEMC_DataInput":
-                                                                           [[1, 'ETH', ['C1', 'C2'], 'ETO', ['C1', 1]]],
+                                                                           [[1, 'ETH', ['C1', 'C2'],
+                                                                             'ETO', ['C1', 1]]
+                                                                            ],
                                                                        "DisFreq": 0.05,
                                                                        "RotFreq": 0.05,
                                                                        "IntraSwapFreq": 0.05,
@@ -3876,8 +3910,9 @@ class TestGOMCControlFileWriter(BaseTest):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_8.conf',
                                                  'GEMC_NPT', 10, 300,
                                                  input_variables_dict={"MEMC_DataInput":
-                                                                           [[1, 'ETH', ['C1', 'C2'], 'ETO',
-                                                                             ['C1', [1]]]],
+                                                                           [[1, 'ETH', ['C1', 'C2'],
+                                                                             'ETO', ['C1', [1]]]
+                                                                            ],
                                                                        "DisFreq": 0.05,
                                                                        "RotFreq": 0.05,
                                                                        "IntraSwapFreq": 0.05,
@@ -3932,8 +3967,9 @@ class TestGOMCControlFileWriter(BaseTest):
             value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_8.conf',
                                                          'GEMC_NPT', 10, 300,
                                                          input_variables_dict={"MEMC_DataInput":
-                                                                                   [[1, 'ETH', ['C1', 'C2'], 'ETO',
-                                                                                     ['C1', 'C2']]],
+                                                                                   [[1, 'ETH', ['C1', 'C2'],
+                                                                                     'ETO', ['C1', 'C2']]
+                                                                                    ],
                                                                                "DisFreq": 0.05,
                                                                                "RotFreq": 0.05,
                                                                                "IntraSwapFreq": 0.05,
@@ -3966,8 +4002,9 @@ class TestGOMCControlFileWriter(BaseTest):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_8.conf',
                                                  'GEMC_NPT', 10, 300,
                                                  input_variables_dict={"MEMC_DataInput":
-                                                                           [[1, 'ETH', ['C1', 'C2'], 'ETO',
-                                                                             ['C1', 'C2']]],
+                                                                           [[1, 'ETH', ['C1', 'C2'],
+                                                                             'ETO', ['C1', 'C2']]
+                                                                            ],
                                                                        "DisFreq": 0.05,
                                                                        "RotFreq": 0.05,
                                                                        "IntraSwapFreq": 0.05,
@@ -3989,8 +4026,9 @@ class TestGOMCControlFileWriter(BaseTest):
             value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_8.conf',
                                                          'GEMC_NVT', 10, 300,
                                                          input_variables_dict={"MEMC_DataInput":
-                                                                                   [[1, 'ETH', ['C1', 'C2'], 'ETO',
-                                                                                     ['C1', 'C2']]],
+                                                                                   [[1, 'ETH', ['C1', 'C2'],
+                                                                                     'ETO', ['C1', 'C2']]
+                                                                                    ],
                                                                                "DisFreq": 0.05,
                                                                                "RotFreq": 0.05,
                                                                                "IntraSwapFreq": 0.05,
@@ -4022,8 +4060,9 @@ class TestGOMCControlFileWriter(BaseTest):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_8.conf',
                                                  'GEMC_NVT', 10, 300,
                                                  input_variables_dict={"MEMC_DataInput":
-                                                                           [[1, 'ETH', ['C1', 'C2'], 'ETO',
-                                                                             ['C1', 'C2']]],
+                                                                           [[1, 'ETH', ['C1', 'C2'],
+                                                                             'ETO', ['C1', 'C2']]
+                                                                            ],
                                                                        "DisFreq": 0.05,
                                                                        "RotFreq": 0.05,
                                                                        "IntraSwapFreq": 0.05,
@@ -4044,8 +4083,8 @@ class TestGOMCControlFileWriter(BaseTest):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_8.conf',
                                                  'GCMC', 10, 300,
                                                  input_variables_dict={"MEMC_DataInput":
-                                                                           [[1, 'ETH', ['C1', 'C2'], 'ETO',
-                                                                             ['C1', 'C2']]
+                                                                           [[1, 'ETH', ['C1', 'C2'],
+                                                                             'ETO', ['C1', 'C2']]
                                                                             ],
                                                                        "DisFreq": 0.05,
                                                                        "RotFreq": 0.05,
@@ -4079,8 +4118,9 @@ class TestGOMCControlFileWriter(BaseTest):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_8.conf',
                                                  'GCMC', 10, 300,
                                                  input_variables_dict={"MEMC_DataInput":
-                                                                           [[1, 'ETH', ['C1', 'C2'], 'ETO',
-                                                                             ['C1', 'C2']]],
+                                                                           [[1, 'ETH', ['C1', 'C2'],
+                                                                             'ETO', ['C1', 'C2']]
+                                                                            ],
                                                                        "DisFreq": 0.05,
                                                                        "RotFreq": 0.05,
                                                                        "IntraSwapFreq": 0.05,
@@ -4102,8 +4142,9 @@ class TestGOMCControlFileWriter(BaseTest):
             value = gomc_control.write_gomc_control_file(charmm_NPT_NVT, 'test_save_NVT_bad_variables_part_8.conf',
                                                          'NPT', 10, 300,
                                                          input_variables_dict={"MEMC_DataInput":
-                                                                                   [[1, 'ETH', ['C1', 'C2'], 'ETO',
-                                                                                     ['C1', 'C2']]],
+                                                                                   [[1, 'ETH', ['C1', 'C2'],
+                                                                                     'ETO', ['C1', 'C2']]
+                                                                                    ],
                                                                                "DisFreq": 0.05,
                                                                                "RotFreq": 0.05,
                                                                                "IntraSwapFreq": 0.05,
@@ -4136,8 +4177,9 @@ class TestGOMCControlFileWriter(BaseTest):
             gomc_control.write_gomc_control_file(charmm_NPT_NVT, 'test_save_NVT_bad_variables_part_8.conf',
                                                  'NPT', 10, 300,
                                                  input_variables_dict={"MEMC_DataInput":
-                                                                           [[1, 'ETH', ['C1', 'C2'], 'ETO',
-                                                                             ['C1', 'C2']]],
+                                                                           [[1, 'ETH', ['C1', 'C2'],
+                                                                             'ETO', ['C1', 'C2']]
+                                                                            ],
                                                                        "DisFreq": 0.05,
                                                                        "RotFreq": 0.05,
                                                                        "IntraSwapFreq": 0.05,
@@ -4159,8 +4201,9 @@ class TestGOMCControlFileWriter(BaseTest):
             value = gomc_control.write_gomc_control_file(charmm_NPT_NVT, 'test_save_NVT_bad_variables_part_8.conf',
                                                          'NVT', 10, 300,
                                                          input_variables_dict={"MEMC_DataInput":
-                                                                                   [[1, 'ETH', ['C1', 'C2'], 'ETO',
-                                                                                     ['C1', 'C2']]],
+                                                                                   [[1, 'ETH', ['C1', 'C2'],
+                                                                                     'ETO', ['C1', 'C2']]
+                                                                                    ],
                                                                                "DisFreq": 0.05,
                                                                                "RotFreq": 0.05,
                                                                                "IntraSwapFreq": 0.05,
@@ -4193,8 +4236,9 @@ class TestGOMCControlFileWriter(BaseTest):
             gomc_control.write_gomc_control_file(charmm_NPT_NVT, 'test_save_NVT_bad_variables_part_8.conf',
                                                  'NVT', 10, 300,
                                                  input_variables_dict={"MEMC_DataInput":
-                                                                           [[1, 'ETH', ['C1', 'C2'], 'ETO',
-                                                                             ['C1', 'C2']]],
+                                                                           [[1, 'ETH', ['C1', 'C2'],
+                                                                             'ETO', ['C1', 'C2']]
+                                                                            ],
                                                                        "DisFreq": 0.05,
                                                                        "RotFreq": 0.05,
                                                                        "IntraSwapFreq": 0.05,
@@ -4217,8 +4261,9 @@ class TestGOMCControlFileWriter(BaseTest):
             value = gomc_control.write_gomc_control_file(charmm_NPT_NVT, 'test_save_NVT_bad_variables_part_8.conf',
                                                          'NVT', 10, 300,
                                                          input_variables_dict={"MEMC_DataInput":
-                                                                                   [[1, 'ETH', ['C1', 'C2'], 'ETO',
-                                                                                     ['C1', 'C2']]],
+                                                                                   [[1, 'ETH', ['C1', 'C2'],
+                                                                                     'ETO', ['C1', 'C2']]
+                                                                                    ],
                                                                                "DisFreq": 0.05,
                                                                                "RotFreq": 0.05,
                                                                                "IntraSwapFreq": 0.05,
@@ -4244,8 +4289,9 @@ class TestGOMCControlFileWriter(BaseTest):
             value = gomc_control.write_gomc_control_file(charmm_NPT_NVT, 'test_save_NVT_bad_variables_part_8.conf',
                                                          'NPT', 10, 300,
                                                          input_variables_dict={"MEMC_DataInput":
-                                                                                   [[1, 'ETH', ['C1', 'C2'], 'ETO',
-                                                                                     ['C1', 'C2']]],
+                                                                                   [[1, 'ETH', ['C1', 'C2'],
+                                                                                     'ETO', ['C1', 'C2']]
+                                                                                    ],
                                                                                "DisFreq": 0.05,
                                                                                "RotFreq": 0.05,
                                                                                "IntraSwapFreq": 0.05,
@@ -4271,8 +4317,9 @@ class TestGOMCControlFileWriter(BaseTest):
             value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_8.conf',
                                                          'GCMC', 10, 300,
                                                          input_variables_dict={"MEMC_DataInput":
-                                                                                   [[1, 'ETH', ['C1', 'C2'], 'ETO',
-                                                                                     ['C1', 'C2']]],
+                                                                                   [[1, 'ETH', ['C1', 'C2'],
+                                                                                     'ETO', ['C1', 'C2']]
+                                                                                    ],
                                                                                "ChemPot": {'ETH': -4000, "ETO": -8000},
                                                                                "DisFreq": 0.05,
                                                                                "RotFreq": 0.05,
@@ -4301,8 +4348,9 @@ class TestGOMCControlFileWriter(BaseTest):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_8.conf',
                                                  'GCMC', 10, 300,
                                                  input_variables_dict={"MEMC_DataInput":
-                                                                           [[1, 'ETH', ['C1', 'C2'], 'ETO',
-                                                                             ['C1', 'C2']]],
+                                                                           [[1, 'ETH', ['C1', 'C2'],
+                                                                             'ETO', ['C1', 'C2']]
+                                                                            ],
                                                                        "DisFreq": 1,
                                                                        "Fugacity": {1: 0, "ETO": 1.0},
                                                                        }
@@ -4312,8 +4360,9 @@ class TestGOMCControlFileWriter(BaseTest):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_8.conf',
                                                  'GCMC', 10, 300,
                                                  input_variables_dict={"MEMC_DataInput":
-                                                                           [[1, 'ETH', ['C1', 'C2'], 'ETO',
-                                                                             ['C1', 'C2']]],
+                                                                           [[1, 'ETH', ['C1', 'C2'],
+                                                                             'ETO', ['C1', 'C2']]
+                                                                            ],
                                                                        "DisFreq": 1,
                                                                        "Fugacity": {"ETH": -1, "ETO": 1.0},
                                                                        }
@@ -4323,8 +4372,9 @@ class TestGOMCControlFileWriter(BaseTest):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_8.conf',
                                                  'GCMC', 10, 300,
                                                  input_variables_dict={"MEMC_DataInput":
-                                                                           [[1, 'ETH', ['C1', 'C2'], 'ETO',
-                                                                             ['C1', 'C2']]],
+                                                                           [[1, 'ETH', ['C1', 'C2'],
+                                                                             'ETO', ['C1', 'C2']]
+                                                                            ],
                                                                        "DisFreq": 1,
                                                                        "Fugacity": {"ETH": "1", "ETO": 1.0},
                                                                        }
@@ -4336,8 +4386,9 @@ class TestGOMCControlFileWriter(BaseTest):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_8.conf',
                                                  'GCMC', 10, 300,
                                                  input_variables_dict={"MEMC_DataInput":
-                                                                           [[1, 'ETH', ['C1', 'C2'], 'ETO',
-                                                                             ['C1', 'C2']]],
+                                                                           [[1, 'ETH', ['C1', 'C2'],
+                                                                             'ETO', ['C1', 'C2']]
+                                                                            ],
                                                                        "DisFreq": 1,
                                                                        "Fugacity": {"ETH": 2, "ETO": 1.0},
                                                                        }
@@ -4407,21 +4458,21 @@ class TestGOMCControlFileWriter(BaseTest):
                                              r"values: \['ChemPot'\]"):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_8.conf',
                                                  'GCMC', 10, 300,
-                                                 input_variables_dict={
-                                                     "DisFreq": 1,
-                                                     "ChemPot": {'ETH': ['40'], "ETO": -8000},
-                                                 }
+                                                 input_variables_dict={"DisFreq": 1,
+                                                                       "ChemPot": {'ETH': ['40'], "ETO": -8000},
+                                                                       }
                                                  )
 
         # test bad values of Volume for NVT, and GCMC
         with pytest.raises(ValueError, match=r'ERROR: The input variable VolFreq is non-zero \(0\). '
-                                             'VolFreq must be zero \(0\) for the "NVT", "GEMC_NVT", '
-                                             'and "GCMC" ensembles.'):
+                                             r'VolFreq must be zero \(0\) for the "NVT", "GEMC_NVT", '
+                                             r'and "GCMC" ensembles.'):
             gomc_control.write_gomc_control_file(charmm_NPT_NVT, 'test_save_NVT_bad_variables_part_8.conf',
                                                  'NVT', 10, 300,
                                                  input_variables_dict={"MEMC_DataInput":
-                                                                           [[1, 'ETH', ['C1', 'C2'], 'ETO',
-                                                                             ['C1', 'C2']]],
+                                                                           [[1, 'ETH', ['C1', 'C2'],
+                                                                             'ETO', ['C1', 'C2']]
+                                                                            ],
                                                                        "DisFreq": 0.05,
                                                                        "RotFreq": 0.05,
                                                                        "IntraSwapFreq": 0.05,
@@ -4439,14 +4490,15 @@ class TestGOMCControlFileWriter(BaseTest):
                                                                        }
                                                  )
 
-        with pytest.raises(ValueError, match=r'ERROR: The input variable VolFreq is non-zero \(0\). ' \
-                                             'VolFreq must be zero \(0\) for the "NVT", "GEMC_NVT", '
-                                             'and "GCMC" ensembles.'):
+        with pytest.raises(ValueError, match=r'ERROR: The input variable VolFreq is non-zero \(0\). '
+                                             r'VolFreq must be zero \(0\) for the "NVT", "GEMC_NVT", '
+                                             r'and "GCMC" ensembles.'):
             gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_8.conf',
                                                  'GCMC', 10, 300,
                                                  input_variables_dict={"MEMC_DataInput":
-                                                                           [[1, 'ETH', ['C1', 'C2'], 'ETO',
-                                                                             ['C1', 'C2']]],
+                                                                           [[1, 'ETH', ['C1', 'C2'],
+                                                                             'ETO', ['C1', 'C2']]
+                                                                            ],
                                                                        "ChemPot": {'ETH': -4000, "ETO": -8000},
                                                                        "DisFreq": 0.05,
                                                                        "RotFreq": 0.05,
@@ -4473,8 +4525,9 @@ class TestGOMCControlFileWriter(BaseTest):
             gomc_control.write_gomc_control_file(charmm_NPT_NVT, 'test_save_NVT_bad_variables_part_8.conf',
                                                  'NVT', 10, 300,
                                                  input_variables_dict={"MEMC_DataInput":
-                                                                           [[1, 'ETH', ['C1', 'C2'], 'ETO',
-                                                                             ['C1', 'C2']]],
+                                                                           [[1, 'ETH', ['C1', 'C2'],
+                                                                             'ETO', ['C1', 'C2']]
+                                                                            ],
                                                                        "DisFreq": 0.05,
                                                                        "RotFreq": 0.05,
                                                                        "IntraSwapFreq": 0.05,
@@ -4499,8 +4552,9 @@ class TestGOMCControlFileWriter(BaseTest):
             gomc_control.write_gomc_control_file(charmm_NPT_NVT, 'test_save_NVT_bad_variables_part_8.conf',
                                                  'NVT', 10, 300,
                                                  input_variables_dict={"MEMC_DataInput":
-                                                                           [[1, 'ETH', ['C1', 'C2'], 'ETO',
-                                                                             ['C1', 'C2']]],
+                                                                           [[1, 'ETH', ['C1', 'C2'],
+                                                                             'ETO', ['C1', 'C2']]
+                                                                            ],
                                                                        "DisFreq": 0.05,
                                                                        "RotFreq": 0.05,
                                                                        "IntraSwapFreq": 0.05,
@@ -4525,8 +4579,9 @@ class TestGOMCControlFileWriter(BaseTest):
             gomc_control.write_gomc_control_file(charmm_NPT_NVT, 'test_save_NVT_bad_variables_part_8.conf',
                                                  'NVT', 10, 300,
                                                  input_variables_dict={"MEMC_DataInput":
-                                                                           [[1, 'ETH', ['C1', 'C2'], 'ETO',
-                                                                             ['C1', 'C2']]],
+                                                                           [[1, 'ETH', ['C1', 'C2'],
+                                                                             'ETO', ['C1', 'C2']]
+                                                                            ],
                                                                        "DisFreq": 0.05,
                                                                        "RotFreq": 0.05,
                                                                        "IntraSwapFreq": 0.05,
@@ -4551,8 +4606,9 @@ class TestGOMCControlFileWriter(BaseTest):
             gomc_control.write_gomc_control_file(charmm_NPT_NVT, 'test_save_NVT_bad_variables_part_8.conf',
                                                  'NPT', 10, 300,
                                                  input_variables_dict={"MEMC_DataInput":
-                                                                           [[1, 'ETH', ['C1', 'C2'], 'ETO',
-                                                                             ['C1', 'C2']]],
+                                                                           [[1, 'ETH', ['C1', 'C2'],
+                                                                             'ETO', ['C1', 'C2']]
+                                                                            ],
                                                                        "DisFreq": 0.05,
                                                                        "RotFreq": 0.05,
                                                                        "IntraSwapFreq": 0.05,
@@ -4577,8 +4633,9 @@ class TestGOMCControlFileWriter(BaseTest):
             gomc_control.write_gomc_control_file(charmm_NPT_NVT, 'test_save_NVT_bad_variables_part_8.conf',
                                                  'NPT', 10, 300,
                                                  input_variables_dict={"MEMC_DataInput":
-                                                                           [[1, 'ETH', ['C1', 'C2'], 'ETO',
-                                                                             ['C1', 'C2']]],
+                                                                           [[1, 'ETH', ['C1', 'C2'],
+                                                                             'ETO', ['C1', 'C2']]
+                                                                            ],
                                                                        "DisFreq": 0.05,
                                                                        "RotFreq": 0.05,
                                                                        "IntraSwapFreq": 0.05,
@@ -4603,8 +4660,9 @@ class TestGOMCControlFileWriter(BaseTest):
             gomc_control.write_gomc_control_file(charmm_NPT_NVT, 'test_save_NVT_bad_variables_part_8.conf',
                                                  'NPT', 10, 300,
                                                  input_variables_dict={"MEMC_DataInput":
-                                                                           [[1, 'ETH', ['C1', 'C2'], 'ETO',
-                                                                             ['C1', 'C2']]],
+                                                                           [[1, 'ETH', ['C1', 'C2'],
+                                                                             'ETO', ['C1', 'C2']]
+                                                                            ],
                                                                        "DisFreq": 0.05,
                                                                        "RotFreq": 0.05,
                                                                        "IntraSwapFreq": 0.05,
@@ -4627,8 +4685,9 @@ class TestGOMCControlFileWriter(BaseTest):
             value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_8.conf',
                                                          'GCMC', 10, 300,
                                                          input_variables_dict={"MEMC_DataInput":
-                                                                                   [[1, 'ETH', ['C1', 'C2'], 'ETO',
-                                                                                     ['C1', 'C2']]],
+                                                                                   [[1, 'ETH', ['C1', 'C2'],
+                                                                                     'ETO', ['C1', 'C2']]
+                                                                                    ],
                                                                                "ChemPot": {'ETH': -4000, "ETO": -8000},
                                                                                "DisFreq": 0.05,
                                                                                "RotFreq": 0.05,
@@ -4655,8 +4714,9 @@ class TestGOMCControlFileWriter(BaseTest):
             value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_8.conf',
                                                          'GCMC', 10, 300,
                                                          input_variables_dict={"MEMC_DataInput":
-                                                                                   [[1, 'ETH', ['C1', 'C2'], 'ETO',
-                                                                                     ['C1', 'C2']]],
+                                                                                   [[1, 'ETH', ['C1', 'C2'],
+                                                                                     'ETO', ['C1', 'C2']]
+                                                                                    ],
                                                                                "ChemPot": {'ETH': -4000, "ETO": -8000},
                                                                                "DisFreq": 0.05,
                                                                                "RotFreq": 0.05,
@@ -4683,8 +4743,9 @@ class TestGOMCControlFileWriter(BaseTest):
             value = gomc_control.write_gomc_control_file(charmm, 'test_save_NVT_bad_variables_part_8.conf',
                                                          'GCMC', 10, 300,
                                                          input_variables_dict={"MEMC_DataInput":
-                                                                                   [[1, 'ETH', ['C1', 'C2'], 'ETO',
-                                                                                     ['C1', 'C2']]],
+                                                                                   [[1, 'ETH', ['C1', 'C2'],
+                                                                                     'ETO', ['C1', 'C2']]
+                                                                                    ],
                                                                                "ChemPot": {'ETH': -4000, "ETO": -8000},
                                                                                "DisFreq": 0.05,
                                                                                "RotFreq": 0.05,

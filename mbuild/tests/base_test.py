@@ -253,48 +253,48 @@ class BaseTest:
 
 
     @pytest.fixture
-    def EthaneGOMC(self):
-        Ethane_GOMC = mb.load('CC', smiles=True)
-        Ethane_GOMC.name = "ETH"
+    def ethane_gomc(self):
+        ethane_gomc = mb.load('CC', smiles=True)
+        ethane_gomc.name = "ETH"
 
-        return Ethane_GOMC
-
-    @pytest.fixture
-    def EthanolGOMC(self):
-        Ethanol_GOMC = mb.load('CCO', smiles=True)
-        Ethanol_GOMC.name = "ETO"
-
-        return Ethanol_GOMC
+        return ethane_gomc
 
     @pytest.fixture
-    def MethaneUAGOMC(self):
-        MethaneUA_GOMC = mb.Compound(name="_CH4")
+    def ethanol_gomc(self):
+        ethanol_gomc = mb.load('CCO', smiles=True)
+        ethanol_gomc.name = "ETO"
 
-        return MethaneUA_GOMC
-
-    @pytest.fixture
-    def TwoPropanolGOMC(self):
-        TwoPropanol_GOMC = mb.load('CC(C)O', smiles=True)
-        TwoPropanol_GOMC.name = "TPR"
-        return TwoPropanol_GOMC
+        return ethanol_gomc
 
     @pytest.fixture
-    def EthylEtherGOMC(self):
-        EthylEther_GOMC = mb.load('CCOCC', smiles=True)
-        EthylEther_GOMC.name = "ETE"
-        return EthylEther_GOMC
+    def methane_ua_gomc(self):
+        methane_ua_gomc = mb.Compound(name="_CH4")
+
+        return methane_ua_gomc
 
     @pytest.fixture
-    def MethlyEtherGOMC(self):
-        MethlyEther_GOMC = mb.load('COC', smiles=True)
-        MethlyEther_GOMC.name = "MTE"
-        return MethlyEther_GOMC
+    def two_propanol_gomc(self):
+        two_propanol_gomc = mb.load('CC(C)O', smiles=True)
+        two_propanol_gomc.name = "TPR"
+        return two_propanol_gomc
 
     @pytest.fixture
-    def TwoPropanolUA(self):
-        class Two_propanol_UA(mb.Compound):
+    def ethyl_ether_gomc(self):
+        ethyl_ether_gomc = mb.load('CCOCC', smiles=True)
+        ethyl_ether_gomc.name = "ETE"
+        return ethyl_ether_gomc
+
+    @pytest.fixture
+    def methyl_ether_gomc(self):
+        methyl_ether_gomc = mb.load('COC', smiles=True)
+        methyl_ether_gomc.name = "MTE"
+        return methyl_ether_gomc
+
+    @pytest.fixture
+    def two_propanol_ua(self):
+        class TwoPropanolUA(mb.Compound):
             def __init__(self):
-                super(Two_propanol_UA, self).__init__()
+                super(TwoPropanolUA, self).__init__()
                 self.name = "POL"
 
                 CH3_1_1 = mb.Particle(pos=[0.2, 0.0, 0.0], name='_CH3')
@@ -337,4 +337,4 @@ class BaseTest:
 
                 self.energy_minimize(forcefield='trappe-ua', steps=10 ** 9)
 
-        return Two_propanol_UA()
+        return TwoPropanolUA()
