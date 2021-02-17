@@ -1338,9 +1338,10 @@ class Charmm:
                                 '{}\t{}\t{}\t{}\t\t{:.5f}\t\t! {}\t{}\t{}\n'.format(base10_to_base52_alph(
                                     self.atom_types_to_index_value_dict[
                                         params[3][0]+'_'+params[4]]),
-                                    base10_to_base52_alph(self.atom_types_to_index_value_dict[params[2]+'_'+params[5]]),
                                     base10_to_base52_alph(self.atom_types_to_index_value_dict[
-                                                              params[3][1]+'_'+params[6]]),
+                                                              params[2] + '_' + params[5]]),
+                                    base10_to_base52_alph(self.atom_types_to_index_value_dict[
+                                                              params[3][1] + '_' + params[6]]),
                                     params[0], params[1],
                                     params[3][0] + '_' + params[4],
                                     params[2]+'_'+params[5],

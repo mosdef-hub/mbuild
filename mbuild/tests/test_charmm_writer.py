@@ -21,11 +21,11 @@ from collections import OrderedDict
 class TestCharmmWriterData(BaseTest):
 
     def test_save(self, ethane_gomc):
-        Charmm(ethane_gomc, 'ethane', FF_filename='ethane',
+        Charmm(ethane_gomc, 'ethane', ff_filename='ethane',
                residues=[ethane_gomc.name], forcefield_selection='oplsaa')
 
     def test_save_charmm_gomc_ff(self, ethane_gomc):
-        charmm = Charmm(ethane_gomc, 'charmm_data', FF_filename='charmm_data',
+        charmm = Charmm(ethane_gomc, 'charmm_data', ff_filename='charmm_data',
                         residues=[ethane_gomc.name], forcefield_selection='oplsaa')
         charmm.write_inp()
 
@@ -87,7 +87,7 @@ class TestCharmmWriterData(BaseTest):
                 pass
 
     def test_save_charmm_psf(self, ethane_gomc):
-        charmm = Charmm(ethane_gomc, 'charmm_data', FF_filename='charmm_data',
+        charmm = Charmm(ethane_gomc, 'charmm_data', ff_filename='charmm_data',
                         residues=[ethane_gomc.name], forcefield_selection='oplsaa')
         charmm.write_psf()
 
@@ -110,7 +110,7 @@ class TestCharmmWriterData(BaseTest):
                 pass
 
     def test_save_charmm_pdb(self, ethane_gomc):
-        charmm = Charmm(ethane_gomc, 'charmm_data', FF_filename='charmm_data',
+        charmm = Charmm(ethane_gomc, 'charmm_data', ff_filename='charmm_data',
                         residues=[ethane_gomc.name], forcefield_selection='oplsaa')
         charmm.write_pdb()
 
@@ -140,7 +140,7 @@ class TestCharmmWriterData(BaseTest):
                 pass
 
     def test_save_charmm_ua_gomc_ff(self, two_propanol_ua):
-        charmm = Charmm(two_propanol_ua, 'charmm_data_UA', FF_filename='charmm_data_UA',
+        charmm = Charmm(two_propanol_ua, 'charmm_data_UA', ff_filename='charmm_data_UA',
                         residues=[two_propanol_ua.name], forcefield_selection='trappe-ua',
                         bead_to_atom_name_dict={'_CH3': 'C'})
         charmm.write_inp()
@@ -218,7 +218,7 @@ class TestCharmmWriterData(BaseTest):
                 pass
 
     def test_save_charmm_ua_psf(self, two_propanol_ua):
-        charmm = Charmm(two_propanol_ua, 'charmm_data_UA', FF_filename='charmm_data_UA',
+        charmm = Charmm(two_propanol_ua, 'charmm_data_UA', ff_filename='charmm_data_UA',
                         residues=[two_propanol_ua.name], forcefield_selection='trappe-ua',
                         bead_to_atom_name_dict={'_CH3': 'C'})
         charmm.write_psf()
@@ -240,7 +240,7 @@ class TestCharmmWriterData(BaseTest):
                 pass
 
     def test_save_charmm_ua_pdb(self, two_propanol_ua):
-        charmm = Charmm(two_propanol_ua, 'charmm_data_UA', FF_filename='charmm_data_UA',
+        charmm = Charmm(two_propanol_ua, 'charmm_data_UA', ff_filename='charmm_data_UA',
                         residues=[two_propanol_ua.name], forcefield_selection='trappe-ua',
                         bead_to_atom_name_dict={'_CH3': 'C'})
         charmm.write_pdb()
@@ -271,7 +271,7 @@ class TestCharmmWriterData(BaseTest):
                                               box=[2.0, 2.0, 2.0]
                                               )
         charmm = Charmm(test_box_ethane_propane, 'Test_fixes_angle_bond_atoms',
-                        FF_filename='Test_fixes_angle_bond_atoms',
+                        ff_filename='Test_fixes_angle_bond_atoms',
                         residues=[ethanol_gomc.name, ethane_gomc.name],
                         forcefield_selection='oplsaa',
                         fix_residue=[ethane_gomc.name],
@@ -381,7 +381,7 @@ class TestCharmmWriterData(BaseTest):
             Charmm(test_box_ethane_two_propanol_ua, 'residue_reorder_box_sizing_box_0',
                    structure_box_1=ethane_gomc,
                    filename_box_1='residue_reorder_box_sizing_box_1',
-                   FF_filename='residue_reorder_box',
+                   ff_filename='residue_reorder_box',
                    residues=[two_propanol_ua.name, ethane_gomc.name],
                    forcefield_selection={two_propanol_ua.name: 'trappe-ua', ethane_gomc.name: 'oplsaa'},
                    fix_residue=None,
@@ -400,7 +400,7 @@ class TestCharmmWriterData(BaseTest):
         charmm = Charmm(test_box_ethane_ethanol_gomc, 'residue_reorder_box_sizing_box_0',
                         structure_box_1=ethane_gomc,
                         filename_box_1='residue_reorder_box_sizing_box_1',
-                        FF_filename=None,
+                        ff_filename=None,
                         residues=[ethane_gomc.name, ethanol_gomc.name],
                         forcefield_selection=str(forcefields.get_ff_path()[0]) + '/xml/' + 'oplsaa.xml',
                         fix_residue=None,
@@ -800,7 +800,7 @@ class TestCharmmWriterData(BaseTest):
         test_value = Charmm(ethane_gomc, 'box_0',
                             structure_box_1=None,
                             filename_box_1=None,
-                            FF_filename=None,
+                            ff_filename=None,
                             residues=[ethane_gomc.name],
                             forcefield_selection={ethane_gomc.name: 'oplsaa'},
                             )
@@ -811,7 +811,7 @@ class TestCharmmWriterData(BaseTest):
         with pytest.raises(TypeError, match=r'ERROR: Please enter the residues list \(residues\) in a list format.'):
             Charmm(ethane_gomc, 'box_0',
                    structure_box_1=None, filename_box_1=None,
-                   FF_filename=None,
+                   ff_filename=None,
                    residues=ethane_gomc.name,
                    forcefield_selection={ethane_gomc.name: 'oplsaa'},
                    )
@@ -821,7 +821,7 @@ class TestCharmmWriterData(BaseTest):
             Charmm(ethane_gomc, 'box_0',
                    structure_box_1=None,
                    filename_box_1=None,
-                   FF_filename=None,
+                   ff_filename=None,
                    residues='ethane_gomc.name',
                    forcefield_selection={ethane_gomc.name: 'oplsaa'},
                    )
@@ -831,9 +831,9 @@ class TestCharmmWriterData(BaseTest):
             Charmm(ethane_gomc, 'box_0',
                    structure_box_1=None,
                    filename_box_1=None,
-                   FF_filename=None,
+                   ff_filename=None,
                    residues=None,
-                   forcefield_selections={ethane_gomc.name: 'oplsaa'},
+                   forcefield_selection={ethane_gomc.name: 'oplsaa'},
                    )
 
     def test_charmm_filename_0_is_not_string(self, ethane_gomc):
@@ -841,7 +841,7 @@ class TestCharmmWriterData(BaseTest):
             Charmm(ethane_gomc, 0,
                    structure_box_1=None,
                    filename_box_1=None,
-                   FF_filename=None,
+                   ff_filename=None,
                    residues=[ethane_gomc.name],
                    forcefield_selection={ethane_gomc.name: 'oplsaa'},
                    )
@@ -851,7 +851,7 @@ class TestCharmmWriterData(BaseTest):
             Charmm(ethane_gomc, 'box_0',
                    structure_box_1=ethane_gomc,
                    filename_box_1=['box_0'],
-                   FF_filename=None,
+                   ff_filename=None,
                    residues=[ethane_gomc.name],
                    forcefield_selection={ethane_gomc.name: 'oplsaa'},
                    )
@@ -862,18 +862,18 @@ class TestCharmmWriterData(BaseTest):
             Charmm(ethane_gomc, 'box_0',
                    structure_box_1=None,
                    filename_box_1=None,
-                   FF_filename=None,
+                   ff_filename=None,
                    residues=[ethane_gomc.name],
                    forcefield_selection={ethane_gomc.name: 'oplsaa'},
                    box_1=[4, 4, 4],
                    )
 
     def test_charmm_gomc_filename_not_string(self, ethane_gomc):
-        with pytest.raises(TypeError, match=r'ERROR: Please enter GOMC force field name \(FF_filename\) as a string.'):
+        with pytest.raises(TypeError, match=r'ERROR: Please enter GOMC force field name \(ff_filename\) as a string.'):
             Charmm(ethane_gomc, 'box_0',
                    structure_box_1=None,
                    filename_box_1=None,
-                   FF_filename=0,
+                   ff_filename=0,
                    residues=[ethane_gomc.name],
                    forcefield_selection={ethane_gomc.name: 'oplsaa'},
                    )
@@ -884,7 +884,7 @@ class TestCharmmWriterData(BaseTest):
             Charmm(ethane_gomc, 'box_0',
                    structure_box_1=None,
                    filename_box_1=None,
-                   FF_filename='box.test',
+                   ff_filename='box.test',
                    residues=[ethane_gomc.name],
                    forcefield_selection={ethane_gomc.name: 'oplsaa'},
                    )
@@ -901,7 +901,7 @@ class TestCharmmWriterData(BaseTest):
             Charmm(ethane_gomc, 'box_0',
                    structure_box_1=None,
                    filename_box_1=None,
-                   FF_filename='box_0',
+                   ff_filename='box_0',
                    residues=[ethane_gomc.name],
                    forcefield_selection=['oplsaa', 'oplsaa'],
                    )
@@ -910,7 +910,7 @@ class TestCharmmWriterData(BaseTest):
         test_value = Charmm(ethane_gomc, 'box_0',
                             structure_box_1=None,
                             filename_box_1=None,
-                            FF_filename='box_0',
+                            ff_filename='box_0',
                             residues=[ethane_gomc.name],
                             forcefield_selection='oplsaa',
                             )
@@ -924,13 +924,13 @@ class TestCharmmWriterData(BaseTest):
             Charmm(ethane_gomc, 'box_0',
                    structure_box_1=None,
                    filename_box_1=None,
-                   FF_filename='box_0',
+                   ff_filename='box_0',
                    residues=["XXX"],
                    forcefield_selection='oplsaa',
                    )
 
     def test_ffselection_string(self, two_propanol_ua):
-        charmm = Charmm(two_propanol_ua, 'ffselection_string', FF_filename='ffselection_string',
+        charmm = Charmm(two_propanol_ua, 'ffselection_string', ff_filename='ffselection_string',
                         residues=[two_propanol_ua.name],
                         forcefield_selection=forcefields.get_ff_path()[0] + '/xml/' + 'trappe-ua.xml',
                         bead_to_atom_name_dict={'_CH3': 'C'})
@@ -965,7 +965,7 @@ class TestCharmmWriterData(BaseTest):
                                             '->Dictionary Ex: {"Water" : "oplsaa", "OCT": "path/trappe-ua.xml"}, '
                                             'Note: the file path must be specified the force field file if '
                                             'a standard foyer force field is not used.'):
-            Charmm(two_propanol_ua, 'S', FF_filename='S',
+            Charmm(two_propanol_ua, 'S', ff_filename='S',
                    residues=[two_propanol_ua.name],
                    forcefield_selection=[str(forcefields.get_ff_path()[0]) + '/xml/' + 'trappe-ua.xml'],
                    bead_to_atom_name_dict={'_CH3': 'C'},
@@ -974,7 +974,7 @@ class TestCharmmWriterData(BaseTest):
     def test_residues_not_a_string(self, two_propanol_ua):
         with pytest.raises(TypeError, match=r'ERROR: Please enter a residues list '
                                             r'\(residues\) with only string values.'):
-            Charmm(two_propanol_ua, 'box_0', FF_filename='box_0',
+            Charmm(two_propanol_ua, 'box_0', ff_filename='box_0',
                    residues=[2],
                    forcefield_selection={two_propanol_ua.name: 'trappe-ua'},
                    bead_to_atom_name_dict={'_CH3': 'C'},
@@ -1152,7 +1152,7 @@ class TestCharmmWriterData(BaseTest):
                                           box=[10, 10, 10], n_compounds=[10])
 
             value_0 = Charmm(box_reservior_0, 'test_bead_atomname_equal_3',
-                             FF_filename='test_bead_atomname_equal_3',
+                             ff_filename='test_bead_atomname_equal_3',
                              residues=[two_propanol_ua.name],
                              forcefield_selection='trappe-ua',
                              bead_to_atom_name_dict={'_CH3': 'Cx', '_HC': 'Cxx'}
@@ -1164,7 +1164,7 @@ class TestCharmmWriterData(BaseTest):
     def test_fix_res_bonds_angles_string(self, two_propanol_ua):
         with pytest.raises(TypeError, match=r'ERROR: Please enter the residues that have fixed angles and '
                                             r'bonds \(fix_res_bonds_angles\) in a list format.'):
-            Charmm(two_propanol_ua, 'charmm_data_UA', FF_filename='charmm_data_UA',
+            Charmm(two_propanol_ua, 'charmm_data_UA', ff_filename='charmm_data_UA',
                    residues=[two_propanol_ua.name], forcefield_selection='trappe-ua',
                    bead_to_atom_name_dict={'_CH3': 'C'}, fix_res_bonds_angles='two_propanol_ua.name'
                    )
@@ -1172,14 +1172,14 @@ class TestCharmmWriterData(BaseTest):
     def test_fix_res_bonds_angles_residue_not_in_system(self, two_propanol_ua):
         with pytest.raises(ValueError, match=r'ERROR: Please ensure that all the residue names in the '
                                              r'fix_res_bonds_angles list are also in the residues list.'):
-            Charmm(two_propanol_ua, 'charmm_data_UA', FF_filename='charmm_data_UA',
+            Charmm(two_propanol_ua, 'charmm_data_UA', ff_filename='charmm_data_UA',
                    residues=[two_propanol_ua.name], forcefield_selection='trappe-ua',
                    bead_to_atom_name_dict={'_CH3': 'C'}, fix_res_bonds_angles=['WNG']
                    )
 
     def test_fix_residue_string(self, two_propanol_ua):
         with pytest.raises(TypeError, match=r'ERROR: Please enter the fix_residue in a list format'):
-            Charmm(two_propanol_ua, 'charmm_data_UA', FF_filename='charmm_data_UA',
+            Charmm(two_propanol_ua, 'charmm_data_UA', ff_filename='charmm_data_UA',
                    residues=[two_propanol_ua.name], forcefield_selection='trappe-ua',
                    bead_to_atom_name_dict={'_CH3': 'C'}, fix_residue='two_propanol_ua.name'
                    )
@@ -1187,14 +1187,14 @@ class TestCharmmWriterData(BaseTest):
     def test_fix_residue_string_residue_not_in_system(self, two_propanol_ua):
         with pytest.raises(ValueError, match=r'Error: Please ensure that all the residue names in the fix_residue '
                                              r'list are also in the residues list.'):
-            Charmm(two_propanol_ua, 'charmm_data_UA', FF_filename='charmm_data_UA',
+            Charmm(two_propanol_ua, 'charmm_data_UA', ff_filename='charmm_data_UA',
                    residues=[two_propanol_ua.name], forcefield_selection='trappe-ua',
                    bead_to_atom_name_dict={'_CH3': 'C'}, fix_residue=['WNG']
                    )
 
     def test_fix_residue_in_box_string(self, two_propanol_ua):
         with pytest.raises(TypeError, match=r'ERROR: Please enter the fix_residue_in_box in a list format.'):
-            Charmm(two_propanol_ua, 'charmm_data_UA', FF_filename='charmm_data_UA',
+            Charmm(two_propanol_ua, 'charmm_data_UA', ff_filename='charmm_data_UA',
                    residues=[two_propanol_ua.name], forcefield_selection='trappe-ua',
                    bead_to_atom_name_dict={'_CH3': 'C'},
                    fix_residue_in_box='two_propanol_ua.name'
@@ -1203,7 +1203,7 @@ class TestCharmmWriterData(BaseTest):
     def test_fix_residue_in_box_string_residue_not_in_system(self, two_propanol_ua):
         with pytest.raises(ValueError, match=r'Error: Please ensure that all the residue names in the '
                                              r'fix_residue_in_box list are also in the residues list.'):
-            Charmm(two_propanol_ua, 'charmm_data_UA', FF_filename='charmm_data_UA',
+            Charmm(two_propanol_ua, 'charmm_data_UA', ff_filename='charmm_data_UA',
                    residues=[two_propanol_ua.name], forcefield_selection='trappe-ua',
                    bead_to_atom_name_dict={'_CH3': 'C'}, fix_residue_in_box=['WNG']
                    )
@@ -1212,7 +1212,7 @@ class TestCharmmWriterData(BaseTest):
         with pytest.raises(TypeError, match=r'ERROR: Please enter the a bead type to atom in the dictionary '
                                             r'\(bead_to_atom_name_dict\) so GOMC can properly evaluate the '
                                             r'unique atom names'):
-            Charmm(two_propanol_ua, 'charmm_data_UA', FF_filename='charmm_data_UA',
+            Charmm(two_propanol_ua, 'charmm_data_UA', ff_filename='charmm_data_UA',
                    residues=[two_propanol_ua.name], forcefield_selection='trappe-ua',
                    bead_to_atom_name_dict=['_CH3', 'C']
                    )
@@ -1220,7 +1220,7 @@ class TestCharmmWriterData(BaseTest):
     def test_bead_to_atom_name_dict_not_string_0(self, two_propanol_ua):
         with pytest.raises(TypeError, match=r'ERROR: Please enter the bead_to_atom_name_dict with only '
                                             r'string inputs.'):
-            Charmm(two_propanol_ua, 'charmm_data_UA', FF_filename='charmm_data_UA',
+            Charmm(two_propanol_ua, 'charmm_data_UA', ff_filename='charmm_data_UA',
                    residues=[two_propanol_ua.name], forcefield_selection='trappe-ua',
                    bead_to_atom_name_dict={'_CH3': 0},
                    )
@@ -1228,7 +1228,7 @@ class TestCharmmWriterData(BaseTest):
     def test_bead_to_atom_name_dict_not_string_1(self, two_propanol_ua):
         with pytest.raises(TypeError, match=r'ERROR: Please enter the bead_to_atom_name_dict with only '
                                             r'string inputs.'):
-            Charmm(two_propanol_ua, 'charmm_data_UA', FF_filename='charmm_data_UA',
+            Charmm(two_propanol_ua, 'charmm_data_UA', ff_filename='charmm_data_UA',
                    residues=[two_propanol_ua.name], forcefield_selection='trappe-ua',
                    bead_to_atom_name_dict={0: 'C'},
                    )
@@ -1237,7 +1237,7 @@ class TestCharmmWriterData(BaseTest):
         with pytest.raises(ValueError, match=r'ERROR: Please enter all 3 values and only 3 values for '
                                              r'the box_0 dimensions.'):
             Charmm(two_propanol_ua, 'charmm_data_UA_box_0',
-                   FF_filename='charmm_data_UA',
+                   ff_filename='charmm_data_UA',
                    residues=[two_propanol_ua.name], forcefield_selection='trappe-ua',
                    bead_to_atom_name_dict={'_CH3': 'C'},
                    box_0=[4, 5, 6, 6],
@@ -1248,7 +1248,7 @@ class TestCharmmWriterData(BaseTest):
                                              r'the box_1 dimensions.'):
             Charmm(two_propanol_ua, 'charmm_data_UA_box_0',
                    structure_box_1=two_propanol_ua, filename_box_1='charmm_data_UA_box_1',
-                   FF_filename='charmm_data_UA',
+                   ff_filename='charmm_data_UA',
                    residues=[two_propanol_ua.name], forcefield_selection='trappe-ua',
                    bead_to_atom_name_dict={'_CH3': 'C'},
                    box_0=[4, 5, 6], box_1=[3, 4, 5, 6]
@@ -1257,7 +1257,7 @@ class TestCharmmWriterData(BaseTest):
     def test_box_0_negative_dims(self, two_propanol_ua):
         with pytest.raises(ValueError, match=r'ERROR: Please enter float or integer values, which are all '
                                              r'positive values for the box_0 dimensions.'):
-            Charmm(two_propanol_ua, 'charmm_data_UA', FF_filename='charmm_data_UA',
+            Charmm(two_propanol_ua, 'charmm_data_UA', ff_filename='charmm_data_UA',
                    residues=[two_propanol_ua.name], forcefield_selection='trappe-ua',
                    bead_to_atom_name_dict={'_CH3': 'C'}, box_0=[-3, 4, 5]
                    )
@@ -1267,7 +1267,7 @@ class TestCharmmWriterData(BaseTest):
                                              r'positive values for the box_1 dimensions.'):
             Charmm(two_propanol_ua, 'charmm_data_UA_box_0',
                    structure_box_1=two_propanol_ua, filename_box_1='charmm_data_UA_box_1',
-                   FF_filename='charmm_data_UA',
+                   ff_filename='charmm_data_UA',
                    residues=[two_propanol_ua.name], forcefield_selection='trappe-ua',
                    bead_to_atom_name_dict={'_CH3': 'C'},
                    box_0=[4, 5, 6], box_1=[-3, 4, 5]
@@ -1276,7 +1276,7 @@ class TestCharmmWriterData(BaseTest):
     def test_box_0_string_dims(self, two_propanol_ua):
         with pytest.raises(ValueError, match=r'ERROR: Please enter float or integer values, which are all '
                                              r'positive values for the box_0 dimensions.'):
-            Charmm(two_propanol_ua, 'charmm_data_UA', FF_filename='charmm_data_UA',
+            Charmm(two_propanol_ua, 'charmm_data_UA', ff_filename='charmm_data_UA',
                    residues=[two_propanol_ua.name], forcefield_selection='trappe-ua',
                    bead_to_atom_name_dict={'_CH3': 'C'}, box_0=['string', 5, 6]
                    )
@@ -1284,7 +1284,7 @@ class TestCharmmWriterData(BaseTest):
     def test_box_1_string_dims(self, two_propanol_ua):
         with pytest.raises(ValueError, match=r'ERROR: Please enter float or integer values, which are all '
                                              r'positive values for the box_1 dimensions.'):
-            Charmm(two_propanol_ua, 'charmm_data_UA_box_0', FF_filename='charmm_data_UA',
+            Charmm(two_propanol_ua, 'charmm_data_UA_box_0', ff_filename='charmm_data_UA',
                    structure_box_1=two_propanol_ua, filename_box_1='charmm_data_UA_box_1',
                    residues=[two_propanol_ua.name], forcefield_selection='trappe-ua',
                    bead_to_atom_name_dict={'_CH3': 'C'},
@@ -1297,7 +1297,7 @@ class TestCharmmWriterData(BaseTest):
                                              r'built for structure.'):
             Charmm(ethane_gomc, 'charmm_data_box_0',
                    structure_box_1=None, filename_box_1=None,
-                   FF_filename='charmm_data',
+                   ff_filename='charmm_data',
                    residues=[ethanol_gomc.name], forcefield_selection='oplsaa',
                    )
 
@@ -1307,7 +1307,7 @@ class TestCharmmWriterData(BaseTest):
                                              r'built for structure.'):
             Charmm(ethane_gomc, 'charmm_data_box_0',
                    structure_box_1=ethanol_gomc, filename_box_1='charmm_data_box_1',
-                   FF_filename='charmm_data',
+                   ff_filename='charmm_data',
                    residues=['XXX', ethanol_gomc.name], forcefield_selection='oplsaa',
                    )
 
@@ -1317,7 +1317,7 @@ class TestCharmmWriterData(BaseTest):
                                              r'built for structure.'):
             Charmm(ethane_gomc, 'charmm_data_box_0',
                    structure_box_1=ethanol_gomc, filename_box_1='charmm_data_box_1',
-                   FF_filename='charmm_data',
+                   ff_filename='charmm_data',
                    residues=['XXX', ethane_gomc.name], forcefield_selection='oplsaa',
                    )
 
@@ -1326,7 +1326,7 @@ class TestCharmmWriterData(BaseTest):
                                              r'only unique residue names.'):
             Charmm(ethane_gomc, 'charmm_data_box_0',
                    structure_box_1=ethanol_gomc, filename_box_1='charmm_data_box_1',
-                   FF_filename='charmm_data',
+                   ff_filename='charmm_data',
                    residues=[ethanol_gomc.name, ethanol_gomc.name], forcefield_selection='oplsaa',
                    )
 
@@ -1336,7 +1336,7 @@ class TestCharmmWriterData(BaseTest):
                                              r'built for structure.'):
             Charmm(ethane_gomc, 'charmm_data_box_0',
                    structure_box_1=ethanol_gomc, filename_box_1='charmm_data_box_1',
-                   FF_filename='charmm_data',
+                   ff_filename='charmm_data',
                    residues=[ethanol_gomc.name], forcefield_selection='oplsaa',
                    )
 
@@ -1346,7 +1346,7 @@ class TestCharmmWriterData(BaseTest):
 
         charmm = Charmm(two_propanol_ua, 'charmm_filled_box',
                         structure_box_1=empty_compound, filename_box_1='charmm_empty_box',
-                        FF_filename='charmm_empty_box.inp',
+                        ff_filename='charmm_empty_box.inp',
                         residues=[two_propanol_ua.name], forcefield_selection='trappe-ua',
                         bead_to_atom_name_dict={'_CH3': 'C'},
                         box_0=[4, 5, 6],
@@ -1388,7 +1388,7 @@ class TestCharmmWriterData(BaseTest):
 
         charmm = Charmm(two_propanol_ua, 'charmm_filled_box',
                         structure_box_1=empty_compound, filename_box_1='charmm_empty_box',
-                        FF_filename='charmm_empty_box.inp',
+                        ff_filename='charmm_empty_box.inp',
                         residues=[two_propanol_ua.name], forcefield_selection='trappe-ua',
                         bead_to_atom_name_dict={'_CH3': 'C'},
                         box_0=[4, 5, 6],
@@ -1430,7 +1430,7 @@ class TestCharmmWriterData(BaseTest):
 
         charmm = Charmm(empty_compound, 'charmm_empty_box',
                         structure_box_1=two_propanol_ua, filename_box_1='charmm_filled_box',
-                        FF_filename='charmm_empty_box',
+                        ff_filename='charmm_empty_box',
                         residues=[two_propanol_ua.name], forcefield_selection='trappe-ua',
                         bead_to_atom_name_dict={'_CH3': 'C'},
                         box_0=[4, 5, 6], box_1=[3, 4, 5]
@@ -1477,7 +1477,7 @@ class TestCharmmWriterData(BaseTest):
                            ):
             Charmm(empty_compound_box_0, 'charmm_data_box_0',
                    structure_box_1=empty_compound_box_1, filename_box_1='charmm_data_box_1',
-                   FF_filename='charmm_data',
+                   ff_filename='charmm_data',
                    residues=[], forcefield_selection='oplsaa',
                    )
 
@@ -1491,7 +1491,7 @@ class TestCharmmWriterData(BaseTest):
                            ):
             Charmm(empty_compound_box_0, 'charmm_data_box_0',
                    structure_box_1=None, filename_box_1=None,
-                   FF_filename='charmm_data',
+                   ff_filename='charmm_data',
                    residues=[], forcefield_selection='oplsaa',
                    )
 
@@ -1504,7 +1504,7 @@ class TestCharmmWriterData(BaseTest):
             empty_compound = mb.Compound()
             Charmm(empty_compound, 'charmm_empty_box',
                    structure_box_1=two_propanol_ua, filename_box_1='charmm_filled_box',
-                   FF_filename='charmm_empty_box',
+                   ff_filename='charmm_empty_box',
                    residues=[two_propanol_ua.name], forcefield_selection='trappe-ua',
                    bead_to_atom_name_dict={'_CH3': 'C'},
                    box_0=[4, 5, 6], box_1=[3, 4, 5]
@@ -1517,7 +1517,7 @@ class TestCharmmWriterData(BaseTest):
                                                                              type('ethane_gomc'))):
             Charmm('ethane_gomc', 'charmm_data_box_0',
                    structure_box_1=ethane_gomc, filename_box_1='charmm_data_box_1',
-                   FF_filename='charmm_data',
+                   ff_filename='charmm_data',
                    residues=[ethane_gomc.name], forcefield_selection='oplsaa',
                    )
 
@@ -1528,7 +1528,7 @@ class TestCharmmWriterData(BaseTest):
                                                                             type(0))):
             Charmm(ethane_gomc, 'charmm_data_box_0',
                    structure_box_1=0, filename_box_1='charmm_data_box_1',
-                   FF_filename='charmm_data',
+                   ff_filename='charmm_data',
                    residues=[ethane_gomc.name], forcefield_selection='oplsaa',
                    )
 
@@ -1536,7 +1536,7 @@ class TestCharmmWriterData(BaseTest):
         with pytest.raises(TypeError, match=r'ERROR: Please enter the forcefield_selection as it was not provided.'):
             Charmm(ethane_gomc, 'charmm_data_box_0',
                    structure_box_1=ethane_gomc, filename_box_1='charmm_data_box_1',
-                   FF_filename='charmm_data',
+                   ff_filename='charmm_data',
                    residues=[ethane_gomc.name], forcefield_selection=None,
                    )
 
@@ -1545,7 +1545,7 @@ class TestCharmmWriterData(BaseTest):
                                              r"supported in this MoSDeF GOMC parameter writer."):
             charmm = Charmm(ethane_gomc, 'charmm_data_box_0',
                             structure_box_1=ethane_gomc, filename_box_1='charmm_data_box_1',
-                            FF_filename='charmm_data',
+                            ff_filename='charmm_data',
                             residues=[ethane_gomc.name], forcefield_selection='oplsaa',
                             non_bonded_type='Mie'
                             )
@@ -1556,7 +1556,7 @@ class TestCharmmWriterData(BaseTest):
                                              r'supported in this MoSDeF GOMC parameter writer.'):
             charmm = Charmm(ethane_gomc, 'charmm_data_box_0',
                             structure_box_1=ethane_gomc, filename_box_1='charmm_data_box_1',
-                            FF_filename='charmm_data',
+                            ff_filename='charmm_data',
                             residues=[ethane_gomc.name], forcefield_selection='oplsaa',
                             non_bonded_type='XXX'
                             )
@@ -1568,7 +1568,7 @@ class TestCharmmWriterData(BaseTest):
                                              "scaling factors."):
             Charmm(ethane_gomc, 'charmm_data_box_0',
                    structure_box_1=two_propanol_ua, filename_box_1='charmm_data_box_1',
-                   FF_filename='charmm_data',
+                   ff_filename='charmm_data',
                    residues=[ethane_gomc.name, two_propanol_ua.name],
                    forcefield_selection={ethane_gomc.name: 'oplsaa', two_propanol_ua.name: 'trappe-ua'},
                    )
@@ -1581,7 +1581,7 @@ class TestCharmmWriterData(BaseTest):
                                             r'then use the write_inp function.'):
             charmm = Charmm(ethane_gomc, 'charmm_data_box_0',
                             structure_box_1=ethane_gomc, filename_box_1='charmm_data_box_1',
-                            FF_filename=None,
+                            ff_filename=None,
                             forcefield_selection='oplsaa',
                             residues=[ethane_gomc.name],
                             )
@@ -1590,7 +1590,7 @@ class TestCharmmWriterData(BaseTest):
     def test_write_inp_with_2_boxes(self, ethane_gomc):
         charmm = Charmm(ethane_gomc, 'charmm_data_box_0',
                         structure_box_1=ethane_gomc, filename_box_1='charmm_data_box_1',
-                        FF_filename='charmm_data',
+                        ff_filename='charmm_data',
                         residues=[ethane_gomc.name],
                         forcefield_selection='oplsaa',
                         )
