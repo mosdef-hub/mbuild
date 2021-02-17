@@ -84,7 +84,7 @@ def specific_ff_to_residue(structure,
         print_error_message = 'ERROR: The structure expected to be of type: ' \
                               '{} or {}, received: {}'.format(type(Compound()),
                                                               type(mb.Box(lengths=[1, 1, 1])),
-                                                              type(structure_box_0))
+                                                              type(structure))
         raise TypeError(print_error_message)
 
     print('forcefield_selection = ' + str(forcefield_selection))
@@ -129,7 +129,8 @@ def specific_ff_to_residue(structure,
             # change from nm to Angstroms
             box_ang.append(box_iter * 10)
 
-    print_error_message_for_boxes_for_simulatiion = 'Please enter boxes_for_simulation equal the integer 1 or 2.'
+    print_error_message_for_boxes_for_simulatiion = 'ERROR: Please enter boxes_for_simulation equal ' \
+                                                    'the integer 1 or 2.'
     if not isinstance(boxes_for_simulation, int):
         raise TypeError(print_error_message_for_boxes_for_simulatiion)
 
@@ -231,14 +232,14 @@ def specific_ff_to_residue(structure,
             mb_box_length_1 = mb_box_maxs_1 - mb_box_mins_1
             mb_box_length_2 = mb_box_maxs_2 - mb_box_mins_2
 
-        if not structure.angles[0] == 90 and not structure.angles[0] == 90 and not structure.angles[0] == 90:
+        if structure.angles[0] != 90 or structure.angles[1] != 90 or structure.angles[2] != 90:
             print_error_message = 'This writer only currently supports orthogonal boxes ' \
-                                  '(i.e., boxes with all 90 degree angles)'
+                                  '(i.e., boxes with all 90 degree angles).'
             raise ValueError(print_error_message)
 
         # convert the structure to a mbuild.Compound and set the  initial_no_atoms = 0
         if structure.lengths is None or mb_box_length_0 <= 0 or mb_box_length_1 <= 0 or mb_box_length_2 <= 0:
-            print_error_message = 'An empty box was specified, without any box dimensions.'
+            print_error_message = 'An empty box was specified, with one or more dimensions <= 0.'
             raise ValueError(print_error_message)
         else:
             structure = mb.Compound()

@@ -710,6 +710,74 @@ class TestCharmmWriterData(BaseTest):
                                    boxes_for_simulation=1
                                    )
 
+    def test_specific_ff_to_residue_input_string_as_compound(self, ethane_gomc):
+        with pytest.raises(TypeError, match=r"ERROR: The structure expected to be of type: "
+                                            r"<class 'mbuild.compound.Compound'> or <class 'mbuild.box.Box'>, "
+                                            r"received: <class 'str'>"):
+            specific_ff_to_residue('ethane_gomc',
+                                   forcefield_selection={ethane_gomc.name: 'oplsaa'},
+                                   residues=[ethane_gomc.name],
+                                   reorder_res_in_pdb_psf=False,
+                                   box=None,
+                                   boxes_for_simulation=1
+                                   )
+
+    def test_specific_ff_to_residue_boxes_for_simulation_not_int(self, ethane_gomc):
+        with pytest.raises(TypeError, match=r'ERROR: Please enter boxes_for_simulation equal '
+                                            'the integer 1 or 2.'):
+            specific_ff_to_residue(ethane_gomc,
+                                   forcefield_selection={ethane_gomc.name: 'oplsaa'},
+                                   residues=[ethane_gomc.name],
+                                   reorder_res_in_pdb_psf=False,
+                                   box=None,
+                                   boxes_for_simulation=1.1
+                                   )
+
+    def test_specific_ff_to_residues_no_ff(self, ethane_gomc):
+        with pytest.raises(ValueError, match=r'The forcefield_selection variable are not provided, '
+                                             r'but there are residues provided.'):
+            specific_ff_to_residue(ethane_gomc,
+                                   forcefield_selection={},
+                                   residues=[ethane_gomc.name],
+                                   reorder_res_in_pdb_psf=False,
+                                   box=None,
+                                   boxes_for_simulation=1
+                                   )
+
+    def test_specific_ff_to_no_residues(self, ethane_gomc):
+        with pytest.raises(ValueError, match=r'The residues variable is and empty list but there are '
+                                             'forcefield_selection variables provided.'):
+            specific_ff_to_residue(ethane_gomc,
+                                   forcefield_selection={ethane_gomc.name: 'oplsaa'},
+                                   residues=[],
+                                   reorder_res_in_pdb_psf=False,
+                                   box=None,
+                                   boxes_for_simulation=1
+                                   )
+
+    def test_specific_ff_wrong_path(self, ethane_gomc):
+        with pytest.raises(ValueError, match=r'Please make sure are entering the correct foyer FF path, including '
+                                             r'the FF file name.xml If you are using the pre-build FF files in '
+                                             r'foyer, please us the forcefield_names variable.'):
+            specific_ff_to_residue(ethane_gomc,
+                                   forcefield_selection={ethane_gomc.name: '/home/oplsaa.xml'},
+                                   residues=[ethane_gomc.name],
+                                   reorder_res_in_pdb_psf=False,
+                                   box=None,
+                                   boxes_for_simulation=1
+                                   )
+
+    def test_specific_ff_wrong_foyer_name(self, ethane_gomc):
+        with pytest.raises(ValueError, match=r'Please make sure are entering the correct foyer FF name, '
+                                             r'or the correct file extention \(i.e., .xml, if required\).'):
+            specific_ff_to_residue(ethane_gomc,
+                                   forcefield_selection={ethane_gomc.name: 'xxx'},
+                                   residues=[ethane_gomc.name],
+                                   reorder_res_in_pdb_psf=False,
+                                   box=None,
+                                   boxes_for_simulation=1
+                                   )
+
     def test_specific_ff_to_residue_ffselection_run(self, ethane_gomc):
         [test_value_0, test_value_1,
          test_value_2, test_value_3] = specific_ff_to_residue(ethane_gomc,
@@ -724,6 +792,31 @@ class TestCharmmWriterData(BaseTest):
         assert test_value_1 == {'ETH': 0.5}
         assert test_value_2 == {'ETH': 0.5}
         assert test_value_3 == ['ETH']
+
+    def test_specific_ff_to_empty_box_with_max_mins(self, ethane_gomc):
+        with pytest.raises(ValueError, match=r'This writer only currently supports orthogonal boxes ' \
+                                             '\(i.e., boxes with all 90 degree angles\).'):
+            empty_compound = mb.Box(mins=[1, 1, 1], maxs=[3, 3, 3], angles=[89, 90, 90])
+
+            specific_ff_to_residue(empty_compound,
+                                   forcefield_selection={ethane_gomc.name: 'oplsaa'},
+                                   residues=[ethane_gomc.name],
+                                   reorder_res_in_pdb_psf=False,
+                                   box=[5, 6, 7],
+                                   boxes_for_simulation=2
+                                   )
+
+    def test_specific_ff_to_empty_box_with_length_0(self, ethane_gomc):
+        with pytest.raises(ValueError, match=r'An empty box was specified, with one or more dimensions <= 0.'):
+            empty_compound = mb.Box(lengths=[0, 1, 1])
+
+            specific_ff_to_residue(empty_compound,
+                                   forcefield_selection={ethane_gomc.name: 'oplsaa'},
+                                   residues=[ethane_gomc.name],
+                                   reorder_res_in_pdb_psf=False,
+                                   box=[5, 6, 7],
+                                   boxes_for_simulation=2
+                                   )
 
     def test_specific_ff_to_no_atoms_in_residue(self):
         with pytest.raises(ValueError, match=r'The residues variable is and empty list but there '
