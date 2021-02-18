@@ -37,6 +37,8 @@ class Polymer(Compound):
     def build(self, n, sequence='A'):
         if n < 1:
             raise ValueError('n must be 1 or more')
+        n_monomers = n*len(sequence)
+
         if isinstance(self.monomers, Compound):
             self.monomers = (self.monomers,)
         for monomer in self.monomers:
@@ -76,7 +78,7 @@ class Polymer(Compound):
 
         # Add the end groups
         head = self['monomer[0]'] # First monomer group
-        tail = self['monomer[{}]'.format(n - 1)] # Last monomer group
+        tail = self['monomer[{}]'.format(n_monomers - 1)] # Last monomer group
         for label in self.port_labels:
             if not head[label].used:
                 head_port = head[label]
@@ -113,7 +115,6 @@ class Polymer(Compound):
         """
         Add an mBuild compound to self.monomers which will be used to build the polymer.
         Call this function for each unique monomer to be used in the polymer.
-
         
         Parameters
         ----------
@@ -134,9 +135,9 @@ class Polymer(Compound):
             monomer created using add_monomer()
         orientation : array-like, shape=(3,), default=None
             Vector along which to orient the port
-            If replace = True, then the orientation of the bond
-            between the particle being removed and the anchor particle
-            is used.
+            If replace = True, and orientation = None, 
+            the orientation of the bond between the particle being
+            removed and the anchor particle is used.
         replace : Bool, required, default=True
             If True, then the particles identified by bonding_indices
             will be removed and ports are added to the particles they
@@ -158,6 +159,11 @@ class Polymer(Compound):
 
         for idx, label in zip(bonding_indices, port_labels):
             _add_port(monomer, label, idx, separation, orientation, replace)
+        if replace:
+            remove_atom1 = monomer[bonding_indices[0]]
+            remove_atom2 = monomer[bonding_indices[1]]
+            monomer.remove(remove_atom1)
+            monomer.remove(remove_atom2)
 
         self.monomers.append(monomer)
 
@@ -167,6 +173,10 @@ class Polymer(Compound):
         compound_2 = clone(compound)
         _add_port(compound, 'up', bond_index, separation, orientation, replace)
         _add_port(compound_2, 'up', bond_index, separation, orientation, replace)
+        if replace:
+            compound.remove(compound[bond_index])
+            compound_2.remove(compound_2[bond_index])
+
         self.end_groups.extend([compound, compound_2])
 
 
@@ -176,8 +186,8 @@ def _add_port(compound, label, atom_idx, separation, orientation=None, replace=T
     if replace:
         atom_bonds = [bond for bond in compound.bonds() if compound[atom_idx] in bond][0]
         anchor_particle = [p for p in atom_bonds if p != compound[atom_idx]][0]
-        orientation = compound[atom_idx].pos - anchor_particle.pos
-        compound.remove(compound[atom_idx])
+        if not orientation:
+            orientation = compound[atom_idx].pos - anchor_particle.pos
     else:
         anchor_particle = compound[atom_idx]
         
