@@ -219,14 +219,14 @@ class PeriodicCKDTree(KDTree):
         retshape = np.shape(x)[:-1]
         if not isinstance(retshape, tuple):
             if k > 1:
-                dd = np.empty(retshape + (k,), dtype=np.float)
+                dd = np.empty(retshape + (k,), dtype=float)
                 dd.fill(np.inf)
-                ii = np.empty(retshape + (k,), dtype=np.int)
+                ii = np.empty(retshape + (k,), dtype=int)
                 ii.fill(self.n)
             elif k == 1:
-                dd = np.empty(retshape, dtype=np.float)
+                dd = np.empty(retshape, dtype=float)
                 dd.fill(np.inf)
-                ii = np.empty(retshape, dtype=np.int)
+                ii = np.empty(retshape, dtype=int)
                 ii.fill(self.n)
             else:
                 raise ValueError("Requested %s nearest neighbors; acceptable "
@@ -254,9 +254,9 @@ class PeriodicCKDTree(KDTree):
                 else:
                     return np.inf, self.n
             elif k > 1:
-                dd = np.empty(k, dtype=np.float)
+                dd = np.empty(k, dtype=float)
                 dd.fill(np.inf)
-                ii = np.empty(k, dtype=np.int)
+                ii = np.empty(k, dtype=int)
                 ii.fill(self.n)
                 for j in range(len(hits)):
                     dd[j], ii[j] = hits[j]
@@ -313,7 +313,7 @@ class PeriodicCKDTree(KDTree):
         save substantial amounts of time by putting them in a
         PeriodicCKDTree and using query_ball_tree.
         """
-        x = np.asarray(x).astype(np.float)
+        x = np.asarray(x).astype(float)
         if x.shape[-1] != self.m:
             raise ValueError(
                 "Searching for a {}d-dimensional point in a {}d-dimensional KDTree".format(
