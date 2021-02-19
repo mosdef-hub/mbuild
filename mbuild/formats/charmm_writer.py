@@ -1390,11 +1390,12 @@ class Charmm:
                             for i in range(0,  dihedral_no_steps+1):
                                 t = i * dihedral_steps
 
-                                rb_dihedral_calc = params[0] + params[1] * (np.cos(t - no_pi))**1
-                                + params[2] * (np.cos(t - no_pi)) ** 2
-                                + params[3] * (np.cos(t - no_pi)) ** 3
-                                + params[4] * (np.cos(t - no_pi)) ** 4
-                                + params[5] * (np.cos(t - no_pi)) ** 5
+                                rb_dihedral_calc = params[0] + params[1] * (np.cos(t - no_pi)) ** 1 \
+                                + params[2] * (np.cos(t - no_pi)) ** 2 \
+                                + params[3] * (np.cos(t - no_pi)) ** 3 \
+                                + params[4] * (np.cos(t - no_pi)) ** 4 \
+                                + params[5] * (np.cos(t - no_pi)) ** 5 \
+
                                 """CHARMM_torsions 
                                 = K0 * (1 + Cos[n0 * (t) - (d0)]) + K1 * (1 + Cos[n1 * (t) - (d1)]) + K2 * (
                                            # 1 + Cos[n2 * (t) - (d2)])
@@ -1407,19 +1408,19 @@ class Charmm:
 
                                 rb_to_charmm_calc = charmm_coeffs[0, 0] * (1 + np.cos(int(charmm_coeffs[0, 1]) * t
                                                                            - charmm_coeffs[0, 2]*no_pi/180)
-                                                                           )
+                                                                           ) \
                                 + charmm_coeffs[1, 0] * (1 + np.cos(int(charmm_coeffs[1, 1]) * t
                                                                     - charmm_coeffs[1, 2]*no_pi/180)
-                                                         )
+                                                         ) \
                                 + charmm_coeffs[2, 0] * (1 + np.cos(int(charmm_coeffs[2, 1]) * t
                                                                     - charmm_coeffs[2, 2]*no_pi/180)
-                                                         )
+                                                         ) \
                                 + charmm_coeffs[3, 0] * (1 + np.cos(int(charmm_coeffs[3, 1]) * t
                                                                     - charmm_coeffs[3, 2]*no_pi/180)
-                                                         )
+                                                         ) \
                                 + charmm_coeffs[4, 0] * (1 + np.cos(int(charmm_coeffs[4, 1]) * t
                                                                     - charmm_coeffs[4, 2]*no_pi/180)
-                                                         )
+                                                         ) \
                                 + charmm_coeffs[5, 0] * (1 + np.cos(int(charmm_coeffs[5, 1]) * t
                                                                     - charmm_coeffs[5, 2]*no_pi/180)
                                                          )

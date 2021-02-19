@@ -8,18 +8,19 @@ def dict_keys_to_list(dict):
     """
     Converts the dictionary keys into a list
 
-    Outputs
+    Returns
     ---------
-    list : list of keys from the provided dictionary.
+    list : list
+        list of keys from the provided dictionary
 
     Parameters
     ----------
-    dict : dict, a provided dictionary
+    dict : dict
+        A provided dictionary
 
     """
-    list = []
-    for key in dict.keys():
-        list.append(key)
+    list = [key for key in dict.keys()]
+
     return list
 
 
@@ -27,7 +28,7 @@ def print_valid_required_input_variables(description=False):
     """
     Prints the valid required input, which is necessary to write the GOMC control file.
 
-    Outputs
+    Returns
     ---------
     Prints out the valid input variables (user optional) on the screen
         , which can be entered in the GOMC writer. These are the valid input
@@ -35,7 +36,7 @@ def print_valid_required_input_variables(description=False):
 
     Parameters
     ----------
-    description =  bool, default = False
+    description : bool, default = False
         If True, it prints the descriptions of the input_variables (i.e. dict),
         If False, it only prints the input_variables without the descriptions (i.e. list)
 
@@ -52,13 +53,13 @@ def _get_required_data(description=False):
 
     Parameters
     ----------
-    description =  bool, default = False.
+    description :  bool, default = False.
         If True, it prints the descriptions of the input_variables (i.e. dict),
         If False, it only prints the input_variables without the descriptions (i.e. list)
 
-    Outputs
+    Returns
     ---------
-    required_data = dict or list, default = list.
+    required_data : dict or list, default = list.
         If the description = True then a dict is provided with the key and value.
         if the description = False then a list of the dict keys is provided.
 
@@ -70,15 +71,15 @@ def _get_required_data(description=False):
     """
 
     required_data = {
-        "charmm_object": 'Charmm object; ' 
+        "charmm_object": 'Charmm object, ' 
                          'A Charmm object, which by definition has been parameterized ' 
                          'from the selected force field.',
-        "ensemble_type": "Required files or System Info (all ensembles): str " 
-                         "(valid strings are 'NVT', 'NPT', 'GEMC_NPT', 'GCMC-NVT', or 'GCMC'); " 
+        "ensemble_type": "Required files or System Info (all ensembles): str, " 
+                         "(valid strings are 'NVT', 'NPT', 'GEMC_NPT', 'GCMC-NVT', or 'GCMC'), " 
                          'the ensemble type for the simulation.',
-        "RunSteps": "Required files or System Info (all ensembles): int (> 0); " 
+        "RunSteps": "Required files or System Info (all ensembles): int (> 0), " 
                      "The number or run steps for the simulation.",
-        "Temperature":  "Required files or System Info (all ensembles): float or integer (> 0); " 
+        "Temperature":  "Required files or System Info (all ensembles): float or integer (> 0), " 
                         "Temperature of system in Kelvin (K)",
 
     }
@@ -95,13 +96,13 @@ def _get_all_possible_input_variables(description=False):
 
     Parameters
     ----------
-    description =  bool, default = False.
+    description :  bool, default = False.
         If True, it prints the descriptions of the input_variables (i.e. dict),
         If False, it only prints the input_variables without the descriptions (i.e. list)
 
-    Outputs
+    Returns
     ---------
-    valid_input_variables = dict or list, default = list.
+    valid_input_variables : dict or list, default = list.
         If the description = True then a dict is provided with the key and value.
         if the description = False then a list of the dict keys is provided.
 
@@ -118,15 +119,15 @@ def _get_all_possible_input_variables(description=False):
         # Definitions in this function are copied to a large extent from the GOMC manual release version 2.50 (start)
         # insert citation here:
         # ******************************************************************************************************
-        "Restart": 'Simulation info (all ensembles): boolean; default = False. ' 
+        "Restart": 'Simulation info (all ensembles): boolean, default = False. ' 
                    'Determines whether to restart the simulation ' 
                    'from restart file (*_restart.pdb and *_restart.psf) or not.',
-        "RestartCheckpoint": 'Simulation info (all ensembles): boolean; default = False. ' 
+        "RestartCheckpoint": 'Simulation info (all ensembles): boolean, default = False. ' 
                              'Determines whether to restart the ' 
                              'simulation with the checkpoint file (checkpoint.dat) or not. Restarting the ' 
                              'simulation with checkpoint.dat would result in an identitcal outcome, as if ' 
                              'previous simulation was continued.',
-        "PRNG": 'Simulation info (all ensembles): string or int (>= 0) ("RANDOM" or integer); default = "RANDOM". ' 
+        "PRNG": 'Simulation info (all ensembles): string or int (>= 0) ("RANDOM" or integer), default = "RANDOM". ' 
                 'Note PRNG = Pseudo-Random Number Generator (PRNG). ' 
                 'The first options are to enter the string \n' 
                 '\t\t\t\t\t\t\t\t\t\t\t\t\t -- "RANDOM", which selects a random seed number. ' 
@@ -138,42 +139,42 @@ def _get_all_possible_input_variables(description=False):
                 'line 2 = Random_Seed user_selected_integer. '
                 'Example 1: for Random enter the string "RANDOM. ' 
                 'Example 2: for a specific seed number enter a integer of your choosing. ',
-        "ParaTypeCHARMM": 'Simulation info (all ensembles): boolean; default = True. ' 
+        "ParaTypeCHARMM": 'Simulation info (all ensembles): boolean, default = True. ' 
                           'True if a CHARMM forcefield, False otherwise.',
-        "ParaTypeMie": 'Simulation info (all ensembles): boolean; default = False. ' 
+        "ParaTypeMie": 'Simulation info (all ensembles): boolean, default = False. ' 
                        'True if a Mie forcefield type, False otherwise.',
-        "ParaTypeMARTINI": 'Simulation info (all ensembles): boolean; default = False. ' 
+        "ParaTypeMARTINI": 'Simulation info (all ensembles): boolean, default = False. ' 
                            'True if a MARTINI forcefield, False otherwise.',
-        "RcutCoulomb_box_0": 'Simulation info (all ensembles): int or float (>= 0); '
+        "RcutCoulomb_box_0": 'Simulation info (all ensembles): int or float (>= 0), '
                              'default = None (Note: if None, GOMC will default to the Rcut value). '
                              'Sets a specific radius in box 0 where the short range ' 
                              'electrostatic energy will be calculated (i.e., The distance to truncate the ' 
                              'short range electrostatic energy in box 0.)',
-        "RcutCoulomb_box_1": 'Simulation info (only GEMC_NPT, GEMC_NVT, and GCMC): int, or float (>= 0); ' 
+        "RcutCoulomb_box_1": 'Simulation info (only GEMC_NPT, GEMC_NVT, and GCMC): int, or float (>= 0), ' 
                              'default = None (Note: if None, GOMC will default to the Rcut value). '
                              'Sets a specific radius in box 1 where the short range  '
                              'electrostatic energy will be calculated. (i.e., The distance to truncate the ' 
                              'short range electrostatic energy in box 1.)',
-        "Pressure": 'Simulation info (only GEMC_NPT and NPT): int (>= 0); default = 1.01325. ' 
+        "Pressure": 'Simulation info (only GEMC_NPT and NPT): int (>= 0), default = 1.01325. ' 
                     'The pressure in bar utilized for the NPT ' 
                     'and GEMC_NPT simulations.',
-        "Rcut": 'Simulation info (all ensembles): int or float (>= 0 and RcutLow < Rswitch < Rcut); default = 10. '
+        "Rcut": 'Simulation info (all ensembles): int or float (>= 0 and RcutLow < Rswitch < Rcut), default = 10. '
                 'Sets a specific radius in Angstroms that non-bonded interaction ' 
                 'energy and force will be considered and calculated using defined potential function. ' 
                 'The distance in Angstoms to truncate the LJ, Mie, or other VDW type potential at. '
                 'Note: Rswitch is only used when the "Potential" = SWITCH. ',
-        "RcutLow": 'Simulation info (all ensembles): int or float (>= 0 and RcutLow < Rswitch < Rcut); default = 1. '
+        "RcutLow": 'Simulation info (all ensembles): int or float (>= 0 and RcutLow < Rswitch < Rcut), default = 1. '
                    'Sets a specific minimum possible distance in Angstroms that reject ' 
                    'any move that places any atom closer than specified distance. The minimum possible '
                    'distance between any atoms. '  
                    'Sets a specific radius in Angstroms that non-bonded interaction '
                    'Note: Rswitch is only used when the "Potential" = SWITCH. ',
-        "LRC": 'Simulation info (all ensembles): boolean; default = True. ' 
+        "LRC": 'Simulation info (all ensembles): boolean, default = True. ' 
                'If True, the simulation considers the long range tail corrections for the non-bonded VDW or '
                'dispersion interactions. '
                'Note: In case of using SHIFT or SWITCH potential functions, LRC will be ignored.',
         "Exclude": 'Simulation info (all ensembles): str ' 
-                   '(The string inputs are "1-2", "1-3", or "1-4"); default = "1-3". ' 
+                   '(The string inputs are "1-2", "1-3", or "1-4"), default = "1-3". ' 
                    'Note: In CHARMM force field, the 1-4 interaction needs to be considered. ' 
                    'Choosing "Excude 1-3", will modify 1-4 interaction based on 1-4 parameters ' 
                    'in parameter file. If a kind force field is used, where ' 
@@ -189,7 +190,7 @@ def _get_all_possible_input_variables(description=False):
                    'except the ones that separated with one, ' 
                    'two or three bonds, will be considered using non-bonded parameters defined in parameter file',
         "Potential": 'Simulation info (all ensembles): str ' 
-                     '(The string inputs are "VDW", "EXP6", "SHIFT" and "SWITCH"); default = "VDW". ' 
+                     '(The string inputs are "VDW", "EXP6", "SHIFT" and "SWITCH"), default = "VDW". ' 
                      'Defines the potential function type to calculate non-bonded dispersion interaction ' 
                      'energy and force between atoms. \n' 
                      '\t\t\t\t\t\t\t\t\t\t\t\t\t -- "VDW":    Nonbonded dispersion interaction energy and force ' 
@@ -203,53 +204,53 @@ def _get_all_possible_input_variables(description=False):
                      '\t\t\t\t\t\t\t\t\t\t\t\t\t -- "SWITCH": This option smoothly forces the potential ' 
                      'energy to be zero at Rcut distance and starts modifying the potential at Rswitch ' 
                      'distance. Depending on force field type, specific potential function will be applied. ',
-        "Rswitch": 'Simulation info (all ensembles): int or float (>= 0 and RcutLow < Rswitch < Rcut); default = 12. '
+        "Rswitch": 'Simulation info (all ensembles): int or float (>= 0 and RcutLow < Rswitch < Rcut), default = 12. '
                    'Note: Rswitch is only used when the SWITCH function is used (i.e., "Potential" = SWITCH). '
                    'The Rswitch distance is in Angstrom. If the “SWITCH” function is chosen, ' 
-                   'Rswitch needs to be defined; otherwise, the program will be terminated. When using ' 
+                   'Rswitch needs to be defined, otherwise, the program will be terminated. When using ' 
                    'choosing "SWITCH" as potential function, the Rswitch distance defines where the' 
                    'non-bonded interaction energy modification is started, which is eventually truncated ' 
                    'smoothly at Rcut distance.',
-        "VDWGeometricSigma": 'Simulation info (all ensembles): boolean; default = False. ' 
+        "VDWGeometricSigma": 'Simulation info (all ensembles): boolean, default = False. ' 
                              'Use geometric mean, as required by OPLS force field, ' 
                              'to combining Lennard-Jones sigma parameters for different atom types. '
                              'If set to True, GOMC uses geometric mean to combine Lennard-Jones or VDW sigmas. '
                              'Note: The default setting of VDWGeometricSigma is false to use arithmetic mean '
                              'when combining Lennard-Jones or VDW sigma parameters for different atom types.',
-        "ElectroStatic": 'Simulation info (all ensembles): boolean; default = True. '
+        "ElectroStatic": 'Simulation info (all ensembles): boolean, default = True. '
                          'Considers the coulomb interactions or not. '
                          'If True, coulomb interactions are considered and false if not. '
                          'Note: To simulate the polar molecule in MARTINI force field, ElectroStatic needs to be ' 
                          'turn on. MARTINI force field uses short-range coulomb interaction with constant ' 
                          'Dielectric 15.0.',
-        "Ewald":  'Simulation info (all ensembles): boolean; default = True. '
+        "Ewald":  'Simulation info (all ensembles): boolean, default = True. '
                   'Considers the standard Ewald summation method for electrostatic calculations. ' 
                   'If True, Ewald summation calculation needs to be considered and false if not. '
                   'Note: By default, GOMC will set ElectroStatic to True if Ewald summation  ' 
                   'method was used to calculate coulomb interaction.',
-        "CachedFourier": 'Simulation info (all ensembles): boolean; default = False. ' 
+        "CachedFourier": 'Simulation info (all ensembles): boolean, default = False. ' 
                          'Considers storing the reciprocal terms for Ewald summation ' 
                          'calculation in order to improve the code performance. This option would increase the code ' 
                          'performance with the cost of memory usage. If True, to store reciprocal terms of Ewald ' 
                          'summation calculation and False if not. ' 
                          'Warning: Monte Carlo moves, such as MEMC-1, MEMC-2, MEMC-3, ' 
                          'IntraMEMC-1, IntraMEMC-2, and IntraMEMC-3 are not support with CachedFourier.',
-        "Tolerance": 'Simulation info (all ensembles): float (0.0 < float < 1.0); default = 0.00001. ' 
+        "Tolerance": 'Simulation info (all ensembles): float (0.0 < float < 1.0), default = 0.00001. ' 
                      'Sets the accuracy in Ewald summation calculation. Ewald separation parameter and number ' 
                      'of reciprocal vectors for the Ewald summation are determined based on the accuracy parameter',
-        "Dielectric": 'Simulation info (all ensembles): int or float (>= 0.0); default = 15. ' 
+        "Dielectric": 'Simulation info (all ensembles): int or float (>= 0.0), default = 15. ' 
                       'Sets dielectric value used in coulomb interaction when the Martini ' 
                       'force field is used. Note: In MARTINI force field, Dielectric needs to be set to 15.0.',
-        "PressureCalc": 'Simulation info (all ensembles): list [bool , int (> 0)] or [bool , step_frequency]; ' 
+        "PressureCalc": 'Simulation info (all ensembles): list [bool , int (> 0)] or [bool , step_frequency], ' 
                         'default = [True , set via formula or 10,000 max]. ' 
                         'Considers to calculate the pressure or not. bool = True, enables the pressure calculation ' 
                         'during the simulation, false disables the calculation. The int/step frequency sets the ' 
                         'frequency of calculating the pressure.',
-        "EqSteps": 'Simulation info (all ensembles): int (> 0); default = set via formula or 1M max. ' 
+        "EqSteps": 'Simulation info (all ensembles): int (> 0), default = set via formula or 1M max. ' 
                    'Sets the number of steps necessary to equilibrate the system ' 
                    'Averaging will begin at this step. ' 
                    'Note: In GCMC simulations, the Histogram files will be outputed at EqSteps.',
-        "AdjSteps": 'Simulation info (all ensembles): int (> 0); default = set via formula or 1,000 max. ' 
+        "AdjSteps": 'Simulation info (all ensembles): int (> 0), default = set via formula or 1,000 max. ' 
                     'Number of steps per move adjustment. ' 
                     'Sets the number of steps per adjustment of the parameter associated with each move ' 
                     '(e.g. maximum translate distance, maximum rotation, maximum volume exchange, etc.)',
@@ -257,13 +258,13 @@ def _get_all_possible_input_variables(description=False):
                            'Considers to change the volume of the simulation box by fixing the cross-sectional ' 
                            'area (x-y plane). If true, the volume will change only in z axis, If false, the volume ' 
                            'will change with constant axis ratio. ',
-        "FixVolBox0": 'Simulation info (only GEMC_NPT): boolean; default = False . ' 
+        "FixVolBox0": 'Simulation info (only GEMC_NPT): boolean, default = False . ' 
                       'Changing the volume of fluid phase (Box 1) to maintain the constant imposed pressure and ' 
                       'Temperature, while keeping the volume of adsorbed phase (Box 0) fixed. Note: By default, ' 
                       'GOMC will set useConstantArea to False if no value was set. It means, the volume of the ' 
                       'box will change in a way to maintain the constant axis ratio.',
         # GCMC only properties
-        "ChemPot": 'Simulation info (only GCMC): dict {str (4 dig limit) , int or float}; '  
+        "ChemPot": 'Simulation info (only GCMC): dict {str (4 dig limit) , int or float}, '  
                    'default = None (i.e., user must set as there is no working default).' 
                    'The chemical potentials in GOMC units of energy, K. ' 
                    'There is a 4 character limit for the string/residue name since the PDB/PSF '
@@ -275,7 +276,7 @@ def _get_all_possible_input_variables(description=False):
                    'OVERWRITTEN AND NO ERROR WILL BE THROWN IN THIS CONTROL FILE WRITER. '
                    'Example 1 (system with only water):  {"H2O" : -4000} . ' 
                    'Example 2 (system with water and ethanol):  {"H2O" : -4000, "ETH" : -8000} ',
-        "Fugacity": 'Simulation info (only GCMC): dict {str , int or float (>= 0)}; ' 
+        "Fugacity": 'Simulation info (only GCMC): dict {str , int or float (>= 0)}, ' 
                     'default = None (i.e., user must set as there is no working default). ' 
                     'The fugacity in GOMC units of pressure, bar. '
                     'There is a 4 character limit for the string/residue name since the PDB/PSF' 
@@ -289,33 +290,33 @@ def _get_all_possible_input_variables(description=False):
                     'Example 2 (system with water and ethanol):  {"H2O" : 0.5, "ETH" : 10} ',
 
         # CBMC inputs
-        "CBMC_First": 'CBMC inputs (all ensembles): int (>= 0); default = 12, ' 
+        "CBMC_First": 'CBMC inputs (all ensembles): int (>= 0), default = 12, ' 
                       'The Number of CD-CBMC trials to choose the first atom position' 
                       '(Lennard-Jones trials for first seed growth).',
-        "CBMC_Nth": 'CBMC inputs (all ensembles): int (>= 0); default = 10,  ' 
+        "CBMC_Nth": 'CBMC inputs (all ensembles): int (>= 0), default = 10,  ' 
                     'The Number of CD-CBMC trials to choose the later atom positions ' 
                     '(Lennard-Jones trials for first seed growth).',
-        "CBMC_Ang": 'CBMC inputs (all ensembles): int (>= 0); default = 50, ' 
+        "CBMC_Ang": 'CBMC inputs (all ensembles): int (>= 0), default = 50, ' 
                     'The Number of CD-CBMC bending angle trials to perform for geometry ' 
                     '(per the coupled-decoupled CBMC scheme).',
-        "CBMC_Dih": 'CBMC inputs (all ensembles): int (>= 0); default = 50, '
+        "CBMC_Dih": 'CBMC inputs (all ensembles): int (>= 0), default = 50, '
                     'The Number of CD-CBMC dihedral angle trials to perform for geometry '
                     '(per the coupled-decoupled CBMC scheme).',
 
 
         # Control file (.conf file ) output controls/parameters
-        "OutputName": 'Output Frequency (all ensembles): str (NO SPACES); default = "Output_data". '
+        "OutputName": 'Output Frequency (all ensembles): str (NO SPACES), default = "Output_data". '
                       'UNIQUE STRING NAME WITH NO SPACES for simulation used to name the block average, '
                       'PDB, and PSF output files.',
         "CoordinatesFreq": 'Output Frequency (all ensembles): list [bool , int (> 0)] or ' 
-                           '[Generate_data_bool , steps_per_data_output_int]; ' 
+                           '[Generate_data_bool , steps_per_data_output_int], ' 
                            'default = [True , set via formula or 1M max]. '
                            'Controls output of PDB file (coordinates). ' 
                            'If bool is True, this enables outputing the coordinate files at the ' 
                            'integer frequency (set steps_per_data_ouput_int), '
                            'while "False" disables outputing the coordinates.',
         "RestartFreq": 'Output Frequency (all ensembles): list [bool , int (> 0)] or ' 
-                       '[Generate_data_bool , steps_per_data_output_int]; ' 
+                       '[Generate_data_bool , steps_per_data_output_int], ' 
                        'default = [True , set via formula or 1M max], '
                        'This creates the PDB and PSF (coordinate and topology) files for restarting the system '
                        'at the set steps_per_data_ouput_int (frequency) '
@@ -323,7 +324,7 @@ def _get_all_possible_input_variables(description=False):
                        'integer frequency (set steps_per_data_ouput_int), ' 
                        'while “false” disables outputing the PDB/PSF restart files. ',
         "CheckpointFreq": 'Output Frequency (all ensembles): list [bool , int (> 0)] or ' 
-                          '[Generate_data_bool , steps_per_data_output_int]; '
+                          '[Generate_data_bool , steps_per_data_output_int], '
                           'default = [True , set via formula or 1M max], ' 
                           'Controls the output of the last state of simulation at a specified step, in a '
                           'binary file format (checkpoint.dat). Checkpoint file contains the following '
@@ -339,7 +340,7 @@ def _get_all_possible_input_variables(description=False):
                           'integer frequency (set steps_per_data_ouput_int), ' 
                           'while "False" disables outputing the checkpoint file.',
         "ConsoleFreq": 'Output Frequency (all ensembles): list [bool , int (> 0)] or '
-                       '[Generate_data_bool , steps_per_data_output_int]; '
+                       '[Generate_data_bool , steps_per_data_output_int], '
                        'default = [True , set via formular or 10,000 max]. ' 
                        'Controls the output to STDIO (“the console” or log file) of messages such as '
                        'acceptance statistics, and run timing info. In addition, instantaneously-selected '
@@ -348,7 +349,7 @@ def _get_all_possible_input_variables(description=False):
                        'integer frequency (set steps_per_data_ouput_int), '
                        'while "False" disables outputing the consol data file.',
         "BlockAverageFreq": 'Output Frequency (all ensembles): list [bool , int (> 0)] or ' 
-                            '[Generate_data_bool , steps_per_data_output_int]; '
+                            '[Generate_data_bool , steps_per_data_output_int], '
                             'default = [True , set via formula or 10,000 max]. '
                             'Controls the block averages output of selected thermodynamic properties. '
                             'Block averages are averages of thermodynamic values of interest for chunks of the '
@@ -357,75 +358,75 @@ def _get_all_possible_input_variables(description=False):
                             'integer frequency (set steps_per_data_ouput_int), '
                             'while "False" disables outputing the block averaging data/file.',
         "HistogramFreq": 'Output Frequency (all ensembles): list [bool , int (> 0)] or ' 
-                         '[Generate_data_bool , steps_per_data_output_int]; ' 
+                         '[Generate_data_bool , steps_per_data_output_int], ' 
                          'default = [True , set via formula or 10,000 max]. ' 
                          'Controls the histograms. Histograms are a binned listing of observation frequency ' 
                          'for a specific thermodynamic variable. In this code, they also control the output '
-                         'of a file containing energy/molecule samples; ' 
+                         'of a file containing energy/molecule samples, ' 
                          'it only will be used in "GCMC" ensemble simulations for histogram reweighting purposes.' 
                          'If bool is True, this enables outputing the data to the histogram data at the '
                          'integer frequency (set steps_per_data_ouput_int), ' 
                          'while "False" disables outputing the histogram data.',
 
         # Histogram data
-        "DistName": 'Histogram Output (all ensembles): str (NO SPACES); default = "dis". ' 
+        "DistName": 'Histogram Output (all ensembles): str (NO SPACES), default = "dis". ' 
                     'Short phrase which will be combined with RunNumber and RunLetter '
                     'to use in the name of the binned histogram for molecule distribution.'
                     'Sets short phrase to naming molecule distribution file.',
-        "HistName": 'Histogram Output (all ensembles): str (NO SPACES); default = "his". ' 
+        "HistName": 'Histogram Output (all ensembles): str (NO SPACES), default = "his". ' 
                     'Short phrase, which will be combined with RunNumber and RunLetter, '
                     'to use in the name of the energy/molecule count sample file.' 
                     'Sets short phrase to naming energy sample file.',
-        "RunNumber": 'Histogram Output (all ensembles): int  ( > 0 ); default = 1. ' 
+        "RunNumber": 'Histogram Output (all ensembles): int  ( > 0 ), default = 1. ' 
                      'Run number to be used in the above file names.  ' 
                      'Sets a number, which is a part of DistName and HistName file name.',
-        "RunLetter": 'Histogram Output (all ensembles): str (1 alphabetic character only); default = "a". '
+        "RunLetter": 'Histogram Output (all ensembles): str (1 alphabetic character only), default = "a". '
                      'Run letter to be used in above file names.' 
                      'Sets a letter, which is a part of DistName and HistName file name.',
-        "SampleFreq": 'Histogram Output (all ensembles): int ( > 0 ); default = 500. ' 
+        "SampleFreq": 'Histogram Output (all ensembles): int ( > 0 ), default = 500. ' 
                       'The number of steps per histogram sample.'
                       'Controls histogram sampling frequency.',
 
         # Data output for the consol and bulk properties calculations
-        "OutEnergy": 'Output Data (all ensembles): [bool, bool]; default = [True, True].   '
+        "OutEnergy": 'Output Data (all ensembles): [bool, bool], default = [True, True].   '
                      'The list provides the booleans to [block_averages_bool, consol_output_bool]. '
                      'This ouputs the energy data into the block averages and consol output/log files.',
-        "OutPressure": 'Output Data (all ensembles): [bool, bool]; default = [True, True].   '
+        "OutPressure": 'Output Data (all ensembles): [bool, bool], default = [True, True].   '
                        'The list provides the booleans to [block_averages_bool, consol_output_bool]. '
                        'This ouputs the pressure data into the block averages and consol output/log files.',
-        "OutMolNumber": 'Output Data (all ensembles): [bool, bool]; default = [True, True].   '
+        "OutMolNumber": 'Output Data (all ensembles): [bool, bool], default = [True, True].   '
                         'The list provides the booleans to [block_averages_bool, consol_output_bool]. '
                         'This ouputs the number of molecules data into the block averages and consol output/log files.',
-        "OutDensity": 'Output Data (all ensembles): [bool, bool]; default = [True, True].   '
+        "OutDensity": 'Output Data (all ensembles): [bool, bool], default = [True, True].   '
                       'The list provides the booleans to [block_averages_bool, consol_output_bool]. '
                       'This ouputs the density data into the block averages and consol output/log files.',
-        "OutVolume": 'Output Data (all ensembles): [bool, bool]; default = [True, True].   '
+        "OutVolume": 'Output Data (all ensembles): [bool, bool], default = [True, True].   '
                      'The list provides the booleans to [block_averages_bool, consol_output_bool]. '
                      'This ouputs the volume data into the block averages and consol output/log files.',
-        "OutSurfaceTension": 'Output Data (all ensembles): [bool, bool]; default = [False, False]. ' 
+        "OutSurfaceTension": 'Output Data (all ensembles): [bool, bool], default = [False, False]. ' 
                              'The list provides the booleans to [block_averages_bool, consol_output_bool]. '
                              'This ouputs the surface tension data into the block averages and consol '
                              'output/log files.',
 
         # free energy calculation in NVT and NPT ensembles.
         "FreeEnergyCalc": 'Free Energy Calcs (NVT and NPT only): list [bool , int (> 0)] or '
-                          '[Generate_data_bool , steps_per_data_output_int]; default = None. ' 
+                          '[Generate_data_bool , steps_per_data_output_int], default = None. ' 
                           'bool = True enabling free energy calculation during the simulation, false disables '
                           'the calculation. The int/step frequency sets the frequency of calculating the free energy.',
         "MoleculeType": 'Free Energy Calcs (NVT and NPT only): list [str , int (> 0)] or '  
-                        '["residue_name" , residue_ID]; ' 
+                        '["residue_name" , residue_ID], ' 
                         'user must set as there is no working default (default = None). ' 
                         'Note: ONLY 4 characters can be used for the string (i.e., "residue_name"). ' 
                         'Sets the solute molecule kind (residue name) and molecule number (residue ID), '  
                         'which absolute solvation free will be calculated for.',
-        "InitialState": 'Free Energy Calcs (NVT and NPT only): int (>= 0); user must set as there is no ' 
+        "InitialState": 'Free Energy Calcs (NVT and NPT only): int (>= 0), user must set as there is no ' 
                         'usable default (default = None). ' 
                         'The index of LambdaCoulomb and LambdaVDW vectors. Sets the index of the' 
                         'LambdaCoulomb and LambdaVDW vectors, to determine the simulation lambda value for'
                         'VDW and Coulomb interactions. ' 
                         'WARNRING : This must an integer within the vector count of the LambdaVDW and LambdaCoulomb, ' 
                         'in which the counting starts at 0.  ',
-        "LambdaVDW": 'Free Energy Calcs (NVT and NPT only): list of floats (0 <= floats <= 1); ' 
+        "LambdaVDW": 'Free Energy Calcs (NVT and NPT only): list of floats (0 <= floats <= 1), ' 
                      'user must set as there is no usable default (default = None). ' 
                      'Lambda values for VDW interaction in ascending order. Sets the intermediate '
                      'lambda states to which solute-solvent VDW interactions are scaled. '
@@ -434,7 +435,7 @@ def _get_all_possible_input_variables(description=False):
                      'WARNRING : This list must be the same length as the LambdaCoulomb list length.' 
                      'Example 1: [0.1, 1.0,] . ' 
                      'Example 2: [0.1, 0.2, 0.4, 0.9] . ',
-        "LambdaCoulomb": 'Free Energy Calcs (NVT and NPT only):  list of floats (0 <= floats <= 1); '
+        "LambdaCoulomb": 'Free Energy Calcs (NVT and NPT only):  list of floats (0 <= floats <= 1), '
                          'user must set as there is no usable default (default = None). ' 
                          'Lambda values for Coulombic interaction in ascending order. Sets the intermediate '
                          'lambda states to which solute-solvent Coulombic interactions are scaled.' 
@@ -448,11 +449,11 @@ def _get_all_possible_input_variables(description=False):
                          'ElectroStatic or Ewald is activated.' 
                          'Example 1: [0.1, 1.0,] . ' 
                          'Example 2: [0.1, 0.2, 0.4, 0.9] . ',
-        "ScaleCoulomb": 'Free Energy Calcs (NVT and NPT only): bool; default = False, '
+        "ScaleCoulomb": 'Free Energy Calcs (NVT and NPT only): bool, default = False, '
                         'True if coulombic interaction needs to be scaled non-linearly, ' 
                         'False if coulombic interaction needs to be scaled linearly. Determines to scale the '
                         'Coulombic interaction non-linearly (soft-core scheme) or not.',
-        "ScalePower": 'Free Energy Calcs (NVT and NPT only): int (>= 0); default = 2, '
+        "ScalePower": 'Free Energy Calcs (NVT and NPT only): int (>= 0), default = 2, '
                       'The p value in the soft-core scaling scheme.  Sets the p value in '
                       'soft-core scaling scheme, where the distance between solute and solvent is scaled'
                       'non-linearly.',
@@ -468,21 +469,21 @@ def _get_all_possible_input_variables(description=False):
 
         # moves without MEMC
         "DisFreq": 'Std. MC moves (all ensembles)                     : ' 
-                   'int or float (0 <= value <= 1); default are specific for each ' 
+                   'int or float (0 <= value <= 1), default are specific for each ' 
                    'ensemble (NVT = 0.15, NPT = 0.15, GEMC_NVT = 0.20, GEMC_NPT = 0.19, GCMC = 0.15). '
                    'Fractional percentage at which the displacement move will occur ' 
                    '(i.e., fraction of displacement moves). Note: all of the move types'  
                    'are not available in for every ensemble. Note: all of the move fractions' 
                    'must sum to 1, or the control file writer will fail.  ',
         "RotFreq": 'Std. MC moves (all ensembles)                     : '
-                   'int or float (0 <= value <= 1); default are specific for each ' 
+                   'int or float (0 <= value <= 1), default are specific for each ' 
                    'ensemble (NVT = 0.15, NPT = 0.15, GEMC_NVT = 0.20, GEMC_NPT = 0.20, GCMC = 0.15). ' 
                    'Fractional percentage at which the rotation move will occur ' 
                    '(i.e., fraction of rotation moves). Note: all of the move types' 
                    'are not available in for every ensemble. Note: all of the move fractions' 
                    'must sum to 1, or the control file writer will fail.  ',
         "IntraSwapFreq": 'Std. MC moves (all ensembles)                     : ' 
-                         'int or float (0 <= value <= 1); default are specific for each ' 
+                         'int or float (0 <= value <= 1), default are specific for each ' 
                          'ensemble (NVT = 0.30, NPT = 0.29, GEMC_NVT = 0.10, GEMC_NPT = 0.10, GCMC = 0.10). ' 
                          'Fractional percentage at which the molecule will be removed from a ' 
                          'box and inserted into the same box using coupled-decoupled configurational-bias'
@@ -490,7 +491,7 @@ def _get_all_possible_input_variables(description=False):
                          'are not available in for every ensemble. Note: all of the move fractions' 
                          'must sum to 1, or the control file writer will fail.  ',
         "SwapFreq": 'Std. MC moves (only GEMC_NPT, GEMC_NVT, and GCMC) : ' 
-                    'int or float (0 <= value <= 1); default are specific for each '
+                    'int or float (0 <= value <= 1), default are specific for each '
                     'ensemble (NVT = 0.00, NPT = 0.00, GEMC_NVT = 0.20, GEMC_NPT = 0.20, GCMC = 0.35). ' 
                     'For Gibbs and Grand Canonical (GC) ensemble runs only: Fractional ' 
                     'percentage at which molecule swap move will occur using coupled-decoupled '
@@ -498,7 +499,7 @@ def _get_all_possible_input_variables(description=False):
                     'are not available in for every ensemble. Note: all of the move fractions'  
                     'must sum to 1, or the control file writer will fail.  ',
         "RegrowthFreq": 'Std. MC moves (all ensembles)                     : '
-                        'int or float (0 <= value <= 1); default are specific for each ' 
+                        'int or float (0 <= value <= 1), default are specific for each ' 
                         'ensemble (NVT = 0.30, NPT = 0.30, GEMC_NVT = 0.20, GEMC_NPT = 0.20, GCMC = 0.15). ' 
                         'Fractional percentage at which part of the molecule will be ' 
                         'deleted and then regrown using coupled- decoupled configurational-bias algorithm ' 
@@ -506,7 +507,7 @@ def _get_all_possible_input_variables(description=False):
                         'are not available in for every ensemble. Note: all of the move fractions' 
                         'must sum to 1, or the control file writer will fail.  ',
         "CrankShaftFreq": 'Std. MC moves (all ensembles)                     : ' 
-                          'int or float (0 <= value <= 1); default are specific for each '
+                          'int or float (0 <= value <= 1), default are specific for each '
                           'ensemble (NVT = 0.10, NPT = 0.10, GEMC_NVT = 0.10, GEMC_NPT = 0.10, GCMC = 0.10). '
                           'Fractional percentage at which crankshaft move will occur. ' 
                           'In this move, two atoms that are forming angle or dihedral are selected randomly and ' 
@@ -516,7 +517,7 @@ def _get_all_possible_input_variables(description=False):
                           'are not available in for every ensemble. Note: all of the move fractions' 
                           'must sum to 1, or the control file writer will fail.  ',
         "VolFreq": 'Std. MC moves (only  GEMC_NPT  and  NPT )         : ' 
-                   'int or float (0 <= value <= 1); default are specific for each ' 
+                   'int or float (0 <= value <= 1), default are specific for each ' 
                    'ensemble (NVT = 0.00, NPT = 0.01, GEMC_NVT = 0.00, GEMC_NPT = 0.01, GCMC = 0.00). ' 
                    'Fractional percentage at which molecule will be removed from one box and inserted into ' 
                    'the other box using configurational bias algorithm ' 
@@ -524,7 +525,7 @@ def _get_all_possible_input_variables(description=False):
                    'are not available in for every ensemble. Note: all of the move fractions'  
                    'must sum to 1, or the control file writer will fail.  ',
         "MultiParticleFreq": 'Std. MC moves (all ensembles)                     : ' 
-                             'int or float (0 <= value <= 1); default are specific for each '
+                             'int or float (0 <= value <= 1), default are specific for each '
                              'ensemble (NVT = 0.00, NPT = 0.00, GEMC_NVT = 0.00, GEMC_NPT = 0.00, GCMC = 0.00). ' 
                              'Fractional percentage at which multi-particle move will ' 
                              'occur. In this move, all molecules in the selected simulation box will be rigidly ' 
@@ -535,7 +536,7 @@ def _get_all_possible_input_variables(description=False):
 
         # MEMC moves
         "IntraMEMC-1Freq": 'MEMC MC moves (all ensembles)                     : ' 
-                           'int or float (0 <= value <= 1); default are specific for each ' 
+                           'int or float (0 <= value <= 1), default are specific for each ' 
                            'ensemble (NVT = 0.00, NPT = 0.00, GEMC_NVT = 0.00, GEMC_NPT = 0.00, GCMC = 0.00). ' 
                            'Fractional percentage at which specified number of small molecule kind will be ' 
                            'exchanged with a specified large molecule kind in defined sub-volume within ' 
@@ -544,7 +545,7 @@ def _get_all_possible_input_variables(description=False):
                            'Note: all of the move types are not available in for every ensemble.' 
                            'Note: all of the move fractions must sum to 1, or the control file writer will fail.  ',
         "MEMC-1Freq": 'MEMC MC moves (only GEMC_NPT, GEMC_NVT, and GCMC) : '
-                      'int or float (0 <= value <= 1); default are specific for each '
+                      'int or float (0 <= value <= 1), default are specific for each '
                       'ensemble (NVT = 0.00, NPT = 0.00, GEMC_NVT = 0.00, GEMC_NPT = 0.00, GCMC = 0.00). '
                       'Fractional percentage at which specified number of small molecule kind will be exchanged with '
                       'a specified large molecule kind in defined sub-volume in dense simulation box. This move need '
@@ -553,7 +554,7 @@ def _get_all_possible_input_variables(description=False):
                       'Note: all of the move types are not available in for every ensemble.' 
                       'Note: all of the move fractions must sum to 1, or the control file writer will fail.  ',
         "IntraMEMC-2Freq": 'MEMC MC moves (all ensembles)                     : ' 
-                           'int or float (0 <= value <= 1); default are specific for each ' 
+                           'int or float (0 <= value <= 1), default are specific for each ' 
                            'ensemble (NVT = 0.00, NPT = 0.00, GEMC_NVT = 0.00, GEMC_NPT = 0.00, GCMC = 0.00). ' 
                            'Fractional percentage at which specified number of small molecule kind '
                            'will be exchanged with a specified large molecule kind in defined sub-volume '
@@ -564,7 +565,7 @@ def _get_all_possible_input_variables(description=False):
                            'Note: all of the move types are not available in for every ensemble.' 
                            'Note: all of the move fractions must sum to 1, or the control file writer will fail.  ',
         "MEMC-2Freq": 'MEMC MC moves (only GEMC_NPT, GEMC_NVT, and GCMC) : '
-                      'int or float (0 <= value <= 1); default are specific for each ' 
+                      'int or float (0 <= value <= 1), default are specific for each ' 
                       'ensemble (NVT = 0.00, NPT = 0.00, GEMC_NVT = 0.00, GEMC_NPT = 0.00, GCMC = 0.00). ' 
                       'Fractional percentage at which specified number of small molecule kind will be '
                       'exchanged with a specified large molecule kind in defined sub-volume in dense simulation box. '
@@ -575,7 +576,7 @@ def _get_all_possible_input_variables(description=False):
                       'Note: all of the move types are not available in for every ensemble.' 
                       'Note: all of the move fractions must sum to 1, or the control file writer will fail.  ',
         "IntraMEMC-3Freq": 'MEMC MC moves (all ensembles)                     : ' 
-                           'int or float (0 <= value <= 1); default are specific for each ' 
+                           'int or float (0 <= value <= 1), default are specific for each ' 
                            'ensemble (NVT = 0.00, NPT = 0.00, GEMC_NVT = 0.00, GEMC_NPT = 0.00, GCMC = 0.00). ' 
                            'Fractional percentage at which specified number of small molecule kind will be '
                            'exchanged with a specified large molecule kind in defined sub-volume within same '
@@ -586,7 +587,7 @@ def _get_all_possible_input_variables(description=False):
                            'Note: all of the move types are not available in for every ensemble.' 
                            'Note: all of the move fractions must sum to 1, or the control file writer will fail. ',
         "MEMC-3Freq": 'MEMC MC moves (only GEMC_NPT, GEMC_NVT, and GCMC) : ' 
-                      'int or float (0 <= value <= 1); default are specific for each ' 
+                      'int or float (0 <= value <= 1), default are specific for each ' 
                       'ensemble (NVT = 0.00, NPT = 0.00, GEMC_NVT = 0.00, GEMC_NPT = 0.00, GCMC = 0.00). '
                       'Fractional percentage at which specified number of small molecule kind will be exchanged with '
                       'a specified large molecule kind in defined sub-volume in dense simulation box. Specified atom '
@@ -600,7 +601,7 @@ def _get_all_possible_input_variables(description=False):
         "ExchangeVolumeDim": 'MEMC parameters (all ensembles)                   : ' 
                              'list of 3 floats or integers ' 
                              '[int or float (> 0), int or float (> 0), int or float (> 0)]'
-                             ' or [X-dimension, Y-dimension, Z-dimension)]; '
+                             ' or [X-dimension, Y-dimension, Z-dimension)], '
                              'default is [1.0, 1.0, 1.0]. '
                              'To use all variation of MEMC and Intra-MEMC Monte Carlo moves, the exchange '
                              'subvolume must be defined. The exchange sub-volume is defined as an orthogonal box ' 
@@ -612,7 +613,7 @@ def _get_all_possible_input_variables(description=False):
                              'Note: In case of exchanging 1 small molecule kind with 1 large molecule kind in '
                              'IntraMEMC-2, IntraMEMC-3, MEMC-2, MEMC-3 Monte Carlo moves, the sub-volume '
                              'dimension has no effect on acceptance rate. ',
-        "MEMC_DataInput": 'MEMC parameters (availablity based on selelection): nested lists; default = None.  ' 
+        "MEMC_DataInput": 'MEMC parameters (availablity based on selelection): nested lists, default = None.  ' 
                           'Enter data as a list with some sub-lists as follows: '
                           '[[ExchangeRatio_int (> 0), ExchangeLargeKind_str, ' 
                           '[LargeKindBackBone_atom_1_str_or_NONE, LargeKindBackBone_atom_2_str_or_NONE ], '
@@ -639,7 +640,7 @@ def _get_all_possible_input_variables(description=False):
                           "Example 3 (MEMC-3) : [ [2, 'WAT', 'O1', 'H1'], 'wat', [None, None]] , "
                           "[2, 'WAT', ['H1', 'H2'], 'wat', [None, None]] .\n"
                           '\t\t\t\t\t\t\t\t\t\t\t\t\t -- ExchangeRatio     = MEMC parameters (all ensembles): ' 
-                          'int (> 0); default = None. The Ratio of exchanging ' 
+                          'int (> 0), default = None. The Ratio of exchanging ' 
                           'small molecule/molecules with 1 large molecule. '
                           'To use all variation of MEMC and Intra-MEMC Monte Carlo moves, ' 
                           'the exchange ratio must be defined. ' 
@@ -647,21 +648,21 @@ def _get_all_possible_input_variables(description=False):
                           'exchanged with 1 large molecule. For each large-small molecule pairs, ' 
                           'one exchange ratio must be defined. \n' 
                           '\t\t\t\t\t\t\t\t\t\t\t\t\t -- ExchangeSmallKind = MEMC parameters (all ensembles): ' 
-                          'str; default = None. The small molecule ' 
+                          'str, default = None. The small molecule ' 
                           'kind (resname) to be exchanged. ' 
                           'Note: ONLY 4 characters can be used for the strings. ' 
                           'To use all variation of MEMC and Intra-MEMC Monte Carlo moves, '
                           'the small molecule kind to be exchanged with a large molecule '
                           'kind must be defined. Multiple small molecule kind can be specified.  \n'
                           '\t\t\t\t\t\t\t\t\t\t\t\t\t -- ExchangeLargeKind = MEMC parameters (all ensembles): ' 
-                          'str; default = None. The large molecule ' 
+                          'str, default = None. The large molecule ' 
                           'kind (resname) to be exchanged. '
                           'Note: ONLY 4 characters can be used for the strings. '
                           'To use all variation of MEMC and Intra-MEMC Monte Carlo moves, ' 
                           'the large molecule kind to be exchanged with small molecule ' 
                           'kind must be defined. Multiple large molecule kind can be specified. \n' 
                           '\t\t\t\t\t\t\t\t\t\t\t\t\t -- LargeKindBackBone = MEMC parameters (all ensembles): '
-                          '2 strings in a list [str, str] or 2 Nones in a list [None, None]; '
+                          '2 strings in a list [str, str] or 2 Nones in a list [None, None], '
                           'default = None. '
                           'Note: ONLY 4 characters can be used for the strings. ' 
                           'The [None, None] values can only be used if that MEMC type does not require them. '
@@ -681,7 +682,7 @@ def _get_all_possible_input_variables(description=False):
                           'same atom name must be used for str_for_atom_name_1 and str_for_atom_name_2 ' 
                           'of the LargeKindBackBone.  \n' 
                           '\t\t\t\t\t\t\t\t\t\t\t\t\t -- SmallKindBackBone = MEMC parameters (all ensembles): '
-                          '2 strings in a list [str, str] or 2 Nones in a list [None, None]; default = None. '
+                          '2 strings in a list [str, str] or 2 Nones in a list [None, None], default = None. '
                           'Note: ONLY 4 characters can be used for the strings. ' 
                           'The [None, None] values can only be used if that MEMC type does not require them.' 
                           'The strings for the the atom name 1 and atom name 2 that belong to the small ' 
@@ -710,13 +711,11 @@ def _get_default_variables_dict():
     """
     Provides a dictionary of the default variables inputs and their default settings (user optional).
 
-    Parameters
-    ----------
-    None
-
-    Outputs
+    Returns
     ---------
-    default_input_variables_dict =  Provides a dict of the default variables inputs (user optional)
+    default_input_variables_dict : dict
+        Provides a dict of the default variables inputs (user optional)
+
     """
 
     default_input_variables_dict = {
@@ -824,42 +823,37 @@ def check_valid_ensemble_files(ensemble_type, testing_ensemble_files_list):
     Checks if all the required ensemble inputs are provided,
         and provides a list of the bad variables in the printed output.
 
-    Outputs
+    Returns
     ---------
-    bool, returns a bool (True or False) depending on if all variables
-        are valid or not
+    bool
+        True is all variables are valid, False otherwise
 
     Parameters
     ----------
-    ensemble_type = str; valid options are 'NVT', 'NPT', 'GEMC_NVT', 'GEMC_NPT', 'GCMC'
-    testing_ensemble_files_list  list, a list containing the required ensemble
+    ensemble_type : str, valid options are 'NVT', 'NPT', 'GEMC_NVT', 'GEMC_NPT', 'GCMC'
+        The ensemble type of the simulation.
+    testing_ensemble_files_list  list
+        A list containing the required ensemble
         files variables, which will be tested for to see if they are valid.
 
     """
 
-    bad_key_inputs_list = []
+    bad_key_inputs_List = []
 
-    required_ensemble_files_list = _get_required_ensemble_files(ensemble_type)
+    req_ensemble_files_set = set(_get_required_ensemble_files(ensemble_type))
+    testing_ensemble_files_set = set(testing_ensemble_files_List)
 
-    ensemble_has_required_ensemble_files_list = True
-    for iter in range(0, len(testing_ensemble_files_list)):
-        if testing_ensemble_files_list[iter] not in required_ensemble_files_list:
-            bad_key_inputs_list.append(testing_ensemble_files_list[iter])
-            ensemble_has_required_ensemble_files_list = False
+    extra = testing_ensemble_files_set - req_ensemble_files_set
+    missing = req_ensemble_files_set - testing_ensemble_files_set
 
-    for iter in range(0, len(required_ensemble_files_list)):
-        if required_ensemble_files_list[iter] not in testing_ensemble_files_list:
-            bad_key_inputs_list.append(testing_ensemble_files_list[iter])
-            ensemble_has_required_ensemble_files_list = False
+    if len(extra) != 0:
+        bad_key_inputs_List.extend(extra)
+    if len(missing) != 0:
+        bad_key_inputs_List.extend(missing)
 
-    if ensemble_has_required_ensemble_files_list:
+    if not bool(missing or extra):
         return True
-
     else:
-        warn("ERROR: checking the valid ensemble file (check_valid_ensemble_files function), "
-             "shows that all the required files are not included for the {} ensemble. \n "
-             "The bad required ensemble inputs = {}".format(ensemble_type, bad_key_inputs_list)
-             )
         return False
 
 
@@ -867,14 +861,15 @@ def print_required_ensemble_files(ensemble_type, description=False):
     """
     Prints the required ensemble arguments with an optional description based on the ensemble type
 
-    Outputs
+    Returns
     ---------
     Prints the required ensemble arguments with an optional description based on the ensemble type
 
     Parameters
     ----------
-    ensemble_type = str; valid options are 'NVT', 'NPT', 'GEMC_NVT', 'GEMC_NPT', 'GCMC'
-    description =  bool, default = False.
+    ensemble_type : str, valid options are 'NVT', 'NPT', 'GEMC_NVT', 'GEMC_NPT', 'GCMC'
+        The ensemble type of the simulation.
+    description :  bool, default = False.
         If True, it prints the descriptions of the required ensemble inputs (i.e. dict),
         If False, it only prints the required ensemble inputs without the descriptions (i.e. list)
 
@@ -907,16 +902,19 @@ def check_valid_ensemble_input_variables(ensemble_type, testing_input_variables_
     Checks if all the input variables (user optional) inputs are valid for the given
         ensemble, and provides a list of the bad variables in the printed output.
 
-    Outputs
+    Returns
     ---------
-    bool, returns a bool (True or False) depending on if all variables
-        are valid or not
+    bool:
+        Returns a bool (True or False) depending on if all variables
+        are valid or not.
 
     Parameters
     ----------
-    ensemble_type = str; valid options are 'NVT', 'NPT', 'GEMC_NVT', 'GEMC_NPT', 'GCMC'
-    testing_input_variables_list =  list, list containing the optional ensemble
-        input variables which will be tested for to see if they are valid.
+    ensemble_type : str, valid options are 'NVT', 'NPT', 'GEMC_NVT', 'GEMC_NPT', 'GCMC'
+        The ensemble type of the simulation.
+    testing_input_variables_list : list
+        List containing the optional ensemble input variables which will be
+        tested for to see if they are valid.
         """
 
     bad_key_inputs_list = []
@@ -939,13 +937,14 @@ def print_valid_ensemble_input_variables(ensemble_type, description=False):
     """
     Prints the arguments for optional variables brief description based on the ensemble type
 
-    Outputs
+    Returns
     ---------
     Prints the arguments for optional variables brief description based on the ensemble type
 
     Parameters
     ----------
-    ensemble_type = str; valid options are 'NVT', 'NPT', 'GEMC_NVT', 'GEMC_NPT', 'GCMC'
+    ensemble_type = str, valid options are 'NVT', 'NPT', 'GEMC_NVT', 'GEMC_NPT', 'GCMC'
+        The ensemble type of the simulation.
     description =  bool, default = False.
         If True, it prints the descriptions of the optional variable ensemble inputs (i.e. dict),
         If False, it only prints the  optional variable ensemble inputs without the
@@ -981,14 +980,15 @@ def _get_possible_ensemble_input_variables(ensemble_type):
     """
     Provides list of the possible optional input variables based on the ensemble type
 
+    Returns
+    ---------
+    valid_input_variables_list : list
+        A list possible optional input variables for the provided ensemble type.
+
     Parameters
     ----------
-    ensemble_type = str; valid options are 'NVT', 'NPT', 'GEMC_NVT', 'GEMC_NPT', 'GCMC'
-
-    Outputs
-    ---------
-    valid_input_variables_list = list; a list possible optional input variables
-        for the provided ensemble type.
+    ensemble_type : str, valid options are 'NVT', 'NPT', 'GEMC_NVT', 'GEMC_NPT', 'GCMC'
+        The ensemble type of the simulation.
 
     """
 
@@ -1103,14 +1103,15 @@ def _get_required_ensemble_files(ensemble_type):
     """
     Provides list of the possible optional input variables based on the ensemble type
 
-    Outputs
+    Returns
     ---------
-    required_ensemble_files_list = list; a list of the required ensemble input variables
-    
+    required_ensemble_files_list : list
+        A list of the required ensemble input variables
+
     Parameters
     ----------
-    ensemble_type = str; valid options are 'NVT', 'NPT', 'GEMC_NVT', 'GEMC_NPT', 'GCMC'
-
+    ensemble_type : str, valid options are 'NVT', 'NPT', 'GEMC_NVT', 'GEMC_NPT', 'GCMC'
+        The ensemble type of the simulation.
     """
     if ensemble_type in ['NVT', 'NPT']:
 
@@ -1152,14 +1153,20 @@ class GOMCControl():
         optimize the system beyond the standard settings.  These override
         options are available via the keyword arguments in input_variable_dict.
 
+        Returns
+        -------
+        None
+
         Parameters
         ----------
-        charmm_object :  Charmm object, which by definition has been parameterized ' \
-                      + 'from the selected force field.',
+        charmm_object :  Charmm object
+            Charmm object is has been parameterized from the selected force field.,
         ensemble_typ : str, only accepts 'NVT', 'NPT', 'GEMC_NPT', 'GCMC-NVT', 'GCMC'
-        RunSteps : int; must be an integer greater than zero.
+            The ensemble type of the simulation.
+        RunSteps : int (>0), must be an integer greater than zero.
             Sets the total number of simulation steps.
-        Temperature : Temperature of system in Kelvin (K)
+        Temperature : float or int
+            Temperature of system in Kelvin (K)
 
         input_variables_dict: dict, default = None
             These input variables are optional and override the default settings.
@@ -1176,9 +1183,6 @@ class GOMCControl():
             Example : input_variables_dict = {'Restart' : False, 'PRNG' : 123,
                                               'ParaTypeCHARMM' : True }
 
-        Returns
-        -------
-        None
 
         Notes
         -------
@@ -2406,7 +2410,7 @@ class GOMCControl():
                     elif len(self.input_variables_dict[key]) == 3:
                         if (isinstance(self.input_variables_dict[key][0], float) is True
                             or isinstance(self.input_variables_dict[key][0], int) is True) \
-                                and (isinstance(self.input_variables_dict[key][1], float) is True 
+                                and (isinstance(self.input_variables_dict[key][1], float) is True
                                      or isinstance(self.input_variables_dict[key][1], int) is True) \
                                 and (isinstance(self.input_variables_dict[key][2], float) is True
                                      or isinstance(self.input_variables_dict[key][2], int) is True):
@@ -2723,16 +2727,16 @@ class GOMCControl():
         """
         Writes the GOMC control file.
 
-        Outputs
+        Returns
         ---------
         Writes the GOMC control file with the name provided via conf_filename
 
-        If completed without errors; str; "PASSED
-        If completed with errors;  None
+            If completed without errors: str, "PASSED
+            If completed with errors :  None
 
         Parameters
         ----------
-        conf_filename; str,
+        conf_filename: str
             The path and file name for the control file name, with
             the .conf extension, or no extension.  If no extension is provided, the
             code will add the .conf extension to the provided file name.
@@ -2918,11 +2922,11 @@ class GOMCControl():
         data_control_file.write(' \n')
 
         # sort and print the MEMC data if MEMC is used for the simulation
-        if self.MEMC_DataInput is not None and (self.MEMC_1Freq > 0 
-                                                or self.MEMC_2Freq > 0 
+        if self.MEMC_DataInput is not None and (self.MEMC_1Freq > 0
+                                                or self.MEMC_2Freq > 0
                                                 or self.MEMC_3Freq > 0
-                                                or self.IntraMEMC_1Freq > 0 
-                                                or self.IntraMEMC_2Freq > 0 
+                                                or self.IntraMEMC_1Freq > 0
+                                                or self.IntraMEMC_2Freq > 0
                                                 or self.IntraMEMC_3Freq > 0):
 
             ExchangeRatio_list = []
@@ -3130,18 +3134,22 @@ class GOMCControl():
         Checks if the input variable is either True for False.
         If not either True or False, the provided list is appended with the bad with the dict_key
 
-        Outputs
+        Returns
         ---------
-        bad_user_variable_list =  list; A list to append with the bad dict_key user inputs,
+        bad_user_variable_list : list,
+            A list to append with the bad dict_key user inputs,
             which is appended upon detecting a bad user input variable.
             Note: This list is intented to be printed with all the bad input variables
             so the user can fix them after upon a failed GOMC conf file writing attempt.
 
         Parameters
         ----------
-        input_variables_dict: dict; The user input variable dictionary
-        key: str; dictionary key for the user provided input variable list
-        bad_user_variable_list: list; A list to append with the bad dict_key user inputs
+        input_variables_dict: dict
+            The user input variable dictionary
+        key: str
+            Dictionary key for the user provided input variable list
+        bad_user_variable_list: list
+            A list to append with the bad dict_key user inputs
             Note: This list is intented to be printed with all the bad input variables
             so the user can fix them after upon a failed GOMC conf file writing attempt.
         """
@@ -3160,16 +3168,20 @@ class GOMCControl():
         Checks if the input variable is an integer or float is zero or greater ( value >= 0 ).
         If not, the provided list is appended with the bad with the dict_key.
 
-        Outputs
+        Returns
         ---------
-        bad_input_variables_values_list: list; A list to append with the bad variable user inputs
+        bad_input_variables_values_list: list
+            A list to append with the bad variable user inputs
             so the user can see which variable input values are bad.
 
         Parameters
         ----------
-        input_variables_dict: dict; The user input variable dictionary
-        key: str; dictionary key for the user provided input variable list
-        bad_input_variables_values_list: list; A list to append with the bad variable user inputs
+        input_variables_dict: dict
+            The user input variable dictionary
+        key: str
+            Dictionary key for the user provided input variable list
+        bad_input_variables_values_list: list
+            A list to append with the bad variable user inputs
             so the user can see which variable input values are bad.
         """
 
@@ -3189,16 +3201,20 @@ class GOMCControl():
         Checks if the input variable is an integer is zero or greater ( value >= 0 ).
         If not, the provided list is appended with the bad with the dict_key
 
-        Outputs
+        Returns
         ---------
-        bad_input_variables_values_list: list; A list to append with the bad variable user inputs
+        bad_input_variables_values_list: list
+            A list to append with the bad variable user inputs
             so the user can see which variable input values are bad.
 
         Parameters
         ----------
-        input_variables_dict: dict; The user input variable dictionary
-        key: str; dictionary key for the user provided input variable list
-        bad_input_variables_values_list: list; A list to append with the bad variable user inputs
+        input_variables_dict: dict
+            The user input variable dictionary
+        key: str
+            Dictionary key for the user provided input variable list
+        bad_input_variables_values_list: list
+            A list to append with the bad variable user inputs
             so the user can see which variable input values are bad.
         """
 
@@ -3217,16 +3233,20 @@ class GOMCControl():
         Checks if the input variable is a float is zero or greater ( value >= 0 ).
         If not, the provided list is appended with the bad with the dict_key
 
-        Outputs
+        Returns
         ---------
-        bad_input_variables_values_list: list; A list to append with the bad variable user inputs
+        bad_input_variables_values_list: list
+            A list to append with the bad variable user inputs
             so the user can see which variable input values are bad.
 
         Parameters
         ----------
-        input_variables_dict: dict; The user input variable dictionary
-        key: str; dictionary key for the user provided input variable list
-        bad_input_variables_values_list: list; A list to append with the bad variable user inputs
+        input_variables_dict: dict
+            The user input variable dictionary
+        key: str
+            Dictionary key for the user provided input variable list
+        bad_input_variables_values_list: list
+            A list to append with the bad variable user inputs
             so the user can see which variable input values are bad.
         """
 
@@ -3245,16 +3265,20 @@ class GOMCControl():
         Checks if the input variable is an integer or float is greater than zero ( value > 0).
         If not, the provided list is appended with the bad with the dict_key
 
-        Outputs
+        Returns
         ---------
-        bad_input_variables_values_list: list; A list to append with the bad variable user inputs
+        bad_input_variables_values_list: list
+            A list to append with the bad variable user inputs
             so the user can see which variable input values are bad.
 
         Parameters
         ----------
-        input_variables_dict: dict; The user input variable dictionary
-        key: str; dictionary key for the user provided input variable list
-        bad_input_variables_values_list: list; A list to append with the bad variable user inputs
+        input_variables_dict: dict
+            The user input variable dictionary
+        key: str
+            Dictionary key for the user provided input variable list
+        bad_input_variables_values_list: list
+            A list to append with the bad variable user inputs
             so the user can see which variable input values are bad.
         """
 
@@ -3274,16 +3298,20 @@ class GOMCControl():
         Checks if the input variable is an integer greater than zero ( value > 0)..
         If not, the provided list is appended with the bad with the dict_key
 
-        Outputs
+        Returns
         ---------
-        bad_input_variables_values_list: list; A list to append with the bad variable user inputs
+        bad_input_variables_values_list: list
+            A list to append with the bad variable user inputs
             so the user can see which variable input values are bad.
 
         Parameters
         ----------
-        input_variables_dict: dict; The user input variable dictionary
-        key: str; dictionary key for the user provided input variable list
-        bad_input_variables_values_list: list; A list to append with the bad variable user inputs
+        input_variables_dict: dict
+            The user input variable dictionary
+        key: str
+            Dictionary key for the user provided input variable list
+        bad_input_variables_values_list: list
+            A list to append with the bad variable user inputs
             so the user can see which variable input values are bad.
         """
 
@@ -3302,16 +3330,20 @@ class GOMCControl():
         Checks if the input variable is a float greater than zero ( value > 0).
         If not, the provided list is appended with the bad with the dict_key
 
-        Outputs
+        Returns
         ---------
-        bad_input_variables_values_list: list; A list to append with the bad variable user inputs
+        bad_input_variables_values_list: list
+            A list to append with the bad variable user inputs
             so the user can see which variable input values are bad.
 
         Parameters
         ----------
-        input_variables_dict: dict; The user input variable dictionary
-        key: str; dictionary key for the user provided input variable list
-        bad_input_variables_values_list: list; A list to append with the bad variable user inputs
+        input_variables_dict: dict
+            The user input variable dictionary
+        key: str
+            Dictionary key for the user provided input variable list
+        bad_input_variables_values_list: list
+            A list to append with the bad variable user inputs
             so the user can see which variable input values are bad.
         """
 
@@ -3331,16 +3363,20 @@ class GOMCControl():
         ( 0 < value < 1).
         If not, the provided list is appended with the bad with the dict_key
 
-        Outputs
+        Returns
         ---------
-        bad_input_variables_values_list: list; A list to append with the bad variable user inputs
+        bad_input_variables_values_list: list
+            A list to append with the bad variable user inputs
             so the user can see which variable input values are bad.
 
         Parameters
         ----------
-        input_variables_dict: dict; The user input variable dictionary
-        key: str; dictionary key for the user provided input variable list
-        bad_input_variables_values_list: list; A list to append with the bad variable user inputs
+        input_variables_dict: dict
+            The user input variable dictionary
+        key: str
+            Dictionary key for the user provided input variable list
+        bad_input_variables_values_list: list
+            A list to append with the bad variable user inputs
             so the user can see which variable input values are bad.
         """
 
@@ -3361,16 +3397,20 @@ class GOMCControl():
         If not, the provided list is appended with the bad with the dict_key
         If not, the provided list is appended with the bad with the dict_key
 
-        Outputs
+        Returns
         ---------
-        bad_input_variables_values_list: list; A list to append with the bad variable user inputs
+        bad_input_variables_values_list: list
+            A list to append with the bad variable user inputs
             so the user can see which variable input values are bad.
 
         Parameters
         ----------
-        input_variables_dict: dict; The user input variable dictionary
-        key: str; dictionary key for the user provided input variable list
-        bad_input_variables_values_list: list; A list to append with the bad variable user inputs
+        input_variables_dict: dict
+            The user input variable dictionary
+        key: str
+            Dictionary key for the user provided input variable list
+        bad_input_variables_values_list: list
+            A list to append with the bad variable user inputs
             so the user can see which variable input values are bad.
         """
 
@@ -3391,16 +3431,20 @@ class GOMCControl():
         Checks if the input variable is a float from 0 to 1 ( 0 =< value <= 1).
         If not, the provided list is appended with the bad with the dict_key
 
-        Outputs
+        Returns
         ---------
-        bad_input_variables_values_list: list; A list to append with the bad variable user inputs
+        bad_input_variables_values_list: list
+            A list to append with the bad variable user inputs
             so the user can see which variable input values are bad.
 
         Parameters
         ----------
-        input_variables_dict: dict; The user input variable dictionary
-        key: str; dictionary key for the user provided input variable list
-        bad_input_variables_values_list: list; A list to append with the bad variable user inputs
+        input_variables_dict: dict
+            The user input variable dictionary
+        key: str
+            Dictionary key for the user provided input variable list
+        bad_input_variables_values_list: list
+            A list to append with the bad variable user inputs
             so the user can see which variable input values are bad.
         """
 
@@ -3420,19 +3464,23 @@ class GOMCControl():
         Checks if the input variable is an integer from 0 to 1 ( 0 =< value <= 1).
         If not, the provided list is appended with the bad with the dict_key
 
-        Outputs
+        Returns
         ---------
-        bad_input_variables_values_list: list; A list to append with the bad variable user inputs
+        bad_input_variables_values_list: list
+            A list to append with the bad variable user inputs
             so the user can see which variable input values are bad.
 
         Parameters
         ----------
-        input_variables_dict: dict; The user input variable dictionary
-        key: str; dictionary key for the user provided input variable list
-        bad_input_variables_values_list: list; A list to append with the bad variable user inputs
+        input_variables_dict: dict
+            The user input variable dictionary
+        key: str
+            Dictionary key for the user provided input variable list
+        bad_input_variables_values_list: list
+            A list to append with the bad variable user inputs
             so the user can see which variable input values are bad.
         """
-        
+
         if input_variables_dict[key] is not None \
                 and isinstance(input_variables_dict[key], int) is not True \
                 or input_variables_dict[key] < 0 \
@@ -3450,19 +3498,23 @@ class GOMCControl():
         ([bool, int >= 0 ]).
         If not, the provided list is appended with the bad with the dict_key
 
-        Outputs
+        Returns
         ---------
-        bad_input_variables_values_list: list; A list to append with the bad variable user inputs
+        bad_input_variables_values_list: list
+            A list to append with the bad variable user inputs
             so the user can see which variable input values are bad.
 
         Parameters
         ----------
-        input_variables_dict: dict; The user input variable dictionary
-        key: str; dictionary key for the user provided input variable list
-        bad_input_variables_values_list: list; A list to append with the bad variable user inputs
+        input_variables_dict: dict
+            The user input variable dictionary
+        key: str
+            Dictionary key for the user provided input variable list
+        bad_input_variables_values_list: list
+            A list to append with the bad variable user inputs
             so the user can see which variable input values are bad.
         """
-        
+
         if isinstance(input_variables_dict[key], list) is False:
             bad_input_variables_values_list.append(key)
         elif isinstance(input_variables_dict[key], list) is True:
@@ -3486,19 +3538,23 @@ class GOMCControl():
         ([bool, int > 0 ]).
         If not, the provided list is appended with the bad with the dict_key
 
-        Outputs
+        Returns
         ---------
-        bad_input_variables_values_list: list; A list to append with the bad variable user inputs
+        bad_input_variables_values_list: list
+            A list to append with the bad variable user inputs
             so the user can see which variable input values are bad.
 
         Parameters
         ----------
-        input_variables_dict: dict; The user input variable dictionary
-        key: str; dictionary key for the user provided input variable list
-        bad_input_variables_values_list: list; A list to append with the bad variable user inputs
+        input_variables_dict: dict
+            The user input variable dictionary
+        key: str
+            Dictionary key for the user provided input variable list
+        bad_input_variables_values_list: list
+            A list to append with the bad variable user inputs
             so the user can see which variable input values are bad.
         """
-        
+
         if isinstance(input_variables_dict[key], list) is False:
             bad_input_variables_values_list.append(key)
         elif isinstance(input_variables_dict[key], list) is True:
@@ -3522,16 +3578,20 @@ class GOMCControl():
         ([str, int > 0 ]).
         If not, the provided list is appended with the bad with the dict_key
 
-        Outputs
+        Returns
         ---------
-        bad_input_variables_values_list: list; A list to append with the bad variable user inputs
+        bad_input_variables_values_list: list
+            A list to append with the bad variable user inputs
             so the user can see which variable input values are bad.
 
         Parameters
         ----------
-        input_variables_dict: dict; The user input variable dictionary
-        key: str; dictionary key for the user provided input variable list
-        bad_input_variables_values_list: list; A list to append with the bad variable user inputs
+        input_variables_dict: dict
+            The user input variable dictionary
+        key: str
+            Dictionary key for the user provided input variable list
+        bad_input_variables_values_list: list
+            A list to append with the bad variable user inputs
             so the user can see which variable input values are bad.
         """
 
@@ -3560,16 +3620,20 @@ class GOMCControl():
         Checks if the input variable is a list with a 2 booleans  ([bool, bool]).
         If not, the provided list is appended with the bad with the dict_key
 
-        Outputs
+        Returns
         ---------
-        bad_input_variables_values_list: list; A list to append with the bad variable user inputs
+        bad_input_variables_values_list: list
+            A list to append with the bad variable user inputs
             so the user can see which variable input values are bad.
 
         Parameters
         ----------
-        input_variables_dict: dict; The user input variable dictionary
-        key: str; dictionary key for the user provided input variable list
-        bad_input_variables_values_list: list; A list to append with the bad variable user inputs
+        input_variables_dict: dict
+            The user input variable dictionary
+        key: str
+            Dictionary key for the user provided input variable list
+        bad_input_variables_values_list: list
+            A list to append with the bad variable user inputs
             so the user can see which variable input values are bad.
         """
 
@@ -3596,16 +3660,20 @@ class GOMCControl():
         Note: the list can be of any length with 0.0 <= float <= 1.0
         If not, the provided list is appended with the bad with the dict_key
 
-        Outputs
+        Returns
         ---------
-        bad_input_variables_values_list: list; A list to append with the bad variable user inputs
+        bad_input_variables_values_list: list
+            A list to append with the bad variable user inputs
             so the user can see which variable input values are bad.
 
         Parameters
         ----------
-        input_variables_dict: dict; The user input variable dictionary
-        key: str; dictionary key for the user provided input variable list
-        bad_input_variables_values_list: list; A list to append with the bad variable user inputs
+        input_variables_dict: dict
+            The user input variable dictionary
+        key: str
+            Dictionary key for the user provided input variable list
+        bad_input_variables_values_list: list
+            A list to append with the bad variable user inputs
             so the user can see which variable input values are bad.
         """
 
@@ -3635,16 +3703,20 @@ class GOMCControl():
         Note: the dictionary can be of any length
         If not, the provided list is appended with the bad with the dict_key
 
-        Outputs
+        Returns
         ---------
-        bad_input_variables_values_list: list; A list to append with the bad variable user inputs
+        bad_input_variables_values_list: list
+            A list to append with the bad variable user inputs
             so the user can see which variable input values are bad.
 
         Parameters
         ----------
-        input_variables_dict: dict; The user input variable dictionary
-        key: str; dictionary key for the user provided input variable list
-        bad_input_variables_values_list: list; A list to append with the bad variable user inputs
+        input_variables_dict: dict
+            The user input variable dictionary
+        key: str
+            Dictionary key for the user provided input variable list
+        bad_input_variables_values_list: list
+            A list to append with the bad variable user inputs
             so the user can see which variable input values are bad.
         """
 
@@ -3684,16 +3756,20 @@ class GOMCControl():
         Note: the dictionary can be of any length
         If not, the provided list is appended with the bad with the dict_key
 
-        Outputs
+        Returns
         ---------
-        bad_input_variables_values_list: list; A list to append with the bad variable user inputs
+        bad_input_variables_values_list: list
+            A list to append with the bad variable user inputs
             so the user can see which variable input values are bad.
 
         Parameters
         ----------
-        input_variables_dict: dict; The user input variable dictionary
-        key: str; dictionary key for the user provided input variable list
-        bad_input_variables_values_list: list; A list to append with the bad variable user inputs
+        input_variables_dict: dict
+            The user input variable dictionary
+        key: str
+            Dictionary key for the user provided input variable list
+        bad_input_variables_values_list: list
+            A list to append with the bad variable user inputs
             so the user can see which variable input values are bad.
         """
 
@@ -3731,19 +3807,23 @@ class GOMCControl():
         Checks if the input variable is a string with no spaces.
         If not, the provided list is appended with the bad with the dict_key.
 
-        Outputs
+        Returns
         ---------
-        bad_input_variables_values_list: list; A list to append with the bad variable user inputs
+        bad_input_variables_values_list: list
+            A list to append with the bad variable user inputs
             so the user can see which variable input values are bad.
 
         Parameters
         ----------
-        input_variables_dict: dict; The user input variable dictionary
-        key: str; dictionary key for the user provided input variable list
-        bad_input_variables_values_list: list; A list to append with the bad variable user inputs
+        input_variables_dict: dict
+            The user input variable dictionary
+        key: str
+            Dictionary key for the user provided input variable list
+        bad_input_variables_values_list: list
+            A list to append with the bad variable user inputs
             so the user can see which variable input values are bad.
         """
-        
+
         if isinstance(input_variables_dict[key], str) is True:
             no_spaces_in_OutputName_string = " " in input_variables_dict[key]
         if isinstance(input_variables_dict[key], str) is not True \
@@ -3771,14 +3851,17 @@ def write_gomc_control_file(charmm_object, conf_filename,  ensemble_type,
 
     Parameters
     ----------
-    charmm_object: CHARMM object (i.e., Charmm()); the Charmm object from the charmm_writer file
-    conf_filename: str, The file name that the GOMC control file will be given.
+    charmm_object: CHARMM object (i.e., Charmm())
+        The Charmm object from the charmm_writer file
+    conf_filename: str,
+        The file name that the GOMC control file will be given.
         This can wither have no extension or (.conf).  If no extension is provided
         the .conf extension is automatically added.
-    ensemble_type: str, only accepts 'NVT', 'NPT', 'GEMC_NPT', 'GCMC-NVT', 'GCMC'
-    RunSteps: int; must be an integer greater than zero.
+    ensemble_type: str, Only accepts 'NVT', 'NPT', 'GEMC_NPT', 'GCMC-NVT', 'GCMC'
+    RunSteps: int (>0), Must be an integer greater than zero.
         Sets the total number of simulation steps.
-    Temperature: Temperature of system in Kelvin (K)
+    Temperature: int (>0), Must be an integer greater than zero.
+        Temperature of system in Kelvin (K)
     input_variables_dict: dict, default = None
         These input variables are optional and override the default settings.
         Changing these variables likely required for more advanced systems.
@@ -3796,9 +3879,9 @@ def write_gomc_control_file(charmm_object, conf_filename,  ensemble_type,
 
     Returns
     -------
-    If completed without errors; str; "GOMC_CONTROL_FILE_WRITTEN"
-        and the GOMC input control file is writen
-    If completed with errors;  None
+    If completed without errors: str
+        returns "GOMC_CONTROL_FILE_WRITTEN" when the GOMC input control file is writen
+    If completed with errors:  None
 
     Notes
     -------
