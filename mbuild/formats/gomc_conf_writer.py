@@ -8,16 +8,15 @@ def dict_keys_to_list(dict):
     """
     Converts the dictionary keys into a list
 
-    Returns
-    ---------
-    list : list
-        list of keys from the provided dictionary
-
     Parameters
     ----------
     dict : dict
         A provided dictionary
 
+    Returns
+    ---------
+    list : list
+        list of keys from the provided dictionary
     """
     list = [key for key in dict.keys()]
 
@@ -28,18 +27,17 @@ def print_valid_required_input_variables(description=False):
     """
     Prints the valid required input, which is necessary to write the GOMC control file.
 
-    Returns
-    ---------
-    Prints out the valid input variables (user optional) on the screen
-        , which can be entered in the GOMC writer. These are the valid input
-        variables for all ensembles.
-
     Parameters
     ----------
     description : bool, default = False
         If True, it prints the descriptions of the input_variables (i.e. dict),
         If False, it only prints the input_variables without the descriptions (i.e. list)
 
+    Returns
+    ---------
+    Prints out the valid input variables (user optional) on the screen
+        , which can be entered in the GOMC writer. These are the valid input
+        variables for all ensembles.
     """
 
     valid_args = _get_all_possible_input_variables(description=description)
@@ -823,11 +821,6 @@ def check_valid_ensemble_files(ensemble_type, testing_ensemble_files_list):
     Checks if all the required ensemble inputs are provided,
         and provides a list of the bad variables in the printed output.
 
-    Returns
-    ---------
-    bool
-        True is all variables are valid, False otherwise
-
     Parameters
     ----------
     ensemble_type : str, valid options are 'NVT', 'NPT', 'GEMC_NVT', 'GEMC_NPT', 'GCMC'
@@ -836,11 +829,15 @@ def check_valid_ensemble_files(ensemble_type, testing_ensemble_files_list):
         A list containing the required ensemble
         files variables, which will be tested for to see if they are valid.
 
+    Returns
+    ---------
+    bool
+        True is all variables are valid, False otherwise
     """
 
     bad_key_inputs_List = []
 
-    req_ensemble_files_set = set(_get_required_ensemble_files(ensemble_type))
+    req_ensemble_files_set = set(_get_required_data(description=False))
     testing_ensemble_files_set = set(testing_ensemble_files_List)
 
     extra = testing_ensemble_files_set - req_ensemble_files_set
@@ -857,42 +854,38 @@ def check_valid_ensemble_files(ensemble_type, testing_ensemble_files_list):
         return False
 
 
-def print_required_ensemble_files(ensemble_type, description=False):
+def print_required_input(description=False):
     """
-    Prints the required ensemble arguments with an optional description based on the ensemble type
-
-    Returns
-    ---------
     Prints the required ensemble arguments with an optional description based on the ensemble type
 
     Parameters
     ----------
-    ensemble_type : str, valid options are 'NVT', 'NPT', 'GEMC_NVT', 'GEMC_NPT', 'GCMC'
-        The ensemble type of the simulation.
     description :  bool, default = False.
         If True, it prints the descriptions of the required ensemble inputs (i.e. dict),
         If False, it only prints the required ensemble inputs without the descriptions (i.e. list)
 
+    Returns
+    ---------
+    Prints the required ensemble arguments with an optional description based on the ensemble type
     """
 
     required_data_dict = _get_required_data(description=True)
+    required_data_list = _get_required_data(description=False)
     ensemble_has_all_valid_required_data = True
     required_data = _get_required_data()
-    required_data_list = _get_required_ensemble_files(ensemble_type)
 
     for iter in range(0, len(required_data_list)):
         if required_data_list[iter] not in required_data:
             ensemble_has_all_valid_required_data = False
-    if ensemble_has_all_valid_required_data and description is False:
-        for iter_2 in range(0, len(required_data_list)):
-            required_data_iter = required_data_list[iter_2]
-            print("{:10s}:    {}".format(str(iter_2), str(required_data_iter)))
 
-    elif ensemble_has_all_valid_required_data and description is True:
+    if ensemble_has_all_valid_required_data:
         for iter_2 in range(0, len(required_data_list)):
             required_data_iter = required_data_list[iter_2]
-            print("{:10s}:    {:30s}    {}".format(str(iter_2), str(required_data_iter),
-                                                   str(required_data_dict[required_data_iter])))
+            if description is False:
+                print("{:10s}:    {}".format(str(iter_2), str(required_data_iter)))
+            elif description is True:
+                print("{:10s}:    {:30s}    {}".format(str(iter_2), str(required_data_iter),
+                                                       str(required_data_dict[required_data_iter])))
     else:
         print("ERROR: Some files in this ensemble are not in the required file list")
 
@@ -902,12 +895,6 @@ def check_valid_ensemble_input_variables(ensemble_type, testing_input_variables_
     Checks if all the input variables (user optional) inputs are valid for the given
         ensemble, and provides a list of the bad variables in the printed output.
 
-    Returns
-    ---------
-    bool:
-        Returns a bool (True or False) depending on if all variables
-        are valid or not.
-
     Parameters
     ----------
     ensemble_type : str, valid options are 'NVT', 'NPT', 'GEMC_NVT', 'GEMC_NPT', 'GCMC'
@@ -915,7 +902,13 @@ def check_valid_ensemble_input_variables(ensemble_type, testing_input_variables_
     testing_input_variables_list : list
         List containing the optional ensemble input variables which will be
         tested for to see if they are valid.
-        """
+
+    Returns
+    ---------
+    bool:
+        Returns a bool (True or False) depending on if all variables
+        are valid or not.
+    """
 
     bad_key_inputs_list = []
 
@@ -937,10 +930,6 @@ def print_valid_ensemble_input_variables(ensemble_type, description=False):
     """
     Prints the arguments for optional variables brief description based on the ensemble type
 
-    Returns
-    ---------
-    Prints the arguments for optional variables brief description based on the ensemble type
-
     Parameters
     ----------
     ensemble_type = str, valid options are 'NVT', 'NPT', 'GEMC_NVT', 'GEMC_NPT', 'GCMC'
@@ -950,6 +939,9 @@ def print_valid_ensemble_input_variables(ensemble_type, description=False):
         If False, it only prints the  optional variable ensemble inputs without the
         descriptions (i.e. list)
 
+    Returns
+    ---------
+    Prints the arguments for optional variables brief description based on the ensemble type
     """
 
     valid_input_variables_dict = _get_all_possible_input_variables(description=True)
@@ -960,18 +952,16 @@ def print_valid_ensemble_input_variables(ensemble_type, description=False):
 
     for iter in range(0, len(valid_input_variables_list)):
         if valid_input_variables_list[iter] not in all_valid_input_variables:
-
             ensemble_has_all_valid_input_variables = False
-    if ensemble_has_all_valid_input_variables and description is False:
-        for iter_2 in range(0, len(valid_input_variables_list)):
-            ensemble_kwarg_iter = valid_input_variables_list[iter_2]
-            print("{:10s}:    {}".format(str(iter_2), str(ensemble_kwarg_iter)))
 
-    elif ensemble_has_all_valid_input_variables and description is True:
+    if ensemble_has_all_valid_input_variables:
         for iter_2 in range(0, len(valid_input_variables_list)):
             ensemble_kwarg_iter = valid_input_variables_list[iter_2]
-            print("{:10s}:    {:30s}    {}".format(str(iter_2), str(ensemble_kwarg_iter),
-                                                   str(valid_input_variables_dict[ensemble_kwarg_iter])))
+            if description is False:
+                print("{:10s}:    {}".format(str(iter_2), str(ensemble_kwarg_iter)))
+            elif description is True:
+                print("{:10s}:    {:30s}    {}".format(str(iter_2), str(ensemble_kwarg_iter),
+                                                       str(valid_input_variables_dict[ensemble_kwarg_iter])))
     else:
         print("ERROR: Some input_variables in the ensemble are not in the main input_variables list")
 
@@ -980,157 +970,70 @@ def _get_possible_ensemble_input_variables(ensemble_type):
     """
     Provides list of the possible optional input variables based on the ensemble type
 
+    Parameters
+    ----------
+    ensemble_type : str, valid options are 'NVT', 'NPT', 'GEMC_NVT', 'GEMC_NPT', 'GCMC'
+        The ensemble type of the simulation.
+
     Returns
     ---------
     valid_input_variables_list : list
         A list possible optional input variables for the provided ensemble type.
-
-    Parameters
-    ----------
-    ensemble_type : str, valid options are 'NVT', 'NPT', 'GEMC_NVT', 'GEMC_NPT', 'GCMC'
-        The ensemble type of the simulation.
-
     """
+    histogram_output_variables_list = ["DistName", "HistName", "RunNumber", "RunLetter", "SampleFreq"]
+
+    cbmc_variables_list = ["CBMC_First", "CBMC_Nth", "CBMC_Ang", "CBMC_Dih"]
+
+    output_freq_variables_list = ["OutputName", "CoordinatesFreq", "RestartFreq", "CheckpointFreq",
+                                  "ConsoleFreq", "BlockAverageFreq", "HistogramFreq"]
+
+    output_data_variables_list = ["OutEnergy", "OutPressure", "OutMolNumber", "OutDensity",
+                                  "OutVolume", "OutSurfaceTension"]
+
+    std_mc_moves_variables_list = ["DisFreq", "RotFreq", "IntraSwapFreq", "SwapFreq", "RegrowthFreq",
+                                   "CrankShaftFreq", "VolFreq", "MultiParticleFreq"]
+
+    memc_mc_moves_variables_list = ["IntraMEMC-1Freq", "MEMC-1Freq", "IntraMEMC-2Freq", "MEMC-2Freq",
+                                    "IntraMEMC-3Freq", "MEMC-3Freq",
+                                    "ExchangeVolumeDim", "MEMC_DataInput"]
+
+    basic_sim_info_variables_list = ["Restart", "RestartCheckpoint", "PRNG",
+                                     "ParaTypeCHARMM", "ParaTypeMie", "ParaTypeMARTINI",
+                                     "RcutCoulomb_box_0",
+                                     "Pressure",
+                                     "Rcut", "RcutLow", "LRC", "Exclude", "Potential", "Rswitch",
+                                     "VDWGeometricSigma", "ElectroStatic", "Ewald", "CachedFourier", "Tolerance",
+                                     "Dielectric", "PressureCalc", "EqSteps", "AdjSteps",
+                                     "useConstantArea"]
 
     if ensemble_type in ['NPT', 'NVT']:
-        sim_info_variables_list = ["Restart", "RestartCheckpoint", "PRNG",
-                                   "ParaTypeCHARMM", "ParaTypeMie",  "ParaTypeMARTINI",
-                                   "RcutCoulomb_box_0",
-                                   "Pressure",
-                                   "Rcut", "RcutLow", "LRC", "Exclude", "Potential", "Rswitch",
-                                   "VDWGeometricSigma", "ElectroStatic", "Ewald", "CachedFourier",  "Tolerance",
-                                   "Dielectric", "PressureCalc", "EqSteps", "AdjSteps",
-                                   "useConstantArea"]
-
-        cbmc_variables_list = ["CBMC_First", "CBMC_Nth", "CBMC_Ang", "CBMC_Dih"]
-        output_freq_variables_list = ["OutputName",  "CoordinatesFreq", "RestartFreq", "CheckpointFreq",
-                                      "ConsoleFreq", "BlockAverageFreq", "HistogramFreq"]
-
-        histogram_output_variables_list = ["DistName", "HistName", "RunNumber", "RunLetter", "SampleFreq"]
-
-        output_data_variables_list = ["OutEnergy", "OutPressure", "OutMolNumber", "OutDensity",
-                                      "OutVolume", "OutSurfaceTension"]
+        extra_sim_info_variables_list = []
 
         free_energy_variables_list = ["FreeEnergyCalc", "MoleculeType", "InitialState", "LambdaVDW",
                                       "LambdaCoulomb", "ScaleCoulomb", "ScalePower", "ScaleAlpha", "MinSigma"]
 
-        std_mc_moves_variables_list = ["DisFreq", "RotFreq", "IntraSwapFreq", "SwapFreq", "RegrowthFreq",
-                                       "CrankShaftFreq", "VolFreq", "MultiParticleFreq"]
-
-        memc_mc_moves_variables_list = ["IntraMEMC-1Freq", "MEMC-1Freq", "IntraMEMC-2Freq", "MEMC-2Freq",
-                                        "IntraMEMC-3Freq", "MEMC-3Freq",
-                                        "ExchangeVolumeDim", "MEMC_DataInput"]
-
-        valid_input_variables_list = sim_info_variables_list + cbmc_variables_list \
-                                     + output_freq_variables_list + histogram_output_variables_list \
-                                     + output_data_variables_list + free_energy_variables_list \
-                                     + std_mc_moves_variables_list + memc_mc_moves_variables_list
-
     elif ensemble_type in ['GEMC_NPT', 'GEMC_NVT']:
-        sim_info_variables_list = ["Restart", "RestartCheckpoint", "PRNG",
-                                   "ParaTypeCHARMM", "ParaTypeMie",  "ParaTypeMARTINI",
-                                   "RcutCoulomb_box_0", "RcutCoulomb_box_1",
-                                   "Pressure",
-                                   "Rcut", "RcutLow", "LRC", "Exclude", "Potential", "Rswitch",
-                                   "VDWGeometricSigma", "ElectroStatic", "Ewald", "CachedFourier",  "Tolerance",
-                                   "Dielectric", "PressureCalc", "EqSteps", "AdjSteps",
-                                   "useConstantArea", "FixVolBox0"]
-
-        cbmc_variables_list = ["CBMC_First", "CBMC_Nth", "CBMC_Ang", "CBMC_Dih"]
-
-        output_freq_variables_list = ["OutputName", "CoordinatesFreq", "RestartFreq", "CheckpointFreq",
-                                      "ConsoleFreq", "BlockAverageFreq", "HistogramFreq"]
+        extra_sim_info_variables_list = ["RcutCoulomb_box_1", "FixVolBox0"]
 
         free_energy_variables_list = []  # always empty for GEMC
 
-        histogram_output_variables_list = ["DistName", "HistName", "RunNumber", "RunLetter", "SampleFreq"]
-
-        output_data_variables_list = ["OutEnergy", "OutPressure", "OutMolNumber", "OutDensity",
-                                      "OutVolume", "OutSurfaceTension"]
-
-        std_mc_moves_variables_list = ["DisFreq", "RotFreq", "IntraSwapFreq", "SwapFreq", "RegrowthFreq",
-                                       "CrankShaftFreq", "VolFreq", "MultiParticleFreq"]
-
-        memc_mc_moves_variables_list = ["IntraMEMC-1Freq", "MEMC-1Freq", "IntraMEMC-2Freq", "MEMC-2Freq",
-                                        "IntraMEMC-3Freq", "MEMC-3Freq",
-                                        "ExchangeVolumeDim", "MEMC_DataInput"]
-
-        valid_input_variables_list = sim_info_variables_list + cbmc_variables_list \
-                                     + output_freq_variables_list + histogram_output_variables_list \
-                                     + output_data_variables_list + free_energy_variables_list \
-                                     + std_mc_moves_variables_list + memc_mc_moves_variables_list
-
     elif ensemble_type == 'GCMC':
-        sim_info_variables_list = ["Restart", "RestartCheckpoint", "PRNG",
-                                   "ParaTypeCHARMM", "ParaTypeMie",  "ParaTypeMARTINI",
-                                   "RcutCoulomb_box_0", "RcutCoulomb_box_1",
-                                   "Rcut", "RcutLow", "LRC", "Exclude", "Potential", "Rswitch",
-                                   "VDWGeometricSigma", "ElectroStatic", "Ewald", "CachedFourier",  "Tolerance",
-                                   "Dielectric",  "PressureCalc",  "EqSteps", "AdjSteps",  "ChemPot", "Fugacity"]
-
-        cbmc_variables_list = ["CBMC_First", "CBMC_Nth", "CBMC_Ang", "CBMC_Dih"]
-
-        output_freq_variables_list = ["OutputName", "CoordinatesFreq", "RestartFreq", "CheckpointFreq",
-                                      "ConsoleFreq", "BlockAverageFreq", "HistogramFreq"]
-
-        histogram_output_variables_list = ["DistName", "HistName", "RunNumber", "RunLetter", "SampleFreq"]
-
-        output_data_variables_list = ["OutEnergy", "OutPressure", "OutMolNumber", "OutDensity",
-                                      "OutVolume", "OutSurfaceTension"]
+        extra_sim_info_variables_list = ["ChemPot", "Fugacity"]
 
         free_energy_variables_list = []  # always empty for GCMC
 
-        std_mc_moves_variables_list = ["DisFreq", "RotFreq", "IntraSwapFreq", "SwapFreq", "RegrowthFreq",
-                                       "CrankShaftFreq", "VolFreq", "MultiParticleFreq"]
-
-        memc_mc_moves_variables_list = ["IntraMEMC-1Freq", "MEMC-1Freq", "IntraMEMC-2Freq", "MEMC-2Freq",
-                                        "IntraMEMC-3Freq", "MEMC-3Freq",
-                                        "ExchangeVolumeDim", "MEMC_DataInput"]
-
-        valid_input_variables_list = sim_info_variables_list + cbmc_variables_list \
+    if ensemble_type in ['NPT', 'NVT', 'GEMC_NPT', 'GEMC_NVT', 'GCMC']:
+        valid_input_variables_list = basic_sim_info_variables_list + extra_sim_info_variables_list \
+                                     + cbmc_variables_list \
                                      + output_freq_variables_list + histogram_output_variables_list \
                                      + output_data_variables_list + free_energy_variables_list \
                                      + std_mc_moves_variables_list + memc_mc_moves_variables_list
-
     else:
-        print('ERROR: The ensemble_type selected for the _get_possible_ensemble_input_variables function is not valid.')
+        warn('WARNINR: The ensemble_type selected for the _get_possible_ensemble_input_variables '
+              'function is not valid.')
         valid_input_variables_list = None
 
     return valid_input_variables_list
-
-
-def _get_required_ensemble_files(ensemble_type):
-    """
-    Provides list of the possible optional input variables based on the ensemble type
-
-    Returns
-    ---------
-    required_ensemble_files_list : list
-        A list of the required ensemble input variables
-
-    Parameters
-    ----------
-    ensemble_type : str, valid options are 'NVT', 'NPT', 'GEMC_NVT', 'GEMC_NPT', 'GCMC'
-        The ensemble type of the simulation.
-    """
-    if ensemble_type in ['NVT', 'NPT']:
-
-        simulation_settings = ["charmm_object", "ensemble_type", "RunSteps", "Temperature"]
-
-        required_ensemble_files_list = simulation_settings
-
-    elif ensemble_type in ['GEMC_NVT', 'GEMC_NPT', 'GCMC']:
-
-        simulation_settings = ["charmm_object", "ensemble_type", "RunSteps", "Temperature"]
-
-        required_ensemble_files_list = simulation_settings
-
-    else:
-        print('ERROR: The ensemble_type selected for the _get_required_ensemble_files function is not valid.')
-        required_ensemble_files_list = None
-
-    return required_ensemble_files_list
-
 
 class GOMCControl():
     def __init__(self, charmm_object, ensemble_type, RunSteps, Temperature, input_variables_dict=None
@@ -1153,10 +1056,6 @@ class GOMCControl():
         optimize the system beyond the standard settings.  These override
         options are available via the keyword arguments in input_variable_dict.
 
-        Returns
-        -------
-        None
-
         Parameters
         ----------
         charmm_object :  Charmm object
@@ -1167,33 +1066,28 @@ class GOMCControl():
             Sets the total number of simulation steps.
         Temperature : float or int
             Temperature of system in Kelvin (K)
-
         input_variables_dict: dict, default = None
             These input variables are optional and override the default settings.
             Changing these variables likely required for more advanced systems.
-
             The details of the acceptable input variables for the selected
             ensembles can be found by running this python workbook,
-
                 print_valid_ensemble_input_variables('GCMC', description = True)
-
             which prints the input_variables with their subsection description
             for the selected 'GCMC' ensemble (other ensembles can be set as well).
-
             Example : input_variables_dict = {'Restart' : False, 'PRNG' : 123,
                                               'ParaTypeCHARMM' : True }
 
+        Returns
+        -------
+        None
 
         Notes
         -------
         The details of the required inputs for the selected
-        ensembles can be found by running this python workbook,
-
-             print_valid_required_input_variables('NVT', description = True)
-
+        ensembles can be found by the following function,
+        >>> print_valid_required_input_variables('NVT', description = True)
         which prints the required inputs with their subsection description
         for the selected 'NVT' ensemble (other ensembles can be set as well).
-
         The box units imported are in nm (standard MoSDeF units).
         The units for this writer are auto-scaled to Angstroms, so they
         can be directly used in the GOMC or NAMD engines.
@@ -1206,11 +1100,11 @@ class GOMCControl():
         self.all_failed_input_List = []
 
         # Check if charmm_object is really a Charmm() object
-        if isinstance(charmm_object, mf_charmm.Charmm) is False:
+        if not isinstance(charmm_object, mf_charmm.Charmm):
             self.all_inputs_pass = False
             print_error_message = 'The variable supplied as a charmm_object ({}}) is not a ' \
                                   'charmm_object ({}})'.format(type(mf_charmm.Charmm), type(mf_charmm.Charmm))
-            raise ValueError(print_error_message)
+            raise TypeError(print_error_message)
 
         # check ensemble is a correct type
         print('INFO: ensemble_type = ' + str(ensemble_type))
@@ -1249,7 +1143,6 @@ class GOMCControl():
         self.input_variables_dict = input_variables_dict
         self.residues_List = charmm_object.residues
         self.all_atom_names_and_res_pairs_dict = charmm_object.all_atom_name_res_pairs_dict
-        self.all_atom_names_and_res_pairs_keys_list = list(self.all_atom_names_and_res_pairs_dict.keys())
 
         self.x_dim_box_0 = charmm_object.box_0.maxs[0] * 10   # times 10 to convert from nm to Angstroms
         self.y_dim_box_0 = charmm_object.box_0.maxs[1] * 10   # times 10 to convert from nm to Angstroms
@@ -1359,170 +1252,44 @@ class GOMCControl():
         self.MEMC_DataInput = default_input_variables_dict['MEMC_DataInput']
 
         # auto calculate the best EqSteps (number of Equilbrium Steps) and Adj_Steps (number of AdjSteps Steps)
-        set_max_steps_equib = self.EqSteps
+        self.EqSteps = scale_gen_freq_for_run_steps_int(self.EqSteps, self.RunSteps)
 
-        if RunSteps / 10 >= set_max_steps_equib and RunSteps / 10 >= 1:
-            self.EqSteps = int(set_max_steps_equib)
-        elif RunSteps / 10 >= 1:
-            self.EqSteps = int(RunSteps / 10)
-        else:
-            self.EqSteps = int(1)
+        self.AdjSteps = scale_gen_freq_for_run_steps_int(self.AdjSteps, self.RunSteps)
 
-        set_max_steps_adj = self.AdjSteps  # 1000
-        if RunSteps / 10 >= set_max_steps_adj and RunSteps / 10 >= 1:
-            self.AdjSteps = int(set_max_steps_adj)
-        elif RunSteps / 10 >= 1:
-            self.AdjSteps = int(RunSteps / 10)
-        else:
-            self.AdjSteps = int(1)
+        # auto calculate the best RestartFreq  for the number of self.RunSteps
+        self.RestartFreq = scale_gen_freq_for_run_steps_list_bool_int(self.RestartFreq, self.RunSteps)
 
-        # auto calculate the best RestartFreq  for the number of RunSteps
-        set_max_steps_RestartFreq = self.RestartFreq[1]
+        # auto calculate the best CheckpointFreq  for the number of self.RunSteps
+        self.CheckpointFreq = scale_gen_freq_for_run_steps_list_bool_int(self.CheckpointFreq, self.RunSteps)
 
-        if RunSteps / 10 >= set_max_steps_RestartFreq and RunSteps / 10 >= 1:
-            self.RestartFreq[1] = int(set_max_steps_RestartFreq)
-        elif RunSteps / 10 >= 1:
-            self.RestartFreq[1] = int(RunSteps / 10)
-        else:
-            self.RestartFreq[1] = int(1)
+        # auto calculate the best CoordinatesFreq  for the number of self.RunSteps
+        self.CoordinatesFreq = scale_gen_freq_for_run_steps_list_bool_int(self.CoordinatesFreq, self.RunSteps)
 
-        # auto calculate the best CheckpointFreq  for the number of RunSteps
-        set_max_steps_CheckpointFreq = self.CheckpointFreq[1]
+        # auto calculate the best ConsoleFreq  for the number of self.RunSteps
+        self.ConsoleFreq = scale_gen_freq_for_run_steps_list_bool_int(self.ConsoleFreq, self.RunSteps)
 
-        if RunSteps / 10 >= set_max_steps_CheckpointFreq and RunSteps / 10 >= 1:
-            self.CheckpointFreq[1] = int(set_max_steps_CheckpointFreq)
-        elif RunSteps / 10 >= 1:
-            self.CheckpointFreq[1] = int(RunSteps / 10)
-        else:
-            self.CheckpointFreq[1] = int(1)
+        # auto calculate the best PressureCalc  for the number of self.RunSteps
+        self.PressureCalc = scale_gen_freq_for_run_steps_list_bool_int(self.PressureCalc, self.RunSteps)
 
-        # auto calculate the best CoordinatesFreq  for the number of RunSteps
-        set_max_steps_CoordinatesFreq = self.CoordinatesFreq[1]
+        # auto calculate the best BlockAverageFreq  for the number of self.RunSteps
+        self.BlockAverageFreq = scale_gen_freq_for_run_steps_list_bool_int(self.BlockAverageFreq, self.RunSteps)
 
-        if RunSteps / 10 >= set_max_steps_CoordinatesFreq and RunSteps / 10 >= 1:
-            self.CoordinatesFreq[1] = int(set_max_steps_CoordinatesFreq)
-        elif RunSteps / 10 >= 1:
-            self.CoordinatesFreq[1] = int(RunSteps / 10)
-        else:
-            self.CoordinatesFreq[1] = int(1)
+        # auto calculate the best HistogramFreq  for the number of self.RunSteps
+        self.HistogramFreq = scale_gen_freq_for_run_steps_list_bool_int(self.HistogramFreq, self.RunSteps)
 
-        # auto calculate the best ConsoleFreq  for the number of RunSteps
-        set_max_steps_ConsoleFreq = self.ConsoleFreq[1]
-
-        if RunSteps / 10 >= set_max_steps_ConsoleFreq and RunSteps / 10 >= 1:
-            self.ConsoleFreq[1] = int(set_max_steps_ConsoleFreq)
-        elif RunSteps / 10 >= 1:
-            self.ConsoleFreq[1] = int(RunSteps / 10)
-        else:
-            self.ConsoleFreq[1] = int(1)
-
-        # auto calculate the best PressureCalc  for the number of RunSteps
-        set_max_steps_PressureCalc = self.PressureCalc[1]
-
-        if RunSteps / 10 >= set_max_steps_PressureCalc and RunSteps / 10 >= 1:
-            self.PressureCalc[1] = int(set_max_steps_PressureCalc)
-        elif RunSteps / 10 >= 1:
-            self.PressureCalc[1] = int(RunSteps / 10)
-        else:
-            self.PressureCalc[1] = int(1)
-
-        # auto calculate the best BlockAverageFreq  for the number of RunSteps
-        set_max_steps_BlockAverageFreq = self.BlockAverageFreq[1]
-
-        if RunSteps / 10 >= set_max_steps_BlockAverageFreq and RunSteps / 10 >= 1:
-            self.BlockAverageFreq[1] = int(set_max_steps_BlockAverageFreq)
-        elif RunSteps / 10 >= 1:
-            self.BlockAverageFreq[1] = int(RunSteps / 10)
-        else:
-            self.BlockAverageFreq[1] = int(1)
-
-        # auto calculate the best HistogramFreq  for the number of RunSteps
-        set_max_steps_HistogramFreq = self.HistogramFreq[1]
-
-        if RunSteps / 10 >= set_max_steps_HistogramFreq and RunSteps / 10 >= 1:
-            self.HistogramFreq[1] = int(set_max_steps_HistogramFreq)
-        elif RunSteps / 10 >= 1:
-            self.HistogramFreq[1] = int(RunSteps / 10)
-        else:
-            self.HistogramFreq[1] = int(1)
-
-        # auto calculate the best SampleFreq  for the number of RunSteps
-        set_max_steps_SampleFreq = self.SampleFreq
-
-        if RunSteps / 10 >= set_max_steps_SampleFreq and RunSteps / 10 >= 1:
-            self.SampleFreq = int(set_max_steps_SampleFreq)
-        elif RunSteps / 10 >= 1:
-            self.SampleFreq = int(RunSteps / 10)
-        else:
-            self.SampleFreq = int(1)
+        # auto calculate the best SampleFreq  for the number of self.RunSteps
+        self.SampleFreq = scale_gen_freq_for_run_steps_int(self.SampleFreq, self.RunSteps)
 
         # check the box dimensions
-        if (isinstance(self.x_dim_box_0, int) is False
-                and isinstance(self.x_dim_box_0, float) is False) \
-                or self.x_dim_box_0 <= 0:
-            self.all_inputs_pass = False
-            print_error_message = "ERROR: The x-dimension for box 0 is, {} , not an integer, float, "
-            "or is <= 0.".format(self.x_dim_box_0)
-            raise ValueError(print_error_message)
-
-        if (isinstance(self.y_dim_box_0, int) is False
-            and isinstance(self.y_dim_box_0, float) is False) \
-                or self.y_dim_box_0 <= 0:
-            self.all_inputs_pass = False
-            print_error_message = "ERROR: The y-dimension for box 0 is, {} , not an integer, float, "
-            "or is <= 0.".format(self.y_dim_box_0)
-            raise ValueError(print_error_message)
-
-        if (isinstance(self.z_dim_box_0, int) is False
-            and isinstance(self.z_dim_box_0, float) is False) \
-                or self.z_dim_box_0 <= 0:
-            self.all_inputs_pass = False
-            print_error_message = "ERROR: The z-dimension for box 0 is, {} , not an integer, float, " \
-                                  "or is <= 0.".format(self.z_dim_box_0)
-            raise ValueError(print_error_message)
+        ck_box_dim_is_float_or_int_greater_0(self.x_dim_box_0, 'x', 0, self.ensemble_type)
+        ck_box_dim_is_float_or_int_greater_0(self.y_dim_box_0, 'y', 0, self.ensemble_type)
+        ck_box_dim_is_float_or_int_greater_0(self.z_dim_box_0, 'z', 0, self.ensemble_type)
 
         if self.ensemble_type in ['GEMC_NVT', 'GEMC_NPT', 'GCMC']:
-            if (isinstance(self.x_dim_box_1, int) is False
-                and isinstance(self.x_dim_box_1, float) is False) \
-                    or self.x_dim_box_1 <= 0:
-                self.all_inputs_pass = False
-                print_error_message = "ERROR: The x-dimension for box 1 is, {} , not an integer, float, " \
-                                      "or is <= 0.".format(self.x_dim_box_1)
-                raise ValueError(print_error_message)
+            ck_box_dim_is_float_or_int_greater_0(self.x_dim_box_1, 'x', 1, self.ensemble_type)
+            ck_box_dim_is_float_or_int_greater_0(self.y_dim_box_1, 'y', 1, self.ensemble_type)
+            ck_box_dim_is_float_or_int_greater_0(self.z_dim_box_1, 'z', 1, self.ensemble_type)
 
-            elif self.x_dim_box_1 is None:
-                self.all_inputs_pass = False
-                print_error_message = "ERROR: The x-dimension for box 1 was not provided.  The x-dimension for box 1, "\
-                                      " is required to be an an integer, float, and be > 0."
-                raise ValueError(print_error_message)
-
-            if (isinstance(self.y_dim_box_1, int) is False
-                and isinstance(self.y_dim_box_1, float) is False) \
-                    or self.y_dim_box_1 <= 0:
-                self.all_inputs_pass = False
-                print_error_message = "ERROR: The y-dimension for box 1 is, {} , not an integer, float, " \
-                                      "or is <= 0.".format(self.y_dim_box_1)
-                raise ValueError(print_error_message)
-
-            elif self.y_dim_box_1 is None:
-                self.all_inputs_pass = False
-                print_error_message = "ERROR: The y-dimension for box 1 was not provided.  The y-dimension for box 1, "\
-                                      "is required to be an an integer, float, and be > 0."
-                raise ValueError(print_error_message)
-
-            if (isinstance(self.z_dim_box_1, int) is False
-                and isinstance(self.z_dim_box_1, float) is False) \
-                    or self.z_dim_box_1 <= 0:
-                self.all_inputs_pass = False
-                print_error_message = "ERROR: The z-dimension for box 1 is, {} , not an integer, float, " \
-                                      "or is <= 0.".format(self.z_dim_box_1)
-                raise ValueError(print_error_message)
-
-            elif self.z_dim_box_1 is None:
-                self.all_inputs_pass = False
-                print_error_message = "ERROR: The z-dimension for box 1 was not provided.  The z-dimension for box 1, "\
-                                      "is required to be an an integer, float, and be > 0."
-                raise ValueError(print_error_message)
         else:
             self.x_dim_box_1 = None
             self.y_dim_box_1 = None
@@ -2469,13 +2236,15 @@ class GOMCControl():
                                     else:
                                         bad_input_variables_values_list.append(key)
 
+                                    all_atom_names_and_res_pairs_keys_list = list(
+                                        self.all_atom_names_and_res_pairs_dict.keys())
                                     # check that the atom names match the residues that exist
                                     if self.input_variables_dict[key][MEMC_iter][1] not in \
-                                            self.all_atom_names_and_res_pairs_keys_list:
+                                            all_atom_names_and_res_pairs_keys_list:
                                         bad_input_variables_values_list.append(key)
 
                                     elif self.input_variables_dict[key][MEMC_iter][1] in \
-                                            self.all_atom_names_and_res_pairs_keys_list:
+                                            all_atom_names_and_res_pairs_keys_list:
 
                                         if self.input_variables_dict[key][MEMC_iter][2][0] not in \
                                                 self.all_atom_names_and_res_pairs_dict[
@@ -2489,11 +2258,11 @@ class GOMCControl():
                                             bad_input_variables_values_list.append(key)
 
                                     if self.input_variables_dict[key][MEMC_iter][3] not in \
-                                            self.all_atom_names_and_res_pairs_keys_list:
+                                            all_atom_names_and_res_pairs_keys_list:
                                         bad_input_variables_values_list.append(key)
 
                                     elif self.input_variables_dict[key][MEMC_iter][3] in \
-                                            self.all_atom_names_and_res_pairs_keys_list:
+                                            all_atom_names_and_res_pairs_keys_list:
                                         if self.input_variables_dict[key][MEMC_iter][4][0] not in \
                                                 self.all_atom_names_and_res_pairs_dict[
                                                     self.input_variables_dict[key][MEMC_iter][3]]:
@@ -2727,13 +2496,6 @@ class GOMCControl():
         """
         Writes the GOMC control file.
 
-        Returns
-        ---------
-        Writes the GOMC control file with the name provided via conf_filename
-
-            If completed without errors: str, "PASSED
-            If completed with errors :  None
-
         Parameters
         ----------
         conf_filename: str
@@ -2741,6 +2503,12 @@ class GOMCControl():
             the .conf extension, or no extension.  If no extension is provided, the
             code will add the .conf extension to the provided file name.
 
+        Returns
+        ---------
+        Writes the GOMC control file with the name provided via conf_filename
+
+            If completed without errors: str, "PASSED
+            If completed with errors :  None
         """
 
         # check to see if it is OK to proceed writing the control file
@@ -3134,14 +2902,6 @@ class GOMCControl():
         Checks if the input variable is either True for False.
         If not either True or False, the provided list is appended with the bad with the dict_key
 
-        Returns
-        ---------
-        bad_user_variable_list : list,
-            A list to append with the bad dict_key user inputs,
-            which is appended upon detecting a bad user input variable.
-            Note: This list is intented to be printed with all the bad input variables
-            so the user can fix them after upon a failed GOMC conf file writing attempt.
-
         Parameters
         ----------
         input_variables_dict: dict
@@ -3150,6 +2910,14 @@ class GOMCControl():
             Dictionary key for the user provided input variable list
         bad_user_variable_list: list
             A list to append with the bad dict_key user inputs
+            Note: This list is intented to be printed with all the bad input variables
+            so the user can fix them after upon a failed GOMC conf file writing attempt.
+
+        Returns
+        ---------
+        bad_user_variable_list : list,
+            A list to append with the bad dict_key user inputs,
+            which is appended upon detecting a bad user input variable.
             Note: This list is intented to be printed with all the bad input variables
             so the user can fix them after upon a failed GOMC conf file writing attempt.
         """
@@ -3168,18 +2936,18 @@ class GOMCControl():
         Checks if the input variable is an integer or float is zero or greater ( value >= 0 ).
         If not, the provided list is appended with the bad with the dict_key.
 
-        Returns
-        ---------
-        bad_input_variables_values_list: list
-            A list to append with the bad variable user inputs
-            so the user can see which variable input values are bad.
-
         Parameters
         ----------
         input_variables_dict: dict
             The user input variable dictionary
         key: str
             Dictionary key for the user provided input variable list
+        bad_input_variables_values_list: list
+            A list to append with the bad variable user inputs
+            so the user can see which variable input values are bad.
+
+        Returns
+        ---------
         bad_input_variables_values_list: list
             A list to append with the bad variable user inputs
             so the user can see which variable input values are bad.
@@ -3233,18 +3001,18 @@ class GOMCControl():
         Checks if the input variable is a float is zero or greater ( value >= 0 ).
         If not, the provided list is appended with the bad with the dict_key
 
-        Returns
-        ---------
-        bad_input_variables_values_list: list
-            A list to append with the bad variable user inputs
-            so the user can see which variable input values are bad.
-
         Parameters
         ----------
         input_variables_dict: dict
             The user input variable dictionary
         key: str
             Dictionary key for the user provided input variable list
+        bad_input_variables_values_list: list
+            A list to append with the bad variable user inputs
+            so the user can see which variable input values are bad.
+
+        Returns
+        ---------
         bad_input_variables_values_list: list
             A list to append with the bad variable user inputs
             so the user can see which variable input values are bad.
@@ -3265,18 +3033,18 @@ class GOMCControl():
         Checks if the input variable is an integer or float is greater than zero ( value > 0).
         If not, the provided list is appended with the bad with the dict_key
 
-        Returns
-        ---------
-        bad_input_variables_values_list: list
-            A list to append with the bad variable user inputs
-            so the user can see which variable input values are bad.
-
         Parameters
         ----------
         input_variables_dict: dict
             The user input variable dictionary
         key: str
             Dictionary key for the user provided input variable list
+        bad_input_variables_values_list: list
+            A list to append with the bad variable user inputs
+            so the user can see which variable input values are bad.
+
+        Returns
+        ---------
         bad_input_variables_values_list: list
             A list to append with the bad variable user inputs
             so the user can see which variable input values are bad.
@@ -3298,18 +3066,18 @@ class GOMCControl():
         Checks if the input variable is an integer greater than zero ( value > 0)..
         If not, the provided list is appended with the bad with the dict_key
 
-        Returns
-        ---------
-        bad_input_variables_values_list: list
-            A list to append with the bad variable user inputs
-            so the user can see which variable input values are bad.
-
         Parameters
         ----------
         input_variables_dict: dict
             The user input variable dictionary
         key: str
             Dictionary key for the user provided input variable list
+        bad_input_variables_values_list: list
+            A list to append with the bad variable user inputs
+            so the user can see which variable input values are bad.
+
+        Returns
+        ---------
         bad_input_variables_values_list: list
             A list to append with the bad variable user inputs
             so the user can see which variable input values are bad.
@@ -3330,18 +3098,18 @@ class GOMCControl():
         Checks if the input variable is a float greater than zero ( value > 0).
         If not, the provided list is appended with the bad with the dict_key
 
-        Returns
-        ---------
-        bad_input_variables_values_list: list
-            A list to append with the bad variable user inputs
-            so the user can see which variable input values are bad.
-
         Parameters
         ----------
         input_variables_dict: dict
             The user input variable dictionary
         key: str
             Dictionary key for the user provided input variable list
+        bad_input_variables_values_list: list
+            A list to append with the bad variable user inputs
+            so the user can see which variable input values are bad.
+
+        Returns
+        ---------
         bad_input_variables_values_list: list
             A list to append with the bad variable user inputs
             so the user can see which variable input values are bad.
@@ -3363,18 +3131,18 @@ class GOMCControl():
         ( 0 < value < 1).
         If not, the provided list is appended with the bad with the dict_key
 
-        Returns
-        ---------
-        bad_input_variables_values_list: list
-            A list to append with the bad variable user inputs
-            so the user can see which variable input values are bad.
-
         Parameters
         ----------
         input_variables_dict: dict
             The user input variable dictionary
         key: str
             Dictionary key for the user provided input variable list
+        bad_input_variables_values_list: list
+            A list to append with the bad variable user inputs
+            so the user can see which variable input values are bad.
+
+        Returns
+        ---------
         bad_input_variables_values_list: list
             A list to append with the bad variable user inputs
             so the user can see which variable input values are bad.
@@ -3397,18 +3165,18 @@ class GOMCControl():
         If not, the provided list is appended with the bad with the dict_key
         If not, the provided list is appended with the bad with the dict_key
 
-        Returns
-        ---------
-        bad_input_variables_values_list: list
-            A list to append with the bad variable user inputs
-            so the user can see which variable input values are bad.
-
         Parameters
         ----------
         input_variables_dict: dict
             The user input variable dictionary
         key: str
             Dictionary key for the user provided input variable list
+        bad_input_variables_values_list: list
+            A list to append with the bad variable user inputs
+            so the user can see which variable input values are bad.
+
+        Returns
+        ---------
         bad_input_variables_values_list: list
             A list to append with the bad variable user inputs
             so the user can see which variable input values are bad.
@@ -3431,18 +3199,18 @@ class GOMCControl():
         Checks if the input variable is a float from 0 to 1 ( 0 =< value <= 1).
         If not, the provided list is appended with the bad with the dict_key
 
-        Returns
-        ---------
-        bad_input_variables_values_list: list
-            A list to append with the bad variable user inputs
-            so the user can see which variable input values are bad.
-
         Parameters
         ----------
         input_variables_dict: dict
             The user input variable dictionary
         key: str
             Dictionary key for the user provided input variable list
+        bad_input_variables_values_list: list
+            A list to append with the bad variable user inputs
+            so the user can see which variable input values are bad.
+
+        Returns
+        ---------
         bad_input_variables_values_list: list
             A list to append with the bad variable user inputs
             so the user can see which variable input values are bad.
@@ -3464,18 +3232,18 @@ class GOMCControl():
         Checks if the input variable is an integer from 0 to 1 ( 0 =< value <= 1).
         If not, the provided list is appended with the bad with the dict_key
 
-        Returns
-        ---------
-        bad_input_variables_values_list: list
-            A list to append with the bad variable user inputs
-            so the user can see which variable input values are bad.
-
         Parameters
         ----------
         input_variables_dict: dict
             The user input variable dictionary
         key: str
             Dictionary key for the user provided input variable list
+        bad_input_variables_values_list: list
+            A list to append with the bad variable user inputs
+            so the user can see which variable input values are bad.
+
+        Returns
+        ---------
         bad_input_variables_values_list: list
             A list to append with the bad variable user inputs
             so the user can see which variable input values are bad.
@@ -3498,18 +3266,18 @@ class GOMCControl():
         ([bool, int >= 0 ]).
         If not, the provided list is appended with the bad with the dict_key
 
-        Returns
-        ---------
-        bad_input_variables_values_list: list
-            A list to append with the bad variable user inputs
-            so the user can see which variable input values are bad.
-
         Parameters
         ----------
         input_variables_dict: dict
             The user input variable dictionary
         key: str
             Dictionary key for the user provided input variable list
+        bad_input_variables_values_list: list
+            A list to append with the bad variable user inputs
+            so the user can see which variable input values are bad.
+
+        Returns
+        ---------
         bad_input_variables_values_list: list
             A list to append with the bad variable user inputs
             so the user can see which variable input values are bad.
@@ -3538,18 +3306,18 @@ class GOMCControl():
         ([bool, int > 0 ]).
         If not, the provided list is appended with the bad with the dict_key
 
-        Returns
-        ---------
-        bad_input_variables_values_list: list
-            A list to append with the bad variable user inputs
-            so the user can see which variable input values are bad.
-
         Parameters
         ----------
         input_variables_dict: dict
             The user input variable dictionary
         key: str
             Dictionary key for the user provided input variable list
+        bad_input_variables_values_list: list
+            A list to append with the bad variable user inputs
+            so the user can see which variable input values are bad.
+
+        Returns
+        ---------
         bad_input_variables_values_list: list
             A list to append with the bad variable user inputs
             so the user can see which variable input values are bad.
@@ -3578,18 +3346,18 @@ class GOMCControl():
         ([str, int > 0 ]).
         If not, the provided list is appended with the bad with the dict_key
 
-        Returns
-        ---------
-        bad_input_variables_values_list: list
-            A list to append with the bad variable user inputs
-            so the user can see which variable input values are bad.
-
         Parameters
         ----------
         input_variables_dict: dict
             The user input variable dictionary
         key: str
             Dictionary key for the user provided input variable list
+        bad_input_variables_values_list: list
+            A list to append with the bad variable user inputs
+            so the user can see which variable input values are bad.
+
+        Returns
+        ---------
         bad_input_variables_values_list: list
             A list to append with the bad variable user inputs
             so the user can see which variable input values are bad.
@@ -3620,18 +3388,18 @@ class GOMCControl():
         Checks if the input variable is a list with a 2 booleans  ([bool, bool]).
         If not, the provided list is appended with the bad with the dict_key
 
-        Returns
-        ---------
-        bad_input_variables_values_list: list
-            A list to append with the bad variable user inputs
-            so the user can see which variable input values are bad.
-
         Parameters
         ----------
         input_variables_dict: dict
             The user input variable dictionary
         key: str
             Dictionary key for the user provided input variable list
+        bad_input_variables_values_list: list
+            A list to append with the bad variable user inputs
+            so the user can see which variable input values are bad.
+
+        Returns
+        ---------
         bad_input_variables_values_list: list
             A list to append with the bad variable user inputs
             so the user can see which variable input values are bad.
@@ -3660,18 +3428,18 @@ class GOMCControl():
         Note: the list can be of any length with 0.0 <= float <= 1.0
         If not, the provided list is appended with the bad with the dict_key
 
-        Returns
-        ---------
-        bad_input_variables_values_list: list
-            A list to append with the bad variable user inputs
-            so the user can see which variable input values are bad.
-
         Parameters
         ----------
         input_variables_dict: dict
             The user input variable dictionary
         key: str
             Dictionary key for the user provided input variable list
+        bad_input_variables_values_list: list
+            A list to append with the bad variable user inputs
+            so the user can see which variable input values are bad.
+
+        Returns
+        ---------
         bad_input_variables_values_list: list
             A list to append with the bad variable user inputs
             so the user can see which variable input values are bad.
@@ -3703,18 +3471,18 @@ class GOMCControl():
         Note: the dictionary can be of any length
         If not, the provided list is appended with the bad with the dict_key
 
-        Returns
-        ---------
-        bad_input_variables_values_list: list
-            A list to append with the bad variable user inputs
-            so the user can see which variable input values are bad.
-
         Parameters
         ----------
         input_variables_dict: dict
             The user input variable dictionary
         key: str
             Dictionary key for the user provided input variable list
+        bad_input_variables_values_list: list
+            A list to append with the bad variable user inputs
+            so the user can see which variable input values are bad.
+
+        Returns
+        ---------
         bad_input_variables_values_list: list
             A list to append with the bad variable user inputs
             so the user can see which variable input values are bad.
@@ -3756,18 +3524,18 @@ class GOMCControl():
         Note: the dictionary can be of any length
         If not, the provided list is appended with the bad with the dict_key
 
-        Returns
-        ---------
-        bad_input_variables_values_list: list
-            A list to append with the bad variable user inputs
-            so the user can see which variable input values are bad.
-
         Parameters
         ----------
         input_variables_dict: dict
             The user input variable dictionary
         key: str
             Dictionary key for the user provided input variable list
+        bad_input_variables_values_list: list
+            A list to append with the bad variable user inputs
+            so the user can see which variable input values are bad.
+
+        Returns
+        ---------
         bad_input_variables_values_list: list
             A list to append with the bad variable user inputs
             so the user can see which variable input values are bad.
@@ -3807,18 +3575,18 @@ class GOMCControl():
         Checks if the input variable is a string with no spaces.
         If not, the provided list is appended with the bad with the dict_key.
 
-        Returns
-        ---------
-        bad_input_variables_values_list: list
-            A list to append with the bad variable user inputs
-            so the user can see which variable input values are bad.
-
         Parameters
         ----------
         input_variables_dict: dict
             The user input variable dictionary
         key: str
             Dictionary key for the user provided input variable list
+        bad_input_variables_values_list: list
+            A list to append with the bad variable user inputs
+            so the user can see which variable input values are bad.
+
+        Returns
+        ---------
         bad_input_variables_values_list: list
             A list to append with the bad variable user inputs
             so the user can see which variable input values are bad.
@@ -3830,6 +3598,119 @@ class GOMCControl():
                 or no_spaces_in_OutputName_string is True:
             bad_input_variables_values_list.append(key)
 
+def scale_gen_freq_for_run_steps_list_bool_int(charmm_variable,
+                                               run_steps
+                                               ):
+    """
+    Scales the frequency of the output to a a more realistic value,
+    if the output frequency does not make sense based on the
+    total number of simulation run steps.
+
+    Parameters
+    ----------
+    charmm_variable : GOMCControl object variable list, [bool, int]
+        This only for the frequency output variables of the GOMCControl object
+    run_steps : int (>0), must be an integer greater than zero.
+        This is the GOMCControl object varaible which sets the total number of simulation steps.
+        This should be the RunSteps variable in the GOMCControl object.
+
+    Returns
+    ---------
+    charmm_variable : GOMCControl object variable list [bool, int]
+        A rescaled and appropriate value for the frequency output variables of the
+        GOMCControl object, based on the RunSteps in the simulation.
+    """
+
+    set_max_steps_charmm_variable = charmm_variable[1]
+
+    if run_steps / 10 >= set_max_steps_charmm_variable and run_steps / 10 >= 1:
+        charmm_variable[1] = int(set_max_steps_charmm_variable)
+    elif run_steps / 10 >= 1:
+        charmm_variable[1] = int(run_steps / 10)
+    else:
+        charmm_variable[1] = int(1)
+
+    return charmm_variable
+
+def scale_gen_freq_for_run_steps_int(charmm_variable,
+                                     run_steps
+                                     ):
+    """
+    Scales the frequency of the output to a a more realistic value,
+    if the output frequency does not make sense based on the
+    total number of simulation run steps.
+
+    Parameters
+    ----------
+    charmm_variable : GOMCControl object variable, int
+        This only for the frequency output variables of the GOMCControl object
+    run_steps : int (>0), must be an integer greater than zero.
+        This is the GOMCControl object varaible which sets the total number of simulation steps.
+        This should be the RunSteps variable in the GOMCControl object.
+
+    Returns
+    ---------
+    charmm_variable : GOMCControl object variable list, int
+        A rescaled and appropriate value for the frequency output variables of the
+        GOMCControl object, based on the RunSteps in the simulation.
+    """
+
+    set_max_steps_charmm_variable = charmm_variable
+
+    if run_steps / 10 >= set_max_steps_charmm_variable and run_steps / 10 >= 1:
+        charmm_variable = int(set_max_steps_charmm_variable)
+    elif run_steps / 10 >= 1:
+        charmm_variable = int(run_steps / 10)
+    else:
+        charmm_variable = int(1)
+
+    return charmm_variable
+
+def ck_box_dim_is_float_or_int_greater_0(charmm_box_dimension,
+                                         dimension,
+                                         box_no,
+                                         ensemble_type
+                                         ):
+    """
+    Scales the frequency of the output to a a more realistic value,
+    if the output frequency does not make sense based on the
+    total number of simulation run steps.
+
+    Parameters
+    ----------
+    charmm_box_dimension : GOMCControl object box dimension variable
+        This is the variable that contains the box input x, y, or z dimensions for box 0 or 1.
+    dimension : str (Only enter 'x', 'y', or 'z')
+        This is the dimension of the charmm_box_dimension variable.
+        Only enter 'x', 'y', or 'z', but it will not error out if you do not.
+    box_no : int (only 0 or 1)
+        This is the box number which is defined in the mbuild.Charmm object
+        Only enter only 0 or 1, but it will not error out if you do not.
+    ensemble_type : str, valid options are 'NVT', 'NPT', 'GEMC_NVT', 'GEMC_NPT', 'GCMC'
+        The ensemble type of the simulation.
+
+    Returns
+    ---------
+    If charmm_box_dimension is an int or float (>0) : None
+    If charmm_box_dimension is not an int or float (>0) : raise ValueError
+
+    """
+
+    if (isinstance(charmm_box_dimension, int) is False
+        and isinstance(charmm_box_dimension, float) is False) \
+            or charmm_box_dimension <= 0:
+        print_error_message = "ERROR: The {}-dimension for box {} is, {} , not an integer, float, "
+        "or is <= 0.".format(dimension, box_no, charmm_box_dimension)
+        raise ValueError(print_error_message)
+
+    if (ensemble_type in ['GEMC_NVT', 'GEMC_NPT', 'GCMC']) and charmm_box_dimension is None and box_no == 1:
+        print_error_message = "ERROR: The {}-dimension for box {} was not provided.  " \
+                              "The {}-dimension for box {}, " \
+                              " is required to be an an integer, float, and be > 0.".format(dimension, box_no,
+                                                                                            dimension, box_no)
+        raise ValueError(print_error_message)
+
+    return None
 
 # user callable function to write the GOMC control file
 def write_gomc_control_file(charmm_object, conf_filename,  ensemble_type,
