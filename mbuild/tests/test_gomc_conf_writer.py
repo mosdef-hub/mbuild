@@ -89,16 +89,17 @@ class TestGOMCControlFileWriter(BaseTest):
                                                          'MEMC-2Freq', 'IntraMEMC-3Freq', 'MEMC-3Freq']
 
     def test_print_ensemble_info(self):
+
         try:
-            gomc_control.print_valid_ensemble_input_variables('NVT', description=True)
-            gomc_control.print_required_ensemble_files('NVT', description=True)
+            gomc_control.print_required_input(description=True)
+            gomc_control.print_required_input(description=False)
             test_status = "PASSED"
         except:
             test_status = "FAILED"
         assert test_status == "PASSED"
 
         try:
-            gomc_control.print_valid_ensemble_input_variables('NVT', description=False)
+            gomc_control.print_required_ensemble_files('NVT', description=True)
             gomc_control.print_required_ensemble_files('NVT', description=False)
             test_status = "PASSED"
         except:
@@ -106,15 +107,7 @@ class TestGOMCControlFileWriter(BaseTest):
         assert test_status == "PASSED"
 
         try:
-            gomc_control.print_valid_ensemble_input_variables('NPT', description=True)
             gomc_control.print_required_ensemble_files('NPT', description=True)
-            test_status = "PASSED"
-        except:
-            test_status = "FAILED"
-        assert test_status == "PASSED"
-
-        try:
-            gomc_control.print_valid_ensemble_input_variables('NPT', description=False)
             gomc_control.print_required_ensemble_files('NPT', description=False)
             test_status = "PASSED"
         except:
@@ -122,15 +115,7 @@ class TestGOMCControlFileWriter(BaseTest):
         assert test_status == "PASSED"
 
         try:
-            gomc_control.print_valid_ensemble_input_variables('GEMC_NVT', description=True)
             gomc_control.print_required_ensemble_files('GEMC_NVT', description=True)
-            test_status = "PASSED"
-        except:
-            test_status = "FAILED"
-        assert test_status == "PASSED"
-
-        try:
-            gomc_control.print_valid_ensemble_input_variables('GEMC_NVT', description=False)
             gomc_control.print_required_ensemble_files('GEMC_NVT', description=False)
             test_status = "PASSED"
         except:
@@ -138,15 +123,7 @@ class TestGOMCControlFileWriter(BaseTest):
         assert test_status == "PASSED"
 
         try:
-            gomc_control.print_valid_ensemble_input_variables('GEMC_NPT', description=True)
             gomc_control.print_required_ensemble_files('GEMC_NPT', description=True)
-            test_status = "PASSED"
-        except:
-            test_status = "FAILED"
-        assert test_status == "PASSED"
-
-        try:
-            gomc_control.print_valid_ensemble_input_variables('GEMC_NPT', description=False)
             gomc_control.print_required_ensemble_files('GEMC_NPT', description=False)
             test_status = "PASSED"
         except:
@@ -154,15 +131,7 @@ class TestGOMCControlFileWriter(BaseTest):
         assert test_status == "PASSED"
 
         try:
-            gomc_control.print_valid_ensemble_input_variables('GCMC', description=True)
             gomc_control.print_required_ensemble_files('GCMC', description=True)
-            test_status = "PASSED"
-        except:
-            test_status = "FAILED"
-        assert test_status == "PASSED"
-
-        try:
-            gomc_control.print_valid_ensemble_input_variables('GCMC', description=False)
             gomc_control.print_required_ensemble_files('GCMC', description=False)
             test_status = "PASSED"
         except:
