@@ -14,19 +14,25 @@ __all__ = ['Polymer']
 class Polymer(Compound):
     """Connect one or more components in a specified sequence.
 
-    Parameters
+    Attributes 
     ----------
-    monomers : mb.Compound or list of mb.Compound
-        The compound(s) to replicate.
-    n : int
-        The number of times to replicate the sequence.
-    sequence : str, optional, default='A'
-        A string of characters where each unique character represents one
-        repetition of a monomer. Characters in `sequence` are assigned to
-        monomers in the order assigned by the built-in `sorted()`.
-    port_labels : 2-tuple of strs, optional, default=('up', 'down')
-        The names of the two ports to use to connect copies of proto.
+    monomers : List of mb.Compounds
+        The compound(s) to replicate. Add to this list using the add_monomers method.
+    end_groups : List of mb.Compounds
+        The compound to cap the end of the polymer. Add to this list using the
+        add_end_groups method. 
 
+    Methods
+    -------
+    add_monomer(monomer, bonding_indices, separation, port_labels, orientation, replace)
+        Use to add a monomer compound to Polymer.monomers
+
+    add_end_groups(compound, bond_index, separation, orientation, replace)
+        Use to add an end group compound to Polymer.end_groups
+
+    build(n, sequence)
+        Use to create a single polymer compound. This method uses the compounds created 
+        by alling the add_monomer and add_end_group methods.
     """
     def __init__(self):
         super(Polymer, self).__init__()
@@ -196,4 +202,7 @@ def _add_port(compound, label, atom_idx, separation, orientation=None, replace=T
                 separation=separation/2
                 )
     compound.add(port, label=label)
+
+
+
 
