@@ -35,7 +35,6 @@ class Port(Compound):
     used : bool
         Status of whether a port has been occupied following an equivalence
         transform.
-
     """
     def __init__(self, anchor=None, orientation=None, separation=0):
         super(Port, self).__init__(name='Port', port_particle=True)
@@ -85,9 +84,17 @@ class Port(Compound):
         return newone
 
     def update_separation(self, separation):
+        """
+        Change the distance between a port and its anchor particle
+
+        separation : float, required
+            Distance to shift port along the orientation vector from the anchor
+            particle position. If no anchor is provided, the port will be shifted
+            from the origin.
+        """
         if self.used:
             warn("This port is already being used and changing its separation"
-                    "will have no effect on distance between particles.")
+                    " will have no effect on distance between particles.")
             return
         if self.anchor:
             self.translate_to(self.anchor.pos)
@@ -95,11 +102,31 @@ class Port(Compound):
         self.translate(separation*self.direction)
 
     def update_orientation(self, orientation):
+        """
+        Change the direction between a port and its anchor particle
+
+        orientation : array-like, shape=(3,), optional, default=[0, 1, 0]
+            Vector along which to orient the port
+        """
         if self.used:
-            warn("This port is already being used and changing its separation"
-                    "will have no effect on distance between particles.")
+            warn("This port is already being used and changing its orientation"
+                    " will have no effect on direction between particles.")
             return
+
         orientation = np.asarray(orientation)
+        down = self.labels['down']
+
+        if np.allclose(
+                self.direction, unit_vector(-orientation)):
+            down.rotate(np.pi, [0, 0, 1])
+            self.rotate(np.pi, [0, 0, 1])
+        elif np.allclose(
+                self.direction, unit_vector(orientation)):
+            down.rotate(np.pi, [0, 0, 1])
+        else:
+            normal = np.cross(self.direction, orientation)
+            self.rotate(angle(self.direction, orientation), normal)
+            down.rotate(np.pi, normal)
 
     @property
     def center(self):
@@ -111,7 +138,11 @@ class Port(Compound):
         """The unit vector pointing in the 'direction' of the Port
         """
         return unit_vector(self.xyz_with_ports[1]-self.xyz_with_ports[0])
-    
+
+    @property
+    def separation(self):
+        if self.anchor:
+            return np.linalg.norm(self.center - self.anchor.pos)
 
     @property
     def access_labels(self):
