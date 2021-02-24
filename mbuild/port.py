@@ -1,4 +1,5 @@
 import itertools
+from warnings import warn
 
 import numpy as np
 
@@ -83,6 +84,23 @@ class Port(Compound):
         newone.used = self.used
         return newone
 
+    def update_separation(self, separation):
+        if self.used:
+            warn("This port is already being used and changing its separation"
+                    "will have no effect on distance between particles.")
+            return
+        if self.anchor:
+            self.translate_to(self.anchor.pos)
+
+        self.translate(separation*self.direction)
+
+    def update_orientation(self, orientation):
+        if self.used:
+            warn("This port is already being used and changing its separation"
+                    "will have no effect on distance between particles.")
+            return
+        orientation = np.asarray(orientation)
+
     @property
     def center(self):
         """The cartesian center of the Port"""
@@ -93,6 +111,7 @@ class Port(Compound):
         """The unit vector pointing in the 'direction' of the Port
         """
         return unit_vector(self.xyz_with_ports[1]-self.xyz_with_ports[0])
+    
 
     @property
     def access_labels(self):
