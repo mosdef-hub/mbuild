@@ -16,9 +16,17 @@ from mbuild.utils.io import (get_fn,
                              has_intermol,
                              has_openbabel,
                              has_networkx,
-                             has_py3Dmol,
-                             has_nglview)
+                             has_py3Dmol)
 from mbuild.tests.base_test import BaseTest
+
+
+try:
+    import nglview
+    has_nglview = True
+    del nglview
+except ImportError:
+    has_nglview = False
+
 
 class TestCompound(BaseTest):
 
