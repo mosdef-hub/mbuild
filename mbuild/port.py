@@ -95,7 +95,7 @@ class Port(Compound):
         if self.used:
             warn("This port is already being used and changing its separation"
                     " will have no effect on the distance between particles.")
-            return
+
         if self.anchor:
             self.translate_to(self.anchor.pos)
         else:
@@ -113,7 +113,6 @@ class Port(Compound):
         if self.used:
             warn("This port is already being used and changing its orientation"
                     " will have no effect on the direction between particles.")
-            return
 
         orientation = np.asarray(orientation)
         down = self.labels['down']
@@ -137,8 +136,16 @@ class Port(Compound):
 
     @property
     def separation(self):
+        """
+        The distance between a port and its anchor particle.
+        If the port has no anchor particle, returns a value of zero.
+        """
         if self.anchor:
             return np.linalg.norm(self.center - self.anchor.pos)
+        else:
+            warn("This port is not anchored to another particle." 
+                    " Retruning a separation of None")
+            return None
 
     @property
     def access_labels(self):
