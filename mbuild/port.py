@@ -115,18 +115,22 @@ class Port(Compound):
 
         orientation = np.asarray(orientation)
         down = self.labels['down']
+        up = self.labels['up']
 
         if np.allclose(
                 self.direction, unit_vector(-orientation)):
             down.rotate(np.pi, [0, 0, 1])
+            up.rotate(np.pi, [0, 0, 1])
             self.rotate(np.pi, [0, 0, 1])
         elif np.allclose(
                 self.direction, unit_vector(orientation)):
             down.rotate(np.pi, [0, 0, 1])
+            up.rotate(np.pi, [0, 0, 1])
         else:
             normal = np.cross(self.direction, orientation)
             self.rotate(angle(self.direction, orientation), normal)
             down.rotate(np.pi, normal)
+            up.rotate(np.pi, normal)
 
     @property
     def center(self):
