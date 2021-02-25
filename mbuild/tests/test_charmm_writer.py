@@ -276,7 +276,7 @@ class TestCharmmWriterData(BaseTest):
                         forcefield_selection='oplsaa',
                         fix_residue=[ethane_gomc.name],
                         fix_residue_in_box=[ethanol_gomc.name],
-                        fix_res_bonds_angles=[ethane_gomc.name]
+                        gomc_fix_bonds_angles=[ethane_gomc.name]
                         )
         charmm.write_inp()
         charmm.write_pdb()
@@ -386,7 +386,7 @@ class TestCharmmWriterData(BaseTest):
                    forcefield_selection={two_propanol_ua.name: 'trappe-ua', ethane_gomc.name: 'oplsaa'},
                    fix_residue=None,
                    fix_residue_in_box=None,
-                   fix_res_bonds_angles=None,
+                   gomc_fix_bonds_angles=None,
                    reorder_res_in_pdb_psf=False,
                    box_0=[3, 3, 3],
                    box_1=[4, 4, 4],
@@ -405,7 +405,7 @@ class TestCharmmWriterData(BaseTest):
                         forcefield_selection=str(forcefields.get_ff_path()[0]) + '/xml/' + 'oplsaa.xml',
                         fix_residue=None,
                         fix_residue_in_box=None,
-                        fix_res_bonds_angles=None,
+                        gomc_fix_bonds_angles=None,
                         reorder_res_in_pdb_psf=True,
                         box_0=[3, 3, 3],
                         box_1=[4, 4, 4],
@@ -1254,20 +1254,20 @@ class TestCharmmWriterData(BaseTest):
             value_0.write_pdb()
             value_0.write_psf()
 
-    def test_fix_res_bonds_angles_string(self, two_propanol_ua):
+    def test_gomc_fix_bonds_angles_string(self, two_propanol_ua):
         with pytest.raises(TypeError, match=r'ERROR: Please enter the residues that have fixed angles and '
-                                            r'bonds \(fix_res_bonds_angles\) in a list format.'):
+                                            r'bonds \(gomc_fix_bonds_angles\) in a list format.'):
             Charmm(two_propanol_ua, 'charmm_data_UA', ff_filename='charmm_data_UA',
                    residues=[two_propanol_ua.name], forcefield_selection='trappe-ua',
-                   bead_to_atom_name_dict={'_CH3': 'C'}, fix_res_bonds_angles='two_propanol_ua.name'
+                   bead_to_atom_name_dict={'_CH3': 'C'}, gomc_fix_bonds_angles='two_propanol_ua.name'
                    )
 
-    def test_fix_res_bonds_angles_residue_not_in_system(self, two_propanol_ua):
+    def test_gomc_fix_bonds_angles_residue_not_in_system(self, two_propanol_ua):
         with pytest.raises(ValueError, match=r'ERROR: Please ensure that all the residue names in the '
-                                             r'fix_res_bonds_angles list are also in the residues list.'):
+                                             r'gomc_fix_bonds_angles list are also in the residues list.'):
             Charmm(two_propanol_ua, 'charmm_data_UA', ff_filename='charmm_data_UA',
                    residues=[two_propanol_ua.name], forcefield_selection='trappe-ua',
-                   bead_to_atom_name_dict={'_CH3': 'C'}, fix_res_bonds_angles=['WNG']
+                   bead_to_atom_name_dict={'_CH3': 'C'}, gomc_fix_bonds_angles=['WNG']
                    )
 
     def test_fix_residue_string(self, two_propanol_ua):

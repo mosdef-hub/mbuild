@@ -381,7 +381,7 @@ def unique_atom_naming(structure, residue_id_list, residue_names_list, bead_to_a
 class Charmm:
     def __init__(self, structure_box_0, filename_box_0, structure_box_1=None, filename_box_1=None,
                  non_bonded_type='LJ', forcefield_selection=None,  residues=None,
-                 detect_forcefield_style=True, fix_res_bonds_angles=None, bead_to_atom_name_dict=None,
+                 detect_forcefield_style=True, gomc_fix_bonds_angles=None, bead_to_atom_name_dict=None,
                  fix_residue=None, fix_residue_in_box=None,  ff_filename=None,
                  reorder_res_in_pdb_psf=False, box_0=None, box_1=None
                  ):
@@ -422,8 +422,8 @@ class Charmm:
                 Note: Currently, on the 'LJ' potential is supported.
         residues : str of list of str
             Labels of unique residues in the Compound. Residues are assigned by
-            checking against Compound.name.  Only supply residue names as 3 character
-            strings, as the residue names are truncated to 3 characters to fit in the
+            checking against Compound.name.  Only supply residue names as 4 character
+            strings, as the residue names are truncated to 4 characters to fit in the
             psf and pdb file.
         forcefield_selection : str or dictionary, default = None
             Apply a forcefield to the output file by selecting a force field XML file with
@@ -440,7 +440,7 @@ class Charmm:
         detect_forcefield_style: boolean
             If True, format NAMD/GOMC/LAMMPS parameters based on the contents of
             the parmed structure_box_0
-        fix_res_bonds_angles: list, default = None
+        gomc_fix_bonds_angles: list, default = None
             When list of residues is provided, the selected residues will have
             their bonds and angles fixed in the GOMC engine.  This is specifically
             for the GOMC engine and it changes the residue's bond constants (Kbs)
@@ -528,7 +528,7 @@ class Charmm:
         self.forcefield_selection = forcefield_selection
         self.residues = residues
         self.detect_forcefield_style = detect_forcefield_style
-        self.fix_res_bonds_angles = fix_res_bonds_angles
+        self.gomc_fix_bonds_angles = gomc_fix_bonds_angles
         self.bead_to_atom_name_dict = bead_to_atom_name_dict
         self.fix_residue = fix_residue
         self.fix_residue_in_box = fix_residue_in_box
@@ -662,26 +662,26 @@ class Charmm:
             print_error_message = 'ERROR:  Please enter the residues (residues) in a list format'
             raise TypeError(print_error_message)
 
-        if self.fix_res_bonds_angles is not None and not isinstance(self.fix_res_bonds_angles, list):
+        if self.gomc_fix_bonds_angles is not None and not isinstance(self.gomc_fix_bonds_angles, list):
             self.input_error = True
             print_error_message = 'ERROR: Please enter the residues that have fixed angles '\
-                                  'and bonds (fix_res_bonds_angles) in a list format.'
+                                  'and bonds (gomc_fix_bonds_angles) in a list format.'
             raise TypeError(print_error_message)
 
-        if isinstance(self.fix_res_bonds_angles, list):
-            for fix_res_bonds_angles_i in self.fix_res_bonds_angles:
-                if fix_res_bonds_angles_i not in self.residues:
+        if isinstance(self.gomc_fix_bonds_angles, list):
+            for gomc_fix_bonds_angles_i in self.gomc_fix_bonds_angles:
+                if gomc_fix_bonds_angles_i not in self.residues:
                     self.input_error = True
                     print_error_message = 'ERROR: Please ensure that all the residue names in the ' \
-                                          'fix_res_bonds_angles list are also in the residues list.'
+                                          'gomc_fix_bonds_angles list are also in the residues list.'
                     raise ValueError(print_error_message)
-                elif not isinstance(fix_res_bonds_angles_i, str):
+                elif not isinstance(gomc_fix_bonds_angles_i, str):
                     self.input_error = True
                     print_error_message = 'ERROR: Please enter a fix_res_bonds_angle list with only string values.'
                     raise TypeError(print_error_message)
                 else:
                     print('INFORMATION: The following residues will have fixed bonds'
-                          + ' and angles: fix_res_bonds_angles = ' + str(self.fix_res_bonds_angles)
+                          + ' and angles: gomc_fix_bonds_angles = ' + str(self.gomc_fix_bonds_angles)
                           )
 
         if self.fix_residue is not None and not isinstance(self.fix_residue, list):
@@ -1010,7 +1010,7 @@ class Charmm:
                 residue_data_name_list.append(stuct_only_iteration.residues[m].name)
 
             self.max_residue_no = 9999
-            self.No_1st_values_res_name = 3
+            self.No_1st_values_res_name = 4
 
             ff_name = []
             residue_id_list = []
@@ -1272,8 +1272,8 @@ class Charmm:
                         data.write('!atom_types \t Kb\t\tb0 \t\t  atoms_types_per_utilized_FF\n')
                     for params, idx in unique_bond_types.items():
                         bond_format = '{}\t{}\t{}\t{}\t\t! {}\t{}\n'
-                        if (self.fix_res_bonds_angles is not None) and ((params[3] and params[4])
-                                                                        in self.fix_res_bonds_angles):
+                        if (self.gomc_fix_bonds_angles is not None) and ((params[3] and params[4])
+                                                                        in self.gomc_fix_bonds_angles):
                             fix_bond_k_value = '999999999999'
                             data.write(bond_format.format(base10_to_base52_alph(
                                 self.atom_types_to_index_value_dict[params[2][0]+'_' + str(params[3])]),
@@ -1316,8 +1316,8 @@ class Charmm:
                     data.write('!atom_types \t\tKtheta\t\tTheta0\t\t\t  atoms_types_per_utilized_FF\n')
                     for params, idx in unique_angle_types.items():
 
-                        if (self.fix_res_bonds_angles is not None) and ((params[4] and params[5] and params[6])
-                                                                        in self.fix_res_bonds_angles):
+                        if (self.gomc_fix_bonds_angles is not None) and ((params[4] and params[5] and params[6])
+                                                                        in self.gomc_fix_bonds_angles):
                             fix_angle_k_value = '999999999999'
                             angle_format = '{}\t{}\t{}\t{}\t\t{:.5f}\t\t! {}\t{}\t{}\n'
                             data.write(angle_format.format(base10_to_base52_alph(
