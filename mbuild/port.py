@@ -94,10 +94,12 @@ class Port(Compound):
         """
         if self.used:
             warn("This port is already being used and changing its separation"
-                    " will have no effect on distance between particles.")
+                    " will have no effect on the distance between particles.")
             return
         if self.anchor:
             self.translate_to(self.anchor.pos)
+        else:
+            self.translate_to((0,0,0))
 
         self.translate(separation*self.direction)
 
@@ -110,27 +112,17 @@ class Port(Compound):
         """
         if self.used:
             warn("This port is already being used and changing its orientation"
-                    " will have no effect on direction between particles.")
+                    " will have no effect on the direction between particles.")
             return
 
         orientation = np.asarray(orientation)
         down = self.labels['down']
         up = self.labels['up']
 
-        if np.allclose(
-                self.direction, unit_vector(-orientation)):
-            down.rotate(np.pi, [0, 0, 1])
-            up.rotate(np.pi, [0, 0, 1])
-            self.rotate(np.pi, [0, 0, 1])
-        elif np.allclose(
-                self.direction, unit_vector(orientation)):
-            down.rotate(np.pi, [0, 0, 1])
-            up.rotate(np.pi, [0, 0, 1])
-        else:
-            normal = np.cross(self.direction, orientation)
-            self.rotate(angle(self.direction, orientation), normal)
-            down.rotate(np.pi, normal)
-            up.rotate(np.pi, normal)
+        normal = np.cross(self.direction, orientation)
+        self.rotate(angle(self.direction, orientation), normal)
+        down.rotate(np.pi, normal)
+        up.rotate(np.pi, normal)
 
     @property
     def center(self):
