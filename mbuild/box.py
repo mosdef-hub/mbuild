@@ -185,6 +185,7 @@ class Box(object):
             beta,
             gamma
         )
+        return self._angles
 
     def __repr__(self):
         (Lx, Ly, Lz, xy, xz, yz) = self.box_parameters

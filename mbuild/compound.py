@@ -6,12 +6,14 @@ import itertools
 import ele
 import numpy as np
 
-from collections import OrderedDict, Iterable
+from collections import OrderedDict
+from collections.abc import Iterable
 from copy import deepcopy
 from warnings import warn
 from oset import oset as OrderedSet
+from ele.element import Element, element_from_symbol, element_from_name
+from ele.exceptions import ElementError
 
-from ele.element import Element
 
 from mbuild import conversion
 from mbuild.bond_graph import BondGraph
@@ -1775,15 +1777,21 @@ class Compound(object):
         """
 
         openbabel = import_('openbabel')
-        md = import_('mdtraj')
-        from mdtraj.core.element import get_by_symbol
         for particle in self.particles():
-            try:
-                get_by_symbol(particle.name)
-            except KeyError:
-                raise MBuildError("Element name {} not recognized. Cannot "
-                                  "perform minimization."
-                                  "".format(particle.name))
+            if particle.element is None:
+                try:
+                    element_from_symbol(particle.name)
+                except ElementError:
+                    try:
+                        element_from_name(particle.name)
+                    except ElementError:
+                        raise MBuildError(
+                            "No element assigned to {}; element could not be"
+                            "inferred from particle name {}. Cannot perform"
+                            "an energy minimization.".format(
+                                particle, particle.name
+                            )
+                        )
 
         obConversion = openbabel.OBConversion()
         obConversion.SetInAndOutFormats("mol2", "pdb")

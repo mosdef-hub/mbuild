@@ -1,12 +1,16 @@
+from collections import defaultdict
+from copy import deepcopy
+import numpy as np
 import os
+from pathlib import Path
 import sys
 from warnings import warn
-from pathlib import Path
-from collections import defaultdict
-import numpy as np
 
 import parmed as pmd
-from parmed.periodic_table import AtomicNum, element_by_name, Mass, Element
+from ele import (
+    element_from_symbol, element_from_atomic_number, element_from_name
+)
+from ele.exceptions import ElementError
 
 import mbuild as mb
 from mbuild.box import Box
@@ -64,6 +68,7 @@ def load(filename_or_object,
         If True, infer hierarchy from chains and residues
     ignore_box_warn : bool, optional, default=False
         If True, ignore warning if no box is present.
+        Defaults to True when loading from SMILES
     **kwargs : keyword arguments
         Key word arguments passed to mdTraj for loading.
 
@@ -83,6 +88,8 @@ def load(filename_or_object,
         )
     # Second check if we are loading SMILES strings
     elif smiles:
+        # Ignore the box info for SMILES (its never there)
+        ignore_box_warn = True
         return load_smiles(
             smiles_or_filename=filename_or_object,
             compound=compound,
@@ -475,8 +482,12 @@ def from_parmed(structure,
             for atom in residue.atoms:
                 pos = np.array([atom.xx,
                                 atom.xy,
-                                atom.xz]) / 10
-                new_atom = mb.Particle(name=str(atom.name), pos=pos)
+                                atom.xz]) / 10 # Angstrom to nm
+                try:
+                    element = element_from_atomic_number(atom.atomic_number)
+                except ElementError:
+                    element = None
+                new_atom = mb.Particle(name=str(atom.name), pos=pos, element=element)
                 parent_compound.add(new_atom, label='{0}[$]'.format(atom.name))
                 atom_mapping[atom] = new_atom
 
@@ -568,9 +579,16 @@ def from_trajectory(traj,
             else:
                 parent_cmpd = chain_compound
             for atom in res.atoms:
+                try:
+                    element = element_from_atomic_number(
+                        atom.element.atomic_number
+                    )
+                except ElementError:
+                    element = None
                 new_atom = mb.Particle(
                     name=str(atom.name),
-                    pos=traj.xyz[frame, atom.index]
+                    pos=traj.xyz[frame, atom.index],
+                    element=element,
                 )
                 parent_cmpd.add(
                     new_atom,
@@ -606,8 +624,8 @@ def from_pybel(pybel_mol,
     compound : mb.Compound, optional, default=None
         The host mbuild Compound.
     use_element : bool, optional, default=True
-        If True, construct mb Particles based on the pybel Atom's element.
-        If False, construcs mb Particles based on the pybel Atom's type.
+        If True, construct mb Particle names based on the pybel Atom's element.
+        If False, construcs mb Particle names based on the pybel Atom's type.
     coords_only : bool, optional, default=False
         Set preexisting atoms in compound to coordinates given
         by structure. Note: Not yet implemented, included only
@@ -642,10 +660,12 @@ def from_pybel(pybel_mol,
     # pybel atoms are 1-indexed, coordinates in Angstrom
     for atom in pybel_mol.atoms:
         xyz = np.array(atom.coords)/10
+        try:
+            element = element_from_atomic_number(atom.atomicnum)
+        except ElementError:
+            element = None
         if use_element:
-            try:
-                temp_name = Element[atom.atomicnum]
-            except KeyError:
+            if element is None:
                 warn(
                     "No element detected for atom at index "
                     "{} with number {}, type {}".format(
@@ -655,9 +675,11 @@ def from_pybel(pybel_mol,
                     )
                 )
                 temp_name = atom.type
+            else:
+                temp_name = element.symbol
         else:
             temp_name = atom.type
-        temp = mb.Particle(name=temp_name, pos=xyz)
+        temp = mb.Particle(name=temp_name, pos=xyz, element=element)
         if infer_hierarchy and hasattr(atom, 'residue'):
             # Is there a safer way to check for res?
             if atom.residue.idx not in resindex_to_cmpd:
@@ -882,12 +904,11 @@ def to_parmed(compound,
     ----------
     compound : mb.Compound
         mbuild Compound that need to be converted.
-    box : mb.Box, optional, default=compound.boundingbox (with buffer)
+    box : mb.Box, optional, default=None
         Box information to be used when converting to a `Structure`.
-        If 'None', a bounding box is used with 0.25nm buffers at
-        each face to avoid overlapping atoms, unless `compound.periodicity`
-        is not None, in which case those values are used for the
-        box lengths.
+        If 'None' and the box attribute is set, the box is used with
+        0.25nm buffers at each face to avoid overlapping atoms. Otherwise
+        the boundingbox is used with the same 0.25nm buffers.
     title : str, optional, default=compound.name
         Title/name of the ParmEd Structure
     residues : str of list of str
@@ -963,29 +984,27 @@ def to_parmed(compound,
             if current_residue not in structure.residues:
                 structure.residues.append(current_residue)
 
-            atomic_number = None
-            name = ''.join(char for char in atom.name if not char.isdigit())
-            try:
-                atomic_number = AtomicNum[atom.name.capitalize()]
-            except KeyError:
-                element = element_by_name(atom.name.capitalize())
-                if name not in guessed_elements:
-                    warn(
-                        'Guessing that "{}" is element: "{}"'.format(
-                            atom, element))
-                    guessed_elements.add(name)
+            # If we have an element attribute assigned this is easy
+            if atom.element is not None:
+                atomic_number = atom.element.atomic_number
+                mass = atom.element.mass
+            # Else we try to infer from the name
             else:
-                element = atom.name.capitalize()
+                element = _infer_element_from_compound(atom, guessed_elements)
+                if element is not None:
+                    atomic_number = element.atomic_number
+                    mass = element.mass
+                else:
+                    atomic_number = 0
+                    mass = 0.0
 
-            atomic_number = atomic_number or AtomicNum[element]
-            mass = Mass[element]
             pmd_atom = pmd.Atom(
                 atomic_number=atomic_number,
                 name=atom.name,
                 mass=mass,
                 charge=atom.charge
             )
-            pmd_atom.xx, pmd_atom.xy, pmd_atom.xz = atom.pos * 10  # Angstroms
+            pmd_atom.xx, pmd_atom.xy, pmd_atom.xz = atom.pos * 10.0  # nm to Angstroms
 
         residue = atom_residue_map[atom]
         structure.add_atom(
@@ -1005,7 +1024,23 @@ def to_parmed(compound,
         structure.bonds.append(bond)
     # pad box with .25nm buffers
     if box is None:
+        if compound.box is not None:
+            box = deepcopy(compound.box)
+        else:
+            box = compound.get_boundingbox()
+            compound_max = compound.maxs.tolist()
+            compound_min = compound.mins.tolist()
+            for dim, val in enumerate(compound.periodicity):
+                if val:
+                    compound_max[dim] = val
+                    compound_min[dim] = 0.0
+                if not val:
+                    compound_max[dim] += 0.25
+                    compound_min[dim] -= 0.25
+            box = Box.from_mins_maxs_angles(mins=compound_min, maxs=compound_max, angles=box.angles)
+    else:
         box = compound.get_boundingbox()
+        # if periodicty is set, use it before bounding box
         compound_max = compound.maxs.tolist()
         compound_min = compound.mins.tolist()
         for dim, val in enumerate(compound.periodicity):
@@ -1185,10 +1220,17 @@ def _to_topology(compound,
         atom_residue_map[atom] = current_residue
 
         # Add the actual atoms
-        try:
-            elem = get_by_symbol(atom.name)
-        except KeyError:
-            elem = get_by_symbol("VS")
+        if atom.element is not None:
+            try:
+                elem = get_by_symbol(atom.element.symbol)
+            except KeyError:
+                elem = get_by_symbol("VS")
+        else:
+            try:
+                elem = get_by_symbol(atom.name)
+            except KeyError:
+                elem = get_by_symbol("VS")
+
         at = top.add_atom(atom.name, elem, atom_residue_map[atom])
         at.charge = atom.charge
         atom_mapping[atom] = at
@@ -1255,6 +1297,7 @@ def to_pybel(compound,
 
     mol = openbabel.OBMol()
     particle_to_atom_index = {}
+    guessed_elements = set()
 
     if not residues and infer_residues:
         residues = list(set([child.name for child in compound.children]))
@@ -1296,12 +1339,14 @@ def to_pybel(compound,
         if part.port_particle:
             temp.SetAtomicNum(0)
         else:
-            try:
-                temp.SetAtomicNum(AtomicNum[part.name.capitalize()])
-            except KeyError:
-                warn("Could not infer atomic number from "
-                     "{}, setting to 0".format(part.name))
-                temp.SetAtomicNum(0)
+            if part.element is not None:
+                temp.SetAtomicNum(part.element.atomic_number)
+            else:
+                element = _infer_element_from_compound(part, guessed_elements)
+                if element is not None:
+                    temp.SetAtomicNum(element.atomic_number)
+                else:
+                    temp.SetAtomicNum(0)
 
         temp.SetVector(*(part.xyz[0]*10))
         particle_to_atom_index[part] = i
@@ -1314,35 +1359,7 @@ def to_pybel(compound,
     b *= 10
     c *= 10
     alpha, beta, gamma = np.radians(box.angles)
-
-    '''
-    cosa = np.cos(alpha)
-    cosb = np.cos(beta)
-    sinb = np.sin(beta)
-    cosg = np.cos(gamma)
-    sing = np.sin(gamma)
-    mat_coef_y = (cosa - cosb * cosg) / sing
-    mat_coef_z = np.power(sinb, 2, dtype=float) - \
-                np.power(mat_coef_y, 2, dtype=float)
-
-    if mat_coef_z > 0.:
-        mat_coef_z = np.sqrt(mat_coef_z)
-    else:
-        raise Warning(
-            'Non-positive z-vector. Angles {} '
-            'do not generate a box with the z-vector in the '
-            'positive z direction'.format(box.angles)
-        )
-
-    box_vec = [[1, 0, 0], [cosg, sing, 0], [cosb, mat_coef_y, mat_coef_z]]
-    box_vec = np.asarray(box_vec)
-    box_mat = (np.array([a, b, c]) * box_vec.T).T
-    first_vector = openbabel.vector3(np.asarray(box.box_vectors[0,:]) * 10.0)
-    second_vector = openbabel.vector3(np.asarray(box.box_vectors[1,:]) * 10.0)
-    third_vector = openbabel.vector3(np.asarray(box.box_vectors[2,:]) * 10.0)
-    '''
     ucell.SetData(a, b, c, alpha, beta, gamma)
-    #ucell.SetData(first_vector, second_vector, third_vector)
     mol.CloneData(ucell)
 
     for bond in compound.bonds():
@@ -1493,3 +1510,47 @@ def _add_intermol_molecule_type(intermol_system, parent):  # pragma: no cover
     for atom1, atom2 in parent.bonds():
         intermol_bond = InterMolBond(atom1.index, atom2.index)
         molecule_type.bonds.add(intermol_bond)
+
+
+def _infer_element_from_compound(compound, guessed_elements):
+    """Infer the element from the compound name
+
+    Parameters
+    ----------
+    compound : mbuild.Compound
+        the compound to infer the element for
+    guessed_elements : list
+        a list of the already-guessed-elements
+
+    Returns
+    -------
+    element : ele.Element or None
+    """
+
+    try:
+        element = element_from_symbol(compound.name)
+    except ElementError:
+        try:
+            element = element_from_name(compound.name)
+            warn_msg = (
+                "No element attribute associated with '{}'; "
+                "Guessing that '{}' is element '{}'".format(
+                    compound,
+                    compound,
+                    element
+                )
+            )
+        except ElementError:
+            element = None
+            warn_msg = (
+                "No element attribute associated with '{}'; "
+                "and no matching elements found based upon the "
+                "compound name. Setting atomic number to zero.".format(
+                    compound,
+                )
+            )
+        if compound.name not in guessed_elements:
+            warn(warn_msg)
+            guessed_elements.add(compound.name)
+
+    return element
