@@ -19,133 +19,418 @@ from mbuild.utils.conversion import base10_to_base62_alph_num
 from mbuild.utils.specific_ff_to_residue import specific_ff_to_residue
 
 
-def combined_1_4_coul_dict_per_residue(stucture,
-                                       dihedrals):
-    """  Creates the impropers required to create a psf file  """
-    for improper_iteration in stucture.impropers:
-        yield (improper_iteration.atom1, improper_iteration.atom2,
-               improper_iteration.atom3, improper_iteration.atom4)
-
-    for dihedral_iteration in dihedrals:
-        if dihedral_iteration.improper:
-            yield (dihedral_iteration.atom1, dihedral_iteration.atom2,
-                   dihedral_iteration.atom3, dihedral_iteration.atom4)
-
-
 def _get_bond_type_key(bond,
                        sigma_conversion_factor,
                        epsilon_conversion_factor):
-    """Get the bond_type key for a bond"""
+    """Get the bond_type key for a bond
+
+    Parameters
+    ----------
+    bond : mbuild.compound.Compound
+        The bond information from the mbuild.compound.Compound
+    sigma_conversion_factor: float or int
+        The sigma conversion factor
+    epsilon_conversion_factor: float or int
+        The epsilon conversion factor
+
+    Returns
+    ----------
+    bond_k_constant : float
+        Harmonic bond k-constant or bond energy scaling factor
+    bond_bo_length : float
+        Harmonic bonds equilibrium length
+    bond_atom_1_and_2_types_tuple : tuple
+        A sorted tuple ofstrings for the bonded atom types for atoms 1 and 2.
+    bond_atom_1_residue_name : str
+        The residue name for atom 1 in the bond.
+    bond_atom_2_residue_name : str
+        The residue name for atom 2 in the bond.
+    """
+
+    bond_k_constant = round(bond.type.k * (sigma_conversion_factor ** 2 / epsilon_conversion_factor), 8)
+    bond_bo_length = round(bond.type.req / sigma_conversion_factor, 8)
+    bond_atom_1_and_2_types_tuple = tuple(sorted((bond.atom1.type, bond.atom2.type)))
+    bond_atom_1_residue_name = bond.atom1.residue.name
+    bond_atom_2_residue_name = bond.atom2.residue.name
+
     return (
-        round(bond.type.k * (sigma_conversion_factor ** 2 / epsilon_conversion_factor), 8),
-        round(bond.type.req / sigma_conversion_factor, 8),
-        tuple(sorted((bond.atom1.type, bond.atom2.type))),
-        bond.atom1.residue.name, bond.atom2.residue.name
+        bond_k_constant,
+        bond_bo_length,
+        bond_atom_1_and_2_types_tuple,
+        bond_atom_1_residue_name, bond_atom_2_residue_name
      )
 
 
 def _get_angle_type_key(angle,
                         sigma_conversion_factor,
                         epsilon_conversion_factor):
-    """Get the angle_type key for an angle"""
+    """Get the angle_type key for an harmonic angle
+
+    Parameters
+    ----------
+    angle : parmed.topologyobjects.Angle
+        The angle information from the parmed.topologyobjects.Angle
+    sigma_conversion_factor: float or int
+        The sigma conversion factor
+    epsilon_conversion_factor: float or int
+        The epsilon conversion factor
+
+    Returns
+    ----------
+    angle_k_constant : float
+        Harmonic angle k-constant or bond energy scaling factor
+    angle_theta_o : float
+        Harmonic equilbrium angle between the atoms
+    angle_center_atom_type_2 : str
+        The center atom type for the angle (atom type 2)
+    angle_end_atom_types_1_and_3_tuple : tuple
+        A sorted tuple of atom types (strings) for the end angle atoms
+        (atoms 1 and 3).
+    angle_atom_1_residue_name : str
+        The residue name for atom 1 in the angle (end atom).
+    angle_atom_2_residue_name : str
+        The residue name for atom 2 in the angle (center atom).
+    angle_atom_3_residue_name : str
+        The residue name for atom 3 in the angle (end atom).
+    """
+
+    angle_k_constant = round(angle.type.k*(sigma_conversion_factor**2/epsilon_conversion_factor), 8)
+    angle_theta_o = round(angle.type.theteq, 8)
+    angle_center_atom_type_2 = angle.atom2.type
+    angle_end_atom_types_1_and_3_tuple = tuple(sorted((angle.atom1.type, angle.atom3.type)))
+    angle_residue_atom_1 = angle.atom1.residue.name
+    angle_residue_atom_2 = angle.atom2.residue.name
+    angle_residue_atom_3 = angle.atom3.residue.name
+
     return (
-        round(angle.type.k*(sigma_conversion_factor**2/epsilon_conversion_factor), 8),
-        round(angle.type.theteq, 8),
-        angle.atom2.type,
-        tuple(sorted((angle.atom1.type, angle.atom3.type))),
-        angle.atom1.residue.name, angle.atom2.residue.name,
-        angle.atom3.residue.name
+        angle_k_constant,
+        angle_theta_o,
+        angle_center_atom_type_2,
+        angle_end_atom_types_1_and_3_tuple,
+        angle_residue_atom_1,
+        angle_residue_atom_2,
+        angle_residue_atom_3
     )
 
 
 def _get_dihedral_rb_torsion_key(dihedral,
                                  epsilon_conversion_factor):
-    """ Get the dihedral_type key for a dihedral"""
+    """ Get the dihedral_type key for a Ryckaert-Bellemans (RB) dihedrals/torsions
+
+    Parameters
+    ----------
+    dihedral : parmed.topologyobjects.Dihedral
+        The dihedral information from the parmed.topologyobjects.Angle
+    epsilon_conversion_factor: float or int
+        The epsilon conversion factor
+
+    Returns
+    ----------
+    dihed_type_RB_c0 : float
+        Ryckaert-Bellemans (RB) dihedrals/torsions C0 constant.
+    dihed_type_RB_c1 : float
+        Ryckaert-Bellemans (RB) dihedrals/torsions C1 constant.
+    dihed_type_RB_c2 : float
+        Ryckaert-Bellemans (RB) dihedrals/torsions C2 constant.
+    dihed_type_RB_c3 : float
+        Ryckaert-Bellemans (RB) dihedrals/torsions C3 constant.
+    dihed_type_RB_c4 : float
+        Ryckaert-Bellemans (RB) dihedrals/torsions C4 constant.
+    dihed_type_RB_c5 : float
+        Ryckaert-Bellemans (RB) dihedrals/torsions C5 constant.
+    dihed_type_scee : float, default is 1.0
+        The 1-4 electrostatic scaling factor
+    dihed_type_scnb : float, default is 1.0
+        The 1-4 Lennard-Jones scaling factor.
+    dihed_atom_1_type : str
+        The atom type for atom number 1 in the dihedral
+    dihed_atom_2_type : str
+        The atom type for atom number 2 in the dihedral
+    dihed_atom_3_type : str
+        The atom type for atom number 3 in the dihedral
+    dihed_atom_4_type : str
+        The atom type for atom number 4 in the dihedral
+    dihed_atom_1_res_type : str
+        The residue name for atom number 1 in the dihedral
+    dihed_atom_2_res_type : str
+        The residue name for atom number 2 in the dihedral
+    dihed_atom_3_res_type : str
+        The residue name for atom number 3 in the dihedral
+    dihed_atom_4_res_type : str
+        The residue name for atom number 4 in the dihedral
+    """
+
     lj_unit = 1 / epsilon_conversion_factor
+
+    dihed_type_RB_c0 = round(dihedral.type.c0 * lj_unit, 8)
+    dihed_type_RB_c1 = round(dihedral.type.c1 * lj_unit, 8)
+    dihed_type_RB_c2 = round(dihedral.type.c2 * lj_unit, 8)
+    dihed_type_RB_c3 = round(dihedral.type.c3 * lj_unit, 8)
+    dihed_type_RB_c4 = round(dihedral.type.c4 * lj_unit, 8)
+    dihed_type_RB_c5 = round(dihedral.type.c5 * lj_unit, 8)
+
+    dihed_type_scee = round(dihedral.type.scee, 4)
+    dihed_type_scnb = round(dihedral.type.scnb, 4)
+
+    dihed_atom_1_type = dihedral.atom1.type
+    dihed_atom_2_type = dihedral.atom2.type
+    dihed_atom_3_type = dihedral.atom3.type
+    dihed_atom_4_type = dihedral.atom4.type
+
+    dihed_atom_1_res_type = dihedral.atom1.residue.name
+    dihed_atom_2_res_type = dihedral.atom2.residue.name
+    dihed_atom_3_res_type = dihedral.atom3.residue.name
+    dihed_atom_4_res_type = dihedral.atom4.residue.name
+
     return (
-        round(dihedral.type.c0*lj_unit, 8),
-        round(dihedral.type.c1*lj_unit, 8),
-        round(dihedral.type.c2*lj_unit, 8),
-        round(dihedral.type.c3*lj_unit, 8),
-        round(dihedral.type.c4*lj_unit, 8),
-        round(dihedral.type.c5*lj_unit, 8),
-        round(dihedral.type.scee, 1),
-        round(dihedral.type.scnb, 1),
-        dihedral.atom1.type,
-        dihedral.atom2.type,
-        dihedral.atom3.type,
-        dihedral.atom4.type,
-        dihedral.atom1.residue.name,
-        dihedral.atom2.residue.name,
-        dihedral.atom3.residue.name,
-        dihedral.atom4.residue.name
+        dihed_type_RB_c0,
+        dihed_type_RB_c1,
+        dihed_type_RB_c2,
+        dihed_type_RB_c3,
+        dihed_type_RB_c4,
+        dihed_type_RB_c5,
+        dihed_type_scee,
+        dihed_type_scnb,
+        dihed_atom_1_type,
+        dihed_atom_2_type,
+        dihed_atom_3_type,
+        dihed_atom_4_type,
+        dihed_atom_1_res_type,
+        dihed_atom_2_res_type,
+        dihed_atom_3_res_type,
+        dihed_atom_4_res_type
     )
 
 
 def _get_improper_type_key(improper,
                            epsilon_conversion_factor):
-    """ Get the improper_type key for an improper"""
+    """ Get the improper_type key for the harmonic improper
+
+    Parameters
+    ----------
+    improper : parmed.topologyobjects.Dihedral
+        The improper information from the parmed.topologyobjects.Angle
+    epsilon_conversion_factor: float or int
+        The epsilon conversion factor
+
+    Returns
+    ----------
+    improper_k_constant : float
+        Harmonic k-constant or bond energy scaling factor
+    improper_psi_o : float
+        Harmonic equilbrium improper angle
+    improper_atom_1_type : str
+        The atom type for atom number 1 in the dihedral
+    improper_atom_2_type : str
+        The atom type for atom number 2 in the dihedral
+    improper_atom_3_type : str
+        The atom type for atom number 3 in the dihedral
+    improper_atom_4_type : str
+        The atom type for atom number 4 in the dihedral
+    improper_atom_1_res_type : str
+        The residue name for atom number 1 in the dihedral
+    improper_atom_2_res_type : str
+        The residue name for atom number 2 in the dihedral
+    improper_atom_3_res_type : str
+        The residue name for atom number 3 in the dihedral
+    improper_atom_4_res_type : str
+        The residue name for atom number 4 in the dihedral
+    """
     lj_unit = 1 / epsilon_conversion_factor
+
+    improper_k_constant = round(improper.type.psi_k * lj_unit, 8)
+    improper_psi_o  =  round(improper.type.psi_eq, 8)
+    improper_atom_1_type = improper.atom1.type
+    improper_atom_2_type = improper.atom2.type
+    improper_atom_3_type = improper.atom3.type
+    improper_atom_4_type = improper.atom4.type
+    improper_atom_1_res_type = improper.atom1.residue.name
+    improper_atom_2_res_type = improper.atom2.residue.name
+    improper_atom_3_res_type = improper.atom3.residue.name
+    improper_atom_4_res_type = improper.atom4.residue.name
+
     return (
-        round(improper.type.psi_k * lj_unit, 8),
-        round(improper.type.psi_eq, 8),
-        improper.atom1.type,
-        improper.atom2.type,
-        improper.atom3.type,
-        improper.atom4.type,
-        improper.atom1.residue.name,
-        improper.atom2.residue.name,
-        improper.atom3.residue.name,
-        improper.atom4.residue.name
+        improper_k_constant,
+        improper_psi_o,
+        improper_atom_1_type,
+        (improper_atom_2_type,
+        improper_atom_3_type,
+        improper_atom_4_type),
+        improper_atom_1_res_type,
+        (improper_atom_2_res_type,
+        improper_atom_3_res_type,
+        improper_atom_4_res_type)
     )
 
 
 def _get_unique_bond_types(structure,
                            sigma_conversion_factor,
                            epsilon_conversion_factor):
-    """ Get the unique bond types for a structure """
+    """ Get the unique bond types for a structure in a dictionary
+
+    Parameters
+    ----------
+    structure : parmed.structure.Structure
+       This is a parmed stucture input (parmed.structure.Structure)
+    sigma_conversion_factor: float or int
+        The sigma conversion factor
+    epsilon_conversion_factor: float or int
+        The epsilon conversion factor
+
+    Returns
+    ----------
+    bond_key_dict : dict, {(float, float, (str, str), str, str) : unique_number}
+        This provides a way to uniquely number the harmonic bond types
+        by providing all the bond parameters as a key and the
+        unique number as the value. An example of the dict is below:
+        {(bond_k_constant, bond_bo_length, (bond_atom_type_1, bond_atom_type_2),
+          bond_atom_1_residue_name, bond_atom_2_residue_name ) : 1,
+         ...,
+         (bond_k_constant, bond_bo_length, (bond_atom_type_1, bond_atom_type_2),
+          bond_atom_1_residue_name, bond_atom_2_residue_name ) : n
+        }
+    """
+
     unique_bond_set = set()
     for bond in structure.bonds:
         unique_bond_set.add(
             _get_bond_type_key(bond, sigma_conversion_factor, epsilon_conversion_factor)
         )
 
-    return {bond_key: i+1 for i, bond_key in enumerate(unique_bond_set)}
+    bond_key_dict = {bond_key: i + 1 for i, bond_key in enumerate(unique_bond_set)}
+
+    return bond_key_dict
 
 
 def _get_unique_angle_types(structure,
                             sigma_conversion_factor,
                             epsilon_conversion_factor):
-    """ Get the unique angle types for a structure """
+    """ Get the unique angle types for a structure and return a dictionary
+
+    Parameters
+    ----------
+    structure : parmed.structure.Structure
+       This is a parmed stucture input (parmed.structure.Structure)
+    sigma_conversion_factor: float or int
+        The sigma conversion factor
+    epsilon_conversion_factor: float or int
+        The epsilon conversion factor
+
+    Returns
+    ----------
+    angle_key_dict : dict, {(float, float, str, (str, str), str, str, str) : unique_number}
+        This provides a way to uniquely number the harmonic angle types
+        by providing all the angle parameters as a key and the
+        unique number as the value. An example of the dict is below:
+        {(angle_k_constant, angle_theta_o, angle_center_atom_type_2,
+          (angle_end_atom_type_1, angle_end_atom_type_3),
+           angle_residue_atom_1, angle_residue_atom_2, angle_residue_atom_3
+         ) : 1,
+         ...,
+         (angle_k_constant, angle_theta_o, angle_center_atom_type_2,
+         (angle_end_atom_type_1, angle_end_atom_type_3),
+          angle_residue_atom_1, angle_residue_atom_2, angle_residue_atom_3) : n
+        }
+    """
+
     unique_angle_set = set()
     for angle in structure.angles:
         unique_angle_set.add(
             _get_angle_type_key(angle, sigma_conversion_factor, epsilon_conversion_factor)
         )
 
-    return {angle_key: i+1 for i, angle_key in enumerate(unique_angle_set)}
+    angle_key_dict = {angle_key: i + 1 for i, angle_key in enumerate(unique_angle_set)}
+
+    return angle_key_dict
 
 
 def _get_unique_rb_torsion_types(structure,
                                  epsilon_conversion_factor):
-    """ Get the unique rb torsion types for a structure """
+    """ Get the unique rb torsion types for a structure and return a dictionary
+
+    Parameters
+    ----------
+    structure : parmed.structure.Structure
+       This is a parmed stucture input (parmed.structure.Structure)
+    epsilon_conversion_factor: float or int
+        The epsilon conversion factor
+
+    Returns
+    ----------
+    dihed_key_dict : dict, {(float, float, float, float, float, float, float, float,
+                             str, str, str, str, str, str, str, str) : unique_number}
+        This provides a way to uniquely number the Ryckaert-Bellemans (RB)
+        dihedral types by providing all the dihedral parameters as a key and the
+        unique number as the value. An example of the dict is below:
+        {(dihed_type_RB_c0, dihed_type_RB_c1, dihed_type_RB_c2,
+          dihed_type_RB_c3, dihed_type_RB_c4, dihed_type_RB_c5,
+          dihed_type_scee, dihed_type_scnb,
+          dihed_atom_1_type, dihed_atom_2_type,
+          dihed_atom_3_type, dihed_atom_4_type,
+          dihed_atom_1_res_type, dihed_atom_2_res_type,
+          dihed_atom_3_res_type, dihed_atom_4_res_type
+         ) : 1,
+         ...,
+        (dihed_type_RB_c0, dihed_type_RB_c1, dihed_type_RB_c2,
+          dihed_type_RB_c3, dihed_type_RB_c4, dihed_type_RB_c5,
+          dihed_type_scee, dihed_type_scnb,
+          dihed_atom_1_type, dihed_atom_2_type,
+          dihed_atom_3_type, dihed_atom_4_type,
+          dihed_atom_1_res_type, dihed_atom_2_res_type,
+          dihed_atom_3_res_type, dihed_atom_4_res_type
+         ) : n
+        }
+    """
     unique_dihedral_set = set()
     for dihedral in structure.rb_torsions:
         unique_dihedral_set.add(
             _get_dihedral_rb_torsion_key(dihedral, epsilon_conversion_factor)
         )
 
-    return {torsion_key: i + 1 for i, torsion_key in enumerate(unique_dihedral_set)}
+    dihed_key_dict = {dihed_key: i + 1 for i, dihed_key in enumerate(unique_dihedral_set)}
+
+    return dihed_key_dict
 
 
 def _get_unique_improper_types(structure,
                                epsilon_conversion_factor):
-    """ Get the unique improper types for a structure """
+    """ Get the unique improper types for a structure  and return a dictionary
+
+    Parameters
+    ----------
+    structure : parmed.structure.Structure
+       This is a parmed stucture input (parmed.structure.Structure)
+    epsilon_conversion_factor: float or int
+        The epsilon conversion factor
+
+    Returns
+    ----------
+    improper_key_dict : dict, {(float, float, str, (str, str, str), str, (str, str, str)) : unique_number}
+        This provides a way to uniquely number the harmonic improper
+        types by providing all the improper parameters as a key and the
+        unique number as the value. An example of the dict is below:
+        {(improper_k_constant, improper_psi_o,
+          improper_atom_1_type, (improper_atom_2_type,
+          improper_atom_3_type, improper_atom_4_type),
+          improper_atom_1_res_type, (improper_atom_2_res_type,
+          improper_atom_3_res_type, improper_atom_4_res_type)
+         ) : 1,
+         ...,
+         (improper_k_constant, improper_psi_o,
+          improper_atom_1_type, (improper_atom_2_type,
+          improper_atom_3_type, improper_atom_4_type),
+          improper_atom_1_res_type, (improper_atom_2_res_type,
+          improper_atom_3_res_type, improper_atom_4_res_type)
+         ) : n
+        }
+    """
     unique_improper_set = set()
     for improper in structure.impropers:
         unique_improper_set.add(_get_improper_type_key(improper, epsilon_conversion_factor))
 
-    return {improper_key: i + 1 for i, improper_key in enumerate(unique_improper_set)}
+    improper_key_dict = {improper_key: i + 1 for i, improper_key in enumerate(unique_improper_set)}
+
+    return improper_key_dict
 
 
 def _get_bond_types(structure,
@@ -157,12 +442,25 @@ def _get_bond_types(structure,
 
     Parameters
     ----------
-    structure: parmed.Structure
+    structure : parmed.Structure
         The parmed structure
-    sigma_conversion_factor: float
+    sigma_conversion_factor : float or int
         The sigma conversion factor
-    epsilon_conversion_factor: float
+    epsilon_conversion_factor : float or int
         The epsilon conversion factor
+
+    Returns
+    ----------
+    bond_types : list
+        The bond types by number in the structure
+    unique_bond_types : OrderedDict, ((float, float, (str, str), str, str), unique_number)
+        This provides the unique harmonic bond types, numbering, and the data values
+        so it can easily be extracted.  An example of the OrderedDict is below:
+        OrderedDict([(bond_k_constant, bond_bo_length, (bond_atom_type_1, bond_atom_type_2),
+                      bond_atom_1_residue_name, bond_atom_2_residue_name), 1),
+                     ...,
+                    (bond_k_constant, bond_bo_length, (bond_atom_type_1, bond_atom_type_2),
+                     bond_atom_1_residue_name, bond_atom_2_residue_name), n)])
     """
     
     unique_bond_types = _get_unique_bond_types(structure, sigma_conversion_factor, epsilon_conversion_factor)
@@ -199,12 +497,42 @@ def _get_angle_types(structure,
                      sigma_conversion_factor,
                      epsilon_conversion_factor,
                      use_urey_bradleys=False):
-    """Get a list of unique angle types that are used to create the Charmm style
-       parameter file (i.e. force field file).  This also checks that the alternately
-       ordered angle types are considered the same unique angle type."""
+    """
+    Get a list of unique angle types that are used to create the Charmm style
+    parameter file (i.e. force field file).  This also checks that the alternately
+    ordered angle types are considered the same unique angle type.
+
+    Parameters
+    ----------
+    structure : parmed.Structure
+        The parmed structure
+    sigma_conversion_factor : float or int
+        The sigma conversion factor
+    epsilon_conversion_factor : float or int
+        The epsilon conversion factor
+    use_urey_bradleys : bool
+        The option that Urey-Bradleys are included in the angles
+
+    Returns
+    ----------
+    angle_types : list
+        The angle types by number in the structure
+    unique_angle_types : OrderedDict, ((float, float, (str, str), str, str), unique_number)
+        This provides the unique harmonic angles types, numbering, and the data values
+        so it can easily be extracted.  An example of the OrderedDict is below:
+        OrderedDict([(angle_k_constant, angle_theta_o, angle_center_atom_type_2,
+                     (angle_end_atom_type_1, angle_end_atom_type_3),
+                      angle_residue_atom_1, angle_residue_atom_2, angle_residue_atom_3), 1,
+                     ...,
+                     (angle_k_constant, angle_theta_o, angle_center_atom_type_2,
+                     (angle_end_atom_type_1, angle_end_atom_type_3),
+                     angle_residue_atom_1, angle_residue_atom_2, angle_residue_atom_3), n])
+        """
+
     if use_urey_bradleys:
-        warn('CRITICAL WARNING:  Urey-Bradleys are not available in the current '
-             'version of this psf, pdb, and GOMC writer.')
+        print_warn_text = 'WARNING: Urey-Bradleys are not available in the current '\
+                          'version of this psf, pdb, and GOMC writer.'
+        warn(print_warn_text)
         return None, None
     else:
         unique_angle_types = _get_unique_angle_types(structure, sigma_conversion_factor, epsilon_conversion_factor)
@@ -241,9 +569,46 @@ def _get_dihedral_types(structure,
                         use_rb_torsions,
                         use_dihedrals,
                         epsilon_conversion_factor):
-    """Get a list of unique dihedral types that are used to create the Charmm style
-           parameter file (i.e. force field file).  This also checks that the alternately
-           ordered dihedral types are considered the same unique dihedral type."""
+    """
+    Get a list of unique dihedral types that are used to create the Charmm style
+    parameter file (i.e. force field file).  This also checks that the alternately
+    ordered dihedral types are considered the same unique dihedral type.
+
+    Parameters
+    ----------
+    structure : parmed.Structure
+        The parmed structure
+    use_rb_torsions : bool
+        The Ryckaert-Bellemans (RB) dihedrals/torsions
+    use_dihedrals : bool
+        The CHARMM style dihedrals style equations.
+    epsilon_conversion_factor : float or int
+        The epsilon conversion factor
+
+    Returns
+    ----------
+    dihedral_types : list
+        The dihedral types by number in the structure
+    unique_dihedral_types : OrderedDict, ([(float, float, float, float, float, float, float, float,
+                                            str, str, str, str, str, str, str, str), unique_number])
+        This provides the unique dihedrals types, numbering, and the data values
+        so it can easily be extracted.  An example of the OrderedDict is below:
+        OrderedDict([(dihed_type_RB_c0, dihed_type_RB_c1, dihed_type_RB_c2,
+                      dihed_type_RB_c3, dihed_type_RB_c4, dihed_type_RB_c5,
+                      dihed_type_scee, dihed_type_scnb,
+                      dihed_atom_1_type, dihed_atom_2_type,
+                      dihed_atom_3_type, dihed_atom_4_type,
+                      dihed_atom_1_res_type, dihed_atom_2_res_type,
+                      dihed_atom_3_res_type, dihed_atom_4_res_type), 1,
+                     ...,
+                     (dihed_type_RB_c0, dihed_type_RB_c1, dihed_type_RB_c2,
+                      dihed_type_RB_c3, dihed_type_RB_c4, dihed_type_RB_c5,
+                      dihed_type_scee, dihed_type_scnb,
+                      dihed_atom_1_type, dihed_atom_2_type,
+                      dihed_atom_3_type, dihed_atom_4_type,
+                      dihed_atom_1_res_type, dihed_atom_2_res_type,
+                      dihed_atom_3_res_type, dihed_atom_4_res_type), n])
+    """
     if use_rb_torsions:
         unique_dihedral_types = _get_unique_rb_torsion_types(structure, epsilon_conversion_factor)
 
@@ -254,8 +619,9 @@ def _get_dihedral_types(structure,
         ]
 
     elif use_dihedrals:
-        warn('CRITICAL WARNING: Using the charmm style and impropers is not '
-             'available in the current version of this psf, pdb, and GOMC writer.')
+        print_warn_text = 'WARNING: Using the charmm style and impropers is not ' \
+                          'available in the current version of this psf, pdb, and GOMC writer.'
+        warn(print_warn_text)
         return None, None
 
     unique_dihedral_check_dict = OrderedDict()
@@ -282,7 +648,39 @@ def _get_dihedral_types(structure,
 
 
 def _get_impropers(structure, epsilon_conversion_factor):
-    """Get a list of improper types."""
+    """
+    Get a list of unique improper types that are used to create the Charmm style
+    parameter file (i.e. force field file).  This also checks that the alternately
+    ordered improper types are considered the same unique improper type.
+
+    Parameters
+    ----------
+    structure : parmed.Structure
+        The parmed structure
+    epsilon_conversion_factor : float or int
+        The epsilon conversion factor
+
+    Returns
+    ----------
+    improper_types : list
+        The improper types by number in the structure
+    unique_improper_types : OrderedDict, ([(float, float, str, (str, str, str), str, (str, str, str)), unique_number])
+        This provides the unique improper types, numbering, and the data values
+        so it can easily be extracted.  An example of the OrderedDict is below:
+        OrderedDict([(improper_k_constant, improper_psi_o,
+          improper_atom_1_type, (improper_atom_2_type,
+          improper_atom_3_type, improper_atom_4_type),
+          improper_atom_1_res_type, (improper_atom_2_res_type,
+          improper_atom_3_res_type, improper_atom_4_res_type)
+         ), 1,
+         ...,
+         (improper_k_constant, improper_psi_o,
+          improper_atom_1_type, (improper_atom_2_type,
+          improper_atom_3_type, improper_atom_4_type),
+          improper_atom_1_res_type, (improper_atom_2_res_type,
+          improper_atom_3_res_type, improper_atom_4_res_type)
+         ), n ])
+         """
     unique_improper_types = _get_unique_improper_types(structure, epsilon_conversion_factor)
     improper_types = [
         unique_improper_types[
@@ -290,33 +688,76 @@ def _get_impropers(structure, epsilon_conversion_factor):
         for improper in structure.impropers
     ]
 
-    # If impropers are added to GOMC, add the atom sorter for the unique combinations here
+    unique_improper_check_dict = OrderedDict()
+    for i_value_improper, i_key_improper in unique_improper_types.items():
+        i_value_duplicated = False
+
+        i_value_improper_k_constant = i_value_improper[0]
+        i_value_improper_psi_o = i_value_improper[1]
+
+        i_value_impr_1_atoms_reorder = i_value_improper[2]
+        i_value_impr_atoms_2_3_4_reorder = sorted(set(i_value_improper[3][0],
+                                                      i_value_improper[3][1],
+                                                      i_value_improper[3][2]
+                                                      )
+                                                  )
+
+        i_value_impr_1_res_reorder = i_value_improper[4]
+        i_value_impr_res_2_3_4_reorder = sorted(set(i_value_improper[5][0],
+                                                    i_value_improper[5][1],
+                                                    i_value_improper[5][2]
+                                                    )
+                                                )
+        i_improper_reformed = (i_value_improper_k_constant, i_value_improper_psi_o,
+                               i_value_impr_1_atoms_reorder, i_value_impr_atoms_2_3_4_reorder,
+                               i_value_impr_1_res_reorder, i_value_impr_res_2_3_4_reorder)
+
+        for j_value_improper, j_key_improper in unique_improper_types.items():
+            j_value_improper_k_constant = j_value_improper[0]
+            j_value_improper_psi_o = j_value_improper[1]
+
+            j_value_impr_1_atoms_reorder = j_value_improper[2]
+            j_value_impr_atoms_2_3_4_reorder = sorted(set(j_value_improper[3][0],
+                                                          j_value_improper[3][1],
+                                                          j_value_improper[3][2]
+                                                          )
+                                                      )
+            j_value_impr_1_res_reorder = j_value_improper[4]
+            j_value_impr_res_2_3_4_reorder = sorted(set(j_value_improper[5][0],
+                                                        j_value_improper[5][1],
+                                                        j_value_improper[5][2]
+                                                        )
+                                                    )
+
+            j_improper_reformed = (j_value_improper_k_constant, j_value_improper_psi_o,
+                                   j_value_impr_1_atoms_reorder, j_value_impr_atoms_2_3_4_reorder,
+                                   j_value_impr_1_res_reorder, j_value_impr_res_2_3_4_reorder)
+
+            if i_improper_reformed == j_improper_reformed:
+                i_value_duplicated = True
+                if i_value_improper[2] > j_value_improper[2]:
+                    unique_improper_check_dict.update({j_value_improper: len(unique_improper_check_dict) + 1})
+                else:
+                    unique_improper_check_dict.update({i_value_improper: len(unique_improper_check_dict) + 1})
+        if i_value_duplicated is False:
+            unique_improper_check_dict.update({i_value_improper: len(unique_improper_check_dict) + 1})
+
+    unique_improper_types = OrderedDict([(y, x) for y, x in unique_improper_check_dict.items()])
 
     return improper_types, unique_improper_types
 
 
 def unique_atom_naming(structure, residue_id_list, residue_names_list, bead_to_atom_name_dict=None):
-
     """
     Generates unique atom/bead names for each molecule, which is required for some
     simulation types (Example: special Monte Carlo moves)
 
-    Outputs
-     ----------
-    unique_individual_atom_names_dict : dictionary
-        All the unique atom names comno_piled into a dictionary.
-    individual_atom_names_list : list, in sequential  order
-        The atom names for every atom in the system
-    missing_bead_to_atom_name  : list, in sequential  order
-        The bead names of any atoms beads that did not have a name specificed to them
-        via the bead_to_atom_name_dict
-
     Parameters
     ----------
     structure : compound object
-    residue_id_list : list, in sequential  order
+    residue_id_list : list, in sequential order
             The residue ID for every atom in the system
-    residue_names_list  : list, in sequential  order
+    residue_names_list  : list, in sequential order
         The atom names for every atom in the system
     bead_to_atom_name_dict: dictionary ; optional, default =None
         For all atom names/elements/beads with 2 or less digits, this converts
@@ -327,6 +768,15 @@ def unique_atom_naming(structure, residue_id_list, residue_names_list, bead_to_a
         provided they do not exceed 62 of the same name/element pre residue.
         Example dictionary: {'_CH3':'C', '_CH2':'C', '_CH':'C', '_HC':'C'}
 
+    Returns
+     ----------
+    unique_individual_atom_names_dict : dictionary
+        All the unique atom names comno_piled into a dictionary.
+    individual_atom_names_list : list, in sequential  order
+        The atom names for every atom in the system
+    missing_bead_to_atom_name  : list, in sequential  order
+        The bead names of any atoms beads that did not have a name specificed to them
+        via the bead_to_atom_name_dict
     """
     unique_individual_atom_names_dict = {}
     individual_atom_names_list = []
@@ -406,7 +856,7 @@ class Charmm:
             If the structure is empty it must be and mbuild Box object.
             Note: If 1 structures are provided (i.e., only structure_box_0),
             it must be an mbuild Compound.
-            Note: If 2 stuctures are provided,
+            Note: If 2 structures are provided,
             only 1 structure can be an empty box (i.e., either structure_box_0 or structure_box_1)
         filename_box_0 : str
             Path of the output file for structure_box_0
@@ -910,8 +1360,6 @@ class Charmm:
 
         self.unique_types = list(set(self.types))
         self.unique_types.sort(key=natural_sort)
-
-        print('unique_types = {}'.format(self.unique_types))
 
         if self.structure_box_1:
             self.masses = np.array([atom.mass for atom in self.residue_id_list.atoms]
@@ -1703,6 +2151,7 @@ class Charmm:
                 if dihedral.improper:
                     warn("ERROR: Amber-style impropers are currently not supported in GOMC")
 
+            impropers_list = stuct_iteration.impropers
             impropers = [[improper.atom1.idx + 1,
                           improper.atom2.idx + 1,
                           improper.atom3.idx + 1,
@@ -1860,11 +2309,16 @@ class Charmm:
 
             # IMPROPERS: Calculate the improper data
             output_write.write(first_indent % no_impropers + ' !NIMPHI: impropers\n')
-            for i_improper, (atom_1, atom_2, atom_3, atom_4) in enumerate(
-                    combined_1_4_coul_dict_per_residue(stuct_iteration, dihedrals_list)):
+            for i_improper, improper_iter in enumerate(impropers_list):
+                improper_atom_1, improper_atom_2, improper_atom_3, improper_atom_4 = improper_iter.atom1,  \
+                                                                                     improper_iter.atom2,  \
+                                                                                     improper_iter.atom3,  \
+                                                                                     improper_iter.atom4
 
-                output_write.write((first_indent * 4) % (atom_1.idx + 1, atom_2.idx + 1,
-                                                         atom_3.idx + 1, atom_4.idx + 1))
+                output_write.write((first_indent * 4) % (improper_atom_1.idx + 1, improper_atom_2.idx + 1,
+                                                         improper_atom_3.idx + 1, improper_atom_4.idx + 1)
+                                   )
+
                 if (i_improper + 1) % 2 == 0:
                     output_write.write('\n')
 

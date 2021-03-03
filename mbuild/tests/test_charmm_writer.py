@@ -1191,7 +1191,7 @@ class TestCharmmWriterData(BaseTest):
                                                                                  epsilon_conversion_factor)
 
         assert str(improper_types_1) == '[]'
-        assert str(unique_improper_types_1) == '{}'
+        assert str(unique_improper_types_1) == 'OrderedDict()'
 
     def test_charmm_angle_reorder(self, ethyl_ether_gomc, methyl_ether_gomc):
         box_reservior_0 = mb.fill_box(compound=[ethyl_ether_gomc, methyl_ether_gomc],
