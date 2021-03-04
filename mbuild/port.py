@@ -138,7 +138,7 @@ class Port(Compound):
     def separation(self):
         """
         The distance between a port and its anchor particle.
-        If the port has no anchor particle, returns a value of zero.
+        If the port has no anchor particle, returns None.
         """
         if self.anchor:
             return np.linalg.norm(self.center - self.anchor.pos)
