@@ -144,7 +144,7 @@ class Port(Compound):
             return np.linalg.norm(self.center - self.anchor.pos)
         else:
             warn("This port is not anchored to another particle." 
-                    " Retruning a separation of None")
+                    " Returning a separation of None")
             return None
 
     @property
