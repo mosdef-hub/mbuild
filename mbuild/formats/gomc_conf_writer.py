@@ -1142,7 +1142,7 @@ class GOMCControl():
         self.coul_1_4_scaling = charmm_object.coul_1_4
         self.input_variables_dict = input_variables_dict
         self.residues_List = charmm_object.residues
-        self.all_atom_names_and_res_pairs_dict = charmm_object.all_atom_name_res_pairs_dict
+        self.all_residues_unique_atom_name_dict = charmm_object.all_res_unique_atom_name_dict
 
         self.x_dim_box_0 = charmm_object.box_0.maxs[0] * 10   # times 10 to convert from nm to Angstroms
         self.y_dim_box_0 = charmm_object.box_0.maxs[1] * 10   # times 10 to convert from nm to Angstroms
@@ -2237,7 +2237,7 @@ class GOMCControl():
                                         bad_input_variables_values_list.append(key)
 
                                     all_atom_names_and_res_pairs_keys_list = list(
-                                        self.all_atom_names_and_res_pairs_dict.keys())
+                                        self.all_residues_unique_atom_name_dict.keys())
                                     # check that the atom names match the residues that exist
                                     if self.input_variables_dict[key][MEMC_iter][1] not in \
                                             all_atom_names_and_res_pairs_keys_list:
@@ -2247,13 +2247,13 @@ class GOMCControl():
                                             all_atom_names_and_res_pairs_keys_list:
 
                                         if self.input_variables_dict[key][MEMC_iter][2][0] not in \
-                                                self.all_atom_names_and_res_pairs_dict[
+                                                self.all_residues_unique_atom_name_dict[
                                                     self.input_variables_dict[key][MEMC_iter][1]]:
 
                                             bad_input_variables_values_list.append(key)
 
                                         if self.input_variables_dict[key][MEMC_iter][2][1] not in \
-                                                self.all_atom_names_and_res_pairs_dict[
+                                                self.all_residues_unique_atom_name_dict[
                                                     self.input_variables_dict[key][MEMC_iter][1]]:
                                             bad_input_variables_values_list.append(key)
 
@@ -2264,12 +2264,12 @@ class GOMCControl():
                                     elif self.input_variables_dict[key][MEMC_iter][3] in \
                                             all_atom_names_and_res_pairs_keys_list:
                                         if self.input_variables_dict[key][MEMC_iter][4][0] not in \
-                                                self.all_atom_names_and_res_pairs_dict[
+                                                self.all_residues_unique_atom_name_dict[
                                                     self.input_variables_dict[key][MEMC_iter][3]]:
                                             bad_input_variables_values_list.append(key)
 
                                         if self.input_variables_dict[key][MEMC_iter][4][1] not in \
-                                                self.all_atom_names_and_res_pairs_dict[
+                                                self.all_residues_unique_atom_name_dict[
                                                     self.input_variables_dict[key][MEMC_iter][3]]:
                                             bad_input_variables_values_list.append(key)
 
