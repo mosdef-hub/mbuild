@@ -771,11 +771,18 @@ class TestCompound(BaseTest):
     def test_parmed_box(self, h2o):
         compound = mb.Compound()
         compound.add(h2o)
-        tilted_box = mb.Box.from_lengths_angles(lengths=[2.0, 2.0, 2.0], angles=[60.0, 80.0, 100.0])
-        print(tilted_box)
+        tilted_box = mb.Box.from_lengths_angles(lengths=[2.0, 2.0, 2.0], angles=[90.0, 90.0, 120.0])
         structure = compound.to_parmed(box=tilted_box)
-        print(structure.box)
-        assert np.all(np.isclose(structure.box, [20.0, 20.0, 20.0, 60.0, 80.0, 100.0]))
+        assert np.all(np.isclose(structure.box, [22.5, 22.5, 22.5, 90.0, 90.0, 120.0]))
+
+    def test_parmed_box_with_periodicity(self, h2o):
+        compound = mb.Compound()
+        compound.add(h2o)
+        tilted_box = mb.Box.from_lengths_angles(lengths=[2.0, 2.0, 2.0], angles=[90.0, 90.0, 120.0])
+        for i,val in enumerate(compound.periodicity):
+            compound.periodicity[i] = 2.0
+        structure = compound.to_parmed(box=tilted_box)
+        assert np.all(np.isclose(structure.box, [20.0, 20.0, 20.0, 90.0, 90.0, 120.0]))
 
     def test_min_periodic_dist(self, ethane):
         compound = mb.Compound(ethane)

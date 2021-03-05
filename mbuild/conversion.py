@@ -1034,23 +1034,21 @@ def to_parmed(compound,
                 if val:
                     compound_max[dim] = val
                     compound_min[dim] = 0.0
-                if not val:
+                else:
                     compound_max[dim] += 0.25
                     compound_min[dim] -= 0.25
             box = Box.from_mins_maxs_angles(mins=compound_min, maxs=compound_max, angles=box.angles)
     else:
-        box = compound.get_boundingbox()
         # if periodicty is set, use it before bounding box
-        compound_max = compound.maxs.tolist()
-        compound_min = compound.mins.tolist()
+        lengths = [box.Lx, box.Ly, box.Lz]
+        # if periodicity not defined, pad edge with .25nm buffer
         for dim, val in enumerate(compound.periodicity):
             if val:
-                compound_max[dim] = val
-                compound_min[dim] = 0.0
-            if not val:
-                compound_max[dim] += 0.25
-                compound_min[dim] -= 0.25
-        box = Box.from_mins_maxs_angles(mins=compound_min, maxs=compound_max, angles=box.angles)
+                lengths[dim] = val
+            else:
+                lengths[dim] += 0.25
+
+        box = Box.from_lengths_angles(lengths=lengths, angles=box.angles)
 
     box_vector = np.empty(6)
     box_vector[3:6] = box.angles

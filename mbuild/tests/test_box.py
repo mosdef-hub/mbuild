@@ -37,10 +37,8 @@ class TestBox(BaseTest):
     def test_left_handed_matrix(self, lh_matrix):
         msg = ("Box vectors provided for a left-handed basis, these will "
                 "be transformed into a right-handed basis automatically.")
-        with pytest.warns(UserWarning) as record:
+        with pytest.warns(UserWarning, match=r'provided for a left\-handed basis'):
             mb.Box(box_vectors=lh_matrix)
-        assert len(record) == 1
-        assert record[0].message.args[0] == msg
 
     @pytest.mark.parametrize('vecs', [
                                  [[1, 0, 0], [1, 1, 0], [1, 1, 0]],

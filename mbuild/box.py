@@ -2,10 +2,10 @@ from warnings import warn
 
 import numpy as np
 
-from mbuild.coordinate_transform import AxisTransform, ChangeOfBasis
 from mbuild.exceptions import MBuildError
 
 __all__ = ['Box']
+
 
 class Box(object):
     """A box representing the bounds of the system.
@@ -40,12 +40,13 @@ class Box(object):
     ----
     Box vectors are expected to be provided in row-major format.
     """
+
     def __init__(self, box_vectors=None, precision=None):
         box_vectors = _validate_box_vectors(box_vectors)
 
         self._box_vectors = box_vectors
 
-        (Lx,Ly,Lz,xy,xz,yz) = self._from_vecs_to_lengths_tilt_factors()
+        (Lx, Ly, Lz, xy, xz, yz) = self._from_vecs_to_lengths_tilt_factors()
         self._Lx = Lx
         self._Ly = Ly
         self._Lz = Lz
@@ -67,7 +68,7 @@ class Box(object):
     @classmethod
     def from_uvec_lengths(cls, uvec, lengths):
         uvec = np.asarray(uvec)
-        uvec.reshape(3,3)
+        uvec.reshape(3, 3)
 
         if not np.allclose(np.linalg.norm(uvec, axis=1), 1.0):
             msg = (f"Unit vector magnitudes provided are not "
@@ -76,7 +77,7 @@ class Box(object):
             raise MBuildError(msg)
 
         lengths = np.asarray(lengths)
-        lengths.reshape(1,3)
+        lengths.reshape(1, 3)
         _validate_box_vectors(uvec)
         scaled_vec = (uvec.T * lengths).T
 
@@ -86,7 +87,7 @@ class Box(object):
     def from_mins_maxs_angles(cls, mins, maxs, angles):
         (x_min, y_min, z_min) = mins
         (x_max, y_max, z_max) = maxs
-        lengths = (x_max-x_min, y_max-y_min, z_max-z_min)
+        lengths = (x_max - x_min, y_max - y_min, z_max - z_min)
         return cls.from_lengths_angles(lengths, angles)
 
     @classmethod
@@ -98,16 +99,16 @@ class Box(object):
             (xy, xz, yz) = tilt_factors
 
         vecs = np.asarray([Lx, 0.0, 0.0],
-                          [Ly*xy, Ly, 0.0],
-                          [Lz*xz, Lz*yz, Lz])
+                          [Ly * xy, Ly, 0.0],
+                          [Lz * xz, Lz * yz, Lz])
 
         return _validate_box_vectors(box_vectors=vecs)
 
     @classmethod
     def from_lo_hi_tilt_factors(cls, lo, hi, tilt_factors):
-        (xlo,ylo,zlo) = lo
-        (xhi,yhi,zhi) = hi
-        (xy,xz,yz) = tilt_factors
+        (xlo, ylo, zlo) = lo
+        (xhi, yhi, zhi) = hi
+        (xy, xz, yz) = tilt_factors
 
         box_vectors = np.asarray([xhi - xlo, 0.0, 0.0],
                                  [xy, yhi - ylo, 0.0],
@@ -214,9 +215,9 @@ class Box(object):
 
         xy = v1_dot_v2 / (Lx * Ly)
         xz = v1_dot_v3 / (Lx * Lz)
-        yz = (v2_dot_v3 - ((v1_dot_v2/Lx) * (v1_dot_v3/Lx))) / (Ly*Lz)
+        yz = (v2_dot_v3 - ((v1_dot_v2 / Lx) * (v1_dot_v3 / Lx))) / (Ly * Lz)
 
-        return (Lx, Ly, Lz, xy, xz, yz)
+        return Lx, Ly, Lz, xy, xz, yz
 
     def _get_angles(self):
         """Calculate the angles between the vectors that define the box.
@@ -238,7 +239,8 @@ class Box(object):
 
         (alpha, beta, gamma) = np.rad2deg(np.arccos(np.clip([alpha_raw, beta_raw, gamma_raw], -1.0, 1.0)))
 
-        return (alpha, beta, gamma)
+        return alpha, beta, gamma
+
 
 def _validate_box_vectors(box_vectors):
     """Determine if the vectors are in the convention we use.
@@ -260,27 +262,28 @@ def _validate_box_vectors(box_vectors):
     be transformed to comply with them, and will also raise a warning.
     """
     vecs = np.asarray(box_vectors, dtype=np.float)
-    vecs.reshape(3,3)
+    vecs.reshape(3, 3)
 
     return _normalize_box(vecs)
+
 
 def _lengths_angles_to_vectors(lengths, angles):
     (a, b, c) = lengths
     (alpha, beta, gamma) = np.deg2rad(angles)
 
-    a_vec = np.asarray([a,0.0,0.0],)
+    a_vec = np.asarray([a, 0.0, 0.0], )
 
     b_x = b * np.cos(gamma)
     b_y = b * np.sin(gamma)
-    b_vec = np.asarray([b_x, b_y, 0.0],)
+    b_vec = np.asarray([b_x, b_y, 0.0], )
 
     c_x = c * np.cos(beta)
     c_cos_y_term = ((np.cos(alpha) - (np.cos(beta) * np.cos(gamma))) / np.sin(gamma))
     c_y = c * c_cos_y_term
     c_z = c * np.sqrt(1 - np.square(np.cos(beta)) - np.square(c_cos_y_term))
     c_vec = np.asarray([c_x, c_y, c_z])
-    box_vectors = np.asarray((a_vec,b_vec,c_vec))
-    box_vectors.reshape(3,3)
+    box_vectors = np.asarray((a_vec, b_vec, c_vec))
+    box_vectors.reshape(3, 3)
     _validate_box_vectors(box_vectors=box_vectors)
     return box_vectors
 
@@ -302,7 +305,7 @@ def _normalize_box(vectors):
                           f"Box vectors evaluated: {vectors}")
     if det < 0.0:
         warn("Box vectors provided for a left-handed basis, these will "
-                "be transformed into a right-handed basis automatically.")
+             "be transformed into a right-handed basis automatically.")
 
     # transpose to column-major for the time being
     Q, R = np.linalg.qr(vectors.T)
@@ -311,7 +314,6 @@ def _normalize_box(vectors):
     sign = np.linalg.det(Q)
     Q = Q * sign
     R = R * sign
-
 
     signs = np.diag(np.diag(np.where(R < 0, -np.ones(R.shape), np.ones(R.shape))))
     transformed_vecs = R.dot(signs)

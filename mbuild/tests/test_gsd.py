@@ -71,8 +71,11 @@ class TestGSD(BaseTest):
     @pytest.mark.skipif(not has_gsd, reason="GSD package not installed")
     def test_box(self, ethane):
         import gsd, gsd.pygsd
-
+        lengths = [1.0, 2.0, 3.0]
         box = mb.box.Box.from_lengths_angles(lengths=[1.0, 2.0, 3.0], angles=[90.0, 90.0, 90.0])
+        for i in range(len(ethane.periodicity)):
+            ethane.periodicity[i] = lengths[i]
+
         ethane.save(filename='ethane.gsd', forcefield_name='oplsaa', box=box)
         gsd_file = gsd.pygsd.GSDFile(open('ethane.gsd', 'rb'))
         frame = gsd.hoomd.HOOMDTrajectory(gsd_file).read_frame(0)
@@ -92,7 +95,7 @@ class TestGSD(BaseTest):
         box_from_gsd_periodic = frame.configuration.box.astype(float)
         assert np.array_equal(box_from_gsd, box_from_gsd_periodic)
 
-        box = mb.box.Box.from_lengths_angles(lengths=np.array([2.0, 2.0, 2.0]), angles=[60, 70, 80])
+        box = mb.box.Box.from_lengths_angles(lengths=np.array([2.0, 2.0, 2.0]), angles=[92, 104, 119])
         ethane.save(filename='triclinic-box.gsd', forcefield_name='oplsaa', box=box)
         gsd_file = gsd.pygsd.GSDFile(open('triclinic-box.gsd', 'rb'))
         frame = gsd.hoomd.HOOMDTrajectory(gsd_file).read_frame(0)
