@@ -35,16 +35,18 @@ def _get_bond_type_key(bond,
 
     Returns
     ----------
-    bond_k_constant : float
-        Harmonic bond k-constant or bond energy scaling factor
-    bond_bo_length : float
-        Harmonic bonds equilibrium length
-    bond_atom_1_and_2_types_tuple : tuple
-        A sorted tuple ofstrings for the bonded atom types for atoms 1 and 2.
-    bond_atom_1_residue_name : str
-        The residue name for atom 1 in the bond.
-    bond_atom_2_residue_name : str
-        The residue name for atom 2 in the bond.
+    tuple, (bond_k_constant, bond_bo_length, bond_atom_1_and_2_types_tuple,
+        bond_atom_1_residue_name, bond_atom_2_residue_name)
+        bond_k_constant : float
+            Harmonic bond k-constant or bond energy scaling factor
+        bond_bo_length : float
+            Harmonic bonds equilibrium length
+        bond_atom_1_and_2_types_tuple : tuple
+            A sorted tuple ofstrings for the bonded atom types for atoms 1 and 2.
+        bond_atom_1_residue_name : str
+            The residue name for atom 1 in the bond.
+        bond_atom_2_residue_name : str
+            The residue name for atom 2 in the bond.
     """
 
     bond_k_constant = round(bond.type.k * (sigma_conversion_factor ** 2 / epsilon_conversion_factor), 8)
@@ -77,21 +79,23 @@ def _get_angle_type_key(angle,
 
     Returns
     ----------
-    angle_k_constant : float
-        Harmonic angle k-constant or bond energy scaling factor
-    angle_theta_o : float
-        Harmonic equilbrium angle between the atoms
-    angle_center_atom_type_2 : str
-        The center atom type for the angle (atom type 2)
-    angle_end_atom_types_1_and_3_tuple : tuple
-        A sorted tuple of atom types (strings) for the end angle atoms
-        (atoms 1 and 3).
-    angle_atom_1_residue_name : str
-        The residue name for atom 1 in the angle (end atom).
-    angle_atom_2_residue_name : str
-        The residue name for atom 2 in the angle (center atom).
-    angle_atom_3_residue_name : str
-        The residue name for atom 3 in the angle (end atom).
+    tuple, (angle_k_constant, angle_theta_o, angle_center_atom_type_2, angle_end_atom_types_1_and_3_tuple,
+        angle_residue_atom_1, angle_residue_atom_2, angle_residue_atom_3)
+        angle_k_constant : float
+            Harmonic angle k-constant or bond energy scaling factor
+        angle_theta_o : float
+            Harmonic equilbrium angle between the atoms
+        angle_center_atom_type_2 : str
+            The center atom type for the angle (atom type 2)
+        angle_end_atom_types_1_and_3_tuple : tuple
+            A sorted tuple of atom types (strings) for the end angle atoms
+            (atoms 1 and 3).
+        angle_atom_1_residue_name : str
+            The residue name for atom 1 in the angle (end atom).
+        angle_atom_2_residue_name : str
+            The residue name for atom 2 in the angle (center atom).
+        angle_atom_3_residue_name : str
+            The residue name for atom 3 in the angle (end atom).
     """
 
     angle_k_constant = round(angle.type.k*(sigma_conversion_factor**2/epsilon_conversion_factor), 8)
@@ -126,38 +130,42 @@ def _get_dihedral_rb_torsion_key(dihedral,
 
     Returns
     ----------
-    dihed_type_RB_c0 : float
-        Ryckaert-Bellemans (RB) dihedrals/torsions C0 constant.
-    dihed_type_RB_c1 : float
-        Ryckaert-Bellemans (RB) dihedrals/torsions C1 constant.
-    dihed_type_RB_c2 : float
-        Ryckaert-Bellemans (RB) dihedrals/torsions C2 constant.
-    dihed_type_RB_c3 : float
-        Ryckaert-Bellemans (RB) dihedrals/torsions C3 constant.
-    dihed_type_RB_c4 : float
-        Ryckaert-Bellemans (RB) dihedrals/torsions C4 constant.
-    dihed_type_RB_c5 : float
-        Ryckaert-Bellemans (RB) dihedrals/torsions C5 constant.
-    dihed_type_scee : float, default = 1.0
-        The 1-4 electrostatic scaling factor
-    dihed_type_scnb : float, default = 1.0
-        The 1-4 Lennard-Jones scaling factor.
-    dihed_atom_1_type : str
-        The atom type for atom number 1 in the dihedral
-    dihed_atom_2_type : str
-        The atom type for atom number 2 in the dihedral
-    dihed_atom_3_type : str
-        The atom type for atom number 3 in the dihedral
-    dihed_atom_4_type : str
-        The atom type for atom number 4 in the dihedral
-    dihed_atom_1_res_type : str
-        The residue name for atom number 1 in the dihedral
-    dihed_atom_2_res_type : str
-        The residue name for atom number 2 in the dihedral
-    dihed_atom_3_res_type : str
-        The residue name for atom number 3 in the dihedral
-    dihed_atom_4_res_type : str
-        The residue name for atom number 4 in the dihedral
+    tuple, (dihed_type_RB_c0,  dihed_type_RB_c1, dihed_type_RB_c2, dihed_type_RB_c3, dihed_type_RB_c4,
+        dihed_type_RB_c5, dihed_type_scee, dihed_type_scnb, dihed_atom_1_type, dihed_atom_2_type,
+        dihed_atom_3_type, dihed_atom_4_type, dihed_atom_1_res_type, dihed_atom_2_res_type,
+        dihed_atom_3_res_type,  dihed_atom_4_res_type)
+        dihed_type_RB_c0 : float
+            Ryckaert-Bellemans (RB) dihedrals/torsions C0 constant.
+        dihed_type_RB_c1 : float
+            Ryckaert-Bellemans (RB) dihedrals/torsions C1 constant.
+        dihed_type_RB_c2 : float
+            Ryckaert-Bellemans (RB) dihedrals/torsions C2 constant.
+        dihed_type_RB_c3 : float
+            Ryckaert-Bellemans (RB) dihedrals/torsions C3 constant.
+        dihed_type_RB_c4 : float
+            Ryckaert-Bellemans (RB) dihedrals/torsions C4 constant.
+        dihed_type_RB_c5 : float
+            Ryckaert-Bellemans (RB) dihedrals/torsions C5 constant.
+        dihed_type_scee : float, default = 1.0
+            The 1-4 electrostatic scaling factor
+        dihed_type_scnb : float, default = 1.0
+            The 1-4 Lennard-Jones scaling factor.
+        dihed_atom_1_type : str
+            The atom type for atom number 1 in the dihedral
+        dihed_atom_2_type : str
+            The atom type for atom number 2 in the dihedral
+        dihed_atom_3_type : str
+            The atom type for atom number 3 in the dihedral
+        dihed_atom_4_type : str
+            The atom type for atom number 4 in the dihedral
+        dihed_atom_1_res_type : str
+            The residue name for atom number 1 in the dihedral
+        dihed_atom_2_res_type : str
+            The residue name for atom number 2 in the dihedral
+        dihed_atom_3_res_type : str
+            The residue name for atom number 3 in the dihedral
+        dihed_atom_4_res_type : str
+            The residue name for atom number 4 in the dihedral
     """
 
     lj_unit = 1 / epsilon_conversion_factor
@@ -215,26 +223,29 @@ def _get_improper_type_key(improper,
 
     Returns
     ----------
-    improper_k_constant : float
-        Harmonic k-constant or bond energy scaling factor
-    improper_psi_o : float
-        Harmonic equilbrium improper angle
-    improper_atom_1_type : str
-        The atom type for atom number 1 in the dihedral
-    improper_atom_2_type : str
-        The atom type for atom number 2 in the dihedral
-    improper_atom_3_type : str
-        The atom type for atom number 3 in the dihedral
-    improper_atom_4_type : str
-        The atom type for atom number 4 in the dihedral
-    improper_atom_1_res_type : str
-        The residue name for atom number 1 in the dihedral
-    improper_atom_2_res_type : str
-        The residue name for atom number 2 in the dihedral
-    improper_atom_3_res_type : str
-        The residue name for atom number 3 in the dihedral
-    improper_atom_4_res_type : str
-        The residue name for atom number 4 in the dihedral
+    tuple, (improper_k_constant, improper_psi_o, improper_atom_1_type,
+        (improper_atom_2_type, improper_atom_3_type,  improper_atom_4_type), improper_atom_1_res_type,
+        (improper_atom_2_res_type, improper_atom_3_res_type, improper_atom_4_res_type)
+        improper_k_constant : float
+            Harmonic k-constant or bond energy scaling factor
+        improper_psi_o : float
+            Harmonic equilbrium improper angle
+        improper_atom_1_type : str
+            The atom type for atom number 1 in the dihedral
+        improper_atom_2_type : str
+            The atom type for atom number 2 in the dihedral
+        improper_atom_3_type : str
+            The atom type for atom number 3 in the dihedral
+        improper_atom_4_type : str
+            The atom type for atom number 4 in the dihedral
+        improper_atom_1_res_type : str
+            The residue name for atom number 1 in the dihedral
+        improper_atom_2_res_type : str
+            The residue name for atom number 2 in the dihedral
+        improper_atom_3_res_type : str
+            The residue name for atom number 3 in the dihedral
+        improper_atom_4_res_type : str
+            The residue name for atom number 4 in the dihedral
     """
     lj_unit = 1 / epsilon_conversion_factor
 
@@ -851,7 +862,7 @@ class Charmm:
 
         Parameters
         ----------
-        structure_box_0 : mbuild Compound object or mbuild Box object;
+        structure_box_0 : mbuild Compound object (mbuild.Compound) or mbuild Box object (mbuild.Box);
             If the structure has atoms/beads it must be an mbuild Compound.
             If the structure is empty it must be and mbuild Box object.
             Note: If 1 structures are provided (i.e., only structure_box_0),
@@ -861,7 +872,7 @@ class Charmm:
         filename_box_0 : str
             The file name of the output file for structure_box_0.  Note: the extension should
             not be provided, as multiple extension (.pdb and .psf) are added to this name.
-        structure_box_1 : mbuild Compound object or mbuild Box object, default = None
+        structure_box_1 : mbuild Compound object (mbuild.Compound) or mbuild Box object (mbuild.Box), default = None;
             If the structure has atoms/beads it must be an mbuild Compound.
             Note: When running a GEMC or GCMC simulation the box 1 stucture should be input
             here.  Otherwise, there is no guarantee that any of the atom type and force field
@@ -948,9 +959,12 @@ class Charmm:
             for structure_box_1 in nanometers (nm)
             This is to add/override or change the structures dimensions. Ex: [1,2,3]
 
-
         Attributes
         ----------
+        input_error : bool
+            This error is typically incurred from an error in the user's input values.
+            However, it could also be due to a bug, provided the user is inputting
+            the data as this Class intends.
         structure_box_0 : mbuild.compound.Compound
             The mbuild Compound for the input box 0
         structure_box_1 : mbuild.compound.Compound or None, default = None
@@ -1034,10 +1048,6 @@ class Charmm:
             A list of 3 positive float values or the dimensions [x, y ,z]
             for structure_box_1 in nanometers (nm)
             This is to add/override or change the structures dimensions. Ex: [1,2,3]
-        input_error : bool
-            This error is typically incurred from an error in the user's input values.
-            However, it could also be due to a bug, provided the user is inputting
-            the data as this Class intends.
         structure_box_0_ff : parmed.structure.Structure
             The box 0 structure (structure_box_0) after all the provided
             force fields are applied.
@@ -1076,22 +1086,22 @@ class Charmm:
             The number of boxes used when writing the Charmm object and force fielding
             the system. If only box 0 is provided, the value is 0. If box 0 and box 1
             are provided, the value is 1.
-        epsilon_dict : dict
+        epsilon_dict : dict {str: float or int}
             The uniquely numbered atom type (key) and it's non-bonded epsilon
             coefficient (value).
-        sigma_dict : dict
+        sigma_dict : dict {str: float or int}
             The uniquely numbered atom type (key) and it's non-bonded sigma
             coefficient (value).
-        LJ_1_4_dict : dict
+        LJ_1_4_dict : dict {str: float or int}
             The uniquely numbered atom type (key) and it's non-bonded 1-4
             Lennard-Jones, LJ, scaling factor (value).
-        coul_1_4 : float
+        coul_1_4 : float or int
             The non-bonded 1-4 coulombic scaling factor, which is the
             same for all the residues/molecules, regardless if
             differenct force fields are utilized.  Note: if
             1-4 coulombic scaling factor is not the same for all
             molecules the Charmm object will fail with an error.
-        combined_1_4_coul_dict_per_residue : dict
+        combined_1_4_coul_dict_per_residue : dict, {str: float or int}
             The residue name/molecule (key) and it's non-bonded 1-4 coulombic
             scaling factor (value).
         forcefield_dict : dict
@@ -1115,7 +1125,7 @@ class Charmm:
             The maximum number of characters allowed in the residue name,
             which is predetermined by the PDB format. This is a constant,
             which equals 4.
-        all_res_unique_atom_name_dict : dict
+        all_res_unique_atom_name_dict : dict, {str : [str, ..., str]}
             A dictionary that provides the residue names (keys) and a list
             of the unique atom names in the residue (value), for the
             combined structures (box 0 and box 1 (if supplied)).
@@ -1608,7 +1618,7 @@ class Charmm:
                                   "scaling factors."
             raise ValueError(print_error_message)
         else:
-            self.coul_1_4 = float(list(coul_1_4_set)[0])
+            self.coul_1_4 = list(coul_1_4_set)[0]
 
         # get all the unique atom name to check for the MEMC move in the gomc_conf_writer
         self.all_individual_atom_names_list = []

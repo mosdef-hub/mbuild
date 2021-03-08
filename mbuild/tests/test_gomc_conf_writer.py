@@ -28,9 +28,10 @@ class TestGOMCControlFileWriter(BaseTest):
         value = gomc_control._get_all_possible_input_variables(description=False)
         assert value == ['Restart', 'RestartCheckpoint', 'PRNG', 'ParaTypeCHARMM', 'ParaTypeMie',
                          'ParaTypeMARTINI', 'RcutCoulomb_box_0', 'RcutCoulomb_box_1', 'Pressure',
-                         'Rcut', 'RcutLow', 'LRC', 'Exclude', 'Potential', 'Rswitch', 'VDWGeometricSigma',
+                         'Rcut', 'RcutLow', 'LRC', 'Exclude', 'Potential', 'Rswitch',
                          'ElectroStatic', 'Ewald', 'CachedFourier', 'Tolerance', 'Dielectric', 'PressureCalc',
-                         'EqSteps', 'AdjSteps', 'useConstantArea', 'FixVolBox0', 'ChemPot', 'Fugacity',
+                         'EqSteps', 'AdjSteps', 'VDWGeometricSigma', 'useConstantArea', 'FixVolBox0',
+                         'ChemPot', 'Fugacity',
                          'CBMC_First', 'CBMC_Nth', 'CBMC_Ang', 'CBMC_Dih', 'OutputName', 'CoordinatesFreq',
                          'RestartFreq', 'CheckpointFreq', 'ConsoleFreq', 'BlockAverageFreq', 'HistogramFreq',
                          'DistName', 'HistName', 'RunNumber', 'RunLetter', 'SampleFreq', 'OutEnergy',
@@ -45,10 +46,11 @@ class TestGOMCControlFileWriter(BaseTest):
         assert gomc_control.dict_keys_to_list(value) == ['Restart', 'RestartCheckpoint', 'PRNG', 'ParaTypeCHARMM',
                                                          'ParaTypeMie', 'ParaTypeMARTINI', 'RcutCoulomb_box_0',
                                                          'RcutCoulomb_box_1', 'Pressure', 'Rcut', 'RcutLow',
-                                                         'LRC', 'Exclude', 'Potential', 'Rswitch', 'VDWGeometricSigma',
+                                                         'LRC', 'Exclude', 'Potential', 'Rswitch',
                                                          'ElectroStatic', 'Ewald', 'CachedFourier', 'Tolerance',
                                                          'Dielectric', 'PressureCalc', 'EqSteps', 'AdjSteps',
-                                                         'useConstantArea', 'FixVolBox0', 'ChemPot', 'Fugacity',
+                                                         'VDWGeometricSigma', 'useConstantArea', 'FixVolBox0',
+                                                         'ChemPot', 'Fugacity',
                                                          'CBMC_First', 'CBMC_Nth', 'CBMC_Ang', 'CBMC_Dih',
                                                          'OutputName', 'CoordinatesFreq', 'RestartFreq',
                                                          'CheckpointFreq', 'ConsoleFreq', 'BlockAverageFreq',
@@ -72,7 +74,8 @@ class TestGOMCControlFileWriter(BaseTest):
                                                          'Exclude', 'coul_1_4_scaling', 'Potential', 'Rswitch',
                                                          'ElectroStatic', 'Ewald', 'CachedFourier', 'Tolerance',
                                                          'Dielectric', 'PressureCalc', 'EqSteps', 'AdjSteps',
-                                                         'useConstantArea', 'FixVolBox0', 'ChemPot', 'Fugacity',
+                                                         'VDWGeometricSigma', 'useConstantArea', 'FixVolBox0',
+                                                         'ChemPot', 'Fugacity',
                                                          'CBMC_First', 'CBMC_Nth', 'CBMC_Ang', 'CBMC_Dih',
                                                          'OutputName', 'CoordinatesFreq', 'RestartFreq',
                                                          'CheckpointFreq', 'ConsoleFreq', 'BlockAverageFreq',
@@ -193,6 +196,10 @@ class TestGOMCControlFileWriter(BaseTest):
             elif line.startswith('RcutLow '):
                 split_line = line.split()
                 assert split_line[1] == '1'
+
+            elif line.startswith('VDWGeometricSigma '):
+                split_line = line.split()
+                assert split_line[1] == 'False'
 
             elif line.startswith('Exclude '):
                 split_line = line.split()
@@ -562,6 +569,14 @@ class TestGOMCControlFileWriter(BaseTest):
                 split_line = line.split()
                 assert split_line[1] == '100'
 
+            elif line.startswith('VDWGeometricSigma '):
+                split_line = line.split()
+                assert split_line[1] == 'False'
+
+            elif line.startswith('useConstantArea '):
+                split_line = line.split()
+                assert split_line[1] == 'False'
+
             else:
                 pass
 
@@ -573,7 +588,8 @@ class TestGOMCControlFileWriter(BaseTest):
                         box_0=[2, 2, 2], box_1=[2, 2, 2]
                         )
         gomc_control.write_gomc_control_file(charmm, 'test_save_basic_GCMC.conf', 'GCMC', 100000, 500,
-                                             input_variables_dict={"ChemPot": {'ETH': -4000}
+                                             input_variables_dict={"ChemPot": {'ETH': -4000},
+                                                                   "VDWGeometricSigma": True
                                                                    }
                                              )
 
@@ -762,6 +778,10 @@ class TestGOMCControlFileWriter(BaseTest):
                 split_line = line.split()
                 assert split_line[1] == '500'
 
+            elif line.startswith('VDWGeometricSigma '):
+                split_line = line.split()
+                assert split_line[1] == 'True'
+
             else:
                 pass
 
@@ -834,6 +854,9 @@ class TestGOMCControlFileWriter(BaseTest):
                 split_line = line.split()
                 assert split_line[1] == '0.0'
 
+            else:
+                pass
+
     def test_save_basic_GEMC_NPT(self, ethane_gomc):
         charmm = Charmm(ethane_gomc, 'ethane_box_0',
                         structure_box_1=ethane_gomc, filename_box_1='ethane_box_1',
@@ -842,7 +865,9 @@ class TestGOMCControlFileWriter(BaseTest):
                         box_0=[2, 2, 2], box_1=[2, 2, 2]
                         )
         gomc_control.write_gomc_control_file(charmm, 'test_save_basic_GEMC_NPT.conf', 'GEMC_NPT', 1000000, 500,
-                                             input_variables_dict={"Pressure": 10
+                                             input_variables_dict={"Pressure": 10,
+                                                                   "useConstantArea": True,
+                                                                   "FixVolBox0": True
                                                                    }
                                              )
 
@@ -907,6 +932,17 @@ class TestGOMCControlFileWriter(BaseTest):
             elif line.startswith('MEMC-3Freq '):
                 split_line = line.split()
                 assert split_line[1] == '0.0'
+
+            elif line.startswith('useConstantArea '):
+                split_line = line.split()
+                assert split_line[1] == 'True'
+
+            elif line.startswith('FixVolBox0 '):
+                split_line = line.split()
+                assert split_line[1] == 'True'
+
+            else:
+                pass
 
     def test_save_change_most_variable_NVT(self, ethane_gomc, ethanol_gomc):
         test_box_ethane_ethanol = mb.fill_box(compound=[ethane_gomc, ethanol_gomc],

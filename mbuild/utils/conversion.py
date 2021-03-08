@@ -26,9 +26,7 @@ def RB_to_OPLS(c0, c1, c2, c3, c4, c5):
 def RB_to_CHARMM(c0, c1, c2, c3, c4, c5):
     """Converts Ryckaert-Bellemans (RB) type dihedrals to CHARMM type
     or
-
     RB_torsions = c0 + c1*Cos[Psi] + c2*Cos[Psi]^2 + c3*Cos[Psi]^3 + c4*Cos[Psi]^4 + c5*Cos[5*Psi]^5
-
     where Psi= t-Pi = t - 180 degrees
 
     Parameters
@@ -49,24 +47,21 @@ def RB_to_CHARMM(c0, c1, c2, c3, c4, c5):
     d4 = 0
     d5 = 180
 
-    converts to:
-
-    CHARMM_torsions =
-    = K0 * (1 + Cos[n0*(t) - (d0)] ) + K1 * (1 + Cos[n1*(t) - (d1)] ) + K2 * (1 + Cos[n2*(t) - (d2)] )
-    + K3 * (1 + Cos[n3*(t) - (d3)] )  +  K4 * (1 + Cos[n4*(t) - (d4)] )  + K5 * (1 + Cos[n5*(t) - (d5)] )  .
-
-    = K0 + K1 * (1 + Cos[n1*(t) - (d1)] ) + K2 * (1 + Cos[n2*(t) - (d2)] )
-    + K3 * (1 + Cos[n3*(t) - (d3)] )  +  K4 * (1 + Cos[n4*(t) - (d4)] )  + K5 * (1 + Cos[n5*(t) - (d5)] )  .
-
     Returns
     -------
+    CHARMM_torsions =
+    = K0 * (1 + Cos[n0*(t) - (d0)] ) + K1 * (1 + Cos[n1*(t) - (d1)] ) + K2 * (1 + Cos[n2*(t) - (d2)] )
+    + K3 * (1 + Cos[n3*(t) - (d3)] )  +  K4 * (1 + Cos[n4*(t) - (d4)] )  + K5 * (1 + Cos[n5*(t) - (d5)] )
+
+    = K0 + K1 * (1 + Cos[n1*(t) - (d1)] ) + K2 * (1 + Cos[n2*(t) - (d2)] )
+    + K3 * (1 + Cos[n3*(t) - (d3)] )  +  K4 * (1 + Cos[n4*(t) - (d4)] )  + K5 * (1 + Cos[n5*(t) - (d5)] )
     K0, K1, K2, K3, K4, K5, n0, n1, n2, n3, n4, n5, d0, d1, d2, d3, d4, and d5  : Charmm coefficients (in kcal/mol)
 
     CHARMM_dihedral coeffs : np.matrix, shape=(6,3)
         Array containing the CHARMM dihedral coeffs  [[K0, n0, d0], [K1, n1, d1], [K2, n2, d2], [K3, n3, d3],
         [K4, n4, d4], [K5, n5, d5]]  (in kcal/mol)
-
     """
+
     # see below or the long version is,  K0 = (c0 + c2 / 2 + 3 / 8 * c4) - K1 - K2 - K3 - K4 - K5
     K0 = (c0 - c1 - c3 - (c4/4) - c5)
     K1 = (c1 + (3/4) * c3 + (5/8) * c5)

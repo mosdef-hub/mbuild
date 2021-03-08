@@ -23,53 +23,67 @@ def specific_ff_to_residue(structure,
 
     Parameters
     ----------
-    structure_box_0 : mbuild Compound object or mbuild Box object;
-    structure: mb.Compound
-        The mBuild Compound object
+    structure: mbuild Compound object or mbuild Box object;
+        The mBuild Compound object or mbuild Box object, which contains the molecules
+        (or empty box) that will have the force field applied to them.
     forcefield_selection: str or dictionary, default=None
         Apply a forcefield to the output file by selecting a force field xml file with
         its path or by using the standard force field name provided the `foyer` package.
-        See Notes for further details on this argument
-    residues: str of list of str, default=None
+        Example dict for FF file: {'ETH' : 'oplsaa.xml', 'OCT': 'path_to file/trappe-ua.xml'}
+        Example str for FF file: 'path_to file/trappe-ua.xml'
+        Example dict for standard FF names : {'ETH' : 'oplsaa', 'OCT': 'trappe-ua'}
+        Example str for standard FF names: 'trappe-ua'
+        Example of a mixed dict with both : {'ETH' : 'oplsaa', 'OCT': 'path_to file/'trappe-ua.xml'}
+    residues: list, [str, ..., str], default=None
         Labels of unique residues in the Compound. Residues are assigned by
-        checking against Compound.name.  Only supply residue names as 3 characters
-        strings, as the residue names are truncated to 3 characters to fit in the
+        checking against Compound.name.  Only supply residue names as 4 characters
+        strings, as the residue names are truncated to 4 characters to fit in the
         psf and pdb file.
     reorder_res_in_pdb_psf: bool, default=False
-        ToDo: Add Description fot this argument
+        This option provides the ability to reorder the residues/molecules from the original
+        structure's order.  If True, the residues will be reordered as they appear in the residues
+        variable.  If False, the order will be the same as entered in the original structure.
     box: list, default=None
-        list of 3 positive float values or the dimensions [x, y ,z]
+        list of 3 positive float or integer values or the dimensions [x, y ,z]
         for structure in nanometers (nm). This is to add/override or change the structures dimensions.
         Ex: [1,2,3]
-    boxes_for_simulation: int of 1 or 2 only;
-        Gibbs or grand canonical ensembles are examples of where the boxes_for_simulation would be 2
-
-    Notes
-    -----
-    To write the NAMD/GOMC force field, pdb, and psf files, the
-    residues and forcefields must be provided in a str or
-    dictionary.  If a dictionary is provided all residues must
-    be specified to a force field.
-
-    Example dict for FF file: {'ETH' : 'oplsaa.xml', 'OCT': 'path_to file/trappe-ua.xml'}
-    Example str for FF file: 'path_to file/trappe-ua.xml'
-    Example dict for standard FF names : {'ETH' : 'oplsaa', 'OCT': 'trappe-ua'}
-    Example str for standard FF names: 'trappe-ua'
-    Example of a mixed dict with both : {'ETH' : 'oplsaa', 'OCT': 'path_to file/'trappe-ua.xml'}
+    boxes_for_simulation: int [1, 2], default = 1
+        Gibbs (GEMC) or grand canonical (GCMC) ensembles are examples of where the boxes_for_simulation would be 2.
+        Canonical (NVT) or isothermal–isobaric (NPT) ensembles are example with the boxes_for_simulation equal to 1.
+        Note: the only valid options are 1 or 2.
 
     Returns
     -------
-    structure: parmed.Structure
-        parmed structure with applied force field
-    coulomb14scalar_dict: dict
-        a dictionary with the 1,4-colombic scalars for each residue
+    list, [structure, coulomb14scalar_dict, lj14_scalar_dict, residues_applied_list]
+        structure: parmed.Structure
+            parmed structure with applied force field
+        coulomb14scalar_dict: dict
+            a dictionary with the 1,4-colombic scalars for each residue
+                (i.e., a different force field could on each residue)
+        lj14_scalar_dict: dict
+            a dictionary with the 1,4-LJ scalars for each residue
             (i.e., a different force field could on each residue)
-    lj14_scalar_dict: dict
-        a dictionary with the 1,4-LJ scalars for each residue
-        (i.e., a different force field could on each residue)
-    residues_applied_list: list
-        list of residues (i.e., list of stings).
-        These are all the residues in which the force field actually applied
+        residues_applied_list: list
+            list of residues (i.e., list of stings).
+            These are all the residues in which the force field actually applied
+
+    Notes
+    -----
+    To write the NAMD/GOMC force field, pdb, psf, and force field
+    (.inp) files, the residues and forcefields must be provided in
+    a str or dictionary. If a dictionary is provided all residues must
+    be specified to a force field if the boxes_for_simulation is equal to 1.
+
+    Generating an empty box (i.e., pdb and psf files):
+    Enter residues = [], but the accompanying structure must be an empty mb.Box.
+    However, when doing this, the forcefield_selection must be supplied,
+    or it will provide an error (i.e., forcefield_selection can not be equal to None).
+
+    In this current FF/psf/pdb writer, a residue type is essentially a molecule type.
+    Therefore, it can only correctly write systems where every bead/atom in the molecule
+    has the same residue name, and the residue name is specific to that molecule type.
+    For example: a protein molecule with many residue names is not currently supported,
+    but is planned to be supported in the future.
     """
 
     if has_foyer:
