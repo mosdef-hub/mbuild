@@ -145,6 +145,7 @@ def create_hoomd_simulation(
             snapshot = f[-1]
         hoomd_objects.append(snapshot)
         hoomd.init.read_gsd(restart, restart=restart)
+        print("Simulation initialized from restart file")
 
     nl = hoomd.md.nlist.cell()
     nl.reset_exclusions(exclusions=["1-2", "1-3"])
