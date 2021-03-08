@@ -12,6 +12,8 @@ from mbuild.utils.conversion import RB_to_OPLS
 
 from .hoomd_snapshot import to_hoomdsnapshot
 
+gsd = import_("gsd")
+gsd.hoomd = import_("gsd.hoomd")
 hoomd = import_("hoomd")
 hoomd.md = import_("hoomd.md")
 hoomd.md.pair = import_("hoomd.md.pair")
@@ -33,6 +35,7 @@ def create_hoomd_simulation(
     snapshot_kwargs={},
     pppm_kwargs={"Nx": 8, "Ny": 8, "Nz": 8, "order": 4},
     init_snap=None,
+    restart=None
 ):
     """Convert a parametrized pmd.Structure to hoomd.SimulationContext
 
@@ -59,6 +62,9 @@ def create_hoomd_simulation(
     init_snap : hoomd.data.SnapshotParticleData, optional, default=None
         Initial snapshot to which to add the ParmEd structure object
         (useful for rigid bodies)
+    restart : str, optional, default=None
+        Path to the gsd file from which to restart the simulation.
+        https://hoomd-blue.readthedocs.io/en/v2.9.4/restartable-jobs.html
 
     Returns
     ------
@@ -123,16 +129,22 @@ def create_hoomd_simulation(
 
     if not hoomd.context.current:
         hoomd.context.initialize("")
-    snapshot, _ = to_hoomdsnapshot(
-        structure,
-        ref_distance=ref_distance,
-        ref_mass=ref_mass,
-        ref_energy=ref_energy,
-        **snapshot_kwargs,
-        hoomd_snapshot=init_snap
-    )
-    hoomd_objects.append(snapshot)
-    hoomd.init.read_snapshot(snapshot)
+    if restart is None:
+        snapshot, _ = to_hoomdsnapshot(
+            structure,
+            ref_distance=ref_distance,
+            ref_mass=ref_mass,
+            ref_energy=ref_energy,
+            **snapshot_kwargs,
+            hoomd_snapshot=init_snap
+        )
+        hoomd_objects.append(snapshot)
+        hoomd.init.read_snapshot(snapshot)
+    else:
+        with gsd.hoomd.open(restart) as f:
+            snapshot = f[-1]
+        hoomd_objects.append(snapshot)
+        hoomd.init.read_gsd(restart, restart=restart)
 
     nl = hoomd.md.nlist.cell()
     nl.reset_exclusions(exclusions=["1-2", "1-3"])
