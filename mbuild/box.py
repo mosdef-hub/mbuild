@@ -186,7 +186,6 @@ class Box(object):
             beta,
             gamma
         )
-        return self._angles
 
     def __repr__(self):
         (Lx, Ly, Lz, xy, xz, yz) = self.box_parameters
@@ -245,7 +244,7 @@ class Box(object):
 def _validate_box_vectors(box_vectors):
     """Determine if the vectors are in the convention we use.
 
-    This method will parse the inputted box vectors, determine if the
+    This method will parse the provided box vectors, determine if the
     vectors follow the conventions the Box class adheres to. In this case:
 
     1. It is a 3x3 matrix that can be coerced into a numpy array of floats
@@ -317,4 +316,29 @@ def _normalize_box(vectors):
 
     signs = np.diag(np.diag(np.where(R < 0, -np.ones(R.shape), np.ones(R.shape))))
     transformed_vecs = R.dot(signs)
-    return transformed_vecs.T
+    return _reduced_form_vectors(transformed_vecs.T)
+
+
+# instructions adapted from HOOMD-Blue's documentation on periodic
+# boundary conditions
+# https://hoomd-blue.readthedocs.io/en/stable/box.html
+def _reduced_form_vectors(box_vectors):
+    v1 = box_vectors[0, :]
+    v2 = box_vectors[1, :]
+    v3 = box_vectors[2, :]
+
+    lx = np.linalg.norm(v1)
+    a_2x = np.dot(v1, v2) / lx
+    ly = np.sqrt(np.dot(v2, v2) - a_2x * a_2x)
+    xy = a_2x / ly
+    v1_x_v2 = np.cross(v1, v2)
+    lz = np.dot(v3, (v1_x_v2 / np.linalg.norm(v1_x_v2)))
+    a_3x = np.dot(v1, v3) / lx
+    xz = a_3x / lz
+    yz = (np.dot(v2, v3) - a_2x * a_3x) / (ly * lz)
+
+    reduced_vecs = np.asarray([[lx, 0.0, 0.0],
+                               [xy * ly, ly, 0.0],
+                               [xz * lz, yz * lz, lz]])
+
+    return reduced_vecs
