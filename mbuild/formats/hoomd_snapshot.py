@@ -38,11 +38,11 @@ def from_snapshot(snapshot, scale=1.0):
     try:
         # gsd
         box = snapshot.configuration.box
-        comp.box = mb.box.Box(lengths=box[:3] * scale)
+        comp.box = mb.box.Box.from_lengths_tilt_factors(lengths=box[:3] * scale, tilt_factors=box[3:])
     except AttributeError:
         # hoomd
         box = snapshot.box
-        comp.box = mb.box.Box(lengths=np.array([box.Lx,box.Ly,box.Lz]) * scale)
+        comp.box = mb.box.Box.from_lengths_tilt_factors(lengths=np.array([box.Lx,box.Ly,box.Lz]) * scale, tilt_factors=[box.xy, box.xz, box.yz])
 
     # to_hoomdsnapshot shifts the coords, this will keep consistent
     shift = np.array(comp.box.lengths)/2

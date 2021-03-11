@@ -11,7 +11,9 @@ from mbuild.utils.io import get_fn, has_foyer, has_gsd, has_hoomd, import_
 class TestHoomd(BaseTest):
     def test_compound_from_snapshot(self, ethane):
         hoomd_snapshot = import_("mbuild.formats.hoomd_snapshot")
-        box = mb.fill_box(ethane, n_compounds=5, box=mb.Box([5,5,5]))
+        lengths = [5, 5, 5]
+        angles = [90, 90, 90]
+        box = mb.fill_box(ethane, n_compounds=5, box=mb.Box.from_lengths_angles(lengths=lengths, angles=angles))
         snap, _ = hoomd_snapshot.to_hoomdsnapshot(box)
         new_box = hoomd_snapshot.from_snapshot(snap, scale=0.1)
 
@@ -32,7 +34,9 @@ class TestHoomd(BaseTest):
     @pytest.mark.skipif(not has_gsd, reason="gsd is not installed")
     def test_compound_from_gsdsnapshot(self, ethane):
         hoomd_snapshot = import_("mbuild.formats.hoomd_snapshot")
-        box = mb.fill_box(ethane, n_compounds=5, box=mb.Box([5,5,5]))
+        lengths = [5, 5, 5]
+        angles = [90, 90, 90]
+        box = mb.fill_box(ethane, n_compounds=5, box=mb.Box.from_lengths_angles(lengths=lengths, angles=angles))
         snap, _ = hoomd_snapshot.to_hoomdsnapshot(box)
 
         # copy attributes from the snapshot to a gsd snapshot
