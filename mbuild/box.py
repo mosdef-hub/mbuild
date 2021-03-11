@@ -102,7 +102,7 @@ class Box(object):
                           [Ly * xy, Ly, 0.0],
                           [Lz * xz, Lz * yz, Lz])
 
-        return _validate_box_vectors(box_vectors=vecs)
+        return Box(_validate_box_vectors(box_vectors=vecs))
 
     @classmethod
     def from_lo_hi_tilt_factors(cls, lo, hi, tilt_factors):
