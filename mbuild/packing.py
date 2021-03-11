@@ -225,8 +225,9 @@ def fill_box(
     box_maxs = box.maxs * 10
     overlap *= 10
 
-    # Apply 1nm edge buffer
+    # Apply edge buffer
     box_maxs -= edge * 10
+    box_mins += edge * 10
 
     # Build the input file for each compound and call packmol.
     filled_xyz = _new_xyz_file()
@@ -380,6 +381,7 @@ def fill_region(
             reg_mins = reg.mins * 10
             reg_maxs = reg.maxs * 10
             reg_maxs -= edge * 10  # Apply edge buffer
+            reg_mins += edge * 10
             input_text += PACKMOL_BOX.format(
                 compound_xyz.name,
                 m_compounds,
