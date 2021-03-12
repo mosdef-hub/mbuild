@@ -76,7 +76,7 @@ stages:
           - bash: |
               source activate test-environment
               pip install pytest-azurepipelines
-              python -m pytest -v --pyargs mbuild --cov=mbuild --cov-report=html --no-coverage-upload
+              python -m pytest -v --pyargs --cov=mbuild --cov-report=html mbuild 
             displayName: Run Tests
 
           - bash: |
