@@ -1748,7 +1748,6 @@ class GOMCControl():
         manual version 2.60. Some of the text was modified from its original version.
         Cite: Potoff, Jeffrey; Schwiebert, Loren; et. al. GOMC Documentation.
         https://raw.githubusercontent.com/GOMC-WSU/GOMC/master/GOMC_Manual.pdf, 2021.
-
         """
 
         # set this to check and see if all the input pass
@@ -2073,6 +2072,7 @@ class GOMCControl():
                 self.IntraMEMC_3Freq = 0.00
                 self.MEMC_3Freq = 0.00
 
+
             # set all the "RcutLow", "Rcut", "Rswitch" variable ahead of time so they can check the values
             # relative to each other in the next interation, regardless of their user entered order
             if input_var_keys_list[var_iter] == "Rcut":
@@ -2083,6 +2083,9 @@ class GOMCControl():
 
             if input_var_keys_list[var_iter] == "Rswitch":
                 self.Rswitch = self.input_variables_dict["Rswitch"]
+
+            if input_var_keys_list[var_iter] == "Potential":
+                self.Potential = self.input_variables_dict["Potential"]
 
         # check for bad input variables and list the bad ones
         for var_iter in range(0, len(input_var_keys_list)):
@@ -2240,7 +2243,8 @@ class GOMCControl():
                         and (isinstance(self.RcutLow, float)
                              or isinstance(self.RcutLow, int)) \
                         and (isinstance(self.Rcut, float)
-                             or isinstance(self.Rcut, int)):
+                             or isinstance(self.Rcut, int)) \
+                        and self.Potential == "SWITCH":
                     if self.input_variables_dict[key] <= self.RcutLow \
                             or self.input_variables_dict[key] >= self.Rcut:
                         bad_input_variables_values_list.append(key)
@@ -3568,249 +3572,8 @@ class GOMCControl():
         data_control_file.write('\n')
         data_control_file.write('\n')
 
-
-
-
-
-
-
-
-        # ***********************************************
-        # evalute the attributes (start)
-        # ***********************************************
-        print('# ***********************************************')
-        print('# evalute the attributes (start)')
-        print('# ***********************************************')
-        print('self.Coordinates_box_0   Type = {}'.format(type(self.Coordinates_box_0)))
-        print('self.Coordinates_box_0    = {}'.format(str(self.Coordinates_box_0)))
-        print('self.Coordinates_box_1   Type = {}'.format(type(self.Coordinates_box_1)))
-        print('self.Coordinates_box_1   = {}'.format(str(self.Coordinates_box_1)))
-        print('self.Structures_box_0   Type = {}'.format(type(self.Structures_box_0)))
-        print('self.Structures_box_0    = {}'.format(str(self.Structures_box_0)))
-        print('self.Structures_box_1   Type = {}'.format(type(self.Structures_box_1)))
-        print('self.Structures_box_1    = {}'.format(str(self.Structures_box_1)))
-        print('self.x_dim_box_0   Type = {}'.format(type(self.x_dim_box_0)))
-        print('self.x_dim_box_0    = {}'.format(str(self.x_dim_box_0)))
-        print('self.y_dim_box_0   Type = {}'.format(type(self.y_dim_box_0)))
-        print('self.y_dim_box_0    = {}'.format(str(self.y_dim_box_0)))
-        print('self.z_dim_box_0   Type = {}'.format(type(self.z_dim_box_0)))
-        print('self.z_dim_box_0    = {}'.format(str(self.z_dim_box_0)))
-        print('self.x_dim_box_1   Type = {}'.format(type(self.x_dim_box_1)))
-        print('self.x_dim_box_1    = {}'.format(str(self.x_dim_box_1)))
-        print('self.y_dim_box_1   Type = {}'.format(type(self.y_dim_box_1)))
-        print('self.y_dim_box_1    = {}'.format(str(self.y_dim_box_1)))
-        print('self.z_dim_box_1   Type = {}'.format(type(self.z_dim_box_1)))
-        print('self.z_dim_box_1    = {}'.format(str(self.z_dim_box_1)))
-        print('self.coul_1_4   Type = {}'.format(type(self.coul_1_4)))
-        print('self.coul_1_4    = {}'.format(str(self.coul_1_4)))
-        print('self.input_variables_dict   Type = {}'.format(type(self.input_variables_dict)))
-        print('self.input_variables_dict    = {}'.format(str(self.input_variables_dict)))
-        print('self.residues   Type = {}'.format(type(self.residues)))
-        print('self.residues    = {}'.format(str(self.residues)))
-        print('self.all_residues_unique_atom_name_dict   Type = {}'.format(type(self.all_residues_unique_atom_name_dict)))
-        print('self.all_residues_unique_atom_name_dict    = {}'.format(str(self.all_residues_unique_atom_name_dict)))
-        print('self.conf_filename   Type = {}'.format(type(self.conf_filename)))
-        print('self.conf_filename    = {}'.format(str(self.conf_filename)))
-        print('self.Restart   Type = {}'.format(type(self.Restart)))
-        print('self.Restart    = {}'.format(str(self.Restart)))
-        print('self.RestartCheckpoint   Type = {}'.format(type(self.RestartCheckpoint)))
-        print('self.RestartCheckpoint    = {}'.format(str(self.RestartCheckpoint)))
-        print('self.PRNG   Type = {}'.format(type(self.PRNG)))
-        print('self.PRNG    = {}'.format(str(self.PRNG)))
-        print('self.ParaTypeCHARMM   Type = {}'.format(type(self.ParaTypeCHARMM)))
-        print('self.ParaTypeCHARMM    = {}'.format(str(self.ParaTypeCHARMM)))
-        print('self.ParaTypeMie   Type = {}'.format(type(self.ParaTypeMie)))
-        print('self.ParaTypeMie    = {}'.format(str(self.ParaTypeMie)))
-        print('self.ParaTypeMARTINI   Type = {}'.format(type(self.ParaTypeMARTINI)))
-        print('self.ParaTypeMARTINI    = {}'.format(str(self.ParaTypeMARTINI)))
-        print('self.RcutCoulomb_box_0   Type = {}'.format(type(self.RcutCoulomb_box_0)))
-        print('self.RcutCoulomb_box_0    = {}'.format(str(self.RcutCoulomb_box_0)))
-        print('self.RcutCoulomb_box_1   Type = {}'.format(type(self.RcutCoulomb_box_1)))
-        print('self.RcutCoulomb_box_1    = {}'.format(str(self.RcutCoulomb_box_1)))
-        print('self.Pressure   Type = {}'.format(type(self.Pressure)))
-        print('self.Pressure    = {}'.format(str(self.Pressure)))
-        print('self.Rcut   Type = {}'.format(type(self.Rcut)))
-        print('self.Rcut    = {}'.format(str(self.Rcut)))
-        print('self.RcutLow   Type = {}'.format(type(self.RcutLow)))
-        print('self.RcutLow    = {}'.format(str(self.RcutLow)))
-        print('self.LRC   Type = {}'.format(type(self.LRC)))
-        print('self.LRC    = {}'.format(str(self.LRC)))
-        print('self.Exclude   Type = {}'.format(type(self.Exclude)))
-        print('self.Exclude    = {}'.format(str(self.Exclude)))
-        print('self.Potential   Type = {}'.format(type(self.Potential)))
-        print('self.Potential    = {}'.format(str(self.Potential)))
-        print('self.Rswitch   Type = {}'.format(type(self.Rswitch)))
-        print('self.Rswitch    = {}'.format(str(self.Rswitch)))
-        print('self.ElectroStatic   Type = {}'.format(type(self.ElectroStatic)))
-        print('self.ElectroStatic    = {}'.format(str(self.ElectroStatic)))
-        print('self.Ewald   Type = {}'.format(type(self.Ewald)))
-        print('self.Ewald    = {}'.format(str(self.Ewald)))
-        print('self.CachedFourier   Type = {}'.format(type(self.CachedFourier)))
-        print('self.CachedFourier    = {}'.format(str(self.CachedFourier)))
-        print('self.Tolerance   Type = {}'.format(type(self.Tolerance)))
-        print('self.Tolerance    = {}'.format(str(self.Tolerance)))
-        print('self.Dielectric   Type = {}'.format(type(self.Dielectric)))
-        print('self.Dielectric    = {}'.format(str(self.Dielectric)))
-        print('self.PressureCalc   Type = {}'.format(type(self.PressureCalc)))
-        print('self.PressureCalc    = {}'.format(str(self.PressureCalc)))
-        print('self.EqSteps   Type = {}'.format(type(self.EqSteps)))
-        print('self.EqSteps    = {}'.format(str(self.EqSteps)))
-        print('self.AdjSteps   Type = {}'.format(type(self.AdjSteps)))
-        print('self.AdjSteps    = {}'.format(str(self.AdjSteps)))
-        print('self.useConstantArea   Type = {}'.format(type(self.useConstantArea)))
-        print('self.useConstantArea    = {}'.format(str(self.useConstantArea)))
-        print('self.FixVolBox0   Type = {}'.format(type(self.FixVolBox0)))
-        print('self.FixVolBox0    = {}'.format(str(self.FixVolBox0)))
-        print('self.ChemPot   Type = {}'.format(type(self.ChemPot)))
-        print('self.ChemPot    = {}'.format(str(self.ChemPot)))
-        print('self.Fugacity   Type = {}'.format(type(self.Fugacity)))
-        print('self.Fugacity    = {}'.format(str(self.Fugacity)))
-        print('self.CBMC_First   Type = {}'.format(type(self.CBMC_First)))
-        print('self.CBMC_First    = {}'.format(str(self.CBMC_First)))
-        print('self.CBMC_Nth   Type = {}'.format(type(self.CBMC_Nth)))
-        print('self.CBMC_Nth    = {}'.format(str(self.CBMC_Nth)))
-        print('self.CBMC_Ang   Type = {}'.format(type(self.CBMC_Ang)))
-        print('self.CBMC_Ang    = {}'.format(str(self.CBMC_Ang)))
-        print('self.CBMC_Dih   Type = {}'.format(type(self.CBMC_Dih)))
-        print('self.CBMC_Dih    = {}'.format(str(self.CBMC_Dih)))
-        print('self.OutputName   Type = {}'.format(type(self.OutputName)))
-        print('self.OutputName    = {}'.format(str(self.OutputName)))
-        print('self.CoordinatesFreq   Type = {}'.format(type(self.CoordinatesFreq)))
-        print('self.CoordinatesFreq    = {}'.format(str(self.CoordinatesFreq)))
-        print('self.RestartFreq   Type = {}'.format(type(self.RestartFreq)))
-        print('self.RestartFreq    = {}'.format(str(self.RestartFreq)))
-        print('self.CheckpointFreq   Type = {}'.format(type(self.CheckpointFreq)))
-        print('self.CheckpointFreq    = {}'.format(str(self.CheckpointFreq)))
-        print('self.ConsoleFreq   Type = {}'.format(type(self.ConsoleFreq)))
-        print('self.ConsoleFreq    = {}'.format(str(self.ConsoleFreq)))
-        print('self.BlockAverageFreq   Type = {}'.format(type(self.BlockAverageFreq)))
-        print('self.BlockAverageFreq    = {}'.format(str(self.BlockAverageFreq)))
-        print('self.HistogramFreq   Type = {}'.format(type(self.HistogramFreq)))
-        print('self.HistogramFreq    = {}'.format(str(self.HistogramFreq)))
-        print('self.DistName   Type = {}'.format(type(self.DistName)))
-        print('self.DistName    = {}'.format(str(self.DistName)))
-        print(' self.HistName   Type = {}'.format(type( self.HistName)))
-        print(' self.HistName    = {}'.format(str( self.HistName)))
-        print('self.RunNumber   Type = {}'.format(type(self.RunNumber)))
-        print('self.RunNumber    = {}'.format(str(self.RunNumber)))
-        print('self.RunLetter   Type = {}'.format(type(self.RunLetter)))
-        print('self.RunLetter    = {}'.format(str(self.RunLetter)))
-        print('self.SampleFreq   Type = {}'.format(type(self.SampleFreq)))
-        print('self.SampleFreq    = {}'.format(str(self.SampleFreq)))
-        print('self.OutEnergy   Type = {}'.format(type(self.OutEnergy)))
-        print('self.OutEnergy    = {}'.format(str(self.OutEnergy)))
-        print('self.OutPressure   Type = {}'.format(type(self.OutPressure)))
-        print('self.OutPressure    = {}'.format(str(self.OutPressure)))
-        print('self.OutMolNumber   Type = {}'.format(type(self.OutMolNumber)))
-        print('self.OutMolNumber    = {}'.format(str(self.OutMolNumber)))
-        print('self.OutDensity   Type = {}'.format(type(self.OutDensity)))
-        print('self.OutDensity    = {}'.format(str(self.OutDensity)))
-        print('self.OutVolume   Type = {}'.format(type(self.OutVolume)))
-        print('self.OutVolume    = {}'.format(str(self.OutVolume)))
-        print('self.OutSurfaceTension   Type = {}'.format(type(self.OutSurfaceTension)))
-        print('self.OutSurfaceTension    = {}'.format(str(self.OutSurfaceTension)))
-        print('self.FreeEnergyCalc   Type = {}'.format(type(self.FreeEnergyCalc)))
-        print('self.FreeEnergyCalc    = {}'.format(str(self.FreeEnergyCalc)))
-        print('self.MoleculeType   Type = {}'.format(type(self.MoleculeType)))
-        print('self.MoleculeType    = {}'.format(str(self.MoleculeType)))
-        print('self.InitialState   Type = {}'.format(type(self.InitialState)))
-        print('self.InitialState    = {}'.format(str(self.InitialState)))
-        print('self.LambdaVDW   Type = {}'.format(type(self.LambdaVDW)))
-        print('self.LambdaVDW    = {}'.format(str(self.LambdaVDW)))
-        print('self.LambdaCoulomb   Type = {}'.format(type(self.LambdaCoulomb)))
-        print('self.LambdaCoulomb    = {}'.format(str(self.LambdaCoulomb)))
-        print('self.ScaleCoulomb   Type = {}'.format(type(self.ScaleCoulomb)))
-        print('self.ScaleCoulomb    = {}'.format(str(self.ScaleCoulomb)))
-        print('self.ScalePower   Type = {}'.format(type(self.ScalePower)))
-        print('self.ScalePower    = {}'.format(str(self.ScalePower)))
-        print('self.ScaleAlpha   Type = {}'.format(type(self.ScaleAlpha)))
-        print('self.ScaleAlpha    = {}'.format(str(self.ScaleAlpha)))
-        print('self.MinSigma   Type = {}'.format(type(self.MinSigma)))
-        print('self.MinSigma    = {}'.format(str(self.MinSigma)))
-        print('self.DisFreq   Type = {}'.format(type(self.DisFreq)))
-        print('self.DisFreq    = {}'.format(str(self.DisFreq)))
-        print('self.RotFreq   Type = {}'.format(type(self.RotFreq)))
-        print('self.RotFreq    = {}'.format(str(self.RotFreq)))
-        print('self.IntraSwapFreq   Type = {}'.format(type(self.IntraSwapFreq)))
-        print('self.IntraSwapFreq    = {}'.format(str(self.IntraSwapFreq)))
-        print('self.SwapFreq   Type = {}'.format(type(self.SwapFreq)))
-        print('self.SwapFreq    = {}'.format(str(self.SwapFreq)))
-        print('self.RegrowthFreq   Type = {}'.format(type(self.RegrowthFreq)))
-        print('self.RegrowthFreq    = {}'.format(str(self.RegrowthFreq)))
-        print('self.CrankShaftFreq   Type = {}'.format(type(self.CrankShaftFreq)))
-        print('self.CrankShaftFreq    = {}'.format(str(self.CrankShaftFreq)))
-        print('self.VolFreq   Type = {}'.format(type(self.VolFreq)))
-        print('self.VolFreq    = {}'.format(str(self.VolFreq)))
-        print('self.MultiParticleFreq   Type = {}'.format(type(self.MultiParticleFreq)))
-        print('self.MultiParticleFreq    = {}'.format(str(self.MultiParticleFreq)))
-        print('self.DisFreq   Type = {}'.format(type(self.DisFreq)))
-        print('self.DisFreq    = {}'.format(str(self.DisFreq)))
-        print('self.RotFreq   Type = {}'.format(type(self.RotFreq)))
-        print('self.RotFreq    = {}'.format(str(self.RotFreq)))
-        print('self.IntraSwapFreq   Type = {}'.format(type(self.IntraSwapFreq)))
-        print('self.IntraSwapFreq    = {}'.format(str(self.IntraSwapFreq)))
-        print('self.SwapFreq   Type = {}'.format(type(self.SwapFreq)))
-        print('self.SwapFreq    = {}'.format(str(self.SwapFreq)))
-        print('self.RegrowthFreq   Type = {}'.format(type(self.RegrowthFreq)))
-        print('self.RegrowthFreq    = {}'.format(str(self.RegrowthFreq)))
-        print('self.CrankShaftFreq   Type = {}'.format(type(self.CrankShaftFreq)))
-        print('self.CrankShaftFreq    = {}'.format(str(self.CrankShaftFreq)))
-        print('self.VolFreq   Type = {}'.format(type(self.VolFreq)))
-        print('self.VolFreq    = {}'.format(str(self.VolFreq)))
-        print('self.MultiParticleFreq   Type = {}'.format(type(self.MultiParticleFreq)))
-        print('self.MultiParticleFreq    = {}'.format(str(self.MultiParticleFreq)))
-        print('self.IntraMEMC_1Freq   Type = {}'.format(type(self.IntraMEMC_1Freq)))
-        print('self.IntraMEMC_1Freq    = {}'.format(str(self.IntraMEMC_1Freq)))
-        print('self.MEMC_1Freq   Type = {}'.format(type(self.MEMC_1Freq)))
-        print('self.MEMC_1Freq    = {}'.format(str(self.MEMC_1Freq)))
-        print('self.IntraMEMC_2Freq   Type = {}'.format(type(self.IntraMEMC_2Freq)))
-        print('self.IntraMEMC_2Freq    = {}'.format(str(self.IntraMEMC_2Freq)))
-        print('self.MEMC_2Freq   Type = {}'.format(type(self.MEMC_2Freq)))
-        print('self.MEMC_2Freq    = {}'.format(str(self.MEMC_2Freq)))
-        print('self.IntraMEMC_3Freq   Type = {}'.format(type(self.IntraMEMC_3Freq)))
-        print('self.IntraMEMC_3Freq    = {}'.format(str(self.IntraMEMC_3Freq)))
-        print('self.MEMC_3Freq   Type = {}'.format(type(self.MEMC_3Freq)))
-        print('self.MEMC_3Freq    = {}'.format(str(self.MEMC_3Freq)))
-        print('self.ExchangeVolumeDim   Type = {}'.format(type(self.ExchangeVolumeDim)))
-        print('self.ExchangeVolumeDim    = {}'.format(str(self.ExchangeVolumeDim)))
-        print('self.MEMC_DataInput   Type = {}'.format(type(self.MEMC_DataInput)))
-        print('self.MEMC_DataInput    = {}'.format(str(self.MEMC_DataInput)))
-
-
-        # ***********************************************
-        # evalute the attributes (end)
-        # ***********************************************
-        print('# ***********************************************')
-        print('# evalute the attributes (end)')
-        print('# ***********************************************')
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
         return "GOMC_CONTROL_FILE_WRITTEN"
+
 
     def ck_input_variable_true_or_false(self,
                                         input_variables_dict,
