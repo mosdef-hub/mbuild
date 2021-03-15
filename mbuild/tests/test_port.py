@@ -52,6 +52,20 @@ class TestPattern(BaseTest):
         port.rotate(np.pi, [1, 0, 0])
         assert(np.allclose([0, -1, 0], port.direction, atol=1e-15))
 
+    def test_port_separation(self, ethane):
+        port = mb.Port(anchor=ethane, separation=0.7)
+        assert(np.allclose(0.7, port.separation, atol=1e-15))
+
+    def test_update_separation(self, ethane):
+        port = mb.Port(anchor=ethane, separation=0.7)
+        port.update_separation(separation=0.9)
+        assert(np.allclose(0.9, port.separation, atol=1e-15))
+
+    def test_update_orientaiton(self, ch2):
+        port = ch2['up']
+        port.update_orientation(orientation=(1,0,0))
+        assert(np.allclose([-1,0,0], port.direction, atol=1e-15))
+
     def test_access_labels(self):
         port = mb.Port()
         compound = mb.Compound()
