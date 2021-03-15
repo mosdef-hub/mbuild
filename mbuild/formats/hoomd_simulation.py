@@ -139,12 +139,14 @@ def create_hoomd_simulation(
             hoomd_snapshot=init_snap
         )
         hoomd_objects.append(snapshot)
-        hoomd.init.read_snapshot(snapshot)
+        hoomd_system = hoomd.init.read_snapshot(snapshot)
+        hoomd_objects.append(hoomd_system)
     else:
         with gsd.hoomd.open(restart) as f:
             snapshot = f[-1]
         hoomd_objects.append(snapshot)
-        hoomd.init.read_gsd(restart, restart=restart)
+        hoomd_system = hoomd.init.read_gsd(restart, restart=restart)
+        hoomd_objects.append(hoomd_system)
         print("Simulation initialized from restart file")
 
     nl = hoomd.md.nlist.cell()
