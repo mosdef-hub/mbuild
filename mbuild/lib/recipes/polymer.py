@@ -92,7 +92,16 @@ class Polymer(Compound):
                 tail_port = tail[label]
 
         if not self.end_groups:
-            self.end_groups.extend([H(), H()])
+            hydrogen = H()
+            hydrogen['up'].update_separation(0.0547)
+            hydrogen_2 = mb.clone(hydrogen)
+            self.end_groups.extend([hydrogen, hydrogen_2])
+            head_port.update_separation(0.0547)
+            tail_port.update_separation(0.0547)
+        else:
+            head_port.update_separation(self.end_groups['up'].separation)
+            tail_port.update_separation(self.end_groups['up'].separation)
+
         for compound in self.end_groups:
             self.add(compound)
         
