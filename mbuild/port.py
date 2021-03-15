@@ -1,4 +1,5 @@
 import itertools
+from warnings import warn
 
 import numpy as np
 
@@ -34,7 +35,6 @@ class Port(Compound):
     used : bool
         Status of whether a port has been occupied following an equivalence
         transform.
-
     """
     def __init__(self, anchor=None, orientation=None, separation=0):
         super(Port, self).__init__(name='Port', port_particle=True)
@@ -83,6 +83,46 @@ class Port(Compound):
         newone.used = self.used
         return newone
 
+    def update_separation(self, separation):
+        """
+        Change the distance between a port and its anchor particle
+
+        separation : float, required
+            Distance to shift port along the orientation vector from the anchor
+            particle position. If no anchor is provided, the port will be shifted
+            from the origin.
+        """
+        if self.used:
+            warn("This port is already being used and changing its separation"
+                    " will have no effect on the distance between particles.")
+
+        if self.anchor:
+            self.translate_to(self.anchor.pos)
+        else:
+            self.translate_to((0,0,0))
+
+        self.translate(separation*self.direction)
+
+    def update_orientation(self, orientation):
+        """
+        Change the direction between a port and its anchor particle
+
+        orientation : array-like, shape=(3,), optional, default=[0, 1, 0]
+            Vector along which to orient the port
+        """
+        if self.used:
+            warn("This port is already being used and changing its orientation"
+                    " will have no effect on the direction between particles.")
+
+        orientation = np.asarray(orientation)
+        down = self.labels['down']
+        up = self.labels['up']
+
+        normal = np.cross(self.direction, orientation)
+        self.rotate(angle(self.direction, orientation), normal)
+        down.rotate(np.pi, normal)
+        up.rotate(np.pi, normal)
+
     @property
     def center(self):
         """The cartesian center of the Port"""
@@ -93,6 +133,19 @@ class Port(Compound):
         """The unit vector pointing in the 'direction' of the Port
         """
         return unit_vector(self.xyz_with_ports[1]-self.xyz_with_ports[0])
+
+    @property
+    def separation(self):
+        """
+        The distance between a port and its anchor particle.
+        If the port has no anchor particle, returns None.
+        """
+        if self.anchor:
+            return np.linalg.norm(self.center - self.anchor.pos)
+        else:
+            warn("This port is not anchored to another particle." 
+                    " Returning a separation of None")
+            return None
 
     @property
     def access_labels(self):
