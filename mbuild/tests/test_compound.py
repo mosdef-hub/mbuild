@@ -657,7 +657,7 @@ class TestCompound(BaseTest):
         intermol_system = compound.to_intermol()
         assert len(intermol_system.molecule_types) == 1
         assert 'Compound' in intermol_system.molecule_types
-        assert len(intermol_system.molecule_types['Compound'].bonds) == 9
+        assert len(intermol_system.molecule_types['Compound'].bond_forces) == 9
 
         assert len(intermol_system.molecule_types['Compound'].molecules) == 1
         molecules = list(intermol_system.molecule_types['Compound'].molecules)
