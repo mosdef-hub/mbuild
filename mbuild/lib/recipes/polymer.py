@@ -31,7 +31,7 @@ class Polymer(Compound):
 
     build(n, sequence)
         Use to create a single polymer compound. This method uses the compounds created 
-        by alling the add_monomer and add_end_group methods.
+        by calling the add_monomer and add_end_group methods.
     """
     def __init__(self):
         super(Polymer, self).__init__()
@@ -40,6 +40,19 @@ class Polymer(Compound):
         self.end_groups = []
 
     def build(self, n, sequence='A'):
+    """Connect one or more components in a specified sequence.
+
+    Parameters
+    ----------
+    monomers : mb.Compound or list of mb.Compound
+        The compound(s) to replicate.
+    n : int
+        The number of times to replicate the sequence.
+    sequence : str, optional, default='A'
+        A string of characters where each unique character represents one
+        repetition of a monomer. Characters in `sequence` are assigned to
+        monomers in the order assigned by the built-in `sorted()`.
+    """
         if n < 1:
             raise ValueError('n must be 1 or more')
         n_monomers = n*len(sequence)
@@ -82,22 +95,22 @@ class Polymer(Compound):
         self.add(first_part.labels[self.port_labels[1]], self.port_labels[1], containment=False)
 
         # Add the end groups
-        head = self['monomer[0]'] # First monomer group
-        tail = self['monomer[{}]'.format(n_monomers - 1)] # Last monomer group
+        head = self['monomer[0]'] # First monomer
+        tail = self['monomer[{}]'.format(n_monomers - 1)] # Last monomer
         for label in self.port_labels:
             if not head[label].used:
                 head_port = head[label]
             if not tail[label].used:
                 tail_port = tail[label]
 
-        if not self.end_groups:
+        if not self.end_groups: # Cap each end with Hydrogens
             hydrogen = H()
             hydrogen['up'].update_separation(0.0547)
             hydrogen_2 = clone(hydrogen)
             self.end_groups.extend([hydrogen, hydrogen_2])
             head_port.update_separation(0.0547)
             tail_port.update_separation(0.0547)
-        else:
+        else: # Use compounds in self.end_groups
             head_port.update_separation(self.end_groups[0]['up'].separation)
             tail_port.update_separation(self.end_groups[1]['up'].separation)
 
@@ -112,7 +125,6 @@ class Polymer(Compound):
                      self.end_groups[1].labels['up'],
                      tail_port
                      )
-
         
     def add_monomer(self, monomer, bonding_indices, separation,
                     port_labels=['A', 'B'], orientation=None,
