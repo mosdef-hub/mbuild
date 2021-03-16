@@ -8,5 +8,5 @@ dependencies:
   - oset
   - packmol>=18
   - parmed>=3.4.0
-  - python
+  - python<=3.8
   - scipy

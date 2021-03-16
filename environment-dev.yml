@@ -24,5 +24,5 @@ dependencies:
   - pycifrw
   - pytest>=3.0
   - pytest-cov
-  - python
+  - python<=3.8
   - scipy
