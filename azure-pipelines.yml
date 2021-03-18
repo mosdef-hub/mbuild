@@ -64,9 +64,7 @@ stages:
           - bash: |
               conda update -c defaults conda
               conda update --all
-              conda create -n test-environment
-              source activate test-environment
-              conda install --yes python=$(python.version) --file environment-dev.yml
+              conda env create -n test-environment -y python=$(python.version) -f environment-dev.yml
               pip install -e .
             displayName: Create Conda env, Activate, Install dependencies, Install Branch
 
