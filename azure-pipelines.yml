@@ -59,17 +59,14 @@ stages:
 
           - bash: |
               conda config --set always_yes yes --set changeps1 no
-              conda config --add channels omnia
-              conda config --add channels conda-forge
-            displayName: Add relavent Channels
+            displayName: Set conda config
 
           - bash: |
               conda update -c defaults conda
               conda update --all
               conda create -n test-environment
               source activate test-environment
-              conda install --yes python=$(python.version) --file requirements-dev.txt
-              conda install 'hoomd<3'
+              conda install --yes python=$(python.version) --file environment-dev.yml
               pip install -e .
             displayName: Create Conda env, Activate, Install dependencies, Install Branch
 
@@ -114,16 +111,15 @@ stages:
 
           - script: |
               conda config --set always_yes yes --set changeps1 no
-              conda config --add channels omnia
               conda config --add channels conda-forge
             displayName: Add relavent channels
 
           - script: |
               conda update -c defaults conda
               conda update conda -yq
-              conda create -n test-environment
-              call activate test-environment
-              conda install --yes python=$(python.version) --file requirements-dev.txt
+              conda env create -n test-environment -y python=$(python.version) -f environment.yml
+              conda activate test-environment
+              conda install bump2version codecov foyer garnett>=0.7.1 gsd>=1.2 mdtraj networkx nglview>=2.7 pip protobuf py3Dmol pycifrw pytest>=3.0 pytest-cov
             displayName: Create Conda env, Activate, Install dependencies
 
           - script: |
@@ -149,21 +145,15 @@ stages:
 
           - bash: |
               conda config --set always_yes yes --set changeps1 no
-              conda config --add channels omnia
-              conda config --add channels conda-forge
               conda update -c defaults conda
               conda update --all
-              conda create -n  bleeding-test-environment
-              source activate bleeding-test-environment
-              conda install --yes python=3.7 --file requirements-dev.txt
-              conda install --yes python=3.7 --file requirements-dev.txt
+              conda env create -n bleeding-test-env -y python=3.7 -f environment-dev.yml
             displayName: Create a new bleeding test environment
 
           - bash: |
-              source activate bleeding-test-environment
+              source activate bleeding-test-env
               git clone https://github.com/mosdef-hub/foyer.git
               cd foyer
-              conda install --yes --file requirements-dev.txt
               conda install --yes --file requirements-dev.txt
               pip install -e .
               pip uninstall mbuild -y
@@ -172,7 +162,7 @@ stages:
             displayName: clone foyer, install foyer, install mbuild
 
           - bash: |
-              source activate bleeding-test-environment
+              source activate bleeding-test-env
               pip install pytest-azurepipelines
               python -m pytest -v --cov=mbuild --cov-report= --pyargs mbuild --no-coverage-upload
             displayName: Run Tests
