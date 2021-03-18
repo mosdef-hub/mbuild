@@ -73,7 +73,7 @@ stages:
           - bash: |
               source activate test-environment
               pip install pytest-azurepipelines
-              python -m pytest -v --cov=mbuild --no-coverage-upload
+              python -m pytest -v --pyargs mbuild --cov=./mbuild --no-coverage-upload
             displayName: Run Tests
 
           - bash: |
@@ -131,7 +131,7 @@ stages:
           - script: |
               call activate test-environment
               python -m pip install pytest-azurepipelines
-              python -m pytest -v --cov=mbuild --cov-report=html --no-coverage-upload
+              python -m pytest -v --cov=./mbuild --cov-report=html --pyargs mbuild --no-coverage-upload
             displayName: Run Tests
 
       - job: LinuxBleedingFoyer
@@ -164,7 +164,7 @@ stages:
           - bash: |
               source activate bleeding-test-env
               pip install pytest-azurepipelines
-              python -m pytest -v --cov=mbuild --cov-report=html --no-coverage-upload
+              python -m pytest -v --cov=./mbuild --cov-report= --pyargs mbuild --no-coverage-upload
             displayName: Run Tests
 
   - stage: Docker
