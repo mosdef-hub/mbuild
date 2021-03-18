@@ -64,13 +64,15 @@ stages:
           - bash: |
               conda update -c defaults conda
               conda update --all
-              conda env create -n test-environment -y python=$(python.version) -f environment-dev.yml
+              conda env create -n test-environment -y python=$(python.version)
+              conda activate test-environment
+              conda env update -n test-environment -y python=$(python.version) -f environment-dev.yml
               pip install -e .
             displayName: Create Conda env, Activate, Install dependencies, Install Branch
 
           - bash: |
               source activate test-environment
-              pip install pytest-azurepipelines
+              python -m pip install pytest-azurepipelines
               python -m pytest -v --cov=./ 
             displayName: Run Tests
 
@@ -115,8 +117,9 @@ stages:
           - script: |
               conda update -c defaults conda
               conda update conda -yq
-              conda env create -n test-environment -y python=$(python.version) -f environment.yml
+              conda env create -n test-environment -y python=$(python.version)
               conda activate test-environment
+              conda env update -n test-environment -y python=$(python.version) -f environment.yml
               conda install bump2version codecov foyer garnett>=0.7.1 gsd>=1.2 mdtraj networkx nglview>=2.7 pip protobuf py3Dmol pycifrw pytest>=3.0 pytest-cov
             displayName: Create Conda env, Activate, Install dependencies
 
@@ -145,7 +148,9 @@ stages:
               conda config --set always_yes yes --set changeps1 no
               conda update -c defaults conda
               conda update --all
-              conda env create -n bleeding-test-env -y python=3.7 -f environment-dev.yml
+              conda env create -n bleeding-test-env -y python=3.7
+              conda activate bleeding-test-env
+              conda env update -n bleeding-test-env -y python=3.7 -f environment-dev.yml
             displayName: Create a new bleeding test environment
 
           - bash: |
@@ -153,15 +158,15 @@ stages:
               git clone https://github.com/mosdef-hub/foyer.git
               cd foyer
               conda install --yes --file requirements-dev.txt
-              pip install -e .
-              pip uninstall mbuild -y
+              python -m pip install -e .
+              python -m pip uninstall mbuild -y
               cd ..
-              pip install -e .
+              python -m pip install -e .
             displayName: clone foyer, install foyer, install mbuild
 
           - bash: |
               source activate bleeding-test-env
-              pip install pytest-azurepipelines
+              python -m pip install pytest-azurepipelines
               python -m pytest -v --cov=./ --cov-report=html
             displayName: Run Tests
 
