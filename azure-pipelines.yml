@@ -111,7 +111,6 @@ stages:
 
           - script: |
               conda config --set always_yes yes --set changeps1 no
-              conda config --add channels conda-forge
             displayName: Add relavent channels
 
           - script: |
@@ -119,8 +118,7 @@ stages:
               conda update conda -yq
               conda create -n test-environment
               call activate test-environment
-              conda env update -n test-environment python=$(python.version) -f environment.yml
-              conda install bump2version codecov foyer garnett>=0.7.1 gsd>=1.2 mdtraj networkx nglview>=2.7 pip protobuf py3Dmol pycifrw pytest>=3.0 pytest-cov
+              conda env update -n test-environment python=$(python.version) -f environment-win.yml
             displayName: Create Conda env, Activate, Install dependencies
 
           - script: |
