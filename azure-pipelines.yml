@@ -64,9 +64,9 @@ stages:
           - bash: |
               conda update -c defaults conda
               conda update --all
-              conda env create -n test-environment -y python=$(python.version)
-              conda activate test-environment
-              conda env update -n test-environment -y python=$(python.version) -f environment-dev.yml
+              conda create -n test-environment python=$(python.version)
+              source activate test-environment
+              conda env update -n test-environment python=$(python.version) -f environment-dev.yml
               pip install -e .
             displayName: Create Conda env, Activate, Install dependencies, Install Branch
 
@@ -117,8 +117,8 @@ stages:
           - script: |
               conda update -c defaults conda
               conda update conda -yq
-              conda env create -n test-environment -y python=$(python.version)
-              conda activate test-environment
+              conda create -n test-environment python=$(python.version)
+              call activate test-environment
               conda env update -n test-environment -y python=$(python.version) -f environment.yml
               conda install bump2version codecov foyer garnett>=0.7.1 gsd>=1.2 mdtraj networkx nglview>=2.7 pip protobuf py3Dmol pycifrw pytest>=3.0 pytest-cov
             displayName: Create Conda env, Activate, Install dependencies
@@ -148,8 +148,8 @@ stages:
               conda config --set always_yes yes --set changeps1 no
               conda update -c defaults conda
               conda update --all
-              conda env create -n bleeding-test-env -y python=3.7
-              conda activate bleeding-test-env
+              conda create -n bleeding-test-env -y python=3.7
+              source activate bleeding-test-env
               conda env update -n bleeding-test-env -y python=3.7 -f environment-dev.yml
             displayName: Create a new bleeding test environment
 
