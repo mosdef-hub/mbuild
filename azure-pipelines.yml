@@ -119,7 +119,7 @@ stages:
               conda update conda -yq
               conda create -n test-environment python=$(python.version)
               call activate test-environment
-              conda env update -n test-environment -y python=$(python.version) -f environment.yml
+              conda env update -n test-environment python=$(python.version) -f environment.yml
               conda install bump2version codecov foyer garnett>=0.7.1 gsd>=1.2 mdtraj networkx nglview>=2.7 pip protobuf py3Dmol pycifrw pytest>=3.0 pytest-cov
             displayName: Create Conda env, Activate, Install dependencies
 
